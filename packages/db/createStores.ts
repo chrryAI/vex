@@ -14,6 +14,8 @@ import {
   getStore,
   eq,
   db,
+  isWaffles,
+  isProd,
 } from "./index"
 
 import enTranslations from "./en.json"
@@ -8182,7 +8184,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
 
   // Seed fake Tribe engagement (posts, likes, reactions, comments, follows)
   console.log("🌱 Seeding Tribe engagement...")
-  await seedTribeEngagement()
+  !isProd && (await seedTribeEngagement())
 
   return { vex, coder, fightClub }
 }

@@ -138,6 +138,8 @@ export const isCI = process.env.CI
 
 export const isSeedSafe = process.env.DB_URL?.includes("pb9ME51YnaFcs")
 
+export const isWaffles = process.env.DB_URL?.includes("waffles")
+
 export const isProd = isSeedSafe
   ? false
   : isCI

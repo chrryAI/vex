@@ -21,6 +21,7 @@ import {
   isProd,
   isCI,
   isSeedSafe,
+  isWaffles,
   user,
   updateApp,
 } from "./index"
@@ -258,6 +259,17 @@ const clearDb = async (): Promise<void> => {
     asked: false,
   })
 
+  await db.delete(tribeBlocks)
+  await db.delete(tribeComments)
+  await db.delete(tribeFollows)
+  await db.delete(tribePosts)
+  await db.delete(tribeLikes)
+  await db.delete(tribes)
+
+  if (isWaffles) {
+    return
+  }
+
   await db.delete(calendarEvents)
   // await db.delete(aiAgents)
   await db.delete(messages)
@@ -278,12 +290,6 @@ const clearDb = async (): Promise<void> => {
   await db.delete(threadSummaries)
   await db.delete(sonarIssues)
   await db.delete(sonarMetrics)
-  await db.delete(tribeBlocks)
-  await db.delete(tribeComments)
-  await db.delete(tribeFollows)
-  await db.delete(tribePosts)
-  await db.delete(tribeLikes)
-  await db.delete(tribes)
 
   // Clear SonarCloud data from graph database
   await clearSonarCloudGraph()
@@ -1020,6 +1026,9 @@ const create = async () => {
     return
   }
 
+  if (isWaffles) {
+    return
+  }
   // await createRealisticUsers()
   // await createCharacterProfiles()
 
@@ -1632,6 +1641,51 @@ const updateStoreUrls = async ({ user }: { user: user }) => {
       (app) => app?.chromeWebStoreUrl,
     ),
   )
+}
+
+const waffles = async () => {
+  let admin = await getUser({
+    email: isWaffles ? "ibsukru@gmail.com" : "test@gmail.com",
+  })
+  if (!admin) throw new Error("Admin user not found")
+
+  const { vex } = await createStores({ user: admin })
+
+  // await updateStoreUrls({ user: admin })
+
+  // Delete inactive bot guests in batches
+  // await clearGuests()
+  // const vex = await createStores({ user: admin, isProd: true })
+  // const allInstructions = await db.select().from(instructions)
+  // const seen = new Map<string, string>() // Map of unique key -> instruction ID
+  // const duplicateIds: string[] = []
+  // for (const instruction of allInstructions) {
+  //   // Create unique key based on userId/guestId + appId + title + content
+  //   const key = `${instruction.userId || ""}-${instruction.guestId || ""}-${instruction.appId || ""}-${instruction.title}-${instruction.content}`
+  //   if (
+  //     // instruction.title === "Plan afternoon trip under €1000 💰" &&
+  //     instruction.userId === admin.id
+  //   ) {
+  //     console.log("my in.", instruction)
+  //   }
+  //   // if (seen.has(key)) {
+  //   //   // This is a duplicate, mark for deletion
+  //   //   duplicateIds.push(instruction.id)
+  //   //   console.log(
+  //   //     `  ❌ Duplicate found: "${instruction.title}" (ID: ${instruction.id})`,
+  //   //   )
+  //   // } else {
+  //   //   seen.set(key, instruction.id)
+  //   // }
+  // }
+  // if (duplicateIds.length > 0) {
+  //   console.log(`🗑️  Removing ${duplicateIds.length} duplicate instructions...`)
+  //   for (const id of duplicateIds) {
+  //     // await db.delete(instructions).where(eq(instructions.id, id))
+  //   }
+  //   console.log(`✅ Removed ${duplicateIds.length} duplicate instructions`)
+  // } else {
+  //   console.log("✅ No duplicate instructions found")
 }
 
 const prod = async () => {

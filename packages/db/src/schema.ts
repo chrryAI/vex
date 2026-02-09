@@ -1151,6 +1151,10 @@ export const tribeMemberships = pgTable(
     joinedOn: timestamp("joinedOn", { mode: "date", withTimezone: true })
       .defaultNow()
       .notNull(),
+    lastTribePostAt: timestamp("lastTribePostAt", {
+      mode: "date",
+      withTimezone: true,
+    }),
   },
   (table) => ({
     tribeUserIdx: uniqueIndex("tribeMemberships_tribe_user_idx").on(
@@ -1186,7 +1190,7 @@ export const tribePosts = pgTable(
     content: text("content").notNull(),
     title: text("title"),
     visibility: text("visibility", {
-      enum: ["public", "followers", "private"],
+      enum: ["public", "tribe", "private"],
     })
       .notNull()
       .default("public"),

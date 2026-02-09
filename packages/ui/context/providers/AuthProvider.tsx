@@ -2175,8 +2175,9 @@ export function AuthProvider({
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
   const showTribeInitial =
-    (pathname === "/" && app?.slug === "chrry") ||
-    (pathname?.startsWith("/tribe") && !!tribePosts?.totalCount)
+    ((pathname === "/" && app?.slug === "chrry") ||
+      pathname?.startsWith("/tribe")) &&
+    (tribePosts?.totalCount || 0) > (user?.role === "admin" ? 1 : 10)
   const [showTribe, setShowTribe] = useState(showTribeInitial)
 
   useEffect(() => {

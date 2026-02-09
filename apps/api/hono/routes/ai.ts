@@ -58,6 +58,7 @@ import {
   sql,
   and,
   isNull,
+  isNotNull,
   aiAgent,
   VEX_LIVE_FINGERPRINTS,
   decrypt,
@@ -65,6 +66,8 @@ import {
   apps as appsSchema,
   getOrCreateTribe,
 } from "@repo/db"
+
+import { tribePosts, tribes } from "@repo/db/src/schema"
 
 import {
   processFileForRAG,
@@ -6331,6 +6334,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         let tribeTitle = ""
         let tribeContent = ""
         let tribe = ""
+        let tribePostId = undefined
+        let moltId = undefined
 
         // // Save final message to database
         if (finalText) {
@@ -6358,7 +6363,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 moltTitle = parsed.title || "Thoughts from Chrry"
                 moltContent = parsed.content || finalText
                 moltSubmolt = parsed.submolt || "general"
-
+                moltId = result.post_id
                 // Two flows: stream (direct post) vs non-stream (parse only)
                 if (shouldStream && moltApiKey) {
                   // STREAM MODE: Direct post to Moltbook
@@ -6427,85 +6432,147 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                       // STREAM MODE: Direct post to Tribe (user sees content + post confirmation)
 
                       // Check credits
-                      const { MEMBER_FREE_TRIBE_CREDITS } =
+                      const { MEMBER_FREE_TRIBE_CREDITS, tribeMemberships } =
                         await import("@repo/db/src/schema")
                       const tribeCredits =
                         member.tribeCredits ?? MEMBER_FREE_TRIBE_CREDITS
 
-                      if (tribeCredits <= 0) {
+                      if (tribeCredits <= 0 && member.role !== "admin") {
                         finalText = `${tribeContent}\n\n⚠️ No Tribe credits remaining. You've used all ${MEMBER_FREE_TRIBE_CREDITS} free posts!`
                       } else {
-                        // Fetch previous posts to avoid repetition
-                        const previousPosts =
-                          await db.query.tribePosts.findMany({
-                            where: eq(tribePosts.appId, requestApp.id),
-                            orderBy: (tribePosts, { desc }) => [
-                              desc(tribePosts.createdOn),
+                        // Check 30-minute cooldown
+                        const membership =
+                          await db.query.tribeMemberships.findFirst({
+                            where: and(
+                              eq(tribeMemberships.userId, member.id),
+                              isNotNull(tribeMemberships.lastTribePostAt),
+                            ),
+                            orderBy: (tribeMemberships, { desc }) => [
+                              desc(tribeMemberships.lastTribePostAt),
                             ],
-                            limit: 3,
                           })
 
-                        // Check for duplicate content
-                        const isDuplicate = previousPosts.some(
-                          (p) =>
-                            p.content === tribeContent ||
-                            p.title === tribeTitle,
-                        )
+                        const now = new Date()
+                        const cooldownMinutes =
+                          member?.role === "admin" ? 0 : 30
+                        const cooldownMs = cooldownMinutes * 60 * 1000
 
-                        if (isDuplicate) {
-                          finalText = `${tribeContent}\n\n⚠️ This content is too similar to a recent post. Please try something different.`
+                        if (
+                          membership?.lastTribePostAt &&
+                          member.role !== "admin" &&
+                          now.getTime() - membership.lastTribePostAt.getTime() <
+                            cooldownMs
+                        ) {
+                          const remainingMs =
+                            cooldownMs -
+                            (now.getTime() -
+                              membership.lastTribePostAt.getTime())
+                          const remainingMinutes = Math.ceil(
+                            remainingMs / 60000,
+                          )
+                          finalText = `${tribeContent}\n\n⏳ Please wait ${remainingMinutes} more minute${remainingMinutes > 1 ? "s" : ""} before posting to Tribe again (30-min cooldown).`
                         } else {
-                          // Get or create tribe
-                          const tribeId = await getOrCreateTribe({
-                            slug: tribe,
-                            userId: member.id,
-                            guestId: undefined,
-                          })
-
-                          // Create post directly
-                          const [post] = await db
-                            .insert(tribePosts)
-                            .values({
-                              appId: requestApp.id,
-                              userId: member.id,
-                              title: tribeTitle,
-                              content: tribeContent,
-                              visibility: "public",
-                              tribeId,
-                            })
-                            .returning()
-
-                          if (post) {
-                            // Increment tribe posts count
-                            await db
-                              .update(tribes)
-                              .set({
-                                postsCount: sql`${tribes.postsCount} + 1`,
-                              })
-                              .where(eq(tribes.id, tribeId))
-
-                            // Deduct credit
-                            await updateUser({
-                              id: member.id,
-                              tribeCredits: tribeCredits - 1,
+                          // Fetch previous posts to avoid repetition
+                          const previousPosts =
+                            await db.query.tribePosts.findMany({
+                              where: eq(tribePosts.appId, requestApp.id),
+                              orderBy: (tribePosts, { desc }) => [
+                                desc(tribePosts.createdOn),
+                              ],
+                              limit: 3,
                             })
 
-                            // Update thread with Tribe post ID
-                            if (thread) {
-                              await updateThread({
-                                id: thread.id,
-                                tribePostId: post.id,
-                                updatedOn: new Date(),
-                              })
-                            }
+                          // Check for duplicate content
+                          const isDuplicate = previousPosts.some(
+                            (p) =>
+                              p.content === tribeContent ||
+                              p.title === tribeTitle,
+                          )
 
-                            finalText = `${tribeContent}\n\n✅ Posted to Tribe! (${tribeCredits - 1}/${MEMBER_FREE_TRIBE_CREDITS} credits remaining)`
-
-                            console.log(`✅ Direct Tribe post: ${post.id}`)
-                            console.log(`📝 Title: ${tribeTitle}`)
-                            console.log(`🪢 Tribe: ${tribe}`)
+                          if (isDuplicate) {
+                            finalText = `${tribeContent}\n\n⚠️ This content is too similar to a recent post. Please try something different.`
                           } else {
-                            finalText = `${tribeContent}\n\n⚠️ Failed to create Tribe post`
+                            // Get or create tribe
+                            const tribeId = await getOrCreateTribe({
+                              slug: tribe,
+                              userId: member.id,
+                              guestId: undefined,
+                            })
+
+                            // Create post directly
+                            const [post] = await db
+                              .insert(tribePosts)
+                              .values({
+                                appId: requestApp.id,
+                                userId: member.id,
+                                title: tribeTitle,
+                                content: tribeContent,
+                                visibility: "public",
+                                tribeId,
+                              })
+                              .returning()
+
+                            if (post) {
+                              // Increment tribe posts count
+                              await db
+                                .update(tribes)
+                                .set({
+                                  postsCount: sql`${tribes.postsCount} + 1`,
+                                })
+                                .where(eq(tribes.id, tribeId))
+
+                              // Deduct credit (skip for admins)
+                              if (member.role !== "admin") {
+                                await updateUser({
+                                  id: member.id,
+                                  tribeCredits: tribeCredits - 1,
+                                })
+                              }
+
+                              // Update lastTribePostAt timestamp
+                              const existingMembership =
+                                await db.query.tribeMemberships.findFirst({
+                                  where: and(
+                                    eq(tribeMemberships.tribeId, tribeId),
+                                    eq(tribeMemberships.userId, member.id),
+                                  ),
+                                })
+
+                              if (existingMembership) {
+                                await db
+                                  .update(tribeMemberships)
+                                  .set({ lastTribePostAt: new Date() })
+                                  .where(
+                                    eq(
+                                      tribeMemberships.id,
+                                      existingMembership.id,
+                                    ),
+                                  )
+                              }
+
+                              tribePostId = post.id
+
+                              // Update thread with Tribe post ID
+                              if (thread) {
+                                await updateThread({
+                                  id: thread.id,
+                                  tribePostId,
+                                  updatedOn: new Date(),
+                                })
+                              }
+
+                              const creditsRemaining =
+                                member.role === "admin"
+                                  ? "∞"
+                                  : `${tribeCredits - 1}/${MEMBER_FREE_TRIBE_CREDITS}`
+                              finalText = `${tribeContent}\n\n✅ Posted to Tribe! (${creditsRemaining} credits remaining)`
+
+                              console.log(`✅ Direct Tribe post: ${post.id}`)
+                              console.log(`📝 Title: ${tribeTitle}`)
+                              console.log(`🪢 Tribe: ${tribe}`)
+                            } else {
+                              finalText = `${tribeContent}\n\n⚠️ Failed to create Tribe post`
+                            }
                           }
                         }
                       }
@@ -6554,6 +6621,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               reasoning: reasoningText || undefined, // Store reasoning separately
               isPear: requestData.pear || false, // Track Pear feedback submissions
               webSearchResult: webSearchResults, // Save web search results
+              tribePostId, // Link to Tribe post if exists
+              moltId,
             })
             // console.log("✅ createMessage completed successfully")
 
@@ -6652,6 +6721,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       let finalText = ""
       let responseMetadata: any = null
       let toolCallsDetected = false
+
       console.time("fullProcessing") // Start at beginning
 
       try {
