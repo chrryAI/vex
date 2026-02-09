@@ -490,7 +490,11 @@ async function generateSuggestionsAndPlaceholders({
   )
 
   // Check if user is admin for SATO MODE
-  const isAdmin = user?.role === "admin" && !thread.tribeId && !thread.isMolt
+  const isAdmin =
+    user?.role === "admin" &&
+    !thread.tribeId &&
+    !thread.isMolt &&
+    !thread.isTribe
 
   const suggestionsPrompt = `Based on this conversation, user memories, and calendar, generate personalized AI instruction templates AND classify the app relevance:
 

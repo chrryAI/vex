@@ -563,22 +563,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                       setSavingApiKey(true)
                       try {
                         // Validate API key with Moltbook /me endpoint
-                        const validateResponse = await fetch(
-                          "https://www.moltbook.com/api/v1/agents/me",
-                          {
-                            headers: {
-                              Authorization: `Bearer ${moltApiKey.trim()}`,
-                            },
-                          },
-                        )
-
-                        if (!validateResponse.ok) {
-                          toast.error(
-                            t("Invalid API key - please check and try again"),
-                          )
-                          setSavingApiKey(false)
-                          return
-                        }
 
                         // Save to backend if validation succeeds
                         const response = await apiFetch(
@@ -1046,20 +1030,34 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                   >
                     <>
                       {user ? (
-                        <Subscribe
-                          selectedPlan="tribe"
-                          customPrice={totalPrice}
-                          onPaymentVerified={handlePaymentVerified}
-                          cta={t("Pay {{price}}", {
-                            price: new Intl.NumberFormat("en-US", {
-                              style: "currency",
-                              currency: "EUR",
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            }).format(totalPrice),
-                          })}
-                          isTribe
-                        />
+                        !accountApp ? (
+                          <Div
+                            style={{
+                              marginTop: ".7rem",
+                              marginBottom: ".3rem",
+                            }}
+                          >
+                            🪢 Continue creating app to earn FREE Tribe credits.
+                            After creating your app you will earn 5 on demand
+                            Posts for free, then you can schedule posts using
+                            this credit calculator.
+                          </Div>
+                        ) : (
+                          <Subscribe
+                            selectedPlan="tribe"
+                            customPrice={totalPrice}
+                            onPaymentVerified={handlePaymentVerified}
+                            cta={t("Pay {{price}}", {
+                              price: new Intl.NumberFormat("en-US", {
+                                style: "currency",
+                                currency: "EUR",
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }).format(totalPrice),
+                            })}
+                            isTribe
+                          />
+                        )
                       ) : (
                         <Button
                           className="inverted"
@@ -1099,7 +1097,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                       )}
                     </>
                   </Div>
-                  {!(user || guest)?.subscription && (
+                  {!(user || guest)?.subscription && accountApp && (
                     <Text
                       style={{
                         fontSize: ".8rem",
@@ -1108,14 +1106,13 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                     >
                       🍓{" "}
                       {t(
-                        "Subscription is not required, but If you enjoy Tribe, it unlocks limits when you bring your own keys",
+                        "Subscription is not required, but If you enjoy Tribe, it unlocks limits when you bring your own keys. This also enables demand Posts",
                       )}{" "}
                       🫐
                     </Text>
                   )}
                 </>
               ) : null}
-              {totalCredits} ssss
             </Div>
           </Div>
         ) : !user ? (

@@ -335,6 +335,8 @@ export type paginatedMessages = {
 }
 // Thread types
 export type thread = {
+  isMolt?: boolean
+  isTribe?: boolean
   characterProfile?: characterProfile
   placeHolder?: placeHolder
   collaborations?:
@@ -483,6 +485,8 @@ export type message = {
   isImageGenerationEnabled: boolean
   agentVersion: string | null
   userId: string | null
+  isMolt?: boolean
+  isTribe?: boolean
   guestId: string | null
   content: string
   reasoning: string | null

@@ -1840,12 +1840,14 @@ ${
   const isTribe = !!(thread?.isTribe || message?.isTribe)
 
   const canPostToTribe =
-    (member?.tribeCredits > 0 && isTribe) || member.role === "admin"
+    (member?.tribeCredits > 0 && isTribe) || member?.role === "admin"
 
   const moltApiKeyInternal = requestApp?.moltApiKey
   const moltApiKey = moltApiKeyInternal ? safeDecrypt(moltApiKeyInternal) : ""
   const canPostToMolt =
-    (member?.moltCredits > 0 || user.role === "admin") && moltApiKey && isMolt
+    (member?.moltCredits > 0 || member?.role === "admin") &&
+    moltApiKey &&
+    isMolt
 
   const tribeCredits = member?.tribeCredits
 
@@ -2174,7 +2176,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   **REQUIRED JSON FORMAT:**
   {
     "tribeTitle": "Your catchy title here (max 100 chars)",
-    "tribeContent": "Your engaging post content here (max 500 chars)",
+    "tribeContent": "Your engaging, thoughtful post content here (500-2000 chars recommended for quality discussions)",
     "tribeName": "general"
   }
   
@@ -6358,7 +6360,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 moltSubmolt = parsed.submolt || "general"
 
                 // Two flows: stream (direct post) vs non-stream (parse only)
-                if (stream && moltApiKey) {
+                if (shouldStream && moltApiKey) {
                   // STREAM MODE: Direct post to Moltbook
                   const result = await postToMoltbook(moltApiKey, {
                     title: moltTitle,
@@ -6421,7 +6423,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 // Two flows: stream (direct post) vs non-stream (parse only, like Moltbook)
                 if (member && requestApp) {
                   try {
-                    if (stream) {
+                    if (shouldStream) {
                       // STREAM MODE: Direct post to Tribe (user sees content + post confirmation)
 
                       // Check credits

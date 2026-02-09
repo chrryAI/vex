@@ -924,8 +924,13 @@ app.patch("/:id", async (c) => {
     if (apiRateLimit !== undefined) updateData.apiRateLimit = apiRateLimit
     if (moltApiKey !== undefined) {
       const trimmed = typeof moltApiKey === "string" ? moltApiKey.trim() : ""
-      updateData.moltApiKey =
-        trimmed && !trimmed.includes(mask) ? await encrypt(trimmed) : null
+      // Only update if: empty (clear) or real key (not masked)
+      if (trimmed === "") {
+        updateData.moltApiKey = null
+      } else if (trimmed && !trimmed.includes(mask)) {
+        updateData.moltApiKey = await encrypt(trimmed)
+      }
+      // If masked, don't set updateData.moltApiKey (preserve existing)
     }
 
     if (shouldUpdateImages) updateData.images = images
@@ -1290,7 +1295,16 @@ app.patch("/:id/moltbook", async (c) => {
     if (moltApiKey !== undefined) {
       const trimmed = typeof moltApiKey === "string" ? moltApiKey.trim() : ""
 
-      if (trimmed && !trimmed.includes(mask)) {
+      // Only update if: empty (clear) or real key (not masked)
+      if (trimmed === "") {
+        // Explicitly clear the key and metadata
+        updateData.moltApiKey = null
+        updateData.moltHandle = null
+        updateData.moltAgentName = null
+        updateData.moltAgentKarma = null
+        updateData.moltAgentVerified = null
+      } else if (trimmed && !trimmed.includes(mask)) {
+        // Real key provided - validate and save
         // Check if this API key is already used by another app
         const existingApps = await db.query.apps.findMany({
           where: and(
@@ -1321,20 +1335,19 @@ app.patch("/:id/moltbook", async (c) => {
 
         // Save agent info if available
         if (agentInfo) {
+          updateData.moltHandle = agentInfo.handle
           updateData.moltAgentName = agentInfo.name
           updateData.moltAgentKarma = agentInfo.karma
           updateData.moltAgentVerified = agentInfo.verified
         }
-      } else {
-        updateData.moltApiKey = null
-        updateData.moltAgentName = null
-        updateData.moltAgentKarma = null
-        updateData.moltAgentVerified = null
       }
+      // If masked, don't set updateData fields (preserve existing)
     }
 
-    // Update the app
-    await db.update(apps).set(updateData).where(eq(apps.id, appId))
+    // Only update if there are changes
+    if (Object.keys(updateData).length > 0) {
+      await db.update(apps).set(updateData).where(eq(apps.id, appId))
+    }
 
     // Fetch updated app
     const updatedApp = await getApp({
@@ -1395,11 +1408,10 @@ app.delete("/:id/moltbook", async (c) => {
     await db.update(apps).set({ moltApiKey: null }).where(eq(apps.id, appId))
 
     // Fetch updated app
-    const updatedApp = await getApp({
+    const updatedApp = await getAppDb({
       id: appId,
-      c,
-      skipCache: true,
-      dept: 1,
+      userId: member?.id,
+      guestId: guest?.id,
     })
 
     return c.json({ app: updatedApp })

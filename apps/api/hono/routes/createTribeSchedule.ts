@@ -1,4 +1,5 @@
 import { Hono } from "hono"
+import Stripe from "stripe"
 import {
   getApp,
   getCreditTransactions,
@@ -11,6 +12,7 @@ import {
 import { getMember } from "../lib/auth"
 import captureException from "../../lib/captureException"
 import { tribeScheduleSchema } from "@chrryAI/chrry/schemas/tribeScheduleSchema"
+import { calculateCreditsFromDB } from "../../lib/scheduledJobs/creditCalculator"
 
 export const createTribeSchedule = new Hono()
 
@@ -56,6 +58,83 @@ createTribeSchedule.post("/", async (c) => {
     }
 
     const app = await getApp({ id: appId, userId: effectiveUserId })
+
+    // 🔒 SECURITY: Validate Stripe session
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+    let stripeSession: Stripe.Checkout.Session
+
+    try {
+      stripeSession = await stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ["line_items"],
+      })
+    } catch (error) {
+      console.error("❌ Failed to retrieve Stripe session:", error)
+      return c.json({ error: "Invalid payment session" }, 400)
+    }
+
+    // Verify payment was completed
+    if (stripeSession.payment_status !== "paid") {
+      return c.json({ error: "Payment not completed" }, 400)
+    }
+
+    // 🔒 SECURITY: Calculate price on backend using same calculator as UI
+    const CREDITS_PRICE = 5.0 // EUR per 1000 credits
+    const calculatedResult = await calculateCreditsFromDB({
+      frequency: frequency as "daily" | "weekly" | "monthly",
+      scheduledTimes: schedule.map((slot) => ({
+        hour: parseInt(slot.time.split(":")[0] || "0"),
+        minute: parseInt(slot.time.split(":")[1] || "0"),
+        postType: slot.postType,
+        model: slot.model,
+        charLimit: slot.charLimit,
+      })),
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      creditsPrice: CREDITS_PRICE,
+    })
+
+    // Verify UI-provided price matches backend calculation
+    if (Math.abs(calculatedResult.totalPrice - totalPrice) > 0.01) {
+      console.error("❌ Price calculation mismatch:", {
+        uiPrice: totalPrice,
+        backendPrice: calculatedResult.totalPrice,
+        uiCredits: totalCredits,
+        backendCredits: calculatedResult.totalCredits,
+      })
+      return c.json(
+        {
+          error: "Price calculation mismatch",
+          uiPrice: totalPrice,
+          backendPrice: calculatedResult.totalPrice,
+        },
+        400,
+      )
+    }
+
+    // Verify payment amount matches calculated price (convert cents to EUR)
+    const paidAmount = (stripeSession.amount_total || 0) / 100
+    const expectedAmount = calculatedResult.totalPrice
+
+    if (Math.abs(paidAmount - expectedAmount) > 0.01) {
+      console.error("❌ Payment amount mismatch:", {
+        paid: paidAmount,
+        expected: expectedAmount,
+      })
+      return c.json(
+        {
+          error: "Payment amount mismatch",
+          paid: paidAmount,
+          expected: expectedAmount,
+        },
+        400,
+      )
+    }
+
+    console.log("✅ Price validation passed:", {
+      paidAmount,
+      calculatedPrice: calculatedResult.totalPrice,
+      totalCredits: calculatedResult.totalCredits,
+    })
 
     // Verify payment by checking creditTransactions with sessionId
     const creditTransactions = await getCreditTransactions({ sessionId })

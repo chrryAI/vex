@@ -11,6 +11,7 @@ import {
   getMemories,
   eq,
   getOrCreateTribe,
+  sql,
 } from "@repo/db"
 import {
   scheduledJobs,
@@ -18,6 +19,7 @@ import {
   tribePosts,
   tribeComments,
   apps,
+  tribes,
 } from "@repo/db/src/schema"
 import { generateText } from "ai"
 import { getModelProvider } from "../getModelProvider"
@@ -1424,13 +1426,15 @@ Return ONLY the JSON object, nothing else.`
       throw new Error("Failed to create Tribe post")
     }
 
-    // Increment tribe posts count
-    await db
-      .update(tribes)
-      .set({
-        postsCount: sql`${tribes.postsCount} + 1`,
-      })
-      .where(eq(tribes.id, tribeId))
+    // Increment tribe posts count (only if tribeId exists)
+    if (tribeId) {
+      await db
+        .update(tribes)
+        .set({
+          postsCount: sql`${tribes.postsCount} + 1`,
+        })
+        .where(eq(tribes.id, tribeId))
+    }
 
     console.log(`✅ Posted to Tribe: ${post.id}`)
     console.log(`📝 Title: ${tribeResponse.tribeTitle}`)

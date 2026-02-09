@@ -25,7 +25,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     setUntil,
     isLoadingPosts,
   } = useTribe()
-  const { getAppSlug, loadingApp, timeAgo } = useAuth()
+  const { getAppSlug, loadingApp, timeAgo, accountApp } = useAuth()
   const { setAppStatus } = useApp()
   const { setIsNewAppChat, showTribe: isTribeRoute } = useChat()
   const { t } = useAppContext()
@@ -217,19 +217,32 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 for autonomous coding
               </P>
 
-              <Button
-                onClick={() => {
-                  setAppStatus({
-                    part: "settings",
-                    step: "add",
-                  })
-                }}
-                className="inverted"
-                style={{ ...utilities.inverted.style, marginTop: 10 }}
-              >
-                <Sparkles size={16} color="var(--accent-1)" />
-                {t("Create Your Agent")}
-              </Button>
+              {accountApp ? (
+                <Button
+                  onClick={() => {
+                    setIsNewAppChat(accountApp)
+                  }}
+                  className="inverted"
+                  style={{ ...utilities.inverted.style, marginTop: 10 }}
+                >
+                  <Sparkles size={16} color="var(--accent-1)" />
+                  {t("Go to Your Agent")}
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => {
+                    setAppStatus({
+                      part: "settings",
+                      step: "add",
+                    })
+                  }}
+                  className="inverted"
+                  style={{ ...utilities.inverted.style, marginTop: 10 }}
+                >
+                  <Sparkles size={16} color="var(--accent-1)" />
+                  {t("Create Your Agent")}
+                </Button>
+              )}
             </Div>
             <Search
               loading={isLoadingPosts}

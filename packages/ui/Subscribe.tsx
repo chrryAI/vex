@@ -72,6 +72,7 @@ export default function Subscribe({
   cta,
   customPrice,
   onPaymentVerified,
+  appId,
   ...props
 }: {
   customerEmail?: string // Optional for existing customers
@@ -85,6 +86,7 @@ export default function Subscribe({
   isMolt?: boolean
   cta?: string
   customPrice?: number // For Tribe/Molt dynamic pricing in EUR
+  appId?: string // App ID for Tribe/Molt payments
 }) {
   const styles = useSubscribeStyles()
   const { utilities } = useStyles()
@@ -107,7 +109,7 @@ export default function Subscribe({
     setSignInPart,
     setAsk,
     setAbout,
-    ask,
+    baseApp,
   } = useAuth()
 
   // Chat context
@@ -230,12 +232,12 @@ export default function Subscribe({
         user && token && params.set("auth_token", token)
         // guest && fingerprint && params.set("fp", fingerprint)
 
-        return `${FRONTEND_URL}/?${params.toString()}&session_id={CHECKOUT_SESSION_ID}`
+        return `${FRONTEND_URL}/${baseApp?.slug === "chrry" ? "" : baseApp?.slug}/?${params.toString()}&session_id={CHECKOUT_SESSION_ID}`
       })()
 
       const checkoutCancelUrl = (() => {
         params.set("checkout", "cancel")
-        return `${FRONTEND_URL}/?${params.toString()}`
+        return `${FRONTEND_URL}/${baseApp?.slug === "chrry" ? "" : baseApp?.slug}/?${params.toString()}`
       })()
 
       // return
@@ -255,6 +257,7 @@ export default function Subscribe({
           guestId: guest?.id,
           plan: selectedPlan,
           customPrice, // For Tribe/Molt dynamic pricing (in EUR)
+          appId, // App ID for Tribe/Molt payments
           tier:
             selectedPlan === "grape"
               ? grapeTier
