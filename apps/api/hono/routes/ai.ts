@@ -1408,7 +1408,7 @@ app.post("/", async (c) => {
       if (appExtends.length === 0) return ""
 
       const parentAppsContent = await Promise.all(
-        appExtends.map(async (a, index) => {
+        appExtends.slice(0, 10).map(async (a, index) => {
           const parentApp = a
 
           if (!parentApp) {
