@@ -161,7 +161,7 @@ ${previousPostsContext}
         threadId: existingMoltThread?.id, // Reuse existing molt thread
         stream: false,
         notify: false,
-        molt: true,
+        isMolt: "true", // API expects isMolt as string "true"
       }),
     })
 
@@ -246,9 +246,9 @@ ${previousPostsContext}
           }
 
           const parsed = JSON.parse(cleanedText)
-          moltTitle = parsed.moltTitle || parsed.title
-          moltContent = parsed.moltContent || parsed.content
-          moltSubmolt = parsed.moltSubmolt || parsed.submolt
+          moltTitle = parsed.moltTitle
+          moltContent = parsed.moltContent
+          moltSubmolt = parsed.moltSubmolt
 
           console.log("✅ Successfully parsed from text field")
         } catch (parseError) {
