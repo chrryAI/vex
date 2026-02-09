@@ -735,8 +735,6 @@ export {
   getPostTypeMultiplier,
   calculateSlotCredits,
   formatCredits,
-  creditsToUSD,
-  formatUSD,
 } from "./creditCalculator"
 export type { ScheduleSlot, EstimateJobCreditsParams } from "./creditCalculator"
 
