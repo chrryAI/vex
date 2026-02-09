@@ -37,17 +37,21 @@
   3. Rejects the request if the IP is private (unless in `development` mode).
 - Apply this validation _before_ fetching any user-provided URL.
 
-## 2025-05-23 - OAuth State Parameter Validation
+## 2026-05-23 - Missing OAuth State Verification & Secure Cookie Handling
 
-**Vulnerability:** The Google OAuth flow was generating a `state` parameter but failed to verify it upon callback, exposing the application to Login CSRF attacks. An attacker could potentially log a victim into the attacker's account.
+**Vulnerability:** The Google OAuth implementation was vulnerable to Login CSRF due to missing state verification. Additionally, manual cookie parsing using regex was prone to errors and bypasses. Using an untrusted redirect URL upon failure introduced an Open Redirect vulnerability.
 
-**Learning:** Generating a `state` parameter is insufficient if it is not cryptographically bound to the user's session (e.g., via a secure cookie) and verified upon return.
+**Learning:**
+1.  **State Verification:** OAuth 2.0 `state` parameter must be bound to the user's browser session (e.g., via a secure, HttpOnly cookie) and verified in the callback.
+2.  **Cookie Helpers:** Use framework-provided cookie helpers (e.g., `hono/cookie`) instead of manual header manipulation or regex parsing.
+3.  **SameSite Policy:**
+    -   **GET Callbacks (e.g., Google):** Use `SameSite=Lax` as it provides CSRF protection for top-level navigations.
+    -   **POST Callbacks (e.g., Apple `form_post`):** Must use `SameSite=None` because the callback is a cross-site POST request, which `Lax` blocks.
+4.  **Avoid Open Redirects:** When validation fails (e.g., state mismatch), do NOT redirect to a URL derived from the untrusted state. Use a hardcoded, safe URL (e.g., app root).
 
-**Prevention:** Always implement the `state` parameter check in OAuth flows:
-
-1. Generate a random state.
-2. Store it in a secure, HttpOnly, SameSite cookie.
-3. Pass it to the OAuth provider.
-4. On callback, compare the returned `state` with the cookie value.
-5. Reject if they don't match.
-6. Clear the cookie after verification.
+**Prevention:**
+1.  **Generate State:** Create a cryptographically secure random state.
+2.  **Store State:** Save the state in a `HttpOnly`, `Secure` cookie. Use `SameSite=Lax` for GET callbacks and `SameSite=None` for POST callbacks.
+3.  **Verify State:** In the callback, use `getCookie` to retrieve and compare the stored state. Reject mismatch.
+4.  **Clear State:** Delete the cookie after verification.
+5.  **Safe Failure Redirect:** Redirect to a known safe URL upon verification failure.

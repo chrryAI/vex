@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from "uuid"
 import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
 import { randomBytes } from "crypto"
 import type { Context } from "hono"
-import { getCookie, setCookie } from "hono/cookie"
+import { getCookie, setCookie, deleteCookie } from "hono/cookie"
 
 const authRoutes = new Hono()
 
@@ -557,10 +557,17 @@ authRoutes.get("/signin/google", async (c) => {
 
     setCookie(c, "oauth_state", state, {
       httpOnly: true,
+<<<<<<< HEAD
       path: "/",
       maxAge: 600,
       sameSite: "None",
       secure: true,
+=======
+      secure: true,
+      sameSite: "Lax",
+      path: "/",
+      maxAge: 600,
+>>>>>>> 959f1b85e880687b31cf67b1fd8ecc7bee7cdf32
     })
 
     const redirectUri = `${API_URL}/auth/callback/google`
@@ -595,7 +602,10 @@ authRoutes.get("/callback/google", async (c) => {
     const storedState = getCookie(c, "oauth_state")
 
     if (state !== storedState) {
+<<<<<<< HEAD
       // Redirect to static URL to prevent Open Redirect
+=======
+>>>>>>> 959f1b85e880687b31cf67b1fd8ecc7bee7cdf32
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
     }
 
@@ -647,12 +657,19 @@ authRoutes.get("/callback/google", async (c) => {
 
     const token = generateToken(user.id, user.email)
 
+<<<<<<< HEAD
     setCookie(c, "oauth_state", "", {
       httpOnly: true,
       path: "/",
       maxAge: 0,
       sameSite: "None",
       secure: true,
+=======
+    deleteCookie(c, "oauth_state", {
+      path: "/",
+      secure: true,
+      sameSite: "Lax",
+>>>>>>> 959f1b85e880687b31cf67b1fd8ecc7bee7cdf32
     })
 
     setCookieFromUrl(c, token, stateData.callbackUrl)
@@ -746,10 +763,13 @@ authRoutes.get("/signin/apple", async (c) => {
     const { callbackUrl, errorUrl } = getCallbackUrls(c)
     const state = createOAuthState(callbackUrl, errorUrl)
 
-    c.header(
-      "Set-Cookie",
-      `oauth_state=${state}; HttpOnly; Path=/; Max-Age=600; SameSite=None; Secure`,
-    )
+    setCookie(c, "oauth_state", state, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None", // Required for form_post callback from Apple
+      path: "/",
+      maxAge: 600,
+    })
 
     const redirectUri = `${API_URL}/auth/callback/apple`
     const authUrl = new URL("https://appleid.apple.com/auth/authorize")
@@ -782,12 +802,10 @@ authRoutes.post("/callback/apple", async (c) => {
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
     }
 
-    const cookieHeader = c.req.header("cookie")
-    const stateMatch = cookieHeader?.match(/oauth_state=([^;]+)/)
-    const storedState = stateMatch ? stateMatch[1] : null
+    const storedState = getCookie(c, "oauth_state")
 
     if (state !== storedState) {
-      return c.redirect(`${stateData.errorUrl}?error=invalid_state`)
+      return c.redirect(`https://chrry.ai/?error=invalid_state`)
     }
 
     const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID
@@ -848,7 +866,11 @@ authRoutes.post("/callback/apple", async (c) => {
 
     const token = generateToken(user.id, user.email)
 
-    c.header("Set-Cookie", "oauth_state=; HttpOnly; Path=/; Max-Age=0")
+    deleteCookie(c, "oauth_state", {
+      path: "/",
+      secure: true,
+      sameSite: "None",
+    })
 
     setCookieFromUrl(c, token, stateData.callbackUrl)
 
