@@ -45,7 +45,6 @@ import {
   getSharedExpenses,
   updateThread,
   getApp,
-  getAppExtends,
   getUser as getUserDb,
   getGuest as getGuestDb,
   checkPearQuota,

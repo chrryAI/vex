@@ -83,10 +83,32 @@ export default function BlogPost({ post, locale }: BlogPostProps) {
       </nav>
 
       <article className={styles.article}>
-        <h1>{post.title}</h1>
-        <p className={styles.date}>
+        <div
+          className={styles.date}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: ".9rem",
+            marginTop: 10,
+            marginBottom: 10,
+          }}
+        >
+          <video
+            src={`https://chrry.ai/video/blob.mp4`}
+            autoPlay
+            loop
+            style={{
+              width: 40,
+              height: 40,
+              objectFit: "cover",
+              borderRadius: "50%",
+            }}
+            muted
+            playsInline
+          ></video>{" "}
           {timeAgo(post.date)} by {post.author}
-        </p>
+        </div>
 
         <ReactMarkdown
           remarkPlugins={REMARK_PLUGINS}
