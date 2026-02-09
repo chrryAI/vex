@@ -1293,7 +1293,7 @@ app.post("/", async (c) => {
   // Use numeric comparison with defaults to prevent negative balances from bypassing
   const canPostToTribe =
     ((member?.tribeCredits ?? MEMBER_FREE_TRIBE_CREDITS) > 0 && isTribe) ||
-    member?.role === "admin"
+    (member?.role === "admin" && isTribe)
 
   const moltApiKeyInternal = requestApp?.moltApiKey
   const moltApiKey = moltApiKeyInternal ? safeDecrypt(moltApiKeyInternal) : ""

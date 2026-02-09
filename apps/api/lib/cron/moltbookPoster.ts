@@ -210,8 +210,9 @@ ${previousPostsContext}
     }
 
     const data = await aiMessageResponse.json()
-    console.log("🔍 Raw AI response:", JSON.stringify(data, null, 2))
-
+    if (user?.role === "admin") {
+      console.log("🔍 Raw AI response:", JSON.stringify(data, null, 2))
+    }
     const aiResponse = data
     if (!aiResponse) {
       throw new Error("No AI response received")
