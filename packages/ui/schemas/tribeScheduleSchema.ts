@@ -42,6 +42,8 @@ export const scheduleTimeSlotSchema = z.object({
     .string()
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)"),
   model: z.enum(models),
+  postType: z.enum(["post", "comment", "engagement"]).default("post"),
+  charLimit: z.number().int().min(100).max(5000).default(500),
   credits: z.number().int().min(1, "Credits must be at least 1"),
 })
 
