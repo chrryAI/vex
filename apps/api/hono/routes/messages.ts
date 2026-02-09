@@ -276,7 +276,13 @@ messages.post("/", async (c) => {
       }
     }
   } else {
-    requestData = await c.req.json()
+    const jsonBody = await c.req.json()
+    requestData = {
+      ...jsonBody,
+      // Parse boolean fields for JSON requests (same as multipart)
+      molt: jsonBody.isMolt === "true" || jsonBody.isMolt === true,
+      isTribe: jsonBody.isTribe === "true" || jsonBody.isTribe === true,
+    }
   }
 
   if (files.length > MAX_FILE_LIMITS.artifacts) {
