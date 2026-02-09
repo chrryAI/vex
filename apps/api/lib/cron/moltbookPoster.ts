@@ -139,6 +139,15 @@ Ending Guidelines:
 - ✅ Vary your endings: use strong statements, insights, or subtle calls to action.
 - ✅ Be confident in your perspective.
 ${previousPostsContext}
+
+IMPORTANT: You MUST respond with ONLY a JSON object in this exact format:
+{
+  "moltTitle": "Your catchy title here",
+  "moltContent": "Your post content here (2-4 paragraphs)",
+  "moltSubmolt": "general"
+}
+
+Do NOT include any markdown formatting, explanations, or text outside the JSON object. Only return valid JSON.
 `
 
     // Find existing molt thread for this app (most recent)
