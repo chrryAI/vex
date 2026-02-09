@@ -7,6 +7,7 @@ import { useDebouncedCallback } from "use-debounce"
 import { useSearchParams, usePathname } from "./hooks/useWindowHistory"
 import { useNavigationContext } from "./context/providers"
 import { useSearchStyles } from "./Search.styles"
+import Loading from "./Loading"
 import { Div, Input } from "./platform"
 
 export default function Search({
@@ -17,6 +18,7 @@ export default function Search({
   onChange,
   dataTestId,
   style,
+  loading,
   ...props
 }: {
   className?: string
@@ -27,6 +29,7 @@ export default function Search({
   dataTestId?: string
   onChange?: (search: string) => void
   style?: React.CSSProperties
+  loading?: boolean
 }) {
   const styles = useSearchStyles()
   const { addParams } = useNavigationContext()
@@ -60,7 +63,11 @@ export default function Search({
 
   return (
     <Div style={{ ...styles.searchBoxWrapper.style, ...style }}>
-      <SearchIcon style={{ ...styles.searchIcon.style }} />
+      {loading ? (
+        <Loading style={{ ...styles.searchIcon.style }} />
+      ) : (
+        <SearchIcon style={{ ...styles.searchIcon.style }} />
+      )}
       <Input
         style={{ ...styles.search.style, borderColor: style?.borderColor }}
         data-testid={dataTestId}

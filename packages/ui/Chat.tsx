@@ -96,7 +96,6 @@ import {
   PROMPT_LIMITS,
   apiFetch,
   MAX_FILE_LIMITS,
-  MEMBER_FREE_TRIBE_CREDITS,
 } from "./utils"
 import needsWebSearch from "./utils/needsWebSearch"
 import { useWebSocket } from "./hooks/useWebSocket"
@@ -245,6 +244,11 @@ export default function Chat({
     about,
     setShowGrapes,
     grapes,
+    postToTribe,
+    setPostToTribe,
+    postToMoltbook,
+    setPostToMoltbook,
+    moltPlaceHolder,
 
     ...auth
   } = useAuth()
@@ -1710,6 +1714,9 @@ export default function Chat({
         isPear && formData.append("pear", JSON.stringify(isPear))
 
         isRetro && formData.append("retro", JSON.stringify(isRetro))
+        postToTribe && formData.append("isTribe", JSON.stringify(postToTribe))
+        postToMoltbook &&
+          formData.append("isMolt", JSON.stringify(postToMoltbook))
 
         artifacts.forEach((artifact, index) => {
           formData.append(`artifact_${index}`, artifact)
@@ -1738,6 +1745,8 @@ export default function Chat({
           taskId,
           pear: isPear,
           retro: isRetro,
+          isTribe: postToTribe,
+          isMolt: postToMoltbook,
         })
       }
       const userResponse = await apiFetch(`${API_URL}/messages`, {
@@ -3646,7 +3655,7 @@ export default function Chat({
                           <CircleX size={13} />
                         </Button>
                       )}
-                      {user?.role === "admin" && (
+                      {user?.role === "admin" && isChatFloating && (
                         <Button
                           data-testid="retro-button"
                           className="link"
@@ -3683,7 +3692,7 @@ export default function Chat({
                           top: !isChatFloating ? 32 : 0,
                           zIndex: 50,
                           display: "inline-flex",
-                          gap: 7.5,
+                          gap: 10,
                           alignItems: "center",
                         }}
                       >
@@ -3693,21 +3702,87 @@ export default function Chat({
                         }) ? (
                           <>
                             <Button
-                              className="inverted"
+                              className="link"
+                              onClick={() => {
+                                setPostToTribe(!postToTribe)
+                                if (postToMoltbook) setPostToMoltbook(false)
+                              }}
+                              data-active={postToTribe}
                               style={{
                                 fontSize: "0.75rem",
                                 ...utilities.xSmall.style,
-                                ...utilities.inverted.style,
+                                ...utilities.link.style,
                               }}
                             >
-                              <Coins size={14} />
-
-                              {t("Create Post")}
+                              {postToTribe ? (
+                                <>
+                                  <Coins size={20} />
+                                  {t("credits", {
+                                    count: user.tribeCredits,
+                                  })}
+                                </>
+                              ) : (
+                                <>
+                                  <Img size={20} icon={"zarathustra"} />
+                                  To Tribe
+                                </>
+                              )}{" "}
                             </Button>
-                            <Span style={{ fontSize: "0.75rem" }}>
+                            <Button
+                              className="link"
+                              onClick={() => {
+                                if (
+                                  !app?.moltApiKey &&
+                                  app?.id &&
+                                  !moltPlaceHolder.includes(app.id)
+                                ) {
+                                  toast.error(
+                                    t("Please add your Moltbook API key first"),
+                                  )
+                                  router.push("/?settings=true&tab=moltBook")
+                                  return
+                                }
+                                setPostToMoltbook(!postToMoltbook)
+                                if (postToTribe) setPostToTribe(false)
+                              }}
+                              data-active={postToMoltbook}
+                              style={{
+                                ...utilities.xSmall.style,
+                                ...utilities.link.style,
+                              }}
+                            >
+                              {postToMoltbook ? (
+                                <>
+                                  <Coins size={20} />
+                                  {t("credits", {
+                                    count: user.tribeCredits,
+                                  })}
+                                </>
+                              ) : (
+                                <>
+                                  <Span
+                                    style={{
+                                      fontSize: "1.2rem",
+                                    }}
+                                  >
+                                    🦞
+                                  </Span>
+                                  <Span
+                                    style={{
+                                      fontSize: "0.75rem",
+                                      ...utilities.xSmall.style,
+                                      ...utilities.link.style,
+                                    }}
+                                  >
+                                    To Moltbook
+                                  </Span>
+                                </>
+                              )}
+                            </Button>
+                            {/* <Span style={{ fontSize: "0.75rem" }}>
                               {MEMBER_FREE_TRIBE_CREDITS}/
                               {user?.tribeCredits}{" "}
-                            </Span>
+                            </Span> */}
                           </>
                         ) : (
                           <>
@@ -3847,15 +3922,15 @@ export default function Chat({
                             marginRight: "auto",
                             left: 5,
                             top: -15,
-                            gap: 7.5,
+                            gap: 5,
                             position: "relative",
                             zIndex: 300,
-                            fontSize: ".9rem",
+                            fontSize: ".85rem",
                           }}
                           href={"/tribe"}
                         >
-                          <Img icon="zarathustra" size={18} />
-                          {t("Tribe")}
+                          <Img logo="coder" size={18} />
+                          {t("Tribe Feed")}
                         </A>
                       </>
                     )}
@@ -3916,15 +3991,15 @@ export default function Chat({
                             marginRight: "auto",
                             left: -5,
                             top: -5,
-                            gap: 7.5,
+                            gap: 5,
                             position: "relative",
                             zIndex: 300,
-                            fontSize: ".9rem",
+                            fontSize: ".85rem",
                           }}
                           href={"/tribe"}
                         >
-                          <Img icon="zarathustra" size={18} />
-                          {t("Tribe")}
+                          <Img logo="coder" size={22} />
+                          {t("Tribe Feed")}
                         </A>
                       </>
                     )}
@@ -4045,8 +4120,12 @@ export default function Chat({
                   placeholder={
                     !isHydrated
                       ? ""
-                      : placeholder ||
-                        `${t("Ask anything")}${placeholderStages[placeholderIndex]}`
+                      : postToTribe
+                        ? `${t("What should I share to Tribe?")} 🪢`
+                        : postToMoltbook
+                          ? `${t("What should I share to Moltbook?")} 🦞`
+                          : placeholder ||
+                            `${t("Ask anything")}${placeholderStages[placeholderIndex]}`
                   }
                   ref={chatInputRef}
                   disabled={disabled}

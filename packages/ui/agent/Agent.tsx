@@ -53,10 +53,10 @@ import {
   Div,
   Input,
   Label,
-  Span,
   usePlatform,
   TextArea,
   P,
+  Span,
 } from "../platform"
 import {
   useChat,
@@ -1764,7 +1764,8 @@ export default function Agent({
                 </Div>
               </>
             )}
-            {tab === "tribe" && <TribeCalculator />}
+            {tab === "tribe" && <TribeCalculator tribeType="Tribe" />}
+            {tab === "moltBook" && <TribeCalculator tribeType="Moltbook" />}
 
             <Div
               style={{

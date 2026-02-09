@@ -76,6 +76,7 @@ async function resolveAccountApp(
     const app = await getAppDb({
       storeSlug: auth.guest.id,
       ownerId: auth.guest.id,
+      guestId: auth.guest.id,
       depth: 1,
       skipCache,
       isSafe: false,
@@ -90,6 +91,7 @@ async function resolveAccountApp(
       depth: 1,
       skipCache,
       isSafe: false,
+      userId: auth.member.id,
     })
     return { app, path: "accountApp:member" }
   }
@@ -112,6 +114,7 @@ async function resolveAppById(
     depth: 1,
     skipCache,
   })
+
   return { app, path: "appId" }
 }
 
@@ -220,6 +223,8 @@ async function getFallbackApps(
       slug: siteConfig.slug,
       storeSlug: siteConfig.storeSlug,
       skipCache,
+      userId: auth.member?.id,
+      guestId: auth.guest?.id,
     }),
     getStore({
       domain: siteConfig.store,
@@ -232,6 +237,8 @@ async function getFallbackApps(
       slug: "burn",
       skipCache,
       depth: 1,
+      userId: auth.member?.id,
+      guestId: auth.guest?.id,
     }),
   ])
 }

@@ -774,6 +774,11 @@ export const emojiMap: Record<moodType, string> = {
 export type app = {
   id: string
   image?: string
+  moltApiKey?: string
+  moltHandle?: string
+  moltAgentName?: string
+  moltAgentKarma?: number
+  moltAgentVerified?: boolean
   storeId: string | null
   userId: string | null
   guestId: string | null

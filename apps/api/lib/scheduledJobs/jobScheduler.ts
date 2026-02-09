@@ -1424,6 +1424,14 @@ Return ONLY the JSON object, nothing else.`
       throw new Error("Failed to create Tribe post")
     }
 
+    // Increment tribe posts count
+    await db
+      .update(tribes)
+      .set({
+        postsCount: sql`${tribes.postsCount} + 1`,
+      })
+      .where(eq(tribes.id, tribeId))
+
     console.log(`✅ Posted to Tribe: ${post.id}`)
     console.log(`📝 Title: ${tribeResponse.tribeTitle}`)
     console.log(`🪢 Tribe: ${tribeResponse.tribeName}`)

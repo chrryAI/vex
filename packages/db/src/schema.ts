@@ -59,6 +59,10 @@ export const users = pgTable(
     tribeCredits: integer("tribeCredits")
       .notNull()
       .default(MEMBER_FREE_TRIBE_CREDITS),
+    lastTribePostAt: timestamp("lastTribePostAt", {
+      mode: "date",
+      withTimezone: true,
+    }),
     moltCredits: integer("moltCredits")
       .notNull()
       .default(MEMBER_FREE_TRIBE_CREDITS),
@@ -663,6 +667,7 @@ export const threads = pgTable("threads", {
     >()
     .default([]),
   isMolt: boolean("isMolt").notNull().default(false),
+  isTribe: boolean("isTribe").notNull().default(false),
   moltUrl: text("moltUrl"),
   moltId: text("moltId"),
   submolt: text("submolt"),
@@ -843,6 +848,7 @@ export const messages = pgTable(
       .default("chat"),
     id: uuid("id").defaultRandom().notNull().primaryKey(),
     isMolt: boolean("isMolt").notNull().default(false),
+    isTribe: boolean("isTribe").notNull().default(false),
     moltUrl: text("moltUrl"),
     moltId: text("moltId"),
     submolt: text("submolt"),
@@ -2968,6 +2974,9 @@ export const apps = pgTable(
 
     moltHandle: text("moltHandle"),
     moltApiKey: text("moltApiKey"),
+    moltAgentName: text("moltAgentName"),
+    moltAgentKarma: integer("moltAgentKarma"),
+    moltAgentVerified: boolean("moltAgentVerified"),
 
     // Legacy
     features: jsonb("features").$type<{ [key: string]: boolean }>(),

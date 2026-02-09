@@ -9,18 +9,20 @@ import {
   Label,
   usePlatform,
   useLocalStorage,
+  Span,
 } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import { useAgentStyles } from "./agent/Agent.styles"
 import { useApp } from "./context/providers"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useData, useNavigationContext } from "./context/providers"
-import { apiFetch, capitalizeFirstLetter } from "./utils"
+import { apiFetch, capitalizeFirstLetter, isOwner } from "./utils"
 import { estimateJobCredits, type ScheduleSlot } from "./utils/creditCalculator"
 
 import toast from "react-hot-toast"
 import Loading from "./Loading"
 import Img from "./Image"
+import ConfirmButton from "./ConfirmButton"
 import A from "./a/A"
 
 import {
@@ -44,10 +46,12 @@ interface TribeCalculatorProps {
     totalCredits: number
     schedule: ScheduleTime[]
   }) => void
+  tribeType?: "Moltbook" | "Tribe"
 }
 
 export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   onCalculate,
+  tribeType = "Tribe",
 }) => {
   const { t } = useAppContext()
   const agentStyles = useAgentStyles()
@@ -62,7 +66,27 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     setAppStatus,
   } = useApp()
 
-  const { user, guest, token, language } = useAuth()
+  const {
+    user,
+    guest,
+    token,
+    language,
+    setSkipAppCacheTemp,
+    moltPlaceHolder,
+    setMoltPlaceHolder,
+    setApp,
+    accountApp,
+  } = useAuth()
+
+  const canUpdateInitial =
+    app &&
+    isOwner(app, {
+      userId: user?.id,
+    }) &&
+    app.moltApiKey
+
+  const [canUpdate, setCanUpdate] = useState(canUpdateInitial)
+
   const { API_URL, FRONTEND_URL, CREDITS_PRICE } = useData()
   const { searchParams, addParams } = useNavigationContext()
 
@@ -70,6 +94,8 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   const [expandedInfoIndex, setExpandedInfoIndex] = useState<number | null>(
     null,
   )
+  const [moltApiKey, setMoltApiKey] = useState("")
+  const [savingApiKey, setSavingApiKey] = useState(false)
 
   const formatter = new Intl.NumberFormat(language)
   // Form state
@@ -187,8 +213,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          userId: user?.id,
-          guestId: guest?.id,
           appId: app?.id,
           successUrl: checkoutSuccessUrl,
           cancelUrl: checkoutCancelUrl,
@@ -339,13 +363,23 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                 marginRight: ".4rem",
               }}
             >
-              <Img icon="zarathustra" size={16} />{" "}
-              <Text>{t("Tribe Post Schedular")}</Text>
+              {tribeType === "Tribe" ? (
+                <Img icon="zarathustra" size={16} />
+              ) : (
+                <Span style={{ fontSize: "1.2rem" }}>🦞</Span>
+              )}
+              <Text>
+                {t("{{tribeType}} Post Schedular", {
+                  tribeType,
+                })}
+              </Text>
               <A
+                target={tribeType === "Moltbook" ? "_blank" : undefined}
+                openInNewTab={tribeType === "Moltbook" ? true : undefined}
                 style={{
                   fontSize: ".8rem",
                 }}
-                href={"/tribe"}
+                href={tribeType === "Tribe" ? "/tribe" : "https://moltbook.com"}
               >
                 Visit
               </A>
@@ -384,6 +418,215 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
           </Div>
         </Div>
       </Div>
+      {tribeType === "Moltbook" &&
+        user &&
+        isOwner(app, {
+          userId: user?.id,
+        }) && (
+          <Div
+            style={{
+              ...utilities.column.style,
+              ...agentStyles.bordered.style,
+              marginTop: ".7rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: ".75rem",
+            }}
+          >
+            {/* Moltbook API Key */}
+            <Div
+              style={{
+                ...utilities.row.style,
+              }}
+            >
+              <Div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: ".5rem",
+                }}
+              >
+                🔑{" "}
+                <Text>
+                  {app?.moltApiKey
+                    ? t("Moltbook API Key configured")
+                    : t("Enter your Moltbook API key (AES encrypted)")}
+                </Text>
+              </Div>
+            </Div>
+
+            <Div
+              style={{
+                ...utilities.row.style,
+              }}
+            >
+              {canUpdate ? (
+                <Div
+                  style={{
+                    display: "flex",
+                    gap: ".5rem",
+                    alignItems: "center",
+                    width: "100%",
+                  }}
+                >
+                  <Button
+                    onClick={() => {
+                      setCanUpdate(false)
+                    }}
+                    style={{
+                      fontSize: ".9rem",
+                      padding: "5px 10px",
+                    }}
+                  >
+                    {t("Update API Key")}
+                  </Button>
+                  <ConfirmButton
+                    processing={savingApiKey}
+                    className="transparent"
+                    onConfirm={async () => {
+                      if (!app?.id) {
+                        toast.error(t("Please save your app first"))
+                        return
+                      }
+
+                      setSavingApiKey(true)
+                      try {
+                        const response = await apiFetch(
+                          `${API_URL}/apps/${app.id}/moltbook`,
+                          {
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${token}`,
+                            },
+                            method: "DELETE",
+                          },
+                        )
+
+                        if (response.ok) {
+                          toast.success(t("API key deleted"))
+                          setMoltPlaceHolder(
+                            moltPlaceHolder.filter((p) => p !== app.id),
+                          )
+                          setApp({
+                            ...app,
+                            moltApiKey: "",
+                          })
+                          setCanUpdate(false)
+                        } else {
+                          toast.error(t("Failed to delete API key"))
+                        }
+                      } catch (error) {
+                        console.error("Error deleting API key:", error)
+                        toast.error(t("Failed to delete API key"))
+                      } finally {
+                        setSavingApiKey(false)
+                      }
+                    }}
+                    disabled={savingApiKey}
+                    style={{
+                      ...utilities.transparent.style,
+                      ...utilities.small.style,
+                    }}
+                  >
+                    {savingApiKey ? <Loading size={16} /> : t("Delete")}
+                  </ConfirmButton>
+                </Div>
+              ) : (
+                <Div
+                  style={{
+                    display: "flex",
+                    gap: ".5rem",
+                    alignItems: "center",
+                    width: "100%",
+                  }}
+                >
+                  <Input
+                    type="password"
+                    placeholder={t("Enter Moltbook API Key")}
+                    value={moltApiKey}
+                    onChange={(e) => setMoltApiKey(e.target.value)}
+                    style={{
+                      flex: 1,
+                    }}
+                  />
+                  <Button
+                    onClick={async () => {
+                      if (!moltApiKey.trim()) {
+                        toast.error(t("Please enter an API key"))
+                        return
+                      }
+                      if (!app?.id) {
+                        toast.error(t("Please save your app first"))
+                        return
+                      }
+
+                      setSavingApiKey(true)
+                      try {
+                        // Validate API key with Moltbook /me endpoint
+                        const validateResponse = await fetch(
+                          "https://www.moltbook.com/api/v1/agents/me",
+                          {
+                            headers: {
+                              Authorization: `Bearer ${moltApiKey.trim()}`,
+                            },
+                          },
+                        )
+
+                        if (!validateResponse.ok) {
+                          toast.error(
+                            t("Invalid API key - please check and try again"),
+                          )
+                          setSavingApiKey(false)
+                          return
+                        }
+
+                        // Save to backend if validation succeeds
+                        const response = await apiFetch(
+                          `${API_URL}/apps/${app.id}/moltbook`,
+                          {
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${token}`,
+                            },
+                            method: "PATCH",
+                            body: JSON.stringify({
+                              moltApiKey: moltApiKey.trim(),
+                            }),
+                          },
+                        )
+
+                        if (response.ok) {
+                          toast.success(t("API key saved securely"))
+                          setMoltApiKey("")
+                          setCanUpdate("true")
+                          setMoltPlaceHolder(moltPlaceHolder.concat(app.id))
+                          setApp({
+                            ...app,
+                            moltApiKey: "********",
+                          })
+                        } else {
+                          toast.error(t("Failed to save API key"))
+                        }
+                      } catch (error) {
+                        console.error("Error saving API key:", error)
+                        toast.error(t("Failed to validate or save API key"))
+                      } finally {
+                        setSavingApiKey(false)
+                      }
+                    }}
+                    disabled={savingApiKey || !moltApiKey.trim()}
+                    style={{
+                      fontSize: ".9rem",
+                      padding: "5px 10px",
+                    }}
+                  >
+                    {savingApiKey ? <Loading size={16} /> : t("Save")}
+                  </Button>
+                </Div>
+              )}
+            </Div>
+          </Div>
+        )}
 
       <Div
         style={{
@@ -708,17 +951,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
           >
             <Div
               style={{
-                marginBottom: ".5rem",
-                display: "flex",
-                alignItems: "center",
-                gap: ".4rem",
-              }}
-            >
-              <Text style={{ fontSize: "1.1rem" }}>💰</Text>
-              {t("Estimated Cost")}
-            </Div>
-            <Div
-              style={{
                 display: "flex",
                 flexDirection: "column",
                 gap: ".5rem",
@@ -775,8 +1007,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                   {formatter.format(totalCredits)}
                 </Text>
               </Div>
-
-              {totalCredits > 0 && (
+              {totalCredits > 0 ? (
                 <>
                   {!user && (
                     <Div
@@ -883,39 +1114,43 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                     </Text>
                   )}
                 </>
-              )}
+              ) : null}
+              {totalCredits} ssss
             </Div>
           </Div>
-        ) : (
-          !user && (
-            <Button
-              className="inverted"
-              onClick={() => {
-                if (!user) {
-                  addParams({
-                    signIn: "login",
-                    callbackUrl: `${FRONTEND_URL}/?settings=true&tab=systemPrompt&trial=tribe`,
-                  })
-                }
-              }}
-              disabled={loading || !app?.id}
-              style={{
-                marginTop: ".3rem",
-                ...utilities.inverted.style,
-                ...utilities.small.style,
-              }}
-            >
-              {loading ? (
-                <Loading size={18} />
-              ) : (
-                <>
-                  <Img logo="chrry" size={20} />
-                  {t("Join to Try")}
-                </>
-              )}
-            </Button>
-          )
-        )}
+        ) : !user ? (
+          <Button
+            className="inverted"
+            onClick={() => {
+              if (!user) {
+                addParams({
+                  signIn: "login",
+                  callbackUrl: `${FRONTEND_URL}/?settings=true&tab=systemPrompt&trial=tribe`,
+                })
+              }
+            }}
+            disabled={loading || !app?.id}
+            style={{
+              marginTop: ".3rem",
+              ...utilities.inverted.style,
+              ...utilities.small.style,
+            }}
+          >
+            {loading ? (
+              <Loading size={18} />
+            ) : (
+              <>
+                <Img logo="chrry" size={20} />
+                {t("Join to Try")}
+              </>
+            )}
+          </Button>
+        ) : !accountApp ? (
+          <Div style={{ marginTop: ".7rem", marginBottom: ".3rem" }}>
+            🔑 Continue creating app to add your 🦞 Moltbook API key using
+            settings
+          </Div>
+        ) : null}
       </Div>
     </Div>
   )

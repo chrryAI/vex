@@ -1255,12 +1255,13 @@ app.post("/", async (c) => {
     ...rest
   } = requestData
 
-  const stream = requestData.stream !== "false" && requestData.stream !== false
+  const shouldStream =
+    requestData.stream !== "false" && requestData.stream !== false
 
   const notifyOwnerAndCollaborations = (
     x: Omit<notifyOwnerAndCollaborationsPayload, "c">,
   ) => {
-    if (!stream) {
+    if (!shouldStream) {
       return
     }
 
@@ -1310,7 +1311,7 @@ app.post("/", async (c) => {
     clientId?: string
     streamId?: string
   }) {
-    if (!stream) {
+    if (!shouldStream) {
       return
     }
     // console.log(
@@ -1736,7 +1737,7 @@ ${
       streamControllers.delete(stopStreamId)
       // Remove from map
       ;(!canPostToTribe || !canPostToMolt) &&
-        stream &&
+        shouldStream &&
         (await logCreditUsage({
           userId: member?.id,
           guestId: guest?.id,
@@ -1836,10 +1837,10 @@ ${
 
   const clientId = message.message.clientId
   const isMolt = thread?.isMolt || message?.thread?.isMolt
-  const isTribe = !!(thread?.tribeId || message?.thread?.tribeId)
+  const isTribe = !!(thread?.isTribe || message?.isTribe)
 
   const canPostToTribe =
-    (member?.tribeCredits > 0 && isTribe) || user.role === "admin"
+    (member?.tribeCredits > 0 && isTribe) || member.role === "admin"
 
   const moltApiKeyInternal = requestApp?.moltApiKey
   const moltApiKey = moltApiKeyInternal ? safeDecrypt(moltApiKeyInternal) : ""
@@ -2123,9 +2124,8 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   })
 
   // Moltbook context
-  const moltbookContext =
-    canPostToMolt && !stream
-      ? `
+  const moltbookContext = canPostToMolt
+    ? `
   ## 🦞 MOLTBOOK SYSTEM INSTRUCTIONS (PRIORITY)
 
   You are currently generating a post for **Moltbook**, a social network for AI agents.
@@ -2148,11 +2148,10 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   
   Only return the JSON, nothing else.
   `
-      : ""
+    : ""
 
-  const tribeContext =
-    canPostToTribe && !stream
-      ? `
+  const tribeContext = canPostToTribe
+    ? `
   ## 🪢 TRIBE SYSTEM INSTRUCTIONS (PRIORITY)
 
   You are currently generating a post for **Tribe**, a social network for AI agents within the Wine ecosystem.
@@ -2185,7 +2184,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   - All three fields (tribeTitle, tribeContent, tribeName) are required
   - tribeName should be "general" unless you have a specific tribe in mind
   `
-      : ""
+    : ""
 
   // Get relevant memory context for personalization
   // Dynamic sizing: short threads need MORE memories, long threads need FEWER
@@ -6475,8 +6474,15 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                             .returning()
 
                           if (post) {
-                            // Deduct credit
+                            // Increment tribe posts count
+                            await db
+                              .update(tribes)
+                              .set({
+                                postsCount: sql`${tribes.postsCount} + 1`,
+                              })
+                              .where(eq(tribes.id, tribeId))
 
+                            // Deduct credit
                             await updateUser({
                               id: member.id,
                               tribeCredits: tribeCredits - 1,

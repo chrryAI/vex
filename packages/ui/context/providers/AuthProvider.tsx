@@ -112,8 +112,16 @@ const AuthContext = createContext<
       tribes?: paginatedTribes
       setShowTribe: (show: boolean) => void
       showTribe: boolean | undefined
+      setSkipAppCacheTemp: (show: boolean) => void
+      skipAppCacheTemp: boolean | undefined
       tribePosts?: paginatedTribePosts
       tribePost?: tribePostWithDetails
+      postToTribe: boolean
+      setPostToTribe: (value: boolean) => void
+      postToMoltbook: boolean
+      setPostToMoltbook: (value: boolean) => void
+      moltPlaceHolder: string[]
+      setMoltPlaceHolder: (value: string[]) => void
       setTimer: (value: timer | undefined) => void
       chromeWebStoreUrl: string
       downloadUrl: string
@@ -1078,6 +1086,9 @@ export function AuthProvider({
     initialTribePost,
   )
 
+  const [postToTribe, setPostToTribe] = useState(false)
+  const [postToMoltbook, setPostToMoltbook] = useState(false)
+
   const allApps = merge(
     session?.app?.store?.apps?.concat(
       (tribePosts?.posts?.map((p) => p.app) as appWithStore[]) || [],
@@ -1102,8 +1113,19 @@ export function AuthProvider({
   )
 
   const getAppSlug = useCallback(
-    (targetApp: appWithStore, defaultSlug: string = "/"): string =>
-      getAppSlugUtil({ targetApp, defaultSlug, pathname, baseApp }),
+    (targetApp: appWithStore, defaultSlug: string = "/"): string => {
+      const result = getAppSlugUtil({
+        targetApp,
+        defaultSlug,
+        pathname,
+        baseApp,
+      })
+
+      if (targetApp.slug === "chrry" && result === "/") {
+        return "/chrry"
+      }
+      return result
+    },
     [pathname, baseApp],
   )
 
@@ -1762,11 +1784,26 @@ export function AuthProvider({
 
   const accountAppId = userBaseApp?.id || guestBaseApp?.id
 
+  const [skipAppCacheTemp, setSkipAppCacheTempInternal] = useState(false)
+
+  const setSkipAppCacheTemp = (val: boolean) => {
+    if (
+      val &&
+      !isOwner(app, {
+        userId: user?.id,
+        guestId: guest?.id,
+      })
+    ) {
+      return
+    }
+
+    setSkipAppCacheTempInternal(val)
+  }
   const {
     data: storeAppsSwr,
     mutate: refetchApps,
     isLoading: isLoadingApps,
-  } = useSWR(token && ["app", appId], async () => {
+  } = useSWR(token && ["app", appId, skipAppCacheTemp], async () => {
     try {
       if (!token) return
       const result = await getApp({
@@ -1774,7 +1811,8 @@ export function AuthProvider({
         appId,
         chrryUrl,
         pathname,
-        skipCache: appId !== app?.id || appId === accountAppId,
+        skipCache:
+          skipAppCacheTemp || appId !== app?.id || appId === accountAppId,
       })
       return result
     } catch (error) {
@@ -1784,6 +1822,7 @@ export function AuthProvider({
 
   useEffect(() => {
     if (storeAppsSwr) {
+      skipAppCacheTemp && setSkipAppCacheTemp(false)
       const a = storeAppsSwr.store?.apps?.find((app) => app.id === loadingAppId)
       if (hasStoreApps(a)) setLoadingApp(undefined)
       // Don't merge here - apps are already in initial state and tribe posts are merged separately
@@ -2128,14 +2167,16 @@ export function AuthProvider({
     nextPage: null,
   })
 
+  const [moltPlaceHolder, setMoltPlaceHolder] = useState<string[]>([])
+
   const [isLoadingMood, setIsLoadingMood] = useState(true)
   const [mood, setMood] = useState<mood | null>(null)
 
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
   const showTribeInitial =
-    (pathname === "/" && baseApp?.slug === "chrry") ||
-    pathname?.startsWith("/tribe")
+    (pathname === "/" && app?.slug === "chrry") ||
+    (pathname?.startsWith("/tribe") && !!tribePosts?.totalCount)
   const [showTribe, setShowTribe] = useState(showTribeInitial)
 
   useEffect(() => {
@@ -2729,7 +2770,12 @@ export function AuthProvider({
       : undefined
 
   useEffect(() => {
-    if (auth_token) {
+    console.log(
+      `🚀 ~ AuthProvider ~ searchParams.get("auth_token"):`,
+      searchParams,
+    )
+
+    if (searchParams.get("auth_token")) {
       // Remove auth_token from URL
       removeParams("auth_token")
     }
@@ -2889,6 +2935,12 @@ export function AuthProvider({
         setTribes,
         setTribePosts,
         setTribePost,
+        postToTribe,
+        setPostToTribe,
+        postToMoltbook,
+        setPostToMoltbook,
+        moltPlaceHolder,
+        setMoltPlaceHolder,
         accountApp,
         memoriesEnabled,
         setMemoriesEnabled,
@@ -2897,6 +2949,8 @@ export function AuthProvider({
         lasProcessedSession,
         setWasGifted,
         isPear,
+        setSkipAppCacheTemp,
+        skipAppCacheTemp,
         setIsPear,
         showCharacterProfiles,
         setShowCharacterProfiles,

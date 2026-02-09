@@ -76,6 +76,7 @@ import { v4 as uuidv4 } from "uuid"
 import * as schema from "./src/schema"
 import { drizzle as postgresDrizzle } from "drizzle-orm/postgres-js"
 import { generateApiKey } from "./src/utils/apiKey"
+import { decrypt } from "./encryption"
 import {
   and,
   eq,
@@ -97,6 +98,7 @@ import {
   cosineDistance,
   notInArray,
   gt,
+  ne,
 } from "drizzle-orm"
 
 import postgres from "postgres"
@@ -163,6 +165,7 @@ export {
   sonarIssues,
   lte,
   sonarMetrics,
+  ne,
 }
 
 // Export Better Auth tables
@@ -433,6 +436,19 @@ export type NewCustomPushSubscription = {
 
 export type CustomPushSubscription = NewCustomPushSubscription & {
   id: string
+}
+
+export function safeDecrypt(
+  encryptedKey: string | undefined,
+): string | undefined {
+  if (!encryptedKey) return undefined
+  try {
+    return decrypt(encryptedKey)
+  } catch (error) {
+    // If decryption fails, assume it's a plain text key (for backward compatibility)
+    console.warn("⚠️ Failed to decrypt API key, using as-is:", error)
+    return encryptedKey
+  }
 }
 
 export type messageActionType = {
@@ -5138,24 +5154,64 @@ export function toSafeApp({
 
   if (!skip && "store" in app && app?.store?.apps) {
     const safeApps = app.store.apps
-      .map((a) => ({
-        ...toSafeApp({ app: a, userId, guestId, skip: true }),
-        store: {
-          ...a.store,
-          apps:
-            a.store?.apps?.map((b) =>
-              toSafeApp({ app: b, userId, guestId, skip: true }),
-            ) || [],
-        },
-      }))
+      .map((a) => {
+        const safeApp = toSafeApp({ app: a, userId, guestId, skip: true })
+        return safeApp
+          ? {
+              ...safeApp,
+              moltApiKey: safeApp.moltApiKey ?? undefined,
+              moltHandle: safeApp.moltHandle ?? undefined,
+              moltAgentName: safeApp.moltAgentName ?? undefined,
+              moltAgentKarma: safeApp.moltAgentKarma ?? undefined,
+              moltAgentVerified: safeApp.moltAgentVerified ?? undefined,
+              store: {
+                ...a.store,
+                apps:
+                  a.store?.apps?.map((b) => {
+                    const nestedApp = toSafeApp({
+                      app: b,
+                      userId,
+                      guestId,
+                      skip: true,
+                    })
+                    return nestedApp
+                      ? {
+                          ...nestedApp,
+                          moltApiKey: nestedApp.moltApiKey ?? undefined,
+                          moltHandle: nestedApp.moltHandle ?? undefined,
+                          moltAgentName: nestedApp.moltAgentName ?? undefined,
+                          moltAgentKarma: nestedApp.moltAgentKarma ?? undefined,
+                          moltAgentVerified:
+                            nestedApp.moltAgentVerified ?? undefined,
+                        }
+                      : undefined
+                  }) || [],
+              },
+            }
+          : undefined
+      })
       .filter((a) => a !== undefined)
 
+    const parentSafeApp = toSafeApp({
+      app,
+      userId,
+      guestId,
+      skip: true,
+      scheduledJobs,
+    })
     return {
-      ...toSafeApp({ app, userId, guestId, skip: true, scheduledJobs }),
-      store: {
-        ...app.store,
-        apps: safeApps as (app | appWithStore)[],
-      },
+      ...parentSafeApp,
+      moltApiKey: parentSafeApp?.moltApiKey ?? undefined,
+      moltHandle: parentSafeApp?.moltHandle ?? undefined,
+      moltAgentName: parentSafeApp?.moltAgentName ?? undefined,
+      moltAgentKarma: parentSafeApp?.moltAgentKarma ?? undefined,
+      moltAgentVerified: parentSafeApp?.moltAgentVerified ?? undefined,
+      store: app.store
+        ? {
+            ...app.store,
+            apps: safeApps as appWithStore[],
+          }
+        : undefined,
     }
   }
   const result: Partial<app | appWithStore> = {
@@ -5192,11 +5248,20 @@ export function toSafeApp({
     systemPrompt: isOwner(app, { userId, guestId })
       ? app.systemPrompt
       : undefined,
-
     scheduledJobs: scheduledJobs || [],
+    moltApiKey:
+      isOwner(app, { userId, guestId }) && app.moltApiKey
+        ? "********"
+        : undefined,
+    moltHandle: app.moltHandle ?? undefined,
+    moltAgentName: app.moltAgentName ?? undefined,
+    moltAgentKarma: app.moltAgentKarma ?? undefined,
+    moltAgentVerified: app.moltAgentVerified ?? undefined,
 
     apiKeys:
-      app.apiKeys && typeof app.apiKeys === "object"
+      app.apiKeys &&
+      typeof app.apiKeys === "object" &&
+      isOwner(app, { userId, guestId })
         ? Object.keys(app.apiKeys).reduce(
             (acc, key) => ({
               ...acc,
@@ -6053,9 +6118,7 @@ export async function getStores({
             ? toSafeGuest({ guest: row.guest })
             : row.guest,
         team: row.teams,
-        app: row.app
-          ? toSafeApp({ app: row.app, userId, guestId, scheduledJobs: [] })
-          : undefined,
+        app: row.app ? toSafeApp({ app: row.app, userId, guestId }) : undefined,
         apps: await Promise.all(
           appsResult.items.map(
             (app) => getApp({ id: app.id, userId, guestId })!,
@@ -6196,7 +6259,7 @@ export async function getStore({
                 ...appItem.store,
                 apps:
                   nestedStoreData?.apps.map((app) =>
-                    toSafeApp({ app, scheduledJobs: [] }),
+                    toSafeApp({ app, scheduledJobs: [], userId, guestId }),
                   ) || [],
                 app: null, // Set to null to prevent circular references
               }
@@ -7298,6 +7361,7 @@ export const getTribePosts = async ({
         await db
           .select({ count: count(tribePosts.id) })
           .from(tribePosts)
+          .leftJoin(apps, eq(tribePosts.appId, apps.id))
           .where(and(...conditions))
       )[0]?.count ?? 0
 
@@ -7377,7 +7441,7 @@ export const getTribePosts = async ({
           sharesCount: row.post.sharesCount,
           createdOn: row.post.createdOn,
           updatedOn: row.post.updatedOn,
-          app: row.app ? toSafeApp({ app: row.app }) : null,
+          app: row.app ? toSafeApp({ app: row.app, userId, guestId }) : null,
           user: row.user
             ? toSafeUser({
                 user: row.user,

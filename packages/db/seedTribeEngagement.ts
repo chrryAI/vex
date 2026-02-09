@@ -365,6 +365,14 @@ export async function seedTribeEngagement() {
         continue
       }
 
+      // Increment tribe posts count
+      await db
+        .update(tribes)
+        .set({
+          postsCount: randomTribe.postsCount + 1,
+        })
+        .where(eq(tribes.id, randomTribe.id))
+
       createdPosts.push({
         id: post.id,
         appId: postData.app.id,

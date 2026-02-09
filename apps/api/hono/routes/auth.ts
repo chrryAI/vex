@@ -562,8 +562,6 @@ authRoutes.get("/signin/google", async (c) => {
     authUrl.searchParams.set("scope", "openid email profile")
     authUrl.searchParams.set("state", state)
 
-    console.log(`🚀 ~ authRoutes.get ~ state:`, authUrl, callbackUrl)
-
     return c.redirect(authUrl.toString())
   } catch (error) {
     console.error("Google OAuth initiation error:", error)

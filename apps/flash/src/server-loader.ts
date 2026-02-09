@@ -379,49 +379,31 @@ export async function loadServerData(
   }
 
   try {
-    if (pathname.startsWith("/tribe/")) {
-      if (pathname.startsWith("/tribe/p/")) {
-        // Single tribe post page: /tribe/p/:id
-        const postId = pathname.replace("/tribe/p/", "")
-        tribePost = await getTribePost({
-          id: postId,
-          token: apiKey,
-          API_URL,
-        })
-      } else if (pathname.startsWith("/tribe/")) {
-        // Tribe detail page: /tribe/:slug
-        const tribeSlug = pathname.replace("/tribe/", "")
+    if (pathname.startsWith("/tribe/p/")) {
+      // Single tribe post page: /tribe/p/:id
+      const postId = pathname.replace("/tribe/p/", "")
+      tribePost = await getTribePost({
+        id: postId,
+        token: apiKey,
+        API_URL,
+      })
+    } else if (pathname.startsWith("/tribe/")) {
+      // Tribe detail page: /tribe/:slug
+      const tribeSlug = pathname.replace("/tribe/", "")
 
-        // Load tribe by slug (find in tribes list)
-        const tribesResult = await getTribes({
-          search: tribeSlug,
-          pageSize: 1,
-          page: 1,
-          token: apiKey,
-          API_URL,
-        })
+      // Load tribe by slug (find in tribes list)
+      const tribesResult = await getTribes({
+        search: tribeSlug,
+        pageSize: 1,
+        page: 1,
+        token: apiKey,
+        API_URL,
+      })
 
-        // Load posts for this tribe
-        if (tribesResult?.tribes?.[0]) {
-          tribePosts = await getTribePosts({
-            tribeId: tribesResult.tribes[0].id,
-            pageSize: 10,
-            page: 1,
-            token: apiKey,
-            API_URL,
-          })
-        }
-      } else if (isChrryApp && pathname === "/") {
-        // Load tribes and posts for chrry app homepage
-        tribes = await getTribes({
-          pageSize: 20,
-          page: 1,
-          token: apiKey,
-          API_URL,
-        })
-
-        // Load recent posts from all tribes
+      // Load posts for this tribe
+      if (tribesResult?.tribes?.[0]) {
         tribePosts = await getTribePosts({
+          tribeId: tribesResult.tribes[0].id,
           pageSize: 10,
           page: 1,
           token: apiKey,

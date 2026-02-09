@@ -230,8 +230,6 @@ export function ChatProvider({
     useNavigation()
 
   const showTribe = auth.showTribe && isEmpty
-  console.log(`🚀 ~ ChatProvider ~ auth.showTribe:`, auth.showTribe)
-  console.log(`🚀 ~ ChatProvider ~ showTribe:`, showTribe)
 
   const setShowTribe = auth.setShowTribe
 

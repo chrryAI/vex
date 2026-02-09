@@ -232,6 +232,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
               </Button>
             </Div>
             <Search
+              loading={isLoadingPosts}
               onChange={(val) => setSearch(val)}
               style={{
                 borderColor: "var(--accent-1)",

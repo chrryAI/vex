@@ -78,8 +78,6 @@ export function TribeProvider({
 
   const { actions } = useData()
 
-  console.log(`🚀 ~ TribeProvider ~ until:`, until)
-
   const {
     data: tribePostsData,
     mutate: refetchPosts,

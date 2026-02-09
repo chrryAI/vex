@@ -1499,11 +1499,6 @@ Focus on the main discussion points, user preferences, and conversation style.`
         }) &&
         !existingUserCharacterTag.appId // Ensure it's a user profile, not app profile
       ) {
-        console.log(
-          `🚀 ~ generateAIContent ~ existingUserCharacterTag:`,
-          existingUserCharacterTag.name,
-        )
-
         // Update existing user character profile
         userCharacterTag = await updateCharacterTag({
           ...existingUserCharacterTag,

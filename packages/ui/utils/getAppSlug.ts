@@ -22,9 +22,6 @@ const getAppSlug = ({
   let computedSlug = defaultSlug
 
   if (targetApp) {
-    if (baseApp?.slug === "chrry" && targetApp?.slug === "chrry") {
-      return "/chrry"
-    }
     if (targetApp.id === baseApp?.id) {
       computedSlug = defaultSlug
     } else if (
