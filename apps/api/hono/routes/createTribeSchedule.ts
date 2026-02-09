@@ -89,7 +89,7 @@ createTribeSchedule.post("/", async (c) => {
         charLimit: slot.charLimit,
       })),
       startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      endDate: endDate ? new Date(endDate) : new Date(startDate),
       creditsPrice: CREDITS_PRICE,
     })
 
