@@ -25,6 +25,10 @@ async function main() {
     commitHash = execSync("git rev-parse HEAD", {
       cwd: REPO_PATH,
       encoding: "utf-8",
+      env: {
+        ...process.env,
+        PATH: "/usr/bin:/bin:/usr/local/bin", // Safe, fixed PATH
+      },
     }).trim()
     console.log(`📌 Commit: ${commitHash.slice(0, 8)}`)
   } catch (error) {
