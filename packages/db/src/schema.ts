@@ -4843,3 +4843,74 @@ export const authExchangeCodes = pgTable(
     expiresOnIdx: index("authExchangeCodes_expiresOn_idx").on(table.expiresOn),
   }),
 )
+
+// ============================================================================
+// CODEBASE AI: AST + RAG + FalkorDB
+// ============================================================================
+
+export const codeEmbeddings = pgTable(
+  "codeEmbeddings",
+  {
+    id: text("id").primaryKey(), // e.g., "apps/api/hono/routes/ai.ts:generateText"
+    repoName: text("repoName").notNull(), // e.g., "chrryAI/vex"
+    commitHash: text("commitHash").notNull(), // Git commit hash for cache invalidation
+    filepath: text("filepath").notNull(),
+    type: text("type").notNull(), // 'file' | 'function' | 'class' | 'import'
+    name: text("name").notNull(),
+    content: text("content").notNull(), // Code snippet
+    startLine: integer("startLine"),
+    endLine: integer("endLine"),
+    embedding: vector("embedding", { dimensions: 1536 }), // OpenAI text-embedding-3-small
+    metadata: jsonb("metadata"), // Additional AST metadata
+    createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updatedAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    repoNameIdx: index("codeEmbeddings_repoName_idx").on(table.repoName),
+    filepathIdx: index("codeEmbeddings_filepath_idx").on(table.filepath),
+    typeIdx: index("codeEmbeddings_type_idx").on(table.type),
+    commitHashIdx: index("codeEmbeddings_commitHash_idx").on(table.commitHash),
+    // Vector similarity index for cosine similarity search
+    embeddingIdx: index("codeEmbeddings_embedding_idx").using(
+      "ivfflat",
+      table.embedding.op("vector_cosine_ops"),
+    ),
+  }),
+)
+
+export type CodeEmbedding = typeof codeEmbeddings.$inferSelect
+export type NewCodeEmbedding = typeof codeEmbeddings.$inferInsert
+
+export const codebaseQueries = pgTable(
+  "codebaseQueries",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
+    appId: uuid("appId").references(() => apps.id, { onDelete: "cascade" }),
+    repoName: text("repoName").notNull(),
+    query: text("query").notNull(),
+    responseTime: integer("responseTime"), // milliseconds
+    tokensUsed: integer("tokensUsed"),
+    costUSD: real("costUSD"), // Track OpenAI costs
+    createdAt: timestamp("createdAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("codebaseQueries_userId_idx").on(table.userId),
+    guestIdIdx: index("codebaseQueries_guestId_idx").on(table.guestId),
+    appIdIdx: index("codebaseQueries_appId_idx").on(table.appId),
+    repoNameIdx: index("codebaseQueries_repoName_idx").on(table.repoName),
+    createdAtIdx: index("codebaseQueries_createdAt_idx").on(table.createdAt),
+  }),
+)
+
+export type CodebaseQuery = typeof codebaseQueries.$inferSelect
+export type NewCodebaseQuery = typeof codebaseQueries.$inferInsert
