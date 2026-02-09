@@ -2179,7 +2179,7 @@ export function AuthProvider({
   const showTribeInitial =
     ((pathname === "/" && app?.slug === "chrry") ||
       pathname?.startsWith("/tribe")) &&
-    (tribePosts?.totalCount || 0) > 1 &&
+    (tribePosts?.totalCount || 0) >= 1 &&
     canShowTribe
   const [showTribe, setShowTribe] = useState(showTribeInitial)
 

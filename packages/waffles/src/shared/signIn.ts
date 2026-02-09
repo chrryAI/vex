@@ -26,12 +26,16 @@ export const signIn = async ({
   }
 
   const memberButton = page.getByTestId("member-button")
-  await expect(memberButton).toBeVisible()
+  await expect(memberButton).toBeVisible({
+    timeout: 5000,
+  })
 
   await memberButton.click()
 
   const signInButton = page.getByTestId("login-button")
-  await expect(signInButton).toBeVisible()
+  await expect(signInButton).toBeVisible({
+    timeout: 5000,
+  })
 
   await signInButton.click()
 

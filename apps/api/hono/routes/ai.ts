@@ -6335,7 +6335,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         let tribeContent = ""
         let tribe = ""
         let tribePostId = undefined
-        let moltId = undefined
+        const moltId = undefined
 
         // // Save final message to database
         if (finalText) {

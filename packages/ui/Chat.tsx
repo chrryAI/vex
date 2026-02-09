@@ -2170,7 +2170,7 @@ export default function Chat({
 
   const placeholderStages = [".", "..", "..."]
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
-  const [showglow, setShowglow] = useState(false)
+  const [showGlow, setShowGlow] = useState(false)
   const previousPlaceholder = useRef(placeholder)
 
   const animationLoop = useRef<number>(0)
@@ -2183,12 +2183,12 @@ export default function Chat({
         !previousPlaceholder.current ||
         placeholder !== previousPlaceholder.current
       ) {
-        setShowglow(true)
+        setShowGlow(true)
         previousPlaceholder.current = placeholder
 
         // Remove glow after animation completes
         const timer = setTimeout(() => {
-          setShowglow(false)
+          setShowGlow(false)
         }, 2000) // Match animation duration
 
         return () => clearTimeout(timer)
@@ -3681,7 +3681,6 @@ export default function Chat({
                     </Div>
                   ) : null}
                   {empty &&
-                    canShowTribe &&
                     !threadIdRef.current &&
                     !showQuotaInfo &&
                     !showTribe && (
@@ -3979,7 +3978,7 @@ export default function Chat({
                         </Span>
                       </H2>
                     ) : null}
-                    {!showTribe && !isChatFloating && empty && (
+                    {!showTribe && !isChatFloating && empty && canShowTribe && (
                       <>
                         <A
                           style={{
@@ -4002,7 +4001,7 @@ export default function Chat({
                 )
               )}
               <Div
-                className={showglow ? "chat glow blur" : "chat blur"}
+                className={showGlow ? "chat glow blur" : "chat blur"}
                 style={{
                   ...styles.chat.style,
                   ...(isStandalone ? styles.standalone : {}),
