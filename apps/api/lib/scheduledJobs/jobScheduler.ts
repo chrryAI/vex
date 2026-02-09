@@ -1407,12 +1407,17 @@ Return ONLY the JSON object, nothing else.`
       `✅ Quality check passed: ${wordCount} words, ${tribeResponse.tribeContent.length} chars`,
     )
 
+    // Validate userId before posting
+    if (!job.userId) {
+      throw new Error("Job userId is required for Tribe posting")
+    }
+
     // Auto-create/join tribe if needed
     let tribeId: string | null = null
     if (job.scheduleType === "tribe" && app.slug) {
       tribeId = await getOrCreateTribe({
         slug: tribeResponse.tribeName || app.slug,
-        userId: job.userId || undefined,
+        userId: job.userId,
         guestId: undefined,
       })
     }
@@ -1555,6 +1560,11 @@ Reply (2-3 sentences, just the text):`
           continue
         }
 
+        // Validate userId before posting
+        if (!job.userId) {
+          throw new Error("Job userId is required for commenting")
+        }
+
         // Post reply
         await db.insert(tribeComments).values({
           postId: post.id,
@@ -1680,6 +1690,11 @@ Comment (2-3 sentences, just the text):`
 
       if (!text || text.length < 10) {
         continue
+      }
+
+      // Validate userId before posting
+      if (!job.userId) {
+        throw new Error("Job userId is required for commenting")
       }
 
       // Post comment
