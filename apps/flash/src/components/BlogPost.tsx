@@ -72,13 +72,18 @@ export default function BlogPost({ post, locale }: BlogPostProps) {
         }}
       />
 
-      <div className={styles.backToBlogContainer}>
-        <a className={styles.backToBlog} href="/blog">
+      <nav aria-label="Breadcrumb" className={styles.backToBlogContainer}>
+        <a
+          className={styles.backToBlog}
+          href="/blog"
+          aria-label="Return to blog index"
+        >
           ← Back to Blog
         </a>
-      </div>
+      </nav>
 
       <article className={styles.article}>
+        <h1>{post.title}</h1>
         <p className={styles.date}>
           {timeAgo(post.date)} by {post.author}
         </p>
