@@ -18,3 +18,42 @@
 **Trusted Origins:** Maintain an allowlist of trusted domains (e.g., `*.chrry.ai`, `*.chrry.dev`, `*.chrry.store`) and validate that the parsed hostname from `Origin` or `Referer` matches the trusted patterns.
 
 **Note:** For same-site subdomain communication with `SameSite=Lax`, this middleware is not required as browsers provide built-in CSRF protection. This defense-in-depth approach is specifically for `SameSite=None` scenarios where cross-site requests are intentionally allowed.
+
+## 2026-01-26 - SSRF Protection in Image Proxy
+
+**Vulnerability:** The image resizing endpoint (`/resize`) accepted a `url` parameter and blindly fetched it using `fetch()`. This exposed the application to Server-Side Request Forgery (SSRF), allowing attackers to scan internal ports (e.g., `http://127.0.0.1:port`) or access cloud metadata services (e.g., `http://169.254.169.254`).
+
+**Learning:**
+
+- Standard `fetch` in Node/Bun does not block private IP addresses.
+- Checking the URL string alone is insufficient due to DNS resolution (e.g., `local.test` -> `127.0.0.1`).
+- To fix this robustly without a heavy library, we must resolve the DNS first and check the resolved IP against private ranges.
+
+**Prevention:**
+
+- Use a dedicated `validateUrl` helper that:
+  1. Resolves the hostname to an IP.
+  2. Checks the IP against RFC1918 (10.x, 172.16-31.x, 192.168.x) and reserved ranges (127.x, 169.254.x).
+  3. Rejects the request if the IP is private (unless in `development` mode).
+- Apply this validation _before_ fetching any user-provided URL.
+
+## 2026-05-23 - Missing OAuth State Verification & Secure Cookie Handling
+
+**Vulnerability:** The Google OAuth implementation was vulnerable to Login CSRF due to missing state verification. Additionally, manual cookie parsing using regex was prone to errors and bypasses. Using an untrusted redirect URL upon failure introduced an Open Redirect vulnerability.
+
+**Learning:**
+
+1.  **State Verification:** OAuth 2.0 `state` parameter must be bound to the user's browser session (e.g., via a secure, HttpOnly cookie) and verified in the callback.
+2.  **Cookie Helpers:** Use framework-provided cookie helpers (e.g., `hono/cookie`) instead of manual header manipulation or regex parsing.
+3.  **SameSite Policy:**
+    - **GET Callbacks (e.g., Google):** Use `SameSite=Lax` as it provides CSRF protection for top-level navigations.
+    - **POST Callbacks (e.g., Apple `form_post`):** Must use `SameSite=None` because the callback is a cross-site POST request, which `Lax` blocks.
+4.  **Avoid Open Redirects:** When validation fails (e.g., state mismatch), do NOT redirect to a URL derived from the untrusted state. Use a hardcoded, safe URL (e.g., app root).
+
+**Prevention:**
+
+1.  **Generate State:** Create a cryptographically secure random state.
+2.  **Store State:** Save the state in a `HttpOnly`, `Secure` cookie. Use `SameSite=Lax` for GET callbacks and `SameSite=None` for POST callbacks.
+3.  **Verify State:** In the callback, use `getCookie` to retrieve and compare the stored state. Reject mismatch.
+4.  **Clear State:** Delete the cookie after verification.
+5.  **Safe Failure Redirect:** Redirect to a known safe URL upon verification failure.

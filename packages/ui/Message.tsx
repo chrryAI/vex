@@ -202,12 +202,56 @@ function Message({
       return { content: cleanedContent, reasoning: extractedReasoning }
     }
 
+    // Parse Tribe/Moltbook JSON responses
+    if (message.thread?.isTribe || message.thread?.isMolt) {
+      try {
+        // Try to parse JSON from the content (safe extraction to prevent ReDoS)
+        const firstBrace = messageContent.indexOf("{")
+        const lastBrace = messageContent.lastIndexOf("}")
+
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          const jsonString = messageContent.substring(firstBrace, lastBrace + 1)
+          // Limit size to prevent DoS (max 50KB)
+          if (jsonString.length > 50000) {
+            throw new Error("JSON too large")
+          }
+          const parsed = JSON.parse(jsonString)
+
+          // Format Tribe post
+          if (parsed.tribeTitle && parsed.tribeContent) {
+            const formattedContent = `**${parsed.tribeTitle}**\n\n${parsed.tribeContent}\n\n_Tribe: ${parsed.tribeName || "general"}_`
+            return {
+              content: formattedContent,
+              reasoning: message.message.reasoning || null,
+            }
+          }
+
+          // Format Moltbook post
+          if (parsed.title && parsed.content) {
+            const formattedContent = `**${parsed.title}**\n\n${parsed.content}\n\n_Submolt: ${parsed.submolt || "general"}_`
+            return {
+              content: formattedContent,
+              reasoning: message.message.reasoning || null,
+            }
+          }
+        }
+      } catch (e) {
+        // If parsing fails, return original content
+      }
+    }
+
     // Also check if reasoning is stored separately in the message
     return {
       content: messageContent,
       reasoning: message.message.reasoning || null,
     }
-  }, [message.message.content, message.message.reasoning, isStreaming])
+  }, [
+    message.message.content,
+    message.message.reasoning,
+    isStreaming,
+    message.thread?.isTribe,
+    message.thread?.isMolt,
+  ])
 
   useEffect(() => {
     if (isReasoningStreaming) setIsReasoningStreaming(!!isStreaming)

@@ -90,9 +90,11 @@ threads.get("/", async (c) => {
     collaborationStatus = undefined
   }
 
+  const redactedUsername = await redact(userName)
+
   // Sanitize username input
-  const sanitizedUserName = userName
-    ? sanitizeHtml(await redact(userName), {
+  const sanitizedUserName = redactedUsername
+    ? sanitizeHtml(redactedUsername, {
         allowedTags: [],
         allowedAttributes: {},
         disallowedTagsMode: "escape",
@@ -726,7 +728,7 @@ threads.patch("/:id", async (c) => {
     appId: appId ?? thread.appId,
     star: star === 0 ? null : star,
     moltUrl,
-    title: sanitizeHtml(redactedTitle),
+    title: sanitizeHtml(redactedTitle || thread.title),
     visibility: visibility || thread.visibility,
     bookmarks: newBookmarks,
     instructions: sanitizedInstructions,

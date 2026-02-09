@@ -2,7 +2,7 @@ import { Hono } from "hono"
 import sanitizeHtml from "sanitize-html"
 import { getUser } from "@repo/db"
 import { getMember, getGuest } from "../lib/auth"
-import { user } from "@repo/db/types"
+import type { user } from "@repo/db"
 
 export const users = new Hono()
 

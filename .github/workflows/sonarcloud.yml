@@ -1,0 +1,64 @@
+name: SonarCloud Analysis & Sync
+
+on:
+  push:
+    branches: [main, prod, dev]
+  pull_request:
+    branches: [main, prod, dev]
+  workflow_dispatch:
+
+jobs:
+  sonarcloud:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Shallow clones should be disabled for better analysis
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests with coverage
+        run: pnpm test:coverage || true # Don't fail if no tests
+        continue-on-error: true
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@e44258b109568baa0df60ed515909fc6c72cba92 # v3.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=chrryai
+            -Dsonar.projectKey=chrryAI_vex
+            -Dsonar.sources=.
+            -Dsonar.tests=.
+            -Dsonar.test.inclusions=**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx,**/__tests__/**,**/tests/**,**/*.test.js
+            -Dsonar.exclusions=**/node_modules/**,**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx,**/__tests__/**,**/tests/**,**/*.test.js
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.analysis.buildNumber=${{ github.run_number }}
+            -Dsonar.analysis.commitHash=${{ github.sha }}
+
+      # Wait for SonarCloud to process (usually takes 30-60 seconds)
+      - name: Wait for SonarCloud Processing
+        run: sleep 90
+
+      # Trigger sync to our database
+      - name: Sync SonarCloud Data to Database
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl -X GET https://chrry.dev/api/cron/syncSonarCloud \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -f || echo "⚠️ Sync failed, will retry on next run"
+        continue-on-error: true # Don't fail the build if sync fails

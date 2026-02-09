@@ -39,7 +39,6 @@ import {
   ClockPlus,
   Star,
   Link,
-  RefreshCw,
 } from "./icons"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { validateFile, formatFileSize } from "./utils/fileValidation"
@@ -245,7 +244,12 @@ export default function Chat({
     about,
     setShowGrapes,
     grapes,
-
+    postToTribe,
+    setPostToTribe,
+    postToMoltbook,
+    setPostToMoltbook,
+    moltPlaceHolder,
+    canShowTribe,
     ...auth
   } = useAuth()
 
@@ -281,12 +285,11 @@ export default function Chat({
     setShouldFocus,
     shouldFocus,
     isChatFloating: isChatFloatingContext,
-    messages,
     isNewChat,
     setIsNewChat,
     onlyAgent,
     scrollToBottom,
-    setIsNewAppChat,
+    showTribe,
   } = useChat()
 
   const {
@@ -1709,6 +1712,9 @@ export default function Chat({
         isPear && formData.append("pear", JSON.stringify(isPear))
 
         isRetro && formData.append("retro", JSON.stringify(isRetro))
+        postToTribe && formData.append("isTribe", JSON.stringify(postToTribe))
+        postToMoltbook &&
+          formData.append("isMolt", JSON.stringify(postToMoltbook))
 
         artifacts.forEach((artifact, index) => {
           formData.append(`artifact_${index}`, artifact)
@@ -1737,6 +1743,8 @@ export default function Chat({
           taskId,
           pear: isPear,
           retro: isRetro,
+          isTribe: postToTribe,
+          isMolt: postToMoltbook,
         })
       }
       const userResponse = await apiFetch(`${API_URL}/messages`, {
@@ -2162,7 +2170,7 @@ export default function Chat({
 
   const placeholderStages = [".", "..", "..."]
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
-  const [showglow, setShowglow] = useState(false)
+  const [showGlow, setShowGlow] = useState(false)
   const previousPlaceholder = useRef(placeholder)
 
   const animationLoop = useRef<number>(0)
@@ -2175,12 +2183,12 @@ export default function Chat({
         !previousPlaceholder.current ||
         placeholder !== previousPlaceholder.current
       ) {
-        setShowglow(true)
+        setShowGlow(true)
         previousPlaceholder.current = placeholder
 
         // Remove glow after animation completes
         const timer = setTimeout(() => {
-          setShowglow(false)
+          setShowGlow(false)
         }, 2000) // Match animation duration
 
         return () => clearTimeout(timer)
@@ -3645,7 +3653,7 @@ export default function Chat({
                           <CircleX size={13} />
                         </Button>
                       )}
-                      {user?.role === "admin" && (
+                      {user?.role === "admin" && isChatFloating && (
                         <Button
                           data-testid="retro-button"
                           className="link"
@@ -3672,40 +3680,130 @@ export default function Chat({
                       )}
                     </Div>
                   ) : null}
-                  {empty && !threadIdRef.current && !showQuotaInfo && (
-                    <Div
-                      style={{
-                        position: "relative",
-                        top: !isChatFloating ? 32 : 0,
-                        zIndex: 50,
-                        display: "inline-flex",
-                        gap: 7.5,
-                        alignItems: "center",
-                      }}
-                    >
-                      <Grapes
-                        style={{ padding: "6px 8px" }}
-                        dataTestId="grapes-button"
-                      />
-
-                      {grapes?.length ? (
-                        <Button
-                          className={"link"}
-                          onClick={() => {
-                            setShowGrapes(true)
-                          }}
-                          style={{
-                            ...utilities.link.style,
-                            fontSize: "0.75rem",
-                            order: minimize ? -1 : 0,
-                          }}
-                        >
-                          <Coins size={14} />
-                          {t("Earn Credits")}
-                        </Button>
-                      ) : null}
-                    </Div>
-                  )}
+                  {empty &&
+                    !threadIdRef.current &&
+                    !showQuotaInfo &&
+                    !showTribe && (
+                      <Div
+                        style={{
+                          position: "relative",
+                          top: !isChatFloating ? 32 : 0,
+                          zIndex: 50,
+                          display: "inline-flex",
+                          gap: 10,
+                          alignItems: "center",
+                        }}
+                      >
+                        {user?.tribeCredits &&
+                        isOwner(app, {
+                          userId: user.id,
+                        }) ? (
+                          <>
+                            <Button
+                              className="link"
+                              onClick={() => {
+                                setPostToTribe(!postToTribe)
+                                if (postToMoltbook) setPostToMoltbook(false)
+                              }}
+                              data-active={postToTribe}
+                              style={{
+                                fontSize: "0.75rem",
+                                ...utilities.xSmall.style,
+                                ...utilities.link.style,
+                              }}
+                            >
+                              {postToTribe ? (
+                                <>
+                                  <Coins size={20} />
+                                  {t("credits", {
+                                    count: user.tribeCredits,
+                                  })}
+                                </>
+                              ) : (
+                                <>
+                                  <Img size={20} icon={"zarathustra"} />
+                                  To Tribe
+                                </>
+                              )}{" "}
+                            </Button>
+                            <Button
+                              className="link"
+                              onClick={() => {
+                                if (
+                                  !app?.moltApiKey &&
+                                  app?.id &&
+                                  !moltPlaceHolder.includes(app.id)
+                                ) {
+                                  toast.error(
+                                    t("Please add your Moltbook API key first"),
+                                  )
+                                  router.push("/?settings=true&tab=moltBook")
+                                  return
+                                }
+                                setPostToMoltbook(!postToMoltbook)
+                                if (postToTribe) setPostToTribe(false)
+                              }}
+                              data-active={postToMoltbook}
+                              style={{
+                                ...utilities.xSmall.style,
+                                ...utilities.link.style,
+                              }}
+                            >
+                              {postToMoltbook ? (
+                                <>
+                                  <Coins size={20} />
+                                  {t("credits", {
+                                    count: user.tribeCredits,
+                                  })}
+                                </>
+                              ) : (
+                                <>
+                                  <Span
+                                    style={{
+                                      fontSize: "1.2rem",
+                                    }}
+                                  >
+                                    🦞
+                                  </Span>
+                                  <Span
+                                    style={{
+                                      fontSize: "0.75rem",
+                                      ...utilities.xSmall.style,
+                                      ...utilities.link.style,
+                                    }}
+                                  >
+                                    To Moltbook
+                                  </Span>
+                                </>
+                              )}
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            {grapes?.length ? (
+                              <Button
+                                className={"link"}
+                                onClick={() => {
+                                  setShowGrapes(true)
+                                }}
+                                style={{
+                                  ...utilities.link.style,
+                                  fontSize: "0.75rem",
+                                  order: minimize ? -1 : 0,
+                                }}
+                              >
+                                <Coins size={14} />
+                                {t("Earn Credits")}
+                              </Button>
+                            ) : null}
+                            <Grapes
+                              style={{ padding: "6px 8px" }}
+                              dataTestId="grapes-button"
+                            />
+                          </>
+                        )}
+                      </Div>
+                    )}
                 </Div>
               </Div>
             )}
@@ -3811,42 +3909,24 @@ export default function Chat({
                       flexDirection: "row",
                     }}
                   >
-                    {back && !hasBottomOffset && isChatFloating && empty ? (
-                      <A
-                        style={{
-                          marginRight: "auto",
-                          left: 5,
-                          top: -15,
-                          gap: 7.5,
-                          position: "relative",
-                          zIndex: 300,
-                        }}
-                        href={getAppSlug(back)}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          setIsPear(back)
-
-                          plausible({
-                            name: ANALYTICS_EVENTS.APP_BACK,
-                            props: {
-                              back: back.name,
-                              app: app?.name,
-                            },
-                          })
-
-                          setIsNewAppChat(back)
-                          addHapticFeedback()
-                          setAppStatus(undefined)
-                          if (e.metaKey || e.ctrlKey) {
-                            return
-                          }
-                        }}
-                      >
-                        <RefreshCw size={13} />
-                        <Img app={back} showLoading={false} size={18} />
-                      </A>
-                    ) : (
-                      <></>
+                    {!showTribe && canShowTribe && empty && minimize && (
+                      <>
+                        <A
+                          style={{
+                            marginRight: "auto",
+                            left: 5,
+                            top: -15,
+                            gap: 5,
+                            position: "relative",
+                            zIndex: 300,
+                            fontSize: ".85rem",
+                          }}
+                          href={"/tribe"}
+                        >
+                          <Img logo="coder" size={18} />
+                          {t("Tribe Feed")}
+                        </A>
+                      </>
                     )}
                     {isChatFloating ||
                     exceededInitial ||
@@ -3898,38 +3978,30 @@ export default function Chat({
                         </Span>
                       </H2>
                     ) : null}
-                    {back && !hasBottomOffset && !isChatFloating && empty ? (
-                      <A
-                        style={{
-                          marginLeft: "auto",
-                          marginRight: "5px",
-                          marginBottom: "5px",
-                          gap: 5,
-                        }}
-                        href={getAppSlug(back)}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          setIsPear(back)
-
-                          setIsNewAppChat(back)
-                          addHapticFeedback()
-                          setAppStatus(undefined)
-                          if (e.metaKey || e.ctrlKey) {
-                            return
-                          }
-                        }}
-                      >
-                        <RefreshCw size={13} />
-                        <Img app={back} showLoading={false} size={18} />
-                      </A>
-                    ) : (
-                      <></>
+                    {!showTribe && !isChatFloating && empty && canShowTribe && (
+                      <>
+                        <A
+                          style={{
+                            marginRight: "auto",
+                            left: -5,
+                            top: -5,
+                            gap: 5,
+                            position: "relative",
+                            zIndex: 300,
+                            fontSize: ".85rem",
+                          }}
+                          href={"/tribe"}
+                        >
+                          <Img logo="coder" size={22} />
+                          {t("Tribe Feed")}
+                        </A>
+                      </>
                     )}
                   </Div>
                 )
               )}
               <Div
-                className={showglow ? "chat glow blur" : "chat blur"}
+                className={showGlow ? "chat glow blur" : "chat blur"}
                 style={{
                   ...styles.chat.style,
                   ...(isStandalone ? styles.standalone : {}),
@@ -4042,8 +4114,12 @@ export default function Chat({
                   placeholder={
                     !isHydrated
                       ? ""
-                      : placeholder ||
-                        `${t("Ask anything")}${placeholderStages[placeholderIndex]}`
+                      : postToTribe
+                        ? `${t("What should I share to Tribe?")} 🪢`
+                        : postToMoltbook
+                          ? `${t("What should I share to Moltbook?")} 🦞`
+                          : placeholder ||
+                            `${t("Ask anything")}${placeholderStages[placeholderIndex]}`
                   }
                   ref={chatInputRef}
                   disabled={disabled}

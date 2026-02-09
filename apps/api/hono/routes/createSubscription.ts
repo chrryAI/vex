@@ -1,12 +1,15 @@
 import { Hono } from "hono"
 import Stripe from "stripe"
 import { captureException } from "@sentry/node"
+import { getMember } from "../lib/auth"
 
 export const createSubscription = new Hono()
 
 // POST /createSubscription - Create Stripe checkout session for subscription
 createSubscription.post("/", async (c) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+
+  const member = await getMember(c)
 
   try {
     const {
@@ -18,6 +21,7 @@ createSubscription.post("/", async (c) => {
       plan = "plus",
       tier,
       affiliateCode,
+      customPrice, // For Tribe/Molt dynamic pricing (in EUR)
     } = (await c.req.json()) ||
     ({} as {
       customerEmail: string
@@ -33,6 +37,8 @@ createSubscription.post("/", async (c) => {
         | "pear"
         | "coder"
         | "watermelon"
+        | "molt"
+        | "tribe"
       tier?:
         | "free"
         | "plus"
@@ -42,11 +48,40 @@ createSubscription.post("/", async (c) => {
         | "standard"
         | "sovereign"
       affiliateCode?: string
+      customPrice?: number
     })
+
+    const isCredits = ["credits", "molt", "tribe"].includes(plan)
+
+    // Minimum price validation for custom pricing (Stripe minimum is €0.50, but we set €5 for safety)
+    const MINIMUM_PRICE_EUR = 5
+    if (customPrice !== undefined && customPrice < MINIMUM_PRICE_EUR) {
+      const shortfall = MINIMUM_PRICE_EUR - customPrice
+      return c.json(
+        {
+          error: `Minimum payment is €${MINIMUM_PRICE_EUR}. Please add €${shortfall.toFixed(2)} more to your configuration.`,
+          minimumRequired: MINIMUM_PRICE_EUR,
+          currentAmount: customPrice,
+          shortfall,
+        },
+        400,
+      )
+    }
 
     // Determine Stripe price ID based on plan and tier
     const getPriceId = () => {
-      if (plan === "credits") return process.env.STRIPE_PRICE_CREDITS_ID!
+      if (plan === "molt")
+        return member?.role === "admin"
+          ? process.env.STRIPE_MOLT_TEST!
+          : process.env.STRIPE_MOLT!
+      if (plan === "tribe")
+        return member?.role === "admin"
+          ? process.env.STRIPE_TRIBE_TEST!
+          : process.env.STRIPE_TRIBE!
+      if (plan === "credits")
+        return member?.role === "admin"
+          ? process.env.STRIPE_PRICE_CREDITS_TEST!
+          : process.env.STRIPE_PRICE_CREDITS_ID!
       if (plan === "plus") return process.env.STRIPE_PRICE_PLUS_ID!
       if (plan === "pro") return process.env.STRIPE_PRICE_PRO_ID!
 
@@ -77,24 +112,49 @@ createSubscription.post("/", async (c) => {
 
     const priceId = getPriceId()
 
+    // Build line items - use price_data for custom pricing, price ID otherwise
+    const lineItems =
+      customPrice !== undefined
+        ? [
+            {
+              price_data: {
+                currency: "eur",
+                product_data: {
+                  name:
+                    plan === "tribe"
+                      ? "Tribe Scheduled Posts"
+                      : plan === "molt"
+                        ? "Molt Credits"
+                        : "Credits",
+                  description:
+                    plan === "tribe"
+                      ? "Automated social media posting schedule"
+                      : "AI credits for your account",
+                },
+                unit_amount: Math.round(customPrice * 100), // Convert EUR to cents
+              },
+              quantity: 1,
+            },
+          ]
+        : [
+            {
+              price: priceId,
+              quantity: 1,
+            },
+          ]
+
     const session = await stripe.checkout.sessions.create({
-      mode: plan === "credits" ? "payment" : "subscription",
+      mode: isCredits ? "payment" : "subscription",
       payment_method_types: ["card"],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       customer_email: customerEmail,
       success_url: successUrl,
       cancel_url: cancelUrl,
-      subscription_data:
-        plan === "credits"
-          ? undefined
-          : {
-              trial_period_days: 5,
-            },
+      subscription_data: isCredits
+        ? undefined
+        : {
+            trial_period_days: 5,
+          },
       automatic_tax: {
         enabled: true,
       },

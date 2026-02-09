@@ -47,7 +47,7 @@ const Anchor = React.forwardRef<
       <A
         {...props}
         ref={ref}
-        target={target}
+        target={newTab ? "_blank" : target}
         onClick={(e) => {
           props.onClick?.(e)
 

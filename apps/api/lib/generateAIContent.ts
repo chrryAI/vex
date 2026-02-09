@@ -490,7 +490,11 @@ async function generateSuggestionsAndPlaceholders({
   )
 
   // Check if user is admin for SATO MODE
-  const isAdmin = user?.role === "admin"
+  const isAdmin =
+    user?.role === "admin" &&
+    !thread.tribeId &&
+    !thread.isMolt &&
+    !thread.isTribe
 
   const suggestionsPrompt = `Based on this conversation, user memories, and calendar, generate personalized AI instruction templates AND classify the app relevance:
 
@@ -1499,11 +1503,6 @@ Focus on the main discussion points, user preferences, and conversation style.`
         }) &&
         !existingUserCharacterTag.appId // Ensure it's a user profile, not app profile
       ) {
-        console.log(
-          `🚀 ~ generateAIContent ~ existingUserCharacterTag:`,
-          existingUserCharacterTag.name,
-        )
-
         // Update existing user character profile
         userCharacterTag = await updateCharacterTag({
           ...existingUserCharacterTag,

@@ -29,7 +29,12 @@ import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import { hasThreadNotification } from "./utils/hasThreadNotification"
 import Loading from "./Loading"
 import { useAppContext } from "./context/AppContext"
-import { useAuth, useNavigationContext, useApp } from "./context/providers"
+import {
+  useAuth,
+  useNavigationContext,
+  useApp,
+  useChat,
+} from "./context/providers"
 import {
   Button,
   Div,
@@ -75,6 +80,8 @@ export default function Menu({
     hasStoreApps,
     setBurn,
   } = useAuth()
+
+  const { setShowTribe } = useChat()
 
   const city = (user || guest)?.city || ""
   // const { utilities } = useStyles()
@@ -351,6 +358,7 @@ export default function Menu({
                       }
                       e.preventDefault()
                       setShowFocus(false)
+                      setShowTribe(false)
 
                       toggleMenuIfSmallDevice()
                       setIsNewChat(true)
@@ -411,6 +419,7 @@ export default function Menu({
                   e.preventDefault()
 
                   setShowFocus(false)
+                  setShowTribe(false)
 
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
                   setIsNewChat(true)
@@ -427,6 +436,8 @@ export default function Menu({
                     name: ANALYTICS_EVENTS.PRIVATE_CHAT_CLICK,
                   })
                   setShowFocus(false)
+                  setShowTribe(false)
+
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
                   setBurn(true)
                   reload()

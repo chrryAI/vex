@@ -70,6 +70,30 @@ async function fetchWithTimeout(
   }
 }
 
+export async function getMoltbookAgentInfo(
+  apiKey: string,
+): Promise<MoltbookAgent | null> {
+  try {
+    const response = await fetchWithTimeout(`${MOLTBOOK_API_BASE}/agents/me`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+      timeout: 30000,
+    })
+
+    if (!response.ok) {
+      throw new Error(`Moltbook API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    return data.agent || data
+  } catch (error) {
+    captureException(error)
+    console.error("❌ Error fetching Moltbook agent info:", error)
+    return null
+  }
+}
+
 export async function getMoltbookTopAgents(
   limit = 10,
 ): Promise<MoltbookAgent[]> {

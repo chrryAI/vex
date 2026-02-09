@@ -11,6 +11,7 @@ export { AuthProvider, useAuth } from "./AuthProvider"
 export { ChatProvider, useChat } from "./ChatProvider"
 export { DataProvider, useData } from "./DataProvider"
 export { AppProvider, useApp, type TabType } from "./AppProvider"
+export { TribeProvider, useTribe } from "./TribeProvider"
 export { PlatformProvider } from "../../platform"
 
 // Composition root - combines all providers
@@ -24,16 +25,24 @@ import { AuthProvider, session } from "./AuthProvider"
 import { DataProvider } from "./DataProvider"
 import { ChatProvider } from "./ChatProvider"
 import { AppProvider } from "./AppProvider"
+import { TribeProvider } from "./TribeProvider"
 import { AppContextProvider } from "../AppContext"
 import { locale } from "../../locales"
 import { SWRConfig } from "swr"
-import { thread, paginatedMessages, appWithStore } from "../../types"
+import {
+  thread,
+  paginatedMessages,
+  appWithStore,
+  paginatedTribes,
+  paginatedTribePosts,
+  tribePostWithDetails,
+} from "../../types"
 import { TimerContextProvider } from "../TimerContext"
 import { Hey } from "../../Hey"
 import getCacheProvider from "../../lib/swrCacheProvider"
 import { getSiteConfig } from "../../utils/siteConfig"
 
-interface AppProvidersProps {
+export interface AppProvidersProps {
   translations?: Record<string, any>
   searchParams?: Record<string, string> & {
     get: (key: string) => string | null
@@ -72,6 +81,10 @@ interface AppProvidersProps {
     threads: thread[]
     totalCount: number
   }
+  tribes?: paginatedTribes
+  tribePosts?: paginatedTribePosts
+  tribePost?: tribePostWithDetails
+  isTribeRoute?: boolean
 }
 
 /**
@@ -95,6 +108,10 @@ export default function AppProviders({
   siteConfig,
   searchParams,
   threads,
+  tribes,
+  tribePosts,
+  tribePost,
+  isTribeRoute,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
 
@@ -161,6 +178,9 @@ export default function AppProviders({
               session={session}
               siteConfig={siteConfig}
               searchParams={searchParams}
+              tribes={tribes}
+              tribePosts={tribePosts}
+              tribePost={tribePost}
             >
               <DataProvider>
                 <AppProvider>
@@ -172,9 +192,11 @@ export default function AppProviders({
                       >
                         <AppContextProvider>
                           <StylesProvider>
-                            <Hey useExtensionIcon={useExtensionIcon}>
-                              {children}
-                            </Hey>
+                            <TribeProvider isTribeRoute={isTribeRoute}>
+                              <Hey useExtensionIcon={useExtensionIcon}>
+                                {children}
+                              </Hey>
+                            </TribeProvider>
                           </StylesProvider>
                         </AppContextProvider>
                       </NavigationProvider>

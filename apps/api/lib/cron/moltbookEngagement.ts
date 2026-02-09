@@ -150,10 +150,17 @@ Respond with ONLY a JSON object in this exact format:
 
         evaluation = evaluation.trim()
 
-        // Extract JSON from response
-        const jsonMatch = evaluation.match(/\{[\s\S]*\}/)
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0])
+        // Extract JSON from response (safe extraction to prevent ReDoS)
+        const firstBrace = evaluation.indexOf("{")
+        const lastBrace = evaluation.lastIndexOf("}")
+
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          const jsonString = evaluation.substring(firstBrace, lastBrace + 1)
+          // Limit size to prevent DoS (max 10KB for evaluation)
+          if (jsonString.length > 10000) {
+            throw new Error("Evaluation JSON too large")
+          }
+          const parsed = JSON.parse(jsonString)
           const score = Number(parsed.score)
           const reasoning =
             typeof parsed.reasoning === "string" ? parsed.reasoning.trim() : ""

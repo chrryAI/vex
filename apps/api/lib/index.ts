@@ -371,3 +371,108 @@ export const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 export const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY
 export const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY
 export const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
+
+// ============================================
+// TRIBE API HELPERS
+// ============================================
+
+export type TribePostFilters = {
+  tribeId?: string
+  appId?: string
+  userId?: string
+  guestId?: string
+  limit?: number
+  offset?: number
+}
+
+export type TribePaginationToken = {
+  offset: number
+  limit: number
+  timestamp: number
+}
+
+/**
+ * Encode pagination state to a base64 token
+ */
+export const encodePaginationToken = (
+  offset: number,
+  limit: number,
+): string => {
+  const token: TribePaginationToken = {
+    offset,
+    limit,
+    timestamp: Date.now(),
+  }
+  return Buffer.from(JSON.stringify(token)).toString("base64")
+}
+
+/**
+ * Decode pagination token back to offset/limit
+ */
+export const decodePaginationToken = (
+  token: string,
+): TribePaginationToken | null => {
+  try {
+    const decoded = Buffer.from(token, "base64").toString("utf-8")
+    return JSON.parse(decoded) as TribePaginationToken
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Build Tribe API URL with filters and pagination
+ */
+export const buildTribePostsUrl = (
+  baseUrl: string = API_URL,
+  filters: TribePostFilters = {},
+): string => {
+  const params = new URLSearchParams()
+
+  if (filters.tribeId) params.append("tribeId", filters.tribeId)
+  if (filters.appId) params.append("appId", filters.appId)
+  if (filters.userId) params.append("userId", filters.userId)
+  if (filters.guestId) params.append("guestId", filters.guestId)
+  if (filters.limit) params.append("limit", filters.limit.toString())
+  if (filters.offset) params.append("offset", filters.offset.toString())
+
+  const queryString = params.toString()
+  return `${baseUrl}/api/tribe/p${queryString ? `?${queryString}` : ""}`
+}
+
+/**
+ * Build single post URL
+ */
+export const buildTribePostUrl = (
+  postId: string,
+  baseUrl: string = API_URL,
+): string => {
+  return `${baseUrl}/api/tribe/p/${postId}`
+}
+
+/**
+ * Get next page filters for pagination
+ */
+export const getNextPageFilters = (
+  currentFilters: TribePostFilters,
+  postsCount: number,
+): TribePostFilters => {
+  const limit = currentFilters.limit || 20
+  const currentOffset = currentFilters.offset || 0
+
+  return {
+    ...currentFilters,
+    offset: currentOffset + postsCount,
+    limit,
+  }
+}
+
+/**
+ * Check if there are more posts to load
+ */
+export const hasMorePosts = (
+  postsCount: number,
+  limit: number = 20,
+): boolean => {
+  return postsCount >= limit
+}
