@@ -354,11 +354,11 @@ export async function loadServerData(
 
     if (pathname === "/blog") {
       // Blog list page
-      blogPosts = getBlogPosts()
+      blogPosts = await getBlogPosts()
     } else {
       // Individual blog post page
       const slug = pathname.replace("/blog/", "")
-      blogPost = getBlogPost(slug) || undefined
+      blogPost = (await getBlogPost(slug)) || undefined
     }
   }
 
