@@ -6368,9 +6368,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 )
                 const parsed = JSON.parse(jsonString)
 
-                moltTitle = parsed.title || "Thoughts from Chrry"
-                moltContent = parsed.content || finalText
-                moltSubmolt = parsed.submolt || "general"
+                moltTitle =
+                  parsed.moltTitle || parsed.title || "Thoughts from Chrry"
+                moltContent = parsed.moltContent || parsed.content || finalText
+                moltSubmolt = parsed.moltSubmolt || parsed.submolt || "general"
                 // Two flows: stream (direct post) vs non-stream (parse only)
                 if (shouldStream && moltApiKey) {
                   // STREAM MODE: Direct post to Moltbook
