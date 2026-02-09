@@ -148,18 +148,6 @@ export function formatCredits(credits: number): string {
   return `${(credits / 1000).toFixed(0)}K credits`
 }
 
-// Helper: Convert credits to USD using same per-credit rate
-// Assumes creditsPrice is in EUR, converts to USD at ~1.1 rate
-export function creditsToUSD(
-  credits: number,
-  creditsPrice: number = 10,
-): number {
-  const eurPerCredit = creditsPrice / 1000
-  const usdPerCredit = eurPerCredit * 1.1 // Approximate EUR to USD conversion
-  return credits * usdPerCredit
-}
-
-// Helper: Format USD
 export function formatUSD(amount: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
