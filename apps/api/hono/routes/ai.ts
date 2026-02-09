@@ -11,7 +11,6 @@ import {
   createMessage,
   getAiAgent,
   getMessage,
-  updateThread,
   getThread,
   updateMessage,
   thread,
@@ -1258,6 +1257,43 @@ app.post("/", async (c) => {
     ...rest
   } = requestData
 
+  const message = await tracker.track("get_message", () =>
+    getMessage({
+      id: messageId,
+      userId: member?.id,
+      guestId: guest?.id,
+    }),
+  )
+
+  if (!message) {
+    return c.json({ error: "Message not found" }, { status: 404 })
+  }
+
+  let thread = await tracker.track("get_thread", () =>
+    getThread({ id: message.message.threadId }),
+  )
+
+  let requestApp = rest.appId
+    ? await tracker.track("get_app", () =>
+        getApp({
+          id: rest.appId,
+          depth: 0,
+          userId: member?.id,
+          guestId: guest?.id,
+          skipCache: true,
+        }),
+      )
+    : undefined
+  const isMolt = thread?.isMolt || message?.thread?.isMolt
+  const isTribe = !!(thread?.isTribe || message.message?.isTribe)
+  const canPostToTribe =
+    (!!member?.tribeCredits && isTribe) || member?.role === "admin"
+
+  const moltApiKeyInternal = requestApp?.moltApiKey
+  const moltApiKey = moltApiKeyInternal ? safeDecrypt(moltApiKeyInternal) : ""
+  const canPostToMolt =
+    (!!member?.moltCredits || member?.role === "admin") && moltApiKey && isMolt
+
   const shouldStream =
     requestData.stream !== "false" && requestData.stream !== false
 
@@ -1359,18 +1395,6 @@ app.post("/", async (c) => {
   const draft = rest.draft as appFormData & {
     canSubmit?: boolean
   }
-
-  let requestApp = rest.appId
-    ? await tracker.track("get_app", () =>
-        getApp({
-          id: rest.appId,
-          depth: 1,
-          userId: member?.id,
-          guestId: guest?.id,
-          skipCache: true,
-        }),
-      )
-    : undefined
 
   const appExtends = requestApp
     ? await tracker.track("get_app_extends", () =>
@@ -1542,7 +1566,10 @@ ${
     isOwner(requestApp, { userId: member?.id, guestId: guest?.id })
 
   // Recursively build knowledge base from app.extends chain (max 5 levels)
-  const buildAppKnowledgeBase = async (currentApp: appWithStore, depth = 0) => {
+  const buildAppKnowledgeBase = async (
+    currentApp: appWithStore | app,
+    depth = 0,
+  ) => {
     if (!currentApp || depth >= 5) {
       return {
         messages: {
@@ -1670,24 +1697,9 @@ ${
   const timezone = member?.timezone || guest?.timezone
 
   // Get message and thread for instructions
-  const message = await tracker.track("get_message", () =>
-    getMessage({
-      id: messageId,
-      userId: member?.id,
-      guestId: guest?.id,
-    }),
-  )
-
-  if (!message) {
-    return c.json({ error: "Message not found" }, { status: 404 })
-  }
 
   const content = message.message.content
   const threadId = message.message.threadId
-
-  let thread = await tracker.track("get_thread", () =>
-    getThread({ id: message.message.threadId }),
-  )
 
   if (!thread) {
     return c.json({ error: "Thread not found" }, { status: 404 })
@@ -1839,18 +1851,6 @@ ${
   }
 
   const clientId = message.message.clientId
-  const isMolt = thread?.isMolt || message?.thread?.isMolt
-  const isTribe = !!(thread?.isTribe || message?.isTribe)
-
-  const canPostToTribe =
-    (member?.tribeCredits > 0 && isTribe) || member?.role === "admin"
-
-  const moltApiKeyInternal = requestApp?.moltApiKey
-  const moltApiKey = moltApiKeyInternal ? safeDecrypt(moltApiKeyInternal) : ""
-  const canPostToMolt =
-    (member?.moltCredits > 0 || member?.role === "admin") &&
-    moltApiKey &&
-    isMolt
 
   const tribeCredits = member?.tribeCredits
 
@@ -3549,7 +3549,7 @@ ${proFeatures.map((f) => `${f.emoji} ${f.text}`).join("\n")}
 `
 
   const satoContext =
-    member?.role === "admin"
+    member?.role === "admin" && !canPostToTribe && !canPostToMolt
       ? `
 
 ## 🥋 SATO MODE ACTIVATED (Admin Only)
@@ -6363,7 +6363,6 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 moltTitle = parsed.title || "Thoughts from Chrry"
                 moltContent = parsed.content || finalText
                 moltSubmolt = parsed.submolt || "general"
-                moltId = result.post_id
                 // Two flows: stream (direct post) vs non-stream (parse only)
                 if (shouldStream && moltApiKey) {
                   // STREAM MODE: Direct post to Moltbook
