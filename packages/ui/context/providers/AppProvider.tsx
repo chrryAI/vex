@@ -53,6 +53,16 @@ const isDeepEqual = (obj1: any, obj2: any): boolean => {
   return true
 }
 
+export type TabType =
+  | "settings"
+  | "api"
+  | "monetization"
+  | "systemPrompt"
+  | "extends"
+  | "customModel"
+  | "tribe"
+  | "moltBook"
+
 interface AppStatus {
   step?: "add" | "success" | "warning" | "cancel" | "update" | "restore"
   part?: "name" | "description" | "highlights" | "settings" | "image" | "title"
@@ -61,6 +71,10 @@ interface AppStatus {
 
 interface AppFormContextType {
   minimize: boolean
+  tab: TabType
+  setTab: React.Dispatch<React.SetStateAction<TabType>>
+  isAgentModalOpen: boolean
+  setIsAgentModalOpen: (value: boolean) => void
   setMinimize: React.Dispatch<React.SetStateAction<boolean>>
   defaultExtends: string[]
   setStoreSlug: (storeSlug: string) => void
@@ -197,7 +211,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const { t } = useTranslation()
 
-  const { searchParams, push, pathname } = useNavigation()
+  const { searchParams, push, pathname, removeParams, addParams } =
+    useNavigation()
 
   // useEffect(() => {
   //   session?.apps.length && setApps(session?.apps)
@@ -277,6 +292,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { captureException } = useError()
 
   const { clear } = useCache()
+
+  const [tab, setTab] = useState<TabType>(
+    (searchParams.get("tab") as TabType) || "settings",
+  )
+
+  useEffect(() => {
+    if (appStatus?.part === "settings") {
+      !tab && setTab("settings")
+    }
+  }, [tab, appStatus, setTab])
+
+  const [isAgentModalOpen, setIsAgentModalOpenInternal] = useState<boolean>(
+    appStatus?.part === "settings",
+  )
+
+  const setIsAgentModalOpen = (value: boolean) => {
+    setIsAgentModalOpenInternal(value)
+    if (!value) {
+      removeParams(["settings", "tab", "trial"])
+    }
+  }
+
+  useEffect(() => {
+    setIsAgentModalOpen(appStatus?.part === "settings")
+    appStatus?.part && auth.setShowTribe(false)
+  }, [appStatus])
+
+  useEffect(() => {
+    if (searchParams.get("settings")) {
+      setAppStatus({ part: "settings" })
+    }
+  }, [searchParams.get("settings")])
 
   const saveApp = async () => {
     try {
@@ -708,6 +755,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       | undefined,
   ) => {
     setMinimize(false)
+    auth.setShowTribe(false)
+    auth.setShowFocus(false)
     setAppStatusInternal(payload)
 
     plausible({
@@ -718,6 +767,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const { step, part } = payload || {}
 
     if (step || part) {
+      if (part === "settings") {
+        addParams({ settings: "true" })
+      }
       ;(appStatus?.step !== step || appStatus?.part !== part) &&
         setAppStatusInternal({
           step: step,
@@ -735,7 +787,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           id: undefined, // Explicitly clear id to prevent conflicts
         }
         appForm.reset(freshDefaults)
-        if ((threadId || currentStore) && chrry) {
+        if ((threadId || currentStore || pathname === "/tribe") && chrry) {
           push(auth.getAppSlug(chrry))
         }
       } else if (step === "restore") {
@@ -805,6 +857,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setApp,
         apps,
         setApps,
+        isAgentModalOpen,
+        setIsAgentModalOpen,
         appForm,
         appFormWatcher,
         isManagingApp,
@@ -830,6 +884,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         hasCustomInstructions,
         setStoreSlug,
         setIsManagingApp,
+        tab,
+        setTab,
         minimize,
         setMinimize,
       }}

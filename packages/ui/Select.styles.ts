@@ -14,7 +14,7 @@ export const SelectStyleDefs = {
   select: {
     base: {
       padding: "0.5rem 2.5rem 0.5rem 0.5rem",
-      border: "1px dashed var(--accent-1)",
+      border: "1px solid var(--shade-2)",
       borderRadius: "var(--radius)",
       backgroundColor: "var(--background)",
       color: "var(--foreground)",

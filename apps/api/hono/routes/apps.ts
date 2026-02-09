@@ -6,13 +6,12 @@ import {
   getStoreInstalls,
   deleteInstall,
   isE2E,
+  ne,
 } from "@repo/db"
 import { apps } from "@repo/db/src/schema"
-import { getMember, getGuest } from "../lib/auth"
+import { getMember, getGuest, getApp } from "../lib/auth"
 import { appSchema } from "@chrryai/chrry/schemas/appSchema"
 import { redact } from "../../lib/redaction"
-
-import { getApp } from "../lib/auth"
 
 import {
   installApp,
@@ -25,9 +24,11 @@ import {
   db,
   and,
   eq,
+  isNotNull,
   getApp as getAppDb,
   deleteApp,
   encrypt,
+  safeDecrypt,
 } from "@repo/db"
 import { appOrders, storeInstalls } from "@repo/db/src/schema"
 import captureException from "../../lib/captureException"
@@ -923,7 +924,16 @@ app.patch("/:id", async (c) => {
     if (apiRateLimit !== undefined) updateData.apiRateLimit = apiRateLimit
     if (moltApiKey !== undefined) {
       const trimmed = typeof moltApiKey === "string" ? moltApiKey.trim() : ""
-      updateData.moltApiKey = trimmed ? await encrypt(trimmed) : null
+      // Only update if: empty (clear) or real key (exact mask = preserve)
+      if (trimmed === "") {
+        updateData.moltApiKey = null
+      } else if (trimmed === mask) {
+        // Exact mask match - preserve existing key (don't update)
+        // This prevents bypass by user input containing mask substring
+      } else {
+        // Real key provided - encrypt and save
+        updateData.moltApiKey = await encrypt(trimmed)
+      }
     }
 
     if (shouldUpdateImages) updateData.images = images
@@ -1236,5 +1246,187 @@ app.delete("/:id", async (c) => {
     console.error("Error deleting app:", error)
     captureException(error)
     return c.json({ error: "Failed to delete app" }, { status: 500 })
+  }
+})
+
+const mask = "*****"
+
+// PATCH /apps/:id/moltbook - Update Moltbook integration settings
+app.patch("/:id/moltbook", async (c) => {
+  try {
+    const member = await getMember(c, {
+      skipCache: true,
+    })
+    const guest = await getGuest(c, {
+      skipCache: true,
+    })
+    if (!member && !guest) {
+      return c.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const appId = c.req.param("id")
+
+    if (!validate(appId)) {
+      return c.json({ error: "Invalid app ID" }, { status: 400 })
+    }
+
+    // Get existing app
+    const existingApp = await getAppDb({
+      id: appId,
+      userId: member?.id,
+      guestId: guest?.id,
+      skipCache: true,
+    })
+
+    if (!existingApp) {
+      return c.json({ error: "App not found" }, { status: 404 })
+    }
+
+    // Verify ownership
+    if (!isOwner(existingApp, { userId: member?.id, guestId: guest?.id })) {
+      return c.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    // Parse JSON body
+    const body = await c.req.json()
+    const { moltApiKey } = body
+
+    // Build the update data object
+    const updateData: any = {}
+
+    // Handle Moltbook API key with encryption
+    if (moltApiKey !== undefined) {
+      const trimmed = typeof moltApiKey === "string" ? moltApiKey.trim() : ""
+
+      // Only update if: empty (clear) or real key (exact mask = preserve)
+      if (trimmed === "") {
+        // Explicitly clear the key and metadata
+        updateData.moltApiKey = null
+        updateData.moltHandle = null
+        updateData.moltAgentName = null
+        updateData.moltAgentKarma = null
+        updateData.moltAgentVerified = null
+      } else if (trimmed === mask) {
+        // Exact mask match - preserve existing key (don't update)
+        // This prevents bypass by user input containing mask substring
+      } else {
+        // Real key provided - validate and save
+        // Check if this API key is already used by another app
+        const existingApps = await db.query.apps.findMany({
+          where: and(
+            isNotNull(apps.moltApiKey),
+            ne(apps.id, appId), // Exclude current app
+          ),
+        })
+
+        // Decrypt and check each existing key
+        for (const existingApp of existingApps) {
+          if (existingApp.moltApiKey) {
+            const decryptedKey = safeDecrypt(existingApp.moltApiKey)
+            if (decryptedKey === trimmed) {
+              return c.json(
+                { error: "This API key is already in use by another app" },
+                { status: 409 },
+              )
+            }
+          }
+        }
+
+        // Fetch agent info from Moltbook
+        const { getMoltbookAgentInfo } =
+          await import("../../lib/integrations/moltbook")
+        const agentInfo = await getMoltbookAgentInfo(trimmed)
+
+        updateData.moltApiKey = await encrypt(trimmed)
+
+        // Save agent info if available
+        if (agentInfo) {
+          updateData.moltHandle = agentInfo.handle
+          updateData.moltAgentName = agentInfo.name
+          updateData.moltAgentKarma = agentInfo.karma
+          updateData.moltAgentVerified = agentInfo.verified
+        }
+      }
+      // If masked, don't set updateData fields (preserve existing)
+    }
+
+    // Only update if there are changes
+    if (Object.keys(updateData).length > 0) {
+      await db.update(apps).set(updateData).where(eq(apps.id, appId))
+    }
+
+    // Fetch updated app
+    const updatedApp = await getApp({
+      id: appId,
+      c,
+      skipCache: true,
+      dept: 1,
+    })
+
+    return c.json({ app: updatedApp })
+  } catch (error) {
+    console.error("Error updating Moltbook settings:", error)
+    captureException(error)
+    return c.json(
+      { error: "Failed to update Moltbook settings" },
+      { status: 500 },
+    )
+  }
+})
+
+// DELETE /apps/:id/moltbook - Delete Moltbook API key
+app.delete("/:id/moltbook", async (c) => {
+  try {
+    const member = await getMember(c, {
+      skipCache: true,
+    })
+    const guest = await getGuest(c, {
+      skipCache: true,
+    })
+    if (!member && !guest) {
+      return c.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const appId = c.req.param("id")
+
+    if (!validate(appId)) {
+      return c.json({ error: "Invalid app ID" }, { status: 400 })
+    }
+
+    // Get existing app
+    const existingApp = await getAppDb({
+      id: appId,
+      userId: member?.id,
+      guestId: guest?.id,
+      skipCache: true,
+    })
+
+    if (!existingApp) {
+      return c.json({ error: "App not found" }, { status: 404 })
+    }
+
+    // Verify ownership
+    if (!isOwner(existingApp, { userId: member?.id, guestId: guest?.id })) {
+      return c.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    // Delete the API key
+    await db.update(apps).set({ moltApiKey: null }).where(eq(apps.id, appId))
+
+    // Fetch updated app
+    const updatedApp = await getAppDb({
+      id: appId,
+      userId: member?.id,
+      guestId: guest?.id,
+    })
+
+    return c.json({ app: updatedApp })
+  } catch (error) {
+    console.error("Error deleting Moltbook API key:", error)
+    captureException(error)
+    return c.json(
+      { error: "Failed to delete Moltbook API key" },
+      { status: 500 },
+    )
   }
 })

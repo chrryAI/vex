@@ -77,6 +77,10 @@ function App({ serverData }: AppProps) {
         viewPortHeight={serverData?.viewPortHeight}
         pathname={serverData?.pathname}
         searchParams={serverData?.searchParams}
+        tribes={serverData?.tribes}
+        tribePosts={serverData?.tribePosts}
+        tribePost={serverData?.tribePost}
+        isTribeRoute={serverData?.isTribeRoute}
       >
         {serverData?.isBlogRoute ? (
           <Skeleton>

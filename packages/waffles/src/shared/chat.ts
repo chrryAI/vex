@@ -41,7 +41,7 @@ export const chat = async ({
     {
       stop: false,
       text: "Hello",
-      agentMessageTimeout: 500000,
+      agentMessageTimeout: 200 * 10000,
       webSearch: false,
       delete: true,
       mix: {
@@ -53,7 +53,7 @@ export const chat = async ({
       },
     },
   ],
-  agentMessageTimeout = 90 * 10000, // 15 minutes for long AI responses
+  agentMessageTimeout = 200 * 10000,
   isNewChat = true,
   isLive = false,
   threadId,
@@ -968,7 +968,7 @@ export const chat = async ({
 
         if (!profile) {
           // First time seeing a profile - store it but don't check yet
-          profile = p
+          profile = p || ""
           shouldCheckProfile = false
         } else {
           // Profile already exists - enable check for next iteration

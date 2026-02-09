@@ -1,5 +1,6 @@
 import { isDevelopment } from "."
-import { user, guest } from "@repo/db"
+import { isE2E } from "@repo/db"
+import type { user, guest } from "@repo/db"
 
 /**
  * Send a server-side event to Plausible Analytics
@@ -22,7 +23,11 @@ export const serverPlausibleEvent = ({
 
   // Default to the first white-label domain if not specified or unknown
   // Ideally, we passed the 'App-Id' or 'Origin' to resolve the domain
-  const targetDomain = isDevelopment ? "local.chrry.ai" : domain || "chrry.dev"
+  const targetDomain = isDevelopment
+    ? "local.chrry.ai"
+    : isE2E
+      ? "e2e.chrry.dev"
+      : domain || "chrry.dev"
   const PLAUSIBLE_HOST = process.env.PLAUSIBLE_HOST || "https://a.chrry.dev"
 
   // Construct the full URL for the event

@@ -8,7 +8,7 @@ services:
       - "6379:6379"  # Redis port
       - "3000:3000"  # Browser UI (optional)
     volumes:
-      - falkordb_data:/var/lib/redis/
+      - ./falkordb_data:/var/lib/falkordb/data
     restart: unless-stopped
     networks:
       - vex-network

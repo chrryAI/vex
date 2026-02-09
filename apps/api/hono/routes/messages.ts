@@ -238,6 +238,7 @@ messages.post("/", async (c) => {
       notify: body["notify"],
       appId: body["appId"] as string,
       molt: body["isMolt"] === "true",
+      isTribe: body["isTribe"] === "true",
       content: body["content"] as string,
       retro: body["retro"] === "true",
       pear: body["pear"] === "true",
@@ -327,6 +328,7 @@ messages.post("/", async (c) => {
     moodId,
     pear,
     molt,
+    isTribe,
     retro,
     ...rest
   } = requestData
@@ -403,6 +405,7 @@ messages.post("/", async (c) => {
       instructions,
       appId: app?.id,
       isMolt: !!molt,
+      isTribe: !!isTribe,
     })
 
     if (!newThread) {
@@ -429,7 +432,7 @@ messages.post("/", async (c) => {
           fingerprint,
         })
         await updateThread({
-          ...newThread,
+          id: newThread.id,
           title: newTitle,
           updatedOn: new Date(),
         })

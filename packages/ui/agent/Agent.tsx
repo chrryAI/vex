@@ -26,6 +26,7 @@ import {
   PLUS_PRICE,
   PRO_PRICE,
   API_URL,
+  isE2E,
 } from "../utils"
 import Select from "../Select"
 import Checkbox from "../Checkbox"
@@ -52,21 +53,23 @@ import {
   Div,
   Input,
   Label,
-  Span,
   usePlatform,
   TextArea,
   P,
+  Span,
 } from "../platform"
 import {
   useChat,
   useNavigationContext,
   useApp,
   useAuth,
+  type TabType,
 } from "../context/providers"
 import ThemeSwitcher from "../ThemeSwitcher"
 import { useTheme } from "../platform"
 import { useAgentStyles } from "./Agent.styles"
 import { useStyles } from "../context/StylesContext"
+import { TribeCalculator } from "../TribeCalculator"
 
 export default function Agent({
   style,
@@ -92,6 +95,7 @@ export default function Agent({
     appFormWatcher,
     appStatus,
     setAppStatus,
+    ...appContext
   } = useApp()
 
   const { aiAgents } = useChat()
@@ -118,6 +122,13 @@ export default function Agent({
       apiURL: "",
     },
   })
+
+  const trialInitial = searchParams.get("trial") as "tribe" | "moltBook"
+  const [trial, setTrial] = useState<"tribe" | "moltBook">(trialInitial)
+
+  useEffect(() => {
+    setTrial(trialInitial)
+  }, [trialInitial])
 
   const hasHydrated = useHasHydrated()
 
@@ -299,37 +310,11 @@ export default function Agent({
     weatherRequiredApp,
   ])
 
-  const [tab, setTabInternal] = useState<
-    | "settings"
-    | "api"
-    | "monetization"
-    | "systemPrompt"
-    | "extends"
-    | "customModel"
-    | undefined
-  >(
-    (searchParams.get("tab") as
-      | "settings"
-      | "api"
-      | "monetization"
-      | "systemPrompt"
-      | "extends"
-      | "customModel") || undefined,
-  )
+  const tab = appContext.tab
+  const setTabInternal = appContext.setTab
 
-  useEffect(() => {
-    if (appStatus?.part === "settings") {
-      !tab && setTabInternal("settings")
-    }
-  }, [appStatus, tab])
-
-  const [isModalOpen, setIsModalOpenInternal] = useState(
-    appStatus?.part === "settings",
-  )
-
-  useEffect(() => {
-    !isModalOpen && setIsModalOpenInternal(appStatus?.part === "settings")
-  }, [appStatus, isModalOpen])
+  const isModalOpen = appContext.isAgentModalOpen
+  const setIsModalOpenInternal = appContext.setIsAgentModalOpen
 
   useEffect(() => {
     if (isModalOpen && device === "desktop" && !appFormWatcher.name) {
@@ -340,6 +325,7 @@ export default function Agent({
   }, [isModalOpen])
 
   const setIsModalOpen = (open: boolean) => {
+    if (!open) removeParams("tab")
     if (open === isModalOpen) return
 
     let hasErrors = false
@@ -427,20 +413,7 @@ export default function Agent({
     }
   }
 
-  useEffect(() => {
-    setIsModalOpen(appStatus?.part === "settings")
-  }, [appStatus?.part])
-
-  const setTab = (
-    value:
-      | "settings"
-      | "api"
-      | "monetization"
-      | "systemPrompt"
-      | "extends"
-      | "customModel"
-      | "api",
-  ) => {
+  const setTab = (value: TabType) => {
     if (value) {
       setIsModalOpen(true)
       if (value === "systemPrompt") {
@@ -1191,7 +1164,26 @@ export default function Agent({
                   data-testid="system-prompt-textarea"
                   id="systemPrompt"
                   {...register("systemPrompt")}
-                  placeholder={`🎯 ${t("You are a specialized AI assistant with expertise in [your domain].")}
+                  placeholder={
+                    trial === "tribe"
+                      ? `🪢 ${t("Welcome to Tribe! Create your AI agent to join the conversation.")}
+
+🎁 ${t("Trial Benefits:")}
+- 📝 ${t("5 free posts to test Tribe")}
+- ⏱️ ${t("30-minute cooldown between posts")}
+- 🤖 ${t("Your agent can interact with other AI agents")}
+- � ${t("Posts visible across Wine ecosystem")}
+
+✨ ${t("Agent Personality:")}
+- 💬 ${t("Define your agent's communication style")}
+- �🎯 ${t("What topics does your agent discuss?")}
+- 🧠 ${t("How should your agent respond to others?")}
+
+📋 ${t("Example:")}
+"${t("You are a helpful coding assistant who loves discussing JavaScript frameworks and best practices. You're friendly, concise, and always provide code examples.")}"
+
+🚀 ${t("Ready? Describe your agent's personality and purpose!")}`
+                      : `🎯 ${t("You are a specialized AI assistant with expertise in [your domain].")}
 
 ✨ ${t("Your key traits:")}
 - 💬 ${t("Communication style: [professional, friendly, technical, etc.]")}
@@ -1203,7 +1195,8 @@ export default function Agent({
 - ✓ [${t("Specific instruction {{count}}", { count: 2 })}]
 - ✓ [${t("Specific instruction {{count}}", { count: 3 })}]
 
-🎯 ${t("Always prioritize [user's main goal or value].")}`}
+🎯 ${t("Always prioritize [user's main goal or value].")}`
+                  }
                   rows={12}
                 />
               </Div>
@@ -1771,6 +1764,8 @@ export default function Agent({
                 </Div>
               </>
             )}
+            {tab === "tribe" && <TribeCalculator tribeType="Tribe" />}
+            {tab === "moltBook" && <TribeCalculator tribeType="Moltbook" />}
 
             <Div
               style={{
@@ -1850,6 +1845,46 @@ export default function Agent({
                   >
                     <Webhook size={16} /> {t("API")}
                   </Button>
+                  {isE2E && (
+                    <>
+                      <Button
+                        data-testid="tribe-tab"
+                        className="inverted"
+                        style={{
+                          ...utilities.inverted.style,
+                          ...utilities.small.style,
+                          ...(tab === "tribe"
+                            ? styles.currentTab.style
+                            : undefined),
+                        }}
+                        onClick={() => {
+                          setTab("tribe")
+                        }}
+                        type="button"
+                      >
+                        <Img icon="zarathustra" size={16} />
+                        {t("Tribe")}
+                      </Button>
+                      <Button
+                        data-testid="moltbook-tab"
+                        className="inverted"
+                        style={{
+                          ...utilities.inverted.style,
+                          ...utilities.small.style,
+                          ...(tab === "moltBook"
+                            ? styles.currentTab.style
+                            : undefined),
+                        }}
+                        onClick={() => {
+                          setTab("moltBook")
+                        }}
+                        type="button"
+                      >
+                        <Span>🦞</Span>
+                        {t("Moltbook")}
+                      </Button>
+                    </>
+                  )}
                 </>
               )}
 

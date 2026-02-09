@@ -120,7 +120,7 @@ export default function Instructions({
 
   const { utilities } = useStyles()
 
-  const { defaultInstructions, isAppInstructions } = useApp()
+  const { defaultInstructions, isAppInstructions, isAgentModalOpen } = useApp()
 
   const {
     token,

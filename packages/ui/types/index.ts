@@ -9,6 +9,7 @@ export type user = {
   isLinkedToApple?: boolean
   hasRefreshToken?: boolean
   id: string
+  tribeCredits: number
   adConsent?: boolean
   stripeConnectAccountId?: string
   stripeConnectOnboarded?: boolean
@@ -39,15 +40,7 @@ export type user = {
   imagesGeneratedToday: number
   lastImageGenerationReset: Date | null
   lastMessage?: message
-  favouriteAgent:
-    | "deepSeek"
-    | "chatGPT"
-    | "claude"
-    | "gemini"
-    | "flux"
-    | "sushi"
-    | "perplexity"
-    | string
+  favouriteAgent: modelName | string
   timezone: string | null
   tasksCount: number
   appleId: string | null
@@ -199,14 +192,7 @@ export type guest = {
   adConsent?: boolean
   pendingCollaborationThreadsCount?: number
   activeCollaborationThreadsCount?: number
-  favouriteAgent:
-    | "deepSeek"
-    | "chatGPT"
-    | "claude"
-    | "gemini"
-    | "flux"
-    | "perplexity"
-    | "sushi"
+  favouriteAgent: modelName | string
   credits: number
   isBot: boolean
   isOnline: boolean | null
@@ -349,6 +335,8 @@ export type paginatedMessages = {
 }
 // Thread types
 export type thread = {
+  isMolt?: boolean
+  isTribe?: boolean
   characterProfile?: characterProfile
   placeHolder?: placeHolder
   collaborations?:
@@ -358,6 +346,10 @@ export type thread = {
         user: user
       }[]
     | null
+  moltUrl?: string
+  moltId?: string
+  submolt?: string
+  tribeId?: string
   isMainThread: boolean
   lastMessage?: message
   user?: user
@@ -431,14 +423,7 @@ export type newCollaboration = Partial<collaboration>
 // AI Agent types
 export type aiAgent = {
   id: string
-  name:
-    | "deepSeek"
-    | "chatGPT"
-    | "claude"
-    | "gemini"
-    | "flux"
-    | "perplexity"
-    | "sushi"
+  name: modelName
   displayName: string
   version: string
   apiURL: string
@@ -479,7 +464,14 @@ export type taskAnalysis = {
 }
 
 // Model name types
-export type modelName = "chatGPT" | "claude" | "deepSeek" | "gemini" | "flux"
+export type modelName =
+  | "chatGPT"
+  | "claude"
+  | "deepSeek"
+  | "gemini"
+  | "flux"
+  | "perplexity"
+  | "sushi"
 
 // Message types
 export type message = {
@@ -493,6 +485,8 @@ export type message = {
   isImageGenerationEnabled: boolean
   agentVersion: string | null
   userId: string | null
+  isMolt?: boolean
+  isTribe?: boolean
   guestId: string | null
   content: string
   reasoning: string | null
@@ -521,6 +515,10 @@ export type message = {
     createdOn: string
   }> | null
   creditCost: number
+  moltUrl?: string
+  moltId?: string
+  submolt?: string
+  tribeId?: string
   webSearchResult: webSearchResult[] | null
   searchContext: string | null
   images: Array<{
@@ -780,6 +778,11 @@ export const emojiMap: Record<moodType, string> = {
 export type app = {
   id: string
   image?: string
+  moltApiKey: string | null
+  moltHandle: string | null
+  moltAgentName: string | null
+  moltAgentKarma: number | null
+  moltAgentVerified: boolean | null
   storeId: string | null
   userId: string | null
   guestId: string | null
@@ -937,10 +940,93 @@ export type store = {
   app: appWithStore | null
 }
 
+export const models = [
+  "chatGPT",
+  "claude",
+  "deepSeek",
+  "gemini",
+  "flux",
+  "perplexity",
+  "sushi",
+] as const
+
+export type scheduledJob = {
+  id: string
+  appId: string | null
+  userId: string
+
+  // Job configuration
+  name: string
+  scheduleType: "tribe" | "molt"
+  jobType:
+    | "tribe_post"
+    | "moltbook_post"
+    | "moltbook_comment"
+    | "moltbook_engage"
+    | "tribe_comment" // Tribe comment checking
+    | "tribe_engage" // Tribe engagement
+
+  // Schedule configuration
+  frequency: "once" | "daily" | "weekly" | "custom"
+  scheduledTimes: string[] // ["09:00", "14:00", "18:00", "22:00"]
+  timezone: string
+  startDate: Date
+  endDate: Date | null
+
+  // AI Model configuration
+  aiModel: modelName
+  modelConfig: {
+    model?: string // e.g., "gpt-4", "claude-3-opus"
+    temperature?: number
+    maxTokens?: number
+  } | null
+
+  // Content configuration
+  contentTemplate: string | null
+  contentRules: {
+    tone?: string
+    length?: string
+    topics?: string[]
+    hashtags?: string[]
+  } | null
+
+  // Credit & billing
+  estimatedCreditsPerRun: number
+  totalEstimatedCredits: number
+  creditsUsed: number
+  isPaid: boolean
+  stripePaymentIntentId: string | null
+
+  // Execution tracking
+  status:
+    | "draft"
+    | "pending_payment"
+    | "active"
+    | "paused"
+    | "completed"
+    | "canceled"
+  lastRunAt: Date | null
+  nextRunAt: Date | null
+  totalRuns: number
+  successfulRuns: number
+  failedRuns: number
+
+  // Metadata
+  metadata: {
+    errors?: Array<{ timestamp: string; error: string }>
+    lastOutput?: string
+    performance?: { avgDuration: number; avgCredits: number }
+  } | null
+
+  createdOn: Date
+  updatedOn: Date
+}
+
 export type appWithStore = app & {
   store?: storeWithApps
   placeHolder?: placeHolder
   instructions?: instruction[]
+  scheduledJobs?: scheduledJob[]
 }
 
 export type storeWithApps = store & { apps: appWithStore[] }
@@ -1011,6 +1097,198 @@ export type budgetCategory =
   | "education"
   | "travel"
   | "other"
+
+// Tribe types
+export type tribe = {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  icon: string | null
+  membersCount: number
+  postsCount: number
+  visibility: "public" | "private" | "restricted"
+  moderatorIds: string[]
+  rules: string | null
+  metadata: {
+    color?: string
+    banner?: string
+    tags?: string[]
+  } | null
+  createdOn: Date
+  updatedOn: Date
+}
+
+export type tribePost = {
+  id: string
+  content: string
+  title?: string | null
+  visibility: "public" | "private" | "tribe"
+  likesCount: number
+  commentsCount: number
+  sharesCount: number
+  createdOn: Date
+  updatedOn: Date
+  app: {
+    id: string
+    name: string
+    slug: string
+    icon: string
+  } | null
+  user: Partial<user> | null
+  guest: Partial<guest> | null
+  tribe: {
+    id: string
+    name: string
+    slug: string
+  } | null
+  likes?: {
+    id: string
+    createdOn: Date
+    user: {
+      id: string
+      name: string | null
+      userName: string | null
+      image: string | null
+    } | null
+    guest: {
+      id: string
+      name: string
+      image: string
+    } | null
+  }[]
+  comments?: {
+    id: string
+    content: string
+    likesCount: number
+    createdOn: Date
+    updatedOn: Date
+    user: Partial<user> | null
+    guest: Partial<guest> | null
+  }[]
+  reactions?: {
+    id: string
+    emoji: string
+    createdOn: Date
+    user: {
+      id: string
+      name: string | null
+      userName: string | null
+      image: string | null
+    } | null
+    guest: {
+      id: string
+      name: string
+      image: string
+    } | null
+  }[]
+  characterProfiles?: {
+    id: string
+    name: string
+    description: string | null
+    image: string | null
+    owner: boolean
+    agent: {
+      id: string
+      name: string
+      slug: string
+    } | null
+    app?: app
+  }[]
+}
+
+export type tribeComment = {
+  id: string
+  postId?: string
+  userId?: string | null
+  guestId?: string | null
+  content: string
+  parentCommentId?: string | null
+  likesCount: number
+  metadata?: Record<string, any> | null
+  createdOn: Date
+  updatedOn: Date
+  user?: Partial<user> | null
+  guest?: Partial<guest> | null
+}
+
+export type tribeLike = {
+  id: string
+  userId?: string | null
+  guestId?: string | null
+  postId?: string | null
+  commentId?: string | null
+  createdOn: Date
+  user?: {
+    id: string
+    name: string | null
+    userName: string | null
+    image: string | null
+  } | null
+  guest?: {
+    id: string
+    name: string
+    image: string
+  } | null
+}
+
+export type tribeReaction = {
+  id: string
+  userId?: string | null
+  guestId?: string | null
+  appId?: string | null
+  postId?: string | null
+  commentId?: string | null
+  emoji: string
+  createdOn: Date
+  user?: {
+    id: string
+    name: string | null
+    userName: string | null
+    image: string | null
+  } | null
+  guest?: {
+    id: string
+    name: string
+    image: string
+  } | null
+}
+
+export type tribeFollow = {
+  id: string
+  followerId: string | null
+  appId: string | null
+  followerGuestId: string | null
+  followingAppId: string
+  notifications: boolean
+  createdOn: Date
+}
+
+export type paginatedTribes = {
+  tribes: tribe[]
+  totalCount: number
+  hasNextPage: boolean
+  nextPage: number | null
+}
+
+export type paginatedTribePosts = {
+  posts: tribePost[]
+  totalCount: number
+  hasNextPage: boolean
+  nextPage: number | null
+}
+
+export type tribePostWithDetails = tribePost & {
+  comments: tribeComment[]
+  reactions: tribeReaction[]
+  likes: tribeLike[]
+  stats: {
+    commentsCount: number
+    likesCount: number
+    sharesCount: number
+    reactionsCount: number
+  }
+}
 
 // Constants
 export const PLUS_CREDITS_PER_MONTH = 2000

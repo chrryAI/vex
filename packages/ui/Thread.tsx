@@ -41,6 +41,7 @@ import { lazy, Suspense } from "react"
 import { useStyles } from "./context/StylesContext"
 import { BREAKPOINTS } from "./styles/breakpoints"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+import Tribe from "./Tribe"
 
 // Lazy load Focus only on web (not extension) to reduce bundle size
 // This component includes timer, tasks, moods, and analytics - heavy dependencies
@@ -72,6 +73,7 @@ const Thread = ({
     setShowFocus,
     grapes,
     app,
+    baseApp,
     setIsRetro,
     isRetro,
     advanceDailySection,
@@ -113,11 +115,15 @@ const Thread = ({
     setLiked,
     placeHolderText,
     isEmpty,
+    showTribe,
+    setShowTribe,
   } = useChat()
 
   const hasHydrated = useHasHydrated()
 
   const showFocus = auth.showFocus && isEmpty && hasHydrated
+
+  const { pathname } = useNavigationContext()
 
   const { isIDE } = usePlatform()
 
@@ -381,7 +387,7 @@ const Thread = ({
             !threadId &&
             hasHydrated && {
               ...styles.threadEmpty.style,
-              paddingBottom: minimize && !showFocus ? 0 : 166,
+              paddingBottom: minimize && !showFocus && !showTribe ? 0 : 166,
             }),
           ...{
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
@@ -519,7 +525,7 @@ const Thread = ({
                 <Div>
                   <Chat
                     requiresSignin={isVisitor && !activeCollaborator && !user}
-                    compactMode={showFocus}
+                    compactMode={showFocus || showTribe}
                     onTyping={notifyTyping}
                     disabled={isPendingCollaboration}
                     placeholder={
@@ -768,7 +774,10 @@ const Thread = ({
                     }
                     thread={thread}
                     showSuggestions={
-                      !showFocus && !isLoading && messages.length === 0
+                      !showTribe &&
+                      !showFocus &&
+                      !isLoading &&
+                      messages.length === 0
                     }
                     onToggleGame={(on) => setIsGame(on)}
                     showGreeting={isEmpty}
@@ -1010,8 +1019,11 @@ const Thread = ({
   }
 
   // Only load Focus on web (not extension) and after hydration
+  // Show Tribe for chrry app or /tribe routes
 
-  return showFocus ? (
+  return showTribe ? (
+    <Tribe>{render()}</Tribe>
+  ) : showFocus ? (
     <Suspense fallback={<Loading fullScreen />}>
       <Focus>{render()}</Focus>
     </Suspense>

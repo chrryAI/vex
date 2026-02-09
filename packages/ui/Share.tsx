@@ -81,7 +81,7 @@ export default function Share({
 
     try {
       const result = await updateThread({
-        ...thread,
+        id: thread.id,
         visibility,
         token,
       })

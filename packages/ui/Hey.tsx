@@ -84,6 +84,7 @@ export const Hey = memo(
       threadId,
       isProgramme,
       isIDE,
+      baseApp,
     } = useAuth()
 
     const { currentStore } = useApp()

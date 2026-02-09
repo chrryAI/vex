@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  redis-waffles:
+    image: redis:7.2
+    container_name: vex-redis-waffles
+    ports:
+      - "6381:6379"  # Waffles local DB (production data)
+    volumes:
+      - ./redis_waffles_data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly no --save 60 1000
+    networks:
+      - vex-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  redis_waffles_data:
+    driver: local
+
+networks:
+  vex-network:
+    driver: bridge
