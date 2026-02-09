@@ -11,16 +11,16 @@ services:
     restart: unless-stopped
     # Enable authentication - set REDIS_PASSWORD in .env file
     command: >
-      sh -c "redis-server 
+      sh -c "test -n \"$$REDIS_PASSWORD\" || { echo 'ERROR: REDIS_PASSWORD must be set'; exit 1; } && redis-server 
       --appendonly no 
       --save 60 1000 
-      --requirepass $${REDIS_PASSWORD:-changeme}"
+      --requirepass $$REDIS_PASSWORD"
     environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-changeme}
+      - REDIS_PASSWORD
     networks:
       - vex-network
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-changeme}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
