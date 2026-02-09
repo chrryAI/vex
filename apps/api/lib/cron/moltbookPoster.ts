@@ -1,6 +1,6 @@
 import { captureException } from "@sentry/node"
 import { v4 as uuidv4 } from "uuid"
-import { sendEmail } from "../sendEmail"
+import { sendDiscordNotification } from "../sendDiscordNotification"
 import type { Context } from "hono"
 import { randomInt } from "crypto"
 import { sign } from "jsonwebtoken"
@@ -22,7 +22,6 @@ import {
   and,
   updateMessage,
   thread,
-  isNull,
   updateThread,
 } from "@repo/db"
 import { apps, messages, moltQuestions, threads } from "@repo/db/src/schema"
@@ -81,8 +80,6 @@ async function generateMoltbookPost({
       id: app.userId,
     })
 
-    console.log(user?.role, user?.name, "sdsdsdsds")
-
     if (!user) {
       throw new Error("User not found")
     }
@@ -92,6 +89,31 @@ async function generateMoltbookPost({
     }
 
     const token = generateToken(user.id, user.email)
+
+    const selectedAgent = await getAiAgent({
+      name: agentName,
+    })
+
+    if (!selectedAgent) {
+      throw new Error("Something went wrong sushi not found")
+    }
+
+    // Fetch agent's previous Moltbook messages to avoid repetition
+    const previousMessages = await db.query.messages.findMany({
+      where: and(eq(messages.isMolt, true), eq(messages.appId, app.id)),
+      orderBy: (messages, { desc }) => [desc(messages.createdOn)],
+      limit: 3,
+    })
+
+    // Build context from previous messages
+    let previousPostsContext = ""
+    if (previousMessages.length > 0) {
+      previousPostsContext = `\n\nYour Recent Moltbook Posts (avoid repeating these topics):\n`
+      previousMessages.forEach((msg, index) => {
+        previousPostsContext += `${index + 1}. ${msg.content.substring(0, 200)}...\n`
+      })
+      previousPostsContext += `\n⚠️ Important: Choose a DIFFERENT topic or angle from these previous posts.\n`
+    }
 
     const prompt = `Generate a thoughtful, engaging post for Moltbook (a social network for AI agents).
 ${
@@ -116,15 +138,14 @@ Ending Guidelines:
 - ❌ Do NOT rely on repetitive phrases like "Let's chat" or "What do you think?".
 - ✅ Vary your endings: use strong statements, insights, or subtle calls to action.
 - ✅ Be confident in your perspective.
+${previousPostsContext}
 `
 
-    const selectedAgent = await getAiAgent({
-      name: agentName,
+    // Find existing molt thread for this app (most recent)
+    const existingMoltThread = await db.query.threads.findFirst({
+      where: and(eq(threads.isMolt, true), eq(threads.appId, app.id)),
+      orderBy: (threads, { desc }) => [desc(threads.createdOn)],
     })
-
-    if (!selectedAgent) {
-      throw new Error("Something went wrong sushi not found")
-    }
 
     const userMessageResponse = await fetch(`${API_URL}/messages`, {
       method: "POST",
@@ -137,6 +158,7 @@ Ending Guidelines:
         clientId: uuidv4(),
         agentId: selectedAgent.id,
         appId: app.id,
+        threadId: existingMoltThread?.id, // Reuse existing molt thread
         stream: false,
         notify: false,
         molt: true,
@@ -298,7 +320,9 @@ export async function postToMoltbookCron({
     let unaskedQuestions = await db
       .select()
       .from(moltQuestions)
-      .where(and(eq(moltQuestions.asked, false), isNull(moltQuestions.appId)))
+      .where(
+        and(eq(moltQuestions.asked, false), eq(moltQuestions.appId, app.id)),
+      )
       .limit(5)
 
     if (!unaskedQuestions || unaskedQuestions.length === 0) {
@@ -311,7 +335,9 @@ export async function postToMoltbookCron({
       unaskedQuestions = await db
         .select()
         .from(moltQuestions)
-        .where(and(eq(moltQuestions.asked, false), isNull(moltQuestions.appId)))
+        .where(
+          and(eq(moltQuestions.asked, false), eq(moltQuestions.appId, app.id)),
+        )
         .limit(5)
     }
 
@@ -352,27 +378,52 @@ export async function postToMoltbookCron({
         .where(eq(moltQuestions.id, questionId))
       console.log(`✅ Marked question ${questionId} as asked`)
 
-      // Send email notification (non-blocking) - only if post was successful
-      if (c && result && result.post_id) {
-        sendEmail({
-          c,
-          to: "feedbackwallet@gmail.com",
-          subject: `✅ Moltbook Post Published - ${agentName || slug}`,
-          html: `
-            <h2>🦞 New Moltbook Post</h2>
-            <p><strong>Agent:</strong> ${agentName || slug}</p>
-            <p><strong>Post ID:</strong> ${result.post_id}</p>
-            <p><strong>Title:</strong> ${post.title}</p>
-            <p><strong>Link:</strong> <a href="https://moltbook.com/post/${result.post_id}">View Post</a></p>
-            <hr>
-            <p>${post.content.substring(0, 200)}...</p>
-          `,
+      // Send Discord notification (non-blocking) - only if post was successful
+      if (result && result.post_id) {
+        sendDiscordNotification({
+          embeds: [
+            {
+              title: "🦞 New Moltbook Post",
+              color: 0x10b981, // Green
+              fields: [
+                {
+                  name: "Agent",
+                  value: app.name || agentName || slug,
+                  inline: true,
+                },
+                {
+                  name: "Post ID",
+                  value: result.post_id,
+                  inline: true,
+                },
+                {
+                  name: "Title",
+                  value: post.title || "No title",
+                  inline: false,
+                },
+                {
+                  name: "Content Preview",
+                  value: (() => {
+                    const content = post.content ?? ""
+                    return content.length > 200
+                      ? content.substring(0, 200) + "..."
+                      : content || "No content"
+                  })(),
+                  inline: false,
+                },
+                {
+                  name: "Link",
+                  value: `[View Post](https://moltbook.com/post/${result.post_id})`,
+                  inline: false,
+                },
+              ],
+              timestamp: new Date().toISOString(),
+            },
+          ],
+        }).catch((err) => {
+          captureException(err)
+          console.error("⚠️ Discord notification failed:", err)
         })
-          .then(() => console.log("📧 Email notification sent"))
-          .catch((err) => {
-            captureException(err)
-            console.error("⚠️ Email notification failed:", err)
-          })
       }
     }
 
@@ -389,7 +440,7 @@ export async function postToMoltbookCron({
       await updateMessage({
         id: m.id,
         moltId: result.post_id,
-        moltUrl: `https://moltbook.com/p/${result.post_id}`,
+        moltUrl: `https://moltbook.com/post/${result.post_id}`,
         submolt: post.submolt,
       })
       console.log(`✅ Updated message ${post.messageId} with Moltbook metadata`)
@@ -399,7 +450,7 @@ export async function postToMoltbookCron({
       await updateThread({
         id: post.molt.id,
         moltId: result.post_id || "",
-        moltUrl: `https://moltbook.com/p/${result.post_id}`,
+        moltUrl: `https://moltbook.com/post/${result.post_id}`,
         submolt: post.submolt,
       })
     }

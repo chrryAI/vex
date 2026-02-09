@@ -774,34 +774,13 @@ export const chat = async ({
       `Debug: Found ${deleteButtonCount} delete buttons in last message`,
     )
 
-    // // Get the message text directly from the element with the expected text
-    const userMessageContent = (await getLastMessage()).getByText(prompt.text)
-    await expect(userMessageContent).toBeVisible({
-      timeout: agentMessageTimeout,
-    })
-    // Get all agent messages and wait for the last one to be visible
-
     const getLastAgentMessage = async () => {
       const agentMessages = page.getByTestId("agent-message")
       const messageCount = await agentMessages.count()
       return agentMessages.nth(messageCount - 1)
     }
 
-    const getLastUserMessage = async () => {
-      const userMessages = page.getByTestId(
-        `${isMember ? "user" : "guest"}-message`,
-      )
-      const messageCount = await userMessages.count()
-      return userMessages.nth(messageCount - 1)
-    }
-
-    // Wait for the last message to be visible and have content
     await expect(await getLastAgentMessage()).toBeVisible()
-    // await expect(
-    //   lastAgentMessage.locator("[data-testid=markdown-paragraph]"),
-    // ).toBeVisible({
-    //   timeout: prompt.agentMessageTimeout || agentMessageTimeout,
-    // })
 
     const deleteAgentMessageButton = (await getLastAgentMessage()).locator(
       "[data-testid=delete-message]",
@@ -1006,7 +985,9 @@ export const chat = async ({
             nextProfile = await characterProfile.getAttribute("data-cp")
             return nextProfile && nextProfile !== profile ? nextProfile : null
           },
-          { timeout: 15000 },
+          {
+            timeout: prompt.agentMessageTimeout || agentMessageTimeout,
+          },
         )
         .toBeTruthy()
       profile = nextProfile ?? ""

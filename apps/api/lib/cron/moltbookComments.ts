@@ -10,9 +10,22 @@ import { streamText } from "ai"
 import { deepseek } from "@ai-sdk/deepseek"
 import { randomInt } from "crypto"
 import { MOLTBOOK_API_KEYS } from ".."
+import { isExcludedAgent } from "./moltbookExcludeList"
+
+// Clean Moltbook's aggressive PII placeholders
+function cleanMoltbookPlaceholders(text: string): string {
+  return text
+    .replace(/\[IG_USER_\d+\]/g, "") // Remove [IG_USER_1234]
+    .replace(/\[IGUSER\d+\]/g, "") // Remove [IGUSER1234]
+    .replace(/\[EMERGENCY_?CONTACT_?\d+\]/g, "") // Remove [EMERGENCYCONTACT1234]
+    .replace(/\[DEED_\d+\]/g, "") // Remove [DEED_1234]
+    .replace(/\s+/g, " ") // Collapse multiple spaces
+    .trim()
+}
 
 const getAIModel = () => {
-  const modelName = "deepseek-reasoner"
+  // Use chat model for comments - reasoner is overkill and slower
+  const modelName = "deepseek-chat"
   return deepseek(modelName)
 }
 
@@ -101,6 +114,28 @@ export async function checkMoltbookComments({
           continue
         }
 
+        // Skip excluded agents (centralized list)
+        if (isExcludedAgent(comment.author.name)) {
+          console.log(`⏭️ Skipping excluded agent: ${comment.author.name}`)
+          continue
+        }
+
+        // Check if agent is in block list
+        const isBlocked = await db.query.moltbookBlocks.findFirst({
+          where: (blocks, { and, eq }) =>
+            and(
+              eq(blocks.appId, app.id),
+              eq(blocks.agentId, comment.author.id),
+            ),
+        })
+
+        if (isBlocked) {
+          console.log(
+            `🚫 Skipping blocked agent: ${comment.author.name} (${isBlocked.reason || "no reason"})`,
+          )
+          continue
+        }
+
         // Insert new comment if it doesn't exist
         if (!existingComment) {
           await db.insert(moltComments).values({
@@ -150,8 +185,8 @@ export async function checkMoltbookComments({
 
           const filterPrompt = `You are evaluating whether to reply to a comment on your Moltbook post.
 
-Your post: "${post.content?.substring(0, 200)}"
-Comment: "${comment.content}"
+Your post: "${cleanMoltbookPlaceholders(post.content?.substring(0, 200) || "")}"
+Comment: "${cleanMoltbookPlaceholders(comment.content)}"
 Commenter: ${comment.author.name}
 
 Should you reply to this comment? Only reply if the comment:
@@ -204,36 +239,63 @@ Respond with ONLY "YES" or "NO":`
         try {
           const deepseek = getAIModel()
 
+          const systemContext = app.systemPrompt
+            ? `Your personality and role:\n${app.systemPrompt.substring(0, 500)}\n\n`
+            : ""
+
           const replyPrompt = `You are an AI agent on Moltbook (a social network for AI agents).
 Someone commented on your post.
 
-Your original post: "${post.content?.substring(0, 200)}"
-Their comment: "${comment.content}"
+${systemContext}Your original post: "${cleanMoltbookPlaceholders(post.content?.substring(0, 200) || "")}"
+Their comment: "${cleanMoltbookPlaceholders(comment.content)}"
 Commenter: ${comment.author.name}
 
-${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500)}\n\n` : ""}Generate a thoughtful, engaging reply that:
-- Addresses their comment directly
-- Adds value to the conversation
-- Encourages further discussion
+${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500)}\n\n` : ""}Generate a thoughtful, detailed reply that:
+- Addresses their comment directly with depth and insight
+- Adds substantial value to the conversation
+- Shares your perspective and reasoning
+- Encourages further discussion with questions or ideas
 - Sounds natural and conversational
 - Stays true to your personality and knowledge
+- Be thorough - don't rush to finish, explain your thinking
 
-Reply (just the text, no quotes):`
+Reply (2-3 sentences max, concise and engaging, just the text, no quotes):`
+
+          console.log(`🔍 Reply generation for ${comment.author.name}:`)
+          console.log(
+            `   Post: "${cleanMoltbookPlaceholders(post.content?.substring(0, 100) || "")}..."`,
+          )
+          console.log(
+            `   Comment: "${cleanMoltbookPlaceholders(comment.content.substring(0, 100))}..."`,
+          )
+          console.log(`   Model: ${deepseek.modelId}`)
 
           const { textStream } = streamText({
             model: deepseek,
             prompt: replyPrompt,
-            maxOutputTokens: 150,
+            maxOutputTokens: 300, // Concise but thoughtful responses
           })
 
           let replyContent = ""
+          let chunkCount = 0
           for await (const chunk of textStream) {
             replyContent += chunk
+            chunkCount++
           }
 
           replyContent = replyContent.trim()
 
-          console.log(`🤖 Generated reply: "${replyContent}"`)
+          console.log(
+            `🤖 Generated reply (${chunkCount} chunks): "${replyContent}"`,
+          )
+
+          // Skip if AI generated empty reply
+          if (!replyContent || replyContent.length === 0) {
+            console.log(
+              `⏭️ Skipping empty reply for ${comment.post_id} comment ${comment.id}`,
+            )
+            continue
+          }
 
           // 5. Post reply to Moltbook
           const replyResult = await postComment(

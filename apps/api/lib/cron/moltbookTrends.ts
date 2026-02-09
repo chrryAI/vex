@@ -1,5 +1,10 @@
-import { db, eq } from "@repo/db"
-import { moltPosts, moltQuestions, aiAgents } from "@repo/db/src/schema"
+import { db, eq, getMemories } from "@repo/db"
+import {
+  moltPosts,
+  moltQuestions,
+  aiAgents,
+  moltbookFollows,
+} from "@repo/db/src/schema"
 import {
   getMoltbookFeed,
   votePost,
@@ -7,6 +12,17 @@ import {
 } from "../integrations/moltbook"
 import { createDeepSeek } from "@ai-sdk/deepseek" // Assuming this is how DeepSeek is initialized
 import { MOLTBOOK_API_KEYS } from ".."
+
+// Clean Moltbook's aggressive PII placeholders
+function cleanMoltbookPlaceholders(text: string): string {
+  return text
+    .replace(/\[IG_USER_\d+\]/g, "") // Remove [IG_USER_1234]
+    .replace(/\[IGUSER\d+\]/g, "") // Remove [IGUSER1234]
+    .replace(/\[EMERGENCY_?CONTACT_?\d+\]/g, "") // Remove [EMERGENCYCONTACT1234]
+    .replace(/\[DEED_\d+\]/g, "") // Remove [DEED_1234]
+    .replace(/\s+/g, " ") // Collapse multiple spaces
+    .trim()
+}
 
 // Helper to get DeepSeek model - mirroring pattern in other files
 async function getAIModel() {
@@ -82,7 +98,7 @@ export async function analyzeMoltbookTrends({
     const context = posts
       .map(
         (p) =>
-          `- [${p.submolt}] ${p.title}: ${p.content?.substring(0, 100)}...`,
+          `- [${p.submolt}] ${cleanMoltbookPlaceholders(p.title)}: ${cleanMoltbookPlaceholders(p.content?.substring(0, 100) || "")}...`,
       )
       .join("\n")
 
@@ -142,7 +158,7 @@ export async function analyzeMoltbookTrends({
         for (const q of questions) {
           await db.insert(moltQuestions).values({
             question: q,
-            // appId: app.id,
+            appId: app.id,
             // threadId is optional, can be null for general pool
           })
         }
@@ -176,13 +192,30 @@ export async function analyzeMoltbookTrends({
       ? `\n\nYour approach and style:\n${Array.isArray(app.tips) ? app.tips.join(", ") : String(app.tips).substring(0, 300)}`
       : ""
 
+    // Get app memories for deeper context
+    let memoriesContext = ""
+    if (app?.id) {
+      const { memories: appMemories } = await getMemories({
+        appId: app.id,
+        pageSize: 20,
+        orderBy: "importance",
+      })
+
+      if (appMemories.length > 0) {
+        const memoryTexts = appMemories
+          .map((m) => `- ${m.title}: ${(m.content || "").substring(0, 100)}`)
+          .join("\n")
+        memoriesContext = `\n\nYour learned knowledge and preferences:\n${memoryTexts}`
+      }
+    }
+
     for (const post of posts.slice(0, 10)) {
       // Analyze top 10 posts
       try {
-        const analysisPrompt = `Analyze this Moltbook post and decide if it's worth upvoting and following the author.${systemContext}${highlightsContext}${tipsContext}
+        const analysisPrompt = `Analyze this Moltbook post and decide if it's worth upvoting and following the author.${systemContext}${highlightsContext}${tipsContext}${memoriesContext}
 
-Post Title: ${post.title}
-Content: ${post.content?.substring(0, 300) || "No content"}
+Post Title: ${cleanMoltbookPlaceholders(post.title)}
+Content: ${cleanMoltbookPlaceholders(post.content?.substring(0, 300) || "No content")}
 Author: ${post.author}
 Current Score: ${post.score}
 Submolt: ${post.submolt}
@@ -220,13 +253,31 @@ Return JSON:
           }
         }
 
-        if (decision.follow) {
+        if (decision.follow && app?.id) {
           const followResult = await followAgent(
             MOLTBOOK_API_KEY,
             post.author_id,
           )
           if (followResult.success) {
-            console.log(`👥 Followed: ${post.author} - ${decision.reason}`)
+            // Save to follow list (race-safe with onConflictDoNothing)
+            const insertResult = await db
+              .insert(moltbookFollows)
+              .values({
+                appId: app.id,
+                agentId: post.author_id,
+                agentName: post.author,
+                metadata: { reason: decision.reason },
+              })
+              .onConflictDoNothing({
+                target: [moltbookFollows.appId, moltbookFollows.agentId],
+              })
+              .returning({ id: moltbookFollows.id })
+
+            if (insertResult.length > 0) {
+              console.log(`👥 Followed: ${post.author} - ${decision.reason}`)
+            } else {
+              console.log(`⏭️ Already following: ${post.author}`)
+            }
           }
         }
 

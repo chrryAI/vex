@@ -68,7 +68,7 @@ const baseCalendarEventSchema = z.object({
   recurrenceRule: recurrenceRuleSchema.optional(),
 
   // Status and visibility
-  status: z.enum(["confirmed", "tentative", "cancelled"]).default("confirmed"),
+  status: z.enum(["confirmed", "tentative", "canceled"]).default("confirmed"),
   visibility: z.enum(["private", "public", "shared"]).default("private"),
 
   // AI integration
@@ -136,7 +136,7 @@ export const updateCalendarEventSchema = baseCalendarEventSchema
     attendees: z.array(attendeeSchema).optional(),
     reminders: z.array(reminderSchema).optional(),
     isRecurring: z.boolean().optional(),
-    status: z.enum(["confirmed", "tentative", "cancelled"]).optional(),
+    status: z.enum(["confirmed", "tentative", "canceled"]).optional(),
     visibility: z.enum(["private", "public", "shared"]).optional(),
   })
   .refine(
@@ -173,7 +173,7 @@ export const getCalendarEventsSchema = z.object({
     ])
     .optional(),
   category: z.string().optional(),
-  status: z.enum(["confirmed", "tentative", "cancelled"]).optional(),
+  status: z.enum(["confirmed", "tentative", "canceled"]).optional(),
 })
 
 // Create a form-specific schema that ensures Date types for react-hook-form

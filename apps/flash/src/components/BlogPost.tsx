@@ -1,5 +1,6 @@
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import { safeJSONStringify } from "../utils/security"
 import { BlogPostWithContent } from "../blog-loader"
 import styles from "./BlogPost.module.scss"
 
@@ -39,7 +40,7 @@ export default function BlogPost({ post, locale }: BlogPostProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJSONStringify({
             "@context": "https://schema.org",
             "@type": "BlogPosting",
             headline: post.title,

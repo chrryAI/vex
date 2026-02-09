@@ -127,6 +127,8 @@ app.post("/", async (c) => {
       apiKeys,
       tips,
       placeholder,
+      moltHandle,
+      moltApiKey,
     } = body
 
     // Validate app name: no spaces, must be unique
@@ -168,31 +170,23 @@ app.post("/", async (c) => {
 
     // Handle image - accept URL from /api/image endpoint
 
-    // Redact sensitive text fields server-side before validation/storage
-    // This is a second layer of defense complementing the client-side Zod schema
-    const redactedName = await redact(name)
-    const redactedTitle = await redact(title)
-    const redactedDescription = description
-      ? await redact(description)
-      : description
-    const redactedSystemPrompt = systemPrompt
-      ? await redact(systemPrompt)
-      : systemPrompt
-    const redactedPlaceholder = placeholder
-      ? await redact(placeholder)
-      : placeholder
-
     // Build the data object for validation
     // Schema will sanitize via sanitizedString helper
     const appData = {
-      name: redactedName,
-      title: redactedTitle,
-      description: redactedDescription || undefined,
-      icon: icon || undefined,
-      systemPrompt: redactedSystemPrompt || undefined,
-      tone: tone || undefined,
-      language: language || undefined,
-      defaultModel: defaultModel || undefined,
+      name: typeof name === "string" ? await redact(name) : name,
+      title: typeof title === "string" ? await redact(title) : title,
+      description:
+        typeof description === "string"
+          ? await redact(description)
+          : description,
+      icon, // URLs shouldn't be redacted
+      systemPrompt:
+        typeof systemPrompt === "string"
+          ? await redact(systemPrompt)
+          : systemPrompt,
+      tone,
+      language,
+      defaultModel,
       temperature,
       capabilities,
       highlights,
@@ -200,20 +194,29 @@ app.post("/", async (c) => {
       tags,
       tools,
       extends: extendsData,
-      visibility: visibility || undefined,
-      themeColor: themeColor || undefined,
-      backgroundColor: backgroundColor || undefined,
-      displayMode: displayMode || undefined,
-      pricing: pricing || undefined,
+      visibility,
+      themeColor,
+      backgroundColor,
+      displayMode,
+      pricing,
       price,
-      currency: currency || undefined,
-      subscriptionInterval: subscriptionInterval || undefined,
+      currency,
+      subscriptionInterval,
       apiEnabled,
-      apiPricing: apiPricing || undefined,
+      apiPricing,
       apiPricePerRequest,
       apiMonthlyPrice,
       apiRateLimit,
-      placeholder: redactedPlaceholder,
+      placeholder:
+        typeof placeholder === "string"
+          ? await redact(placeholder)
+          : placeholder,
+      moltHandle:
+        typeof moltHandle === "string" ? await redact(moltHandle) : moltHandle,
+      moltApiKey:
+        typeof moltApiKey === "string" && moltApiKey.trim()
+          ? await encrypt(moltApiKey.trim())
+          : undefined,
     }
 
     const chrry = await getStore({
@@ -837,6 +840,8 @@ app.patch("/:id", async (c) => {
       image: imageUrl,
       placeholder,
       apiKeys,
+      moltHandle,
+      moltApiKey,
     } = body
 
     // Handle image - accept URL from /api/image endpoint
@@ -846,12 +851,42 @@ app.patch("/:id", async (c) => {
     // Build the update data object (only include provided fields)
     const updateData: any = {}
 
-    if (name !== null) updateData.name = name
-    if (placeholder !== null) updateData.placeholder = placeholder
-    if (title !== null) updateData.title = title
-    if (description !== null) updateData.description = description
+    if (name !== undefined)
+      updateData.name =
+        name === null
+          ? null
+          : typeof name === "string"
+            ? await redact(name)
+            : name
+    if (placeholder !== undefined)
+      updateData.placeholder =
+        placeholder === null
+          ? null
+          : typeof placeholder === "string"
+            ? await redact(placeholder)
+            : placeholder
+    if (title !== undefined)
+      updateData.title =
+        title === null
+          ? null
+          : typeof title === "string"
+            ? await redact(title)
+            : title
+    if (description !== undefined)
+      updateData.description =
+        description === null
+          ? null
+          : typeof description === "string"
+            ? await redact(description)
+            : description
     if (icon !== null) updateData.icon = icon
-    if (systemPrompt !== null) updateData.systemPrompt = systemPrompt
+    if (systemPrompt !== undefined)
+      updateData.systemPrompt =
+        systemPrompt === null
+          ? null
+          : typeof systemPrompt === "string"
+            ? await redact(systemPrompt)
+            : systemPrompt
     if (tone !== null) updateData.tone = tone
     if (language !== null) updateData.language = language
     if (defaultModel !== null) updateData.defaultModel = defaultModel
@@ -867,6 +902,15 @@ app.patch("/:id", async (c) => {
     if (displayMode !== null) updateData.displayMode = displayMode
     if (pricing !== null) updateData.pricing = pricing
     if (price !== undefined) updateData.price = price
+    if (moltHandle !== undefined)
+      updateData.moltHandle =
+        moltHandle === null
+          ? null
+          : typeof moltHandle === "string"
+            ? await redact(moltHandle)
+            : moltHandle
+    // moltApiKey is handled below with encrypt
+
     if (currency !== null) updateData.currency = currency
     if (subscriptionInterval !== null)
       updateData.subscriptionInterval = subscriptionInterval
@@ -877,6 +921,11 @@ app.patch("/:id", async (c) => {
     if (apiMonthlyPrice !== undefined)
       updateData.apiMonthlyPrice = apiMonthlyPrice
     if (apiRateLimit !== undefined) updateData.apiRateLimit = apiRateLimit
+    if (moltApiKey !== undefined) {
+      const trimmed = typeof moltApiKey === "string" ? moltApiKey.trim() : ""
+      updateData.moltApiKey = trimmed ? await encrypt(trimmed) : null
+    }
+
     if (shouldUpdateImages) updateData.images = images
 
     // Hash API keys before saving (if provided)

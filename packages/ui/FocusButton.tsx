@@ -359,6 +359,7 @@ export default function FocusButton({
           <Button
             data-testid="close-settings-button"
             style={styles.closeSettingsButton.style}
+            aria-label={t("Close settings")}
             onClick={() => setShowSettings(false)}
           >
             <CircleX width={18} height={18} /> {t("Settings")}
@@ -594,6 +595,7 @@ export default function FocusButton({
             <Button
               data-testid="settings-button"
               title={t("Settings")}
+              aria-label={t("Settings")}
               className="link"
               style={{ ...utilities.link.style, ...styles.showSettings.style }}
               onClick={() => setShowSettings(true)}
@@ -603,6 +605,7 @@ export default function FocusButton({
             <Button
               className="link"
               title={t("Replay")}
+              aria-label={t("Replay")}
               style={{
                 ...utilities.link.style,
                 ...styles.showSettings.style,
@@ -635,6 +638,7 @@ export default function FocusButton({
                     className="ghost"
                     ref={minutesUpButtonRef}
                     style={{ ...styles.timeAdjust.style }}
+                    aria-label={t("Increase minutes")}
                     onPointerDown={(e) => {
                       e.stopPropagation()
                       if (e.pointerType === "mouse" && e.buttons !== 1) return
@@ -657,6 +661,7 @@ export default function FocusButton({
                     className="ghost"
                     ref={minutesDownButtonRef}
                     style={{ ...styles.timeAdjust.style }}
+                    aria-label={t("Decrease minutes")}
                     onPointerDown={(e) => {
                       e.stopPropagation()
                       if (e.pointerType === "mouse" && e.buttons !== 1) return
@@ -683,6 +688,7 @@ export default function FocusButton({
                     className="ghost"
                     ref={secondsUpButtonRef}
                     style={styles.timeAdjust.style}
+                    aria-label={t("Increase seconds")}
                     onPointerDown={(e) => {
                       e.stopPropagation()
                       if (e.pointerType === "mouse" && e.buttons !== 1) return
@@ -706,6 +712,7 @@ export default function FocusButton({
                     className="ghost"
                     ref={secondsDownButtonRef}
                     style={styles.timeAdjust.style}
+                    aria-label={t("Decrease seconds")}
                     onPointerDown={(e) => {
                       e.stopPropagation()
                       if (e.pointerType === "mouse" && e.buttons !== 1) return
@@ -739,6 +746,7 @@ export default function FocusButton({
             <ThemeSwitcher size={22} style={{ marginTop: 2.5 }} />
             <Button
               title={playBirds ? t("Pause sound") : t("Play sound")}
+              aria-label={playBirds ? t("Pause sound") : t("Play sound")}
               onClick={() => setPlayBirds(!playBirds)}
               className={"link"}
               style={{ ...(playBirds ? styles.active : {}) }}
