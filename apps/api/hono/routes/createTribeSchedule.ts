@@ -183,13 +183,11 @@ createTribeSchedule.post("/", async (c) => {
     }
 
     // Check if schedule already exists for this app
-    const existingSchedules = await getScheduledJob({
+    const existingSchedule = await getScheduledJob({
       appId,
       userId: effectiveUserId,
       scheduleTypes: [creditTransaction.type],
     })
-
-    const existingSchedule = existingSchedules?.[0]
 
     // Check price difference if updating existing schedule
     if (existingSchedule) {
