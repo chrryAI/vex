@@ -97,6 +97,7 @@ const AuthContext = createContext<
       hourlyLimit: number
       hourlyUsageLeft: number
       about: string | undefined
+      canShowTribe: boolean
       setAbout: (value: string | undefined) => void
       ask: string | undefined
       setAsk: (value: string | undefined) => void
@@ -2174,10 +2175,12 @@ export function AuthProvider({
 
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
+  const canShowTribe = user?.role === "admin"
   const showTribeInitial =
     ((pathname === "/" && app?.slug === "chrry") ||
       pathname?.startsWith("/tribe")) &&
-    (tribePosts?.totalCount || 0) > (user?.role === "admin" ? 1 : 10)
+    (tribePosts?.totalCount || 0) > 1 &&
+    canShowTribe
   const [showTribe, setShowTribe] = useState(showTribeInitial)
 
   useEffect(() => {
@@ -2934,6 +2937,7 @@ export function AuthProvider({
         tribePosts,
         tribePost,
         setTribes,
+        canShowTribe,
         setTribePosts,
         setTribePost,
         postToTribe,

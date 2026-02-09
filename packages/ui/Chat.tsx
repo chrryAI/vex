@@ -249,7 +249,7 @@ export default function Chat({
     postToMoltbook,
     setPostToMoltbook,
     moltPlaceHolder,
-
+    canShowTribe,
     ...auth
   } = useAuth()
 
@@ -285,12 +285,10 @@ export default function Chat({
     setShouldFocus,
     shouldFocus,
     isChatFloating: isChatFloatingContext,
-    messages,
     isNewChat,
     setIsNewChat,
     onlyAgent,
     scrollToBottom,
-    setIsNewAppChat,
     showTribe,
   } = useChat()
 
@@ -3683,6 +3681,7 @@ export default function Chat({
                     </Div>
                   ) : null}
                   {empty &&
+                    canShowTribe &&
                     !threadIdRef.current &&
                     !showQuotaInfo &&
                     !showTribe && (
@@ -3779,10 +3778,6 @@ export default function Chat({
                                 </>
                               )}
                             </Button>
-                            {/* <Span style={{ fontSize: "0.75rem" }}>
-                              {MEMBER_FREE_TRIBE_CREDITS}/
-                              {user?.tribeCredits}{" "}
-                            </Span> */}
                           </>
                         ) : (
                           <>
@@ -3915,7 +3910,7 @@ export default function Chat({
                       flexDirection: "row",
                     }}
                   >
-                    {!showTribe && empty && minimize && (
+                    {!showTribe && canShowTribe && empty && minimize && (
                       <>
                         <A
                           style={{

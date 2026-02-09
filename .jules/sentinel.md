@@ -44,6 +44,7 @@
 **Learning:** Generating a `state` parameter is insufficient if it is not cryptographically bound to the user's session (e.g., via a secure cookie) and verified upon return.
 
 **Prevention:** Always implement the `state` parameter check in OAuth flows:
+
 1. Generate a random state.
 2. Store it in a secure, HttpOnly, SameSite cookie.
 3. Pass it to the OAuth provider.
