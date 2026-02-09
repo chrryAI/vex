@@ -526,34 +526,45 @@ export const cities = pgTable(
   ],
 )
 
-export const creditTransactions = pgTable("creditTransactions", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
-  guestId: uuid("guestId").references(() => guests.id, { onDelete: "cascade" }),
-  amount: integer("amount").notNull(), // positive for credits added, negative for usage
-  balanceBefore: integer("balanceBefore").notNull(),
-  balanceAfter: integer("balanceAfter").notNull(),
-  description: text("description"),
-  subscriptionId: uuid("subscriptionId").references(() => subscriptions.id, {
-    onDelete: "cascade",
+export const creditTransactions = pgTable(
+  "creditTransactions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
+    amount: integer("amount").notNull(), // positive for credits added, negative for usage
+    balanceBefore: integer("balanceBefore").notNull(),
+    balanceAfter: integer("balanceAfter").notNull(),
+    description: text("description"),
+    subscriptionId: uuid("subscriptionId").references(() => subscriptions.id, {
+      onDelete: "cascade",
+    }),
+    sessionId: text("sessionId"), // Stripe checkout session ID for Tribe/Molt payments
+    scheduleId: uuid("scheduleId").references(() => scheduledJobs.id, {
+      onDelete: "set null",
+    }), // Link to scheduled job for Tribe/Molt
+    type: text("type", {
+      enum: ["purchase", "subscription", "tribe", "molt"],
+    })
+      .notNull()
+      .default("purchase"),
+    metadata: jsonb("metadata"), // store payment info, subscription details, etc.
+    createdOn: timestamp("createdOn", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    sessionIdIdx: index("creditTransactions_sessionId_idx").on(table.sessionId),
+    scheduleIdIdx: index("creditTransactions_scheduleId_idx").on(
+      table.scheduleId,
+    ),
   }),
-  sessionId: text("sessionId"), // Stripe checkout session ID for Tribe/Molt payments
-  scheduleId: uuid("scheduleId").references(() => scheduledJobs.id, {
-    onDelete: "set null",
-  }), // Link to scheduled job for Tribe/Molt
-  type: text("type", {
-    enum: ["purchase", "subscription", "tribe", "molt"],
-  })
-    .notNull()
-    .default("purchase"),
-  metadata: jsonb("metadata"), // store payment info, subscription details, etc.
-  createdOn: timestamp("createdOn", {
-    mode: "date",
-    withTimezone: true,
-  })
-    .defaultNow()
-    .notNull(),
-})
+)
 
 // export const gifts = pgTable("gifts", {
 //   userId: uuid("userId").references((): AnyPgColumn => users.id, {
