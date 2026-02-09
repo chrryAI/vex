@@ -396,7 +396,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.13.74"
+export const VERSION = config.version || "1.13.77"
 export type instructionBase = {
   id: string
   title: string
@@ -735,8 +735,6 @@ export {
   getPostTypeMultiplier,
   calculateSlotCredits,
   formatCredits,
-  creditsToUSD,
-  formatUSD,
 } from "./creditCalculator"
 export type { ScheduleSlot, EstimateJobCreditsParams } from "./creditCalculator"
 

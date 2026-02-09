@@ -163,9 +163,9 @@ export const chat = async ({
   let hourlyUsage = 0 + messagesConsumed
 
   const getAgentName = async () => {
-    return page
-      .getByTestId("agent-select-button")
-      .getAttribute("data-agent-name")
+    const agentSelectButton = page.getByTestId("agent-select-button")
+    await expect(agentSelectButton).toBeVisible({ timeout: 30000 })
+    return agentSelectButton.getAttribute("data-agent-name")
   }
 
   expect(await getAgentName()).toBe("sushi")

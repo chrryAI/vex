@@ -247,6 +247,12 @@ function getCallbackUrls(c: Context): {
     callbackUrl = `${requestUrl.protocol}//${requestUrl.host}`
   }
 
+  // Validate error URL to prevent open redirect
+  if (errorUrl && !validateCallbackUrl(errorUrl)) {
+    console.warn("⚠️ Invalid errorUrl provided, using safe fallback")
+    errorUrl = callbackUrl + "/?error=oauth_failed"
+  }
+
   // Fallback error URL
   if (!errorUrl) {
     errorUrl = callbackUrl + "/?error=oauth_failed"

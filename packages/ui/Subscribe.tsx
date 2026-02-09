@@ -52,7 +52,7 @@ export type selectedPlanType =
   | "member"
   | "credits"
   | "coder"
-  | "code rPlus"
+  | "coderPlus"
   | "pear"
   | "pearPlus"
   | "grape"
@@ -302,13 +302,6 @@ export default function Subscribe({
     // Stripe session IDs should be exactly 66 characters (cs_test_...)
     const cleaned = sessionId?.split("?")?.[0]?.trim() || ""
 
-    console.log(" cleanSessionId:", {
-      original: sessionId,
-      cleaned,
-      originalLength: sessionId.length,
-      cleanedLength: cleaned.length,
-    })
-
     return cleaned
   }
 
@@ -429,7 +422,14 @@ export default function Subscribe({
 
       // Call onPaymentVerified callback if provided (e.g., for Tribe schedule creation)
       if (onPaymentVerified) {
-        await onPaymentVerified(sessionId)
+        try {
+          // Use the existing cleanSessionId helper to normalize the session ID
+          const normalizedSessionId = cleanSessionId(sessionId)
+          await onPaymentVerified(normalizedSessionId)
+        } catch (error) {
+          console.error("onPaymentVerified callback failed:", error)
+          // Continue anyway - don't block fetchSession or modal close
+        }
       }
 
       await fetchSession()
@@ -528,6 +528,10 @@ export default function Subscribe({
     }
   }, [is])
 
+  // Get initial plan from URL or props (needed for sushiTier initialization)
+  const selectedPlanInitial = (searchParams.get("plan") ??
+    props.selectedPlan) as selectedPlanType
+
   const [grapeTier, setGrapeTierInternal] = useState<"free" | "plus" | "pro">(
     (searchParams.get("grapeTier") as "free" | "plus" | "pro") ?? "free",
   )
@@ -536,7 +540,10 @@ export default function Subscribe({
   )
   const [sushiTier, setSushiTierInternal] = useState<
     "free" | "coder" | "architect"
-  >((searchParams.get("sushiTier") as "free" | "coder" | "architect") ?? "free")
+  >(
+    (searchParams.get("sushiTier") as "free" | "coder" | "architect") ??
+      (selectedPlanInitial === "architect" ? "architect" : "free"),
+  )
   const [watermelonTier, setWatermelonTierInternal] = useState<
     "standard" | "plus"
   >((searchParams.get("watermelonTier") as "standard" | "plus") ?? "standard")
@@ -595,7 +602,7 @@ export default function Subscribe({
     "member",
     "credits",
     "coder",
-    "code rPlus",
+    "coderPlus",
     "pear",
     "pearPlus",
     "grape",
@@ -607,10 +614,17 @@ export default function Subscribe({
     "molt",
     "tribe",
   ]
-  const selectedPlanInitial = (searchParams.get("plan") ??
-    props.selectedPlan) as selectedPlanType
-  const selectedPlanInternal = selectedPlans.includes(selectedPlanInitial)
-    ? selectedPlanInitial
+
+  // Normalize plan aliases to prevent blank features/wrong pricing
+  function normalizePlanAlias(plan: selectedPlanType): selectedPlanType {
+    if (plan === "architect") return "coder"
+    if (plan === "coderPlus") return "coder"
+    return plan
+  }
+
+  const normalizedPlan = normalizePlanAlias(selectedPlanInitial)
+  const selectedPlanInternal = selectedPlans.includes(normalizedPlan)
+    ? normalizedPlan
     : (user || guest)?.subscription?.plan || "plus"
 
   // ... (keeping other lines unchanged conceptually, but replace block needs contiguous)

@@ -104,9 +104,11 @@ export function estimateJobCredits(params: EstimateJobCreditsParams): {
   if (frequency === "daily") {
     totalRuns = days
   } else if (frequency === "weekly") {
-    totalRuns = Math.floor(days / 7)
+    // Use Math.ceil to count partial weeks, minimum 1 run
+    totalRuns = Math.max(1, Math.ceil(days / 7))
   } else if (frequency === "monthly") {
-    totalRuns = Math.max(1, Math.floor(days / 30))
+    // Use Math.ceil to count partial months, minimum 1 run
+    totalRuns = Math.max(1, Math.ceil(days / 30))
   }
 
   // Calculate total credits based on each slot's configuration
@@ -124,14 +126,16 @@ export function estimateJobCredits(params: EstimateJobCreditsParams): {
   const avgCreditsPerPost =
     totalPostsCount > 0 ? Math.ceil(totalCreditsSum / totalPostsCount) : 0
 
-  // Calculate EUR price based on credits (€10 per 1000 credits by default)
-  const priceInEur = Math.ceil((totalCreditsSum / 1000) * creditsPrice)
+  // Calculate EUR price based on credits - keep decimal precision
+  // EUR per credit = creditsPrice / 1000
+  const eurPerCredit = creditsPrice / 1000
+  const priceInEur = totalCreditsSum * eurPerCredit
 
   return {
     totalPosts: totalPostsCount,
     creditsPerPost: avgCreditsPerPost,
     totalCredits: totalCreditsSum,
-    totalPrice: priceInEur,
+    totalPrice: Math.round(priceInEur * 100) / 100, // Round to 2 decimal places
   }
 }
 
@@ -144,12 +148,6 @@ export function formatCredits(credits: number): string {
   return `${(credits / 1000).toFixed(0)}K credits`
 }
 
-// Helper: Convert credits to USD (assuming 1 credit = $0.001)
-export function creditsToUSD(credits: number): number {
-  return credits * 0.001
-}
-
-// Helper: Format USD
 export function formatUSD(amount: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",

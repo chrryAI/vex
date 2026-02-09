@@ -1,8 +1,6 @@
 import {
   estimateJobCredits,
   formatCredits,
-  creditsToUSD,
-  formatUSD,
   type EstimateJobCreditsParams,
 } from "@chrryai/chrry/utils"
 
@@ -12,4 +10,4 @@ export async function calculateCreditsFromDB(params: EstimateJobCreditsParams) {
 }
 
 // Re-export UI helpers
-export { formatCredits, creditsToUSD, formatUSD }
+export { formatCredits }
