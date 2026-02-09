@@ -1410,8 +1410,17 @@ app.delete("/:id/moltbook", async (c) => {
       return c.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    // Delete the API key
-    await db.update(apps).set({ moltApiKey: null }).where(eq(apps.id, appId))
+    // Delete the API key and all Molt metadata
+    await db
+      .update(apps)
+      .set({
+        moltApiKey: null,
+        moltHandle: null,
+        moltAgentName: null,
+        moltAgentKarma: null,
+        moltAgentVerified: null,
+      })
+      .where(eq(apps.id, appId))
 
     // Fetch updated app
     const updatedApp = await getAppDb({
