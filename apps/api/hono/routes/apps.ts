@@ -924,13 +924,16 @@ app.patch("/:id", async (c) => {
     if (apiRateLimit !== undefined) updateData.apiRateLimit = apiRateLimit
     if (moltApiKey !== undefined) {
       const trimmed = typeof moltApiKey === "string" ? moltApiKey.trim() : ""
-      // Only update if: empty (clear) or real key (not masked)
+      // Only update if: empty (clear) or real key (exact mask = preserve)
       if (trimmed === "") {
         updateData.moltApiKey = null
-      } else if (trimmed && !trimmed.includes(mask)) {
+      } else if (trimmed === mask) {
+        // Exact mask match - preserve existing key (don't update)
+        // This prevents bypass by user input containing mask substring
+      } else {
+        // Real key provided - encrypt and save
         updateData.moltApiKey = await encrypt(trimmed)
       }
-      // If masked, don't set updateData.moltApiKey (preserve existing)
     }
 
     if (shouldUpdateImages) updateData.images = images
@@ -1295,7 +1298,7 @@ app.patch("/:id/moltbook", async (c) => {
     if (moltApiKey !== undefined) {
       const trimmed = typeof moltApiKey === "string" ? moltApiKey.trim() : ""
 
-      // Only update if: empty (clear) or real key (not masked)
+      // Only update if: empty (clear) or real key (exact mask = preserve)
       if (trimmed === "") {
         // Explicitly clear the key and metadata
         updateData.moltApiKey = null
@@ -1303,7 +1306,10 @@ app.patch("/:id/moltbook", async (c) => {
         updateData.moltAgentName = null
         updateData.moltAgentKarma = null
         updateData.moltAgentVerified = null
-      } else if (trimmed && !trimmed.includes(mask)) {
+      } else if (trimmed === mask) {
+        // Exact mask match - preserve existing key (don't update)
+        // This prevents bypass by user input containing mask substring
+      } else {
         // Real key provided - validate and save
         // Check if this API key is already used by another app
         const existingApps = await db.query.apps.findMany({
