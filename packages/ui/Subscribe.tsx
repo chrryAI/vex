@@ -429,7 +429,14 @@ export default function Subscribe({
 
       // Call onPaymentVerified callback if provided (e.g., for Tribe schedule creation)
       if (onPaymentVerified) {
-        await onPaymentVerified(sessionId)
+        try {
+          // Clean session ID (strip common prefixes and whitespace)
+          const cleanSessionId = sessionId.replace(/^(cs_|sess_)/, "").trim()
+          await onPaymentVerified(cleanSessionId)
+        } catch (error) {
+          console.error("onPaymentVerified callback failed:", error)
+          // Continue anyway - don't block fetchSession or modal close
+        }
       }
 
       await fetchSession()
@@ -607,10 +614,19 @@ export default function Subscribe({
     "molt",
     "tribe",
   ]
+
+  // Normalize plan aliases to prevent blank features/wrong pricing
+  function normalizePlanAlias(plan: selectedPlanType): selectedPlanType {
+    if (plan === "architect") return "sushi"
+    if (plan === "code rPlus") return "coder"
+    return plan
+  }
+
   const selectedPlanInitial = (searchParams.get("plan") ??
     props.selectedPlan) as selectedPlanType
-  const selectedPlanInternal = selectedPlans.includes(selectedPlanInitial)
-    ? selectedPlanInitial
+  const normalizedPlan = normalizePlanAlias(selectedPlanInitial)
+  const selectedPlanInternal = selectedPlans.includes(normalizedPlan)
+    ? normalizedPlan
     : (user || guest)?.subscription?.plan || "plus"
 
   // ... (keeping other lines unchanged conceptually, but replace block needs contiguous)
