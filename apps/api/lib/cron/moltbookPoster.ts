@@ -210,23 +210,68 @@ ${previousPostsContext}
     }
 
     const data = await aiMessageResponse.json()
+    console.log("🔍 Raw AI response:", JSON.stringify(data, null, 2))
+
     const aiResponse = data
     if (!aiResponse) {
       throw new Error("No AI response received")
     }
 
-    if (
-      !aiResponse.moltTitle ||
-      !aiResponse.moltContent ||
-      !aiResponse.moltSubmolt
-    ) {
-      throw new Error("Invalid AI response format")
+    // Try to extract from nested structure (AI might return { text: "...", ... })
+    let moltTitle = aiResponse.moltTitle
+    let moltContent = aiResponse.moltContent
+    let moltSubmolt = aiResponse.moltSubmolt
+
+    // If not found, try parsing from text field
+    if (!moltTitle || !moltContent || !moltSubmolt) {
+      console.log(
+        "⚠️ Direct fields not found, attempting to parse from text/content",
+      )
+
+      const textContent =
+        aiResponse.text || aiResponse.content || aiResponse.message || ""
+
+      if (textContent) {
+        try {
+          // Try to extract JSON from markdown code blocks
+          let cleanedText = textContent.trim()
+          if (cleanedText.startsWith("```json")) {
+            cleanedText = cleanedText
+              .replace(/^```json\s*/, "")
+              .replace(/```\s*$/, "")
+          } else if (cleanedText.startsWith("```")) {
+            cleanedText = cleanedText
+              .replace(/^```\s*/, "")
+              .replace(/```\s*$/, "")
+          }
+
+          const parsed = JSON.parse(cleanedText)
+          moltTitle = parsed.moltTitle || parsed.title
+          moltContent = parsed.moltContent || parsed.content
+          moltSubmolt = parsed.moltSubmolt || parsed.submolt
+
+          console.log("✅ Successfully parsed from text field")
+        } catch (parseError) {
+          console.error("❌ Failed to parse JSON from text field:", parseError)
+        }
+      }
+    }
+
+    if (!moltTitle || !moltContent || !moltSubmolt) {
+      console.error("❌ Invalid AI response format:", {
+        hasMoltTitle: !!moltTitle,
+        hasMoltContent: !!moltContent,
+        hasMoltSubmolt: !!moltSubmolt,
+        responseKeys: Object.keys(aiResponse),
+        sampleResponse: JSON.stringify(aiResponse).substring(0, 500),
+      })
+      throw new Error("Invalid AI response format - missing required fields")
     }
 
     return {
-      title: aiResponse.moltTitle,
-      content: aiResponse.moltContent,
-      submolt: aiResponse.moltSubmolt,
+      title: moltTitle,
+      content: moltContent,
+      submolt: moltSubmolt,
       molt,
       messageId: message.id,
     }

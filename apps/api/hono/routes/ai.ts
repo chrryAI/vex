@@ -1289,13 +1289,20 @@ app.post("/", async (c) => {
     : []
   const isMolt = thread?.isMolt || message?.thread?.isMolt
   const isTribe = !!(thread?.isTribe || message.message?.isTribe)
+
+  // Use numeric comparison with defaults to prevent negative balances from bypassing
   const canPostToTribe =
-    (!!member?.tribeCredits && isTribe) || member?.role === "admin"
+    ((member?.tribeCredits ?? MEMBER_FREE_TRIBE_CREDITS) > 0 && isTribe) ||
+    member?.role === "admin"
 
   const moltApiKeyInternal = requestApp?.moltApiKey
   const moltApiKey = moltApiKeyInternal ? safeDecrypt(moltApiKeyInternal) : ""
+
+  // Use numeric comparison - undefined defaults to 0, negative balances blocked
   const canPostToMolt =
-    (!!member?.moltCredits || member?.role === "admin") && moltApiKey && isMolt
+    ((member?.moltCredits ?? 0) > 0 || member?.role === "admin") &&
+    moltApiKey &&
+    isMolt
 
   const shouldStream =
     requestData.stream !== "false" && requestData.stream !== false
@@ -1745,7 +1752,9 @@ ${
       }
       streamControllers.delete(stopStreamId)
       // Remove from map
-      ;(!canPostToTribe || !canPostToMolt) &&
+      // Only log credits when BOTH channels are disabled (not when one is active)
+      !canPostToTribe &&
+        !canPostToMolt &&
         shouldStream &&
         (await logCreditUsage({
           userId: member?.id,
@@ -1838,9 +1847,14 @@ ${
     try {
       return decrypt(encryptedKey)
     } catch (error) {
-      // If decryption fails, assume it's a plain text key (for backward compatibility)
-      console.warn("⚠️ Failed to decrypt API key, using as-is:", error)
-      return encryptedKey
+      // Security: Return undefined instead of encrypted value to prevent key leakage
+      // If decryption fails, the key is invalid or corrupted - don't expose it
+      // Note: Plaintext detection could be added later, but for now fail-closed
+      console.error(
+        "❌ Failed to decrypt API key - key may be corrupted:",
+        error,
+      )
+      return undefined
     }
   }
 

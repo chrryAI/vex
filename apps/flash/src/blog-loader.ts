@@ -87,12 +87,18 @@ export async function getBlogPost(
   slug: string,
 ): Promise<BlogPostWithContent | null> {
   // Return cached result in production
-  if (process.env.NODE_ENV === "production" && cachedPostContent.has(slug)) {
-    return cachedPostContent.get(slug)!
+  // Sanitize slug early to prevent path traversal
+  const safeSlug = sanitizeSlug(slug)
+
+  if (
+    process.env.NODE_ENV === "production" &&
+    cachedPostContent.has(safeSlug)
+  ) {
+    return cachedPostContent.get(safeSlug)!
   }
 
   try {
-    const filePath = path.join(BLOG_DIR, `${slug}.md`)
+    const filePath = path.join(BLOG_DIR, `${safeSlug}.md`)
 
     try {
       await fs.access(filePath)
@@ -104,7 +110,7 @@ export async function getBlogPost(
     const { data, content } = matter(fileContent)
 
     const post: BlogPostWithContent = {
-      slug: sanitizeSlug(slug),
+      slug: safeSlug,
       title: data.title || "Untitled",
       excerpt: data.excerpt || "No excerpt available",
       date: data.date || new Date().toISOString().split("T")[0],
@@ -117,7 +123,7 @@ export async function getBlogPost(
 
     // Cache result in production
     if (process.env.NODE_ENV === "production") {
-      cachedPostContent.set(slug, post)
+      cachedPostContent.set(safeSlug, post)
     }
 
     return post
