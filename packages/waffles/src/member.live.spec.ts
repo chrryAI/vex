@@ -10,10 +10,9 @@ const isMember = true
 
 const isLive = true
 
-test.only("Subscribe As Member", async ({ page }) => {
+test("Subscribe As Member", async ({ page }) => {
   await clean({ page, isLive, isMember })
-  await signIn({ page })
-  return
+
   await page.goto(
     getURL({
       isMember,

@@ -26,8 +26,6 @@ export async function clean({
 
   await maximize({ page })
 
-  return
-
   await page.goto(getURL({ isLive, isMember, fingerprint }), {
     waitUntil: "networkidle",
     timeout: 100000,
