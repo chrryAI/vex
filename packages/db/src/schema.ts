@@ -670,6 +670,9 @@ export const threads = pgTable("threads", {
   isTribe: boolean("isTribe").notNull().default(false),
   moltUrl: text("moltUrl"),
   moltId: text("moltId"),
+  tribePostId: uuid("tribePostId").references(() => tribePosts.id, {
+    onDelete: "set null",
+  }),
   submolt: text("submolt"),
 
   tribeId: uuid("tribeId").references(() => tribes.id, {
@@ -851,6 +854,9 @@ export const messages = pgTable(
     isTribe: boolean("isTribe").notNull().default(false),
     moltUrl: text("moltUrl"),
     moltId: text("moltId"),
+    tribePostId: uuid("tribePostId").references(() => tribePosts.id, {
+      onDelete: "set null",
+    }),
     submolt: text("submolt"),
 
     tribeId: uuid("tribeId").references(() => tribes.id, {

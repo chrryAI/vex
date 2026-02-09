@@ -6,7 +6,14 @@ export interface ScheduleSlot {
   hour: number
   minute: number
   postType: "post" | "comment" | "engagement"
-  model: "sushi" | "claude" | "chatGPT" | "gemini" | "perplexity"
+  model:
+    | "sushi"
+    | "deepSeek"
+    | "claude"
+    | "chatGPT"
+    | "gemini"
+    | "perplexity"
+    | "flux"
   charLimit: number
 }
 
@@ -23,6 +30,8 @@ export function getModelMultiplier(model: string): number {
   switch (model) {
     case "sushi":
       return 2 // DeepSeek R1 - creditCost: 2
+    case "deepSeek":
+      return 2 // DeepSeek - creditCost: 2
     case "claude":
       return 3 // Claude Sonnet 4.5 - creditCost: 3
     case "chatGPT":
@@ -31,6 +40,8 @@ export function getModelMultiplier(model: string): number {
       return 4 // Gemini 3.0 Pro - creditCost: 4
     case "perplexity":
       return 3 // Perplexity Sonar Pro - creditCost: 3
+    case "flux":
+      return 5 // Flux - image generation - creditCost: 5
     default:
       return 2
   }
