@@ -205,10 +205,17 @@ function Message({
     // Parse Tribe/Moltbook JSON responses
     if (message.thread?.isTribe || message.thread?.isMolt) {
       try {
-        // Try to parse JSON from the content
-        const jsonMatch = messageContent.match(/\{[\s\S]*\}/)
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0])
+        // Try to parse JSON from the content (safe extraction to prevent ReDoS)
+        const firstBrace = messageContent.indexOf("{")
+        const lastBrace = messageContent.lastIndexOf("}")
+
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          const jsonString = messageContent.substring(firstBrace, lastBrace + 1)
+          // Limit size to prevent DoS (max 50KB)
+          if (jsonString.length > 50000) {
+            throw new Error("JSON too large")
+          }
+          const parsed = JSON.parse(jsonString)
 
           // Format Tribe post
           if (parsed.tribeTitle && parsed.tribeContent) {
