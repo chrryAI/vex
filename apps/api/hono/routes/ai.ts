@@ -1289,6 +1289,9 @@ app.post("/", async (c) => {
       )
     : undefined
 
+  // let swarm = []
+  // const speaker = []
+
   const appExtends = requestApp
     ? requestApp?.store?.apps.filter((a) => a.id !== requestApp?.id) || []
     : []
