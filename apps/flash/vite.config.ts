@@ -128,6 +128,17 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
                   if (id.includes("@lobehub")) {
                     return "ui-vendor"
                   }
+                  if (
+                    id.includes("react-markdown") ||
+                    id.includes("remark") ||
+                    id.includes("micromark") ||
+                    id.includes("unist") ||
+                    id.includes("mdast") ||
+                    id.includes("vfile") ||
+                    id.includes("hast")
+                  ) {
+                    return "markdown-vendor"
+                  }
                   return "vendor"
                 }
               },

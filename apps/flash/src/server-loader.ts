@@ -7,9 +7,11 @@ import {
   isE2E,
   getEnv,
   API_INTERNAL_URL,
+} from "@chrryai/chrry/utils"
+import {
   getAppAndStoreSlugs,
   excludedSlugRoutes,
-} from "@chrryai/chrry/utils"
+} from "@chrryai/chrry/utils/url"
 import {
   getApp,
   getSession,
@@ -94,6 +96,9 @@ export interface ServerData {
     has: (key: string) => boolean
     toString: () => string
   } // URL search params with URLSearchParams-compatible API
+  // Agent profile data
+  agentProfile?: any
+  isAgentRoute: boolean
 }
 
 /**
@@ -373,6 +378,7 @@ export async function loadServerData(
   // Agent profile route
   let agentProfile: any | undefined
   let isAgentRoute = false
+  let agentTribePosts: paginatedTribePosts | undefined
 
   // Check if this is a tribe route OR if app slug is 'chrry'
   const isChrryApp = app?.slug === "chrry"
@@ -394,11 +400,17 @@ export async function loadServerData(
       locales,
     })
 
-    // If we found both slugs and they're not defaults, try to load agent profile
-    if (storeSlug && appSlug && storeSlug !== "" && appSlug !== "") {
-      isAgentRoute = true
-
+    // If we found both slugs and they're not defaults, and not already a tribe/blog route, try to load agent profile
+    if (
+      storeSlug &&
+      appSlug &&
+      storeSlug !== "" &&
+      appSlug !== "" &&
+      !isTribeRoute &&
+      !isBlogRoute
+    ) {
       try {
+        // Fetch agent profile
         const agentResponse = await fetch(
           `${API_URL}/apps/${encodeURIComponent(storeSlug)}/${encodeURIComponent(appSlug)}`,
           {
@@ -409,9 +421,12 @@ export async function loadServerData(
         if (agentResponse.ok) {
           agentProfile = await agentResponse.json()
 
-          // Load tribe posts by this agent
+          // Only set isAgentRoute if we have a valid agent profile
           if (agentProfile?.id) {
-            tribePosts = await getTribePosts({
+            isAgentRoute = true
+
+            // Load tribe posts by this agent
+            agentTribePosts = await getTribePosts({
               appId: agentProfile.id,
               pageSize: 20,
               page: 1,
@@ -422,6 +437,7 @@ export async function loadServerData(
         }
       } catch (error) {
         console.error("❌ Agent profile loading error:", error)
+        // isAgentRoute remains false on error
       }
     }
 
@@ -446,7 +462,7 @@ export async function loadServerData(
         API_URL,
       })
 
-      // Load posts for this tribe
+      // Load posts for this tribe (don't overwrite agentTribePosts)
       if (tribesResult?.tribes?.[0]) {
         tribePosts = await getTribePosts({
           tribeId: tribesResult.tribes[0].id,
@@ -465,13 +481,18 @@ export async function loadServerData(
         API_URL,
       })
 
-      // Load recent posts from all tribes
+      // Load recent posts from all tribes (don't overwrite agentTribePosts)
       tribePosts = await getTribePosts({
         pageSize: 10,
         page: 1,
         token: apiKey,
         API_URL,
       })
+    }
+
+    // If we have agent posts but no tribe posts, use agent posts
+    if (agentTribePosts && !tribePosts) {
+      tribePosts = agentTribePosts
     }
   } catch (error) {
     console.error("❌ Tribe/Agent data loading error:", error)

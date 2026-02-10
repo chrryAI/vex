@@ -10,6 +10,7 @@ import {
 import { generateText } from "ai"
 import { getModelProvider } from "../../lib/getModelProvider"
 import captureException from "../captureException"
+import crypto from "crypto"
 
 interface BiddingContext {
   campaign: appCampaign
@@ -124,11 +125,13 @@ export async function runautonomousBidding({
         confidence: slot.confidence,
         reason: slot.bidReason,
         predictedROI: slot.predictedROI,
-        predictedTraffic: slot.averageTraffic,
+        predictedTraffic: slot.averageTraffic ?? 0,
       })
 
-      bids.push(bid)
-      totalCreditsAllocated += slot.recommendedBid
+      if (bid) {
+        bids.push(bid)
+        totalCreditsAllocated += slot.recommendedBid
+      }
     }
 
     // 6. UPDATE CAMPAIGN
@@ -324,7 +327,42 @@ Return ONLY JSON:
         prompt: scoringPrompt,
       })
 
-      const parsed = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0] || "{}")
+      // Safe JSON extraction: first try parsing the entire stripped text, then fall back to brace-counting
+      let parsed: any
+      try {
+        // Strip markdown code fences if present
+        const strippedText = text
+          .replace(/^```(?:json)?\n?/gm, "")
+          .replace(/\n?```$/gm, "")
+          .trim()
+
+        // Try parsing the entire stripped text first
+        try {
+          parsed = JSON.parse(strippedText)
+        } catch {
+          // Fallback: extract JSON using brace-counting (handles cases where AI adds text before/after JSON)
+          let jsonText = "{}"
+          const firstBrace = text.indexOf("{")
+          if (firstBrace !== -1) {
+            let braceCount = 0
+            let endIndex = firstBrace
+            for (let i = firstBrace; i < text.length; i++) {
+              if (text[i] === "{") braceCount++
+              if (text[i] === "}") braceCount--
+              if (braceCount === 0) {
+                endIndex = i + 1
+                break
+              }
+            }
+            jsonText = text.substring(firstBrace, endIndex)
+          }
+          parsed = JSON.parse(jsonText)
+        }
+      } catch (e) {
+        console.warn("Failed to parse JSON from AI response:", e)
+        // Use default values if parsing fails completely
+        parsed = {}
+      }
 
       scoredSlots.push({
         ...slot,
@@ -367,9 +405,9 @@ function calculateHeuristicScore(
   let score = 50 // Base score
 
   // Traffic bonus
-  if (slot.averageTraffic > 1000) score += 20
-  else if (slot.averageTraffic > 500) score += 10
-  else if (slot.averageTraffic < 100) score -= 10
+  if (slot.averageTraffic && slot.averageTraffic > 1000) score += 20
+  else if (slot.averageTraffic && slot.averageTraffic > 500) score += 10
+  else if (slot.averageTraffic && slot.averageTraffic < 100) score -= 10
 
   // Price penalty
   if (
@@ -462,9 +500,9 @@ function selectOptimalSlots({
       }
     }
 
-    // Prime time preference check
+    // Prime time preference check (using crypto for secure randomness)
     if (slot.isPrimeTime) {
-      const primeTimeRoll = Math.random()
+      const primeTimeRoll = crypto.randomInt(0, 100) / 100 // 0.00 to 0.99
       if (primeTimeRoll > strategy.primeTimePreference) {
         continue // Skip prime time based on strategy
       }
@@ -504,7 +542,7 @@ async function placeBid({
   reason: string
   predictedROI: number
   predictedTraffic: number
-}): Promise<autonomousBid> {
+}): Promise<autonomousBid | undefined> {
   const [bid] = await db
     .insert(autonomousBids)
     .values({

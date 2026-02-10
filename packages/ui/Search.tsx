@@ -8,7 +8,7 @@ import { useSearchParams, usePathname } from "./hooks/useWindowHistory"
 import { useNavigationContext } from "./context/providers"
 import { useSearchStyles } from "./Search.styles"
 import Loading from "./Loading"
-import { Div, Input } from "./platform"
+import { Div, Input, usePlatform } from "./platform"
 
 export default function Search({
   className,
@@ -35,6 +35,7 @@ export default function Search({
   const { addParams } = useNavigationContext()
   const searchParams = useSearchParams()
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const { isWeb, isDesktop } = usePlatform()
 
   const pathname = usePathname()
 
@@ -44,6 +45,24 @@ export default function Search({
 
   const isFocus =
     props.isFocus ?? searchParams?.get("focus")?.toString() === "search"
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd+K or Ctrl+K or /
+      if (
+        ((e.metaKey || e.ctrlKey) && e.key === "k") ||
+        (e.key === "/" && document.activeElement?.tagName !== "INPUT")
+      ) {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      }
+    }
+
+    if (isWeb && typeof window !== "undefined") {
+      window.addEventListener("keydown", handleKeyDown)
+      return () => window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [isWeb])
 
   useEffect(() => {
     if (isFocus) {
@@ -71,6 +90,7 @@ export default function Search({
       <Input
         style={{ ...styles.search.style, borderColor: style?.borderColor }}
         data-testid={dataTestId}
+        aria-label={placeholder || "Search"}
         type="search"
         placeholder={placeholder || "Search"}
         name="search"
@@ -81,6 +101,28 @@ export default function Search({
         }}
         value={term}
       />
+      {isDesktop && (
+        <span
+          style={{
+            position: "absolute",
+            right: 12,
+            top: "50%",
+            transform: "translateY(-50%)",
+            border: "1px solid var(--shade-3)",
+            borderRadius: 4,
+            padding: "2px 6px",
+            fontSize: 12,
+            color: "var(--shade-5)",
+            background: "var(--shade-1)",
+            pointerEvents: "none",
+            userSelect: "none",
+            lineHeight: 1,
+            fontFamily: "var(--font-mono)",
+          }}
+        >
+          ⌘K
+        </span>
+      )}
     </Div>
   )
 }
