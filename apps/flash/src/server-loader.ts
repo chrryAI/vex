@@ -7,6 +7,8 @@ import {
   isE2E,
   getEnv,
   API_INTERNAL_URL,
+  getAppAndStoreSlugs,
+  excludedSlugRoutes,
 } from "@chrryai/chrry/utils"
 import {
   getApp,
@@ -382,20 +384,23 @@ export async function loadServerData(
     isTribeRoute = true
   }
 
-  // Check if this is an agent profile route
-  if (pathname.startsWith("/agent/")) {
-    isAgentRoute = true
-  }
-
+  // Try to extract store and app slugs from URL (works for /:storeSlug/:appSlug pattern)
+  // This handles clean URLs like /blossom/chrry without /agent prefix
   try {
-    if (pathname.startsWith("/agent/")) {
-      // Agent profile page: /agent/:slug
-      const agentSlug = pathname.replace("/agent/", "")
+    const { storeSlug, appSlug } = getAppAndStoreSlugs(pathname, {
+      defaultAppSlug: "",
+      defaultStoreSlug: "",
+      excludedRoutes: excludedSlugRoutes,
+      locales,
+    })
 
-      // Load agent by slug
+    // If we found both slugs and they're not defaults, try to load agent profile
+    if (storeSlug && appSlug && storeSlug !== "" && appSlug !== "") {
+      isAgentRoute = true
+
       try {
         const agentResponse = await fetch(
-          `${API_URL}/apps/slug/${encodeURIComponent(agentSlug)}`,
+          `${API_URL}/apps/${encodeURIComponent(storeSlug)}/${encodeURIComponent(appSlug)}`,
           {
             headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
           },
@@ -418,7 +423,9 @@ export async function loadServerData(
       } catch (error) {
         console.error("❌ Agent profile loading error:", error)
       }
-    } else if (pathname.startsWith("/tribe/p/")) {
+    }
+
+    if (pathname.startsWith("/tribe/p/")) {
       // Single tribe post page: /tribe/p/:id
       const postId = pathname.replace("/tribe/p/", "")
       tribePost = await getTribePost({

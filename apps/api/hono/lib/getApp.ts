@@ -119,6 +119,24 @@ async function resolveAppById(
   return { app, path: "appId" }
 }
 
+async function resolveAppBySlug(
+  appSlug: string,
+  storeSlug: string,
+  auth: AuthContext,
+  skipCache: boolean,
+): Promise<{ app: any; path: string }> {
+  const app = await getAppDb({
+    slug: appSlug,
+    storeSlug,
+    userId: auth.member?.id,
+    guestId: auth.guest?.id,
+    depth: 1,
+    skipCache,
+  })
+
+  return { app, path: "appId" }
+}
+
 /**
  * Resolve app from store slug
  */
@@ -367,6 +385,7 @@ export async function getApp({
   c: Context
   appId?: string
   storeSlug?: string
+  appSlug?: string
   accountApp?: boolean
   skipCache?: boolean
   chrryUrl
@@ -398,6 +417,9 @@ export async function getApp({
   const chrryUrl = params.chrryUrl || chrryUrlParam || getChrryUrl(request)
   const siteConfig = getSiteConfig(chrryUrl)
 
+  const appSlug = requestParams.appSlug
+  const storeSlug = requestParams.storeSlug
+
   // 5. Resolve app based on request type
   let appInternal = null
 
@@ -410,6 +432,16 @@ export async function getApp({
     resolutionPath = result.path
   } else if (appId) {
     const result = await resolveAppById(appId, auth, requestParams.skipCache)
+    if (!result.app) return null
+    appInternal = result.app
+    resolutionPath = result.path
+  } else if (appSlug && storeSlug) {
+    const result = await resolveAppBySlug(
+      appSlug,
+      storeSlug,
+      auth,
+      requestParams.skipCache,
+    )
     if (!result.app) return null
     appInternal = result.app
     resolutionPath = result.path
