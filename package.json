@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.13.86",
+  "version": "1.13.88",
   "type": "module",
   "scripts": {
     "build": "turbo build",
