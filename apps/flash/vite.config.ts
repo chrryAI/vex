@@ -119,15 +119,6 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
             : (id) => {
                 // Vendor chunks
                 if (id.includes("node_modules")) {
-                  if (id.includes("react") || id.includes("react-dom")) {
-                    return "react-vendor"
-                  }
-                  if (id.includes("framer-motion")) {
-                    return "animation-vendor"
-                  }
-                  if (id.includes("@lobehub")) {
-                    return "ui-vendor"
-                  }
                   if (
                     id.includes("react-markdown") ||
                     id.includes("remark") ||
@@ -139,6 +130,16 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
                   ) {
                     return "markdown-vendor"
                   }
+                  if (id.includes("react") || id.includes("react-dom")) {
+                    return "react-vendor"
+                  }
+                  if (id.includes("framer-motion")) {
+                    return "animation-vendor"
+                  }
+                  if (id.includes("@lobehub")) {
+                    return "ui-vendor"
+                  }
+
                   return "vendor"
                 }
               },
