@@ -57,3 +57,22 @@
 3.  **Verify State:** In the callback, use `getCookie` to retrieve and compare the stored state. Reject mismatch.
 4.  **Clear State:** Delete the cookie after verification.
 5.  **Safe Failure Redirect:** Redirect to a known safe URL upon verification failure.
+
+## 2026-05-24 - SSRF via HTTP Redirect
+
+**Vulnerability:** The image proxy endpoint (`/resize`) used standard `fetch` which follows redirects by default. This allowed an attacker to bypass the initial `getSafeUrl` IP check by providing a URL that resolves to a public IP but redirects to a private IP (e.g., `http://attacker.com` -> `302` -> `http://127.0.0.1/admin`).
+
+**Learning:**
+
+- Standard `fetch` (and many HTTP clients) follows redirects automatically.
+- Validating only the initial URL is insufficient for SSRF protection.
+- DNS Rebinding attacks are also possible if the time between check and fetch is significant (though HTTPS usually mitigates this if cert validation is on).
+- `redirect: 'manual'` is essential when fetching untrusted URLs.
+
+**Prevention:**
+
+- Implemented a manual redirect loop (max 5 redirects).
+- Used `redirect: 'manual'` in `fetch`.
+- Extracted the `Location` header from 3xx responses.
+- Resolved relative redirect URLs against the current URL.
+- Validated *every* URL (initial and redirects) using `getSafeUrl` before fetching.
