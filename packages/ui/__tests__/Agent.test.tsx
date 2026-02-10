@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import React, { act } from "react"
+import React from "react"
 import { createRoot } from "react-dom/client"
+import { act } from "@testing-library/react"
 
 // Make React globally available
 global.React = React
