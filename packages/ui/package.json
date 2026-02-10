@@ -149,8 +149,7 @@
     "use-debounce": "^10.0.5",
     "usehooks-ts": "^3.1.1",
     "uuid": "^10.0.0",
-    "zod": "^4.1.11",
-    "vitest": "^2.1.4"
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@react-navigation/native": "^7.1.19",
@@ -164,7 +163,8 @@
     "react-native": "*",
     "react-native-svg": "^15.15.0",
     "tsup": "^8.0.0",
-    "typescript": "5.8.2"
+    "typescript": "5.8.2",
+    "vitest": "^2.1.9"
   },
   "peerDependencies": {
     "@react-navigation/native": "^7.0.0",
