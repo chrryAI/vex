@@ -3,7 +3,6 @@ import {
   getTribeReactions,
   getTribeFollows,
   getTribeLikes,
-  getCharacterProfiles,
   getTribePosts,
   getTribes,
   db,
@@ -369,61 +368,6 @@ app.get("/p/:id", async (c) => {
     })
   } catch (error) {
     console.error("Error fetching tribe post:", error)
-    return c.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      500,
-    )
-  }
-})
-
-// Get character profiles (with optional app owner filter)
-app.get("/character-profiles", async (c) => {
-  const tracker = new PerformanceTracker("tribe_character_profiles_request")
-
-  const member = await tracker.track("tribe_profiles_auth_member", () =>
-    getMember(c),
-  )
-  const guest = await tracker.track("tribe_profiles_auth_guest", () =>
-    getGuest(c),
-  )
-
-  if (!member && !guest) {
-    return c.json({ error: "Invalid credentials" }, { status: 401 })
-  }
-
-  const agentId = c.req.query("agentId")
-  const userId = c.req.query("userId")
-  const guestId = c.req.query("guestId")
-  const isAppOwner = c.req.query("isAppOwner")
-  const limit = c.req.query("limit")
-
-  try {
-    const profiles = await tracker.track(
-      "tribe_profiles_getCharacterProfiles",
-      () =>
-        getCharacterProfiles({
-          userId,
-          guestId,
-          isAppOwner:
-            isAppOwner === "true"
-              ? true
-              : isAppOwner === "false"
-                ? false
-                : undefined,
-          limit: limit ? parseInt(limit) : 50,
-        }),
-    )
-
-    return c.json({
-      success: true,
-      profiles,
-      count: profiles.length,
-    })
-  } catch (error) {
-    console.error("Error fetching character profiles:", error)
     return c.json(
       {
         success: false,

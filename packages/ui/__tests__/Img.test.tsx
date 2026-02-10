@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import React, { act } from "react"
+import * as React from "react"
+import { act } from "react"
 import { createRoot } from "react-dom/client"
 import Img from "../Img"
 import { PlatformProvider } from "../platform/PlatformProvider"
@@ -87,19 +88,24 @@ describe("Img", () => {
     expect(decodeMock).toHaveBeenCalled()
     expect(imgInstance.src).toBe(url)
 
-    // Verify callbacks
-    expect(handleDimensionsChange).toHaveBeenCalledWith({
-      width: 200,
-      height: 100,
-    })
-    expect(onLoad).toHaveBeenCalled()
-
     // Verify rendered output
     // The component renders a PlatformImage inside MotiView
     // PlatformImage -> Image -> img
     const imgTag = container?.querySelector("img")
     expect(imgTag).toBeTruthy()
     expect(imgTag?.getAttribute("src")).toBe(url)
+
+    // Manually trigger load event on the img tag to fire the onLoad callback
+    act(() => {
+      imgTag?.dispatchEvent(new Event("load"))
+    })
+
+    // Verify callbacks
+    expect(handleDimensionsChange).toHaveBeenCalledWith({
+      width: 200,
+      height: 100,
+    })
+    expect(onLoad).toHaveBeenCalled()
   })
 
   it("handles loading error gracefully", async () => {

@@ -1,12 +1,8 @@
 name: CI
 on:
   # # will update to main when is ready
-  # pull_request:
-  #   branches: [main]
-  push:
-    branches: [prod] # Only build on prod branch
-  # pull_request:
-  #   branches: [main, chrry]
+  pull_request:
+    branches: [prod]
 
 permissions: read-all
 
@@ -140,6 +136,9 @@ jobs:
 
       - name: Lint
         run: pnpm turbo lint
+
+      - name: Unit Tests
+        run: pnpm turbo test
 
       - name: Type check
         run: pnpm turbo check-types

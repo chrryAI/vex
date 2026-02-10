@@ -2445,6 +2445,8 @@ export const getThread = async ({
         }),
         characterProfile: await getCharacterProfile({
           threadId: result.threads.id,
+          userId: result.threads.userId || undefined,
+          guestId: result.threads.guestId || undefined,
         }),
         summary: await getThreadSummary({
           threadId: result.threads.id,
@@ -2468,15 +2470,40 @@ export const getThread = async ({
 }
 
 export const getCharacterProfile = async ({
+  agentId,
+  userId,
+  guestId,
+  isAppOwner,
+  pinned,
+  visibility,
   threadId,
+  appId,
 }: {
-  threadId: string
+  agentId?: string
+  appId?: string
+  userId?: string
+  guestId?: string
+  isAppOwner?: boolean
+  pinned?: boolean
+  threadId?: string
+  visibility?: "public" | "private"
 }) => {
   const [result] = await db
     .select()
     .from(characterProfiles)
-    .where(eq(characterProfiles.threadId, threadId))
-
+    .where(
+      and(
+        agentId ? eq(characterProfiles.agentId, agentId) : undefined,
+        userId ? eq(characterProfiles.userId, userId) : undefined,
+        guestId ? eq(characterProfiles.guestId, guestId) : undefined,
+        isAppOwner ? eq(characterProfiles.isAppOwner, isAppOwner) : undefined,
+        pinned ? eq(characterProfiles.pinned, pinned) : undefined,
+        visibility ? eq(characterProfiles.visibility, visibility) : undefined,
+        appId ? eq(characterProfiles.appId, appId) : undefined,
+        threadId ? eq(characterProfiles.threadId, threadId) : undefined,
+      ),
+    )
+    .limit(1)
   return result
 }
 
