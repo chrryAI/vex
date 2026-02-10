@@ -69,7 +69,7 @@
     "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit",
     "prepublishOnly": "npm run build",
-    "test": "vitest run"
+    "test": "pnpm exec vitest run"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
