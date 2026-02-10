@@ -2,14 +2,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import React from "react"
 import { createRoot } from "react-dom/client"
-
-// Import act with fallback
-let act: any
-try {
-  act = require("react").act || ((callback: any) => callback())
-} catch {
-  act = (callback: any) => callback()
-}
+import { act } from "react-dom/test-utils"
 
 // Make React globally available
 global.React = React
