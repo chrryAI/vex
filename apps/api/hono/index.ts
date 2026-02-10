@@ -1,5 +1,6 @@
 import { Hono } from "hono"
 import { compress } from "@hono/bun-compress"
+import { serveStatic } from "@hono/node-server/serve-static"
 import { headersMiddleware } from "./middleware/headers"
 import { corsMiddleware } from "./middleware/cors"
 import { securityHeadersMiddleware } from "./middleware/securityHeaders"
@@ -186,6 +187,17 @@ api.route("/campaigns", adCampaigns)
 
 // Mount API routes under /api
 app.route("/api", api)
+
+// Serve static files from public directory
+app.use(
+  "/*",
+  serveStatic({
+    root: "./public",
+    onNotFound: (path, c) => {
+      // Continue to next handler if file not found
+    },
+  }),
+)
 
 // Root-level routes
 app.route("/", landing) // Landing page at root

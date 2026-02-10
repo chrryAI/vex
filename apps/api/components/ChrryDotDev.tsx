@@ -96,7 +96,7 @@ export default function Chrry() {
               <a href={"https://vex.chrry.ai"}>
                 <img
                   alt="Vex"
-                  src="https://vex.chrry.ai/icons/icon-128-v.png"
+                  src="/icons/vex-icon.png"
                   width={24}
                   height={24}
                 />
@@ -109,7 +109,7 @@ export default function Chrry() {
           <div className="logo">
             <img
               alt="Chrry"
-              src="https://vex.chrry.ai/logo/cherry-500.png"
+              src="/logo/cherry-500.png"
               width={250}
               height={250}
             />
