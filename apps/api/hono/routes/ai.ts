@@ -1609,7 +1609,7 @@ ${
 
     // Get thread data
     const messagesData = thread
-      ? await getMessages({ threadId: thread.id, pageSize: 10 })
+      ? await getMessages({ threadId: thread.id, pageSize: 6 })
       : { messages: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
     const messages = messagesData.messages || []
