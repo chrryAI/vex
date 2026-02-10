@@ -161,10 +161,10 @@
     "eslint": "^9.34.0",
     "happy-dom": "^20.4.0",
     "react-native": "*",
-    "vitest": "^2.1.4",
     "react-native-svg": "^15.15.0",
     "tsup": "^8.0.0",
-    "typescript": "5.8.2"
+    "typescript": "5.8.2",
+    "vitest": "^2.1.4"
   },
   "peerDependencies": {
     "@react-navigation/native": "^7.0.0",
