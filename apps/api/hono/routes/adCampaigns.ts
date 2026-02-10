@@ -1,5 +1,6 @@
 import { Hono } from "hono"
-import { db, eq, and, desc, gte, lte } from "@repo/db"
+import { z } from "zod"
+import { db, eq, and, desc, gte, lte, sql } from "@repo/db"
 import {
   appCampaigns,
   autonomousBids,
@@ -14,6 +15,8 @@ import {
   processAuctionResults,
 } from "../../lib/adExchange/campaignLearning"
 import captureException from "../../lib/captureException"
+import { isDevelopment } from "@chrryai/chrry/utils"
+import { users, guests } from "@repo/db/src/schema"
 
 export const adCampaignsRoute = new Hono()
 
@@ -116,59 +119,66 @@ adCampaignsRoute.post("/", async (c) => {
       return c.json({ error: "Unauthorized" }, 401)
     }
 
-    const body = await c.req.json()
-
-    const {
-      appId,
-      name,
-      totalCredits,
-      optimizationGoal = "balanced",
-      biddingStrategy = "smart",
-      targetStores,
-      targetCategories,
-      excludeStores,
-      minTraffic = 100,
-      maxPricePerSlot,
-      preferredDays,
-      preferredHours,
-      avoidPrimeTime = false,
-      dailyBudget,
-    } = body
-
-    if (!appId || !name || !totalCredits) {
+    const createCampaignSchema = z.object({
+      appId: z.string().uuid(),
+      name: z.string().min(1).max(100),
+      totalCredits: z.number().int().positive(),
+      optimizationGoal: z
+        .enum(["balanced", "traffic", "ctr", "cvr"])
+        .optional()
+        .default("balanced"),
+      biddingStrategy: z.enum(["smart", "manual"]).optional().default("smart"),
+      targetStores: z.array(z.string()).optional(),
+      targetCategories: z.array(z.string()).optional(),
+      excludeStores: z.array(z.string()).optional(),
+      minTraffic: z.number().int().nonnegative().optional().default(100),
+      maxPricePerSlot: z.number().nonnegative().optional(),
+      preferredDays: z.array(z.number().int().min(0).max(6)).optional(),
+      preferredHours: z.array(z.number().int().min(0).max(23)).optional(),
+      avoidPrimeTime: z.boolean().optional().default(false),
+      dailyBudget: z.number().nonnegative().optional(),
+      metadata: z.record(z.any()).optional(),
+    })
+    const parsed = createCampaignSchema.safeParse(await c.req.json())
+    if (!parsed.success) {
       return c.json(
-        { error: "Missing required fields: appId, name, totalCredits" },
+        { error: "Invalid payload", details: parsed.error.issues },
         400,
       )
     }
+    const body = parsed.data
 
     // Create campaign
     const [campaign] = await db
       .insert(appCampaigns)
       .values({
-        appId,
+        appId: body.appId,
         userId: member?.id,
         guestId: guest?.id,
-        name,
-        totalCredits,
-        creditsRemaining: totalCredits,
-        optimizationGoal,
-        biddingStrategy,
-        targetStores,
-        targetCategories,
-        excludeStores,
-        minTraffic,
-        maxPricePerSlot,
-        preferredDays,
-        preferredHours,
-        avoidPrimeTime,
-        dailyBudget,
+        name: body.name,
+        totalCredits: body.totalCredits,
+        creditsRemaining: body.totalCredits,
+        optimizationGoal: body.optimizationGoal,
+        biddingStrategy: body.biddingStrategy,
+        targetStores: body.targetStores,
+        targetCategories: body.targetCategories,
+        excludeStores: body.excludeStores,
+        minTraffic: body.minTraffic,
+        maxPricePerSlot: body.maxPricePerSlot,
+        preferredDays: body.preferredDays,
+        preferredHours: body.preferredHours,
+        avoidPrimeTime: body.avoidPrimeTime,
+        dailyBudget: body.dailyBudget,
         status: "active",
-        metadata: body.metadata || null,
+        metadata: body.metadata ?? null,
       } as NewappCampaign)
       .returning()
 
-    console.log(`✅ Created campaign ${campaign.id}: ${campaign.name}`)
+    if (isDevelopment)
+      console.debug("campaign_created", {
+        id: campaign.id,
+        name: campaign.name,
+      })
 
     // Run initial bidding
     const biddingResult = await runautonomousBidding({
@@ -212,12 +222,39 @@ adCampaignsRoute.patch("/:id", async (c) => {
       return c.json({ error: "Forbidden" }, 403)
     }
 
-    const body = await c.req.json()
+    const updateCampaignSchema = z
+      .object({
+        appId: z.string().uuid().optional(),
+        name: z.string().min(1).max(100).optional(),
+        totalCredits: z.number().int().positive().optional(),
+        optimizationGoal: z
+          .enum(["balanced", "traffic", "ctr", "cvr"])
+          .optional(),
+        biddingStrategy: z.enum(["smart", "manual"]).optional(),
+        targetStores: z.array(z.string()).optional(),
+        targetCategories: z.array(z.string()).optional(),
+        excludeStores: z.array(z.string()).optional(),
+        minTraffic: z.number().int().nonnegative().optional(),
+        maxPricePerSlot: z.number().nonnegative().optional(),
+        preferredDays: z.array(z.number().int().min(0).max(6)).optional(),
+        preferredHours: z.array(z.number().int().min(0).max(23)).optional(),
+        avoidPrimeTime: z.boolean().optional(),
+        dailyBudget: z.number().nonnegative().optional(),
+        metadata: z.record(z.any()).optional(),
+      })
+      .partial()
+    const parsed = updateCampaignSchema.safeParse(await c.req.json())
+    if (!parsed.success) {
+      return c.json(
+        { error: "Invalid payload", details: parsed.error.issues },
+        400,
+      )
+    }
 
     const [updated] = await db
       .update(appCampaigns)
       .set({
-        ...body,
+        ...parsed.data,
         updatedOn: new Date(),
       })
       .where(eq(appCampaigns.id, id))
@@ -400,6 +437,17 @@ adCampaignsRoute.post("/rentals/:id/complete", async (c) => {
 // POST /auctions/process - Process auction results (admin/cron)
 adCampaignsRoute.post("/auctions/process", async (c) => {
   try {
+    // Require admin user OR a valid cron secret bearer token
+    const member = await getMember(c)
+    const authHeader = c.req.header("authorization") || ""
+    const bearer = authHeader.replace(/^Bearer\s+/i, "")
+    const hasCronSecret =
+      !!process.env.CRON_SECRET && bearer === process.env.CRON_SECRET
+
+    if (!(member?.role === "admin" || hasCronSecret)) {
+      return c.json({ error: "Forbidden" }, 403)
+    }
+
     const body = await c.req.json()
     const { slotId, auctionDate } = body
 
@@ -460,8 +508,27 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
     // Calculate total cost
     const totalCredits = slot.creditsPerHour * slot.durationHours
 
-    // TODO: Check user has enough credits
-    // For now, assume they do
+    // Atomically check and deduct credits to avoid race conditions
+    let debitOk = false
+    if (member) {
+      const res = await db
+        .update(users)
+        .set({ credits: sql`${users.credits} - ${totalCredits}` })
+        .where(and(eq(users.id, member.id), gte(users.credits, totalCredits)))
+        .returning({ credits: users.credits })
+      debitOk = res.length > 0
+    } else if (guest) {
+      const res = await db
+        .update(guests)
+        .set({ credits: sql`${guests.credits} - ${totalCredits}` })
+        .where(and(eq(guests.id, guest.id), gte(guests.credits, totalCredits)))
+        .returning({ credits: guests.credits })
+      debitOk = res.length > 0
+    }
+
+    if (!debitOk) {
+      return c.json({ error: "Insufficient credits" }, 402)
+    }
 
     // Create rental
     const rentalStartTime = new Date(startDate)
@@ -486,11 +553,11 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
       })
       .returning()
 
-    // TODO: Deduct credits from user account
-
-    console.log(
-      `✅ Manual rental created: ${rental.id} for ${totalCredits} credits`,
-    )
+    if (isDevelopment)
+      console.debug("manual_rental_created", {
+        id: rental.id,
+        credits: totalCredits,
+      })
 
     return c.json({
       rental,

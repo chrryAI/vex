@@ -1607,9 +1607,20 @@ ${
 
     // Auto-set main thread if owner and not set
 
-    // Get thread data
+    // Get parent apps first to calculate total app count
+    const parentApps =
+      "store" in currentApp && currentApp.store?.apps
+        ? currentApp.store.apps.filter((a) => a.id !== currentApp.id)
+        : []
+
+    // Calculate dynamic message count based on total apps
+    // Min 4 messages = 2 complete exchanges (user-AI pairs)
+    const totalApps = parentApps.length + 1
+    const dynamicPageSize = Math.max(4, Math.min(6, Math.floor(18 / totalApps)))
+
+    // Get thread data with dynamic page size
     const messagesData = thread
-      ? await getMessages({ threadId: thread.id, pageSize: 10 })
+      ? await getMessages({ threadId: thread.id, pageSize: dynamicPageSize })
       : { messages: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
     const messages = messagesData.messages || []
@@ -1640,12 +1651,6 @@ ${
       artifacts: [] as any[],
       task: undefined as typeof task,
     }
-
-    // Get parent apps from store (filter out current app)
-    const parentApps =
-      "store" in currentApp && currentApp.store?.apps
-        ? currentApp.store.apps.filter((a) => a.id !== currentApp.id)
-        : []
 
     if (parentApps.length > 0) {
       // Get knowledge from all parent apps (up to 5 total in chain)
@@ -4005,7 +4010,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
 
     // Scan files for malware
     const malwareResponse = await tracker.track("malware_scan", async () => {
-      console.log("🔍 Scanning files for malware...")
+      if (isDevelopment) console.debug("Scanning files for malware...")
       for (const file of files) {
         const arrayBuffer = await file.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
@@ -4024,7 +4029,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
           )
         }
       }
-      console.log("✅ All files passed malware scan")
+      if (isDevelopment) console.debug("All files passed malware scan")
       return null
     })
 
@@ -4033,7 +4038,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     }
 
     // Convert files to base64 and prepare multimodal content
-    console.log("🔄 Converting files to base64...")
+    if (isDevelopment) console.debug("Converting files to base64...")
     const fileContents = await tracker.track("file_conversion", () =>
       Promise.all(
         files.map(async (file) => {
@@ -4042,9 +4047,13 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
           const mimeType = file.type
           const isText = mimeType.startsWith("text/") || isTextFile(file.name)
 
-          console.log(
-            `✅ Processed ${file.name} (${mimeType || "detected as text"}, ${(file.size / 1024).toFixed(1)}KB)`,
-          )
+          if (isDevelopment) {
+            console.debug("File processed", {
+              name: file.name,
+              mimeType: mimeType || "text/plain",
+              sizeKB: Number((file.size / 1024).toFixed(1)),
+            })
+          }
 
           return {
             type: mimeType.startsWith("image/")
@@ -4078,7 +4087,10 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
       files: fileContents,
     }
 
-    console.log(`📎 Prepared multimodal content: ${fileContents.length} files`)
+    if (isDevelopment)
+      console.debug("Prepared multimodal content", {
+        count: fileContents.length,
+      })
 
     // Add proactive file analysis instruction to system prompt
     const fileAnalysisInstruction = `\n\nIMPORTANT: The user has attached ${fileContents.length} file(s). You MUST proactively analyze these files in your response WITHOUT waiting for the user to explicitly ask. Provide a detailed, comprehensive analysis of the file content, including:
@@ -4213,7 +4225,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               height: uploadResult.height,
             })
             // Extract key frames from video for AI analysis
-            console.log(`🎥 Processing video: ${file.filename}`)
+            if (isDevelopment)
+              console.debug("Processing video", { filename: file.filename })
             try {
               const videoFrames = await tracker.track(
                 "extract_video_frames",
@@ -4227,9 +4240,11 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 })
               }
 
-              console.log(
-                `✅ Extracted ${videoFrames.length} frames from ${file.filename}`,
-              )
+              if (isDevelopment)
+                console.debug("Extracted video frames", {
+                  frames: videoFrames.length,
+                  filename: file.filename,
+                })
             } catch (error) {
               captureException(error)
               console.error(
@@ -5380,7 +5395,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   }
 
   if (isE2E) {
-    console.log("🤖 Starting E2E testing for thread:", threadId)
+    if (isDevelopment) console.debug("Starting E2E testing", { threadId })
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     // E2E test mode - simulate streaming via WebSocket notifications
@@ -5554,7 +5569,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       })
     }
 
-    console.log("✅ E2E test streaming complete")
+    if (isDevelopment) console.debug("E2E test streaming complete")
 
     // Clean up stream controller
     streamControllers.delete(streamId)
@@ -5698,7 +5713,8 @@ Respond in JSON format:
         }
 
         // Stream the enhanced description to the user while generating the image
-        console.log("🎨 Streaming description and generating image...")
+        if (isDevelopment)
+          console.debug("Streaming description and generating image...")
 
         const controller: StreamController = {
           close: () => {},
@@ -5752,7 +5768,8 @@ Respond in JSON format:
           return c.json({ error: "Stream was stopped" }, { status: 400 })
         }
 
-        console.log("🎨 Generating image with enhanced Flux prompt...")
+        if (isDevelopment)
+          console.debug("Generating image with enhanced Flux prompt...")
 
         // Prioritize app-specific Replicate/OpenRouter key if provided (Image Gen usually via Replicate directly)
         // If the app has a specific key for 'replicate', use it.
@@ -5789,7 +5806,8 @@ Respond in JSON format:
           },
         })
 
-        console.log("📝 Flux raw output type:", typeof output, output)
+        if (isDevelopment)
+          console.debug("Flux raw output", { type: typeof output })
 
         // Handle different output formats from Replicate
         let imageUrl: string | URL
@@ -5858,7 +5876,7 @@ Respond in JSON format:
           )
         }
 
-        console.log("✅ Image uploaded to permanent storage:", permanentUrl)
+        if (isDevelopment) console.debug("Image uploaded to permanent storage")
 
         const aiResponseContent = aiDescription
 
