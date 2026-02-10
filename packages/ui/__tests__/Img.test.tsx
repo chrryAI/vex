@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import React, { act } from "react"
+import * as React from "react"
+import { act } from "react"
 import { createRoot } from "react-dom/client"
 import Img from "../Img"
 import { PlatformProvider } from "../platform/PlatformProvider"
