@@ -29,10 +29,10 @@ export async function syncIssuesToGraph(
       const fileQuery = `
         MERGE (f:File {path: $path})
         ON CREATE SET 
-          f.createdAt = datetime(),
+          f.createdAt = timestamp(),
           f.language = $language
         ON MATCH SET 
-          f.updatedAt = datetime()
+          f.updatedAt = timestamp()
         RETURN f
       `
 
@@ -68,10 +68,10 @@ export async function syncIssuesToGraph(
           i.status = $status,
           i.ruleKey = $ruleKey,
           i.lineNumber = $lineNumber,
-          i.createdAt = datetime()
+          i.createdAt = timestamp()
         ON MATCH SET 
           i.status = $status,
-          i.updatedAt = datetime()
+          i.updatedAt = timestamp()
         RETURN i
       `
 
@@ -92,7 +92,7 @@ export async function syncIssuesToGraph(
         MATCH (f:File {path: $path})
         MATCH (i:Issue {key: $key})
         MERGE (f)-[r:HAS_ISSUE]->(i)
-        ON CREATE SET r.createdAt = datetime()
+        ON CREATE SET r.createdAt = timestamp()
         RETURN r
       `
 
@@ -109,10 +109,10 @@ export async function syncIssuesToGraph(
       for (const keyword of keywords) {
         const topicQuery = `
           MERGE (t:Topic {name: $name})
-          ON CREATE SET t.createdAt = datetime()
+          ON CREATE SET t.createdAt = timestamp()
           MATCH (i:Issue {key: $key})
           MERGE (i)-[r:RELATES_TO]->(t)
-          ON CREATE SET r.createdAt = datetime()
+          ON CREATE SET r.createdAt = timestamp()
           RETURN t
         `
 
@@ -154,8 +154,8 @@ export async function syncMetricsToGraph(
     // Create or update Project node
     const projectQuery = `
       MERGE (p:Project {key: $key})
-      ON CREATE SET p.createdAt = datetime()
-      ON MATCH SET p.updatedAt = datetime()
+      ON CREATE SET p.createdAt = timestamp()
+      ON MATCH SET p.updatedAt = timestamp()
       RETURN p
     `
 
@@ -173,7 +173,7 @@ export async function syncMetricsToGraph(
           measuredAt: $measuredAt
         })
         CREATE (p)-[r:HAS_METRIC]->(m)
-        SET r.createdAt = datetime()
+        SET r.createdAt = timestamp()
         RETURN m
       `
 

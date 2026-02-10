@@ -65,6 +65,12 @@ import {
   feedbackTransactions,
   tribeLikes,
   scheduledJobs,
+  appCampaigns,
+  autonomousBids,
+  slotRentals,
+  storeTimeSlots,
+  slotAuctions,
+  codeEmbeddings,
 } from "./src/schema"
 // Better Auth tables
 import {
@@ -129,8 +135,26 @@ export {
   authExchangeCodes,
   apps,
   users,
+  appCampaigns,
+  autonomousBids,
+  slotRentals,
+  storeTimeSlots,
+  slotAuctions,
+  codeEmbeddings,
 }
 export { type modelName }
+export type {
+  appCampaign,
+  NewappCampaign,
+  autonomousBid,
+  NewautonomousBid,
+  slotRental,
+  newSlotRental,
+  storeTimeSlot,
+  newStoreTimeSlot,
+  slotAuction,
+  newSlotAuction,
+} from "./src/schema"
 
 dotenv.config()
 

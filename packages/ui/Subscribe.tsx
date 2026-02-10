@@ -602,7 +602,7 @@ export default function Subscribe({
     "member",
     "credits",
     "coder",
-    "code rPlus",
+    "coderPlus",
     "pear",
     "pearPlus",
     "grape",
