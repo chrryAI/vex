@@ -7341,6 +7341,7 @@ export const getTribePosts = async ({
   characterProfileIds,
   page = 1,
   pageSize = 10,
+  sortBy = "date",
 }: {
   tribeId?: string
   appId?: string
@@ -7350,6 +7351,7 @@ export const getTribePosts = async ({
   characterProfileIds?: string[]
   page?: number
   pageSize?: number
+  sortBy?: "date" | "hot" | "comments"
 }) => {
   try {
     const conditions = [
@@ -7395,21 +7397,38 @@ export const getTribePosts = async ({
       }
     }
 
+    // Dynamic sorting based on sortBy parameter
+    let orderByClause
+    if (sortBy === "comments") {
+      // Sort by comment count descending
+      orderByClause = desc(tribePosts.commentsCount)
+    } else if (sortBy === "hot") {
+      // Hot algorithm: combines recency and engagement (comments)
+      // Formula: (comments + 1) / ((hours_old + 2) ^ 1.5)
+      // This creates a time-decay where newer posts with comments rise to top
+      orderByClause = sql`(COALESCE(${tribePosts.commentsCount}, 0) + 1) / POWER((EXTRACT(EPOCH FROM (NOW() - ${tribePosts.createdOn}))/3600 + 2), 1.5) DESC`
+    } else {
+      // Default: sort by date (newest first)
+      orderByClause = desc(tribePosts.createdOn)
+    }
+
     const result = await db
       .select({
         post: tribePosts,
         app: apps,
+        store: stores,
         user: users,
         guest: guests,
         tribe: tribes,
       })
       .from(tribePosts)
       .leftJoin(apps, eq(tribePosts.appId, apps.id))
+      .leftJoin(stores, eq(apps.storeId, stores.id))
       .leftJoin(users, eq(tribePosts.userId, users.id))
       .leftJoin(guests, eq(tribePosts.guestId, guests.id))
       .leftJoin(tribes, eq(tribePosts.tribeId, tribes.id))
       .where(and(...conditions))
-      .orderBy(desc(tribePosts.createdOn))
+      .orderBy(orderByClause)
       .limit(pageSize)
       .offset((page - 1) * pageSize)
 
@@ -7425,6 +7444,9 @@ export const getTribePosts = async ({
 
     const hasNextPage = totalCount > page * pageSize
     const nextPage = hasNextPage ? page + 1 : null
+
+    // Cache for getApp results to avoid N+1 queries
+    const appCache = new Map<string, appWithStore | undefined>()
 
     // Fetch engagement data for all posts in parallel
     const postsWithEngagement = await Promise.all(
@@ -7499,7 +7521,40 @@ export const getTribePosts = async ({
           sharesCount: row.post.sharesCount,
           createdOn: row.post.createdOn,
           updatedOn: row.post.updatedOn,
-          app: row.app ? toSafeApp({ app: row.app, userId, guestId }) : null,
+          app:
+            row.app && row.store
+              ? await (async () => {
+                  const appId = row.app!.id
+                  // Check cache first
+                  if (appCache.has(appId)) {
+                    const cachedApp = appCache.get(appId)
+                    return toSafeApp({
+                      app: cachedApp,
+                      userId,
+                      guestId,
+                    })
+                  }
+
+                  // Fetch and cache
+                  const appData = await getApp({
+                    id: appId,
+                    userId,
+                    guestId,
+                  })
+
+                  if (appData) {
+                    appCache.set(appId, appData)
+                  }
+
+                  return toSafeApp({
+                    app: appData,
+                    userId,
+                    guestId,
+                  })
+                })()
+              : row.app
+                ? toSafeApp({ app: row.app, userId, guestId })
+                : null,
           user: row.user
             ? toSafeUser({
                 user: row.user,
