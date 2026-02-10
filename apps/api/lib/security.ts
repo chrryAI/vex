@@ -55,16 +55,65 @@ export async function scanFileForMalware(
       hasApiKey: !!process.env.MALWARE_SCANNER_API_KEY,
     })
     // Fail open for safe file types, fail closed for unknown types
+    // Must match file types shown in UI file picker (Chat.tsx)
     const SAFE_EXTENSIONS = [
+      // Video
       ".mov",
       ".mp4",
       ".webm",
+      ".avi",
+      ".mkv",
+      // Images
       ".png",
       ".jpg",
       ".jpeg",
       ".gif",
+      ".webp",
+      ".svg",
+      ".bmp",
+      // Audio
+      ".mp3",
+      ".wav",
+      ".ogg",
+      ".m4a",
+      ".aac",
+      ".flac",
+      // Documents
       ".pdf",
       ".txt",
+      ".md",
+      ".csv",
+      ".log",
+      // Data formats
+      ".json",
+      ".xml",
+      ".yaml",
+      ".yml",
+      ".toml",
+      ".ini",
+      ".conf",
+      // Code files
+      ".html",
+      ".css",
+      ".js",
+      ".ts",
+      ".tsx",
+      ".jsx",
+      ".py",
+      ".java",
+      ".c",
+      ".cpp",
+      ".h",
+      ".hpp",
+      ".cs",
+      ".php",
+      ".rb",
+      ".go",
+      ".rs",
+      ".swift",
+      ".kt",
+      ".scala",
+      ".sh",
     ]
     const fileExt = options?.filename?.toLowerCase().split(".").pop()
     const isSafeType =
