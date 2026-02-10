@@ -60,6 +60,7 @@ export interface ServerData {
     threads: thread[]
     totalCount: number
   }
+  showTribe: boolean
   translations?: Record<string, any>
   app?: appWithStore
   siteConfig: ReturnType<typeof getSiteConfig>
@@ -127,6 +128,9 @@ export async function loadServerData(
     pathname && locales.includes(pathname.split("/")?.[1] as locale)
 
   const localeCookie = cookies.locale as locale
+
+  const showTribe =
+    cookies.showTribe === "true" || pathname.split("/")?.[1] === "tribe"
 
   // Parse Accept-Language header to get browser's preferred language
   const acceptLanguage = headers["accept-language"]
@@ -464,6 +468,7 @@ export async function loadServerData(
     tribePost,
     tribe,
     agentProfile,
+    showTribe,
     isAgentRoute,
     pathname, // Add pathname so client knows the SSR route
   }

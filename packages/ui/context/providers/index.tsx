@@ -54,6 +54,7 @@ export interface AppProvidersProps {
   children: ReactNode
   session?: session
   app?: appWithStore
+  showTribe?: boolean
   pathname?: string // SSR pathname for thread ID extraction
   onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
   signInContext?: (
@@ -110,6 +111,7 @@ export default function AppProviders({
   threads,
   tribes,
   tribePosts,
+  showTribe,
   tribePost,
   isTribeRoute,
 }: AppProvidersProps) {
@@ -174,6 +176,7 @@ export default function AppProviders({
               app={app}
               pathname={pathname}
               threads={threads}
+              showTribe={showTribe}
               onSetLanguage={onSetLanguage}
               session={session}
               siteConfig={siteConfig}

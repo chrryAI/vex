@@ -283,7 +283,6 @@ const AuthContext = createContext<
       isExtensionRedirect: boolean
       showGrapes: boolean
       setShowGrapes: (value: boolean) => void
-
       signInContext?: (
         provider: "google" | "apple" | "github" | "credentials",
         options: {
@@ -385,6 +384,7 @@ export function AuthProvider({
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
+  showTribe?: boolean
 
   searchParams?: Record<string, string> & {
     get: (key: string) => string | null
@@ -2175,18 +2175,32 @@ export function AuthProvider({
 
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
-  const canShowTribe = user?.role === "admin"
+  const canShowTribe = isDevelopment || isE2E || user?.role === "admin"
+
+  const showTribeFromPathname = pathname.split("/")?.[1] === "tribe"
+
   const showTribeInitial =
-    pathname?.startsWith("/tribe") ||
-    (pathname === "/" &&
-      app?.slug === "chrry" &&
-      (tribePosts?.totalCount || 0) >= 1 &&
-      canShowTribe)
-  const [showTribe, setShowTribe] = useState(showTribeInitial)
+    showTribeFromPathname ||
+    (props.showTribe ?? ((tribePosts?.totalCount || 0) >= 1 && canShowTribe))
+
+  const [showTribeFinal, setShowTribeFinal] = useCookieOrLocalStorage(
+    "showTribe",
+    showTribeInitial ? "true" : "false",
+  )
 
   useEffect(() => {
-    showTribeInitial && setShowTribe(showTribeInitial)
-  }, [showTribeInitial])
+    showTribeFromPathname && setShowTribeFinal("true")
+  }, [showTribeFromPathname])
+
+  const showTribe = showTribeFinal === "true"
+
+  const setShowTribe = (value: boolean) => {
+    setShowTribeFinal(value ? "true" : "false")
+
+    if (!value && pathname === "/tribe") {
+      router.push("/")
+    }
+  }
 
   const { data: moodData, mutate: refetchMood } = useSWR(
     shouldFetchMood && token ? ["mood", token] : null, // Disabled by default, fetch manually with refetchMood()

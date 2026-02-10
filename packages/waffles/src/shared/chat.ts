@@ -963,7 +963,14 @@ export const chat = async ({
           timeout: agentMessageTimeout,
         })
 
-        const p = await characterProfile.getAttribute("data-cp")
+        const cpName = await page.getByTestId("character-profile-name")
+
+        await expect(cpName).toBeVisible({
+          timeout: agentMessageTimeout,
+        })
+
+        const p = await cpName.getAttribute("value")
+
         expect(p).toBeTruthy()
 
         if (!profile) {
@@ -980,20 +987,21 @@ export const chat = async ({
     if (profile && shouldCheckProfile) {
       let nextProfile: string | null = null
 
-      await expect
-        .poll(
-          async () => {
-            // Re-query element on each poll to get fresh data
-            const cp = page.getByTestId("character-profile")
-            nextProfile = await cp.getAttribute("data-cp")
-            return nextProfile && nextProfile !== profile ? nextProfile : null
-          },
-          {
-            timeout: prompt.agentMessageTimeout || agentMessageTimeout,
-          },
-        )
-        .toBeTruthy()
-      profile = nextProfile ?? ""
+      await expect(characterProfile).toBeVisible({
+        timeout: agentMessageTimeout,
+      })
+
+      const cpName = await page.getByTestId("character-profile-name")
+
+      await expect(cpName).toBeVisible({
+        timeout: agentMessageTimeout,
+      })
+
+      const newProfile = await cpName.getAttribute("value")
+
+      expect(newProfile).toBeTruthy()
+
+      profile = newProfile ?? ""
       shouldCheckProfile = false
     }
 
