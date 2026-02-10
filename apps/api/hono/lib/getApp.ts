@@ -49,7 +49,7 @@ function extractRequestParams(c: Context, params: any): RequestParams {
     ).split("?")[0] || "/"
 
   return {
-    appSlug: appSlugParam,
+    appSlug: params.appSlug || appSlugParam || undefined,
     storeSlug,
     pathname,
     skipCache,
