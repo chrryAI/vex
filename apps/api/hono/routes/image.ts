@@ -40,7 +40,9 @@ image.post("/", async (c) => {
     const buffer = Buffer.from(arrayBuffer)
 
     // Scan for malware
-    const scanResult = await scanFileForMalware(buffer)
+    const scanResult = await scanFileForMalware(buffer, {
+      filename: file.name || "app-image",
+    })
 
     if (!scanResult.safe) {
       console.error("🚨 Malware detected in app image")

@@ -4017,7 +4017,9 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
         const arrayBuffer = await file.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
 
-        const scanResult = await scanFileForMalware(buffer)
+        const scanResult = await scanFileForMalware(buffer, {
+          filename: file.name,
+        })
 
         if (!scanResult.safe) {
           console.error(
