@@ -84,6 +84,7 @@ packages/ui/locales/en.new.json
 test-results
 packages/waffles/test-results/*
 **/dist-chrome-*.zip
+junit.xml # Trunk Flaky Tests reporter output
 
 
 # apps/two

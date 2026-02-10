@@ -869,6 +869,94 @@ export default function Calendar({
     }
   }, [])
 
+  // ⚡ Bolt: Memoize components to prevent unnecessary re-renders of react-big-calendar internals
+  const components = useMemo(
+    () => ({
+      toolbar: (props: any) => (
+        <CustomToolbar
+          {...props}
+          onGoogleSync={user?.role === "admin" ? handleGoogleSync : undefined}
+          isGoogleConnected={isGoogleConnected}
+          isSyncing={isSyncing}
+        />
+      ),
+      event: EventComponent,
+      eventWrapper: view === Views.MONTH ? EventContainerWrapper : undefined,
+      month: {
+        dateHeader: ({ date }: any) => (
+          <div className={clsx(styles.dateHeader, device && styles[device])}>
+            <button
+              className={clsx("link", styles.addEventButton)}
+              onClick={(e) => {
+                e.stopPropagation()
+                // Get current time for the selected date
+                const now = new Date()
+                const selectedDate = new Date(date)
+
+                // Set the start time to current time on the selected date
+                const startTime = new Date(selectedDate)
+                startTime.setHours(now.getHours(), now.getMinutes(), 0, 0)
+
+                // Set end time to 1 hour later
+                const endTime = new Date(startTime)
+                endTime.setHours(startTime.getHours() + 1)
+
+                setModalData({
+                  start: startTime,
+                  end: endTime,
+                })
+                setIsModalOpen(true)
+              }}
+            >
+              <CalendarPlus className={styles.calendarPlus} size={16} />
+            </button>
+            <button
+              className={clsx("small transparent", styles.dateButton)}
+              onClick={(e) => {
+                e.stopPropagation()
+                // Navigate to day view for this specific date
+                setDate(new Date(date))
+                setView(Views.DAY)
+              }}
+            >
+              {date.getDate()}
+            </button>
+          </div>
+        ),
+      },
+    }),
+    [
+      user?.role,
+      handleGoogleSync,
+      isGoogleConnected,
+      isSyncing,
+      view,
+      EventContainerWrapper,
+      device,
+    ],
+  )
+
+  // ⚡ Bolt: Memoize formats to prevent unnecessary re-renders
+  const formats = useMemo(
+    () => ({
+      timeGutterFormat: "HH:mm",
+      eventTimeRangeFormat: (
+        { start, end }: any,
+        culture: any,
+        localizer: any,
+      ) =>
+        `${localizer?.format(start, "HH:mm", culture)} - ${localizer?.format(end, "HH:mm", culture)}`,
+      agendaTimeFormat: "HH:mm",
+      agendaTimeRangeFormat: (
+        { start, end }: any,
+        culture: any,
+        localizer: any,
+      ) =>
+        `${localizer?.format(start, "HH:mm", culture)} - ${localizer?.format(end, "HH:mm", culture)}`,
+    }),
+    [],
+  )
+
   if (!hasHydrated) return null
 
   return (
@@ -921,94 +1009,13 @@ export default function Calendar({
             dayPropGetter={dayPropGetter}
             slotPropGetter={slotPropGetter}
             // Custom components
-            components={{
-              toolbar: (props: any) => (
-                <CustomToolbar
-                  {...props}
-                  onGoogleSync={
-                    user?.role === "admin" ? handleGoogleSync : undefined
-                  }
-                  isGoogleConnected={isGoogleConnected}
-                  isSyncing={isSyncing}
-                />
-              ),
-              event: EventComponent,
-              eventWrapper:
-                view === Views.MONTH ? EventContainerWrapper : undefined,
-              month: {
-                dateHeader: ({ date }: any) => (
-                  <div
-                    className={clsx(
-                      styles.dateHeader,
-                      device && styles[device],
-                    )}
-                  >
-                    <button
-                      className={clsx("link", styles.addEventButton)}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        // Get current time for the selected date
-                        const now = new Date()
-                        const selectedDate = new Date(date)
-
-                        // Set the start time to current time on the selected date
-                        const startTime = new Date(selectedDate)
-                        startTime.setHours(
-                          now.getHours(),
-                          now.getMinutes(),
-                          0,
-                          0,
-                        )
-
-                        // Set end time to 1 hour later
-                        const endTime = new Date(startTime)
-                        endTime.setHours(startTime.getHours() + 1)
-
-                        setModalData({
-                          start: startTime,
-                          end: endTime,
-                        })
-                        setIsModalOpen(true)
-                      }}
-                    >
-                      <CalendarPlus className={styles.calendarPlus} size={16} />
-                    </button>
-                    <button
-                      className={clsx("small transparent", styles.dateButton)}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        // Navigate to day view for this specific date
-                        setDate(new Date(date))
-                        setView(Views.DAY)
-                      }}
-                    >
-                      {date.getDate()}
-                    </button>
-                  </div>
-                ),
-              },
-            }}
+            components={components}
             // Remove popup-based overflow detection
             showMultiDayTimes={false} // Don't show times for multi-day events
             // Drag and drop
             draggableAccessor={() => true}
             // Formats
-            formats={{
-              timeGutterFormat: "HH:mm",
-              eventTimeRangeFormat: (
-                { start, end }: any,
-                culture: any,
-                localizer: any,
-              ) =>
-                `${localizer?.format(start, "HH:mm", culture)} - ${localizer?.format(end, "HH:mm", culture)}`,
-              agendaTimeFormat: "HH:mm",
-              agendaTimeRangeFormat: (
-                { start, end }: any,
-                culture: any,
-                localizer: any,
-              ) =>
-                `${localizer?.format(start, "HH:mm", culture)} - ${localizer?.format(end, "HH:mm", culture)}`,
-            }}
+            formats={formats}
           />
         )}
       </div>
