@@ -2177,10 +2177,11 @@ export function AuthProvider({
 
   const canShowTribe = user?.role === "admin"
   const showTribeInitial =
-    ((pathname === "/" && app?.slug === "chrry") ||
-      pathname?.startsWith("/tribe")) &&
-    (tribePosts?.totalCount || 0) >= 1 &&
-    canShowTribe
+    pathname?.startsWith("/tribe") ||
+    (pathname === "/" &&
+      app?.slug === "chrry" &&
+      (tribePosts?.totalCount || 0) >= 1 &&
+      canShowTribe)
   const [showTribe, setShowTribe] = useState(showTribeInitial)
 
   useEffect(() => {

@@ -1,7 +1,9 @@
 import { Hono } from "hono"
 import { compress } from "@hono/bun-compress"
+import { serveStatic } from "@hono/node-server/serve-static"
 import { headersMiddleware } from "./middleware/headers"
 import { corsMiddleware } from "./middleware/cors"
+import { securityHeadersMiddleware } from "./middleware/securityHeaders"
 import { csrfMiddleware } from "./middleware/csrf"
 import { apiAnalyticsMiddleware } from "./middleware/analytics"
 import { session } from "./routes/session"
@@ -51,6 +53,7 @@ import favicon from "./routes/favicon"
 import analytics from "./routes/analytics"
 import premium from "./routes/premium"
 import tribe from "./routes/tribe"
+import { adCampaignsRoute as adCampaigns } from "./routes/adCampaigns"
 
 import * as Sentry from "@sentry/node"
 
@@ -107,6 +110,9 @@ app.onError((err, c) => {
 
 // Apply custom CORS middleware (matching Next.js middleware)
 app.use("*", corsMiddleware)
+
+// Apply security headers middleware
+app.use("*", securityHeadersMiddleware)
 
 // Apply CSRF protection middleware (verifies Origin for state-changing requests)
 app.use("*", csrfMiddleware)
@@ -177,9 +183,27 @@ api.route("/notify", notify)
 api.route("/analytics", analytics)
 api.route("/premium", premium)
 api.route("/tribe", tribe)
+api.route("/campaigns", adCampaigns)
 
 // Mount API routes under /api
 app.route("/api", api)
+
+// Serve static files from public directory
+// In dev: cwd is apps/api, so ./public works
+// In prod: cwd is /app, so ./apps/api/public is needed
+const publicDir = process.cwd().endsWith("apps/api")
+  ? "./public"
+  : "./apps/api/public"
+
+app.use(
+  "/*",
+  serveStatic({
+    root: publicDir,
+    onNotFound: (path, c) => {
+      // Continue to next handler if file not found
+    },
+  }),
+)
 
 // Root-level routes
 app.route("/", landing) // Landing page at root

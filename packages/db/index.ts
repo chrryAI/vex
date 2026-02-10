@@ -65,6 +65,12 @@ import {
   feedbackTransactions,
   tribeLikes,
   scheduledJobs,
+  appCampaigns,
+  autonomousBids,
+  slotRentals,
+  storeTimeSlots,
+  slotAuctions,
+  codeEmbeddings,
 } from "./src/schema"
 // Better Auth tables
 import {
@@ -129,8 +135,26 @@ export {
   authExchangeCodes,
   apps,
   users,
+  appCampaigns,
+  autonomousBids,
+  slotRentals,
+  storeTimeSlots,
+  slotAuctions,
+  codeEmbeddings,
 }
 export { type modelName }
+export type {
+  appCampaign,
+  NewappCampaign,
+  autonomousBid,
+  NewautonomousBid,
+  slotRental,
+  newSlotRental,
+  storeTimeSlot,
+  newStoreTimeSlot,
+  slotAuction,
+  newSlotAuction,
+} from "./src/schema"
 
 dotenv.config()
 
@@ -2421,6 +2445,8 @@ export const getThread = async ({
         }),
         characterProfile: await getCharacterProfile({
           threadId: result.threads.id,
+          userId: result.threads.userId || undefined,
+          guestId: result.threads.guestId || undefined,
         }),
         summary: await getThreadSummary({
           threadId: result.threads.id,
@@ -2444,15 +2470,41 @@ export const getThread = async ({
 }
 
 export const getCharacterProfile = async ({
+  agentId,
+  userId,
+  guestId,
+  isAppOwner,
+  pinned,
+  visibility,
   threadId,
+  appId,
 }: {
-  threadId: string
+  agentId?: string
+  appId?: string
+  userId?: string
+  guestId?: string
+  isAppOwner?: boolean
+  pinned?: boolean
+  threadId?: string
+  visibility?: "public" | "private"
 }) => {
   const [result] = await db
     .select()
     .from(characterProfiles)
-    .where(eq(characterProfiles.threadId, threadId))
-
+    .where(
+      and(
+        threadId ? eq(characterProfiles.threadId, threadId) : undefined,
+        agentId ? eq(characterProfiles.agentId, agentId) : undefined,
+        userId ? eq(characterProfiles.userId, userId) : undefined,
+        guestId ? eq(characterProfiles.guestId, guestId) : undefined,
+        isAppOwner ? eq(characterProfiles.isAppOwner, isAppOwner) : undefined,
+        pinned ? eq(characterProfiles.pinned, pinned) : undefined,
+        visibility ? eq(characterProfiles.visibility, visibility) : undefined,
+        appId ? eq(characterProfiles.appId, appId) : undefined,
+        threadId ? eq(characterProfiles.threadId, threadId) : undefined,
+      ),
+    )
+    .limit(1)
   return result
 }
 

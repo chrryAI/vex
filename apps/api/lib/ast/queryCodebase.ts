@@ -1,7 +1,7 @@
 import { openai } from "@ai-sdk/openai"
 import { embed } from "ai"
 import { db } from "@repo/db"
-import { codeEmbeddings } from "@repo/db/schema"
+import { codeEmbeddings } from "@repo/db"
 import { eq, sql } from "drizzle-orm"
 import { queryCodeGraph } from "./storeFalkorGraph"
 

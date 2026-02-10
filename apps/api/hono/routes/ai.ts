@@ -98,6 +98,11 @@ import {
 } from "../../lib"
 import { getModelProvider } from "../../lib/getModelProvider"
 import { validatePearFeedback } from "../../lib/validatePearFeedback"
+import {
+  checkTokenLimit,
+  splitConversation,
+  createTokenLimitError,
+} from "../../lib/tokenLimitCheck"
 import { getRetroAnalyticsContext } from "../../lib/getRetroAnalyticsContext"
 import { scanFileForMalware } from "../../lib/security"
 import { upload } from "../../lib/minio"
@@ -1284,6 +1289,9 @@ app.post("/", async (c) => {
       )
     : undefined
 
+  // let swarm = []
+  // const speaker = []
+
   const appExtends = requestApp
     ? requestApp?.store?.apps.filter((a) => a.id !== requestApp?.id) || []
     : []
@@ -1601,9 +1609,20 @@ ${
 
     // Auto-set main thread if owner and not set
 
-    // Get thread data
+    // Get parent apps first to calculate total app count
+    const parentApps =
+      "store" in currentApp && currentApp.store?.apps
+        ? currentApp.store.apps.filter((a) => a.id !== currentApp.id)
+        : []
+
+    // Calculate dynamic message count based on total apps
+    // Min 4 messages = 2 complete exchanges (user-AI pairs)
+    const totalApps = parentApps.length + 1
+    const dynamicPageSize = Math.max(4, Math.min(6, Math.floor(18 / totalApps)))
+
+    // Get thread data with dynamic page size
     const messagesData = thread
-      ? await getMessages({ threadId: thread.id, pageSize: 20 })
+      ? await getMessages({ threadId: thread.id, pageSize: dynamicPageSize })
       : { messages: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
     const messages = messagesData.messages || []
@@ -1634,12 +1653,6 @@ ${
       artifacts: [] as any[],
       task: undefined as typeof task,
     }
-
-    // Get parent apps from store (filter out current app)
-    const parentApps =
-      "store" in currentApp && currentApp.store?.apps
-        ? currentApp.store.apps.filter((a) => a.id !== currentApp.id)
-        : []
 
     if (parentApps.length > 0) {
       // Get knowledge from all parent apps (up to 5 total in chain)
@@ -3999,7 +4012,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
 
     // Scan files for malware
     const malwareResponse = await tracker.track("malware_scan", async () => {
-      console.log("🔍 Scanning files for malware...")
+      if (isDevelopment) console.debug("Scanning files for malware...")
       for (const file of files) {
         const arrayBuffer = await file.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
@@ -4018,7 +4031,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
           )
         }
       }
-      console.log("✅ All files passed malware scan")
+      if (isDevelopment) console.debug("All files passed malware scan")
       return null
     })
 
@@ -4027,7 +4040,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     }
 
     // Convert files to base64 and prepare multimodal content
-    console.log("🔄 Converting files to base64...")
+    if (isDevelopment) console.debug("Converting files to base64...")
     const fileContents = await tracker.track("file_conversion", () =>
       Promise.all(
         files.map(async (file) => {
@@ -4036,9 +4049,13 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
           const mimeType = file.type
           const isText = mimeType.startsWith("text/") || isTextFile(file.name)
 
-          console.log(
-            `✅ Processed ${file.name} (${mimeType || "detected as text"}, ${(file.size / 1024).toFixed(1)}KB)`,
-          )
+          if (isDevelopment) {
+            console.debug("File processed", {
+              name: file.name,
+              mimeType: mimeType || "text/plain",
+              sizeKB: Number((file.size / 1024).toFixed(1)),
+            })
+          }
 
           return {
             type: mimeType.startsWith("image/")
@@ -4072,7 +4089,10 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
       files: fileContents,
     }
 
-    console.log(`📎 Prepared multimodal content: ${fileContents.length} files`)
+    if (isDevelopment)
+      console.debug("Prepared multimodal content", {
+        count: fileContents.length,
+      })
 
     // Add proactive file analysis instruction to system prompt
     const fileAnalysisInstruction = `\n\nIMPORTANT: The user has attached ${fileContents.length} file(s). You MUST proactively analyze these files in your response WITHOUT waiting for the user to explicitly ask. Provide a detailed, comprehensive analysis of the file content, including:
@@ -4207,7 +4227,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               height: uploadResult.height,
             })
             // Extract key frames from video for AI analysis
-            console.log(`🎥 Processing video: ${file.filename}`)
+            if (isDevelopment)
+              console.debug("Processing video", { filename: file.filename })
             try {
               const videoFrames = await tracker.track(
                 "extract_video_frames",
@@ -4221,9 +4242,11 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 })
               }
 
-              console.log(
-                `✅ Extracted ${videoFrames.length} frames from ${file.filename}`,
-              )
+              if (isDevelopment)
+                console.debug("Extracted video frames", {
+                  frames: videoFrames.length,
+                  filename: file.filename,
+                })
             } catch (error) {
               captureException(error)
               console.error(
@@ -4868,7 +4891,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
     enhancedUserMessage,
   ]
 
-  const messages: ModelMessage[] = mergeConsecutiveUserMessages(rawMessages)
+  let messages: ModelMessage[] = mergeConsecutiveUserMessages(rawMessages)
 
   // Log prompt size for debugging token usage
   const totalPromptLength = messages.reduce((total, msg) => {
@@ -5374,7 +5397,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   }
 
   if (isE2E) {
-    console.log("🤖 Starting E2E testing for thread:", threadId)
+    if (isDevelopment) console.debug("Starting E2E testing", { threadId })
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     // E2E test mode - simulate streaming via WebSocket notifications
@@ -5548,7 +5571,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       })
     }
 
-    console.log("✅ E2E test streaming complete")
+    if (isDevelopment) console.debug("E2E test streaming complete")
 
     // Clean up stream controller
     streamControllers.delete(streamId)
@@ -5591,15 +5614,20 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
         // Step 1: Use DeepSeek to enhance the prompt and generate description
         // console.log("🧠 Enhancing prompt with DeepSeek...")
 
-        // First, get enhanced prompt from DeepSeek internally (no streaming)
-        // In the enhancement prompt, add conversation context
+        // Check token limit for enhancement messages
+        const deepseekEnhanceProvider = await getModelProvider(requestApp)
+        const enhanceModelId =
+          typeof deepseekEnhanceProvider.provider === "string"
+            ? deepseekEnhanceProvider.provider
+            : (deepseekEnhanceProvider.provider as any).modelId ||
+              "deepseek-chat"
+
+        // Limit conversation history to avoid token overflow
+        let conversationHistory = messages.slice(-5)
         const enhancementPrompt = `You are an expert image generation prompt engineer.
 
 CONVERSATION HISTORY:
-${messages
-  .slice(-5)
-  .map((msg) => `${msg.role}: ${msg.content}`)
-  .join("\n")}
+${conversationHistory.map((msg) => `${msg.role}: ${msg.content}`).join("\n")}
 
 CURRENT REQUEST: "${content}"
 
@@ -5617,11 +5645,44 @@ Respond in this exact JSON format:
 
 Make the enhanced prompt contextually aware and optimized for high-quality image generation.`
 
-        // Use app-specific DeepSeek key if available
-        const deepseekEnhanceProvider = await getModelProvider(requestApp)
+        const enhanceMessages = [
+          { role: "user" as const, content: enhancementPrompt },
+        ]
+        const enhanceTokenCheck = checkTokenLimit(
+          enhanceMessages,
+          enhanceModelId,
+        )
+
+        console.log(`📊 Flux enhancement token check:`, {
+          estimated: enhanceTokenCheck.estimatedTokens,
+          max: enhanceTokenCheck.maxTokens,
+          withinLimit: enhanceTokenCheck.withinLimit,
+        })
+
+        // If token limit exceeded, use fewer messages
+        if (!enhanceTokenCheck.withinLimit && enhanceMessages[0]) {
+          console.warn(`⚠️ Enhancement prompt too long, using shorter context`)
+          conversationHistory = messages.slice(-2)
+          const shorterPrompt = `You are an expert image generation prompt engineer.
+
+CONVERSATION HISTORY:
+${conversationHistory.map((msg) => `${msg.role}: ${msg.content}`).join("\n")}
+
+CURRENT REQUEST: "${content}"
+
+Create an enhanced, detailed prompt for Flux image generation and a creative description.
+
+Respond in JSON format:
+{
+  "enhancedPrompt": "detailed prompt",
+  "description": "creative description"
+}`
+          enhanceMessages[0].content = shorterPrompt
+        }
+
         const enhancementResponse = await generateText({
           model: deepseekEnhanceProvider.provider,
-          messages: [{ role: "user", content: enhancementPrompt }],
+          messages: enhanceMessages,
         })
 
         let enhancedPrompt = content
@@ -5654,7 +5715,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         }
 
         // Stream the enhanced description to the user while generating the image
-        console.log("🎨 Streaming description and generating image...")
+        if (isDevelopment)
+          console.debug("Streaming description and generating image...")
 
         const controller: StreamController = {
           close: () => {},
@@ -5708,7 +5770,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           return c.json({ error: "Stream was stopped" }, { status: 400 })
         }
 
-        console.log("🎨 Generating image with enhanced Flux prompt...")
+        if (isDevelopment)
+          console.debug("Generating image with enhanced Flux prompt...")
 
         // Prioritize app-specific Replicate/OpenRouter key if provided (Image Gen usually via Replicate directly)
         // If the app has a specific key for 'replicate', use it.
@@ -5745,7 +5808,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           },
         })
 
-        console.log("📝 Flux raw output type:", typeof output, output)
+        if (isDevelopment)
+          console.debug("Flux raw output", { type: typeof output })
 
         // Handle different output formats from Replicate
         let imageUrl: string | URL
@@ -5814,7 +5878,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           )
         }
 
-        console.log("✅ Image uploaded to permanent storage:", permanentUrl)
+        if (isDevelopment) console.debug("Image uploaded to permanent storage")
 
         const aiResponseContent = aiDescription
 
@@ -5907,7 +5971,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             ...calendarTools,
             ...vaultTools,
             ...focusTools,
-            ...imageTools,
+            // ...imageTools,
             ...talentTools,
           }
 
@@ -5924,6 +5988,65 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       let responseMetadata: any = null
       let toolCallsDetected = false
       let streamCompleted = false
+      let tokenLimitWarning = ""
+
+      // Check token limit BEFORE streaming
+      const modelId =
+        typeof model === "string"
+          ? model
+          : (model as any).modelId || "deepseek-reasoner"
+      const tokenCheck = checkTokenLimit(messages, modelId)
+
+      console.log(`📊 Token check for ${tokenCheck.modelName}:`, {
+        estimated: tokenCheck.estimatedTokens,
+        max: tokenCheck.maxTokens,
+        withinLimit: tokenCheck.withinLimit,
+        shouldSplit: tokenCheck.shouldSplit,
+      })
+
+      // If token limit exceeded, split conversation
+      if (tokenCheck.shouldSplit) {
+        console.warn(`⚠️ Token limit exceeded - splitting conversation`)
+        const split = splitConversation(
+          messages,
+          Math.floor(tokenCheck.maxTokens * 0.7),
+        )
+
+        // Rebuild messages with summary
+        const newMessages = []
+        if (split.systemPrompt) {
+          // Inject summary into system prompt
+          const updatedSystemPrompt = {
+            ...split.systemPrompt,
+            content:
+              split.systemPrompt.content + "\n\n" + split.summarizedContext,
+          }
+          newMessages.push(updatedSystemPrompt)
+        } else if (split.summarizedContext) {
+          // Create new system message with summary
+          newMessages.push({
+            role: "system",
+            content: split.summarizedContext,
+          })
+        }
+        newMessages.push(...split.recentMessages)
+
+        messages = newMessages as ModelMessage[]
+        tokenLimitWarning = createTokenLimitError(
+          tokenCheck.estimatedTokens,
+          tokenCheck.maxTokens,
+          tokenCheck.modelName,
+        )
+
+        console.log(
+          `✅ Conversation split - new message count: ${messages.length}`,
+        )
+      } else if (!tokenCheck.withinLimit) {
+        // Token limit exceeded but can't split (too few messages)
+        const errorMsg = `Conversation too long for ${tokenCheck.modelName} (${tokenCheck.estimatedTokens.toLocaleString()} tokens, ${tokenCheck.maxTokens.toLocaleString()} max). Please start a new conversation.`
+        console.error(`❌ ${errorMsg}`)
+        return c.json({ error: errorMsg }, { status: 400 })
+      }
 
       try {
         console.log("🍣 Step 1: Creating streamText result...")
@@ -6123,7 +6246,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 }
               }
               console.log("🍣 Successfully completed fullStream iteration")
-            } catch (streamError) {
+            } catch (streamError: any) {
               captureException(streamError)
 
               console.error(
@@ -6135,11 +6258,41 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 "❌ Error constructor:",
                 streamError?.constructor?.name,
               )
+
+              // Check for token limit errors
+              const errorMsg = streamError?.message || String(streamError)
+              const isTokenLimitError =
+                errorMsg.includes("maximum context length") ||
+                errorMsg.includes("context_length_exceeded") ||
+                errorMsg.includes("tokens")
+
               if (streamError instanceof Error) {
                 console.error("❌ Error message:", streamError.message)
                 console.error("❌ Error stack:", streamError.stack)
+
+                if (isTokenLimitError) {
+                  // Provide helpful error message for token limit
+                  const userFriendlyError = `The conversation has grown too long. Please start a new chat to continue. (Technical: ${streamError.message})`
+
+                  // Send error to user via stream
+                  await enhancedStreamChunk({
+                    chunk: `\n\n⚠️ **Error**: ${userFriendlyError}`,
+                    chunkNumber: currentChunk++,
+                    totalChunks: -1,
+                    streamingMessage: sushiStreamingMessage,
+                    member,
+                    guest,
+                    thread,
+                    streamId,
+                    clientId,
+                  })
+
+                  // Don't re-throw - we've handled it gracefully
+                  streamFinished = true
+                  return
+                }
               }
-              // Re-throw to be caught by outer try-catch
+              // Re-throw non-token-limit errors to be caught by outer try-catch
               throw streamError
             } finally {
               // Clean up monitoring interval
@@ -6196,6 +6349,11 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         console.log("🍣 Stream loop completed")
 
         finalText = answerText || finalText
+
+        // Prepend token limit warning if conversation was split
+        if (tokenLimitWarning && finalText) {
+          finalText = `ℹ️ ${tokenLimitWarning}\n\n${finalText}`
+        }
 
         if (!streamControllers.has(streamId)) {
           console.log("Stream was stopped, breaking loop")

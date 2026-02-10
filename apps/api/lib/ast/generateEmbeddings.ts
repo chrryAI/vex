@@ -1,7 +1,7 @@
 import { openai } from "@ai-sdk/openai"
 import { embedMany } from "ai"
 import { db } from "@repo/db"
-import { codeEmbeddings } from "@repo/db/schema"
+import { codeEmbeddings } from "@repo/db"
 import { eq, and } from "drizzle-orm"
 import type { ASTNode } from "./parseCodebase"
 

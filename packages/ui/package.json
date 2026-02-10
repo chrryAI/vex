@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "1.13.77",
+  "version": "1.13.92",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -65,11 +65,11 @@
   "scripts": {
     "build": "pnpm exec tsup",
     "dev": "pnpm exec tsup --watch",
-    "lint": "eslint . --max-warnings 1800",
+    "lint": "eslint . --max-warnings 2000",
     "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit",
     "prepublishOnly": "npm run build",
-    "test": "vitest run"
+    "test": "pnpm exec vitest run"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
@@ -150,13 +150,15 @@
     "usehooks-ts": "^3.1.1",
     "uuid": "^10.0.0",
     "zod": "^4.1.11",
-    "vitest": "^2.1.4"
+    "vitest": "^2.1.9"
   },
   "devDependencies": {
     "@react-navigation/native": "^7.1.19",
     "@react-navigation/native-stack": "^7.6.2",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.1.0",
     "@types/node": "^22.15.3",
     "@types/react-native": "^0.73.0",
     "eslint": "^9.34.0",

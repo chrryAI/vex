@@ -9,6 +9,10 @@ import {
   API_INTERNAL_URL,
 } from "@chrryai/chrry/utils"
 import {
+  getAppAndStoreSlugs,
+  excludedSlugRoutes,
+} from "@chrryai/chrry/utils/url"
+import {
   getApp,
   getSession,
   getThread,
@@ -92,6 +96,9 @@ export interface ServerData {
     has: (key: string) => boolean
     toString: () => string
   } // URL search params with URLSearchParams-compatible API
+  // Agent profile data
+  agentProfile?: any
+  isAgentRoute: boolean
 }
 
 /**
@@ -368,6 +375,11 @@ export async function loadServerData(
   let tribePost: tribePostWithDetails | undefined
   let isTribeRoute = false
 
+  // Agent profile route
+  let agentProfile: any | undefined
+  let isAgentRoute = false
+  let agentTribePosts: paginatedTribePosts | undefined
+
   // Check if this is a tribe route OR if app slug is 'chrry'
   const isChrryApp = app?.slug === "chrry"
   if (
@@ -378,7 +390,57 @@ export async function loadServerData(
     isTribeRoute = true
   }
 
+  // Try to extract store and app slugs from URL (works for /:storeSlug/:appSlug pattern)
+  // This handles clean URLs like /blossom/chrry without /agent prefix
   try {
+    const { storeSlug, appSlug } = getAppAndStoreSlugs(pathname, {
+      defaultAppSlug: "",
+      defaultStoreSlug: "",
+      excludedRoutes: excludedSlugRoutes,
+      locales,
+    })
+
+    // If we found both slugs and they're not defaults, and not already a tribe/blog route, try to load agent profile
+    if (
+      storeSlug &&
+      appSlug &&
+      storeSlug !== "" &&
+      appSlug !== "" &&
+      !isTribeRoute &&
+      !isBlogRoute
+    ) {
+      try {
+        // Fetch agent profile
+        const agentResponse = await fetch(
+          `${API_URL}/apps/${encodeURIComponent(storeSlug)}/${encodeURIComponent(appSlug)}`,
+          {
+            headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
+          },
+        )
+
+        if (agentResponse.ok) {
+          agentProfile = await agentResponse.json()
+
+          // Only set isAgentRoute if we have a valid agent profile
+          if (agentProfile?.id) {
+            isAgentRoute = true
+
+            // Load tribe posts by this agent
+            agentTribePosts = await getTribePosts({
+              appId: agentProfile.id,
+              pageSize: 10,
+              page: 1,
+              token: apiKey,
+              API_URL,
+            })
+          }
+        }
+      } catch (error) {
+        console.error("❌ Agent profile loading error:", error)
+        // isAgentRoute remains false on error
+      }
+    }
+
     if (pathname.startsWith("/tribe/p/")) {
       // Single tribe post page: /tribe/p/:id
       const postId = pathname.replace("/tribe/p/", "")
@@ -400,7 +462,7 @@ export async function loadServerData(
         API_URL,
       })
 
-      // Load posts for this tribe
+      // Load posts for this tribe (don't overwrite agentTribePosts)
       if (tribesResult?.tribes?.[0]) {
         tribePosts = await getTribePosts({
           tribeId: tribesResult.tribes[0].id,
@@ -410,8 +472,8 @@ export async function loadServerData(
           API_URL,
         })
       }
-    } else {
-      // Single tribe post page: /tribe/p/:id
+    } else if (isTribeRoute) {
+      // Tribe home page
       tribes = await getTribes({
         pageSize: 15,
         page: 1,
@@ -419,7 +481,7 @@ export async function loadServerData(
         API_URL,
       })
 
-      // Load recent posts from all tribes
+      // Load recent posts from all tribes (don't overwrite agentTribePosts)
       tribePosts = await getTribePosts({
         pageSize: 10,
         page: 1,
@@ -427,8 +489,13 @@ export async function loadServerData(
         API_URL,
       })
     }
+
+    // If we have agent posts but no tribe posts, use agent posts
+    if (agentTribePosts && !tribePosts) {
+      tribePosts = agentTribePosts
+    }
   } catch (error) {
-    console.error("❌ Tribe data loading error:", error)
+    console.error("❌ Tribe/Agent data loading error:", error)
   }
 
   const result = {
@@ -454,6 +521,8 @@ export async function loadServerData(
     tribePosts,
     tribePost,
     isTribeRoute,
+    agentProfile,
+    isAgentRoute,
     pathname, // Add pathname so client knows the SSR route
   }
 

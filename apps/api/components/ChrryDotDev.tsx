@@ -2,7 +2,7 @@
 
 import React from "react"
 import { ExternalLink, Github, Package } from "lucide-react"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { chrryDev } from "@chrryai/chrry/utils/siteConfig"
 
 const css = `
 
@@ -83,7 +83,7 @@ const css = `
 `
 
 export default function Chrry() {
-  const config = getSiteConfig("chrryDev")
+  const config = chrryDev
 
   return (
     <>
@@ -96,7 +96,7 @@ export default function Chrry() {
               <a href={"https://vex.chrry.ai"}>
                 <img
                   alt="Vex"
-                  src="https://vex.chrry.ai/icons/icon-128-v.png"
+                  src="/icons/vex-icon.png"
                   width={24}
                   height={24}
                 />
@@ -109,7 +109,7 @@ export default function Chrry() {
           <div className="logo">
             <img
               alt="Chrry"
-              src="https://vex.chrry.ai/logo/cherry-500.png"
+              src="/logo/cherry-500.png"
               width={250}
               height={250}
             />
@@ -158,6 +158,7 @@ export default function Chrry() {
               <div className="featureTitle">
                 <span>{feature.icon}</span> <span>{feature.title}</span>
               </div>
+              sss
               <p className="featureDescription">{feature.description}</p>
             </a>
           ))}

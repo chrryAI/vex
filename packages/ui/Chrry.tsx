@@ -46,6 +46,8 @@ export default function Chrry({
   tribePosts,
   tribePost,
   isTribeRoute,
+  agentProfile,
+  isAgentRoute,
 }: {
   translations?: Record<string, any>
   useExtensionIcon?: (slug?: string) => void
@@ -72,6 +74,8 @@ export default function Chrry({
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
   isTribeRoute?: boolean
+  agentProfile?: any
+  isAgentRoute?: boolean
   onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
 }) {
   return (
@@ -94,6 +98,8 @@ export default function Chrry({
       tribePosts={tribePosts}
       tribePost={tribePost}
       isTribeRoute={isTribeRoute}
+      // agentProfile={agentProfile}
+      // isAgentRoute={isAgentRoute}
     >
       {children}
     </AppProviders>

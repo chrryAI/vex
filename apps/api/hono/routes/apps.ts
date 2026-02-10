@@ -64,6 +64,25 @@ app.get("/", async (c) => {
   return c.json(app)
 })
 
+// GET /apps/:storeSlug/:appSlug - Get app by store and app slug (SEO-friendly)
+app.get("/:storeSlug/:appSlug", async (c) => {
+  const storeSlug = c.req.param("storeSlug")
+  const appSlug = c.req.param("appSlug")
+
+  const app = await getApp({
+    c,
+    storeSlug,
+    appSlug,
+    skipCache: true,
+  })
+
+  if (!app) {
+    return c.json({ error: "App not found" }, 404)
+  }
+
+  return c.json(app)
+})
+
 // GET /apps/:id - Get single app by ID
 app.get("/:id", async (c) => {
   const id = c.req.param("id")

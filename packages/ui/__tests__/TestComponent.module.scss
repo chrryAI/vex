@@ -12,22 +12,22 @@
   align-items: center;
   justify-content: center;
   gap: toRem.toRem(10);
-  
+
   // Sizing
   width: 100%;
   max-width: toRem.toRem(500);
   min-height: toRem.toRem(200);
   padding: toRem.toRem(16);
   margin: 0 auto;
-  
+
   // Colors
   background-color: var(--background);
   color: var(--foreground);
   border: 1px solid var(--shade-2);
-  
+
   // Border & radius
   border-radius: toRem.toRem(20);
-  
+
   // Position
   position: relative;
   overflow: hidden;
@@ -47,24 +47,24 @@
   display: inline-flex;
   align-items: center;
   gap: toRem.toRem(5);
-  
+
   // Hover state
   &:hover {
     background-color: var(--accent-5);
     transform: translateY(-1px);
   }
-  
+
   // Active state
   &:active {
     transform: translateY(1px);
   }
-  
+
   // Focus state
   &:focus {
     outline: 2px solid var(--accent-6);
     outline-offset: 2px;
   }
-  
+
   // Disabled state
   &:disabled {
     opacity: 0.5;
@@ -81,12 +81,12 @@
   display: inline-flex;
   align-items: center;
   gap: toRem.toRem(3);
-  
+
   &:hover {
     color: var(--accent-5);
     text-decoration: underline;
   }
-  
+
   &:active {
     transform: translateY(1px);
   }
@@ -130,16 +130,16 @@
   color: var(--foreground);
   font-size: toRem.toRem(14);
   width: 100%;
-  
+
   &:hover {
     border-color: var(--shade-3);
   }
-  
+
   &:focus {
     border-color: var(--accent-6);
     outline: none;
   }
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -175,7 +175,7 @@
 // 9. Nested structure (should be flattened)
 .parent {
   padding: toRem.toRem(16);
-  
+
   // This should be ignored or handled separately
   .child {
     margin: toRem.toRem(8);
@@ -188,15 +188,15 @@
   color: var(--foreground);
   background-color: var(--background);
   border-color: var(--shade-2);
-  
+
   // Accent colors
   --test-accent-0: var(--accent-0);
   --test-accent-6: var(--accent-6);
-  
+
   // Shades
   --test-shade-1: var(--shade-1);
   --test-shade-7: var(--shade-7);
-  
+
   // Special
   box-shadow: var(--shadow);
 }
@@ -207,11 +207,11 @@
   padding-top: toRem.toRem(50);
   display: flex;
   flex-direction: column;
-  
+
   &.empty {
     padding-top: 0;
   }
-  
+
   &.fullscreen {
     padding: 0;
     height: 100vh;
@@ -224,12 +224,12 @@
   position: fixed;
   top: 0;
   padding: toRem.toRem(10);
-  
+
   &.empty {
     position: static;
     margin: 0;
   }
-  
+
   &.transparent {
     background-color: transparent;
   }

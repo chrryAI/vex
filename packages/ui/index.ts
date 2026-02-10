@@ -22,6 +22,7 @@ export { default as Chrry } from "./Chrry"
 export { default as Store } from "./Store"
 export { HistoryRouterProvider } from "./context/providers/HistoryRouterProvider"
 export { TribeCalculator } from "./TribeCalculator"
+export { default as AgentProfile } from "./AgentProfile"
 
 // Make Chrry the default export
 export { default } from "./Chrry"

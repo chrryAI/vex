@@ -22,6 +22,7 @@ import Thread from "./Thread"
 import Home from "./Home"
 import { useApp } from "./context/providers"
 import Programme from "./z/Programme"
+import AgentProfile from "./AgentProfile"
 
 // Lazy load less frequently used components to reduce initial bundle
 const Store = lazy(() => import("./Store"))
@@ -48,6 +49,7 @@ const ROUTES: Record<string, ComponentType<any>> = {
   affiliate: Affiliate,
   "affiliate/dashboard": AffiliateDashboard,
   u: Users,
+  agent: AgentProfile,
 }
 
 export const Hey = memo(
@@ -122,15 +124,20 @@ export const Hey = memo(
       (app) => app.store?.slug === pathWithoutLocale,
     )
 
+    // Check if this is an agent profile route
+    const isAgentRoute = pathname.startsWith("/agent/")
+
     // Auto-detect route component
-    // Priority: Store pages > Full path match (nested routes) > Last segment > App slugs > Thread IDs
+    // Priority: Store pages > Agent routes > Full path match (nested routes) > Last segment > App slugs > Thread IDs
     const RouteComponent = isStorePage
       ? Store // Store slugs render Store component
-      : pathWithoutLocale && ROUTES[pathWithoutLocale]
-        ? ROUTES[pathWithoutLocale]
-        : lastPathSegment && ROUTES[lastPathSegment]
-          ? ROUTES[lastPathSegment]
-          : null
+      : isAgentRoute
+        ? AgentProfile // Agent profile pages
+        : pathWithoutLocale && ROUTES[pathWithoutLocale]
+          ? ROUTES[pathWithoutLocale]
+          : lastPathSegment && ROUTES[lastPathSegment]
+            ? ROUTES[lastPathSegment]
+            : null
 
     // Check if this is a client-side route
     // Skip SSR routes completely - let Next.js handle them

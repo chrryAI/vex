@@ -3,7 +3,7 @@ import { queryCodebase } from "../../lib/ast/queryCodebase"
 import { generateText } from "ai"
 import { getModelProvider } from "../../lib/getModelProvider"
 import { db } from "@repo/db"
-import { codebaseQueries } from "@repo/db/schema"
+import { codebaseQueries } from "@repo/db"
 import { eq, and, gte, count } from "drizzle-orm"
 import { startOfDay } from "date-fns"
 

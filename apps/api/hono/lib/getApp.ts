@@ -5,6 +5,7 @@ import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
 import { appWithStore } from "@chrryai/chrry/types"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
+import { getActiveRentalsForStore } from "../../lib/adExchange/getActiveRentals"
 
 // ==================== HELPER TYPES ====================
 interface RequestParams {
@@ -48,7 +49,7 @@ function extractRequestParams(c: Context, params: any): RequestParams {
     ).split("?")[0] || "/"
 
   return {
-    appSlug: appSlugParam,
+    appSlug: params.appSlug || appSlugParam || undefined,
     storeSlug,
     pathname,
     skipCache,
@@ -116,6 +117,24 @@ async function resolveAppById(
   })
 
   return { app, path: "appId" }
+}
+
+async function resolveAppBySlug(
+  appSlug: string,
+  storeSlug: string,
+  auth: AuthContext,
+  skipCache: boolean,
+): Promise<{ app: any; path: string }> {
+  const app = await getAppDb({
+    slug: appSlug,
+    storeSlug,
+    userId: auth.member?.id,
+    guestId: auth.guest?.id,
+    depth: 1,
+    skipCache,
+  })
+
+  return { app, path: "appSlug" }
 }
 
 /**
@@ -316,6 +335,60 @@ async function enrichStoreApps(
   )
 
   app.store.apps = enrichedApps.filter(Boolean) as appWithStore[]
+
+  // Add active slot rentals to store.apps
+  if (app?.store?.id) {
+    try {
+      const rentedAppsWithMetadata = await getActiveRentalsForStore({
+        storeId: app.store.id,
+        userId: auth.member?.id,
+        guestId: auth.guest?.id,
+      })
+
+      // Filter out apps that already exist in store.apps
+      const newRentedApps = rentedAppsWithMetadata.filter(
+        (a) => !app.store.apps.find((b: appWithStore) => b.id === a?.id),
+      )
+
+      // Add rented apps to the beginning of the list (priority placement)
+      if (newRentedApps.length > 0) {
+        // Check if current user is the store owner
+        const isStoreOwner =
+          (auth.member && app.store.userId === auth.member.id) ||
+          (auth.guest && app.store.guestId === auth.guest.id)
+
+        // Re-fetch apps with depth 1 for full details
+        const extendedApps = await Promise.all(
+          newRentedApps
+            .filter((a) => !!a)
+            .map(async (rentedApp) => {
+              const fullApp = await getAppDb({
+                id: rentedApp.id,
+                userId: auth.member?.id,
+                guestId: auth.guest?.id,
+                depth: 1,
+                skipCache,
+              })
+
+              // Only attach rental metadata if user is the store owner
+              if (fullApp && isStoreOwner && rentedApp._rental) {
+                return {
+                  ...fullApp,
+                  _rental: rentedApp._rental,
+                }
+              }
+
+              return fullApp
+            }),
+        )
+
+        app.store.apps = [...extendedApps.filter(Boolean), ...app.store.apps]
+      }
+    } catch (error) {
+      console.error("Failed to fetch active rentals:", error)
+      // Don't fail the whole request if rentals fail
+    }
+  }
 }
 
 /**
@@ -347,9 +420,10 @@ export async function getApp({
   c: Context
   appId?: string
   storeSlug?: string
+  appSlug?: string
   accountApp?: boolean
   skipCache?: boolean
-  chrryUrl
+  chrryUrl?: string
 }) {
   const startTime = Date.now()
   let resolutionPath = ""
@@ -378,6 +452,9 @@ export async function getApp({
   const chrryUrl = params.chrryUrl || chrryUrlParam || getChrryUrl(request)
   const siteConfig = getSiteConfig(chrryUrl)
 
+  const appSlug = requestParams.appSlug
+  const storeSlug = requestParams.storeSlug
+
   // 5. Resolve app based on request type
   let appInternal = null
 
@@ -390,6 +467,16 @@ export async function getApp({
     resolutionPath = result.path
   } else if (appId) {
     const result = await resolveAppById(appId, auth, requestParams.skipCache)
+    if (!result.app) return null
+    appInternal = result.app
+    resolutionPath = result.path
+  } else if (appSlug && storeSlug) {
+    const result = await resolveAppBySlug(
+      appSlug,
+      storeSlug,
+      auth,
+      requestParams.skipCache,
+    )
     if (!result.app) return null
     appInternal = result.app
     resolutionPath = result.path

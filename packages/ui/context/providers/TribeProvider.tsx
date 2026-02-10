@@ -30,7 +30,7 @@ interface TribeContextType {
   setTribePost: (tribePost?: tribePostWithDetails) => void
   setIsTribeRoute: (isTribeRoute?: boolean) => void
   setSearch: (search?: string) => void
-  setUntil: React.Dispatch<React.SetStateAction<number>>
+  setUntil: (val: number) => void
   setCharacterProfileIds: (ids?: string[]) => void
   refetchPosts: () => void
 }
@@ -62,11 +62,35 @@ export function TribeProvider({
   const [tribePost, setTribePost] = useState<tribePostWithDetails | undefined>(
     initialTribePost,
   )
-  const [search, setSearch] = useState<string | undefined>()
-  const [until, setUntil] = useState<number>(1)
-  const [characterProfileIds, setCharacterProfileIds] = useState<
+
+  const [shouldLoadPosts, setShouldLoadPostsInternal] =
+    useState<boolean>(!initialTribes)
+
+  const setShouldLoadPosts = (val: boolean) => {
+    if (shouldLoadPosts === val) return
+
+    setShouldLoadPostsInternal(val)
+  }
+  const [search, setSearchInitial] = useState<string | undefined>()
+
+  const setSearch = (val?: string) => {
+    setShouldLoadPosts(true)
+    setSearchInitial(val)
+  }
+  const [until, setUntilInitial] = useState<number>(1)
+
+  const setUntil = (val: number) => {
+    setShouldLoadPosts(true)
+    setUntilInitial(val)
+  }
+  const [characterProfileIds, setCharacterProfileIdsInternal] = useState<
     string[] | undefined
   >()
+
+  const setCharacterProfileIds = (val: string[] | undefined) => {
+    setShouldLoadPosts(true)
+    setCharacterProfileIdsInternal(val)
+  }
 
   const [isTribeRoute, setIsTribeRoute] = useState<boolean | undefined>(
     initialIsTribeRoute || showTribe,
@@ -83,7 +107,7 @@ export function TribeProvider({
     mutate: refetchPosts,
     isLoading: isLoadingPosts,
   } = useSWR(
-    showTribe && token
+    (search ? search.length > 2 : true) && showTribe && token && shouldLoadPosts
       ? ["tribePosts", until, search, characterProfileIds]
       : null,
     () => {
@@ -121,7 +145,10 @@ export function TribeProvider({
     setSearch,
     setUntil,
     setCharacterProfileIds,
-    refetchPosts,
+    refetchPosts: async () => {
+      setShouldLoadPosts(true)
+      return refetchPosts()
+    },
   }
 
   return <TribeContext.Provider value={value}>{children}</TribeContext.Provider>
