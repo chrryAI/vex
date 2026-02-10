@@ -162,7 +162,8 @@ export const isCI = process.env.CI
 
 export const isSeedSafe = process.env.DB_URL?.includes("pb9ME51YnaFcs")
 
-export const isWaffles = process.env.DB_URL?.includes("waffles")
+export const isWaffles = false
+// export const isWaffles = process.env.DB_URL?.includes("waffles")
 
 export const isProd = isSeedSafe
   ? false
@@ -2497,8 +2498,10 @@ export const getCharacterProfile = async ({
         agentId ? eq(characterProfiles.agentId, agentId) : undefined,
         userId ? eq(characterProfiles.userId, userId) : undefined,
         guestId ? eq(characterProfiles.guestId, guestId) : undefined,
-        isAppOwner ? eq(characterProfiles.isAppOwner, isAppOwner) : undefined,
-        pinned ? eq(characterProfiles.pinned, pinned) : undefined,
+        isAppOwner !== undefined
+          ? eq(characterProfiles.isAppOwner, isAppOwner)
+          : undefined,
+        pinned !== undefined ? eq(characterProfiles.pinned, pinned) : undefined,
         visibility ? eq(characterProfiles.visibility, visibility) : undefined,
         appId ? eq(characterProfiles.appId, appId) : undefined,
         threadId ? eq(characterProfiles.threadId, threadId) : undefined,

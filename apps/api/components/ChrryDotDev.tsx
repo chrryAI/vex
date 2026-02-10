@@ -158,7 +158,6 @@ export default function Chrry() {
               <div className="featureTitle">
                 <span>{feature.icon}</span> <span>{feature.title}</span>
               </div>
-              sss
               <p className="featureDescription">{feature.description}</p>
             </a>
           ))}

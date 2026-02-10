@@ -8,7 +8,7 @@ import Loading from "./Loading"
 import { characterProfile } from "./types"
 import { updateThread } from "./lib"
 import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
-import { Button, Div } from "./platform"
+import { Button, Div, Input } from "./platform"
 
 export default function CharacterProfile({
   onCharacterProfileUpdate,
@@ -111,10 +111,14 @@ export default function CharacterProfile({
   return (
     <Div
       data-testid="character-profile"
-      data-cp={`${characterProfile.name}${characterProfile.tags?.length ? `-${characterProfile.tags.join(", ")}` : ""}`}
       key={characterProfile.id}
       style={{ ...styles.characterProfilesActions.style, ...style }}
     >
+      <Input
+        data-testid="character-profile-name"
+        type="hidden"
+        value={`${characterProfile.name}${characterProfile.tags?.length ? `-${characterProfile.tags.join(", ")}` : ""}`}
+      />
       {characterProfile.pinned && showActions && (
         <Button
           title={t("Share")}
