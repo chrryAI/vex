@@ -24,7 +24,7 @@ export const adCampaignsRoute = new Hono()
 adCampaignsRoute.get("/", async (c) => {
   try {
     const member = await getMember(c)
-    const guest = await getGuest(c)
+    const guest = member ? null : await getGuest(c)
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, 401)
@@ -52,7 +52,7 @@ adCampaignsRoute.get("/:id", async (c) => {
   try {
     const id = c.req.param("id")
     const member = await getMember(c)
-    const guest = await getGuest(c)
+    const guest = member ? null : await getGuest(c)
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, 401)
@@ -70,10 +70,10 @@ adCampaignsRoute.get("/:id", async (c) => {
     }
 
     // Check ownership
-    if (
-      (member && campaign.userId !== member.id) ||
-      (guest && campaign.guestId !== guest.id)
-    ) {
+    const ownerMatch =
+      (member && campaign.userId === member.id) ||
+      (guest && campaign.guestId === guest.id)
+    if (!ownerMatch) {
       return c.json({ error: "Forbidden" }, 403)
     }
 
@@ -113,7 +113,7 @@ adCampaignsRoute.get("/:id", async (c) => {
 adCampaignsRoute.post("/", async (c) => {
   try {
     const member = await getMember(c)
-    const guest = await getGuest(c)
+    const guest = member ? null : await getGuest(c)
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, 401)
@@ -124,20 +124,23 @@ adCampaignsRoute.post("/", async (c) => {
       name: z.string().min(1).max(100),
       totalCredits: z.number().int().positive(),
       optimizationGoal: z
-        .enum(["balanced", "traffic", "ctr", "cvr"])
+        .enum(["traffic", "conversions", "knowledge", "balanced"])
         .optional()
         .default("balanced"),
-      biddingStrategy: z.enum(["smart", "manual"]).optional().default("smart"),
+      biddingStrategy: z
+        .enum(["smart", "aggressive", "conservative", "custom"])
+        .optional()
+        .default("smart"),
       targetStores: z.array(z.string()).optional(),
       targetCategories: z.array(z.string()).optional(),
       excludeStores: z.array(z.string()).optional(),
       minTraffic: z.number().int().nonnegative().optional().default(100),
       maxPricePerSlot: z.number().nonnegative().optional(),
       preferredDays: z.array(z.number().int().min(0).max(6)).optional(),
-      preferredHours: z.array(z.number().int().min(0).max(23)).optional(),
+      preferredHours: z.array(z.string()).optional(),
       avoidPrimeTime: z.boolean().optional().default(false),
       dailyBudget: z.number().nonnegative().optional(),
-      metadata: z.record(z.any()).optional(),
+      metadata: z.record(z.string(), z.any()).optional(),
     })
     const parsed = createCampaignSchema.safeParse(await c.req.json())
     if (!parsed.success) {
@@ -174,11 +177,15 @@ adCampaignsRoute.post("/", async (c) => {
       } as NewappCampaign)
       .returning()
 
-    if (isDevelopment)
+    if (isDevelopment && campaign)
       console.debug("campaign_created", {
         id: campaign.id,
         name: campaign.name,
       })
+
+    if (!campaign) {
+      return c.json({ error: "Failed to create campaign" }, 500)
+    }
 
     // Run initial bidding
     const biddingResult = await runautonomousBidding({
@@ -200,7 +207,7 @@ adCampaignsRoute.patch("/:id", async (c) => {
   try {
     const id = c.req.param("id")
     const member = await getMember(c)
-    const guest = await getGuest(c)
+    const guest = member ? null : await getGuest(c)
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, 401)
@@ -215,10 +222,10 @@ adCampaignsRoute.patch("/:id", async (c) => {
     }
 
     // Check ownership
-    if (
-      (member && campaign.userId !== member.id) ||
-      (guest && campaign.guestId !== guest.id)
-    ) {
+    const ownerMatch =
+      (member && campaign.userId === member.id) ||
+      (guest && campaign.guestId === guest.id)
+    if (!ownerMatch) {
       return c.json({ error: "Forbidden" }, 403)
     }
 
@@ -228,19 +235,21 @@ adCampaignsRoute.patch("/:id", async (c) => {
         name: z.string().min(1).max(100).optional(),
         totalCredits: z.number().int().positive().optional(),
         optimizationGoal: z
-          .enum(["balanced", "traffic", "ctr", "cvr"])
+          .enum(["traffic", "conversions", "knowledge", "balanced"])
           .optional(),
-        biddingStrategy: z.enum(["smart", "manual"]).optional(),
+        biddingStrategy: z
+          .enum(["smart", "aggressive", "conservative", "custom"])
+          .optional(),
         targetStores: z.array(z.string()).optional(),
         targetCategories: z.array(z.string()).optional(),
         excludeStores: z.array(z.string()).optional(),
         minTraffic: z.number().int().nonnegative().optional(),
         maxPricePerSlot: z.number().nonnegative().optional(),
         preferredDays: z.array(z.number().int().min(0).max(6)).optional(),
-        preferredHours: z.array(z.number().int().min(0).max(23)).optional(),
+        preferredHours: z.array(z.string()).optional(),
         avoidPrimeTime: z.boolean().optional(),
         dailyBudget: z.number().nonnegative().optional(),
-        metadata: z.record(z.any()).optional(),
+        metadata: z.record(z.string(), z.any()).optional(),
       })
       .partial()
     const parsed = updateCampaignSchema.safeParse(await c.req.json())
@@ -272,7 +281,7 @@ adCampaignsRoute.post("/:id/pause", async (c) => {
   try {
     const id = c.req.param("id")
     const member = await getMember(c)
-    const guest = await getGuest(c)
+    const guest = member ? null : await getGuest(c)
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, 401)
@@ -287,10 +296,10 @@ adCampaignsRoute.post("/:id/pause", async (c) => {
     }
 
     // Check ownership
-    if (
-      (member && campaign.userId !== member.id) ||
-      (guest && campaign.guestId !== guest.id)
-    ) {
+    const ownerMatch =
+      (member && campaign.userId === member.id) ||
+      (guest && campaign.guestId === guest.id)
+    if (!ownerMatch) {
       return c.json({ error: "Forbidden" }, 403)
     }
 
@@ -315,7 +324,7 @@ adCampaignsRoute.post("/:id/resume", async (c) => {
   try {
     const id = c.req.param("id")
     const member = await getMember(c)
-    const guest = await getGuest(c)
+    const guest = member ? null : await getGuest(c)
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, 401)
@@ -330,10 +339,10 @@ adCampaignsRoute.post("/:id/resume", async (c) => {
     }
 
     // Check ownership
-    if (
-      (member && campaign.userId !== member.id) ||
-      (guest && campaign.guestId !== guest.id)
-    ) {
+    const ownerMatch =
+      (member && campaign.userId === member.id) ||
+      (guest && campaign.guestId === guest.id)
+    if (!ownerMatch) {
       return c.json({ error: "Forbidden" }, 403)
     }
 
@@ -366,7 +375,7 @@ adCampaignsRoute.post("/:id/run-bidding", async (c) => {
   try {
     const id = c.req.param("id")
     const member = await getMember(c)
-    const guest = await getGuest(c)
+    const guest = member ? null : await getGuest(c)
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, 401)
@@ -381,10 +390,10 @@ adCampaignsRoute.post("/:id/run-bidding", async (c) => {
     }
 
     // Check ownership
-    if (
-      (member && campaign.userId !== member.id) ||
-      (guest && campaign.guestId !== guest.id)
-    ) {
+    const ownerMatch =
+      (member && campaign.userId === member.id) ||
+      (guest && campaign.guestId === guest.id)
+    if (!ownerMatch) {
       return c.json({ error: "Forbidden" }, 403)
     }
 
@@ -422,6 +431,37 @@ adCampaignsRoute.get("/slots/available", async (c) => {
 adCampaignsRoute.post("/rentals/:id/complete", async (c) => {
   try {
     const id = c.req.param("id")
+
+    // Authenticate the caller
+    const member = await getMember(c)
+    const guest = member ? null : await getGuest(c)
+
+    if (!member && !guest) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+
+    // Load the rental to check ownership
+    const rental = await db.query.slotRentals.findFirst({
+      where: eq(slotRentals.id, id),
+    })
+
+    if (!rental) {
+      return c.json({ error: "Rental not found" }, 404)
+    }
+
+    // Authorize: ensure the authenticated user owns the rental or has admin/cron privileges
+    const isOwner =
+      (member && rental.userId === member.id) ||
+      (guest && rental.guestId === guest.id)
+    const isAdmin = member?.role === "admin"
+    const authHeader = c.req.header("authorization") || ""
+    const bearer = authHeader.replace(/^Bearer\s+/i, "")
+    const isCron =
+      !!process.env.CRON_SECRET && bearer === process.env.CRON_SECRET
+
+    if (!isOwner && !isAdmin && !isCron) {
+      return c.json({ error: "Forbidden" }, 403)
+    }
 
     const result = await updateCampaignPerformance({
       rentalId: id,
@@ -476,7 +516,7 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
   try {
     const slotId = c.req.param("id")
     const member = await getMember(c)
-    const guest = await getGuest(c)
+    const guest = member ? null : await getGuest(c)
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, 401)
@@ -530,32 +570,95 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
       return c.json({ error: "Insufficient credits" }, 402)
     }
 
-    // Create rental
+    // Create rental with transaction to prevent race conditions
     const rentalStartTime = new Date(startDate)
     const rentalEndTime = new Date(
       rentalStartTime.getTime() + slot.durationHours * 60 * 60 * 1000,
     )
 
-    const [rental] = await db
-      .insert(slotRentals)
-      .values({
-        slotId,
-        appId,
-        userId: member?.id,
-        guestId: guest?.id,
-        startTime: rentalStartTime,
-        endTime: rentalEndTime,
-        durationHours: slot.durationHours,
-        creditsCharged: totalCredits,
-        priceEur: totalCredits * 0.01, // 1 credit = €0.01
-        status: "scheduled",
-        knowledgeBaseEnabled: true,
+    // Use a transaction to ensure atomicity and prevent overbooking
+    const rental = await db.transaction(async (tx) => {
+      // Lock the slot row to prevent concurrent modifications
+      const lockedSlot = await tx.query.storeTimeSlots.findFirst({
+        where: eq(storeTimeSlots.id, slotId),
       })
-      .returning()
+
+      if (!lockedSlot) {
+        throw new Error("Slot not found")
+      }
+
+      // Count existing overlapping rentals (excluding cancelled/completed)
+      const overlappingRentals = await tx.query.slotRentals.findMany({
+        where: and(
+          eq(slotRentals.slotId, slotId),
+          and(
+            lte(slotRentals.startTime, rentalEndTime),
+            gte(slotRentals.endTime, rentalStartTime),
+          ),
+        ),
+      })
+
+      const activeOverlapping = overlappingRentals.filter(
+        (r) => r.status !== "cancelled" && r.status !== "completed",
+      )
+
+      const maxConcurrent = lockedSlot.maxConcurrentRentals || 1
+      if (activeOverlapping.length >= maxConcurrent) {
+        throw new Error(
+          `Slot is fully booked (${activeOverlapping.length}/${maxConcurrent} rentals)`,
+        )
+      }
+
+      // Create a campaign for this direct rental
+      const [campaign] = await tx
+        .insert(appCampaigns)
+        .values({
+          appId,
+          userId: member?.id,
+          guestId: guest?.id,
+          name: `Direct Rental - ${new Date().toISOString()}`,
+          totalCredits,
+          creditsRemaining: 0,
+          optimizationGoal: "balanced",
+          biddingStrategy: "smart",
+          status: "active",
+          metadata: { directRental: true },
+        } as NewappCampaign)
+        .returning()
+
+      if (!campaign) {
+        throw new Error("Failed to create campaign")
+      }
+
+      // Insert the rental with the campaign ID
+      const [newRental] = await tx
+        .insert(slotRentals)
+        .values({
+          slotId,
+          appId,
+          campaignId: campaign.id,
+          userId: member?.id,
+          guestId: guest?.id,
+          startTime: rentalStartTime,
+          endTime: rentalEndTime,
+          durationHours: slot.durationHours,
+          creditsCharged: totalCredits,
+          priceEur: totalCredits * 0.01, // 1 credit = €0.01
+          status: "scheduled",
+          knowledgeBaseEnabled: true,
+        })
+        .returning()
+
+      return newRental
+    })
+
+    if (!rental) {
+      return c.json({ error: "Failed to rent slot" }, 500)
+    }
 
     if (isDevelopment)
       console.debug("manual_rental_created", {
-        id: rental.id,
+        id: rental?.id,
         credits: totalCredits,
       })
 
@@ -607,8 +710,12 @@ adCampaignsRoute.get("/slots/:id/availability", async (c) => {
       ),
     })
 
-    const isAvailable =
-      existingRentals.length < (slot.maxConcurrentRentals || 1)
+    // Filter out cancelled and completed rentals
+    const activeRentals = existingRentals.filter(
+      (r) => r.status !== "cancelled" && r.status !== "completed",
+    )
+
+    const isAvailable = activeRentals.length < (slot.maxConcurrentRentals || 1)
 
     return c.json({
       available: isAvailable,

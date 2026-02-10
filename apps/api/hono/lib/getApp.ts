@@ -134,7 +134,7 @@ async function resolveAppBySlug(
     skipCache,
   })
 
-  return { app, path: "appId" }
+  return { app, path: "appSlug" }
 }
 
 /**
@@ -339,15 +339,50 @@ async function enrichStoreApps(
   // Add active slot rentals to store.apps
   if (app?.store?.id) {
     try {
-      const rentedApps = await getActiveRentalsForStore({
+      const rentedAppsWithMetadata = await getActiveRentalsForStore({
         storeId: app.store.id,
         userId: auth.member?.id,
         guestId: auth.guest?.id,
       })
 
+      // Filter out apps that already exist in store.apps
+      const newRentedApps = rentedAppsWithMetadata.filter(
+        (a) => !app.store.apps.find((b: appWithStore) => b.id === a?.id),
+      )
+
       // Add rented apps to the beginning of the list (priority placement)
-      if (rentedApps.length > 0) {
-        app.store.apps = [...rentedApps, ...app.store.apps]
+      if (newRentedApps.length > 0) {
+        // Check if current user is the store owner
+        const isStoreOwner =
+          (auth.member && app.store.userId === auth.member.id) ||
+          (auth.guest && app.store.guestId === auth.guest.id)
+
+        // Re-fetch apps with depth 1 for full details
+        const extendedApps = await Promise.all(
+          newRentedApps
+            .filter((a) => !!a)
+            .map(async (rentedApp) => {
+              const fullApp = await getAppDb({
+                id: rentedApp.id,
+                userId: auth.member?.id,
+                guestId: auth.guest?.id,
+                depth: 1,
+                skipCache,
+              })
+
+              // Only attach rental metadata if user is the store owner
+              if (fullApp && isStoreOwner && rentedApp._rental) {
+                return {
+                  ...fullApp,
+                  _rental: rentedApp._rental,
+                }
+              }
+
+              return fullApp
+            }),
+        )
+
+        app.store.apps = [...extendedApps.filter(Boolean), ...app.store.apps]
       }
     } catch (error) {
       console.error("Failed to fetch active rentals:", error)
@@ -388,7 +423,7 @@ export async function getApp({
   appSlug?: string
   accountApp?: boolean
   skipCache?: boolean
-  chrryUrl
+  chrryUrl?: string
 }) {
   const startTime = Date.now()
   let resolutionPath = ""
