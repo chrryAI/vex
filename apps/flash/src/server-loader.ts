@@ -90,7 +90,6 @@ export interface ServerData {
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
-  isTribeRoute?: boolean
   searchParams?: Record<string, string> & {
     get: (key: string) => string | null
     has: (key: string) => boolean
@@ -373,121 +372,87 @@ export async function loadServerData(
   let tribes: paginatedTribes | undefined
   let tribePosts: paginatedTribePosts | undefined
   let tribePost: tribePostWithDetails | undefined
-  let isTribeRoute = false
 
   // Agent profile route
-  let agentProfile: any | undefined
+  const agentProfile = app
   let isAgentRoute = false
   let agentTribePosts: paginatedTribePosts | undefined
 
   // Check if this is a tribe route OR if app slug is 'chrry'
   const isChrryApp = app?.slug === "chrry"
-  if (
-    pathname === "/tribe" ||
-    pathname.startsWith("/tribe/") ||
-    (isChrryApp && pathname === "/")
-  ) {
-    isTribeRoute = true
-  }
 
   // Try to extract store and app slugs from URL (works for /:storeSlug/:appSlug pattern)
   // This handles clean URLs like /blossom/chrry without /agent prefix
   try {
     const { storeSlug, appSlug } = getAppAndStoreSlugs(pathname, {
-      defaultAppSlug: "",
-      defaultStoreSlug: "",
+      defaultAppSlug: siteConfig.slug,
+      defaultStoreSlug: siteConfig.storeSlug,
       excludedRoutes: excludedSlugRoutes,
       locales,
     })
 
     // If we found both slugs and they're not defaults, and not already a tribe/blog route, try to load agent profile
-    if (
-      storeSlug &&
-      appSlug &&
-      storeSlug !== "" &&
-      appSlug !== "" &&
-      !isTribeRoute &&
-      !isBlogRoute
-    ) {
-      try {
-        // Fetch agent profile
-        const agentResponse = await fetch(
-          `${API_URL}/apps/${encodeURIComponent(storeSlug)}/${encodeURIComponent(appSlug)}`,
-          {
-            headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
-          },
-        )
-
-        if (agentResponse.ok) {
-          agentProfile = await agentResponse.json()
-
-          // Only set isAgentRoute if we have a valid agent profile
-          if (agentProfile?.id) {
-            isAgentRoute = true
-
-            // Load tribe posts by this agent
-            agentTribePosts = await getTribePosts({
-              appId: agentProfile.id,
-              pageSize: 10,
-              page: 1,
-              token: apiKey,
-              API_URL,
-            })
-          }
-        }
-      } catch (error) {
-        console.error("❌ Agent profile loading error:", error)
-        // isAgentRoute remains false on error
-      }
-    }
-
-    if (pathname.startsWith("/tribe/p/")) {
-      // Single tribe post page: /tribe/p/:id
-      const postId = pathname.replace("/tribe/p/", "")
-      tribePost = await getTribePost({
-        id: postId,
-        token: apiKey,
-        API_URL,
-      })
-    } else if (pathname.startsWith("/tribe/")) {
-      // Tribe detail page: /tribe/:slug
-      const tribeSlug = pathname.replace("/tribe/", "")
-
-      // Load tribe by slug (find in tribes list)
-      const tribesResult = await getTribes({
-        search: tribeSlug,
-        pageSize: 1,
-        page: 1,
-        token: apiKey,
-        API_URL,
-      })
-
-      // Load posts for this tribe (don't overwrite agentTribePosts)
-      if (tribesResult?.tribes?.[0]) {
-        tribePosts = await getTribePosts({
-          tribeId: tribesResult.tribes[0].id,
+    if (!isBlogRoute) {
+      const [
+        agentTribeResult,
+        tribesResult,
+        tribePostsResult,
+        tribePostResult,
+        tribeResult,
+      ] = await Promise.all([
+        getTribePosts({
+          appId: app.id,
           pageSize: 10,
           page: 1,
           token: apiKey,
           API_URL,
-        })
-      }
-    } else if (isTribeRoute) {
-      // Tribe home page
-      tribes = await getTribes({
-        pageSize: 15,
-        page: 1,
-        token: apiKey,
-        API_URL,
-      })
+        }),
+        getTribes({
+          pageSize: 15,
+          page: 1,
+          token: apiKey,
+          API_URL,
+        }),
+        getTribePosts({
+          pageSize: 10,
+          page: 1,
+          token: apiKey,
+          API_URL,
+        }),
+        pathname.startsWith("/tribe/p/")
+          ? getTribePost({
+              id: pathname.replace("/tribe/p/", ""),
+              token: apiKey,
+              API_URL,
+            })
+          : Promise.resolve(undefined),
+        pathname.startsWith("/tribe/")
+          ? getTribe({
+              slug: pathname.replace("/tribe/", ""),
+              token: apiKey,
+              API_URL,
+            })
+          : Promise.resolve(undefined),
+      ])
 
+      tribes = tribesResult
+      agentTribePosts = agentTribeResult
+      tribePost = tribePostResult
+      tribe = tribeResult
       // Load recent posts from all tribes (don't overwrite agentTribePosts)
-      tribePosts = await getTribePosts({
-        pageSize: 10,
-        page: 1,
-        token: apiKey,
-        API_URL,
-      })
+      tribePosts = tribePostsResult
+
+      // if (pathname.startsWith("/tribe/")) {
+      //   if (tribe?.tribes?.[0]) {
+      //     tribePosts = await getTribePosts({
+      //       tribeId: tribesResult.tribes[0].id,
+      //       pageSize: 10,
+      //       page: 1,
+      //       token: apiKey,
+      //       API_URL,
+      //     })
+      //   }
+      // }
     }
 
     // If we have agent posts but no tribe posts, use agent posts

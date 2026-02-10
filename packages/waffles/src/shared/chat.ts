@@ -979,10 +979,13 @@ export const chat = async ({
 
     if (profile && shouldCheckProfile) {
       let nextProfile: string | null = null
+
       await expect
         .poll(
           async () => {
-            nextProfile = await characterProfile.getAttribute("data-cp")
+            // Re-query element on each poll to get fresh data
+            const cp = page.getByTestId("character-profile")
+            nextProfile = await cp.getAttribute("data-cp")
             return nextProfile && nextProfile !== profile ? nextProfile : null
           },
           {

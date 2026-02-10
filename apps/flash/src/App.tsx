@@ -82,7 +82,6 @@ function App({ serverData }: AppProps) {
         tribes={serverData?.tribes}
         tribePosts={serverData?.tribePosts}
         tribePost={serverData?.tribePost}
-        isTribeRoute={serverData?.isTribeRoute}
         agentProfile={serverData?.agentProfile}
         isAgentRoute={serverData?.isAgentRoute}
       >
