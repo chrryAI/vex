@@ -1609,10 +1609,10 @@ ${
 
     // Get thread data
     const messagesData = thread
-      ? await getMessages({ threadId: thread.id, pageSize: 20 })
+      ? await getMessages({ threadId: thread.id, pageSize: 10 })
       : { messages: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
-    let messages = messagesData.messages || []
+    const messages = messagesData.messages || []
 
     // Only main app (depth 0) provides instructions and artifacts
     const instructions = depth === 0 ? thread?.instructions || "" : ""
@@ -4874,7 +4874,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
     enhancedUserMessage,
   ]
 
-  const messages: ModelMessage[] = mergeConsecutiveUserMessages(rawMessages)
+  let messages: ModelMessage[] = mergeConsecutiveUserMessages(rawMessages)
 
   // Log prompt size for debugging token usage
   const totalPromptLength = messages.reduce((total, msg) => {
