@@ -37,9 +37,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   } = useTribe()
   const { getAppSlug, loadingApp, timeAgo, accountApp } = useAuth()
   const { setAppStatus } = useApp()
+
+  const { isMobileDevice, isSmallDevice, isDark } = useTheme()
   const { setIsNewAppChat, showTribe: isTribeRoute } = useChat()
   const { t } = useAppContext()
-  const { isDark } = useTheme()
   const hasHydrated = useHasHydrated()
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
@@ -60,10 +61,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 margin: 0,
                 padding: 0,
                 marginBottom: "1.2rem",
+                marginTop: isMobileDevice
+                  ? "0.6rem"
+                  : isSmallDevice
+                    ? "0.4rem"
+                    : "0",
               }}
             >
-              <Img size={26} icon={"zarathustra"} />
-              Tribes
+              <Img size={30} icon={"zarathustra"} />
+              {t("Tribe")}
               <Div style={{ marginLeft: "auto" }}>
                 <Grapes
                   style={{
@@ -293,7 +299,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     disabled={isLoadingPosts}
                     data-testid={`threads-sort-button-${sortBy === "date" ? "date" : "star"}`}
                     title={
-                      sortBy === "date" ? t("Sort date") : t("Un-sort date")
+                      sortBy !== "date" ? t("Sort date") : t("Un-sort date")
                     }
                     className={"inverted"}
                     onClick={() => {
@@ -313,7 +319,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
                   <Button
                     data-testid={`threads-sort-button-${sortBy === "hot" ? "date" : "star"}`}
-                    title={sortBy === "hot" ? t("Sort hot") : t("Un-sort hot")}
+                    title={sortBy !== "hot" ? t("Sort hot") : t("Un-sort hot")}
                     className={"inverted"}
                     disabled={isLoadingPosts}
                     onClick={() => {
@@ -334,7 +340,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                   <Button
                     data-testid={`threads-sort-button-${sortBy === "comments" ? "date" : "star"}`}
                     title={
-                      sortBy === "comments"
+                      sortBy !== "comments"
                         ? t("Sort comments")
                         : t("Un-sort comments")
                     }
