@@ -162,21 +162,15 @@ describe("Thread", () => {
     // Header actions might be inside a conditional block in Thread.tsx
     // Let's check if we need to set anything else.
     // Thread.tsx: {!isVisitor && thread && ( ... )}
-    // isVisitor is false, thread is set.
+    // isVisitor is false, thread is set - check for instructions and delete button
 
-    // Maybe instructions component is not rendering?
-    // Let's relax the selector slightly or debug why.
-    // But let's assume it should be there.
-
-    const instructions = container.querySelector(
-      "[data-testid='thread-instruction']",
-    )
-    if (instructions) expect(instructions).toBeTruthy()
+    const instructions = container.querySelector("[data-testid='instructions']")
+    expect(instructions).toBeTruthy()
 
     const deleteThread = container.querySelector(
       "[data-testid='delete-thread']",
     )
-    if (deleteThread) expect(deleteThread).toBeTruthy()
+    expect(deleteThread).toBeTruthy()
   })
 
   it("shows loading state when loading", async () => {

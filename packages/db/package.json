@@ -1,6 +1,6 @@
 {
   "name": "@repo/db",
-  "version": "1.13.97",
+  "version": "1.13.98",
   "description": "",
   "type": "module",
   "main": "./index.ts",
@@ -10,7 +10,7 @@
     "./src/better-auth-schema": "./src/better-auth-schema.ts"
   },
   "scripts": {
-    "test": "echo \"No tests specified for @repo/db\" && exit 0",
+    "test": "if [ -n \"$CI\" ]; then echo \"ERROR: No tests specified for @repo/db\" && exit 1; else echo \"No tests specified for @repo/db\" && exit 0; fi",
     "generate": "pnpm exec drizzle-kit generate",
     "g": "pnpm exec drizzle-kit generate",
     "migrate": "pnpm exec drizzle-kit migrate",

@@ -320,12 +320,14 @@ export async function loadServerData(
     if (pathname === "/blog" || pathname.startsWith("/blog/")) {
       isBlogRoute = true
 
-      if (pathname === "/blog") {
+      // Normalize trailing slash and extract slug
+      const slug = pathname.replace(/^\/blog\/?/, "")
+
+      if (pathname === "/blog" || pathname === "/blog/" || slug === "") {
         // Blog list page
         blogPosts = await getBlogPosts()
       } else {
         // Individual blog post page
-        const slug = pathname.replace("/blog/", "")
         blogPost = (await getBlogPost(slug)) || undefined
       }
     }
@@ -395,7 +397,7 @@ export async function loadServerData(
             API_URL,
           })
         : Promise.resolve(undefined),
-      pathname.startsWith("/tribe/")
+      pathname.startsWith("/tribe/") && !pathname.startsWith("/tribe/p/")
         ? getTribe({
             slug: pathname.replace("/tribe/", ""),
             token: apiKey,
