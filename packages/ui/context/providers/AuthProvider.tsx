@@ -2775,11 +2775,6 @@ export function AuthProvider({
       : undefined
 
   useEffect(() => {
-    console.log(
-      `🚀 ~ AuthProvider ~ searchParams.get("auth_token"):`,
-      searchParams,
-    )
-
     if (searchParams.get("auth_token")) {
       // Remove auth_token from URL
       removeParams("auth_token")
