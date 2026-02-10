@@ -234,7 +234,7 @@ async function scoreSlots({
   historicalPerformance,
 }: {
   slots: storeTimeSlot[]
-  campaign: AdCampaign
+  campaign: appCampaign
   historicalPerformance: PerformanceData[]
 }): Promise<ScoredSlot[]> {
   const scoredSlots: ScoredSlot[] = []
@@ -362,7 +362,7 @@ Return ONLY JSON:
  */
 function calculateHeuristicScore(
   slot: storeTimeSlot,
-  campaign: AdCampaign,
+  campaign: appCampaign,
 ): number {
   let score = 50 // Base score
 

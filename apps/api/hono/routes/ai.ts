@@ -57,6 +57,7 @@ import {
   and,
   isNull,
   isNotNull,
+  type message,
   aiAgent,
   VEX_LIVE_FINGERPRINTS,
   decrypt,
@@ -98,6 +99,11 @@ import {
 } from "../../lib"
 import { getModelProvider } from "../../lib/getModelProvider"
 import { validatePearFeedback } from "../../lib/validatePearFeedback"
+import {
+  checkTokenLimit,
+  splitConversation,
+  createTokenLimitError,
+} from "../../lib/tokenLimitCheck"
 import { getRetroAnalyticsContext } from "../../lib/getRetroAnalyticsContext"
 import { scanFileForMalware } from "../../lib/security"
 import { upload } from "../../lib/minio"
@@ -1606,7 +1612,7 @@ ${
       ? await getMessages({ threadId: thread.id, pageSize: 20 })
       : { messages: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
-    const messages = messagesData.messages || []
+    let messages = messagesData.messages || []
 
     // Only main app (depth 0) provides instructions and artifacts
     const instructions = depth === 0 ? thread?.instructions || "" : ""
@@ -5591,15 +5597,20 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
         // Step 1: Use DeepSeek to enhance the prompt and generate description
         // console.log("🧠 Enhancing prompt with DeepSeek...")
 
-        // First, get enhanced prompt from DeepSeek internally (no streaming)
-        // In the enhancement prompt, add conversation context
+        // Check token limit for enhancement messages
+        const deepseekEnhanceProvider = await getModelProvider(requestApp)
+        const enhanceModelId =
+          typeof deepseekEnhanceProvider.provider === "string"
+            ? deepseekEnhanceProvider.provider
+            : (deepseekEnhanceProvider.provider as any).modelId ||
+              "deepseek-chat"
+
+        // Limit conversation history to avoid token overflow
+        let conversationHistory = messages.slice(-5)
         const enhancementPrompt = `You are an expert image generation prompt engineer.
 
 CONVERSATION HISTORY:
-${messages
-  .slice(-5)
-  .map((msg) => `${msg.role}: ${msg.content}`)
-  .join("\n")}
+${conversationHistory.map((msg) => `${msg.role}: ${msg.content}`).join("\n")}
 
 CURRENT REQUEST: "${content}"
 
@@ -5617,11 +5628,44 @@ Respond in this exact JSON format:
 
 Make the enhanced prompt contextually aware and optimized for high-quality image generation.`
 
-        // Use app-specific DeepSeek key if available
-        const deepseekEnhanceProvider = await getModelProvider(requestApp)
+        const enhanceMessages = [
+          { role: "user" as const, content: enhancementPrompt },
+        ]
+        const enhanceTokenCheck = checkTokenLimit(
+          enhanceMessages,
+          enhanceModelId,
+        )
+
+        console.log(`📊 Flux enhancement token check:`, {
+          estimated: enhanceTokenCheck.estimatedTokens,
+          max: enhanceTokenCheck.maxTokens,
+          withinLimit: enhanceTokenCheck.withinLimit,
+        })
+
+        // If token limit exceeded, use fewer messages
+        if (!enhanceTokenCheck.withinLimit) {
+          console.warn(`⚠️ Enhancement prompt too long, using shorter context`)
+          conversationHistory = messages.slice(-2)
+          const shorterPrompt = `You are an expert image generation prompt engineer.
+
+CONVERSATION HISTORY:
+${conversationHistory.map((msg) => `${msg.role}: ${msg.content}`).join("\n")}
+
+CURRENT REQUEST: "${content}"
+
+Create an enhanced, detailed prompt for Flux image generation and a creative description.
+
+Respond in JSON format:
+{
+  "enhancedPrompt": "detailed prompt",
+  "description": "creative description"
+}`
+          enhanceMessages[0].content = shorterPrompt
+        }
+
         const enhancementResponse = await generateText({
           model: deepseekEnhanceProvider.provider,
-          messages: [{ role: "user", content: enhancementPrompt }],
+          messages: enhanceMessages,
         })
 
         let enhancedPrompt = content
@@ -5907,7 +5951,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             ...calendarTools,
             ...vaultTools,
             ...focusTools,
-            ...imageTools,
+            // ...imageTools,
             ...talentTools,
           }
 
@@ -5924,6 +5968,65 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       let responseMetadata: any = null
       let toolCallsDetected = false
       let streamCompleted = false
+      let tokenLimitWarning = ""
+
+      // Check token limit BEFORE streaming
+      const modelId =
+        typeof model === "string"
+          ? model
+          : (model as any).modelId || "deepseek-reasoner"
+      const tokenCheck = checkTokenLimit(messages, modelId)
+
+      console.log(`📊 Token check for ${tokenCheck.modelName}:`, {
+        estimated: tokenCheck.estimatedTokens,
+        max: tokenCheck.maxTokens,
+        withinLimit: tokenCheck.withinLimit,
+        shouldSplit: tokenCheck.shouldSplit,
+      })
+
+      // If token limit exceeded, split conversation
+      if (tokenCheck.shouldSplit) {
+        console.warn(`⚠️ Token limit exceeded - splitting conversation`)
+        const split = splitConversation(
+          messages,
+          Math.floor(tokenCheck.maxTokens * 0.7),
+        )
+
+        // Rebuild messages with summary
+        const newMessages = []
+        if (split.systemPrompt) {
+          // Inject summary into system prompt
+          const updatedSystemPrompt = {
+            ...split.systemPrompt,
+            content:
+              split.systemPrompt.content + "\n\n" + split.summarizedContext,
+          }
+          newMessages.push(updatedSystemPrompt)
+        } else if (split.summarizedContext) {
+          // Create new system message with summary
+          newMessages.push({
+            role: "system",
+            content: split.summarizedContext,
+          })
+        }
+        newMessages.push(...split.recentMessages)
+
+        messages = newMessages as message[]
+        tokenLimitWarning = createTokenLimitError(
+          tokenCheck.estimatedTokens,
+          tokenCheck.maxTokens,
+          tokenCheck.modelName,
+        )
+
+        console.log(
+          `✅ Conversation split - new message count: ${messages.length}`,
+        )
+      } else if (!tokenCheck.withinLimit) {
+        // Token limit exceeded but can't split (too few messages)
+        const errorMsg = `Conversation too long for ${tokenCheck.modelName} (${tokenCheck.estimatedTokens.toLocaleString()} tokens, ${tokenCheck.maxTokens.toLocaleString()} max). Please start a new conversation.`
+        console.error(`❌ ${errorMsg}`)
+        return c.json({ error: errorMsg }, { status: 400 })
+      }
 
       try {
         console.log("🍣 Step 1: Creating streamText result...")
@@ -6123,7 +6226,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 }
               }
               console.log("🍣 Successfully completed fullStream iteration")
-            } catch (streamError) {
+            } catch (streamError: any) {
               captureException(streamError)
 
               console.error(
@@ -6135,11 +6238,41 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 "❌ Error constructor:",
                 streamError?.constructor?.name,
               )
+
+              // Check for token limit errors
+              const errorMsg = streamError?.message || String(streamError)
+              const isTokenLimitError =
+                errorMsg.includes("maximum context length") ||
+                errorMsg.includes("context_length_exceeded") ||
+                errorMsg.includes("tokens")
+
               if (streamError instanceof Error) {
                 console.error("❌ Error message:", streamError.message)
                 console.error("❌ Error stack:", streamError.stack)
+
+                if (isTokenLimitError) {
+                  // Provide helpful error message for token limit
+                  const userFriendlyError = `The conversation has grown too long. Please start a new chat to continue. (Technical: ${streamError.message})`
+
+                  // Send error to user via stream
+                  await enhancedStreamChunk({
+                    chunk: `\n\n⚠️ **Error**: ${userFriendlyError}`,
+                    chunkNumber: currentChunk++,
+                    totalChunks: -1,
+                    streamingMessage: sushiStreamingMessage,
+                    member,
+                    guest,
+                    thread,
+                    streamId,
+                    clientId,
+                  })
+
+                  // Don't re-throw - we've handled it gracefully
+                  streamFinished = true
+                  return
+                }
               }
-              // Re-throw to be caught by outer try-catch
+              // Re-throw non-token-limit errors to be caught by outer try-catch
               throw streamError
             } finally {
               // Clean up monitoring interval
@@ -6196,6 +6329,11 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         console.log("🍣 Stream loop completed")
 
         finalText = answerText || finalText
+
+        // Prepend token limit warning if conversation was split
+        if (tokenLimitWarning && finalText) {
+          finalText = `ℹ️ ${tokenLimitWarning}\n\n${finalText}`
+        }
 
         if (!streamControllers.has(streamId)) {
           console.log("Stream was stopped, breaking loop")

@@ -85,8 +85,8 @@ export async function updateCampaignPerformance({
       bidAmount: bid.bidAmount,
       predictedROI: bid.predictedROI || 0,
       actualROI,
-      traffic: rental.trafficGenerated,
-      conversions: rental.conversions,
+      traffic: rental.trafficGenerated ?? 0,
+      conversions: rental.conversions ?? 0,
       timestamp: new Date().toISOString(),
     }
 
@@ -96,11 +96,13 @@ export async function updateCampaignPerformance({
     const trimmedHistory = performanceHistory.slice(-100)
 
     // Calculate updated metrics
-    const totalImpressions = campaign.totalImpressions + rental.impressions
-    const totalClicks = campaign.totalClicks + rental.clicks
-    const totalConversions = campaign.totalConversions + rental.conversions
+    const totalImpressions =
+      campaign.totalImpressions + (rental.impressions ?? 0)
+    const totalClicks = campaign.totalClicks + (rental.clicks ?? 0)
+    const totalConversions =
+      campaign.totalConversions + (rental.conversions ?? 0)
     const totalKnowledgeGained =
-      campaign.totalKnowledgeGained + rental.knowledgeGained
+      campaign.totalKnowledgeGained + (rental.knowledgeGained ?? 0)
 
     const averageCPC = totalClicks > 0 ? campaign.creditsSpent / totalClicks : 0
     const averageROI = calculateAverageROI(trimmedHistory)
@@ -379,7 +381,7 @@ export async function processAuctionResults({
     }
 
     const slot = await db.query.storeTimeSlots.findFirst({
-      where: eq(slotRentals.slotId, slotId),
+      where: eq(storeTimeSlots.id, slotId),
     })
 
     if (!slot) {

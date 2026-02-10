@@ -16,7 +16,7 @@ import {
   real,
 } from "drizzle-orm/pg-core"
 import type { AdapterAccount } from "@auth/core/adapters"
-import { sql } from "drizzle-orm"
+import { sql, relations } from "drizzle-orm"
 
 export const PRO_CREDITS_PER_MONTH = 5000
 export const PLUS_CREDITS_PER_MONTH = 2000
@@ -5277,3 +5277,88 @@ export const slotAuctions = pgTable(
 
 export type slotAuction = typeof slotAuctions.$inferSelect
 export type newSlotAuction = typeof slotAuctions.$inferInsert
+
+// ============================================================================
+// DRIZZLE RELATIONS - Enable runtime queries with 'with' clauses
+// ============================================================================
+
+export const storeTimeSlotsRelations = relations(
+  storeTimeSlots,
+  ({ one, many }) => ({
+    store: one(stores, {
+      fields: [storeTimeSlots.storeId],
+      references: [stores.id],
+    }),
+    rentals: many(slotRentals),
+    auctions: many(slotAuctions),
+  }),
+)
+
+export const appCampaignsRelations = relations(
+  appCampaigns,
+  ({ one, many }) => ({
+    app: one(apps, {
+      fields: [appCampaigns.appId],
+      references: [apps.id],
+    }),
+    user: one(users, {
+      fields: [appCampaigns.userId],
+      references: [users.id],
+    }),
+    guest: one(guests, {
+      fields: [appCampaigns.guestId],
+      references: [guests.id],
+    }),
+    bids: many(autonomousBids),
+    rentals: many(slotRentals),
+  }),
+)
+
+export const autonomousBidsRelations = relations(autonomousBids, ({ one }) => ({
+  campaign: one(appCampaigns, {
+    fields: [autonomousBids.campaignId],
+    references: [appCampaigns.id],
+  }),
+  slot: one(storeTimeSlots, {
+    fields: [autonomousBids.slotId],
+    references: [storeTimeSlots.id],
+  }),
+}))
+
+export const slotRentalsRelations = relations(slotRentals, ({ one }) => ({
+  slot: one(storeTimeSlots, {
+    fields: [slotRentals.slotId],
+    references: [storeTimeSlots.id],
+  }),
+  campaign: one(appCampaigns, {
+    fields: [slotRentals.campaignId],
+    references: [appCampaigns.id],
+  }),
+  app: one(apps, {
+    fields: [slotRentals.appId],
+    references: [apps.id],
+  }),
+  user: one(users, {
+    fields: [slotRentals.userId],
+    references: [users.id],
+  }),
+  guest: one(guests, {
+    fields: [slotRentals.guestId],
+    references: [guests.id],
+  }),
+  bid: one(autonomousBids, {
+    fields: [slotRentals.bidId],
+    references: [autonomousBids.id],
+  }),
+}))
+
+export const slotAuctionsRelations = relations(slotAuctions, ({ one }) => ({
+  slot: one(storeTimeSlots, {
+    fields: [slotAuctions.slotId],
+    references: [storeTimeSlots.id],
+  }),
+  winningBid: one(autonomousBids, {
+    fields: [slotAuctions.winningBidId],
+    references: [autonomousBids.id],
+  }),
+}))

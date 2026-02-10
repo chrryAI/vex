@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { db, eq, and, desc } from "@repo/db"
+import { db, eq, and, desc, gte, lte } from "@repo/db"
 import {
   appCampaigns,
   autonomousBids,
@@ -55,8 +55,8 @@ adCampaignsRoute.get("/:id", async (c) => {
       return c.json({ error: "Unauthorized" }, 401)
     }
 
-    const campaign = await db.query.adCampaigns.findFirst({
-      where: eq(adCampaigns.id, id),
+    const campaign = await db.query.appCampaigns.findFirst({
+      where: eq(appCampaigns.id, id),
       with: {
         app: true,
       },
@@ -164,7 +164,7 @@ adCampaignsRoute.post("/", async (c) => {
         avoidPrimeTime,
         dailyBudget,
         status: "active",
-        metadata: jsonb("metadata"),
+        metadata: body.metadata || null,
       } as NewappCampaign)
       .returning()
 
@@ -196,8 +196,8 @@ adCampaignsRoute.patch("/:id", async (c) => {
       return c.json({ error: "Unauthorized" }, 401)
     }
 
-    const campaign = await db.query.adCampaigns.findFirst({
-      where: eq(adCampaigns.id, id),
+    const campaign = await db.query.appCampaigns.findFirst({
+      where: eq(appCampaigns.id, id),
     })
 
     if (!campaign) {
@@ -241,8 +241,8 @@ adCampaignsRoute.post("/:id/pause", async (c) => {
       return c.json({ error: "Unauthorized" }, 401)
     }
 
-    const campaign = await db.query.adCampaigns.findFirst({
-      where: eq(adCampaigns.id, id),
+    const campaign = await db.query.appCampaigns.findFirst({
+      where: eq(appCampaigns.id, id),
     })
 
     if (!campaign) {
@@ -284,8 +284,8 @@ adCampaignsRoute.post("/:id/resume", async (c) => {
       return c.json({ error: "Unauthorized" }, 401)
     }
 
-    const campaign = await db.query.adCampaigns.findFirst({
-      where: eq(adCampaigns.id, id),
+    const campaign = await db.query.appCampaigns.findFirst({
+      where: eq(appCampaigns.id, id),
     })
 
     if (!campaign) {
@@ -335,8 +335,8 @@ adCampaignsRoute.post("/:id/run-bidding", async (c) => {
       return c.json({ error: "Unauthorized" }, 401)
     }
 
-    const campaign = await db.query.adCampaigns.findFirst({
-      where: eq(adCampaigns.id, id),
+    const campaign = await db.query.appCampaigns.findFirst({
+      where: eq(appCampaigns.id, id),
     })
 
     if (!campaign) {
