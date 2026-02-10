@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi } from "vitest"
 import * as React from "react"
-import { act } from "react-dom/test-utils"
+import { act } from "react"
 import { createRoot } from "react-dom/client"
 import Checkbox from "../Checkbox"
 import { PlatformProvider } from "../platform/PlatformProvider"

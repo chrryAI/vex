@@ -60,7 +60,7 @@ function FocusButton({
   const { time, presetMin1 } = useTimerContext()
 
   const { appStyles } = useStyles()
-  const { isExtension, isFirefox, isWeb } = usePlatform()
+  const { isExtension, isFirefox, isWeb: _isWeb } = usePlatform()
   const { focus, getAppSlug, setShowFocus, app } = useAuth()
 
   const hasHydrated = useHasHydrated()
@@ -127,7 +127,7 @@ export default function App({
   }) => void
 }) {
   const { t } = useAppContext()
-  const { time, playKitasaku, setPlayKitasaku } = useTimerContext()
+  const { time: _time, playKitasaku, setPlayKitasaku } = useTimerContext()
 
   const {
     slug,
@@ -166,7 +166,7 @@ export default function App({
     accountApp,
     token,
     loadingApp,
-    userBaseStore,
+    userBaseStore: _userBaseStore,
     canBurn,
     setBurn,
     isPear,
@@ -174,7 +174,7 @@ export default function App({
     displayedApps,
     setDisplayedApps,
     plausible,
-    lastApp,
+    lastApp: _lastApp,
     ...auth
   } = useAuth()
 
