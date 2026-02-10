@@ -26,8 +26,8 @@ env:
   BUILD_ID: ${{ github.sha }}
 
   # Node environment
-  NODE_ENV: production
-  VITE_NODE_ENV: production
+  NODE_ENV: test
+  VITE_NODE_ENV: test
 
   # Database
   DB_URL: ${{ secrets.DB_URL }}
