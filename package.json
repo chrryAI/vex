@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.13.96",
+  "version": "1.13.97",
   "type": "module",
   "scripts": {
     "build": "turbo build",
@@ -36,6 +36,7 @@
     "publish": "bash scripts/publish-all.sh",
     "test:scss": "node scripts/test-scss-converter.js",
     "test": "npm run test:scss",
+    "test:coverage": "turbo run test:coverage",
     "validate:chrry": "node scripts/validate-chrry-config.js",
     "generate:icons": "bash scripts/generate-app-icons.sh",
     "cleanup": "turbo lint -- --fix",
