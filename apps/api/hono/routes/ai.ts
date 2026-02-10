@@ -1607,9 +1607,20 @@ ${
 
     // Auto-set main thread if owner and not set
 
-    // Get thread data
+    // Get parent apps first to calculate total app count
+    const parentApps =
+      "store" in currentApp && currentApp.store?.apps
+        ? currentApp.store.apps.filter((a) => a.id !== currentApp.id)
+        : []
+
+    // Calculate dynamic message count based on total apps
+    // Min 4 messages = 2 complete exchanges (user-AI pairs)
+    const totalApps = parentApps.length + 1
+    const dynamicPageSize = Math.max(4, Math.min(6, Math.floor(18 / totalApps)))
+
+    // Get thread data with dynamic page size
     const messagesData = thread
-      ? await getMessages({ threadId: thread.id, pageSize: 6 })
+      ? await getMessages({ threadId: thread.id, pageSize: dynamicPageSize })
       : { messages: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
     const messages = messagesData.messages || []
@@ -1640,12 +1651,6 @@ ${
       artifacts: [] as any[],
       task: undefined as typeof task,
     }
-
-    // Get parent apps from store (filter out current app)
-    const parentApps =
-      "store" in currentApp && currentApp.store?.apps
-        ? currentApp.store.apps.filter((a) => a.id !== currentApp.id)
-        : []
 
     if (parentApps.length > 0) {
       // Get knowledge from all parent apps (up to 5 total in chain)
