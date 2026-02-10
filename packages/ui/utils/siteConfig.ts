@@ -77,7 +77,7 @@ export const isTestingDevice = false && isDevelopment
 export const isE2E =
   getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
 
-const chrryDev = {
+export const chrryDev = {
   mode: "chrryDev" as SiteMode,
   slug: "chrryDev",
   storeSlug: "chrry",
@@ -100,7 +100,7 @@ const chrryDev = {
   features: [
     {
       title: "Waffles",
-      description: "🍣 Sushi Playwright testing utilities, e2e strikes 🎯",
+      description: "Sushi 🍣 Playwright testing utilities, e2e strikes 🎯",
       icon: "🧇",
       link: "https://github.com/chrryAI/waffles",
       isOpenSource: true,

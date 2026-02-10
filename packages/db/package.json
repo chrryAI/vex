@@ -1,6 +1,6 @@
 {
   "name": "@repo/db",
-  "version": "1.13.83",
+  "version": "1.13.89",
   "description": "",
   "type": "module",
   "main": "./index.ts",
@@ -10,7 +10,7 @@
     "./src/better-auth-schema": "./src/better-auth-schema.ts"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"No tests specified for @repo/db\" && exit 0",
     "generate": "pnpm exec drizzle-kit generate",
     "g": "pnpm exec drizzle-kit generate",
     "migrate": "pnpm exec drizzle-kit migrate",
