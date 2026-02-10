@@ -1,7 +1,15 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import React, { act } from "react"
+import React from "react"
 import { createRoot } from "react-dom/client"
+
+// Import act with fallback
+let act: any
+try {
+  act = require("react").act || ((callback: any) => callback())
+} catch {
+  act = (callback: any) => callback()
+}
 
 // Make React globally available for the tested component which expects it
 global.React = React
