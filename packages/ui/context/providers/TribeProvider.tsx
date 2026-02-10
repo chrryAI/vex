@@ -15,6 +15,7 @@ import {
 import { useChat } from "./ChatProvider"
 import { useAuth, useData } from "."
 import useSWR from "swr"
+import { useLocalStorage } from "../../hooks"
 
 interface TribeContextType {
   tribes?: paginatedTribes
@@ -25,6 +26,8 @@ interface TribeContextType {
   until?: number
   characterProfileIds?: string[]
   isLoadingPosts?: boolean
+  sortBy: "date" | "hot" | "comments"
+  setSortBy: (val: "date" | "hot" | "comments") => void
   setTribes: (tribes?: paginatedTribes) => void
   setTribePosts: (tribePosts?: paginatedTribePosts) => void
   setTribePost: (tribePost?: tribePostWithDetails) => void
@@ -56,6 +59,16 @@ export function TribeProvider({
   const [tribes, setTribes] = useState<paginatedTribes | undefined>(
     initialTribes,
   )
+
+  const [sortBy, setSortByInternal] = useLocalStorage<
+    "date" | "hot" | "comments"
+  >("sortBy", "hot")
+
+  const setSortBy = (val: "date" | "hot" | "comments") => {
+    setShouldLoadPosts(true)
+    setSortByInternal(val)
+  }
+
   const [tribePosts, setTribePosts] = useState<paginatedTribePosts | undefined>(
     initialTribePosts,
   )
@@ -100,6 +113,11 @@ export function TribeProvider({
     !showTribe && setIsTribeRoute(false)
   }, [showTribe])
 
+  useEffect(() => {
+    // Trigger refetch when sortBy changes
+    setShouldLoadPosts(true)
+  }, [sortBy])
+
   const { actions } = useData()
 
   const {
@@ -108,7 +126,7 @@ export function TribeProvider({
     isLoading: isLoadingPosts,
   } = useSWR(
     (search ? search.length > 2 : true) && showTribe && token && shouldLoadPosts
-      ? ["tribePosts", until, search, characterProfileIds]
+      ? ["tribePosts", until, search, characterProfileIds, sortBy]
       : null,
     () => {
       if (!token) return
@@ -116,11 +134,17 @@ export function TribeProvider({
         pageSize: 10 * until,
         search,
         characterProfileIds,
+        sortBy,
       })
     },
-    {
-      fallbackData: initialTribePosts,
-    },
+  )
+  console.log(
+    `🚀 ~ token:`,
+    token,
+    (search ? search.length > 2 : true) &&
+      showTribe &&
+      token &&
+      shouldLoadPosts,
   )
 
   useEffect(() => {
@@ -142,6 +166,8 @@ export function TribeProvider({
     setTribePosts,
     setTribePost,
     setIsTribeRoute,
+    sortBy,
+    setSortBy,
     setSearch,
     setUntil,
     setCharacterProfileIds,

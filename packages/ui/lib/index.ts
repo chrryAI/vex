@@ -1254,6 +1254,7 @@ export const getTribePosts = async ({
   userId,
   guestId,
   characterProfileIds,
+  sortBy,
   onError,
   API_URL = utils.API_URL,
 }: {
@@ -1266,6 +1267,7 @@ export const getTribePosts = async ({
   userId?: string
   guestId?: string
   characterProfileIds?: string[]
+  sortBy?: "date" | "hot" | "comments"
   onError?: (status: number) => void
   API_URL?: string
 }) => {
@@ -1280,6 +1282,7 @@ export const getTribePosts = async ({
   if (guestId) url.searchParams.set("guestId", guestId)
   if (characterProfileIds && characterProfileIds.length > 0)
     url.searchParams.set("characterProfileIds", characterProfileIds.join(","))
+  if (sortBy) url.searchParams.set("sortBy", sortBy)
 
   const response = await fetch(url, {
     method: "GET",
@@ -1471,6 +1474,7 @@ export const getActions = ({
       userId?: string
       guestId?: string
       characterProfileIds?: string[]
+      sortBy?: "date" | "hot" | "comments"
       onError?: (status: number) => void
     }) => getTribePosts({ token, ...params, API_URL }),
     getTribePost: (params: {

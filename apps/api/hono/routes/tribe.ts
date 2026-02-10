@@ -8,14 +8,13 @@ import {
   db,
   eq,
   desc,
+  redis as dbRedis,
 } from "@repo/db"
 import { tribePosts, tribeComments } from "@repo/db/src/schema"
 import { PerformanceTracker } from "../../lib/analytics"
-import { getApp } from "../lib/auth"
-
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
-
 import { getGuest, getMember } from "../lib/auth"
+import { isDevelopment } from "@chrryai/chrry/utils"
+import { isE2E } from "@chrryai/chrry/utils/siteConfig"
 
 const app = new Hono()
 
@@ -215,8 +214,11 @@ app.get("/p", async (c) => {
   const characterProfileIds = c.req.query("characterProfileIds")
   const pageSize = c.req.query("pageSize")
   const page = c.req.query("page")
-
-  const { hostname } = c.req
+  const sortBy = c.req.query("sortBy") as
+    | "date"
+    | "hot"
+    | "comments"
+    | undefined
 
   const member = await tracker.track(
     "tribe_post_request_post_auth_member",
@@ -228,10 +230,37 @@ app.get("/p", async (c) => {
     return c.json({ error: "Invalid credentials" }, { status: 401 })
   }
 
+  // Redis setup (skip in dev/e2e)
+  const redis =
+    isDevelopment || isE2E
+      ? {
+          get: async (key: string) => null,
+          setex: async (key: string, ttl: number, value: string) => {},
+          del: async (key: string) => {},
+        }
+      : dbRedis
+
+  const skipCache = c.req.query("skipCache") === "true"
+
   try {
-    const result = await tracker.track(
-      "tribe_posts_request_getTribePosts",
-      () =>
+    // Create cache key based on all query parameters
+    const cacheKey = `tribe:posts:${sortBy || "date"}:${tribeId || "all"}:${appId || "all"}:${search || ""}:${characterProfileIds || ""}:${pageSize || 10}:${page || 1}`
+
+    let result = null
+
+    // Check Redis cache first
+    if (!skipCache && !isDevelopment && !isE2E) {
+      const cachedPosts = await redis.get(cacheKey)
+      if (cachedPosts) {
+        console.log(`✅ Tribe posts cache hit: ${cacheKey}`)
+        result = JSON.parse(cachedPosts)
+      }
+    }
+
+    // Fetch from database if not cached
+    if (!result) {
+      console.log(`📝 Fetching fresh tribe posts: ${cacheKey}`)
+      result = await tracker.track("tribe_posts_request_getTribePosts", () =>
         getTribePosts({
           tribeId,
           appId,
@@ -243,29 +272,27 @@ app.get("/p", async (c) => {
             : undefined,
           pageSize: pageSize ? parseInt(pageSize) : 10,
           page: page ? parseInt(page) : 1,
+          sortBy: sortBy || "date",
         }),
-    )
+      )
 
-    const chrryUrl = getSiteConfig(hostname).url
+      // Store in Redis cache with 5 minute TTL
+      if (!isDevelopment && !isE2E) {
+        await redis.setex(cacheKey, 300, JSON.stringify(result))
+        console.log(`💾 Cached tribe posts: ${cacheKey}`)
+      }
+    }
 
     const data = {
       ...result,
-      posts: await Promise.all(
-        result?.posts?.map(async (r) => {
-          return {
-            ...r,
-            content:
-              r.content?.length > 300
-                ? `${r.content?.slice(0, 300)}...`
-                : r.content,
-            app: await getApp({
-              c,
-              appId: r.app.id,
-              chrryUrl,
-            }),
-          }
-        }),
-      ),
+      posts: result?.posts?.map((r) => ({
+        ...r,
+        content:
+          r.content?.length > 300
+            ? `${r.content?.slice(0, 300)}...`
+            : r.content,
+        // App already includes store from database join
+      })),
     }
 
     return c.json({
@@ -299,7 +326,35 @@ app.get("/p/:id", async (c) => {
 
   const postId = c.req.param("id")
 
+  // Redis setup (skip in dev/e2e)
+  const redis =
+    isDevelopment || isE2E
+      ? {
+          get: async (key: string) => null,
+          setex: async (key: string, ttl: number, value: string) => {},
+          del: async (key: string) => {},
+        }
+      : dbRedis
+
+  const skipCache = c.req.query("skipCache") === "true"
+
   try {
+    // Create cache key for single post
+    const cacheKey = `tribe:post:${postId}`
+
+    const cachedPost = null
+
+    // Check Redis cache first
+    if (!skipCache && !isDevelopment && !isE2E) {
+      const cached = await redis.get(cacheKey)
+      if (cached) {
+        console.log(`✅ Tribe post cache hit: ${postId}`)
+        return c.json(JSON.parse(cached))
+      }
+    }
+
+    console.log(`📝 Fetching fresh tribe post: ${postId}`)
+
     // Get post details by ID
     const [postData] = await tracker.track("tribe_post_request_post", () =>
       db
@@ -351,7 +406,7 @@ app.get("/p/:id", async (c) => {
       }),
     )
 
-    return c.json({
+    const responseData = {
       success: true,
       post: {
         ...post,
@@ -365,7 +420,15 @@ app.get("/p/:id", async (c) => {
           reactionsCount: reactions.length,
         },
       },
-    })
+    }
+
+    // Store in Redis cache with 5 minute TTL
+    if (!isDevelopment && !isE2E) {
+      await redis.setex(cacheKey, 300, JSON.stringify(responseData))
+      console.log(`💾 Cached tribe post: ${postId}`)
+    }
+
+    return c.json(responseData)
   } catch (error) {
     console.error("Error fetching tribe post:", error)
     return c.json(

@@ -471,13 +471,19 @@ export async function invalidatePattern(
  * SWR Cache Provider function
  * Matches SWR's expected signature: (cache: Readonly<Cache>) => Cache
  * The parent cache is ignored as we use our own persistent storage
+ *
+ * DISABLED: IndexedDB cache disabled due to performance issues (quota bloat)
+ * Using simple memory-only cache for better performance
  */
 export function getCacheProvider(_parentCache?: Readonly<Cache>): Cache {
-  if (typeof indexedDB !== "undefined") {
-    return createDexieProvider(DEFAULT_CONFIG)
-  }
-
+  // ALWAYS use memory-only cache (IndexedDB disabled)
   return createMemoryProvider()
+
+  // Old code (disabled):
+  // if (typeof indexedDB !== "undefined") {
+  //   return createDexieProvider(DEFAULT_CONFIG)
+  // }
+  // return createMemoryProvider()
 }
 
 /**
@@ -491,11 +497,14 @@ export function createCacheProvider(
   const mergedConfig = { ...DEFAULT_CONFIG, ...config }
 
   return (_parentCache?: Readonly<Cache>) => {
-    if (typeof indexedDB !== "undefined") {
-      return createDexieProvider(mergedConfig)
-    }
-
+    // IndexedDB disabled - always use memory cache
     return createMemoryProvider()
+
+    // Old code (disabled):
+    // if (typeof indexedDB !== "undefined") {
+    //   return createDexieProvider(mergedConfig)
+    // }
+    // return createMemoryProvider()
   }
 }
 

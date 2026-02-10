@@ -17,7 +17,8 @@ export async function scanFileForMalware(
     // Convert Buffer to Uint8Array for proper Blob compatibility
     const uint8Array = new Uint8Array(buffer)
     const blob = new Blob([uint8Array], { type: "application/octet-stream" })
-    formData.append("file", blob, "file")
+    // Use actual filename if provided so scanner can detect file type
+    formData.append("file", blob, options?.filename || "file")
 
     console.log(`🔍 Scanning file at ${scannerUrl}/scan`)
 

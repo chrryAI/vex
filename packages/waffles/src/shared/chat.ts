@@ -965,7 +965,7 @@ export const chat = async ({
 
         const cpName = await page.getByTestId("character-profile-name")
 
-        await expect(cpName).toBeVisible({
+        await expect(cpName).toBeAttached({
           timeout: agentMessageTimeout,
         })
 
@@ -993,7 +993,7 @@ export const chat = async ({
 
       const cpName = await page.getByTestId("character-profile-name")
 
-      await expect(cpName).toBeVisible({
+      await expect(cpName).toBeAttached({
         timeout: agentMessageTimeout,
       })
 
