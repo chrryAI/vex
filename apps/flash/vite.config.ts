@@ -93,7 +93,13 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
       },
     },
     optimizeDeps: {
-      include: ["react", "react-dom", "react-dom/server"],
+      include: [
+        "react",
+        "react-dom",
+        "react-dom/server",
+        "markdown-to-jsx",
+        "react-syntax-highlighter",
+      ],
       exclude: [
         // Tauri APIs are only available at runtime in Tauri environment
         "@tauri-apps/api",
@@ -121,6 +127,8 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
                 if (id.includes("node_modules")) {
                   if (
                     id.includes("react-markdown") ||
+                    id.includes("markdown-to-jsx") ||
+                    id.includes("react-syntax-highlighter") ||
                     id.includes("remark") ||
                     id.includes("micromark") ||
                     id.includes("unist") ||

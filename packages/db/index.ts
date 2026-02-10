@@ -2493,6 +2493,7 @@ export const getCharacterProfile = async ({
     .from(characterProfiles)
     .where(
       and(
+        threadId ? eq(characterProfiles.threadId, threadId) : undefined,
         agentId ? eq(characterProfiles.agentId, agentId) : undefined,
         userId ? eq(characterProfiles.userId, userId) : undefined,
         guestId ? eq(characterProfiles.guestId, guestId) : undefined,
