@@ -57,7 +57,6 @@ import {
   and,
   isNull,
   isNotNull,
-  type message,
   aiAgent,
   VEX_LIVE_FINGERPRINTS,
   decrypt,
@@ -1289,6 +1288,9 @@ app.post("/", async (c) => {
         }),
       )
     : undefined
+
+  // let swarm = []
+  // const speaker = []
 
   const appExtends = requestApp
     ? requestApp?.store?.apps.filter((a) => a.id !== requestApp?.id) || []
@@ -5658,7 +5660,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         })
 
         // If token limit exceeded, use fewer messages
-        if (!enhanceTokenCheck.withinLimit) {
+        if (!enhanceTokenCheck.withinLimit && enhanceMessages[0]) {
           console.warn(`⚠️ Enhancement prompt too long, using shorter context`)
           conversationHistory = messages.slice(-2)
           const shorterPrompt = `You are an expert image generation prompt engineer.
@@ -6029,7 +6031,7 @@ Respond in JSON format:
         }
         newMessages.push(...split.recentMessages)
 
-        messages = newMessages as message[]
+        messages = newMessages as ModelMessage[]
         tokenLimitWarning = createTokenLimitError(
           tokenCheck.estimatedTokens,
           tokenCheck.maxTokens,
