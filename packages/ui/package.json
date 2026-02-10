@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "1.13.88",
+  "version": "1.13.92",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -157,6 +157,8 @@
     "@react-navigation/native-stack": "^7.6.2",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.1.0",
     "@types/node": "^22.15.3",
     "@types/react-native": "^0.73.0",
     "eslint": "^9.34.0",

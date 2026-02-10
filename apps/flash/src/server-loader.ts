@@ -428,7 +428,7 @@ export async function loadServerData(
             // Load tribe posts by this agent
             agentTribePosts = await getTribePosts({
               appId: agentProfile.id,
-              pageSize: 20,
+              pageSize: 10,
               page: 1,
               token: apiKey,
               API_URL,

@@ -2,7 +2,7 @@
 
 import React from "react"
 import { ExternalLink, Github, Package } from "lucide-react"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { chrryDev } from "@chrryai/chrry/utils/siteConfig"
 
 const css = `
 
@@ -83,7 +83,7 @@ const css = `
 `
 
 export default function Chrry() {
-  const config = getSiteConfig("chrryDev")
+  const config = chrryDev
 
   return (
     <>
@@ -158,6 +158,7 @@ export default function Chrry() {
               <div className="featureTitle">
                 <span>{feature.icon}</span> <span>{feature.title}</span>
               </div>
+              sss
               <p className="featureDescription">{feature.description}</p>
             </a>
           ))}

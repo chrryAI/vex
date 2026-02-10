@@ -189,10 +189,16 @@ api.route("/campaigns", adCampaigns)
 app.route("/api", api)
 
 // Serve static files from public directory
+// In dev: cwd is apps/api, so ./public works
+// In prod: cwd is /app, so ./apps/api/public is needed
+const publicDir = process.cwd().endsWith("apps/api")
+  ? "./public"
+  : "./apps/api/public"
+
 app.use(
   "/*",
   serveStatic({
-    root: "./public",
+    root: publicDir,
     onNotFound: (path, c) => {
       // Continue to next handler if file not found
     },
