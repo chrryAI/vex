@@ -74,7 +74,7 @@ export function getModelLimits(modelId: string): ModelLimits {
   )
 
   if (partialMatch) {
-    return MODEL_LIMITS[partialMatch]
+    return MODEL_LIMITS[partialMatch] || DEFAULT_LIMIT
   }
 
   console.warn(
