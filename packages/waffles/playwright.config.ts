@@ -30,13 +30,17 @@ export default defineConfig({
   forbidOnly: false, //!!process.env.CI,
   // forbidOnly: false,
 
-  // retries: process.env.CI ? 1 : 0,
+  retries: 0, // Disabled for Trunk Flaky Tests - retries compromise accurate detection
   maxFailures: process.env.CI ? 1 : 1,
   /* Opt out of parallel tests on CI. */
   // workers: process.env.CI ? 1 : undefined,
   workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [["list"], ["html", { outputFolder: "./playwright-report" }]],
+  reporter: [
+    ["list"],
+    ["html", { outputFolder: "./playwright-report" }],
+    ["junit", { outputFile: "junit.xml" }], // For Trunk Flaky Tests
+  ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     launchOptions: { slowMo: 200 },
