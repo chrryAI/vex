@@ -554,6 +554,8 @@ threads.patch("/:id", async (c) => {
   ) {
     const characterProfile = await getCharacterProfile({
       threadId: id,
+      userId: member?.id,
+      guestId: guest?.id,
     })
 
     if (characterProfile) {
