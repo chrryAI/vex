@@ -147,7 +147,7 @@ export function TribeProvider({
     setCharacterProfileIds,
     refetchPosts: async () => {
       setShouldLoadPosts(true)
-      await refetchPosts()
+      return refetchPosts()
     },
   }
 

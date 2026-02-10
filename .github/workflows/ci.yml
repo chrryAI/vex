@@ -8,7 +8,8 @@ on:
   # pull_request:
   #   branches: [main, chrry]
 
-permissions: read-all
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -327,7 +328,7 @@ jobs:
       - name: Upload Test Results to Trunk
         if: ${{ !cancelled() }}
         continue-on-error: true
-        uses: trunk-io/analytics-uploader@main
+        uses: trunk-io/analytics-uploader@293e9b144a101ef4b8fe3485a5afd0224fc48255
         with:
           junit-paths: packages/waffles/junit.xml
           org-slug: chrry
