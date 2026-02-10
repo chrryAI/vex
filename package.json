@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.13.77",
+  "version": "1.13.78",
   "type": "module",
   "scripts": {
     "build": "turbo build",
@@ -101,6 +101,9 @@
   "dependencies": {
     "@auth/core": "^0.37.4",
     "@axiomhq/pino": "^1.4.0",
+    "@babel/parser": "^7.24.4",
+    "@babel/traverse": "^7.29.0",
+    "@babel/types": "^7.29.0",
     "@capacitor-firebase/authentication": "^7.5.0",
     "@capacitor/app": "^7.1.1",
     "@capacitor/browser": "^7.0.3",

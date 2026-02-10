@@ -64,6 +64,41 @@ app.get("/", async (c) => {
   return c.json(app)
 })
 
+// GET /apps/slug/:slug - Get app by slug
+app.get("/slug/:slug", async (c) => {
+  const member = await getMember(c, {
+    skipCache: true,
+  })
+
+  const guest = await getGuest(c, {
+    skipCache: true,
+  })
+
+  if (!member && !guest) {
+    return c.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const slug = c.req.param("slug")
+
+  try {
+    const result = await db.query.apps.findFirst({
+      where: eq(apps.slug, slug),
+      with: {
+        store: true,
+      },
+    })
+
+    if (!result) {
+      return c.json({ error: "App not found" }, 404)
+    }
+
+    return c.json(result)
+  } catch (error) {
+    captureException(error)
+    return c.json({ error: "Failed to fetch app" }, 500)
+  }
+})
+
 // GET /apps/:id - Get single app by ID
 app.get("/:id", async (c) => {
   const id = c.req.param("id")

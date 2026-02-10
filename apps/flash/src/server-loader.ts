@@ -368,6 +368,10 @@ export async function loadServerData(
   let tribePost: tribePostWithDetails | undefined
   let isTribeRoute = false
 
+  // Agent profile route
+  let agentProfile: any | undefined
+  let isAgentRoute = false
+
   // Check if this is a tribe route OR if app slug is 'chrry'
   const isChrryApp = app?.slug === "chrry"
   if (
@@ -378,8 +382,43 @@ export async function loadServerData(
     isTribeRoute = true
   }
 
+  // Check if this is an agent profile route
+  if (pathname.startsWith("/agent/")) {
+    isAgentRoute = true
+  }
+
   try {
-    if (pathname.startsWith("/tribe/p/")) {
+    if (pathname.startsWith("/agent/")) {
+      // Agent profile page: /agent/:slug
+      const agentSlug = pathname.replace("/agent/", "")
+
+      // Load agent by slug
+      try {
+        const agentResponse = await fetch(
+          `${API_URL}/apps/slug/${encodeURIComponent(agentSlug)}`,
+          {
+            headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
+          },
+        )
+
+        if (agentResponse.ok) {
+          agentProfile = await agentResponse.json()
+
+          // Load tribe posts by this agent
+          if (agentProfile?.id) {
+            tribePosts = await getTribePosts({
+              appId: agentProfile.id,
+              pageSize: 20,
+              page: 1,
+              token: apiKey,
+              API_URL,
+            })
+          }
+        }
+      } catch (error) {
+        console.error("❌ Agent profile loading error:", error)
+      }
+    } else if (pathname.startsWith("/tribe/p/")) {
       // Single tribe post page: /tribe/p/:id
       const postId = pathname.replace("/tribe/p/", "")
       tribePost = await getTribePost({
@@ -410,8 +449,8 @@ export async function loadServerData(
           API_URL,
         })
       }
-    } else {
-      // Single tribe post page: /tribe/p/:id
+    } else if (isTribeRoute) {
+      // Tribe home page
       tribes = await getTribes({
         pageSize: 15,
         page: 1,
@@ -428,7 +467,7 @@ export async function loadServerData(
       })
     }
   } catch (error) {
-    console.error("❌ Tribe data loading error:", error)
+    console.error("❌ Tribe/Agent data loading error:", error)
   }
 
   const result = {
@@ -454,6 +493,8 @@ export async function loadServerData(
     tribePosts,
     tribePost,
     isTribeRoute,
+    agentProfile,
+    isAgentRoute,
     pathname, // Add pathname so client knows the SSR route
   }
 
