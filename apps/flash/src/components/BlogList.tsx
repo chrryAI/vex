@@ -42,13 +42,29 @@ export default function BlogList({ posts, locale }: BlogListProps) {
         <ul className={styles.blogList}>
           {posts.map((post) => (
             <li key={post.slug} style={{ marginBottom: 24 }}>
-              <h2>
-                <a href={`/blog/${post.slug}`}>{post.title}</a>
-              </h2>
-              <p>{post.excerpt}</p>
-              <small>
-                {timeAgo(post.date)} by {post.author}
-              </small>
+              <article>
+                <h2>
+                  <a
+                    href={`/blog/${post.slug}`}
+                    aria-label={`Read full post: ${post.title}`}
+                  >
+                    {post.title}
+                  </a>
+                </h2>
+                <p>{post.excerpt}</p>
+                <small>
+                  <time dateTime={post.date}>{timeAgo(post.date)}</time> by{" "}
+                  {post.author}
+                </small>
+                <br />
+                <a
+                  href={`/blog/${post.slug}`}
+                  className={styles.readMore}
+                  aria-label={`Read more about ${post.title}`}
+                >
+                  Read more →
+                </a>
+              </article>
             </li>
           ))}
         </ul>
