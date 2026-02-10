@@ -5,6 +5,7 @@ import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
 import { appWithStore } from "@chrryai/chrry/types"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
+import { getActiveRentalsForStore } from "../../lib/adExchange/getActiveRentals"
 
 // ==================== HELPER TYPES ====================
 interface RequestParams {
@@ -316,6 +317,25 @@ async function enrichStoreApps(
   )
 
   app.store.apps = enrichedApps.filter(Boolean) as appWithStore[]
+
+  // Add active slot rentals to store.apps
+  if (app?.store?.id) {
+    try {
+      const rentedApps = await getActiveRentalsForStore({
+        storeId: app.store.id,
+        userId: auth.member?.id,
+        guestId: auth.guest?.id,
+      })
+
+      // Add rented apps to the beginning of the list (priority placement)
+      if (rentedApps.length > 0) {
+        app.store.apps = [...rentedApps, ...app.store.apps]
+      }
+    } catch (error) {
+      console.error("Failed to fetch active rentals:", error)
+      // Don't fail the whole request if rentals fail
+    }
+  }
 }
 
 /**

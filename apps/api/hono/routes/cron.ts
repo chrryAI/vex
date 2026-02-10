@@ -20,6 +20,10 @@ import { engageWithMoltbookPosts } from "../../lib/cron/moltbookEngagement"
 import { syncSonarCloud } from "../../lib/cron/sonarSync"
 import { isDevelopment } from "../../lib"
 import { captureException } from "@sentry/node"
+import {
+  runAutonomousAgentsCron,
+  updateSlotAnalytics,
+} from "../../lib/cron/autonomousAgentsCron"
 
 export const cron = new Hono()
 
@@ -577,6 +581,64 @@ cron.get("/syncSonarCloud", async (c) => {
   return c.json({
     success: true,
     message: "SonarCloud sync job started in background",
+    timestamp: new Date().toISOString(),
+  })
+})
+
+// GET /cron/autonomousAgents - Run autonomous AI agents to analyze stores and place bids
+cron.get("/autonomousAgents", async (c) => {
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
+
+  console.log("🤖 Starting autonomous AI agents cron job...")
+
+  runAutonomousAgentsCron()
+    .then((result) => {
+      console.log("✅ Autonomous agents job completed:", result)
+    })
+    .catch((error) => {
+      captureException(error)
+      console.error("❌ Autonomous agents job failed:", error)
+    })
+
+  return c.json({
+    success: true,
+    message: "Autonomous AI agents job started in background",
+    timestamp: new Date().toISOString(),
+  })
+})
+
+// GET /cron/updateSlotAnalytics - Update slot traffic analytics
+cron.get("/updateSlotAnalytics", async (c) => {
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
+
+  console.log("📊 Starting slot analytics update job...")
+
+  updateSlotAnalytics()
+    .then((result) => {
+      console.log("✅ Slot analytics update completed:", result)
+    })
+    .catch((error) => {
+      captureException(error)
+      console.error("❌ Slot analytics update failed:", error)
+    })
+
+  return c.json({
+    success: true,
+    message: "Slot analytics update job started in background",
     timestamp: new Date().toISOString(),
   })
 })

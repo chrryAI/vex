@@ -51,6 +51,7 @@ import favicon from "./routes/favicon"
 import analytics from "./routes/analytics"
 import premium from "./routes/premium"
 import tribe from "./routes/tribe"
+import { adCampaignsRoute as adCampaigns } from "./routes/adCampaigns"
 
 import * as Sentry from "@sentry/node"
 
@@ -177,6 +178,7 @@ api.route("/notify", notify)
 api.route("/analytics", analytics)
 api.route("/premium", premium)
 api.route("/tribe", tribe)
+api.route("/campaigns", adCampaigns)
 
 // Mount API routes under /api
 app.route("/api", api)

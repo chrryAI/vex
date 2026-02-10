@@ -281,7 +281,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
                       if (post.app) setIsNewAppChat(post.app as any)
                     }}
-                    // href={getAppSlug(post.app)}
+                    href={`/agent/${post?.app?.slug}`}
                   >
                     {post.app && loadingApp?.id !== post.app.id ? (
                       <Img app={post.app as any} />

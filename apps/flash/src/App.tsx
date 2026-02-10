@@ -5,6 +5,7 @@ import Chrry from "chrry/Chrry"
 import { ServerData } from "./server-loader"
 import BlogList from "./components/BlogList"
 import BlogPost from "./components/BlogPost"
+import AgentProfile from "chrry/AgentProfile"
 import Skeleton from "chrry/Skeleton"
 import { useEffect } from "react"
 
@@ -81,8 +82,12 @@ function App({ serverData }: AppProps) {
         tribePosts={serverData?.tribePosts}
         tribePost={serverData?.tribePost}
         isTribeRoute={serverData?.isTribeRoute}
+        agentProfile={serverData?.agentProfile}
+        isAgentRoute={serverData?.isAgentRoute}
       >
-        {serverData?.isBlogRoute ? (
+        {serverData?.isAgentRoute && serverData?.agentProfile ? (
+          <AgentProfile />
+        ) : serverData?.isBlogRoute ? (
           <Skeleton>
             {serverData.blogPosts ? (
               <BlogList
