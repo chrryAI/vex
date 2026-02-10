@@ -327,27 +327,42 @@ Return ONLY JSON:
         prompt: scoringPrompt,
       })
 
-      // Safe JSON extraction without ReDoS vulnerability
-      let jsonText = "{}"
+      // Safe JSON extraction: first try parsing the entire stripped text, then fall back to brace-counting
+      let parsed: any
       try {
-        const firstBrace = text.indexOf("{")
-        if (firstBrace !== -1) {
-          let braceCount = 0
-          let endIndex = firstBrace
-          for (let i = firstBrace; i < text.length; i++) {
-            if (text[i] === "{") braceCount++
-            if (text[i] === "}") braceCount--
-            if (braceCount === 0) {
-              endIndex = i + 1
-              break
+        // Strip markdown code fences if present
+        const strippedText = text
+          .replace(/^```(?:json)?\n?/gm, "")
+          .replace(/\n?```$/gm, "")
+          .trim()
+
+        // Try parsing the entire stripped text first
+        try {
+          parsed = JSON.parse(strippedText)
+        } catch {
+          // Fallback: extract JSON using brace-counting (handles cases where AI adds text before/after JSON)
+          let jsonText = "{}"
+          const firstBrace = text.indexOf("{")
+          if (firstBrace !== -1) {
+            let braceCount = 0
+            let endIndex = firstBrace
+            for (let i = firstBrace; i < text.length; i++) {
+              if (text[i] === "{") braceCount++
+              if (text[i] === "}") braceCount--
+              if (braceCount === 0) {
+                endIndex = i + 1
+                break
+              }
             }
+            jsonText = text.substring(firstBrace, endIndex)
           }
-          jsonText = text.substring(firstBrace, endIndex)
+          parsed = JSON.parse(jsonText)
         }
       } catch (e) {
-        console.warn("Failed to extract JSON from AI response")
+        console.warn("Failed to parse JSON from AI response:", e)
+        // Use default values if parsing fails completely
+        parsed = {}
       }
-      const parsed = JSON.parse(jsonText)
 
       scoredSlots.push({
         ...slot,

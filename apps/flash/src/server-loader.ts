@@ -410,24 +410,13 @@ export async function loadServerData(
       !isBlogRoute
     ) {
       try {
-        // Fetch agent profile and posts in parallel
-        const [agentResponse, agentPostsResult] = await Promise.all([
-          fetch(
-            `${API_URL}/apps/${encodeURIComponent(storeSlug)}/${encodeURIComponent(appSlug)}`,
-            {
-              headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
-            },
-          ),
-          // Optimistically fetch posts, will be discarded if agent fetch fails
-          (async () => {
-            try {
-              // We don't have agentProfile.id yet, so we'll fetch this after confirming agent exists
-              return null
-            } catch {
-              return null
-            }
-          })(),
-        ])
+        // Fetch agent profile
+        const agentResponse = await fetch(
+          `${API_URL}/apps/${encodeURIComponent(storeSlug)}/${encodeURIComponent(appSlug)}`,
+          {
+            headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
+          },
+        )
 
         if (agentResponse.ok) {
           agentProfile = await agentResponse.json()
