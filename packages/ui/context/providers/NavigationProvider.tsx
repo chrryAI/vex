@@ -84,7 +84,15 @@ const NavigationContext = createContext<
         status: "pending" | "active" | undefined | null,
       ) => void
       collaborationStatus: "pending" | "active" | undefined | null
-      setIsNewChat: (value: boolean, to?: string) => void
+      setIsNewChat: ({
+        value,
+        to,
+        tribe,
+      }: {
+        value: boolean
+        to?: string
+        tribe?: boolean
+      }) => void
       setSlug: (slug?: string) => void
       slug?: "atlas" | "peach" | "vault" | "bloom" | string
       goToCalendar: () => void

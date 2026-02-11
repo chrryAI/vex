@@ -52,7 +52,13 @@ const ChatContext = createContext<
       setShouldGetCredits: (shouldGetCredits: boolean) => void
       fetchActiveCollaborationThreadsCount: () => Promise<void>
       fetchPendingCollaborationThreadsCount: () => Promise<void>
-      setIsNewAppChat: (item: appWithStore | undefined) => void
+      setIsNewAppChat: ({
+        item,
+        tribe,
+      }: {
+        item: appWithStore | undefined
+        tribe?: boolean
+      }) => void
       shouldFocus: boolean
       setShouldFocus: (shouldFocus: boolean) => void
       placeHolderText: string | undefined
@@ -137,7 +143,15 @@ const ChatContext = createContext<
         status: "pending" | "active" | undefined | null,
       ) => void
       collaborationStatus: "pending" | "active" | undefined | null
-      setIsNewChat: (value: boolean, to?: string) => void
+      setIsNewChat: ({
+        value,
+        to,
+        tribe,
+      }: {
+        value: boolean
+        to?: string
+        tribe?: boolean
+      }) => void
     }
   | undefined
 >(undefined)
@@ -409,7 +423,13 @@ export function ChatProvider({
     }
   }, [loadingApp, storeApps])
 
-  const setIsNewAppChat = (item: appWithStore | undefined) => {
+  const setIsNewAppChat = ({
+    item,
+    tribe,
+  }: {
+    item: appWithStore | undefined
+    tribe?: boolean
+  }) => {
     if (!item) {
       return
     }
@@ -419,7 +439,7 @@ export function ChatProvider({
       return
     }
 
-    setIsNewChat(true, getAppSlug(item))
+    setIsNewChat({ value: true, to: getAppSlug(item), tribe })
   }
 
   useEffect(() => {
@@ -428,14 +448,19 @@ export function ChatProvider({
     }
   }, [threadIdRef.current])
 
-  const setIsNewChat = (
-    value: boolean,
+  const setIsNewChat = ({
+    value,
     to = app?.slug ? getAppSlug(app) : "/",
-  ) => {
+    tribe,
+  }: {
+    value: boolean
+    to?: string
+    tribe?: boolean
+  }) => {
     if (value) {
       setLiked(undefined)
       setShowFocus(false)
-      setShowTribe(false)
+      setShowTribe(tribe === true)
 
       setCollaborationStep(0)
       setThread(undefined)
@@ -611,7 +636,7 @@ export function ChatProvider({
   const [isVisitor, setIsVisitor] = useState(false)
 
   useEffect(() => {
-    toFetch && setIsNewChat(false)
+    toFetch && setIsNewChat({ value: false })
   }, [toFetch])
 
   useEffect(() => {

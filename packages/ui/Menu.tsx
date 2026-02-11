@@ -361,7 +361,9 @@ export default function Menu({
                       setShowTribe(false)
 
                       toggleMenuIfSmallDevice()
-                      setIsNewChat(true)
+                      setIsNewChat({
+                        value: true,
+                      })
                       reload()
                     }}
                   >
@@ -422,7 +424,9 @@ export default function Menu({
                   setShowTribe(false)
 
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
-                  setIsNewChat(true)
+                  setIsNewChat({
+                    value: true,
+                  })
                   reload()
                 }}
                 style={styles.menuItemButton.style}
@@ -534,7 +538,9 @@ export default function Menu({
                         <Button
                           className="link"
                           onClick={() => {
-                            setIsNewChat(true)
+                            setIsNewChat({
+                              value: true,
+                            })
                           }}
                         >
                           <ArrowLeft color={colors.accent6} size={17} />
@@ -547,7 +553,9 @@ export default function Menu({
                                 <Button
                                   className="link"
                                   onClick={() => {
-                                    setIsNewChat(true)
+                                    setIsNewChat({
+                                      value: true,
+                                    })
                                   }}
                                 >
                                   <ArrowLeft color={colors.accent6} size={17} />

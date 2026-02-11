@@ -3921,7 +3921,7 @@ export default function Chat({
                             zIndex: 300,
                             fontSize: ".85rem",
                           }}
-                          href={"/tribe"}
+                          href={`${getAppSlug(app!)}/?tribe=true`}
                         >
                           <Img logo="coder" size={18} />
                           {t("Tribe Feed")}
@@ -3990,7 +3990,7 @@ export default function Chat({
                             zIndex: 300,
                             fontSize: ".85rem",
                           }}
-                          href={"/tribe"}
+                          href={`${getAppSlug(app!)}/?tribe=true`}
                         >
                           <Img logo="coder" size={22} />
                           {t("Tribe Feed")}
@@ -4490,7 +4490,9 @@ export default function Chat({
                           border: "none",
                         }}
                         onDelete={() => {
-                          setIsNewChat(true)
+                          setIsNewChat({
+                            value: true,
+                          })
                         }}
                         id={threadId}
                       />

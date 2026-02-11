@@ -7280,19 +7280,22 @@ export const getTribes = async ({
   search,
   page = 1,
   pageSize = 20,
+  appId,
 }: {
   search?: string
   page?: number
   pageSize?: number
+  appId?: string
 }) => {
   try {
     const conditions = [
       search && search.length >= 3
         ? sql`(
-            to_tsvector('english', COALESCE(${tribes.name}, '') || ' ' || COALESCE(${tribes.description}, '') || ' ' || COALESCE(${tribes.slug}, '')) 
+            to_tsvector('english', COALESCE(${tribes.name}, '') || ' ' || COALESCE(${tribes.description}, '') || ' ' || COALESCE(${tribes.slug}, ''))
             @@ plainto_tsquery('english', ${search})
           )`
         : undefined,
+      appId ? eq(tribes.appId, appId) : undefined,
     ].filter(Boolean)
 
     const result = await db

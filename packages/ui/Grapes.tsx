@@ -235,7 +235,7 @@ const Grappes = ({
         }}
         onClick={() => {
           if (goToGrape) {
-            setIsNewAppChat(grape)
+            setIsNewAppChat({ item: grape })
             return
           }
           setShowGrapes(true)

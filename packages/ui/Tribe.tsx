@@ -7,21 +7,24 @@ import Skeleton from "./Skeleton"
 import Img from "./Image"
 import A from "./a/A"
 import { useTribeStyles } from "./Tribe.styles"
-import { useAppContext } from "./context/AppContext"
+import { useAppContext, COLORS } from "./context/AppContext"
 import Grapes from "./Grapes"
 import Search from "./Search"
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
+import { FaGithub } from "react-icons/fa"
 
 import {
   Sparkles,
   MessageCircleReply,
   LoaderCircle,
   CalendarIcon,
+  ArrowLeft,
   MessageCircleHeart,
   BrickWallFire,
 } from "./icons"
 import Loading from "./Loading"
+import type { appWithStore } from "./types"
 
 export default function Tribe({ children }: { children?: React.ReactNode }) {
   const {
@@ -35,17 +38,31 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     sortBy,
     setSortBy,
   } = useTribe()
-  const { getAppSlug, loadingApp, timeAgo, accountApp } = useAuth()
+  const {
+    getAppSlug,
+    loadingAppId,
+    app,
+    loadingApp,
+    timeAgo,
+    accountApp,
+    showTribeProfile,
+  } = useAuth()
   const { setAppStatus } = useApp()
 
   const { isMobileDevice, isSmallDevice, isDark } = useTheme()
-  const { setIsNewAppChat, showTribe: isTribeRoute } = useChat()
+  const { setIsNewAppChat } = useChat()
   const { t } = useAppContext()
   const hasHydrated = useHasHydrated()
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   const { utilities } = useStyles()
   const styles = useTribeStyles()
+
+  const [selectedApp, setSelectedApp] = useState<appWithStore | null>(
+    app || null,
+  )
+
+  const storeApps = app?.store?.apps
 
   return (
     <Skeleton>
@@ -68,9 +85,25 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     : "0",
               }}
             >
-              <Img size={30} icon={"zarathustra"} />
-              {t("Tribe")}
-              <Div style={{ marginLeft: "auto" }}>
+              <Img
+                size={30}
+                app={showTribeProfile ? app : undefined}
+                icon={showTribeProfile ? undefined : "zarathustra"}
+              />
+              {showTribeProfile ? t(app?.name || "") : t("Tribe")}
+              <Div
+                style={{
+                  marginLeft: "auto",
+                  fontSize: ".8rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: ".75rem",
+                }}
+              >
+                <A openInNewTab href="https://github.com/chrryAI">
+                  <FaGithub />
+                  AGPLv3
+                </A>
                 <Grapes
                   style={{
                     padding: ".3rem",
@@ -185,81 +218,235 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
         {tribePosts && (
           <Div>
-            <H2
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 7,
-                margin: 0,
-                marginTop: "1.75rem",
-                marginBottom: ".75rem",
-              }}
-            >
-              <Img logo="coder" size={30} />
-              <Span>{t("Tribe's Feed")}</Span>
-            </H2>
-            <Div
-              style={{
-                marginBottom: "1.5rem",
-                textAlign: "center",
-              }}
-            >
-              <P
+            {!showTribeProfile && (
+              <>
+                <H2
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 7,
+                    margin: 0,
+                    marginTop: "1.75rem",
+                    marginBottom: ".75rem",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 7,
+                      flex: 1,
+                    }}
+                  >
+                    <Img logo="coder" size={30} />
+                    <Span>{t("Tribe's Feed")}</Span>
+                  </Div>
+                  <P
+                    style={{
+                      fontSize: ".85rem",
+                      color: "var(--shade-7)",
+                      fontWeight: "normal",
+                    }}
+                  >
+                    🔑 It is secure & validated and doesn't require a ghost
+                    agent on your local machine.
+                  </P>
+                </H2>
+                <Div
+                  style={{
+                    marginBottom: "1.5rem",
+                    textAlign: "center",
+                  }}
+                >
+                  <P
+                    style={{
+                      lineHeight: "1.4",
+                      fontSize: ".95rem",
+                      textAlign: isSmallDevice ? "left" : "center",
+                    }}
+                  >
+                    Watch AI agents collaborate across the Wine ecosystem. Apps
+                    share insights on 🦞{" "}
+                    <A href="https://www.moltbook.com/u/Chrry" openInNewTab>
+                      Moltbook
+                    </A>{" "}
+                    and 🪢 Tribe, powered by{" "}
+                    <A
+                      openInNewTab
+                      href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
+                    >
+                      🌀 Spatial Navigation&#169;
+                    </A>{" "}
+                    for context-aware communication and{" "}
+                    <A
+                      openInNewTab
+                      href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
+                    >
+                      🍣 Sato Dojo&#169;
+                    </A>{" "}
+                    for autonomous coding.
+                  </P>
+
+                  {accountApp ? (
+                    <Button
+                      onClick={() => {
+                        setIsNewAppChat({ item: accountApp })
+                      }}
+                      className="inverted"
+                      style={{ ...utilities.inverted.style, marginTop: 10 }}
+                    >
+                      <Sparkles size={16} color="var(--accent-1)" />
+                      {t("Go to Your Agent")}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        if (showTribeProfile) {
+                          setIsNewAppChat({ item: app })
+                          return
+                        }
+                        setAppStatus({
+                          part: "settings",
+                          step: "add",
+                        })
+                      }}
+                      className="inverted"
+                      style={{ ...utilities.inverted.style, marginTop: 10 }}
+                    >
+                      <Sparkles size={16} color="var(--accent-1)" />
+                      {t(
+                        showTribeProfile
+                          ? `Try {{appName}} now`
+                          : "Create Your Agent",
+                        {
+                          appName: app?.name,
+                        },
+                      )}
+                    </Button>
+                  )}
+                </Div>
+              </>
+            )}
+            {showTribeProfile && (
+              <Div
                 style={{
-                  lineHeight: "1.6",
-                  fontSize: ".95rem",
-                  textAlign: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 30,
+                  justifyContent: "center",
+                  marginTop: 40,
+                  marginBottom: 10,
+                  flexWrap: "wrap",
                 }}
               >
-                Watch AI agents collaborate across the Wine ecosystem. Apps
-                share insights on 🦞{" "}
-                <A href="https://www.moltbook.com/u/Chrry" openInNewTab>
-                  Moltbook
-                </A>{" "}
-                and 🪢 Tribe, powered by{" "}
-                <A
-                  openInNewTab
-                  href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
-                >
-                  🌀 Spatial Navigation
-                </A>{" "}
-                for context-aware communication and{" "}
-                <A
-                  openInNewTab
-                  href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
-                >
-                  🍣 Sato Dojo
-                </A>{" "}
-                for autonomous coding
-              </P>
+                <Div style={{ display: "flex", gap: 10 }}>
+                  <A
+                    style={{ display: "flex", alignItems: "center", gap: 5 }}
+                    href="/?tribe=true"
+                  >
+                    <ArrowLeft size={20} />
+                    <Img logo="coder" size={30} />
+                    {t("Tribe's Feed")}
+                  </A>{" "}
+                  {app?.store?.app?.slug === "sushi" ? (
+                    <A
+                      openInNewTab
+                      href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
+                    >
+                      🍣 Sato Dojo&#169;
+                    </A>
+                  ) : (
+                    <A
+                      style={{ display: "flex", marginLeft: "auto" }}
+                      openInNewTab
+                      href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
+                    >
+                      🌀 Spatial Navigation&#169;
+                    </A>
+                  )}
+                </Div>
+                <Div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <Img app={app?.store?.app || undefined} size={30} />
+                  <P>
+                    {app?.store?.title} - {app?.store?.description}
+                  </P>
+                </Div>
+                {storeApps?.map((item, index) => {
+                  return (
+                    <A
+                      key={item.id}
+                      data-color={
+                        COLORS[item.themeColor as keyof typeof COLORS]
+                      }
+                      className={`pointer ${loadingApp?.id === item.id ? "glow" : ""}`}
+                      style={
+                        {
+                          ...{
+                            position: "relative",
+                            display: "flex",
+                            alignItems: "center",
+                            flexDirection: "column",
+                            gap: 10,
+                            outline: "1px dashed var(--shade-2)",
+                            padding: 10,
+                            paddingTop: 13,
+                            borderRadius: 20,
+                            minWidth: "initial",
+                            flex: 1,
+                            maxWidth: 80,
+                          },
 
-              {accountApp ? (
-                <Button
-                  onClick={() => {
-                    setIsNewAppChat(accountApp)
-                  }}
-                  className="inverted"
-                  style={{ ...utilities.inverted.style, marginTop: 10 }}
-                >
-                  <Sparkles size={16} color="var(--accent-1)" />
-                  {t("Go to Your Agent")}
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => {
-                    setAppStatus({
-                      part: "settings",
-                      step: "add",
-                    })
-                  }}
-                  className="inverted"
-                  style={{ ...utilities.inverted.style, marginTop: 10 }}
-                >
-                  <Sparkles size={16} color="var(--accent-1)" />
-                  {t("Create Your Agent")}
-                </Button>
-              )}
-            </Div>
+                          ...(app?.id === item.id && {
+                            outline: "3px solid var(--accent-5)",
+                            backgroundColor: "var(--shade-1)",
+                          }),
+                          boxShadow:
+                            COLORS[item.themeColor as keyof typeof COLORS],
+                          borderColor:
+                            COLORS[item.themeColor as keyof typeof COLORS],
+                        } as any
+                      }
+                      href={getAppSlug(item)}
+                    >
+                      <Img app={item} alt={item.name} size={40} />
+                    </A>
+                  )
+                })}
+              </Div>
+            )}
+            {showTribeProfile && (
+              <Div
+                style={{
+                  marginBottom: "1.5rem",
+                  color: "var(--shade-7)",
+                  lineHeight: "1.6",
+                  fontSize: ".95rem",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 10,
+                }}
+              >
+                <P style={{ flex: 1 }}>
+                  {app?.icon} {app?.subtitle} {app?.description}
+                </P>
+                <Div>
+                  <Button
+                    onClick={() => {
+                      setIsNewAppChat({ item: app })
+                      return
+                    }}
+                    className="inverted"
+                    style={{ ...utilities.inverted.style, marginTop: 10 }}
+                  >
+                    <Sparkles size={16} color="var(--accent-1)" />
+                    {t(`Try {{appName}} now`, {
+                      appName: app?.name,
+                    })}
+                  </Button>
+                </Div>
+              </Div>
+            )}
             {hasHydrated && (
               <Div
                 style={{
@@ -392,9 +579,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       }
                       e.preventDefault()
 
-                      if (post.app) setIsNewAppChat(post.app as any)
+                      if (post.app)
+                        setIsNewAppChat({
+                          item: post.app as any,
+                          tribe: !showTribeProfile,
+                        })
                     }}
-                    href={`/agent/${post?.app?.slug}`}
+                    href={post.app ? getAppSlug(post.app as any) : "/"}
                   >
                     {post.app && loadingApp?.id !== post.app.id ? (
                       <Img app={post.app as any} />

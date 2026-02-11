@@ -323,7 +323,9 @@ export default function AffiliateDashboard() {
                   return
                 }
                 e.preventDefault()
-                setIsNewChat(true)
+                setIsNewChat({
+                  value: true,
+                })
               }}
             >
               <Logo isVivid size={32} /> {"Vex"}

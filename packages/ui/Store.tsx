@@ -197,7 +197,7 @@ export default function Store({
                     e.preventDefault()
 
                     if (store.app) {
-                      setIsNewAppChat(store.app)
+                      setIsNewAppChat({ item: store.app })
                     }
                     if (e.metaKey || e.ctrlKey) {
                       return
@@ -306,7 +306,7 @@ export default function Store({
                         return
                       }
                       e.preventDefault()
-                      setIsNewAppChat(selectedApp)
+                      setIsNewAppChat({ item: selectedApp })
                     }}
                     style={styles.tryItNow.style}
                   >
@@ -345,7 +345,7 @@ export default function Store({
                                 return
                               }
                               e.preventDefault()
-                              setIsNewAppChat(selectedApp)
+                              setIsNewAppChat({ item: selectedApp })
                             }}
                             className={"link"}
                           >

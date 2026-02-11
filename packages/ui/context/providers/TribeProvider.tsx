@@ -21,7 +21,6 @@ interface TribeContextType {
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
-  isTribeRoute?: boolean
   search?: string
   until?: number
   characterProfileIds?: string[]
@@ -31,30 +30,28 @@ interface TribeContextType {
   setTribes: (tribes?: paginatedTribes) => void
   setTribePosts: (tribePosts?: paginatedTribePosts) => void
   setTribePost: (tribePost?: tribePostWithDetails) => void
-  setIsTribeRoute: (isTribeRoute?: boolean) => void
   setSearch: (search?: string) => void
   setUntil: (val: number) => void
   setCharacterProfileIds: (ids?: string[]) => void
   refetchPosts: () => void
+  refetchTribes: () => void
 }
 
 const TribeContext = createContext<TribeContextType | undefined>(undefined)
 
 interface TribeProviderProps {
   children: ReactNode
-  isTribeRoute?: boolean
 }
 
-export function TribeProvider({
-  children,
-  isTribeRoute: initialIsTribeRoute,
-}: TribeProviderProps) {
+export function TribeProvider({ children }: TribeProviderProps) {
   const { showTribe } = useChat()
   const {
     tribes: initialTribes,
     tribePosts: initialTribePosts,
     tribePost: initialTribePost,
+    showTribeProfile,
     token,
+    app, // Current selected app for filtering
   } = useAuth()
   const [tribes, setTribes] = useState<paginatedTribes | undefined>(
     initialTribes,
@@ -105,14 +102,6 @@ export function TribeProvider({
     setCharacterProfileIdsInternal(val)
   }
 
-  const [isTribeRoute, setIsTribeRoute] = useState<boolean | undefined>(
-    initialIsTribeRoute || showTribe,
-  )
-
-  useEffect(() => {
-    !showTribe && setIsTribeRoute(false)
-  }, [showTribe])
-
   useEffect(() => {
     // Trigger refetch when sortBy changes
     setShouldLoadPosts(true)
@@ -120,13 +109,30 @@ export function TribeProvider({
 
   const { actions } = useData()
 
+  // Fetch tribes with SWR (no app filtering - tribes are independent)
+  const { data: tribesData, mutate: refetchTribes } = useSWR(
+    showTribe && token ? ["tribes"] : null,
+    () => {
+      if (!token) return
+      return actions.getTribes({
+        // Don't filter tribes by app - they're independent communities
+      })
+    },
+  )
+
+  useEffect(() => {
+    if (tribesData) {
+      setTribes(tribesData)
+    }
+  }, [tribesData])
+
   const {
     data: tribePostsData,
     mutate: refetchPosts,
     isLoading: isLoadingPosts,
   } = useSWR(
-    (search ? search.length > 2 : true) && showTribe && token && shouldLoadPosts
-      ? ["tribePosts", until, search, characterProfileIds, sortBy]
+    (search ? search.length > 2 : true) && showTribe && token
+      ? ["tribePosts", until, search, characterProfileIds, sortBy, app?.id]
       : null,
     () => {
       if (!token) return
@@ -135,16 +141,9 @@ export function TribeProvider({
         search,
         characterProfileIds,
         sortBy,
+        appId: !showTribeProfile ? undefined : app?.id, // Filter by current selected app
       })
     },
-  )
-  console.log(
-    `🚀 ~ token:`,
-    token,
-    (search ? search.length > 2 : true) &&
-      showTribe &&
-      token &&
-      shouldLoadPosts,
   )
 
   useEffect(() => {
@@ -157,7 +156,6 @@ export function TribeProvider({
     tribes,
     tribePosts,
     tribePost,
-    isTribeRoute,
     search,
     until,
     characterProfileIds,
@@ -165,7 +163,6 @@ export function TribeProvider({
     setTribes,
     setTribePosts,
     setTribePost,
-    setIsTribeRoute,
     sortBy,
     setSortBy,
     setSearch,
@@ -174,6 +171,9 @@ export function TribeProvider({
     refetchPosts: async () => {
       setShouldLoadPosts(true)
       return refetchPosts()
+    },
+    refetchTribes: async () => {
+      return refetchTribes()
     },
   }
 

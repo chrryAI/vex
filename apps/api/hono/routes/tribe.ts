@@ -34,6 +34,7 @@ app.get("/", async (c) => {
   const search = c.req.query("search")
   const pageSize = c.req.query("pageSize")
   const page = c.req.query("page")
+  const appId = c.req.query("appId")
 
   try {
     const result = await tracker.track("tribe_list_getTribes", () =>
@@ -41,6 +42,7 @@ app.get("/", async (c) => {
         search,
         pageSize: pageSize ? parseInt(pageSize) : 20,
         page: page ? parseInt(page) : 1,
+        appId,
       }),
     )
 

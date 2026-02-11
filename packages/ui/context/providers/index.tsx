@@ -85,7 +85,6 @@ export interface AppProvidersProps {
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
-  isTribeRoute?: boolean
 }
 
 /**
@@ -113,7 +112,6 @@ export default function AppProviders({
   tribePosts,
   showTribe,
   tribePost,
-  isTribeRoute,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
 
@@ -195,7 +193,7 @@ export default function AppProviders({
                       >
                         <AppContextProvider>
                           <StylesProvider>
-                            <TribeProvider isTribeRoute={isTribeRoute}>
+                            <TribeProvider>
                               <Hey useExtensionIcon={useExtensionIcon}>
                                 {children}
                               </Hey>

@@ -59,7 +59,7 @@ import { defaultLocale, locale, locales } from "../../locales"
 import { MEANINGFUL_EVENTS } from "../../utils/analyticsEvents"
 import { t } from "i18next"
 import { getSiteConfig } from "../../utils/siteConfig"
-import { getAppAndStoreSlugs } from "../../utils/url"
+import { getAppAndStoreSlugs, excludedSlugRoutes } from "../../utils/url"
 import getAppSlugUtil from "../../utils/getAppSlug"
 import {
   API_URL,
@@ -144,7 +144,7 @@ const AuthContext = createContext<
       setIsPear: (value: appWithStore | undefined) => void
       grapes: appWithStore[]
       setIsProgramme: (value: boolean) => void
-
+      showTribeProfile: boolean
       // Daily Questions State
       dailyQuestionData: {
         currentQuestion: string
@@ -1091,9 +1091,10 @@ export function AuthProvider({
   const [postToMoltbook, setPostToMoltbook] = useState(false)
 
   const allApps = merge(
-    session?.app?.store?.apps?.concat(
-      (tribePosts?.posts?.map((p) => p.app) as appWithStore[]) || [],
-    ) || [],
+    merge(
+      (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
+      session?.app?.store?.apps || [],
+    ),
     userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
@@ -2177,31 +2178,27 @@ export function AuthProvider({
 
   const canShowTribe = isDevelopment || isE2E || user?.role === "admin"
 
-  const showTribeFromPathname = pathname.split("/")?.[1] === "tribe"
+  const canBeTribeProfile =
+    !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "") &&
+    pathname !== "/"
+
+  const showTribeFromQuery = searchParams.get("tribe") === "true"
 
   const showTribeInitial =
-    showTribeFromPathname ||
+    showTribeFromQuery ||
     (props.showTribe ?? ((tribePosts?.totalCount || 0) >= 1 && canShowTribe))
 
-  const [showTribeFinal, setShowTribeFinal] = useCookieOrLocalStorage(
-    "showTribe",
-    showTribeInitial ? "true" : "false",
-  )
+  const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
 
-  useEffect(() => {
-    showTribeFromPathname && setShowTribeFinal("true")
-  }, [showTribeFromPathname])
-
-  const showTribe = showTribeFinal === "true"
+  const showTribeProfile = canBeTribeProfile && showTribe
 
   const setShowTribe = (value: boolean) => {
-    setShowTribeFinal(value ? "true" : "false")
-
-    if (!value && pathname === "/tribe") {
-      router.push("/")
-    }
+    setShowTribeFinal(value)
   }
 
+  useEffect(() => {
+    showTribeFromQuery && setShowTribe(true)
+  }, [showTribeFromQuery])
   const { data: moodData, mutate: refetchMood } = useSWR(
     shouldFetchMood && token ? ["mood", token] : null, // Disabled by default, fetch manually with refetchMood()
     async () => {
@@ -3072,6 +3069,7 @@ export function AuthProvider({
         advanceDailySection,
         setDailyQuestionIndex,
         dailyQuestionIndex,
+        showTribeProfile,
       }}
     >
       {children}
