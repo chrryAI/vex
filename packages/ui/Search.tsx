@@ -49,9 +49,15 @@ export default function Search({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Cmd+K or Ctrl+K or /
+      const target = document.activeElement as HTMLElement
+      const isInput =
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable
+
       if (
         ((e.metaKey || e.ctrlKey) && e.key === "k") ||
-        (e.key === "/" && document.activeElement?.tagName !== "INPUT")
+        (e.key === "/" && !isInput)
       ) {
         e.preventDefault()
         searchInputRef.current?.focus()

@@ -30,7 +30,7 @@ export const securityHeadersMiddleware = async (c: Context, next: Next) => {
   // Relax CSP for landing page (root path) which uses inline styles/scripts
   if (path === "/" || path === "/favicon.ico") {
     csp =
-      "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;"
+      "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data: https://minio.chrry.dev; font-src 'self' data:; connect-src 'self';"
   }
 
   c.header("Content-Security-Policy", csp)

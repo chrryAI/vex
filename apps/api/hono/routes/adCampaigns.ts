@@ -1,4 +1,5 @@
 import { Hono } from "hono"
+import crypto from "node:crypto"
 import { z } from "zod"
 import { db, eq, and, desc, gte, lte, sql } from "@repo/db"
 import {
@@ -483,8 +484,11 @@ adCampaignsRoute.post("/rentals/:id/complete", async (c) => {
     const isAdmin = member?.role === "admin"
     const authHeader = c.req.header("authorization") || ""
     const bearer = authHeader.replace(/^Bearer\s+/i, "")
+    const cronSecret = process.env.CRON_SECRET || ""
     const isCron =
-      !!process.env.CRON_SECRET && bearer === process.env.CRON_SECRET
+      !!cronSecret &&
+      bearer.length === cronSecret.length &&
+      crypto.timingSafeEqual(Buffer.from(bearer), Buffer.from(cronSecret))
 
     if (!isOwner && !isAdmin && !isCron) {
       return c.json({ error: "Forbidden" }, 403)
@@ -508,8 +512,11 @@ adCampaignsRoute.post("/auctions/process", async (c) => {
     const member = await getMember(c)
     const authHeader = c.req.header("authorization") || ""
     const bearer = authHeader.replace(/^Bearer\s+/i, "")
+    const cronSecret = process.env.CRON_SECRET || ""
     const hasCronSecret =
-      !!process.env.CRON_SECRET && bearer === process.env.CRON_SECRET
+      !!cronSecret &&
+      bearer.length === cronSecret.length &&
+      crypto.timingSafeEqual(Buffer.from(bearer), Buffer.from(cronSecret))
 
     if (!(member?.role === "admin" || hasCronSecret)) {
       return c.json({ error: "Forbidden" }, 403)
@@ -564,11 +571,23 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
     }
 
     const body = await c.req.json()
-    const { appId, startDate } = body
 
-    if (!appId || !startDate) {
-      return c.json({ error: "Missing appId or startDate" }, 400)
+    const rentSchema = z.object({
+      appId: z.string().uuid(),
+      startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+        message: "Invalid start date",
+      }),
+    })
+
+    const parsed = rentSchema.safeParse(body)
+    if (!parsed.success) {
+      return c.json(
+        { error: "Invalid input", details: parsed.error.issues },
+        400,
+      )
     }
+
+    const { appId, startDate } = parsed.data
 
     // Get slot details
     const slot = await db.query.storeTimeSlots.findFirst({
@@ -735,6 +754,9 @@ adCampaignsRoute.get("/slots/:id/availability", async (c) => {
     }
 
     const requestedDate = new Date(dateParam)
+    if (isNaN(requestedDate.getTime())) {
+      return c.json({ error: "Invalid date parameter" }, 400)
+    }
 
     // Get slot
     const slot = await db.query.storeTimeSlots.findFirst({

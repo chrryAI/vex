@@ -1,14 +1,11 @@
 name: CI
 on:
   # # will update to main when is ready
-  # pull_request:
-  #   branches: [main]
-  push:
-    branches: [prod] # Only build on prod branch
-  # pull_request:
-  #   branches: [main, chrry]
+  pull_request:
+    branches: [prod]
 
-permissions: read-all
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -30,8 +27,8 @@ env:
   BUILD_ID: ${{ github.sha }}
 
   # Node environment
-  NODE_ENV: production
-  VITE_NODE_ENV: production
+  NODE_ENV: test
+  VITE_NODE_ENV: test
 
   # Database
   DB_URL: ${{ secrets.DB_URL }}
@@ -141,6 +138,9 @@ jobs:
       - name: Lint
         run: pnpm turbo lint
 
+      - name: Unit Tests
+        run: pnpm turbo test
+
       - name: Type check
         run: pnpm turbo check-types
 
@@ -151,6 +151,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: [build, cancel-deployments]
+    # Security: Only run for PRs from same repo (not forks) or trusted bots
+    if: |
+      github.event.pull_request.head.repo.fork == false ||
+      github.actor == 'dependabot[bot]' ||
+      github.actor == 'google-labs-jules[bot]'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -240,6 +245,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy
     timeout-minutes: 120
+    # Security: Only run for PRs from same repo (not forks) or trusted bots
+    if: |
+      github.event.pull_request.head.repo.fork == false ||
+      github.actor == 'dependabot[bot]' ||
+      github.actor == 'google-labs-jules[bot]'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -276,7 +286,7 @@ jobs:
       - name: Upload Test Results to Trunk
         if: ${{ !cancelled() }}
         continue-on-error: true
-        uses: trunk-io/analytics-uploader@main
+        uses: trunk-io/analytics-uploader@293e9b144a101ef4b8fe3485a5afd0224fc48255
         with:
           junit-paths: packages/waffles/junit.xml
           org-slug: chrry
@@ -289,6 +299,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: e2e-guest-live
     timeout-minutes: 120
+    # Security: Only run for PRs from same repo (not forks) or trusted bots
+    if: |
+      github.event.pull_request.head.repo.fork == false ||
+      github.actor == 'dependabot[bot]' ||
+      github.actor == 'google-labs-jules[bot]'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -327,7 +342,7 @@ jobs:
       - name: Upload Test Results to Trunk
         if: ${{ !cancelled() }}
         continue-on-error: true
-        uses: trunk-io/analytics-uploader@main
+        uses: trunk-io/analytics-uploader@293e9b144a101ef4b8fe3485a5afd0224fc48255
         with:
           junit-paths: packages/waffles/junit.xml
           org-slug: chrry
@@ -365,7 +380,13 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     needs: [e2e-member-live]
-    if: success()
+    # Security: Only run for PRs from same repo (not forks) or trusted bots, AND if tests pass
+    if: |
+      success() && (
+        github.event.pull_request.head.repo.fork == false ||
+        github.actor == 'dependabot[bot]' ||
+        github.actor == 'google-labs-jules[bot]'
+      )
     steps:
       - uses: actions/checkout@v4
         with:

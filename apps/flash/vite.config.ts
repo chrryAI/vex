@@ -93,7 +93,13 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
       },
     },
     optimizeDeps: {
-      include: ["react", "react-dom", "react-dom/server"],
+      include: [
+        "react",
+        "react-dom",
+        "react-dom/server",
+        "markdown-to-jsx",
+        "react-syntax-highlighter",
+      ],
       exclude: [
         // Tauri APIs are only available at runtime in Tauri environment
         "@tauri-apps/api",
@@ -119,17 +125,14 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
             : (id) => {
                 // Vendor chunks
                 if (id.includes("node_modules")) {
+                  // React MUST be in react-vendor (before markdown check)
                   if (id.includes("react") || id.includes("react-dom")) {
                     return "react-vendor"
                   }
-                  if (id.includes("framer-motion")) {
-                    return "animation-vendor"
-                  }
-                  if (id.includes("@lobehub")) {
-                    return "ui-vendor"
-                  }
                   if (
                     id.includes("react-markdown") ||
+                    id.includes("markdown-to-jsx") ||
+                    id.includes("react-syntax-highlighter") ||
                     id.includes("remark") ||
                     id.includes("micromark") ||
                     id.includes("unist") ||
@@ -139,9 +142,29 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
                   ) {
                     return "markdown-vendor"
                   }
+                  if (id.includes("framer-motion")) {
+                    return "animation-vendor"
+                  }
+                  if (id.includes("@lobehub")) {
+                    return "ui-vendor"
+                  }
+
                   return "vendor"
                 }
               },
+          // Ensure proper chunk loading order
+          chunkFileNames: (chunkInfo) => {
+            // React vendor loads first (priority 0)
+            if (chunkInfo.name === "react-vendor") {
+              return "assets/0-[name]-[hash].js"
+            }
+            // Markdown vendor loads after (priority 1)
+            if (chunkInfo.name === "markdown-vendor") {
+              return "assets/1-[name]-[hash].js"
+            }
+            // Everything else (priority 2)
+            return "assets/2-[name]-[hash].js"
+          },
           format: "es", // Force ES module format
           // Only add Node.js polyfills for SSR builds, not client builds
           banner: isSsrBuild

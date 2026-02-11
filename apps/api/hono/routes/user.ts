@@ -215,7 +215,9 @@ user.patch("/image", async (c) => {
     const arrayBuffer = await image.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    const scanResult = await scanFileForMalware(buffer)
+    const scanResult = await scanFileForMalware(buffer, {
+      filename: image.name || "profile-image",
+    })
 
     if (!scanResult.safe) {
       console.error(`🚨 Malware detected`)

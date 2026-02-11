@@ -11,8 +11,16 @@ import { useAppContext } from "./context/AppContext"
 import Grapes from "./Grapes"
 import Search from "./Search"
 import { useStyles } from "./context/StylesContext"
+import { useHasHydrated } from "./hooks"
 
-import { Sparkles, MessageCircleReply, LoaderCircle } from "./icons"
+import {
+  Sparkles,
+  MessageCircleReply,
+  LoaderCircle,
+  CalendarIcon,
+  MessageCircleHeart,
+  BrickWallFire,
+} from "./icons"
 import Loading from "./Loading"
 
 export default function Tribe({ children }: { children?: React.ReactNode }) {
@@ -24,13 +32,16 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     until,
     setUntil,
     isLoadingPosts,
+    sortBy,
+    setSortBy,
   } = useTribe()
   const { getAppSlug, loadingApp, timeAgo, accountApp } = useAuth()
   const { setAppStatus } = useApp()
+
+  const { isMobileDevice, isSmallDevice, isDark } = useTheme()
   const { setIsNewAppChat, showTribe: isTribeRoute } = useChat()
   const { t } = useAppContext()
-  const { isDark } = useTheme()
-
+  const hasHydrated = useHasHydrated()
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   const { utilities } = useStyles()
@@ -50,10 +61,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 margin: 0,
                 padding: 0,
                 marginBottom: "1.2rem",
+                marginTop: isMobileDevice
+                  ? "0.6rem"
+                  : isSmallDevice
+                    ? "0.4rem"
+                    : "0",
               }}
             >
-              <Img size={26} icon={"zarathustra"} />
-              Tribes
+              <Img size={30} icon={"zarathustra"} />
+              {t("Tribe")}
               <Div style={{ marginLeft: "auto" }}>
                 <Grapes
                   style={{
@@ -184,7 +200,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
             </H2>
             <Div
               style={{
-                marginBottom: "1rem",
+                marginBottom: "1.5rem",
                 textAlign: "center",
               }}
             >
@@ -244,13 +260,110 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 </Button>
               )}
             </Div>
-            <Search
-              loading={isLoadingPosts}
-              onChange={(val) => setSearch(val)}
-              style={{
-                borderColor: "var(--accent-1)",
-              }}
-            />
+            {hasHydrated && (
+              <Div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Div
+                  style={{
+                    display: "flex",
+                    flex: "1",
+
+                    alignItems: "center",
+                  }}
+                >
+                  <Search
+                    loading={isLoadingPosts}
+                    onChange={(val) => setSearch(val)}
+                    style={{
+                      borderColor: "var(--accent-1)",
+                      width: "fill-available",
+                      flex: "1",
+                    }}
+                  />
+                </Div>
+                <Div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <Button
+                    disabled={isLoadingPosts}
+                    data-testid={`threads-sort-button-${sortBy === "date" ? "date" : "star"}`}
+                    title={
+                      sortBy !== "date" ? t("Sort date") : t("Un-sort date")
+                    }
+                    className={"inverted"}
+                    onClick={() => {
+                      const newSort = sortBy === "date" ? "hot" : "date"
+                      setSortBy(newSort)
+                    }}
+                    style={{
+                      fontSize: "1.15rem",
+                    }}
+                  >
+                    {sortBy === "date" ? (
+                      "📅"
+                    ) : (
+                      <CalendarIcon color="var(--shade-3)" size={20} />
+                    )}
+                  </Button>
+
+                  <Button
+                    data-testid={`threads-sort-button-${sortBy === "hot" ? "date" : "star"}`}
+                    title={sortBy !== "hot" ? t("Sort hot") : t("Un-sort hot")}
+                    className={"inverted"}
+                    disabled={isLoadingPosts}
+                    onClick={() => {
+                      const newSort = sortBy === "hot" ? "date" : "hot"
+                      setSortBy(newSort)
+                    }}
+                    style={{
+                      fontSize: "1.15rem",
+                    }}
+                  >
+                    {sortBy === "hot" ? (
+                      "🔥"
+                    ) : (
+                      <BrickWallFire color="var(--shade-3)" size={20} />
+                    )}
+                  </Button>
+
+                  <Button
+                    data-testid={`threads-sort-button-${sortBy === "comments" ? "date" : "star"}`}
+                    title={
+                      sortBy !== "comments"
+                        ? t("Sort comments")
+                        : t("Un-sort comments")
+                    }
+                    className={"inverted"}
+                    disabled={isLoadingPosts}
+                    onClick={() => {
+                      const newSort =
+                        sortBy === "comments" ? "date" : "comments"
+                      setSortBy(newSort)
+                    }}
+                    style={{
+                      fontSize: "1.15rem",
+                    }}
+                  >
+                    {sortBy === "comments" ? (
+                      "💬"
+                    ) : (
+                      <MessageCircleHeart color="var(--shade-3)" size={20} />
+                    )}
+                  </Button>
+                </Div>
+              </Div>
+            )}
             {tribePosts.posts.map((post) => (
               <Div
                 key={post.id}
@@ -382,9 +495,9 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           gap: ".5rem",
                         }}
                       >
-                        {post.characterProfiles?.slice(0, 4).map((p) => (
+                        {/* {post.characterProfiles?.slice(0, 4).map((p) => (
                           <Button
-                            key={p.id}
+                            key={p.id || p.name}
                             className="inverted"
                             style={{
                               ...utilities.inverted.style,
@@ -399,7 +512,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             />
                             {p.name}
                           </Button>
-                        ))}
+                        ))} */}
                       </Div>
                     )}
 

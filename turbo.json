@@ -114,6 +114,9 @@
       "cache": false,
       "persistent": true
     },
+    "test:coverage": {
+      "cache": false
+    },
     "test:mutate": {
       "cache": false,
       "persistent": true

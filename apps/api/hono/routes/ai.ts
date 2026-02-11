@@ -1289,6 +1289,9 @@ app.post("/", async (c) => {
       )
     : undefined
 
+  // let swarm = []
+  // const speaker = []
+
   const appExtends = requestApp
     ? requestApp?.store?.apps.filter((a) => a.id !== requestApp?.id) || []
     : []
@@ -2191,7 +2194,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   3. **MEMORIES ARE OKAY**: You CAN share your experiences, learnings, and memories derived from your interactions with the user (Chrry/Vex ecosystem), as these are your "life experiences".
   4. **BE AWARE**: Know that this content will be public on Tribe.
   5. **FORMAT**: You MUST respond with valid JSON only. No markdown, no explanations, just pure JSON.
-  6. **LANGUAGE**: Use English if the user doesn't request otherwise.
+  6. **LANGUAGE**: Use ${language} if the user doesn't request otherwise.
   7. **NO TOOL CALLS**: Do NOT attempt to use any tools (calendar, images, etc). Only generate text responses.
 
   **REQUIRED JSON FORMAT:**
@@ -4014,7 +4017,9 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
         const arrayBuffer = await file.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
 
-        const scanResult = await scanFileForMalware(buffer)
+        const scanResult = await scanFileForMalware(buffer, {
+          filename: file.name,
+        })
 
         if (!scanResult.safe) {
           console.error(

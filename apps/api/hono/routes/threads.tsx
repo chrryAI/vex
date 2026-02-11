@@ -437,7 +437,9 @@ threads.patch("/:id", async (c) => {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    const scanResult = await scanFileForMalware(buffer)
+    const scanResult = await scanFileForMalware(buffer, {
+      filename: file.name,
+    })
 
     if (!scanResult.safe) {
       console.error(`🚨 Malware detected in ${file.name}: ${scanResult.threat}`)
@@ -554,6 +556,8 @@ threads.patch("/:id", async (c) => {
   ) {
     const characterProfile = await getCharacterProfile({
       threadId: id,
+      userId: member?.id,
+      guestId: guest?.id,
     })
 
     if (characterProfile) {

@@ -17,7 +17,8 @@ export async function scanFileForMalware(
     // Convert Buffer to Uint8Array for proper Blob compatibility
     const uint8Array = new Uint8Array(buffer)
     const blob = new Blob([uint8Array], { type: "application/octet-stream" })
-    formData.append("file", blob, "file")
+    // Use actual filename if provided so scanner can detect file type
+    formData.append("file", blob, options?.filename || "file")
 
     console.log(`🔍 Scanning file at ${scannerUrl}/scan`)
 
@@ -54,16 +55,65 @@ export async function scanFileForMalware(
       hasApiKey: !!process.env.MALWARE_SCANNER_API_KEY,
     })
     // Fail open for safe file types, fail closed for unknown types
+    // Must match file types shown in UI file picker (Chat.tsx)
     const SAFE_EXTENSIONS = [
+      // Video
       ".mov",
       ".mp4",
       ".webm",
+      ".avi",
+      ".mkv",
+      // Images
       ".png",
       ".jpg",
       ".jpeg",
       ".gif",
+      ".webp",
+      ".svg",
+      ".bmp",
+      // Audio
+      ".mp3",
+      ".wav",
+      ".ogg",
+      ".m4a",
+      ".aac",
+      ".flac",
+      // Documents
       ".pdf",
       ".txt",
+      ".md",
+      ".csv",
+      ".log",
+      // Data formats
+      ".json",
+      ".xml",
+      ".yaml",
+      ".yml",
+      ".toml",
+      ".ini",
+      ".conf",
+      // Code files
+      ".html",
+      ".css",
+      ".js",
+      ".ts",
+      ".tsx",
+      ".jsx",
+      ".py",
+      ".java",
+      ".c",
+      ".cpp",
+      ".h",
+      ".hpp",
+      ".cs",
+      ".php",
+      ".rb",
+      ".go",
+      ".rs",
+      ".swift",
+      ".kt",
+      ".scala",
+      ".sh",
     ]
     const fileExt = options?.filename?.toLowerCase().split(".").pop()
     const isSafeType =
