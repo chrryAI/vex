@@ -17,3 +17,8 @@
 
 **Learning:** The `Bookmark` component relied solely on visual icon changes (filled vs empty star) to indicate state. This is invisible to screen readers who just hear "button".
 **Action:** Added `aria-pressed` for state and dynamic `aria-label` for action description ("Bookmark thread" vs "Remove bookmark"). This pattern should be applied to all toggle buttons (Like, Subscribe, etc.).
+
+## 2026-03-03 - Focus Styles on Custom Checkboxes
+
+**Learning:** Custom checkbox components that hide the native input often lose keyboard focus indicators. The `Checkbox` component had a hidden input but no visual feedback on the custom track when focused via keyboard.
+**Action:** Use `onFocus`/`onBlur` state on the wrapper to apply focus ring styles to the custom visual element, ensuring keyboard users can see where they are.
