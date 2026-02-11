@@ -7,3 +7,7 @@
 
 **Learning:** `ReactMarkdown` creates new references for `remarkPlugins` and `components` if defined inline, causing unnecessary re-renders. Also, default `img` tags lack lazy loading.
 **Action:** Move configuration objects and utility functions (like `timeAgo`) to module scope. Use `loading="lazy"` and `decoding="async"` for markdown images. Be careful with TS type imports (`import type { Components }`) to avoid runtime crashes in some bundlers.
+## 2026-02-06 - Parallel Data Fetching in SSR
+
+**Learning:** Parallelized blog data fetching (file system read) with API calls in `loadServerData` using a promise initiated early and awaited late. This significantly reduces response time by overlapping I/O operations.
+**Action:** Identify independent data dependencies in SSR loaders and initiate their promises as early as possible. Ensure error handling is robust (e.g. catch errors inside the promise or handle rejections gracefully) to prevent unhandled rejections if the main flow exits early.

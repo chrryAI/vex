@@ -123,6 +123,19 @@ export async function loadServerData(
       : `/${request.pathname}`) || "/"
   ).split("?")?.[0]
 
+  // OPTIMIZATION: Start fetching blog data early to parallelize with session/app data fetching
+  // This allows file system reads to happen concurrently with API calls
+  const isBlogList = pathname === "/blog"
+  const isBlogPost = pathname.startsWith("/blog/") && pathname !== "/blog"
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const isBlogRoute = isBlogList || isBlogPost
+
+  const blogDataPromise = isBlogList
+    ? getBlogPosts()
+    : isBlogPost
+      ? getBlogPost(pathname.replace("/blog/", ""))
+      : Promise.resolve(null)
+
   const isLocalePathname =
     pathname && locales.includes(pathname.split("/")?.[1] as locale)
 
@@ -353,19 +366,25 @@ export async function loadServerData(
   // Detect blog routes and load blog data
   let blogPosts: BlogPost[] | undefined
   let blogPost: BlogPostWithContent | undefined
-  let isBlogRoute = false
 
-  // Check if this is a blog route
-  if (pathname === "/blog" || pathname.startsWith("/blog/")) {
-    isBlogRoute = true
-
-    if (pathname === "/blog") {
-      // Blog list page
-      blogPosts = await getBlogPosts()
-    } else {
-      // Individual blog post page
-      const slug = pathname.replace("/blog/", "")
-      blogPost = (await getBlogPost(slug)) || undefined
+  // Await the pre-fetched blog data
+  if (isBlogList) {
+    try {
+      const data = await blogDataPromise
+      if (Array.isArray(data)) {
+        blogPosts = data as BlogPost[]
+      }
+    } catch (error) {
+      console.error("Error loading blog posts:", error)
+    }
+  } else if (isBlogPost) {
+    try {
+      const data = await blogDataPromise
+      if (data && !Array.isArray(data)) {
+        blogPost = (data as BlogPostWithContent) || undefined
+      }
+    } catch (error) {
+      console.error("Error loading blog post:", error)
     }
   }
 
