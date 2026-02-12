@@ -16,6 +16,7 @@ import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
 import { randomBytes } from "crypto"
 import type { Context } from "hono"
 import { getCookie, setCookie, deleteCookie } from "hono/cookie"
+import { checkAuthRateLimit } from "../../lib/rateLimiting"
 
 const authRoutes = new Hono()
 
@@ -353,6 +354,16 @@ function buildRedirectUrl(baseUrl: string, authCode: string): string {
  */
 authRoutes.post("/signup/password", async (c) => {
   try {
+    const ip = c.req.header("x-forwarded-for")?.split(",")[0] || "127.0.0.1"
+    const { success } = await checkAuthRateLimit(c.req.raw, ip)
+
+    if (!success) {
+      return c.json(
+        { error: "Too many attempts. Please try again later." },
+        429,
+      )
+    }
+
     const { email, password, name } = await c.req.json()
 
     if (!email || !password) {
@@ -398,6 +409,16 @@ authRoutes.post("/signup/password", async (c) => {
  */
 authRoutes.post("/signin/password", async (c) => {
   try {
+    const ip = c.req.header("x-forwarded-for")?.split(",")[0] || "127.0.0.1"
+    const { success } = await checkAuthRateLimit(c.req.raw, ip)
+
+    if (!success) {
+      return c.json(
+        { error: "Too many attempts. Please try again later." },
+        429,
+      )
+    }
+
     const { email, password, callbackUrl } = await c.req.json()
 
     if (!email || !password) {

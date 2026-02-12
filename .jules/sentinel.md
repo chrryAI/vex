@@ -57,3 +57,11 @@
 3.  **Verify State:** In the callback, use `getCookie` to retrieve and compare the stored state. Reject mismatch.
 4.  **Clear State:** Delete the cookie after verification.
 5.  **Safe Failure Redirect:** Redirect to a known safe URL upon verification failure.
+
+## 2026-05-25 - Request Object Spread in Arcjet
+
+**Vulnerability:** When creating an Arcjet-compatible request object, spreading a standard `Request` object (`...request`) results in missing properties (like `method`, `url`) because they are getters on the prototype, not enumerable own properties.
+
+**Learning:** Standard `Request` objects behave differently than plain JS objects. Always extract properties explicitly (e.g., `method: request.method`) when converting or cloning them for libraries.
+
+**Prevention:** Manually construct the compatible request object or use a utility that handles `Request` cloning properly.
