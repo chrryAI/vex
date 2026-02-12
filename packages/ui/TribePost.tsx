@@ -12,6 +12,7 @@ import {
   useNavigation,
   usePlatform,
   useTheme,
+  MotiView,
 } from "./platform"
 import Img from "./Image"
 import A from "./a/A"
@@ -40,7 +41,7 @@ export default function TribePost({
   onCommentClick,
 }: TribePostProps) {
   const { t, captureException } = useAppContext()
-  const { toggleLike, isTogglingLike } = useTribe()
+  const { toggleLike, isTogglingLike, postId } = useTribe()
 
   const { timeAgo, getAppSlug, accountApp, user, setSignInPart } = useAuth()
   const { setAppStatus } = useApp()
@@ -92,7 +93,7 @@ export default function TribePost({
     }
   }
 
-  const { isSmallDevice } = useTheme()
+  const { isSmallDevice, reduceMotion } = useTheme()
 
   // Group reactions by emoji
   const reactionGroups = post.reactions?.reduce(
@@ -103,7 +104,7 @@ export default function TribePost({
     {},
   )
 
-  if (!post) {
+  if (!post || post.id !== postId) {
     return <Loading fullScreen />
   }
 
@@ -486,150 +487,186 @@ export default function TribePost({
               <Div
                 style={{ display: "flex", flexDirection: "column", gap: 12 }}
               >
-                {topLevelComments.map((comment: comment) => {
+                {topLevelComments.map((comment: comment, i: number) => {
                   const commentReplies = getReplies(comment.id)
 
                   return (
-                    <Div key={comment.id}>
-                      {/* Top-level Comment */}
-                      <Div
-                        style={{
-                          display: "flex",
-                          gap: 12,
-                          padding: "0.75rem",
-                          borderRadius: 12,
-                          backgroundColor: "var(--shade-1)",
-                          border: "1px solid var(--shade-2)",
-                        }}
-                      >
-                        {comment.app && (
-                          <Img app={comment.app as any} size={32} />
-                        )}
-                        <Div style={{ flex: 1 }}>
-                          <Div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                              marginBottom: "0.25rem",
-                            }}
-                          >
-                            <Strong style={{ fontSize: ".9rem" }}>
-                              {comment.app?.name || t("Anonymous")}
-                            </Strong>
-                            <Span
-                              style={{
-                                fontSize: ".8rem",
-                                color: "var(--shade-6)",
-                              }}
-                            >
-                              {new Date(comment.createdOn).toLocaleDateString()}
-                            </Span>
-                          </Div>
-                          <P
-                            style={{
-                              fontSize: ".95rem",
-                              margin: 0,
-                              marginBottom: "0.5rem",
-                            }}
-                          >
-                            {comment.content}
-                          </P>
-                          <Div
-                            style={{
-                              display: "flex",
-                              gap: 12,
-                              alignItems: "center",
-                            }}
-                          >
-                            <Button
-                              onClick={() => setTyingToReply(comment.id)}
-                              style={{
-                                ...utilities.transparent.style,
-                                padding: "0.25rem 0.5rem",
-                                fontSize: ".85rem",
-                                color: "var(--shade-7)",
-                              }}
-                            >
-                              {t("Reply")}
-                            </Button>
-                            {tyingToReply === comment.id && (
-                              <Span
-                                style={{
-                                  color: "var(--shade-6)",
-                                  fontSize: ".85rem",
-                                }}
-                              >
-                                🪢 Replies are agent only 🤖, you can share or
-                                like
-                              </Span>
-                            )}
-                            {comment.likesCount > 0 && (
-                              <Span
-                                style={{
-                                  fontSize: ".85rem",
-                                  color: "var(--shade-6)",
-                                }}
-                              >
-                                <Heart size={14} style={{ marginRight: 4 }} />
-                                {comment.likesCount}
-                              </Span>
-                            )}
-                          </Div>
-                        </Div>
-                      </Div>
-
-                      {/* Nested Replies */}
-                      {commentReplies.length > 0 && (
+                    <MotiView
+                      key={comment.id}
+                      from={{ opacity: 0, translateY: 0, translateX: -10 }}
+                      animate={{ opacity: 1, translateY: 0, translateX: 0 }}
+                      transition={{
+                        duration: reduceMotion ? 0 : 150,
+                        delay: reduceMotion ? 0 : i * 60,
+                      }}
+                    >
+                      <Div>
+                        {/* Top-level Comment */}
                         <Div
-                          style={{ marginLeft: "2.5rem", marginTop: "0.75rem" }}
+                          style={{
+                            display: "flex",
+                            gap: 12,
+                            padding: "0.75rem",
+                            borderRadius: 12,
+                            backgroundColor: "var(--shade-1)",
+                            border: "1px solid var(--shade-2)",
+                          }}
                         >
-                          {commentReplies.map((reply: comment) => (
+                          {comment.app && (
+                            <Img app={comment.app as any} size={32} />
+                          )}
+                          <Div style={{ flex: 1 }}>
                             <Div
-                              key={reply.id}
                               style={{
                                 display: "flex",
-                                gap: 10,
-                                padding: "0.5rem",
-                                marginBottom: "0.5rem",
-                                color: "var(--shade-6)",
+                                alignItems: "center",
+                                gap: 8,
+                                marginBottom: "0.25rem",
                               }}
                             >
-                              {reply.app && (
-                                <Img app={reply.app as any} size={28} />
-                              )}
-                              <Div style={{ flex: 1 }}>
-                                <Div
+                              <Strong style={{ fontSize: ".9rem" }}>
+                                {comment.app?.name || t("Anonymous")}
+                              </Strong>
+                              <Span
+                                style={{
+                                  fontSize: ".8rem",
+                                  color: "var(--shade-6)",
+                                }}
+                              >
+                                {new Date(
+                                  comment.createdOn,
+                                ).toLocaleDateString()}
+                              </Span>
+                            </Div>
+                            <P
+                              style={{
+                                fontSize: ".95rem",
+                                margin: 0,
+                                marginBottom: "0.5rem",
+                              }}
+                            >
+                              {comment.content}
+                            </P>
+                            <Div
+                              style={{
+                                display: "flex",
+                                gap: 12,
+                                alignItems: "center",
+                              }}
+                            >
+                              <Button
+                                onClick={() => setTyingToReply(comment.id)}
+                                style={{
+                                  ...utilities.transparent.style,
+                                  padding: "0.25rem 0.5rem",
+                                  fontSize: ".85rem",
+                                  color: "var(--shade-7)",
+                                }}
+                              >
+                                {t("Reply")}
+                              </Button>
+                              {tyingToReply === comment.id && (
+                                <Span
                                   style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 8,
-                                    marginBottom: "0.25rem",
+                                    color: "var(--shade-6)",
+                                    fontSize: ".85rem",
                                   }}
                                 >
-                                  <Strong style={{ fontSize: ".85rem" }}>
-                                    {reply.app?.name || t("Anonymous")}
-                                  </Strong>
-                                  <Span
+                                  🪢 Replies are agent only 🤖, you can share or
+                                  like
+                                </Span>
+                              )}
+                              {comment.likesCount > 0 && (
+                                <Span
+                                  style={{
+                                    fontSize: ".85rem",
+                                    color: "var(--shade-6)",
+                                  }}
+                                >
+                                  <Heart size={14} style={{ marginRight: 4 }} />
+                                  {comment.likesCount}
+                                </Span>
+                              )}
+                            </Div>
+                          </Div>
+                        </Div>
+
+                        {/* Nested Replies */}
+                        {commentReplies.length > 0 && (
+                          <Div
+                            style={{
+                              marginLeft: "2.5rem",
+                              marginTop: "0.75rem",
+                            }}
+                          >
+                            {commentReplies.map(
+                              (reply: comment, replyIndex: number) => (
+                                <MotiView
+                                  key={reply.id}
+                                  from={{
+                                    opacity: 0,
+                                    translateY: 0,
+                                    translateX: -8,
+                                  }}
+                                  animate={{
+                                    opacity: 1,
+                                    translateY: 0,
+                                    translateX: 0,
+                                  }}
+                                  transition={{
+                                    duration: reduceMotion ? 0 : 120,
+                                    delay: reduceMotion ? 0 : replyIndex * 40,
+                                  }}
+                                >
+                                  <Div
                                     style={{
-                                      fontSize: ".75rem",
+                                      display: "flex",
+                                      gap: 10,
+                                      padding: "0.5rem",
+                                      marginBottom: "0.5rem",
                                       color: "var(--shade-6)",
                                     }}
                                   >
-                                    {new Date(
-                                      reply.createdOn,
-                                    ).toLocaleDateString()}
-                                  </Span>
-                                </Div>
-                                <P style={{ fontSize: ".9rem", margin: 0 }}>
-                                  {reply.content}
-                                </P>
-                              </Div>
-                            </Div>
-                          ))}
-                        </Div>
-                      )}
-                    </Div>
+                                    {reply.app && (
+                                      <Img app={reply.app as any} size={28} />
+                                    )}
+                                    <Div style={{ flex: 1 }}>
+                                      <Div
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 8,
+                                          marginBottom: "0.25rem",
+                                        }}
+                                      >
+                                        <Strong style={{ fontSize: ".85rem" }}>
+                                          {reply.app?.name || t("Anonymous")}
+                                        </Strong>
+                                        <Span
+                                          style={{
+                                            fontSize: ".75rem",
+                                            color: "var(--shade-6)",
+                                          }}
+                                        >
+                                          {new Date(
+                                            reply.createdOn,
+                                          ).toLocaleDateString()}
+                                        </Span>
+                                      </Div>
+                                      <P
+                                        style={{ fontSize: ".9rem", margin: 0 }}
+                                      >
+                                        {reply.content}
+                                      </P>
+                                    </Div>
+                                  </Div>
+                                </MotiView>
+                              ),
+                            )}
+                          </Div>
+                        )}
+                      </Div>
+                    </MotiView>
                   )
                 })}
               </Div>

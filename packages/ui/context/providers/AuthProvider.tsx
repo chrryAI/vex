@@ -2196,8 +2196,10 @@ export function AuthProvider({
 
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
-  const canShowTribe = false
-  //  isDevelopment || isE2E || user?.role === "admin"
+  const hasAppPosts = !!tribePosts?.totalCount
+
+  const canShowTribe =
+    (isDevelopment || isE2E || user?.role === "admin") && hasAppPosts
 
   const canBeTribeProfile =
     !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "") &&
@@ -2220,6 +2222,7 @@ export function AuthProvider({
   const showTribeProfile = canBeTribeProfile && showTribe
 
   const setShowTribe = (value: boolean) => {
+    if (!canShowTribe) return
     setShowTribeFinal(value)
   }
 
