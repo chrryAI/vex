@@ -1884,9 +1884,9 @@ export function AuthProvider({
     }
   }, [storeAppsSwr, newApp, updatedApp, loadingAppId])
 
-  const showFocusInitial = baseApp?.slug
-    ? baseApp?.slug === "focus" && app?.slug === "focus"
-    : pathname === "/focus"
+  const showFocusInitial =
+    pathname === "/focus" ||
+    (baseApp?.slug ? baseApp?.slug === "focus" && app?.slug === "focus" : false)
 
   const [showFocus, setShowFocusInternal] = useState<boolean | undefined>(
     showFocusInitial,

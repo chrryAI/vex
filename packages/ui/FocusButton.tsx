@@ -986,6 +986,7 @@ export default function FocusButton({
                           >
                             <Div style={styles.taskContent.style}>
                               <Button
+                                className="link"
                                 onClick={() => {
                                   if (
                                     selectedTasks?.some((t) => t.id === task.id)

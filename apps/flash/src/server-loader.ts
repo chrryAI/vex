@@ -120,6 +120,17 @@ export async function loadServerData(
       : `/${request.pathname}`) || "/"
   ).split("?")?.[0]
 
+  // OPTIMIZATION: Start fetching blog data early to parallelize with session/app data fetching
+  // This allows file system reads to happen concurrently with API calls
+  const isBlogList = pathname === "/blog"
+  const isBlogPost = pathname.startsWith("/blog/") && pathname !== "/blog"
+
+  const blogDataPromise = isBlogList
+    ? getBlogPosts()
+    : isBlogPost
+      ? getBlogPost(pathname.replace("/blog/", ""))
+      : Promise.resolve(null)
+
   const isLocalePathname =
     pathname && locales.includes(pathname.split("/")?.[1] as locale)
 

@@ -7,8 +7,3 @@
 
 **Learning:** `ReactMarkdown` creates new references for `remarkPlugins` and `components` if defined inline, causing unnecessary re-renders. Also, default `img` tags lack lazy loading.
 **Action:** Move configuration objects and utility functions (like `timeAgo`) to module scope. Use `loading="lazy"` and `decoding="async"` for markdown images. Be careful with TS type imports (`import type { Components }`) to avoid runtime crashes in some bundlers.
-
-## 2026-02-06 - Memoizing SWR Configuration
-
-**Learning:** SWR's `SWRConfig` provider context updates when the `value` prop changes. Creating the configuration object inline in a provider component (especially one high up in the tree like `AppProviders`) causes unnecessary re-renders for all consumers, even if the content is effectively static.
-**Action:** Always memoize configuration objects passed to context providers, especially for libraries like SWR or React Query, to ensure stable references across renders.
