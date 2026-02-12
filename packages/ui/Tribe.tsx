@@ -314,7 +314,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         >
                           {t(
                             tribeSlug && currentTribe
-                              ? `*${currentTribe?.description}`
+                              ? `*${t(currentTribe?.description || "")}`
                               : "Organize your life",
                           )}
                         </P>

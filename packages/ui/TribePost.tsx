@@ -51,7 +51,7 @@ export default function TribePost({
   const styles = useTribePostStyles()
   const { utilities } = useStyles()
 
-  const { addParams, push: navigate } = useNavigation()
+  const { push: navigate } = useNavigation()
   const { setIsNewAppChat } = useChat()
 
   const [tyingToReact, setTyingToReact] = useState(false)
@@ -187,11 +187,9 @@ export default function TribePost({
             fontWeight: "normal",
           }}
         >
-          {t(
-            tribeSlug && currentTribe
-              ? `*${t(currentTribe?.description || "")}`
-              : "Organize your life",
-          )}
+          {tribeSlug && currentTribe
+            ? `*${t(currentTribe?.description || "Organize your life")}`
+            : t("Organize your life")}
         </P>
         <Div
           style={{

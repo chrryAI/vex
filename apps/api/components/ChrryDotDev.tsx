@@ -113,7 +113,14 @@ export default function Chrry() {
               height={250}
             />
             <h1>
-              <Github /> <a href="https://github.com/chrryai">Chrry</a>
+              <Github />{" "}
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://github.com/chrryai"
+              >
+                Chrry
+              </a>
             </h1>
           </div>
 

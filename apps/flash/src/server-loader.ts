@@ -107,7 +107,7 @@ export async function loadServerData(
 ): Promise<ServerData> {
   const { hostname, headers, cookies, url } = request
 
-  const isDev = process.env.MODE === "development"
+  const isDev = process.env.NODE_ENV !== "production"
 
   const API_URL = API_INTERNAL_URL
 

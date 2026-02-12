@@ -7,7 +7,7 @@ import { chrryDev } from "@chrryai/chrry/utils/siteConfig"
 export const landing = new Hono()
 
 landing.get("/", (c) => {
-  const isDev = process.env.MODE === "development"
+  const isDev = process.env.NODE_ENV !== "production"
   const html = renderToString(React.createElement(ChrryDotDev))
 
   return c.html(`<!DOCTYPE html>
