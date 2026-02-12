@@ -1928,6 +1928,7 @@ export function AuthProvider({
       item.store?.id &&
       item.store?.id === app?.store?.id,
   )
+
   const [storeApp, setStoreAppInternal] = useState<appWithStore | undefined>(
     storeAppIternal,
   )
@@ -2196,7 +2197,8 @@ export function AuthProvider({
 
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
-  const canShowTribe = isDevelopment || isE2E || user?.role === "admin"
+  const canShowTribe = false
+  //  isDevelopment || isE2E || user?.role === "admin"
 
   const canBeTribeProfile =
     !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "") &&

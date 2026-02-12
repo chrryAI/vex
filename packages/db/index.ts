@@ -7656,7 +7656,7 @@ export const getTribePosts = async ({
           ? await db
               .select()
               .from(threads)
-              .where(eq(threads.id, row.post.tribeId))
+              .where(eq(threads.tribeId, row.post.tribeId))
               .limit(1)
           : [undefined]
 

@@ -212,6 +212,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     display: "flex",
                     gap: ".5rem",
                     flexWrap: "wrap",
+                    minHeight: "2rem",
                   }}
                   key={`app-tribe-${tribeSlug}-${app?.id}`}
                 >
