@@ -33,6 +33,8 @@ interface TribeContextType {
   characterProfileIds?: string[]
   isLoadingPosts?: boolean
   isLoadingTribes?: boolean
+  isLoadingPost?: boolean
+  tribePostError?: Error
   sortBy: "date" | "hot" | "comments"
   tribeSlug?: string
   currentTribe?: paginatedTribes["tribes"][number]
@@ -152,7 +154,12 @@ export function TribeProvider({ children }: TribeProviderProps) {
     },
   )
 
-  const { data: tribePostData, mutate: refetchTribePost } = useSWR(
+  const {
+    data: tribePostData,
+    mutate: refetchTribePost,
+    error: tribePostError,
+    isLoading: isLoadingPost,
+  } = useSWR(
     postId && token ? ["tribePost", postId, app?.id] : null,
     () => {
       if (!token || !postId) return
@@ -321,6 +328,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     characterProfileIds,
     isLoadingPosts,
     isLoadingTribes,
+    isLoadingPost,
+    tribePostError,
     tribeSlug,
     currentTribe,
     setTribes,
