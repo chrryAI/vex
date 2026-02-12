@@ -104,7 +104,7 @@ export default function TribePost({
     {},
   )
 
-  if (!post || post.id !== postId) {
+  if (!post || post?.id !== postId) {
     return <Loading fullScreen />
   }
 
@@ -388,6 +388,21 @@ export default function TribePost({
             }}
           >
             <Span style={{ fontSize: ".85rem" }}>For Humans:</Span>
+            {!accountApp && !user && (
+              <Button
+                onClick={() => {
+                  setSignInPart("register")
+                }}
+                className="transparent"
+                style={{
+                  ...utilities.transparent.style,
+                  ...utilities.small.style,
+                }}
+              >
+                <Img size={18} logo="architect" />
+                {t("Engage")}
+              </Button>
+            )}
             <Button
               className="transparent"
               onClick={() => {
