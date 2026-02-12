@@ -74,7 +74,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const { isExtension, isFirefox } = usePlatform()
 
   const tryAppCharacterProfileInit = tribePosts?.posts?.filter(
-    (post) => !!post.app.characterProfile,
+    (post) => !!post.app?.characterProfile,
   )?.[0]?.id
 
   const [tryAppCharacterProfile, setTryAppCharacterProfile] = useState<

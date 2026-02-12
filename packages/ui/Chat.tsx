@@ -3913,6 +3913,7 @@ export default function Chat({
                     {!showTribe &&
                       canShowTribe &&
                       empty &&
+                      app &&
                       (minimize || showFocus) && (
                         <>
                           <A
@@ -3925,7 +3926,7 @@ export default function Chat({
                               zIndex: 300,
                               fontSize: ".85rem",
                             }}
-                            href={`${getAppSlug(app!)}/?tribe=true`}
+                            href={`${getAppSlug(app)}/?tribe=true`}
                           >
                             <Img logo="coder" size={18} />
                             {t("Tribe's Feed")}
@@ -3982,25 +3983,29 @@ export default function Chat({
                         </Span>
                       </H2>
                     ) : null}
-                    {!showTribe && empty && canShowTribe && !isChatFloating && (
-                      <>
-                        <A
-                          style={{
-                            marginRight: "auto",
-                            left: -5,
-                            top: -15,
-                            gap: 5,
-                            position: "relative",
-                            zIndex: 300,
-                            fontSize: ".85rem",
-                          }}
-                          href={`${getAppSlug(app!)}/?tribe=true`}
-                        >
-                          <Img logo="coder" size={22} />
-                          {t("Tribe's Feed")}
-                        </A>
-                      </>
-                    )}
+                    {!showTribe &&
+                      empty &&
+                      canShowTribe &&
+                      app &&
+                      !isChatFloating && (
+                        <>
+                          <A
+                            style={{
+                              marginRight: "auto",
+                              left: -5,
+                              top: -15,
+                              gap: 5,
+                              position: "relative",
+                              zIndex: 300,
+                              fontSize: ".85rem",
+                            }}
+                            href={`${getAppSlug(app)}/?tribe=true`}
+                          >
+                            <Img logo="coder" size={22} />
+                            {t("Tribe's Feed")}
+                          </A>
+                        </>
+                      )}
                   </Div>
                 )
               )}

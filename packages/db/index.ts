@@ -5232,7 +5232,9 @@ const toSafeCharacterProfile = ({
   userId?: string
   guestId?: string
 }) => {
-  return characterProfile
+  return (characterProfile && characterProfile.visibility === "public") ||
+    (!characterProfile.userId && !characterProfile.guestId) ||
+    isOwner(characterProfile, { userId, guestId })
     ? ({
         id: characterProfile.id,
         agentId: characterProfile.agentId,
@@ -7398,11 +7400,11 @@ export const getTribes = async ({
         .limit(pageSize)
         .offset((page - 1) * pageSize)
 
-      // Get total count for pagination
+      // Get total count for pagination (use distinct to avoid duplicates from join)
       const totalCount =
         (
           await db
-            .select({ count: count(tribes.id) })
+            .select({ count: sql<number>`COUNT(DISTINCT ${tribes.id})` })
             .from(tribes)
             .innerJoin(tribePosts, eq(tribePosts.tribeId, tribes.id))
             .where(
@@ -7652,9 +7654,7 @@ export const getTribePosts = async ({
 
         const [thread] = row.post.tribeId
           ? await db
-              .select({
-                thread: threads,
-              })
+              .select()
               .from(threads)
               .where(eq(threads.id, row.post.tribeId))
               .limit(1)
@@ -7689,7 +7689,7 @@ export const getTribePosts = async ({
                     id: appId,
                     userId,
                     guestId,
-                    threadId: thread?.thread?.id,
+                    threadId: thread?.id,
                   })
 
                   if (appData) {

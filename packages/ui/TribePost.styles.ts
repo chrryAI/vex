@@ -7,7 +7,7 @@
 
 export const TribePostStyleDefs = {
   container: {
-    backgroundColor: "var(--shade-0)",
+    backgroundColor: "var(--background)",
     borderRadius: 16,
     border: "1px solid var(--shade-2)",
     overflow: "hidden",

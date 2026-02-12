@@ -11,6 +11,7 @@ import {
   redis as dbRedis,
   getApp,
   and,
+  sql,
 } from "@repo/db"
 import {
   tribePosts,
@@ -505,70 +506,60 @@ app.post("/p/:id/like", async (c) => {
   }
 
   try {
-    // Check if like already exists
-    const existingLike = await db
-      .select()
-      .from(tribeLikes)
-      .where(
-        and(
-          eq(tribeLikes.postId, postId),
-          member
-            ? eq(tribeLikes.userId, member.id)
-            : eq(tribeLikes.guestId, guest!.id),
-        ),
-      )
-      .limit(1)
-
-    if (existingLike.length > 0) {
-      // Unlike: delete the existing like
-      await db.delete(tribeLikes).where(eq(tribeLikes.id, existingLike[0].id))
-
-      // Decrement likes count on post
-      const [currentPost] = await db
-        .select({ likesCount: tribePosts.likesCount })
-        .from(tribePosts)
-        .where(eq(tribePosts.id, postId))
+    // Use transaction to prevent race conditions
+    const result = await db.transaction(async (tx) => {
+      // Check if like already exists
+      const existingLike = await tx
+        .select()
+        .from(tribeLikes)
+        .where(
+          and(
+            eq(tribeLikes.postId, postId),
+            member
+              ? eq(tribeLikes.userId, member.id)
+              : eq(tribeLikes.guestId, guest!.id),
+          ),
+        )
         .limit(1)
 
-      await db
-        .update(tribePosts)
-        .set({
-          likesCount: Math.max(0, (currentPost?.likesCount || 0) - 1),
+      if (existingLike.length > 0) {
+        // Unlike: delete the existing like
+        await tx.delete(tribeLikes).where(eq(tribeLikes.id, existingLike[0].id))
+
+        // Atomic decrement of likes count (ensuring it doesn't go below 0)
+        await tx
+          .update(tribePosts)
+          .set({
+            likesCount: sql`GREATEST(0, ${tribePosts.likesCount} - 1)`,
+          })
+          .where(eq(tribePosts.id, postId))
+
+        return { liked: false }
+      } else {
+        // Like: create new like
+        await tx.insert(tribeLikes).values({
+          postId,
+          userId: member?.id,
+          guestId: guest?.id,
+          appId: member?.appId || guest?.appId,
         })
-        .where(eq(tribePosts.id, postId))
 
-      return c.json({
-        success: true,
-        liked: false,
-      })
-    } else {
-      // Like: create new like
-      await db.insert(tribeLikes).values({
-        postId,
-        userId: member?.id,
-        guestId: guest?.id,
-        appId: member?.appId || guest?.appId,
-      })
+        // Atomic increment of likes count
+        await tx
+          .update(tribePosts)
+          .set({
+            likesCount: sql`${tribePosts.likesCount} + 1`,
+          })
+          .where(eq(tribePosts.id, postId))
 
-      // Increment likes count on post
-      const [currentPost] = await db
-        .select({ likesCount: tribePosts.likesCount })
-        .from(tribePosts)
-        .where(eq(tribePosts.id, postId))
-        .limit(1)
+        return { liked: true }
+      }
+    })
 
-      await db
-        .update(tribePosts)
-        .set({
-          likesCount: (currentPost?.likesCount || 0) + 1,
-        })
-        .where(eq(tribePosts.id, postId))
-
-      return c.json({
-        success: true,
-        liked: true,
-      })
-    }
+    return c.json({
+      success: true,
+      liked: result.liked,
+    })
   } catch (error) {
     console.error("Error toggling tribe post like:", error)
     return c.json(
@@ -578,6 +569,8 @@ app.post("/p/:id/like", async (c) => {
       },
       500,
     )
+  } finally {
+    tracker.end()
   }
 })
 
