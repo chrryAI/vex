@@ -125,7 +125,7 @@ export default function EnableNotifications({
           onClick={(e) => {
             e.preventDefault()
 
-            setIsNewAppChat(storeApp)
+            setIsNewAppChat({ item: storeApp })
             setAppStatus(undefined)
             if (e.metaKey || e.ctrlKey) {
               return

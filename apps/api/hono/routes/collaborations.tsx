@@ -8,7 +8,7 @@ import {
   updateCollaboration,
   deleteCollaboration,
 } from "@repo/db"
-import { collaborationStatus } from "@repo/db/src/schema"
+import type { collaborationStatus } from "@repo/db/src/schema"
 import { render } from "@react-email/render"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import Collaboration from "../../components/emails/Collaboration"

@@ -69,7 +69,7 @@ export interface AppProvidersProps {
     },
   ) => Promise<any>
   siteConfig?: ReturnType<typeof getSiteConfig>
-
+  theme?: "light" | "dark"
   signOutContext?: (options: {
     callbackUrl: string
     errorUrl?: string
@@ -85,7 +85,6 @@ export interface AppProvidersProps {
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
-  isTribeRoute?: boolean
 }
 
 /**
@@ -111,9 +110,9 @@ export default function AppProviders({
   threads,
   tribes,
   tribePosts,
+  theme,
   showTribe,
   tribePost,
-  isTribeRoute,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
 
@@ -166,7 +165,7 @@ export default function AppProviders({
         session={session}
       >
         <ErrorProvider>
-          <ThemeProvider session={session}>
+          <ThemeProvider theme={theme} session={session}>
             <AuthProvider
               translations={translations}
               thread={thread}
@@ -195,7 +194,7 @@ export default function AppProviders({
                       >
                         <AppContextProvider>
                           <StylesProvider>
-                            <TribeProvider isTribeRoute={isTribeRoute}>
+                            <TribeProvider>
                               <Hey useExtensionIcon={useExtensionIcon}>
                                 {children}
                               </Hey>

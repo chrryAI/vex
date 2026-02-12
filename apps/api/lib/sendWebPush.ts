@@ -1,7 +1,7 @@
 import webpush from "web-push"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { getChrryUrl } from "../hono/lib/getApp"
-import { Context } from "hono"
+import type { Context } from "hono"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import { deletePushSubscription, getPushSubscription } from "@repo/db"
 

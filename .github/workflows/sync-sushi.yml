@@ -6,7 +6,7 @@ on:
     branches:
       - chrry # Sync to sushi repo when pushed to chrry
     paths:
-      - "packages/sushi/**" # Only trigger if sushi package changed
+      - packages/sushi/** # Only trigger if sushi package changed
 
 permissions:
   contents: read
@@ -32,7 +32,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm"
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

@@ -354,7 +354,7 @@ export default function FocusButton({
 
   if (showSettings) {
     return (
-      <Div style={styles.settingsContainer.style}>
+      <Div data-testid="focus-mode" style={styles.settingsContainer.style}>
         <Div>
           <Button
             data-testid="close-settings-button"
@@ -904,7 +904,7 @@ export default function FocusButton({
                               setShowFocus(false)
                               app?.id === focus?.id
                                 ? setShowFocus(false)
-                                : setIsNewAppChat(app)
+                                : setIsNewAppChat({ item: app })
                             }}
                             // href={getAppSlug(refApp)}
                           >

@@ -3,7 +3,7 @@ import {
   deletePushSubscription,
   getPushSubscription,
   createPushSubscription,
-  NewCustomPushSubscription,
+  type NewCustomPushSubscription,
 } from "@repo/db"
 import { getGuest, getMember } from "../lib/auth"
 

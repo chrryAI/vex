@@ -1,5 +1,5 @@
-import { db, sql, eq, desc, app, isE2E, isDevelopment } from "@repo/db"
-import { appWithStore } from "@chrryai/chrry/types"
+import { db, sql, eq, desc, type app, isE2E, isDevelopment } from "@repo/db"
+import type { appWithStore } from "@chrryai/chrry/types"
 
 import {
   documentChunks,

@@ -477,8 +477,8 @@ function selectOptimalSlots({
 
   // Sort by risk-adjusted score
   const sortedSlots = scoredSlots.sort((a, b) => {
-    const scoreA = a.score * Math.pow(a.confidence, strategy.riskTolerance)
-    const scoreB = b.score * Math.pow(b.confidence, strategy.riskTolerance)
+    const scoreA = a.score * a.confidence ** strategy.riskTolerance
+    const scoreB = b.score * b.confidence ** strategy.riskTolerance
     return scoreB - scoreA
   })
 

@@ -1,7 +1,7 @@
 import { getUser, getGuest as getGuestDb } from "@repo/db"
 import jwt from "jsonwebtoken"
 import captureException from "../../lib/captureException"
-import { Context } from "hono"
+import type { Context } from "hono"
 import { validate } from "uuid"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
 export { getApp } from "./getApp"
@@ -102,7 +102,6 @@ export async function getMember(
 export async function getGuest(
   c?: Context,
   { skipCache }: { skipCache?: boolean } = {},
-  debug = false,
 ) {
   const request = c?.req.raw
   const appIdHeader = request?.headers.get("x-app-id")

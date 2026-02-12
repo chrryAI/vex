@@ -78,7 +78,7 @@ const checkFileUploadLimits = async ({
   if (tooLarge) {
     return {
       allowed: false,
-      error: `File \"${tooLarge.name}\" exceeds the ${limits.maxFileSizeMB}MB limit.`,
+      error: `File "${tooLarge.name}" exceeds the ${limits.maxFileSizeMB}MB limit.`,
     }
   }
 

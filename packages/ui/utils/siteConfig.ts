@@ -302,6 +302,37 @@ const chrryAI = {
       isOpenSource: true,
     },
   ],
+  about: {
+    intro:
+      "Chrry is the ultimate AI app marketplace where creativity meets monetization. Discover cutting-edge AI applications built by developers worldwide, or create and publish your own AI apps to earn revenue.",
+    intro2:
+      "With 70% revenue sharing for app creators, custom stores, and powerful developer tools - Chrry empowers both users and builders to harness the full potential of AI technology.",
+    approach: {
+      title: "Our Mission",
+      content:
+        "We're building the infrastructure for the AI app economy. Chrry makes it simple for developers to monetize their AI creations while giving users access to a curated marketplace of high-quality applications. Transparency in pricing, usage, and revenue sharing is at our core.",
+    },
+    platforms: {
+      title: "Available Everywhere",
+      content:
+        "Access Chrry's AI app marketplace across all your devices - web, mobile PWA, and browser extensions.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Full marketplace experience with app discovery, installation, and management from any browser.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install Chrry on your mobile or desktop. Browse apps offline, get notifications, sync across devices.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Quick access to your installed apps from the browser toolbar. Right-click integration on any webpage.",
+      },
+    },
+  },
 }
 
 const focus = {
@@ -444,6 +475,37 @@ const atlas = {
       isOpenSource: true,
     },
   ],
+  about: {
+    intro:
+      "Atlas is your intelligent geographic companion that transforms how you explore and remember places. Save locations with AI-powered context, create geo-tagged notes, and discover local insights wherever you go.",
+    intro2:
+      "Whether you're planning your next adventure or documenting your favorite spots - Atlas combines location intelligence with AI to help you navigate the world more meaningfully.",
+    approach: {
+      title: "Smart Geography",
+      content:
+        "We're reinventing how people interact with places. Atlas uses AI to understand not just where you've been, but why it mattered. From travel planning to local discovery - every feature is designed to enrich your geographic experiences with intelligent context.",
+    },
+    platforms: {
+      title: "Explore Anywhere",
+      content:
+        "Take Atlas with you across web, mobile, and browser - your geographic memory synced everywhere.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Full-featured mapping experience with location management, travel planning, and local discovery from any browser.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install Atlas as a native app. Access your saved locations offline, get location-based notifications, and seamless sync.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Save locations while browsing, get context-aware recommendations, and quick access to your geographic memory from the toolbar.",
+      },
+    },
+  },
 }
 
 const istanbul = {
@@ -943,6 +1005,37 @@ const vex = {
   ],
   chromeWebStoreUrl:
     "https://chromewebstore.google.com/detail/vex-🍒/enpllenkofnbmnflnlkbomkcilamjgac",
+  about: {
+    intro:
+      "Vex is your intelligent AI-powered life assistant designed to help you accomplish tasks efficiently and stay organized. From managing your daily routines to collaborating with AI agents - Vex is built to empower your productivity.",
+    intro2:
+      "With per-chat instructions, thread artifacts for document memory, and real-time collaboration features - Vex learns your context, remembers your files, and works seamlessly with you.",
+    approach: {
+      title: "Our Philosophy",
+      content:
+        "We believe AI should enhance your life, not complicate it. Vex provides complete transparency about how our AI works, what data we use, and how we charge for services. Clear usage limits, honest pricing, and straightforward capabilities - you always know what to expect.",
+    },
+    platforms: {
+      title: "Multi-Platform AI Assistant",
+      content:
+        "Vex is designed as a true multi-platform experience - available across web, mobile, and browser extensions as first-class citizens.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Full-featured web experience with real-time collaboration, thread management, and all AI capabilities accessible from any browser.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App (PWA)",
+        content:
+          "Install Vex as a native app on your mobile device or desktop. Offline capabilities, push notifications, and seamless sync across all your devices.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Right-click context menu integration with sidebar AI assistant. Summarize, fact-check, write replies, and check grammar on any webpage without switching tabs.",
+      },
+    },
+  },
 }
 
 const burn = {
@@ -1194,6 +1287,30 @@ export interface SiteConfig {
     link?: string
     isOpenSource?: boolean
   }>
+  about?: {
+    intro: string
+    intro2?: string
+    approach?: {
+      title: string
+      content: string
+    }
+    platforms?: {
+      title: string
+      content: string
+      web?: {
+        title: string
+        content: string
+      }
+      pwa?: {
+        title: string
+        content: string
+      }
+      chrome?: {
+        title: string
+        content: string
+      }
+    }
+  }
 }
 
 export const extensions = [
@@ -2192,7 +2309,7 @@ export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
-  const devMode = "chrryAI"
+  const devMode = "search"
 
   const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || devMode
 

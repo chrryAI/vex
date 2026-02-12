@@ -49,6 +49,7 @@ export default function CharacterProfile({
   const [isChangingVisibility, setIsChangingVisibility] = useState(false)
   const handlePin = async () => {
     if (!token) return
+    if (!characterProfile.threadId) return
     setIsPinning(true)
     try {
       const response = await updateThread({
@@ -82,6 +83,7 @@ export default function CharacterProfile({
 
   const handleShare = async () => {
     if (!token) return
+    if (!characterProfile.threadId) return
     setIsChangingVisibility(true)
     try {
       const response = await updateThread({

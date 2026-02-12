@@ -79,6 +79,7 @@ export default function Menu({
     setLoadingAppId,
     hasStoreApps,
     setBurn,
+    showTribe,
   } = useAuth()
 
   const { setShowTribe } = useChat()
@@ -361,7 +362,10 @@ export default function Menu({
                       setShowTribe(false)
 
                       toggleMenuIfSmallDevice()
-                      setIsNewChat(true)
+                      setIsNewChat({
+                        value: true,
+                        tribe: !showTribe,
+                      })
                       reload()
                     }}
                   >
@@ -422,7 +426,9 @@ export default function Menu({
                   setShowTribe(false)
 
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
-                  setIsNewChat(true)
+                  setIsNewChat({
+                    value: true,
+                  })
                   reload()
                 }}
                 style={styles.menuItemButton.style}
@@ -534,7 +540,9 @@ export default function Menu({
                         <Button
                           className="link"
                           onClick={() => {
-                            setIsNewChat(true)
+                            setIsNewChat({
+                              value: true,
+                            })
                           }}
                         >
                           <ArrowLeft color={colors.accent6} size={17} />
@@ -547,7 +555,9 @@ export default function Menu({
                                 <Button
                                   className="link"
                                   onClick={() => {
-                                    setIsNewChat(true)
+                                    setIsNewChat({
+                                      value: true,
+                                    })
                                   }}
                                 >
                                   <ArrowLeft color={colors.accent6} size={17} />

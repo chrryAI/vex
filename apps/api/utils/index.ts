@@ -1,5 +1,5 @@
 import parseJson, { JSONError } from "parse-json"
-import { messageActionType } from "@repo/db"
+import type { messageActionType } from "@repo/db"
 
 export const getMetadata = ({
   // manifest = "/manifest.webmanifest",
@@ -159,7 +159,7 @@ export const extractActionFromResponse = (
           try {
             const keywordsStr = targetKeywordsMatch[1].replace(/["']/g, '"')
             params.targetKeywords = JSON.parse(`[${keywordsStr}]`)
-          } catch (e) {
+          } catch (_e) {
             // Simple split fallback
             params.targetKeywords = targetKeywordsMatch[1]
               .split(",")
@@ -197,7 +197,7 @@ export const extractActionFromResponse = (
     const indexMatches = [
       aiResponse.match(/elementIndex["']?\s*:\s*([0-9]+)/i),
       aiResponse.match(/index[\s:]*([0-9]+)/i),
-      aiResponse.match(/element[\s\[]*([0-9]+)/i),
+      aiResponse.match(/element[\s[]*([0-9]+)/i),
       aiResponse.match(/\[([0-9]+)\]/),
     ].find((match) => match)
 

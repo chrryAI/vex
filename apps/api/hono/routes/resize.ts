@@ -128,7 +128,7 @@ resize.get("/", async (c) => {
           // Resolve relative URLs against the CURRENT original URL
           try {
             currentUrl = new URL(location, currentUrl).toString()
-          } catch (e) {
+          } catch (_e) {
             throw new Error("Invalid redirect URL")
           }
 

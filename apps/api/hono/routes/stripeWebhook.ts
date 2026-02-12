@@ -36,7 +36,7 @@ stripeWebhook.post("/", async (c) => {
   }
 
   switch (event.type) {
-    case "invoice.payment_succeeded":
+    case "invoice.payment_succeeded": {
       // Handle monthly subscription renewals for affiliate commission
       const invoice = event.data.object as Stripe.Invoice
 
@@ -118,8 +118,9 @@ stripeWebhook.post("/", async (c) => {
         }
       }
       break
+    }
 
-    case "customer.subscription.deleted":
+    case "customer.subscription.deleted": {
       const dbSubscription = await getSubscription({
         subscriptionId: event.data.object.id,
       })
@@ -142,6 +143,7 @@ stripeWebhook.post("/", async (c) => {
         captureException(error)
       }
       break
+    }
   }
 
   return c.json({ received: true })

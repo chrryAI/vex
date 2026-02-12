@@ -4,14 +4,12 @@ import {
   VERSION,
   getThreadId,
   pageSizes,
+  getPostId,
   isE2E,
   getEnv,
   API_INTERNAL_URL,
 } from "@chrryai/chrry/utils"
-import {
-  getAppAndStoreSlugs,
-  excludedSlugRoutes,
-} from "@chrryai/chrry/utils/url"
+import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
 import {
   getApp,
   getSession,
@@ -98,8 +96,6 @@ export interface ServerData {
     toString: () => string
   } // URL search params with URLSearchParams-compatible API
   // Agent profile data
-  agentProfile?: any
-  isAgentRoute: boolean
 }
 
 /**
@@ -129,8 +125,8 @@ export async function loadServerData(
 
   const localeCookie = cookies.locale as locale
 
-  const showTribe =
-    cookies.showTribe === "true" || pathname.split("/")?.[1] === "tribe"
+  const showTribe = cookies.showTribe === "true"
+  const themeCookie = cookies.theme as themeType
 
   // Parse Accept-Language header to get browser's preferred language
   const acceptLanguage = headers["accept-language"]
@@ -285,7 +281,6 @@ export async function loadServerData(
   let tribePosts: paginatedTribePosts | undefined
   let tribePost: tribePostWithDetails | undefined
   let tribe: tribe | undefined
-  let agentTribePosts: paginatedTribePosts | undefined
 
   try {
     threadResult = threadId
@@ -340,17 +335,21 @@ export async function loadServerData(
       API_URL,
     })
 
+    const postId = getPostId(pathname)
+
     apiKey =
       sessionResult?.user?.token || sessionResult?.guest?.fingerprint || apiKey
+
+    const canShowTribeProfile =
+      !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "") &&
+      pathname !== "/"
 
     const [
       translationsResult,
       threadsResult,
-      agentTribeResult,
       tribesResult,
       tribePostsResult,
       tribePostResult,
-      tribeResult,
     ] = await Promise.all([
       getTranslations({
         token: apiKey,
@@ -366,19 +365,11 @@ export async function loadServerData(
         API_URL,
       }),
       !isBlogRoute
-        ? getTribePosts({
-            appId: appResult.id,
-            pageSize: 10,
-            page: 1,
-            token: apiKey,
-            API_URL,
-          })
-        : Promise.resolve(undefined),
-      !isBlogRoute
         ? getTribes({
             pageSize: 15,
             page: 1,
             token: apiKey,
+            appId: canShowTribeProfile ? appResult.id : undefined,
             API_URL,
           })
         : Promise.resolve(undefined),
@@ -387,19 +378,13 @@ export async function loadServerData(
             pageSize: 10,
             page: 1,
             token: apiKey,
+            appId: canShowTribeProfile ? appResult.id : undefined,
             API_URL,
           })
         : Promise.resolve(undefined),
-      pathname.startsWith("/tribe/p/")
+      postId
         ? getTribePost({
-            id: pathname.replace("/tribe/p/", ""),
-            token: apiKey,
-            API_URL,
-          })
-        : Promise.resolve(undefined),
-      pathname.startsWith("/tribe/") && !pathname.startsWith("/tribe/p/")
-        ? getTribe({
-            slug: pathname.replace("/tribe/", ""),
+            id: postId,
             token: apiKey,
             API_URL,
           })
@@ -415,17 +400,11 @@ export async function loadServerData(
     session = sessionResult
 
     tribes = tribesResult
-    agentTribePosts = agentTribeResult
     tribePost = tribePostResult
-    tribe = tribeResult?.tribes?.[0]
     tribePosts = tribePostsResult
 
     const accountApp = session?.userBaseApp || session?.guestBaseApp
     app = appResult.id === accountApp?.id ? accountApp : appResult
-
-    if (agentTribePosts && !tribePosts) {
-      tribePosts = agentTribePosts
-    }
   } catch (error) {
     captureException(error)
     console.error("❌ API Error:", error)
@@ -434,14 +413,12 @@ export async function loadServerData(
 
   // Fetch threads
 
-  const theme = app?.backgroundColor === "#ffffff" ? "light" : "dark"
+  const theme =
+    themeCookie || (app?.backgroundColor === "#ffffff" ? "light" : "dark")
 
   // Agent profile route
-  const agentProfile = app
-  let isAgentRoute = false
 
   // Check if this is a tribe route OR if app slug is 'chrry'
-  const isChrryApp = app?.slug === "chrry"
 
   // Try to extract store and app slugs from URL (works for /:storeSlug/:appSlug pattern)
   // This handles clean URLs like /blossom/chrry without /agent prefix
@@ -468,10 +445,7 @@ export async function loadServerData(
     tribes,
     tribePosts,
     tribePost,
-    tribe,
-    agentProfile,
     showTribe,
-    isAgentRoute,
     pathname, // Add pathname so client knows the SSR route
   }
 

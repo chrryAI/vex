@@ -237,7 +237,7 @@ export async function searchNews(
     .select()
     .from(newsArticles)
     .where(
-      // @ts-ignore - SQL LIKE search
+      // @ts-expect-error - SQL LIKE search
       sql`${newsArticles.title} ILIKE ${"%" + query + "%"} OR ${newsArticles.description} ILIKE ${"%" + query + "%"}`,
     )
     .orderBy(desc(newsArticles.publishedAt))

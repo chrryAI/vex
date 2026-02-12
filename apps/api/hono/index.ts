@@ -98,8 +98,6 @@ if (process.env.VITE_SENTRY === "true" && process.env.SENTRY_DSN) {
   })
 }
 
-const isDevelopment = process.env.NODE_ENV !== "production"
-
 const app = new Hono()
 
 app.onError((err, c) => {
@@ -199,7 +197,7 @@ app.use(
   "/*",
   serveStatic({
     root: publicDir,
-    onNotFound: (path, c) => {
+    onNotFound: (_path, _c) => {
       // Continue to next handler if file not found
     },
   }),

@@ -6,7 +6,17 @@
 import { locales as localesArray } from "../locales"
 import { getThreadId as getThreadIdFromUrl } from "./index"
 
-const baseProtectedRoutes = ["threads", "about", "privacy", "terms", "why", "u"]
+const baseProtectedRoutes = [
+  "threads",
+  "about",
+  "privacy",
+  "terms",
+  "why",
+  "u",
+  "p",
+  "blog",
+  "tribe",
+]
 
 export const protectedRoutes = Array.from(
   new Set([...baseProtectedRoutes, ...localesArray]),
