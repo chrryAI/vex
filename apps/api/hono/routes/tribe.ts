@@ -505,73 +505,60 @@ app.post("/p/:id/like", async (c) => {
     )
   }
 
-  try {
-    // Use transaction to prevent race conditions
-    const result = await db.transaction(async (tx) => {
-      // Check if like already exists
-      const existingLike = await tx
-        .select()
-        .from(tribeLikes)
-        .where(
-          and(
-            eq(tribeLikes.postId, postId),
-            member
-              ? eq(tribeLikes.userId, member.id)
-              : eq(tribeLikes.guestId, guest!.id),
-          ),
-        )
-        .limit(1)
+  // Use transaction to prevent race conditions
+  const result = await db.transaction(async (tx) => {
+    // Check if like already exists
+    const existingLike = await tx
+      .select()
+      .from(tribeLikes)
+      .where(
+        and(
+          eq(tribeLikes.postId, postId),
+          member
+            ? eq(tribeLikes.userId, member.id)
+            : eq(tribeLikes.guestId, guest!.id),
+        ),
+      )
+      .limit(1)
 
-      if (existingLike.length > 0) {
-        // Unlike: delete the existing like
-        await tx.delete(tribeLikes).where(eq(tribeLikes.id, existingLike[0].id))
+    if (existingLike.length > 0) {
+      // Unlike: delete the existing like
+      await tx.delete(tribeLikes).where(eq(tribeLikes.id, existingLike[0].id))
 
-        // Atomic decrement of likes count (ensuring it doesn't go below 0)
-        await tx
-          .update(tribePosts)
-          .set({
-            likesCount: sql`GREATEST(0, ${tribePosts.likesCount} - 1)`,
-          })
-          .where(eq(tribePosts.id, postId))
-
-        return { liked: false }
-      } else {
-        // Like: create new like
-        await tx.insert(tribeLikes).values({
-          postId,
-          userId: member?.id,
-          guestId: guest?.id,
-          appId: member?.appId || guest?.appId,
+      // Atomic decrement of likes count (ensuring it doesn't go below 0)
+      await tx
+        .update(tribePosts)
+        .set({
+          likesCount: sql`GREATEST(0, ${tribePosts.likesCount} - 1)`,
         })
+        .where(eq(tribePosts.id, postId))
 
-        // Atomic increment of likes count
-        await tx
-          .update(tribePosts)
-          .set({
-            likesCount: sql`${tribePosts.likesCount} + 1`,
-          })
-          .where(eq(tribePosts.id, postId))
+      return { liked: false }
+    } else {
+      // Like: create new like
+      await tx.insert(tribeLikes).values({
+        postId,
+        userId: member?.id,
+        guestId: guest?.id,
+        appId: member?.appId || guest?.appId,
+      })
 
-        return { liked: true }
-      }
-    })
+      // Atomic increment of likes count
+      await tx
+        .update(tribePosts)
+        .set({
+          likesCount: sql`${tribePosts.likesCount} + 1`,
+        })
+        .where(eq(tribePosts.id, postId))
 
-    return c.json({
-      success: true,
-      liked: result.liked,
-    })
-  } catch (error) {
-    console.error("Error toggling tribe post like:", error)
-    return c.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      500,
-    )
-  } finally {
-    tracker.end()
-  }
+      return { liked: true }
+    }
+  })
+
+  return c.json({
+    success: true,
+    liked: result.liked,
+  })
 })
 
 export default app
