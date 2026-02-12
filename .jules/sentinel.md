@@ -57,16 +57,3 @@
 3.  **Verify State:** In the callback, use `getCookie` to retrieve and compare the stored state. Reject mismatch.
 4.  **Clear State:** Delete the cookie after verification.
 5.  **Safe Failure Redirect:** Redirect to a known safe URL upon verification failure.
-
-## 2026-06-15 - Unvalidated Profile Image URL (XSS/SSRF Risk)
-
-**Vulnerability:** The user profile update endpoint (`PATCH /user`) allowed users to supply any string as their `image` URL. This could be used to inject malicious schemes (e.g., `javascript:alert(1)`) leading to XSS if rendered unsafely, or potentially `file:///` URLs leading to local file disclosure in some rendering contexts.
-
-**Learning:**
-- Trusting user input for URL fields without validation is risky.
-- Even if the frontend escapes attributes, defense-in-depth requires API-level validation.
-
-**Prevention:**
-- Validate all URL inputs to ensure they adhere to allowed protocols (strictly `http:` and `https:`).
-- Use `new URL()` constructor to parse and validate format.
-- Reject requests with invalid URLs before processing.
