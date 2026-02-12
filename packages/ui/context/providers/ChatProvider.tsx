@@ -433,9 +433,7 @@ export function ChatProvider({
     if (!item) {
       return
     }
-    console.log(`🚀 ~ hasStoreApps(item):`, hasStoreApps(item))
 
-    console.log(`🚀 ~ item:`, item)
     if (!hasStoreApps(item)) {
       loadingAppRef.current = item
       setLoadingApp(item)

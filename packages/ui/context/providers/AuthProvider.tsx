@@ -1097,7 +1097,7 @@ export function AuthProvider({
   const allApps = merge(
     merge(
       (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
-      session?.app?.store?.apps || [],
+      session?.app?.store?.apps || props.app?.store?.apps || [],
     ),
     userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
   )
@@ -1736,7 +1736,6 @@ export function AuthProvider({
       (item) => item.slug === appSlug && (hasStoreApps(item) ? true : true),
     )
 
-    console.log(`🚀 ~ matchedApp:`, matchedApp, appSlug, storeSlug)
     return matchedApp
   }
 
@@ -2528,7 +2527,6 @@ export function AuthProvider({
 
     // Priority 2: Find app by pathname
     if (!matchedApp) {
-      console.log(`🚀 ~ useEffect ~ matchedApp:`, matchedApp)
       matchedApp = findAppByPathname(pathname, storeApps) || baseApp
       // Using pathname app
     }
@@ -2537,7 +2535,6 @@ export function AuthProvider({
 
     // Only update if the matched app is different from current app
     if (matchedApp && matchedApp.id !== app?.id) {
-      console.log(`🚀 ~ useEffect ~ matchedApp:`, matchedApp)
       // Switching app
       setApp(matchedApp)
       setStore(matchedApp.store)

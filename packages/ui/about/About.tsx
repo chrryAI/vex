@@ -87,7 +87,6 @@ export default function About() {
   const [selectedApp, setSelectedApp] = React.useState<
     appWithStore | undefined
   >(auth.app)
-  console.log(`🚀 ~ About ~ app:`, selectedApp)
 
   const apps = selectedApp?.store?.apps || baseApp?.store?.apps
 

@@ -283,15 +283,6 @@ export async function loadServerData(
   let tribe: tribe | undefined
 
   try {
-    threadResult = threadId
-      ? await getThread({
-          id: threadId,
-          pageSize: pageSizes.threads,
-          token: apiKey,
-          API_URL: API_INTERNAL_URL,
-        })
-      : undefined
-
     appId = threadResult?.thread?.appId || headers["x-app-id"]
     const sessionResult = await getSession({
       // appId: appResult.id,
@@ -340,6 +331,14 @@ export async function loadServerData(
     apiKey =
       sessionResult?.user?.token || sessionResult?.guest?.fingerprint || apiKey
 
+    threadResult = threadId
+      ? await getThread({
+          id: threadId,
+          pageSize: pageSizes.threads,
+          token: apiKey,
+          API_URL,
+        })
+      : undefined
     const canShowTribeProfile =
       !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "") &&
       pathname !== "/"

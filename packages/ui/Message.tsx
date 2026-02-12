@@ -924,18 +924,34 @@ function Message({
                 {images?.length ? (
                   <Div
                     data-testid="user-message-images"
-                    style={styles.userMessageImages.style}
+                    style={{
+                      ...styles.userMessageImages.style,
+                    }}
                   >
                     {images.map((image) => (
-                      <Img
-                        style={styles.userMessageImage.style}
-                        dataTestId="user-message-image"
-                        key={image.id}
-                        src={image.url}
-                        alt={image.title}
-                        width={200}
-                        height={"auto"}
-                      />
+                      <Div style={{ position: "relative" }}>
+                        <Img
+                          style={styles.userMessageImage.style}
+                          dataTestId="user-message-image"
+                          key={image.id}
+                          src={image.url}
+                          alt={image.title}
+                          width={200}
+                          height={"auto"}
+                        />
+                        <Button
+                          style={styles.downloadButton.style}
+                          onClick={() =>
+                            downloadImage(
+                              image.url,
+                              `${image.prompt?.slice(0, 30) || "image"}.webp`,
+                            )
+                          }
+                          title={t("Download image")}
+                        >
+                          <Download size={16} />
+                        </Button>
+                      </Div>
                     ))}
                   </Div>
                 ) : null}

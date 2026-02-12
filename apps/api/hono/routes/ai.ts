@@ -4143,9 +4143,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 url: `data:${file.mimeType};base64,${file.data}`,
                 messageId: slugify(file.filename.substring(0, 10)),
                 options: {
-                  maxWidth: 600,
-                  maxHeight: 600,
                   title: file.filename,
+                  type: "image",
                 },
               }),
             )
