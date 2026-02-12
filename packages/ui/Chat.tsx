@@ -945,7 +945,6 @@ export default function Chat({
       }
 
       // Send original file - server will handle optimization if needed
-      console.log(`📎 Adding file: ${file.name} (${file.size} bytes)`)
       validFiles.push(file)
     }
 

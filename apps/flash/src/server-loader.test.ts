@@ -27,19 +27,15 @@ vi.mock("@chrryai/chrry/utils/url", () => ({
 }))
 
 vi.mock("@chrryai/chrry/lib", () => ({
-  getApp: vi
-    .fn()
-    .mockResolvedValue({
-      id: "app-id",
-      slug: "app-slug",
-      backgroundColor: "#ffffff",
-    }),
-  getSession: vi
-    .fn()
-    .mockResolvedValue({
-      user: { token: "mock-token" },
-      fingerprint: "mock-fp",
-    }),
+  getApp: vi.fn().mockResolvedValue({
+    id: "app-id",
+    slug: "app-slug",
+    backgroundColor: "#ffffff",
+  }),
+  getSession: vi.fn().mockResolvedValue({
+    user: { token: "mock-token" },
+    fingerprint: "mock-fp",
+  }),
   getThread: vi.fn().mockResolvedValue(undefined),
   getThreads: vi.fn().mockResolvedValue({ threads: [], totalCount: 0 }),
   getTranslations: vi.fn().mockResolvedValue({}),

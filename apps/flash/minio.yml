@@ -1,7 +1,8 @@
 services:
   minio:
     image: ghcr.io/coollabsio/minio:RELEASE.2025-10-15T17-29-55Z
-    command: server /data --console-address "127.0.0.1:9001 # Only localhost
+    # Console only accessible via localhost for security
+    command: server /data --console-address "127.0.0.1:9001"
     environment:
       - MINIO_SERVER_URL=$MINIO_SERVER_URL
       - MINIO_ROOT_USER=$SERVICE_USER_MINIO

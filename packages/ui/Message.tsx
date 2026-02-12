@@ -929,11 +929,10 @@ function Message({
                     }}
                   >
                     {images.map((image) => (
-                      <Div style={{ position: "relative" }}>
+                      <Div key={image.id} style={{ position: "relative" }}>
                         <Img
                           style={styles.userMessageImage.style}
                           dataTestId="user-message-image"
-                          key={image.id}
                           src={image.url}
                           alt={image.title}
                           width={200}
