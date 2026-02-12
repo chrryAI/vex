@@ -1,4 +1,4 @@
-import { Context, Next } from "hono"
+import type { Context, Next } from "hono"
 import { validate } from "uuid"
 
 // Static allowed origins (always allowed)

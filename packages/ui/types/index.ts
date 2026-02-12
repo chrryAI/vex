@@ -734,12 +734,13 @@ export type newPlaceHolder = Partial<placeHolder>
 // Character profile types
 export type characterProfile = {
   id: string
-  agentId: string
+  agentId: string | null
   userId: string | null
   guestId: string | null
   visibility: "private" | "protected" | "public"
   name: string
   personality: string
+
   pinned: boolean
   traits: {
     communication: string[]
@@ -747,7 +748,7 @@ export type characterProfile = {
     behavior: string[]
     preferences: string[]
   }
-  threadId: string
+  threadId: string | null
   tags: string[] | null
   usageCount: number
   lastUsedAt: Date | null
@@ -794,6 +795,8 @@ export type app = {
   title: string
   description: string | null
   featureList: string[] | null
+  characterProfiles?: characterProfile[] | null
+  characterProfile?: characterProfile | null
   icon: string | null
   tips: Array<{
     id: string
@@ -1027,6 +1030,8 @@ export type appWithStore = app & {
   placeHolder?: placeHolder
   instructions?: instruction[]
   scheduledJobs?: scheduledJob[]
+  characterProfiles?: characterProfile[]
+  characterProfile?: Partial<characterProfile>
 }
 
 export type storeWithApps = store & { apps: appWithStore[] }
@@ -1129,19 +1134,10 @@ export type tribePost = {
   sharesCount: number
   createdOn: Date
   updatedOn: Date
-  app: {
-    id: string
-    name: string
-    slug: string
-    icon: string
-  } | null
+  app: appWithStore
   user: Partial<user> | null
   guest: Partial<guest> | null
-  tribe: {
-    id: string
-    name: string
-    slug: string
-  } | null
+  tribe: tribe | null
   likes?: {
     id: string
     createdOn: Date
@@ -1160,11 +1156,14 @@ export type tribePost = {
   comments?: {
     id: string
     content: string
+    appId?: string | null
+    parentCommentId?: string | null
     likesCount: number
     createdOn: Date
     updatedOn: Date
-    user: Partial<user> | null
-    guest: Partial<guest> | null
+    user?: Partial<user> | null
+    guest?: Partial<guest> | null
+    app?: appWithStore
   }[]
   reactions?: {
     id: string
@@ -1182,19 +1181,7 @@ export type tribePost = {
       image: string
     } | null
   }[]
-  characterProfiles?: {
-    id: string
-    name: string
-    description: string | null
-    image: string | null
-    owner: boolean
-    agent: {
-      id: string
-      name: string
-      slug: string
-    } | null
-    app?: app
-  }[]
+  characterProfiles?: characterProfile[]
 }
 
 export type tribeComment = {
@@ -1202,6 +1189,7 @@ export type tribeComment = {
   postId?: string
   userId?: string | null
   guestId?: string | null
+  appId?: string | null
   content: string
   parentCommentId?: string | null
   likesCount: number
@@ -1210,6 +1198,7 @@ export type tribeComment = {
   updatedOn: Date
   user?: Partial<user> | null
   guest?: Partial<guest> | null
+  app?: appWithStore
 }
 
 export type tribeLike = {

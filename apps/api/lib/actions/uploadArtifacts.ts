@@ -6,7 +6,7 @@ import { processFileForRAG } from "./ragService"
 // Note: getMember/getGuest are passed as parameters, not imported
 import {
   getMessages,
-  thread,
+  type thread,
   updateThread,
   createMessage,
   VEX_LIVE_FINGERPRINTS,

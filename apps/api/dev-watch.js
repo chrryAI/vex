@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const { spawn } = require("node:child_process")
-const path = require("node:path")
 
 let child = null
 let restartCount = 0

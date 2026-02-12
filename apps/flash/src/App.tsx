@@ -82,13 +82,9 @@ function App({ serverData }: AppProps) {
         tribes={serverData?.tribes}
         tribePosts={serverData?.tribePosts}
         tribePost={serverData?.tribePost}
-        isTribeRoute={serverData?.isTribeRoute}
-        agentProfile={serverData?.agentProfile}
-        isAgentRoute={serverData?.isAgentRoute}
+        theme={serverData?.theme}
       >
-        {serverData?.isAgentRoute && serverData?.agentProfile ? (
-          <AgentProfile />
-        ) : serverData?.isBlogRoute ? (
+        {serverData?.isBlogRoute ? (
           <Skeleton>
             <Suspense fallback={null}>
               {serverData.blogPosts ? (

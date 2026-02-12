@@ -632,7 +632,7 @@ landing.get("/", (c) => {
       }
       
       @media (max-width: 48rem) {
-        .widget-visible iframe[title="chat\ widget"] {
+        .widget-visible iframe[title="chat widget"] {
           margin-bottom: 3.75rem !important;
         }
       }

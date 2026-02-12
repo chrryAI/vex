@@ -13,3 +13,7 @@ apps/mobile/ios/App/Podfile.lock:generic-api-key:98
 docs/SONARCLOUD_AUTO_SYNC.md:curl-auth-header:97
 docs/SONARCLOUD_AUTO_SYNC.md:curl-auth-header:101
 docs/SONARCLOUD_SETUP.md:curl-auth-header:40
+
+# False positives - Malware Scanner example values (not real secrets)
+malwareScanner/.env.example:generic-api-key:18
+malwareScanner/README.md:curl-auth-header:85

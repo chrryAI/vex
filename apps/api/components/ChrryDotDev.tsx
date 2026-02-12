@@ -1,6 +1,5 @@
 "use client"
 
-import React from "react"
 import { ExternalLink, Github, Package } from "lucide-react"
 import { chrryDev } from "@chrryai/chrry/utils/siteConfig"
 
@@ -147,9 +146,9 @@ export default function Chrry() {
         </div>
 
         <div className="features">
-          {config.features.map((feature, index) => (
+          {config.features.map((feature) => (
             <a
-              key={index}
+              key={feature.icon}
               href={feature.link}
               target={feature.isOpenSource ? "_blank" : undefined}
               rel={feature.isOpenSource ? "noopener noreferrer" : undefined}
@@ -158,7 +157,6 @@ export default function Chrry() {
               <div className="featureTitle">
                 <span>{feature.icon}</span> <span>{feature.title}</span>
               </div>
-              sss
               <p className="featureDescription">{feature.description}</p>
             </a>
           ))}

@@ -1,14 +1,14 @@
 import { Hono } from "hono"
 import {
   canCollaborate,
-  collaboration,
+  type collaboration,
   getApp,
   getThread,
   getThreads,
   getUser,
   isOwner,
-  thread,
-  user,
+  type thread,
+  type user,
   getMessages,
   deleteThread as deleteThreadDb,
   updateThread as updateThreadDb,
@@ -437,7 +437,9 @@ threads.patch("/:id", async (c) => {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    const scanResult = await scanFileForMalware(buffer)
+    const scanResult = await scanFileForMalware(buffer, {
+      filename: file.name,
+    })
 
     if (!scanResult.safe) {
       console.error(`🚨 Malware detected in ${file.name}: ${scanResult.threat}`)

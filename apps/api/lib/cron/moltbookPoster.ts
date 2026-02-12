@@ -21,7 +21,7 @@ import {
   eq,
   and,
   updateMessage,
-  thread,
+  type thread,
   updateThread,
 } from "@repo/db"
 import { apps, messages, moltQuestions, threads } from "@repo/db/src/schema"

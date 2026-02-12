@@ -755,14 +755,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       | undefined,
   ) => {
     setMinimize(false)
-    auth.setShowTribe(false)
-    auth.setShowFocus(false)
     setAppStatusInternal(payload)
 
     plausible({
       name: ANALYTICS_EVENTS.APP_STATUS,
       props: payload,
     })
+
+    if (payload) {
+      auth.setShowTribe(false)
+      auth.setShowFocus(false)
+    }
 
     const { step, part } = payload || {}
 

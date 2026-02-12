@@ -18,7 +18,7 @@ import arcjet, { shield, fixedWindow } from "@arcjet/node"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.13.92"
+const VERSION = "1.14.9"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -562,6 +562,7 @@ app.use(async (req, res) => {
     // Load server data first (optional - can be undefined for client-only rendering)
     let serverData
     if (loadData) {
+      console.log("🔍 Loading server data for:", url)
       // You can build the context from req here
       const context = {
         url,
@@ -576,6 +577,7 @@ app.use(async (req, res) => {
           "0.0.0.0", // Extract client IP
       }
       serverData = await loadData(context)
+      console.log("✅ Server data loaded. Theme:", serverData?.theme)
 
       // Handle OAuth redirect
       if (serverData?.redirect) {
@@ -642,14 +644,23 @@ app.use(async (req, res) => {
       ? `<script>window.__ROUTER_STATE__ = ${JSON.stringify(routerState).replace(/</g, "\\u003c")}</script>`
       : ""
 
-    // Replace placeholders - inject metadata, CSS, server data, router state, and lang attribute
+    // Sanitize theme value to prevent HTML injection
+    const ALLOWED_THEMES = ["dark", "light"]
+    const rawTheme = serverData?.theme
+    const sanitizedTheme = ALLOWED_THEMES.includes(rawTheme) ? rawTheme : "dark"
+
+    // Replace placeholders - inject metadata, CSS, server data, router state, lang attribute, and theme class
+    console.log("🎨 Applying theme class:", sanitizedTheme)
     const html = template
       .replace(`<html lang="en"`, `<html lang="${serverData?.locale || "en"}"`)
+      .replace(`class="dark"`, `class="${sanitizedTheme}"`)
       .replace(
         `<!--app-head-->`,
         `${metaTags}\n  ${cssLinks}\n  ${serverDataScript}\n  ${routerStateScript}`,
       )
       .replace(`<!--app-html-->`, appHtml)
+
+    console.log(`✅ HTML generated with theme: ${sanitizedTheme}`)
 
     res.status(200).set({ "Content-Type": "text/html" }).end(html)
   } catch (e) {

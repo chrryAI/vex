@@ -1,6 +1,8 @@
 import { test, expect } from "@playwright/test"
 
-test("test", async ({ page }) => {
+test("guest chat flow: send message, bookmark, edit, delete", async ({
+  page,
+}) => {
   await page.goto("https://atlas.chrry.ai/")
   await page.getByTestId("chat-textarea").click()
   await page
@@ -13,20 +15,20 @@ test("test", async ({ page }) => {
   await page.getByTestId("chat-send-button").click()
   await page.getByTestId("chat-send-button").click()
   await expect(page.getByTestId("agent-message")).toBeVisible({
-    timeout: 10000000,
+    timeout: 100000,
   })
 
   await expect(page.getByTestId("agent-message")).toBeVisible({
-    timeout: 10000000,
+    timeout: 100000,
   })
   await expect(page.getByTestId("thread-not-bookmarked")).toBeVisible({
-    timeout: 10000000,
+    timeout: 100000,
   })
   await page.getByTestId("thread-not-bookmarked").click()
   await page.getByTestId("menu-bookmarked").click()
   await page.getByTestId("menu-not-bookmarked").click()
   await expect(page.getByTestId("character-profile")).toBeVisible({
-    timeout: 10000000,
+    timeout: 100000,
   })
   await page.getByTestId("character-profile").click()
   await page.getByTestId("modal-close-button").click()

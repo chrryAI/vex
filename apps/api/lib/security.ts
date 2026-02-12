@@ -17,7 +17,8 @@ export async function scanFileForMalware(
     // Convert Buffer to Uint8Array for proper Blob compatibility
     const uint8Array = new Uint8Array(buffer)
     const blob = new Blob([uint8Array], { type: "application/octet-stream" })
-    formData.append("file", blob, "file")
+    // Use actual filename if provided so scanner can detect file type
+    formData.append("file", blob, options?.filename || "file")
 
     console.log(`🔍 Scanning file at ${scannerUrl}/scan`)
 
@@ -54,21 +55,49 @@ export async function scanFileForMalware(
       hasApiKey: !!process.env.MALWARE_SCANNER_API_KEY,
     })
     // Fail open for safe file types, fail closed for unknown types
+    // Must match file types shown in UI file picker (Chat.tsx)
+    // Restrict to non-executable types only
     const SAFE_EXTENSIONS = [
-      ".mov",
-      ".mp4",
-      ".webm",
-      ".png",
-      ".jpg",
-      ".jpeg",
-      ".gif",
-      ".pdf",
-      ".txt",
+      // Video
+      "mov",
+      "mp4",
+      "webm",
+      "avi",
+      "mkv",
+      // Images
+      "png",
+      "jpg",
+      "jpeg",
+      "gif",
+      "webp",
+      "svg",
+      "bmp",
+      // Audio (non-executable)
+      "mp3",
+      "wav",
+      "ogg",
+      "m4a",
+      "aac",
+      "flac",
+      // Documents / Data (non-executable)
+      "pdf",
+      "txt",
+      "md",
+      "csv",
+      "log",
+      "json",
+      "xml",
+      "yaml",
+      "yml",
+      "toml",
+      "ini",
+      "conf",
     ]
-    const fileExt = options?.filename?.toLowerCase().split(".").pop()
-    const isSafeType =
-      fileExt && SAFE_EXTENSIONS.some((ext: string) => ext.includes(fileExt))
-    return { safe: !!isSafeType }
+    const fileExt = (
+      options?.filename?.toLowerCase().split(".").pop() || ""
+    ).trim()
+    const isSafeType = SAFE_EXTENSIONS.includes(fileExt)
+    return { safe: isSafeType }
   }
 }
 

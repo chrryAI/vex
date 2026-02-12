@@ -8,14 +8,23 @@ import {
   db,
   eq,
   desc,
+  redis as dbRedis,
+  getApp,
+  and,
+  sql,
 } from "@repo/db"
-import { tribePosts, tribeComments } from "@repo/db/src/schema"
+import {
+  tribePosts,
+  tribeComments,
+  apps,
+  tribeLikes,
+  tribes,
+} from "@repo/db/src/schema"
 import { PerformanceTracker } from "../../lib/analytics"
-import { getApp } from "../lib/auth"
-
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
-
 import { getGuest, getMember } from "../lib/auth"
+import { isDevelopment } from "@chrryai/chrry/utils"
+import { isE2E } from "@chrryai/chrry/utils/siteConfig"
+import type { tribePost } from "@chrryai/chrry/types"
 
 const app = new Hono()
 
@@ -35,6 +44,7 @@ app.get("/", async (c) => {
   const search = c.req.query("search")
   const pageSize = c.req.query("pageSize")
   const page = c.req.query("page")
+  const appId = c.req.query("appId")
 
   try {
     const result = await tracker.track("tribe_list_getTribes", () =>
@@ -42,6 +52,7 @@ app.get("/", async (c) => {
         search,
         pageSize: pageSize ? parseInt(pageSize) : 20,
         page: page ? parseInt(page) : 1,
+        appId,
       }),
     )
 
@@ -215,8 +226,11 @@ app.get("/p", async (c) => {
   const characterProfileIds = c.req.query("characterProfileIds")
   const pageSize = c.req.query("pageSize")
   const page = c.req.query("page")
-
-  const { hostname } = c.req
+  const sortBy = c.req.query("sortBy") as
+    | "date"
+    | "hot"
+    | "comments"
+    | undefined
 
   const member = await tracker.track(
     "tribe_post_request_post_auth_member",
@@ -228,10 +242,37 @@ app.get("/p", async (c) => {
     return c.json({ error: "Invalid credentials" }, { status: 401 })
   }
 
+  // Redis setup (skip in dev/e2e)
+  const redis =
+    isDevelopment || isE2E
+      ? {
+          get: async (key: string) => null,
+          setex: async (key: string, ttl: number, value: string) => {},
+          del: async (key: string) => {},
+        }
+      : dbRedis
+
+  const skipCache = c.req.query("skipCache") === "true"
+
   try {
-    const result = await tracker.track(
-      "tribe_posts_request_getTribePosts",
-      () =>
+    // Create cache key based on all query parameters
+    const cacheKey = `tribe:posts:${sortBy || "date"}:${tribeId || "all"}:${appId || "all"}:${search || ""}:${characterProfileIds || ""}:${pageSize || 10}:${page || 1}`
+
+    let result = null
+
+    // Check Redis cache first
+    if (!skipCache && !isDevelopment && !isE2E) {
+      const cachedPosts = await redis.get(cacheKey)
+      if (cachedPosts) {
+        console.log(`✅ Tribe posts cache hit: ${cacheKey}`)
+        result = JSON.parse(cachedPosts)
+      }
+    }
+
+    // Fetch from database if not cached
+    if (!result) {
+      console.log(`📝 Fetching fresh tribe posts: ${cacheKey}`)
+      result = await tracker.track("tribe_posts_request_getTribePosts", () =>
         getTribePosts({
           tribeId,
           appId,
@@ -243,29 +284,27 @@ app.get("/p", async (c) => {
             : undefined,
           pageSize: pageSize ? parseInt(pageSize) : 10,
           page: page ? parseInt(page) : 1,
+          sortBy: sortBy || "date",
         }),
-    )
+      )
 
-    const chrryUrl = getSiteConfig(hostname).url
+      // Store in Redis cache with 5 minute TTL
+      if (!isDevelopment && !isE2E) {
+        await redis.setex(cacheKey, 300, JSON.stringify(result))
+        console.log(`💾 Cached tribe posts: ${cacheKey}`)
+      }
+    }
 
     const data = {
       ...result,
-      posts: await Promise.all(
-        result?.posts?.map(async (r) => {
-          return {
-            ...r,
-            content:
-              r.content?.length > 300
-                ? `${r.content?.slice(0, 300)}...`
-                : r.content,
-            app: await getApp({
-              c,
-              appId: r.app.id,
-              chrryUrl,
-            }),
-          }
-        }),
-      ),
+      posts: result?.posts?.map((r: tribePost) => ({
+        ...r,
+        content:
+          r.content?.length > 300
+            ? `${r.content?.slice(0, 300)}...`
+            : r.content,
+        // App already includes store from database join
+      })),
     }
 
     return c.json({
@@ -299,14 +338,56 @@ app.get("/p/:id", async (c) => {
 
   const postId = c.req.param("id")
 
+  if (!postId || postId === "undefined") {
+    return c.json(
+      {
+        success: false,
+        error: "Post ID is required",
+      },
+      400,
+    )
+  }
+
+  // Redis setup (skip in dev/e2e)
+  const redis =
+    isDevelopment || isE2E
+      ? {
+          get: async (key: string) => null,
+          setex: async (key: string, ttl: number, value: string) => {},
+          del: async (key: string) => {},
+        }
+      : dbRedis
+
+  const skipCache = c.req.query("skipCache") === "true"
+
   try {
-    // Get post details by ID
+    // Create cache key for single post
+    const cacheKey = `tribe:post:${postId}`
+
+    const cachedPost = null
+
+    // Check Redis cache first
+    if (!skipCache && !isDevelopment && !isE2E) {
+      const cached = await redis.get(cacheKey)
+      if (cached) {
+        console.log(`✅ Tribe post cache hit: ${postId}`)
+        return c.json(JSON.parse(cached))
+      }
+    }
+
+    console.log(`📝 Fetching fresh tribe post: ${postId}`)
+
+    // Get post details by ID with app data
     const [postData] = await tracker.track("tribe_post_request_post", () =>
       db
         .select({
           post: tribePosts,
+          app: apps,
+          tribe: tribes,
         })
         .from(tribePosts)
+        .leftJoin(apps, eq(tribePosts.appId, apps.id))
+        .leftJoin(tribes, eq(tribePosts.tribeId, tribes.id))
         .where(eq(tribePosts.id, postId))
         .limit(1),
     )
@@ -321,15 +402,21 @@ app.get("/p/:id", async (c) => {
       )
     }
 
-    const post = postData.post
+    const post = {
+      ...postData.post,
+      app: postData.app ? await getApp({ id: postData.app.id }) : null,
+      tribe: postData.tribe,
+    }
 
-    // Get comments for this post
+    // Get comments for this post with app data
     const comments = await tracker.track("tribe_post_comments", () =>
       db
         .select({
           comment: tribeComments,
+          app: apps,
         })
         .from(tribeComments)
+        .leftJoin(apps, eq(tribeComments.appId, apps.id))
         .where(eq(tribeComments.postId, postId))
         .orderBy(desc(tribeComments.createdOn))
         .limit(100),
@@ -351,11 +438,16 @@ app.get("/p/:id", async (c) => {
       }),
     )
 
-    return c.json({
+    const responseData = {
       success: true,
       post: {
         ...post,
-        comments: comments.map((c) => c.comment),
+        comments: await Promise.all(
+          comments.map(async (c) => ({
+            ...c.comment,
+            app: c.app ? await getApp({ id: c.app.id }) : null,
+          })),
+        ),
         reactions,
         likes,
         stats: {
@@ -365,7 +457,15 @@ app.get("/p/:id", async (c) => {
           reactionsCount: reactions.length,
         },
       },
-    })
+    }
+
+    // Store in Redis cache with 5 minute TTL
+    if (!isDevelopment && !isE2E) {
+      await redis.setex(cacheKey, 300, JSON.stringify(responseData))
+      console.log(`💾 Cached tribe post: ${postId}`)
+    }
+
+    return c.json(responseData)
   } catch (error) {
     console.error("Error fetching tribe post:", error)
     return c.json(
@@ -376,6 +476,89 @@ app.get("/p/:id", async (c) => {
       500,
     )
   }
+})
+
+// Toggle like on a post
+app.post("/p/:id/like", async (c) => {
+  const tracker = new PerformanceTracker("tribe_post_like_request")
+
+  const member = await tracker.track("tribe_post_like_auth_member", () =>
+    getMember(c),
+  )
+  const guest = await tracker.track("tribe_post_like_auth_guest", () =>
+    getGuest(c),
+  )
+
+  if (!member && !guest) {
+    return c.json({ error: "Invalid credentials" }, { status: 401 })
+  }
+
+  const postId = c.req.param("id")
+
+  if (!postId || postId === "undefined") {
+    return c.json(
+      {
+        success: false,
+        error: "Post ID is required",
+      },
+      400,
+    )
+  }
+
+  // Use transaction to prevent race conditions
+  const result = await db.transaction(async (tx) => {
+    // Check if like already exists
+    const existingLike = await tx
+      .select()
+      .from(tribeLikes)
+      .where(
+        and(
+          eq(tribeLikes.postId, postId),
+          member
+            ? eq(tribeLikes.userId, member.id)
+            : eq(tribeLikes.guestId, guest!.id),
+        ),
+      )
+      .limit(1)
+
+    if (existingLike.length > 0) {
+      // Unlike: delete the existing like
+      await tx.delete(tribeLikes).where(eq(tribeLikes.id, existingLike[0].id))
+
+      // Atomic decrement of likes count (ensuring it doesn't go below 0)
+      await tx
+        .update(tribePosts)
+        .set({
+          likesCount: sql`GREATEST(0, ${tribePosts.likesCount} - 1)`,
+        })
+        .where(eq(tribePosts.id, postId))
+
+      return { liked: false }
+    } else {
+      // Like: create new like
+      await tx.insert(tribeLikes).values({
+        postId,
+        userId: member?.id,
+        guestId: guest?.id,
+        appId: member?.appId || guest?.appId,
+      })
+
+      // Atomic increment of likes count
+      await tx
+        .update(tribePosts)
+        .set({
+          likesCount: sql`${tribePosts.likesCount} + 1`,
+        })
+        .where(eq(tribePosts.id, postId))
+
+      return { liked: true }
+    }
+  })
+
+  return c.json({
+    success: true,
+    liked: result.liked,
+  })
 })
 
 export default app

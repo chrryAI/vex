@@ -191,7 +191,7 @@ export default function ImageComponent(props: ImageProps) {
         ? Number.parseInt(size, 10)
         : 24 // Default size for emojis when size is CSS unit
 
-  const emojiSize = intSize
+  const emojiSize = intSize <= 50 ? intSize * 0.85 : intSize
   if (isEmoji) {
     if (app?.store?.slug === "books") {
       if (app.slug === "zarathustra") {

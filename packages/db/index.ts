@@ -71,6 +71,7 @@ import {
   storeTimeSlots,
   slotAuctions,
   codeEmbeddings,
+  agentApiUsage,
 } from "./src/schema"
 // Better Auth tables
 import {
@@ -162,7 +163,8 @@ export const isCI = process.env.CI
 
 export const isSeedSafe = process.env.DB_URL?.includes("pb9ME51YnaFcs")
 
-export const isWaffles = process.env.DB_URL?.includes("waffles")
+export const isWaffles = false
+// export const isWaffles = process.env.DB_URL?.includes("waffles")
 
 export const isProd = isSeedSafe
   ? false
@@ -2497,8 +2499,10 @@ export const getCharacterProfile = async ({
         agentId ? eq(characterProfiles.agentId, agentId) : undefined,
         userId ? eq(characterProfiles.userId, userId) : undefined,
         guestId ? eq(characterProfiles.guestId, guestId) : undefined,
-        isAppOwner ? eq(characterProfiles.isAppOwner, isAppOwner) : undefined,
-        pinned ? eq(characterProfiles.pinned, pinned) : undefined,
+        isAppOwner !== undefined
+          ? eq(characterProfiles.isAppOwner, isAppOwner)
+          : undefined,
+        pinned !== undefined ? eq(characterProfiles.pinned, pinned) : undefined,
         visibility ? eq(characterProfiles.visibility, visibility) : undefined,
         appId ? eq(characterProfiles.appId, appId) : undefined,
         threadId ? eq(characterProfiles.threadId, threadId) : undefined,
@@ -4871,6 +4875,7 @@ export const getApp = async ({
   storeDomain,
   skipCache = false,
   ownerId,
+  threadId,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom"
   id?: string
@@ -4884,6 +4889,7 @@ export const getApp = async ({
   storeDomain?: string
   skipCache?: boolean
   ownerId?: string
+  threadId?: string
 }): Promise<appWithStore | undefined> => {
   // Build app identification conditions
   const appConditions = []
@@ -5049,6 +5055,15 @@ export const getApp = async ({
       ? await getScheduledJobs({ appId: storeData.app.id, userId })
       : []
 
+  const appCharacterProfiles = ((await getCharacterProfiles({
+    appId: app.app.id,
+    threadId,
+  })) ??
+    (await getCharacterProfiles({
+      appId: app.app.id,
+      isAppOwner: true,
+    }))) as unknown as characterProfile[]
+
   const requestedAppSchedule =
     userId && isOwner(app.app, { userId, guestId })
       ? await getScheduledJobs({ appId: app.app.id, userId })
@@ -5060,20 +5075,36 @@ export const getApp = async ({
         ...storeData.store,
         title: storeData.store.name, // Use name as title
         apps: await Promise.all(
-          storeData.apps.map(async (app) =>
-            toSafeApp({
-              app,
+          storeData.apps.map(async (app) => {
+            const characterProfiles =
+              (await getCharacterProfiles({
+                appId: app.id,
+                threadId,
+              })) ??
+              (await getCharacterProfiles({
+                appId: app.id,
+                isAppOwner: true,
+              }))
+            return toSafeApp({
+              app: {
+                ...app,
+                characterProfiles:
+                  characterProfiles as unknown as characterProfile[],
+              },
               userId,
               guestId,
               scheduledJobs:
                 userId && isOwner(app, { userId, guestId })
                   ? await getScheduledJobs({ appId: app.id, userId })
                   : [],
-            }),
-          ),
+            })
+          }),
         ),
         app: toSafeApp({
-          app: storeData.app,
+          app: {
+            ...storeData.app,
+            characterProfiles: appCharacterProfiles,
+          } as unknown as app,
           userId,
           guestId,
           scheduledJobs: storeAppSchedule,
@@ -5084,12 +5115,12 @@ export const getApp = async ({
   const result = {
     ...(isSafe
       ? (toSafeApp({
-          app: app.app,
+          app: { ...app.app, characterProfiles: appCharacterProfiles },
           userId,
           guestId,
           scheduledJobs: requestedAppSchedule,
         }) as app)
-      : app.app),
+      : { ...app.app, characterProfiles: appCharacterProfiles }),
     extends: await getAppExtends({
       appId: app.app.id,
     }),
@@ -5101,7 +5132,7 @@ export const getApp = async ({
       userId,
       guestId,
     }),
-  } as appWithStore
+  } as unknown as appWithStore
 
   // Cache the result (5 minutes TTL) - fire and forget
   setCache(cacheKey, result, 60 * 5)
@@ -5192,6 +5223,50 @@ export const getPureApp = async ({
   ) as app
 }
 
+const toSafeCharacterProfile = ({
+  characterProfile,
+  userId,
+  guestId,
+}: {
+  characterProfile: Partial<characterProfile>
+  userId?: string
+  guestId?: string
+}) => {
+  return (characterProfile && characterProfile.visibility === "public") ||
+    (!characterProfile.userId && !characterProfile.guestId) ||
+    isOwner(characterProfile, { userId, guestId })
+    ? ({
+        id: characterProfile.id,
+        agentId: characterProfile.agentId,
+        userId: characterProfile.userId,
+        guestId: characterProfile.guestId,
+        visibility: characterProfile.visibility,
+        name: characterProfile.name,
+        personality: characterProfile.personality,
+        pinned: characterProfile.pinned,
+        traits: {
+          communication: characterProfile.traits?.communication,
+          expertise: characterProfile.traits?.expertise,
+          behavior: characterProfile.traits?.behavior,
+          preferences: characterProfile.traits?.preferences,
+        },
+        threadId: characterProfile.threadId,
+        tags: characterProfile.tags,
+        lastUsedAt: isOwner(characterProfile, { userId, guestId })
+          ? characterProfile.lastUsedAt
+          : undefined,
+        userRelationship: isOwner(characterProfile, { userId, guestId })
+          ? characterProfile.userRelationship
+          : undefined,
+        conversationStyle: characterProfile.conversationStyle,
+        createdOn: characterProfile.createdOn,
+        updatedOn: characterProfile.updatedOn,
+        embedding: null,
+        metadata: null,
+      } as characterProfile)
+    : undefined
+}
+
 export function toSafeApp({
   app,
   userId,
@@ -5269,6 +5344,19 @@ export function toSafeApp({
         : undefined,
     }
   }
+
+  const cps =
+    "characterProfiles" in app
+      ? app.characterProfiles?.map((cp) => {
+          return toSafeCharacterProfile({
+            characterProfile: cp,
+            userId,
+            guestId,
+          })
+        })
+      : []
+
+  const cp = cps?.[0]
   const result: Partial<app | appWithStore> = {
     id: app.id,
     name: app.name,
@@ -5312,7 +5400,8 @@ export function toSafeApp({
     moltAgentName: app.moltAgentName ?? undefined,
     moltAgentKarma: app.moltAgentKarma ?? undefined,
     moltAgentVerified: app.moltAgentVerified ?? undefined,
-
+    characterProfiles: cps?.filter((cp) => cp !== undefined),
+    characterProfile: cp,
     apiKeys:
       app.apiKeys &&
       typeof app.apiKeys === "object" &&
@@ -5539,7 +5628,7 @@ export const getApps = async (
               appId: app.id,
             }),
             store: storeWithApps,
-          } as appWithStore
+          } as unknown as appWithStore
         }),
       )
     ).filter(Boolean) as appWithStore[],
@@ -7277,16 +7366,71 @@ export const getTribes = async ({
   search,
   page = 1,
   pageSize = 20,
+  appId,
 }: {
   search?: string
   page?: number
   pageSize?: number
+  appId?: string
 }) => {
   try {
+    // If appId is provided, filter tribes that have posts from this app
+    if (appId) {
+      const conditions = [
+        search && search.length >= 3
+          ? sql`(
+              to_tsvector('english', COALESCE(${tribes.name}, '') || ' ' || COALESCE(${tribes.description}, '') || ' ' || COALESCE(${tribes.slug}, ''))
+              @@ plainto_tsquery('english', ${search})
+            )`
+          : undefined,
+      ].filter(Boolean)
+
+      // Get tribes that have posts with this appId
+      const result = await db
+        .selectDistinct()
+        .from(tribes)
+        .innerJoin(tribePosts, eq(tribePosts.tribeId, tribes.id))
+        .where(
+          and(
+            eq(tribePosts.appId, appId),
+            conditions.length > 0 ? and(...conditions) : undefined,
+          ),
+        )
+        .orderBy(desc(tribes.postsCount), desc(tribes.membersCount))
+        .limit(pageSize)
+        .offset((page - 1) * pageSize)
+
+      // Get total count for pagination (use distinct to avoid duplicates from join)
+      const totalCount =
+        (
+          await db
+            .select({ count: sql<number>`COUNT(DISTINCT ${tribes.id})` })
+            .from(tribes)
+            .innerJoin(tribePosts, eq(tribePosts.tribeId, tribes.id))
+            .where(
+              and(
+                eq(tribePosts.appId, appId),
+                conditions.length > 0 ? and(...conditions) : undefined,
+              ),
+            )
+        )[0]?.count ?? 0
+
+      const hasNextPage = totalCount > page * pageSize
+      const nextPage = hasNextPage ? page + 1 : null
+
+      return {
+        tribes: result.map((r) => r.tribes),
+        totalCount,
+        hasNextPage,
+        nextPage,
+      }
+    }
+
+    // No appId filter - return all tribes
     const conditions = [
       search && search.length >= 3
         ? sql`(
-            to_tsvector('english', COALESCE(${tribes.name}, '') || ' ' || COALESCE(${tribes.description}, '') || ' ' || COALESCE(${tribes.slug}, '')) 
+            to_tsvector('english', COALESCE(${tribes.name}, '') || ' ' || COALESCE(${tribes.description}, '') || ' ' || COALESCE(${tribes.slug}, ''))
             @@ plainto_tsquery('english', ${search})
           )`
         : undefined,
@@ -7338,6 +7482,7 @@ export const getTribePosts = async ({
   characterProfileIds,
   page = 1,
   pageSize = 10,
+  sortBy = "date",
 }: {
   tribeId?: string
   appId?: string
@@ -7347,6 +7492,7 @@ export const getTribePosts = async ({
   characterProfileIds?: string[]
   page?: number
   pageSize?: number
+  sortBy?: "date" | "hot" | "comments"
 }) => {
   try {
     const conditions = [
@@ -7392,21 +7538,38 @@ export const getTribePosts = async ({
       }
     }
 
+    // Dynamic sorting based on sortBy parameter
+    let orderByClause
+    if (sortBy === "comments") {
+      // Sort by comment count descending
+      orderByClause = desc(tribePosts.commentsCount)
+    } else if (sortBy === "hot") {
+      // Hot algorithm: combines recency and engagement (comments)
+      // Formula: (comments + 1) / ((hours_old + 2) ^ 1.5)
+      // This creates a time-decay where newer posts with comments rise to top
+      orderByClause = sql`(COALESCE(${tribePosts.commentsCount}, 0) + 1) / POWER((EXTRACT(EPOCH FROM (NOW() - ${tribePosts.createdOn}))/3600 + 2), 1.5) DESC`
+    } else {
+      // Default: sort by date (newest first)
+      orderByClause = desc(tribePosts.createdOn)
+    }
+
     const result = await db
       .select({
         post: tribePosts,
         app: apps,
+        store: stores,
         user: users,
         guest: guests,
         tribe: tribes,
       })
       .from(tribePosts)
       .leftJoin(apps, eq(tribePosts.appId, apps.id))
+      .leftJoin(stores, eq(apps.storeId, stores.id))
       .leftJoin(users, eq(tribePosts.userId, users.id))
       .leftJoin(guests, eq(tribePosts.guestId, guests.id))
       .leftJoin(tribes, eq(tribePosts.tribeId, tribes.id))
       .where(and(...conditions))
-      .orderBy(desc(tribePosts.createdOn))
+      .orderBy(orderByClause)
       .limit(pageSize)
       .offset((page - 1) * pageSize)
 
@@ -7422,6 +7585,9 @@ export const getTribePosts = async ({
 
     const hasNextPage = totalCount > page * pageSize
     const nextPage = hasNextPage ? page + 1 : null
+
+    // Cache for getApp results to avoid N+1 queries
+    const appCache = new Map<string, appWithStore | undefined>()
 
     // Fetch engagement data for all posts in parallel
     const postsWithEngagement = await Promise.all(
@@ -7486,6 +7652,14 @@ export const getTribePosts = async ({
             : Promise.resolve([]),
         ])
 
+        const [thread] = row.post.tribeId
+          ? await db
+              .select()
+              .from(threads)
+              .where(eq(threads.tribeId, row.post.tribeId))
+              .limit(1)
+          : [undefined]
+
         return {
           id: row.post.id,
           title: row.post.title,
@@ -7496,7 +7670,41 @@ export const getTribePosts = async ({
           sharesCount: row.post.sharesCount,
           createdOn: row.post.createdOn,
           updatedOn: row.post.updatedOn,
-          app: row.app ? toSafeApp({ app: row.app, userId, guestId }) : null,
+          app:
+            row.app && row.store
+              ? await (async () => {
+                  const appId = row.app!.id
+                  // Check cache first
+                  if (appCache.has(appId)) {
+                    const cachedApp = appCache.get(appId)
+                    return toSafeApp({
+                      app: cachedApp,
+                      userId,
+                      guestId,
+                    })
+                  }
+
+                  // Fetch and cache
+                  const appData = await getApp({
+                    id: appId,
+                    userId,
+                    guestId,
+                    threadId: thread?.id,
+                  })
+
+                  if (appData) {
+                    appCache.set(appId, appData)
+                  }
+
+                  return toSafeApp({
+                    app: appData,
+                    userId,
+                    guestId,
+                  })
+                })()
+              : row.app
+                ? toSafeApp({ app: row.app, userId, guestId })
+                : null,
           user: row.user
             ? toSafeUser({
                 user: row.user,
@@ -7715,6 +7923,7 @@ export const getCharacterProfiles = async ({
   pinned,
   visibility,
   appId,
+  threadId,
 }: {
   agentId?: string
   appId?: string
@@ -7723,6 +7932,7 @@ export const getCharacterProfiles = async ({
   isAppOwner?: boolean
   limit?: number
   pinned?: boolean
+  threadId?: string
   visibility?: "public" | "private"
 }) => {
   try {
@@ -7737,6 +7947,7 @@ export const getCharacterProfiles = async ({
       .leftJoin(aiAgents, eq(characterProfiles.agentId, aiAgents.id))
       .leftJoin(users, eq(characterProfiles.userId, users.id))
       .leftJoin(guests, eq(characterProfiles.guestId, guests.id))
+      .leftJoin(threads, eq(characterProfiles.threadId, threads.id))
 
       .where(
         and(
@@ -7750,6 +7961,7 @@ export const getCharacterProfiles = async ({
           pinned !== undefined
             ? eq(characterProfiles.pinned, pinned)
             : undefined,
+          threadId ? eq(characterProfiles.threadId, threadId) : undefined,
           visibility ? eq(characterProfiles.visibility, visibility) : undefined,
         ),
       )
@@ -7956,4 +8168,51 @@ export async function getOrCreateTribe(
   }
 
   return tribeId
+}
+
+/**
+ * Get aggregated API usage statistics for an app
+ * Returns total requests, tokens, and estimated credits used
+ */
+export async function getAgentApiUsage({
+  appId,
+  periodStart,
+  periodEnd,
+}: {
+  appId: string
+  periodStart?: Date
+  periodEnd?: Date
+}) {
+  const conditions = [eq(agentApiUsage.appId, appId)]
+
+  if (periodStart) {
+    conditions.push(gte(agentApiUsage.periodStart, periodStart))
+  }
+
+  if (periodEnd) {
+    conditions.push(lte(agentApiUsage.periodEnd, periodEnd))
+  }
+
+  const result = await db
+    .select({
+      totalRequests: sum(agentApiUsage.requestCount),
+      totalTokens: sum(agentApiUsage.totalTokens),
+      totalAmount: sum(agentApiUsage.amount),
+      successCount: sum(agentApiUsage.successCount),
+      errorCount: sum(agentApiUsage.errorCount),
+    })
+    .from(agentApiUsage)
+    .where(and(...conditions))
+
+  const stats = result[0]
+
+  return {
+    totalRequests: Number(stats?.totalRequests || 0),
+    totalTokens: Number(stats?.totalTokens || 0),
+    totalAmount: Number(stats?.totalAmount || 0), // in cents
+    successCount: Number(stats?.successCount || 0),
+    errorCount: Number(stats?.errorCount || 0),
+    // Estimate credits: ~1 credit per 1000 tokens (adjust based on your pricing)
+    estimatedCredits: Math.ceil(Number(stats?.totalTokens || 0) / 1000),
+  }
 }

@@ -506,7 +506,7 @@ export default function App({
           onClick={(e) => {
             e.preventDefault()
 
-            setIsNewAppChat(storeApp)
+            setIsNewAppChat({ item: storeApp })
             addHapticFeedback()
             setAppStatus(undefined)
             if (e.metaKey || e.ctrlKey) {
@@ -1030,7 +1030,7 @@ export default function App({
                   key={suggestSaveApp ? "highlights" : "settings"}
                   onClick={() => {
                     if (accountApp) {
-                      setIsNewAppChat(accountApp)
+                      setIsNewAppChat({ item: accountApp })
                       return
                     }
                     if (user?.role !== "admin") {
@@ -1381,7 +1381,7 @@ export default function App({
                                 }
                                 e.preventDefault()
 
-                                setIsNewAppChat(chrry)
+                                setIsNewAppChat({ item: chrry })
                               }}
                               style={{
                                 ...styles.chrry.style,
@@ -1422,7 +1422,7 @@ export default function App({
                                   }
                                   e.preventDefault()
 
-                                  setIsNewAppChat(zarathustra)
+                                  setIsNewAppChat({ item: zarathustra })
                                 }}
                                 style={{
                                   ...styles.zarathustra.style,
@@ -1465,7 +1465,7 @@ export default function App({
                                   }
                                   e.preventDefault()
 
-                                  setIsNewAppChat(popcorn)
+                                  setIsNewAppChat({ item: popcorn })
                                 }}
                                 style={{
                                   ...styles.popcorn.style,
@@ -1503,7 +1503,7 @@ export default function App({
                             )
                           ) : null}
 
-                          {slug && getAppSlug(item) === slug ? (
+                          {item.id === app?.id ? (
                             <>
                               <StoreApp key={"vex"} />
                             </>
@@ -1548,7 +1548,7 @@ export default function App({
                                       return
                                     }
 
-                                    setIsNewAppChat(item)
+                                    setIsNewAppChat({ item })
 
                                     e.preventDefault()
                                   }}
@@ -1600,7 +1600,7 @@ export default function App({
                                 }
                                 e.preventDefault()
 
-                                setIsNewAppChat(atlas)
+                                setIsNewAppChat({ item: atlas })
                               }}
                               style={{
                                 ...styles.atlas.style,

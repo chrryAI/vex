@@ -2,9 +2,9 @@ import { createDeepSeek } from "@ai-sdk/deepseek"
 import { createOpenAI } from "@ai-sdk/openai"
 import { createAnthropic } from "@ai-sdk/anthropic"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
-import { app, getAiAgents, decrypt, aiAgent } from "@repo/db"
+import { type app, getAiAgents, decrypt, type aiAgent } from "@repo/db"
 import type { LanguageModel } from "ai"
-import { appWithStore } from "@chrryai/chrry/types"
+import type { appWithStore } from "@chrryai/chrry/types"
 import { createPerplexity } from "@ai-sdk/perplexity"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 
@@ -354,7 +354,7 @@ export async function getModelProvider(
       }
     }
 
-    default:
+    default: {
       // Custom OpenAI-compatible model
       if (agent.apiURL) {
         console.log("🤖 Using custom agent:", agent.name)
@@ -403,6 +403,7 @@ export async function getModelProvider(
         provider: fallbackProvider("deepseek-chat"),
         agentName: "deepSeek",
       }
+    }
   }
 }
 

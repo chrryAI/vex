@@ -45,6 +45,7 @@ export async function render(request: ServerRequest) {
   // Inject metadata and app HTML into template
   const html = template
     .replace("<!--app-head-->", metaTags)
+    .replace("<!--html-class-->", serverData.theme)
     .replace("<!--app-html-->", appHtml)
     .replace(
       "<html",

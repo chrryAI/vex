@@ -83,13 +83,63 @@ resize.get("/", async (c) => {
 
     // Try HTTP first, fallback to filesystem for local dev
     try {
-      // Security: Fetch using the validated IP address (safeUrl) and original Host header.
-      // This prevents DNS rebinding attacks and ensures we connect to the IP we checked.
-      const response = await fetch(safeUrl, {
-        headers: {
-          Host: originalHost,
-        },
-      })
+      let currentUrl = fullUrl
+      let redirects = 0
+      const maxRedirects = 5
+      let response: Response
+
+      // Security: Manual redirect handling loop
+      // Standard fetch follows redirects blindly, bypassing our initial IP check
+      while (true) {
+        // If this is a redirect, we need to validate the new URL
+        if (redirects > 0) {
+          try {
+            const result = await getSafeUrl(currentUrl)
+            safeUrl = result.safeUrl
+            originalHost = result.originalHost
+          } catch (error: any) {
+            console.error(
+              "❌ SSRF validation failed on redirect:",
+              error.message,
+            )
+            throw new Error("Requested URL is not allowed")
+          }
+        }
+
+        // Fetch using the validated IP address (safeUrl) and original Host header.
+        response = await fetch(safeUrl, {
+          headers: {
+            Host: originalHost,
+            "User-Agent": "Chrry/1.0",
+          },
+          redirect: "manual", // Critical: Stop automatic redirects
+        })
+
+        if (response.status >= 300 && response.status < 400) {
+          if (redirects >= maxRedirects) {
+            throw new Error("Too many redirects")
+          }
+
+          const location = response.headers.get("Location")
+          if (!location) {
+            throw new Error("Redirect without Location header")
+          }
+
+          // Resolve relative URLs against the CURRENT original URL
+          try {
+            currentUrl = new URL(location, currentUrl).toString()
+          } catch (_e) {
+            throw new Error("Invalid redirect URL")
+          }
+
+          console.log(`🔀 Redirecting to: ${currentUrl}`)
+          redirects++
+          continue
+        }
+
+        break
+      }
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
