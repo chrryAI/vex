@@ -65,3 +65,25 @@
 **Learning:** Standard `Request` objects behave differently than plain JS objects. Always extract properties explicitly (e.g., `method: request.method`) when converting or cloning them for libraries.
 
 **Prevention:** Manually construct the compatible request object or use a utility that handles `Request` cloning properly.
+
+## 2026-05-25 - Testing Rate Limits in CI
+
+**Vulnerability:** New security code (like rate limiting) often requires "mocking the world" to verify in tests because real enforcement might be bypassed in test environments or depend on external services (like Arcjet).
+
+**Learning:** "0.0% Coverage on New Code" errors in CI usually mean your tests are either not running (wrong runner, e.g.,  vs ) or bypassing the logic you added. Integration tests that mock the service boundary (e.g., mocking  itself) are crucial for verifying that the *application* correctly handles the security rejection (429), even if the *library* logic is tested separately.
+
+**Prevention:**
+1. Use the project's standard test runner (Vitest here).
+2. Write integration tests that mock the security check to return "fail/deny" to verify the app's response (429).
+3. Write unit tests for the security library logic using mocks for external dependencies.
+
+## 2026-05-25 - Testing Rate Limits in CI
+
+**Vulnerability:** New security code (like rate limiting) often requires "mocking the world" to verify in tests because real enforcement might be bypassed in test environments or depend on external services (like Arcjet).
+
+**Learning:** "0.0% Coverage on New Code" errors in CI usually mean your tests are either not running (wrong runner, e.g., `bun:test` vs `vitest`) or bypassing the logic you added. Integration tests that mock the service boundary (e.g., mocking `checkAuthRateLimit` itself) are crucial for verifying that the *application* correctly handles the security rejection (429), even if the *library* logic is tested separately.
+
+**Prevention:**
+1. Use the project's standard test runner (Vitest here).
+2. Write integration tests that mock the security check to return "fail/deny" to verify the app's response (429).
+3. Write unit tests for the security library logic using mocks for external dependencies.
