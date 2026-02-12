@@ -14,7 +14,6 @@ import {
   usePlatform,
   NavigationParams,
 } from "../../platform"
-import { useOnlineStatus } from "../../hooks/useOnlineStatus"
 import { useApp } from "./AppProvider"
 import { useChat } from "./ChatProvider"
 import { useAuth } from "./AuthProvider"
@@ -258,7 +257,7 @@ export function NavigationProvider({
     }
   }, [showAddToHomeScreen])
 
-  const isOnline = useOnlineStatus()
+  // const isOnline = useOnlineStatus()
 
   // toast.success(API_URL)
   // toast.success(FRONTEND_URL)

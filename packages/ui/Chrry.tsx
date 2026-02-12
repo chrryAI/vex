@@ -45,6 +45,7 @@ export default function Chrry({
   tribes,
   tribePosts,
   tribePost,
+  theme,
 }: {
   translations?: Record<string, any>
   useExtensionIcon?: (slug?: string) => void
@@ -67,6 +68,7 @@ export default function Chrry({
     threads: thread[]
     totalCount: number
   }
+  theme?: "light" | "dark"
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
@@ -91,6 +93,7 @@ export default function Chrry({
       tribes={tribes}
       tribePosts={tribePosts}
       tribePost={tribePost}
+      theme={theme}
     >
       {children}
     </AppProviders>

@@ -9,12 +9,21 @@ import {
   eq,
   desc,
   redis as dbRedis,
+  getApp,
+  and,
 } from "@repo/db"
-import { tribePosts, tribeComments } from "@repo/db/src/schema"
+import {
+  tribePosts,
+  tribeComments,
+  apps,
+  tribeLikes,
+  tribes,
+} from "@repo/db/src/schema"
 import { PerformanceTracker } from "../../lib/analytics"
 import { getGuest, getMember } from "../lib/auth"
 import { isDevelopment } from "@chrryai/chrry/utils"
 import { isE2E } from "@chrryai/chrry/utils/siteConfig"
+import type { tribePost } from "@chrryai/chrry/types"
 
 const app = new Hono()
 
@@ -287,7 +296,7 @@ app.get("/p", async (c) => {
 
     const data = {
       ...result,
-      posts: result?.posts?.map((r) => ({
+      posts: result?.posts?.map((r: tribePost) => ({
         ...r,
         content:
           r.content?.length > 300
@@ -328,6 +337,16 @@ app.get("/p/:id", async (c) => {
 
   const postId = c.req.param("id")
 
+  if (!postId || postId === "undefined") {
+    return c.json(
+      {
+        success: false,
+        error: "Post ID is required",
+      },
+      400,
+    )
+  }
+
   // Redis setup (skip in dev/e2e)
   const redis =
     isDevelopment || isE2E
@@ -357,13 +376,17 @@ app.get("/p/:id", async (c) => {
 
     console.log(`📝 Fetching fresh tribe post: ${postId}`)
 
-    // Get post details by ID
+    // Get post details by ID with app data
     const [postData] = await tracker.track("tribe_post_request_post", () =>
       db
         .select({
           post: tribePosts,
+          app: apps,
+          tribe: tribes,
         })
         .from(tribePosts)
+        .leftJoin(apps, eq(tribePosts.appId, apps.id))
+        .leftJoin(tribes, eq(tribePosts.tribeId, tribes.id))
         .where(eq(tribePosts.id, postId))
         .limit(1),
     )
@@ -378,15 +401,21 @@ app.get("/p/:id", async (c) => {
       )
     }
 
-    const post = postData.post
+    const post = {
+      ...postData.post,
+      app: postData.app ? await getApp({ id: postData.app.id }) : null,
+      tribe: postData.tribe,
+    }
 
-    // Get comments for this post
+    // Get comments for this post with app data
     const comments = await tracker.track("tribe_post_comments", () =>
       db
         .select({
           comment: tribeComments,
+          app: apps,
         })
         .from(tribeComments)
+        .leftJoin(apps, eq(tribeComments.appId, apps.id))
         .where(eq(tribeComments.postId, postId))
         .orderBy(desc(tribeComments.createdOn))
         .limit(100),
@@ -412,7 +441,12 @@ app.get("/p/:id", async (c) => {
       success: true,
       post: {
         ...post,
-        comments: comments.map((c) => c.comment),
+        comments: await Promise.all(
+          comments.map(async (c) => ({
+            ...c.comment,
+            app: c.app ? await getApp({ id: c.app.id }) : null,
+          })),
+        ),
         reactions,
         likes,
         stats: {
@@ -433,6 +467,110 @@ app.get("/p/:id", async (c) => {
     return c.json(responseData)
   } catch (error) {
     console.error("Error fetching tribe post:", error)
+    return c.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      500,
+    )
+  }
+})
+
+// Toggle like on a post
+app.post("/p/:id/like", async (c) => {
+  const tracker = new PerformanceTracker("tribe_post_like_request")
+
+  const member = await tracker.track("tribe_post_like_auth_member", () =>
+    getMember(c),
+  )
+  const guest = await tracker.track("tribe_post_like_auth_guest", () =>
+    getGuest(c),
+  )
+
+  if (!member && !guest) {
+    return c.json({ error: "Invalid credentials" }, { status: 401 })
+  }
+
+  const postId = c.req.param("id")
+
+  if (!postId || postId === "undefined") {
+    return c.json(
+      {
+        success: false,
+        error: "Post ID is required",
+      },
+      400,
+    )
+  }
+
+  try {
+    // Check if like already exists
+    const existingLike = await db
+      .select()
+      .from(tribeLikes)
+      .where(
+        and(
+          eq(tribeLikes.postId, postId),
+          member
+            ? eq(tribeLikes.userId, member.id)
+            : eq(tribeLikes.guestId, guest!.id),
+        ),
+      )
+      .limit(1)
+
+    if (existingLike.length > 0) {
+      // Unlike: delete the existing like
+      await db.delete(tribeLikes).where(eq(tribeLikes.id, existingLike[0].id))
+
+      // Decrement likes count on post
+      const [currentPost] = await db
+        .select({ likesCount: tribePosts.likesCount })
+        .from(tribePosts)
+        .where(eq(tribePosts.id, postId))
+        .limit(1)
+
+      await db
+        .update(tribePosts)
+        .set({
+          likesCount: Math.max(0, (currentPost?.likesCount || 0) - 1),
+        })
+        .where(eq(tribePosts.id, postId))
+
+      return c.json({
+        success: true,
+        liked: false,
+      })
+    } else {
+      // Like: create new like
+      await db.insert(tribeLikes).values({
+        postId,
+        userId: member?.id,
+        guestId: guest?.id,
+        appId: member?.appId || guest?.appId,
+      })
+
+      // Increment likes count on post
+      const [currentPost] = await db
+        .select({ likesCount: tribePosts.likesCount })
+        .from(tribePosts)
+        .where(eq(tribePosts.id, postId))
+        .limit(1)
+
+      await db
+        .update(tribePosts)
+        .set({
+          likesCount: (currentPost?.likesCount || 0) + 1,
+        })
+        .where(eq(tribePosts.id, postId))
+
+      return c.json({
+        success: true,
+        liked: true,
+      })
+    }
+  } catch (error) {
+    console.error("Error toggling tribe post like:", error)
     return c.json(
       {
         success: false,

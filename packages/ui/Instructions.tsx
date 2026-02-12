@@ -1,6 +1,7 @@
 "use client"
 
 import React, {
+  type CSSProperties,
   Dispatch,
   lazy,
   SetStateAction,
@@ -86,11 +87,14 @@ export default function Instructions({
   onSave,
   icon,
   showInstructions = true,
+  showDownloads = true,
   dataTestId = "instruction",
   showButton = true,
+  showAbout = true,
   opacity = 1,
   isAgentBuilder = false,
   onClose,
+  style,
   ...rest
 }: {
   className?: string
@@ -102,6 +106,8 @@ export default function Instructions({
   placeholder?: string
   isArtifactsOpen?: boolean
   showButton?: boolean
+  showDownloads?: boolean
+  showAbout?: boolean
   onClose?: () => void
   isAgentBuilder?: boolean
   onSave?: ({
@@ -111,6 +117,7 @@ export default function Instructions({
     content: string
     artifacts: File[]
   }) => void
+  style?: CSSProperties
 }) {
   const { t, console } = useAppContext()
 
@@ -1517,12 +1524,17 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
             })}
           </Div>
         )}
-        {!thread && !icon && showInstructions && (
+        {!thread && !icon && (showInstructions || showDownloads) && (
           <Div
             data-testid={`${dataTestId}-about`}
-            style={{ ...styles.bottom.style, marginBottom: 30, zIndex: 10 }}
+            style={{
+              ...styles.bottom.style,
+              marginBottom: showDownloads ? 0 : 30,
+              marginTop: showAbout ? 10 : style?.marginTop,
+              zIndex: 10,
+            }}
           >
-            {!showGrape && (
+            {!showGrape && showAbout && (
               <A style={{ lineHeight: 1.5 }} href={"/about"}>
                 <MousePointerClick color="var(--accent-1)" size={26} />
 
@@ -1621,6 +1633,8 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                     style={{
                       ...utilities.link.style,
                       marginLeft: showGrape ? 0 : 5,
+                      fontSize: "0.9rem",
+                      fontWeight: "normal",
                       padding: "6.25px 0",
                     }}
                     onClick={(e) => {

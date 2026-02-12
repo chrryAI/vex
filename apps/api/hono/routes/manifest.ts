@@ -27,9 +27,6 @@ manifest.get("/", async (c) => {
   const siteConfig = getSiteConfig(chrryUrl || undefined)
   const appSlug = siteConfig.slug
 
-  const member = await getMember(c)
-  const guest = await getGuest(c)
-
   // Get app by slug
   let app = await getApp({ slug: appSlug })
 

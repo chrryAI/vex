@@ -387,7 +387,8 @@ const Thread = ({
             !threadId &&
             hasHydrated && {
               ...styles.threadEmpty.style,
-              paddingBottom: minimize && !showFocus && !showTribe ? 0 : 166,
+              zIndex: 10,
+              paddingBottom: minimize && !showFocus && !showTribe ? 0 : 186,
             }),
           ...{
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,

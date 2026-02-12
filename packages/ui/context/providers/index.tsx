@@ -69,7 +69,7 @@ export interface AppProvidersProps {
     },
   ) => Promise<any>
   siteConfig?: ReturnType<typeof getSiteConfig>
-
+  theme?: "light" | "dark"
   signOutContext?: (options: {
     callbackUrl: string
     errorUrl?: string
@@ -110,6 +110,7 @@ export default function AppProviders({
   threads,
   tribes,
   tribePosts,
+  theme,
   showTribe,
   tribePost,
 }: AppProvidersProps) {
@@ -164,7 +165,7 @@ export default function AppProviders({
         session={session}
       >
         <ErrorProvider>
-          <ThemeProvider session={session}>
+          <ThemeProvider theme={theme} session={session}>
             <AuthProvider
               translations={translations}
               thread={thread}

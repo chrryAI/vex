@@ -39,7 +39,7 @@ const defaultMockAuth = {
   canShowTribe: true,
 }
 
-export const mockAuth = {
+export const mockAuth: any = {
   ...defaultMockAuth,
   setThreadId: vi.fn(),
   setUser: vi.fn(),
@@ -140,7 +140,7 @@ const defaultMockChat = {
   placeHolderText: "",
 }
 
-export const mockChat = {
+export const mockChat: any = {
   ...defaultMockChat,
   setSelectedAgent: vi.fn(),
   setDebateAgent: vi.fn(),
@@ -192,7 +192,7 @@ const defaultMockApp = {
   tab: "settings",
 }
 
-export const mockApp = {
+export const mockApp: any = {
   ...defaultMockApp,
   saveApp: vi.fn(),
   setMinimize: vi.fn(),
@@ -253,7 +253,7 @@ const defaultMockNavigation = {
   tab: null,
 }
 
-export const mockNavigation = {
+export const mockNavigation: any = {
   ...defaultMockNavigation,
   router: { push: vi.fn(), replace: vi.fn(), back: vi.fn() },
   setCollaborationStep: vi.fn(),
@@ -288,7 +288,7 @@ export const mockPlatform = {
   },
 }
 
-export const mockTheme = {
+export const mockTheme: any = {
   addHapticFeedback: vi.fn(),
   playNotification: vi.fn(),
   isDrawerOpen: false,
@@ -297,7 +297,7 @@ export const mockTheme = {
   reduceMotion: false,
 }
 
-export const mockData = {
+export const mockData: any = {
   weather: null,
   actions: { updateGuest: vi.fn() },
 }

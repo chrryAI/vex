@@ -7,7 +7,7 @@ import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import getAppSlug from "@chrryai/chrry/utils/getAppSlug"
 import getWhiteLabelUtil from "@chrryai/chrry/utils/getWhiteLabel"
 import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
-import { appWithStore } from "@chrryai/chrry/types"
+import type { appWithStore } from "@chrryai/chrry/types"
 
 export const sitemap = new Hono()
 

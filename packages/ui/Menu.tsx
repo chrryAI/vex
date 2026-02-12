@@ -79,6 +79,7 @@ export default function Menu({
     setLoadingAppId,
     hasStoreApps,
     setBurn,
+    showTribe,
   } = useAuth()
 
   const { setShowTribe } = useChat()
@@ -363,6 +364,7 @@ export default function Menu({
                       toggleMenuIfSmallDevice()
                       setIsNewChat({
                         value: true,
+                        tribe: !showTribe,
                       })
                       reload()
                     }}

@@ -433,6 +433,9 @@ export function ChatProvider({
     if (!item) {
       return
     }
+    console.log(`🚀 ~ hasStoreApps(item):`, hasStoreApps(item))
+
+    console.log(`🚀 ~ item:`, item)
     if (!hasStoreApps(item)) {
       loadingAppRef.current = item
       setLoadingApp(item)
@@ -474,6 +477,9 @@ export function ChatProvider({
       threadIdRef.current = undefined
       router.push(to)
       refetchThreads()
+    } else {
+      // Ensure tribe view resets when closing a new chat
+      setShowTribe(false)
     }
 
     setIsNewChatInternal(value)

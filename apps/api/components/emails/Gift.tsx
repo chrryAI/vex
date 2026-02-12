@@ -11,7 +11,7 @@ import {
 } from "@react-email/components"
 import { capitalizeFirstLetter } from "@chrryai/chrry/utils"
 import * as React from "react"
-import { SiteConfig, getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { type SiteConfig, getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 export default function GiftEmail({
   origin,
@@ -33,7 +33,7 @@ export default function GiftEmail({
   return (
     <Html>
       <Head />
-      {plan == "credits" ? (
+      {plan === "credits" ? (
         <>
           <Preview>
             🎁 You&apos;ve received a {siteConfig.name} Credits gift!

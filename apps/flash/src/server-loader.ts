@@ -4,14 +4,12 @@ import {
   VERSION,
   getThreadId,
   pageSizes,
+  getPostId,
   isE2E,
   getEnv,
   API_INTERNAL_URL,
 } from "@chrryai/chrry/utils"
-import {
-  getAppAndStoreSlugs,
-  excludedSlugRoutes,
-} from "@chrryai/chrry/utils/url"
+import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
 import {
   getApp,
   getSession,
@@ -128,6 +126,7 @@ export async function loadServerData(
   const localeCookie = cookies.locale as locale
 
   const showTribe = cookies.showTribe === "true"
+  const themeCookie = cookies.theme as themeType
 
   // Parse Accept-Language header to get browser's preferred language
   const acceptLanguage = headers["accept-language"]
@@ -336,10 +335,14 @@ export async function loadServerData(
       API_URL,
     })
 
+    const postId = getPostId(pathname)
+
     apiKey =
       sessionResult?.user?.token || sessionResult?.guest?.fingerprint || apiKey
 
-    const canShowTribeProfile = pathname !== "/"
+    const canShowTribeProfile =
+      !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "") &&
+      pathname !== "/"
 
     const [
       translationsResult,
@@ -379,9 +382,9 @@ export async function loadServerData(
             API_URL,
           })
         : Promise.resolve(undefined),
-      pathname.startsWith("/tribe/p/")
+      postId
         ? getTribePost({
-            id: pathname.replace("/tribe/p/", ""),
+            id: postId,
             token: apiKey,
             API_URL,
           })
@@ -410,7 +413,8 @@ export async function loadServerData(
 
   // Fetch threads
 
-  const theme = app?.backgroundColor === "#ffffff" ? "light" : "dark"
+  const theme =
+    themeCookie || (app?.backgroundColor === "#ffffff" ? "light" : "dark")
 
   // Agent profile route
 

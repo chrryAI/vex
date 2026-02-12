@@ -1180,6 +1180,40 @@ export const getApp = async ({
   return data as appWithStore
 }
 
+export const getAppUsage = async ({
+  appId,
+  token,
+  API_URL = utils.API_URL,
+}: {
+  appId: string
+  token: string
+  API_URL?: string
+}) => {
+  const response = await fetch(`${API_URL}/apps/${appId}/usage`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch app usage: ${response.status} ${response.statusText}`,
+    )
+  }
+
+  const data = await response.json()
+  return data.usage as {
+    totalRequests: number
+    totalTokens: number
+    totalAmount: number
+    successCount: number
+    errorCount: number
+    estimatedCredits: number
+  }
+}
+
 export const getTranslations = async ({
   API_URL = utils.API_URL,
   token,
@@ -1306,15 +1340,21 @@ export const getTribePosts = async ({
 export const getTribePost = async ({
   id,
   token,
+  appId,
   onError,
   API_URL = utils.API_URL,
 }: {
   id: string
   token: string
+  appId?: string
   onError?: (status: number) => void
   API_URL?: string
 }) => {
-  const response = await fetch(`${API_URL}/tribe/p/${id}`, {
+  const url = new URL(`${API_URL}/tribe/p/${id}`)
+
+  if (appId) url.searchParams.set("appId", appId)
+
+  const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -1327,7 +1367,8 @@ export const getTribePost = async ({
     return null
   }
 
-  return response.json()
+  const data = await response.json()
+  return data.post
 }
 
 export const getActions = ({
@@ -1483,6 +1524,7 @@ export const getActions = ({
     }) => getTribePosts({ token, ...params, API_URL }),
     getTribePost: (params: {
       id: string
+      appId?: string
       onError?: (status: number) => void
     }) => getTribePost({ token, ...params, API_URL }),
   }

@@ -17,15 +17,24 @@ import { useAuth, useData } from "."
 import useSWR from "swr"
 import { useLocalStorage } from "../../hooks"
 
+import { useNavigation } from "../../platform"
+import { apiFetch } from "../../utils"
+import { useAppContext } from "../../context/AppContext"
+import toast from "react-hot-toast"
+
 interface TribeContextType {
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
   search?: string
   until?: number
+  postId?: string
   characterProfileIds?: string[]
   isLoadingPosts?: boolean
+  isLoadingTribes?: boolean
   sortBy: "date" | "hot" | "comments"
+  tribeSlug?: string
+  currentTribe?: paginatedTribes["tribes"][number]
   setSortBy: (val: "date" | "hot" | "comments") => void
   setTribes: (tribes?: paginatedTribes) => void
   setTribePosts: (tribePosts?: paginatedTribePosts) => void
@@ -35,6 +44,8 @@ interface TribeContextType {
   setCharacterProfileIds: (ids?: string[]) => void
   refetchPosts: () => void
   refetchTribes: () => void
+  toggleLike: (postId: string) => Promise<{ liked: boolean }>
+  isTogglingLike: string | undefined
 }
 
 const TribeContext = createContext<TribeContextType | undefined>(undefined)
@@ -51,11 +62,26 @@ export function TribeProvider({ children }: TribeProviderProps) {
     tribePost: initialTribePost,
     showTribeProfile,
     token,
+    postId,
+    tribePosts,
+    setTribePosts,
+    tribePost,
+    setTribePost,
     app, // Current selected app for filtering
   } = useAuth()
+
   const [tribes, setTribes] = useState<paginatedTribes | undefined>(
     initialTribes,
   )
+
+  const { pathname } = useNavigation()
+
+  const { captureException, t } = useAppContext()
+
+  // Extract tribe slug from pathname like /tribe/entertainment
+  const tribeSlug = pathname?.startsWith("/tribe/")
+    ? pathname.replace("/tribe/", "").split("?")[0]
+    : undefined
 
   const [sortBy, setSortByInternal] = useLocalStorage<
     "date" | "hot" | "comments"
@@ -65,13 +91,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setShouldLoadPosts(true)
     setSortByInternal(val)
   }
-
-  const [tribePosts, setTribePosts] = useState<paginatedTribePosts | undefined>(
-    initialTribePosts,
-  )
-  const [tribePost, setTribePost] = useState<tribePostWithDetails | undefined>(
-    initialTribePost,
-  )
 
   const [shouldLoadPosts, setShouldLoadPostsInternal] =
     useState<boolean>(!initialTribes)
@@ -107,18 +126,49 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setShouldLoadPosts(true)
   }, [sortBy])
 
-  const { actions } = useData()
+  const { actions, API_URL } = useData()
 
-  // Fetch tribes with SWR (no app filtering - tribes are independent)
-  const { data: tribesData, mutate: refetchTribes } = useSWR(
-    showTribe && token ? ["tribes"] : null,
+  const canShowTribeProfile = showTribeProfile
+
+  // Fetch tribes with SWR - filter by tribes where this app has posted
+  const {
+    data: tribesData,
+    isLoading: isLoadingTribes,
+    mutate: refetchTribes,
+  } = useSWR(
+    showTribe && token ? ["tribes", app?.id, canShowTribeProfile] : null,
     () => {
       if (!token) return
       return actions.getTribes({
-        // Don't filter tribes by app - they're independent communities
+        appId: canShowTribeProfile ? app?.id : undefined, // Show tribes where this app has posted
       })
     },
+    {
+      fallbackData: initialTribes,
+      revalidateOnFocus: false,
+    },
   )
+
+  const { data: tribePostData, mutate: refetchTribePost } = useSWR(
+    postId && token ? ["tribePost", postId, app?.id] : null,
+    () => {
+      if (!token || !postId) return
+      return actions.getTribePost({
+        id: postId,
+        appId: app?.id,
+      })
+    },
+    {
+      fallbackData: initialTribePost,
+      revalidateOnFocus: false,
+    },
+  )
+
+  useEffect(() => {
+    if (tribePostData) {
+      setTribePost(tribePostData)
+    }
+  }, [tribePostData])
 
   useEffect(() => {
     if (tribesData) {
@@ -126,13 +176,28 @@ export function TribeProvider({ children }: TribeProviderProps) {
     }
   }, [tribesData])
 
+  // Find tribe ID from slug
+  const currentTribe = tribeSlug
+    ? tribes?.tribes?.find((t) => t.slug === tribeSlug)
+    : undefined
+  const tribeId = currentTribe?.id
+
   const {
     data: tribePostsData,
     mutate: refetchPosts,
     isLoading: isLoadingPosts,
   } = useSWR(
     (search ? search.length > 2 : true) && showTribe && token
-      ? ["tribePosts", until, search, characterProfileIds, sortBy, app?.id]
+      ? [
+          "tribePosts",
+          until,
+          search,
+          characterProfileIds,
+          sortBy,
+          app?.id,
+          tribeId,
+          canShowTribeProfile,
+        ]
       : null,
     () => {
       if (!token) return
@@ -141,8 +206,13 @@ export function TribeProvider({ children }: TribeProviderProps) {
         search,
         characterProfileIds,
         sortBy,
-        appId: !showTribeProfile ? undefined : app?.id, // Filter by current selected app
+        appId: !canShowTribeProfile ? undefined : app?.id, // Filter by current selected app
+        tribeId, // Filter by tribe when viewing /tribe/:slug
       })
+    },
+    {
+      fallbackData: initialTribePosts,
+      revalidateOnFocus: false,
     },
   )
 
@@ -152,6 +222,56 @@ export function TribeProvider({ children }: TribeProviderProps) {
     }
   }, [tribePostsData])
 
+  const [isTogglingLike, setIsTogglingLike] = useState<string | undefined>(
+    undefined,
+  )
+
+  const toggleLike = async (postId: string): Promise<{ liked: boolean }> => {
+    if (!postId) {
+      console.error("Post ID is required")
+      captureException(new Error("Post ID is required"))
+      return { liked: false }
+    }
+    if (!token) {
+      console.error("Not authenticated")
+      captureException(new Error("Not authenticated"))
+      return { liked: false }
+    }
+
+    setIsTogglingLike(postId)
+
+    try {
+      const response = await apiFetch(`${API_URL}/tribe/p/${postId}/like`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (!response.ok) {
+        toast.error(`Failed to toggle like: ${response.status}`)
+        captureException(new Error(`Failed to toggle like: ${response.status}`))
+        return { liked: false }
+      }
+
+      const data = await response.json()
+      // Refetch posts to update like counts
+      await refetchPosts()
+      if (tribePost?.id === postId) {
+        await refetchTribePost()
+      }
+
+      return { liked: data.liked }
+    } catch (error) {
+      captureException(error)
+      console.error("Failed to toggle like:", error)
+      toast.error(t("Something went wrong"))
+      return { liked: false }
+    } finally {
+      setIsTogglingLike(undefined)
+    }
+  }
+
   const value: TribeContextType = {
     tribes,
     tribePosts,
@@ -160,14 +280,20 @@ export function TribeProvider({ children }: TribeProviderProps) {
     until,
     characterProfileIds,
     isLoadingPosts,
+    isLoadingTribes,
+    tribeSlug,
+    currentTribe,
     setTribes,
     setTribePosts,
     setTribePost,
     sortBy,
     setSortBy,
     setSearch,
+    postId,
     setUntil,
     setCharacterProfileIds,
+    toggleLike,
+    isTogglingLike,
     refetchPosts: async () => {
       setShouldLoadPosts(true)
       return refetchPosts()

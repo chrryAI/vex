@@ -6,7 +6,7 @@ export const mood = new Hono()
 
 // POST /mood - Create or update today's mood
 mood.post("/", async (c) => {
-  const { type, ...rest } = await c.req.json()
+  const { type, ..._ } = await c.req.json()
 
   const guest = await getGuest(c)
   const member = await getMember(c)

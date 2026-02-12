@@ -68,6 +68,7 @@ import {
   FRONTEND_URL,
   getExampleInstructions,
   getThreadId,
+  getPostId,
   instructionBase,
   isDevelopment,
   isE2E,
@@ -110,6 +111,7 @@ const AuthContext = createContext<
         duration?: number
       } | null
       timer?: timer
+      postId?: string
       tribes?: paginatedTribes
       setShowTribe: (show: boolean) => void
       showTribe: boolean | undefined
@@ -239,6 +241,7 @@ const AuthContext = createContext<
         hasNextPage: boolean
         nextPage: number | null
       }
+
       isLoadingMood: boolean
       timeAgo: typeof ago
       fetchMoods: () => Promise<void>
@@ -416,6 +419,7 @@ export function AuthProvider({
     os,
     browser,
     isCapacitor,
+
     // IDE state from platform
     isIDE,
     toggleIDE,
@@ -1099,6 +1103,13 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
+  useEffect(() => {
+    const diff = allApps.filter((app) => !storeApps?.includes(app))
+    if (diff && diff.length > 0) {
+      mergeApps(diff)
+    }
+  }, [allApps.length, storeApps?.length])
+
   const baseAppInternal = storeApps.find((item) => {
     if (!item) return false
 
@@ -1123,9 +1134,10 @@ export function AuthProvider({
         baseApp,
       })
 
-      if (targetApp.slug === "chrry" && result === "/") {
-        return "/chrry"
+      if (targetApp?.id === baseApp?.id) {
+        return `/${targetApp.slug}`
       }
+
       return result
     },
     [pathname, baseApp],
@@ -1697,7 +1709,7 @@ export function AuthProvider({
     apps: appWithStore[],
   ): appWithStore | undefined => {
     // if (focus && showFocus) return focus
-    if (path === "/") return undefined
+    if (path === "/" && !showFocus && !showTribe) return undefined
 
     const { appSlug, storeSlug } = getAppAndStoreSlugs(path, {
       defaultAppSlug: baseApp?.slug || siteConfig.slug,
@@ -1721,14 +1733,10 @@ export function AuthProvider({
     }
 
     const matchedApp = storeApps?.find(
-      (item) =>
-        item.slug === appSlug &&
-        (hasStoreApps(baseApp)
-          ? baseApp?.store?.apps?.find((app) => app.slug === appSlug) ||
-            item.store?.slug === storeSlug
-          : true),
+      (item) => item.slug === appSlug && (hasStoreApps(item) ? true : true),
     )
 
+    console.log(`🚀 ~ matchedApp:`, matchedApp, appSlug, storeSlug)
     return matchedApp
   }
 
@@ -1749,11 +1757,11 @@ export function AuthProvider({
     })
   }, [])
 
-  useEffect(() => {
-    if (tribePosts?.posts?.length) {
-      mergeApps(tribePosts.posts.map((p) => p.app) as appWithStore[])
-    }
-  }, [tribePosts, mergeApps])
+  // useEffect(() => {
+  //   if (tribePosts?.posts?.length) {
+  //     mergeApps(tribePosts.posts.map((p) => p.app) as appWithStore[])
+  //   }
+  // }, [tribePosts, mergeApps])
 
   const { clear } = useCache()
 
@@ -1877,11 +1885,19 @@ export function AuthProvider({
     }
   }, [storeAppsSwr, newApp, updatedApp, loadingAppId])
 
+  const showFocusInitial = baseApp?.slug
+    ? baseApp?.slug === "focus" && app?.slug === "focus"
+    : pathname === "/focus"
+
   const [showFocus, setShowFocusInternal] = useState<boolean | undefined>(
-    baseApp?.slug
-      ? baseApp?.slug === "focus" && app?.slug === "focus"
-      : undefined,
+    showFocusInitial,
   )
+
+  useEffect(() => {
+    if (showFocusInitial === undefined && showFocusInitial !== showFocus) {
+      setShowFocusInternal(showFocusInitial)
+    }
+  }, [showFocusInitial, showFocus])
 
   const setShowFocus = (showFocus: boolean) => {
     setShowFocusInternal(showFocus)
@@ -1889,15 +1905,19 @@ export function AuthProvider({
     if (showFocus) {
       setThread(undefined)
       setThreadId(undefined)
+      setShowTribe(false)
     }
   }
 
   useEffect(() => {
     if (!baseApp || !app) return
     if (showFocus === undefined && baseApp?.slug) {
-      setShowFocus(baseApp?.slug === "focus" && app?.slug === "focus")
+      setShowFocus(
+        (baseApp?.slug === "focus" && app?.slug === "focus") ||
+          pathname === "/focus",
+      )
     }
-  }, [baseApp, app]) // Only depend on slugs, not showFocus
+  }, [baseApp, app, pathname]) // Only depend on slugs, not showFocus
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
@@ -2184,9 +2204,15 @@ export function AuthProvider({
 
   const showTribeFromQuery = searchParams.get("tribe") === "true"
 
+  const postId = getPostId(pathname)
+
   const showTribeInitial =
-    showTribeFromQuery ||
-    (props.showTribe ?? ((tribePosts?.totalCount || 0) >= 1 && canShowTribe))
+    (showTribeFromQuery ||
+      (postId
+        ? true
+        : (props.showTribe ??
+          ((tribePosts?.totalCount || 0) >= 1 && canShowTribe)))) &&
+    !showFocus
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
 
@@ -2198,7 +2224,8 @@ export function AuthProvider({
 
   useEffect(() => {
     showTribeFromQuery && setShowTribe(true)
-  }, [showTribeFromQuery])
+    postId && setShowTribe(true)
+  }, [showTribeFromQuery, postId])
   const { data: moodData, mutate: refetchMood } = useSWR(
     shouldFetchMood && token ? ["mood", token] : null, // Disabled by default, fetch manually with refetchMood()
     async () => {
@@ -2499,6 +2526,7 @@ export function AuthProvider({
 
     // Priority 2: Find app by pathname
     if (!matchedApp) {
+      console.log(`🚀 ~ useEffect ~ matchedApp:`, matchedApp)
       matchedApp = findAppByPathname(pathname, storeApps) || baseApp
       // Using pathname app
     }
@@ -2507,6 +2535,7 @@ export function AuthProvider({
 
     // Only update if the matched app is different from current app
     if (matchedApp && matchedApp.id !== app?.id) {
+      console.log(`🚀 ~ useEffect ~ matchedApp:`, matchedApp)
       // Switching app
       setApp(matchedApp)
       setStore(matchedApp.store)
@@ -3070,6 +3099,7 @@ export function AuthProvider({
         setDailyQuestionIndex,
         dailyQuestionIndex,
         showTribeProfile,
+        postId,
       }}
     >
       {children}
