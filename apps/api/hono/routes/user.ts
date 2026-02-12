@@ -16,6 +16,15 @@ import { deleteFile, upload } from "../../lib/minio"
 import { scanFileForMalware } from "../../lib/security"
 import { clearGraphDataForUser } from "../../lib/graph/graphService"
 
+function isValidImageUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === "http:" || parsed.protocol === "https:"
+  } catch {
+    return false
+  }
+}
+
 export const user = new Hono()
 
 // GET /user - Get current user
@@ -58,6 +67,10 @@ user.patch("/", async (c) => {
       { error: "Username must be 3-20 alphanumeric characters" },
       400,
     )
+  }
+
+  if (image && !isValidImageUrl(image)) {
+    return c.json({ error: "Invalid image URL" }, 400)
   }
 
   const exists = async (username: string) => {

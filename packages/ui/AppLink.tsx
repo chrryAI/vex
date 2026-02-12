@@ -13,11 +13,14 @@ export default function AppLink({
   onLoading,
   loading,
   className,
+  title,
   as = "a",
   loadingStyle,
+  isTribe,
   icon,
   ...props
 }: {
+  title?: string
   style?: CSSProperties
   app: appWithStore
   children?: React.ReactNode
@@ -26,7 +29,8 @@ export default function AppLink({
   loading?: React.ReactNode
   className?: string
   loadingStyle?: CSSProperties
-  icon?: string
+  isTribe?: boolean
+  icon?: React.ReactNode
   setIsNewAppChat?: (item: appWithStore) => void
 }) {
   const { setIsWebSearchEnabled, setIsNewAppChat } = useChat()
@@ -53,11 +57,18 @@ export default function AppLink({
   if (as === "a") {
     return (
       <A
+        title={title}
+        aria-label={title}
+        href={getAppSlug(app)}
         style={{
           ...style,
           ...(isLoading ? loadingStyle : {}),
         }}
-        onClick={() => {
+        onClick={(e: React.MouseEvent) => {
+          if (e.metaKey || e.ctrlKey) {
+            return
+          }
+          e.preventDefault()
           if (!hasStoreApps(app)) {
             setLoadingApp(app)
             onLoading?.()
@@ -65,16 +76,17 @@ export default function AppLink({
           }
 
           if (props.setIsNewAppChat) {
-            return props.setIsNewAppChat(app)
+            props.setIsNewAppChat(app)
+            return
           }
-          setIsNewAppChat({ item: app })
+          setIsNewAppChat({ item: app, tribe: isTribe })
         }}
         className={`${className}`}
       >
-        {isLoading ? (
-          <Span>{loading || <Loading />}</Span>
+        {isLoading && loading ? (
+          <Span>{loading}</Span>
         ) : (
-          <Span>{icon}</Span>
+          icon && <Span>{icon}</Span>
         )}
         <Span>{children}</Span>
       </A>
@@ -83,6 +95,8 @@ export default function AppLink({
 
   return (
     <Button
+      title={title}
+      aria-label={title}
       style={{ ...style, ...(isLoading ? loadingStyle : {}) }}
       onClick={() => {
         if (isLoading) {

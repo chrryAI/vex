@@ -204,10 +204,6 @@
 .imageContainer {
   position: relative;
   display: inline-block;
-
-  &:hover .downloadButton {
-    opacity: 1;
-  }
 }
 
 .downloadButton {
@@ -220,15 +216,10 @@
   color: white;
   padding: toRem.toRem(6);
   cursor: pointer;
-  opacity: 1;
   transition: opacity 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  @media (min-width: breakpoints.$breakpoint-mobile) {
-    opacity: 0;
-  }
 }
 
 .agentMessageImages .agentMessageImage,

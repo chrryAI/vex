@@ -944,29 +944,8 @@ export default function Chat({
         continue
       }
 
-      // Compress images to reduce token usage
-      if (validation.fileCategory === "image") {
-        console.log(`🖼️ Processing image: ${file.name} (${file.size} bytes)`)
-        try {
-          const compressedFile = await compressImage(file, 400, 0.6) // More aggressive compression
-          const reduction = (
-            ((file.size - compressedFile.size) / file.size) *
-            100
-          ).toFixed(1)
-          console.log(
-            `🗜️ Compressed ${file.name}: ${file.size} → ${compressedFile.size} bytes (${reduction}% reduction)`,
-          )
-          validFiles.push(compressedFile)
-        } catch (error) {
-          console.warn(
-            `❌ Failed to compress ${file.name}, using original:`,
-            error,
-          )
-          validFiles.push(file)
-        }
-      } else {
-        validFiles.push(file)
-      }
+      // Send original file - server will handle optimization if needed
+      validFiles.push(file)
     }
 
     setFiles((prev) => [...prev, ...validFiles].slice(0, MAX_FILES))
@@ -1390,8 +1369,8 @@ export default function Chat({
   // Compress images to reduce token usage
   const compressImage = (
     file: File,
-    maxWidth = 400,
-    quality = 0.6,
+    maxWidth = 1920,
+    quality = 0.92,
   ): Promise<File> => {
     return new Promise((resolve, reject) => {
       console.log(`🔧 Starting compression for ${file.name}...`)

@@ -5375,6 +5375,7 @@ export function toSafeApp({
     defaultModel: app.defaultModel,
     highlights: app.highlights,
     images: app.images,
+    subtitle: app.subtitle,
     features: app.features,
     userId: app.userId,
     guestId: app.guestId,
