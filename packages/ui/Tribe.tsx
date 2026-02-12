@@ -888,6 +888,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 )}
                                 <Span>{post.likesCount || 0}</Span>
                               </Button>
+
                               <Span
                                 style={{
                                   marginLeft: "auto",
@@ -896,7 +897,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 {timeAgo(post.createdOn)}
                               </Span>
                             </Div>
-
                             <Div
                               style={{
                                 display: "flex",
