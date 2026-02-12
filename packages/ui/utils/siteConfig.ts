@@ -1036,6 +1036,7 @@ const zarathustra = {
       isOpenSource: true,
     },
   ],
+
   about: {
     intro:
       "Zarathustra is your AI philosophy guide, exploring the great traditions of philosophical thought from Nietzsche and existentialism to timeless wisdom across cultures. Engage in deep conversations about ideas that matter and unlock new perspectives on life.",

@@ -6,6 +6,7 @@ import {
   getStoreInstalls,
   deleteInstall,
   isE2E,
+  isDevelopment,
   ne,
 } from "@repo/db"
 import { apps } from "@repo/db/src/schema"
@@ -875,6 +876,18 @@ app.patch("/:id", async (c) => {
       tier,
     } = body
 
+    const skipDangerousZone =
+      isDevelopment || isE2E || body.dangerousZone === true
+
+    if (!skipDangerousZone) {
+      if (member?.role === "admin") {
+        return c.json(
+          { error: "Send dangerousZone to confirm" },
+          { status: 401 },
+        )
+      }
+    }
+
     if (tier && tier !== "free" && !member) {
       return c.json(
         { error: "You must be logged in to create a paid app" },
@@ -1221,6 +1234,9 @@ app.patch("/:id", async (c) => {
 
 app.delete("/:id", async (c) => {
   const id = c.req.param("id")
+  const body = await c.req.json()
+  const skipDangerousZone =
+    isDevelopment || isE2E || body.dangerousZone === true
   try {
     const member = await getMember(c, {
       skipCache: true,
@@ -1233,11 +1249,8 @@ app.delete("/:id", async (c) => {
       return c.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    if (member?.role === "admin" && !isE2E) {
-      return c.json(
-        { error: "Use seed api for deleting apps" },
-        { status: 403 },
-      )
+    if (member?.role === "admin" && !dangerousZone && !isE2E) {
+      return c.json({ error: "Send dangerousZone to confirm" }, { status: 401 })
     }
 
     const app = await getAppDb({

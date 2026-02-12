@@ -110,7 +110,7 @@ export default function About() {
           <Span
             onClick={() => {
               if (user?.role === "admin") {
-                captureException(new Error(`About ${config.name}`))
+                captureException(new Error("About Vex"))
               }
             }}
           >
@@ -119,7 +119,7 @@ export default function About() {
         </H1>
         <Section style={{ marginBottom: 15 }}>
           <P>
-            {/* <a
+            <a
               onClick={(e) => {
                 addHapticFeedback()
                 if (e.metaKey || e.ctrlKey) {
@@ -131,8 +131,8 @@ export default function About() {
               href={isStandalone ? undefined : `${FRONTEND_URL}/why`}
             >
               {t("why_vex")}
-            </a> */}
-            {/* {", "} */}
+            </a>
+            {", "}
             <A
               openInNewTab
               href={`${FRONTEND_URL}/blog`}
