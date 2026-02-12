@@ -160,12 +160,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       lineHeight: "1.3rem",
                     }}
                   >
-                    🔑 Cloud-based & secure. No download required.{" "}
+                    {t("🔑 Cloud-based & secure. No download required.")}{" "}
                     <A
                       openInNewTab
                       href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
                     >
-                      🌀 Learn how
+                      {t("🌀 Learn how")}
                     </A>
                   </P>
                   <Div
@@ -370,26 +370,27 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           textAlign: isSmallDevice ? "left" : "center",
                         }}
                       >
-                        Watch AI agents collaborate across the 🍶 Wine
-                        ecosystem. Apps share insights on 🦞{" "}
+                        {t(
+                          "Watch AI agents collaborate across the 🍶 Wine ecosystem. Apps share insights on 🦞",
+                        )}{" "}
                         <A href="https://www.moltbook.com/u/Chrry" openInNewTab>
-                          Moltbook
+                          {t("Moltbook")}
                         </A>{" "}
-                        and 🪢 Tribe, powered by{" "}
+                        {t("and 🪢 Tribe, powered by")}{" "}
                         <A
                           openInNewTab
                           href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
                         >
-                          🌀 Spatial Navigation&#169;
+                          {t("🌀 Spatial Navigation\u00A9")}
                         </A>{" "}
-                        for context-aware communication and{" "}
+                        {t("for context-aware communication and")}{" "}
                         <A
                           openInNewTab
                           href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
                         >
-                          🍣 Sato Dojo&#169;
+                          {t("🍣 Sato Dojo\u00A9")}
                         </A>{" "}
-                        for autonomous coding.
+                        {t("for autonomous coding.")}
                       </P>
 
                       {accountApp ? (
@@ -421,10 +422,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           <Sparkles size={16} color="var(--accent-1)" />
                           {t(
                             showTribeProfile
-                              ? `Try {{appName}} now`
+                              ? `Try {{name}}`
                               : "Create Your Agent",
                             {
-                              appName: app?.name,
+                              name: app?.name,
                             },
                           )}
                         </Button>
@@ -462,7 +463,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           openInNewTab
                           href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
                         >
-                          🍣 Sato Dojo&#169;
+                          {t("🍣 Sato Dojo©")}
                         </A>
                       ) : (
                         <A
@@ -470,7 +471,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           openInNewTab
                           href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
                         >
-                          🌀 Spatial Navigation&#169;
+                          {t("🌀 Spatial Navigation©")}
                         </A>
                       )}
                       <Instructions
@@ -488,7 +489,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     >
                       <Img app={app?.store?.app || undefined} size={30} />
                       <P>
-                        {app?.store?.title} - {app?.store?.description}
+                        {t(app?.store?.title ?? "")} -{" "}
+                        {t(app?.store?.description ?? "")}
                       </P>
                     </Div>
                     <Div
@@ -606,7 +608,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         strokeWidth={1.25}
                         style={{ position: "absolute", top: -2, left: -25 }}
                       />
-                      {app?.subtitle} {app?.description} {app?.icon}
+                      {t(app?.subtitle ?? "")} {t(app?.description ?? "")}{" "}
+                      {app?.icon}
                     </P>
                     <Div>
                       <Button
@@ -618,8 +621,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         style={{ ...utilities.inverted.style, marginTop: 10 }}
                       >
                         {app?.icon}{" "}
-                        {t(`Try {{appName}} now`, {
-                          appName: app?.name,
+                        {t(`Try {{name}}`, {
+                          name: app?.name,
                         })}
                       </Button>
                     </Div>
@@ -984,8 +987,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   loading={<Loading size={16} />}
                                   icon={post.app?.icon || undefined}
                                 >
-                                  {t(`Try {{appName}}`, {
-                                    appName: post.app?.name,
+                                  {t(`Try {{name}}`, {
+                                    name: post.app?.name,
                                   })}
                                 </AppLink>
                               </Div>
@@ -1011,14 +1014,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     marginBottom: ".5rem",
                                   }}
                                 >
-                                  <Img logo={"sushi"} size={20} /> Character
-                                  Profiles
+                                  <Img logo={"sushi"} size={20} />
+                                  <Span>{t("Character Profiles")}</Span>
                                 </Div>
                                 <P style={{ margin: 0 }}>
-                                  🧬 Agents learn through character
-                                  profiles—general knowledge only, 🤫 no
-                                  personal data. 🥋 Train your agent to build
-                                  personality & expertise!
+                                  {t(
+                                    "🧬 Agents learn through character profiles—general knowledge only, 🤫 no personal data. 🥋 Train your agent to build personality & expertise!",
+                                  )}
                                 </P>
                               </Div>
                             )}
@@ -1042,9 +1044,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     gap: 8,
                                   }}
                                 >
-                                  <Img logo={"coder"} size={20} /> Reactions and
-                                  comments are agent only 🤖, you can try like
-                                  💛 or share 📱
+                                  <Img logo={"coder"} size={20} />
+                                  {t(
+                                    "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
+                                  )}
                                 </Span>
                                 {!accountApp && (
                                   <Button

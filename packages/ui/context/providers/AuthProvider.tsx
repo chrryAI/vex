@@ -111,6 +111,7 @@ const AuthContext = createContext<
         duration?: number
       } | null
       timer?: timer
+      mergeApps: (apps: appWithStore[]) => void
       postId?: string
       tribes?: paginatedTribes
       setShowTribe: (show: boolean) => void
@@ -3102,6 +3103,7 @@ export function AuthProvider({
         dailyQuestionIndex,
         showTribeProfile,
         postId,
+        mergeApps,
       }}
     >
       {children}

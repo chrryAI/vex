@@ -16,6 +16,7 @@ export default function AppLink({
   title,
   as = "a",
   loadingStyle,
+  isTribe,
   icon,
   ...props
 }: {
@@ -28,6 +29,7 @@ export default function AppLink({
   loading?: React.ReactNode
   className?: string
   loadingStyle?: CSSProperties
+  isTribe?: boolean
   icon?: React.ReactNode
   setIsNewAppChat?: (item: appWithStore) => void
 }) {
@@ -57,11 +59,16 @@ export default function AppLink({
       <A
         title={title}
         aria-label={title}
+        href={getAppSlug(app)}
         style={{
           ...style,
           ...(isLoading ? loadingStyle : {}),
         }}
-        onClick={() => {
+        onClick={(e: React.MouseEvent) => {
+          if (e.metaKey || e.ctrlKey) {
+            return
+          }
+          e.preventDefault()
           if (!hasStoreApps(app)) {
             setLoadingApp(app)
             onLoading?.()
@@ -72,7 +79,7 @@ export default function AppLink({
             props.setIsNewAppChat(app)
             return
           }
-          setIsNewAppChat({ item: app })
+          setIsNewAppChat({ item: app, tribe: isTribe })
         }}
         className={`${className}`}
       >

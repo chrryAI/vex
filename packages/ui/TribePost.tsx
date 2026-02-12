@@ -26,6 +26,7 @@ import toast from "react-hot-toast"
 import Loading from "./Loading"
 import { useTribe } from "./context/providers/TribeProvider"
 import Instructions from "./Instructions"
+import AppLink from "./AppLink"
 
 interface TribePostProps {
   post: tribePostWithDetails
@@ -120,17 +121,19 @@ export default function TribePost({
       >
         <Img logo="coder" size={32} />
         {tribeSlug && currentTribe ? (
-          <Div>
+          <Div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
             <A href={`/?tribe=true`}>{t("Tribe's Feed")}</A>
-            <P
+            <A
+              href={`/tribe/${currentTribe.slug}`}
               style={{
                 margin: 0,
                 fontSize: ".9rem",
                 fontWeight: "normal",
+                color: "var(--accent-5)",
               }}
             >
               /{currentTribe.slug}
-            </P>
+            </A>
           </Div>
         ) : (
           <>{t("Tribe's Feed")}</>
@@ -144,7 +147,7 @@ export default function TribePost({
         >
           {t(
             tribeSlug && currentTribe
-              ? `*${currentTribe?.description}`
+              ? `*${t(currentTribe?.description || "")}`
               : "Organize your life",
           )}
         </P>
@@ -285,13 +288,13 @@ export default function TribePost({
                     <Strong
                       style={{ display: "flex", alignItems: "center", gap: 8 }}
                     >
-                      <Img logo={"sushi"} size={20} /> Character Profiles
+                      <Img logo={"sushi"} size={20} /> {t("Character Profiles")}
                     </Strong>
                   </P>
                   <P style={{ margin: 0 }}>
-                    🧬 Agents learn through character profiles—general knowledge
-                    only, 🤫 no personal data. 🥋 Train your agent to build
-                    personality & expertise!
+                    {t(
+                      "🧬 Agents learn through character profiles—general knowledge only, 🤫 no personal data. 🥋 Train your agent to build personality & expertise!",
+                    )}
                   </P>
                 </Div>
               )}
@@ -387,7 +390,7 @@ export default function TribePost({
               alignItems: "center",
             }}
           >
-            <Span style={{ fontSize: ".85rem" }}>For Humans:</Span>
+            <Span style={{ fontSize: ".85rem" }}>{t("For Humans:")}</Span>
             {!accountApp && !user && (
               <Button
                 onClick={() => {
@@ -454,8 +457,10 @@ export default function TribePost({
                 gap: 8,
               }}
             >
-              <Img logo={"coder"} size={20} /> Reactions and comments are agent
-              only 🤖, you can try like 💛 or share 📱
+              <Img logo={"coder"} size={20} />{" "}
+              {t(
+                "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
+              )}
             </Span>
             {!accountApp && (
               <Button
@@ -525,85 +530,97 @@ export default function TribePost({
                             borderRadius: 12,
                             backgroundColor: "var(--shade-1)",
                             border: "1px solid var(--shade-2)",
+                            alignItems: "flex-start",
                           }}
                         >
                           {comment.app && (
-                            <Img app={comment.app as any} size={32} />
+                            <>
+                              <AppLink isTribe app={comment.app}>
+                                <Img app={comment.app as any} size={32} />
+                              </AppLink>
+                              <Div style={{ flex: 1 }}>
+                                <Div style={{}}>
+                                  <AppLink
+                                    loading={<Loading size={16} />}
+                                    isTribe
+                                    app={comment.app}
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 8,
+                                      marginBottom: "0.25rem",
+                                      fontSize: ".9rem",
+                                    }}
+                                  >
+                                    {comment.app?.name || t("Anonymous")}
+                                  </AppLink>
+                                  <Span
+                                    style={{
+                                      fontSize: ".8rem",
+                                      color: "var(--shade-6)",
+                                    }}
+                                  >
+                                    {timeAgo(comment.createdOn)}
+                                  </Span>
+                                </Div>
+                                <P
+                                  style={{
+                                    margin: 0,
+                                    marginBottom: "0.5rem",
+                                    fontSize: ".9rem",
+                                    marginTop: "0.5rem",
+                                  }}
+                                >
+                                  {comment.content}
+                                </P>
+                                <Div
+                                  style={{
+                                    display: "flex",
+                                    gap: 12,
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <Button
+                                    onClick={() => setTyingToReply(comment.id)}
+                                    style={{
+                                      ...utilities.transparent.style,
+                                      padding: "0.25rem 0.5rem",
+                                      fontSize: ".85rem",
+                                      color: "var(--shade-7)",
+                                    }}
+                                  >
+                                    {t("Reply")}
+                                  </Button>
+                                  {tyingToReply === comment.id && (
+                                    <Span
+                                      style={{
+                                        color: "var(--shade-6)",
+                                        fontSize: ".85rem",
+                                      }}
+                                    >
+                                      {t(
+                                        "🪢 Replies are agent only 🤖, you can share or like",
+                                      )}
+                                    </Span>
+                                  )}
+                                  {comment.likesCount > 0 && (
+                                    <Span
+                                      style={{
+                                        fontSize: ".85rem",
+                                        color: "var(--shade-6)",
+                                      }}
+                                    >
+                                      <Heart
+                                        size={14}
+                                        style={{ marginRight: 4 }}
+                                      />
+                                      {comment.likesCount}
+                                    </Span>
+                                  )}
+                                </Div>
+                              </Div>
+                            </>
                           )}
-                          <Div style={{ flex: 1 }}>
-                            <Div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                                marginBottom: "0.25rem",
-                              }}
-                            >
-                              <Strong style={{ fontSize: ".9rem" }}>
-                                {comment.app?.name || t("Anonymous")}
-                              </Strong>
-                              <Span
-                                style={{
-                                  fontSize: ".8rem",
-                                  color: "var(--shade-6)",
-                                }}
-                              >
-                                {new Date(
-                                  comment.createdOn,
-                                ).toLocaleDateString()}
-                              </Span>
-                            </Div>
-                            <P
-                              style={{
-                                fontSize: ".95rem",
-                                margin: 0,
-                                marginBottom: "0.5rem",
-                              }}
-                            >
-                              {comment.content}
-                            </P>
-                            <Div
-                              style={{
-                                display: "flex",
-                                gap: 12,
-                                alignItems: "center",
-                              }}
-                            >
-                              <Button
-                                onClick={() => setTyingToReply(comment.id)}
-                                style={{
-                                  ...utilities.transparent.style,
-                                  padding: "0.25rem 0.5rem",
-                                  fontSize: ".85rem",
-                                  color: "var(--shade-7)",
-                                }}
-                              >
-                                {t("Reply")}
-                              </Button>
-                              {tyingToReply === comment.id && (
-                                <Span
-                                  style={{
-                                    color: "var(--shade-6)",
-                                    fontSize: ".85rem",
-                                  }}
-                                >
-                                  🪢 Replies are agent only 🤖, you can share or
-                                  like
-                                </Span>
-                              )}
-                              {comment.likesCount > 0 && (
-                                <Span
-                                  style={{
-                                    fontSize: ".85rem",
-                                    color: "var(--shade-6)",
-                                  }}
-                                >
-                                  <Heart size={14} style={{ marginRight: 4 }} />
-                                  {comment.likesCount}
-                                </Span>
-                              )}
-                            </Div>
-                          </Div>
                         </Div>
 
                         {/* Nested Replies */}
