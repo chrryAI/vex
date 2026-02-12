@@ -382,9 +382,13 @@ const createApp = async ({
   await expect(continueButton).toBeVisible()
   await continueButton.click()
 
+  await wait(1000)
+
   const saveAppButton = page.getByTestId("save-app")
   await expect(saveAppButton).toBeVisible()
   await saveAppButton.click()
+
+  await wait(1000)
 
   const editAppButton = page.getByTestId("edit-app")
   await expect(editAppButton).toBeVisible({

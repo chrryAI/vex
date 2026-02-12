@@ -290,7 +290,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         <Span>
                           {tribeSlug && currentTribe ? (
                             <>
-                              <A href={`/tribe=true`}>{t("Tribe's Feed")}</A>
+                              <A href={`/?tribe=true`}>{t("Tribe's Feed")}</A>
                               <P
                                 style={{
                                   margin: 0,
