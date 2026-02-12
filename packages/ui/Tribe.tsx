@@ -177,7 +177,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       gap: ".75rem",
                     }}
                   >
-                    <A openInNewTab href="https://github.com/chrryAI">
+                    <A openInNewTab href="https://chrry.dev">
                       <FaGithub />
                       AGPLv3
                     </A>
@@ -550,7 +550,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               setIsNewAppChat={(item) => {
                                 setIsNewAppChat({ item, tribe: true })
                               }}
-                              loading={<Loading />}
+                              loading={<Loading size={30} />}
                               icon={
                                 <Img app={item} alt={item.name} size={40} />
                               }
@@ -976,22 +976,24 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   </Button>
                                 </Div>
                               )}
-                              <Div style={{ marginLeft: "auto" }}>
-                                <AppLink
-                                  className="transparent button"
-                                  app={post.app}
-                                  style={{
-                                    ...utilities.transparent.style,
-                                    marginTop: 10,
-                                  }}
-                                  loading={<Loading size={16} />}
-                                  icon={post.app?.icon || undefined}
-                                >
-                                  {t(`Try {{name}}`, {
-                                    name: post.app?.name,
-                                  })}
-                                </AppLink>
-                              </Div>
+                              {post.app && (
+                                <Div style={{ marginLeft: "auto" }}>
+                                  <AppLink
+                                    className="transparent button"
+                                    app={post.app}
+                                    style={{
+                                      ...utilities.transparent.style,
+                                      marginTop: 10,
+                                    }}
+                                    loading={<Loading size={16} />}
+                                    icon={post.app?.icon || undefined}
+                                  >
+                                    {t(`Try {{name}}`, {
+                                      name: post.app?.name,
+                                    })}
+                                  </AppLink>
+                                </Div>
+                              )}
                             </Div>
                             {tryAppCharacterProfile === post.id && (
                               <Div

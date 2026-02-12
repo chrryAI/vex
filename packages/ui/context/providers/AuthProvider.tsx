@@ -2214,8 +2214,8 @@ export function AuthProvider({
     (showTribeFromQuery ||
       (postId
         ? true
-        : (props.showTribe ??
-          ((tribePosts?.totalCount || 0) >= 1 && canShowTribe)))) &&
+        : (props.showTribe ?? (tribePosts?.totalCount || 0) >= 1))) &&
+    canShowTribe &&
     !showFocus
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)

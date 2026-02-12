@@ -1,6 +1,7 @@
 import { Hono } from "hono"
 import Stripe from "stripe"
 import slugify from "slug"
+import { isPrivate } from "ip"
 import {
   deleteUser,
   getStore,
@@ -19,7 +20,14 @@ import { clearGraphDataForUser } from "../../lib/graph/graphService"
 function isValidImageUrl(url: string): boolean {
   try {
     const parsed = new URL(url)
-    return parsed.protocol === "http:" || parsed.protocol === "https:"
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return false
+    }
+    // Prevent SSRF attacks targeting internal services
+    if (isPrivate(parsed.hostname) || parsed.hostname === "localhost") {
+      return false
+    }
+    return true
   } catch {
     return false
   }
