@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.14.15",
+  "version": "1.14.16",
   "type": "module",
   "scripts": {
     "build": "turbo build",
@@ -92,7 +92,8 @@
       "tar@<7.5.7": ">=7.5.7",
       "happy-dom@<20.0.0": ">=20.0.0",
       "fast-xml-parser@>=4.3.6 <=5.3.3": ">=5.3.4",
-      "@isaacs/brace-expansion@<=5.0.0": ">=5.0.1"
+      "@isaacs/brace-expansion@<=5.0.0": ">=5.0.1",
+      "qs@<=6.14.1": ">=6.14.2"
     }
   },
   "workspaces": [

@@ -73,10 +73,12 @@ import { TribeCalculator } from "../TribeCalculator"
 
 export default function Agent({
   style,
+  dataTestId,
 }: {
   initialData?: Partial<appFormData>
   isUpdate?: boolean
   style?: React.CSSProperties
+  dataTestId?: string
 }) {
   const { device } = usePlatform()
   const styles = useAgentStyles()
@@ -471,7 +473,9 @@ export default function Agent({
             tab !== "systemPrompt" ? (
               <Div style={styles.titleContainer.style}>
                 <Input
-                  data-testid="name-input"
+                  data-testid={
+                    dataTestId ? `${dataTestId}-name-input` : "name-input"
+                  }
                   autoComplete="false"
                   {...register("name")}
                   title={t("Name your app......")}
