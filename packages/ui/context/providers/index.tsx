@@ -15,7 +15,7 @@ export { TribeProvider, useTribe } from "./TribeProvider"
 export { PlatformProvider } from "../../platform"
 
 // Composition root - combines all providers
-import React, { ReactNode, useState } from "react"
+import React, { ReactNode, useState, useMemo } from "react"
 import { PlatformProvider } from "../../platform"
 import { ThemeProvider } from "../ThemeContext"
 import { StylesProvider } from "../StylesContext"
@@ -117,7 +117,7 @@ export default function AppProviders({
   const [error, setError] = useState("")
 
   // Global SWR configuration with 429 error handling and persistent cache
-  const swrConfig = {
+  const swrConfig = useMemo(() => ({
     // Use persistent cache provider (IndexedDB on web, MMKV on native)
     provider: getCacheProvider,
     // Pre-populate cache with SSR data
@@ -155,7 +155,7 @@ export default function AppProviders({
       if (retryCount >= 3) return
       setTimeout(() => revalidate({ retryCount }), 5000)
     },
-  }
+  }), [])
 
   return (
     <SWRConfig value={swrConfig}>
