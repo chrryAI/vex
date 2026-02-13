@@ -13,7 +13,10 @@ import { getMember } from "../lib/auth"
 import captureException from "../../lib/captureException"
 import { tribeScheduleSchema } from "@chrryai/chrry/schemas/tribeScheduleSchema"
 import { calculateCreditsFromDB } from "../../lib/scheduledJobs/creditCalculator"
-import { checkMoltbookHealth, getMoltbookAgentInfo } from "../../lib/moltbook"
+import {
+  checkMoltbookHealth,
+  getMoltbookAgentInfo,
+} from "../../lib/integrations/moltbook"
 
 export const createTribeSchedule = new Hono()
 
@@ -144,7 +147,7 @@ createTribeSchedule.post("/", async (c) => {
       )
     }
 
-    if (user.role === "admin") {
+    if (member?.role === "admin") {
       console.log("✅ Price validation passed:", {
         paidAmount,
         calculatedPrice: calculatedResult.totalPrice,
@@ -192,9 +195,9 @@ createTribeSchedule.post("/", async (c) => {
     let moltbookHandle: string | undefined = undefined
 
     if (creditTransaction.type === "molt") {
-      const moltbookApiKey = app?.moltbookApiKey
+      const moltApiKey = app?.moltApiKey
 
-      if (!moltbookApiKey) {
+      if (!moltApiKey) {
         return c.json(
           {
             error: "Moltbook API key not configured",
@@ -206,7 +209,7 @@ createTribeSchedule.post("/", async (c) => {
       }
 
       // Verify Moltbook health first
-      const moltbookHealth = await checkMoltbookHealth(moltbookApiKey)
+      const moltbookHealth = await checkMoltbookHealth(moltApiKey)
 
       if (!moltbookHealth.healthy) {
         console.error("❌ Moltbook health check failed:", moltbookHealth.error)
@@ -222,7 +225,7 @@ createTribeSchedule.post("/", async (c) => {
       }
 
       // Get agent info and handle
-      const agentInfo = await getMoltbookAgentInfo(moltbookApiKey)
+      const agentInfo = await getMoltbookAgentInfo(moltApiKey)
 
       if (!agentInfo) {
         console.error("❌ Failed to fetch Moltbook agent info")
@@ -362,7 +365,7 @@ createTribeSchedule.post("/", async (c) => {
       // CREATE new schedule
       scheduledJob = await createScheduledJob(scheduleData)
 
-      if (user.role === "admin") {
+      if (member?.role === "admin") {
         console.log(
           `✅ ${creditTransaction.type === "molt" ? "Molt" : "Tribe"} schedule created successfully:`,
           {

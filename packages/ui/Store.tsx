@@ -20,6 +20,7 @@ import { useStoreMetadata } from "./hooks/useMetadata"
 import { useStyles } from "./context/StylesContext"
 import Loading from "./Loading"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+import AppLink from "./AppLink"
 
 export default function Store({
   compact,
@@ -47,8 +48,8 @@ export default function Store({
     loadingApp,
     setLoadingApp,
     loadingAppId,
-    setLoadingAppId,
     hasStoreApps,
+    accountApp,
   } = useAuth()
 
   const { currentStore, setAppStatus } = useApp()
@@ -70,51 +71,13 @@ export default function Store({
 
   const slugParam = searchParams.get("app")
 
-  const [selectedApp, setSelectedAppInternal] = useState<
-    appWithStore | undefined
-  >(storeApps?.find((app) => app.slug === slugParam || app.id === store?.appId))
+  const [selectedApp, setSelectedApp] = useState<appWithStore | undefined>(
+    storeApps?.find((app) => app.slug === slugParam || app.id === store?.appId),
+  )
 
   useEffect(() => {
     if (!storeApps?.length) return
-    if (slugParam) {
-      const app = storeApps?.find((app) => app.slug === slugParam)
-      if (app) {
-        setSelectedAppInternal(app)
-      }
-    }
-  }, [slugParam, storeAppsContext])
-
-  const [loadingAppInternal, setLoadingAppInternal] = useState<
-    appWithStore | undefined
-  >(loadingApp)
-
-  const setSelectedApp = (app: appWithStore | undefined) => {
-    if (app && !hasStoreApps(storeAppsContext.find((a) => a.id === app.id))) {
-      setLoadingApp(app)
-      setLoadingAppInternal(app)
-      return
-    }
-
-    if (!app?.store?.slug) return
-    if (!app?.slug) return
-
-    if (loadingApp?.id === app.id) return
-
-    setSelectedAppInternal(app)
-
-    !slug && router.push(`/${app.store.slug}?app=${app.slug}`)
-  }
-
-  useEffect(() => {
-    const loadedApp = storeApps?.find(
-      (app) => app.id === loadingAppInternal?.id,
-    )
-    if (!loadingApp && loadingAppInternal && loadedApp) {
-      setSelectedAppInternal(loadedApp)
-      router.push(`/${loadedApp?.store?.slug}?app=${loadedApp?.slug}`)
-      setLoadingAppInternal(undefined)
-    }
-  }, [loadingApp, loadingAppInternal])
+  }, [slugParam, storeApps, storeAppsContext])
 
   useEffect(() => {
     if (store) {
@@ -216,26 +179,75 @@ export default function Store({
           </Div>
         )}
         <Div style={styles.createAgent.style}>
-          <Button
-            onClick={() => {
-              setAppStatus({
-                part: "highlights",
-                step: "add",
-              })
-            }}
-            className="inverted"
-            style={{ ...utilities.inverted.style }}
-          >
-            <Sparkles size={16} color="var(--accent-1)" />
-            {t("Create Your Agent")}
-          </Button>
+          {accountApp ? (
+            <AppLink
+              app={accountApp}
+              icon={<Img app={accountApp} size={22} />}
+              loading={<Loading size={22} />}
+              className="inverted"
+              style={{
+                ...utilities.button.style,
+                ...utilities.small.style,
+                ...utilities.inverted.style,
+              }}
+            >
+              {t("Go to Your Agent")}
+            </AppLink>
+          ) : (
+            <Button
+              onClick={() => {
+                setAppStatus({
+                  part: "highlights",
+                  step: "add",
+                })
+              }}
+              className="inverted"
+              style={{ ...utilities.inverted.style }}
+            >
+              <Sparkles size={16} color="var(--accent-1)" />
+              {t("Create Your Agent")}
+            </Button>
+          )}
         </Div>
         <Div style={styles.content.style}>
           <Div style={styles.apps.style}>
             {storeApps?.map((app, index) => {
               return (
-                <Div
+                <AppLink
+                  isTribe
+                  app={app}
                   key={app.id}
+                  setIsNewAppChat={(app) => {
+                    setSelectedApp(app)
+                  }}
+                  icon={
+                    <>
+                      <Div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <Span
+                          style={{
+                            ...styles.badge.style,
+                            display: isMobileDevice ? "none" : "flex",
+                            fontSize: 12,
+                          }}
+                        >
+                          {t(app.status === "active" ? "live" : "testing")}
+                        </Span>
+                      </Div>
+                      <Img
+                        style={{ ...styles.appImage.style }}
+                        app={app}
+                        alt={app.name}
+                        size={isMobileDevice ? 40 : 50}
+                      />
+                    </>
+                  }
                   data-color={COLORS[app.themeColor as keyof typeof COLORS]}
                   className={`pointer ${loadingApp?.id === app.id ? "glow" : ""}`}
                   style={{
@@ -246,35 +258,17 @@ export default function Store({
                     ...(selectedApp?.id === app.id && styles.appSelected.style),
                     boxShadow: COLORS[app.themeColor as keyof typeof COLORS],
                     borderColor: COLORS[app.themeColor as keyof typeof COLORS],
-                    "--glow-color":
+                    ["--glow-color" as keyof React.CSSProperties]:
                       COLORS[app.themeColor as keyof typeof COLORS],
                   }}
-                  onClick={() => setSelectedApp(app)}
                 >
-                  <A
-                    href={getAppSlug(app)}
-                    style={{
-                      ...styles.badge.style,
-                      display: isMobileDevice ? "none" : "flex",
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      // setSelectedApp(app)
-                    }}
-                  >
-                    {t(app.status === "active" ? "live" : "testing")}
-                  </A>
-                  <Img
-                    style={{ ...styles.appImage.style }}
-                    app={app}
-                    alt={app.name}
-                    size={isMobileDevice ? 40 : 80}
-                  />
-                  <A
-                    href={getAppSlug(app)}
+                  <Div
                     style={{
                       ...styles.appInfo.style,
                       display: isMobileDevice ? "none" : "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      alignContent: "center",
                     }}
                   >
                     <Span style={{ ...styles.appName.style }}>
@@ -285,11 +279,16 @@ export default function Store({
                       )}{" "}
                       {app.name}
                     </Span>
-                    <Span style={{ ...styles.appSubtitle.style }}>
+                    <Span
+                      style={{
+                        ...styles.appSubtitle.style,
+                        margin: ".25rem 0 0 0",
+                      }}
+                    >
                       {t(app.subtitle || "")}
                     </Span>
-                  </A>
-                </Div>
+                  </Div>
+                </AppLink>
               )
             })}
           </Div>

@@ -71,7 +71,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
     tribePost,
     setTribePost,
     mergeApps,
-    storeApps,
     app, // Current selected app for filtering
   } = useAuth()
 

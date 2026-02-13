@@ -309,15 +309,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setIsAgentModalOpen = (value: boolean) => {
     setIsAgentModalOpenInternal(value)
-    if (!value) {
-      removeParams(["settings", "tab", "trial"])
-    }
+    // if (!value) {
+    //   removeParams(["settings", "tab", "trial"])
+    // }
   }
 
   useEffect(() => {
     setIsAgentModalOpen(appStatus?.part === "settings")
     appStatus?.part && auth.setShowTribe(false)
-  }, [appStatus])
+  }, [appStatus, auth, setIsAgentModalOpen])
 
   useEffect(() => {
     if (searchParams.get("settings")) {
@@ -763,6 +763,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     })
 
     if (payload) {
+      addParams({ settings: "true" })
+
       auth.setShowTribe(false)
       auth.setShowFocus(false)
     }
