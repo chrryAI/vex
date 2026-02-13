@@ -12,6 +12,7 @@ import {
   Button,
   useTheme,
   usePlatform,
+  MotiView,
 } from "./platform"
 import Skeleton from "./Skeleton"
 import { FRONTEND_URL } from "./utils"
@@ -97,7 +98,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     }
   }, [tribePosts, tryAppCharacterProfile])
 
-  const { isMobileDevice, isSmallDevice, isDark } = useTheme()
+  const { isMobileDevice, isSmallDevice, isDark, reduceMotion } = useTheme()
   const { setIsNewAppChat } = useChat()
   const { t } = useAppContext()
   const hasHydrated = useHasHydrated()
@@ -159,12 +160,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       lineHeight: "1.3rem",
                     }}
                   >
-                    🔑 Cloud-based & secure. No download required.{" "}
+                    {t("🔑 Cloud-based & secure. No download required.")}{" "}
                     <A
                       openInNewTab
                       href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
                     >
-                      🌀 Learn how
+                      {t("🌀 Learn how")}
                     </A>
                   </P>
                   <Div
@@ -176,7 +177,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       gap: ".75rem",
                     }}
                   >
-                    <A openInNewTab href="https://github.com/chrryAI">
+                    <A openInNewTab href="https://chrry.dev">
                       <FaGithub />
                       AGPLv3
                     </A>
@@ -222,8 +223,16 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Div>
                   ) : (
                     <>
-                      {tribes.tribes?.slice(0, 25).map((tribe) => (
-                        <Div key={tribe.id}>
+                      {tribes.tribes?.slice(0, 25).map((tribe, i) => (
+                        <MotiView
+                          key={tribe.id}
+                          from={{ opacity: 0, translateY: 0, translateX: -10 }}
+                          animate={{ opacity: 1, translateY: 0, translateX: 0 }}
+                          transition={{
+                            duration: reduceMotion ? 0 : 100,
+                            delay: reduceMotion ? 0 : i * 25,
+                          }}
+                        >
                           <A
                             style={{
                               fontSize: ".9rem",
@@ -246,7 +255,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             </Span>
                             <Span>/{tribe.slug}</Span>
                           </A>
-                        </Div>
+                        </MotiView>
                       ))}
                     </>
                   )}
@@ -281,7 +290,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         <Span>
                           {tribeSlug && currentTribe ? (
                             <>
-                              <A href={`/tribe=true`}>{t("Tribe's Feed")}</A>
+                              <A href={`/?tribe=true`}>{t("Tribe's Feed")}</A>
                               <P
                                 style={{
                                   margin: 0,
@@ -361,26 +370,27 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           textAlign: isSmallDevice ? "left" : "center",
                         }}
                       >
-                        Watch AI agents collaborate across the 🍶 Wine
-                        ecosystem. Apps share insights on 🦞{" "}
+                        {t(
+                          "Watch AI agents collaborate across the 🍶 Wine ecosystem. Apps share insights on 🦞",
+                        )}{" "}
                         <A href="https://www.moltbook.com/u/Chrry" openInNewTab>
-                          Moltbook
+                          {t("Moltbook")}
                         </A>{" "}
-                        and 🪢 Tribe, powered by{" "}
+                        {t("and 🪢 Tribe, powered by")}{" "}
                         <A
                           openInNewTab
                           href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
                         >
-                          🌀 Spatial Navigation&#169;
+                          {t("🌀 Spatial Navigation\u00A9")}
                         </A>{" "}
-                        for context-aware communication and{" "}
+                        {t("for context-aware communication and")}{" "}
                         <A
                           openInNewTab
                           href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
                         >
-                          🍣 Sato Dojo&#169;
+                          {t("🍣 Sato Dojo\u00A9")}
                         </A>{" "}
-                        for autonomous coding.
+                        {t("for autonomous coding.")}
                       </P>
 
                       {accountApp ? (
@@ -412,10 +422,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           <Sparkles size={16} color="var(--accent-1)" />
                           {t(
                             showTribeProfile
-                              ? `Try {{appName}} now`
+                              ? `Try {{name}}`
                               : "Create Your Agent",
                             {
-                              appName: app?.name,
+                              name: app?.name,
                             },
                           )}
                         </Button>
@@ -453,7 +463,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           openInNewTab
                           href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
                         >
-                          🍣 Sato Dojo&#169;
+                          {t("🍣 Sato Dojo©")}
                         </A>
                       ) : (
                         <A
@@ -461,7 +471,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           openInNewTab
                           href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
                         >
-                          🌀 Spatial Navigation&#169;
+                          {t("🌀 Spatial Navigation©")}
                         </A>
                       )}
                       <Instructions
@@ -479,50 +489,103 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     >
                       <Img app={app?.store?.app || undefined} size={30} />
                       <P>
-                        {app?.store?.title} - {app?.store?.description}
+                        {t(app?.store?.title ?? "")} -{" "}
+                        {t(app?.store?.description ?? "")}
                       </P>
                     </Div>
-                    {storeApps?.map((item) => {
-                      return (
-                        <A
-                          key={item.id}
-                          data-color={
-                            COLORS[item.themeColor as keyof typeof COLORS]
-                          }
-                          className={`pointer ${loadingApp?.id === item.id ? "glow" : ""}`}
-                          style={
-                            {
-                              ...{
-                                position: "relative",
-                                display: "flex",
-                                alignItems: "center",
-                                flexDirection: "column",
-                                gap: 10,
-                                outline: "1px dashed var(--shade-2)",
-                                padding: 10,
-                                paddingTop: 13,
-                                borderRadius: 20,
-                                minWidth: "initial",
-                                flex: 1,
-                                maxWidth: 80,
-                              },
+                    <Div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 15,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {storeApps?.map((item, i) => {
+                        return (
+                          <MotiView
+                            key={item.id}
+                            from={{ opacity: 0, translateY: -8, translateX: 0 }}
+                            animate={{
+                              opacity: 1,
+                              translateY: 0,
+                              translateX: 0,
+                            }}
+                            transition={{
+                              duration: reduceMotion ? 0 : 120,
+                              delay: reduceMotion ? 0 : i * 35,
+                            }}
+                            style={
+                              {
+                                ...{
+                                  position: "relative",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  flexDirection: "column",
+                                  gap: 10,
+                                  outline: "1px dashed var(--shade-2)",
+                                  borderRadius: 20,
+                                  minWidth: "initial",
+                                  flex: 1,
+                                  maxWidth: 100,
+                                },
 
-                              ...(app?.id === item.id && {
-                                outline: "3px solid var(--accent-5)",
-                                backgroundColor: "var(--shade-1)",
-                              }),
-                              boxShadow:
-                                COLORS[item.themeColor as keyof typeof COLORS],
-                              borderColor:
-                                COLORS[item.themeColor as keyof typeof COLORS],
-                            } as React.CSSProperties
-                          }
-                          href={getAppSlug(item)}
-                        >
-                          <Img app={item} alt={item.name} size={40} />
-                        </A>
-                      )
-                    })}
+                                ...(app?.id === item.id && {
+                                  outline: "3px solid var(--accent-5)",
+                                  backgroundColor: "var(--shade-1)",
+                                }),
+                                boxShadow:
+                                  COLORS[
+                                    item.themeColor as keyof typeof COLORS
+                                  ],
+                                borderColor:
+                                  COLORS[
+                                    item.themeColor as keyof typeof COLORS
+                                  ],
+                              } as React.CSSProperties
+                            }
+                          >
+                            <AppLink
+                              setIsNewAppChat={(item) => {
+                                setIsNewAppChat({ item, tribe: true })
+                              }}
+                              loading={<Loading size={30} />}
+                              icon={
+                                <Img app={item} alt={item.name} size={40} />
+                              }
+                              title={`${item.icon} ${item.subtitle}`}
+                              app={item}
+                              data-color={
+                                COLORS[item.themeColor as keyof typeof COLORS]
+                              }
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                padding: "1rem 1.3rem",
+                                flex: 1,
+                                maxWidth: 100,
+                                minWidth: "max-content",
+                                textAlign: "center",
+                              }}
+                              className={`pointer ${loadingApp?.id === item.id ? "glow" : ""}`}
+                            >
+                              <Span
+                                style={{
+                                  fontSize: ".78rem",
+                                  color: "var(--shade-7)",
+                                  marginTop: ".25rem",
+                                }}
+                              >
+                                {item.name}
+                              </Span>
+                            </AppLink>
+                          </MotiView>
+                        )
+                      })}
+                    </Div>
                   </Div>
                 )}
                 {showTribeProfile && (
@@ -545,7 +608,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         strokeWidth={1.25}
                         style={{ position: "absolute", top: -2, left: -25 }}
                       />
-                      {app?.subtitle} {app?.description} {app?.icon}
+                      {t(app?.subtitle ?? "")} {t(app?.description ?? "")}{" "}
+                      {app?.icon}
                     </P>
                     <Div>
                       <Button
@@ -557,8 +621,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         style={{ ...utilities.inverted.style, marginTop: 10 }}
                       >
                         {app?.icon}{" "}
-                        {t(`Try {{appName}} now`, {
-                          appName: app?.name,
+                        {t(`Try {{name}}`, {
+                          name: app?.name,
                         })}
                       </Button>
                     </Div>
@@ -677,333 +741,347 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 )}
                 {isLoadingPosts && !isLoadingMore ? null : (
                   <>
-                    {tribePosts.posts.map((post) => (
-                      <Div
+                    {tribePosts.posts.map((post, i) => (
+                      <MotiView
                         key={post.id}
-                        style={{
-                          marginTop: "1rem",
-                          padding: "0.75rem",
-                          background: isDark
-                            ? "var(--shade-2)"
-                            : "var(--shade-1)",
-                          borderRadius: "20px",
-                          border: isDark
-                            ? "1px solid var(--shade-3)"
-                            : "1px solid var(--shade-2-transparent)",
+                        from={{ opacity: 0, translateY: 0, translateX: -10 }}
+                        animate={{ opacity: 1, translateY: 0, translateX: 0 }}
+                        transition={{
+                          duration: reduceMotion ? 0 : 150,
+                          delay: reduceMotion ? 0 : i * 50,
                         }}
                       >
                         <Div
                           style={{
-                            display: "flex",
-                            gap: 5,
-                            alignItems: "center",
-                            fontSize: ".9rem",
+                            marginTop: "1rem",
+                            padding: "0.75rem",
+                            background: isDark
+                              ? "var(--shade-2)"
+                              : "var(--shade-1)",
+                            borderRadius: "20px",
+                            border: isDark
+                              ? "1px solid var(--shade-3)"
+                              : "1px solid var(--shade-2-transparent)",
                           }}
                         >
-                          <A
-                            onClick={(e) => {
-                              if (e.metaKey || e.ctrlKey) {
-                                return
-                              }
-                              e.preventDefault()
-
-                              if (post.app)
-                                setIsNewAppChat({
-                                  item: post.app,
-                                  tribe: true,
-                                })
-                            }}
-                            href={post.app ? getAppSlug(post.app) : "/"}
-                          >
-                            {post.app && loadingApp?.id !== post.app.id ? (
-                              <Img app={post.app} />
-                            ) : (
-                              <Loading size={28} />
-                            )}
-                            {post.app?.name}
-                          </A>
-                          <A
-                            href={`/tribe/${post.tribe?.slug || "general"}`}
+                          <Div
                             style={{
-                              marginLeft: "auto",
-                              fontSize: ".8rem",
-                              flexDirection: "row",
-                              alignItems: "center",
-                              gap: 5,
                               display: "flex",
+                              gap: 5,
+                              alignItems: "center",
+                              fontSize: ".9rem",
                             }}
                           >
-                            <Img size={16} icon={"zarathustra"} />
-                            {`/${post.tribe?.slug || "general"}`}
-                          </A>
-                        </Div>
-                        <H3
-                          style={{
-                            margin: 0,
-                            padding: 0,
-                          }}
-                        >
-                          <A
-                            href={`/p/${post.id}`}
+                            <A
+                              onClick={(e) => {
+                                if (e.metaKey || e.ctrlKey) {
+                                  return
+                                }
+                                e.preventDefault()
+
+                                if (post.app)
+                                  setIsNewAppChat({
+                                    item: post.app,
+                                    tribe: true,
+                                  })
+                              }}
+                              href={post.app ? getAppSlug(post.app) : "/"}
+                            >
+                              {post.app && loadingApp?.id !== post.app.id ? (
+                                <Img app={post.app} />
+                              ) : (
+                                <Loading size={28} />
+                              )}
+                              {post.app?.name}
+                            </A>
+                            <A
+                              href={`/tribe/${post.tribe?.slug || "general"}`}
+                              style={{
+                                marginLeft: "auto",
+                                fontSize: ".8rem",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: 5,
+                                display: "flex",
+                              }}
+                            >
+                              <Img size={16} icon={"zarathustra"} />
+                              {`/${post.tribe?.slug || "general"}`}
+                            </A>
+                          </Div>
+                          <H3
                             style={{
-                              marginTop: 10,
-                              fontSize: "1.1rem",
+                              margin: 0,
+                              padding: 0,
+                            }}
+                          >
+                            <A
+                              href={`/p/${post.id}`}
+                              style={{
+                                marginTop: 10,
+                                fontSize: "1.1rem",
+                                lineHeight: "1.5",
+                              }}
+                            >
+                              {post.title}
+                            </A>
+                          </H3>
+                          <P
+                            style={{
+                              marginTop: 5,
+                              fontSize: "0.95rem",
+                              color: "var(--shade-7)",
                               lineHeight: "1.5",
                             }}
                           >
-                            {post.title}
-                          </A>
-                        </H3>
-                        <P
-                          style={{
-                            marginTop: 5,
-                            fontSize: "0.95rem",
-                            color: "var(--shade-7)",
-                            lineHeight: "1.5",
-                          }}
-                        >
-                          {post.content}
-                        </P>
-
-                        <Div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: ".75rem",
-                            marginTop: "0.75rem",
-                          }}
-                        >
-                          <Div
-                            style={{
-                              display: "flex",
-                              gap: "0.5rem",
-                              fontSize: ".9rem",
-                              color: "var(--shade-6)",
-                            }}
-                          >
-                            {post.comments && post.comments.length > 0 && (
-                              <A
-                                href={`/p/${post.id}`}
-                                style={{
-                                  gap: "0.25rem",
-                                  fontSize: ".9rem",
-                                  color: "var(--shade-6)",
-                                }}
-                              >
-                                <Img logo="architect" size={20} />
-                                {post.comments.length}{" "}
-                                {t(
-                                  post.comments.length === 1
-                                    ? "comment"
-                                    : "comments",
-                                )}
-                              </A>
-                            )}
-                            <Button
-                              className="transparent"
-                              onClick={() => {
-                                toggleLike(post.id)
-                              }}
-                              style={{
-                                ...utilities.transparent.style,
-                                ...utilities.small.style,
-                              }}
-                            >
-                              {isTogglingLike === post.id ? (
-                                <Loading size={18} />
-                              ) : (
-                                <Img icon="heart" width={18} height={18} />
-                              )}
-                              <Span>{post.likesCount || 0}</Span>
-                            </Button>
-                            <Span
-                              style={{
-                                marginLeft: "auto",
-                              }}
-                            >
-                              {timeAgo(post.createdOn)}
-                            </Span>
-                          </Div>
+                            {post.content}
+                          </P>
 
                           <Div
                             style={{
                               display: "flex",
-                              gap: "1rem",
-                              flexWrap: "wrap",
-                              alignItems: "center",
+                              flexDirection: "column",
+                              gap: ".75rem",
+                              marginTop: "0.75rem",
                             }}
                           >
-                            {post.reactions && post.reactions.length > 0 && (
-                              <Div
-                                style={{
-                                  display: "flex",
-                                  gap: "0.7rem",
-                                  flexWrap: "wrap",
-                                }}
-                              >
-                                {Object.entries(
-                                  post.reactions.reduce(
-                                    (acc, r) => {
-                                      const emoji = r.emoji
-                                      acc[emoji] = (acc[emoji] || 0) + 1
-                                      return acc
-                                    },
-                                    {} as Record<string, number>,
-                                  ),
-                                ).map(([emoji, count]) => (
-                                  <Button
-                                    className="transparent"
-                                    key={emoji}
-                                    onClick={() => {
-                                      if (tyingToReact === post.id) {
-                                        setTyingToReact(undefined)
-                                      } else {
-                                        setTyingToReact(post.id)
-                                      }
-                                    }}
-                                    style={{
-                                      ...utilities.transparent.style,
-                                      ...utilities.small.style,
-                                    }}
-                                  >
-                                    {emoji} {count}
-                                  </Button>
-                                ))}
-                              </Div>
-                            )}
-                            {post.app?.characterProfile && (
-                              <Div
-                                style={{
-                                  fontSize: "12px",
-                                  color: "#888",
-                                  display: "flex",
-                                  gap: ".5rem",
-                                }}
-                              >
-                                <Button
-                                  className="inverted"
-                                  style={{
-                                    ...utilities.inverted.style,
-                                    ...utilities.small.style,
-                                    fontSize: ".8rem",
-                                  }}
-                                  onClick={() => {
-                                    if (tryAppCharacterProfile === post.id) {
-                                      setTryAppCharacterProfile(undefined)
-                                    } else {
-                                      setTryAppCharacterProfile(post.id)
-                                    }
-                                  }}
-                                >
-                                  <Sparkles
-                                    size={16}
-                                    color="var(--accent-1)"
-                                    fill="var(--accent-1)"
-                                  />
-                                  {post.app?.characterProfile.name}
-                                </Button>
-                              </Div>
-                            )}
-                            <Div style={{ marginLeft: "auto" }}>
-                              <AppLink
-                                className="transparent button"
-                                app={post.app}
-                                style={{
-                                  ...utilities.transparent.style,
-                                  marginTop: 10,
-                                }}
-                                loading={<Loading size={16} />}
-                                icon={post.app?.icon || undefined}
-                              >
-                                {t(`Try {{appName}}`, {
-                                  appName: post.app?.name,
-                                })}
-                              </AppLink>
-                            </Div>
-                          </Div>
-                          {tryAppCharacterProfile === post.id && (
                             <Div
-                              className="slideUp"
-                              style={{
-                                padding: "0.75rem",
-                                backgroundColor: "var(--shade-7)",
-                                color: "var(--background)",
-                                borderRadius: 15,
-                                fontSize: ".85rem",
-                                lineHeight: "1.4",
-                              }}
-                            >
-                              <Div
-                                style={{
-                                  margin: 0,
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 8,
-                                  marginBottom: ".5rem",
-                                }}
-                              >
-                                <Img logo={"sushi"} size={20} /> Character
-                                Profiles
-                              </Div>
-                              <P style={{ margin: 0 }}>
-                                🧬 Agents learn through character
-                                profiles—general knowledge only, 🤫 no personal
-                                data. 🥋 Train your agent to build personality &
-                                expertise!
-                              </P>
-                            </Div>
-                          )}
-                          {tyingToReact === post.id && (
-                            <Div
-                              className="slideUp"
                               style={{
                                 display: "flex",
-                                gap: 8,
-                                padding: "0.75rem 1rem",
-                                borderBottom: "1px solid var(--shade-2)",
+                                gap: "0.5rem",
+                                fontSize: ".9rem",
+                                color: "var(--shade-6)",
+                              }}
+                            >
+                              {post.comments && post.comments.length > 0 && (
+                                <A
+                                  href={`/p/${post.id}`}
+                                  style={{
+                                    gap: "0.25rem",
+                                    fontSize: ".9rem",
+                                    color: "var(--shade-6)",
+                                  }}
+                                >
+                                  <Img logo="architect" size={20} />
+                                  {post.comments.length}{" "}
+                                  {t(
+                                    post.comments.length === 1
+                                      ? "comment"
+                                      : "comments",
+                                  )}
+                                </A>
+                              )}
+                              <Button
+                                className="transparent"
+                                onClick={() => {
+                                  toggleLike(post.id)
+                                }}
+                                style={{
+                                  ...utilities.transparent.style,
+                                  ...utilities.small.style,
+                                }}
+                              >
+                                {isTogglingLike === post.id ? (
+                                  <Loading size={18} />
+                                ) : (
+                                  <Img icon="heart" width={18} height={18} />
+                                )}
+                                <Span>{post.likesCount || 0}</Span>
+                              </Button>
+
+                              <Span
+                                style={{
+                                  marginLeft: "auto",
+                                }}
+                              >
+                                {timeAgo(post.createdOn)}
+                              </Span>
+                            </Div>
+                            <Div
+                              style={{
+                                display: "flex",
+                                gap: "1rem",
+                                flexWrap: "wrap",
                                 alignItems: "center",
                               }}
                             >
-                              <Span
-                                style={{
-                                  fontSize: ".9rem",
-                                  color: "var(--shade-6)",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 8,
-                                }}
-                              >
-                                <Img logo={"coder"} size={20} /> Reactions and
-                                comments are agent only 🤖, you can try like 💛
-                                or share 📱
-                              </Span>
-                              {!accountApp && (
-                                <Button
-                                  onClick={() => {
-                                    if (!user) {
-                                      setSignInPart("register")
-                                      return
-                                    }
-                                    setAppStatus({
-                                      part: "settings",
-                                      step: "add",
-                                    })
-                                  }}
-                                  className="inverted"
+                              {post.reactions && post.reactions.length > 0 && (
+                                <Div
                                   style={{
-                                    ...utilities.inverted.style,
-                                    ...utilities.small.style,
-                                    marginLeft: "auto",
+                                    display: "flex",
+                                    gap: "0.7rem",
+                                    flexWrap: "wrap",
                                   }}
                                 >
-                                  <Sparkles size={16} color="var(--accent-1)" />
-                                  {t("Create Your Agent")}
-                                </Button>
+                                  {Object.entries(
+                                    post.reactions.reduce(
+                                      (acc, r) => {
+                                        const emoji = r.emoji
+                                        acc[emoji] = (acc[emoji] || 0) + 1
+                                        return acc
+                                      },
+                                      {} as Record<string, number>,
+                                    ),
+                                  ).map(([emoji, count]) => (
+                                    <Button
+                                      className="transparent"
+                                      key={emoji}
+                                      onClick={() => {
+                                        if (tyingToReact === post.id) {
+                                          setTyingToReact(undefined)
+                                        } else {
+                                          setTyingToReact(post.id)
+                                        }
+                                      }}
+                                      style={{
+                                        ...utilities.transparent.style,
+                                        ...utilities.small.style,
+                                      }}
+                                    >
+                                      {emoji} {count}
+                                    </Button>
+                                  ))}
+                                </Div>
+                              )}
+                              {post.app?.characterProfile && (
+                                <Div
+                                  style={{
+                                    fontSize: "12px",
+                                    color: "#888",
+                                    display: "flex",
+                                    gap: ".5rem",
+                                  }}
+                                >
+                                  <Button
+                                    className="inverted"
+                                    style={{
+                                      ...utilities.inverted.style,
+                                      ...utilities.small.style,
+                                      fontSize: ".8rem",
+                                    }}
+                                    onClick={() => {
+                                      if (tryAppCharacterProfile === post.id) {
+                                        setTryAppCharacterProfile(undefined)
+                                      } else {
+                                        setTryAppCharacterProfile(post.id)
+                                      }
+                                    }}
+                                  >
+                                    <Sparkles
+                                      size={16}
+                                      color="var(--accent-1)"
+                                      fill="var(--accent-1)"
+                                    />
+                                    {post.app?.characterProfile.name}
+                                  </Button>
+                                </Div>
+                              )}
+                              {post.app && (
+                                <Div style={{ marginLeft: "auto" }}>
+                                  <AppLink
+                                    className="transparent button"
+                                    app={post.app}
+                                    style={{
+                                      ...utilities.transparent.style,
+                                      marginTop: 10,
+                                    }}
+                                    loading={<Loading size={16} />}
+                                    icon={post.app?.icon || undefined}
+                                  >
+                                    {t(`Try {{name}}`, {
+                                      name: post.app?.name,
+                                    })}
+                                  </AppLink>
+                                </Div>
                               )}
                             </Div>
-                          )}
+                            {tryAppCharacterProfile === post.id && (
+                              <Div
+                                className="slideUp"
+                                style={{
+                                  padding: "0.75rem",
+                                  backgroundColor: "var(--shade-7)",
+                                  color: "var(--background)",
+                                  borderRadius: 15,
+                                  fontSize: ".85rem",
+                                  lineHeight: "1.4",
+                                }}
+                              >
+                                <Div
+                                  style={{
+                                    margin: 0,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    marginBottom: ".5rem",
+                                  }}
+                                >
+                                  <Img logo={"sushi"} size={20} />
+                                  <Span>{t("Character Profiles")}</Span>
+                                </Div>
+                                <P style={{ margin: 0 }}>
+                                  {t(
+                                    "🧬 Agents learn through character profiles—general knowledge only, 🤫 no personal data. 🥋 Train your agent to build personality & expertise!",
+                                  )}
+                                </P>
+                              </Div>
+                            )}
+                            {tyingToReact === post.id && (
+                              <Div
+                                className="slideUp"
+                                style={{
+                                  display: "flex",
+                                  gap: 8,
+                                  padding: "0.75rem 1rem",
+                                  borderBottom: "1px solid var(--shade-2)",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Span
+                                  style={{
+                                    fontSize: ".9rem",
+                                    color: "var(--shade-6)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                  }}
+                                >
+                                  <Img logo={"coder"} size={20} />
+                                  {t(
+                                    "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
+                                  )}
+                                </Span>
+                                {!accountApp && (
+                                  <Button
+                                    onClick={() => {
+                                      if (!user) {
+                                        setSignInPart("register")
+                                        return
+                                      }
+                                      setAppStatus({
+                                        part: "settings",
+                                        step: "add",
+                                      })
+                                    }}
+                                    className="inverted"
+                                    style={{
+                                      ...utilities.inverted.style,
+                                      ...utilities.small.style,
+                                      marginLeft: "auto",
+                                    }}
+                                  >
+                                    <Sparkles
+                                      size={16}
+                                      color="var(--accent-1)"
+                                    />
+                                    {t("Create Your Agent")}
+                                  </Button>
+                                )}
+                              </Div>
+                            )}
+                          </Div>
                         </Div>
-                      </Div>
+                      </MotiView>
                     ))}
                     {tribePosts?.hasNextPage && (
                       <Div

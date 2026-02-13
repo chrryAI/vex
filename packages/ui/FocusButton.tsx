@@ -985,7 +985,8 @@ export default function FocusButton({
                             }}
                           >
                             <Div style={styles.taskContent.style}>
-                              <Div
+                              <Button
+                                className="link"
                                 onClick={() => {
                                   if (
                                     selectedTasks?.some((t) => t.id === task.id)
@@ -1018,6 +1019,13 @@ export default function FocusButton({
                                 style={{
                                   ...styles.taskTitle.style,
                                   cursor: "pointer",
+                                  background: "transparent",
+                                  border: "none",
+                                  textAlign: "left",
+                                  width: "100%",
+                                  fontFamily: "inherit",
+                                  fontSize: "inherit",
+                                  color: "inherit",
                                 }}
                               >
                                 {selectedTasks?.some(
@@ -1085,7 +1093,7 @@ export default function FocusButton({
                                     </>
                                   )
                                 })()}
-                              </Div>
+                              </Button>
 
                               <Div
                                 onPointerDown={(e) => {
@@ -1112,6 +1120,8 @@ export default function FocusButton({
                                   position: "relative",
                                   bottom: 1.5,
                                 }}
+                                aria-label={`${t("Delete")} ${task.title}`}
+                                title={t("Delete task")}
                                 data-testid="edit-task-button"
                                 className={"link"}
                                 onClick={() => {

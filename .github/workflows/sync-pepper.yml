@@ -6,7 +6,7 @@ on:
     branches:
       - chrry # Trigger when pushing to main branch
     paths:
-      - "packages/pepper/**" # Only when pepper changes
+      - packages/pepper/** # Only when pepper changes
 
 permissions:
   contents: read

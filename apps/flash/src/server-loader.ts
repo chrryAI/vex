@@ -120,6 +120,17 @@ export async function loadServerData(
       : `/${request.pathname}`) || "/"
   ).split("?")?.[0]
 
+  // OPTIMIZATION: Start fetching blog data early to parallelize with session/app data fetching
+  // This allows file system reads to happen concurrently with API calls
+  const isBlogList = pathname === "/blog"
+  const isBlogPost = pathname.startsWith("/blog/") && pathname !== "/blog"
+
+  const blogDataPromise = isBlogList
+    ? getBlogPosts()
+    : isBlogPost
+      ? getBlogPost(pathname.replace("/blog/", ""))
+      : Promise.resolve(null)
+
   const isLocalePathname =
     pathname && locales.includes(pathname.split("/")?.[1] as locale)
 
@@ -283,15 +294,6 @@ export async function loadServerData(
   let tribe: tribe | undefined
 
   try {
-    threadResult = threadId
-      ? await getThread({
-          id: threadId,
-          pageSize: pageSizes.threads,
-          token: apiKey,
-          API_URL: API_INTERNAL_URL,
-        })
-      : undefined
-
     appId = threadResult?.thread?.appId || headers["x-app-id"]
     const sessionResult = await getSession({
       // appId: appResult.id,
@@ -315,15 +317,22 @@ export async function loadServerData(
     if (pathname === "/blog" || pathname.startsWith("/blog/")) {
       isBlogRoute = true
 
-      // Normalize trailing slash and extract slug
-      const slug = pathname.replace(/^\/blog\/?/, "")
+      // Reuse the early-fetched blog data promise
+      try {
+        const blogData = await blogDataPromise
 
-      if (pathname === "/blog" || pathname === "/blog/" || slug === "") {
-        // Blog list page
-        blogPosts = await getBlogPosts()
-      } else {
-        // Individual blog post page
-        blogPost = (await getBlogPost(slug)) || undefined
+        if (isBlogList) {
+          // Blog list page
+          blogPosts = blogData as BlogPost[] | undefined
+        } else if (isBlogPost) {
+          // Individual blog post page
+          blogPost = (blogData as BlogPostWithContent | null) || undefined
+        }
+      } catch (error) {
+        console.error("❌ Blog data fetch failed:", error)
+        // Fallback to null on error
+        blogPosts = undefined
+        blogPost = undefined
       }
     }
 
@@ -340,6 +349,14 @@ export async function loadServerData(
     apiKey =
       sessionResult?.user?.token || sessionResult?.guest?.fingerprint || apiKey
 
+    threadResult = threadId
+      ? await getThread({
+          id: threadId,
+          pageSize: pageSizes.threads,
+          token: apiKey,
+          API_URL,
+        })
+      : undefined
     const canShowTribeProfile =
       !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "") &&
       pathname !== "/"

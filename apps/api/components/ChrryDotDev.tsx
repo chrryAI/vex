@@ -112,12 +112,22 @@ export default function Chrry() {
               width={250}
               height={250}
             />
-            <h1>Chrry</h1>
+            <h1>
+              <Github /> <a href="https://github.com/chrryai">Chrry</a>
+            </h1>
           </div>
 
           <p className="description">{config.description}</p>
 
           <div className="links">
+            <a
+              href={"https://chrry.ai"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link"
+            >
+              🍒 Chrry.ai
+            </a>
             {config.links.github && (
               <a
                 href={config.links.github}

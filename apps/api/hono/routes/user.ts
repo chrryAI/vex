@@ -1,6 +1,7 @@
 import { Hono } from "hono"
 import Stripe from "stripe"
 import slugify from "slug"
+import { isPrivate } from "ip"
 import {
   deleteUser,
   getStore,
@@ -15,6 +16,22 @@ import { protectedRoutes } from "@chrryai/chrry/utils/url"
 import { deleteFile, upload } from "../../lib/minio"
 import { scanFileForMalware } from "../../lib/security"
 import { clearGraphDataForUser } from "../../lib/graph/graphService"
+
+function isValidImageUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return false
+    }
+    // Prevent SSRF attacks targeting internal services
+    if (isPrivate(parsed.hostname) || parsed.hostname === "localhost") {
+      return false
+    }
+    return true
+  } catch {
+    return false
+  }
+}
 
 export const user = new Hono()
 
@@ -58,6 +75,10 @@ user.patch("/", async (c) => {
       { error: "Username must be 3-20 alphanumeric characters" },
       400,
     )
+  }
+
+  if (image && !isValidImageUrl(image)) {
+    return c.json({ error: "Invalid image URL" }, 400)
   }
 
   const exists = async (username: string) => {

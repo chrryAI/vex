@@ -10,7 +10,8 @@
     "build:server": "NODE_ENV=production pnpm vite build --ssr src/entry-server.tsx --outDir dist/server",
     "start": "cross-env NODE_ENV=production node server",
     "preview": "cross-env NODE_ENV=production node server",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest run --coverage.enabled --coverage.provider=v8 --coverage.reporter=text --coverage.reporter=lcov"
   },
   "dependencies": {
     "@arcjet/node": "1.0.0-beta.15",
@@ -40,8 +41,10 @@
     "@types/node": "^24.5.1",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
+    "@vitest/coverage-v8": "^2.1.9",
     "cross-env": "^10.0.0",
     "sass": "^1.94.2",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "vitest": "^2.1.9"
   }
 }

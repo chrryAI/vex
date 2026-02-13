@@ -88,7 +88,8 @@ export const chrryDev = {
   domain: "chrry.dev",
   url: "https://chrry.dev",
   email: "iliyan@chrry.ai",
-  description: "A modern, cross-platform AI UI library for React, React Native",
+  description:
+    "🐝 A modern, cross-platform AI Infrastructure for Universal React and TypeScript",
   logo: "/assets/cherry-logo.svg", // Cross-platform SVG
   primaryColor: "#E91E63", // Cherry pink
   links: {
@@ -99,8 +100,16 @@ export const chrryDev = {
   },
   features: [
     {
+      title: "Sushi(WIP)",
+      description:
+        "🏢 Enterprise-grade compiler infrastructure with multi-agent 🤖 coordination",
+      icon: "🍣",
+      link: "https://github.com/chrryAI/sushi",
+      isOpenSource: true,
+    },
+    {
       title: "Waffles",
-      description: "Sushi 🍣 Playwright testing utilities, e2e strikes 🎯",
+      description: "Playwright testing utilities for Sushi 🍣 e2e strikes 🎯",
       icon: "🧇",
       link: "https://github.com/chrryAI/waffles",
       isOpenSource: true,
@@ -123,14 +132,14 @@ export const chrryDev = {
       title: "Styles",
       description: "SCSS to TypeScript converter",
       icon: "🎭",
-      link: "https://github.com/chrryAI/vex/blob/main/scripts/scss-to-universal.js",
+      link: "https://github.com/chrryAI/vex/tree/main/scripts/scss-to-universal.js",
       isOpenSource: true,
     },
     {
       title: "Hooks",
       description: "Reusable React hooks",
       icon: "🪝",
-      link: "https://github.com/chrryAI/blob/vex/tree/main/hooks",
+      link: "https://github.com/chrryAI/vex/tree/main/packages/ui/hooks",
       isOpenSource: true,
     },
     {
@@ -144,7 +153,7 @@ export const chrryDev = {
       title: "Platform",
       description: "Cross-platform utilities",
       icon: "📱",
-      link: "https://github.com/chrryAI/vex/blob/main/packages/ui/platform",
+      link: "https://github.com/chrryAI/vex/tree/main/packages/ui/platform",
       isOpenSource: true,
     },
   ],
@@ -2309,7 +2318,7 @@ export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
-  const devMode = "search"
+  const devMode = "vex"
 
   const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || devMode
 

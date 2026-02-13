@@ -111,6 +111,7 @@ const AuthContext = createContext<
         duration?: number
       } | null
       timer?: timer
+      mergeApps: (apps: appWithStore[]) => void
       postId?: string
       tribes?: paginatedTribes
       setShowTribe: (show: boolean) => void
@@ -1097,7 +1098,7 @@ export function AuthProvider({
   const allApps = merge(
     merge(
       (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
-      session?.app?.store?.apps || [],
+      session?.app?.store?.apps || props.app?.store?.apps || [],
     ),
     userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
   )
@@ -1736,7 +1737,6 @@ export function AuthProvider({
       (item) => item.slug === appSlug && (hasStoreApps(item) ? true : true),
     )
 
-    console.log(`🚀 ~ matchedApp:`, matchedApp, appSlug, storeSlug)
     return matchedApp
   }
 
@@ -1885,9 +1885,9 @@ export function AuthProvider({
     }
   }, [storeAppsSwr, newApp, updatedApp, loadingAppId])
 
-  const showFocusInitial = baseApp?.slug
-    ? baseApp?.slug === "focus" && app?.slug === "focus"
-    : pathname === "/focus"
+  const showFocusInitial =
+    pathname === "/focus" ||
+    (baseApp?.slug ? baseApp?.slug === "focus" && app?.slug === "focus" : false)
 
   const [showFocus, setShowFocusInternal] = useState<boolean | undefined>(
     showFocusInitial,
@@ -2197,8 +2197,10 @@ export function AuthProvider({
 
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
-  const canShowTribe = false
-  //  isDevelopment || isE2E || user?.role === "admin"
+  const hasAppPosts = !!tribePosts?.totalCount
+
+  const canShowTribe =
+    (isDevelopment || isE2E || user?.role === "admin") && hasAppPosts
 
   const canBeTribeProfile =
     !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "") &&
@@ -2212,8 +2214,8 @@ export function AuthProvider({
     (showTribeFromQuery ||
       (postId
         ? true
-        : (props.showTribe ??
-          ((tribePosts?.totalCount || 0) >= 1 && canShowTribe)))) &&
+        : (props.showTribe ?? (tribePosts?.totalCount || 0) >= 1))) &&
+    canShowTribe &&
     !showFocus
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
@@ -2221,6 +2223,7 @@ export function AuthProvider({
   const showTribeProfile = canBeTribeProfile && showTribe
 
   const setShowTribe = (value: boolean) => {
+    if (!canShowTribe) return
     setShowTribeFinal(value)
   }
 
@@ -2528,7 +2531,6 @@ export function AuthProvider({
 
     // Priority 2: Find app by pathname
     if (!matchedApp) {
-      console.log(`🚀 ~ useEffect ~ matchedApp:`, matchedApp)
       matchedApp = findAppByPathname(pathname, storeApps) || baseApp
       // Using pathname app
     }
@@ -2537,7 +2539,6 @@ export function AuthProvider({
 
     // Only update if the matched app is different from current app
     if (matchedApp && matchedApp.id !== app?.id) {
-      console.log(`🚀 ~ useEffect ~ matchedApp:`, matchedApp)
       // Switching app
       setApp(matchedApp)
       setStore(matchedApp.store)
@@ -3102,6 +3103,7 @@ export function AuthProvider({
         dailyQuestionIndex,
         showTribeProfile,
         postId,
+        mergeApps,
       }}
     >
       {children}

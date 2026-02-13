@@ -433,9 +433,7 @@ export function ChatProvider({
     if (!item) {
       return
     }
-    console.log(`🚀 ~ hasStoreApps(item):`, hasStoreApps(item))
 
-    console.log(`🚀 ~ item:`, item)
     if (!hasStoreApps(item)) {
       loadingAppRef.current = item
       setLoadingApp(item)
@@ -907,10 +905,7 @@ export function ChatProvider({
   const [isUserSelectedAgent, setIsUserSelectedAgent] = useState<boolean>(false)
 
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
-    setIsWebSearchEnabledInternal(
-      agent?.name === "perplexity" ||
-        (isWebSearchEnabled ? !!agent?.capabilities?.webSearch : false),
-    )
+    setIsWebSearchEnabledInternal(agent?.name === "perplexity")
     if (selectedAgent?.name === agent?.name) return
     if (agent === null) {
       setAgentName("")

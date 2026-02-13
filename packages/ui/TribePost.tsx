@@ -12,6 +12,7 @@ import {
   useNavigation,
   usePlatform,
   useTheme,
+  MotiView,
 } from "./platform"
 import Img from "./Image"
 import A from "./a/A"
@@ -25,6 +26,7 @@ import toast from "react-hot-toast"
 import Loading from "./Loading"
 import { useTribe } from "./context/providers/TribeProvider"
 import Instructions from "./Instructions"
+import AppLink from "./AppLink"
 
 interface TribePostProps {
   post: tribePostWithDetails
@@ -40,7 +42,8 @@ export default function TribePost({
   onCommentClick,
 }: TribePostProps) {
   const { t, captureException } = useAppContext()
-  const { toggleLike, isTogglingLike } = useTribe()
+  const { toggleLike, isTogglingLike, postId, tribePostError, isLoadingPost } =
+    useTribe()
 
   const { timeAgo, getAppSlug, accountApp, user, setSignInPart } = useAuth()
   const { setAppStatus } = useApp()
@@ -48,7 +51,7 @@ export default function TribePost({
   const styles = useTribePostStyles()
   const { utilities } = useStyles()
 
-  const { addParams } = useNavigation()
+  const { addParams, push: navigate } = useNavigation()
   const { setIsNewAppChat } = useChat()
 
   const [tyingToReact, setTyingToReact] = useState(false)
@@ -92,7 +95,7 @@ export default function TribePost({
     }
   }
 
-  const { isSmallDevice } = useTheme()
+  const { isSmallDevice, reduceMotion } = useTheme()
 
   // Group reactions by emoji
   const reactionGroups = post.reactions?.reduce(
@@ -102,6 +105,47 @@ export default function TribePost({
     },
     {},
   )
+
+  // Handle loading and error states when fetching a specific post
+  if (postId && isLoadingPost) {
+    return <Loading fullScreen />
+  }
+
+  // Show error when post fetch failed
+  if (postId && tribePostError && !isLoadingPost) {
+    return (
+      <Div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 10,
+          padding: "40px 20px",
+          minHeight: "60vh",
+          textAlign: "center",
+        }}
+      >
+        <H2 style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Img logo="coder" size={32} />
+          {t("Post not found")}
+        </H2>
+        <A
+          href="/?tribe=true"
+          className="button inverted"
+          style={{
+            ...utilities.button.style,
+            ...utilities.inverted.style,
+            ...utilities.small.style,
+            marginTop: 10,
+          }}
+        >
+          <Img icon="zarathustra" size={18} />
+          {t("Back to feed")}
+        </A>
+      </Div>
+    )
+  }
 
   if (!post) {
     return <Loading fullScreen />
@@ -119,17 +163,19 @@ export default function TribePost({
       >
         <Img logo="coder" size={32} />
         {tribeSlug && currentTribe ? (
-          <Div>
+          <Div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
             <A href={`/?tribe=true`}>{t("Tribe's Feed")}</A>
-            <P
+            <A
+              href={`/tribe/${currentTribe.slug}`}
               style={{
                 margin: 0,
                 fontSize: ".9rem",
                 fontWeight: "normal",
+                color: "var(--accent-5)",
               }}
             >
               /{currentTribe.slug}
-            </P>
+            </A>
           </Div>
         ) : (
           <>{t("Tribe's Feed")}</>
@@ -143,7 +189,7 @@ export default function TribePost({
         >
           {t(
             tribeSlug && currentTribe
-              ? `*${currentTribe?.description}`
+              ? `*${t(currentTribe?.description || "")}`
               : "Organize your life",
           )}
         </P>
@@ -284,13 +330,13 @@ export default function TribePost({
                     <Strong
                       style={{ display: "flex", alignItems: "center", gap: 8 }}
                     >
-                      <Img logo={"sushi"} size={20} /> Character Profiles
+                      <Img logo={"sushi"} size={20} /> {t("Character Profiles")}
                     </Strong>
                   </P>
                   <P style={{ margin: 0 }}>
-                    🧬 Agents learn through character profiles—general knowledge
-                    only, 🤫 no personal data. 🥋 Train your agent to build
-                    personality & expertise!
+                    {t(
+                      "🧬 Agents learn through character profiles—general knowledge only, 🤫 no personal data. 🥋 Train your agent to build personality & expertise!",
+                    )}
                   </P>
                 </Div>
               )}
@@ -386,7 +432,22 @@ export default function TribePost({
               alignItems: "center",
             }}
           >
-            <Span style={{ fontSize: ".85rem" }}>For Humans:</Span>
+            <Span style={{ fontSize: ".85rem" }}>{t("For Humans:")}</Span>
+            {!accountApp && !user && (
+              <Button
+                onClick={() => {
+                  setSignInPart("register")
+                }}
+                className="transparent"
+                style={{
+                  ...utilities.transparent.style,
+                  ...utilities.small.style,
+                }}
+              >
+                <Img size={18} logo="architect" />
+                {t("Engage")}
+              </Button>
+            )}
             <Button
               className="transparent"
               onClick={() => {
@@ -438,8 +499,10 @@ export default function TribePost({
                 gap: 8,
               }}
             >
-              <Img logo={"coder"} size={20} /> Reactions and comments are agent
-              only 🤖, you can try like 💛 or share 📱
+              <Img logo={"coder"} size={20} />{" "}
+              {t(
+                "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
+              )}
             </Span>
             {!accountApp && (
               <Button
@@ -486,150 +549,208 @@ export default function TribePost({
               <Div
                 style={{ display: "flex", flexDirection: "column", gap: 12 }}
               >
-                {topLevelComments.map((comment: comment) => {
+                {topLevelComments.map((comment: comment, i: number) => {
                   const commentReplies = getReplies(comment.id)
 
                   return (
-                    <Div key={comment.id}>
-                      {/* Top-level Comment */}
-                      <Div
-                        style={{
-                          display: "flex",
-                          gap: 12,
-                          padding: "0.75rem",
-                          borderRadius: 12,
-                          backgroundColor: "var(--shade-1)",
-                          border: "1px solid var(--shade-2)",
-                        }}
-                      >
-                        {comment.app && (
-                          <Img app={comment.app as any} size={32} />
-                        )}
-                        <Div style={{ flex: 1 }}>
-                          <Div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                              marginBottom: "0.25rem",
-                            }}
-                          >
-                            <Strong style={{ fontSize: ".9rem" }}>
-                              {comment.app?.name || t("Anonymous")}
-                            </Strong>
-                            <Span
-                              style={{
-                                fontSize: ".8rem",
-                                color: "var(--shade-6)",
-                              }}
-                            >
-                              {new Date(comment.createdOn).toLocaleDateString()}
-                            </Span>
-                          </Div>
-                          <P
-                            style={{
-                              fontSize: ".95rem",
-                              margin: 0,
-                              marginBottom: "0.5rem",
-                            }}
-                          >
-                            {comment.content}
-                          </P>
-                          <Div
-                            style={{
-                              display: "flex",
-                              gap: 12,
-                              alignItems: "center",
-                            }}
-                          >
-                            <Button
-                              onClick={() => setTyingToReply(comment.id)}
-                              style={{
-                                ...utilities.transparent.style,
-                                padding: "0.25rem 0.5rem",
-                                fontSize: ".85rem",
-                                color: "var(--shade-7)",
-                              }}
-                            >
-                              {t("Reply")}
-                            </Button>
-                            {tyingToReply === comment.id && (
-                              <Span
-                                style={{
-                                  color: "var(--shade-6)",
-                                  fontSize: ".85rem",
-                                }}
-                              >
-                                🪢 Replies are agent only 🤖, you can share or
-                                like
-                              </Span>
-                            )}
-                            {comment.likesCount > 0 && (
-                              <Span
-                                style={{
-                                  fontSize: ".85rem",
-                                  color: "var(--shade-6)",
-                                }}
-                              >
-                                <Heart size={14} style={{ marginRight: 4 }} />
-                                {comment.likesCount}
-                              </Span>
-                            )}
-                          </Div>
-                        </Div>
-                      </Div>
-
-                      {/* Nested Replies */}
-                      {commentReplies.length > 0 && (
+                    <MotiView
+                      key={comment.id}
+                      from={{ opacity: 0, translateY: 0, translateX: -10 }}
+                      animate={{ opacity: 1, translateY: 0, translateX: 0 }}
+                      transition={{
+                        duration: reduceMotion ? 0 : 150,
+                        delay: reduceMotion ? 0 : i * 60,
+                      }}
+                    >
+                      <Div>
+                        {/* Top-level Comment */}
                         <Div
-                          style={{ marginLeft: "2.5rem", marginTop: "0.75rem" }}
+                          style={{
+                            display: "flex",
+                            gap: 12,
+                            padding: "0.75rem",
+                            borderRadius: 12,
+                            backgroundColor: "var(--shade-1)",
+                            border: "1px solid var(--shade-2)",
+                            alignItems: "flex-start",
+                          }}
                         >
-                          {commentReplies.map((reply: comment) => (
-                            <Div
-                              key={reply.id}
-                              style={{
-                                display: "flex",
-                                gap: 10,
-                                padding: "0.5rem",
-                                marginBottom: "0.5rem",
-                                color: "var(--shade-6)",
-                              }}
-                            >
-                              {reply.app && (
-                                <Img app={reply.app as any} size={28} />
-                              )}
-                              <Div style={{ flex: 1 }}>
-                                <Div
+                          {comment.app && (
+                            <AppLink isTribe app={comment.app}>
+                              <Img app={comment.app as any} size={32} />
+                            </AppLink>
+                          )}
+                          <Div style={{ flex: 1 }}>
+                            <Div style={{}}>
+                              {comment.app ? (
+                                <AppLink
+                                  loading={<Loading size={16} />}
+                                  isTribe
+                                  app={comment.app}
                                   style={{
                                     display: "flex",
                                     alignItems: "center",
                                     gap: 8,
                                     marginBottom: "0.25rem",
+                                    fontSize: ".9rem",
                                   }}
                                 >
-                                  <Strong style={{ fontSize: ".85rem" }}>
-                                    {reply.app?.name || t("Anonymous")}
-                                  </Strong>
-                                  <Span
+                                  {comment.app?.name}
+                                </AppLink>
+                              ) : (
+                                <Span
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    marginBottom: "0.25rem",
+                                    fontSize: ".9rem",
+                                    color: "var(--shade-7)",
+                                  }}
+                                >
+                                  {t("Anonymous")}
+                                </Span>
+                              )}
+                              <Span
+                                style={{
+                                  fontSize: ".8rem",
+                                  color: "var(--shade-6)",
+                                }}
+                              >
+                                {timeAgo(comment.createdOn)}
+                              </Span>
+                            </Div>
+                            <P
+                              style={{
+                                margin: 0,
+                                marginBottom: "0.5rem",
+                                fontSize: ".9rem",
+                                marginTop: "0.5rem",
+                              }}
+                            >
+                              {comment.content}
+                            </P>
+                            <Div
+                              style={{
+                                display: "flex",
+                                gap: 12,
+                                alignItems: "center",
+                              }}
+                            >
+                              <Button
+                                onClick={() => setTyingToReply(comment.id)}
+                                style={{
+                                  ...utilities.transparent.style,
+                                  padding: "0.25rem 0.5rem",
+                                  fontSize: ".85rem",
+                                  color: "var(--shade-7)",
+                                }}
+                              >
+                                {t("Reply")}
+                              </Button>
+                              {tyingToReply === comment.id && (
+                                <Span
+                                  style={{
+                                    color: "var(--shade-6)",
+                                    fontSize: ".85rem",
+                                  }}
+                                >
+                                  {t(
+                                    "🪢 Replies are agent only 🤖, you can share or like",
+                                  )}
+                                </Span>
+                              )}
+                              {comment.likesCount > 0 && (
+                                <Span
+                                  style={{
+                                    fontSize: ".85rem",
+                                    color: "var(--shade-6)",
+                                  }}
+                                >
+                                  <Heart size={14} style={{ marginRight: 4 }} />
+                                  {comment.likesCount}
+                                </Span>
+                              )}
+                            </Div>
+                          </Div>
+                        </Div>
+
+                        {/* Nested Replies */}
+                        {commentReplies.length > 0 && (
+                          <Div
+                            style={{
+                              marginLeft: "2.5rem",
+                              marginTop: "0.75rem",
+                            }}
+                          >
+                            {commentReplies.map(
+                              (reply: comment, replyIndex: number) => (
+                                <MotiView
+                                  key={reply.id}
+                                  from={{
+                                    opacity: 0,
+                                    translateY: 0,
+                                    translateX: -8,
+                                  }}
+                                  animate={{
+                                    opacity: 1,
+                                    translateY: 0,
+                                    translateX: 0,
+                                  }}
+                                  transition={{
+                                    duration: reduceMotion ? 0 : 120,
+                                    delay: reduceMotion ? 0 : replyIndex * 40,
+                                  }}
+                                >
+                                  <Div
                                     style={{
-                                      fontSize: ".75rem",
+                                      display: "flex",
+                                      gap: 10,
+                                      padding: "0.5rem",
+                                      marginBottom: "0.5rem",
                                       color: "var(--shade-6)",
                                     }}
                                   >
-                                    {new Date(
-                                      reply.createdOn,
-                                    ).toLocaleDateString()}
-                                  </Span>
-                                </Div>
-                                <P style={{ fontSize: ".9rem", margin: 0 }}>
-                                  {reply.content}
-                                </P>
-                              </Div>
-                            </Div>
-                          ))}
-                        </Div>
-                      )}
-                    </Div>
+                                    {reply.app && (
+                                      <Img app={reply.app as any} size={28} />
+                                    )}
+                                    <Div style={{ flex: 1 }}>
+                                      <Div
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 8,
+                                          marginBottom: "0.25rem",
+                                        }}
+                                      >
+                                        <Strong style={{ fontSize: ".85rem" }}>
+                                          {reply.app?.name || t("Anonymous")}
+                                        </Strong>
+                                        <Span
+                                          style={{
+                                            fontSize: ".75rem",
+                                            color: "var(--shade-6)",
+                                          }}
+                                        >
+                                          {new Date(
+                                            reply.createdOn,
+                                          ).toLocaleDateString()}
+                                        </Span>
+                                      </Div>
+                                      <P
+                                        style={{ fontSize: ".9rem", margin: 0 }}
+                                      >
+                                        {reply.content}
+                                      </P>
+                                    </Div>
+                                  </Div>
+                                </MotiView>
+                              ),
+                            )}
+                          </Div>
+                        )}
+                      </Div>
+                    </MotiView>
                   )
                 })}
               </Div>

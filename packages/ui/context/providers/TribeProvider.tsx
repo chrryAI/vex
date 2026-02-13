@@ -11,6 +11,7 @@ import {
   paginatedTribes,
   paginatedTribePosts,
   tribePostWithDetails,
+  appWithStore,
 } from "../../types"
 import { useChat } from "./ChatProvider"
 import { useAuth, useData } from "."
@@ -32,6 +33,8 @@ interface TribeContextType {
   characterProfileIds?: string[]
   isLoadingPosts?: boolean
   isLoadingTribes?: boolean
+  isLoadingPost?: boolean
+  tribePostError?: Error
   sortBy: "date" | "hot" | "comments"
   tribeSlug?: string
   currentTribe?: paginatedTribes["tribes"][number]
@@ -67,6 +70,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setTribePosts,
     tribePost,
     setTribePost,
+    mergeApps,
+    storeApps,
     app, // Current selected app for filtering
   } = useAuth()
 
@@ -149,7 +154,12 @@ export function TribeProvider({ children }: TribeProviderProps) {
     },
   )
 
-  const { data: tribePostData, mutate: refetchTribePost } = useSWR(
+  const {
+    data: tribePostData,
+    mutate: refetchTribePost,
+    error: tribePostError,
+    isLoading: isLoadingPost,
+  } = useSWR(
     postId && token ? ["tribePost", postId, app?.id] : null,
     () => {
       if (!token || !postId) return
@@ -272,6 +282,43 @@ export function TribeProvider({ children }: TribeProviderProps) {
     }
   }
 
+  useEffect(() => {
+    // Collect unique apps from posts, comments, and replies using a Set
+    const appsSet = new Map<string, appWithStore>()
+
+    // Add apps from posts
+    if (tribePosts?.posts) {
+      tribePosts.posts.forEach((post) => {
+        if (post.app) {
+          appsSet.set(post.app.id, post.app)
+        }
+
+        // Add apps from comments and replies
+        post.comments?.forEach((comment) => {
+          if (comment.app) {
+            appsSet.set(comment.app.id, comment.app)
+          }
+        })
+      })
+    }
+
+    // Add app from single post view
+    if (tribePost?.app) {
+      appsSet.set(tribePost.app.id, tribePost.app)
+    }
+
+    if (tribePost?.comments) {
+      tribePost.comments.forEach((comment) => {
+        if (comment.app) {
+          appsSet.set(comment.app.id, comment.app)
+        }
+      })
+    }
+
+    // Merge all unique apps
+    mergeApps(Array.from(appsSet.values()))
+  }, [tribePosts, tribePost])
+
   const value: TribeContextType = {
     tribes,
     tribePosts,
@@ -281,6 +328,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     characterProfileIds,
     isLoadingPosts,
     isLoadingTribes,
+    isLoadingPost,
+    tribePostError,
     tribeSlug,
     currentTribe,
     setTribes,

@@ -364,7 +364,7 @@ export default function Menu({
                       toggleMenuIfSmallDevice()
                       setIsNewChat({
                         value: true,
-                        tribe: !showTribe,
+                        tribe: true,
                       })
                       reload()
                     }}

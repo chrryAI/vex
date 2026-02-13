@@ -174,7 +174,6 @@ export const MessageStyleDefs = {
     borderRadius: 6,
     color: "white",
     padding: 6,
-    opacity: 1,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
