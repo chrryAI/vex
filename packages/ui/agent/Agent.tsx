@@ -323,7 +323,9 @@ export default function Agent({
   useEffect(() => {
     if (isModalOpen && device === "desktop" && !appFormWatcher.name) {
       setTimeout(() => {
-        document.getElementById("name")?.focus()
+        if (typeof document !== "undefined") {
+          document.getElementById("name")?.focus()
+        }
       }, 100)
     }
   }, [isModalOpen])

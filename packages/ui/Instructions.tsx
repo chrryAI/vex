@@ -528,7 +528,7 @@ export default function Instructions({
       if (selectedInstruction?.content) {
         setContent(t(selectedInstruction?.content))
       }
-      setIsOpen(true)
+      // setIsOpen(true)
     }
   }, [selectedInstruction, t, setIsOpen, thread])
 

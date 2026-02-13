@@ -2199,7 +2199,8 @@ export function AuthProvider({
 
   const hasAppPosts = !!tribePosts?.totalCount
 
-  const canShowTribe = isDevelopment || isE2E || user?.role === "admin"
+  const canShowTribe =
+    hasAppPosts && (isDevelopment || isE2E || user?.role === "admin")
 
   const canBeTribeProfile =
     !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "") &&
