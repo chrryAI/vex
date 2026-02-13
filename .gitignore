@@ -110,3 +110,5 @@ apps/flash/public/installs/
 
 dev.log
 *.log
+
+junit.xml
