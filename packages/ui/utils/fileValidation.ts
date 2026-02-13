@@ -1,3 +1,4 @@
+import { modelName } from "chrry/types"
 import { MAX_FILE_SIZES } from "./index"
 
 export interface FileValidationResult {
@@ -14,14 +15,7 @@ export interface AgentCapabilities {
   text?: boolean
 }
 
-export type AgentModel =
-  | "deepSeek"
-  | "sushi"
-  | "chatGPT"
-  | "claude"
-  | "gemini"
-  | "perplexity"
-  | "string"
+export type AgentModel = modelName
 
 /**
  * Get maximum file size based on file type and agent model

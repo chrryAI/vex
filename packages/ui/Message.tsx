@@ -157,6 +157,15 @@ function Message({
       (u.guestId && u.guestId === message.guest?.id),
   )
 
+  const agentImageStyle = useMemo(() => {
+    return {
+      ...styles.agentMessageImageContainer.style,
+      width: isMobileDevice ? "100%" : "300px",
+      height: isMobileDevice ? "100%" : "300px",
+      display: "inline-flex",
+    }
+  }, [isMobileDevice, styles.agentMessageImageContainer.style])
+
   const agentImageLoader = useCallback(() => {
     return (
       <Div style={styles.agentMessageImages.style}>
@@ -165,7 +174,7 @@ function Message({
         </Div>
       </Div>
     )
-  }, [])
+  }, [agentImageStyle, styles.agentMessageImages.style])
 
   const [isAppSelectOpen, setIsAppSelectOpen] = useState(false)
   const [isUpdatingApp, setIsUpdatingApp] = useState(false)
@@ -236,6 +245,7 @@ function Message({
           }
         }
       } catch (e) {
+        captureException(e)
         // If parsing fails, return original content
       }
     }
@@ -248,9 +258,10 @@ function Message({
   }, [
     message.message.content,
     message.message.reasoning,
-    isStreaming,
     message.thread?.isTribe,
     message.thread?.isMolt,
+    isStreaming,
+    captureException,
   ])
 
   useEffect(() => {
@@ -336,7 +347,7 @@ function Message({
       const data = await response.json()
 
       if (data.usage) {
-        user &&
+        if (user)
           setUser({
             ...user,
             speechRequestsToday: data.usage.requestsToday,
@@ -344,7 +355,7 @@ function Message({
             speechCharactersToday: data.usage.charactersToday,
           })
 
-        guest &&
+        if (guest)
           setGuest({
             ...guest,
             speechRequestsToday: data.usage.requestsToday,
@@ -440,19 +451,14 @@ function Message({
       setCopied(true)
       toast.success(t("Copied"))
       setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
+    } catch (err: unknown) {
+      captureException(err)
       toast.error("Failed to copy code")
     }
   }
 
   const [remoteDeleted, setRemoteDeleted] = useState(false)
 
-  const agentImageStyle = {
-    ...styles.agentMessageImageContainer.style,
-    width: isMobileDevice ? "100%" : "300px",
-    height: isMobileDevice ? "100%" : "300px",
-    display: "inline-flex",
-  }
   useWebSocket<{
     type: string
     data: {
@@ -482,13 +488,13 @@ function Message({
         type === "message_update" &&
         data.message?.message.id === message.message.id
       ) {
-        data.message?.message?.images?.length &&
+        if (data.message?.message?.images?.length)
           setImages(data.message.message.images)
-        data.message?.message?.video?.length &&
+        if (data.message?.message?.video?.length)
           setVideo(data.message.message.video)
-        data.message?.message?.audio?.length &&
+        if (data.message?.message?.audio?.length)
           setAudio(data.message.message.audio)
-        data.message?.message?.files?.length &&
+        if (data.message?.message?.files?.length)
           setFiles(data.message.message.files)
 
         scrollToBottom()
@@ -1437,8 +1443,7 @@ function Message({
                     addParams({ subscribe: "true", plan: "member" })
                   } else if (requiresSubscription) {
                     addParams({ subscribe: "true", plan: "plus" })
-                  } else if (isStreaming) {
-                  } else {
+                  } else if (!isStreaming) {
                     playAIResponseWithTTS(
                       stripMarkdown(message.message.content),
                     )

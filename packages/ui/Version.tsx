@@ -20,16 +20,11 @@ import { SiMacos } from "react-icons/si"
 import { useHasHydrated } from "./hooks"
 
 export default function Version() {
-  const {
-    setNeedsUpdateModalOpen,
-    versions,
-    needsUpdateModalOpen,
-    needsUpdate,
-  } = useData()
+  const { setNeedsUpdateModalOpen, versions, needsUpdateModalOpen } = useData()
 
   const hasHydrated = useHasHydrated()
 
-  const { showAddToHomeScreen, setShowAddToHomeScreen } = useNavigationContext()
+  const { setShowAddToHomeScreen } = useNavigationContext()
   const { t } = useTranslation()
 
   const { chromeWebStoreUrl, downloadUrl } = useAuth()

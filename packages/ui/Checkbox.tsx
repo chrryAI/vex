@@ -2,10 +2,10 @@
 
 import React from "react"
 import { useCheckboxStyles } from "./Checkbox.styles"
-import { Div, Input, Label, Span } from "./platform"
+import { clsx, Div, Input, Label, Span } from "./platform"
 
 type CheckboxProps = {
-  children: React.ReactNode
+  children?: React.ReactNode
   className?: string
   checked?: boolean
   disabled?: boolean
@@ -37,7 +37,7 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
     return (
       <Label
         htmlFor={inputId}
-        className={"formSwitch"}
+        className={clsx("formSwitch", className)}
         data-testid={dataTestId ? `${dataTestId}-wrapper` : undefined}
         style={{
           ...styles.formSwitch.style,

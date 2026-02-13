@@ -532,37 +532,36 @@ export default function Calendar({
   )
 
   // Utility function to build full event data for updates
-  const buildEventUpdate = (
-    eventId: string,
-    start: Date,
-    end: Date,
-  ): CalendarEventFormData | null => {
-    const event = calendarEvents.find((e) => e.id === eventId)
-    if (!event) return null
+  const buildEventUpdate = useCallback(
+    (eventId: string, start: Date, end: Date): CalendarEventFormData | null => {
+      const event = calendarEvents.find((e) => e.id === eventId)
+      if (!event) return null
 
-    return {
-      title: event.title,
-      startTime: start,
-      endTime: end,
-      color: event.color || "blue",
-      attendees: event.attendees ?? [],
-      reminders: event.reminders ?? [],
-      description: event.description ?? undefined,
-      location: event.location ?? undefined,
-      timezone: event.timezone ?? undefined,
-      category: event.category ?? undefined,
-      isAllDay: event.isAllDay ?? false,
-      isRecurring: event.isRecurring ?? false,
-      recurrenceRule: event.recurrenceRule ?? undefined,
-      status: event.status ?? "confirmed",
-      visibility: event.visibility ?? "private",
-      threadId: event.threadId ?? undefined,
-      agentId: event.agentId ?? undefined,
-      aiContext: event.aiContext ?? undefined,
-      externalId: event.externalId ?? undefined,
-      externalSource: event.externalSource ?? undefined,
-    }
-  }
+      return {
+        title: event.title,
+        startTime: start,
+        endTime: end,
+        color: event.color || "blue",
+        attendees: event.attendees ?? [],
+        reminders: event.reminders ?? [],
+        description: event.description ?? undefined,
+        location: event.location ?? undefined,
+        timezone: event.timezone ?? undefined,
+        category: event.category ?? undefined,
+        isAllDay: event.isAllDay ?? false,
+        isRecurring: event.isRecurring ?? false,
+        recurrenceRule: event.recurrenceRule ?? undefined,
+        status: event.status ?? "confirmed",
+        visibility: event.visibility ?? "private",
+        threadId: event.threadId ?? undefined,
+        agentId: event.agentId ?? undefined,
+        aiContext: event.aiContext ?? undefined,
+        externalId: event.externalId ?? undefined,
+        externalSource: event.externalSource ?? undefined,
+      }
+    },
+    [calendarEvents],
+  )
 
   // Handle event drag and drop with optimistic update
   const handleEventDrop = useCallback(
@@ -632,11 +631,13 @@ export default function Calendar({
       }
     },
     [
-      onEventDrop,
       token,
       calendarEvents,
-      refetchCalendarEvents,
       buildEventUpdate,
+      onEventDrop,
+      actions,
+      refetchCalendarEvents,
+      console,
     ],
   )
 
@@ -708,11 +709,13 @@ export default function Calendar({
       }
     },
     [
-      onEventResize,
       token,
       calendarEvents,
-      refetchCalendarEvents,
       buildEventUpdate,
+      onEventResize,
+      actions,
+      refetchCalendarEvents,
+      console,
     ],
   )
 
@@ -777,7 +780,14 @@ export default function Calendar({
     } finally {
       setIsSyncing(false)
     }
-  }, [token, isGoogleConnected, refetchCalendarEvents])
+  }, [
+    token,
+    isGoogleConnected,
+    signInContext,
+    console,
+    actions,
+    refetchCalendarEvents,
+  ])
 
   // Custom event style getter
   const eventStyleGetter = useCallback((event: calendarEvent) => {

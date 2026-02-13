@@ -50,11 +50,17 @@ export type themeType = "dark" | "light"
 export const MONTHLY_GUEST_CREDITS = 30
 
 export const AppContext = createContext<{
-  t: (key: string, values?: Record<string, any>, autoAdd?: boolean) => string
+  t: (
+    key: string,
+    values?: Record<string, unknown>,
+    autoAdd?: boolean,
+  ) => string
   captureException: (error: Error | unknown) => void
   console: ReturnType<typeof createCustomConsole>
 }>({
-  t: (key: string, values?: Record<string, any>, autoAdd?: boolean) => key,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  t: (key: string, _values?: Record<string, unknown>, _autoAdd?: boolean) =>
+    key,
   captureException: () => {},
   console: createCustomConsole(undefined),
 })
@@ -68,7 +74,7 @@ export const AppContextProvider = ({
   const { user, storeApps, atlas, siteConfig: config } = useAuth()
 
   // Auto-append missing translation keys in dev mode
-  const t = (key: string, values?: Record<string, any>, autoAdd = true) => {
+  const t = (key: string, values?: Record<string, unknown>, autoAdd = true) => {
     const result = i18nT(key, values)
 
     // Only check in dev mode and if we haven't checked this key before

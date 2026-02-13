@@ -1,7 +1,7 @@
 "use client"
 
-import { aiAgent, instruction } from "../../types"
-import React, {
+import { aiAgent } from "../../types"
+import {
   createContext,
   useContext,
   ReactNode,
@@ -9,11 +9,7 @@ import React, {
   useEffect,
   useMemo,
 } from "react"
-import {
-  isBrowserExtension,
-  getExtensionId,
-  usePlatform,
-} from "../../platform/PlatformProvider"
+import { usePlatform } from "../../platform/PlatformProvider"
 import { getActions, ApiActions } from "../../lib"
 import { useAuth } from "./AuthProvider"
 import console from "../../utils/log"
@@ -105,15 +101,12 @@ const DataContext = createContext<
         macosVersion: string
       }) => void
       // Data
-      instructions: instruction[]
       affiliateStats: affiliateStats | null | undefined
       affiliateCode: string | null
       loadingAffiliateStats: boolean
       refetchAffiliateData: () => Promise<void>
       refetchWeather: () => void
       // Environment
-      env: "development" | "production" | "staging"
-      setEnv: (env: "development" | "production" | "staging") => void
       isDevelopment: boolean
       // URLs (from AuthProvider)
       API_URL: string
@@ -150,24 +143,10 @@ const DataContext = createContext<
 // Check if running in development mode
 // For extensions: check if extension ID matches dev ID
 // For web: check NODE_ENV
-const isExtension = isBrowserExtension()
-const extensionId = getExtensionId()
 
 export const MONTHLY_GUEST_CREDITS = 30
 
-export function DataProvider({ children, ...rest }: { children: ReactNode }) {
-  const expenseCategory = [
-    "food",
-    "transport",
-    "entertainment",
-    "shopping",
-    "bills",
-    "health",
-    "education",
-    "travel",
-    "other",
-  ] as const
-
+export function DataProvider({ children }: { children: ReactNode }) {
   const { user, deviceId, guest, chrryUrl, app, ...auth } = useAuth()
   const { captureException } = useError()
 
@@ -194,14 +173,13 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
     return affiliateCodeData.code
   }, [affiliateCodeData, setAffiliateCodeData])
 
-  const [instructions, setInstructions] = useState<instruction[]>([])
   const [affiliateStats, setAffiliateStats] = useState<
     affiliateStats | null | undefined
   >(null)
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.14.25"
+  const VERSION = "1.14.28"
 
   const [weather, setWeather] = useLocalStorage<
     | {
@@ -221,8 +199,6 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
     WS_URL,
     FRONTEND_URL,
     PROD_FRONTEND_URL,
-    env,
-    setEnv,
     isCI,
     token,
     setToken,
@@ -395,7 +371,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
         console.log("🎯 Affiliate code stored (guest, 30 days):", ref)
       }
     }
-  }, [searchParams, affiliateCode, setAffiliateCodeData, user, token])
+  }, [searchParams, affiliateCode, setAffiliateCodeData, user, token, API_URL])
 
   const RELEASE_TIMESTAMP = "2025-09-14T09:48:29.393Z" // Move to constants
   const [createdOn, setCreatedOn] = useCookieOrLocalStorage("createdOn", "")
@@ -404,7 +380,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
     if (createdOn === "") {
       setCreatedOn(new Date().toISOString())
     }
-  }, [createdOn])
+  }, [createdOn, setCreatedOn])
 
   const [needsUpdateModalOpen, setNeedsUpdateModalOpen] = useState(false)
   const [needsUpdate, setNeedsUpdate] = useState(false)
@@ -438,7 +414,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
 
   useEffect(() => {
     if (error) captureException(error)
-  }, [error])
+  }, [captureException, error])
 
   useEffect(() => {
     if (weatherData) {
@@ -460,7 +436,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
         lastUpdated: weatherData.current.last_updated,
       })
     }
-  }, [weatherData])
+  }, [setWeather, weatherData])
 
   const [aiAgents, setAiAgents] = useState<aiAgent[]>(session?.aiAgents || [])
 
@@ -530,14 +506,11 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
         setVersions,
         VERSION,
         token,
-        instructions,
         affiliateStats,
         affiliateCode,
         loadingAffiliateStats,
         refetchAffiliateData,
         refetchWeather,
-        env,
-        setEnv,
         isDevelopment,
         API_URL,
         WS_URL,

@@ -97,7 +97,6 @@ import {
   apiFetch,
   MAX_FILE_LIMITS,
 } from "./utils"
-import needsWebSearch from "./utils/needsWebSearch"
 import { useWebSocket } from "./hooks/useWebSocket"
 import { checkSpeechLimits, SPEECH_LIMITS } from "./lib/speechLimits"
 import { stripMarkdown } from "./lib/stripMarkdown"
@@ -117,7 +116,6 @@ const MAX_FILES = MAX_FILE_LIMITS.chat
 
 export default function Chat({
   className,
-  onToggleGame,
   onMessage,
   onStreamingUpdate,
   showGreeting,
@@ -141,7 +139,6 @@ export default function Chat({
   showSuggestions?: boolean
   showGreeting?: boolean
   className?: string
-  onToggleGame?: (on: boolean) => void
   disabled?: boolean
   onMessage?: (message: {
     content: string
@@ -154,7 +151,6 @@ export default function Chat({
       aiAgent?: aiAgent
       thread?: thread
     }
-    webSearchResults?: any[]
     isImageGenerationEnabled?: boolean
     isWebSearchEnabled?: boolean
   }) => void
@@ -199,7 +195,7 @@ export default function Chat({
   onTyping?: (isTyping: boolean) => void
 }): React.ReactElement {
   const { t, console } = useAppContext()
-  const { weather, actions } = useData()
+  const { weather } = useData()
 
   const styles = useChatStyles()
 
@@ -208,7 +204,6 @@ export default function Chat({
   const {
     user,
     token,
-    fingerprint,
     language,
     setUser,
     setGuest,
@@ -223,12 +218,8 @@ export default function Chat({
     mood,
     updateMood,
     taskId,
-    fetchTasks,
-    canBurn,
-    isProgramme,
     burn,
     isPear,
-    setIsPear,
     isIDE,
     accountApps,
     isRetro,
@@ -237,8 +228,6 @@ export default function Chat({
     advanceDailySection,
     setDailyQuestionIndex,
     dailyQuestionIndex,
-    back,
-    lastApp,
     getAppSlug,
     ask,
     about,
@@ -265,7 +254,6 @@ export default function Chat({
     debateAgent,
     setDebateAgent,
     isDebating,
-    setIsChatFloating,
     setIsWebSearchEnabled: setWebSearchEnabledInternal,
     isWebSearchEnabled,
     setInput: setInputInternal,
@@ -305,19 +293,19 @@ export default function Chat({
   const {
     slug,
     suggestSaveApp,
-    saveApp,
-    apps,
     appStatus,
     appFormWatcher,
     minimize,
     setMinimize,
-    setAppStatus,
   } = useApp()
 
   const threadIdRef = useRef(threadId)
 
   useEffect(() => {
-    threadId && (threadIdRef.current = threadId)
+    if (!threadId) {
+      return
+    }
+    threadIdRef.current = threadId
   }, [threadId])
 
   const setThreadId = (id?: string) => {
@@ -329,14 +317,14 @@ export default function Chat({
       setThreadId(undefined)
       auth.setThreadId(undefined)
     }
-  }, [isNewChat])
+  }, [isNewChat, auth])
 
   // Sync input with daily question data when it changes
   useEffect(() => {
     if (isRetro && dailyQuestionData?.currentQuestion) {
       setInputInternal(dailyQuestionData.currentQuestion)
     }
-  }, [isRetro, dailyQuestionData?.currentQuestion])
+  }, [isRetro, dailyQuestionData?.currentQuestion, setInputInternal])
 
   const { captureException } = useError()
 
@@ -349,39 +337,40 @@ export default function Chat({
     isWeb,
     isCapacitor,
   } = usePlatform()
+
   const inputRef = useRef(text || "")
 
-  const {
-    addHapticFeedback,
-    playNotification,
-    isDrawerOpen,
-    isSmallDevice,
-    isMobileDevice,
-  } = useTheme()
+  const { addHapticFeedback, playNotification, isDrawerOpen, isSmallDevice } =
+    useTheme()
 
-  const setSelectedAgent = (agent: aiAgent | undefined | null) => {
-    setSelectedAgentInternal(agent)
-    setShouldFocus(true)
-    plausible({
-      name: ANALYTICS_EVENTS.AGENT_SELECTED,
-      props: {
-        agentId: agent?.id,
-        agentName: agent?.name,
-        agentVersion: agent?.version,
-      },
-    })
-  }
+  const setSelectedAgent = useCallback(
+    (agent: aiAgent | undefined | null) => {
+      setSelectedAgentInternal(agent)
+      setShouldFocus(true)
+      plausible({
+        name: ANALYTICS_EVENTS.AGENT_SELECTED,
+        props: {
+          agentId: agent?.id,
+          agentName: agent?.name,
+          agentVersion: agent?.version,
+        },
+      })
+    },
+    [setSelectedAgentInternal, plausible, setShouldFocus],
+  )
 
   useEffect(() => {
     if (shouldFocus) {
       chatInputRef.current?.focus()
       setShouldFocus(false)
     }
-  }, [shouldFocus])
+  }, [shouldFocus, setShouldFocus])
 
   const setIsWebSearchEnabled = (value: boolean) => {
     setWebSearchEnabledInternal(value)
-    value && setShouldFocus(true)
+    if (value) {
+      setShouldFocus(true)
+    }
   }
 
   // Scroll detection for auto-hide chat input
@@ -447,11 +436,10 @@ export default function Chat({
             : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
               ? `✨ ${t("Explore new apps while you chat")} 🍇`
               : placeHolderInternal
-  // useEffect(() => {
-  //   setIsChatFloating(isChatFloating)
-  // }, [isChatFloating])
 
-  // Strip ACTION JSON sfrom streaming text
+  const [isUpdatingFavouriteAgent, setIsUpdatingFavouriteAgent] =
+    useState(false)
+
   const stripActionFromText = (text: string): string => {
     // Check if there's a complete ACTION JSON at the end
     const actionMatch = text.match(/ACTION:\s*(\{(?:[^{}]|\{[^}]*\})*\})\s*$/)
@@ -507,65 +495,89 @@ export default function Chat({
 
   const [isLoading, setIsLoading] = useState(false)
   const [isStreaming, setIsStreaming] = useState(false)
-  const [retroAppIndex, setRetroAppIndex] = useState(0)
   const controller = new AbortController()
+
+  const getMaxFileSize = useCallback(
+    (fileType: string) => {
+      if (!selectedAgent) return 0
+
+      // Conservative limits based on agent capabilities and token limits
+      const limits = MAX_FILE_SIZES
+
+      const agentLimits =
+        limits[selectedAgent.name as keyof typeof limits] || limits.deepSeek
+
+      if (fileType.startsWith("image/")) return agentLimits.image
+      if (fileType.startsWith("audio/")) return agentLimits.audio
+      if (fileType.startsWith("video/")) return agentLimits.video
+      if (fileType.startsWith("text/")) return agentLimits.text
+
+      if (fileType.startsWith("application/pdf")) return agentLimits.pdf
+
+      return agentLimits.text
+    },
+    [selectedAgent],
+  )
 
   const [files, setFilesInternal] = useState<File[]>([])
 
-  const setFiles: Dispatch<SetStateAction<File[]>> = (data) => {
-    const f = typeof data === "function" ? data(files) : data
+  const setFiles: Dispatch<SetStateAction<File[]>> = useCallback(
+    (data) => {
+      const f = typeof data === "function" ? data(files) : data
 
-    if (!selectedAgent) {
-      setFilesInternal(f)
-      return
-    }
+      if (!selectedAgent) {
+        setFilesInternal(f)
+        return
+      }
 
-    // Get agent-specific limits
-    const agentLimits =
-      MAX_FILE_SIZES[selectedAgent.name as keyof typeof MAX_FILE_SIZES] ||
-      MAX_FILE_SIZES.sushi
+      // Get agent-specific limits
+      const agentLimits =
+        MAX_FILE_SIZES[selectedAgent.name as keyof typeof MAX_FILE_SIZES] ||
+        MAX_FILE_SIZES.sushi
 
-    // Calculate maximum total size from agent's individual file limits
-    const MAX_TOTAL_FILE_SIZE =
-      Math.max(
-        agentLimits.pdf,
-        agentLimits.image,
-        agentLimits.audio,
-        agentLimits.video,
-        agentLimits.text,
-      ) * MAX_FILES // Multiply by max number of files allowed
+      // Calculate maximum total size from agent's individual file limits
+      const MAX_TOTAL_FILE_SIZE =
+        Math.max(
+          agentLimits.pdf,
+          agentLimits.image,
+          agentLimits.audio,
+          agentLimits.video,
+          agentLimits.text,
+        ) * MAX_FILES // Multiply by max number of files allowed
 
-    // Calculate individual file size limits (your existing logic)
-    const maxIndividualFileSizes = f.reduce(
-      (acc, file) => acc + getMaxFileSize(file.type),
-      0,
-    )
-
-    // Calculate total file size
-    const totalFileSize = f.reduce((acc, file) => acc + file.size, 0)
-
-    // Check individual file size limits
-    if (totalFileSize > maxIndividualFileSizes) {
-      const maxIndividualSizeMB = (
-        maxIndividualFileSizes /
-        (1024 * 1024)
-      ).toFixed(1)
-      toast.error(`Maximum file size exceeds limit: ${maxIndividualSizeMB}MB`)
-      return
-    }
-
-    // Check total file size limit
-    if (totalFileSize > MAX_TOTAL_FILE_SIZE) {
-      const maxTotalSizeMB = (MAX_TOTAL_FILE_SIZE / (1024 * 1024)).toFixed(1)
-      const currentTotalSizeMB = (totalFileSize / (1024 * 1024)).toFixed(1)
-      toast.error(
-        `Total file size (${currentTotalSizeMB}MB) exceeds maximum limit of ${maxTotalSizeMB}MB`,
+      // Calculate individual file size limits (your existing logic)
+      const maxIndividualFileSizes = f.reduce(
+        (acc, file) => acc + getMaxFileSize(file.type),
+        0,
       )
-      return
-    }
 
-    setFilesInternal(f)
-  }
+      // Calculate total file size
+      const totalFileSize = f.reduce((acc, file) => acc + file.size, 0)
+
+      // Check individual file size limits
+      if (totalFileSize > maxIndividualFileSizes) {
+        const maxIndividualSizeMB = (
+          maxIndividualFileSizes /
+          (1024 * 1024)
+        ).toFixed(1)
+        toast.error(`Maximum file size exceeds limit: ${maxIndividualSizeMB}MB`)
+        return
+      }
+
+      // Check total file size limit
+      if (totalFileSize > MAX_TOTAL_FILE_SIZE) {
+        const maxTotalSizeMB = (MAX_TOTAL_FILE_SIZE / (1024 * 1024)).toFixed(1)
+        const currentTotalSizeMB = (totalFileSize / (1024 * 1024)).toFixed(1)
+        toast.error(
+          `Total file size (${currentTotalSizeMB}MB) exceeds maximum limit of ${maxTotalSizeMB}MB`,
+        )
+        return
+      }
+
+      setFilesInternal(f)
+    },
+    [files, getMaxFileSize, selectedAgent],
+  )
   const [isListening, setIsListeningInternal] = useState(false)
   const [isSpeaking, setIsSpeakingInternal] = useState(false)
   const limitCheck =
@@ -604,20 +616,24 @@ export default function Chat({
   const [showQuotaInfo, setShowQuotaInfoInternal] = useState(false)
   const setShowQuotaInfo = (show: boolean) => {
     setShowQuotaInfoInternal(show)
-    show &&
+    if (show) {
       plausible({
         name: ANALYTICS_EVENTS.QUOTA_INFO,
         props: {
           show,
         },
       })
+    }
   }
 
-  const setInput = (value: string) => {
-    inputRef.current = value
+  const setInput = useCallback(
+    (value: string) => {
+      inputRef.current = value
 
-    setInputInternal(value)
-  }
+      setInputInternal(value)
+    },
+    [setInputInternal],
+  )
 
   useEffect(() => {
     inputRef.current = input
@@ -631,19 +647,22 @@ export default function Chat({
     thread?: thread
   } | null>(null)
 
-  const setMessage = (
-    message: {
-      message: message
-      user?: user
-      guest?: guest
-      aiAgent?: aiAgent
-      thread?: thread
-    } | null,
-  ) => {
-    setMessageInternal(message)
-    setClientId(message?.message?.clientId)
-    message?.message?.threadId && setThreadId(message?.message?.threadId)
-  }
+  const setMessage = useCallback(
+    (
+      message: {
+        message: message
+        user?: user
+        guest?: guest
+        aiAgent?: aiAgent
+        thread?: thread
+      } | null,
+    ) => {
+      setMessageInternal(message)
+      setClientId(message?.message?.clientId)
+      if (message?.message?.threadId) setThreadId(message?.message?.threadId)
+    },
+    [],
+  )
 
   const isHydrated = useHasHydrated()
 
@@ -651,247 +670,16 @@ export default function Chat({
   const [clientId, setClientId] = useState<string | undefined>()
 
   useEffect(() => {
-    !clientId && setClientId(uuidv4())
-  }, [clientId])
+    if (clientId) {
+      return
+    }
+    setClientId(uuidv4())
+  }, [clientId, setClientId])
 
   // State for accumulating incomplete XML messages
-  const xmlBufferRef = useRef<string>("")
-  const filteredLogRef = useRef<string>("")
-
-  // Filter out technical messages and only show meaningful updates
-  const filterStreamingMessage = (input: string | any): string | null => {
-    // Handle workflow messages directly in the filter
-    if (typeof input === "object" && input !== null) {
-      const msg = input as any
-      if (msg.type === "workflow" && msg.workflow) {
-        const { workflow } = msg
-        let progressMessage = ""
-
-        if (workflow.name) {
-          progressMessage += `🎯 ${workflow.name}\n`
-        }
-        if (workflow.thought) {
-          progressMessage += `💭 ${workflow.thought}\n`
-        }
-
-        // Show agent tasks
-        if (workflow.agents && workflow.agents.length > 0) {
-          workflow.agents.forEach((agent: any, index: number) => {
-            if (agent.task) {
-              progressMessage += `📋 ${agent.name}: ${agent.task}\n`
-            }
-          })
-        }
-
-        return progressMessage.trim() || t("🤖 Planning workflow...")
-      }
-
-      if (msg.type === "text" && msg.text) {
-        console.log("Text message received:", msg.text)
-
-        // Handle XML content using DOMParser for proper parsing
-        if (msg.text.includes("<root>") || xmlBufferRef.current) {
-          // Accumulate XML content
-          if (msg.text.includes("<root>") && !xmlBufferRef.current) {
-            xmlBufferRef.current = msg.text
-          } else if (xmlBufferRef.current) {
-            xmlBufferRef.current += msg.text
-          }
-
-          // Check if we have complete XML
-          if (xmlBufferRef.current.includes("</root>")) {
-            try {
-              const parser = new DOMParser()
-              const doc = parser.parseFromString(
-                xmlBufferRef.current,
-                "text/xml",
-              )
-
-              // Check for parsing errors
-              const errorNode = doc.querySelector("parsererror")
-              if (errorNode) {
-                console.warn("XML parsing error:", errorNode.textContent)
-                // Fallback to text extraction using DOMParser
-                const tempDiv = document.createElement("div")
-                tempDiv.textContent = xmlBufferRef.current // Use textContent to safely extract text
-                const textContent = tempDiv.textContent || ""
-                xmlBufferRef.current = ""
-                return textContent.replaceAll(/\s+/g, " ").trim()
-              }
-
-              // Extract text content from parsed XML (textContent is safe)
-              const textContent = doc.documentElement.textContent || ""
-              const cleanedContent = textContent.replaceAll(/\s+/g, " ").trim()
-
-              xmlBufferRef.current = ""
-              return cleanedContent
-            } catch (e) {
-              console.warn("XML parsing failed:", e)
-              // Fallback to safe text extraction
-              const tempDiv = document.createElement("div")
-              tempDiv.textContent = xmlBufferRef.current
-              const textContent = (tempDiv.textContent || "")
-                .replaceAll(/\s+/g, " ")
-                .trim()
-              xmlBufferRef.current = ""
-              return textContent
-            }
-          }
-
-          // Don't stream partial XML
-          return null
-        }
-
-        return filterStreamingMessage(msg.text)
-      }
-      // If it's a log message object, extract the log string
-      if (msg.type === "log" && msg.log) {
-        return filterStreamingMessage(msg.log)
-      }
-
-      return null
-    }
-
-    const log = input as string
-
-    // Ensure log is a string
-    if (typeof log !== "string") {
-      return null
-    }
-
-    // Show planning indicator at start of workflow
-    if (log.includes('"xml":') && log.includes("<root>")) {
-      return t("🤖 Planning workflow...")
-    }
-
-    // Skip technical tool commands (JSON syntax) - but allow XML content
-    if (log.includes('{"index":') || log.includes('{"url":')) {
-      return null
-    }
-
-    // Skip repetitive character-by-character streaming patterns
-    if (log.match(/^(.+?)\1{3,}/) || log.includes("II'll'll")) {
-      // console.warn(
-      //   "🚫 Skipping repetitive streaming pattern:",
-      //   log.slice(0, 100),
-      // )
-      // return log.replace(/(.+?)\1{3,}/g, "$1")
-    }
-
-    // Remove the wait condition since we handle concatenation in the text handler above
-
-    // Strip XML tags and show clean text content for any <root> message
-    if (log.includes("<root>")) {
-      try {
-        // Parse XML and extract text content properly
-        try {
-          // Auto-close incomplete tags by adding missing closing tags
-          let xmlContent = log
-
-          // Find all opening tags that don't have closing tags
-          const openTags = xmlContent.match(/<(\w+)[^>]*>/g) || []
-          const closeTags = xmlContent.match(/<\/(\w+)>/g) || []
-
-          const openTagNames = openTags
-            .map((tag) => tag.match(/<(\w+)/)?.[1])
-            .filter(Boolean)
-          const closeTagNames = closeTags
-            .map((tag) => tag.match(/<\/(\w+)>/)?.[1])
-            .filter(Boolean)
-
-          // Add missing closing tags
-          const unclosedTags = openTagNames.filter(
-            (tag) => !closeTagNames.includes(tag),
-          )
-          unclosedTags.reverse().forEach((tag) => {
-            xmlContent += `</${tag}>`
-          })
-
-          // Create a temporary DOM element to parse XML and extract text
-          const tempDiv = document.createElement("div")
-          tempDiv.innerHTML = xmlContent
-          const textContent = tempDiv.textContent || tempDiv.innerText || ""
-
-          const cleanedContent = textContent
-            .replace(/\n\s*\n/g, "\n") // Remove extra blank lines
-            .replace(/^\s+|\s+$/g, "") // Trim whitespace
-            .trim()
-
-          if (cleanedContent.length > 20) {
-            filteredLogRef.current = `✅ ${cleanedContent}`
-            return filteredLogRef.current
-          }
-          return null
-        } catch (e) {
-          // Fallback to safe text extraction using DOM
-          const tempDiv = document.createElement("div")
-          tempDiv.textContent = log // Use textContent to safely extract text without HTML
-          const cleanedContent = (tempDiv.textContent || "")
-            .replace(/\n\s*\n/g, "\n") // Remove extra blank lines
-            .trim()
-
-          if (cleanedContent.length > 20) {
-            return `✅ ${cleanedContent}`
-          }
-          return null
-        }
-      } catch (e) {
-        return null
-      }
-    }
-
-    // Skip raw XML workflow syntax (but we handle structured XML above)
-    if (
-      log.includes("<node>") ||
-      log.includes("</node>") ||
-      log.includes("<agent>") ||
-      log.includes("<root>")
-    ) {
-      return null
-    }
-
-    // Skip tool execution details
-    if (log.match(/^Browser > \w+/)) {
-      return null
-    }
-
-    // Keep meaningful messages like:
-    // - "Searching for askvex.com on Google"
-    // - "Filling out form with information"
-    // - "Collecting search results"
-    // - "Plan\n<workflow content>" (but clean it up)
-
-    if (log.startsWith("Plan\n")) {
-      return t("🤖 Planning your task...")
-    }
-
-    // Keep other meaningful messages
-    if (log.length > 10 && !log.includes("{") && !log.includes("<")) {
-      return stripMarkdown(log)
-    }
-
-    return null
-  }
 
   // Note: Base64 encoding increases size by ~33%, and DeepSeek has 28K token limit
-  const getMaxFileSize = (fileType: string) => {
-    if (!selectedAgent) return 0
 
-    // Conservative limits based on agent capabilities and token limits
-    const limits = MAX_FILE_SIZES
-
-    const agentLimits =
-      limits[selectedAgent.name as keyof typeof limits] || limits.deepSeek
-
-    if (fileType.startsWith("image/")) return agentLimits.image
-    if (fileType.startsWith("audio/")) return agentLimits.audio
-    if (fileType.startsWith("video/")) return agentLimits.video
-    if (fileType.startsWith("text/")) return agentLimits.text
-
-    if (fileType.startsWith("application/pdf")) return agentLimits.pdf
-
-    return agentLimits.text
-  }
   const setIsAttaching = (attaching: boolean) => {
     if (attaching) {
       if (!isPrivacyApproved) {
@@ -904,7 +692,7 @@ export default function Chat({
     }
 
     setIsAttachingInternal(attaching)
-    attaching &&
+    if (attaching)
       plausible({
         name: ANALYTICS_EVENTS.IS_ATTACHING,
         props: {
@@ -927,7 +715,7 @@ export default function Chat({
       const validation = validateFile(
         file,
         selectedAgent?.capabilities,
-        selectedAgent?.name as any, // Pass agent model for size limits
+        selectedAgent?.name, // Pass agent model for size limits
       )
 
       if (!validation.isSupported) {
@@ -956,19 +744,19 @@ export default function Chat({
     }
   }
 
-  const clearFiles = () => setFiles([])
+  const clearFiles = useCallback(() => setFiles([]), [setFiles])
 
   // Remove specific file
   const removeFile = (index: number) => {
     setFilesInternal((prev) => prev.filter((_, i) => i !== index))
-    device === "desktop" && setShouldFocus(true)
+    if (device === "desktop") setShouldFocus(true)
   }
 
   useEffect(() => {
     if (files.length > 0 && selectedAgent?.name === "flux") {
       setSelectedAgent(undefined)
     }
-  }, [files.length, selectedAgent])
+  }, [files.length, selectedAgent, setSelectedAgent])
 
   // Fetch quota information
   const fetchQuotaInfo = async () => {
@@ -1001,7 +789,7 @@ export default function Chat({
 
   useEffect(() => {
     refetchQuotaInfo()
-  }, [])
+  }, [refetchQuotaInfo])
 
   useEffect(() => {
     if (!quotaData) return
@@ -1041,28 +829,8 @@ export default function Chat({
   }
 
   // Check if we have files of a specific type
-  const hasFileType = (type: "image" | "audio" | "video" | "pdf") => {
-    return files.some((file) => getFileType(file) === type)
-  }
 
   // Check if attachment buttons should be disabled
-  const isAttachmentDisabled = (type: "image" | "audio" | "video" | "pdf") => {
-    // Disable if we have 3 files already
-    if (files.length >= MAX_FILES) return true
-
-    // Disable if we have files of a different type
-    // const currentTypes = [...new Set(files.map(getFileType))]
-    // if (currentTypes.length > 0 && !currentTypes.includes(type)) return true
-
-    return false
-  }
-
-  // Get button color based on selection state
-  const getButtonColor = (type: "image" | "audio" | "video" | "pdf") => {
-    if (isAttachmentDisabled(type)) return "var(--shade-3)"
-    if (hasFileType(type)) return "var(--accent-4)"
-    return "var(--accent-6)"
-  }
 
   const [synthesis, setSynthesis] = useState<SpeechSynthesisUtterance | null>(
     null,
@@ -1070,6 +838,552 @@ export default function Chat({
 
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
 
+  const [isPrivacyApproved, setIsPrivacyApproved] = useLocalStorage(
+    "isPrivacyApproved",
+    !!user,
+  )
+
+  const inputText = inputRef.current?.trim() || input?.trim() || ""
+
+  const getIsSendDisabled = useCallback(
+    () =>
+      (inputText === "" && files.length === 0) ||
+      isLoading ||
+      creditsLeft === 0 ||
+      disabled,
+    [inputText, files.length, isLoading, creditsLeft, disabled],
+  )
+
+  const [instruction, setInstruction] = useState("")
+
+  const handleSubmit = useCallback(
+    async (approve?: boolean) => {
+      if (
+        guest &&
+        selectedAgent?.authorization &&
+        !["all", "guest"].includes(selectedAgent?.authorization)
+      ) {
+        addParams({
+          subscribe: "true",
+          plan: "member",
+        })
+
+        return
+      }
+
+      if (hitHourlyLimit) {
+        toast.error(
+          t("You hit your hourly limit {{hourlyLimit}}", {
+            hourlyLimit,
+          }),
+        )
+
+        return
+      }
+
+      if (!isPrivacyApproved && !approve) {
+        setNeedsReview(true)
+        return
+      }
+
+      if (approve) {
+        setNeedsReview(false)
+        setIsPrivacyApproved(true)
+      }
+
+      addHapticFeedback()
+
+      clearFiles()
+
+      if (
+        !selectedAgent?.capabilities?.image &&
+        files.some((file) => file.type.startsWith("image/"))
+      ) {
+        setIsAgentModalOpen(true)
+        return
+      }
+      if (
+        !selectedAgent?.capabilities?.pdf &&
+        files.some((file) => file.type.startsWith("application/pdf"))
+      ) {
+        setIsAgentModalOpen(true)
+        return
+      }
+
+      if (
+        !selectedAgent?.capabilities?.audio &&
+        files.some((file) => file.type.startsWith("audio/"))
+      ) {
+        setIsAgentModalOpen(true)
+        return
+      }
+      if (
+        !selectedAgent?.capabilities?.video &&
+        files.some((file) => file.type.startsWith("video/"))
+      ) {
+        setIsAgentModalOpen(true)
+        return
+      }
+      if (
+        !selectedAgent?.capabilities?.text &&
+        files.some((file) => file.type.startsWith("text/"))
+      ) {
+        setIsAgentModalOpen(true)
+        return
+      }
+
+      shouldStopRef.current = false
+
+      if (requiresSignin && !user) {
+        addParams({ signIn: "login", callbackUrl: pathname })
+        return
+      }
+
+      if (
+        selectedAgent?.maxPromptSize &&
+        inputRef.current.length > selectedAgent?.maxPromptSize
+      ) {
+        toast.error(
+          t(`Input too long (max ${selectedAgent?.maxPromptSize} chars)`),
+        )
+        return
+      }
+
+      if (files.length > 0 && !selectedAgent?.capabilities?.text) {
+        setIsAgentModalOpen(true)
+        return
+      }
+
+      if (isWebSearchEnabled && !selectedAgent?.capabilities?.webSearch) {
+        setIsAgentModalOpen(true)
+        return
+      }
+
+      if (getIsSendDisabled()) return
+
+      const userMessageText = sanitizeHtml(inputRef.current.trim())
+
+      if (userMessageText.length > PROMPT_LIMITS.TOTAL) {
+        toast.error(t(`Input too long (max ${PROMPT_LIMITS.TOTAL} chars)`))
+        return
+      }
+
+      setInput("")
+      if (device === "desktop") setShouldFocus(true)
+      setIsLoading(true)
+
+      // Scroll to bottom after sending message
+      scrollToBottom(100)
+
+      playNotification()
+
+      if (isImageGenerationEnabled) {
+        toast.success(t("Generating image, keep calm..."), {
+          duration: 6000,
+        })
+      }
+
+      onMessage?.({
+        content: userMessageText,
+        isUser: true,
+        message: {
+          message: {
+            content: userMessageText,
+            isUser: true,
+            id: uuidv4(),
+            clientId,
+            createdOn: new Date(),
+            guestId: guest?.id,
+            userId: user?.id,
+          } as unknown as message,
+          user: user as user,
+          guest: guest as guest,
+        },
+      })
+
+      setIsLoading(true)
+
+      const sanitizedThreadId =
+        threadIdRef.current && validate(threadIdRef.current)
+          ? threadIdRef.current
+          : null
+
+      try {
+        let postRequestBody: FormData | string
+        const postRequestHeaders: Record<string, string> = {
+          Authorization: `Bearer ${token}`,
+        }
+        if (artifacts && artifacts.length > 0) {
+          nProgress.start()
+
+          toast.success(t("Uploading artifacts..."))
+          // Use FormData for file uploads
+          const formData = new FormData()
+
+          if (app && app.id) formData.append("appId", app?.id)
+
+          formData.append("content", userMessageText)
+          formData.append("isIncognito", JSON.stringify(burn))
+          if (selectedAgent) formData.append("agentId", selectedAgent?.id)
+          if (debateAgent) formData.append("debateAgentId", debateAgent?.id)
+          if (sanitizedThreadId) formData.append("threadId", sanitizedThreadId)
+          formData.append("attachmentType", "file")
+          formData.append(
+            "webSearchEnabled",
+            JSON.stringify(isWebSearchEnabled),
+          )
+          formData.append(
+            "imageGenerationEnabled",
+            JSON.stringify(isImageGenerationEnabled),
+          )
+          if (taskId) formData.append("taskId", taskId)
+          if (mood) formData.append("moodId", mood.id)
+          formData.append("actionEnabled", JSON.stringify(isExtension))
+          formData.append("instructions", instruction)
+          formData.append("language", language)
+          if (clientId) formData.append("clientId", clientId)
+          if (isPear) formData.append("pear", JSON.stringify(isPear))
+
+          if (isRetro) formData.append("retro", JSON.stringify(isRetro))
+          if (postToTribe)
+            formData.append("isTribe", JSON.stringify(postToTribe))
+          if (postToMoltbook)
+            formData.append("isMolt", JSON.stringify(postToMoltbook))
+
+          artifacts.forEach((artifact, index) => {
+            formData.append(`artifact_${index}`, artifact)
+          })
+
+          postRequestBody = formData
+        } else {
+          postRequestHeaders["Content-Type"] = "application/json"
+          postRequestBody = JSON.stringify({
+            content: userMessageText,
+            isIncognito: burn,
+            agentId: selectedAgent?.id,
+            debateAgentId: debateAgent?.id,
+            threadId: sanitizedThreadId,
+            webSearchEnabled: isWebSearchEnabled && !isExtension,
+            imageGenerationEnabled: isImageGenerationEnabled,
+            actionEnabled: isExtension,
+            instructions: instruction,
+            language,
+            attachmentType: "file",
+            clientId,
+            appId: app?.id,
+            moodId: mood?.id,
+            taskId,
+            pear: isPear,
+            retro: isRetro,
+            isTribe: postToTribe,
+            isMolt: postToMoltbook,
+          })
+        }
+        const userResponse = await apiFetch(`${API_URL}/messages`, {
+          method: "POST",
+          headers: postRequestHeaders,
+          body: postRequestBody,
+        })
+        console.log("userResponse", `${API_URL}/messages`, app?.name)
+
+        if (debateAgent) {
+          toast.success(t("Let's debate!"))
+        }
+
+        let result = undefined
+        if (
+          userResponse.headers.get("content-type")?.includes("application/json")
+        ) {
+          result = await userResponse.json()
+          if (result.error) {
+            nProgress.done()
+            toast.error(result.error)
+            return
+          }
+        }
+
+        if (!userResponse.ok) {
+          nProgress.done()
+          toast.error("Failed to send message. Response is not ok")
+          return
+        }
+
+        setIsLoading(false)
+
+        nProgress.done()
+
+        setInstruction("")
+        setArtifacts([])
+
+        const userMessage: {
+          message: message
+          user?: user
+          guest?: guest
+          aiAgent?: aiAgent
+          thread?: thread
+        } | null = result.message
+
+        setMessage(userMessage)
+
+        if (userMessage?.message?.id) {
+          setThreadId(userMessage?.message?.threadId)
+          if (collaborationStep === 2) {
+            setCollaborationStep(3)
+          }
+
+          onMessage?.({
+            content: userMessageText,
+            isUser: true,
+            message: userMessage,
+          })
+        } else {
+          toast.error("Failed to send message")
+          return
+        }
+
+        if (!userMessage?.message?.clientId) {
+          toast.error("Failed to send message")
+          return
+        }
+
+        if (!selectedAgent) {
+          return
+        }
+
+        // Prepare request data - use FormData if files are present, JSON otherwise
+        let requestBody: FormData | string
+        const requestHeaders: Record<string, string> = {
+          Authorization: `Bearer ${token}`,
+        }
+
+        if (files && files.length > 0) {
+          // Use FormData for file uploads
+          const formData = new FormData()
+          if (slug) formData.append("slug", slug)
+          if (app?.id) formData.append("appId", app.id)
+          if (ask) formData.append("ask", ask)
+          if (about) formData.append("about", about)
+          if (
+            !appFormWatcher.id &&
+            app?.id === chrry?.id &&
+            suggestSaveApp &&
+            appStatus?.part
+          )
+            formData.append("draft", JSON.stringify(appFormWatcher))
+          formData.append("messageId", userMessage?.message.id || "")
+          if (debateAgent) formData.append("debateAgentId", debateAgent.id)
+          formData.append("agentId", selectedAgent.id)
+          formData.append("language", language || "en")
+          if (isWebSearchEnabled)
+            formData.append("webSearchEnabled", isWebSearchEnabled.toString())
+          formData.append("actionEnabled", isExtension.toString())
+          formData.append(
+            "imageGenerationEnabled",
+            isImageGenerationEnabled.toString(),
+          )
+
+          if (isRetro) formData.append("retro", "true")
+
+          if (isPear) formData.append("pear", "true")
+
+          if (placeholder) formData.append("placeholder", placeholder)
+
+          if (weather) formData.append("weather", JSON.stringify(weather))
+
+          formData.append("attachmentType", "file")
+          if (deviceId) formData.append("deviceId", deviceId)
+
+          if (isSpeechActive) formData.append("isSpeechActive", "true")
+
+          // Add files to FormData
+          files.forEach((file, index) => {
+            formData.append(`file_${index}`, file)
+          })
+
+          requestBody = formData
+          // Don't set Content-Type for FormData - browser will set it with boundary
+        } else {
+          // Use JSON for text-only messages
+          requestHeaders["Content-Type"] = "application/json"
+          requestBody = JSON.stringify({
+            debateAgentId: debateAgent?.id,
+            messageId: userMessage?.message.id,
+            agentId: selectedAgent.id,
+            language,
+            actionEnabled: isExtension,
+            webSearchEnabled: isWebSearchEnabled,
+            imageGenerationEnabled: isImageGenerationEnabled,
+            isSpeechActive,
+            pear: isPear,
+            deviceId,
+            weather,
+            placeholder,
+            ask,
+            about,
+            retro: isRetro,
+            appId: app?.id,
+            draft:
+              app?.id === chrry?.id && suggestSaveApp && appStatus?.part
+                ? appFormWatcher
+                : undefined,
+          })
+        }
+
+        onMessage?.({
+          content: "",
+          isUser: false,
+          message: {
+            ...userMessage,
+            message: {
+              ...userMessage.message,
+              id: userMessage?.message?.clientId,
+            },
+          },
+          isStreaming: true,
+          isImageGenerationEnabled,
+          isWebSearchEnabled,
+        })
+
+        setIsStreaming(true)
+
+        // const foo = false
+        // if (!foo) return
+
+        const agentResponse = await apiFetch(`${API_URL}/ai`, {
+          method: "POST",
+          headers: requestHeaders,
+          body: requestBody,
+          signal: controller.signal,
+        })
+
+        // Handle error responses (including 413 Request too large)
+        if (!agentResponse.ok) {
+          if (
+            agentResponse.headers
+              .get("content-type")
+              ?.includes("application/json")
+          ) {
+            try {
+              const result = await agentResponse.json()
+              if (result.error) {
+                // Show detailed error message for oversized requests
+                if (agentResponse.status === 413 && result.message) {
+                  toast.error(result.message)
+                } else {
+                  toast.error(result.error)
+                }
+                return
+              }
+            } catch (error) {
+              console.error("Failed to parse JSON response", error)
+              toast.error("Failed to send message")
+            }
+          }
+
+          // Generic error for non-JSON responses
+          toast.error("Failed to send message")
+          return
+        }
+
+        // Handle successful JSON responses
+        if (
+          agentResponse.headers
+            .get("content-type")
+            ?.includes("application/json")
+        ) {
+          const result = await agentResponse.json()
+          if (result.error) {
+            toast.error(result.error)
+            return
+          }
+          if (result.success) {
+            return
+          }
+          // handle other non-streaming JSON responses
+        }
+      } catch (error: Error | unknown) {
+        console.error("Chat error:", error)
+        captureException(error)
+        // Could add onError callback here
+      } finally {
+        setIsLoading(false)
+        setClientId(uuidv4())
+      }
+    },
+    [
+      API_URL,
+      about,
+      addHapticFeedback,
+      addParams,
+      app,
+      appFormWatcher,
+      appStatus?.part,
+      artifacts,
+      ask,
+      burn,
+      captureException,
+      chrry?.id,
+      clearFiles,
+      clientId,
+      collaborationStep,
+      console,
+      controller.signal,
+      debateAgent,
+      device,
+      deviceId,
+      files,
+      getIsSendDisabled,
+      guest,
+      hitHourlyLimit,
+      hourlyLimit,
+      instruction,
+      isExtension,
+      isImageGenerationEnabled,
+      isPear,
+      isPrivacyApproved,
+      isRetro,
+      isSpeechActive,
+      isWebSearchEnabled,
+      language,
+      mood,
+      onMessage,
+      pathname,
+      placeholder,
+      playNotification,
+      postToMoltbook,
+      postToTribe,
+      requiresSignin,
+      scrollToBottom,
+      selectedAgent,
+      setCollaborationStep,
+      setInput,
+      setIsAgentModalOpen,
+      setIsPrivacyApproved,
+      setMessage,
+      setShouldFocus,
+      slug,
+      suggestSaveApp,
+      t,
+      taskId,
+      token,
+      user,
+      weather,
+    ],
+  )
+
+  const stopVoiceInput = useCallback(() => {
+    plausible({
+      name: ANALYTICS_EVENTS.VOICE_INPUT,
+      props: {
+        stopped: true,
+      },
+    })
+    if (recognition) {
+      recognition.stop()
+    }
+    setIsListening(false)
+    setRecognition(null)
+  }, [recognition, plausible])
   // Create image preview URL
   const createImagePreview = (file: File): string => {
     return URL.createObjectURL(file)
@@ -1079,159 +1393,7 @@ export default function Chat({
 
   const [hasPlayed, setHasPlayed] = useState(false)
 
-  // Voice conversation functionality
-  const startVoiceConversation = async () => {
-    plausible({
-      name: ANALYTICS_EVENTS.VOICE_CONVERSATION,
-      props: {
-        started: true,
-      },
-    })
-
-    if (hasPlayed) {
-      setIsSpeechActive(true)
-    }
-
-    inConversationRef.current = true
-
-    setIsLoading(true)
-
-    // Start with AI greeting
-
-    try {
-      if (synthesis) synthesis.dispatchEvent(new Event("pause"))
-
-      if (audio) audio?.pause()
-      // Generate and play AI greeting with TTS
-      playAIResponseWithTTS()
-      setHasPlayed(true)
-    } catch (error) {
-      console.error("Voice conversation error:", error)
-      captureException(error)
-      startListening()
-    } finally {
-      setIsLoading(false)
-    }
-  }
-  const [isVideoLoading, setIsVideoLoading] = useState(true)
-
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [voiceMessages, setVoiceMessages] = useState<
-    { messageId?: string; text: string }[]
-  >([])
-
-  useEffect(() => {
-    if (isSpeaking || isListening) return
-    if (voiceMessages.length > 0) {
-      const message = voiceMessages[0]
-      message && playAIResponseWithTTS(message.text)
-      setVoiceMessages((prev) => prev.slice(1))
-    }
-  }, [voiceMessages, isSpeaking, isListening])
-
-  // Play AI response with TTS and continue conversation
-  const playAIResponseWithTTS = async (text?: string) => {
-    try {
-      const response = await apiFetch(`${API_URL}/tts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        body: JSON.stringify({ text, language }),
-      })
-
-      const data = await response.json()
-
-      if (data.usage) {
-        user &&
-          setUser({
-            ...user,
-            speechRequestsToday: data.usage.requestsToday,
-            speechRequestsThisHour: data.usage.requestsThisHour,
-            speechCharactersToday: data.usage.charactersToday,
-          })
-
-        guest &&
-          setGuest({
-            ...guest,
-            speechRequestsToday: data.usage.requestsToday,
-            speechRequestsThisHour: data.usage.requestsThisHour,
-            speechCharactersToday: data.usage.charactersToday,
-          })
-
-        setIsSpeechActive(true)
-      }
-
-      if (data.error) {
-        toast.error(t(data.error))
-        setIsLoading(false)
-        inConversationRef.current = false
-        return
-      }
-
-      if (data.useWebSpeech) {
-        // Fallback to Web Speech API
-        if ("speechSynthesis" in window) {
-          const utterance = new SpeechSynthesisUtterance(text)
-          utterance.onend = () => {
-            setSynthesis(null)
-            setIsSpeaking(false)
-            inConversationRef.current = false
-            // Continue conversation - start listening again
-            // if (!isDebate) {
-            //   setTimeout(() => startListening(), 1000)
-            //   inConversationRef.current = false
-            // }
-            inConversationRef.current = false
-          }
-          speechSynthesis.speak(utterance)
-          setIsSpeaking(true)
-          setSynthesis(utterance)
-        }
-      } else if (data.audio) {
-        // Play ElevenLabs audio
-        const audio = new Audio(data.audio)
-        setAudio(audio)
-        audio.onended = () => {
-          setIsSpeaking(false)
-          setAudio(null)
-          // if (!isDebate && voiceMessages.length === 0) {
-          //   setTimeout(() => startListening(), 1000)
-          //   inConversationRef.current = false
-          // }
-          inConversationRef.current = false
-        }
-
-        try {
-          setIsSpeaking(true)
-          await audio.play()
-          setAudio(audio)
-        } catch (error) {
-          captureException(error)
-          console.error("Audio play failed, falling back to Web Speech:", error)
-          // ios audio fallback to Web Speech API
-          if ("speechSynthesis" in window) {
-            const utterance = new SpeechSynthesisUtterance(text)
-            utterance.onend = () => {
-              setIsSpeaking(false)
-              inConversationRef.current = false
-              setTimeout(() => startListening(), 1000)
-            }
-            speechSynthesis.speak(utterance)
-            setIsSpeaking(true)
-          }
-        }
-      }
-    } catch (error) {
-      captureException(error)
-      console.error("TTS playback error:", error)
-      // Continue conversation even if TTS fails
-      setTimeout(() => startListening(), 1000)
-    }
-  }
-
-  const startListening = () => {
+  const startListening = useCallback(() => {
     // Check if browser supports speech recognition
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
@@ -1263,12 +1425,15 @@ export default function Chat({
 
     let finalTranscript = ""
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: {
+      resultIndex: number
+      results: { [key: string]: { transcript: string; isFinal: boolean } }[]
+    }) => {
       let interimTranscript = ""
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript
-        if (event.results[i].isFinal) {
+        const transcript = event.results?.[i]?.[0]?.transcript
+        if (event?.results?.[i]?.isFinal) {
           finalTranscript += transcript
         } else {
           interimTranscript += transcript
@@ -1316,21 +1481,183 @@ export default function Chat({
 
     recognition.start()
     setRecognition(recognition)
-  }
+  }, [
+    language,
+    isListening,
+    captureException,
+    console,
+    handleSubmit,
+    stopVoiceInput,
+  ])
 
-  const stopVoiceInput = () => {
+  // Voice conversation functionality
+  const startVoiceConversation = async () => {
     plausible({
-      name: ANALYTICS_EVENTS.VOICE_INPUT,
+      name: ANALYTICS_EVENTS.VOICE_CONVERSATION,
       props: {
-        stopped: true,
+        started: true,
       },
     })
-    if (recognition) {
-      recognition.stop()
+
+    if (hasPlayed) {
+      setIsSpeechActive(true)
     }
-    setIsListening(false)
-    setRecognition(null)
+
+    inConversationRef.current = true
+
+    setIsLoading(true)
+
+    // Start with AI greeting
+
+    try {
+      if (synthesis) synthesis.dispatchEvent(new Event("pause"))
+
+      if (audio) audio?.pause()
+      // Generate and play AI greeting with TTS
+      playAIResponseWithTTS()
+      setHasPlayed(true)
+    } catch (error) {
+      console.error("Voice conversation error:", error)
+      captureException(error)
+      startListening()
+    } finally {
+      setIsLoading(false)
+    }
   }
+
+  const [voiceMessages, setVoiceMessages] = useState<
+    { messageId?: string; text: string }[]
+  >([])
+
+  const playAIResponseWithTTS = useCallback(
+    async (text?: string) => {
+      try {
+        const response = await apiFetch(`${API_URL}/tts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          body: JSON.stringify({ text, language }),
+        })
+
+        const data = await response.json()
+
+        if (data.usage) {
+          if (user)
+            setUser({
+              ...user,
+              speechRequestsToday: data.usage.requestsToday,
+              speechRequestsThisHour: data.usage.requestsThisHour,
+              speechCharactersToday: data.usage.charactersToday,
+            })
+
+          if (guest)
+            setGuest({
+              ...guest,
+              speechRequestsToday: data.usage.requestsToday,
+              speechRequestsThisHour: data.usage.requestsThisHour,
+              speechCharactersToday: data.usage.charactersToday,
+            })
+
+          setIsSpeechActive(true)
+        }
+
+        if (data.error) {
+          toast.error(t(data.error))
+          setIsLoading(false)
+          inConversationRef.current = false
+          return
+        }
+
+        if (data.useWebSpeech) {
+          // Fallback to Web Speech API
+          if ("speechSynthesis" in window) {
+            const utterance = new SpeechSynthesisUtterance(text)
+            utterance.onend = () => {
+              setSynthesis(null)
+              setIsSpeaking(false)
+              inConversationRef.current = false
+              // Continue conversation - start listening again
+              // if (!isDebate) {
+              //   setTimeout(() => startListening(), 1000)
+              //   inConversationRef.current = false
+              // }
+              inConversationRef.current = false
+            }
+            speechSynthesis.speak(utterance)
+            setIsSpeaking(true)
+            setSynthesis(utterance)
+          }
+        } else if (data.audio) {
+          // Play ElevenLabs audio
+          const audio = new Audio(data.audio)
+          setAudio(audio)
+          audio.onended = () => {
+            setIsSpeaking(false)
+            setAudio(null)
+            // if (!isDebate && voiceMessages.length === 0) {
+            //   setTimeout(() => startListening(), 1000)
+            //   inConversationRef.current = false
+            // }
+            inConversationRef.current = false
+          }
+
+          try {
+            setIsSpeaking(true)
+            await audio.play()
+            setAudio(audio)
+          } catch (error) {
+            captureException(error)
+            console.error(
+              "Audio play failed, falling back to Web Speech:",
+              error,
+            )
+            // ios audio fallback to Web Speech API
+            if ("speechSynthesis" in window) {
+              const utterance = new SpeechSynthesisUtterance(text)
+              utterance.onend = () => {
+                setIsSpeaking(false)
+                inConversationRef.current = false
+                setTimeout(() => startListening(), 1000)
+              }
+              speechSynthesis.speak(utterance)
+              setIsSpeaking(true)
+            }
+          }
+        }
+      } catch (error) {
+        captureException(error)
+        console.error("TTS playback error:", error)
+        // Continue conversation even if TTS fails
+        setTimeout(() => startListening(), 1000)
+      }
+    },
+    [
+      API_URL,
+      token,
+      language,
+      setUser,
+      user,
+      setGuest,
+      guest,
+      captureException,
+      t,
+      console,
+      startListening,
+    ],
+  )
+
+  useEffect(() => {
+    if (isSpeaking || isListening) return
+    if (voiceMessages.length > 0) {
+      const message = voiceMessages[0]
+      if (message) playAIResponseWithTTS(message.text)
+      setVoiceMessages((prev) => prev.slice(1))
+    }
+  }, [voiceMessages, isSpeaking, isListening, playAIResponseWithTTS])
+
+  // Play AI response with TTS and continue conversation
 
   const stopSpeechConversation = () => {
     addHapticFeedback()
@@ -1364,74 +1691,6 @@ export default function Chat({
     }
   }, [recognition])
 
-  const showHourlyLimitInfo = hourlyUsageLeft <= 5
-
-  // Compress images to reduce token usage
-  const compressImage = (
-    file: File,
-    maxWidth = 1920,
-    quality = 0.92,
-  ): Promise<File> => {
-    return new Promise((resolve, reject) => {
-      console.log(`🔧 Starting compression for ${file.name}...`)
-
-      const canvas = document.createElement("canvas")
-      const ctx = canvas.getContext("2d")
-
-      if (!ctx) {
-        console.warn("❌ Canvas context not available")
-        resolve(file)
-        return
-      }
-
-      const img = new Image()
-
-      img.onload = () => {
-        console.log(`📐 Original dimensions: ${img.width}x${img.height}`)
-
-        // Calculate new dimensions
-        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height, 1) // Don't upscale
-        const newWidth = Math.floor(img.width * ratio)
-        const newHeight = Math.floor(img.height * ratio)
-
-        console.log(
-          `📐 New dimensions: ${newWidth}x${newHeight} (ratio: ${ratio})`,
-        )
-
-        canvas.width = newWidth
-        canvas.height = newHeight
-
-        // Draw and compress
-        ctx.drawImage(img, 0, 0, newWidth, newHeight)
-
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              console.log(`✅ Blob created: ${blob.size} bytes`)
-              const compressedFile = new File([blob], file.name, {
-                type: "image/jpeg", // Force JPEG for better compression
-                lastModified: Date.now(),
-              })
-              resolve(compressedFile)
-            } else {
-              console.warn("❌ Failed to create blob")
-              resolve(file) // Fallback to original
-            }
-          },
-          "image/jpeg",
-          quality,
-        ) // Force JPEG format
-      }
-
-      img.onerror = (error) => {
-        console.warn("❌ Image load error:", error)
-        resolve(file)
-      }
-
-      img.src = URL.createObjectURL(file)
-    })
-  }
-
   // File input handlers for different media types
   const triggerFileInput = (accept: string) => {
     addHapticFeedback()
@@ -1462,10 +1721,6 @@ export default function Chat({
     }
     input.click()
   }
-
-  const { push } = router
-
-  const [instruction, setInstruction] = useState("")
 
   // Collaboration wizard steps
   const collaborationSteps = [
@@ -1504,471 +1759,6 @@ export default function Chat({
     // clientIdRef.current = message?.message?.clientId
     BrowserInstance?.storage?.local?.set?.({ messageId: message?.message?.id })
   }, [message])
-
-  const handleSubmit = async (approve?: boolean) => {
-    if (
-      guest &&
-      selectedAgent?.authorization &&
-      !["all", "guest"].includes(selectedAgent?.authorization)
-    ) {
-      addParams({
-        subscribe: "true",
-        plan: "member",
-      })
-
-      return
-    }
-
-    if (hitHourlyLimit) {
-      toast.error(
-        t("You hit your hourly limit {{hourlyLimit}}", {
-          hourlyLimit,
-        }),
-      )
-
-      return
-    }
-
-    if (!isPrivacyApproved && !approve) {
-      setNeedsReview(true)
-      return
-    }
-
-    if (approve) {
-      setNeedsReview(false)
-      setIsPrivacyApproved(true)
-    }
-
-    addHapticFeedback()
-
-    clearFiles()
-
-    if (
-      !selectedAgent?.capabilities?.image &&
-      files.some((file) => file.type.startsWith("image/"))
-    ) {
-      setIsAgentModalOpen(true)
-      return
-    }
-    if (
-      !selectedAgent?.capabilities?.pdf &&
-      files.some((file) => file.type.startsWith("application/pdf"))
-    ) {
-      setIsAgentModalOpen(true)
-      return
-    }
-
-    if (
-      !selectedAgent?.capabilities?.audio &&
-      files.some((file) => file.type.startsWith("audio/"))
-    ) {
-      setIsAgentModalOpen(true)
-      return
-    }
-    if (
-      !selectedAgent?.capabilities?.video &&
-      files.some((file) => file.type.startsWith("video/"))
-    ) {
-      setIsAgentModalOpen(true)
-      return
-    }
-    if (
-      !selectedAgent?.capabilities?.text &&
-      files.some((file) => file.type.startsWith("text/"))
-    ) {
-      setIsAgentModalOpen(true)
-      return
-    }
-
-    shouldStopRef.current = false
-
-    if (requiresSignin && !user) {
-      addParams({ signIn: "login", callbackUrl: pathname })
-      return
-    }
-
-    // e.preventDefault()
-
-    if (
-      selectedAgent?.maxPromptSize &&
-      inputRef.current.length > selectedAgent?.maxPromptSize
-    ) {
-      toast.error(
-        t(`Input too long (max ${selectedAgent?.maxPromptSize} chars)`),
-      )
-      return
-    }
-
-    if (files.length > 0 && !selectedAgent?.capabilities?.text) {
-      setIsAgentModalOpen(true)
-      return
-    }
-
-    if (isWebSearchEnabled && !selectedAgent?.capabilities?.webSearch) {
-      setIsAgentModalOpen(true)
-      return
-    }
-
-    if (getIsSendDisabled()) return
-
-    const userMessageText = sanitizeHtml(inputRef.current.trim())
-
-    if (userMessageText.length > PROMPT_LIMITS.TOTAL) {
-      toast.error(t(`Input too long (max ${PROMPT_LIMITS.TOTAL} chars)`))
-      return
-    }
-
-    setInput("")
-    device === "desktop" && setShouldFocus(true)
-    setIsLoading(true)
-
-    // Scroll to bottom after sending message
-    scrollToBottom(100)
-
-    playNotification()
-
-    if (isImageGenerationEnabled) {
-      toast.success(t("Generating image, keep calm..."), {
-        duration: 6000,
-      })
-    }
-
-    onMessage?.({
-      content: userMessageText,
-      isUser: true,
-      message: {
-        message: {
-          content: userMessageText,
-          isUser: true,
-          id: uuidv4(),
-          clientId,
-          createdOn: new Date(),
-          guestId: guest?.id,
-          userId: user?.id,
-        } as unknown as message,
-        user: user as user,
-        guest: guest as guest,
-      },
-    })
-
-    setIsLoading(true)
-
-    const sanitizedThreadId =
-      threadIdRef.current && validate(threadIdRef.current)
-        ? threadIdRef.current
-        : null
-
-    try {
-      let postRequestBody: FormData | string
-      const postRequestHeaders: Record<string, string> = {
-        Authorization: `Bearer ${token}`,
-      }
-      if (artifacts && artifacts.length > 0) {
-        nProgress.start()
-
-        toast.success(t("Uploading artifacts..."))
-        // Use FormData for file uploads
-        const formData = new FormData()
-
-        app && formData.append("appId", app?.id)
-
-        formData.append("content", userMessageText)
-        formData.append("isIncognito", JSON.stringify(burn))
-        selectedAgent && formData.append("agentId", selectedAgent?.id)
-        debateAgent && formData.append("debateAgentId", debateAgent?.id)
-        sanitizedThreadId && formData.append("threadId", sanitizedThreadId)
-        formData.append("attachmentType", "file")
-        formData.append("webSearchEnabled", JSON.stringify(isWebSearchEnabled))
-        formData.append(
-          "imageGenerationEnabled",
-          JSON.stringify(isImageGenerationEnabled),
-        )
-        taskId && formData.append("taskId", taskId)
-        mood && formData.append("moodId", mood.id)
-        formData.append("actionEnabled", JSON.stringify(isExtension))
-        formData.append("instructions", instruction)
-        formData.append("language", language)
-        clientId && formData.append("clientId", clientId)
-        isPear && formData.append("pear", JSON.stringify(isPear))
-
-        isRetro && formData.append("retro", JSON.stringify(isRetro))
-        postToTribe && formData.append("isTribe", JSON.stringify(postToTribe))
-        postToMoltbook &&
-          formData.append("isMolt", JSON.stringify(postToMoltbook))
-
-        artifacts.forEach((artifact, index) => {
-          formData.append(`artifact_${index}`, artifact)
-        })
-
-        postRequestBody = formData
-        // Don't set Content-Type for FormData - browser will set it with boundary
-      } else {
-        // Use JSON for text-only messages
-        postRequestHeaders["Content-Type"] = "application/json"
-        postRequestBody = JSON.stringify({
-          content: userMessageText,
-          isIncognito: burn,
-          agentId: selectedAgent?.id,
-          debateAgentId: debateAgent?.id,
-          threadId: sanitizedThreadId,
-          webSearchEnabled: isWebSearchEnabled && !isExtension,
-          imageGenerationEnabled: isImageGenerationEnabled,
-          actionEnabled: isExtension,
-          instructions: instruction,
-          language,
-          attachmentType: "file",
-          clientId,
-          appId: app?.id,
-          moodId: mood?.id,
-          taskId,
-          pear: isPear,
-          retro: isRetro,
-          isTribe: postToTribe,
-          isMolt: postToMoltbook,
-        })
-      }
-      const userResponse = await apiFetch(`${API_URL}/messages`, {
-        method: "POST",
-        headers: postRequestHeaders,
-        body: postRequestBody,
-      })
-      console.log("userResponse", `${API_URL}/messages`, app?.name)
-
-      if (debateAgent) {
-        toast.success(t("Let's debate!"))
-      }
-
-      let result = undefined
-      if (
-        userResponse.headers.get("content-type")?.includes("application/json")
-      ) {
-        result = await userResponse.json()
-        if (result.error) {
-          nProgress.done()
-          toast.error(result.error)
-          return
-        }
-        // handle non-streaming JSON response
-      }
-
-      if (!userResponse.ok) {
-        nProgress.done()
-        toast.error("Failed to send message. Response is not ok")
-        return
-      }
-
-      setIsLoading(false)
-
-      nProgress.done()
-
-      setInstruction("")
-      setArtifacts([])
-
-      const userMessage: {
-        message: message
-        user?: user
-        guest?: guest
-        aiAgent?: aiAgent
-        thread?: thread
-      } | null = result.message
-
-      setMessage(userMessage)
-      // Refresh tasks list after first message to task (to get newly created threadId)
-      // playNotification()
-
-      // const clientId = message?.message?.clientId
-
-      if (userMessage?.message?.id) {
-        setThreadId(userMessage?.message?.threadId)
-        if (collaborationStep === 2) {
-          setCollaborationStep(3)
-        }
-
-        onMessage?.({
-          content: userMessageText,
-          isUser: true,
-          message: userMessage,
-        })
-
-        // Auto-advance daily questions AFTER message is sent
-        // if (isRetro && dailyQuestionData) {
-        //   const { questions, isLastQuestionOfSection } = dailyQuestionData
-        //   if (isLastQuestionOfSection) {
-        //     advanceDailySection()
-        //   } else {
-        //     setDailyQuestionIndex(dailyQuestionIndex + 1)
-        //   }
-        // }
-      } else {
-        toast.error("Failed to send message")
-        return
-      }
-
-      if (!userMessage?.message?.clientId) {
-        toast.error("Failed to send message")
-        return
-      }
-
-      if (!selectedAgent) {
-        return
-      }
-
-      // Prepare request data - use FormData if files are present, JSON otherwise
-      let requestBody: FormData | string
-      const requestHeaders: Record<string, string> = {
-        Authorization: `Bearer ${token}`,
-      }
-
-      if (files && files.length > 0) {
-        // Use FormData for file uploads
-        const formData = new FormData()
-        slug && formData.append("slug", slug)
-        app?.id && formData.append("appId", app.id)
-        ask && formData.append("ask", ask)
-        about && formData.append("about", about)
-        !appFormWatcher.id &&
-          app?.id === chrry?.id &&
-          suggestSaveApp &&
-          appStatus?.part &&
-          formData.append("draft", JSON.stringify(appFormWatcher))
-        formData.append("messageId", userMessage?.message.id || "")
-        debateAgent && formData.append("debateAgentId", debateAgent.id)
-        formData.append("agentId", selectedAgent.id)
-        formData.append("language", language || "en")
-        isWebSearchEnabled &&
-          formData.append("webSearchEnabled", isWebSearchEnabled.toString())
-        formData.append("actionEnabled", isExtension.toString())
-        formData.append(
-          "imageGenerationEnabled",
-          isImageGenerationEnabled.toString(),
-        )
-
-        isRetro && formData.append("retro", "true")
-
-        isPear && formData.append("pear", "true")
-
-        placeholder && formData.append("placeholder", placeholder)
-
-        weather && formData.append("weather", JSON.stringify(weather))
-
-        formData.append("attachmentType", "file")
-        deviceId && formData.append("deviceId", deviceId)
-
-        isSpeechActive && formData.append("isSpeechActive", "true")
-
-        // Add files to FormData
-        files.forEach((file, index) => {
-          formData.append(`file_${index}`, file)
-        })
-
-        requestBody = formData
-        // Don't set Content-Type for FormData - browser will set it with boundary
-      } else {
-        // Use JSON for text-only messages
-        requestHeaders["Content-Type"] = "application/json"
-        requestBody = JSON.stringify({
-          debateAgentId: debateAgent?.id,
-          messageId: userMessage?.message.id,
-          agentId: selectedAgent.id,
-          language,
-          actionEnabled: isExtension,
-          webSearchEnabled: isWebSearchEnabled,
-          imageGenerationEnabled: isImageGenerationEnabled,
-          isSpeechActive,
-          pear: isPear,
-          deviceId,
-          weather,
-          placeholder,
-          ask,
-          about,
-          retro: isRetro,
-          appId: app?.id,
-          draft:
-            app?.id === chrry?.id && suggestSaveApp && appStatus?.part
-              ? appFormWatcher
-              : undefined,
-        })
-      }
-
-      onMessage?.({
-        content: "",
-        isUser: false,
-        message: {
-          ...userMessage,
-          message: {
-            ...userMessage.message,
-            id: userMessage?.message?.clientId,
-          },
-        },
-        isStreaming: true,
-        isImageGenerationEnabled,
-        isWebSearchEnabled,
-      })
-
-      setIsStreaming(true)
-
-      // const foo = false
-      // if (!foo) return
-
-      const agentResponse = await apiFetch(`${API_URL}/ai`, {
-        method: "POST",
-        headers: requestHeaders,
-        body: requestBody,
-        signal: controller.signal,
-      })
-
-      // Handle error responses (including 413 Request too large)
-      if (!agentResponse.ok) {
-        if (
-          agentResponse.headers
-            .get("content-type")
-            ?.includes("application/json")
-        ) {
-          try {
-            const result = await agentResponse.json()
-            if (result.error) {
-              // Show detailed error message for oversized requests
-              if (agentResponse.status === 413 && result.message) {
-                toast.error(result.message)
-              } else {
-                toast.error(result.error)
-              }
-              return
-            }
-          } catch (error) {
-            console.error("Failed to parse JSON response", error)
-            toast.error("Failed to send message")
-          }
-        }
-
-        // Generic error for non-JSON responses
-        toast.error("Failed to send message")
-        return
-      }
-
-      // Handle successful JSON responses
-      if (
-        agentResponse.headers.get("content-type")?.includes("application/json")
-      ) {
-        const result = await agentResponse.json()
-        if (result.error) {
-          toast.error(result.error)
-          return
-        }
-        if (result.success) {
-          return
-        }
-        // handle other non-streaming JSON responses
-      }
-    } catch (error: any) {
-      console.error("Chat error:", error)
-      captureException(error)
-      // Could add onError callback here
-    } finally {
-      setIsLoading(false)
-      setClientId(uuidv4())
-    }
-  }
 
   useEffect(() => {
     let isProcessing = false
@@ -2010,7 +1800,7 @@ export default function Chat({
           }
 
           if (type !== "aiDebate") {
-            debateAgent && setDebateAgent(null)
+            if (debateAgent) setDebateAgent(null)
             setAttempt("submit")
             setShouldSubmit(true)
           } else {
@@ -2035,7 +1825,10 @@ export default function Chat({
     }
 
     // Primary: Storage change listener (instant)
-    const handleStorageChange = (changes: any, areaName?: string) => {
+    const handleStorageChange = (
+      changes: { contextMenuAction?: { newValue: { text: string } } },
+      areaName?: string,
+    ) => {
       if (areaName === "local" && changes.contextMenuAction?.newValue?.text) {
         processAction()
       }
@@ -2059,7 +1852,17 @@ export default function Chat({
         storageAPI.onChanged.removeListener(handleStorageChange)
       }
     }
-  }, [setInput])
+  }, [
+    captureException,
+    console,
+    debateAgent,
+    selectedAgent,
+    setDebateAgent,
+    setInput,
+    setIsDebateAgentModalOpen,
+    setSelectedAgent,
+    t,
+  ])
 
   const [streamId, setStreamId] = useState<string | null>(null)
   const handleStopStreaming = async () => {
@@ -2081,10 +1884,10 @@ export default function Chat({
       }),
     })
       .then((response) => response.json())
-      .then((result) => {
+      .then(() => {
         setShouldGetCredits(true)
 
-        message &&
+        if (message)
           onStreamingStop?.({
             ...message,
             message: {
@@ -2177,10 +1980,10 @@ export default function Chat({
   }, [placeholder])
 
   useEffect(() => {
-    let interval: any = null
+    let interval: ReturnType<typeof setInterval> | null = null
     // Only animate if input is empty and not focused
     if (inputRef.current.length > 0) {
-      interval && clearInterval(interval)
+      if (interval) clearInterval(interval)
       return
     }
     interval = setInterval(() => {
@@ -2188,27 +1991,11 @@ export default function Chat({
 
       setPlaceholderIndex((i) => (i + 1) % placeholderStages.length)
       if (animationLoop.current >= placeholderStages.length + 2) {
-        interval && clearInterval(interval)
+        if (interval) clearInterval(interval)
       }
     }, 600) // adjust speed as desired
     return () => clearInterval(interval)
-  }, [inputRef.current])
-
-  // function formatUnlockTime(date: Date | null) {
-  //   if (!date) return ""
-  //   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-  // }
-
-  const [isGame, setIsGameInternal] = useState(false)
-  const setIsGame = (value: boolean) => {
-    setIsGameInternal(value)
-    plausible({
-      name: ANALYTICS_EVENTS.GAME_TOGGLE,
-      props: {
-        isGame: value,
-      },
-    })
-  }
+  }, [placeholderIndex, placeholderStages.length])
 
   const shouldStopRef = useRef(false)
 
@@ -2244,7 +2031,7 @@ export default function Chat({
     onMessage: async ({ type, data }) => {
       const threadId = threadIdRef.current
 
-      data?.streamId && setStreamId(data.streamId)
+      if (data?.streamId) setStreamId(data.streamId)
 
       if (!token) return
 
@@ -2314,24 +2101,29 @@ export default function Chat({
             setIsSpeaking(false)
             setIsSpeechActive(false)
           } else {
-            data?.message?.message?.content !== undefined &&
+            if (
+              data?.message?.message?.content !== undefined &&
+              data?.message?.message?.content
+            )
               setVoiceMessages((prev) => [
                 ...prev,
-                { text: stripMarkdown(data?.message?.message?.content!) },
+                { text: stripMarkdown(data?.message?.message?.content || "") },
               ])
           }
         }
 
         // Notify completion
         onStreamingComplete?.(data.message)
-        isImageGenerationEnabled && setIsImageGenerationEnabled(false)
+        if (isImageGenerationEnabled) setIsImageGenerationEnabled(false)
 
-        sushiAgent &&
+        if (
+          sushiAgent &&
           selectedAgent?.name === sushiAgent?.name &&
-          isWebSearchEnabled &&
+          isWebSearchEnabled
+        )
           setIsWebSearchEnabled(false)
 
-        data.streamId === streamId && setStreamId(null)
+        if (data.streamId === streamId) setStreamId(null)
 
         if (
           message?.message &&
@@ -2435,7 +2227,7 @@ export default function Chat({
           isWebSearchEnabled: data?.isWebSearchEnabled,
         })
 
-        data.message.message.selectedAgentId &&
+        if (data.message.message.selectedAgentId)
           onMessage?.({
             content: "",
             isUser: false,
@@ -2456,11 +2248,6 @@ export default function Chat({
     deviceId,
   })
 
-  const [isPrivacyApproved, setIsPrivacyApproved] = useLocalStorage(
-    "isPrivacyApproved",
-    !!user,
-  )
-
   const setNeedsReview = (value: boolean) => {
     setNeedsReviewInternal(value)
     needsReviewRef.current = value
@@ -2468,7 +2255,7 @@ export default function Chat({
 
   const handlePaste = (e: React.ClipboardEvent) => {
     addHapticFeedback()
-    device === "desktop" && setShouldFocus(true)
+    if (device === "desktop") setShouldFocus(true)
 
     if (e.clipboardData.files.length > 0) {
       const imageFiles = Array.from(e.clipboardData.files).filter((file) =>
@@ -2515,6 +2302,7 @@ export default function Chat({
         setIsDebateAgentModalOpen(true)
         return
       }
+
       // Use agent-specific limit if available, otherwise default
       const maxSize = getMaxFileSize("text/plain")
 
@@ -2544,14 +2332,6 @@ export default function Chat({
       e.preventDefault()
     }
   }
-
-  useEffect(() => {
-    onToggleGame?.(isGame)
-  }, [isGame])
-
-  useEffect(() => {
-    onToggleGame?.(isGame)
-  }, [isGame])
 
   const unlockDate = getUnlockTime()
   const remainingMs = useCountdown(hitHourlyLimit ? unlockDate : null)
@@ -2631,28 +2411,11 @@ export default function Chat({
     return () => clearTimeout(timer)
   }, [input, placeholder, isWeb, minimize])
 
-  const inputText = inputRef.current?.trim() || input?.trim() || ""
-
-  const getIsSendDisabled = () =>
-    (inputText === "" && files.length === 0) ||
-    isLoading ||
-    creditsLeft === 0 ||
-    disabled
-
   const isVoiceDisabled = isLoading || creditsLeft === 0 || disabled
 
-  const [speechSupported, setSpeechSupported] = useState(false)
-
   useEffect(() => {
-    const hasRecognition =
-      "SpeechRecognition" in window || "webkitSpeechRecognition" in window
-
-    setSpeechSupported(hasRecognition)
-  }, [])
-
-  useEffect(() => {
-    device === "desktop" && setShouldFocus(true)
-  }, [device])
+    if (device === "desktop") setShouldFocus(true)
+  }, [device, setShouldFocus])
 
   useEffect(() => {
     if (!hitHourlyLimit) return
@@ -2664,25 +2427,17 @@ export default function Chat({
     })
 
     setMinimize(false)
-  }, [hitHourlyLimit])
+  }, [hitHourlyLimit, hourlyUsageLeft, plausible, setMinimize])
 
   useEffect(() => {
-    files.length > 0 &&
+    if (files.length > 0)
       plausible({
         name: ANALYTICS_EVENTS.FILE_UPLOAD,
         props: {
           filesLength: files.length,
         },
       })
-  }, [files])
-
-  const [creditEstimate, setCreditEstimate] = useState<{
-    multiplier: number
-    taskType: string
-    warning?: string
-  } | null>(null)
-
-  const needSearch = needsWebSearch(inputText)
+  }, [files, plausible])
 
   // Scroll detection for auto-hide chat input
   useEffect(() => {
@@ -2798,7 +2553,7 @@ export default function Chat({
       setShouldSubmit(false)
       setAttempt(undefined)
     }
-  }, [shouldSubmit, selectedAgent, attempt, debateAgent])
+  }, [shouldSubmit, selectedAgent, attempt, debateAgent, handleSubmit])
 
   const renderSubmit = () => {
     return (
@@ -3037,9 +2792,13 @@ export default function Chat({
 
                             return
                           }
-                          isDebateAgentModalOpen
-                            ? setDebateAgent(agent)
-                            : setSelectedAgent(agent)
+
+                          if (isDebateAgentModalOpen) {
+                            setDebateAgent(agent)
+                          } else {
+                            setSelectedAgent(agent)
+                          }
+
                           setIsAgentModalOpen(false)
                           setIsDebateAgentModalOpen(false)
 
@@ -3085,13 +2844,14 @@ export default function Chat({
                           title={t("Set as favorite")}
                           className="favorite link"
                           onClick={async () => {
+                            setIsUpdatingFavouriteAgent(true)
                             addHapticFeedback()
-                            user &&
+                            if (user)
                               setUser({
                                 ...user,
                                 favouriteAgent: agent.name,
                               })
-                            guest &&
+                            if (guest)
                               setGuest({
                                 ...guest,
                                 favouriteAgent: agent.name,
@@ -3118,17 +2878,23 @@ export default function Chat({
                                   data.error || t("Error updating username"),
                                 )
                               }
-                            } catch (error) {
+                            } catch (error: Error | unknown) {
+                              captureException(error)
                               toast.error(t("Error updating favorite agent"))
                             } finally {
+                              setIsUpdatingFavouriteAgent(false)
                             }
                           }}
                         >
-                          <Star
-                            color="var(--accent-1)"
-                            strokeWidth={1.5}
-                            size={17}
-                          />
+                          {isUpdatingFavouriteAgent ? (
+                            <Loading size={17} />
+                          ) : (
+                            <Star
+                              color="var(--accent-1)"
+                              strokeWidth={1.5}
+                              size={17}
+                            />
+                          )}
                         </Button>
                       )}
                     </Div>
@@ -3328,7 +3094,7 @@ export default function Chat({
           </Div>
         </Modal>
       )}
-      {!thread && showSuggestions && !isGame && (
+      {!thread && showSuggestions && (
         <App
           onSave={(instruction) => {
             setInstructionsIndex(instructionsIndex + 1)
@@ -3342,6 +3108,7 @@ export default function Chat({
         />
       )}
       <Div
+        className={className}
         key={isChatFloating ? "floating" : "fixed"}
         style={{
           ...styles.chatContainerWrapper.style,
@@ -4046,7 +3813,6 @@ export default function Chat({
                     {files.map((file, index) => {
                       const fileType = getFileType(file)
                       const isImage = fileType === "image"
-                      const isText = fileType === "text" // Add text type detection
 
                       return (
                         <Div key={index} style={styles.filePreview.style}>
@@ -4377,9 +4143,11 @@ export default function Chat({
                           className="link"
                           onClick={() => {
                             addHapticFeedback()
-                            debateAgent
-                              ? setDebateAgent(null)
-                              : setSelectedAgent(null)
+                            if (debateAgent) {
+                              setDebateAgent(null)
+                              return
+                            }
+                            setSelectedAgent(null)
                           }}
                         >
                           <CircleX color="var(--accent-1)" size={18} />
@@ -4494,163 +4262,7 @@ export default function Chat({
                       />
                     )}
 
-                    {isAttaching ? (
-                      <Span style={styles.attachButtons.style}>
-                        <Button
-                          data-testid="attach-button-close"
-                          className="link"
-                          style={{
-                            ...utilities.link.style,
-                          }}
-                          onClick={() => {
-                            addHapticFeedback()
-                            setIsAttaching(false)
-                          }}
-                        >
-                          <CircleX color="var(--accent-1)" size={22} />
-                        </Button>
-                        <Button
-                          data-testid="attach-button-video"
-                          title={t("Video")}
-                          onClick={() => {
-                            if (
-                              !selectedAgent ||
-                              !selectedAgent.capabilities.video
-                            ) {
-                              setIsAgentModalOpen(true)
-                              return
-                            }
-                            if (
-                              debateAgent &&
-                              !debateAgent.capabilities.video
-                            ) {
-                              setIsDebateAgentModalOpen(true)
-                              return
-                            }
-                            triggerFileInput("video/*")
-                          }}
-                          disabled={isAttachmentDisabled("video")}
-                          style={{
-                            ...utilities.link.style,
-                            ...(hasFileType("video")
-                              ? styles.attachButtonSelected.style
-                              : isAttachmentDisabled("video")
-                                ? styles.attachButtonDisabled.style
-                                : undefined),
-                          }}
-                          className="link"
-                        >
-                          <VideoIcon
-                            size={22}
-                            color={getButtonColor("video")}
-                          />
-                        </Button>
-                        <Button
-                          data-testid="attach-button-pdf"
-                          title={"PDF"}
-                          onClick={() => {
-                            if (
-                              !selectedAgent ||
-                              !selectedAgent.capabilities.pdf
-                            ) {
-                              setIsAgentModalOpen(true)
-                              return
-                            }
-                            if (debateAgent && !debateAgent.capabilities.pdf) {
-                              setIsDebateAgentModalOpen(true)
-                              return
-                            }
-
-                            triggerFileInput("application/pdf")
-                          }}
-                          style={{
-                            ...utilities.link.style,
-                            ...(hasFileType("pdf")
-                              ? styles.attachButtonSelected.style
-                              : isAttachmentDisabled("pdf")
-                                ? styles.attachButtonDisabled.style
-                                : undefined),
-                          }}
-                          disabled={isAttachmentDisabled("audio")}
-                          className="link"
-                        >
-                          <FileText size={22} color={getButtonColor("pdf")} />
-                        </Button>
-                        <Button
-                          data-testid="attach-button-audio"
-                          title={t("Audio")}
-                          onClick={() => {
-                            if (
-                              !selectedAgent ||
-                              !selectedAgent.capabilities.audio
-                            ) {
-                              setIsAgentModalOpen(true)
-                              return
-                            }
-                            if (
-                              debateAgent &&
-                              !debateAgent.capabilities.audio
-                            ) {
-                              setIsDebateAgentModalOpen(true)
-                              return
-                            }
-                            triggerFileInput("audio/*")
-                          }}
-                          disabled={isAttachmentDisabled("audio")}
-                          style={{
-                            ...utilities.link.style,
-                            ...(hasFileType("audio")
-                              ? styles.attachButtonSelected.style
-                              : isAttachmentDisabled("audio")
-                                ? styles.attachButtonDisabled.style
-                                : undefined),
-                          }}
-                          className="link"
-                        >
-                          <AudioLines
-                            size={22}
-                            color={getButtonColor("audio")}
-                          />
-                        </Button>
-                        <Button
-                          data-testid="attach-button-image"
-                          title={t("Image")}
-                          onClick={() => {
-                            if (
-                              !selectedAgent ||
-                              !selectedAgent.capabilities.image
-                            ) {
-                              setIsAgentModalOpen(true)
-                              return
-                            }
-                            if (
-                              debateAgent &&
-                              !debateAgent.capabilities.image
-                            ) {
-                              setIsDebateAgentModalOpen(true)
-                              return
-                            }
-
-                            triggerFileInput("image/*")
-                          }}
-                          disabled={isAttachmentDisabled("image")}
-                          style={{
-                            ...utilities.link.style,
-                            ...(hasFileType("image")
-                              ? styles.attachButtonSelected.style
-                              : isAttachmentDisabled("image")
-                                ? styles.attachButtonDisabled.style
-                                : undefined),
-                          }}
-                          className="link"
-                        >
-                          <ImageIcon
-                            size={22}
-                            color={getButtonColor("image")}
-                          />
-                        </Button>
-                      </Span>
-                    ) : needsReview ? (
+                    {needsReview ? (
                       <A
                         target="_blank"
                         className="button small transparent"
@@ -4743,29 +4355,7 @@ export default function Chat({
                     {!hitHourlyLimit && (
                       <Coins color="var(--accent-1)" size={16} />
                     )}
-                    {creditEstimate && creditEstimate.multiplier > 1 ? (
-                      <Button
-                        className="link"
-                        onClick={() => {
-                          addHapticFeedback()
-                          setIsAgentModalOpen(true)
-                        }}
-                        title={t("task_detected_tooltip", {
-                          taskType: t(`task_type_${creditEstimate.taskType}`),
-                          multiplier: creditEstimate.multiplier,
-                          warning: creditEstimate.warning || "",
-                        })}
-                        style={{ fontSize: "0.9em", opacity: 0.8 }}
-                      >
-                        ~
-                        {t("credits", {
-                          count: Math.ceil(
-                            creditEstimate.multiplier *
-                              (selectedAgent?.creditCost || 1),
-                          ),
-                        })}
-                      </Button>
-                    ) : hitHourlyLimit && !threadId ? (
+                    {hitHourlyLimit && !threadId ? (
                       <Span
                         data-testid="hit-hourly-limit-info"
                         data-hourly-left={hourlyUsageLeft}

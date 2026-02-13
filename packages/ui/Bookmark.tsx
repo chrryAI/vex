@@ -47,15 +47,18 @@ export default function Bookmark({
   useEffect(() => {
     const t = threads?.threads?.find((t) => t.id === thread.id)
     if (t) {
-      t.bookmarks?.some((b) =>
-        isOwner(b, { userId: user?.id, guestId: guest?.id }),
+      if (
+        t.bookmarks?.some((b) =>
+          isOwner(b, { userId: user?.id, guestId: guest?.id }),
+        )
       )
-        ? setBookmarkedInternal(true)
-        : setBookmarkedInternal(false)
+        setBookmarkedInternal(true)
+      else setBookmarkedInternal(false)
     }
-  }, [threads])
+  }, [guest?.id, thread.id, threads, user?.id])
 
   const setBookmarked = async (bookmarked: boolean) => {
+    if (!token) return
     setBookmarkedInternal(bookmarked)
     plausible({
       name: ANALYTICS_EVENTS.BOOKMARK,
@@ -68,14 +71,13 @@ export default function Bookmark({
 
     onClick?.(bookmarked)
 
-    token &&
-      updateThread({
-        id: thread.id,
-        bookmarked,
-        token,
-      }).then(() => {
-        onSave?.()
-      })
+    updateThread({
+      id: thread.id,
+      bookmarked,
+      token,
+    }).then(() => {
+      onSave?.()
+    })
   }
 
   return (

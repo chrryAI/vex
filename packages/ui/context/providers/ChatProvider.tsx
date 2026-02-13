@@ -7,6 +7,7 @@ import React, {
   useState,
   useEffect,
   useRef,
+  useCallback,
 } from "react"
 import { useAuth } from "./AuthProvider"
 import { useData } from "./DataProvider"
@@ -21,6 +22,7 @@ import {
   messages,
   paginatedMessages,
   appWithStore,
+  placeHolder,
 } from "../../types"
 
 import { pageSizes, isOwner } from "../../utils"
@@ -37,10 +39,6 @@ import useSWR from "swr"
 import { useWebSocket } from "../../hooks/useWebSocket"
 import { useUserScroll } from "../../hooks/useUserScroll"
 import { useError } from "./ErrorProvider"
-interface placeHolder {
-  // TODO: Define placeHolder type
-  [key: string]: any
-}
 
 const ChatContext = createContext<
   | {
@@ -75,7 +73,7 @@ const ChatContext = createContext<
       setNextPage: (nextPage: number | undefined) => void
       scrollToBottom: (timeout?: number, force?: boolean) => void
       status: number | null
-      error: any
+      error?: Error | unknown
       until: number
       setUntil: (until: number) => void
       liked?: boolean
@@ -166,11 +164,8 @@ export function ChatProvider({
     setGuest,
     setUser,
     setInstructions,
-    setApp,
     storeApps,
-    storeAppsSwr,
     app,
-    chrry,
     plausible,
     aiAgents,
     token,
@@ -185,7 +180,6 @@ export function ChatProvider({
     thread,
     setThread,
     sushiAgent,
-    deepSeekAgent,
     perplexityAgent,
     claudeAgent,
     favouriteAgent,
@@ -201,13 +195,7 @@ export function ChatProvider({
     hasNotification,
     setHasNotification,
     setThreadId,
-    newApp,
-    updatedApp,
-    setNewApp,
-    setUpdatedApp,
-    setBaseAccountApp,
     burn,
-    setBurn,
     isPear,
     input,
     setInput,
@@ -215,9 +203,9 @@ export function ChatProvider({
     showFocus,
     hourlyLimit,
     hourlyUsageLeft,
-    baseApp,
     ...auth
   } = useAuth()
+  const { actions } = useData()
 
   // const threadId = threadIdRef.current
 
@@ -240,14 +228,13 @@ export function ChatProvider({
 
   const isEmpty = !messages?.length
 
-  const { pathname, searchParams, addParams, removeParams, ...router } =
-    useNavigation()
+  const { pathname, ...router } = useNavigation()
 
   const showTribe = auth.showTribe && isEmpty
 
   const setShowTribe = auth.setShowTribe
 
-  const { isExtension, isMobile, isTauri, isCapacitor } = usePlatform()
+  const { isExtension, isMobile, isTauri } = usePlatform()
 
   const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
 
@@ -272,14 +259,6 @@ export function ChatProvider({
   const toFetch = threadId || threadIdRef.current
 
   // Load cached threads immediately on mount
-
-  useEffect(() => {
-    if (user && migratedFromGuestRef.current) {
-      migratedFromGuestRef.current = false
-      fetchSession()
-      refetchThreads()
-    }
-  }, [user])
 
   const {
     data: threadsSwr,
@@ -332,6 +311,14 @@ export function ChatProvider({
     },
   )
 
+  useEffect(() => {
+    if (user && migratedFromGuestRef.current) {
+      migratedFromGuestRef.current = false
+      fetchSession()
+      refetchThreads()
+    }
+  }, [fetchSession, migratedFromGuestRef, refetchThreads, user])
+
   const [isLoadingThreads, setIsLoadingThreads] = useState(!threads)
 
   useEffect(() => {
@@ -352,49 +339,17 @@ export function ChatProvider({
       setThreads(threadsSwr)
       setIsLoadingThreads(false)
     }
-  }, [threadsSwr])
+  }, [setThreads, threadsSwr])
 
-  const fetchActiveCollaborationThreadsCount = async () => {
+  const fetchActiveCollaborationThreadsCount = useCallback(async () => {
     const threads = await actions.getThreads({
       pageSize: 1,
       collaborationStatus: "active",
       appId: app?.id,
     })
-    threads &&
-      threads.totalCount &&
+    if (threads?.totalCount)
       setActiveCollaborationThreadsCount(threads.totalCount)
-  }
-
-  const [
-    pendingCollaborationThreadsCount,
-    setPendingCollaborationThreadsCount,
-  ] = useState<number>(
-    threads?.threads?.filter((t) =>
-      t.collaborations?.some((c) => c.collaboration.status === "pending"),
-    ).length || 0,
-  )
-
-  const fetchPendingCollaborationThreadsCount = async () => {
-    const threads = await actions.getThreads({
-      pageSize: 1,
-      myPendingCollaborations: true,
-      appId: app?.id,
-    })
-    threads &&
-      threads.totalCount &&
-      setPendingCollaborationThreadsCount(threads.totalCount)
-  }
-
-  const setCollaborationStatus = (
-    newStatus: "pending" | "active" | undefined | null,
-  ) => {
-    if (newStatus === collaborationStatus) {
-      return
-    }
-    setCollaborationStatusInternal(newStatus)
-    fetchActiveCollaborationThreadsCount()
-    fetchPendingCollaborationThreadsCount()
-  }
+  }, [actions, app])
 
   const [isNewChat, setIsNewChatInternal] = useState(false)
 
@@ -421,7 +376,7 @@ export function ChatProvider({
 
       router.push(getAppSlug(a))
     }
-  }, [loadingApp, storeApps])
+  }, [getAppSlug, hasStoreApps, loadingApp, router, storeApps])
 
   const setIsNewAppChat = ({
     item,
@@ -433,11 +388,6 @@ export function ChatProvider({
     if (!item) {
       return
     }
-    console.log(`🚀 ~ hasStoreApps(item):`, hasStoreApps(item), {
-      value: true,
-      to: getAppSlug(item),
-      tribe,
-    })
 
     if (!hasStoreApps(item)) {
       loadingAppRef.current = item
@@ -452,52 +402,18 @@ export function ChatProvider({
     if (!threadIdRef.current) {
       setMessages([])
     }
-  }, [threadIdRef.current])
+  }, [threadIdRef])
 
-  const setIsNewChat = ({
-    value,
-    to = app?.slug ? getAppSlug(app) : "/",
-    tribe,
-  }: {
-    value: boolean
-    to?: string
-    tribe?: boolean
-  }) => {
-    if (value) {
-      setLiked(undefined)
-      setShowFocus(false)
-      setShowTribe(tribe === true)
-
-      setCollaborationStep(0)
-      setThread(undefined)
-      setProfile(undefined)
-      setStatus(null)
-      burn && setWasIncognito(true)
-      setCollaborationStatus(null)
-      setIsChatFloating(false)
-      setThreadId(undefined)
-      setMessages([])
-      threadIdRef.current = undefined
-      router.push(to)
-      refetchThreads()
-    } else {
-      // Ensure tribe view resets when closing a new chat
-      setShowTribe(false)
-    }
-
-    setIsNewChatInternal(value)
-  }
-
-  const fetchThreads = async () => {
+  const fetchThreads = useCallback(async () => {
     setShouldFetchThreads(true)
     await refetchThreads()
-  }
+  }, [refetchThreads])
 
   useEffect(() => {
     if (app) {
       fetchThreads()
     }
-  }, [app])
+  }, [app, fetchThreads])
 
   useEffect(() => {
     setWasIncognito(burn)
@@ -505,7 +421,7 @@ export function ChatProvider({
       // setThread(undefined)
       setProfile(undefined)
     }
-  }, [burn])
+  }, [burn, setProfile])
 
   const userOrGuest = user || guest
 
@@ -539,7 +455,7 @@ export function ChatProvider({
         }
       })()
     }
-  }, [shouldGetCredits, user, guest])
+  }, [shouldGetCredits, user, guest, actions])
 
   const [shouldMutate, setShouldMutate] = useState(false)
 
@@ -547,16 +463,6 @@ export function ChatProvider({
   const isStreamingStop = messages.some(
     (message) => message?.message?.isStreamingStop,
   )
-  useEffect(() => {
-    if (isStreaming) {
-      return
-    }
-
-    if (shouldMutate) {
-      mutate()
-      setShouldMutate(false)
-    }
-  }, [shouldMutate, isStreaming])
 
   const { notifyPresence, connected } = useWebSocket<{
     type: string
@@ -583,12 +489,12 @@ export function ChatProvider({
         if (user) {
           const updatedUser = await actions.getUser()
           setUser(updatedUser)
-          updatedUser && setInstructions(updatedUser.instructions)
+          if (updatedUser) setInstructions(updatedUser.instructions)
         }
         if (guest) {
           const updatedGuest = await actions.getGuest()
           setGuest(updatedGuest)
-          updatedGuest && setInstructions(updatedGuest.instructions)
+          if (updatedGuest) setInstructions(updatedGuest.instructions)
         }
         setShouldMutate(true)
       }
@@ -639,14 +545,10 @@ export function ChatProvider({
     const hasNotifications = !!threads?.threads?.some((thread: thread) =>
       hasThreadNotification({ thread }),
     )
-    hasNotifications && setHasNotification(hasNotifications)
-  }, [threads])
+    if (hasNotifications) setHasNotification(hasNotifications)
+  }, [setHasNotification, threads])
 
   const [isVisitor, setIsVisitor] = useState(false)
-
-  useEffect(() => {
-    toFetch && setIsNewChat({ value: false })
-  }, [toFetch])
 
   useEffect(() => {
     if (profile) {
@@ -687,11 +589,6 @@ export function ChatProvider({
   useEffect(() => {
     if (!token || !fingerprint || !connected) return
     // Listen for navigation messages from service worker
-    const handleServiceWorkerMessage = (event: MessageEvent) => {
-      if (event.data && event.data.type === "NAVIGATE_TO_URL") {
-        window.location.href = event.data.url
-      }
-    }
 
     const handleNetworkChange = () => {
       notifyPresence?.({
@@ -756,7 +653,16 @@ export function ChatProvider({
         })
       }
     }
-  }, [user, guest, threadId, connected])
+  }, [
+    user,
+    guest,
+    threadId,
+    connected,
+    token,
+    fingerprint,
+    notifyPresence,
+    thread?.id,
+  ])
 
   // Credits plausibleing
   const [creditsLeft, setCreditsLeft] = useState<number | undefined>(undefined)
@@ -769,15 +675,18 @@ export function ChatProvider({
 
   // AI Agents
 
-  useEffect(() => {
-    isPear && setSelectedAgent(sushiAgent)
-  }, [isPear])
-
   const onlyAgent = !!(app?.onlyAgent || isPear)
 
   const [debateAgent, setDebateAgentInternal] = useLocalStorage<
     aiAgent | undefined | null
   >("debateAgent", undefined)
+
+  const setDebateAgent = useCallback(
+    (agent: aiAgent | undefined | null) => {
+      setDebateAgentInternal(agent)
+    },
+    [setDebateAgentInternal],
+  )
 
   useEffect(() => {
     if (debateAgent) {
@@ -786,7 +695,7 @@ export function ChatProvider({
         props: { agent: debateAgent.displayName },
       })
     }
-  }, [debateAgent])
+  }, [debateAgent, plausible])
 
   const isAgentAuthorized = (agent: aiAgent | undefined | null) => {
     if (!agent) return false
@@ -800,13 +709,11 @@ export function ChatProvider({
 
   const ph = thread?.placeHolder || app?.placeHolder
 
-  const [placeHolder, setPlaceHolder] = useState<placeHolder | undefined>(
-    ph || undefined,
-  )
+  const [placeHolder, setPlaceHolder] = useState<placeHolder | undefined>(ph)
 
   useEffect(() => {
     setPlaceHolder(ph)
-  }, [thread, app])
+  }, [thread, app, ph])
 
   const [placeHolderText, setPlaceHolderText] = React.useState<
     string | undefined
@@ -822,15 +729,9 @@ export function ChatProvider({
     }
   }, [placeHolder, app])
 
-  const { appStatus, setIsSavingApp, setIsManagingApp } = useApp()
+  const { appStatus } = useApp()
 
   const { captureException } = useError()
-
-  useEffect(() => {
-    if (appStatus?.part) {
-      setSelectedAgent(sushiAgent)
-    }
-  }, [appStatus?.part])
 
   const [shouldFetchThread, setShouldFetchThread] = useState(!auth.threadData)
 
@@ -843,13 +744,16 @@ export function ChatProvider({
   const [until, setUntil] = useState<number>(1)
   const [liked, setLikedInternal] = useState<boolean | undefined>(undefined)
 
-  const setLiked = (liked: boolean | undefined) => {
-    setLikedInternal(liked)
-    plausible({
-      name: ANALYTICS_EVENTS.THREAD_LIKES,
-      props: { liked },
-    })
-  }
+  const setLiked = useCallback(
+    (liked: boolean | undefined) => {
+      setLikedInternal(liked)
+      plausible({
+        name: ANALYTICS_EVENTS.THREAD_LIKES,
+        props: { liked },
+      })
+    },
+    [plausible],
+  )
 
   const [isLoading, setIsLoading] = useState(!!threadId)
 
@@ -886,6 +790,17 @@ export function ChatProvider({
     },
   )
 
+  useEffect(() => {
+    if (isStreaming) {
+      return
+    }
+
+    if (shouldMutate) {
+      mutate()
+      setShouldMutate(false)
+    }
+  }, [shouldMutate, isStreaming, mutate])
+
   const [agentName, setAgentName] = useState(session?.aiAgent?.name || "")
 
   const [isWebSearchEnabled, setIsWebSearchEnabledInternal] = useState<boolean>(
@@ -904,28 +819,10 @@ export function ChatProvider({
     isImageGenerationEnabledRef.current = value
     setIsImageGenerationEnabledInternal(value)
     setSelectedAgentInternal(forAgent || sushiAgent)
-    value && setDebateAgent(null)
+    if (value) setDebateAgent(null)
   }
 
   const [isUserSelectedAgent, setIsUserSelectedAgent] = useState<boolean>(false)
-
-  const setSelectedAgent = (agent: aiAgent | undefined | null) => {
-    setIsWebSearchEnabledInternal(agent?.name === "perplexity")
-    if (selectedAgent?.name === agent?.name) return
-    if (agent === null) {
-      setAgentName("")
-      setSelectedAgentInternal(null)
-      setDebateAgent(null)
-      return
-    }
-
-    setSelectedAgentInternal(agent)
-    setAgentName(agent?.name || "")
-    isImageGenerationEnabledRef.current &&
-      setIsImageGenerationEnabledInternal(
-        agent?.capabilities?.imageGeneration || false,
-      )
-  }
 
   const defaultAgentInternal =
     aiAgents.find((a) => app?.defaultModel && a.name === app?.defaultModel) ||
@@ -943,40 +840,70 @@ export function ChatProvider({
     setDefaultAgent(defaultAgentInternal)
   }, [defaultAgentInternal])
 
-  useEffect(() => {
-    defaultAgent &&
-      (selectedAgent === undefined || !isUserSelectedAgent) &&
-      setSelectedAgent(defaultAgent)
-  }, [defaultAgent, isUserSelectedAgent, selectedAgent])
+  const setSelectedAgent = useCallback(
+    (agent: aiAgent | undefined | null) => {
+      setIsWebSearchEnabledInternal(agent?.name === "perplexity")
+      if (selectedAgent?.name === agent?.name) return
+      if (agent === null) {
+        setAgentName("")
+        setSelectedAgentInternal(null)
+        setDebateAgent(null)
+        return
+      }
+
+      setSelectedAgentInternal(agent)
+      setAgentName(agent?.name || "")
+      if (isImageGenerationEnabledRef.current)
+        setIsImageGenerationEnabledInternal(
+          agent?.capabilities?.imageGeneration || false,
+        )
+    },
+    [selectedAgent?.name, setDebateAgent, setSelectedAgentInternal],
+  )
 
   useEffect(() => {
-    auth.selectedAgent?.name !== selectedAgent?.name &&
-      selectedAgent &&
+    if (appStatus?.part) {
+      setSelectedAgent(sushiAgent)
+    }
+  }, [appStatus?.part, setSelectedAgent, sushiAgent])
+
+  useEffect(() => {
+    if (isPear) setSelectedAgent(sushiAgent)
+  }, [isPear, setSelectedAgent, sushiAgent])
+
+  useEffect(() => {
+    if (defaultAgent && (selectedAgent === undefined || !isUserSelectedAgent))
+      setSelectedAgent(defaultAgent)
+  }, [defaultAgent, isUserSelectedAgent, selectedAgent, setSelectedAgent])
+
+  useEffect(() => {
+    if (auth.selectedAgent?.name !== selectedAgent?.name && selectedAgent)
       auth.setSelectedAgent(selectedAgent)
-  }, [selectedAgent])
+  }, [auth, selectedAgent])
 
   useEffect(() => {
     if (selectedAgent == null) return
 
-    !selectedAgent && setSelectedAgent(defaultAgent)
-  }, [defaultAgent, selectedAgent])
+    if (!selectedAgent) setSelectedAgent(defaultAgent)
+  }, [defaultAgent, selectedAgent, setSelectedAgent])
 
   const setIsWebSearchEnabled = (value: boolean) => {
     if (value) {
-      app?.defaultModel === "perplexity" &&
-      app?.onlyAgent &&
-      selectedAgent?.name !== "perplexity"
-        ? setSelectedAgent(perplexityAgent)
-        : selectedAgent?.name !== "sushi" &&
-          !selectedAgent?.capabilities?.webSearch &&
-          setSelectedAgent(sushiAgent)
+      if (
+        app?.defaultModel === "perplexity" &&
+        app?.onlyAgent &&
+        selectedAgent?.name !== "perplexity"
+      ) {
+        setSelectedAgent(perplexityAgent)
+      } else if (
+        !selectedAgent?.capabilities?.webSearch &&
+        selectedAgent?.name !== "sushi"
+      ) {
+        setSelectedAgent(sushiAgent)
+      }
     }
 
     setIsWebSearchEnabledInternal(value)
-  }
-
-  const setDebateAgent = (agent: aiAgent | undefined | null) => {
-    setDebateAgentInternal(agent)
   }
 
   useEffect(() => {
@@ -995,7 +922,7 @@ export function ChatProvider({
 
       setSelectedAgent(undefined)
     }
-  }, [aiAgents, selectedAgent, user, guest])
+  }, [aiAgents, selectedAgent, user, guest, setSelectedAgent])
 
   const [isAgentModalOpen, setIsAgentModalOpenInternal] = useState(false)
 
@@ -1007,7 +934,7 @@ export function ChatProvider({
     if (!open) {
       setIsDebateAgentModalOpenInternal(false)
     }
-    open &&
+    if (open)
       plausible({
         name: ANALYTICS_EVENTS.AGENT_MODAL,
         props: {},
@@ -1017,7 +944,7 @@ export function ChatProvider({
   const setIsDebateAgentModalOpen = (open: boolean) => {
     setIsDebateAgentModalOpenInternal(open)
     setIsAgentModalOpenInternal(open)
-    open &&
+    if (open)
       plausible({
         name: ANALYTICS_EVENTS.DEBATE_AGENT_MODAL,
         props: {},
@@ -1035,10 +962,42 @@ export function ChatProvider({
 
     setSelectedAgent(a)
     setDebateAgent(null)
-  }, [app, aiAgents])
+  }, [app, aiAgents, setSelectedAgent, setDebateAgent])
 
-  const { isDevelopment, isE2E, actions } = useData()
+  const fetchPendingCollaborationThreadsCount = useCallback(async () => {
+    const threads = await actions.getThreads({
+      pageSize: 1,
+      myPendingCollaborations: true,
+      appId: app?.id,
+    })
+    if (threads && threads.totalCount)
+      setPendingCollaborationThreadsCount(threads.totalCount)
+  }, [actions, app?.id])
 
+  const [
+    pendingCollaborationThreadsCount,
+    setPendingCollaborationThreadsCount,
+  ] = useState<number>(
+    threads?.threads?.filter((t) =>
+      t.collaborations?.some((c) => c.collaboration.status === "pending"),
+    ).length || 0,
+  )
+
+  const setCollaborationStatus = useCallback(
+    (newStatus: "pending" | "active" | undefined | null) => {
+      if (newStatus === collaborationStatus) {
+        return
+      }
+      setCollaborationStatusInternal(newStatus)
+      fetchActiveCollaborationThreadsCount()
+      fetchPendingCollaborationThreadsCount()
+    },
+    [
+      collaborationStatus,
+      fetchActiveCollaborationThreadsCount,
+      fetchPendingCollaborationThreadsCount,
+    ],
+  )
   const isDebating = !!debateAgent
 
   const hitHourlyLimit = hourlyUsageLeft <= 0
@@ -1081,12 +1040,70 @@ export function ChatProvider({
     hitHourlyLimit,
     user?.lastMessage?.createdOn,
     guest?.lastMessage?.createdOn,
+    user,
+    guest,
+    setUser,
+    setGuest,
   ])
+
+  const setIsNewChat = useCallback(
+    ({
+      value,
+      to = app?.slug ? getAppSlug(app) : "/",
+      tribe,
+    }: {
+      value: boolean
+      to?: string
+      tribe?: boolean
+    }) => {
+      if (value) {
+        setLiked(undefined)
+        setShowFocus(false)
+        setShowTribe(tribe === true)
+
+        setCollaborationStep(0)
+        setThread(undefined)
+        setProfile(undefined)
+        setStatus(null)
+        if (burn) setWasIncognito(true)
+        setCollaborationStatus(null)
+        setIsChatFloating(false)
+        setThreadId(undefined)
+        setMessages([])
+        threadIdRef.current = undefined
+        router.push(to)
+        refetchThreads()
+      } else {
+        // Ensure tribe view resets when closing a new chat
+        setShowTribe(false)
+      }
+
+      setIsNewChatInternal(value)
+    },
+    [
+      app,
+      burn,
+      getAppSlug,
+      refetchThreads,
+      router,
+      setCollaborationStatus,
+      setLiked,
+      setProfile,
+      setShowFocus,
+      setShowTribe,
+      setThread,
+      setThreadId,
+      threadIdRef,
+    ],
+  )
+
+  useEffect(() => {
+    if (toFetch) setIsNewChat({ value: false })
+  }, [setIsNewChat, toFetch])
 
   const [nextPage, setNextPage] = useState<number | undefined>(undefined)
 
   const threadData = threadSWR || auth.threadData || undefined
-  const lastProcessedThreadDataRef = useRef<any>(null)
 
   const shouldStopAutoScrollRef = useRef(false)
 
@@ -1096,25 +1113,36 @@ export function ChatProvider({
 
   const toFetchRef = useRef<boolean | null>(null)
 
-  const scrollToBottom = (timeout = isTauri ? 0 : 500, force = false) => {
-    if (showFocus) setShowFocus(false)
-    setTimeout(() => {
-      if (isEmpty || isUserScrolling || hasStoppedScrolling) return
-      // Use requestAnimationFrame for more stable scrolling in Tauri
-      requestAnimationFrame(() => {
-        // In Tauri, use instant scroll instead of smooth to prevent hopping
-        const behavior = isTauri ? "instant" : "smooth"
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          behavior: behavior as ScrollBehavior,
+  const scrollToBottom = useCallback(
+    (timeout = isTauri ? 0 : 500, force = false) => {
+      if (showFocus) setShowFocus(false)
+      setTimeout(() => {
+        if (!force)
+          if (isEmpty || isUserScrolling || hasStoppedScrolling) return
+        // Use requestAnimationFrame for more stable scrolling in Tauri
+        requestAnimationFrame(() => {
+          // In Tauri, use instant scroll instead of smooth to prevent hopping
+          const behavior = isTauri ? "instant" : "smooth"
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: behavior as ScrollBehavior,
+          })
+          toFetchRef.current = null
         })
-        toFetchRef.current = null
-      })
-    }, timeout)
-  }
+      }, timeout)
+    },
+    [
+      hasStoppedScrolling,
+      isEmpty,
+      isTauri,
+      isUserScrolling,
+      setShowFocus,
+      showFocus,
+    ],
+  )
 
   useEffect(() => {
-    !toFetchRef.current && (toFetchRef.current = !!toFetch)
+    if (!toFetchRef.current) toFetchRef.current = !!toFetch
   }, [toFetch])
 
   const scrollToTop = (timeout = 0) => {
@@ -1132,36 +1160,25 @@ export function ChatProvider({
   }
 
   useEffect(() => {
-    isLoading && error && setIsLoading(false)
+    if (isLoading && error) setIsLoading(false)
   }, [error, isLoading])
 
   useEffect(() => {
-    // if (toFetch) {
-    //   setShowFocus(false)
-    //   return
-    // }
     if (showFocus) {
       setThread(undefined)
       setMessages([])
     }
-  }, [showFocus, toFetch])
+  }, [setThread, showFocus, toFetch])
 
   useEffect(() => {
-    if (!toFetch) {
-      status && setStatus(null)
-      // setMessages([])
+    if (!toFetch && status) {
+      setStatus(null)
       return
     }
 
     const serverMessages = threadData?.messages as paginatedMessages
 
     if (threadData?.thread && Array.isArray(serverMessages.messages)) {
-      // Skip if we've already processed this exact threadData
-      // if (lastProcessedThreadDataRef.current === threadData) return
-      lastProcessedThreadDataRef.current = threadData
-
-      // setMessages(serverMessages.messages)
-
       if (
         !isDebating &&
         !isStreaming &&
@@ -1177,24 +1194,23 @@ export function ChatProvider({
       setNextPage(threadData.messages.nextPage)
       setThread(threadData.thread)
 
-      isNewChat && setStatus(null)
+      if (isNewChat) setStatus(null)
 
-      !isNewChat &&
+      if (
         threadData?.thread?.user &&
         threadData.thread.user.id !== user?.id &&
+        !isNewChat
+      )
         setProfile(threadData.thread.user)
 
-      collaborationStatus !== "pending" &&
+      if (
+        collaborationStatus !== "pending" &&
         !shouldStopAutoScrollRef.current &&
         !isLoadingMore &&
         !(isSmallDevice && isDrawerOpen) &&
-        !isChatFloating &&
+        !isChatFloating
+      )
         scrollToBottom(100)
-
-      // return () => {
-      //   setThread(undefined)
-      //   setMessages([])
-      // }
     }
   }, [
     threadData,
@@ -1214,6 +1230,12 @@ export function ChatProvider({
     threadId,
     threadIdRef,
     messages,
+    toFetch,
+    status,
+    isDebating,
+    setThread,
+    setProfile,
+    scrollToBottom,
   ])
 
   return (
@@ -1265,7 +1287,7 @@ export function ChatProvider({
         selectedAgent,
         setSelectedAgent: (agent: aiAgent | undefined | null) => {
           setSelectedAgent(agent)
-          !isUserSelectedAgent && setIsUserSelectedAgent(true)
+          if (!isUserSelectedAgent) setIsUserSelectedAgent(true)
         },
         hitHourlyLimit,
         debateAgent,

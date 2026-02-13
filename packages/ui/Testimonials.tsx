@@ -33,7 +33,7 @@ const Testimonials = ({ style }: { style?: React.CSSProperties }) => {
             author: "— Jordan S.",
             emoji: <ChartColumnBig width={15} height={22} />,
           },
-        ].map((item, i) => (
+        ].map((item) => (
           <Div key={item.author} style={styles.testimonial.style}>
             <Span>
               <Quote

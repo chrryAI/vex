@@ -31,6 +31,7 @@ export default function Modal({
   borderHeader = true,
   dataTestId,
   hideOnClickOutside = true,
+  className,
   style,
   ...props
 }: {
@@ -40,6 +41,7 @@ export default function Modal({
   isModalOpen?: boolean
   hasCloseButton?: boolean
   children: React.ReactNode
+  className?: string
   title: React.ReactNode
   onToggle?: (open: boolean) => void
   event?: {
@@ -165,7 +167,12 @@ export default function Modal({
     hasHydrated &&
     isModalOpen &&
     createPortal(
-      <Div style={{ ...styles.modal.style }} role="dialog" aria-modal="true">
+      <Div
+        className={className}
+        style={{ ...styles.modal.style }}
+        role="dialog"
+        aria-modal="true"
+      >
         <Div
           style={{
             ...styles.main.style,

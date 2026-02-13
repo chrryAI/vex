@@ -30,7 +30,7 @@ import { toast } from "react-hot-toast"
 import { useAuth, useData } from "./context/providers"
 import { useWeatherStyles } from "./Weather.styles"
 import { Button, Div, Span } from "./platform"
-import { useStyles } from "./context/StylesContext"
+import { useAppContext } from "./context/AppContext"
 
 // Register English locale
 countries.registerLocale(enLocale)
@@ -105,10 +105,9 @@ export default function Weather({
   onLocationClick?: (location: string) => void
 }) {
   const { weather, refetchWeather, actions } = useData()
+  const { captureException } = useAppContext() // For re-render on app change, which can affect API URL and token
 
   const styles = useWeatherStyles()
-
-  const { utilities } = useStyles()
 
   const { user, guest, token, setUser, setGuest, API_URL } = useAuth()
 
@@ -141,7 +140,13 @@ export default function Weather({
           label: `${data.name}, ${data.country}`,
         }))
       })
-      .catch((error) => {
+      .catch((error: Error | unknown) => {
+        console.error(error)
+        captureException(
+          error instanceof Error
+            ? error
+            : new Error("Unknown error in Weather component"),
+        )
         toast.error(t("Something went wrong"))
         return []
       })
@@ -239,7 +244,13 @@ export default function Weather({
                 toast.success(t("Updated"))
 
                 refetchWeather()
-              } catch (error) {
+              } catch (error: Error | unknown) {
+                console.error(error)
+                captureException(
+                  error instanceof Error
+                    ? error
+                    : new Error("Unknown error in Weather component update"),
+                )
                 toast.error(t("Something went wrong"))
               }
             }}

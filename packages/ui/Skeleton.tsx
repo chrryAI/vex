@@ -12,16 +12,7 @@ import { useState } from "react"
 const Subscribe = lazy(() => import("./Subscribe"))
 const SignIn = lazy(() => import("./SignIn"))
 const CharacterProfiles = lazy(() => import("./CharacterProfiles"))
-import {
-  Button,
-  Div,
-  H1,
-  Main,
-  usePreviousPathname,
-  usePlatform,
-  VexToast,
-  Span,
-} from "./platform"
+import { Button, Div, H1, Main, usePlatform, VexToast, Span } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import {
   useChat,
@@ -54,7 +45,7 @@ function FocusButton({
   const focus = app?.store?.apps?.find((app) => app.slug === "focus")
 
   const hasHydrated = useHasHydrated()
-  const { isMobileDevice, isSmallDevice } = useTheme()
+  const { isMobileDevice } = useTheme()
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const { skeletonStyles, utilities } = useStyles()
 
@@ -174,7 +165,7 @@ export default function Skeleton({
   const { isEmpty } = useChat()
 
   // Navigation context
-  const { pathname, setIsNewChat, hasNotification } = useNavigationContext()
+  const { setIsNewChat, hasNotification } = useNavigationContext()
 
   const { isDrawerOpen, setIsDrawerOpen, isSmallDevice, isMobileDevice } =
     useTheme()
@@ -185,7 +176,7 @@ export default function Skeleton({
   // Data context
   const { FRONTEND_URL } = useData()
 
-  const { threadIdRef, isIDE, ...auth } = useAuth()
+  const { threadIdRef, isIDE } = useAuth()
 
   const threadId = threadIdRef.current
 
@@ -200,11 +191,7 @@ export default function Skeleton({
     setIsDrawerOpen(!isDrawerOpen)
   }
 
-  const previous = usePreviousPathname()
-  const isHome = pathname === "/" || pathname === ""
-
   useEffect(() => {
-    // Preload toast icons
     const preloadImages = [
       `${FRONTEND_URL}/frog.png`,
       `${FRONTEND_URL}/hamster.png`,
@@ -217,14 +204,12 @@ export default function Skeleton({
       })
     }
 
-    // Enable body scroll on Capacitor
     if (isCapacitor && os === "ios") {
       document.body.style.overflow = "auto"
       ;(document.body.style as any).WebkitOverflowScrolling = "touch"
     }
   }, [FRONTEND_URL, isCapacitor, os])
 
-  // Call ALL hooks sssbefore any conditional returns
   const { skeletonStyles, utilities } = useStyles()
 
   return (
@@ -235,7 +220,6 @@ export default function Skeleton({
         ...skeletonStyles.page.style,
         paddingLeft: !isSmallDevice && isDrawerOpen ? 255 : 0,
         background: "transparent",
-        // paddingTop: isCapacitor && os === "ios" ? 40 : undefined,
       }}
     >
       <Div

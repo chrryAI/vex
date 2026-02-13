@@ -60,7 +60,7 @@ export default function MemoryConsent({
   } = useNavigationContext()
 
   const { clear } = useCache()
-  const { isManagingApp, canEditApp, minimize } = useApp()
+  const { isManagingApp, minimize } = useApp()
   const { actions } = useData()
 
   const { captureException } = useError()
@@ -78,9 +78,10 @@ export default function MemoryConsent({
     function handleClickOutside(event: MouseEvent) {
       if (
         containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
+        !containerRef.current.contains(event.target as Node) &&
+        isMemoryConsentManageVisible
       ) {
-        isMemoryConsentManageVisible && setIsMemoryConsentManageVisible(false)
+        setIsMemoryConsentManageVisible(false)
       }
     }
 
@@ -88,7 +89,7 @@ export default function MemoryConsent({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
-  }, [isMemoryConsentManageVisible])
+  }, [isMemoryConsentManageVisible, setIsMemoryConsentManageVisible])
 
   const [isUpdatingMemories, setIsUpdatingMemories] = useState(false)
 
@@ -132,7 +133,6 @@ export default function MemoryConsent({
             <Checkbox
               style={{ marginLeft: "auto" }}
               checked={auth.burn}
-              children={""}
               onChange={() => {
                 setBurn(!auth.burn)
               }}
@@ -147,8 +147,12 @@ export default function MemoryConsent({
     <Div
       ref={containerRef}
       data-testid="memory-consent-content"
+      key={isDeleted ? "session-deleted" : "memory-consent"}
       style={{ ...styles.memoryConsent.style, ...style }}
     >
+      {isDeleted && (
+        <Input type="hidden" value={"deleted"} data-testid="is-deleted" />
+      )}
       <Div style={styles.buttons.style}>
         <>
           {memoriesEnabled && !isMemoryConsentManageVisible && !minimize ? (
@@ -320,14 +324,6 @@ export default function MemoryConsent({
                     )}
                     {t("Disable Memories")}
                   </ConfirmButton>
-                  {isDeleted && (
-                    <Input
-                      type="hidden"
-                      value={isDeleted.toString()}
-                      onChange={() => {}}
-                      data-testid="is-deleted"
-                    />
-                  )}
 
                   {isE2E && isLiveTest && (
                     <ConfirmButton
@@ -356,7 +352,7 @@ export default function MemoryConsent({
 
                           setIsDeleted(true)
 
-                          data.success && toast.success(t("Session cleared"))
+                          if (data.success) toast.success(t("Session cleared"))
                           clear()
                         } catch (error) {
                           console.error("Error updating guest:", error)

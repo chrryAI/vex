@@ -1,3 +1,4 @@
+/* eslint-disable react/display-name */
 "use client"
 
 import React, {
@@ -46,7 +47,6 @@ import {
 } from "./context/providers"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useTimerContext } from "./context/TimerContext"
-import { appWithStore } from "./types"
 import Grapes from "./Grapes"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
@@ -60,7 +60,7 @@ function FocusButton({
   const { time, presetMin1 } = useTimerContext()
 
   const { appStyles } = useStyles()
-  const { isExtension, isFirefox, isWeb: _isWeb } = usePlatform()
+  const { isExtension, isFirefox } = usePlatform()
   const { focus, getAppSlug, setShowFocus, app } = useAuth()
 
   const hasHydrated = useHasHydrated()
@@ -127,10 +127,9 @@ export default function App({
   }) => void
 }) {
   const { t } = useAppContext()
-  const { time: _time, playKitasaku, setPlayKitasaku } = useTimerContext()
+  const { playKitasaku, setPlayKitasaku } = useTimerContext()
 
   const {
-    slug,
     app,
     appForm,
     appFormWatcher,
@@ -161,12 +160,9 @@ export default function App({
     store,
     burnApp,
     apps,
-    guestBaseApp,
-    userBaseApp,
     accountApp,
     token,
     loadingApp,
-    userBaseStore: _userBaseStore,
     canBurn,
     setBurn,
     isPear,
@@ -174,7 +170,6 @@ export default function App({
     displayedApps,
     setDisplayedApps,
     plausible,
-    lastApp: _lastApp,
     ...auth
   } = useAuth()
 
@@ -245,29 +240,7 @@ export default function App({
       })
   }
 
-  const appsInternal = React.useMemo(
-    () => getApps(),
-    [
-      getApps, // 🎯 Linter'ın istediği o kritik eksik!
-      apps,
-      burnApp,
-      store,
-      chrry,
-      grape,
-      zarathustra,
-      atlas,
-      popcorn,
-      vex,
-      currentStoreId,
-      app,
-      baseApp,
-      userBaseApp,
-      guestBaseApp,
-      isBlossom,
-      focus,
-      isPear,
-    ],
-  )
+  const appsInternal = getApps()
 
   useEffect(() => {
     // Only update if app IDs actually changed (prevent infinite loop)
@@ -283,7 +256,7 @@ export default function App({
     if (currentIds !== newIds) {
       setDisplayedApps(appsInternal)
     }
-  }, [appsInternal])
+  }, [appsInternal, setDisplayedApps, displayedApps])
 
   // Use apps from context - sort: store base app first, Chrry second, rest keep original order
   // No need for separate state + useEffect, useMemo already handles updates
@@ -315,7 +288,7 @@ export default function App({
     }
   }, [app, app?.image])
 
-  const { isExtension, isFirefox, isWeb, os } = usePlatform()
+  const { isExtension, isFirefox } = usePlatform()
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement
@@ -409,7 +382,9 @@ export default function App({
             console.log("✅ Image uploaded:", data.url)
 
             appForm?.setValue("image", data.url)
-            app && setApp({ ...app, image: data.url })
+            if (app) {
+              setApp({ ...app, image: data.url })
+            }
             setImage(data.url)
           } catch (error) {
             console.error("❌ Failed to upload image:", error)
@@ -425,8 +400,6 @@ export default function App({
 
   const fbStyles = useFocusButtonStyles()
 
-  const videoRef = React.useRef<HTMLVideoElement>(null)
-
   const [isUploading, setIsUploading] = useState(false)
 
   const hasErrors = Object.keys(appForm?.formState.errors || {}).length > 0
@@ -435,6 +408,7 @@ export default function App({
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const isSettingVisible = hasHydrated && isAppOwner && !isManagingApp
+  const { appStyles: styles, utilities } = useStyles()
 
   const BurnButton = useMemo(
     () =>
@@ -453,7 +427,12 @@ export default function App({
           onClick={() => {
             const newBurn = burnApp?.id === app?.id || !auth.burn
             setBurn(newBurn)
-            !newBurn && toggleInstructions()
+
+            if (newBurn) {
+              return
+            }
+
+            toggleInstructions()
           }}
         >
           <Span
@@ -467,13 +446,29 @@ export default function App({
           </Span>
         </Button>
       ),
-    [burn, toggleInstructions, burnApp?.id, app?.id, auth.burn, setBurn],
+    [
+      burn,
+      toggleInstructions,
+      burnApp?.id,
+      app?.id,
+      auth.burn,
+      setBurn,
+      styles,
+      t,
+      utilities,
+    ],
   )
+
+  const canAddName = appFormWatcher?.canSubmit
+
   useEffect(() => {
-    ;(appStatus?.part === "highlights" || appStatus?.part === "title") &&
-      !canAddName &&
+    if (
+      (appStatus?.part === "highlights" || appStatus?.part === "title") &&
+      !canAddName
+    ) {
       setAppStatus(undefined)
-  }, [appStatus, appFormWatcher])
+    }
+  }, [appStatus, appFormWatcher, canAddName, setAppStatus])
 
   const triggerFileInput = () => {
     addHapticFeedback()
@@ -518,18 +513,17 @@ export default function App({
           <Span>{storeApp?.name}</Span>
         </A>
       ),
-    [storeApp],
+    [
+      storeApp,
+      getAppSlug,
+      setIsNewAppChat,
+      setAppStatus,
+      addHapticFeedback,
+      utilities,
+    ],
   )
 
-  const canAddName = appFormWatcher?.canSubmit
-
   const canAddTitle = isManagingApp
-
-  const { appStyles: styles, utilities } = useStyles()
-
-  const [selectedGrapeApp, setSelectedGrapeApp] = useState<
-    appWithStore | undefined
-  >()
 
   return (
     <Div>
@@ -831,13 +825,6 @@ export default function App({
               {
                 <Div
                   onClick={() => {
-                    if (videoRef.current && os === "ios") {
-                      !playKitasaku
-                        ? videoRef.current.play().catch((error: any) => {
-                            console.error(error)
-                          })
-                        : videoRef.current.pause()
-                    }
                     setPlayKitasaku(!playKitasaku)
                   }}
                   style={{
@@ -886,7 +873,6 @@ export default function App({
                           />
                         )}
                         <Video
-                          // ref={videoRef}
                           style={fbStyles.video.style}
                           src={`${FRONTEND_URL}/video/blob.mp4`}
                           autoPlay

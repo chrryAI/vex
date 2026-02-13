@@ -3,7 +3,6 @@ import { Span, Button } from "./platform"
 import { appWithStore } from "./types"
 import { useAuth, useChat } from "./context/providers"
 import A from "./a/A"
-import { useStyles } from "./context/StylesContext"
 import Loading from "./Loading"
 
 export default function AppLink({
@@ -33,7 +32,7 @@ export default function AppLink({
   icon?: React.ReactNode
   setIsNewAppChat?: (item: appWithStore) => void
 }) {
-  const { setIsWebSearchEnabled, setIsNewAppChat } = useChat()
+  const { setIsNewAppChat } = useChat()
   const {
     loadingApp,
     getAppSlug,
@@ -49,7 +48,7 @@ export default function AppLink({
 
   React.useEffect(() => {
     setIsLoading(loadingApp && loadingApp?.id === app?.id)
-  }, [loadingApp])
+  }, [app?.id, loadingApp])
 
   useEffect(() => {
     const a = storeApps.find((app) => app.id === loadingApp?.id)
@@ -57,7 +56,7 @@ export default function AppLink({
       setLoadingApp(undefined)
       props.setIsNewAppChat?.(a)
     }
-  }, [loadingApp, storeApps])
+  }, [hasStoreApps, loadingApp, props, setLoadingApp, storeApps])
 
   useEffect(() => {
     if (!app) return
@@ -66,9 +65,8 @@ export default function AppLink({
     if (!isExist) {
       mergeApps([app])
     }
-  }, [storeApps, app])
+  }, [storeApps, app, mergeApps])
 
-  const { utilities } = useStyles()
   if (as === "a") {
     return (
       <A

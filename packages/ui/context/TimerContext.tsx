@@ -89,45 +89,63 @@ export const TimerContext = createContext<{
   isCancelled: false,
   remoteTimer: null,
   timer: null,
-  setTimer: (timer: timer | null) => {},
-  updateTimer: (data: timer) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setTimer: (_timer: timer | null) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  updateTimer: (_data: timer) => {},
   selectedTasks: undefined,
-  setSelectedTasks: (tasks: Task[] | undefined) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setSelectedTasks: (_tasks: Task[] | undefined) => {},
   presetMin1: 25,
   presetMin2: 15,
   presetMin3: 5,
-  setPresetMin1: (value: number) => {},
-  setPresetMin2: (value: number) => {},
-  setPresetMin3: (value: number) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setPresetMin1: (_value: number) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setPresetMin2: (_value: number) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setPresetMin3: (_value: number) => {},
   handlePause: () => {},
   handleResume: () => {},
   playKitasaku: false,
-  setPlayKitasaku: (playKitasaku: boolean) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setPlayKitasaku: (_playKitasaku: boolean) => {},
   stopAdjustment: () => {},
-  startAdjustment: (direction: number, isMinutes: boolean) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  startAdjustment: (_direction: number, _isMinutes: boolean) => {},
   playTimerEnd: () => {},
   fetchTasks: async () => {},
   fetchTimer: async () => {},
   isLoadingTasks: false,
   playBirds: false,
-  setPlayBirds: (playBirds: boolean) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setPlayBirds: (_playBirds: boolean) => {},
   activePomodoro: null,
-  setActivePomodoro: (activePomodoro: number | null) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setActivePomodoro: (_activePomodoro: number | null) => {},
   time: 0,
   isCountingDown: false,
   isPaused: false,
   isFinished: false,
   startTime: 0,
-  setIsCountingDown: (isCountingDown: boolean) => {},
-  setIsPaused: (isPaused: boolean) => {},
-  setTime: (time: number) => {},
-  setIsFinished: (isFinished: boolean) => {},
-  startCountdown: (duration?: number) => {},
-  setStartTime: (startTime: number) => {},
-  handlePresetTime: (minutes: number) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setIsCountingDown: (_isCountingDown: boolean) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setIsPaused: (_isPaused: boolean) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setTime: (_time: number) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setIsFinished: (_isFinished: boolean) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  startCountdown: (_duration?: number) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setStartTime: (_startTime: number) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  handlePresetTime: (_minutes: number) => {},
   handleCancel: () => {},
   replay: false,
-  setReplay: (replay: boolean) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setReplay: (_replay: boolean) => {},
   tasks: {
     tasks: [] as Task[],
     totalCount: 0,
@@ -206,11 +224,6 @@ export function TimerContextProvider({
       if (type === "mood") {
         await fetchMood()
       }
-
-      // if (data && type === "selected_tasks") {
-      //   // Only update if fingerprint is different to prevent loops
-      //   setTimerTasks(data)
-      // }
     },
     token,
     deviceId,
@@ -228,91 +241,36 @@ export function TimerContextProvider({
   const [timerState, setTimerState] = useState<TimerState | null>(null)
   const [activePomodoro, setActivePomodoro] = useState<number | null>(null)
 
-  const setTimer = (timer: timer | null) => {
-    timer && auth.setTimer(timer)
-    setTimerInternal((prevTimer) => {
-      if (
-        prevTimer?.id === timer?.id &&
-        prevTimer?.isCountingDown === timer?.isCountingDown &&
-        prevTimer?.count === timer?.count &&
-        prevTimer?.preset1 === timer?.preset1 &&
-        prevTimer?.preset2 === timer?.preset2 &&
-        prevTimer?.preset3 === timer?.preset3
-      ) {
-        return prevTimer // No change, prevent re-render
-      }
+  const setTimer = useCallback(
+    (timer: timer | null) => {
+      if (timer) auth.setTimer(timer)
+      setTimerInternal((prevTimer) => {
+        if (
+          prevTimer?.id === timer?.id &&
+          prevTimer?.isCountingDown === timer?.isCountingDown &&
+          prevTimer?.count === timer?.count &&
+          prevTimer?.preset1 === timer?.preset1 &&
+          prevTimer?.preset2 === timer?.preset2 &&
+          prevTimer?.preset3 === timer?.preset3
+        ) {
+          return prevTimer // No change, prevent re-render
+        }
 
-      return timer
-    })
-  }
+        return timer
+      })
+    },
+    [auth],
+  ) // Only depend on auth.setTimer, which is stable
 
   const [remoteTimer, setRemoteTimer] = useState<
     (timer & { device?: device }) | null
   >(null)
 
-  useEffect(() => {
-    if (!remoteTimer || remoteTimer.count !== timer?.count) return
-    if (!remoteTimer?.isCountingDown) {
-      handlePause(false)
-    } else {
-      handleResume()
-    }
-
-    setRemoteTimer(null)
-  }, [remoteTimer, timer])
-
   const [isPaused, setIsPaused] = useState(false)
   const [isFinished, setIsFinished] = useState(false)
   const [isCancelled, setIsCancelled] = useState(false)
 
-  const [timerTasks, setTimerTasks] = useState<Task[]>([])
-  const lastProcessedFingerprintRef = useRef<string | undefined>(undefined)
   const lastFilteredTasksRef = useRef<string>("")
-
-  useEffect(() => {
-    if (!timerTasks?.length) return
-    // Use functional update to avoid tasks dependency
-    setTasks((prevTasks) => {
-      // Safety check: ensure prevTasks and prevTasks.tasks exist
-      if (!prevTasks || !prevTasks.tasks || !Array.isArray(prevTasks.tasks)) {
-        return prevTasks
-      }
-
-      // Check if there are actual updates before updating
-      const hasUpdates = timerTasks.some((t) => {
-        const task = prevTasks.tasks.find((task) => task.id === t.id)
-        if (!task?.total || !t.total) return false
-
-        const updatedTotal = t.total.reduce((a, b) => a + b.count, 0)
-        const currentTotal = task.total.reduce((a, b) => a + b.count, 0)
-
-        return updatedTotal > currentTotal
-      })
-
-      // Don't update if nothing changed - prevents infinite loop
-      if (!hasUpdates) return prevTasks
-
-      return {
-        ...prevTasks,
-        tasks: prevTasks.tasks.map((task) => {
-          const updatedTask = timerTasks.find((t) => t.id === task.id)
-          if (!updatedTask?.total?.length || !task.total?.length) return task
-
-          const updatedTotal = updatedTask.total.reduce(
-            (a, b) => a + b.count,
-            0,
-          )
-          const currentTotal = task.total.reduce((a, b) => a + b.count, 0)
-
-          return updatedTotal > currentTotal
-            ? { ...task, total: updatedTask.total }
-            : task
-        }),
-      }
-    })
-
-    // Clear the fingerprint after processing to prevent re-running
-  }, [timerTasks, fingerprint])
 
   const [presetMin1, setPresetMin1Internal] = useLocalStorage(
     "presetMin1",
@@ -357,13 +315,11 @@ export function TimerContextProvider({
 
       return currentSelected
     })
-  }, [tasks?.tasks])
+  }, [setSelectedTasksInternal, tasks?.tasks])
 
   const updateTimer = useCallback(
     (data: timer) => {
       if (!token) return
-
-      const deviceId = fingerprint
 
       // Filter out tasks with empty total arrays (not actively running)
       const activeTasks = selectedTasks?.filter(
@@ -390,22 +346,8 @@ export function TimerContextProvider({
         lastSent.current = now
       }
     },
-    [send, selectedTasks, token, isCountingDown, isFinished, remoteTimer],
+    [token, selectedTasks, send],
   )
-
-  useEffect(() => {
-    if (!timer) return
-
-    if (timer.isCountingDown === isCountingDown) return
-
-    if (isCountingDown) {
-      handleResume()
-    } else {
-      handlePause()
-    }
-
-    // updateTimer(timer)
-  }, [timer, isCountingDown])
 
   const setPresetMin1 = useCallback(
     (value: number) => {
@@ -416,7 +358,7 @@ export function TimerContextProvider({
         updateTimer(newTimer)
       }
     },
-    [timer, updateTimer],
+    [setPresetMin1Internal, setTimer, timer, updateTimer],
   )
 
   const [presetMin2, setPresetMin2Internal] = useLocalStorage(
@@ -433,7 +375,7 @@ export function TimerContextProvider({
         updateTimer(newTimer)
       }
     },
-    [fingerprint, timer, updateTimer],
+    [fingerprint, setPresetMin2Internal, setTimer, timer, updateTimer],
   )
 
   const [presetMin3, setPresetMin3Internal] = useLocalStorage(
@@ -450,29 +392,23 @@ export function TimerContextProvider({
         updateTimer(newTimer)
       }
     },
-    [fingerprint, timer, updateTimer],
+    [fingerprint, setPresetMin3Internal, setTimer, timer, updateTimer],
   )
 
-  useEffect(() => {
-    if (!tasks?.totalCount || selectedTasks) return
-    if (!tasks?.tasks || !Array.isArray(tasks.tasks)) return
-
-    const filter = tasks.tasks.filter((task) => task.selected)
-    setSelectedTasksInternal(filter)
-  }, [tasks?.totalCount])
-
-  const setSelectedTasks = useCallback((value: Task[] | undefined) => {
-    setSelectedTasksInternal(value)
-  }, [])
+  const setSelectedTasks = useCallback(
+    (value: Task[] | undefined) => {
+      setSelectedTasksInternal(value)
+    },
+    [setSelectedTasksInternal],
+  )
 
   const [startTime, setStartTime] = useLocalStorage<number>(
     "startTime",
     timer?.count || 0,
   )
-  const timerRef = useRef<any | null>(null)
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const isTimerEndingRef = useRef<boolean>(false)
   const adjustIntervalRef = useRef<number | null>(null)
-  const lastVisibilityUpdateRef = useRef<number>(0)
   const hasRestoredTimerRef = useRef<boolean>(false)
 
   const [playBirds, setPlayBirds] = useState<boolean | undefined>(undefined)
@@ -482,7 +418,15 @@ export function TimerContextProvider({
     setPresetMin1Internal(timer.preset1)
     setPresetMin2Internal(timer.preset2)
     setPresetMin3Internal(timer.preset3)
-  }, [timer?.id])
+  }, [
+    setPresetMin1Internal,
+    setPresetMin2Internal,
+    setPresetMin3Internal,
+    timer?.id,
+    timer?.preset1,
+    timer?.preset2,
+    timer?.preset3,
+  ])
 
   const [shouldFetchTimer, setShouldFetchTimer] = useState(true)
 
@@ -504,20 +448,10 @@ export function TimerContextProvider({
 
   const hasAutoResumedRef = useRef(false)
 
-  useEffect(() => {
-    if (isCountingDown) return // Already counting
-    if (!timerData?.isCountingDown) return // DB says not counting
-    if (timerData.count === 0) return // Timer finished
-    if (hasAutoResumedRef.current) return // Already auto-resumed
-
-    hasAutoResumedRef.current = true
-    handleResume()
-  }, [timerData?.isCountingDown, timerData?.count])
-
-  const fetchTimer = async () => {
+  const fetchTimer = useCallback(async () => {
     setShouldFetchTimer(true)
-    shouldFetchTimer && refetchTimer()
-  }
+    return refetchTimer()
+  }, [refetchTimer])
 
   useEffect(() => {
     if (timerData) {
@@ -551,13 +485,13 @@ export function TimerContextProvider({
         setIsFinished(true)
       }
     }
-  }, [timerData])
+  }, [setStartTime, setTimer, timerData])
 
   useEffect(() => {
     if (!timer && token && fingerprint && user && !isLoadingTimer) {
       fetchTimer()
     }
-  }, [fingerprint, token, user, timer, isLoadingTimer])
+  }, [fingerprint, token, user, timer, isLoadingTimer, fetchTimer])
 
   useEffect(() => {
     if (!token || !isCountingDown || isPaused || !selectedTasks?.length) return
@@ -604,7 +538,9 @@ export function TimerContextProvider({
     isCountingDown,
     isPaused,
     token,
-    selectedTasks?.map((t) => t.id).join(","),
+    selectedTasks,
+    startTime,
+    setTasks,
   ])
 
   // Use ref to plausible timer sync - only sync on state changes, not every second
@@ -657,6 +593,8 @@ export function TimerContextProvider({
     presetMin2,
     presetMin3,
     startTime,
+    setTimer,
+    updateTimer,
   ])
 
   const currentStateRef = useRef({
@@ -675,118 +613,6 @@ export function TimerContextProvider({
     }
   }, [time, isCountingDown, isPaused, isFinished])
 
-  const handleTimerEnd = useCallback(() => {
-    if (!isCountingDown) return
-
-    setIsFinished(true)
-    setPlayBirds(false)
-
-    if (timer) {
-      updateTimer({
-        ...timer,
-        count: 0,
-        isCountingDown: false,
-      })
-    }
-
-    setIsCountingDown(false)
-    setIsPaused(false)
-    setTime(0)
-
-    // Clear timer state immediately
-    setTimerState(null)
-
-    // Clear interval
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
-    }
-
-    // Play sound and show notification
-    playTimerEnd()
-    sendNotification()
-
-    setTimeout(() => {
-      if (replay) {
-        handlePresetTime(presetMin1)
-        startCountdown()
-      }
-    }, 1000)
-  }, [isCountingDown, timer, updateTimer, isExtension, replay, presetMin1])
-
-  useEffect(() => {
-    if (time === 0 && isCountingDown) {
-      handleTimerEnd()
-    }
-  }, [time, isCountingDown])
-
-  const startCountdown = useCallback(
-    (duration?: number) => {
-      if (duration !== undefined) {
-        setTime(duration)
-      }
-
-      // Clear any existing timer
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-      }
-
-      setIsCountingDown(true)
-      setIsPaused(false)
-      setIsFinished(false)
-      setIsCancelled(false)
-
-      const now = Date.now()
-      setStartTime(now)
-
-      if (timer) {
-        updateTimer({
-          ...timer,
-          isCountingDown: true,
-        })
-      }
-
-      console.log("Starting web timer")
-      // Start local timer for web mode
-      const initialTime = duration ?? time
-      let lastUpdate = now
-
-      timerRef.current = setInterval(() => {
-        const currentTime = Date.now()
-        const elapsedTime = Math.floor((currentTime - lastUpdate) / 1000)
-
-        if (elapsedTime > 0) {
-          lastUpdate = currentTime - ((currentTime - lastUpdate) % 1000)
-
-          setTime((prevTime) => {
-            const newTime = Math.max(0, prevTime - elapsedTime)
-
-            if (newTime === 0 && prevTime > 0) {
-              clearInterval(timerRef.current)
-              timerRef.current = null
-              // Trigger timer end after state update
-              setTimeout(() => handleTimerEnd(), 0)
-            }
-            return newTime
-          })
-        }
-      }, 100)
-
-      // Save state to localStorage
-      setTimerState({
-        time: initialTime,
-        isCountingDown: true,
-        isPaused: false,
-        startTime: now,
-        isFinished: false,
-      })
-
-      plausible({ name: "timer_start", props: { duration: duration || time } })
-    },
-    [time, isExtension, updateTimer, timer, fingerprint],
-  )
-
   const handleCancel = useCallback(() => {
     setIsCancelled(true)
     setPlayBirds(false)
@@ -799,7 +625,7 @@ export function TimerContextProvider({
     // Clear any existing timer interval
     if (timerRef.current) {
       clearInterval(timerRef.current)
-      timerRef.current = null
+      timerRef.current = undefined
     }
 
     if (timer) {
@@ -830,7 +656,7 @@ export function TimerContextProvider({
     setTimeout(() => {
       isTimerEndingRef.current = false
     }, 500)
-  }, [isExtension, timer, fingerprint])
+  }, [timer, plausible, updateTimer, setTimer])
 
   const handlePause = useCallback(
     (update: boolean = true) => {
@@ -841,7 +667,7 @@ export function TimerContextProvider({
       // Clear interval if running locally
       if (timerRef.current) {
         clearInterval(timerRef.current)
-        timerRef.current = null
+        timerRef.current = undefined
       }
 
       // Update local storage for web version
@@ -863,25 +689,6 @@ export function TimerContextProvider({
     [timer, updateTimer, time, startTime, plausible],
   )
 
-  const handleResume = useCallback(() => {
-    setIsPaused(false)
-    setIsCancelled(false)
-    setIsCountingDown(true)
-
-    const now = Date.now()
-    setStartTime(now)
-
-    // Start the timer with current remaining time
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-    }
-
-    // Start countdown with current display time
-    startCountdown(time)
-
-    plausible({ name: "timer_resume", props: { timeLeft: time } })
-  }, [time, startCountdown, plausible])
-
   const handlePresetTime = useCallback(
     (minutes: number) => {
       const newTime = minutes * 60
@@ -894,7 +701,7 @@ export function TimerContextProvider({
       if (isCountingDown) {
         if (timerRef.current) {
           clearInterval(timerRef.current)
-          timerRef.current = null
+          timerRef.current = undefined
         }
         setIsCountingDown(false)
       }
@@ -923,56 +730,17 @@ export function TimerContextProvider({
   // Set mounted state
 
   // Restore timer state on mount
-  const restoreTimerState = useCallback(async () => {
-    try {
-      // State is now loaded automatically via useLocalStorage hook
-      if (!timerState) {
-        return
-      }
-      const state = timerState
-
-      // If timer was running, calculate elapsed time
-      if (state.isCountingDown && !state.isPaused && state.startTime) {
-        const elapsedTime = Math.floor((Date.now() - state.startTime) / 1000)
-        state.time = Math.max(0, state.time - elapsedTime)
-      }
-
-      console.log("Restoring timer state:", state)
-
-      if (state) {
-        setTime(state.time)
-        setIsCountingDown(state.isCountingDown)
-        setIsPaused(state.isPaused)
-        setIsFinished(state.isFinished)
-
-        if (state.startTime) {
-          setStartTime(state.startTime)
-        }
-
-        // If timer was running, restart it
-        if (state.isCountingDown && !state.isPaused && state.time > 0) {
-          startCountdown(state.time)
-        }
-      }
-    } catch (error) {
-      console.error("Error restoring timer state:", error)
-    }
-  }, [isExtension])
-
-  useEffect(() => {
-    restoreTimerState()
-  }, [restoreTimerState])
 
   const audioRef = useRef<HTMLAudioElement | undefined>(undefined)
 
   const kitasakuRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
-    playBirds && plausible({ name: "play_bird_sound" })
+    if (playBirds) plausible({ name: "play_bird_sound" })
 
     // Only use Audio API on web (check for global Audio constructor)
     if (typeof window !== "undefined" && "Audio" in window) {
-      audioRef.current = audioRef.current || new (window as any).Audio()
+      audioRef.current = audioRef.current || new window.Audio()
     }
 
     if (playBirds) {
@@ -996,7 +764,7 @@ export function TimerContextProvider({
     } else {
       audioRef.current?.pause()
     }
-  }, [playBirds, isExtension])
+  }, [playBirds, isExtension, plausible])
 
   const playTimerEnd = useCallback(async () => {
     // Only play sound in web mode (check for global Audio API)
@@ -1005,7 +773,7 @@ export function TimerContextProvider({
     }
 
     try {
-      const audio = new (window as any).Audio()
+      const audio = new window.Audio()
       audio.src = `${FRONTEND_URL}/sounds/timer-end.mp3`
       audio.volume = 0.9
 
@@ -1017,7 +785,7 @@ export function TimerContextProvider({
     } catch (error) {
       console.error("Error playing notification sound:", error)
     }
-  }, [isExtension, enableSound])
+  }, [enableSound])
 
   const isNotificationSupported = typeof Notification !== "undefined"
 
@@ -1056,7 +824,7 @@ export function TimerContextProvider({
       if (isCountingDown) {
         if (timerRef.current) {
           clearInterval(timerRef.current)
-          timerRef.current = null
+          timerRef.current = undefined
         }
         setIsCountingDown(false)
         setIsPaused(false)
@@ -1087,6 +855,215 @@ export function TimerContextProvider({
     },
     [isCountingDown],
   )
+  const handleTimerEnd = useCallback(() => {
+    if (!isCountingDown) return
+
+    setIsFinished(true)
+    setPlayBirds(false)
+
+    if (timer) {
+      updateTimer({
+        ...timer,
+        count: 0,
+        isCountingDown: false,
+      })
+    }
+
+    setIsCountingDown(false)
+    setIsPaused(false)
+    setTime(0)
+
+    // Clear timer state immediately
+    setTimerState(null)
+
+    // Clear interval
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = undefined
+    }
+
+    // Play sound and show notification
+    playTimerEnd()
+    sendNotification()
+  }, [isCountingDown, timer, playTimerEnd, sendNotification, updateTimer])
+
+  const startCountdown = useCallback(
+    (duration?: number) => {
+      if (duration !== undefined) {
+        setTime(duration)
+      }
+
+      // Clear any existing timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = undefined
+      }
+
+      setIsCountingDown(true)
+      setIsPaused(false)
+      setIsFinished(false)
+      setIsCancelled(false)
+
+      const now = Date.now()
+      setStartTime(now)
+
+      if (timer) {
+        updateTimer({
+          ...timer,
+          isCountingDown: true,
+        })
+      }
+
+      console.log("Starting web timer")
+      // Start local timer for web mode
+      const initialTime = duration ?? time
+      let lastUpdate = now
+
+      timerRef.current = setInterval(() => {
+        const currentTime = Date.now()
+        const elapsedTime = Math.floor((currentTime - lastUpdate) / 1000)
+
+        if (elapsedTime > 0) {
+          lastUpdate = currentTime - ((currentTime - lastUpdate) % 1000)
+
+          setTime((prevTime) => {
+            const newTime = Math.max(0, prevTime - elapsedTime)
+
+            if (newTime === 0 && prevTime > 0) {
+              clearInterval(timerRef.current)
+              timerRef.current = undefined
+              // Trigger timer end after state update
+              setTimeout(() => handleTimerEnd(), 0)
+            }
+            return newTime
+          })
+        }
+      }, 100)
+
+      // Save state to localStorage
+      setTimerState({
+        time: initialTime,
+        isCountingDown: true,
+        isPaused: false,
+        startTime: now,
+        isFinished: false,
+      })
+
+      plausible({ name: "timer_start", props: { duration: duration || time } })
+    },
+    [setStartTime, timer, time, plausible, updateTimer, handleTimerEnd],
+  )
+
+  const restoreTimerState = useCallback(async () => {
+    try {
+      // State is now loaded automatically via useLocalStorage hook
+      if (!timerState) {
+        return
+      }
+      const state = timerState
+
+      // If timer was running, calculate elapsed time
+      if (state.isCountingDown && !state.isPaused && state.startTime) {
+        const elapsedTime = Math.floor((Date.now() - state.startTime) / 1000)
+        state.time = Math.max(0, state.time - elapsedTime)
+      }
+
+      console.log("Restoring timer state:", state)
+
+      if (state) {
+        setTime(state.time)
+        setIsCountingDown(state.isCountingDown)
+        setIsPaused(state.isPaused)
+        setIsFinished(state.isFinished)
+
+        if (state.startTime) {
+          setStartTime(state.startTime)
+        }
+
+        // If timer was running, restart it
+        if (state.isCountingDown && !state.isPaused && state.time > 0) {
+          startCountdown(state.time)
+        }
+      }
+    } catch (error) {
+      console.error("Error restoring timer state:", error)
+    }
+  }, [setStartTime, startCountdown, timerState])
+
+  useEffect(() => {
+    restoreTimerState()
+  }, [restoreTimerState])
+
+  const handleResume = useCallback(() => {
+    setIsPaused(false)
+    setIsCancelled(false)
+    setIsCountingDown(true)
+
+    const now = Date.now()
+    setStartTime(now)
+
+    // Start the timer with current remaining time
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+    }
+
+    // Start countdown with current display time
+    startCountdown(time)
+
+    plausible({ name: "timer_resume", props: { timeLeft: time } })
+  }, [setStartTime, startCountdown, time, plausible])
+
+  useEffect(() => {
+    if (!timer) return
+
+    if (timer.isCountingDown === isCountingDown) return
+
+    if (isCountingDown) {
+      handleResume()
+    } else {
+      handlePause()
+    }
+
+    // updateTimer(timer)
+  }, [timer, isCountingDown, handleResume, handlePause])
+
+  useEffect(() => {
+    if (isCountingDown) return // Already counting
+    if (!timerData?.isCountingDown) return // DB says not counting
+    if (timerData.count === 0) return // Timer finished
+    if (hasAutoResumedRef.current) return // Already auto-resumed
+
+    hasAutoResumedRef.current = true
+    handleResume()
+  }, [timerData?.isCountingDown, timerData.count, isCountingDown, handleResume])
+
+  useEffect(() => {
+    if (!remoteTimer || remoteTimer.count !== timer?.count) return
+    if (!remoteTimer?.isCountingDown) {
+      handlePause(false)
+    } else {
+      handleResume()
+    }
+
+    setRemoteTimer(null)
+  }, [handlePause, handleResume, remoteTimer, timer])
+
+  useEffect(() => {
+    if (!isFinished && replay) {
+      setTimeout(() => {
+        if (replay) {
+          handlePresetTime(presetMin1)
+          startCountdown()
+        }
+      }, 1000)
+    }
+  }, [handlePresetTime, isFinished, presetMin1, replay, startCountdown])
+
+  useEffect(() => {
+    if (time === 0 && isCountingDown) {
+      handleTimerEnd()
+    }
+  }, [time, isCountingDown, handleTimerEnd])
 
   const stopAdjustment = useCallback(() => {
     if (adjustIntervalRef.current) {
@@ -1094,38 +1071,6 @@ export function TimerContextProvider({
       adjustIntervalRef.current = null
     }
   }, [])
-
-  const handleVisibilityChange = useCallback(
-    (now: number) => {
-      if (document.hidden) {
-        return
-      }
-
-      // App coming to foreground - handled by timerState from useLocalStorage
-    },
-    [time, isCountingDown, startCountdown],
-  )
-
-  useEffect(() => {
-    const handleVisibilityChangeWrapper = () => {
-      const now = Date.now()
-      // Prevent multiple updates within 1 second
-      if (now - lastVisibilityUpdateRef.current < 1000) {
-        return
-      }
-      lastVisibilityUpdateRef.current = now
-
-      handleVisibilityChange(now)
-    }
-
-    document.addEventListener("visibilitychange", handleVisibilityChangeWrapper)
-    return () => {
-      document.removeEventListener(
-        "visibilitychange",
-        handleVisibilityChangeWrapper,
-      )
-    }
-  }, [handleVisibilityChange])
 
   // Handle keyboard events
 
@@ -1149,64 +1094,13 @@ export function TimerContextProvider({
 
   useEffect(() => {
     if (isExtension) {
-      const handleMessage = (message: any) => {
-        console.log("Received message:", message)
-
-        if (message.type === "TIMER_UPDATE") {
-          console.log("Timer update message:", {
-            remainingTime: message.remainingTime,
-            running: message.running,
-            isPaused: message.isPaused,
-          })
-
-          if (message.remainingTime !== undefined) {
-            console.log("Updating time to:", message.remainingTime)
-            setTime(message.remainingTime)
-
-            // Start or update local timer for smooth UI updates
-            if (message.running && !message.isPaused) {
-              console.log("Starting local countdown timer")
-              if (timerRef.current) {
-                console.log("Clearing existing timer")
-                clearInterval(timerRef.current)
-              }
-              timerRef.current = setInterval(() => {
-                setTime((prevTime: number) => {
-                  const newTime = Math.max(0, prevTime - 1)
-                  console.log("Local timer update:", newTime)
-                  if (newTime === 0) {
-                    console.log("Timer reached zero, clearing interval")
-                    clearInterval(timerRef.current)
-                    timerRef.current = null
-                  }
-                  return newTime
-                })
-              }, 1000)
-            } else if (timerRef.current) {
-              console.log("Stopping local countdown timer")
-              clearInterval(timerRef.current)
-              timerRef.current = null
-            }
-          }
-
-          if (message.running !== undefined) {
-            console.log("Updating timer state:", {
-              running: message.running,
-              paused: !message.running,
-            })
-            setIsCountingDown(message.running)
-            setIsPaused(!message.running)
-          }
-        }
-      }
-
       console.log("Setting up message listener")
 
       return () => {
         // Clean up any timers if needed
         if (timerRef.current) {
           clearInterval(timerRef.current)
-          timerRef.current = null
+          timerRef.current = undefined
         }
       }
     }
@@ -1226,7 +1120,15 @@ export function TimerContextProvider({
     } else {
       kitasakuRef.current?.pause()
     }
-  }, [playKitasaku])
+  }, [plausible, playKitasaku])
+
+  useEffect(() => {
+    if (!tasks?.totalCount || selectedTasks) return
+    if (!tasks?.tasks || !Array.isArray(tasks.tasks)) return
+
+    const filter = tasks.tasks.filter((task) => task.selected)
+    setSelectedTasksInternal(filter)
+  }, [selectedTasks, setSelectedTasksInternal, tasks?.tasks, tasks?.totalCount])
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(
@@ -1290,8 +1192,6 @@ export function TimerContextProvider({
       stopAdjustment,
       startAdjustment,
       playTimerEnd,
-      isLoadingTasks,
-      fetchTasks,
       playBirds,
       activePomodoro,
       time,
@@ -1300,15 +1200,20 @@ export function TimerContextProvider({
       isFinished,
       startTime,
       startCountdown,
+      setStartTime,
       handlePresetTime,
       handleCancel,
       replay,
       tasks,
+      setTasks,
       timer,
+      setTimer,
       updateTimer,
       handlePause,
       handleResume,
       isCancelled,
+      fetchTasks,
+      isLoadingTasks,
       fetchTimer,
     ],
   )

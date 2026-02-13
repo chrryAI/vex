@@ -2,7 +2,6 @@
 
 import { useMemo, type ReactElement } from "react"
 import { appWithStore } from "./types"
-import { getImageSrc } from "./lib"
 import { generateAppMetadata } from "./utils"
 
 // Simplified list of most common splash screens
@@ -58,20 +57,13 @@ export default function AppMetadata({
   currentDomain,
 }: {
   app?: appWithStore
-  translations: Record<string, any>
+  translations: Record<string, Record<string, string>>
   locale: string
   currentDomain: string
 }): ReactElement {
   // Get slug from app prop, fallback to "vex"
 
   // Get title from app context, fallback to "Vex"
-
-  const iconSrc = app
-    ? getImageSrc({
-        app,
-        size: 180,
-      })
-    : undefined
 
   const meta = app
     ? generateAppMetadata({

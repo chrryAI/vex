@@ -54,7 +54,6 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     token,
     user,
     language,
-    setProfile,
     profile,
     app,
     storeApps,
@@ -105,9 +104,11 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
   useEffect(() => {
     if (!loadingAppId) {
       setLoadingThreadId(null)
-      loadingThreadId && router.push(`/threads/${loadingThreadId}`)
+      if (loadingThreadId) {
+        router.push(`/threads/${loadingThreadId}`)
+      }
     }
-  }, [loadingAppId])
+  }, [loadingAppId, loadingThreadId, router])
 
   const [lastStarredId, setLastStarredId] = useState<string | null>(null)
 
@@ -162,7 +163,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     if (token && until) {
       refetch()
     }
-  }, [token, until, sortByDate, collaborationStatus])
+  }, [token, until, sortByDate, collaborationStatus, refetch])
 
   useEffect(() => {
     if (error) {
@@ -194,7 +195,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
           {profile?.image ? (
             <Img
               style={{ ...styles.profileImage.style }}
-              src={profile?.image!}
+              src={profile?.image}
               width={22}
               height={22}
               alt={profile?.name || ""}
@@ -258,9 +259,9 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                   title={t("Pending Collaborations")}
                   onClick={() => {
                     setIsLoading(true)
-                    collaborationStatus === "pending"
-                      ? setCollaborationStatus(null)
-                      : setCollaborationStatus("pending")
+                    if (collaborationStatus === "pending")
+                      setCollaborationStatus(null)
+                    else setCollaborationStatus("pending")
                   }}
                 >
                   <BellDot

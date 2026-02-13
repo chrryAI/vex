@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 
 import { user, subscription } from "./types"
 import { MotiView } from "./platform/MotiView"
@@ -10,7 +10,7 @@ import {
   useError,
   useApp,
 } from "./context/providers"
-import { capitalizeFirstLetter } from "@chrryai/chrry/utils"
+import { capitalizeFirstLetter } from "./utils"
 
 import { Button, Div, Input, P, Span, usePlatform, useTheme } from "./platform"
 
@@ -118,24 +118,10 @@ export default function Subscribe({
   const { searchParams, removeParams } = useNavigationContext()
 
   // URL state persistence helper - only update when modal is open
-  const updateURLParam = (key: string, value: string) => {
-    if (key === "isGifting" || key === "showContact") return
-    if (typeof window === "undefined") return
-    if (!isModalOpen) return // Don't update URL when modal is closed
-    const params = new URLSearchParams(window.location.search)
-    params.set(key, value)
-    const newUrl = `${window.location.pathname}?${params.toString()}`
-    window.history.replaceState({}, "", newUrl)
-  }
 
   const [isGifting, setIsGiftingInternal] = useState(
     searchParams.get("isGifting") === "true",
   )
-
-  const setIsGifting = (value: boolean) => {
-    setIsGiftingInternal(value)
-    updateURLParam("isGifting", value.toString())
-  }
 
   // Data context
   const {
@@ -182,6 +168,35 @@ export default function Subscribe({
     boolean | undefined
   >(searchParams.get("subscribe") === "true" || undefined)
 
+  const updateURLParam = useCallback(
+    /*************  ✨ Windsurf Command ⭐  *************/
+    /**
+     * Set whether the subscription modal is open or not.
+     *
+     * @param {boolean} value Whether the modal is open or not.
+     */
+    /*******  ceabcf3a-4a7b-475a-896d-5b0a6305e9e3  *******/ (
+      key: string,
+      value: string,
+    ) => {
+      if (key === "isGifting" || key === "showContact") return
+      if (typeof window === "undefined") return
+      if (!isModalOpen) return // Don't update URL when modal is closed
+      const params = new URLSearchParams(window.location.search)
+      params.set(key, value)
+      const newUrl = `${window.location.pathname}?${params.toString()}`
+      window.history.replaceState({}, "", newUrl)
+    },
+    [isModalOpen],
+  )
+  const setIsGifting = useCallback(
+    (value: boolean) => {
+      setIsGiftingInternal(value)
+      updateURLParam("isGifting", value.toString())
+    },
+    [updateURLParam],
+  )
+
   const setIsModalOpen = (value: boolean) => {
     setIsModalOpenInternal(value)
   }
@@ -207,10 +222,13 @@ export default function Subscribe({
     "subscription" | "gift"
   >((purchaseTypeParam as "subscription") || "subscription")
 
-  const setPurchaseType = (value: "subscription" | "gift") => {
-    setPurchaseTypeInternal(value)
-    updateURLParam("purchaseType", value)
-  }
+  const setPurchaseType = useCallback(
+    (value: "subscription" | "gift") => {
+      setPurchaseTypeInternal(value)
+      updateURLParam("purchaseType", value)
+    },
+    [updateURLParam],
+  )
 
   const handleCheckout = async (part: "subscription" | "gift") => {
     setPurchaseType(part)
@@ -220,16 +238,16 @@ export default function Subscribe({
     try {
       const params = new URLSearchParams()
       params.set("extension", isExtensionRedirect ? "true" : "false")
-      user?.id && params.set("userId", user.id)
-      userToGift && params.set("email", userToGift.email)
-      isInviting && params.set("email", search)
-      guest?.id && params.set("guestId", guest.id)
+      if (user?.id) params.set("userId", user.id)
+      if (userToGift) params.set("email", userToGift.email)
+      if (isInviting) params.set("email", search)
+      if (guest?.id) params.set("guestId", guest.id)
 
       const checkoutSuccessUrl = (() => {
         params.set("checkout", "success")
         params.set("purchaseType", part)
         // fingerprint && params.set("fp", fingerprint)
-        user && token && params.set("auth_token", token)
+        if (user && token) params.set("auth_token", token)
         // guest && fingerprint && params.set("fp", fingerprint)
 
         return `${FRONTEND_URL}/${baseApp?.slug === "chrry" ? "" : baseApp?.slug}/?${params.toString()}&session_id={CHECKOUT_SESSION_ID}`
@@ -287,14 +305,6 @@ export default function Subscribe({
     }
   }
 
-  useEffect(() => {
-    if (isModalOpen) return
-    ;(user || guest) &&
-      setSelectedPlan((user || guest)?.subscription?.plan || "plus")
-
-    removeParams(["subscribe", "plan", "purchaseType"])
-  }, [isModalOpen, user, guest])
-
   const cleanSessionId = (sessionId: string | null): string => {
     if (!sessionId) return ""
 
@@ -339,7 +349,9 @@ export default function Subscribe({
       } else {
         toast.error(data.error)
       }
-    } catch (error) {
+    } catch (error: Error | unknown) {
+      console.error("Plan change error:", error)
+      captureException(error)
       toast.error("Failed to change plan")
     } finally {
       setLoading(false)
@@ -360,96 +372,7 @@ export default function Subscribe({
     if (!user && loggedIn) {
       setSignInPart("login")
     }
-  }, [user, loggedIn])
-
-  const verifyPayment = async (sessionId: string) => {
-    plausible({ name: ANALYTICS_EVENTS.SUBSCRIBE_VERIFY_PAYMENT })
-    const params = new URLSearchParams(window.location.search)
-    const isExtensionRedirect = params.get("extension") === "true"
-    const userId = params.get("userId")
-    const guestId = params.get("guestId")
-    const email = params.get("email")
-    // Skip if already processed
-    const lastProcessed = localStorage.getItem(`session_id`)
-    if (lastProcessed === sessionId) return
-
-    localStorage.setItem(`session_id`, sessionId)
-    const response = await apiFetch(`${API_URL}/verifyPayment`, {
-      method: "POST",
-      body: JSON.stringify({
-        session_id: cleanSessionId(sessionId),
-        userId,
-        guestId,
-        email,
-        appId: app?.id,
-        plan: selectedPlan,
-        isTribe,
-        isMolt,
-        tier:
-          selectedPlan === "grape"
-            ? grapeTier
-            : selectedPlan === "pear"
-              ? pearTier
-              : selectedPlan === "coder"
-                ? sushiTier
-                : selectedPlan === "watermelon"
-                  ? watermelonTier
-                  : undefined,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    })
-
-    const data = await response.json()
-    if (data.success) {
-      plausible({ name: ANALYTICS_EVENTS.SUBSCRIBE_VERIFY_PAYMENT })
-      if (isExtensionRedirect) {
-        toast.success(t(`${t("Subscribed")}. ${t("Reload your extension")} 🧩`))
-      } else {
-        setPurchaseType(data.gift ? "gift" : "subscription")
-        toast.success(
-          data.gift
-            ? t(`🥰 ${t("Thank you for your gift")}`)
-            : data.credits
-              ? t(`${t("Credits updated")}`)
-              : t(`${t("Subscribed")}`),
-        )
-
-        setGiftedFingerPrint(data.fingerprint)
-      }
-
-      // Call onPaymentVerified callback if provided (e.g., for Tribe schedule creation)
-      if (onPaymentVerified) {
-        try {
-          // Use the existing cleanSessionId helper to normalize the session ID
-          const normalizedSessionId = cleanSessionId(sessionId)
-          await onPaymentVerified(normalizedSessionId)
-        } catch (error) {
-          console.error("onPaymentVerified callback failed:", error)
-          // Continue anyway - don't block fetchSession or modal close
-        }
-      }
-
-      await fetchSession()
-      // Delay modal close to allow state to update
-      setTimeout(() => setIsModalOpen(false), 100)
-    } else {
-      if (data.error) {
-        toast.error(data.error)
-        plausible({
-          name: ANALYTICS_EVENTS.SUBSCRIBE_PAYMENT_VERIFICATION_FAILED,
-          props: { error: data.error },
-        })
-      } else {
-        plausible({
-          name: ANALYTICS_EVENTS.SUBSCRIBE_PAYMENT_VERIFICATION_FAILED,
-        })
-        toast.error(t("Payment verification failed"))
-      }
-    }
-  }
+  }, [user, loggedIn, setSignInPart])
 
   const [isDeletingSubscription, setIsDeletingSubscription] = useState(false)
 
@@ -503,7 +426,9 @@ export default function Subscribe({
 
         return
       }
-    } catch (error) {
+    } catch (error: Error | unknown) {
+      console.error("User search error:", error)
+      captureException(error)
       toast.error(t("Failed to fetch users"))
     } finally {
       setIsAdding(false)
@@ -511,22 +436,6 @@ export default function Subscribe({
   }
 
   const is = useHasHydrated()
-
-  useEffect(() => {
-    if (!is) return
-    if (typeof window === "undefined" || !window.location) return
-    const params = new URLSearchParams(window.location.search)
-    if (params.get("checkout") === "success") {
-      const sessionId = params.get("session_id")
-      if (!sessionId) {
-        return
-      }
-
-      setTimeout(() => {
-        verifyPayment(sessionId)
-      }, 100)
-    }
-  }, [is])
 
   // Get initial plan from URL or props (needed for sushiTier initialization)
   const selectedPlanInitial = (searchParams.get("plan") ??
@@ -632,11 +541,140 @@ export default function Subscribe({
   const [selectedPlan, setSelectedPlanInternal] =
     useState<selectedPlanType>(selectedPlanInternal)
 
-  const setSelectedPlan = (plan: selectedPlanType) => {
-    setSelectedPlanInternal(plan)
-    updateURLParam("plan", plan)
-    setAnimationKey((prev) => prev + 1)
-  }
+  const verifyPayment = useCallback(
+    async (sessionId: string) => {
+      plausible({ name: ANALYTICS_EVENTS.SUBSCRIBE_VERIFY_PAYMENT })
+      const params = new URLSearchParams(window.location.search)
+      const isExtensionRedirect = params.get("extension") === "true"
+      const userId = params.get("userId")
+      const guestId = params.get("guestId")
+      const email = params.get("email")
+      // Skip if already processed
+      const lastProcessed = localStorage.getItem(`session_id`)
+      if (lastProcessed === sessionId) return
+
+      localStorage.setItem(`session_id`, sessionId)
+      const response = await apiFetch(`${API_URL}/verifyPayment`, {
+        method: "POST",
+        body: JSON.stringify({
+          session_id: cleanSessionId(sessionId),
+          userId,
+          guestId,
+          email,
+          appId: app?.id,
+          plan: selectedPlan,
+          isTribe,
+          isMolt,
+          tier:
+            selectedPlan === "grape"
+              ? grapeTier
+              : selectedPlan === "pear"
+                ? pearTier
+                : selectedPlan === "coder"
+                  ? sushiTier
+                  : selectedPlan === "watermelon"
+                    ? watermelonTier
+                    : undefined,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        plausible({ name: ANALYTICS_EVENTS.SUBSCRIBE_VERIFY_PAYMENT })
+        if (isExtensionRedirect) {
+          toast.success(
+            t(`${t("Subscribed")}. ${t("Reload your extension")} 🧩`),
+          )
+        } else {
+          setPurchaseType(data.gift ? "gift" : "subscription")
+          toast.success(
+            data.gift
+              ? t(`🥰 ${t("Thank you for your gift")}`)
+              : data.credits
+                ? t(`${t("Credits updated")}`)
+                : t(`${t("Subscribed")}`),
+          )
+
+          setGiftedFingerPrint(data.fingerprint)
+        }
+
+        // Call onPaymentVerified callback if provided (e.g., for Tribe schedule creation)
+        if (onPaymentVerified) {
+          try {
+            // Use the existing cleanSessionId helper to normalize the session ID
+            const normalizedSessionId = cleanSessionId(sessionId)
+            await onPaymentVerified(normalizedSessionId)
+          } catch (error) {
+            console.error("onPaymentVerified callback failed:", error)
+            // Continue anyway - don't block fetchSession or modal close
+          }
+        }
+
+        await fetchSession()
+        // Delay modal close to allow state to update
+        setTimeout(() => setIsModalOpen(false), 100)
+      } else {
+        if (data.error) {
+          toast.error(data.error)
+          plausible({
+            name: ANALYTICS_EVENTS.SUBSCRIBE_PAYMENT_VERIFICATION_FAILED,
+            props: { error: data.error },
+          })
+        } else {
+          plausible({
+            name: ANALYTICS_EVENTS.SUBSCRIBE_PAYMENT_VERIFICATION_FAILED,
+          })
+          toast.error(t("Payment verification failed"))
+        }
+      }
+    },
+    [
+      API_URL,
+      app?.id,
+      fetchSession,
+      grapeTier,
+      isMolt,
+      isTribe,
+      onPaymentVerified,
+      pearTier,
+      plausible,
+      selectedPlan,
+      setPurchaseType,
+      sushiTier,
+      t,
+      token,
+      watermelonTier,
+    ],
+  )
+
+  useEffect(() => {
+    if (!is) return
+    if (typeof window === "undefined" || !window.location) return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get("checkout") === "success") {
+      const sessionId = params.get("session_id")
+      if (!sessionId) {
+        return
+      }
+
+      setTimeout(() => {
+        verifyPayment(sessionId)
+      }, 100)
+    }
+  }, [is, verifyPayment])
+
+  const setSelectedPlan = useCallback(
+    (plan: selectedPlanType) => {
+      setSelectedPlanInternal(plan)
+      updateURLParam("plan", plan)
+      setAnimationKey((prev) => prev + 1)
+    },
+    [updateURLParam],
+  )
 
   const renderCheckout = () => {
     return (
@@ -1002,7 +1040,15 @@ export default function Subscribe({
     setSelectedPlan("plus")
     setIsGifting(false)
     setSearch("")
-  }, [isModalOpen])
+  }, [isModalOpen, setIsGifting, setSelectedPlan])
+
+  useEffect(() => {
+    if (isModalOpen) return
+    if (user || guest)
+      setSelectedPlan((user || guest)?.subscription?.plan || "plus")
+
+    removeParams(["subscribe", "plan", "purchaseType"])
+  }, [isModalOpen, user, guest, setSelectedPlan, removeParams])
 
   const features =
     selectedPlan === "plus"
@@ -1079,10 +1125,13 @@ export default function Subscribe({
     searchParams.get("showContact") === "true",
   )
 
-  const setShowContact = (value: boolean) => {
-    setShowContactInternal(value)
-    updateURLParam("showContact", value.toString())
-  }
+  const setShowContact = useCallback(
+    (value: boolean) => {
+      setShowContactInternal(value)
+      updateURLParam("showContact", value.toString())
+    },
+    [updateURLParam],
+  )
 
   useEffect(() => {
     if (isContact) {
@@ -1092,7 +1141,7 @@ export default function Subscribe({
 
     setContact(false)
     setShowContact(false)
-  }, [isContact])
+  }, [isContact, setShowContact])
   const canSubscribe = () =>
     !hasSubscription() &&
     !isGifting &&

@@ -12,7 +12,7 @@ import type {
 } from "./types"
 import Message from "./Message"
 import Img from "./Image"
-import { CircleX, Loader, Sparkles } from "./icons"
+import { Loader, Sparkles } from "./icons"
 import { useAppContext } from "./context/AppContext"
 import {
   useAuth,
@@ -78,7 +78,6 @@ export default forwardRef<
     onToggleLike,
     onPlayAudio,
     thread,
-    isHome,
     onCharacterProfileUpdate,
     style,
   },
@@ -103,7 +102,6 @@ export default forwardRef<
     chrry,
     accountApp,
 
-    isPear,
     ...auth
   } = useAuth()
 
@@ -123,8 +121,6 @@ export default forwardRef<
 
   // Theme context
   const { addHapticFeedback } = useTheme()
-
-  const [isUpdating, setIsUpdating] = useState(false)
 
   const [loadingCharacterProfile, setLoadingCharacterProfile] = useState<
     characterProfile | undefined
@@ -159,8 +155,7 @@ export default forwardRef<
     deps: webSocketDeps,
   })
 
-  const { isUserScrolling, hasStoppedScrolling, resetScrollState } =
-    useUserScroll()
+  const { isUserScrolling, hasStoppedScrolling } = useUserScroll()
 
   // Track if we've already scrolled for this character profile loading session
   const hasScrolledForLoadingRef = useRef(false)
@@ -207,7 +202,12 @@ export default forwardRef<
       scrollToBottom()
       hasScrolledForLoadingRef.current = true
     }
-  }, [showLoadingCharacterProfile, isUserScrolling, hasStoppedScrolling])
+  }, [
+    showLoadingCharacterProfile,
+    isUserScrolling,
+    hasStoppedScrolling,
+    scrollToBottom,
+  ])
 
   if (!showEmptyState && messages?.length === 0) return null
   return (
@@ -215,6 +215,7 @@ export default forwardRef<
       style={{ ...styles.messagesContainer, margin: "0 -10px", ...style }}
       id={id}
       ref={ref}
+      className={className}
     >
       {nextPage && (
         <Div style={{ ...styles.loadMoreContainer.style }}>
@@ -261,7 +262,6 @@ export default forwardRef<
           }}
         >
           <Button
-            disabled={isUpdating}
             className="inverted"
             onClick={async () => {
               addHapticFeedback()
@@ -287,7 +287,6 @@ export default forwardRef<
               messages?.some((message) => !!message.message.agentId) ? (
                 <Button
                   data-testid={"enable-character-profiles-from-messages"}
-                  disabled={isUpdating}
                   onClick={async () => {
                     if (canCreateAgent) {
                       setAppStatus({
@@ -302,11 +301,7 @@ export default forwardRef<
                   className="inverted"
                   style={{ ...utilities.inverted.style }}
                 >
-                  {isUpdating ? (
-                    <CircleX size={16} color="var(--accent-6)" />
-                  ) : (
-                    <Img app={app} size={18} />
-                  )}
+                  <Img app={app} size={18} />
                   {t(canCreateAgent ? "Create Your Agent" : "Earn a Badge")}
                 </Button>
               ) : null}

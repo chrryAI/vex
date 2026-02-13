@@ -32,7 +32,6 @@ export default function Chrry({
   thread,
   viewPortWidth,
   viewPortHeight,
-  onSetLanguage,
   apiKey,
   locale,
   translations,
@@ -72,7 +71,6 @@ export default function Chrry({
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
-  onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
 }) {
   return (
     <AppProviders
@@ -84,7 +82,6 @@ export default function Chrry({
       viewPortWidth={viewPortWidth}
       viewPortHeight={viewPortHeight}
       pathname={pathname}
-      onSetLanguage={onSetLanguage}
       apiKey={apiKey}
       thread={thread}
       translations={translations}

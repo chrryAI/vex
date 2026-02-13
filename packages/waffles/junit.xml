@@ -1,54 +1,1554 @@
-<testsuites id="" name="" tests="20" failures="1" skipped="19" errors="0" time="2.968851">
-<testsuite name="guest.live.spec.ts" timestamp="2026-02-13T02:03:39.756Z" hostname="chromium" tests="12" failures="1" skipped="11" time="1.499" errors="0">
-<testcase name="Subscribe As Guest" classname="guest.live.spec.ts" time="1.499">
-<failure message="guest.live.spec.ts:23:5 Subscribe As Guest" type="FAILURE">
-<![CDATA[  [chromium] › guest.live.spec.ts:23:5 › Subscribe As Guest ────────────────────────────────────────
-
-    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/?fp=6482fcbe-4117-4cb4-81a9-9d5cf15df341
-    Call log:
-      - navigating to "http://localhost:5173/?fp=6482fcbe-4117-4cb4-81a9-9d5cf15df341", waiting until "networkidle"
-
-
-       at shared/clean.ts:22
-
-      20 |   isMember?: boolean
-      21 | }) {
-    > 22 |   await page.goto(getURL({ isLive, isMember, fingerprint }), {
-         |              ^
-      23 |     waitUntil: "networkidle",
-      24 |     timeout: 100000,
-      25 |   })
-        at clean (/Users/ibrahimvelinov/Documents/vex/packages/waffles/src/shared/clean.ts:22:14)
-        at /Users/ibrahimvelinov/Documents/vex/packages/waffles/src/guest.live.spec.ts:24:14
-
-    Error Context: ../test-results/guest.live-Subscribe-As-Guest-chromium/error-context.md
-]]>
-</failure>
+<testsuites id="" name="" tests="20" failures="1" skipped="14" errors="0" time="3134.79573">
+<testsuite name="guest.live.spec.ts" timestamp="2026-02-13T03:20:03.981Z" hostname="chromium" tests="12" failures="1" skipped="6" time="3132.719" errors="0">
+<testcase name="Subscribe As Guest" classname="guest.live.spec.ts" time="155.753">
 <system-out>
-<![CDATA[
-[[ATTACHMENT|test-results/guest.live-Subscribe-As-Guest-chromium/error-context.md]]
+<![CDATA[[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 1 messages Added: a24a78ef-4766-466f-997e-50ea2226eeef
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] 🤖 Adding AI message to state {messageId: c0f2b162-613b-4570-b233-e21fc96a2f7a, content: }
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…ING____REASONING__ the__/REASONING____REASONIN..., stats: Object, agent: Sushi 1.0, features: Object, clientId: c0f2b162}
+[browser][log] Debug: Found 0 user messages, 1 guest messages
+Debug: After wait - 0 user messages, 1 guest messages
+Debug: Using guest message (1 found)
+Debug: After wait - 0 user messages, 1 guest messages
+Debug: Using guest message (1 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] 📡 Received pong, connection alive
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…ING____REASONING__ the__/REASONING____REASONIN..., stats: Object, agent: Sushi 1.0, features: Object, clientId: c0f2b162}
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…ING____REASONING__ the__/REASONING____REASONIN..., stats: Object, agent: Sushi 1.0, features: Object, clientId: c0f2b162}
+[browser][log] 🤖 onStreamingComplete {messageId: c0f2b162-613b-4570-b233-e21fc96a2f7a, content: The main benefits of TypeScript over JavaScript:
+
+…ts.
+
+Want me to elaborate on any of these points?}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+Thread: d0b7b437-963e-437c-b731-0fafa69e4248
+✅ Credits assertion: 28 left (expected: 28)
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 3 messages Added: 5d862ae6-0163-42b8-8912-1ad63da5458a
+[browser][log] 🤖 Adding AI message to state {messageId: c993e15f-4f81-4e4d-bc7a-d58a64f5ed7f, content: }
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] 📡 Received pong, connection alive
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…ING____REASONING__ implementing__/REASONING___..., stats: Object, agent: Sushi 1.0, features: Object, clientId: c993e15f}
+[browser][log] Debug: Found 0 user messages, 2 guest messages
+Debug: After wait - 0 user messages, 2 guest messages
+Debug: Using guest message (2 found)
+Debug: After wait - 0 user messages, 2 guest messages
+Debug: Using guest message (2 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…ING____REASONING__ implementing__/REASONING___..., stats: Object, agent: Sushi 1.0, features: Object, clientId: c993e15f}
+[browser][log] 🔍 Code detected: {inline: undefined, className: undefined}
+[browser][log] 🔍 Code detected: {inline: undefined, className: lang-js}
+[browser][log] 🎨 Prism theme loaded: true Language: js
+[browser][log] 🔍 Code detected: {inline: undefined, className: lang-jsx}
+[browser][log] 🎨 Prism theme loaded: true Language: jsx
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…ING____REASONING__ implementing__/REASONING___..., stats: Object, agent: Sushi 1.0, features: Object, clientId: c993e15f}
+[browser][log] 🔍 Code detected: {inline: undefined, className: lang-jsx}
+[browser][log] 🎨 Prism theme loaded: true Language: jsx
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…ING____REASONING__ implementing__/REASONING___..., stats: Object, agent: Sushi 1.0, features: Object, clientId: c993e15f}
+[browser][log] 🤖 onStreamingComplete {messageId: c993e15f-4f81-4e4d-bc7a-d58a64f5ed7f, content: Here's a brief implementation of error boundaries …il.
+
+Want me to elaborate on any specific aspect?}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+Thread: d0b7b437-963e-437c-b731-0fafa69e4248
+[browser][log] 📡 Received pong, connection alive
+✅ Credits assertion: 26 left (expected: 26)
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🎨 Prism theme loaded: true Language: jsx
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][debug] [vite] connecting...
+[browser][debug] [vite] connected.
+[browser][info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[browser][log] ✅ Using localStorage for web storage
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] Setting up message listener
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 📐 ThemeContext viewPortWidth: 1280
+[browser][log] 📐 Calculated isSmallDevice: false from width: 1280
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] ⚡️ Navigation debounced (double-tap prevented)
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 📦 Session API Response - Apps: {app: undefined, totalApps: 0, apps: undefined, currentStore: undefined, currentStoreId: undefined}
+[browser][log] 🎬 Using View Transition for navigation to: /?subscribe=true&plan=plus
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] ⚡️ Navigation debounced (double-tap prevented)
+[browser][verbose] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o
+[browser][log] 🚀 Closing existing WebSocket for reconnection
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] 🔌 WebSocket closed 1005 
+[browser][log] 🔌 WebSocket close confirmed
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] ✅ WebSocket opened successfully
+[browser][debug] [vite] connecting...
+[browser][debug] [vite] connected.
+[browser][info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[browser][log] ✅ Using localStorage for web storage
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] Setting up message listener
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 📐 ThemeContext viewPortWidth: 1280
+[browser][log] 📐 Calculated isSmallDevice: false from width: 1280
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🎬 Using View Transition for navigation to: /threads/d0b7b437-963e-437c-b731-0fafa69e4248
+[browser][log] ⚡️ Navigation debounced (double-tap prevented)
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 🔍 Code detected: {inline: undefined, className: lang-jsx}
+[browser][log] 🎨 Prism theme loaded: true Language: jsx
+[browser][log] Debug: Found 2 user messages, 0 guest messages
+Debug: After wait - 2 user messages, 0 guest messages
+Debug: Using user message (2 found)
+
+[[ATTACHMENT|test-results/guest.live-Subscribe-As-Guest-chromium/video.webm]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Invite" classname="guest.live.spec.ts" time="0">
-<skipped>
-</skipped>
+<testcase name="Invite" classname="guest.live.spec.ts" time="83.453">
+<system-out>
+<![CDATA[[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[browser][debug] [vite] connecting...
+[browser][debug] [vite] connected.
+[browser][info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[browser][log] ✅ Using localStorage for web storage
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] Setting up message listener
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 📐 ThemeContext viewPortWidth: 1280
+[browser][log] 📐 Calculated isSmallDevice: false from width: 1280
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ⚡️ Navigation debounced (double-tap prevented)
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 📦 Session API Response - Apps: {app: undefined, totalApps: 0, apps: undefined, currentStore: undefined, currentStoreId: undefined}
+[browser][log] 📡 Received pong, connection alive
+
+[[ATTACHMENT|test-results/guest.live-Invite-chromium/video.webm]]
+]]>
+</system-out>
 </testcase>
-<testcase name="Gift" classname="guest.live.spec.ts" time="0">
-<skipped>
-</skipped>
+<testcase name="Gift" classname="guest.live.spec.ts" time="117.932">
+<system-out>
+<![CDATA[[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][debug] [vite] connecting...
+[browser][debug] [vite] connected.
+[browser][info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[browser][log] ✅ Using localStorage for web storage
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] Setting up message listener
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 📐 ThemeContext viewPortWidth: 1280
+[browser][log] 📐 Calculated isSmallDevice: false from width: 1280
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] ⚡️ Navigation debounced (double-tap prevented)
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 📦 Session API Response - Apps: {app: undefined, totalApps: 0, apps: undefined, currentStore: undefined, currentStoreId: undefined}
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+
+[[ATTACHMENT|test-results/guest.live-Gift-chromium/video.webm]]
+]]>
+</system-out>
 </testcase>
-<testcase name="Long text" classname="guest.live.spec.ts" time="0">
-<skipped>
-</skipped>
+<testcase name="Long text" classname="guest.live.spec.ts" time="104.141">
+<system-out>
+<![CDATA[[browser][debug] [vite] connecting...
+[browser][debug] [vite] connected.
+[browser][info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[browser][log] ✅ Using localStorage for web storage
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] Setting up message listener
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 📐 ThemeContext viewPortWidth: 1280
+[browser][log] 📐 Calculated isSmallDevice: false from width: 1280
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 1 messages Added: e116c042-21d1-4799-880d-9e721ae8503f
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] 🤖 Adding AI message to state {messageId: c2868887-a962-45eb-bda2-3bc78dc8eb87, content: }
+[browser][log] 📡 Received pong, connection alive
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…REASONING__300__/REASONING____REASONING__-word..., stats: Object, agent: Sushi 1.0, features: Object, clientId: c2868887}
+[browser][log] Debug: Found 0 user messages, 1 guest messages
+Debug: After wait - 0 user messages, 1 guest messages
+Debug: Using guest message (1 found)
+Debug: After wait - 0 user messages, 1 guest messages
+Debug: Using guest message (1 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 3 messages Added: 07f00be8-b198-43e6-bc89-f9bf5d787281
+[browser][log] 🤖 Adding AI message to state {messageId: d2d11ff1-ecf3-4f1b-8917-1ebee418282c, content: }
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] Debug: Found 0 user messages, 2 guest messages
+Debug: After wait - 0 user messages, 2 guest messages
+Debug: Using guest message (2 found)
+Debug: After wait - 0 user messages, 2 guest messages
+Debug: Using guest message (2 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…EASONING____REASONING__ a__/REASONING____REASO..., stats: Object, agent: Sushi 1.0, features: Object, clientId: d2d11ff1}
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…EASONING____REASONING__ a__/REASONING____REASO..., stats: Object, agent: Sushi 1.0, features: Object, clientId: d2d11ff1}
+[browser][log] 🤖 onStreamingComplete {messageId: d2d11ff1-ecf3-4f1b-8917-1ebee418282c, content: A time traveler discovers that every attempt to al…story's fabric cannot be rewoven, only witnessed.}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+Thread: 92603648-b76d-49cc-8f5f-a360b6727e18
+[browser][log] 📡 Received pong, connection alive
+✅ Credits assertion: 26 left (expected: 26)
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🎬 Using View Transition for navigation to: /vex
+[browser][log] ⚡️ Navigation debounced (double-tap prevented)
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+
+[[ATTACHMENT|test-results/guest.live-Long-text-chromium/video.webm]]
+]]>
+</system-out>
 </testcase>
-<testcase name="Chat" classname="guest.live.spec.ts" time="0">
-<skipped>
-</skipped>
+<testcase name="Chat" classname="guest.live.spec.ts" time="285.235">
+<properties>
+<property name="slow" value="">
+</property>
+</properties>
+<system-out>
+<![CDATA[[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 1 messages Added: 49757816-3500-4a67-bc15-b9e98c7782f6
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] 🤖 Adding AI message to state {messageId: 5f9635ba-0710-4f50-8f13-97f82bd87d30, content: }
+[browser][log] 📡 Received pong, connection alive
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…/REASONING____REASONING__ Tokyo__/REASONING___..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 5f9635ba}
+[browser][log] Debug: Found 0 user messages, 1 guest messages
+Debug: After wait - 0 user messages, 1 guest messages
+Debug: Using guest message (1 found)
+Debug: After wait - 0 user messages, 1 guest messages
+Debug: Using guest message (1 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…/REASONING____REASONING__ Tokyo__/REASONING___..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 5f9635ba}
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…/REASONING____REASONING__ Tokyo__/REASONING___..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 5f9635ba}
+[browser][log] 🤖 onStreamingComplete {messageId: 5f9635ba-0710-4f50-8f13-97f82bd87d30, content: Based on your previous interest in Tokyo, here are…tailed visiting tips or help plan your itinerary.}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+Thread: 6e94567b-34fc-4347-a7b4-02e9dc52d565
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 📡 Received pong, connection alive
+✅ Credits assertion: 28 left (expected: 28)
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 3 messages Added: 9e58b977-06ca-4163-b147-0467b041d8aa
+[browser][log] 🤖 Adding AI message to state {messageId: ffa7ce01-7f44-4e22-be6f-6b629d8645fd, content: }
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] Debug: Found 0 user messages, 2 guest messages
+Debug: After wait - 0 user messages, 2 guest messages
+Debug: Using guest message (2 found)
+Debug: After wait - 0 user messages, 2 guest messages
+Debug: Using guest message (2 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] 🤖 Streaming Update {preview: Here's a simple Day 1 Tokyo itinerary:  **Morning …reakfast at a local café  **Midday (12:00 PM)*..., stats: Object, agent: Claude Sonnet 4.5, features: Object, clientId: ffa7ce01}
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 onStreamingComplete {messageId: ffa7ce01-7f44-4e22-be6f-6b629d8645fd, content: Here's a simple Day 1 Tokyo itinerary:
+
+**Morning …s for any of these stops, or shall we plan day 2?}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+Thread: 6e94567b-34fc-4347-a7b4-02e9dc52d565
+[browser][log] 📡 Received pong, connection alive
+✅ Credits assertion: 25 left (expected: 25)
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 5 messages Added: 0e1631eb-f1ab-4ff1-9939-cfec36c4ea1d
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] 🤖 Adding AI message to state {messageId: f7b44603-7123-44cc-948a-35cf57cdf46a, content: }
+[browser][log] 📡 Received pong, connection alive
+[browser][log] Debug: Found 0 user messages, 3 guest messages
+Debug: After wait - 0 user messages, 3 guest messages
+Debug: Using guest message (3 found)
+Debug: After wait - 0 user messages, 3 guest messages
+Debug: Using guest message (3 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🤖 Streaming Update {preview: Best way to get around Tokyo, briefly:  - **IC Car…ins, subways, and buses—no need to buy tickets..., stats: Object, agent: GPT-5.1, features: Object, clientId: f7b44603}
+[browser][error] Maximum update depth exceeded. This can happen when a component calls setState inside useEffect, but useEffect either doesn't have a dependency array, or one of the dependencies changes on every render.
+[browser][log] 🤖 onStreamingComplete {messageId: f7b44603-7123-44cc-948a-35cf57cdf46a, content: Best way to get around Tokyo, briefly:
+
+- **IC Car…nes and a simple “home base” route for your trip.}
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+Thread: 6e94567b-34fc-4347-a7b4-02e9dc52d565
+✅ Credits assertion: 21 left (expected: 21)
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 7 messages Added: 85083f83-0c8e-4461-ab94-769e6da97102
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] 🤖 Adding AI message to state {messageId: c8bec263-7844-4a49-a836-907d74fb5501, content: }
+[browser][log] Debug: Found 0 user messages, 4 guest messages
+Debug: After wait - 0 user messages, 4 guest messages
+Debug: Using guest message (4 found)
+Debug: After wait - 0 user messages, 4 guest messages
+Debug: Using guest message (4 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 onStreamingComplete {messageId: c8bec263-7844-4a49-a836-907d74fb5501, content: Character profiles are **automatically enabled** a…k your profile status in app settings if curious.}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+Thread: 6e94567b-34fc-4347-a7b4-02e9dc52d565
+✅ Credits assertion: 18 left (expected: 18)
+[browser][log] 📡 Received pong, connection alive
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Adding user message to state
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 📝 Updated messages state: 9 messages Added: 6f4ad71d-d4b9-4921-81f8-c0e72fe3c334
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] 🤖 Adding AI message to state {messageId: b1312f63-a21d-4161-b7c5-f22985a34e36, content: }
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 📡 Received pong, connection alive
+[browser][log] Debug: Found 0 user messages, 5 guest messages
+Debug: After wait - 0 user messages, 5 guest messages
+Debug: Using guest message (5 found)
+Debug: After wait - 0 user messages, 5 guest messages
+Debug: Using guest message (5 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: The image will depict a breathtaking, hyper-detail…between impossibly tall skyscrapers, with sile..., stats: Object, agent: Sushi 1.0, features: Object, clientId: b1312f63}
+[browser][error] Maximum update depth exceeded. This can happen when a component calls setState inside useEffect, but useEffect either doesn't have a dependency array, or one of the dependencies changes on every render.
+[browser][log] 🤖 onStreamingComplete {messageId: b1312f63-a21d-4161-b7c5-f22985a34e36, content: The image will depict a breathtaking, hyper-detail…the enduring human scale of a vibrant metropolis.}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+Thread: 6e94567b-34fc-4347-a7b4-02e9dc52d565
+[browser][log] 📡 Received pong, connection alive
+✅ Credits assertion: 16 left (expected: 16)
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🎬 Using View Transition for navigation to: /vex
+[browser][log] ⚡️ Navigation debounced (double-tap prevented)
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 📡 Received pong, connection alive
+[browser][log] ✅ Already connected, skipping connection
+
+[[ATTACHMENT|test-results/guest.live-Chat-chromium/video.webm]]
+]]>
+</system-out>
 </testcase>
-<testcase name="Thread" classname="guest.live.spec.ts" time="0">
-<skipped>
-</skipped>
+<testcase name="Thread" classname="guest.live.spec.ts" time="2386.205">
+<properties>
+<property name="slow" value="">
+</property>
+</properties>
+<failure message="guest.live.spec.ts:159:5 Thread" type="FAILURE">
+<![CDATA[  [chromium] › guest.live.spec.ts:159:5 › Thread ───────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByTestId('agent-message').first().locator('[data-testid=delete-message]')
+    Expected: visible
+    Timeout: 2000000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 2000000ms
+      - waiting for getByTestId('agent-message').first().locator('[data-testid=delete-message]')
+
+
+       at shared/chat.ts:788
+
+      786 |       "[data-testid=delete-message]",
+      787 |     )
+    > 788 |     await expect(deleteAgentMessageButton).toBeVisible({
+          |                                            ^
+      789 |       timeout: prompt.agentMessageTimeout || agentMessageTimeout,
+      790 |       visible: !prompt.stop,
+      791 |     })
+        at chat (/Users/ibrahimvelinov/Documents/vex/packages/waffles/src/shared/chat.ts:788:44)
+        at thread (/Users/ibrahimvelinov/Documents/vex/packages/waffles/src/shared/thread.ts:220:5)
+        at /Users/ibrahimvelinov/Documents/vex/packages/waffles/src/guest.live.spec.ts:162:3
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/guest.live-Thread-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[[browser][debug] [vite] connecting...
+[browser][debug] [vite] connected.
+[browser][info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[browser][log] ✅ Using localStorage for web storage
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] Setting up message listener
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 📐 ThemeContext viewPortWidth: 1280
+[browser][log] 📐 Calculated isSmallDevice: false from width: 1280
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 1 messages Added: 27588540-4ccc-4ca6-9044-2fb8324cdaa6
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] 🤖 Adding AI message to state {messageId: 2fa0562e-4d3d-4f8d-ad68-5bf7b271b034, content: }
+[browser][log] 📡 Received pong, connection alive
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…G____REASONING__ a__/REASONING____REASONING__ ..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 2fa0562e}
+[browser][log] Debug: Found 0 user messages, 1 guest messages
+Debug: After wait - 0 user messages, 1 guest messages
+Debug: Using guest message (1 found)
+Debug: After wait - 0 user messages, 1 guest messages
+Debug: Using guest message (1 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…G____REASONING__ a__/REASONING____REASONING__ ..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 2fa0562e}
+[browser][log] 🔍 Code detected: {inline: undefined, className: undefined}
+[browser][log] 🔍 Code detected: {inline: undefined, className: lang-javascript}
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…G____REASONING__ a__/REASONING____REASONING__ ..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 2fa0562e}
+[browser][log] 🔍 Code detected: {inline: undefined, className: undefined}
+[browser][log] 🔍 Code detected: {inline: undefined, className: lang-javascript}
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] 🤖 onStreamingComplete {messageId: 2fa0562e-4d3d-4f8d-ad68-5bf7b271b034, content: ## Async/await vs Promises in JavaScript
+
+**Promis…se settles, then resumes with the resolved value.}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+Thread: 1d165d7d-6645-4bd4-be56-a73bd457736e
+✅ Credits assertion: 28 left (expected: 28)
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 3 messages Added: 2ae0b8b2-b39f-4afe-ad77-982eddfec650
+[browser][log] 🤖 Adding AI message to state {messageId: f8d555ed-f004-4356-9228-deed0019273b, content: }
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…__REASONING__3__/REASONING____REASONING__ best..., stats: Object, agent: Sushi 1.0, features: Object, clientId: f8d555ed}
+[browser][log] Debug: Found 0 user messages, 2 guest messages
+Debug: After wait - 0 user messages, 2 guest messages
+Debug: Using guest message (2 found)
+Debug: After wait - 0 user messages, 2 guest messages
+Debug: Using guest message (2 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…__REASONING__3__/REASONING____REASONING__ best..., stats: Object, agent: Sushi 1.0, features: Object, clientId: f8d555ed}
+[browser][log] 🔍 Code detected: {inline: undefined, className: undefined}
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 onStreamingComplete {messageId: f8d555ed-f004-4356-9228-deed0019273b, content: Here are 3 key React performance optimizations:
+
+1…g., `react-window`) to render only visible items.}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+Thread: 1d165d7d-6645-4bd4-be56-a73bd457736e
+[browser][log] 📡 Received pong, connection alive
+✅ Credits assertion: 26 left (expected: 26)
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 5 messages Added: 148e189c-e1a9-4ee3-85fc-ca8b2438ed75
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] 🤖 Adding AI message to state {messageId: 2572cd38-9744-41d3-ba47-6112088d53c9, content: }
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…REASONING____REASONING__ a__/REASONING____REAS..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 2572cd38}
+[browser][log] Debug: Found 0 user messages, 3 guest messages
+Debug: After wait - 0 user messages, 3 guest messages
+Debug: Using guest message (3 found)
+Debug: After wait - 0 user messages, 3 guest messages
+Debug: Using guest message (3 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…REASONING____REASONING__ a__/REASONING____REAS..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 2572cd38}
+[browser][log] 📡 Received pong, connection alive
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…REASONING____REASONING__ a__/REASONING____REAS..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 2572cd38}
+[browser][log] 🤖 onStreamingComplete {messageId: 2572cd38-9744-41d3-ba47-6112088d53c9, content: ## Scalable Microservices Architecture Design
+
+**C…ttlenecks emerge—don't over-engineer prematurely.}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+Thread: 1d165d7d-6645-4bd4-be56-a73bd457736e
+✅ Credits assertion: 24 left (expected: 24)
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] 🎬 Using View Transition for navigation to: /vex
+[browser][log] ⚡️ Navigation debounced (double-tap prevented)
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 🎬 Using View Transition for navigation to: /threads
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 📡 Received pong, connection alive
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][debug] [vite] connecting...
+[browser][debug] [vite] connected.
+[browser][info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[browser][log] ✅ Using localStorage for web storage
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] Setting up message listener
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 📐 ThemeContext viewPortWidth: 1280
+[browser][log] 📐 Calculated isSmallDevice: false from width: 1280
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 1 messages Added: c7bfa876-1ae7-4005-8801-aa83295b252e
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] 🤖 Adding AI message to state {messageId: 259b0950-565c-480e-9fd2-999540eb4527, content: }
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…G____REASONING__ explanation__/REASONING____RE..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 259b0950}
+[browser][log] 📡 Received pong, connection alive
+[browser][log] Debug: Found 0 user messages, 1 guest messages
+Debug: After wait - 0 user messages, 1 guest messages
+Debug: Using guest message (1 found)
+Debug: After wait - 0 user messages, 1 guest messages
+Debug: Using guest message (1 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🔍 Code detected: {inline: undefined, className: undefined}
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…G____REASONING__ explanation__/REASONING____RE..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 259b0950}
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🔍 Code detected: {inline: undefined, className: undefined}
+[browser][log] 🔍 Code detected: {inline: undefined, className: lang-javascript}
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…G____REASONING__ explanation__/REASONING____RE..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 259b0950}
+[browser][log] 🤖 onStreamingComplete {messageId: 259b0950-565c-480e-9fd2-999540eb4527, content: Dependency Injection (DI) is a design pattern wher…dency creation to enable testing and flexibility.}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+Thread: ea0d7a8f-40ce-4363-8b85-95a72a71751e
+✅ Credits assertion: 22 left (expected: 22)
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 3 messages Added: 9924b4fb-3785-4d74-a924-58c69dc7fb95
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] 🤖 Adding AI message to state {messageId: 0e9b6ba2-8e96-47f9-96c7-1c70ee0a5d47, content: }
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…/REASONING____REASONING__ SQL__/REASONING____R..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 0e9b6ba2}
+[browser][log] Debug: Found 0 user messages, 2 guest messages
+Debug: After wait - 0 user messages, 2 guest messages
+Debug: Using guest message (2 found)
+Debug: After wait - 0 user messages, 2 guest messages
+Debug: Using guest message (2 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…/REASONING____REASONING__ SQL__/REASONING____R..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 0e9b6ba2}
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…/REASONING____REASONING__ SQL__/REASONING____R..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 0e9b6ba2}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] 🤖 onStreamingComplete {messageId: 0e9b6ba2-8e96-47f9-96c7-1c70ee0a5d47, content: **SQL vs NoSQL - Key Differences:**
+
+**SQL (Relati…"which is better" but "which fits the use case."*}
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+Thread: ea0d7a8f-40ce-4363-8b85-95a72a71751e
+[browser][log] 📡 Received pong, connection alive
+✅ Credits assertion: 20 left (expected: 20)
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 5 messages Added: 2c3362a4-bbab-4c23-83d5-a8180ddb8669
+[browser][log] 🤖 Adding AI message to state {messageId: 219beb2f-6a0c-43e0-b9ac-9c9ed1a124f5, content: }
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…/REASONING____REASONING__ J__/REASONING____REA..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 219beb2f}
+[browser][log] Debug: Found 0 user messages, 3 guest messages
+Debug: After wait - 0 user messages, 3 guest messages
+Debug: Using guest message (3 found)
+Debug: After wait - 0 user messages, 3 guest messages
+Debug: Using guest message (3 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] 📡 Received pong, connection alive
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🔍 Code detected: {inline: undefined, className: undefined}
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…/REASONING____REASONING__ J__/REASONING____REA..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 219beb2f}
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🔍 Code detected: {inline: undefined, className: undefined}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…/REASONING____REASONING__ J__/REASONING____REA..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 219beb2f}
+[browser][log] 🔍 Code detected: {inline: undefined, className: lang-javascript}
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🔍 Code detected: {inline: undefined, className: undefined}
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…/REASONING____REASONING__ J__/REASONING____REA..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 219beb2f}
+[browser][log] 🔍 Code detected: {inline: undefined, className: lang-javascript}
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🔍 Code detected: {inline: undefined, className: undefined}
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…/REASONING____REASONING__ J__/REASONING____REA..., stats: Object, agent: Sushi 1.0, features: Object, clientId: 219beb2f}
+[browser][log] 🔍 Code detected: {inline: undefined, className: lang-javascript}
+[browser][log] 🤖 onStreamingComplete {messageId: 219beb2f-6a0c-43e0-b9ac-9c9ed1a124f5, content: Here's how to implement JWT authentication **in pr…sting and rate limiting authentication endpoints.}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] ✅ Already connected, skipping connection
+Thread: ea0d7a8f-40ce-4363-8b85-95a72a71751e
+[browser][log] 📡 Received pong, connection alive
+✅ Credits assertion: 18 left (expected: 18)
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🎨 Prism theme loaded: true Language: javascript
+[browser][log] 🎬 Using View Transition for navigation to: /vex
+[browser][log] ⚡️ Navigation debounced (double-tap prevented)
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 🎬 Using View Transition for navigation to: /vex
+[browser][log] ⚡️ Navigation debounced (double-tap prevented)
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] ✅ Adding user message to state
+[browser][log] 📝 Updated messages state: 1 messages Added: 0fc1f414-bf5b-4b5f-b0de-f655cbf0113f
+[browser][log] userResponse http://localhost:3001/api/messages Vex
+[browser][log] 🤖 Adding AI message to state {messageId: ac8d1405-dc82-4113-8ac6-6d4ba8e79556, content: }
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…G____REASONING__ a__/REASONING____REASONING__ ..., stats: Object, agent: Sushi 1.0, features: Object, clientId: ac8d1405}
+[browser][log] Debug: Found 0 user messages, 1 guest messages
+Debug: After wait - 0 user messages, 1 guest messages
+Debug: Using guest message (1 found)
+Debug: After wait - 0 user messages, 1 guest messages
+Debug: Using guest message (1 found)
+Debug: Got last message, looking for delete button...
+Debug: Found 1 delete buttons in last message
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…G____REASONING__ a__/REASONING____REASONING__ ..., stats: Object, agent: Sushi 1.0, features: Object, clientId: ac8d1405}
+[browser][log] 📡 Received pong, connection alive
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 🤖 Streaming Update {preview: __REASONING__The__/REASONING____REASONING__ user__…G____REASONING__ a__/REASONING____REASONING__ ..., stats: Object, agent: Sushi 1.0, features: Object, clientId: ac8d1405}
+[browser][log] 🤖 onStreamingComplete {messageId: ac8d1405-dc82-4113-8ac6-6d4ba8e79556, content: Here are the key principles of clean code in a nut…nt, and makes onboarding new team members easier.}
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/TribePost.tsx
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] Setting up message listener
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Thread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Message.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Messages.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Tribe.tsx
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chrry.tsx
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] Setting up message listener
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx
+[browser][log] Restoring timer state: {time: 0, isCountingDown: false, isPaused: false, startTime: 0, timestamp: 1770954512206}
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ✅ Already connected, skipping connection
+[browser][debug] [vite] invalidate /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx: Could not Fast Refresh ("useApp" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Skeleton.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chrry.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Menu.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/LanguageSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Image.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Version.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/a/A.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/TimerContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/AppContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Bookmark.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CollaborationStatus.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EmptyStateTips.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Modal.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Loading.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ColorScheme.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ThemeSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/TribeProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/addToHomeScreen/AddToHomeScreen.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Home.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Thread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Instructions.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/MemoryConsent.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/DeleteThread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Tribe.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chat.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/FocusButtonMini.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/App.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Subscribe.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ConfirmButton.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/ChatProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Messages.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Message.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Grapes.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EditThread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Share.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CharacterProfile.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/AppLink.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Search.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/TribePost.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Logo.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EnableNotifications.web.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Weather.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CharacterProfiles.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/SignIn.web.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/account/Account.tsx
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] Setting up message listener
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][log] 📡 Received pong, connection alive
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ✅ Already connected, skipping connection
+[browser][debug] [vite] invalidate /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx: Could not Fast Refresh ("useApp" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Skeleton.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chrry.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Menu.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/LanguageSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Image.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Version.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/a/A.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/TimerContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/AppContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Bookmark.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CollaborationStatus.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EmptyStateTips.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Modal.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Loading.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ColorScheme.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ThemeSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/TribeProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/addToHomeScreen/AddToHomeScreen.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Home.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Thread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Instructions.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/MemoryConsent.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/DeleteThread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Tribe.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chat.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/FocusButtonMini.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/App.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Subscribe.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ConfirmButton.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/ChatProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Messages.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Message.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Grapes.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EditThread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Share.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CharacterProfile.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/AppLink.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Search.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/TribePost.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Logo.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EnableNotifications.web.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Weather.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CharacterProfiles.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/SignIn.web.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/account/Account.tsx
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] Setting up message listener
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][debug] [vite] invalidate /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx: Could not Fast Refresh ("useApp" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Skeleton.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chrry.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Menu.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/LanguageSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Image.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Version.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/a/A.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/TimerContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/AppContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Bookmark.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CollaborationStatus.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EmptyStateTips.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Modal.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Loading.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ColorScheme.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ThemeSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/TribeProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/addToHomeScreen/AddToHomeScreen.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Home.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Thread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Instructions.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/MemoryConsent.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/DeleteThread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Tribe.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chat.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/FocusButtonMini.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/App.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Subscribe.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ConfirmButton.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/ChatProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Messages.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Message.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Grapes.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EditThread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Share.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CharacterProfile.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/AppLink.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Search.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/TribePost.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Logo.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EnableNotifications.web.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Weather.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CharacterProfiles.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/SignIn.web.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/account/Account.tsx
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] Setting up message listener
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][debug] [vite] invalidate /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx: Could not Fast Refresh ("useApp" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Skeleton.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chrry.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Menu.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/LanguageSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Image.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Version.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/a/A.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/TimerContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/AppContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Bookmark.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CollaborationStatus.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EmptyStateTips.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Modal.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Loading.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ColorScheme.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ThemeSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/TribeProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/addToHomeScreen/AddToHomeScreen.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Home.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Thread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Instructions.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/MemoryConsent.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/DeleteThread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Tribe.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chat.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/FocusButtonMini.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/App.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Subscribe.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ConfirmButton.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/ChatProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Messages.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Message.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Grapes.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EditThread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Share.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CharacterProfile.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/AppLink.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Search.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/TribePost.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Logo.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EnableNotifications.web.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Weather.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CharacterProfiles.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/SignIn.web.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/account/Account.tsx
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] Setting up message listener
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][debug] [vite] invalidate /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx: Could not Fast Refresh ("useApp" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Skeleton.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chrry.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Menu.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/LanguageSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Image.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Version.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/a/A.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/TimerContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/AppContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Bookmark.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CollaborationStatus.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EmptyStateTips.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Modal.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Loading.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ColorScheme.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ThemeSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/TribeProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/addToHomeScreen/AddToHomeScreen.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Home.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Thread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Instructions.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/MemoryConsent.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/DeleteThread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Tribe.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chat.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/FocusButtonMini.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/App.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Subscribe.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ConfirmButton.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/ChatProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Messages.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Message.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Grapes.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EditThread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Share.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CharacterProfile.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/AppLink.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Search.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/TribePost.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Logo.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EnableNotifications.web.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Weather.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/CharacterProfiles.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/SignIn.web.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/account/Account.tsx
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] Setting up message listener
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][debug] [vite] invalidate /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx: Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ColorScheme.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ThemeSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EmptyStateTips.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/DataProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/NavigationProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AppProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/ChatProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/TimerContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Messages.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Thread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Message.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chat.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/z/Programme.tsx
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] Setting up message listener
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][log] 📡 Received pong, connection alive
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][debug] [vite] invalidate /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx: Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ColorScheme.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ThemeSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EmptyStateTips.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/DataProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/NavigationProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AppProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/ChatProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/TimerContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Messages.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Thread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Message.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chat.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/z/Programme.tsx
+[browser][log] 🚀 ~ showTribe: false
+[browser][log] 🔄 Forcing reconnection...
+[browser][log] ⏳ Connection already in progress, skipping
+[browser][log] Setting up message listener
+[browser][log] 🚀 ~ useEffect ~ matchedApp: {id: d1c24c55-85e8-474d-a1fd-d54a109ed2ea, name: Vex, tools: Array(3), title: Your AI-Powered Life, slug: vex}
+[browser][log] 🔍 Platform detection: {isWeb: true, isNative: false, isBrowserExtension: false}
+[browser][log] 🔧 setViewPortWidth: 1280
+[browser][log] 🔧 setViewPortHeight: 720
+[browser][log] � prevApps before merge: 8 apps
+[browser][log] 📦 result after merge: 8 apps
+[browser][log] Cannot send message: WebSocket not connected
+[browser][log] 🔄 Attempting to reconnect...
+[browser][log] 🔄 Reconnecting in 1000ms (attempt 1/10)
+[browser][log] 🔌 WebSocket closed 1006 
+[browser][log] Connection lost unexpectedly, attempting reconnection...
+[browser][log] 🔄 Reconnecting in 2000ms (attempt 2/10)
+[browser][log] ✅ WebSocket opened successfully
+[browser][log] ✅ Already connected, skipping connection
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][debug] [vite] invalidate /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx: Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ColorScheme.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ThemeSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EmptyStateTips.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/DataProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/NavigationProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AppProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/ChatProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/TimerContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Messages.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Thread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Message.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chat.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/z/Programme.tsx
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][debug] [vite] invalidate /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx: Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ColorScheme.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ThemeSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EmptyStateTips.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/DataProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/NavigationProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AppProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/ChatProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/TimerContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Messages.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Thread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Message.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chat.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/z/Programme.tsx
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][debug] [vite] invalidate /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx: Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ColorScheme.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ThemeSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EmptyStateTips.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/DataProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/NavigationProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AppProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/ChatProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/TimerContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Messages.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Thread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Message.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chat.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/z/Programme.tsx
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][debug] [vite] invalidate /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx: Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AuthProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/index.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ColorScheme.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/ThemeSwitcher.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/EmptyStateTips.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/DataProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/NavigationProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/AppProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/providers/ChatProvider.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/context/TimerContext.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Messages.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Thread.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Message.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/Chat.tsx
+[browser][debug] [vite] hot updated: /@fs/Users/ibrahimvelinov/Documents/vex/packages/ui/z/Programme.tsx
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+[browser][log] 📡 Received pong, connection alive
+
+[[ATTACHMENT|test-results/guest.live-Thread-chromium/video.webm]]
+]]>
+</system-out>
 </testcase>
 <testcase name="File upload" classname="guest.live.spec.ts" time="0">
 <properties>
@@ -83,7 +1583,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="member.live.spec.ts" timestamp="2026-02-13T02:03:39.756Z" hostname="chromium" tests="6" failures="0" skipped="6" time="0" errors="0">
+<testsuite name="member.live.spec.ts" timestamp="2026-02-13T03:20:03.981Z" hostname="chromium" tests="6" failures="0" skipped="6" time="0" errors="0">
 <testcase name="Subscribe As Member" classname="member.live.spec.ts" time="0">
 <skipped>
 </skipped>
@@ -113,13 +1613,13 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="simple-guest-chat.spec.ts" timestamp="2026-02-13T02:03:39.756Z" hostname="chromium" tests="1" failures="0" skipped="1" time="0" errors="0">
+<testsuite name="simple-guest-chat.spec.ts" timestamp="2026-02-13T03:20:03.981Z" hostname="chromium" tests="1" failures="0" skipped="1" time="0" errors="0">
 <testcase name="guest chat flow: send message, bookmark, edit, delete" classname="simple-guest-chat.spec.ts" time="0">
 <skipped>
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="validation.live.spec.ts" timestamp="2026-02-13T02:03:39.756Z" hostname="chromium" tests="1" failures="0" skipped="1" time="0" errors="0">
+<testsuite name="validation.live.spec.ts" timestamp="2026-02-13T03:20:03.981Z" hostname="chromium" tests="1" failures="0" skipped="1" time="0" errors="0">
 <testcase name="App Creation Validation" classname="validation.live.spec.ts" time="0">
 <properties>
 <property name="skip" value="">

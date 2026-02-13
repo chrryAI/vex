@@ -37,7 +37,7 @@ export default function Store({
 
   const { utilities } = useStyles()
 
-  const { router, searchParams } = useNavigationContext()
+  const { searchParams } = useNavigationContext()
 
   const { setIsNewAppChat } = useChat()
 
@@ -46,9 +46,7 @@ export default function Store({
     storeApps: storeAppsContext,
     getAppSlug,
     loadingApp,
-    setLoadingApp,
     loadingAppId,
-    hasStoreApps,
     accountApp,
   } = useAuth()
 
@@ -91,7 +89,7 @@ export default function Store({
         },
       })
     }
-  }, [store?.id, plausible])
+  }, [store?.id, plausible, store, storeApps?.length])
 
   useEffect(() => {
     if (selectedApp) {
@@ -106,7 +104,7 @@ export default function Store({
         },
       })
     }
-  }, [selectedApp?.id, store?.id, plausible])
+  }, [selectedApp?.id, store?.id, plausible, selectedApp, store?.name])
 
   // Dynamically update page metadata for client-side navigation
   useStoreMetadata(store)

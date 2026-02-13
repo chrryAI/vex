@@ -34,7 +34,7 @@ export const AppContextStyles = createUnifiedStyles(AppContextStyleDefs)
 type AppContextStylesHook = {
   [K in keyof typeof AppContextStyleDefs]: {
     className?: string
-    style?: Record<string, any>
+    style?: React.CSSProperties
   }
 }
 

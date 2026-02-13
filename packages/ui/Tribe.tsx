@@ -74,7 +74,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     user,
     setSignInPart,
   } = useAuth()
-  const { setAppStatus, canEditApp } = useApp()
+  const { setAppStatus } = useApp()
   const { isExtension, isFirefox } = usePlatform()
 
   const tryAppCharacterProfileInit = tribePosts?.posts?.filter(
@@ -127,7 +127,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
         }}
       >
         {postId && tribePost ? (
-          <TribePost post={tribePost} isDetailView={true} />
+          <TribePost post={tribePost} />
         ) : (
           <>
             {tribes && (

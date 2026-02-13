@@ -48,9 +48,14 @@ export async function clean({
   await clearSessionButton.click()
 
   // unstable
-  // await expect(page.getByTestId("is-deleted")).toBeAttached({
-  //   timeout: 50000,
-  // })
+
+  try {
+    await expect(page.getByTestId("is-deleted")).toBeAttached({
+      timeout: 50000,
+    })
+  } catch (error) {
+    console.error("Error waiting for is-deleted element:", error)
+  }
 
   // Wait for the API call to complete
   await page.waitForTimeout(5000)

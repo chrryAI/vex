@@ -43,7 +43,7 @@ import getCacheProvider from "../../lib/swrCacheProvider"
 import { getSiteConfig } from "../../utils/siteConfig"
 
 export interface AppProvidersProps {
-  translations?: Record<string, any>
+  translations?: Record<string, Record<string, string>>
   searchParams?: Record<string, string> & {
     get: (key: string) => string | null
     has: (key: string) => boolean
@@ -56,7 +56,6 @@ export interface AppProvidersProps {
   app?: appWithStore
   showTribe?: boolean
   pathname?: string // SSR pathname for thread ID extraction
-  onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
   signInContext?: (
     provider: "google" | "apple" | "credentials",
     options: {
@@ -67,13 +66,13 @@ export interface AppProvidersProps {
       errorUrl?: string
       blankTarget?: boolean
     },
-  ) => Promise<any>
+  ) => Promise<unknown>
   siteConfig?: ReturnType<typeof getSiteConfig>
   theme?: "light" | "dark"
   signOutContext?: (options: {
     callbackUrl: string
     errorUrl?: string
-  }) => Promise<any>
+  }) => Promise<unknown>
   viewPortWidth?: string
   viewPortHeight?: string
   useExtensionIcon?: (slug?: string) => void
@@ -97,7 +96,6 @@ export default function AppProviders({
   session,
   app,
   pathname,
-  onSetLanguage,
   apiKey,
   viewPortWidth,
   viewPortHeight,
@@ -126,7 +124,7 @@ export default function AppProviders({
       //   ...(session ? { session: { data: session } } : {}),
       //   ...(thread?.thread ? { [`threadId-${thread.thread.id}`]: thread } : {}),
       // },
-      onError: (error: any) => {
+      onError: (error: { status: number }) => {
         if (error?.status === 429) {
           // const errorKey = `rate_limit_${Date.now()}`
           const lastShown = localStorage.getItem("last_rate_limit_toast")
@@ -143,9 +141,9 @@ export default function AppProviders({
       },
 
       onErrorRetry: (
-        error: any,
-        key: string,
-        config: any,
+        error: { status: number },
+        _key: string,
+        _config: unknown,
         revalidate: any,
         { retryCount }: any,
       ) => {
@@ -179,7 +177,6 @@ export default function AppProviders({
               pathname={pathname}
               threads={threads}
               showTribe={showTribe}
-              onSetLanguage={onSetLanguage}
               session={session}
               siteConfig={siteConfig}
               searchParams={searchParams}

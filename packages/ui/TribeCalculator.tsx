@@ -7,7 +7,6 @@ import {
   Button,
   Input,
   Label,
-  usePlatform,
   useLocalStorage,
   Span,
 } from "./platform"
@@ -56,22 +55,13 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   const { t } = useAppContext()
   const agentStyles = useAgentStyles()
 
-  const {
-    defaultExtends,
-    app,
-    apps,
-    appForm,
-    appFormWatcher,
-    appStatus,
-    setAppStatus,
-  } = useApp()
+  const { app } = useApp()
 
   const {
     user,
     guest,
     token,
     language,
-    setSkipAppCacheTemp,
     moltPlaceHolder,
     setMoltPlaceHolder,
     setApp,
@@ -88,7 +78,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   const [canUpdate, setCanUpdate] = useState(canUpdateInitial)
 
   const { API_URL, FRONTEND_URL, CREDITS_PRICE } = useData()
-  const { searchParams, addParams } = useNavigationContext()
+  const { addParams } = useNavigationContext()
 
   const [loading, setLoading] = useState(false)
   const [expandedInfoIndex, setExpandedInfoIndex] = useState<number | null>(
@@ -102,10 +92,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   const [frequency, setFrequency] = useLocalStorage<
     "daily" | "weekly" | "monthly"
   >("frequency", "daily")
-  const [postsPerDay, setPostsPerDay] = useLocalStorage<number>(
-    "postsPerDay",
-    3,
-  )
+
   const [startDate, setStartDate] = useLocalStorage<string>(
     "startDate",
     new Date().toISOString().split("T")[0] || "",
@@ -133,7 +120,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   )
   // Removed global contentLength - now per-slot
   const { utilities } = useStyles()
-  const { viewPortWidth } = usePlatform()
 
   // Calculation results
   const [totalPosts, setTotalPosts] = useState<number>(0)
@@ -144,7 +130,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   // Model and post type multipliers imported from creditCalculator
 
   // Minimum price for Stripe (€5)
-  const MINIMUM_PRICE = 5
 
   // Calculate credits and posts using shared calculator
   useEffect(() => {
@@ -190,14 +175,11 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     setLoading(true)
     try {
       const params = new URLSearchParams()
-      user?.id && params.set("userId", user.id)
-      guest?.id && params.set("guestId", guest.id)
-      app?.id && params.set("appId", app.id)
+      if (app?.id) params.set("appId", app.id)
 
       const checkoutSuccessUrl = (() => {
         params.set("checkout", "success")
         params.set("purchaseType", "tribe")
-        user && token && params.set("auth_token", token)
         return `${FRONTEND_URL}/?${params.toString()}&session_id={CHECKOUT_SESSION_ID}`
       })()
 

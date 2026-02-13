@@ -68,7 +68,7 @@ interface ThemeContextValue {
   setEnableSound: (enableSound: boolean) => void
   playNotification: () => Promise<void>
   resolveColor: (cssVar: string) => string
-  resolveStyles: (style: Record<string, any>) => Record<string, any>
+  resolveStyles: (style: React.CSSProperties) => React.CSSProperties
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
@@ -93,8 +93,13 @@ export function ThemeProvider({
   )
 
   const setColorScheme = (scheme?: string) => {
-    if (scheme && Object.keys(COLORS).includes(scheme)) {
-      scheme && scheme !== colorScheme && setColorSchemeInternal(scheme)
+    if (
+      scheme &&
+      Object.keys(COLORS).includes(scheme) &&
+      scheme &&
+      scheme !== colorScheme
+    ) {
+      setColorSchemeInternal(scheme)
     }
   }
 
@@ -272,8 +277,8 @@ export function ThemeProvider({
 
   const addHapticFeedback = (intensity = 30) => {
     if (isExtension) return
-    if ("vibrate" in navigator) {
-      isAndroid && navigator.vibrate(intensity)
+    if (isAndroid && "vibrate" in navigator) {
+      navigator.vibrate(intensity)
     }
   }
 
@@ -300,17 +305,18 @@ export function ThemeProvider({
   )
 
   const setReduceMotion = (reduceMotion: boolean) => {
-    reduceMotion
-      ? toast.error(
-          t("Motion Off", {
-            duration: 30000,
-          }),
-        )
-      : toast.success(
-          t("Motion On", {
-            duration: 30000,
-          }),
-        )
+    if (reduceMotion)
+      toast.error(
+        t("Motion Off", {
+          duration: 30000,
+        }),
+      )
+    else
+      toast.success(
+        t("Motion On", {
+          duration: 30000,
+        }),
+      )
     setReduceMotionInternal(reduceMotion)
   }
 
@@ -320,7 +326,7 @@ export function ThemeProvider({
   }
 
   // Resolve all CSS variables in a style object
-  const resolveStyles = (style: Record<string, any>): Record<string, any> => {
+  const resolveStyles = (style: React.CSSProperties): React.CSSProperties => {
     return resolveStyleVars(style, theme, isWeb)
   }
 

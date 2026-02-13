@@ -29,7 +29,6 @@ import DeleteThread from "./DeleteThread"
 import Instructions from "./Instructions"
 import EditThread from "./EditThread"
 import Share from "./Share"
-import { useUserScroll } from "./hooks/useUserScroll"
 import { useThreadPresence } from "./hooks/useThreadPresence"
 import Bookmark from "./Bookmark"
 import CollaborationStatus from "./CollaborationStatus"
@@ -70,10 +69,8 @@ const Thread = ({
     plausible,
     threadIdRef,
     memoriesEnabled,
-    setShowFocus,
     grapes,
     app,
-    baseApp,
     setIsRetro,
     isRetro,
     advanceDailySection,
@@ -116,14 +113,11 @@ const Thread = ({
     placeHolderText,
     isEmpty,
     showTribe,
-    setShowTribe,
   } = useChat()
 
   const hasHydrated = useHasHydrated()
 
   const showFocus = auth.showFocus && isEmpty && hasHydrated
-
-  const { pathname } = useNavigationContext()
 
   const { isIDE } = usePlatform()
 
@@ -150,7 +144,7 @@ const Thread = ({
 
   const { appStatus, appFormWatcher, suggestSaveApp } = useApp()
 
-  const { addHapticFeedback, isMobileDevice, isSmallDevice } = useTheme()
+  const { addHapticFeedback, isSmallDevice } = useTheme()
 
   // Update thread metadata dynamically
   useThreadMetadata(thread)
@@ -170,21 +164,6 @@ const Thread = ({
   // const lastProcessedThreadDataRef = useRef<any>(null)
 
   // Smart auto-scroll: only scroll for short responses
-  const shouldAutoScroll = (currentMessage: string) => {
-    if (currentMessage.length === 0) return true
-    if (shouldStopAutoScrollRef.current) return false // Once stopped, stay stopped for this response
-
-    const contentLength = currentMessage.length
-    const wordCount = currentMessage.split(" ").length
-
-    // Stop auto-scrolling if response gets too long
-    if (contentLength > 500 || wordCount > 80) {
-      shouldStopAutoScrollRef.current = true
-      return false
-    }
-
-    return true
-  }
 
   const messagesRef = useRef<HTMLDivElement>(null)
 
@@ -219,7 +198,7 @@ const Thread = ({
         setAutoSelectedAgent(true)
       }
     }
-  }, [messages, autoSelectedAgent, debateAgent])
+  }, [messages, autoSelectedAgent, debateAgent, aiAgents, setSelectedAgent])
   // aiAgents excluded to prevent loop, setSelectedAgent is stable
 
   const nameIsRequired = `👋 ${t("Name your app...")}`
@@ -240,13 +219,8 @@ const Thread = ({
           : `${t("You can save it now!")} 🚀`
     : null
 
-  const [isGame, setIsGame] = useState(false)
-
   const [collaborationVersion, setCollaborationVersion] = useState(0)
   const { utilities } = useStyles()
-
-  const { isUserScrolling, hasStoppedScrolling, resetScrollState } =
-    useUserScroll()
 
   // Memoize the streaming update handler to prevent infinite loops
   const handleStreamingUpdate = useCallback(
@@ -362,13 +336,13 @@ const Thread = ({
       })
     },
     [
-      isLoadingMore,
       scrollToBottom,
       setMessages,
-      shouldAutoScroll,
-      resetScrollState,
-      isUserScrolling,
-      hasStoppedScrolling,
+      console,
+      threadId,
+      user?.id,
+      guest?.id,
+      thread,
     ],
   )
 
@@ -484,41 +458,39 @@ const Thread = ({
           </Div>
         ) : (
           <>
-            {isGame ? null : (
-              <Messages
-                onCharacterProfileUpdate={() => {
-                  !isChatFloating && scrollToBottom()
-                }}
-                isHome={isHome}
-                thread={thread}
-                onPlayAudio={() => {
-                  shouldStopAutoScrollRef.current = true
-                }}
-                onToggleLike={(liked) => {
-                  refetch()
-                }}
-                emptyMessage={
-                  liked && messages.length === 0
-                    ? t("Nothing here yet")
-                    : undefined
-                }
-                showEmptyState={!!thread}
-                onDelete={async ({ id }) => {
-                  if (messages.length === 1) {
-                    await refetch().then(() => setMessages([]))
-                  } else
-                    await refetch().then(() =>
-                      setMessages(messages.filter((m) => m.message.id !== id)),
-                    )
-                }}
-                ref={messagesRef}
-                messages={messages}
-                setIsLoadingMore={setIsLoadingMore}
-                setUntil={setUntil}
-                until={until}
-                nextPage={nextPage}
-              />
-            )}
+            <Messages
+              onCharacterProfileUpdate={() => {
+                if (!isChatFloating) scrollToBottom()
+              }}
+              isHome={isHome}
+              thread={thread}
+              onPlayAudio={() => {
+                shouldStopAutoScrollRef.current = true
+              }}
+              onToggleLike={() => {
+                refetch()
+              }}
+              emptyMessage={
+                liked && messages.length === 0
+                  ? t("Nothing here yet")
+                  : undefined
+              }
+              showEmptyState={!!thread}
+              onDelete={async ({ id }) => {
+                if (messages.length === 1) {
+                  await refetch().then(() => setMessages([]))
+                } else
+                  await refetch().then(() =>
+                    setMessages(messages.filter((m) => m.message.id !== id)),
+                  )
+              }}
+              ref={messagesRef}
+              messages={messages}
+              setIsLoadingMore={setIsLoadingMore}
+              setUntil={setUntil}
+              until={until}
+              nextPage={nextPage}
+            />
             {(!isVisitor ||
               collaborator ||
               thread?.visibility === "public") && (
@@ -750,14 +722,14 @@ const Thread = ({
                             {user?.messagesLastHour ||
                               guest?.messagesLastHour ||
                               0}
-                            /{hourlyLimit}"
+                            /{hourlyLimit}
                           </Span>
                           <CollaborationStatus
                             dataTestId="chat"
                             key={`${thread.id}-${collaborationVersion}`}
                             onSave={(status) => {
                               setCollaborationVersion((v) => v + 1)
-                              collaborationStatus &&
+                              if (collaborationStatus)
                                 setCollaborationStatus(undefined)
                               if (
                                 status === "revoked" ||
@@ -771,7 +743,7 @@ const Thread = ({
                                 return
                               }
 
-                              !collaborationStatus && refetchThreads()
+                              if (!collaborationStatus) refetchThreads()
                               refetch()
                             }}
                             thread={thread}
@@ -786,10 +758,9 @@ const Thread = ({
                       !isLoading &&
                       messages.length === 0
                     }
-                    onToggleGame={(on) => setIsGame(on)}
                     showGreeting={isEmpty}
                     onStreamingStop={async (message) => {
-                      message?.message?.clientId &&
+                      if (message?.message?.clientId)
                         setMessages((prev) => {
                           return prev.map((m) =>
                             m.message.id === message?.message?.clientId
@@ -809,7 +780,6 @@ const Thread = ({
                       if (msg.isUser && msg.message) {
                         console.log("✅ Adding user message to state")
                         scrollToBottom(500, true)
-                        resetScrollState()
                         shouldStopAutoScrollRef.current = false // Reset auto-scroll for new response
 
                         if (
@@ -834,6 +804,7 @@ const Thread = ({
                           }
                         }
                         setMessages((prev) => {
+                          if (!msg.message?.message) return prev
                           const existingIndex = prev.findIndex(
                             (m) =>
                               m.message.clientId ===
@@ -841,7 +812,7 @@ const Thread = ({
                           )
 
                           const newMessage = {
-                            message: msg.message?.message!,
+                            message: msg.message?.message,
                             aiAgent: undefined,
                             user: msg.message?.user ?? user ?? undefined,
                             guest: msg.message?.guest ?? guest ?? undefined,
@@ -878,50 +849,50 @@ const Thread = ({
 
                           const newMessage = {
                             message: {
-                              id: msg.message?.message?.id!,
+                              id: msg.message?.message?.id,
                               type: "chat" as const, // Regular chat message
                               content: msg.content,
-                              createdOn: msg?.message?.message?.createdOn!,
-                              updatedOn: msg?.message?.message?.updatedOn!,
+                              createdOn: msg?.message?.message?.createdOn,
+                              updatedOn: msg?.message?.message?.updatedOn,
                               agentId:
                                 msg?.message?.message?.agentId ||
                                 msg?.message?.message?.selectedAgentId ||
                                 null,
                               agentVersion: selectedAgent?.version || null,
                               threadId: "",
-                              readOn: msg?.message?.message?.createdOn!,
+                              readOn: msg?.message?.message?.createdOn,
                               userId: user?.id || null,
                               guestId: guest?.id || null,
                               searchContext:
-                                msg?.message?.message?.searchContext!,
+                                msg?.message?.message?.searchContext,
                               webSearchResult:
-                                msg?.message?.message?.webSearchResult!,
-                              metadata: msg?.message?.message?.metadata!,
+                                msg?.message?.message?.webSearchResult,
+                              metadata: msg?.message?.message?.metadata,
                               originalContent: msg.content,
-                              images: msg?.message?.message?.images!,
-                              files: msg?.message?.message?.files!,
-                              isWebSearchEnabled: msg?.isWebSearchEnabled!,
+                              images: msg?.message?.message?.images,
+                              files: msg?.message?.message?.files,
+                              isWebSearchEnabled: msg?.isWebSearchEnabled,
                               isImageGenerationEnabled:
-                                msg?.isImageGenerationEnabled!,
+                                msg?.isImageGenerationEnabled,
                               isStreaming: true,
-                              reasoning: msg?.message?.message?.reasoning!,
+                              reasoning: msg?.message?.message?.reasoning,
                               like: null,
                               dislike: null,
                               creditCost: selectedAgent?.creditCost || 1,
-                              task: msg?.message?.message?.task!,
-                              reactions: msg?.message?.message?.reactions!,
-                              clientId: msg.message?.message?.clientId!,
-                              audio: msg?.message?.message?.audio!,
-                              video: msg?.message?.message?.video!,
+                              task: msg?.message?.message?.task,
+                              reactions: msg?.message?.message?.reactions,
+                              clientId: msg.message?.message?.clientId,
+                              audio: msg?.message?.message?.audio,
+                              video: msg?.message?.message?.video,
                               selectedAgentId:
-                                msg.message?.message?.selectedAgentId!,
+                                msg.message?.message?.selectedAgentId,
                               debateAgentId:
-                                msg.message?.message?.debateAgentId!,
-                              pauseDebate: msg.message?.message?.pauseDebate!,
+                                msg.message?.message?.debateAgentId,
+                              pauseDebate: msg.message?.message?.pauseDebate,
                             },
-                            aiAgent: msg?.message?.aiAgent! || selectedAgent,
+                            aiAgent: msg?.message?.aiAgent || selectedAgent,
                             thread: thread,
-                          }
+                          } as (typeof prev)[number]
 
                           if (existingIndex >= 0) {
                             const updated = [...prev]
@@ -967,15 +938,15 @@ const Thread = ({
                         },
                       })
 
-                      message?.thread &&
+                      if (message?.thread)
                         setThread({
                           ...message.thread,
                         })
 
                       // Mark last AI message as not streaming
-                      message &&
+                      if (message)
                         setMessages((prev) =>
-                          prev.map((m, i) => {
+                          prev.map((m) => {
                             if (m.message.id === message.message.id) {
                               if (m.message.isStreamingStop) {
                                 return {

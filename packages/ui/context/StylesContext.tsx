@@ -9,7 +9,7 @@ import { SkeletonStyleDefs } from "../Skeleton.styles"
 // Style object that can be spread directly into style prop
 // Also has className property for CSS classes and style property for inline styles
 type StyleObject = {
-  style: Record<string, any>
+  style: React.CSSProperties
   className: string
 }
 

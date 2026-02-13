@@ -33,7 +33,6 @@ export default function SignIn({
   signInButtonText,
   showRegister = true,
   registerButtonText,
-  desktopAuthHandler,
   style,
   ...props
 }: {
@@ -86,7 +85,6 @@ export default function SignIn({
   const {
     FRONTEND_URL,
     isE2E,
-    isCI,
     API_URL,
     TEST_GUEST_FINGERPRINTS,
     TEST_MEMBER_FINGERPRINTS,
@@ -96,7 +94,7 @@ export default function SignIn({
 
   const { threadId } = useChat()
 
-  const { router, removeParams } = useNavigationContext()
+  const { router } = useNavigationContext()
 
   const { captureException } = useError()
 
@@ -115,7 +113,7 @@ export default function SignIn({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
-  }, [])
+  }, [setPart])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -128,7 +126,7 @@ export default function SignIn({
     return () => {
       window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [part])
+  }, [part, setPart])
 
   const E2E =
     isE2E ||
@@ -166,7 +164,8 @@ export default function SignIn({
       try {
         new URL(callbackUrl)
         isCallbackUrlURI = true
-      } catch (error) {
+      } catch (error: Error | unknown) {
+        captureException(error)
         isCallbackUrlURI = false
       }
     }
@@ -191,7 +190,7 @@ export default function SignIn({
     // successUrl.searchParams.set("chrryUrl", encodeURIComponent(CHRRY_URL))
     // }
 
-    isExtensionRedirect && successUrl.searchParams.set("extension", "true")
+    if (isExtensionRedirect) successUrl.searchParams.set("extension", "true")
 
     // fingerprint && successUrl.searchParams.set("fp", fingerprint)
 
@@ -202,7 +201,6 @@ export default function SignIn({
   }
 
   const [isSignInLoading, setIsSignInLoading] = useState(false)
-  const [redirectUrl, setRedirectUrl] = useState<string | null>(null)
 
   const handleLogin = async () => {
     setIsSignInLoading(true)
@@ -275,7 +273,7 @@ export default function SignIn({
     const { successUrl, errorUrl } = getCallbacks()
 
     successUrl.searchParams.set("welcome", "true")
-    isExtensionRedirect && successUrl.searchParams.set("extension", "true")
+    if (isExtensionRedirect) successUrl.searchParams.set("extension", "true")
 
     try {
       const result = await signInContext?.("apple", {
@@ -573,19 +571,19 @@ export default function SignIn({
                   }
 
                   if (guest) {
-                    threadId
-                      ? router.push(
-                          `/threads/${threadId}?subscribe=true&plan=${plan}`,
-                        )
-                      : router.push(`/?subscribe=true&plan=${plan}`)
+                    if (threadId)
+                      router.push(
+                        `/threads/${threadId}?subscribe=true&plan=${plan}`,
+                      )
+                    else router.push(`/?subscribe=true&plan=${plan}`)
                     return
                   }
 
-                  threadId
-                    ? router.push(
-                        `/threads/${threadId}?subscribe=true&plan=${plan}`,
-                      )
-                    : router.push(`/?subscribe=true&plan=${plan}`)
+                  if (threadId)
+                    router.push(
+                      `/threads/${threadId}?subscribe=true&plan=${plan}`,
+                    )
+                  else router.push(`/?subscribe=true&plan=${plan}`)
                 }}
                 className={clsx("transparent small", styles.registerButton)}
               >
@@ -610,6 +608,7 @@ export default function SignIn({
               playsInline
             ></video>
           }
+          className={className}
           title={<>{t(part === "login" ? "Login" : "Register")}</>}
           dataTestId="sign-in-modal"
           hasCloseButton
@@ -618,6 +617,7 @@ export default function SignIn({
           onToggle={(open) => {
             setPart(open ? "login" : undefined)
           }}
+          style={style}
         >
           {part !== "credentials" ? (
             <div className={styles.signInButtons}>
@@ -750,7 +750,6 @@ export default function SignIn({
                   justifyContent: "center",
                 }}
                 data-testid="login-submit"
-                {...(redirectUrl && { "data-redirect-url": redirectUrl })}
                 onClick={handleLogin}
                 type="submit"
               >

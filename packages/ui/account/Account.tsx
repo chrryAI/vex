@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { UserRound, LogOut, AtSign, Trash2, Pencil } from "../icons"
 import { CircleX } from "../icons"
 import { v4 as uuidv4 } from "uuid"
@@ -29,7 +29,6 @@ import { Button, Div, FilePicker, Input, useTheme } from "../platform"
 import { uploadUserImage } from "../lib"
 import Img from "../Image"
 import CharacterProfiles from "../CharacterProfiles"
-import Checkbox from "../Checkbox"
 import { useAccountStyles } from "./Account.styles"
 import { useStyles } from "../context/StylesContext"
 
@@ -65,10 +64,9 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
 
   const { addHapticFeedback } = useTheme()
 
-  const { setEnv, env, actions } = useData()
+  const { actions } = useData()
 
   const searchParams = useSearchParams()
-  const innerRef = React.useRef<HTMLDivElement>(null)
   const isExtension = checkIsExtension()
   const isAppleAvailable = false
   const isOAuthAccountNotLinkedError =
@@ -79,7 +77,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
   const [userName, setUserName] = React.useState<string>("")
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const [isUserNameNotSet, setIsUserNameNotSet] = React.useState<boolean>(false)
+  const [, setIsUserNameNotSet] = React.useState<boolean>(false)
 
   useEffect(() => {
     if (user?.userName) {
@@ -94,10 +92,48 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
       setIsModalOpen(true)
       setIsUserNameNotSet(true)
     }
-  }, [user?.userName, user?.id, setIsModalOpen])
+  }, [user?.userName, user?.id, setIsModalOpen, user])
 
   const isLoggingOut = searchParams.get("logout") === "true" || undefined
   const [isSaving, setIsSaving] = useState(false)
+
+  const handleLogout = useCallback(async () => {
+    addHapticFeedback()
+    if (isExtension) {
+      await signOut()
+      BrowserInstance?.runtime?.sendMessage({
+        action: "openInSameTab",
+        url: `${FRONTEND_URL}?account=true&logout=true&extension=true`,
+      })
+    }
+
+    await signOut()
+    // setIsModalOpen(false)
+
+    if (!isExtension) {
+      signOutContext?.({
+        callbackUrl: `${FRONTEND_URL}/?loggedOut=true${isExtensionRedirect ? "&extension=true" : ""}`,
+      })
+      setDeviceId(uuidv4())
+    }
+
+    const searchParams = new URLSearchParams(window.location.search)
+    searchParams.delete("account")
+    const newUrl = searchParams.toString()
+      ? `?${searchParams.toString()}`
+      : window.location.pathname
+
+    push(newUrl)
+  }, [
+    addHapticFeedback,
+    isExtension,
+    signOut,
+    FRONTEND_URL,
+    signOutContext,
+    isExtensionRedirect,
+    setDeviceId,
+    push,
+  ])
 
   const handleUsernameSubmit = async () => {
     addHapticFeedback()
@@ -158,36 +194,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
         handleLogout()
       }, 2000)
     }
-  }, [isLoggingOut])
-
-  const handleLogout = async () => {
-    addHapticFeedback()
-    if (isExtension) {
-      await signOut()
-      BrowserInstance?.runtime?.sendMessage({
-        action: "openInSameTab",
-        url: `${FRONTEND_URL}?account=true&logout=true&extension=true`,
-      })
-    }
-
-    await signOut()
-    // setIsModalOpen(false)
-
-    if (!isExtension) {
-      signOutContext?.({
-        callbackUrl: `${FRONTEND_URL}/?loggedOut=true${isExtensionRedirect ? "&extension=true" : ""}`,
-      })
-      setDeviceId(uuidv4())
-    }
-
-    const searchParams = new URLSearchParams(window.location.search)
-    searchParams.delete("account")
-    const newUrl = searchParams.toString()
-      ? `?${searchParams.toString()}`
-      : window.location.pathname
-
-    push(newUrl)
-  }
+  }, [handleLogout, isLoggingOut])
 
   const [isUploading, setIsUploading] = useState(false)
 
@@ -236,7 +243,9 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
         const updatedUser = await actions.getUser()
         setUser(updatedUser)
       }
-    } catch (error) {
+    } catch (error: Error | unknown) {
+      console.error("Error uploading image:", error)
+      captureException(error)
       toast.error("Error uploading image")
     } finally {
       setIsUploading(false)
@@ -357,7 +366,9 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
                               const updatedUser = await actions.getUser()
                               setUser(updatedUser)
                             }
-                          } catch (error) {
+                          } catch (error: Error | unknown) {
+                            console.error("Error removing image:", error)
+                            captureException(error)
                             toast.error("Error removing image")
                           } finally {
                             setIsUploading(false)
@@ -487,20 +498,6 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
           </Div>
 
           <Div style={styles.actions.style}>
-            {user?.role === "admin" && (
-              <Checkbox
-                checked={env === "production"}
-                onChange={(e) => {
-                  const newEnv = e ? "production" : "development"
-                  setEnv(newEnv)
-                  toast.success(
-                    `Switched to ${newEnv === "production" ? "Production" : "Development"} environment`,
-                  )
-                }}
-              >
-                {t("Prod")}
-              </Checkbox>
-            )}
             <Button
               className="link"
               data-testid="account-logout-button"

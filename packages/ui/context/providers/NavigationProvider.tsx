@@ -23,6 +23,7 @@ import { thread } from "../../types"
 import { t } from "i18next"
 import { defaultLocale } from "../../locales"
 import { whiteLabels } from "../../utils/siteConfig"
+import { captureException } from "chrry/utils/errorTracking"
 
 const NavigationContext = createContext<
   | {
@@ -124,7 +125,9 @@ export function NavigationProvider({
   const searchParams = (typeof window === "undefined"
     ? props.searchParams
     : sp) || {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     get: (_key: string) => null,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     has: (_key: string) => false,
     toString: () => "",
   }
@@ -153,7 +156,6 @@ export function NavigationProvider({
     setIsVisitor,
     refetchThreads,
     userNameByUrl,
-    setShouldFetchThread,
   } = useChat()
 
   const goToCalendar = () => {
@@ -218,7 +220,9 @@ export function NavigationProvider({
       await navigator.clipboard.writeText(url)
       toast.success(t("Copied"))
       setTimeout(() => (copiedRef.current = false), 2000)
-    } catch (err) {
+    } catch (err: Error | unknown) {
+      captureException(err)
+      console.error("Failed to copy URL to clipboard:", err)
       toast.error("Failed to copy code")
     }
   }
@@ -228,7 +232,7 @@ export function NavigationProvider({
     const whiteLabel = app?.slug
       ? whiteLabels.find((a) => a.slug === app.slug)
       : undefined
-    !value && navigation.removeParams("showInstall")
+    if (!value) navigation.removeParams("showInstall")
     if (
       !isStandalone &&
       value &&
@@ -255,39 +259,7 @@ export function NavigationProvider({
     if (showAddToHomeScreen) {
       setShowFocus(false)
     }
-  }, [showAddToHomeScreen])
-
-  // const isOnline = useOnlineStatus()
-
-  // toast.success(API_URL)
-  // toast.success(FRONTEND_URL)
-
-  // const [wasOffline, setWasOffline] = useState(false)
-
-  // ⚠️ unstable
-  // useEffect(() => {
-  //   // 1. The "Panic" State (Lost Connection)
-  //   if (!isOnline) {
-  //     setWasOffline(true)
-  //     // Change from "Error" to "Loading" or "Status" icon if possible
-  //     toast.loading(t("Reconnecting..."), {
-  //       id: "connection-status", // specific ID so we can update this exact toast
-  //     })
-  //   }
-
-  //   // 2. The "Relief" State (Connection Restored)
-  //   else if (isOnline && wasOffline) {
-  //     // Update the EXISTING toast to Success
-  //     toast.success(t("Back online"), {
-  //       id: "connection-status",
-  //       duration: 3000,
-  //     })
-  //     setWasOffline(false)
-
-  //     // OPTIONAL: Trigger a silent revalidation of the current thread
-  //     // mutate("/api/messages")
-  //   }
-  // }, [isOnline, wasOffline])
+  }, [setShowFocus, showAddToHomeScreen])
 
   const [
     isMemoryConsentManageVisible,

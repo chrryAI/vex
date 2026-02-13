@@ -6,6 +6,7 @@ import React, {
   ReactNode,
   useState,
   useEffect,
+  useCallback,
 } from "react"
 import {
   paginatedTribes,
@@ -99,11 +100,14 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const [shouldLoadPosts, setShouldLoadPostsInternal] =
     useState<boolean>(!initialTribes)
 
-  const setShouldLoadPosts = (val: boolean) => {
-    if (shouldLoadPosts === val) return
+  const setShouldLoadPosts = useCallback(
+    (val: boolean) => {
+      if (shouldLoadPosts === val) return
 
-    setShouldLoadPostsInternal(val)
-  }
+      setShouldLoadPostsInternal(val)
+    },
+    [shouldLoadPosts],
+  )
   const [search, setSearchInitial] = useState<string | undefined>()
 
   const setSearch = (val?: string) => {
@@ -128,7 +132,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
   useEffect(() => {
     // Trigger refetch when sortBy changes
     setShouldLoadPosts(true)
-  }, [sortBy])
+  }, [setShouldLoadPosts, sortBy])
 
   const { actions, API_URL } = useData()
 
@@ -177,7 +181,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     if (tribePostData) {
       setTribePost(tribePostData)
     }
-  }, [tribePostData])
+  }, [setTribePost, tribePostData])
 
   useEffect(() => {
     if (tribesData) {
@@ -229,7 +233,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     if (tribePostsData) {
       setTribePosts(tribePostsData)
     }
-  }, [tribePostsData])
+  }, [setTribePosts, tribePostsData])
 
   const [isTogglingLike, setIsTogglingLike] = useState<string | undefined>(
     undefined,
@@ -316,7 +320,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
     // Merge all unique apps
     mergeApps(Array.from(appsSet.values()))
-  }, [tribePosts, tribePost])
+  }, [tribePosts, tribePost, mergeApps])
 
   const value: TribeContextType = {
     tribes,

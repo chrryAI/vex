@@ -7,6 +7,7 @@ import React, {
   useState,
   useEffect,
   useMemo,
+  useCallback,
 } from "react"
 import { useLocalStorage, useNavigation, toast } from "../../platform"
 import useCache from "../../hooks/useCache"
@@ -76,7 +77,6 @@ interface AppFormContextType {
   setIsAgentModalOpen: (value: boolean) => void
   setMinimize: React.Dispatch<React.SetStateAction<boolean>>
   defaultExtends: string[]
-  setStoreSlug: (storeSlug: string) => void
   currentStore: storeWithApps | undefined
   showingCustom: boolean
   hasCustomInstructions: boolean
@@ -176,11 +176,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setApp: setAppInternal,
     storeApp,
     chrry,
-    vex,
     baseApp,
-    userBaseApp,
     store,
-    guestBaseApp,
     stores,
     storeApps,
     isSavingApp,
@@ -196,10 +193,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isManagingApp,
     isRemovingApp,
     setIsRemovingApp,
-    burn,
-    burnApp,
     burning,
-    setBurn,
     plausible,
     minimize,
     setMinimize: setMinimizeInternal,
@@ -210,8 +204,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const { t } = useTranslation()
 
-  const { searchParams, push, pathname, removeParams, addParams } =
-    useNavigation()
+  const { searchParams, push, pathname, addParams } = useNavigation()
 
   // useEffect(() => {
   //   session?.apps.length && setApps(session?.apps)
@@ -282,7 +275,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setIsManagingApp(isManagingAppInternal)
-  }, [isManagingAppInternal])
+  }, [isManagingAppInternal, setIsManagingApp])
 
   const setApp = (app: appWithStore | undefined) => {
     setAppInternal(app)
@@ -298,7 +291,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (appStatus?.part === "settings") {
-      !tab && setTab("settings")
+      if (!tab) setTab("settings")
     }
   }, [tab, appStatus, setTab])
 
@@ -306,23 +299,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     appStatus?.part === "settings",
   )
 
-  const setIsAgentModalOpen = (value: boolean) => {
+  const setIsAgentModalOpen = useCallback((value: boolean) => {
     setIsAgentModalOpenInternal(value)
     // if (!value) {
     //   removeParams(["settings", "tab", "trial"])
     // }
-  }
+  }, [])
 
   useEffect(() => {
     setIsAgentModalOpen(appStatus?.part === "settings")
-    appStatus?.part && auth.setShowTribe(false)
+    if (appStatus?.part) auth.setShowTribe(false)
   }, [appStatus, auth, setIsAgentModalOpen])
-
-  useEffect(() => {
-    if (searchParams.get("settings")) {
-      setAppStatus({ part: "settings" })
-    }
-  }, [searchParams.get("settings")])
 
   const saveApp = async () => {
     try {
@@ -379,7 +366,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       })
       return false
     } finally {
-      canEditApp && setIsSavingApp(false)
+      if (canEditApp) setIsSavingApp(false)
     }
 
     toast.error(t("Something went wrong"))
@@ -450,50 +437,56 @@ export function AppProvider({ children }: { children: ReactNode }) {
     ?.slice(0, 5)
     .map((app) => app.id) as string[]
 
-  const defaultFormValues = {
-    name: t("MyAgent"),
-    title: t("Your personal AI agent"),
-    tone: "professional" as const,
-    language: "en",
-    defaultModel: "claude",
-    isDefaultValues: true,
-    temperature: 0.7,
-    pricing: "free" as const,
-    tier: "free" as const,
-    highlights: defaultInstructions,
-    visibility: "private" as const,
-    capabilities: {
-      text: true,
-      image: true,
-      audio: true,
-      video: true,
-      webSearch: true,
-      imageGeneration: true,
-      codeExecution: true,
-      pdf: true,
-    },
-    themeColor: "#8B5CF6", // Default purple color
-    extends: defaultExtends, // Default: Chrry (required) and base app (if exists)
-    tools: ["calendar", "location", "weather"],
-    apiEnabled: false,
-    apiPricing: "per-request" as const,
-    displayMode: "standalone" as const,
-  }
+  const defaultFormValues = useMemo(
+    () => ({
+      name: t("MyAgent"),
+      title: t("Your personal AI agent"),
+      tone: "professional" as const,
+      language: "en",
+      defaultModel: "claude",
+      isDefaultValues: true,
+      temperature: 0.7,
+      pricing: "free" as const,
+      tier: "free" as const,
+      highlights: defaultInstructions,
+      visibility: "private" as const,
+      capabilities: {
+        text: true,
+        image: true,
+        audio: true,
+        video: true,
+        webSearch: true,
+        imageGeneration: true,
+        codeExecution: true,
+        pdf: true,
+      },
+      themeColor: "#8B5CF6", // Default purple color
+      extends: defaultExtends, // Default: Chrry (required) and base app (if exists)
+      tools: ["calendar", "location", "weather"],
+      apiEnabled: false,
+      apiPricing: "per-request" as const,
+      displayMode: "standalone" as const,
+    }),
+    [t, defaultInstructions, defaultExtends],
+  )
   // Cross-platform localStorage hook (works on web, native, extension)
   const [formDraft, setFormDraftInternal] = useLocalStorage<
     Partial<appFormData> | undefined
   >("draft", defaultFormValues)
 
-  const setFormDraft = (
-    draft:
-      | Partial<appFormData>
-      | undefined
-      | ((
-          prev: Partial<appFormData> | undefined,
-        ) => Partial<appFormData> | undefined),
-  ) => {
-    setFormDraftInternal(draft)
-  }
+  const setFormDraft = useCallback(
+    (
+      draft:
+        | Partial<appFormData>
+        | undefined
+        | ((
+            prev: Partial<appFormData> | undefined,
+          ) => Partial<appFormData> | undefined),
+    ) => {
+      setFormDraftInternal(draft)
+    },
+    [setFormDraftInternal],
+  )
 
   useEffect(() => {
     // Guard: Only run if formDraft has extends
@@ -526,9 +519,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...formDraft,
       extends: validExtends,
     })
-  }, [storeApps, defaultExtends]) // Removed formDraft from deps
+  }, [storeApps, defaultExtends, formDraft, setFormDraft]) // Removed formDraft from deps
 
-  const getInitialFormValues = (): Partial<appFormData> => {
+  const getInitialFormValues = useCallback((): Partial<appFormData> => {
     if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
       return {
         id: app.id,
@@ -558,7 +551,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     }
     return defaultFormValues
-  }
+  }, [
+    app,
+    user?.id,
+    guest?.id,
+    defaultFormValues,
+    defaultExtends,
+    defaultInstructions,
+  ])
 
   const appForm = useForm<appFormData>({
     resolver: customZodResolver(appSchema),
@@ -584,17 +584,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
   //   true,
   // )
 
-  const setMinimize = (value: boolean | ((prev: boolean) => boolean)) => {
-    const newValue = typeof value === "function" ? value(minimize) : value
+  const setMinimize = useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      const newValue = typeof value === "function" ? value(minimize) : value
 
-    // Update state
-    setMinimizeInternal(newValue)
+      // Update state
+      setMinimizeInternal(newValue)
 
-    // Track state change - plausible will automatically calculate duration
-    plausible({
-      name: newValue ? ANALYTICS_EVENTS.MINIMIZE : ANALYTICS_EVENTS.MAXIMIZE,
-    })
-  }
+      // Track state change - plausible will automatically calculate duration
+      plausible({
+        name: newValue ? ANALYTICS_EVENTS.MINIMIZE : ANALYTICS_EVENTS.MAXIMIZE,
+      })
+    },
+    [plausible, minimize, setMinimizeInternal],
+  )
 
   const contextInstructions = useMemo(() => {
     if (!app) return []
@@ -611,8 +614,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // Filter by appId
     return instructions.filter((i) => i.appId === app?.id) as instruction[]
   }, [
-    burn,
-    burnApp,
     app,
     auth?.instructions,
     user?.instructions,
@@ -620,13 +621,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     burning,
   ])
 
-  const [storeSlug, setStoreSlug] = useState(pathname.replace("/", ""))
-
-  useEffect(() => {
-    setStoreSlug(pathname.replace("/", ""))
-  }, [pathname])
-
-  const getCurrentStoreApp = () => {
+  const getCurrentStoreApp = useCallback(() => {
     const pathSegments = pathname.split("/").filter(Boolean)
     const lastSegment = pathSegments[pathSegments.length - 1] || ""
 
@@ -635,7 +630,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     )
 
     return matchedApp
-  }
+  }, [pathname, storeApps])
 
   const [currentStore, setCurrentStore] = useState(getCurrentStoreApp()?.store)
   useEffect(() => {
@@ -644,8 +639,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setLoadingApp(matchedApp)
       return
     }
-    matchedApp?.store && setCurrentStore(matchedApp.store)
-  }, [pathname, storeApps, currentStore])
+    if (matchedApp?.store) {
+      setCurrentStore(matchedApp.store)
+    }
+  }, [pathname, storeApps, currentStore, getCurrentStoreApp, setLoadingApp])
 
   const appFormWatcher = {
     ...watcher,
@@ -681,11 +678,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 slug: app?.slug || undefined,
               }) as instruction[]),
     [
-      contextInstructions,
-      app?.id, // IMPORTANT: Track app changes
-      app?.highlights,
       isManagingApp,
-      JSON.stringify(watcher.highlights), // Stringify for deep comparison
+      appFormWatcher.highlights,
+      contextInstructions,
+      app?.highlights,
       app?.slug,
     ],
   )
@@ -694,7 +690,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     useState<instruction[]>(instructionsInternal)
 
   useEffect(() => {
-    instructionsInternal.length && setInstructions(instructionsInternal)
+    if (instructionsInternal.length) setInstructions(instructionsInternal)
   }, [instructionsInternal])
 
   const hasCustomInstructions = contextInstructions?.some(
@@ -737,73 +733,106 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const canEditApp = isAppOwner
 
-  const setAppStatus = (
-    payload:
-      | {
-          step?: "add" | "success" | "warning" | "cancel" | "update" | "restore"
-          part?:
-            | "name"
-            | "description"
-            | "highlights"
-            | "settings"
-            | "image"
-            | "title"
-          text?: Record<string, string>
-        }
-      | undefined,
-  ) => {
-    setMinimize(false)
-    setAppStatusInternal(payload)
+  const setAppStatus = useCallback(
+    (
+      payload:
+        | {
+            step?:
+              | "add"
+              | "success"
+              | "warning"
+              | "cancel"
+              | "update"
+              | "restore"
+            part?:
+              | "name"
+              | "description"
+              | "highlights"
+              | "settings"
+              | "image"
+              | "title"
+            text?: Record<string, string>
+          }
+        | undefined,
+    ) => {
+      setMinimize(false)
+      setAppStatusInternal(payload)
 
-    plausible({
-      name: ANALYTICS_EVENTS.APP_STATUS,
-      props: payload,
-    })
+      plausible({
+        name: ANALYTICS_EVENTS.APP_STATUS,
+        props: payload,
+      })
 
-    if (payload) {
-      addParams({ settings: "true" })
-
-      auth.setShowTribe(false)
-      auth.setShowFocus(false)
-    }
-
-    const { step, part } = payload || {}
-
-    if (step || part) {
-      if (part === "settings") {
+      if (payload) {
         addParams({ settings: "true" })
+
+        auth.setShowTribe(false)
+        auth.setShowFocus(false)
       }
 
-      if (appStatus?.step !== step || appStatus?.part !== part)
-        setAppStatusInternal({
-          step: step,
-          part: part,
-        })
+      const { step, part } = payload || {}
 
-      if (step === "add") {
-        // Clear localStorage draft first
-        setFormDraft(undefined)
+      if (step || part) {
+        if (part === "settings") {
+          addParams({ settings: "true" })
+        }
 
-        // Then reset form to default values (clears id and all fields)
-        // Recalculate default extends to include chrry and base app
-        const freshDefaults = {
-          ...defaultFormValues,
-          id: undefined, // Explicitly clear id to prevent conflicts
-        }
-        appForm.reset(freshDefaults)
-        if ((threadId || currentStore || pathname === "/tribe") && chrry) {
-          push(auth.getAppSlug(chrry))
-        }
-      } else if (step === "restore") {
-        // Restore app data from current app into form for editing
-        if (app && isAppOwner) {
-          const appValues = getInitialFormValues()
-          appForm.reset(appValues)
-          setFormDraft(appValues)
+        if (appStatus?.step !== step || appStatus?.part !== part)
+          setAppStatusInternal({
+            step: step,
+            part: part,
+          })
+
+        if (step === "add") {
+          // Clear localStorage draft first
+          setFormDraft(undefined)
+
+          // Then reset form to default values (clears id and all fields)
+          // Recalculate default extends to include chrry and base app
+          const freshDefaults = {
+            ...defaultFormValues,
+            id: undefined, // Explicitly clear id to prevent conflicts
+          }
+          appForm.reset(freshDefaults)
+          if ((threadId || currentStore || pathname === "/tribe") && chrry) {
+            push(auth.getAppSlug(chrry))
+          }
+        } else if (step === "restore") {
+          // Restore app data from current app into form for editing
+          if (app && isAppOwner) {
+            const appValues = getInitialFormValues()
+            appForm.reset(appValues)
+            setFormDraft(appValues)
+          }
         }
       }
+    },
+    [
+      setMinimize,
+      plausible,
+      addParams,
+      auth,
+      appStatus?.step,
+      appStatus?.part,
+      setFormDraft,
+      defaultFormValues,
+      appForm,
+      threadId,
+      currentStore,
+      pathname,
+      chrry,
+      push,
+      app,
+      isAppOwner,
+      getInitialFormValues,
+    ],
+  )
+
+  useEffect(() => {
+    if (searchParams.get("settings")) {
+      setAppStatus({ part: "settings" })
     }
-  }
+  }, [searchParams, setAppStatus])
 
   useEffect(() => {
     const subscription = appForm.watch((data) => {
@@ -817,13 +846,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [appForm])
+  }, [appForm, setFormDraft])
   useEffect(() => {
     if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
       const appValues = getInitialFormValues()
       appForm.reset(appValues)
     }
-  }, [app, user, guest])
+  }, [app, user, guest, getInitialFormValues, appForm])
 
   // Restore form draft only on mount (but not when step is "add")
   const [hasRestoredDraft, setHasRestoredDraft] = useState(false)
@@ -842,7 +871,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       setHasRestoredDraft(true)
     }
-  }, [formDraft, step]) // Only run on mount or when step changes
+  }, [appForm, formDraft, hasRestoredDraft, step]) // Only run on mount or when step changes
 
   return (
     <AppFormContext.Provider
@@ -886,7 +915,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setInstructions,
         isAppInstructions,
         hasCustomInstructions,
-        setStoreSlug,
         setIsManagingApp,
         tab,
         setTab,
