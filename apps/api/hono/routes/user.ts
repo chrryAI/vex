@@ -1,6 +1,7 @@
 import { Hono } from "hono"
 import Stripe from "stripe"
 import slugify from "slug"
+import { resolve4, resolve6 } from "node:dns/promises"
 import {
   deleteUser,
   getStore,
@@ -15,6 +16,83 @@ import { protectedRoutes } from "@chrryai/chrry/utils/url"
 import { deleteFile, upload } from "../../lib/minio"
 import { scanFileForMalware } from "../../lib/security"
 import { clearGraphDataForUser } from "../../lib/graph/graphService"
+
+/**
+ * Check if an IP address is in a private or reserved range.
+ * Replaces the vulnerable 'ip' package with safe built-in logic.
+ */
+function isPrivateIP(ip: string): boolean {
+  // IPv4 private ranges
+  const ipv4Match = ip.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/)
+  if (ipv4Match) {
+    const [, a, b] = ipv4Match.map(Number)
+    // 0.0.0.0/8
+    if (a === 0) return true
+    // 10.0.0.0/8
+    if (a === 10) return true
+    // 127.0.0.0/8 (loopback)
+    if (a === 127) return true
+    // 169.254.0.0/16 (link-local)
+    if (a === 169 && b === 254) return true
+    // 172.16.0.0/12
+    if (a === 172 && b >= 16 && b <= 31) return true
+    // 192.168.0.0/16
+    if (a === 192 && b === 168) return true
+  }
+
+  // IPv6 loopback
+  if (ip === "::1") return true
+
+  // IPv6 private ranges (fe80::/10, fc00::/7)
+  if (ip.startsWith("fe80:") || ip.startsWith("fc") || ip.startsWith("fd")) {
+    return true
+  }
+
+  // IPv4-mapped IPv6 loopback (::ffff:127.0.0.x)
+  if (ip.startsWith("::ffff:127.")) return true
+
+  return false
+}
+
+async function isValidImageUrl(url: string): Promise<boolean> {
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return false
+    }
+
+    // Prevent DNS rebinding attacks by resolving hostname and validating each IP
+    try {
+      // Resolve IPv4 addresses
+      const v4Addresses = await resolve4(parsed.hostname, { all: true })
+      for (const addr of v4Addresses) {
+        if (isPrivateIP(addr)) {
+          return false
+        }
+      }
+
+      // Also try IPv6 resolution
+      try {
+        const v6Addresses = await resolve6(parsed.hostname, { all: true })
+        for (const addr of v6Addresses) {
+          if (isPrivateIP(addr)) {
+            return false
+          }
+        }
+      } catch {
+        // IPv6 resolution may not always succeed; that's okay
+      }
+
+      return true
+    } catch (dnsError) {
+      // DNS resolution failed - treat as invalid to prevent SSRF
+      console.warn(`DNS resolution failed for ${parsed.hostname}:`, dnsError)
+      return false
+    }
+  } catch {
+    return false
+  }
+}
 
 export const user = new Hono()
 
@@ -58,6 +136,10 @@ user.patch("/", async (c) => {
       { error: "Username must be 3-20 alphanumeric characters" },
       400,
     )
+  }
+
+  if (image && !(await isValidImageUrl(image))) {
+    return c.json({ error: "Invalid image URL" }, 400)
   }
 
   const exists = async (username: string) => {
@@ -237,8 +319,7 @@ user.patch("/image", async (c) => {
       options: {
         width: 200,
         height: 200,
-        fit: "cover",
-        position: "top",
+        fit: "contain", // Preserve aspect ratio without cropping
         title: image.name,
       },
     })

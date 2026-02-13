@@ -9,11 +9,15 @@ import React, {
   createContext,
   useContext,
   ReactNode,
-  useMemo,
   useEffect,
   useState,
 } from "react"
-import { usePlatform, toast, useLocalStorage } from "../platform"
+import {
+  usePlatform,
+  toast,
+  useLocalStorage,
+  useCookieOrLocalStorage,
+} from "../platform"
 import {
   lightTheme,
   darkTheme,
@@ -72,9 +76,11 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 export function ThemeProvider({
   children,
   session,
+  ...props
 }: {
   children: ReactNode
   session?: session
+  theme?: themeType
 }) {
   const { isWeb, isExtension, isAndroid, viewPortWidth, device, os } =
     usePlatform()
@@ -104,7 +110,7 @@ export function ThemeProvider({
         ? "dark"
         : "light"
     }
-    return "dark" // Default to dark for SSR and Native
+    return props.theme || "dark" // Default to theme for SSR and Native
   }
 
   useEffect(() => {
@@ -115,7 +121,7 @@ export function ThemeProvider({
     }
   }, [viewPortWidth, os, device])
 
-  const [themeMode, setThemeMode] = useLocalStorage<themeType>(
+  const [themeMode, setThemeMode] = useCookieOrLocalStorage(
     "theme",
     getInitialTheme(),
   )
@@ -229,9 +235,7 @@ export function ThemeProvider({
   )
 
   // Detect initial dark mode preference
-  const isDark = useMemo(() => {
-    return themeMode === "dark"
-  }, [themeMode])
+  const isDark = themeMode === "dark"
 
   const theme = isDark ? darkTheme : lightTheme
 

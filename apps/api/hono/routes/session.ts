@@ -15,8 +15,8 @@ import {
   migrateUser,
   updateGuest,
   updateUser,
-  user,
-  guest,
+  type user,
+  type guest,
   upsertDevice,
   getAiAgents,
   getAiAgent,
@@ -104,7 +104,7 @@ function parseUserAgent(uaString: string) {
   }
 }
 
-const isValidFingerprint = (fp: string | null): boolean => {
+const _isValidFingerprint = (fp: string | null): boolean => {
   if (!fp) {
     return false
   }
@@ -217,7 +217,7 @@ session.get("/", async (c) => {
 
   const referer =
     request.headers.get("referer") || request.headers.get("origin")
-  let cookieDomain: string | undefined = undefined
+  let cookieDomain: string | undefined
 
   // Priority: chrryUrl (for extensions) > referer (for web)
   const sourceUrl = chrryUrl ? chrryUrl : referer
@@ -261,8 +261,6 @@ session.get("/", async (c) => {
   const locale = locales.includes(localeInternal as locale)
     ? localeInternal
     : "en"
-
-  const source = url.searchParams.get("source") || "client"
 
   const appType = url.searchParams.get("app")
   const isExtension = appType === "extension"
@@ -553,10 +551,6 @@ session.get("/", async (c) => {
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401)
       }
-
-      const protectedFPs = TEST_MEMBER_FINGERPRINTS.concat(
-        TEST_GUEST_FINGERPRINTS,
-      )
 
       await updateUser({
         ...member,

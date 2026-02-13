@@ -170,7 +170,7 @@ const ERROR_TEMPLATE: BookingTemplate = {
 export function selectBookingTemplate(
   context: BookingContext,
 ): BookingTemplate {
-  const { stats, elements, userRequest, pageInfo } = context
+  const { stats, elements, userRequest: _userRequest, pageInfo } = context
 
   // PRIORITY 1: Check for date picker elements (HIGHEST PRIORITY)
   const hasDatePicker = elements?.some((el: any) => {
@@ -335,7 +335,7 @@ Provide next action:`
 export function handleRateLimit(attempt: number = 1): number {
   const baseDelay = 1000 // 1 second
   const maxDelay = 30000 // 30 seconds
-  const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), maxDelay)
+  const delay = Math.min(baseDelay * 2 ** (attempt - 1), maxDelay)
 
   console.log(`Rate limit hit. Retrying in ${delay}ms (attempt ${attempt})`)
   return delay

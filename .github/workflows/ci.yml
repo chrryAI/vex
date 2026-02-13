@@ -2,7 +2,7 @@ name: CI
 on:
   # # will update to main when is ready
   pull_request:
-    branches: [prod]
+    branches: [main, prod]
 
 permissions:
   contents: read
@@ -27,8 +27,8 @@ env:
   BUILD_ID: ${{ github.sha }}
 
   # Node environment
-  NODE_ENV: test
-  VITE_NODE_ENV: test
+  NODE_ENV: development
+  VITE_NODE_ENV: development
 
   # Database
   DB_URL: ${{ secrets.DB_URL }}

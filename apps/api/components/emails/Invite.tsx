@@ -10,7 +10,7 @@ import {
   Text,
   Link,
 } from "@react-email/components"
-import { SiteConfig, getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { type SiteConfig, getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 export default function InviteEmail({
   origin,
@@ -84,10 +84,4 @@ const paragraph = {
   fontSize: "16px",
   lineHeight: "26px",
   margin: "16px 0",
-}
-
-const link = {
-  color: "#2754C5",
-  fontSize: "16px",
-  textDecoration: "underline",
 }

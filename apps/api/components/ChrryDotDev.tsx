@@ -1,6 +1,5 @@
 "use client"
 
-import React from "react"
 import { ExternalLink, Github, Package } from "lucide-react"
 import { chrryDev } from "@chrryai/chrry/utils/siteConfig"
 
@@ -113,12 +112,29 @@ export default function Chrry() {
               width={250}
               height={250}
             />
-            <h1>Chrry</h1>
+            <h1>
+              <Github />{" "}
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://github.com/chrryai"
+              >
+                Chrry
+              </a>
+            </h1>
           </div>
 
           <p className="description">{config.description}</p>
 
           <div className="links">
+            <a
+              href={"https://chrry.ai"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link"
+            >
+              🍒 Chrry.ai
+            </a>
             {config.links.github && (
               <a
                 href={config.links.github}
@@ -147,9 +163,9 @@ export default function Chrry() {
         </div>
 
         <div className="features">
-          {config.features.map((feature, index) => (
+          {config.features.map((feature) => (
             <a
-              key={index}
+              key={feature.icon}
               href={feature.link}
               target={feature.isOpenSource ? "_blank" : undefined}
               rel={feature.isOpenSource ? "noopener noreferrer" : undefined}

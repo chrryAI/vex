@@ -101,6 +101,20 @@ export function getThreadId(pathname?: string): string | undefined {
   return threadId && isValidUuidV4(threadId) ? threadId : undefined
 }
 
+export function getPostId(pathname?: string): string | undefined {
+  if (!pathname) return undefined
+  // Server-safe: check if window exists
+  const segments = pathname.split("/").filter(Boolean)
+  const pIndex = segments.findIndex((segment) => segment === "p")
+
+  if (pIndex === -1) return undefined
+
+  const postSegment = segments[pIndex + 1] || ""
+  const [postId] = postSegment.split("?")[0]?.split("&") ?? []
+
+  return postId && isValidUuidV4(postId) ? postId : undefined
+}
+
 // export const isDevelopment = process.env.VITE_NODE_ENV !== "production"
 
 export const MAX_TOOL_CALLS_PER_MESSAGE = 7
@@ -396,7 +410,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.14.3"
+export const VERSION = config.version || "1.14.26"
 export type instructionBase = {
   id: string
   title: string

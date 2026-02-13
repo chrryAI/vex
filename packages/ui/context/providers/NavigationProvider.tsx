@@ -14,7 +14,6 @@ import {
   usePlatform,
   NavigationParams,
 } from "../../platform"
-import { useOnlineStatus } from "../../hooks/useOnlineStatus"
 import { useApp } from "./AppProvider"
 import { useChat } from "./ChatProvider"
 import { useAuth } from "./AuthProvider"
@@ -84,7 +83,15 @@ const NavigationContext = createContext<
         status: "pending" | "active" | undefined | null,
       ) => void
       collaborationStatus: "pending" | "active" | undefined | null
-      setIsNewChat: (value: boolean, to?: string) => void
+      setIsNewChat: ({
+        value,
+        to,
+        tribe,
+      }: {
+        value: boolean
+        to?: string
+        tribe?: boolean
+      }) => void
       setSlug: (slug?: string) => void
       slug?: "atlas" | "peach" | "vault" | "bloom" | string
       goToCalendar: () => void
@@ -250,7 +257,7 @@ export function NavigationProvider({
     }
   }, [showAddToHomeScreen])
 
-  const isOnline = useOnlineStatus()
+  // const isOnline = useOnlineStatus()
 
   // toast.success(API_URL)
   // toast.success(FRONTEND_URL)

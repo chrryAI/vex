@@ -8,7 +8,7 @@ const getEnv = () => {
 
   let importMetaEnv: Record<string, any> = {}
   if (typeof import.meta !== "undefined") {
-    // @ts-ignore
+    // @ts-expect-error - import.meta.env may not exist in all environments
     importMetaEnv = import.meta.env || {}
   }
 
@@ -116,7 +116,7 @@ export async function getSafeUrl(
   let parsed: URL
   try {
     parsed = new URL(url)
-  } catch (e) {
+  } catch (_e) {
     throw new Error("Invalid URL format")
   }
 

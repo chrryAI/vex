@@ -8,19 +8,19 @@ import {
   getAiAgent,
   createThread,
   getMessage,
-  subscription,
+  type subscription,
   updateThread,
   getThread,
   getMood,
   getPureApp,
   getTask,
-  guest,
+  type guest,
   updateTask,
-  user,
+  type user,
   deleteMessage,
   updateMessage,
 } from "@repo/db"
-import { PROMPT_LIMITS, webSearchResultType } from "@repo/db/src/schema"
+import { PROMPT_LIMITS, type webSearchResultType } from "@repo/db/src/schema"
 import {
   isE2E as isE2EInternal,
   isOwner,
@@ -92,10 +92,6 @@ const getFileUploadQuota = async ({
   if (!user && !guest) {
     return null
   }
-
-  const fingerprint = user?.fingerprint || guest?.fingerprint
-  const isE2E =
-    fingerprint && !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
 
   const limits = getUploadLimitsForUser({ user, guest })
 
@@ -191,7 +187,6 @@ messages.get("/", async (c) => {
   const quota = c.req.query("quota")
 
   if (quota === "true") {
-    const fingerprint = member?.fingerprint || guest?.fingerprint
     const quotaInfo = await getFileUploadQuota({
       user: member,
       guest,

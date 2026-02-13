@@ -149,6 +149,15 @@ export default function MemoryConsent({
       data-testid="memory-consent-content"
       style={{ ...styles.memoryConsent.style, ...style }}
     >
+      {isDeleted && (
+        <Input
+          type="hidden"
+          value={isDeleted.toString()}
+          onChange={() => {}}
+          data-testid="is-deleted"
+        />
+      )}
+
       <Div style={styles.buttons.style}>
         <>
           {memoriesEnabled && !isMemoryConsentManageVisible && !minimize ? (
@@ -320,14 +329,6 @@ export default function MemoryConsent({
                     )}
                     {t("Disable Memories")}
                   </ConfirmButton>
-                  {isDeleted && (
-                    <Input
-                      type="hidden"
-                      value={isDeleted.toString()}
-                      onChange={() => {}}
-                      data-testid="is-deleted"
-                    />
-                  )}
 
                   {isE2E && isLiveTest && (
                     <ConfirmButton

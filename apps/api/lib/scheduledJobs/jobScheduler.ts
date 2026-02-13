@@ -7,7 +7,7 @@ import {
   or,
   isNotNull,
   decrypt,
-  scheduledJob,
+  type scheduledJob,
   getMemories,
   eq,
   getOrCreateTribe,
@@ -45,7 +45,7 @@ import {
   getUser,
   getAiAgent,
   updateMessage,
-  thread,
+  type thread,
   updateThread,
 } from "@repo/db"
 import { messages, moltQuestions, threads } from "@repo/db/src/schema"

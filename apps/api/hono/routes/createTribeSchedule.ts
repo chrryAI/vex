@@ -13,6 +13,10 @@ import { getMember } from "../lib/auth"
 import captureException from "../../lib/captureException"
 import { tribeScheduleSchema } from "@chrryai/chrry/schemas/tribeScheduleSchema"
 import { calculateCreditsFromDB } from "../../lib/scheduledJobs/creditCalculator"
+import {
+  checkMoltbookHealth,
+  getMoltbookAgentInfo,
+} from "../../lib/integrations/moltbook"
 
 export const createTribeSchedule = new Hono()
 
@@ -57,7 +61,15 @@ createTribeSchedule.post("/", async (c) => {
       return c.json({ error: "Authentication required" }, 401)
     }
 
+    if (!appId) {
+      return c.json({ error: "App ID is required" }, 400)
+    }
+
     const app = await getApp({ id: appId, userId: effectiveUserId })
+
+    if (!app) {
+      return c.json({ error: "App not found" }, 404)
+    }
 
     // 🔒 SECURITY: Validate Stripe session
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
@@ -135,11 +147,13 @@ createTribeSchedule.post("/", async (c) => {
       )
     }
 
-    console.log("✅ Price validation passed:", {
-      paidAmount,
-      calculatedPrice: calculatedResult.totalPrice,
-      totalCredits: calculatedResult.totalCredits,
-    })
+    if (member?.role === "admin") {
+      console.log("✅ Price validation passed:", {
+        paidAmount,
+        calculatedPrice: calculatedResult.totalPrice,
+        totalCredits: calculatedResult.totalCredits,
+      })
+    }
 
     // Verify payment by checking creditTransactions with sessionId
     const creditTransactions = await getCreditTransactions({ sessionId })
@@ -165,26 +179,69 @@ createTribeSchedule.post("/", async (c) => {
       return c.json({ error: "Payment does not belong to this user" }, 403)
     }
 
-    // Verify app ownership if appId provided
-    if (appId) {
-      if (
-        !isOwner(app, {
-          userId: effectiveUserId,
-        })
-      ) {
-        return c.json({ error: "App not found" }, 404)
-      }
+    // 🔒 SECURITY: Verify app ownership (appId is required)
+    if (
+      !isOwner(app, {
+        userId: effectiveUserId,
+      })
+    ) {
+      return c.json(
+        { error: "You don't have permission to create this schedule" },
+        403,
+      )
+    }
 
-      if (
-        !isOwner(app, {
-          userId: effectiveUserId,
-        })
-      ) {
+    // 🔗 MOLTBOOK: Verify Moltbook connection and get agent info for Molt-type schedules
+    let moltbookHandle: string | undefined = undefined
+
+    if (creditTransaction.type === "molt") {
+      const moltApiKey = app?.moltApiKey
+
+      if (!moltApiKey) {
         return c.json(
-          { error: "You don't have permission to create this schedule" },
-          403,
+          {
+            error: "Moltbook API key not configured",
+            details:
+              "Please set up your Moltbook connection in app settings first",
+          },
+          400,
         )
       }
+
+      // Verify Moltbook health first
+      const moltbookHealth = await checkMoltbookHealth(moltApiKey)
+
+      if (!moltbookHealth.healthy) {
+        console.error("❌ Moltbook health check failed:", moltbookHealth.error)
+        return c.json(
+          {
+            error: "Moltbook connection failed",
+            details:
+              moltbookHealth.error ||
+              "Unable to connect to Moltbook. Please verify your API key.",
+          },
+          400,
+        )
+      }
+
+      // Get agent info and handle
+      const agentInfo = await getMoltbookAgentInfo(moltApiKey)
+
+      if (!agentInfo) {
+        console.error("❌ Failed to fetch Moltbook agent info")
+        return c.json(
+          {
+            error: "Failed to fetch Moltbook agent info",
+            details:
+              "Unable to retrieve your Moltbook agent details. Please try again.",
+          },
+          400,
+        )
+      }
+
+      moltbookHandle = agentInfo.name
+
+      console.log("✅ Moltbook connection verified for agent:", moltbookHandle)
     }
 
     // Check if schedule already exists for this app
@@ -275,6 +332,7 @@ createTribeSchedule.post("/", async (c) => {
       isPaid: true,
       stripePaymentIntentId: sessionId,
       status: "active" as const,
+      ...(creditTransaction.type === "molt" && { moltbookHandle }),
     }
 
     let scheduledJob
@@ -286,32 +344,46 @@ createTribeSchedule.post("/", async (c) => {
         data: scheduleData,
       })
 
-      console.log("✅ Tribe/Molt schedule updated successfully:", {
-        scheduleId: scheduledJob?.id,
-        userId: effectiveUserId,
-        appId,
-        scheduleType: creditTransaction.type,
-        frequency,
-        scheduledTimes: schedule.length,
-        totalCredits,
-        creditsReserved: creditTransaction.amount,
-        action: "UPDATE",
-      })
+      console.log(
+        `✅ ${creditTransaction.type === "molt" ? "Molt" : "Tribe"} schedule updated successfully:`,
+        {
+          scheduleId: scheduledJob?.id,
+          userId: effectiveUserId,
+          appId,
+          scheduleType: creditTransaction.type,
+          frequency,
+          scheduledTimes: schedule.length,
+          totalCredits,
+          creditsReserved: creditTransaction.amount,
+          verified: creditTransaction.type === "molt" ? "moltbook" : "tribe",
+          moltbookHandle:
+            creditTransaction.type === "molt" ? moltbookHandle : undefined,
+          action: "UPDATE",
+        },
+      )
     } else {
       // CREATE new schedule
       scheduledJob = await createScheduledJob(scheduleData)
 
-      console.log("✅ Tribe/Molt schedule created successfully:", {
-        scheduleId: scheduledJob?.id,
-        userId: effectiveUserId,
-        appId,
-        scheduleType: creditTransaction.type,
-        frequency,
-        scheduledTimes: schedule.length,
-        totalCredits,
-        creditsReserved: creditTransaction.amount,
-        action: "CREATE",
-      })
+      if (member?.role === "admin") {
+        console.log(
+          `✅ ${creditTransaction.type === "molt" ? "Molt" : "Tribe"} schedule created successfully:`,
+          {
+            scheduleId: scheduledJob?.id,
+            userId: effectiveUserId,
+            appId,
+            scheduleType: creditTransaction.type,
+            frequency,
+            scheduledTimes: schedule.length,
+            totalCredits,
+            creditsReserved: creditTransaction.amount,
+            verified: creditTransaction.type === "molt" ? "moltbook" : "tribe",
+            moltbookHandle:
+              creditTransaction.type === "molt" ? moltbookHandle : undefined,
+            action: "CREATE",
+          },
+        )
+      }
     }
 
     // Link creditTransaction to schedule

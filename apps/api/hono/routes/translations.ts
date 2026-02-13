@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { defaultLocale, locales, locale } from "@chrryai/chrry/locales"
+import { defaultLocale, locales, type locale } from "@chrryai/chrry/locales"
 import { getCachedTranslations, setCachedTranslations } from "@repo/db"
 import { isDevelopment } from "@chrryai/chrry/utils"
 
