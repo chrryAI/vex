@@ -739,7 +739,6 @@ export default function Subscribe({
                     ) : (
                       <SmilePlus />
                     )}
-                    sddsdsd
                     {["credits", "molt", "tribe"].includes(selectedPlan) ? (
                       <Span>
                         {cta ||
