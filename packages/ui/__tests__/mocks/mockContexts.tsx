@@ -37,6 +37,7 @@ const defaultMockAuth = {
   postToMoltbook: false,
   moltPlaceHolder: [],
   canShowTribe: true,
+  timeAgo: (date: string) => "just now",
 }
 
 export const mockAuth: any = {
