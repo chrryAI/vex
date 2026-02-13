@@ -215,7 +215,6 @@ export default function TribePost({
             showButton={false}
             showDownloads={true}
             showInstructions={false}
-            showAbout={false}
             style={{
               marginTop: 0,
             }}

@@ -1100,7 +1100,7 @@ export function AuthProvider({
       (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
       session?.app?.store?.apps || props.app?.store?.apps || [],
     ),
-    userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
+    accountApp ? [accountApp] : [],
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
@@ -1717,21 +1717,21 @@ export function AuthProvider({
       defaultStoreSlug: baseApp?.store?.slug || siteConfig.storeSlug,
     })
 
-    if (
-      userBaseApp &&
-      storeSlug === userBaseApp.store?.slug &&
-      appSlug === userBaseApp.slug
-    ) {
-      return userBaseApp
-    }
+    // if (
+    //   userBaseApp &&
+    //   storeSlug === userBaseApp.store?.slug &&
+    //   appSlug === userBaseApp.slug
+    // ) {
+    //   return userBaseApp
+    // }
 
-    if (
-      guestBaseApp &&
-      storeSlug === guestBaseApp.store?.slug &&
-      appSlug === guestBaseApp.slug
-    ) {
-      return guestBaseApp
-    }
+    // if (
+    //   guestBaseApp &&
+    //   storeSlug === guestBaseApp.store?.slug &&
+    //   appSlug === guestBaseApp.slug
+    // ) {
+    //   return guestBaseApp
+    // }
 
     const matchedApp = storeApps?.find(
       (item) => item.slug === appSlug && (hasStoreApps(item) ? true : true),
@@ -2199,8 +2199,7 @@ export function AuthProvider({
 
   const hasAppPosts = !!tribePosts?.totalCount
 
-  const canShowTribe =
-    (isDevelopment || isE2E || user?.role === "admin") && hasAppPosts
+  const canShowTribe = isDevelopment || isE2E || user?.role === "admin"
 
   const canBeTribeProfile =
     !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "") &&
@@ -2212,18 +2211,20 @@ export function AuthProvider({
 
   const showTribeInitial =
     (showTribeFromQuery ||
-      (postId
-        ? true
-        : (props.showTribe ?? (tribePosts?.totalCount || 0) >= 1))) &&
-    canShowTribe &&
+      canShowTribe ||
+      (postId ? true : (props.showTribe ?? false))) &&
     !showFocus
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
+  console.log(`🚀 ~ showTribe:`, showTribe)
 
   const showTribeProfile = canBeTribeProfile && showTribe
 
   const setShowTribe = (value: boolean) => {
+    searchParams.get("tribe") && removeParams("tribe")
     if (!canShowTribe) return
+    console.log(`🚀 ~ setShowTribe ~ value:`, value)
+
     setShowTribeFinal(value)
   }
 
@@ -2534,6 +2535,8 @@ export function AuthProvider({
       matchedApp = findAppByPathname(pathname, storeApps) || baseApp
       // Using pathname app
     }
+
+    console.log(`🚀 ~ useEffect ~ matchedApp:`, matchedApp)
 
     // App detection logic
 

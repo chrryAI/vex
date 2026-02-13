@@ -34,8 +34,14 @@ export default function AppLink({
   setIsNewAppChat?: (item: appWithStore) => void
 }) {
   const { setIsWebSearchEnabled, setIsNewAppChat } = useChat()
-  const { loadingApp, getAppSlug, hasStoreApps, setLoadingApp, storeApps } =
-    useAuth()
+  const {
+    loadingApp,
+    getAppSlug,
+    hasStoreApps,
+    setLoadingApp,
+    storeApps,
+    mergeApps,
+  } = useAuth()
 
   const [isLoading, setIsLoading] = React.useState(
     loadingApp && loadingApp?.id === app?.id,
@@ -53,6 +59,15 @@ export default function AppLink({
     }
   }, [loadingApp, storeApps])
 
+  useEffect(() => {
+    if (!app) return
+
+    const isExist = storeApps.find((a) => a.id === app?.id)
+    if (!isExist) {
+      mergeApps([app])
+    }
+  }, [storeApps, app])
+
   const { utilities } = useStyles()
   if (as === "a") {
     return (
@@ -69,6 +84,7 @@ export default function AppLink({
             return
           }
           e.preventDefault()
+
           if (!hasStoreApps(app)) {
             setLoadingApp(app)
             onLoading?.()

@@ -433,6 +433,11 @@ export function ChatProvider({
     if (!item) {
       return
     }
+    console.log(`🚀 ~ hasStoreApps(item):`, hasStoreApps(item), {
+      value: true,
+      to: getAppSlug(item),
+      tribe,
+    })
 
     if (!hasStoreApps(item)) {
       loadingAppRef.current = item

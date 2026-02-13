@@ -1954,7 +1954,7 @@ export default function Agent({
                         className="inverted"
                         style={{
                           ...utilities.inverted.style,
-                          ...utilities.small.style,
+                          ...utilities.xSmall.style,
                           ...(tab === "tribe"
                             ? styles.currentTab.style
                             : undefined),
@@ -1964,7 +1964,7 @@ export default function Agent({
                         }}
                         type="button"
                       >
-                        <Img icon="zarathustra" size={16} />
+                        <Img icon="zarathustra" size={24} />
                         {t("Tribe")}
                       </Button>
                       <Button
@@ -1972,7 +1972,7 @@ export default function Agent({
                         className="inverted"
                         style={{
                           ...utilities.inverted.style,
-                          ...utilities.small.style,
+                          ...utilities.xSmall.style,
                           ...(tab === "moltBook"
                             ? styles.currentTab.style
                             : undefined),
@@ -1982,7 +1982,13 @@ export default function Agent({
                         }}
                         type="button"
                       >
-                        <Span>🦞</Span>
+                        <Span
+                          style={{
+                            fontSize: "1.25rem",
+                          }}
+                        >
+                          🦞
+                        </Span>
                         {t("Moltbook")}
                       </Button>
                     </>

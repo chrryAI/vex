@@ -16,6 +16,7 @@ import {
 } from "./platform"
 import Skeleton from "./Skeleton"
 import { FRONTEND_URL } from "./utils"
+import isOwner from "./utils/isOwner"
 import Img from "./Image"
 import A from "./a/A"
 import { useTribeStyles } from "./Tribe.styles"
@@ -37,7 +38,9 @@ import {
   ArrowLeft,
   MessageCircleHeart,
   BrickWallFire,
+  Settings2,
   Quote,
+  Pin,
 } from "./icons"
 import Loading from "./Loading"
 import TribePost from "./TribePost"
@@ -71,7 +74,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     user,
     setSignInPart,
   } = useAuth()
-  const { setAppStatus } = useApp()
+  const { setAppStatus, canEditApp } = useApp()
   const { isExtension, isFirefox } = usePlatform()
 
   const tryAppCharacterProfileInit = tribePosts?.posts?.filter(
@@ -106,6 +109,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
   const { utilities } = useStyles()
   const styles = useTribeStyles()
+
+  const owner = isOwner(app, {
+    userId: user?.id,
+  })
+
+  const TRAIN = owner ? `Train {{name}}` : `Try {{name}}`
 
   const storeApps = app?.store?.apps
 
@@ -214,6 +223,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     gap: ".5rem",
                     flexWrap: "wrap",
                     minHeight: "2rem",
+                    marginTop: ".5rem",
                   }}
                   key={`app-tribe-${tribeSlug}-${app?.id}`}
                 >
@@ -222,7 +232,14 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       <Loading />
                     </Div>
                   ) : (
-                    <>
+                    <Div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        gap: ".85rem",
+                        flexWrap: "wrap",
+                      }}
+                    >
                       {tribes.tribes?.slice(0, 25).map((tribe, i) => (
                         <MotiView
                           key={tribe.id}
@@ -257,7 +274,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           </A>
                         </MotiView>
                       ))}
-                    </>
+                    </Div>
                   )}
                 </Div>
               </Div>
@@ -347,7 +364,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             showButton={false}
                             showDownloads={true}
                             showInstructions={false}
-                            showAbout={false}
+                            showInstallers={false}
                             style={{
                               marginTop: 0,
                             }}
@@ -399,9 +416,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             setIsNewAppChat({ item: accountApp })
                           }}
                           className="inverted"
-                          style={{ ...utilities.inverted.style, marginTop: 10 }}
+                          style={{
+                            ...utilities.inverted.style,
+                            ...utilities.small.style,
+                            marginTop: 10,
+                          }}
                         >
-                          <Sparkles size={16} color="var(--accent-1)" />
+                          <Img app={accountApp} width={22} height={22} />
                           {t("Go to Your Agent")}
                         </Button>
                       ) : (
@@ -413,21 +434,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             }
                             setAppStatus({
                               part: "settings",
-                              step: "add",
                             })
                           }}
                           className="inverted"
                           style={{ ...utilities.inverted.style, marginTop: 10 }}
                         >
                           <Sparkles size={16} color="var(--accent-1)" />
-                          {t(
-                            showTribeProfile
-                              ? `Try {{name}}`
-                              : "Create Your Agent",
-                            {
-                              name: app?.name,
-                            },
-                          )}
+                          {t(showTribeProfile ? TRAIN : "Create Your Agent", {
+                            name: app?.name,
+                          })}
                         </Button>
                       )}
                     </Div>
@@ -475,7 +490,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         </A>
                       )}
                       <Instructions
-                        showAbout={false}
                         showButton={false}
                         showDownloads={true}
                         showInstructions={false}
@@ -485,12 +499,19 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       />
                     </Div>
                     <Div
-                      style={{ display: "flex", alignItems: "center", gap: 10 }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        lineHeight: "1.5",
+                      }}
                     >
                       <Img app={app?.store?.app || undefined} size={30} />
                       <P>
-                        {t(app?.store?.title ?? "")} -{" "}
-                        {t(app?.store?.description ?? "")}
+                        <A href={`/${app?.store?.slug}`} target="_blank">
+                          {t(app?.store?.title ?? "")}
+                        </A>{" "}
+                        - {t(app?.store?.description ?? "")}
                       </P>
                     </Div>
                     <Div
@@ -599,32 +620,83 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       display: "flex",
                       flexWrap: "wrap",
                       gap: 10,
-                      padding: "0 .5rem",
+                      position: "relative",
                     }}
                   >
-                    <P style={{ flex: 1, position: "relative" }}>
+                    {app?.subtitle || app?.description ? (
                       <Quote
                         size={18}
                         strokeWidth={1.25}
-                        style={{ position: "absolute", top: -2, left: -25 }}
+                        style={{ position: "absolute", top: -2 }}
                       />
-                      {t(app?.subtitle ?? "")} {t(app?.description ?? "")}{" "}
-                      {app?.icon}
+                    ) : (
+                      <Pin
+                        size={18}
+                        strokeWidth={1.25}
+                        style={{ position: "absolute", top: -2 }}
+                      />
+                    )}
+                    <P style={{ flex: 1, paddingLeft: 25 }}>
+                      {app?.subtitle || app?.description ? (
+                        <>
+                          {t(app?.subtitle ?? "")} {t(app?.description ?? "")}{" "}
+                          {app?.icon}
+                        </>
+                      ) : (
+                        <>
+                          {t(
+                            "This part will be updated when  App Creator pin a character profile 🧬",
+                          )}
+                        </>
+                      )}
                     </P>
-                    <Div>
-                      <Button
-                        onClick={() => {
-                          setIsNewAppChat({ item: app })
-                          return
-                        }}
-                        className="inverted"
-                        style={{ ...utilities.inverted.style, marginTop: 10 }}
-                      >
-                        {app?.icon}{" "}
-                        {t(`Try {{name}}`, {
-                          name: app?.name,
-                        })}
-                      </Button>
+                    <Div
+                      style={{
+                        display: "flex",
+                        gap: 10,
+                        alignItems: "center",
+                        justifyContent: "flex-end",
+                        marginTop: 10,
+                      }}
+                    >
+                      {isOwner(app, { userId: user?.id }) && (
+                        <Button
+                          className="link"
+                          title={t("Edit")}
+                          onClick={() => {
+                            setAppStatus({
+                              step: "update",
+                              part: "name",
+                            })
+                          }}
+                          style={utilities.link.style}
+                        >
+                          <Settings2 size={18} /> {t("Edit")}
+                        </Button>
+                      )}
+                      {app && (
+                        <AppLink
+                          isTribe={false}
+                          app={app}
+                          icon={
+                            app?.icon ? (
+                              app.icon
+                            ) : (
+                              <Img app={app} width={22} height={22} />
+                            )
+                          }
+                          className="button inverted"
+                          style={{
+                            ...utilities.inverted.style,
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          {t(TRAIN, {
+                            name: app?.name,
+                          })}
+                        </AppLink>
+                      )}
                     </Div>
                   </Div>
                 )}
