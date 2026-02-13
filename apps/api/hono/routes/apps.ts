@@ -1249,7 +1249,7 @@ app.delete("/:id", async (c) => {
       return c.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    if (member?.role === "admin" && !dangerousZone && !isE2E) {
+    if (member?.role === "admin" && !skipDangerousZone) {
       return c.json({ error: "Send dangerousZone to confirm" }, { status: 401 })
     }
 
