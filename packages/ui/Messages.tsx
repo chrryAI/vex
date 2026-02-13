@@ -25,6 +25,7 @@ import CharacterProfile from "./CharacterProfile"
 import { useWebSocket } from "./hooks/useWebSocket"
 import { isOwner } from "./utils"
 import { useMessagesStyles } from "./Messages.styles"
+import { useThreadPresence } from "./hooks/useThreadPresence"
 import { useStyles } from "./context/StylesContext"
 import { useUserScroll } from "./hooks/useUserScroll"
 import { isE2E } from "./utils/siteConfig"
@@ -137,6 +138,10 @@ export default forwardRef<
   // Memoize deps to prevent reconnection loop
   const webSocketDeps = useMemo(() => [threadId], [threadId])
 
+  const { typingUsers, onlineUsers } = useThreadPresence({
+    threadId,
+  })
+
   useWebSocket<{
     type: string
     data: characterProfile
@@ -238,11 +243,26 @@ export default forwardRef<
       )}
       <Div style={{ ...styles.messages.style }}>
         {sortedMessages?.map((message) => {
+          // ⚡ Bolt: Calculate presence here to avoid O(N) hook subscriptions in Message component
+          const isTyping = typingUsers.some(
+            (u) =>
+              (u.userId && u.userId === message.user?.id) ||
+              (u.guestId && u.guestId === message.guest?.id),
+          )
+
+          const isOnline = onlineUsers.some(
+            (u) =>
+              (u.userId && u.userId === message.user?.id) ||
+              (u.guestId && u.guestId === message.guest?.id),
+          )
+
           return (
             <Message
               onToggleLike={onToggleLike}
               onDelete={onDelete}
               onPlayAudio={onPlayAudio}
+              isTyping={isTyping}
+              isOnline={isOnline}
               key={message.message.id}
               message={message}
             />
