@@ -103,7 +103,9 @@ const CustomToolbar = (
     isSyncing,
   } = props
   const { t } = useAppContext()
-  const [view, setView] = useState<View>(initialView)
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [view, _setView] = useState<View>(initialView)
 
   const { searchParams, goToThread, goToApp } = useNavigationContext()
 
@@ -204,7 +206,6 @@ export default function Calendar({
   onEventResize,
   loading = false,
   defaultView = Views.MONTH,
-  defaultDate = new Date(),
   className,
 }: {
   events?: calendarEvent[]
@@ -233,7 +234,7 @@ export default function Calendar({
 
   // Handle event selection - open modal for editing
   const handleSelectEvent = useCallback(
-    (event: calendarEvent, e?: any) => {
+    (event: calendarEvent) => {
       // Don't open modal if clicking "show more" button
 
       // Find the full event data from calendarEvents
@@ -266,17 +267,10 @@ export default function Calendar({
 
   const { t, console } = useAppContext()
   const [date, setDate] = useState<Date>(new Date()) // Force current date
-  const {
-    token,
-    API_URL,
-    signInContext,
-    user,
-    language: locale,
-    deviceId,
-  } = useAuth()
-  const { os, device } = usePlatform()
+  const { token, signInContext, user, language: locale, deviceId } = useAuth()
+  const { device } = usePlatform()
 
-  const { searchParams, router } = useNavigationContext()
+  const { searchParams } = useNavigationContext()
 
   // Create localizer based on user's locale
   const localizer = useMemo(() => createLocalizer(locale || "en"), [locale])
@@ -312,7 +306,7 @@ export default function Calendar({
     if (urlView !== view) {
       setView(urlView)
     }
-  }, [searchParams, defaultView])
+  }, [searchParams, defaultView, view])
 
   // Listen for browser back/forward button
   useEffect(() => {
@@ -327,7 +321,9 @@ export default function Calendar({
   }, [defaultView])
   const hasCalendarScope = user?.hasCalendarScope
 
-  const [isGoogleConnected, setIsGoogleConnected] = useState(!!hasCalendarScope)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isGoogleConnected, _setIsGoogleConnected] =
+    useState(!!hasCalendarScope)
   const [isSyncing, setIsSyncing] = useState(false)
 
   const [calendarEventsStartDate, setCalendarEventsStartDate] = useState<
@@ -416,7 +412,7 @@ export default function Calendar({
     })
 
     return { transformedEvents: limitedEvents, eventsByDay }
-  }, [calendarEvents, view])
+  }, [calendarEvents])
 
   // Ensure we start with current date on mount
   useEffect(() => {
@@ -877,7 +873,7 @@ export default function Calendar({
       console.error("Failed to create DnD calendar:", error)
       return BigCalendar
     }
-  }, [])
+  }, [console])
 
   // ⚡ Bolt: Memoize components to prevent unnecessary re-renders of react-big-calendar internals
   const components = useMemo(
@@ -979,55 +975,49 @@ export default function Calendar({
           device && styles[device],
         )}
       >
-        {false ? (
-          <div className={styles.loadingContainer}>
-            <Loading className={styles.loading} />
-          </div>
-        ) : (
-          <DnDCalendar
-            localizer={localizer}
-            messages={messages}
-            events={transformedEvents}
-            startAccessor={(event: any) => event.start}
-            endAccessor={(event: any) => event.end}
-            titleAccessor="title"
-            allDayAccessor={(event: any) => event.isAllDay}
-            // Views
-            views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
-            view={view}
-            onView={handleViewChange}
-            // Date navigation
-            date={date}
-            onNavigate={handleNavigate}
-            // Disable built-in popup (we use custom wrapper)
-            popup={false}
-            // Event handlers
-            onSelectEvent={handleSelectEvent}
-            onSelectSlot={view !== Views.MONTH ? handleSelectSlot : undefined}
-            onEventDrop={handleEventDrop}
-            onEventResize={handleEventResize}
-            // Selection
-            selectable={true}
-            resizable={true}
-            // Time configuration
-            step={15} // 15-minute increments
-            timeslots={4} // 4 slots per hour (15min each)
-            min={new Date(2024, 0, 1, 6, 0)} // Start at 6 AM
-            max={new Date(2024, 0, 1, 22, 0)} // End at 10 PM
-            // Styling
-            eventPropGetter={eventStyleGetter}
-            dayPropGetter={dayPropGetter}
-            slotPropGetter={slotPropGetter}
-            // Custom components
-            components={components}
-            // Remove popup-based overflow detection
-            showMultiDayTimes={false} // Don't show times for multi-day events
-            // Drag and drop
-            draggableAccessor={() => true}
-            // Formats
-            formats={formats}
-          />
-        )}
+        <DnDCalendar
+          localizer={localizer}
+          messages={messages}
+          events={transformedEvents}
+          startAccessor={(event: any) => event.start}
+          endAccessor={(event: any) => event.end}
+          titleAccessor="title"
+          allDayAccessor={(event: any) => event.isAllDay}
+          // Views
+          views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
+          view={view}
+          onView={handleViewChange}
+          // Date navigation
+          date={date}
+          onNavigate={handleNavigate}
+          // Disable built-in popup (we use custom wrapper)
+          popup={false}
+          // Event handlers
+          onSelectEvent={handleSelectEvent}
+          onSelectSlot={view !== Views.MONTH ? handleSelectSlot : undefined}
+          onEventDrop={handleEventDrop}
+          onEventResize={handleEventResize}
+          // Selection
+          selectable={true}
+          resizable={true}
+          // Time configuration
+          step={15} // 15-minute increments
+          timeslots={4} // 4 slots per hour (15min each)
+          min={new Date(2024, 0, 1, 6, 0)} // Start at 6 AM
+          max={new Date(2024, 0, 1, 22, 0)} // End at 10 PM
+          // Styling
+          eventPropGetter={eventStyleGetter}
+          dayPropGetter={dayPropGetter}
+          slotPropGetter={slotPropGetter}
+          // Custom components
+          components={components}
+          // Remove popup-based overflow detection
+          showMultiDayTimes={false} // Don't show times for multi-day events
+          // Drag and drop
+          draggableAccessor={() => true}
+          // Formats
+          formats={formats}
+        />
       </div>
 
       {/* Event Creation Modal */}

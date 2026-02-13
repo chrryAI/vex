@@ -50,7 +50,7 @@ import { useTimerContext } from "./context/TimerContext"
 import SwipeableTimeControl from "./SwipeableTimeControl"
 import { useAuth, useChat, useNavigationContext } from "./context/providers"
 import { usePlatform, useTheme } from "./platform"
-import { COLORS, themeType } from "./context/ThemeContext"
+import { COLORS } from "./context/ThemeContext"
 import Img from "./Image"
 import A from "./a/A"
 import { useStyles } from "./context/StylesContext"
@@ -60,6 +60,7 @@ import { useFocusButtonStyles } from "./FocusButton.styles"
 import ThemeSwitcher from "./ThemeSwitcher"
 import ConfirmButton from "./ConfirmButton"
 import GitHubConnectButton from "./GitHubConnectButton"
+import { captureException } from "./utils/errorTracking"
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60)
@@ -96,14 +97,9 @@ export default function FocusButton({
     setEnableNotifications,
     user,
     guest,
-    baseApp,
-    bloom,
     app,
-    getAppSlug,
-    storeApps,
     focus,
     setShowFocus,
-    showFocus,
     loadingApp,
   } = useAuth()
 
@@ -194,9 +190,9 @@ export default function FocusButton({
   // Cleanup: Reset placeholder when component unmounts
   useEffect(() => {
     return () => {
-      isEditingTask && setPlaceHolderText(originalPlaceHolderText)
+      if (isEditingTask) setPlaceHolderText(originalPlaceHolderText)
     }
-  }, [isEditingTask, originalPlaceHolderText])
+  }, [isEditingTask, originalPlaceHolderText, setPlaceHolderText])
 
   const [showSettings, setShowSettings] = useState(false)
   const isMounted = useHasHydrated()
@@ -207,20 +203,13 @@ export default function FocusButton({
 
   useEffect(() => {
     setAddingTask(searchParams.get("addTask") === "true")
-  }, [searchParams.get("addTask")])
+  }, [searchParams])
 
   useEffect(() => {
     if (showSettings) {
       plausibleEvent({ name: "settings" })
     }
-  }, [showSettings])
-
-  const setTheme = (theme: themeType) => {
-    setThemeInContext(theme)
-    theme === "dark"
-      ? plausibleEvent({ name: "dark_mode" })
-      : plausibleEvent({ name: "light_mode" })
-  }
+  }, [plausibleEvent, showSettings])
 
   useEffect(() => {
     document.title = `${Math.floor(time / 60)
@@ -309,13 +298,14 @@ export default function FocusButton({
     startCountdown,
     handlePause,
     handleCancel,
+    setTime,
   ])
 
   useEffect(() => {
     if (!tasks && isMounted) {
       fetchTasks()
     }
-  }, [tasks, isMounted])
+  }, [tasks, isMounted, fetchTasks])
 
   const updateTask = async ({
     task,
@@ -341,7 +331,7 @@ export default function FocusButton({
       const data = await response.json()
       return data
     } catch (error) {
-      console.error(new Error("Error updating task:"), error)
+      captureException(error)
       throw error
     }
   }
@@ -520,11 +510,12 @@ export default function FocusButton({
         <Span
           onClick={() => {
             if (videoRef.current && os === "ios") {
-              !playKitasaku
-                ? videoRef.current.play().catch((error: any) => {
-                    console.error(error)
-                  })
-                : videoRef.current.pause()
+              if (!playKitasaku)
+                videoRef.current.play().catch((error: Error | unknown) => {
+                  captureException(error)
+                  console.error(error)
+                })
+              else videoRef.current.pause()
             }
             setPlayKitasaku(!playKitasaku)
           }}
@@ -902,9 +893,8 @@ export default function FocusButton({
                             }}
                             onClick={() => {
                               setShowFocus(false)
-                              app?.id === focus?.id
-                                ? setShowFocus(false)
-                                : setIsNewAppChat({ item: app })
+                              if (app?.id === focus?.id) setShowFocus(false)
+                              else setIsNewAppChat({ item: app })
                             }}
                             // href={getAppSlug(refApp)}
                           >
@@ -1155,7 +1145,14 @@ export default function FocusButton({
                                     }
                                     await fetchTasks()
                                     toast.success(t("Deleted"))
-                                  } catch (error) {
+                                  } catch (error: Error | unknown) {
+                                    captureException(
+                                      error instanceof Error
+                                        ? error
+                                        : new Error(
+                                            "Unknown error deleting task",
+                                          ),
+                                    )
                                     toast.error(t("Something went wrong"))
                                   } finally {
                                     setIsDeletingTask(false)

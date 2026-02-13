@@ -141,12 +141,7 @@ export default function Weather({
         }))
       })
       .catch((error: Error | unknown) => {
-        console.error(error)
-        captureException(
-          error instanceof Error
-            ? error
-            : new Error("Unknown error in Weather component"),
-        )
+        captureException(error)
         toast.error(t("Something went wrong"))
         return []
       })
@@ -245,12 +240,7 @@ export default function Weather({
 
                 refetchWeather()
               } catch (error: Error | unknown) {
-                console.error(error)
-                captureException(
-                  error instanceof Error
-                    ? error
-                    : new Error("Unknown error in Weather component update"),
-                )
+                captureException(error)
                 toast.error(t("Something went wrong"))
               }
             }}

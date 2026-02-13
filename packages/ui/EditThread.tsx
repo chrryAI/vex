@@ -19,7 +19,6 @@ export default function EditThread({
   onDelete,
   thread,
   style,
-  ...rest
 }: {
   style?: React.CSSProperties
   thread: thread
@@ -57,7 +56,8 @@ export default function EditThread({
   }: { regenerateTitle?: boolean; cancel?: boolean } = {}) => {
     if (!isAllowed) return
     if (!token) return
-    regenerateTitle ? setIsGeneratingTitle(true) : setIsSaving(true)
+    if (regenerateTitle) setIsGeneratingTitle(true)
+    else setIsSaving(true)
     try {
       const response = await updateThread({
         id: thread.id,
@@ -73,7 +73,8 @@ export default function EditThread({
 
       toast.success(t("Updated"))
 
-      refetch ? await refetch() : await refetchThreads()
+      if (refetch) await refetch()
+      else await refetchThreads()
 
       setTitle(response.thread.title)
 
@@ -149,7 +150,9 @@ export default function EditThread({
 
           <DeleteThread
             onDelete={async () => {
-              refetch ? await refetch() : await refetchThreads()
+              if (refetch) await refetch()
+              else await refetchThreads()
+
               onDelete?.()
               //   setIsModalOpen(false)
             }}
