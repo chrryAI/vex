@@ -106,6 +106,7 @@ export default function BlogPost({ post, locale }: BlogPostProps) {
             }}
             muted
             playsInline
+            aria-hidden="true"
           ></video>{" "}
           {timeAgo(post.date)} by {post.author}
         </div>
