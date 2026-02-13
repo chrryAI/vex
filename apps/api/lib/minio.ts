@@ -352,7 +352,17 @@ export async function upload({
       }
     }
 
-    const fileType = validateFileType(inferredType) || options.type
+    const detectedType = validateFileType(inferredType)
+    const targetType = options.type
+
+    // Enforce target type if specified
+    if (targetType && detectedType && detectedType !== targetType) {
+      throw new Error(
+        `Invalid file type: expected ${targetType}, got ${detectedType}`,
+      )
+    }
+
+    const fileType = detectedType || targetType
 
     if (!fileType) {
       console.error(`❌ Unsupported file type: "${inferredType}"`)
