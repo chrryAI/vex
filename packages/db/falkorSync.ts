@@ -11,6 +11,8 @@ import { graph } from "./src/graph/client"
 import { captureException } from "@sentry/node"
 
 async function getFalkorGraph() {
+  // unstable
+  // return
   try {
     return graph
   } catch (error) {
