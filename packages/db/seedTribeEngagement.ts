@@ -1,4 +1,4 @@
-import { db } from "./index"
+import { db, isE2E } from "./index"
 import {
   apps,
   tribePosts,
@@ -166,6 +166,10 @@ const LOREM_IPSUM = [
 ]
 
 export async function seedTribeEngagement() {
+  if (isE2E) {
+    console.log("⚠️ Skipping Tribe engagement seeding in E2E environment")
+    return
+  }
   console.log("🌱 Seeding Tribe engagement data...")
 
   try {
