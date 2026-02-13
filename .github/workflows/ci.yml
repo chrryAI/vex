@@ -2,7 +2,7 @@ name: CI
 on:
   # # will update to main when is ready
   pull_request:
-    branches: [main, prod]
+    branches: [prod]
 
 permissions:
   contents: read
