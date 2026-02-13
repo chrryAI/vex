@@ -8,20 +8,20 @@ import {
   getThreadSummary,
   updateCharacterTag,
   updateThreadSummary,
-  threadSummary,
-  thread,
-  collaboration,
-  user,
-  guest,
+  type threadSummary,
+  type thread,
+  type collaboration,
+  type user,
+  type guest,
   getPlaceHolder,
   updatePlaceHolder,
   createPlaceHolder,
   getApps,
   createInstruction,
-  message,
-  calendarEvent,
+  type message,
+  type calendarEvent,
   createMood,
-  app,
+  type app,
   db,
   getMoods,
   getTasks,
@@ -54,15 +54,15 @@ const memorySchema = z.array(
 
 type MemoryData = z.infer<typeof memorySchema>
 
-import { generateText, ModelMessage } from "ai"
+import { generateText, type ModelMessage } from "ai"
 import { checkThreadSummaryLimit } from "./index"
 import { getModelProvider } from "./getModelProvider"
 
 import { captureException } from "@sentry/node"
 import { z } from "zod"
 import { notifyOwnerAndCollaborations } from "./notify"
-import { appWithStore } from "@chrryai/chrry/types"
-import { Context } from "hono"
+import type { appWithStore } from "@chrryai/chrry/types"
+import type { Context } from "hono"
 
 // Smart context retrieval from memories
 

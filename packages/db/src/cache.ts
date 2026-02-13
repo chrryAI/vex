@@ -1,4 +1,3 @@
-import { isDevelopment } from ".."
 import { redis } from "./redis"
 
 /**
@@ -7,9 +6,11 @@ import { redis } from "./redis"
  */
 
 const isCI = process.env.CI
+const isDevelopment = process.env.NODE_ENV === "development"
 // Disable cache in development for easier debugging
 const CACHE_ENABLED =
   !isCI &&
+  !isDevelopment &&
   (process.env.NODE_ENV === "production" || process.env.ENABLE_CACHE === "true")
 
 // Cache TTLs (in seconds)

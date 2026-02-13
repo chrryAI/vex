@@ -56,69 +56,48 @@ export async function scanFileForMalware(
     })
     // Fail open for safe file types, fail closed for unknown types
     // Must match file types shown in UI file picker (Chat.tsx)
+    // Restrict to non-executable types only
     const SAFE_EXTENSIONS = [
       // Video
-      ".mov",
-      ".mp4",
-      ".webm",
-      ".avi",
-      ".mkv",
+      "mov",
+      "mp4",
+      "webm",
+      "avi",
+      "mkv",
       // Images
-      ".png",
-      ".jpg",
-      ".jpeg",
-      ".gif",
-      ".webp",
-      ".svg",
-      ".bmp",
-      // Audio
-      ".mp3",
-      ".wav",
-      ".ogg",
-      ".m4a",
-      ".aac",
-      ".flac",
-      // Documents
-      ".pdf",
-      ".txt",
-      ".md",
-      ".csv",
-      ".log",
-      // Data formats
-      ".json",
-      ".xml",
-      ".yaml",
-      ".yml",
-      ".toml",
-      ".ini",
-      ".conf",
-      // Code files
-      ".html",
-      ".css",
-      ".js",
-      ".ts",
-      ".tsx",
-      ".jsx",
-      ".py",
-      ".java",
-      ".c",
-      ".cpp",
-      ".h",
-      ".hpp",
-      ".cs",
-      ".php",
-      ".rb",
-      ".go",
-      ".rs",
-      ".swift",
-      ".kt",
-      ".scala",
-      ".sh",
+      "png",
+      "jpg",
+      "jpeg",
+      "gif",
+      "webp",
+      "svg",
+      "bmp",
+      // Audio (non-executable)
+      "mp3",
+      "wav",
+      "ogg",
+      "m4a",
+      "aac",
+      "flac",
+      // Documents / Data (non-executable)
+      "pdf",
+      "txt",
+      "md",
+      "csv",
+      "log",
+      "json",
+      "xml",
+      "yaml",
+      "yml",
+      "toml",
+      "ini",
+      "conf",
     ]
-    const fileExt = options?.filename?.toLowerCase().split(".").pop()
-    const isSafeType =
-      fileExt && SAFE_EXTENSIONS.some((ext: string) => ext.includes(fileExt))
-    return { safe: !!isSafeType }
+    const fileExt = (
+      options?.filename?.toLowerCase().split(".").pop() || ""
+    ).trim()
+    const isSafeType = SAFE_EXTENSIONS.includes(fileExt)
+    return { safe: isSafeType }
   }
 }
 

@@ -250,6 +250,7 @@ export default function Chat({
     setPostToMoltbook,
     moltPlaceHolder,
     canShowTribe,
+    showFocus,
     ...auth
   } = useAuth()
 
@@ -943,29 +944,8 @@ export default function Chat({
         continue
       }
 
-      // Compress images to reduce token usage
-      if (validation.fileCategory === "image") {
-        console.log(`🖼️ Processing image: ${file.name} (${file.size} bytes)`)
-        try {
-          const compressedFile = await compressImage(file, 400, 0.6) // More aggressive compression
-          const reduction = (
-            ((file.size - compressedFile.size) / file.size) *
-            100
-          ).toFixed(1)
-          console.log(
-            `🗜️ Compressed ${file.name}: ${file.size} → ${compressedFile.size} bytes (${reduction}% reduction)`,
-          )
-          validFiles.push(compressedFile)
-        } catch (error) {
-          console.warn(
-            `❌ Failed to compress ${file.name}, using original:`,
-            error,
-          )
-          validFiles.push(file)
-        }
-      } else {
-        validFiles.push(file)
-      }
+      // Send original file - server will handle optimization if needed
+      validFiles.push(file)
     }
 
     setFiles((prev) => [...prev, ...validFiles].slice(0, MAX_FILES))
@@ -1389,8 +1369,8 @@ export default function Chat({
   // Compress images to reduce token usage
   const compressImage = (
     file: File,
-    maxWidth = 400,
-    quality = 0.6,
+    maxWidth = 1920,
+    quality = 0.92,
   ): Promise<File> => {
     return new Promise((resolve, reject) => {
       console.log(`🔧 Starting compression for ${file.name}...`)
@@ -3909,25 +3889,29 @@ export default function Chat({
                       flexDirection: "row",
                     }}
                   >
-                    {!showTribe && canShowTribe && empty && minimize && (
-                      <>
-                        <A
-                          style={{
-                            marginRight: "auto",
-                            left: 5,
-                            top: -15,
-                            gap: 5,
-                            position: "relative",
-                            zIndex: 300,
-                            fontSize: ".85rem",
-                          }}
-                          href={"/tribe"}
-                        >
-                          <Img logo="coder" size={18} />
-                          {t("Tribe Feed")}
-                        </A>
-                      </>
-                    )}
+                    {!showTribe &&
+                      canShowTribe &&
+                      empty &&
+                      app &&
+                      (minimize || showFocus) && (
+                        <>
+                          <A
+                            style={{
+                              marginRight: "auto",
+                              left: 5,
+                              top: -20,
+                              gap: 5,
+                              position: "relative",
+                              zIndex: 300,
+                              fontSize: ".85rem",
+                            }}
+                            href={`${getAppSlug(app)}/?tribe=true`}
+                          >
+                            <Img logo="coder" size={18} />
+                            {t("Tribe's Feed")}
+                          </A>
+                        </>
+                      )}
                     {isChatFloating ||
                     exceededInitial ||
                     threadId ? null : showGreeting && files.length === 0 ? (
@@ -3978,25 +3962,29 @@ export default function Chat({
                         </Span>
                       </H2>
                     ) : null}
-                    {!showTribe && !isChatFloating && empty && canShowTribe && (
-                      <>
-                        <A
-                          style={{
-                            marginRight: "auto",
-                            left: -5,
-                            top: -5,
-                            gap: 5,
-                            position: "relative",
-                            zIndex: 300,
-                            fontSize: ".85rem",
-                          }}
-                          href={"/tribe"}
-                        >
-                          <Img logo="coder" size={22} />
-                          {t("Tribe Feed")}
-                        </A>
-                      </>
-                    )}
+                    {!showTribe &&
+                      empty &&
+                      canShowTribe &&
+                      app &&
+                      !isChatFloating && (
+                        <>
+                          <A
+                            style={{
+                              marginRight: "auto",
+                              left: -5,
+                              top: -15,
+                              gap: 5,
+                              position: "relative",
+                              zIndex: 300,
+                              fontSize: ".85rem",
+                            }}
+                            href={`${getAppSlug(app)}/?tribe=true`}
+                          >
+                            <Img logo="coder" size={22} />
+                            {t("Tribe's Feed")}
+                          </A>
+                        </>
+                      )}
                   </Div>
                 )
               )}
@@ -4006,7 +3994,15 @@ export default function Chat({
                   ...styles.chat.style,
                   ...(isStandalone ? styles.standalone : {}),
                   ...(isChatFloating
-                    ? { ...styles.chatFloating.style, paddingBottom: 45 }
+                    ? {
+                        ...styles.chatFloating.style,
+                        ...(app?.themeColor && showTribe
+                          ? {
+                              border: `1px solid ${COLORS[app?.themeColor as keyof typeof COLORS]}`,
+                            }
+                          : {}),
+                        paddingBottom: 45,
+                      }
                     : {}),
                   "--glow-color":
                     COLORS[app?.themeColor as keyof typeof COLORS],
@@ -4490,7 +4486,9 @@ export default function Chat({
                           border: "none",
                         }}
                         onDelete={() => {
-                          setIsNewChat(true)
+                          setIsNewChat({
+                            value: true,
+                          })
                         }}
                         id={threadId}
                       />

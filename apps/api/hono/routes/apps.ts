@@ -6,6 +6,7 @@ import {
   getStoreInstalls,
   deleteInstall,
   isE2E,
+  isDevelopment,
   ne,
 } from "@repo/db"
 import { apps } from "@repo/db/src/schema"
@@ -149,6 +150,7 @@ app.post("/", async (c) => {
       placeholder,
       moltHandle,
       moltApiKey,
+      tier,
     } = body
 
     // Validate app name: no spaces, must be unique
@@ -227,6 +229,7 @@ app.post("/", async (c) => {
       apiPricePerRequest,
       apiMonthlyPrice,
       apiRateLimit,
+      tier,
       placeholder:
         typeof placeholder === "string"
           ? await redact(placeholder)
@@ -245,6 +248,13 @@ app.post("/", async (c) => {
 
     if (!chrry) {
       return c.json({ error: "Chrry store not found" }, { status: 404 })
+    }
+
+    if (tier && tier !== "free" && !member) {
+      return c.json(
+        { error: "You must be logged in to create a paid app" },
+        { status: 401 },
+      )
     }
 
     // Validate with Zod schema
@@ -477,7 +487,7 @@ app.post("/", async (c) => {
     }
 
     // Hash API keys before saving
-    let hashedApiKeys: Record<string, string> | undefined = undefined
+    let hashedApiKeys: Record<string, string> | undefined
     if (apiKeys && typeof apiKeys === "object") {
       hashedApiKeys = {}
       for (const [key, value] of Object.entries(apiKeys)) {
@@ -497,6 +507,7 @@ app.post("/", async (c) => {
         userId: member?.id,
         guestId: guest?.id,
         ...validationResult.data,
+        tier: validationResult.data.tier as "free" | "plus" | "pro",
         tools: validationResult.data.tools as
           | ("calendar" | "location" | "weather")[]
           | null
@@ -862,7 +873,27 @@ app.patch("/:id", async (c) => {
       apiKeys,
       moltHandle,
       moltApiKey,
+      tier,
     } = body
+
+    const skipDangerousZone =
+      isDevelopment || isE2E || body.dangerousZone === true
+
+    if (!skipDangerousZone) {
+      if (member?.role === "admin") {
+        return c.json(
+          { error: "Send dangerousZone to confirm" },
+          { status: 401 },
+        )
+      }
+    }
+
+    if (tier && tier !== "free" && !member) {
+      return c.json(
+        { error: "You must be logged in to create a paid app" },
+        { status: 401 },
+      )
+    }
 
     // Handle image - accept URL from /api/image endpoint
     let images = existingApp.images || []
@@ -922,6 +953,7 @@ app.patch("/:id", async (c) => {
     if (displayMode !== null) updateData.displayMode = displayMode
     if (pricing !== null) updateData.pricing = pricing
     if (price !== undefined) updateData.price = price
+    if (tier !== undefined) updateData.tier = tier
     if (moltHandle !== undefined)
       updateData.moltHandle =
         moltHandle === null
@@ -1202,6 +1234,9 @@ app.patch("/:id", async (c) => {
 
 app.delete("/:id", async (c) => {
   const id = c.req.param("id")
+  const body = await c.req.json()
+  const skipDangerousZone =
+    isDevelopment || isE2E || body.dangerousZone === true
   try {
     const member = await getMember(c, {
       skipCache: true,
@@ -1214,11 +1249,8 @@ app.delete("/:id", async (c) => {
       return c.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    if (member?.role === "admin" && !isE2E) {
-      return c.json(
-        { error: "Use seed api for deleting apps" },
-        { status: 403 },
-      )
+    if (member?.role === "admin" && !dangerousZone && !isE2E) {
+      return c.json({ error: "Send dangerousZone to confirm" }, { status: 401 })
     }
 
     const app = await getAppDb({

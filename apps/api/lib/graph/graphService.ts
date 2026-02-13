@@ -1,9 +1,9 @@
-import { graph, app, isDevelopment, isE2E, db, eq } from "@repo/db"
+import { graph, type app, isDevelopment, isE2E, db, eq } from "@repo/db"
 import { threads } from "@repo/db/src/schema"
 import { generateText, embed } from "ai"
 import captureException from "../../lib/captureException"
 import { getModelProvider, getEmbeddingProvider } from "../getModelProvider"
-import { appWithStore } from "@chrryai/chrry/types"
+import type { appWithStore } from "@chrryai/chrry/types"
 
 /**
  * FUTURE: App-level provider configuration
@@ -207,7 +207,7 @@ async function generateDynamicCypher(
     // Also exclude variable-length path markers: [*], [*1..3]
     const varsWithoutTypes = relPatterns
       .filter((pattern) => !pattern.includes(":") && !pattern.includes("*"))
-      .map((v) => v.replace(/[\[\]\s]/g, "")) // Remove brackets and spaces
+      .map((v) => v.replace(/[[\]\s]/g, "")) // Remove brackets and spaces
 
     if (varsWithoutTypes.length > 0) {
       // Check if each variable is used anywhere in the query after its definition
@@ -606,7 +606,7 @@ export async function getGraphContext(
         .replace(/\\/g, "\\\\") // Escape backslashes first
         .replace(/'/g, "\\'") // Escape apostrophes
         .replace(/"/g, '\\"') // Escape quotes
-        .replace(/[\-:@|()[\]{}$%^&*+=!~<>?,.;]/g, "\\$&") // Escape other special chars
+        .replace(/[-:@|()[\]{}$%^&*+=!~<>?,.;]/g, "\\$&") // Escape other special chars
         .replace(/\s+/g, " ") // Normalize whitespace to single spaces
         .trim()
 

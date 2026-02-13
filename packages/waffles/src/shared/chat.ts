@@ -985,8 +985,6 @@ export const chat = async ({
     }
 
     if (profile && shouldCheckProfile) {
-      let nextProfile: string | null = null
-
       await expect(characterProfile).toBeVisible({
         timeout: agentMessageTimeout,
       })

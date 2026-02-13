@@ -1,14 +1,14 @@
 import { Hono } from "hono"
 import {
   canCollaborate,
-  collaboration,
+  type collaboration,
   getApp,
   getThread,
   getThreads,
   getUser,
   isOwner,
-  thread,
-  user,
+  type thread,
+  type user,
   getMessages,
   deleteThread as deleteThreadDb,
   updateThread as updateThreadDb,

@@ -387,7 +387,8 @@ const Thread = ({
             !threadId &&
             hasHydrated && {
               ...styles.threadEmpty.style,
-              paddingBottom: minimize && !showFocus && !showTribe ? 0 : 166,
+              zIndex: 10,
+              paddingBottom: minimize && !showFocus && !showTribe ? 0 : 186,
             }),
           ...{
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
@@ -421,7 +422,9 @@ const Thread = ({
                 id={thread.id}
                 onDelete={() => {
                   if (threads?.threads?.length === 1) {
-                    setIsNewChat(true)
+                    setIsNewChat({
+                      value: true,
+                    })
                   } else {
                     shouldStopAutoScrollRef.current = true
                     goToThreads()
@@ -435,7 +438,9 @@ const Thread = ({
                 }}
                 onDelete={() => {
                   if (threads?.threads?.length === 1) {
-                    setIsNewChat(true)
+                    setIsNewChat({
+                      value: true,
+                    })
                   } else {
                     shouldStopAutoScrollRef.current = true
                     goToThreads()
@@ -760,7 +765,9 @@ const Thread = ({
                                   (thread.userId !== user?.id ||
                                     thread.guestId !== user?.id))
                               ) {
-                                setIsNewChat(true)
+                                setIsNewChat({
+                                  value: true,
+                                })
                                 return
                               }
 
@@ -821,7 +828,9 @@ const Thread = ({
                                 `/threads/${msg.message.message.threadId}`,
                               )
                             }
-                            setIsNewChat(false)
+                            setIsNewChat({
+                              value: false,
+                            })
                           }
                         }
                         setMessages((prev) => {

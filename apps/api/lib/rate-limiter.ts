@@ -87,7 +87,7 @@ export async function fetchWithRetry(
         const retryAfter = response.headers.get("retry-after")
         const delay = retryAfter
           ? Number.parseInt(retryAfter) * 1000
-          : Math.pow(2, attempt) * 1000
+          : 2 ** attempt * 1000
 
         console.warn(
           `⚠️ Rate limited (attempt ${attempt}/${maxRetries}), retrying after ${delay}ms`,
@@ -112,10 +112,9 @@ export async function fetchWithRetry(
       lastError = error
 
       if (attempt < maxRetries) {
-        const delay = Math.pow(2, attempt) * 1000
+        const delay = 2 ** attempt * 1000
         console.warn(`⚠️ Retrying after ${delay}ms`)
         await new Promise((resolve) => setTimeout(resolve, delay))
-        continue
       }
     }
   }

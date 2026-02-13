@@ -1,4 +1,4 @@
-import { Context, Next } from "hono"
+import type { Context, Next } from "hono"
 import { getSlugFromPathname } from "@chrryai/chrry/utils"
 
 const RESERVED_PATHS = [

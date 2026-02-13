@@ -23,11 +23,6 @@ interface PlausibleResult {
   conversion_rate?: number
 }
 
-interface PlausibleBreakdownResult {
-  dimensions: string[]
-  metrics: PlausibleResult
-}
-
 export async function syncPlausibleAnalytics() {
   console.log(
     `🍇 Starting sync for ${whiteLabels.length} white-label domains...`,
@@ -231,8 +226,6 @@ export async function syncPlausibleAnalytics() {
       console.log(`---\n`) // Separator between domains
     } catch (error) {
       console.error(`❌ Plausible sync failed for ${label.domain}:`, error)
-      // Continue to next domain instead of throwing
-      continue
     }
   }
 }

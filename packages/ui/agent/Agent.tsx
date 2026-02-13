@@ -73,16 +73,18 @@ import { TribeCalculator } from "../TribeCalculator"
 
 export default function Agent({
   style,
+  dataTestId,
 }: {
   initialData?: Partial<appFormData>
   isUpdate?: boolean
   style?: React.CSSProperties
+  dataTestId?: string
 }) {
   const { device } = usePlatform()
   const styles = useAgentStyles()
   const { utilities } = useStyles()
   const { t } = useAppContext()
-  const { chrry, baseApp, token, accountApp } = useAuth()
+  const { chrry, baseApp, token, accountApp, user } = useAuth()
 
   const bordered = {
     border: "1px dashed var(--shade-2)",
@@ -221,6 +223,8 @@ export default function Agent({
       app.tools?.includes("weather"),
   )
 
+  const [revenueShareMode, setRevenueShareMode] = useState(false)
+
   const aiAgent = aiAgents?.find(
     (a) =>
       a.name.toLowerCase() === appForm?.watch("defaultModel")?.toLowerCase(),
@@ -319,7 +323,9 @@ export default function Agent({
   useEffect(() => {
     if (isModalOpen && device === "desktop" && !appFormWatcher.name) {
       setTimeout(() => {
-        document.getElementById("name")?.focus()
+        if (typeof document !== "undefined") {
+          document.getElementById("name")?.focus()
+        }
       }, 100)
     }
   }, [isModalOpen])
@@ -469,7 +475,9 @@ export default function Agent({
             tab !== "systemPrompt" ? (
               <Div style={styles.titleContainer.style}>
                 <Input
-                  data-testid="name-input"
+                  data-testid={
+                    dataTestId ? `${dataTestId}-name-input` : "name-input"
+                  }
                   autoComplete="false"
                   {...register("name")}
                   title={t("Name your app......")}
@@ -1300,47 +1308,85 @@ export default function Agent({
                           : t("paid_tier_requires_pro")}
                       </P>
                       <P>{t("paid_tier_subscription_required")}</P>
-                      <Div
-                        style={{
-                          marginTop: "1rem",
-                        }}
-                      >
-                        <P
+                      {revenueShareMode && (
+                        <Div
                           style={{
-                            margin: 0,
-                            fontSize: "0.85rem",
-                            fontWeight: 600,
+                            marginTop: "1rem",
+                            padding: ".75rem",
+                            backgroundColor: "var(--shade-05)",
+                            borderRadius: "12px",
+                            border: "1px solid var(--shade-2)",
                           }}
                         >
-                          🤝 {t("revenue_share_title")}
-                        </P>
-                        <P
-                          style={{
-                            margin: "0.5rem 0 0 0",
-                            fontSize: "0.8rem",
-                            opacity: 0.9,
-                          }}
-                        >
-                          {appFormWatcher.tier === "plus"
-                            ? t("revenue_share_calculation", {
-                                price: PLUS_PRICE,
-                                earn: (PLUS_PRICE * 0.7).toFixed(2),
-                              })
-                            : t("revenue_share_calculation", {
-                                price: PRO_PRICE,
-                                earn: (PRO_PRICE * 0.7).toFixed(2),
-                              })}
-                        </P>
-                        <P
-                          style={{
-                            margin: "0.25rem 0 0 0",
-                            fontSize: "0.75rem",
-                            opacity: 0.7,
-                          }}
-                        >
-                          {t("revenue_share_coming_soon")}
-                        </P>
-                      </Div>
+                          <P
+                            style={{
+                              margin: 0,
+                              fontSize: "0.9rem",
+                              marginBottom: "0.5rem",
+                            }}
+                          >
+                            🍒 REVENUE SHARE MODEL (70% to App Creators) - Q1
+                            2026
+                          </P>
+                          <Div
+                            style={{
+                              fontSize: "0.85rem",
+                              lineHeight: "1.6",
+                              color: "var(--shade-7)",
+                            }}
+                          >
+                            <P style={{ margin: "0.5rem 0" }}>
+                              <strong>Revenue Source:</strong> When users
+                              subscribe to Plus (€{PLUS_PRICE}/mo) or Pro (€
+                              {PRO_PRICE}/mo) plans AND bring their own API keys
+                              (OpenAI, Anthropic, Replicate, etc.), 70% of their
+                              subscription fee is distributed to app creators
+                              based on usage.
+                            </P>
+                            <P style={{ margin: "0.5rem 0" }}>
+                              <strong>How It Works:</strong> Platform tracks
+                              which apps each user interacts with (message
+                              count, session duration, feature usage). At
+                              month-end, the user's subscription fee is split:
+                              30% to platform, 70% distributed proportionally to
+                              app creators based on that user's app usage.
+                            </P>
+                            <P style={{ margin: "0.5rem 0" }}>
+                              <strong>Example:</strong> User pays €{PLUS_PRICE}
+                              /month Plus plan + uses own OpenAI key. They spend
+                              60% of time in App A, 40% in App B. Distribution:
+                              €{(PLUS_PRICE * 0.3).toFixed(2)} to platform, €
+                              {(PLUS_PRICE * 0.7 * 0.6).toFixed(2)} to App A
+                              creator (60% of €{(PLUS_PRICE * 0.7).toFixed(2)}
+                              ), €{(PLUS_PRICE * 0.7 * 0.4).toFixed(2)} to App B
+                              creator (40% of €{(PLUS_PRICE * 0.7).toFixed(2)}).
+                            </P>
+                            <P style={{ margin: "0.5rem 0" }}>
+                              <strong>Key Point:</strong> Revenue share only
+                              applies when users bring their own API keys. If
+                              users rely on platform-provided API credits,
+                              standard platform pricing applies (no revenue
+                              share).
+                            </P>
+                            <P style={{ margin: "0.5rem 0" }}>
+                              <strong>Status:</strong> Implementation planned
+                              for Q1 2026. Tracking infrastructure and payout
+                              system in development.
+                            </P>
+                            <P
+                              style={{
+                                margin: "0.5rem 0 0 0",
+                                fontStyle: "italic",
+                                opacity: 0.8,
+                              }}
+                            >
+                              This creates an economic incentive for building
+                              high-quality, useful apps that people want to use
+                              regularly.
+                            </P>
+                          </Div>{" "}
+                        </Div>
+                      )}
                       {appFormWatcher.tier === "pro" && (
                         <Div>
                           <P>✨ {t("pro_unlimited_title")}</P>
@@ -1348,6 +1394,64 @@ export default function Agent({
                         </Div>
                       )}
                     </Div>
+                  )}
+                  {!user && appFormWatcher.tier && (
+                    <Div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: ".75rem",
+                      }}
+                    >
+                      <Button
+                        className="inverted"
+                        onClick={() => {
+                          addParams({
+                            signIn: "login",
+                            callbackUrl: `${FRONTEND_URL}/?settings=true&tab=tribe`,
+                          })
+                        }}
+                        style={{
+                          marginTop: ".3rem",
+                          ...utilities.inverted.style,
+                          ...utilities.small.style,
+                        }}
+                      >
+                        <>
+                          <Img logo="chrry" size={20} />
+                          {t("Join to use {{tier}}", {
+                            tier: capitalizeFirstLetter(
+                              appFormWatcher.tier || "",
+                            ),
+                          })}
+                        </>
+                      </Button>
+                      <Button
+                        className="link"
+                        onClick={() => {
+                          setRevenueShareMode(!revenueShareMode)
+                        }}
+                        style={{
+                          ...utilities.link.style,
+                        }}
+                      >
+                        {t(revenueShareMode ? "Show less" : "Learn more 🍒")}
+                      </Button>
+                    </Div>
+                  )}
+                  {!accountApp && appFormWatcher.tier === "free" ? (
+                    <P
+                      style={{
+                        color: "var(--shade-6)",
+                        position: "relative",
+                        bottom: "4px",
+                      }}
+                    >
+                      *Start as guest. Your data will be preserved when you sign
+                      up.
+                    </P>
+                  ) : (
+                    ""
                   )}
                 </Div>
                 {appFormWatcher.tier !== "free" && (
@@ -1852,7 +1956,7 @@ export default function Agent({
                         className="inverted"
                         style={{
                           ...utilities.inverted.style,
-                          ...utilities.small.style,
+                          ...utilities.xSmall.style,
                           ...(tab === "tribe"
                             ? styles.currentTab.style
                             : undefined),
@@ -1862,7 +1966,7 @@ export default function Agent({
                         }}
                         type="button"
                       >
-                        <Img icon="zarathustra" size={16} />
+                        <Img icon="zarathustra" size={24} />
                         {t("Tribe")}
                       </Button>
                       <Button
@@ -1870,7 +1974,7 @@ export default function Agent({
                         className="inverted"
                         style={{
                           ...utilities.inverted.style,
-                          ...utilities.small.style,
+                          ...utilities.xSmall.style,
                           ...(tab === "moltBook"
                             ? styles.currentTab.style
                             : undefined),
@@ -1880,7 +1984,13 @@ export default function Agent({
                         }}
                         type="button"
                       >
-                        <Span>🦞</Span>
+                        <Span
+                          style={{
+                            fontSize: "1.25rem",
+                          }}
+                        >
+                          🦞
+                        </Span>
                         {t("Moltbook")}
                       </Button>
                     </>

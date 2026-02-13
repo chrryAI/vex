@@ -7,6 +7,7 @@
 import { FalkorDB } from "falkordb";
 import fs from "fs";
 import path from "path";
+import { randomBytes } from "crypto";
 
 let db = null;
 let graph = null;
@@ -134,7 +135,9 @@ async function logBugToFalkorDB(bug) {
   if (!graph) await initBAM();
 
   const timestamp = Date.now();
-  const bugId = `bug_${timestamp}_${Math.random().toString(36).substr(2, 9)}`;
+  // Use cryptographically secure random instead of Math.random()
+  const randomPart = randomBytes(5).toString("base64").replace(/[+/=]/g, "").slice(0, 9);
+  const bugId = `bug_${timestamp}_${randomPart}`;
 
   await graph.query(
     `

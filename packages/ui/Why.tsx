@@ -54,7 +54,9 @@ export default function About() {
 
         {/* Hero Section */}
         <Section>
-          <H2>🥰 {t("hero_title")}</H2>
+          <H2>
+            {siteConfig.logo || "🍒"} {t("hero_title")}
+          </H2>
           <P>{t("hero_description")}</P>
         </Section>
 

@@ -15,7 +15,7 @@ export { TribeProvider, useTribe } from "./TribeProvider"
 export { PlatformProvider } from "../../platform"
 
 // Composition root - combines all providers
-import React, { ReactNode, useState } from "react"
+import React, { ReactNode, useState, useMemo } from "react"
 import { PlatformProvider } from "../../platform"
 import { ThemeProvider } from "../ThemeContext"
 import { StylesProvider } from "../StylesContext"
@@ -69,7 +69,7 @@ export interface AppProvidersProps {
     },
   ) => Promise<any>
   siteConfig?: ReturnType<typeof getSiteConfig>
-
+  theme?: "light" | "dark"
   signOutContext?: (options: {
     callbackUrl: string
     errorUrl?: string
@@ -85,7 +85,6 @@ export interface AppProvidersProps {
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
-  isTribeRoute?: boolean
 }
 
 /**
@@ -111,52 +110,55 @@ export default function AppProviders({
   threads,
   tribes,
   tribePosts,
+  theme,
   showTribe,
   tribePost,
-  isTribeRoute,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
 
   // Global SWR configuration with 429 error handling and persistent cache
-  const swrConfig = {
-    // Use persistent cache provider (IndexedDB on web, MMKV on native)
-    provider: getCacheProvider,
-    // Pre-populate cache with SSR data
-    // fallback: {
-    //   ...(session ? { session: { data: session } } : {}),
-    //   ...(thread?.thread ? { [`threadId-${thread.thread.id}`]: thread } : {}),
-    // },
-    onError: (error: any) => {
-      if (error?.status === 429) {
-        // const errorKey = `rate_limit_${Date.now()}`
-        const lastShown = localStorage.getItem("last_rate_limit_toast")
-        const now = Date.now()
+  const swrConfig = useMemo(
+    () => ({
+      // Use persistent cache provider (IndexedDB on web, MMKV on native)
+      provider: getCacheProvider,
+      // Pre-populate cache with SSR data
+      // fallback: {
+      //   ...(session ? { session: { data: session } } : {}),
+      //   ...(thread?.thread ? { [`threadId-${thread.thread.id}`]: thread } : {}),
+      // },
+      onError: (error: any) => {
+        if (error?.status === 429) {
+          // const errorKey = `rate_limit_${Date.now()}`
+          const lastShown = localStorage.getItem("last_rate_limit_toast")
+          const now = Date.now()
 
-        // Only show toast if it's been more than 30 seconds since last one
-        if (!lastShown || now - Number.parseInt(lastShown) > 30000) {
-          setError(
-            "Rate limit exceeded. Please wait a moment before trying again.",
-          )
-          localStorage.setItem("last_rate_limit_toast", now.toString())
+          // Only show toast if it's been more than 30 seconds since last one
+          if (!lastShown || now - Number.parseInt(lastShown) > 30000) {
+            setError(
+              "Rate limit exceeded. Please wait a moment before trying again.",
+            )
+            localStorage.setItem("last_rate_limit_toast", now.toString())
+          }
         }
-      }
-    },
+      },
 
-    onErrorRetry: (
-      error: any,
-      key: string,
-      config: any,
-      revalidate: any,
-      { retryCount }: any,
-    ) => {
-      // Don't retry on 429 errors
-      if (error?.status === 429) return
+      onErrorRetry: (
+        error: any,
+        key: string,
+        config: any,
+        revalidate: any,
+        { retryCount }: any,
+      ) => {
+        // Don't retry on 429 errors
+        if (error?.status === 429) return
 
-      // Default retry logic for other errors
-      if (retryCount >= 3) return
-      setTimeout(() => revalidate({ retryCount }), 5000)
-    },
-  }
+        // Default retry logic for other errors
+        if (retryCount >= 3) return
+        setTimeout(() => revalidate({ retryCount }), 5000)
+      },
+    }),
+    [],
+  )
 
   return (
     <SWRConfig value={swrConfig}>
@@ -166,7 +168,7 @@ export default function AppProviders({
         session={session}
       >
         <ErrorProvider>
-          <ThemeProvider session={session}>
+          <ThemeProvider theme={theme} session={session}>
             <AuthProvider
               translations={translations}
               thread={thread}
@@ -195,7 +197,7 @@ export default function AppProviders({
                       >
                         <AppContextProvider>
                           <StylesProvider>
-                            <TribeProvider isTribeRoute={isTribeRoute}>
+                            <TribeProvider>
                               <Hey useExtensionIcon={useExtensionIcon}>
                                 {children}
                               </Hey>

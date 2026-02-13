@@ -358,7 +358,9 @@ export default function Skeleton({
                           }}
                           onClick={(e) => {
                             e.preventDefault()
-                            setIsNewChat(true)
+                            setIsNewChat({
+                              value: true,
+                            })
                           }}
                         >
                           <Img key={app?.id || "vex"} app={app} size={28} />

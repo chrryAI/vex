@@ -13,8 +13,8 @@ import {
   getMessage,
   getThread,
   updateMessage,
-  thread,
-  collaboration,
+  type thread,
+  type collaboration,
   logCreditUsage,
   type user,
   type guest,
@@ -22,7 +22,7 @@ import {
   getPlaceHolder,
   getCalendarEvents,
   updateApp,
-  memory,
+  type memory,
   getPureApp,
   type app,
   getTasks,
@@ -52,12 +52,12 @@ import {
   updateUser,
   getAnalyticsSites,
   updateGuest,
-  subscription,
+  type subscription,
   sql,
   and,
   isNull,
   isNotNull,
-  aiAgent,
+  type aiAgent,
   VEX_LIVE_FINGERPRINTS,
   decrypt,
   inArray,
@@ -73,7 +73,7 @@ import {
   processMessageForRAG,
 } from "../../lib/actions/ragService"
 import { getLatestNews, getNewsBySource } from "../../lib/newsFetcher"
-import { streamText, generateText, ModelMessage } from "ai"
+import { streamText, generateText, type ModelMessage } from "ai"
 
 import { faker } from "@faker-js/faker"
 import {
@@ -86,7 +86,7 @@ import {
 } from "@chrryai/chrry/utils"
 import Replicate from "replicate"
 import {
-  webSearchResultType,
+  type webSearchResultType,
   MEMBER_FREE_TRIBE_CREDITS,
 } from "@repo/db/src/schema"
 import {
@@ -109,7 +109,7 @@ import { upload } from "../../lib/minio"
 import slugify from "slug"
 import {
   notifyOwnerAndCollaborations as notifyOwnerAndCollaborationsInternal,
-  notifyOwnerAndCollaborationsPayload,
+  type notifyOwnerAndCollaborationsPayload,
 } from "../../lib/notify"
 import { checkRateLimit } from "../../lib/rateLimiting"
 import { captureException } from "@sentry/node"
@@ -119,8 +119,8 @@ import { checkThreadSummaryLimit } from "../../lib"
 import extractVideoFrames from "../../lib/extractVideoFrames"
 import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
 import { getTools } from "../../lib/tools"
-import { appWithStore } from "@chrryai/chrry/types"
-import { appFormData } from "@chrryai/chrry/schemas/appSchema"
+import type { appWithStore } from "@chrryai/chrry/types"
+import type { appFormData } from "@chrryai/chrry/schemas/appSchema"
 import { getFeatures } from "@chrryai/chrry/utils/subscription"
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
 import { getGuest, getMember } from "../lib/auth"
@@ -2131,7 +2131,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   // Render system prompt using Handlebars template
   const baseSystemPrompt = renderSystemPrompt({
     template: templateSource || fallbackTemplate,
-    app: requestApp || defaultVexApp,
+    app: requestApp as unknown as appWithStore,
     appKnowledge,
     userName,
     language,
@@ -3742,7 +3742,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     agent?.maxPromptSize || 4000,
   )
 
-  let suggestionMessages = undefined
+  let suggestionMessages
 
   if (!characterProfilesEnabled) {
     const pastMessages = await getMessages({
@@ -4143,9 +4143,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 url: `data:${file.mimeType};base64,${file.data}`,
                 messageId: slugify(file.filename.substring(0, 10)),
                 options: {
-                  maxWidth: 600,
-                  maxHeight: 600,
                   title: file.filename,
+                  type: "image",
                 },
               }),
             )
@@ -6502,7 +6501,7 @@ Respond in JSON format:
         let tribeTitle = ""
         let tribeContent = ""
         let tribe = ""
-        let tribePostId = undefined
+        let tribePostId
         const moltId = undefined
 
         // // Save final message to database

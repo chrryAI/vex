@@ -45,9 +45,7 @@ export default function Chrry({
   tribes,
   tribePosts,
   tribePost,
-  isTribeRoute,
-  agentProfile,
-  isAgentRoute,
+  theme,
 }: {
   translations?: Record<string, any>
   useExtensionIcon?: (slug?: string) => void
@@ -70,12 +68,10 @@ export default function Chrry({
     threads: thread[]
     totalCount: number
   }
+  theme?: "light" | "dark"
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
-  isTribeRoute?: boolean
-  agentProfile?: any
-  isAgentRoute?: boolean
   onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
 }) {
   return (
@@ -97,9 +93,7 @@ export default function Chrry({
       tribes={tribes}
       tribePosts={tribePosts}
       tribePost={tribePost}
-      isTribeRoute={isTribeRoute}
-      // agentProfile={agentProfile}
-      // isAgentRoute={isAgentRoute}
+      theme={theme}
     >
       {children}
     </AppProviders>

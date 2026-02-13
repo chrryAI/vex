@@ -4,6 +4,7 @@
  */
 
 import captureException from "./captureException"
+import { generateSecureId } from "./secureRandom"
 
 export interface TrainingDataPoint {
   // Unique identifier for this training example
@@ -100,7 +101,7 @@ export class TrainingDataCollector {
     flowContext: any
   }): Promise<void> {
     const trainingPoint: TrainingDataPoint = {
-      id: `booking_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: generateSecureId("booking_"),
       timestamp: new Date().toISOString(),
 
       user_intent: data.userIntent,

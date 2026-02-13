@@ -369,7 +369,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                 <Span style={{ fontSize: "1.2rem" }}>🦞</Span>
               )}
               <Text>
-                {t("{{tribeType}} Post Schedular", {
+                {t("{{tribeType}} Post Scheduler", {
                   tribeType,
                 })}
               </Text>

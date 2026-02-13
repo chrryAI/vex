@@ -73,14 +73,14 @@ image.post("/", async (c) => {
 
     // Upload with 500x500 dimensions for app icons
     // Use content hash as messageId for deduplication
+    // Use "contain" to preserve aspect ratio without cropping
     const uploadResult = await upload({
       url: `data:${file.type};base64,${base64}`,
       messageId: `icon-${contentHash}`,
       options: {
-        width: 500, // App icon size
-        height: 500,
-        fit: "cover", // Crop to fit
-        position: "center",
+        width: 500, // App icon max width
+        height: 500, // App icon max height
+        fit: "contain", // Preserve aspect ratio without cropping
         title: file.name,
       },
       context: "apps",

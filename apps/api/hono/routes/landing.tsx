@@ -2,10 +2,12 @@ import { Hono } from "hono"
 import { renderToString } from "react-dom/server"
 import ChrryDotDev from "../../components/ChrryDotDev"
 import React from "react"
+import { chrryDev } from "@chrryai/chrry/utils/siteConfig"
 
 export const landing = new Hono()
 
 landing.get("/", (c) => {
+  const isDev = process.env.NODE_ENV !== "production"
   const html = renderToString(React.createElement(ChrryDotDev))
 
   return c.html(`<!DOCTYPE html>
@@ -632,7 +634,7 @@ landing.get("/", (c) => {
       }
       
       @media (max-width: 48rem) {
-        .widget-visible iframe[title="chat\ widget"] {
+        .widget-visible iframe[title="chat widget"] {
           margin-bottom: 3.75rem !important;
         }
       }
@@ -1172,6 +1174,7 @@ landing.get("/", (c) => {
         }
       }
     </style>
+    ${!isDev ? `<script defer data-domain="${chrryDev.domain}" src="https://a.chrry.dev/js/app.js"></script>` : ""}
   </head>
   <body>
     <div id="root">${html}</div>

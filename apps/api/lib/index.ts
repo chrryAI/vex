@@ -1,13 +1,13 @@
 import { isE2E } from "@chrryai/chrry/utils/siteConfig"
 import {
-  user,
-  threadSummary,
-  thread,
-  guest,
-  subscription,
-  message,
-  collaboration,
-  app,
+  type user,
+  type threadSummary,
+  type thread,
+  type guest,
+  type subscription,
+  type message,
+  type collaboration,
+  type app,
   isOwner,
 } from "@repo/db"
 // import { headers } from "next/headers" // Not needed for Hono standalone
