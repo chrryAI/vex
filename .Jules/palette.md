@@ -17,3 +17,8 @@
 
 **Learning:** The `Bookmark` component relied solely on visual icon changes (filled vs empty star) to indicate state. This is invisible to screen readers who just hear "button".
 **Action:** Added `aria-pressed` for state and dynamic `aria-label` for action description ("Bookmark thread" vs "Remove bookmark"). This pattern should be applied to all toggle buttons (Like, Subscribe, etc.).
+
+## 2026-05-23 - Accessibility of Date/Time Displays
+
+**Learning:** Blog post dates were rendered as simple text (e.g., "2 days ago") or just text strings, making them less useful for assistive technologies and users wanting exact timestamps.
+**Action:** Use the `<time>` element with `dateTime` attribute for machine-readable dates. Add a `title` attribute with the full localized date string to provide exact time on hover, enhancing the "relative time" display pattern. This pattern should be standard for all time-based displays (comments, logs, etc.).
