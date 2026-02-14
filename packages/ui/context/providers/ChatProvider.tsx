@@ -7,6 +7,7 @@ import React, {
   useState,
   useEffect,
   useRef,
+  useCallback,
 } from "react"
 import { useAuth } from "./AuthProvider"
 import { useData } from "./DataProvider"
@@ -1096,22 +1097,32 @@ export function ChatProvider({
 
   const toFetchRef = useRef<boolean | null>(null)
 
-  const scrollToBottom = (timeout = isTauri ? 0 : 500, force = false) => {
-    if (showFocus) setShowFocus(false)
-    setTimeout(() => {
-      if (isEmpty || isUserScrolling || hasStoppedScrolling) return
-      // Use requestAnimationFrame for more stable scrolling in Tauri
-      requestAnimationFrame(() => {
-        // In Tauri, use instant scroll instead of smooth to prevent hopping
-        const behavior = isTauri ? "instant" : "smooth"
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          behavior: behavior as ScrollBehavior,
+  const scrollToBottom = useCallback(
+    (timeout = isTauri ? 0 : 500, force = false) => {
+      if (showFocus) setShowFocus(false)
+      setTimeout(() => {
+        if (isEmpty || isUserScrolling || hasStoppedScrolling) return
+        // Use requestAnimationFrame for more stable scrolling in Tauri
+        requestAnimationFrame(() => {
+          // In Tauri, use instant scroll instead of smooth to prevent hopping
+          const behavior = isTauri ? "instant" : "smooth"
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: behavior as ScrollBehavior,
+          })
+          toFetchRef.current = null
         })
-        toFetchRef.current = null
-      })
-    }, timeout)
-  }
+      }, timeout)
+    },
+    [
+      isTauri,
+      showFocus,
+      setShowFocus,
+      isEmpty,
+      isUserScrolling,
+      hasStoppedScrolling,
+    ],
+  )
 
   useEffect(() => {
     !toFetchRef.current && (toFetchRef.current = !!toFetch)
@@ -1216,6 +1227,11 @@ export function ChatProvider({
     messages,
   ])
 
+  const refetchThread = useCallback(async () => {
+    setShouldFetchThread(true)
+    await mutate()
+  }, [mutate])
+
   return (
     <ChatContext.Provider
       value={{
@@ -1235,10 +1251,7 @@ export function ChatProvider({
         shouldFetchThread,
         scrollToTop,
         setShouldFetchThread,
-        refetchThread: async () => {
-          setShouldFetchThread(true)
-          await mutate()
-        },
+        refetchThread,
         setIsWebSearchEnabled,
         input,
         setIsAgentModalOpen,
