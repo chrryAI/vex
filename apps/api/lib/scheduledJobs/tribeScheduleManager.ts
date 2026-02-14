@@ -130,8 +130,8 @@ export async function createOrUpdateTribeSchedule(params: {
   } = params
 
   try {
-    // Get app
-    const app = await getApp({ id: appId, userId })
+    // Get app with real moltApiKey (unsafe mode)
+    const app = await getApp({ id: appId, userId, isSafe: false })
     if (!app) {
       return {
         success: false,
@@ -230,10 +230,11 @@ export async function createOrUpdateTribeSchedule(params: {
       pendingPayment: pendingPayment ? pendingPayment : undefined,
       contentTemplate: contentTemplate ?? null,
       contentRules: contentRules ?? null,
-      estimatedCreditsPerRun: Math.ceil(totalCredits / schedule.length),
+      estimatedCreditsPerRun:
+        schedule.length > 0 ? Math.ceil(totalCredits / schedule.length) : 0,
       totalEstimatedCredits: totalCredits,
       creditsUsed: 0,
-      isPaid: true,
+      isPaid: !pendingPayment || pendingPayment === 0,
       stripePaymentIntentId: sessionId ?? null,
       status: params.status ?? existingSchedule?.status ?? ("active" as const),
       ...(jobType === "molt" && { moltbookHandle }),
@@ -263,7 +264,8 @@ export async function createOrUpdateTribeSchedule(params: {
     } else {
       scheduledJob = await createScheduledJob({
         ...scheduleData,
-        status: "pending_payment",
+        isPaid: !pendingPayment || pendingPayment === 0,
+        status: params.status || "pending_payment",
       })
 
       action = "CREATE"

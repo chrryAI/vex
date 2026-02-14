@@ -173,21 +173,19 @@ scheduledJobs.post("/", async (c) => {
           existingSchedule.updatedOn || existingSchedule.createdOn
 
         let priceDifference = totalPrice // in cents
-        if (existingSchedule) {
-          const oldPrice = existingSchedule.totalPrice || 0 // in cents
-          priceDifference = totalPrice - oldPrice // price diff in cents
+        const oldPrice = existingSchedule.totalPrice || 0 // in cents
+        priceDifference = totalPrice - oldPrice // price diff in cents
 
-          console.log(`📊 Schedule price comparison:`, {
-            oldPrice,
-            newPrice: totalPrice,
-            priceDifference,
-            isUpgrade: priceDifference > 0,
-            isDowngrade: priceDifference < 0,
-            isSame: priceDifference === 0,
-          })
-        }
+        console.log(`📊 Schedule price comparison:`, {
+          oldPrice,
+          newPrice: totalPrice,
+          priceDifference,
+          isUpgrade: priceDifference > 0,
+          isDowngrade: priceDifference < 0,
+          isSame: priceDifference === 0,
+        })
 
-        const PRICE_TOLERANCE = 0.01 // 1 cent tolerance
+        const PRICE_TOLERANCE = 1 // 1 cent tolerance (integer cents)
 
         const result = await createOrUpdateTribeSchedule({
           userId: userId,
@@ -261,12 +259,12 @@ scheduledJobs.delete("/:id", async (c) => {
 
   // Get the scheduled job to verify ownership
   const job = await getScheduledJob({
-    appId: undefined,
+    id: jobId,
     userId: member.id,
     scheduleTypes: ["tribe", "molt"],
   })
 
-  if (!job || job.id !== jobId) {
+  if (!job) {
     return c.json({ error: "Job not found or unauthorized" }, { status: 404 })
   }
 

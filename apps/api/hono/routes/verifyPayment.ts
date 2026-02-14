@@ -109,8 +109,8 @@ verifyPayment.post("/", async (c) => {
     if (session.metadata?.scheduledTaskId) {
       scheduledTaskId = session.metadata.scheduledTaskId
       console.log("📦 Found pending schedule ID in metadata:", scheduledTaskId)
-    } else if (body.scheduledTaskId) {
-      scheduledTaskId = body.scheduledTaskId
+    } else {
+      console.log("⚠️ No scheduledTaskId in session metadata")
     }
 
     let newCredits = 0
@@ -795,9 +795,8 @@ verifyPayment.post("/", async (c) => {
             : 0
 
           if (expectedPrice > 0) {
-            const priceDifference =
-              Math.abs(amountPaidEur - expectedPrice) / 100
-            const PRICE_TOLERANCE = 0.03 // 1 cent tolerance for rounding
+            const priceDifference = Math.abs(amountPaidEur - expectedPrice)
+            const PRICE_TOLERANCE = 0.01 // 1 cent tolerance
 
             if (priceDifference > PRICE_TOLERANCE) {
               console.error(

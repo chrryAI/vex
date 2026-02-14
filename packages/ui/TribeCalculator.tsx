@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from "react"
-import { Div, Text, Button, Input, Label, Span } from "./platform"
+import { Div, Text, Button, Input, Label, Span, P } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import { useAgentStyles } from "./agent/Agent.styles"
 import { useApp } from "./context/providers"
@@ -104,6 +104,10 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   const [expandedInfoIndex, setExpandedInfoIndex] = useState<number | null>(
     null,
   )
+  const [repeatInterval, setRepeatInterval] = useState<Record<number, number>>(
+    {},
+  )
+  const [repeatCount, setRepeatCount] = useState<Record<number, number>>({})
   const [moltApiKey, setMoltApiKey] = useState("")
   const [savingApiKey, setSavingApiKey] = useState(false)
 
@@ -189,7 +193,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
 
     return {
       // Form state
-      frequency: "daily" as "daily" | "weekly" | "monthly" | "once",
+      frequency: frequency as "daily" | "weekly" | "monthly" | "once",
       totalPrice: estimate?.totalPrice || 0,
       schedule,
       creditsPerPost: estimate?.creditsPerPost || 0,
@@ -293,13 +297,13 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
       credits: result.creditsPerPost,
     }))
 
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       schedule: scheduleWithCredits,
       creditsPerPost: result.creditsPerPost,
       totalCredits: result.totalCredits,
       totalPrice: result.totalPrice,
-    })
+    }))
 
     if (onCalculate) {
       onCalculate({
@@ -1034,9 +1038,8 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
               }
 
               return (
-                <>
+                <React.Fragment key={index}>
                   <Div
-                    key={index}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -1199,9 +1202,267 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                         {t("Model")}: {capitalizeFirstLetter(time.model)} •{" "}
                         {t("Char limit")}: {time.charLimit}
                       </Text>
+                      {/* Repeat Slot Feature */}
+                      <Div
+                        style={{
+                          marginTop: ".75rem",
+                          paddingTop: ".5rem",
+                          borderTop: "1px solid var(--shade-2)",
+                        }}
+                      >
+                        <Text
+                          style={{ fontWeight: "bold", marginBottom: ".5rem" }}
+                        >
+                          🔁 {t("Repeat this slot")}
+                        </Text>
+                        <Div
+                          style={{
+                            display: "flex",
+                            gap: ".5rem",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            marginTop: ".5rem",
+                          }}
+                        >
+                          <Div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: ".3rem",
+                            }}
+                          >
+                            <Label style={{ fontSize: ".8rem" }}>
+                              {t("Every")}
+                            </Label>
+                            <Input
+                              type="number"
+                              min="10"
+                              max="1440"
+                              value={String(repeatInterval[index] || 60)}
+                              onChange={(e) =>
+                                setRepeatInterval({
+                                  ...repeatInterval,
+                                  [index]: parseInt(e.target.value) || 60,
+                                })
+                              }
+                              style={{
+                                width: "70px",
+                                fontSize: ".85rem",
+                                padding: ".3rem .5rem",
+                              }}
+                              placeholder="60"
+                            />
+                            <Label style={{ fontSize: ".8rem" }}>
+                              {t("minutes")}
+                            </Label>
+                          </Div>
+
+                          <Div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: ".3rem",
+                            }}
+                          >
+                            <Label style={{ fontSize: ".8rem" }}>
+                              {t("Repeat")}
+                            </Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="20"
+                              value={String(repeatCount[index] || 3)}
+                              onChange={(e) =>
+                                setRepeatCount({
+                                  ...repeatCount,
+                                  [index]: parseInt(e.target.value) || 3,
+                                })
+                              }
+                              style={{
+                                width: "60px",
+                                fontSize: ".85rem",
+                                padding: ".3rem .5rem",
+                              }}
+                              placeholder="3"
+                            />
+                            <Label style={{ fontSize: ".8rem" }}>
+                              {t("times")}
+                            </Label>
+                          </Div>
+
+                          <Button
+                            className="inverted"
+                            style={{
+                              ...utilities.inverted.style,
+                              fontSize: ".8rem",
+                              padding: ".3rem .6rem",
+                            }}
+                            onClick={() => {
+                              const intervalMinutes =
+                                repeatInterval[index] || 60
+                              const count = repeatCount[index] || 3
+
+                              if (intervalMinutes < 10) {
+                                toast.error(
+                                  t("Interval must be at least 10 minutes"),
+                                )
+                                return
+                              }
+
+                              if (count < 1 || count > 20) {
+                                toast.error(
+                                  t("Repeat count must be between 1 and 20"),
+                                )
+                                return
+                              }
+
+                              // Validate 30-minute cooldown for same post type
+                              if (intervalMinutes < SLOT_INTERVAL_MINUTES) {
+                                toast.error(
+                                  t(
+                                    "Interval must be at least {{minutes}} minutes between same post types",
+                                    {
+                                      minutes: Math.ceil(SLOT_INTERVAL_MINUTES),
+                                    },
+                                  ),
+                                )
+                                return
+                              }
+
+                              // Generate new slots based on current slot
+                              const newSlots: ScheduleTime[] = []
+                              let currentHour = time.hour
+                              let currentMinute = time.minute
+
+                              for (let i = 0; i < count; i++) {
+                                // Add interval to current time
+                                currentMinute += intervalMinutes
+
+                                // Handle minute overflow
+                                while (currentMinute >= 60) {
+                                  currentMinute -= 60
+                                  currentHour += 1
+                                }
+
+                                // Handle hour overflow (stop if we go past 24 hours)
+                                if (currentHour >= 24) {
+                                  toast.error(
+                                    t(
+                                      "Cannot create slots beyond 24 hours. Created {{count}} slots.",
+                                      {
+                                        count: i,
+                                      },
+                                    ),
+                                  )
+                                  break
+                                }
+
+                                newSlots.push({
+                                  hour: currentHour,
+                                  minute: currentMinute,
+                                  postType: time.postType,
+                                  model: time.model,
+                                  charLimit: time.charLimit,
+                                  credits: creditsPerPost,
+                                })
+                              }
+
+                              if (newSlots.length > 0) {
+                                // Remove conflicting slots (same time or within cooldown period)
+                                const newSlotTimes = new Set(
+                                  newSlots.map(
+                                    (slot) => `${slot.hour}:${slot.minute}`,
+                                  ),
+                                )
+
+                                // Filter out existing slots that conflict with new slots
+                                const filteredSchedule = schedule.filter(
+                                  (existingSlot, existingIndex) => {
+                                    // Don't remove the source slot
+                                    if (existingIndex === index) return true
+
+                                    const existingTime = `${existingSlot.hour}:${existingSlot.minute}`
+
+                                    // Remove if exact time match
+                                    if (newSlotTimes.has(existingTime)) {
+                                      return false
+                                    }
+
+                                    // Check cooldown only for same post type
+                                    if (
+                                      existingSlot.postType === time.postType
+                                    ) {
+                                      const existingMinutes =
+                                        existingSlot.hour * 60 +
+                                        existingSlot.minute
+
+                                      // Check if any new slot is too close to this existing slot
+                                      for (const newSlot of newSlots) {
+                                        const newMinutes =
+                                          newSlot.hour * 60 + newSlot.minute
+                                        const timeDiff = Math.abs(
+                                          newMinutes - existingMinutes,
+                                        )
+
+                                        // Remove if within cooldown period
+                                        if (
+                                          timeDiff > 0 &&
+                                          timeDiff < SLOT_INTERVAL_MINUTES
+                                        ) {
+                                          return false
+                                        }
+                                      }
+                                    }
+
+                                    return true
+                                  },
+                                )
+
+                                const removedCount =
+                                  schedule.length - filteredSchedule.length
+
+                                // Update schedule with filtered slots + new slots
+                                setSchedule([...filteredSchedule, ...newSlots])
+
+                                if (removedCount > 0) {
+                                  toast.success(
+                                    t(
+                                      "Added {{added}} slots and removed {{removed}} conflicting slots",
+                                      {
+                                        added: newSlots.length,
+                                        removed: removedCount,
+                                      },
+                                    ),
+                                  )
+                                } else {
+                                  toast.success(
+                                    t("Added {{count}} repeated slots", {
+                                      count: newSlots.length,
+                                    }),
+                                  )
+                                }
+                              }
+                            }}
+                          >
+                            {t("Generate Slots")}
+                          </Button>
+                        </Div>
+                        <P
+                          style={{
+                            fontSize: ".75rem",
+                            opacity: 0.6,
+                            marginTop: ".5rem",
+                          }}
+                        >
+                          💡{" "}
+                          {t(
+                            "This will create new slots with the same settings at the specified interval",
+                          )}
+                        </P>
+                      </Div>
                     </Div>
                   )}
-                </>
+                </React.Fragment>
               )
             })}
           </Div>
@@ -1223,76 +1484,85 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
               <Div
                 style={{
                   display: "flex",
-                  gap: ".5rem",
-                  alignItems: "center",
+                  flexDirection: "row",
+                  gap: "1rem",
+                  flexWrap: "wrap",
                 }}
               >
-                <Text style={{ fontSize: "1rem" }}>📮</Text>
-                <Text>{t("Total Posts")}</Text>
-                <Text
+                <Div
                   style={{
-                    color: "var(--accent-1)",
+                    display: "flex",
+                    gap: ".5rem",
+                    alignItems: "center",
                   }}
                 >
-                  {formatter.format(totalPosts)}
-                </Text>
-              </Div>
-              <Div
-                style={{
-                  display: "flex",
-                  gap: ".5rem",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ fontSize: "1rem" }}>⚡</Text>
-                <Text>{t("Credits per Post")}</Text>
-                <Text
+                  <Text style={{ fontSize: "1rem" }}>📮</Text>
+                  <Text>{t("Total Posts")}</Text>
+                  <Text
+                    style={{
+                      color: "var(--accent-1)",
+                    }}
+                  >
+                    {formatter.format(totalPosts)}
+                  </Text>
+                </Div>
+                <Div
                   style={{
-                    color: "var(--accent-1)",
+                    display: "flex",
+                    gap: ".5rem",
+                    alignItems: "center",
                   }}
                 >
-                  {formatter.format(creditsPerPost)}
-                </Text>
-              </Div>
-              <Div
-                style={{
-                  display: "flex",
-                  gap: ".5rem",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ fontSize: "1rem" }}>💎</Text>
-                <Text>{t("Total Credits")}</Text>
-                <Text
+                  <Text style={{ fontSize: "1rem" }}>⚡</Text>
+                  <Text>{t("Credits per Post")}</Text>
+                  <Text
+                    style={{
+                      color: "var(--accent-1)",
+                    }}
+                  >
+                    {formatter.format(creditsPerPost)}
+                  </Text>
+                </Div>
+                <Div
                   style={{
-                    color: "var(--accent-1)",
+                    display: "flex",
+                    gap: ".5rem",
+                    alignItems: "center",
                   }}
                 >
-                  {formatter.format(totalCredits)}
-                </Text>
-              </Div>
-              <Div
-                style={{
-                  display: "flex",
-                  gap: ".5rem",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ fontSize: "1rem" }}>💵</Text>
-                <Text style={{ fontWeight: "bold" }}>{t("Total Price")}</Text>
-                <Text
+                  <Text style={{ fontSize: "1rem" }}>💎</Text>
+                  <Text>{t("Total Credits")}</Text>
+                  <Text
+                    style={{
+                      color: "var(--accent-1)",
+                    }}
+                  >
+                    {formatter.format(totalCredits)}
+                  </Text>
+                </Div>
+                <Div
                   style={{
-                    color: "var(--accent-1)",
-                    fontWeight: "bold",
+                    display: "flex",
+                    gap: ".5rem",
+                    alignItems: "center",
                   }}
                 >
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "EUR",
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  }).format(totalPrice)}
-                </Text>
+                  <Text style={{ fontSize: "1rem" }}>💵</Text>
+                  <Text style={{ fontWeight: "bold" }}>{t("Total Price")}</Text>
+                  <Text
+                    style={{
+                      color: "var(--accent-1)",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "EUR",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(totalPrice)}
+                  </Text>
+                </Div>
               </Div>
               <>
                 {!user && (
@@ -1400,8 +1670,8 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                                 gap: ".5rem",
                                 alignItems: "center",
                                 flexWrap: "wrap",
-                                fex: 1,
-                                with: "100%",
+                                flex: 1,
+                                width: "100%",
                                 marginTop: 5,
                                 marginBottom: 7.5,
                               }}
