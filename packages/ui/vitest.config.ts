@@ -21,6 +21,10 @@ export default defineConfig({
     deps: {
       interopDefault: true,
     },
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov"],
+    },
   },
   resolve: {
     alias: {
