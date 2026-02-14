@@ -78,7 +78,13 @@ vi.mock("../hooks/useThreadPresence", () => ({
 
 // Mock other components
 vi.mock("../Messages", () => ({
-  default: () => <div data-testid="messages-list" />,
+  default: ({ onDelete }: any) => (
+    <div data-testid="messages-list">
+      <button data-testid="delete-message-btn" onClick={() => onDelete({ id: "1" })}>
+        Delete
+      </button>
+    </div>
+  ),
 }))
 vi.mock("../Chat", () => ({ default: () => <div data-testid="chat-input" /> }))
 vi.mock("../Loading", () => ({ default: () => <div data-testid="loading" /> }))
@@ -186,6 +192,41 @@ describe("Thread", () => {
     // Reset
     mockChat.isLoading = false
     mockChat.isEmpty = false
+  })
+
+  it("handles message deletion", async () => {
+    mockChat.messages = [
+      { message: { id: "1", content: "Test" } },
+      { message: { id: "2", content: "Test 2" } },
+    ] as any
+    const refetchMock = vi.fn().mockResolvedValue({})
+    mockChat.refetchThread = refetchMock
+
+    // Create a spy for setMessages
+    const setMessagesSpy = vi.fn((updateFn: any) => {
+      if (typeof updateFn === 'function') {
+        const newMessages = updateFn(mockChat.messages)
+        mockChat.messages = newMessages
+      } else {
+        mockChat.messages = updateFn
+      }
+    })
+    mockChat.setMessages = setMessagesSpy
+
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    const deleteBtn = container.querySelector("[data-testid='delete-message-btn']")
+    await act(async () => {
+      deleteBtn?.click()
+    })
+
+    expect(refetchMock).toHaveBeenCalled()
+    // Verify functional update was called and filtered correctly
+    expect(setMessagesSpy).toHaveBeenCalled()
+    expect(mockChat.messages.length).toBe(1)
+    expect(mockChat.messages[0].message.id).toBe("2")
   })
 
   it.skip("renders focus mode when enabled", async () => {
