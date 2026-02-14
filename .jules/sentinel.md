@@ -57,3 +57,14 @@
 3.  **Verify State:** In the callback, use `getCookie` to retrieve and compare the stored state. Reject mismatch.
 4.  **Clear State:** Delete the cookie after verification.
 5.  **Safe Failure Redirect:** Redirect to a known safe URL upon verification failure.
+
+## 2026-02-14 - Missing Rate Limiting on Authentication Endpoints
+
+**Vulnerability:** The `/signup` and `/signin` endpoints were completely unprotected against brute force and credential stuffing attacks, despite having `@arcjet/node` installed.
+
+**Learning:**
+- Always verify that security libraries (like Arcjet) are actually *applied* to critical routes, not just installed.
+- Arcjet can use `ip.src` characteristic for anonymous rate limiting without user context.
+
+**Prevention:**
+- Added strict IP-based rate limiting (10 req/min) to all password-based authentication routes using `checkAuthRateLimit`.
