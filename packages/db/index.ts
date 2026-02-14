@@ -3916,6 +3916,38 @@ export async function getCreditTransactions({
   return result
 }
 
+export async function getCreditTransaction({
+  id,
+  userId,
+  guestId,
+  fromDate,
+  sessionId,
+  toDate,
+  scheduleId,
+  type,
+}: {
+  id?: string
+  userId?: string
+  guestId?: string
+  fromDate?: Date
+  toDate?: Date
+  type?: "purchase" | "subscription" | "tribe" | "molt"
+  sessionId?: string
+  scheduleId?: string
+}) {
+  const result = await getCreditTransactions({
+    id,
+    userId,
+    guestId,
+    fromDate,
+    sessionId,
+    toDate,
+    scheduleId,
+    type,
+  })
+  return result?.[0]
+}
+
 export async function createCalendarEvent(calendarEvent: newCalendarEvent) {
   const [inserted] = await db
     .insert(calendarEvents)
@@ -5093,10 +5125,6 @@ export const getApp = async ({
               },
               userId,
               guestId,
-              scheduledJobs:
-                userId && isOwner(app, { userId, guestId })
-                  ? await getScheduledJobs({ appId: app.id, userId })
-                  : [],
             })
           }),
         ),
@@ -5107,7 +5135,6 @@ export const getApp = async ({
           } as unknown as app,
           userId,
           guestId,
-          scheduledJobs: storeAppSchedule,
         }), // Include the store's base app
       }
     : undefined
@@ -5118,7 +5145,6 @@ export const getApp = async ({
           app: { ...app.app, characterProfiles: appCharacterProfiles },
           userId,
           guestId,
-          scheduledJobs: requestedAppSchedule,
         }) as app)
       : { ...app.app, characterProfiles: appCharacterProfiles }),
     extends: await getAppExtends({
@@ -5217,7 +5243,6 @@ export const getPureApp = async ({
           app: app.app,
           userId,
           guestId,
-          scheduledJobs: appSchedule,
         }) as app)
       : { ...app.app, scheduledJobs: appSchedule }
   ) as app
@@ -5272,13 +5297,11 @@ export function toSafeApp({
   userId,
   guestId,
   skip,
-  scheduledJobs,
 }: {
   app?: app | appWithStore
   userId?: string
   guestId?: string
   skip?: boolean
-  scheduledJobs?: scheduledJob[]
 }): Partial<app | appWithStore> | undefined {
   if (!app) return undefined
 
@@ -5327,7 +5350,6 @@ export function toSafeApp({
       userId,
       guestId,
       skip: true,
-      scheduledJobs,
     })
     return {
       ...parentSafeApp,
@@ -5392,7 +5414,6 @@ export function toSafeApp({
     systemPrompt: isOwner(app, { userId, guestId })
       ? app.systemPrompt
       : undefined,
-    scheduledJobs: scheduledJobs || [],
     moltApiKey:
       isOwner(app, { userId, guestId }) && app.moltApiKey
         ? "********"
@@ -5616,13 +5637,6 @@ export const getApps = async (
                   app,
                   userId,
                   guestId,
-                  scheduledJobs:
-                    userId && isOwner(app, { userId, guestId })
-                      ? await getScheduledJobs({
-                          appId: app.id,
-                          userId,
-                        })
-                      : [],
                 })
               : app),
             extends: await getAppExtends({
@@ -6397,14 +6411,14 @@ export async function getStore({
         })
 
         return {
-          ...toSafeApp({ app: appItem, userId, guestId, scheduledJobs: [] }),
+          ...toSafeApp({ app: appItem, userId, guestId }),
 
           store: appItem.store
             ? {
                 ...appItem.store,
                 apps:
                   nestedStoreData?.apps.map((app) =>
-                    toSafeApp({ app, scheduledJobs: [], userId, guestId }),
+                    toSafeApp({ app, userId, guestId }),
                   ) || [],
                 app: null, // Set to null to prevent circular references
               }
@@ -7223,9 +7237,11 @@ export const getScheduledJob = async ({
   appId,
   userId,
   scheduleTypes,
+  id,
 }: {
   appId?: string
   userId?: string
+  id?: string
   scheduleTypes?: ("tribe" | "molt")[]
 }) => {
   try {
@@ -7234,6 +7250,7 @@ export const getScheduledJob = async ({
       .from(scheduledJobs)
       .where(
         and(
+          id ? eq(scheduledJobs.id, id) : undefined,
           appId ? eq(scheduledJobs.appId, appId) : undefined,
           userId ? eq(scheduledJobs.userId, userId) : undefined,
           scheduleTypes
@@ -7256,19 +7273,28 @@ export const createScheduledJob = async (
   return created
 }
 
-export const updateScheduledJob = async ({
-  id,
-  data,
-}: {
-  id: string
-  data: Partial<typeof scheduledJobs.$inferInsert>
-}) => {
+export const updateScheduledJob = async (
+  data: Partial<typeof scheduledJobs.$inferInsert> & { id: string },
+) => {
   const [updated] = await db
     .update(scheduledJobs)
     .set({ ...data, updatedOn: new Date() })
-    .where(eq(scheduledJobs.id, id))
+    .where(eq(scheduledJobs.id, data.id))
     .returning()
   return updated
+}
+
+export const deleteScheduledJob = async (id: string) => {
+  try {
+    const [deleted] = await db
+      .delete(scheduledJobs)
+      .where(eq(scheduledJobs.id, id))
+      .returning()
+    return deleted
+  } catch (error) {
+    console.error("Error deleting scheduled job:", error)
+    return null
+  }
 }
 
 export const getScheduledJobs = async ({

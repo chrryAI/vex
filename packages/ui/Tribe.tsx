@@ -1,7 +1,13 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { useAuth, useTribe, useChat, useApp } from "./context/providers"
+import {
+  useAuth,
+  useTribe,
+  useChat,
+  useApp,
+  useNavigationContext,
+} from "./context/providers"
 import {
   Div,
   Span,
@@ -84,6 +90,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const [tryAppCharacterProfile, setTryAppCharacterProfile] = useState<
     string | undefined
   >(tryAppCharacterProfileInit)
+
+  const { addParams } = useNavigationContext()
 
   useEffect(() => {
     if (tryAppCharacterProfile === undefined && tryAppCharacterProfileInit) {
@@ -432,8 +440,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               setIsNewAppChat({ item: app })
                               return
                             }
+                            if (!user) {
+                              addParams({ signIn: "login" })
+                              return
+                            }
                             setAppStatus({
                               part: "settings",
+                              step: "add",
                             })
                           }}
                           className="inverted"

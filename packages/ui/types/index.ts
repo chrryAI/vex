@@ -971,11 +971,18 @@ export type scheduledJob = {
 
   // Schedule configuration
   frequency: "once" | "daily" | "weekly" | "custom"
-  scheduledTimes: string[] // ["09:00", "14:00", "18:00", "22:00"]
+  scheduledTimes: Array<{
+    time: string // "09:00", "14:00", etc.
+    model: string
+    postType: "post" | "comment" | "engagement"
+    charLimit: number
+    credits: number
+  }>
   timezone: string
   startDate: Date
   endDate: Date | null
-
+  totalPrice?: number
+  pendingPayment?: number
   // AI Model configuration
   aiModel: modelName
   modelConfig: {

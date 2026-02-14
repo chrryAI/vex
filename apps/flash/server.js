@@ -18,7 +18,7 @@ import arcjet, { shield, fixedWindow } from "@arcjet/node"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.14.29"
+const VERSION = "1.14.30"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -639,7 +639,7 @@ app.use(async (req, res) => {
       ),
       hash: url.split("#")[1] || "",
     }
-    console.log("🔧 SSR: Injecting router state:", routerState)
+
     const routerStateScript = serverData
       ? `<script>window.__ROUTER_STATE__ = ${JSON.stringify(routerState).replace(/</g, "\\u003c")}</script>`
       : ""

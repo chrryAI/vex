@@ -2053,7 +2053,13 @@ export async function findJobsToRun() {
 
 // Calculate next run time based on schedule
 export function calculateNextRunTime(
-  scheduledTimes: string[],
+  scheduledTimes: Array<{
+    time: string
+    model: string
+    postType: "post" | "comment" | "engagement"
+    charLimit: number
+    credits: number
+  }>,
   timezone: string,
   frequency: string,
 ): Date {
@@ -2066,13 +2072,16 @@ export function calculateNextRunTime(
     throw new Error("scheduledTimes cannot be empty")
   }
 
+  // Extract time strings from schedule objects
+  const timeStrings = scheduledTimes.map((slot) => slot.time)
+
   // Get current time in target timezone
   const currentHour = zonedNow.getHours()
   const currentMinute = zonedNow.getMinutes()
   const currentTime = `${currentHour.toString().padStart(2, "0")}:${currentMinute.toString().padStart(2, "0")}`
 
   // Sort scheduledTimes in ascending order (invariant: must be sorted)
-  const sortedTimes = [...scheduledTimes].sort()
+  const sortedTimes = [...timeStrings].sort()
 
   // Find next time slot in the scheduled times
   const nextTime = sortedTimes.find((time) => time > currentTime)

@@ -360,7 +360,6 @@ export async function loadServerData(
     const canShowTribeProfile = !excludedSlugRoutes.includes(
       pathname.split("/")?.[1] || "",
     )
-    console.log(`🚀 ~ canShowTribeProfile:`, canShowTribeProfile)
 
     const [
       translationsResult,

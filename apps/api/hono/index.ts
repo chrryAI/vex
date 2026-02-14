@@ -7,6 +7,7 @@ import { securityHeadersMiddleware } from "./middleware/securityHeaders"
 import { csrfMiddleware } from "./middleware/csrf"
 import { apiAnalyticsMiddleware } from "./middleware/analytics"
 import { session } from "./routes/session"
+import { scheduledJobs } from "./routes/scheduledJobs"
 import { threads } from "./routes/threads"
 import { translations } from "./routes/translations"
 import { app as apps } from "./routes/apps"
@@ -16,10 +17,10 @@ import { aiAgents } from "./routes/aiAgents"
 import { calendar } from "./routes/calendar"
 import { cities } from "./routes/cities"
 import { clear } from "./routes/clear"
+
 import { collaborations } from "./routes/collaborations"
 import { createCreditPurchase } from "./routes/createCreditPurchase"
 import { createSubscription } from "./routes/createSubscription"
-import { createTribeSchedule } from "./routes/createTribeSchedule"
 import { cron } from "./routes/cron"
 import { guest } from "./routes/guest"
 import { image } from "./routes/image"
@@ -135,6 +136,7 @@ const api = new Hono()
 
 // Register all API routes without /api prefix (it's added by basePath)
 api.route("/session", session)
+api.route("/scheduledJobs", scheduledJobs)
 api.route("/threads", threads)
 api.route("/translations", translations)
 api.route("/apps", apps)
@@ -147,7 +149,6 @@ api.route("/clear", clear)
 api.route("/collaborations", collaborations)
 api.route("/createCreditPurchase", createCreditPurchase)
 api.route("/createSubscription", createSubscription)
-api.route("/createTribeSchedule", createTribeSchedule)
 api.route("/cron", cron)
 api.route("/guest", guest)
 api.route("/image", image)

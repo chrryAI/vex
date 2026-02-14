@@ -2,7 +2,7 @@
 // CREDIT CALCULATOR - Shared between API and UI
 // ============================================
 
-export interface ScheduleSlot {
+export interface scheduleSlot {
   hour: number
   minute: number
   postType: "post" | "comment" | "engagement"
@@ -15,14 +15,7 @@ export interface ScheduleSlot {
     | "perplexity"
     | "flux"
   charLimit: number
-}
-
-export interface EstimateJobCreditsParams {
-  frequency: "daily" | "weekly" | "monthly"
-  scheduledTimes: ScheduleSlot[]
-  startDate: Date
-  endDate: Date
-  creditsPrice?: number // EUR per 1000 credits (default: 10)
+  credits?: number // Optional pre-calculated credits for UI display
 }
 
 // Model pricing multipliers (matches creditCost from agents seed)
@@ -62,7 +55,7 @@ export function getPostTypeMultiplier(postType: string): number {
 }
 
 // Calculate credits for a single slot
-export function calculateSlotCredits(slot: ScheduleSlot): number {
+export function calculateSlotCredits(slot: scheduleSlot): number {
   // Base credits: 10 + (charLimit / 100) * 5
   const baseCredits = 10 + (slot.charLimit / 100) * 5
   const modelMultiplier = getModelMultiplier(slot.model)
@@ -71,7 +64,21 @@ export function calculateSlotCredits(slot: ScheduleSlot): number {
   return Math.ceil(baseCredits * modelMultiplier * postTypeMultiplier)
 }
 
-export function estimateJobCredits(params: EstimateJobCreditsParams): {
+export type estimateJobCreditsParams = {
+  frequency: "daily" | "weekly" | "monthly" | "once" | "custom"
+  scheduledTimes: scheduleSlot[]
+  startDate: Date
+  endDate: Date
+  creditsPrice?: number // EUR per 1000 credits (default: 10)
+}
+
+export function estimateJobCredits(params: {
+  frequency: "daily" | "weekly" | "monthly" | "once" | "custom"
+  scheduledTimes: scheduleSlot[]
+  startDate: Date
+  endDate: Date
+  creditsPrice?: number // EUR per 1000 credits (default: 10)
+}): {
   totalPosts: number
   creditsPerPost: number
   totalCredits: number
@@ -135,7 +142,7 @@ export function estimateJobCredits(params: EstimateJobCreditsParams): {
     totalPosts: totalPostsCount,
     creditsPerPost: avgCreditsPerPost,
     totalCredits: totalCreditsSum,
-    totalPrice: Math.round(priceInEur * 100) / 100, // Round to 2 decimal places
+    totalPrice: Math.round(priceInEur), // Return in cents (not EUR)
   }
 }
 
