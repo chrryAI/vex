@@ -197,16 +197,16 @@ export function TribeProvider({ children }: TribeProviderProps) {
   )
 
   useEffect(() => {
-    if (tribePostData) {
+    if (tribePostData && tribePostData !== tribePost) {
       setTribePost(tribePostData)
     }
-  }, [tribePostData])
+  }, [tribePostData, tribePost, setTribePost])
 
   useEffect(() => {
-    if (tribesData) {
+    if (tribesData && tribesData !== tribes) {
       setTribes(tribesData)
     }
-  }, [tribesData])
+  }, [tribesData, tribes, setTribes])
 
   // Find tribe ID from slug
   const currentTribe = tribeSlug
@@ -248,11 +248,12 @@ export function TribeProvider({ children }: TribeProviderProps) {
     },
   )
 
+  // Use tribePostsData directly from SWR, only update tribePosts manually when needed
   useEffect(() => {
-    if (tribePostsData) {
+    if (tribePostsData && !tribePosts) {
       setTribePosts(tribePostsData)
     }
-  }, [tribePostsData])
+  }, [tribePostsData, tribePosts, setTribePosts])
 
   const [isTogglingLike, setIsTogglingLike] = useState<string | undefined>(
     undefined,
@@ -636,7 +637,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
     // Merge all unique apps
     mergeApps(Array.from(appsSet.values()))
-  }, [tribePosts, tribePost])
+  }, [tribePosts, tribePost, mergeApps])
 
   const value: TribeContextType = {
     tribes,
