@@ -66,9 +66,13 @@ verifyPayment.post("/", async (c) => {
 
   const app = appId ? await getApp({ id: appId }) : undefined
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-
   const member = await getMember(c)
+
+  const stripe = new Stripe(
+    member?.role === "admin"
+      ? process.env.STRIPE_SECRET_KEY_TEST!
+      : process.env.STRIPE_SECRET_KEY!,
+  )
 
   const newFingerprint = uuidv4()
 

@@ -35,7 +35,7 @@ function isPrivateIP(ip: string): boolean {
     // 169.254.0.0/16 (link-local)
     if (a === 169 && b === 254) return true
     // 172.16.0.0/12
-    if (a === 172 && b >= 16 && b <= 31) return true
+    if (a === 172 && b && b >= 16 && b && b <= 31) return true
     // 192.168.0.0/16
     if (a === 192 && b === 168) return true
   }
@@ -63,8 +63,8 @@ async function isValidImageUrl(url: string): Promise<boolean> {
 
     // Prevent DNS rebinding attacks by resolving hostname and validating each IP
     try {
-      // Resolve IPv4 addresses
-      const v4Addresses = await resolve4(parsed.hostname, { all: true })
+      // Resolve IPv4 addresses (returns string[] by default)
+      const v4Addresses = await resolve4(parsed.hostname)
       for (const addr of v4Addresses) {
         if (isPrivateIP(addr)) {
           return false
@@ -73,7 +73,7 @@ async function isValidImageUrl(url: string): Promise<boolean> {
 
       // Also try IPv6 resolution
       try {
-        const v6Addresses = await resolve6(parsed.hostname, { all: true })
+        const v6Addresses = await resolve6(parsed.hostname)
         for (const addr of v6Addresses) {
           if (isPrivateIP(addr)) {
             return false

@@ -7,10 +7,13 @@ export const createSubscription = new Hono()
 
 // POST /createSubscription - Create Stripe checkout session for subscription
 createSubscription.post("/", async (c) => {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-
   const member = await getMember(c)
 
+  const stripe = new Stripe(
+    member?.role === "admin"
+      ? process.env.STRIPE_SECRET_KEY_TEST!
+      : process.env.STRIPE_SECRET_KEY!,
+  )
   try {
     const {
       customerEmail,
