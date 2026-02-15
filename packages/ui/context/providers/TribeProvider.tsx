@@ -64,9 +64,10 @@ interface TribeContextType {
   setCharacterProfileIds: (ids?: string[]) => void
   refetchPosts: () => Promise<void>
   refetchPost: () => Promise<void>
-
   refetchTribes: () => Promise<void>
   toggleLike: (postId: string) => Promise<{ liked: boolean }>
+  deletePost: (postId: string) => Promise<void>
+  deleteComment: (commentId: string) => Promise<void>
   setPendingPostIds: (id: string[]) => void
   isTogglingLike: string | undefined
 }
@@ -92,6 +93,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setTribePost,
     mergeApps,
     deviceId,
+    getAppSlug,
     app, // Current selected app for filtering
   } = useAuth()
 
@@ -99,7 +101,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     initialTribes,
   )
 
-  const { pathname } = useNavigation()
+  const { pathname, push } = useNavigation()
 
   const { captureException, t } = useAppContext()
 
@@ -472,6 +474,87 @@ export function TribeProvider({ children }: TribeProviderProps) {
     deviceId,
   })
 
+  const deletePost = async (postId: string) => {
+    if (!postId) {
+      console.error("Post ID is required")
+      captureException(new Error("Post ID is required"))
+    }
+    if (!token) {
+      console.error("Not authenticated")
+      captureException(new Error("Not authenticated"))
+    }
+
+    try {
+      const response = await apiFetch(`${API_URL}/tribe/p/${postId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (!response.ok) {
+        const errorData = await response.json()
+        toast.error(errorData.error || "Failed to delete post")
+        captureException(new Error(`Failed to delete post: ${response.status}`))
+      }
+
+      toast.success(`🧐 ${"Deleted"}`)
+      // Refetch posts to update list
+      await refetchPosts()
+
+      push("/?tribe=true")
+    } catch (error) {
+      console.error("Error deleting post:", error)
+      captureException(error)
+      toast.error("Failed to delete post")
+    }
+  }
+
+  const deleteComment = async (commentId: string) => {
+    if (!commentId) {
+      console.error("Comment ID is required")
+      captureException(new Error("Comment ID is required"))
+    }
+    if (!token) {
+      console.error("Not authenticated")
+      captureException(new Error("Not authenticated"))
+    }
+
+    if (tribePost) {
+      setTribePost({
+        ...tribePost,
+        comments: tribePost.comments?.filter((c) => c.id !== commentId) || [],
+      })
+    }
+
+    try {
+      const response = await apiFetch(`${API_URL}/tribe/c/${commentId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (!response.ok) {
+        const errorData = await response.json()
+        toast.error(errorData.error || "Failed to delete comment")
+        captureException(
+          new Error(`Failed to delete comment: ${response.status}`),
+        )
+      }
+
+      toast.success("Comment deleted successfully")
+      // Refetch post to update comments
+      if (tribePost?.id) {
+        await refetchTribePost()
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error)
+      captureException(error)
+      toast.error("Failed to delete comment")
+    }
+  }
+
   const toggleLike = async (postId: string): Promise<{ liked: boolean }> => {
     if (!postId) {
       console.error("Post ID is required")
@@ -578,6 +661,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setUntil,
     setCharacterProfileIds,
     toggleLike,
+    deletePost,
+    deleteComment,
     isSwarm,
     isTogglingLike,
     posting,

@@ -16,6 +16,7 @@ import {
 } from "./platform"
 import Img from "./Image"
 import A from "./a/A"
+import isOwner from "./utils/isOwner"
 
 import {
   MessageCircleReply,
@@ -23,6 +24,7 @@ import {
   Share2,
   Sparkles,
   LoaderCircle,
+  Trash2,
 } from "./icons"
 import { useTribePostStyles } from "./TribePost.styles"
 import { useStyles } from "./context/StylesContext"
@@ -34,6 +36,8 @@ import Loading from "./Loading"
 import { useTribe } from "./context/providers/TribeProvider"
 import Instructions from "./Instructions"
 import AppLink from "./AppLink"
+import ConfirmButton from "./ConfirmButton"
+import { isDevelopment } from "./utils"
 
 interface TribePostProps {
   post: tribePostWithDetails
@@ -58,6 +62,8 @@ export default function TribePost({
     refetchPost,
     liveReactions,
     commenting,
+    deletePost,
+    deleteComment,
   } = useTribe()
 
   const isSwarm = commenting.length || liveReactions.length
@@ -68,7 +74,7 @@ export default function TribePost({
     commenting.length && setHasMore(commenting.length)
   }, [commenting.length])
 
-  const { timeAgo, getAppSlug, accountApp, user, setSignInPart } = useAuth()
+  const { timeAgo, accountApp, user, setSignInPart, getAppSlug } = useAuth()
   const { setAppStatus } = useApp()
   const { FRONTEND_URL } = useData()
   const styles = useTribePostStyles()
@@ -90,6 +96,24 @@ export default function TribePost({
     undefined,
   )
   const [copied, setCopied] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    type: "post" | "comment"
+    id: string
+  } | null>(null)
+
+  const owner = isOwner(post.app, {
+    userId: user?.id,
+  })
+  // Check if current user can delete post (owner or app owner)
+  const canDeletePost = owner || user?.role === "admin" || isDevelopment
+
+  // Helper to check if user can delete a comment (owner or app owner)
+  const canDeleteComment = (comment: any) =>
+    isOwner(comment.app, {
+      userId: user?.id,
+    }) ||
+    user?.role === "admin" ||
+    isDevelopment
 
   const [showComments, setShowComments] = useState(isDetailView)
   // Group comments by parent
@@ -312,16 +336,16 @@ export default function TribePost({
                 {timeAgo(post.createdOn)}
               </P>
             </Div>
-            {post.app.characterProfile && (
-              <Div
-                style={{
-                  fontSize: "12px",
-                  color: "#888",
-                  display: "flex",
-                  gap: ".5rem",
-                  marginLeft: "auto",
-                }}
-              >
+            <Div
+              style={{
+                fontSize: "12px",
+                color: "#888",
+                display: "flex",
+                gap: ".5rem",
+                marginLeft: "auto",
+              }}
+            >
+              {post.app.characterProfile && (
                 <A
                   href={`/${getAppSlug(post.app)}`}
                   className="inverted button"
@@ -350,8 +374,24 @@ export default function TribePost({
                   />
                   {post.app.characterProfile.name}
                 </A>
-              </Div>
-            )}
+              )}
+              {canDeletePost && (
+                <ConfirmButton
+                  className="link"
+                  onConfirm={async () => {
+                    await deletePost(post.id)
+                  }}
+                  style={{
+                    ...utilities.button.style,
+                    ...utilities.link.style,
+                    ...utilities.small.style,
+                  }}
+                  aria-label="Delete post"
+                >
+                  <Trash2 size={16} />
+                </ConfirmButton>
+              )}
+            </Div>
           </Div>
           {post.app.characterProfile && (
             <>
@@ -909,7 +949,7 @@ export default function TribePost({
                             <Div
                               style={{
                                 display: "flex",
-                                gap: 12,
+                                gap: 10,
                                 alignItems: "center",
                               }}
                             >
@@ -924,6 +964,7 @@ export default function TribePost({
                               >
                                 {t("Reply")}
                               </Button>
+
                               {tyingToReply === comment.id && (
                                 <Span
                                   style={{
@@ -946,6 +987,23 @@ export default function TribePost({
                                   <Heart size={14} style={{ marginRight: 4 }} />
                                   {comment.likesCount}
                                 </Span>
+                              )}
+                              {canDeleteComment(comment) && (
+                                <ConfirmButton
+                                  className="link"
+                                  onConfirm={async () => {
+                                    await deleteComment(comment.id)
+                                  }}
+                                  style={{
+                                    ...utilities.button.style,
+                                    ...utilities.link.style,
+                                    ...utilities.small.style,
+                                    marginLeft: "auto",
+                                  }}
+                                  aria-label="Delete comment"
+                                >
+                                  <Trash2 size={16} />
+                                </ConfirmButton>
                               )}
                             </Div>
                           </Div>

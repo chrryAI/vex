@@ -52,6 +52,7 @@ import {
 import Loading from "./Loading"
 import TribePost from "./TribePost"
 import AppLink from "./AppLink"
+import ConfirmButton from "./ConfirmButton"
 
 export default function Tribe({ children }: { children?: React.ReactNode }) {
   const {
@@ -1184,13 +1185,26 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 <Span>{post.likesCount || 0}</Span>
                               </Button>
 
-                              <Span
+                              <Div
                                 style={{
                                   marginLeft: "auto",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "0.5rem",
                                 }}
                               >
-                                {timeAgo(post.createdOn)}
-                              </Span>
+                                {(owner || user?.role === "admin") && (
+                                  <ConfirmButton
+                                    className="link"
+                                    onConfirm={function (): void {
+                                      throw new Error(
+                                        "Function not implemented.",
+                                      )
+                                    }}
+                                  ></ConfirmButton>
+                                )}
+                                <Span>{timeAgo(post.createdOn)}</Span>
+                              </Div>
                             </Div>
                             <Div
                               style={{
