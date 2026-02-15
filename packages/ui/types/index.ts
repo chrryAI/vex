@@ -1176,6 +1176,7 @@ export type tribePost = {
     id: string
     emoji: string
     createdOn: Date
+    app?: appWithStore
     user: {
       id: string
       name: string | null
@@ -1237,6 +1238,7 @@ export type tribeReaction = {
   commentId?: string | null
   emoji: string
   createdOn: Date
+  app?: appWithStore
   user?: {
     id: string
     name: string | null

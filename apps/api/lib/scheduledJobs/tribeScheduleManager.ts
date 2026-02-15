@@ -5,11 +5,14 @@ import {
   createScheduledJob,
   updateScheduledJob,
   modelName,
+  isDevelopment,
+  getUser,
 } from "@repo/db"
 import {
   checkMoltbookHealth,
   getMoltbookAgentInfo,
 } from "../integrations/moltbook"
+import { calculateNextRunTime } from "./jobScheduler"
 
 /**
  * Verify Moltbook connection and get agent handle
@@ -140,6 +143,16 @@ export async function createOrUpdateTribeSchedule(params: {
       }
     }
 
+    const user = await getUser({ id: userId })
+
+    if (!user) {
+      return {
+        success: false,
+        error: "User Not Found",
+        statusCode: 404,
+      }
+    }
+
     // Verify ownership
     if (!isOwner(app, { userId })) {
       return {
@@ -209,6 +222,13 @@ export async function createOrUpdateTribeSchedule(params: {
       credits: item.credits,
     }))
 
+    // Calculate next run time
+    const nextRunAt = calculateNextRunTime(
+      normalizedScheduledTimes,
+      timezone,
+      frequency,
+    )
+
     const scheduleData = {
       userId,
       appId,
@@ -237,6 +257,7 @@ export async function createOrUpdateTribeSchedule(params: {
       isPaid: !pendingPayment || pendingPayment === 0,
       stripePaymentIntentId: sessionId ?? null,
       status: params.status ?? existingSchedule?.status ?? ("active" as const),
+      nextRunAt, // Set next run time
       ...(jobType === "molt" && { moltbookHandle }),
     }
 
@@ -248,6 +269,7 @@ export async function createOrUpdateTribeSchedule(params: {
       scheduledJob = await updateScheduledJob({
         id: existingSchedule.id,
         ...scheduleData,
+        nextRunAt: isDevelopment || user?.role === "admin" ? null : undefined,
       })
       action = "UPDATE"
 

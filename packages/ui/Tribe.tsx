@@ -24,6 +24,7 @@ import Skeleton from "./Skeleton"
 import { FRONTEND_URL } from "./utils"
 import isOwner from "./utils/isOwner"
 import Img from "./Image"
+
 import A from "./a/A"
 import { useTribeStyles } from "./Tribe.styles"
 import { useAppContext, COLORS } from "./context/AppContext"
@@ -69,7 +70,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     currentTribe,
     toggleLike,
     isTogglingLike,
+    posting,
+    liveReactions,
+    pendingPostIds,
+    isSwarm,
+    commenting,
+    refetchPosts,
+    setPendingPostIds,
   } = useTribe()
+  console.log(`🚀 ~ Tribe ~ posting:`, posting)
   const {
     getAppSlug,
     app,
@@ -114,6 +123,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const { t } = useAppContext()
   const hasHydrated = useHasHydrated()
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [newPostsCount, setNewPostsCount] = useState(0)
 
   const { utilities } = useStyles()
   const styles = useTribeStyles()
@@ -822,6 +832,173 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         )}
                       </Button>
                     </Div>
+                  </Div>
+                )}
+                {isSwarm && (
+                  <Div
+                    style={{
+                      marginTop: "1.5rem",
+                      marginBottom: "1.5rem",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      display: "flex",
+                      gap: "1rem",
+                      flexDirection: "row",
+                    }}
+                  >
+                    <Div
+                      style={{
+                        alignItems: "center",
+                        display: "flex",
+                        gap: ".5rem",
+                      }}
+                    >
+                      <Div
+                        style={{
+                          alignItems: "center",
+                          justifyContent: "center",
+                          display: "flex",
+                          gap: "1rem",
+                        }}
+                      >
+                        {posting.map((item, i) => {
+                          return (
+                            <MotiView
+                              key={item.app.id}
+                              from={{
+                                opacity: 0,
+                                translateY: -8,
+                                translateX: 0,
+                              }}
+                              animate={{
+                                opacity: 1,
+                                translateY: 0,
+                                translateX: 0,
+                              }}
+                              transition={{
+                                duration: reduceMotion ? 0 : 120,
+                                delay: reduceMotion ? 0 : i * 35,
+                              }}
+                            >
+                              <Img slug={item.app.slug} />
+                            </MotiView>
+                          )
+                        })}
+                      </Div>
+                      {posting.length ? (
+                        <Div
+                          style={{
+                            justifyContent: "center",
+                            display: "flex",
+                            gap: ".25rem",
+                          }}
+                        >
+                          <Span
+                            style={{
+                              fontSize: ".8rem",
+                              color: "var(--accent-4)",
+                            }}
+                          >
+                            {t("Thinking...")}
+                          </Span>
+                          <Div
+                            className="typing"
+                            data-testid="typing-indicator"
+                            style={{
+                              display: "inline-flex",
+                              gap: 2,
+                              alignItems: "center",
+                              marginLeft: 6,
+                            }}
+                          >
+                            <Span
+                              style={{
+                                width: 4,
+                                height: 4,
+                                backgroundColor: "var(--accent-4)",
+                                borderRadius: "50%",
+                              }}
+                            ></Span>
+                            <Span
+                              style={{
+                                width: 4,
+                                height: 4,
+                                backgroundColor: "var(--accent-4)",
+                                borderRadius: "50%",
+                              }}
+                            ></Span>
+                            <Span
+                              style={{
+                                width: 4,
+                                height: 4,
+                                backgroundColor: "var(--accent-4)",
+                                borderRadius: "50%",
+                              }}
+                            ></Span>
+                          </Div>
+                        </Div>
+                      ) : null}
+                    </Div>
+                    {pendingPostIds.length ? (
+                      <Button
+                        disabled={isLoadingPosts}
+                        onClick={async () => {
+                          await refetchPosts()
+                          setPendingPostIds([])
+                        }}
+                        style={{
+                          fontSize: 13,
+                          padding: "5px 10px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                        }}
+                      >
+                        {isLoadingPosts ? (
+                          <Loading color="#fff" size={16} />
+                        ) : (
+                          <LoaderCircle size={16} />
+                        )}
+                        {t("{{count}} more", {
+                          count: pendingPostIds.length,
+                        })}
+                      </Button>
+                    ) : null}
+                  </Div>
+                )}
+                {newPostsCount > 0 && (
+                  <Div
+                    style={{
+                      marginTop: "1rem",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    <Button
+                      onClick={async () => {
+                        setIsLoadingMore(true)
+                        // Refresh posts to show new ones
+                        window.location.reload()
+                      }}
+                      className="inverted"
+                      style={{
+                        width: "100%",
+                        padding: "0.75rem",
+                        fontSize: "0.95rem",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "0.5rem",
+                        background: "var(--accent-1)",
+                        color: "white",
+                        border: "none",
+                        ...utilities.inverted.style,
+                      }}
+                    >
+                      <Sparkles size={16} />
+                      {t("Load {{count}} new post", {
+                        count: newPostsCount,
+                      }).replace("post", newPostsCount > 1 ? "posts" : "post")}
+                    </Button>
                   </Div>
                 )}
                 {isLoadingPosts && !isLoadingMore ? null : (

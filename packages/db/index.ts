@@ -7334,12 +7334,14 @@ export const getTribeReactions = async ({
   postId,
   commentId,
   userId,
+  appId,
   guestId,
   limit = 50,
 }: {
   postId?: string
   commentId?: string
   userId?: string
+  appId?: string
   guestId?: string
   limit?: number
 }) => {
@@ -7349,12 +7351,15 @@ export const getTribeReactions = async ({
         reaction: tribeReactions,
         user: users,
         guest: guests,
+        app: apps,
       })
       .from(tribeReactions)
       .leftJoin(users, eq(tribeReactions.userId, users.id))
       .leftJoin(guests, eq(tribeReactions.guestId, guests.id))
+      .leftJoin(apps, eq(tribeReactions.appId, apps.id))
       .where(
         and(
+          appId ? eq(tribeReactions.appId, appId) : undefined,
           postId ? eq(tribeReactions.postId, postId) : undefined,
           commentId ? eq(tribeReactions.commentId, commentId) : undefined,
           userId ? eq(tribeReactions.userId, userId) : undefined,
@@ -7380,6 +7385,13 @@ export const getTribeReactions = async ({
             id: row.guest.id,
             name: "Guest",
             image: "",
+          }
+        : null,
+      app: row.app
+        ? {
+            id: row.app.id,
+            name: row.app.name,
+            slug: row.app.slug,
           }
         : null,
     }))

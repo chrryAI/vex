@@ -26,6 +26,7 @@ import { getModelProvider } from "../getModelProvider"
 import { captureException } from "@sentry/node"
 import { getMoltbookFeed, postToMoltbook } from "../integrations/moltbook"
 import { toZonedTime, fromZonedTime } from "date-fns-tz"
+import { broadcast } from "../wsClients"
 
 import { v4 as uuidv4 } from "uuid"
 import { sendDiscordNotification } from "../sendDiscordNotification"
@@ -1337,7 +1338,7 @@ Return ONLY the JSON object, nothing else.`
       temperature:
         (job.modelConfig as { temperature?: number })?.temperature || 0.7,
       maxOutputTokens:
-        (job.modelConfig as { maxTokens?: number })?.maxTokens || 800,
+        (job.modelConfig as { maxTokens?: number })?.maxTokens || 3000, // Increased from 800 to support longer posts
     })
 
     // ============================================
@@ -1360,10 +1361,28 @@ Return ONLY the JSON object, nothing else.`
         cleanedText = cleanedText.replace(/^```\s*/, "").replace(/```\s*$/, "")
       }
 
-      tribeResponse = JSON.parse(cleanedText)
+      // Safe JSON extraction with brace-matching (prevents ReDoS and handles truncation)
+      let jsonText = cleanedText
+      const firstBrace = cleanedText.indexOf("{")
+      if (firstBrace !== -1) {
+        let braceCount = 0
+        let endIndex = firstBrace
+        for (let i = firstBrace; i < cleanedText.length; i++) {
+          if (cleanedText[i] === "{") braceCount++
+          if (cleanedText[i] === "}") braceCount--
+          if (braceCount === 0) {
+            endIndex = i + 1
+            break
+          }
+        }
+        jsonText = cleanedText.substring(firstBrace, endIndex)
+      }
+
+      tribeResponse = JSON.parse(jsonText)
     } catch (error) {
       console.error("Failed to parse Tribe JSON response:", error)
       console.log("Raw response:", text)
+      console.log("Text length:", text.length, "chars")
       return {
         success: false,
         error: "Invalid JSON response from AI",
@@ -1407,6 +1426,15 @@ Return ONLY the JSON object, nothing else.`
       `✅ Quality check passed: ${wordCount} words, ${tribeResponse.tribeContent.length} chars`,
     )
 
+    // Log full AI response for debugging
+    console.log("📊 Full Tribe Response:", {
+      title: tribeResponse.tribeTitle,
+      titleLength: tribeResponse.tribeTitle?.length || 0,
+      contentLength: tribeResponse.tribeContent?.length || 0,
+      tribeName: tribeResponse.tribeName,
+      contentPreview: tribeResponse.tribeContent?.substring(0, 100) + "...",
+    })
+
     // Validate userId before posting
     if (!job.userId) {
       throw new Error("Job userId is required for Tribe posting")
@@ -1422,21 +1450,36 @@ Return ONLY the JSON object, nothing else.`
       })
     }
 
+    // Prepare insert values
+    const insertValues = {
+      appId: job.appId,
+      userId: job.userId,
+      title: tribeResponse.tribeTitle || null,
+      content: tribeResponse.tribeContent,
+      visibility: "public" as const,
+      tribeId,
+    }
+
+    console.log("📝 Inserting to DB:", {
+      title: insertValues.title,
+      titleLength: insertValues.title?.length || 0,
+      contentLength: insertValues.content.length,
+      tribeId: insertValues.tribeId,
+    })
+
     // Create Tribe post
-    const [post] = await db
-      .insert(tribePosts)
-      .values({
-        appId: job.appId,
-        userId: job.userId,
-        content: tribeResponse.tribeContent,
-        visibility: "public",
-        tribeId,
-      })
-      .returning()
+    const [post] = await db.insert(tribePosts).values(insertValues).returning()
 
     if (!post) {
       throw new Error("Failed to create Tribe post")
     }
+
+    console.log("✅ Post created in DB:", {
+      id: post.id,
+      title: post.title,
+      titleLength: post.title?.length || 0,
+      contentLength: post.content?.length || 0,
+    })
 
     // Increment tribe posts count (only if tribeId exists)
     if (tribeId) {
@@ -1451,6 +1494,24 @@ Return ONLY the JSON object, nothing else.`
     console.log(`✅ Posted to Tribe: ${post.id}`)
     console.log(`📝 Title: ${tribeResponse.tribeTitle}`)
     console.log(`🪢 Tribe: ${tribeResponse.tribeName}`)
+
+    // // Broadcast to all connected clients for real-time UI updates
+    // try {
+    //   broadcast({
+    //     type: "new_post_end",
+    //     data: {
+    //       app: {
+    //         id: app.id,
+    //         name: app.name,
+    //         postId: post.id,
+    //       },
+    //     },
+    //   })
+    //   console.log(`📡 Broadcasted new_post_end to all clients`)
+    // } catch (broadcastError) {
+    //   console.error("❌ Failed to broadcast new post:", broadcastError)
+    //   // Don't fail the job if broadcast fails
+    // }
 
     return {
       success: true,
@@ -1565,6 +1626,24 @@ Reply (2-3 sentences, just the text):`
           throw new Error("Job userId is required for commenting")
         }
 
+        // Broadcast comment start
+        try {
+          broadcast({
+            type: "new_comment_start",
+            data: {
+              app: {
+                id: app.id,
+                name: app.name,
+                slug: app.slug,
+              },
+              tribePostId: post.id,
+            },
+          })
+          console.log(`📡 Broadcasted new_comment_start for post ${post.id}`)
+        } catch (broadcastError) {
+          console.error("❌ Failed to broadcast comment start:", broadcastError)
+        }
+
         // Post reply
         await db.insert(tribeComments).values({
           postId: post.id,
@@ -1572,6 +1651,24 @@ Reply (2-3 sentences, just the text):`
           content: text,
           parentCommentId: comment.id,
         })
+
+        // Broadcast comment end
+        try {
+          broadcast({
+            type: "new_comment_end",
+            data: {
+              app: {
+                id: app.id,
+                name: app.name,
+                slug: app.slug,
+              },
+              tribePostId: post.id,
+            },
+          })
+          console.log(`📡 Broadcasted new_comment_end for post ${post.id}`)
+        } catch (broadcastError) {
+          console.error("❌ Failed to broadcast comment end:", broadcastError)
+        }
 
         repliesCount++
         console.log(`✅ Replied to comment on post ${post.id}`)
@@ -1697,12 +1794,48 @@ Comment (2-3 sentences, just the text):`
         throw new Error("Job userId is required for commenting")
       }
 
+      // Broadcast comment start
+      try {
+        broadcast({
+          type: "new_comment_start",
+          data: {
+            app: {
+              id: app.id,
+              name: app.name,
+              slug: app.slug,
+            },
+            tribePostId: post.id,
+          },
+        })
+        console.log(`📡 Broadcasted new_comment_start for post ${post.id}`)
+      } catch (broadcastError) {
+        console.error("❌ Failed to broadcast comment start:", broadcastError)
+      }
+
       // Post comment
       await db.insert(tribeComments).values({
         postId: post.id,
         userId: job.userId,
         content: text,
       })
+
+      // Broadcast comment end
+      try {
+        broadcast({
+          type: "new_comment_end",
+          data: {
+            app: {
+              id: app.id,
+              name: app.name,
+              slug: app.slug,
+            },
+            tribePostId: post.id,
+          },
+        })
+        console.log(`📡 Broadcasted new_comment_end for post ${post.id}`)
+      } catch (broadcastError) {
+        console.error("❌ Failed to broadcast comment end:", broadcastError)
+      }
 
       commentsPosted++
       console.log(`✅ Commented on post ${post.id}`)
@@ -1752,8 +1885,14 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
     return
   }
 
-  // Atomically claim the job by updating nextRunAt
   const LOCK_TTL_MS = 5 * 60 * 1000 // 5 minutes for long-running jobs
+
+  console.log(
+    `🚀 ~ executeScheduledJob ~ new Date(Date.now() + LOCK_TTL_MS):`,
+    new Date(Date.now() + LOCK_TTL_MS),
+  )
+
+  // Atomically claim the job by updating nextRunAt
   const claimResult = await db
     .update(scheduledJobs)
     .set({
@@ -2039,6 +2178,11 @@ async function executeMoltbookEngage(job: scheduledJob) {
 export async function findJobsToRun() {
   const now = new Date()
 
+  console.log(`🔍 findJobsToRun called at:`, {
+    now: now.toISOString(),
+    nowLocal: now.toString(),
+  })
+
   const jobs = await db.query.scheduledJobs.findMany({
     where: and(
       eq(scheduledJobs.status, "active"),
@@ -2046,6 +2190,24 @@ export async function findJobsToRun() {
       or(isNull(scheduledJobs.endDate), gte(scheduledJobs.endDate, now)),
       or(isNull(scheduledJobs.nextRunAt), lte(scheduledJobs.nextRunAt, now)),
     ),
+  })
+
+  console.log(`🔍 findJobsToRun found ${jobs.length} jobs:`, {
+    jobs: jobs.map((j) => ({
+      id: j.id,
+      name: j.name,
+      status: j.status,
+      nextRunAt: j.nextRunAt?.toISOString(),
+      timezone: j.timezone,
+      startDate: j.startDate?.toISOString(),
+      endDate: j.endDate?.toISOString(),
+    })),
+    allJobs: await db.query.scheduledJobs.findMany({
+      where: and(
+        eq(scheduledJobs.status, "active"),
+        lte(scheduledJobs.startDate, now),
+      ),
+    }),
   })
 
   return jobs

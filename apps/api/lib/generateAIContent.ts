@@ -68,6 +68,7 @@ import type { Context } from "hono"
 
 // Extract memories from conversation (without saving to database)
 async function extractMemories(conversationText: string, model: any) {
+  console.log(`🚀 ~ extractMemories ~ conversationText:`, conversationText)
   const memoryPrompt = `Based on this conversation, extract meaningful memories:
 
 CONVERSATION:
@@ -202,13 +203,6 @@ async function extractAndSaveMemories(
           )
           isAppMemory = false
         }
-      }
-
-      // Skip user memories if user has disabled them (privacy)
-      // But ALWAYS save app memories (institutional knowledge, no privacy concern)
-      if (!isAppMemory && !memoriesEnabled) {
-        console.log(`⏭️  Skipping user memory (privacy): ${memory.title}`)
-        continue
       }
 
       if (isAppMemory || memoriesEnabled) {

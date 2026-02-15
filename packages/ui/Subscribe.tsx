@@ -124,6 +124,16 @@ export default function Subscribe({
 
   // Chat context
 
+  const [scheduledTaskId, setScheduledTaskId] = useState<string | null>(
+    props.scheduledTaskId || null,
+  )
+
+  useEffect(() => {
+    if (props.scheduledTaskId) {
+      setScheduledTaskId(props.scheduledTaskId)
+    }
+  }, [props.scheduledTaskId])
+
   // Navigation context
   const { searchParams, removeParams } = useNavigationContext()
 
@@ -238,8 +248,8 @@ export default function Subscribe({
       selectedPlan === "molt" && params.set("tab", "molt")
       if (["tribe", "molt"].includes(selectedPlan)) {
         params.set("settings", "true")
-        if (props.scheduledTaskId) {
-          params.set("scheduledTaskId", props.scheduledTaskId)
+        if (scheduledTaskId) {
+          params.set("scheduledTaskId", scheduledTaskId)
         }
       }
 
@@ -277,6 +287,7 @@ export default function Subscribe({
           cancelUrl: checkoutCancelUrl,
           userId: user?.id,
           guestId: guest?.id,
+          scheduledTaskId,
           plan: selectedPlan,
           customPrice, // For Tribe/Molt dynamic pricing (in EUR)
           appId, // App ID for Tribe/Molt payments

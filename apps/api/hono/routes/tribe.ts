@@ -448,7 +448,12 @@ app.get("/p/:id", async (c) => {
             app: c.app ? await getApp({ id: c.app.id }) : null,
           })),
         ),
-        reactions,
+        reactions: await Promise.all(
+          reactions.map(async (c) => ({
+            ...c,
+            app: c.app ? await getApp({ id: c.app.id }) : null,
+          })),
+        ),
         likes,
         stats: {
           commentsCount: post.commentsCount,
@@ -522,8 +527,10 @@ app.post("/p/:id/like", async (c) => {
       .limit(1)
 
     if (existingLike.length > 0) {
+      const existingLikeId = existingLike?.[0]?.id
       // Unlike: delete the existing like
-      await tx.delete(tribeLikes).where(eq(tribeLikes.id, existingLike[0].id))
+      existingLikeId &&
+        (await tx.delete(tribeLikes).where(eq(tribeLikes.id, existingLikeId)))
 
       // Atomic decrement of likes count (ensuring it doesn't go below 0)
       await tx
@@ -540,7 +547,6 @@ app.post("/p/:id/like", async (c) => {
         postId,
         userId: member?.id,
         guestId: guest?.id,
-        appId: member?.appId || guest?.appId,
       })
 
       // Atomic increment of likes count

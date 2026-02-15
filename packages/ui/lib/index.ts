@@ -33,7 +33,7 @@ export const getImageSrc = ({
   canEditApp,
   image,
 }: {
-  slug?: "atlas" | "peach" | "vault" | "bloom"
+  slug?: "atlas" | "peach" | "vault" | "bloom" | string
   className?: string
   size?: number
   title?: string
@@ -174,10 +174,12 @@ export const getImageSrc = ({
     return app.images[0]?.url // 512px
   }
 
+  app && !app.id && console.log(`🚀 ~ getImageSrc ~ app:`, app)
+
   const appImageSrc =
-    logo || store
+    (logo || store) && !slug
       ? null
-      : app &&
+      : (app || slug) &&
           [
             "atlas",
             "bloom",
@@ -194,15 +196,16 @@ export const getImageSrc = ({
             "pear",
             "coder",
             "architect",
-          ].includes(app.slug)
-        ? `${BASE_URL}/images/apps/${app.slug}.png`
+          ].includes(app?.slug || slug || "")
+        ? `${BASE_URL}/images/apps/${app?.slug || slug}.png`
         : getImageBySize(size) ||
           app?.image ||
           (slug
-            ? `${BASE_URL}/icons/${slug}-128.png`
+            ? `${BASE_URL}/images/pacman/space-invader.png`
             : canEditApp
               ? image || iconSrc
               : undefined) // Remote web asset
+  app && !app.id && console.log(`🚀 ~ getImageSrc ~ appImageSrc:`, appImageSrc)
 
   const finalSrc =
     src || logoSrc || (!app && iconSrc) || appImageSrc || undefined

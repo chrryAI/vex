@@ -382,7 +382,9 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
           endDate: formData.endDate,
           totalCredits: formData.totalCredits,
           totalPrice: formData.totalPrice * 100,
-          timezone: (formData as any).timezone || "UTC",
+          timezone:
+            (formData as any).timezone ||
+            Intl.DateTimeFormat().resolvedOptions().timeZone,
           jobType: tribeType === "Tribe" ? "tribe" : "molt",
           createPending: existingSchedule ? false : true, // Signal to create with pending_payment status
         }),
@@ -1302,7 +1304,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                                 repeatInterval[index] || 60
                               const count = repeatCount[index] || 3
 
-                              if (intervalMinutes < 10) {
+                              if (!isDevelopment && intervalMinutes < 10) {
                                 toast.error(
                                   t("Interval must be at least 10 minutes"),
                                 )
@@ -1729,7 +1731,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                                 // Update schedule (payment required if price increased)
                                 <Button
                                   onClick={handleCreateOrUpdateSchedule}
-                                  disabled={!priceDifference || loading}
+                                  disabled={loading}
                                   style={{
                                     ...utilities.inverted.style,
                                     ...utilities.small.style,
@@ -1744,7 +1746,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                                       {t(
                                         realDifference
                                           ? "Update Schedule"
-                                          : "Use calculator to update schedule",
+                                          : "Update Schedule",
                                       )}
                                     </>
                                   )}
