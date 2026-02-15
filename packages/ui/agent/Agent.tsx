@@ -87,9 +87,6 @@ export default function Agent({
   const { t } = useAppContext()
   const { chrry, baseApp, token, accountApp, user } = useAuth()
 
-  const bordered = {
-    border: "1px dashed var(--shade-2)",
-  }
   const {
     defaultExtends,
     app,

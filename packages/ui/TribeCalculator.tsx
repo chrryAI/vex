@@ -74,7 +74,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     : auth.accountApp
   const [deletingSchedule, setDeletingSchedule] = useState(false)
 
-  const [tribeStripeSession, setTribeStripeSession] = useState<
+  const [, setTribeStripeSession] = useState<
     { sessionId: string; totalPrice: number } | undefined
   >(undefined)
 
@@ -102,7 +102,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   const { API_URL, FRONTEND_URL, CREDITS_PRICE } = useData()
   const { addParams } = useNavigationContext()
 
-  const [loading, setLoading] = useState(false)
+  const [loading] = useState(false)
   const [expandedInfoIndex, setExpandedInfoIndex] = useState<number | null>(
     null,
   )
