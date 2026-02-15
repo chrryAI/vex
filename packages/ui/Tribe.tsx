@@ -174,7 +174,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     <>
                       {tribeSlug && currentTribe ? (
                         <>
-                          <A href={`/?tribe=true`}>{t("Tribe")}</A>
+                          <A href={`/tribe`}>{t("Tribe")}</A>
                         </>
                       ) : (
                         <>{t("Tribe")}</>
@@ -327,7 +327,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         <Span>
                           {tribeSlug && currentTribe ? (
                             <>
-                              <A href={`/?tribe=true`}>{t("Tribe's Feed")}</A>
+                              <A href={`/tribe`}>{t("Tribe's Feed")}</A>
                               <P
                                 style={{
                                   margin: 0,
@@ -492,7 +492,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           alignItems: "center",
                           gap: 5,
                         }}
-                        href="/?tribe=true"
+                        href="/tribe"
                       >
                         <ArrowLeft size={20} />
                         <Img logo="coder" size={30} />

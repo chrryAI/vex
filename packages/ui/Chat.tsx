@@ -3905,7 +3905,7 @@ export default function Chat({
                               zIndex: 300,
                               fontSize: ".85rem",
                             }}
-                            href={`${getAppSlug(app)}/?tribe=true`}
+                            href={`${getAppSlug(app)}/tribe`}
                           >
                             <Img logo="coder" size={18} />
                             {t("Tribe's Feed")}
@@ -3978,7 +3978,7 @@ export default function Chat({
                               zIndex: 300,
                               fontSize: ".85rem",
                             }}
-                            href={`${getAppSlug(app)}/?tribe=true`}
+                            href={`${getAppSlug(app)}/tribe`}
                           >
                             <Img logo="coder" size={22} />
                             {t("Tribe's Feed")}

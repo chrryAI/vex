@@ -357,9 +357,12 @@ export async function loadServerData(
           API_URL,
         })
       : undefined
-    const canShowTribeProfile = !excludedSlugRoutes.includes(
-      pathname.split("/")?.[1] || "",
-    )
+
+    const showAllTribe =
+      pathname === "/tribe" ||
+      (postId ? true : siteConfig?.mode === "chrryAI" && pathname === "/")
+    const canShowTribeProfile =
+      !excludedSlugRoutes.includes(pathname.split("?")?.[0]) && !showAllTribe
 
     const [
       translationsResult,

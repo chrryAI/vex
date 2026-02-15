@@ -2250,22 +2250,23 @@ export function AuthProvider({
 
   const hasAppPosts = !!tribePosts?.totalCount
 
-  const canShowTribe =
-    hasAppPosts && (isDevelopment || isE2E || user?.role === "admin")
+  const canShowTribe = hasAppPosts
 
   const canBeTribeProfile =
-    !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "") &&
-    pathname !== "/"
+    pathname === "/"
+      ? baseApp?.id !== chrry?.id
+      : !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "")
 
-  const showTribeFromQuery = searchParams.get("tribe") === "true"
+  const showTribeFromPath = pathname === "/tribe"
 
   const postId = getPostId(pathname)
 
   const showTribeInitial =
-    (showTribeFromQuery ||
-      canShowTribe ||
-      (postId ? true : (props.showTribe ?? false))) &&
-    !showFocus
+    showTribeFromPath ||
+    (postId
+      ? true
+      : (props.showTribe ??
+        !excludedSlugRoutes.includes(pathname.split("?")?.[0] || "")))
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
 
@@ -2279,9 +2280,9 @@ export function AuthProvider({
   }
 
   useEffect(() => {
-    showTribeFromQuery && setShowTribe(true)
+    showTribeFromPath && setShowTribe(true)
     postId && setShowTribe(true)
-  }, [showTribeFromQuery, postId])
+  }, [showTribeFromPath, postId])
   const { data: moodData, mutate: refetchMood } = useSWR(
     shouldFetchMood && token ? ["mood", token] : null, // Disabled by default, fetch manually with refetchMood()
     async () => {

@@ -502,7 +502,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
       // Refetch posts to update list
       await refetchPosts()
 
-      push("/?tribe=true")
+      push("/tribe")
     } catch (error) {
       console.error("Error deleting post:", error)
       captureException(error)

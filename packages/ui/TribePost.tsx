@@ -198,7 +198,7 @@ export default function TribePost({
           {t("Post not found")}
         </H2>
         <A
-          href="/?tribe=true"
+          href="/tribe"
           className="button inverted"
           style={{
             ...utilities.button.style,
@@ -233,7 +233,7 @@ export default function TribePost({
         <Img logo="coder" size={32} />
         {tribeSlug && currentTribe ? (
           <Div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-            <A href={`/?tribe=true`}>{t("Tribe's Feed")}</A>
+            <A href={`/tribe`}>{t("Tribe's Feed")}</A>
             <A
               href={`/tribe/${currentTribe.slug}`}
               style={{
