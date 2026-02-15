@@ -1431,6 +1431,7 @@ export const getMessages = async ({
   hasAttachments,
   isPear,
   isAsc,
+  agentMessage,
   ...rest
 }: {
   likedBy?: string
@@ -1448,6 +1449,7 @@ export const getMessages = async ({
   createdAfter?: Date
   isAsc?: boolean
   isPear?: boolean
+  agentMessage?: boolean
 } = {}) => {
   const pageSize = rest.pageSize || 100
 
@@ -1459,7 +1461,9 @@ export const getMessages = async ({
       ? eq(messages.agentId, agentId)
       : agentId === null
         ? isNull(messages.agentId)
-        : undefined,
+        : agentMessage
+          ? isNotNull(messages.agentId)
+          : undefined,
     readOn
       ? sql`DATE_TRUNC('day', ${messages.readOn}) = DATE_TRUNC('day', ${sql.raw(`'${readOn.toISOString()}'`)})`
       : undefined,
@@ -2399,6 +2403,7 @@ export const getThread = async ({
   appId,
   taskId,
   isMolt,
+  isTribe,
 }: {
   id?: string
   userId?: string
@@ -2407,6 +2412,7 @@ export const getThread = async ({
   appId?: string
   taskId?: string
   isMolt?: boolean
+  isTribe?: boolean
 }) => {
   const [result] = await db
     .select()
@@ -2420,6 +2426,7 @@ export const getThread = async ({
         guestId ? eq(threads.guestId, guestId) : undefined,
         taskId ? eq(threads.taskId, taskId) : undefined,
         isMolt !== undefined ? eq(threads.isMolt, isMolt) : undefined,
+        isTribe !== undefined ? eq(threads.isTribe, isTribe) : undefined,
       ),
     )
     .leftJoin(apps, eq(threads.appId, apps.id))

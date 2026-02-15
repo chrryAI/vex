@@ -1645,6 +1645,7 @@ export const scheduledJobs = pgTable(
     totalRuns: integer("totalRuns").notNull().default(0),
     successfulRuns: integer("successfulRuns").notNull().default(0),
     failedRuns: integer("failedRuns").notNull().default(0),
+    failureReason: text("failureReason"), // Why the job failed (prevents retry)
 
     totalPrice: integer("totalPrice").default(0),
     pendingPayment: integer("pendingPayment").default(0),
@@ -1654,6 +1655,10 @@ export const scheduledJobs = pgTable(
       errors?: Array<{ timestamp: string; error: string }>
       lastOutput?: string
       performance?: { avgDuration: number; avgCredits: number }
+      // Tribe scheduling metadata
+      tribeSlug?: string
+      cooldownMinutes?: number
+      platformInterval?: number
     }>(),
 
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })

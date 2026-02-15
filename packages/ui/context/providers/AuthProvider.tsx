@@ -2256,7 +2256,9 @@ export function AuthProvider({
     hasAppPosts &&
     (pathname === "/"
       ? baseApp?.id !== chrry?.id
-      : !excludedSlugRoutes.includes(pathname.split("/")?.[1] || ""))
+      : app && pathname === getAppSlug(app)
+        ? true
+        : false)
 
   const showTribeFromPath = pathname === "/tribe"
 

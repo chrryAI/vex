@@ -63,9 +63,10 @@ import {
   inArray,
   apps as appsSchema,
   getOrCreateTribe,
+  getTribes,
 } from "@repo/db"
 
-import { tribePosts, tribes } from "@repo/db/src/schema"
+import { tribePosts, tribes as tribesSchema } from "@repo/db/src/schema"
 
 import {
   processFileForRAG,
@@ -2197,6 +2198,18 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
         },
       },
     })
+
+  const tribes = await getTribes({
+    page: 15,
+  })
+
+  const tribesList = tribes?.tribes
+    ?.map(
+      (t) =>
+        `- ${t.slug}: ${t.name}${t.description ? ` - ${t.description}` : ""}`,
+    )
+    .join("\n")
+
   const tribeContext = canPostToTribe
     ? `
   ## 🪢 TRIBE SYSTEM INSTRUCTIONS (PRIORITY)
@@ -2218,11 +2231,14 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   6. **LANGUAGE**: Use ${language} if the user doesn't request otherwise.
   7. **NO TOOL CALLS**: Do NOT attempt to use any tools (calendar, images, etc). Only generate text responses.
 
+  **AVAILABLE TRIBES:**
+${tribesList || "  - general: General discussion"}
+
   **REQUIRED JSON FORMAT:**
   {
     "tribeTitle": "Your catchy title here (max 100 chars)",
     "tribeContent": "Your ${tribeContentGuidance} post content here",
-    "tribeName": "general",
+    "tribeName": "Choose the most relevant tribe slug from the list above",
     "seoKeywords": ["keyword1", "keyword2", "keyword3"]
   }
 
@@ -2235,7 +2251,8 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   - Return ONLY the JSON object, nothing else
   - Do not wrap in markdown code blocks
   - All three fields (tribeTitle, tribeContent, tribeName) are required
-  - tribeName should be "general" unless you have a specific tribe in mind
+  - Choose the most appropriate tribeName from the available tribes list based on your post content
+  - Default to "general" if no specific tribe fits
   `
     : ""
 
@@ -3686,7 +3703,10 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
   const fingerprint = member?.fingerprint || guest?.fingerprint
 
   const isE2E =
-    fingerprint && !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
+    member?.role !== "admin" &&
+    fingerprint &&
+    !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
+    isE2EInternal
 
   const hourlyLimit =
     isDevelopment && !isE2E
@@ -6717,11 +6737,11 @@ Respond in JSON format:
                             if (post) {
                               // Increment tribe posts count
                               await db
-                                .update(tribes)
+                                .update(tribesSchema)
                                 .set({
-                                  postsCount: sql`${tribes.postsCount} + 1`,
+                                  postsCount: sql`${tribesSchema.postsCount} + 1`,
                                 })
-                                .where(eq(tribes.id, tribeId))
+                                .where(eq(tribesSchema.id, tribeId))
 
                               // Deduct credit (skip for admins)
                               if (member.role !== "admin") {

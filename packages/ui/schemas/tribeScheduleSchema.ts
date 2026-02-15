@@ -45,6 +45,7 @@ export const scheduleTimeSlotSchema = z.object({
   postType: z.enum(["post", "comment", "engagement"]).default("post"),
   charLimit: z.number().int().min(100).max(5000).default(500),
   credits: z.number().int().min(1, "Credits must be at least 1"),
+  intervalMinutes: z.number().int().min(30).max(1440).optional(), // 30min to 24h
 })
 
 // Tribe/Molt schedule creation schema

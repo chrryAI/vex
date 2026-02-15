@@ -1599,11 +1599,24 @@ Focus on the main discussion points, user preferences, and conversation style.`
       })
 
       // Build app character traits from memories
+      // Extract name from memories (look for "name", "called", "known as")
+      const nameMemory = appCharacterMemories.find(
+        (m: any) =>
+          m.content.toLowerCase().includes("name") ||
+          m.content.toLowerCase().includes("called") ||
+          m.content.toLowerCase().includes("known as"),
+      )
+      const extractedName = nameMemory
+        ? nameMemory.content
+            .split(/name|called|known as/i)[1]
+            ?.trim()
+            .split(/[.,;]/)[0]
+            ?.trim()
+            .substring(0, 50)
+        : null
+
       const appCharacterTraits = {
-        name:
-          appCharacterMemories
-            .find((m: any) => m.content.toLowerCase().includes("personality"))
-            ?.content.substring(0, 50) || `${agentId} Character`,
+        name: extractedName || `${agentId} Character`,
         communication: appCharacterMemories
           .filter(
             (m: any) =>
@@ -1677,7 +1690,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
           userId: null, // APP profile - no userId
           guestId: null, // APP profile - no guestId
           appId, // APP profile - appId set
-          name: `${agentId} App Character`,
+          name: appCharacterTraits.name, // Use extracted name from memories
           personality:
             appCharacterMemories[0]?.content || "AI Assistant Character",
           traits: appCharacterTraits,

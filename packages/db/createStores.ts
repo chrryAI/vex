@@ -26,7 +26,6 @@ import {
 } from "./getExampleInstructions"
 import { extractTranslations } from "./extractTranslations"
 import { stores, users, guests, teams, apps, aiAgents } from "./src/schema"
-import { seedTribeEngagement } from "./seedTribeEngagement"
 
 // ============================================
 // ♾️ INFINITE HUMAN: RPG Seeder Helper
@@ -8184,7 +8183,6 @@ You are an architecture expert. Design systems that grow with users, follow indu
 
   // Seed fake Tribe engagement (posts, likes, reactions, comments, follows)
   console.log("🌱 Seeding Tribe engagement...")
-  !isProd && (await seedTribeEngagement())
 
   return { vex, coder, fightClub }
 }

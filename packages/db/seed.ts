@@ -59,8 +59,12 @@ import {
   tribes,
 } from "./src/schema"
 
+import { seedTribeEngagement } from "./seedTribeEngagement"
+
 import { createEvent } from "./createEvent"
 import { createStores } from "./createStores"
+import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
+
 import { createCities } from "./createCities"
 
 const now = new Date()
@@ -1072,13 +1076,17 @@ const create = async () => {
     console.log("✅ Admin user already exists, skipping creation")
   }
 
+  const agents = await createAgents()
+
+  if (!agents?.sushiAgent) throw new Error("Failed to add agent")
+
   const { vex } = await createStores({ user: admin })
 
   await updateStoreUrls({ user: admin })
 
-  const agents = await createAgents()
+  await seedTribeEngagement()
 
-  if (!agents?.sushiAgent) throw new Error("Failed to add agent")
+  await seedScheduledTribeJobs()
 
   const { sushiAgent } = agents
 
@@ -1703,15 +1711,149 @@ const waffles = async () => {
   //   console.log("✅ No duplicate instructions found")
 }
 
+const generateTribes = async () => {
+  const oops = true
+
+  if (oops) {
+    await db.delete(tribeBlocks)
+    await db.delete(tribeComments)
+    await db.delete(tribeFollows)
+    await db.delete(tribePosts)
+    await db.delete(tribeLikes)
+    await db.delete(tribes)
+  }
+
+  const tribeTemplates = [
+    {
+      name: "General",
+      slug: "general",
+      description: "General discussion for all Wine ecosystem apps",
+    },
+    {
+      name: "AI & ML",
+      slug: "ai-ml",
+      description: "Artificial Intelligence and Machine Learning discussions",
+    },
+    {
+      name: "Productivity",
+      slug: "productivity",
+      description: "Tips and tools for getting things done",
+    },
+    {
+      name: "Development",
+      slug: "development",
+      description: "Software development and coding discussions",
+    },
+    {
+      name: "Design",
+      slug: "design",
+      description: "UI/UX design and creative work",
+    },
+    {
+      name: "Analytics",
+      slug: "analytics",
+      description: "Data analysis and insights",
+    },
+    {
+      name: "Collaboration",
+      slug: "collaboration",
+      description: "Team work and project management",
+    },
+    {
+      name: "Innovation",
+      slug: "innovation",
+      description: "New ideas and experimental features",
+    },
+    {
+      name: "Community",
+      slug: "community",
+      description: "Community updates and events",
+    },
+    {
+      name: "Support",
+      slug: "support",
+      description: "Help and troubleshooting",
+    },
+    {
+      name: "Feedback",
+      slug: "feedback",
+      description: "Product feedback and suggestions",
+    },
+    {
+      name: "Announcements",
+      slug: "announcements",
+      description: "Important updates and news",
+    },
+    {
+      name: "Showcase",
+      slug: "showcase",
+      description: "Show off your work and projects",
+    },
+    {
+      name: "Learning",
+      slug: "learning",
+      description: "Educational content and tutorials",
+    },
+    {
+      name: "Philosophy",
+      slug: "philosophy",
+      description: "Deep thoughts and philosophical discussions",
+    },
+    {
+      name: "Wellness",
+      slug: "wellness",
+      description: "Mental health and wellbeing",
+    },
+    {
+      name: "Entertainment",
+      slug: "entertainment",
+      description: "Fun and leisure content",
+    },
+    {
+      name: "Research",
+      slug: "research",
+      description: "Research findings and experiments",
+    },
+  ]
+
+  const createdTribes = []
+  for (const template of tribeTemplates) {
+    let [tribe] = await db
+      .select()
+      .from(tribes)
+      .where(eq(tribes.slug, template.slug))
+
+    if (!tribe) {
+      ;[tribe] = await db
+        .insert(tribes)
+        .values({
+          name: template.name,
+          slug: template.slug,
+          description: template.description,
+          visibility: "public",
+        })
+        .returning()
+      console.log(`✅ Created '${template.name}' tribe`)
+    }
+
+    if (tribe) {
+      createdTribes.push(tribe)
+    }
+  }
+}
+
 const prod = async () => {
   // Check if admin user already exists
-  await clearMemories()
+  // await clearMemories()
   // await clearGuests()
   let admin = await getUser({
     email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  const { vex } = await createStores({ user: admin })
+  // const { vex } = await createStores({ user: admin })
+
+  await generateTribes()
+  await seedScheduledTribeJobs()
 
   // await updateStoreUrls({ user: admin })
 
