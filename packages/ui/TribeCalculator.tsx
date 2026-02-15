@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from "react"
 import { Div, Text, Button, Input, Label, Span, P } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import { useAgentStyles } from "./agent/Agent.styles"
-import { useApp } from "./context/providers"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useData, useNavigationContext } from "./context/providers"
 import {
@@ -53,23 +52,26 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   const { t } = useAppContext()
   const agentStyles = useAgentStyles()
 
-  const { app } = useApp()
-
   const {
     user,
     guest,
     token,
     language,
-    setSkipAppCacheTemp,
+
     moltPlaceHolder,
     setMoltPlaceHolder,
     setApp,
-    accountApp,
+    app,
     scheduledJobs,
     fetchScheduledJobs,
-    isLoadingScheduledJobs,
+    ...auth
   } = useAuth()
 
+  const accountApp = isOwner(app, {
+    userId: user?.id,
+  })
+    ? app
+    : auth.accountApp
   const [deletingSchedule, setDeletingSchedule] = useState(false)
 
   const [tribeStripeSession, setTribeStripeSession] = useState<
