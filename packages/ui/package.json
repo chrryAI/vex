@@ -70,7 +70,7 @@
     "check-types": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "test": "pnpm exec vitest run",
-    "test:coverage": "pnpm exec vitest run --coverage"
+    "test:coverage": "pnpm exec vitest run --coverage.enabled --coverage.provider=v8 --coverage.reporter=text --coverage.reporter=lcov"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
