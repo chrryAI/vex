@@ -26,7 +26,11 @@ vi.mock("@repo/db", () => ({
   and: vi.fn(),
   gt: vi.fn(),
   db: {
-    select: vi.fn(() => ({ from: vi.fn(() => ({ where: vi.fn(() => ({ limit: vi.fn(() => [null]) })) })) })),
+    select: vi.fn(() => ({
+      from: vi.fn(() => ({
+        where: vi.fn(() => ({ limit: vi.fn(() => [null]) })),
+      })),
+    })),
     insert: vi.fn(() => ({ values: vi.fn() })),
     update: vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn() })) })),
   },
@@ -47,44 +51,61 @@ describe("Auth Route Rate Limiting Integration", () => {
 
   it("should return 429 when rate limit is exceeded on /signin/password", async () => {
     // Mock checkAuthRateLimit to fail
-    vi.mocked(checkAuthRateLimit).mockResolvedValue({ success: false, remaining: 0 })
+    vi.mocked(checkAuthRateLimit).mockResolvedValue({
+      success: false,
+      remaining: 0,
+    })
 
     const res = await app.request("/auth/signin/password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: "test@example.com", password: "password" })
+      body: JSON.stringify({ email: "test@example.com", password: "password" }),
     })
 
     expect(res.status).toBe(429)
     const body = await res.json()
-    expect(body).toEqual({ error: "Too many attempts. Please try again later." })
+    expect(body).toEqual({
+      error: "Too many attempts. Please try again later.",
+    })
     expect(checkAuthRateLimit).toHaveBeenCalled()
   })
 
   it("should return 429 when rate limit is exceeded on /signup/password", async () => {
     // Mock checkAuthRateLimit to fail
-    vi.mocked(checkAuthRateLimit).mockResolvedValue({ success: false, remaining: 0 })
+    vi.mocked(checkAuthRateLimit).mockResolvedValue({
+      success: false,
+      remaining: 0,
+    })
 
     const res = await app.request("/auth/signup/password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: "test@example.com", password: "password", name: "Test" })
+      body: JSON.stringify({
+        email: "test@example.com",
+        password: "password",
+        name: "Test",
+      }),
     })
 
     expect(res.status).toBe(429)
     const body = await res.json()
-    expect(body).toEqual({ error: "Too many attempts. Please try again later." })
+    expect(body).toEqual({
+      error: "Too many attempts. Please try again later.",
+    })
     expect(checkAuthRateLimit).toHaveBeenCalled()
   })
 
   it("should proceed when rate limit is not exceeded", async () => {
     // Mock checkAuthRateLimit to succeed
-    vi.mocked(checkAuthRateLimit).mockResolvedValue({ success: true, remaining: 5 })
+    vi.mocked(checkAuthRateLimit).mockResolvedValue({
+      success: true,
+      remaining: 5,
+    })
 
     const res = await app.request("/auth/signin/password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: "test@example.com", password: "password" })
+      body: JSON.stringify({ email: "test@example.com", password: "password" }),
     })
 
     expect(res.status).not.toBe(429)

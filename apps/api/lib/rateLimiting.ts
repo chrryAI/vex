@@ -7,19 +7,6 @@ export interface ArcjetCompatibleRequest extends Omit<Request, "headers"> {
   headers: Record<string, string | string[] | undefined>
 }
 
-// Auth rate limiter (IP-based)
-const ajAuth = arcjet({
-  key: process.env.ARCJET_KEY!,
-  characteristics: ["ip.src"], // Use IP address
-  rules: [
-    slidingWindow({
-      mode: "LIVE",
-      interval: 60, // 1 minute
-      max: 10, // 10 attempts per minute
-    }),
-  ],
-})
-
 // Create separate Arcjet instances for each tier
 const ajAnonymous = arcjet({
   key: process.env.ARCJET_KEY!,

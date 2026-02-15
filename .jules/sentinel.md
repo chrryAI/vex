@@ -85,6 +85,7 @@
 
 - **Strict Enforcement:** Enforce `options.type` in the upload function. If the caller expects an "image", reject everything else, even if it's a valid "text" file.
 - **Explicit Intent:** Callers must explicitly specify the expected type (e.g., `type: "image"`) for sensitive uploads.
+
 ## 2026-05-25 - Request Object Spread in Arcjet
 
 **Vulnerability:** When creating an Arcjet-compatible request object, spreading a standard `Request` object (`...request`) results in missing properties (like `method`, `url`) because they are getters on the prototype, not enumerable own properties.
@@ -97,9 +98,10 @@
 
 **Vulnerability:** New security code (like rate limiting) often requires "mocking the world" to verify in tests because real enforcement might be bypassed in test environments or depend on external services (like Arcjet).
 
-**Learning:** "0.0% Coverage on New Code" errors in CI usually mean your tests are either not running (wrong runner, e.g., `bun:test` vs `vitest`) or bypassing the logic you added. Integration tests that mock the service boundary (e.g., mocking `checkAuthRateLimit` itself) are crucial for verifying that the *application* correctly handles the security rejection (429), even if the *library* logic is tested separately.
+**Learning:** "0.0% Coverage on New Code" errors in CI usually mean your tests are either not running (wrong runner, e.g., `bun:test` vs `vitest`) or bypassing the logic you added. Integration tests that mock the service boundary (e.g., mocking `checkAuthRateLimit` itself) are crucial for verifying that the _application_ correctly handles the security rejection (429), even if the _library_ logic is tested separately.
 
 **Prevention:**
+
 1. Use the project's standard test runner (Vitest here).
 2. Write integration tests that mock the security check to return "fail/deny" to verify the app's response (429).
 3. Write unit tests for the security library logic using mocks for external dependencies.

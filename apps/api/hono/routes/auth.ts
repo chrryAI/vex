@@ -354,9 +354,6 @@ function buildRedirectUrl(baseUrl: string, authCode: string): string {
  */
 authRoutes.post("/signup/password", async (c) => {
   try {
-    const rateLimit = await checkAuthRateLimit(c.req.raw)
-    if (!rateLimit.success) {
-      return c.json({ error: rateLimit.errorMessage }, 429)
     const ip = c.req.header("x-forwarded-for")?.split(",")[0] || "127.0.0.1"
     const { success } = await checkAuthRateLimit(c.req.raw, ip)
 
@@ -412,9 +409,6 @@ authRoutes.post("/signup/password", async (c) => {
  */
 authRoutes.post("/signin/password", async (c) => {
   try {
-    const rateLimit = await checkAuthRateLimit(c.req.raw)
-    if (!rateLimit.success) {
-      return c.json({ error: rateLimit.errorMessage }, 429)
     const ip = c.req.header("x-forwarded-for")?.split(",")[0] || "127.0.0.1"
     const { success } = await checkAuthRateLimit(c.req.raw, ip)
 

@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 vi.mock("@chrryai/chrry/utils", () => ({
   isDevelopment: false,
   isE2E: false,
-  isOwner: () => false
+  isOwner: () => false,
 }))
 
 const { protectMock } = vi.hoisted(() => {
@@ -13,9 +13,9 @@ const { protectMock } = vi.hoisted(() => {
 
 vi.mock("@arcjet/node", () => ({
   default: () => ({
-    protect: protectMock
+    protect: protectMock,
   }),
-  slidingWindow: () => ({})
+  slidingWindow: () => ({}),
 }))
 
 import { checkAuthRateLimit } from "../lib/rateLimiting"
@@ -28,12 +28,12 @@ describe("checkAuthRateLimit Logic", () => {
   it("should return success when arcjet allows", async () => {
     protectMock.mockResolvedValue({
       isDenied: () => false,
-      results: [{ reason: { isRateLimit: () => true, remaining: 5 } }]
+      results: [{ reason: { isRateLimit: () => true, remaining: 5 } }],
     })
 
     const req = new Request("http://localhost/auth/signin", {
       method: "POST",
-      headers: { "x-forwarded-for": "1.2.3.4" }
+      headers: { "x-forwarded-for": "1.2.3.4" },
     })
 
     const result = await checkAuthRateLimit(req, "1.2.3.4")
@@ -46,12 +46,12 @@ describe("checkAuthRateLimit Logic", () => {
   it("should return failure when arcjet denies", async () => {
     protectMock.mockResolvedValue({
       isDenied: () => true,
-      results: [{ reason: { isRateLimit: () => true, remaining: 0 } }]
+      results: [{ reason: { isRateLimit: () => true, remaining: 0 } }],
     })
 
     const req = new Request("http://localhost/auth/signin", {
       method: "POST",
-      headers: { "x-forwarded-for": "1.2.3.4" }
+      headers: { "x-forwarded-for": "1.2.3.4" },
     })
 
     const result = await checkAuthRateLimit(req, "1.2.3.4")

@@ -26,7 +26,6 @@ import {
   tribeComments,
   tribeReactions,
   tribeFollows,
-  tribeBlocks,
   apps,
   tribes,
 } from "@repo/db/src/schema"
