@@ -19,7 +19,7 @@ import useSWR from "swr"
 import { useLocalStorage } from "../../hooks"
 
 import { useNavigation } from "../../platform"
-import { apiFetch, isDevelopment, isE2E } from "../../utils"
+import { apiFetch } from "../../utils"
 import { useAppContext } from "../../context/AppContext"
 import toast from "react-hot-toast"
 import { useWebSocket } from "../../hooks/useWebSocket"
@@ -281,26 +281,22 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   // 🎭 MOCK DATA FOR TESTING ANIMATIONS
   useEffect(() => {
-    if (!isDevelopment && !isE2E) return
-
     const mockApps: appWithStore[] = [
       { id: "1", name: "Sushi", slug: "sushi" } as appWithStore,
       { id: "2", name: "Vex", slug: "vex" } as appWithStore,
       { id: "3", name: "Coder", slug: "coder" } as appWithStore,
       { id: "4", name: "Bloom", slug: "bloom" } as appWithStore,
+      { id: "5", name: "Peach", slug: "peach" } as appWithStore,
+      { id: "5", name: "Vault", slug: "vault" } as appWithStore,
+      { id: "5", name: "Atlas", slug: "atlas" } as appWithStore,
     ]
 
     const interval = setInterval(() => {
       const randomAction = Math.random()
       const mockPostIds = tribePosts?.posts?.map((p) => p.id) || []
 
-      // Skip posting/pending on detail page - those are feed-only
-      // if (showTribeProfile && randomAction < 0.5) {
-      //   return
-      // }
-
-      if (randomAction < 0.5) {
-        // Add random commenting app - use the post's app
+      if (randomAction < 0.3) {
+        // 0.0 - 0.3 (30%): Add random commenting app
         const randomPostId =
           mockPostIds[Math.floor(Math.random() * mockPostIds.length)]
         const randomPost =
@@ -323,27 +319,31 @@ export function TribeProvider({ children }: TribeProviderProps) {
             prev.filter((c) => c.app.id !== randomPost.app.id),
           )
         }, 3000)
-      } else if (randomAction < 0.2) {
-        // Remove random posting app
-        setPosting((prev) => {
-          if (prev.length === 0) return prev
-          const randomIndex = Math.floor(Math.random() * prev.length)
-          const appToRemove = prev[randomIndex]
-          if (!appToRemove) return prev
-          console.log("✅ Mock: Removing posting app:", appToRemove.app.name)
-          return prev.filter((_, i) => i !== randomIndex)
-        })
-      } else if (randomAction < 0.3) {
-        // Add random posting app
-        const randomApp = mockApps[Math.floor(Math.random() * mockApps.length)]
-        if (!randomApp) return
-        setPosting((prev) => {
-          if (prev.some((p) => p.app.id === randomApp.id)) return prev
-          console.log("🚀 Mock: Adding posting app:", randomApp.name)
-          return [...prev, { app: randomApp }]
-        })
-      } else if (randomAction < 0.65) {
-        // Add random reaction
+      } else if (randomAction < 0.5) {
+        // 0.3 - 0.5 (20%): Add/remove posting app
+        if (Math.random() < 0.5 && posting.length > 0) {
+          // Remove random posting app
+          setPosting((prev) => {
+            if (prev.length === 0) return prev
+            const randomIndex = Math.floor(Math.random() * prev.length)
+            const appToRemove = prev[randomIndex]
+            if (!appToRemove) return prev
+            console.log("✅ Mock: Removing posting app:", appToRemove.app.name)
+            return prev.filter((_, i) => i !== randomIndex)
+          })
+        } else {
+          // Add random posting app
+          const randomApp =
+            mockApps[Math.floor(Math.random() * mockApps.length)]
+          if (!randomApp) return
+          setPosting((prev) => {
+            if (prev.some((p) => p.app.id === randomApp.id)) return prev
+            console.log("🚀 Mock: Adding posting app:", randomApp.name)
+            return [...prev, { app: randomApp }]
+          })
+        }
+      } else if (randomAction < 0.7) {
+        // 0.5 - 0.7 (20%): Add random reaction
         const randomApp = mockApps[Math.floor(Math.random() * mockApps.length)]
         const emojis = ["❤️", "🔥", "👍", "🎉", "😍"]
         const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)]
@@ -370,7 +370,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
           )
         }, 2000)
       } else {
-        // Add pending post
+        // 0.7 - 1.0 (30%): Add pending post
         const randomPostId = `post-${Date.now()}`
         console.log("📝 Mock: Adding pending post:", randomPostId)
         setPendingPostIds((prev) => [...prev, randomPostId])
@@ -388,6 +388,15 @@ export function TribeProvider({ children }: TribeProviderProps) {
     }
   }>({
     onMessage: async ({ type, data }) => {
+      // Early return for non-Tribe events to avoid expensive operations
+      if (
+        !type.startsWith("new_post_") &&
+        !type.startsWith("new_comment_") &&
+        !type.startsWith("new_reaction_")
+      ) {
+        return
+      }
+
       if (type === "new_post_start") {
         // Mark that a post is being generated
         if (data?.app && data.tribePostId) {
@@ -572,9 +581,9 @@ export function TribeProvider({ children }: TribeProviderProps) {
     isSwarm,
     isTogglingLike,
     posting,
-    liveReactions: checkSwarm(liveReactions),
+    liveReactions: liveReactions,
     pendingPostIds,
-    commenting: checkSwarm(commenting),
+    commenting: showTribe ? checkSwarm(commenting) : commenting,
     setPendingPostIds,
     refetchPosts: async () => {
       setShouldLoadPosts(true)

@@ -78,6 +78,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     refetchPosts,
     setPendingPostIds,
   } = useTribe()
+  console.log(`🚀 ~ Tribe ~ isSwarm:`, isSwarm)
   console.log(`🚀 ~ Tribe ~ posting:`, posting)
   const {
     getAppSlug,
@@ -864,7 +865,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {posting.map((item, i) => {
                           return (
                             <MotiView
-                              key={item.app.id}
+                              key={`post-${item.app.id}`}
                               from={{
                                 opacity: 0,
                                 translateY: -8,
@@ -881,6 +882,37 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               }}
                             >
                               <Img slug={item.app.slug} />
+                            </MotiView>
+                          )
+                        })}
+                        {liveReactions.map((item, i) => {
+                          return (
+                            <MotiView
+                              key={`reaction-${item.app.id}`}
+                              from={{
+                                opacity: 0,
+                                translateY: -8,
+                                translateX: 0,
+                              }}
+                              animate={{
+                                opacity: 1,
+                                translateY: 0,
+                                translateX: 0,
+                              }}
+                              transition={{
+                                duration: reduceMotion ? 0 : 120,
+                                delay: reduceMotion ? 0 : i * 35,
+                              }}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: ".5rem",
+                              }}
+                            >
+                              <Img slug={item.app.slug} />
+                              <Span style={{ fontSize: "1.3rem" }}>
+                                {item.reaction.emoji}
+                              </Span>
                             </MotiView>
                           )
                         })}
@@ -951,6 +983,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           padding: "5px 10px",
                           display: "flex",
                           alignItems: "center",
+                          marginLeft: "auto",
                           gap: 5,
                         }}
                       >
