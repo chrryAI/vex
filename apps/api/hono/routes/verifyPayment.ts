@@ -20,6 +20,8 @@ import {
   updateAffiliateLink,
   createFeedbackTransaction,
   getApp,
+  updateScheduledJob,
+  getScheduledJob,
 } from "@repo/db"
 import { getMember } from "../lib/auth"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
@@ -52,6 +54,8 @@ verifyPayment.post("/", async (c) => {
     plan: requestPlan,
     tier: requestTier,
     appId,
+    // Tribe/Molt schedule fields (optional)
+    totalPrice,
   } = body
 
   console.log("🔍 verifyPayment received session_id:", {
@@ -101,19 +105,80 @@ verifyPayment.post("/", async (c) => {
       return c.json({ error: "Payment not completed" }, 400)
     }
 
+    let scheduledTaskId: string | null = null
+    if (session.metadata?.scheduledTaskId) {
+      scheduledTaskId = session.metadata.scheduledTaskId
+      console.log("📦 Found pending schedule ID in metadata:", scheduledTaskId)
+    } else {
+      console.log("⚠️ No scheduledTaskId in session metadata")
+    }
+
     let newCredits = 0
 
-    const plan =
-      requestPlan ||
-      (session.metadata?.plan as
-        | "plus"
-        | "pro"
-        | "credits"
-        | "grape"
-        | "pear"
-        | "coder"
-        | "watermelon") ||
-      "plus"
+    // Prefer an explicit request plan, then try to infer from session line items
+    // (safer for one-off `payment` sessions where frontend might omit metadata),
+    // then fall back to `session.metadata.plan` and finally default to `plus`.
+    let plan = requestPlan as
+      | "plus"
+      | "pro"
+      | "credits"
+      | "grape"
+      | "pear"
+      | "coder"
+      | "watermelon"
+      | "tribe"
+      | "molt"
+      | undefined
+
+    // If this was a one-time payment, prefer to infer plan from the line item
+    if (!plan && session.mode === "payment" && session.line_items?.data?.[0]) {
+      const item = session.line_items.data[0]
+      const priceId = (item.price as any)?.id
+
+      if (priceId) {
+        if (
+          priceId === process.env.STRIPE_PRICE_CREDITS_ID ||
+          priceId === process.env.STRIPE_PRICE_CREDITS_TEST
+        ) {
+          plan = "credits"
+        } else if (
+          priceId === process.env.STRIPE_TRIBE ||
+          priceId === process.env.STRIPE_TRIBE_TEST
+        ) {
+          plan = "tribe"
+        } else if (
+          priceId === process.env.STRIPE_MOLT ||
+          priceId === process.env.STRIPE_MOLT_TEST
+        ) {
+          plan = "molt"
+        }
+      } else if ((item as any).price_data?.product_data?.name) {
+        const name = (item as any).price_data.product_data.name.toLowerCase()
+        if (name.includes("tribe")) plan = "tribe"
+        else if (name.includes("molt")) plan = "molt"
+        else if (name.includes("credit")) plan = "credits"
+      }
+    }
+
+    if (!plan) {
+      plan =
+        (session.metadata?.plan as
+          | "plus"
+          | "pro"
+          | "credits"
+          | "grape"
+          | "pear"
+          | "coder"
+          | "watermelon") || "plus"
+    }
+
+    console.log(
+      `🚀 Derived plan:`,
+      plan,
+      "(metadata.plan:",
+      session.metadata?.plan,
+      ")",
+    )
 
     const tier =
       requestTier ||
@@ -243,20 +308,6 @@ verifyPayment.post("/", async (c) => {
         }
       }
 
-      const newSubscription = await createSubscription({
-        provider: "stripe",
-        subscriptionId:
-          typeof session.subscription === "string"
-            ? session.subscription
-            : session.subscription.id,
-        status: "active",
-        userId: user?.id,
-        guestId: guest?.id,
-        plan,
-        sessionId: session.id,
-        appId: app?.id,
-      })
-
       // Create premium subscription for grape, pear, coder, watermelon plans
       if (
         ["grape", "pear", "coder", "watermelon"].includes(plan) &&
@@ -359,122 +410,139 @@ verifyPayment.post("/", async (c) => {
         }
       }
 
-      if (!newSubscription) {
-        return c.json({
-          success: false,
-          type: "subscription",
-          message: "Something went wrong",
+      if (["plus", "pro"].includes(plan)) {
+        const newSubscription = await createSubscription({
+          provider: "stripe",
+          subscriptionId:
+            typeof session.subscription === "string"
+              ? session.subscription
+              : session.subscription.id,
+          status: "active",
+          userId: user?.id,
+          guestId: guest?.id,
+          plan: plan as "plus" | "pro",
+          sessionId: session.id,
+          appId: app?.id,
         })
-      }
 
-      // Create credit transaction
-      if (guest) {
-        await createCreditTransaction({
-          userId: null,
-          guestId: guest.id,
-          amount:
-            plan === "plus" ? PLUS_CREDITS_PER_MONTH : PRO_CREDITS_PER_MONTH,
-          balanceBefore: guest.credits,
-          balanceAfter: guest.credits + newCredits,
-          description: "Subscription credit allocation",
-          type: "subscription",
-          subscriptionId: newSubscription.id,
-          metadata: {
+        if (!newSubscription) {
+          return c.json({
+            success: false,
+            type: "subscription",
+            message: "Something went wrong",
+          })
+        }
+
+        // Create credit transaction
+        if (guest) {
+          await createCreditTransaction({
+            userId: null,
+            guestId: guest.id,
+            amount:
+              plan === "plus" ? PLUS_CREDITS_PER_MONTH : PRO_CREDITS_PER_MONTH,
+            balanceBefore: guest.credits,
+            balanceAfter: guest.credits + newCredits,
+            description: "Subscription credit allocation",
+            type: "subscription",
+            subscriptionId: newSubscription.id,
             sessionId: session.id,
-          },
-        })
-      } else if (user) {
-        await createCreditTransaction({
-          userId: user.id,
-          guestId: null,
-          amount:
-            plan === "plus" ? PLUS_CREDITS_PER_MONTH : PRO_CREDITS_PER_MONTH,
-          balanceBefore: user.credits,
-          balanceAfter: newCredits,
-          description: "Subscription credit allocation",
-          type: "subscription",
-          subscriptionId: newSubscription.id,
-          metadata: {
+
+            metadata: {
+              sessionId: session.id,
+            },
+          })
+        } else if (user) {
+          await createCreditTransaction({
+            userId: user.id,
+            guestId: null,
+            amount:
+              plan === "plus" ? PLUS_CREDITS_PER_MONTH : PRO_CREDITS_PER_MONTH,
+            balanceBefore: user.credits,
+            balanceAfter: newCredits,
+            description: "Subscription credit allocation",
+            type: "subscription",
+            subscriptionId: newSubscription.id,
+            metadata: {
+              sessionId: session.id,
+            },
             sessionId: session.id,
-          },
-        })
-      }
+          })
+        }
 
-      // Process affiliate referral
-      const affiliateCode = session.metadata?.affiliateCode
-      if (affiliateCode) {
-        try {
-          const affiliateLink = await getAffiliateLink({ code: affiliateCode })
+        // Process affiliate referral
+        const affiliateCode = session.metadata?.affiliateCode
+        if (affiliateCode) {
+          try {
+            const affiliateLink = await getAffiliateLink({
+              code: affiliateCode,
+            })
 
-          if (affiliateLink && affiliateLink.status === "active") {
-            const isSelfReferral = user && affiliateLink.userId === user.id
+            if (affiliateLink && affiliateLink.status === "active") {
+              const isSelfReferral = user && affiliateLink.userId === user.id
 
-            if (isSelfReferral) {
-              console.log("⚠️ Self-referral blocked:", {
-                affiliateUserId: affiliateLink.userId,
-                buyerUserId: user?.id,
+              if (isSelfReferral) {
+                console.log("⚠️ Self-referral blocked:", {
+                  affiliateUserId: affiliateLink.userId,
+                  buyerUserId: user?.id,
+                })
+                throw new Error("Cannot use your own affiliate link")
+              }
+
+              const monthlyPrice = plan === "plus" ? 999 : 1999
+              const monthlyCommission = Math.floor(
+                monthlyPrice * (affiliateLink.commissionRate / 100),
+              )
+
+              const bonusCredits = Math.floor(CREDITS_PER_MONTH * 0.3)
+
+              await createAffiliateReferral({
+                affiliateLinkId: affiliateLink.id,
+                referredUserId: user?.id || null,
+                referredGuestId: guest?.id || null,
+                subscriptionId: newSubscription.id,
+                status: "converted",
+                commissionAmount: monthlyCommission,
+                bonusCredits: bonusCredits,
+                convertedOn: new Date(),
               })
-              throw new Error("Cannot use your own affiliate link")
+
+              await updateAffiliateLink({
+                ...affiliateLink,
+                conversions: affiliateLink.conversions + 1,
+                totalRevenue: affiliateLink.totalRevenue + monthlyPrice,
+                commissionEarned:
+                  affiliateLink.commissionEarned + monthlyCommission,
+                updatedOn: new Date(),
+              })
+
+              if (user) {
+                await updateUser({
+                  ...user,
+                  credits: newCredits + bonusCredits,
+                })
+
+                user = await getUser({ id: user.id, skipCache: true })
+              } else if (guest) {
+                await updateGuest({
+                  ...guest,
+                  credits: newCredits + bonusCredits,
+                })
+                guest = await getGuest({ id: guest.id, skipCache: true })
+              }
+
+              console.log("🎉 Affiliate bonus applied (monthly recurring):", {
+                affiliate: affiliateCode,
+                monthlyCommission: monthlyCommission / 100,
+                bonusCredits: bonusCredits,
+                plan: plan,
+              })
             }
-
-            const monthlyPrice = plan === "plus" ? 999 : 1999
-            const monthlyCommission = Math.floor(
-              monthlyPrice * (affiliateLink.commissionRate / 100),
-            )
-
-            const bonusCredits = Math.floor(CREDITS_PER_MONTH * 0.3)
-
-            await createAffiliateReferral({
-              affiliateLinkId: affiliateLink.id,
-              referredUserId: user?.id || null,
-              referredGuestId: guest?.id || null,
-              subscriptionId: newSubscription.id,
-              status: "converted",
-              commissionAmount: monthlyCommission,
-              bonusCredits: bonusCredits,
-              convertedOn: new Date(),
-            })
-
-            await updateAffiliateLink({
-              ...affiliateLink,
-              conversions: affiliateLink.conversions + 1,
-              totalRevenue: affiliateLink.totalRevenue + monthlyPrice,
-              commissionEarned:
-                affiliateLink.commissionEarned + monthlyCommission,
-              updatedOn: new Date(),
-            })
-
-            if (user) {
-              await updateUser({
-                ...user,
-                credits: newCredits + bonusCredits,
-              })
-
-              user = await getUser({ id: user.id, skipCache: true })
-            } else if (guest) {
-              await updateGuest({
-                ...guest,
-                credits: newCredits + bonusCredits,
-              })
-              guest = await getGuest({ id: guest.id, skipCache: true })
-            }
-
-            console.log("🎉 Affiliate bonus applied (monthly recurring):", {
-              affiliate: affiliateCode,
-              monthlyCommission: monthlyCommission / 100,
-              bonusCredits: bonusCredits,
-              plan: plan,
-            })
+          } catch (error) {
+            console.error("❌ Error processing affiliate referral:", error)
+            captureException(error)
           }
-        } catch (error) {
-          console.error("❌ Error processing affiliate referral:", error)
-          captureException(error)
         }
       }
-
-      // Track Google Ads conversion
-      const purchaseAmount = plan === "plus" ? 9.99 : 19.99
-      const purchaseUserId = user?.id || guest?.id || "unknown"
 
       return c.json({
         success: true,
@@ -485,7 +553,11 @@ verifyPayment.post("/", async (c) => {
     }
 
     // Handle one-time credit purchase
-    if (session.mode === "payment" && session.line_items?.data[0]) {
+    if (
+      session.mode === "payment" &&
+      session.line_items?.data[0] &&
+      plan === "credits"
+    ) {
       // Get the amount paid (in cents)
       const amountPaidCents = session.amount_total || 0
       const amountPaidEur = amountPaidCents / 100
@@ -580,6 +652,7 @@ verifyPayment.post("/", async (c) => {
             sessionId: session.id,
             ...(bonusCredits && { affiliateBonus: bonusCredits }),
           },
+          sessionId: session.id,
         })
       }
 
@@ -607,6 +680,7 @@ verifyPayment.post("/", async (c) => {
             sessionId: session.id,
             ...(bonusCredits && { affiliateBonus: bonusCredits }),
           },
+          sessionId: session.id,
         })
       }
 
@@ -665,16 +739,14 @@ verifyPayment.post("/", async (c) => {
         }
       }
 
-      // Track Google Ads conversion
-      const creditPurchaseAmount = (session.amount_total || 0) / 100
-      const creditPurchaseUserId = user?.id || guest?.id || "unknown"
-
       return c.json({
         success: true,
         type: "credits",
         creditsAdded: creditsToAdd,
         gift: !!email,
         credits: creditsToAdd,
+        plan,
+        totalPrice,
         fingerprint: guest?.fingerprint || user?.fingerprint || newFingerprint,
       })
     }
@@ -688,46 +760,131 @@ verifyPayment.post("/", async (c) => {
       const amountPaidCents = session.amount_total || 0
       const amountPaidEur = amountPaidCents / 100
 
-      // Calculate credits based on payment (€10 per 1000 credits)
-      const creditsReserved = Math.round((amountPaidEur / 10) * 1000)
+      // Calculate credits based on payment (€5 per 1000 credits - must match createTribeSchedule.ts)
+      const CREDITS_PRICE = 5.0 // EUR per 1000 credits
+      const creditsReserved = Math.round((amountPaidEur / CREDITS_PRICE) * 1000)
 
       console.log(
-        `💰 ${plan === "tribe" ? "Tribe" : "Molt"} payment: €${amountPaidEur} = ${creditsReserved} credits reserved`,
+        `💰 ${plan === "tribe" ? "Tribe" : "Molt"} payment: €${amountPaidEur} = ${creditsReserved} credits reserved (€${CREDITS_PRICE}/1000 credits)`,
       )
 
-      // Create credit transaction record (balance stays same - credits reserved for schedule)
-      const currentBalance = user?.credits || guest?.credits || 0
+      // Note: creditTransaction already created in createSubscription as pending (amount=0)
+      // It will be updated below when activating the schedule with actual creditsReserved amount
 
-      if (user) {
-        await createCreditTransaction({
-          userId: user.id,
-          guestId: null,
-          amount: creditsReserved,
-          balanceBefore: currentBalance,
-          balanceAfter: currentBalance, // Balance unchanged - credits reserved
-          description: `${plan === "tribe" ? "Tribe" : "Molt"} schedule payment`,
-          sessionId: session.id,
-          type: plan as "tribe" | "molt",
-          metadata: {
-            amountPaid: amountPaidEur,
-            creditsReserved,
-          },
+      // Activate pending schedule if scheduledTaskId exists in metadata
+      if (scheduledTaskId) {
+        if (!member) {
+          return c.json({ error: "Member not found" }, 404)
+        }
+        const scheduledTask = await getScheduledJob({
+          id: scheduledTaskId,
+          userId: member?.id,
         })
-      } else if (guest) {
-        await createCreditTransaction({
-          userId: null,
-          guestId: guest.id,
-          amount: creditsReserved,
-          balanceBefore: currentBalance,
-          balanceAfter: currentBalance, // Balance unchanged - credits reserved
-          description: `${plan === "tribe" ? "Tribe" : "Molt"} schedule payment`,
-          sessionId: session.id,
-          type: plan as "tribe" | "molt",
-          metadata: {
-            amountPaid: amountPaidEur,
-            creditsReserved,
-          },
-        })
+
+        if (!scheduledTask) {
+          return c.json({ error: "Scheduled task not found" }, 404)
+        }
+
+        try {
+          console.log(`🔨 Activating pending schedule: ${scheduledTaskId}`)
+
+          // Validate payment amount matches expected price
+          // Skip validation if pendingPayment is 0 (newly created pending schedule)
+          const expectedPrice = scheduledTask.pendingPayment
+            ? scheduledTask.pendingPayment / 100
+            : 0
+
+          if (expectedPrice > 0) {
+            const priceDifference = Math.abs(amountPaidEur - expectedPrice)
+            const PRICE_TOLERANCE = 0.01 // 1 cent tolerance
+
+            if (priceDifference > PRICE_TOLERANCE) {
+              console.error(
+                `❌ Price mismatch: Expected €${expectedPrice}, paid €${amountPaidEur}`,
+              )
+              return c.json({
+                error: `Price mismatch: Expected €${expectedPrice}, paid €${amountPaidEur}`,
+                sessionId: session.id,
+              })
+            }
+
+            console.log(
+              `✅ Price validated: €${amountPaidEur} matches expected €${expectedPrice}`,
+            )
+          } else {
+            console.log(
+              `⚠️ Newly created pending schedule (no prior price set) - accepting payment €${amountPaidEur}`,
+            )
+          }
+
+          // Activate the pending schedule by updating its status
+          const updatedSchedule = await updateScheduledJob({
+            id: scheduledTaskId,
+            status: "active",
+            isPaid: true,
+            stripePaymentIntentId: session.payment_intent as string,
+            pendingPayment: 0,
+          })
+
+          if (updatedSchedule) {
+            console.log(
+              `✅ ${plan === "tribe" ? "Tribe" : "Molt"} schedule activated successfully`,
+              {
+                scheduledTaskId: updatedSchedule.id,
+                creditsReserved: creditsReserved,
+                paidAmount: amountPaidEur,
+                expectedAmount: expectedPrice,
+              },
+            )
+
+            // Create credit transaction for tribe/molt payment
+            if (member) {
+              try {
+                await createCreditTransaction({
+                  userId: member.id,
+                  guestId: null,
+                  amount: creditsReserved,
+                  balanceBefore: 0, // Tribe/Molt works with schedule credits, not user balance
+                  balanceAfter: creditsReserved,
+                  description: `${plan === "tribe" ? "Tribe" : "Molt"} schedule payment - ${creditsReserved} credits reserved`,
+                  type: plan as "tribe" | "molt",
+                  scheduleId: updatedSchedule.id,
+                  sessionId: session.id,
+                  metadata: {
+                    sessionId: session.id,
+                    scheduleType: plan,
+                    creditsReserved: creditsReserved,
+                    amountPaid: amountPaidEur,
+                  },
+                })
+
+                console.log(
+                  `✅ Created creditTransaction for ${plan} schedule`,
+                  {
+                    userId: member.id,
+                    creditsReserved,
+                    scheduleId: updatedSchedule.id,
+                  },
+                )
+              } catch (txError) {
+                console.error(
+                  `⚠️ Failed to create creditTransaction for ${plan}:`,
+                  txError,
+                )
+                // Don't fail payment if transaction logging fails
+              }
+            }
+          } else {
+            console.error(`❌ Failed to activate schedule: ${scheduledTaskId}`)
+          }
+        } catch (scheduleError) {
+          console.error(
+            `❌ Error activating ${plan} schedule after payment:`,
+            scheduleError,
+          )
+          captureException(scheduleError)
+          // Don't fail the entire response - payment is complete
+        }
       }
 
       return c.json({

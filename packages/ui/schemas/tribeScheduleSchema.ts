@@ -51,7 +51,7 @@ export const scheduleTimeSlotSchema = z.object({
 export const tribeScheduleSchema = z
   .object({
     // Payment verification (required for new schedules or price increases)
-    sessionId: z.string().min(1, "Session ID is required"),
+    sessionId: z.string().optional(),
 
     // User identification
     appId: z.uuid().optional(),

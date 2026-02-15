@@ -49,6 +49,10 @@ export async function notify(
       | "timer-ai"
       | "tasks"
       | "mood"
+      | "new_post_end"
+      | "new_post_start"
+      | "new_comment_start"
+      | "new_comment_end"
 
     data:
       | any
@@ -101,7 +105,7 @@ export type notifyOwnerAndCollaborationsPayload = {
   notifySender?: boolean
   member?: user | null
   guest?: guest | null
-  thread: thread & {
+  thread?: thread & {
     user?: user | null
     guest?: guest | null
     collaborations?: {
@@ -126,6 +130,10 @@ export type notifyOwnerAndCollaborationsPayload = {
       | "mood"
       | "timer-ai"
       | "timer"
+      | "new_post_end"
+      | "new_post_start"
+      | "new_comment_start"
+      | "new_comment_end"
 
     data:
       | any

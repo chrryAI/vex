@@ -25,7 +25,7 @@ import {
 import { getImageSrc } from "./lib"
 
 type ImageProps = {
-  slug?: "atlas" | "peach" | "vault" | "bloom"
+  slug?: "atlas" | "peach" | "vault" | "bloom" | string
 
   className?: string
   size?: number
@@ -89,13 +89,12 @@ export default function ImageComponent(props: ImageProps) {
   const {
     className,
     showLoading,
-    slug,
     logo,
-    app,
     store,
     title,
     alt,
-    icon,
+    slug,
+    app,
     style,
     containerClass,
     dataTestId,
@@ -112,6 +111,7 @@ export default function ImageComponent(props: ImageProps) {
     image: appFormWatcher?.image,
     BASE_URL,
     PROD_FRONTEND_URL,
+    slug,
   })
 
   const isAgent =
@@ -270,6 +270,8 @@ export default function ImageComponent(props: ImageProps) {
     ) : null
   }
 
+  const invader = `${BASE_URL}/images/pacman/space-invader.png`
+
   return (
     <>
       <Img
@@ -284,7 +286,7 @@ export default function ImageComponent(props: ImageProps) {
         height={height}
         title={title}
         src={resize({
-          url: src || `${BASE_URL}/images/pacman/space-invader.png`,
+          url: slug && !src ? invader : src || invader,
           width,
           height,
         })}

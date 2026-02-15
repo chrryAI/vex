@@ -410,7 +410,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.14.27"
+export const VERSION = config.version || "1.14.33"
 export type instructionBase = {
   id: string
   title: string
@@ -750,6 +750,6 @@ export {
   calculateSlotCredits,
   formatCredits,
 } from "./creditCalculator"
-export type { ScheduleSlot, EstimateJobCreditsParams } from "./creditCalculator"
+export type { scheduleSlot, estimateJobCreditsParams } from "./creditCalculator"
 
 // Export API URL utilities

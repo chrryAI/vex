@@ -13,23 +13,22 @@ export async function clean({
   fingerprint,
   isLive,
   isMember,
+  waitForDelete = true,
 }: {
   page: Page
   fingerprint?: string
   isLive?: boolean
   isMember?: boolean
+  waitForDelete?: boolean
 }) {
   await page.goto(getURL({ isLive, isMember, fingerprint }), {
     waitUntil: "networkidle",
     timeout: 100000,
   })
 
-  await maximize({ page })
+  await page.getByTestId("new-chat-button").click()
 
-  await page.goto(getURL({ isLive, isMember, fingerprint }), {
-    waitUntil: "networkidle",
-    timeout: 100000,
-  })
+  await maximize({ page })
 
   await wait(500)
 
@@ -48,9 +47,11 @@ export async function clean({
   await clearSessionButton.click()
 
   // unstable
-  await expect(page.getByTestId("is-deleted")).toBeAttached({
-    timeout: 50000,
-  })
+  waitForDelete
+    ? await expect(page.getByTestId("is-deleted")).toBeAttached({
+        timeout: 50000,
+      })
+    : await wait(5000)
 
   // Wait for the API call to complete
   await page.waitForTimeout(5000)

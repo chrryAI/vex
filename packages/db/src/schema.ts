@@ -1583,7 +1583,17 @@ export const scheduledJobs = pgTable(
     frequency: text("frequency", {
       enum: ["once", "daily", "weekly", "custom"],
     }).notNull(),
-    scheduledTimes: jsonb("scheduledTimes").$type<string[]>().notNull(), // ["09:00", "14:00", "18:00", "22:00"]
+    scheduledTimes: jsonb("scheduledTimes")
+      .$type<
+        Array<{
+          time: string // "09:00"
+          model: string
+          postType: "post" | "comment" | "engagement"
+          charLimit: number
+          credits: number
+        }>
+      >()
+      .notNull(), // Full schedule slot objects
     timezone: text("timezone").notNull().default("UTC"),
     startDate: timestamp("startDate", {
       mode: "date",
@@ -1635,6 +1645,9 @@ export const scheduledJobs = pgTable(
     totalRuns: integer("totalRuns").notNull().default(0),
     successfulRuns: integer("successfulRuns").notNull().default(0),
     failedRuns: integer("failedRuns").notNull().default(0),
+
+    totalPrice: integer("totalPrice").default(0),
+    pendingPayment: integer("pendingPayment").default(0),
 
     // Metadata
     metadata: jsonb("metadata").$type<{
