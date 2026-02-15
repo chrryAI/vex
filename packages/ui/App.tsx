@@ -1048,6 +1048,11 @@ export default function App({
                       }
                     }
 
+                    if (!user) {
+                      addParams({ signIn: "login" })
+                      return
+                    }
+
                     setAppStatus({
                       part: "settings",
                       step: canEditApp ? "update" : "add",

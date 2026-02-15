@@ -1380,6 +1380,20 @@
       "when": 1770681115953,
       "tag": "0196_chunky_scourge",
       "breakpoints": true
+    },
+    {
+      "idx": 197,
+      "version": "7",
+      "when": 1771054785290,
+      "tag": "0197_oval_professor_monster",
+      "breakpoints": true
+    },
+    {
+      "idx": 198,
+      "version": "7",
+      "when": 1771058372506,
+      "tag": "0198_acoustic_liz_osborn",
+      "breakpoints": true
     }
   ]
 }

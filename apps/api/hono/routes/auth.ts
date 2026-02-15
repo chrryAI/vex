@@ -16,6 +16,7 @@ import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
 import { randomBytes } from "crypto"
 import type { Context } from "hono"
 import { getCookie, setCookie, deleteCookie } from "hono/cookie"
+import { checkAuthRateLimit } from "../../lib/rateLimiting"
 
 const authRoutes = new Hono()
 
@@ -353,6 +354,11 @@ function buildRedirectUrl(baseUrl: string, authCode: string): string {
  */
 authRoutes.post("/signup/password", async (c) => {
   try {
+    const rateLimit = await checkAuthRateLimit(c.req.raw)
+    if (!rateLimit.success) {
+      return c.json({ error: rateLimit.errorMessage }, 429)
+    }
+
     const { email, password, name } = await c.req.json()
 
     if (!email || !password) {
@@ -398,6 +404,11 @@ authRoutes.post("/signup/password", async (c) => {
  */
 authRoutes.post("/signin/password", async (c) => {
   try {
+    const rateLimit = await checkAuthRateLimit(c.req.raw)
+    if (!rateLimit.success) {
+      return c.json({ error: rateLimit.errorMessage }, 429)
+    }
+
     const { email, password, callbackUrl } = await c.req.json()
 
     if (!email || !password) {

@@ -380,6 +380,7 @@ app.post("/", async (c) => {
               fit: "contain", // Center image, don't crop (adds padding if needed)
               position: "center",
               title: `${name}-${size}x${size}`,
+              type: "image",
             },
             context: "apps", // Use apps UploadThing account
           })
@@ -996,7 +997,7 @@ app.patch("/:id", async (c) => {
         for (const [key, value] of Object.entries(apiKeys)) {
           if (value && typeof value === "string" && value.trim()) {
             // Encrypt the API key using AES-256-GCM
-            hashedApiKeys[key] = await encrypt(value.trim())
+            hashedApiKeys[key] = encrypt(value.trim())
           }
         }
         updateData.apiKeys = hashedApiKeys
@@ -1159,6 +1160,7 @@ app.patch("/:id", async (c) => {
               fit: "contain", // Center image, don't crop (adds padding if needed)
               position: "center",
               title: `${name}-${size}x${size}`,
+              type: "image",
             },
           })
           return {
@@ -1392,7 +1394,7 @@ app.patch("/:id/moltbook", async (c) => {
 
         // Save agent info if available
         if (agentInfo) {
-          updateData.moltHandle = agentInfo.handle
+          updateData.moltHandle = agentInfo.name
           updateData.moltAgentName = agentInfo.name
           updateData.moltAgentKarma = agentInfo.karma
           updateData.moltAgentVerified = agentInfo.verified
@@ -1408,10 +1410,9 @@ app.patch("/:id/moltbook", async (c) => {
 
     // Fetch updated app
     const updatedApp = await getApp({
-      id: appId,
+      appId: appId,
       c,
       skipCache: true,
-      dept: 1,
     })
 
     return c.json({ app: updatedApp })

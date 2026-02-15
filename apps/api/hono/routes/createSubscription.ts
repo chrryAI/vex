@@ -21,6 +21,7 @@ createSubscription.post("/", async (c) => {
       plan = "plus",
       tier,
       affiliateCode,
+      scheduledTaskId,
       customPrice, // For Tribe/Molt dynamic pricing (in EUR)
     } = (await c.req.json()) ||
     ({} as {
@@ -161,6 +162,7 @@ createSubscription.post("/", async (c) => {
       metadata: {
         userId,
         guestId,
+        scheduledTaskId,
         plan,
         ...(tier && { tier }),
         ...(affiliateCode && { affiliateCode }),

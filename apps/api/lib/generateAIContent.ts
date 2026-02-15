@@ -204,13 +204,6 @@ async function extractAndSaveMemories(
         }
       }
 
-      // Skip user memories if user has disabled them (privacy)
-      // But ALWAYS save app memories (institutional knowledge, no privacy concern)
-      if (!isAppMemory && !memoriesEnabled) {
-        console.log(`⏭️  Skipping user memory (privacy): ${memory.title}`)
-        continue
-      }
-
       if (isAppMemory || memoriesEnabled) {
         await createMemory({
           userId: isAppMemory ? null : userId || null,

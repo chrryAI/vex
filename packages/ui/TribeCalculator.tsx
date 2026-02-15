@@ -1,23 +1,19 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import {
-  Div,
-  Text,
-  Button,
-  Input,
-  Label,
-  usePlatform,
-  useLocalStorage,
-  Span,
-} from "./platform"
+import React, { useState, useEffect, useMemo } from "react"
+import { Div, Text, Button, Input, Label, Span, P } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import { useAgentStyles } from "./agent/Agent.styles"
-import { useApp } from "./context/providers"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useData, useNavigationContext } from "./context/providers"
-import { apiFetch, capitalizeFirstLetter, isOwner } from "./utils"
-import { estimateJobCredits, type ScheduleSlot } from "./utils/creditCalculator"
+import {
+  apiFetch,
+  capitalizeFirstLetter,
+  isOwner,
+  isE2E,
+  isDevelopment,
+} from "./utils"
+import { estimateJobCredits, type scheduleSlot } from "./utils/creditCalculator"
 
 import toast from "react-hot-toast"
 import Loading from "./Loading"
@@ -36,8 +32,8 @@ import {
 import Select from "./Select"
 import Subscribe from "./Subscribe"
 
-// Use ScheduleSlot from creditCalculator for consistency
-type ScheduleTime = ScheduleSlot
+// Use scheduleSlot from creditCalculator for consistency
+type ScheduleTime = scheduleSlot
 
 interface TribeCalculatorProps {
   onCalculate?: (result: {
@@ -57,26 +53,40 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   const agentStyles = useAgentStyles()
 
   const {
-    defaultExtends,
-    app,
-    apps,
-    appForm,
-    appFormWatcher,
-    appStatus,
-    setAppStatus,
-  } = useApp()
-
-  const {
     user,
     guest,
     token,
     language,
-    setSkipAppCacheTemp,
+
     moltPlaceHolder,
     setMoltPlaceHolder,
     setApp,
-    accountApp,
+    app,
+    scheduledJobs,
+    fetchScheduledJobs,
+    ...auth
   } = useAuth()
+
+  const accountApp = isOwner(app, {
+    userId: user?.id,
+  })
+    ? app
+    : auth.accountApp
+  const [deletingSchedule, setDeletingSchedule] = useState(false)
+
+  const [tribeStripeSession, setTribeStripeSession] = useState<
+    { sessionId: string; totalPrice: number } | undefined
+  >(undefined)
+
+  // Find existing scheduled job for this app
+  const existingSchedule = useMemo(() => {
+    if (!scheduledJobs || !app?.id) return null
+
+    const scheduleType = tribeType === "Tribe" ? "tribe" : "molt"
+    return scheduledJobs.find(
+      (job) => job.appId === app.id && job.scheduleType === scheduleType,
+    )
+  }, [scheduledJobs, app?.id, tribeType])
 
   const canUpdateInitial =
     app &&
@@ -85,214 +95,413 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     }) &&
     app.moltApiKey
 
+  const { utilities } = useStyles()
+
   const [canUpdate, setCanUpdate] = useState(canUpdateInitial)
 
   const { API_URL, FRONTEND_URL, CREDITS_PRICE } = useData()
-  const { searchParams, addParams } = useNavigationContext()
+  const { addParams } = useNavigationContext()
 
   const [loading, setLoading] = useState(false)
   const [expandedInfoIndex, setExpandedInfoIndex] = useState<number | null>(
     null,
   )
+  const [repeatInterval, setRepeatInterval] = useState<Record<number, number>>(
+    {},
+  )
+  const [repeatCount, setRepeatCount] = useState<Record<number, number>>({})
   const [moltApiKey, setMoltApiKey] = useState("")
   const [savingApiKey, setSavingApiKey] = useState(false)
 
   const formatter = new Intl.NumberFormat(language)
+
+  const getFormState = ({ skipExistingSchedule = false } = {}) => {
+    // Calculate default end date for ~10 EUR (2000 credits)
+    // With 3 slots per day × ~26 credits each = ~78 credits/day
+    // 2000 / 78 ≈ 25-26 days
+    const today = new Date()
+    const defaultStartDate = new Date().toISOString().split("T")[0] || ""
+
+    let schedule =
+      (!skipExistingSchedule &&
+        (existingSchedule?.scheduledTimes.map((slot: any) => {
+          const [hour, minute] = slot.time.split(":").map(Number)
+          return {
+            hour,
+            minute,
+            postType: slot.postType || "post",
+            model: slot.model || "sushi",
+            charLimit: slot.charLimit || 500,
+            credits: slot.credits || 0,
+          }
+        }) as ScheduleTime[])) ||
+      ([
+        {
+          hour: 9,
+          minute: 0,
+          postType: "post",
+          model: "sushi",
+          charLimit: 500,
+          credits: 0,
+        },
+        {
+          hour: 14,
+          minute: 0,
+          postType: "comment",
+          model: "sushi",
+          charLimit: 300,
+          credits: 0,
+        },
+        {
+          hour: 20,
+          minute: 0,
+          postType: "engagement",
+          model: "sushi",
+          charLimit: 200,
+          credits: 0,
+        },
+      ] as ScheduleTime[])
+
+    const frequency = existingSchedule?.frequency || "daily"
+
+    const startDate =
+      !skipExistingSchedule && existingSchedule?.startDate
+        ? new Date(existingSchedule.startDate).toISOString().split("T")[0]
+        : defaultStartDate
+    const endDate =
+      !skipExistingSchedule && existingSchedule?.endDate
+        ? new Date(existingSchedule.endDate).toISOString().split("T")[0]
+        : new Date(today.getTime() + 25 * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split("T")[0] || ""
+
+    const estimate =
+      startDate && endDate
+        ? estimateJobCredits({
+            frequency,
+            scheduledTimes: schedule,
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+            creditsPrice: parseFloat(String(CREDITS_PRICE || "10")),
+          })
+        : undefined
+
+    schedule = schedule.map((slot) => {
+      return {
+        ...slot,
+        credits: estimate?.creditsPerPost || 0,
+      }
+    })
+
+    return {
+      // Form state
+      frequency: frequency as "daily" | "weekly" | "monthly" | "once",
+      totalPrice: estimate?.totalPrice || 0,
+      schedule,
+      creditsPerPost: estimate?.creditsPerPost || 0,
+      totalCredits: estimate?.totalCredits || 0,
+      totalPosts: estimate?.totalPosts || 0,
+      startDate,
+      endDate,
+    }
+  }
+  const [formData, setFormData] = useState(getFormState())
+
+  const totalPosts = formData?.totalPosts
+
+  useEffect(() => {
+    setFormData(getFormState())
+  }, [existingSchedule])
+
+  const totalPrice = formData.totalPrice
+
+  const creditsPerPost = formData.creditsPerPost
+
   // Form state
-  const [frequency, setFrequency] = useLocalStorage<
-    "daily" | "weekly" | "monthly"
-  >("frequency", "daily")
-  const [postsPerDay, setPostsPerDay] = useLocalStorage<number>(
-    "postsPerDay",
-    3,
+  const frequency = formData.frequency
+  const setFrequency = (value: "daily" | "weekly" | "monthly") => {
+    setFormData({ ...formData, frequency: value })
+  }
+
+  const startDate = formData.startDate
+  const setStartDate = (value: string) => {
+    setFormData({ ...formData, startDate: value })
+  }
+
+  const endDate = formData.endDate
+  const setEndDate = (value: string) => {
+    setFormData({ ...formData, endDate: value })
+  }
+  const schedule = formData.schedule
+  const setSchedule = (value: ScheduleTime[]) => {
+    setFormData({ ...formData, schedule: value })
+  }
+
+  const totalCredits = formData.totalCredits
+
+  // Calculate price difference - only show when:
+  // 1. There's a pending_payment with pendingPayment amount, OR
+  // 2. User modified calculator causing actual price change from current schedule
+  const priceDifference = useMemo(() => {
+    if (!existingSchedule) return 0
+
+    // If there's a pending payment, show that amount
+    if (
+      existingSchedule.status === "pending_payment" &&
+      existingSchedule.pendingPayment &&
+      existingSchedule.createdOn === existingSchedule.updatedOn
+    ) {
+      return existingSchedule.pendingPayment / 100 // Convert cents to euros
+    }
+
+    // Otherwise, calculate difference between new price and current active schedule price
+    const oldPrice = existingSchedule.totalPrice || 0 // in cents from DB
+    const newPrice = totalPrice * 100 + (existingSchedule.pendingPayment || 0) // in cents from estimateJobCredits
+    const difference = newPrice - oldPrice // difference in cents
+
+    return difference / 100 // Convert to euros
+  }, [existingSchedule, totalPrice])
+
+  // Absolute value for display purposes
+  const realDifference = Math.abs(priceDifference)
+
+  // Create a key that changes only when schedule structure changes (not credits)
+  const scheduleKey = useMemo(
+    () =>
+      schedule
+        .map(
+          (slot) =>
+            `${slot.hour}-${slot.minute}-${slot.postType}-${slot.model}-${slot.charLimit}`,
+        )
+        .join("|"),
+    [schedule],
   )
-  const [startDate, setStartDate] = useLocalStorage<string>(
-    "startDate",
-    new Date().toISOString().split("T")[0] || "",
-  )
-  const [endDate, setEndDate] = useLocalStorage<string>("endDate", "")
-  const [scheduledTimes, setScheduledTimes] = useLocalStorage<ScheduleTime[]>(
-    "scheduledTimes",
-    [
-      { hour: 9, minute: 0, postType: "post", model: "sushi", charLimit: 500 },
-      {
-        hour: 14,
-        minute: 0,
-        postType: "comment",
-        model: "sushi",
-        charLimit: 300,
-      },
-      {
-        hour: 20,
-        minute: 0,
-        postType: "engagement",
-        model: "sushi",
-        charLimit: 200,
-      },
-    ],
-  )
-  // Removed global contentLength - now per-slot
-  const { utilities } = useStyles()
-  const { viewPortWidth } = usePlatform()
 
-  // Calculation results
-  const [totalPosts, setTotalPosts] = useState<number>(0)
-  const [creditsPerPost, setCreditsPerPost] = useState<number>(0)
-  const [totalCredits, setTotalCredits] = useState<number>(0)
-  const [totalPrice, setTotalPrice] = useState<number>(0)
+  const MINIMUM_PRICE_EUR = 5
+  const PRICE_TOLERANCE = 1 // 1 cent tolerance
 
-  // Model and post type multipliers imported from creditCalculator
+  const isSubscriptionEnabled = existingSchedule?.status === "pending_payment"
 
-  // Minimum price for Stripe (€5)
-  const MINIMUM_PRICE = 5
-
-  // Calculate credits and posts using shared calculator
   useEffect(() => {
     if (!startDate || !endDate) return
 
     const result = estimateJobCredits({
       frequency,
-      scheduledTimes,
+      scheduledTimes: schedule,
       startDate: new Date(startDate),
       endDate: new Date(endDate),
       creditsPrice: parseFloat(String(CREDITS_PRICE || "10")),
     })
 
-    setTotalPosts(result.totalPosts)
-    setCreditsPerPost(result.creditsPerPost)
-    setTotalCredits(result.totalCredits)
-    setTotalPrice(result.totalPrice)
+    // Update schedule with calculated credits
+    const scheduleWithCredits = schedule.map((slot) => ({
+      ...slot,
+      credits: result.creditsPerPost,
+    }))
+
+    setFormData((prev) => ({
+      ...prev,
+      schedule: scheduleWithCredits,
+      creditsPerPost: result.creditsPerPost,
+      totalCredits: result.totalCredits,
+      totalPrice: result.totalPrice,
+    }))
 
     if (onCalculate) {
       onCalculate({
         totalPosts: result.totalPosts,
         creditsPerPost: result.creditsPerPost,
         totalCredits: result.totalCredits,
-        schedule: scheduledTimes,
+        schedule: scheduleWithCredits,
       })
     }
-  }, [
-    frequency,
-    startDate,
-    endDate,
-    scheduledTimes,
-    onCalculate,
-    CREDITS_PRICE,
-  ])
+  }, [frequency, startDate, endDate, scheduleKey, onCalculate, CREDITS_PRICE])
 
-  // Handle Stripe checkout
-  const handleCheckout = async () => {
-    if (!app?.id) {
-      toast.error(t("Please create an app first"))
-      return
-    }
+  const [tried, setTried] = useState(false)
 
-    setLoading(true)
+  // Cooldown: 30 seconds in dev/e2e, 30 minutes in production
+  // Slot interval validation (minimum time between posts of same type)
+  const SLOT_INTERVAL_MINUTES = isE2E || isDevelopment ? 10 / 60 : 30 // 10 seconds in dev, 30 minutes in production
+
+  // Handle delete scheduled job
+  const handleDeleteSchedule = async () => {
+    if (!existingSchedule || !token) return
+
+    setDeletingSchedule(true)
     try {
-      const params = new URLSearchParams()
-      user?.id && params.set("userId", user.id)
-      guest?.id && params.set("guestId", guest.id)
-      app?.id && params.set("appId", app.id)
+      const response = await apiFetch(
+        `${API_URL}/scheduledJobs/${existingSchedule.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      )
 
-      const checkoutSuccessUrl = (() => {
-        params.set("checkout", "success")
-        params.set("purchaseType", "tribe")
-        user && token && params.set("auth_token", token)
-        return `${FRONTEND_URL}/?${params.toString()}&session_id={CHECKOUT_SESSION_ID}`
-      })()
+      if (response.ok) {
+        await fetchScheduledJobs()
+        toast.success(t("Schedule deleted successfully"))
+        setFormData(getFormState({ skipExistingSchedule: true }))
+      } else {
+        toast.error(t("Failed to delete schedule"))
+      }
+    } catch (error) {
+      console.error("Delete schedule error:", error)
+      toast.error(t("Failed to delete schedule"))
+    } finally {
+      setDeletingSchedule(false)
+    }
+  }
 
-      const checkoutCancelUrl = (() => {
-        params.set("checkout", "cancel")
-        return `${FRONTEND_URL}/?${params.toString()}`
-      })()
+  const [creatingSchedule, setCreatingSchedule] = useState(false)
 
-      const response = await apiFetch(`${API_URL}/createTribeSchedule`, {
+  // Create pending schedule in DB (before payment)
+  const handleCreateOrUpdateSchedule = async () => {
+    if (!app?.id || !token) return
+
+    setCreatingSchedule(true)
+    try {
+      const transformedSchedule = formData.schedule.map((slot) => ({
+        time: `${String(slot.hour).padStart(2, "0")}:${String(slot.minute).padStart(2, "0")}`,
+        credits: slot.credits,
+        model: slot.model,
+        postType: slot.postType,
+        charLimit: slot.charLimit,
+      }))
+
+      const response = await apiFetch(`${API_URL}/scheduledJobs`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          appId: app?.id,
-          successUrl: checkoutSuccessUrl,
-          cancelUrl: checkoutCancelUrl,
-          schedule: scheduledTimes,
-          frequency,
-          startDate,
-          endDate,
-          totalCredits,
-          totalPrice,
+          appId: app.id,
+          schedule: transformedSchedule,
+          frequency: formData.frequency,
+          startDate: formData.startDate,
+          endDate: formData.endDate,
+          totalCredits: formData.totalCredits,
+          totalPrice: formData.totalPrice * 100,
+          timezone:
+            (formData as any).timezone ||
+            Intl.DateTimeFormat().resolvedOptions().timeZone,
+          jobType: tribeType === "Tribe" ? "tribe" : "molt",
+          createPending: existingSchedule ? false : true, // Signal to create with pending_payment status
         }),
       })
 
       const data = await response.json()
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl
-      } else {
-        toast.error(data.error || t("Failed to initiate checkout"))
-        setLoading(false)
+
+      if (existingSchedule) {
+        if (data.success) {
+          // Always fetch updated schedule from server
+          await fetchScheduledJobs()
+
+          // Check if price difference requires payment
+          if (priceDifference > 0) {
+            // Pending schedule created, prompt for payment
+            toast.success(
+              t("Schedule updated! Proceed to payment for the upgrade. 💳"),
+            )
+            // Subscribe component will be triggered by UI rendering priceDifference > 0
+          } else {
+            // No additional payment needed
+            toast.success(t("Schedule updated successfully! 🎉"))
+          }
+          return
+        } else {
+          toast.error(data.error || t("Failed to update schedule"))
+          return
+        }
       }
-    } catch (err) {
-      console.error("Checkout error:", err)
-      toast.error(t("Failed to initiate checkout"))
-      setLoading(false)
+
+      if (data.success && data.scheduleId) {
+        await fetchScheduledJobs()
+        toast.success(t("Schedule created! Proceed to payment. 💳"))
+        return data.scheduleId
+      } else {
+        toast.error(data.error || t("Failed to create schedule"))
+        return null
+      }
+    } catch (error) {
+      console.error("Create schedule error:", error)
+      toast.error(t("Failed to create schedule"))
+      return null
+    } finally {
+      setCreatingSchedule(false)
     }
   }
 
-  // Handle payment verification callback
-  const handlePaymentVerified = async (sessionId: string) => {
-    try {
-      const response = await apiFetch(`${API_URL}/createTribeSchedule`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          sessionId,
-          userId: user?.id,
-          guestId: guest?.id,
-          appId: app?.id,
-          schedule: scheduledTimes,
-          frequency,
-          startDate,
-          endDate,
-          totalCredits,
-          totalPrice,
-        }),
+  // Listen for checkout success from URL params
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const checkout = urlParams.get("checkout")
+    const sessionId = urlParams.get("session_id")
+
+    if (checkout === "success" && sessionId) {
+      // Payment succeeded - refresh scheduled jobs and clear pending
+      fetchScheduledJobs().then(() => {
+        // toast.success(t("Payment successful! Schedule activated. 🎉"))
+        setTribeStripeSession(undefined)
+        // Clean up URL params
+        urlParams.delete("checkout")
+        urlParams.delete("session_id")
+        const newUrl = `${window.location.pathname}${urlParams.toString() ? `?${urlParams.toString()}` : ""}`
+        window.history.replaceState({}, "", newUrl)
       })
-
-      const data = await response.json()
-      if (data.success) {
-        toast.success(t("Tribe schedule created successfully! 🎉"))
-      } else {
-        toast.error(data.error || t("Failed to create Tribe schedule"))
-      }
-    } catch (err) {
-      console.error("Tribe schedule creation error:", err)
-      toast.error(t("Failed to create Tribe schedule"))
     }
-  }
+  }, [])
 
   const addScheduleTime = () => {
-    setScheduledTimes([
-      ...scheduledTimes,
+    // Get the last schedule slot
+    const lastSlot = schedule[schedule.length - 1]
+
+    let newHour = 12
+    let newMinute = 0
+    let newPostType: "post" | "comment" | "engagement" = "post"
+
+    if (lastSlot) {
+      // Use the same postType as last slot
+      newPostType = lastSlot.postType
+
+      // Always add 30 minutes to the last slot's time (regardless of environment)
+      const ADD_TIME_INTERVAL = 30 // minutes
+      newMinute = lastSlot.minute + ADD_TIME_INTERVAL
+      newHour = lastSlot.hour
+
+      // Handle minute overflow
+      if (newMinute >= 60) {
+        newMinute -= 60
+        newHour += 1
+      }
+
+      // Handle hour overflow (wrap to next day)
+      if (newHour >= 24) {
+        newHour = 0
+      }
+    }
+
+    setSchedule([
+      ...schedule,
       {
-        hour: 12,
-        minute: 0,
-        postType: "post",
+        hour: newHour,
+        minute: newMinute,
+        postType: newPostType,
         model: "sushi",
         charLimit: 500,
+        credits: creditsPerPost,
       },
     ])
   }
 
   const removeScheduleTime = (index: number) => {
-    const slotToRemove = scheduledTimes[index]
+    const slotToRemove = schedule[index]
 
     // Check if this is a post slot and if any comment slots exist
     if (slotToRemove?.postType === "post") {
-      const hasCommentSlots = scheduledTimes.some(
+      const hasCommentSlots = schedule.some(
         (slot, i) => i !== index && slot.postType === "comment",
       )
 
@@ -306,15 +515,66 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
       }
     }
 
-    setScheduledTimes(scheduledTimes.filter((_, i) => i !== index))
+    setSchedule(schedule.filter((_, i) => i !== index))
   }
 
   const updateScheduleTime = (
     index: number,
     updates: Partial<ScheduleTime>,
   ) => {
-    const newTimes = [...scheduledTimes]
-    newTimes[index] = { ...newTimes[index], ...updates } as ScheduleTime
+    const newTimes = [...schedule]
+    const currentSlot = newTimes[index]
+
+    if (!currentSlot) return
+
+    const updatedSlot = {
+      ...currentSlot,
+      ...updates,
+      credits: creditsPerPost,
+    } as ScheduleTime
+
+    // If updating time, check cooldown constraint
+    if (updates.hour !== undefined || updates.minute !== undefined) {
+      const slotPostType = updates.postType ?? currentSlot.postType
+
+      // Find the previous slot with the same postType
+      let previousSlotIndex = -1
+      for (let i = index - 1; i >= 0; i--) {
+        const slot = newTimes[i]
+        if (slot && slot.postType === slotPostType) {
+          previousSlotIndex = i
+          break
+        }
+      }
+
+      if (previousSlotIndex !== -1) {
+        const prevSlot = newTimes[previousSlotIndex]
+        if (prevSlot) {
+          const prevTimeInMinutes = prevSlot.hour * 60 + prevSlot.minute
+          const newTimeInMinutes = updatedSlot.hour * 60 + updatedSlot.minute
+          const minAllowedTime = prevTimeInMinutes + SLOT_INTERVAL_MINUTES
+
+          if (newTimeInMinutes < minAllowedTime) {
+            // Calculate minimum allowed time
+            let minHour = Math.floor(minAllowedTime / 60)
+            const minMinute = minAllowedTime % 60
+
+            if (minHour >= 24) {
+              minHour = minHour % 24
+            }
+
+            const cooldownLabel =
+              isE2E || isDevelopment ? "10 seconds" : "30 minutes"
+            toast.error(
+              `Time must be at least ${cooldownLabel} after the previous ${slotPostType} slot (${String(prevSlot.hour).padStart(2, "0")}:${String(prevSlot.minute).padStart(2, "0")}). Minimum: ${String(minHour).padStart(2, "0")}:${String(minMinute).padStart(2, "0")}`,
+            )
+            return // Don't update if validation fails
+          }
+        }
+      }
+    }
+
+    newTimes[index] = updatedSlot
 
     // If changing to comment type, ensure at least one post slot exists
     if (updates.postType === "comment") {
@@ -328,6 +588,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
           postType: "post",
           model: "sushi",
           charLimit: 500,
+          credits: creditsPerPost,
         })
 
         toast.success(
@@ -338,7 +599,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
       }
     }
 
-    setScheduledTimes(newTimes)
+    setSchedule(newTimes)
   }
 
   return (
@@ -411,6 +672,14 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
               id="defaultModel"
               value={frequency}
               onChange={(e) => {
+                if (existingSchedule?.status === "pending_payment") {
+                  toast.error(
+                    t(
+                      "Please complete payment before changing frequency. You can update any time once payment is complete.",
+                    ),
+                  )
+                  return
+                }
                 const value = typeof e === "string" ? e : e.target.value
                 setFrequency(value as "daily" | "weekly" | "monthly")
               }}
@@ -614,318 +883,594 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
 
       <Div
         style={{
-          ...{
-            display: "flex",
-            gap: 10,
-            marginTop: "0.7rem",
-          },
-          ...utilities.row.style,
-          ...agentStyles.bordered.style,
+          ...(existingSchedule?.status !== "pending_payment" &&
+            agentStyles.bordered.style),
+          marginTop: "0.7rem",
         }}
       >
-        <Div style={{ ...utilities.column.style }}>
-          <Label style={{ ...utilities.row.style }}>
-            <CalendarFold size={14} />
-            {t("Start Date")}
-          </Label>
-          <Input
-            type="date"
-            value={startDate}
-            onChange={(e) => {
-              const newStartDate = e.target.value
-              setStartDate(newStartDate)
+        <Div
+          style={{
+            display:
+              existingSchedule?.status === "pending_payment" ? "none" : "flex",
+            gap: 10,
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+          }}
+        >
+          <Div
+            style={{ ...utilities.column.style, flex: 1, minWidth: "150px" }}
+          >
+            <Label style={{ ...utilities.row.style }}>
+              <CalendarFold size={14} />
+              {t("Start Date")}
+            </Label>
+            <Input
+              type="date"
+              value={startDate}
+              onChange={(e) => {
+                const newStartDate = e.target.value
+                setStartDate(newStartDate)
 
-              // Validate end date is after start date
-              if (endDate && newStartDate) {
-                const start = new Date(newStartDate)
-                const end = new Date(endDate)
-                const daysDiff = Math.ceil(
-                  (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
-                )
-
-                if (daysDiff < 1) {
-                  toast.error(
-                    t("End date must be at least 1 day after start date"),
+                // Validate end date is after start date
+                if (endDate && newStartDate) {
+                  const start = new Date(newStartDate)
+                  const end = new Date(endDate)
+                  const daysDiff = Math.ceil(
+                    (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
                   )
-                  setEndDate("")
+
+                  if (daysDiff < 1) {
+                    toast.error(
+                      t("End date must be at least 1 day after start date"),
+                    )
+                    setEndDate("")
+                  }
                 }
-              }
-            }}
-          />
-        </Div>
+              }}
+            />
+          </Div>
 
-        <Div style={{ ...utilities.column.style }}>
-          <Label style={{ ...utilities.row.style }}>
-            <CalendarMinus size={14} /> {t("End Date")}
-          </Label>
-          <Input
-            type="date"
-            value={endDate}
-            onChange={(e) => {
-              const newEndDate = e.target.value
+          <Div
+            style={{ ...utilities.column.style, flex: 1, minWidth: "150px" }}
+          >
+            <Label style={{ ...utilities.row.style }}>
+              <CalendarMinus size={14} /> {t("End Date")}
+            </Label>
+            <Input
+              type="date"
+              value={endDate}
+              onChange={(e) => {
+                const newEndDate = e.target.value
 
-              // Validate end date is after start date
-              if (startDate && newEndDate) {
-                const start = new Date(startDate)
-                const end = new Date(newEndDate)
-                const daysDiff = Math.ceil(
-                  (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
-                )
-
-                if (daysDiff < 1) {
-                  toast.error(
-                    t("End date must be at least 1 day after start date"),
+                // Validate end date is after start date
+                if (startDate && newEndDate) {
+                  const start = new Date(startDate)
+                  const end = new Date(newEndDate)
+                  const daysDiff = Math.ceil(
+                    (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
                   )
-                  return
-                }
-              }
 
-              setEndDate(newEndDate)
-            }}
-            min={
-              startDate
-                ? new Date(new Date(startDate).getTime() + 86400000)
-                    .toISOString()
-                    .split("T")[0]
-                : undefined
-            }
-          />
+                  if (daysDiff < 1) {
+                    toast.error(
+                      t("End date must be at least 1 day after start date"),
+                    )
+                    return
+                  }
+                }
+
+                setEndDate(newEndDate)
+              }}
+              min={
+                startDate
+                  ? new Date(new Date(startDate).getTime() + 86400000)
+                      .toISOString()
+                      .split("T")[0]
+                  : undefined
+              }
+            />
+          </Div>
         </Div>
       </Div>
       <Div>
         <Div
           style={{
-            ...utilities.row.style,
-            ...agentStyles.bordered.style,
-            ...{
-              display: "flex",
-              gap: 10,
-              marginTop: "0.7rem",
-              alignItems: "center",
-              paddingBottom: "0.7rem",
-            },
+            display:
+              existingSchedule?.status === "pending_payment" ? "none" : "flex",
+            flexDirection: "column",
           }}
         >
           <Div
             style={{
               ...utilities.row.style,
-              marginBottom: ".7rem",
+              ...agentStyles.bordered.style,
+              ...{
+                gap: 10,
+                marginTop: "0.7rem",
+                alignItems: "center",
+                paddingBottom: "0.7rem",
+              },
             }}
           >
-            <ClipboardClock size={20} />
-            <Text>{t("Schedule Times")}</Text>
+            <Div
+              style={{
+                ...utilities.row.style,
+                marginBottom: ".7rem",
+              }}
+            >
+              <ClipboardClock size={20} />
+              <Text>{t("Schedule Times")}</Text>
+            </Div>
+            <Div
+              style={{
+                ...utilities.right.style,
+                display: "flex",
+                alignItems: "center",
+                gap: "0.8rem",
+              }}
+            >
+              <Button
+                className={"inverted"}
+                style={{
+                  ...utilities.inverted.style,
+                  ...utilities.small.style,
+                }}
+                onClick={addScheduleTime}
+              >
+                {t("+ Add Time")}
+              </Button>
+            </Div>
           </Div>
+          {/* Schedule Times */}
           <Div
             style={{
-              ...utilities.right.style,
+              marginTop: "0.7rem",
               display: "flex",
-              alignItems: "center",
-              gap: "0.8rem",
+              flexDirection: "column",
+              gap: ".5rem",
+              maxHeight: "20vh",
+              overflowY: "auto",
+              ...agentStyles.bordered.style,
             }}
           >
-            <Button
-              className={"inverted"}
-              style={{
-                ...utilities.inverted.style,
-                ...utilities.small.style,
-              }}
-              onClick={addScheduleTime}
-            >
-              {t("+ Add Time")}
-            </Button>
-          </Div>
-        </Div>
-        {/* Schedule Times */}
+            {schedule.map((time, index) => {
+              const getTimeDescription = (hour: number) => {
+                if (hour >= 5 && hour < 12) return t("🌞 Morning boost")
+                if (hour >= 12 && hour < 17) return t("🕛 Afternoon peak")
+                if (hour >= 17 && hour < 21) return t("🌆 Evening engagement")
+                if (hour >= 21 || hour < 5) return t("🌙 Night owls")
+                return ""
+              }
 
-        <Div
-          style={{
-            marginTop: "0.7rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: ".5rem",
-            ...agentStyles.bordered.style,
-          }}
-        >
-          {scheduledTimes.map((time, index) => {
-            const getTimeDescription = (hour: number) => {
-              if (hour >= 5 && hour < 12) return t("🌞 Morning boost")
-              if (hour >= 12 && hour < 17) return t("🕛 Afternoon peak")
-              if (hour >= 17 && hour < 21) return t("🌆 Evening engagement")
-              if (hour >= 21 || hour < 5) return t("🌙 Night owls")
-              return ""
-            }
-
-            return (
-              <>
-                <Div
-                  key={index}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: ".5rem",
-                    justifyContent: "space-between",
-                  }}
-                >
+              return (
+                <React.Fragment key={index}>
                   <Div
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: ".5rem",
-                      flexWrap: "wrap",
+                      justifyContent: "space-between",
                     }}
                   >
-                    <Button
-                      title={"Details"}
-                      className={"link"}
-                      style={{ ...utilities.link.style }}
-                      onClick={() => {
-                        setExpandedInfoIndex(
-                          expandedInfoIndex === index ? null : index,
-                        )
-                      }}
-                    >
-                      <Info size={16} />
-                    </Button>
-
-                    <Input
-                      type="time"
-                      value={`${String(time.hour).padStart(2, "0")}:${String(time.minute).padStart(2, "0")}`}
-                      onChange={(e) => {
-                        const [hour, minute] = e.target.value.split(":")
-                        updateScheduleTime(index, {
-                          hour: parseInt(hour || "0") || 0,
-                          minute: parseInt(minute || "0") || 0,
-                        })
-                      }}
-                      style={{
-                        padding: ".4rem .6rem",
-                        fontSize: ".9rem",
-                      }}
-                    />
-                    <Select
-                      style={{
-                        fontSize: ".85rem",
-                      }}
-                      value={time.postType}
-                      onChange={(e) =>
-                        updateScheduleTime(index, {
-                          postType: (typeof e === "string"
-                            ? e
-                            : e.target.value) as
-                            | "post"
-                            | "comment"
-                            | "engagement",
-                        })
-                      }
-                      options={[
-                        { value: "post", label: "💭 Post" },
-                        { value: "comment", label: "💬 Comment" },
-                        { value: "engagement", label: "👋 Engage" },
-                      ]}
-                    />
-                    <Select
-                      value={time.model}
-                      onChange={(e) =>
-                        updateScheduleTime(index, {
-                          model: (typeof e === "string"
-                            ? e
-                            : e.target.value) as
-                            | "sushi"
-                            | "claude"
-                            | "chatGPT"
-                            | "gemini"
-                            | "perplexity",
-                        })
-                      }
-                      options={[
-                        { value: "sushi", label: "🍣 Sushi" },
-                        { value: "claude", label: "🍑 Claude" },
-                        { value: "chatGPT", label: "💬 ChatGPT" },
-                        { value: "gemini", label: "🌌 Gemini" },
-                        { value: "perplexity", label: "🕸️ Perplexity" },
-                      ]}
-                    />
                     <Div
                       style={{
                         display: "flex",
                         alignItems: "center",
                         gap: ".5rem",
+                        flexWrap: "wrap",
                       }}
-                      title={t("Character limit")}
                     >
+                      <Button
+                        title={"Details"}
+                        className={"link"}
+                        style={{ ...utilities.link.style }}
+                        onClick={() => {
+                          setExpandedInfoIndex(
+                            expandedInfoIndex === index ? null : index,
+                          )
+                        }}
+                      >
+                        <Info size={16} />
+                      </Button>
+
                       <Input
-                        type="number"
-                        min="50"
-                        max="5000"
-                        value={String(time.charLimit)}
-                        onChange={(e) =>
+                        type="time"
+                        value={`${String(time.hour).padStart(2, "0")}:${String(time.minute).padStart(2, "0")}`}
+                        onChange={(e) => {
+                          const [hour, minute] = e.target.value.split(":")
                           updateScheduleTime(index, {
-                            charLimit: parseInt(e.target.value) || 500,
+                            hour: parseInt(hour || "0") || 0,
+                            minute: parseInt(minute || "0") || 0,
                           })
-                        }
+                        }}
+                        style={{
+                          padding: ".4rem .6rem",
+                          fontSize: ".9rem",
+                        }}
+                      />
+                      <Select
                         style={{
                           fontSize: ".85rem",
                         }}
-                        placeholder="chars"
+                        value={time.postType}
+                        onChange={(e) =>
+                          updateScheduleTime(index, {
+                            postType: (typeof e === "string"
+                              ? e
+                              : e.target.value) as
+                              | "post"
+                              | "comment"
+                              | "engagement",
+                          })
+                        }
+                        options={[
+                          { value: "post", label: "💭 Post" },
+                          { value: "comment", label: "💬 Comment" },
+                          { value: "engagement", label: "👋 Engage" },
+                        ]}
                       />
-                    </Div>
-                    {scheduledTimes.length > 1 && (
-                      <Button
-                        className="link"
-                        title={t("Delete")}
+                      <Select
+                        value={time.model}
+                        onChange={(e) =>
+                          updateScheduleTime(index, {
+                            model: (typeof e === "string"
+                              ? e
+                              : e.target.value) as
+                              | "sushi"
+                              | "claude"
+                              | "chatGPT"
+                              | "gemini"
+                              | "perplexity",
+                          })
+                        }
+                        options={[
+                          { value: "sushi", label: "🍣 Sushi" },
+                          { value: "claude", label: "🍑 Claude" },
+                          { value: "chatGPT", label: "💬 ChatGPT" },
+                          { value: "gemini", label: "🌌 Gemini" },
+                          { value: "perplexity", label: "🕸️ Perplexity" },
+                        ]}
+                      />
+                      <Div
                         style={{
-                          ...utilities.link.style,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: ".5rem",
                         }}
-                        onClick={() => removeScheduleTime(index)}
+                        title={t("Character limit")}
                       >
-                        <Text style={{ fontSize: "1.2rem" }}>🔥</Text>
-                      </Button>
-                    )}
+                        <Input
+                          type="number"
+                          min="50"
+                          max="5000"
+                          value={String(time.charLimit)}
+                          onChange={(e) =>
+                            updateScheduleTime(index, {
+                              charLimit: parseInt(e.target.value) || 500,
+                            })
+                          }
+                          style={{
+                            fontSize: ".85rem",
+                          }}
+                          placeholder="chars"
+                        />
+                      </Div>
+                      {schedule.length > 1 && (
+                        <Button
+                          className="link"
+                          title={t("Delete")}
+                          style={{
+                            ...utilities.link.style,
+                          }}
+                          onClick={() => removeScheduleTime(index)}
+                        >
+                          <Text style={{ fontSize: "1.2rem" }}>🔥</Text>
+                        </Button>
+                      )}
+                    </Div>
                   </Div>
-                </Div>
-                {expandedInfoIndex === index && (
-                  <Div
-                    style={{
-                      padding: ".75rem",
-                      backgroundColor: "var(--shade-1)",
-                      borderRadius: "var(--radius)",
-                      fontSize: ".85rem",
-                      lineHeight: "1.5",
-                    }}
-                  >
-                    <Text style={{ fontWeight: "bold", marginBottom: ".5rem" }}>
-                      {getTimeDescription(time.hour)}
-                    </Text>{" "}
-                    <Text style={{ opacity: 0.8 }}>
-                      {time.postType === "post"
-                        ? t(
-                            "This slot will create a new post on Moltbook at the scheduled time.",
-                          )
-                        : time.postType === "comment"
-                          ? t(
-                              "This slot will comment on your own post. A post slot is required.",
-                            )
-                          : t(
-                              "This slot will engage with other agents' posts on Moltbook.",
-                            )}
-                    </Text>{" "}
-                    <Text
+                  {expandedInfoIndex === index && (
+                    <Div
                       style={{
-                        marginTop: ".5rem",
-                        opacity: 0.7,
-                        fontSize: ".8rem",
+                        padding: ".75rem",
+                        backgroundColor: "var(--shade-1)",
+                        borderRadius: "var(--radius)",
+                        fontSize: ".85rem",
+                        lineHeight: "1.5",
                       }}
                     >
-                      {t("Model")}: {capitalizeFirstLetter(time.model)} •{" "}
-                      {t("Char limit")}: {time.charLimit}
-                    </Text>
-                  </Div>
-                )}
-              </>
-            )
-          })}
-        </Div>
+                      <Text
+                        style={{ fontWeight: "bold", marginBottom: ".5rem" }}
+                      >
+                        {getTimeDescription(time.hour)}
+                      </Text>{" "}
+                      <Text style={{ opacity: 0.8 }}>
+                        {time.postType === "post"
+                          ? t(
+                              "This slot will create a new post on Moltbook at the scheduled time.",
+                            )
+                          : time.postType === "comment"
+                            ? t(
+                                "This slot will comment on your own post. A post slot is required.",
+                              )
+                            : t(
+                                "This slot will engage with other agents' posts on Moltbook.",
+                              )}
+                      </Text>{" "}
+                      <Text
+                        style={{
+                          marginTop: ".5rem",
+                          opacity: 0.7,
+                          fontSize: ".8rem",
+                        }}
+                      >
+                        {t("Model")}: {capitalizeFirstLetter(time.model)} •{" "}
+                        {t("Char limit")}: {time.charLimit}
+                      </Text>
+                      {/* Repeat Slot Feature */}
+                      <Div
+                        style={{
+                          marginTop: ".75rem",
+                          paddingTop: ".5rem",
+                          borderTop: "1px solid var(--shade-2)",
+                        }}
+                      >
+                        <Text
+                          style={{ fontWeight: "bold", marginBottom: ".5rem" }}
+                        >
+                          🔁 {t("Repeat this slot")}
+                        </Text>
+                        <Div
+                          style={{
+                            display: "flex",
+                            gap: ".5rem",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            marginTop: ".5rem",
+                          }}
+                        >
+                          <Div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: ".3rem",
+                            }}
+                          >
+                            <Label style={{ fontSize: ".8rem" }}>
+                              {t("Every")}
+                            </Label>
+                            <Input
+                              type="number"
+                              min="10"
+                              max="1440"
+                              value={String(repeatInterval[index] || 60)}
+                              onChange={(e) =>
+                                setRepeatInterval({
+                                  ...repeatInterval,
+                                  [index]: parseInt(e.target.value) || 60,
+                                })
+                              }
+                              style={{
+                                width: "70px",
+                                fontSize: ".85rem",
+                                padding: ".3rem .5rem",
+                              }}
+                              placeholder="60"
+                            />
+                            <Label style={{ fontSize: ".8rem" }}>
+                              {t("minutes")}
+                            </Label>
+                          </Div>
 
+                          <Div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: ".3rem",
+                            }}
+                          >
+                            <Label style={{ fontSize: ".8rem" }}>
+                              {t("Repeat")}
+                            </Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="20"
+                              value={String(repeatCount[index] || 3)}
+                              onChange={(e) =>
+                                setRepeatCount({
+                                  ...repeatCount,
+                                  [index]: parseInt(e.target.value) || 3,
+                                })
+                              }
+                              style={{
+                                width: "60px",
+                                fontSize: ".85rem",
+                                padding: ".3rem .5rem",
+                              }}
+                              placeholder="3"
+                            />
+                            <Label style={{ fontSize: ".8rem" }}>
+                              {t("times")}
+                            </Label>
+                          </Div>
+
+                          <Button
+                            className="inverted"
+                            style={{
+                              ...utilities.inverted.style,
+                              fontSize: ".8rem",
+                              padding: ".3rem .6rem",
+                            }}
+                            onClick={() => {
+                              const intervalMinutes =
+                                repeatInterval[index] || 60
+                              const count = repeatCount[index] || 3
+
+                              if (!isDevelopment && intervalMinutes < 10) {
+                                toast.error(
+                                  t("Interval must be at least 10 minutes"),
+                                )
+                                return
+                              }
+
+                              if (count < 1 || count > 20) {
+                                toast.error(
+                                  t("Repeat count must be between 1 and 20"),
+                                )
+                                return
+                              }
+
+                              // Validate 30-minute cooldown for same post type
+                              if (intervalMinutes < SLOT_INTERVAL_MINUTES) {
+                                toast.error(
+                                  t(
+                                    "Interval must be at least {{minutes}} minutes between same post types",
+                                    {
+                                      minutes: Math.ceil(SLOT_INTERVAL_MINUTES),
+                                    },
+                                  ),
+                                )
+                                return
+                              }
+
+                              // Generate new slots based on current slot
+                              const newSlots: ScheduleTime[] = []
+                              let currentHour = time.hour
+                              let currentMinute = time.minute
+
+                              for (let i = 0; i < count; i++) {
+                                // Add interval to current time
+                                currentMinute += intervalMinutes
+
+                                // Handle minute overflow
+                                while (currentMinute >= 60) {
+                                  currentMinute -= 60
+                                  currentHour += 1
+                                }
+
+                                // Handle hour overflow (stop if we go past 24 hours)
+                                if (currentHour >= 24) {
+                                  toast.error(
+                                    t(
+                                      "Cannot create slots beyond 24 hours. Created {{count}} slots.",
+                                      {
+                                        count: i,
+                                      },
+                                    ),
+                                  )
+                                  break
+                                }
+
+                                newSlots.push({
+                                  hour: currentHour,
+                                  minute: currentMinute,
+                                  postType: time.postType,
+                                  model: time.model,
+                                  charLimit: time.charLimit,
+                                  credits: creditsPerPost,
+                                })
+                              }
+
+                              if (newSlots.length > 0) {
+                                // Remove conflicting slots (same time or within cooldown period)
+                                const newSlotTimes = new Set(
+                                  newSlots.map(
+                                    (slot) => `${slot.hour}:${slot.minute}`,
+                                  ),
+                                )
+
+                                // Filter out existing slots that conflict with new slots
+                                const filteredSchedule = schedule.filter(
+                                  (existingSlot, existingIndex) => {
+                                    // Don't remove the source slot
+                                    if (existingIndex === index) return true
+
+                                    const existingTime = `${existingSlot.hour}:${existingSlot.minute}`
+
+                                    // Remove if exact time match
+                                    if (newSlotTimes.has(existingTime)) {
+                                      return false
+                                    }
+
+                                    // Check cooldown only for same post type
+                                    if (
+                                      existingSlot.postType === time.postType
+                                    ) {
+                                      const existingMinutes =
+                                        existingSlot.hour * 60 +
+                                        existingSlot.minute
+
+                                      // Check if any new slot is too close to this existing slot
+                                      for (const newSlot of newSlots) {
+                                        const newMinutes =
+                                          newSlot.hour * 60 + newSlot.minute
+                                        const timeDiff = Math.abs(
+                                          newMinutes - existingMinutes,
+                                        )
+
+                                        // Remove if within cooldown period
+                                        if (
+                                          timeDiff > 0 &&
+                                          timeDiff < SLOT_INTERVAL_MINUTES
+                                        ) {
+                                          return false
+                                        }
+                                      }
+                                    }
+
+                                    return true
+                                  },
+                                )
+
+                                const removedCount =
+                                  schedule.length - filteredSchedule.length
+
+                                // Update schedule with filtered slots + new slots
+                                setSchedule([...filteredSchedule, ...newSlots])
+
+                                if (removedCount > 0) {
+                                  toast.success(
+                                    t(
+                                      "Added {{added}} slots and removed {{removed}} conflicting slots",
+                                      {
+                                        added: newSlots.length,
+                                        removed: removedCount,
+                                      },
+                                    ),
+                                  )
+                                } else {
+                                  toast.success(
+                                    t("Added {{count}} repeated slots", {
+                                      count: newSlots.length,
+                                    }),
+                                  )
+                                }
+                              }
+                            }}
+                          >
+                            {t("Generate Slots")}
+                          </Button>
+                        </Div>
+                        <P
+                          style={{
+                            fontSize: ".75rem",
+                            opacity: 0.6,
+                            marginTop: ".5rem",
+                          }}
+                        >
+                          💡{" "}
+                          {t(
+                            "This will create new slots with the same settings at the specified interval",
+                          )}
+                        </P>
+                      </Div>
+                    </Div>
+                  )}
+                </React.Fragment>
+              )
+            })}
+          </Div>
+        </Div>
         {/* Results */}
         {totalPosts > 0 ? (
           <Div
@@ -943,176 +1488,341 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
               <Div
                 style={{
                   display: "flex",
-                  gap: ".5rem",
-                  alignItems: "center",
+                  flexDirection: "row",
+                  gap: "1rem",
+                  flexWrap: "wrap",
                 }}
               >
-                <Text style={{ fontSize: "1rem" }}>📮</Text>
-                <Text>{t("Total Posts")}</Text>
-                <Text
+                <Div
                   style={{
-                    color: "var(--accent-1)",
+                    display: "flex",
+                    gap: ".5rem",
+                    alignItems: "center",
                   }}
                 >
-                  {formatter.format(totalPosts)}
-                </Text>
-              </Div>
-              <Div
-                style={{
-                  display: "flex",
-                  gap: ".5rem",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ fontSize: "1rem" }}>⚡</Text>
-                <Text>{t("Credits per Post")}</Text>
-                <Text
+                  <Text style={{ fontSize: "1rem" }}>📮</Text>
+                  <Text>{t("Total Posts")}</Text>
+                  <Text
+                    style={{
+                      color: "var(--accent-1)",
+                    }}
+                  >
+                    {formatter.format(totalPosts)}
+                  </Text>
+                </Div>
+                <Div
                   style={{
-                    color: "var(--accent-1)",
+                    display: "flex",
+                    gap: ".5rem",
+                    alignItems: "center",
                   }}
                 >
-                  {formatter.format(creditsPerPost)}
-                </Text>
-              </Div>
-              <Div
-                style={{
-                  display: "flex",
-                  gap: ".5rem",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ fontSize: "1rem" }}>💎</Text>
-                <Text>{t("Total Credits")}</Text>
-                <Text
+                  <Text style={{ fontSize: "1rem" }}>⚡</Text>
+                  <Text>{t("Credits per Post")}</Text>
+                  <Text
+                    style={{
+                      color: "var(--accent-1)",
+                    }}
+                  >
+                    {formatter.format(creditsPerPost)}
+                  </Text>
+                </Div>
+                <Div
                   style={{
-                    color: "var(--accent-1)",
+                    display: "flex",
+                    gap: ".5rem",
+                    alignItems: "center",
                   }}
                 >
-                  {formatter.format(totalCredits)}
-                </Text>
+                  <Text style={{ fontSize: "1rem" }}>💎</Text>
+                  <Text>{t("Total Credits")}</Text>
+                  <Text
+                    style={{
+                      color: "var(--accent-1)",
+                    }}
+                  >
+                    {formatter.format(totalCredits)}
+                  </Text>
+                </Div>
+                <Div
+                  style={{
+                    display: "flex",
+                    gap: ".5rem",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ fontSize: "1rem" }}>💵</Text>
+                  <Text style={{ fontWeight: "bold" }}>{t("Total Price")}</Text>
+                  <Text
+                    style={{
+                      color: "var(--accent-1)",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "EUR",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(totalPrice)}
+                  </Text>
+                </Div>
               </Div>
-              {totalCredits > 0 ? (
-                <>
-                  {!user && (
-                    <Div
-                      style={{
-                        display: "flex",
-                        gap: ".5rem",
-                        alignItems: "center",
-                      }}
-                    >
-                      <ShoppingCart color="var(--accent-1)" size={18} />
-                      <Text
-                        style={{
-                          fontSize: "1.1rem",
-                          color: "var(--accent-1)",
-                        }}
-                      >
-                        {t("{{price}} ", {
-                          price: new Intl.NumberFormat("en-US", {
-                            style: "currency",
-                            currency: "EUR",
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }).format(totalPrice),
-                        })}
-                      </Text>
-                      added to your basket
-                      <Img logo="coder" size={20} />
-                    </Div>
-                  )}
-
+              <>
+                {!user && (
                   <Div
                     style={{
                       display: "flex",
+                      gap: ".5rem",
                       alignItems: "center",
                     }}
                   >
-                    <>
-                      {user ? (
-                        !accountApp ? (
-                          <Div
-                            style={{
-                              marginTop: ".7rem",
-                              marginBottom: ".3rem",
-                            }}
-                          >
-                            🪢 Continue creating app to earn FREE Tribe credits.
-                            After creating your app you will earn 5 on demand
-                            Posts for free, then you can schedule posts using
-                            this credit calculator.
-                          </Div>
-                        ) : (
-                          <Subscribe
-                            selectedPlan="tribe"
-                            customPrice={totalPrice}
-                            onPaymentVerified={handlePaymentVerified}
-                            cta={t("Pay {{price}}", {
-                              price: new Intl.NumberFormat("en-US", {
-                                style: "currency",
-                                currency: "EUR",
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }).format(totalPrice),
-                            })}
-                            isTribe
-                          />
-                        )
-                      ) : (
-                        <Button
-                          className="inverted"
-                          onClick={() => {
-                            if (!user) {
-                              addParams({
-                                signIn: "login",
-                                callbackUrl: `${FRONTEND_URL}/?settings=true&tab=tribe`,
-                              })
-                            } else {
-                              handleCheckout()
-                            }
-                          }}
-                          disabled={loading || !app?.id}
-                          style={{
-                            marginTop: ".3rem",
-                            ...utilities.inverted.style,
-                            ...utilities.small.style,
-                          }}
-                        >
-                          {loading ? (
-                            <Loading size={18} />
-                          ) : (
-                            <>
-                              <Img logo="chrry" size={20} />
-                              {t(user ? "Pay {{price}}" : "Join", {
-                                price: new Intl.NumberFormat("en-US", {
-                                  style: "currency",
-                                  currency: "EUR",
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                                }).format(totalPrice),
-                              })}
-                            </>
-                          )}
-                        </Button>
-                      )}
-                    </>
-                  </Div>
-                  {!(user || guest)?.subscription && accountApp && (
+                    <ShoppingCart color="var(--accent-1)" size={18} />
                     <Text
                       style={{
-                        fontSize: ".8rem",
-                        color: "var(--shade-7)",
+                        fontSize: "1.1rem",
+                        color: "var(--accent-1)",
                       }}
                     >
-                      🍓{" "}
-                      {t(
-                        "Subscription is not required, but If you enjoy Tribe, it unlocks limits when you bring your own keys. This also enables demand Posts",
-                      )}{" "}
-                      🫐
+                      {t("{{price}} ", {
+                        price: new Intl.NumberFormat("en-US", {
+                          style: "currency",
+                          currency: "EUR",
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }).format(totalPrice),
+                      })}
                     </Text>
-                  )}
-                </>
-              ) : null}
+                    added to your basket
+                    <Img logo="coder" size={20} />
+                  </Div>
+                )}
+
+                <Div style={{}}>
+                  <>
+                    {user ? (
+                      !accountApp ? (
+                        <Div style={{}}>
+                          🪢 Continue creating app to earn FREE Tribe credits.
+                          After creating your app you will earn 5 on demand
+                          Posts for free, then you can schedule posts using this
+                          credit calculator.
+                        </Div>
+                      ) : (
+                        <>
+                          <Div style={{}}>
+                            {existingSchedule && (
+                              <Div
+                                style={{
+                                  display: "inline-flex",
+                                  flexDirection: "column",
+                                  marginTop: ".5rem",
+                                }}
+                              >
+                                <Div
+                                  style={{
+                                    padding: ".5rem",
+                                    backgroundColor: "var(--shade-2)",
+                                    borderRadius: "var(--radius)",
+                                    fontSize: ".85rem",
+                                  }}
+                                >
+                                  <Div
+                                    style={{
+                                      fontWeight: "500",
+                                      flex: 1,
+                                      display: "inline-flex",
+                                    }}
+                                  >
+                                    📅{" "}
+                                    {t(
+                                      existingSchedule.status === "active"
+                                        ? "Active Schedule"
+                                        : "Pending Schedule",
+                                    )}{" "}
+                                    ({existingSchedule.scheduleType}) -{" "}
+                                    {t("Current credits")}:{" "}
+                                    {existingSchedule.totalEstimatedCredits}
+                                  </Div>{" "}
+                                  {priceDifference !== 0 && (
+                                    <Div
+                                      style={{
+                                        marginTop: ".2rem",
+                                        color:
+                                          priceDifference > 0
+                                            ? "var(--accent-1)"
+                                            : "var(--accent-4)",
+                                        fontWeight: "500",
+                                      }}
+                                    >
+                                      {priceDifference > 0 ? "📈" : "📉"}{" "}
+                                      {t("Difference")}:{" "}
+                                      {new Intl.NumberFormat("en-US", {
+                                        style: "currency",
+                                        currency: "EUR",
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                      }).format(Math.abs(priceDifference))}
+                                    </Div>
+                                  )}
+                                </Div>
+                              </Div>
+                            )}
+                            <Div
+                              style={{
+                                display: "flex",
+                                gap: ".5rem",
+                                alignItems: "center",
+                                flexWrap: "wrap",
+                                flex: 1,
+                                width: "100%",
+                                marginTop: 5,
+                                marginBottom: 7.5,
+                              }}
+                            >
+                              <Subscribe
+                                style={{
+                                  display: existingSchedule?.pendingPayment
+                                    ? "block"
+                                    : "none",
+                                }}
+                                disabled={!isSubscriptionEnabled}
+                                selectedPlan="tribe"
+                                customPrice={realDifference}
+                                cta={t(
+                                  !isSubscriptionEnabled
+                                    ? `Add {{price}} more using`
+                                    : "Confirm {{price}} at checkout",
+                                  !realDifference
+                                    ? undefined
+                                    : {
+                                        price: new Intl.NumberFormat("en-US", {
+                                          style: "currency",
+                                          currency: "EUR",
+                                          minimumFractionDigits: 2,
+                                          maximumFractionDigits: 2,
+                                        }).format(realDifference),
+                                      },
+                                )}
+                                scheduledTaskId={existingSchedule?.id}
+                                appId={app?.id}
+                                isTribe
+                              />
+                              {!existingSchedule && totalPrice ? (
+                                // No schedule exists - create pending first
+                                <Button
+                                  onClick={handleCreateOrUpdateSchedule}
+                                  disabled={creatingSchedule}
+                                  style={{
+                                    ...utilities.inverted.style,
+                                    ...utilities.small.style,
+                                  }}
+                                  className="inverted"
+                                >
+                                  {creatingSchedule ? (
+                                    <Loading size={18} />
+                                  ) : (
+                                    <>
+                                      <Img logo="coder" />
+                                      {t("Create Schedule")}
+                                    </>
+                                  )}
+                                </Button>
+                              ) : existingSchedule &&
+                                !existingSchedule?.pendingPayment ? (
+                                // Update schedule (payment required if price increased)
+                                <Button
+                                  onClick={handleCreateOrUpdateSchedule}
+                                  disabled={loading}
+                                  style={{
+                                    ...utilities.inverted.style,
+                                    ...utilities.small.style,
+                                  }}
+                                  className="inverted"
+                                >
+                                  {loading ? (
+                                    <Loading size={18} />
+                                  ) : (
+                                    <>
+                                      <Img logo="coder" />
+                                      {t(
+                                        realDifference
+                                          ? "Update Schedule"
+                                          : "Update Schedule",
+                                      )}
+                                    </>
+                                  )}
+                                </Button>
+                              ) : null}
+                              {existingSchedule && (
+                                <ConfirmButton
+                                  processing={deletingSchedule}
+                                  className="transparent"
+                                  onConfirm={handleDeleteSchedule}
+                                  disabled={deletingSchedule}
+                                  style={{
+                                    ...utilities.transparent.style,
+                                    ...utilities.small.style,
+                                    marginLeft: "auto",
+                                  }}
+                                >
+                                  {deletingSchedule ? (
+                                    <Loading size={16} />
+                                  ) : (
+                                    "🗑️ " + t("Delete")
+                                  )}
+                                </ConfirmButton>
+                              )}
+                            </Div>
+                          </Div>
+                        </>
+                      )
+                    ) : (
+                      <Button
+                        className="inverted"
+                        onClick={() => {
+                          addParams({
+                            signIn: "login",
+                            callbackUrl: `${FRONTEND_URL}/?settings=true&tab=tribe`,
+                          })
+                        }}
+                        disabled={loading || !app?.id}
+                        style={{
+                          marginTop: ".3rem",
+                          ...utilities.inverted.style,
+                          ...utilities.small.style,
+                        }}
+                      >
+                        {loading ? (
+                          <Loading size={18} />
+                        ) : (
+                          <>
+                            <Img logo="chrry" size={20} />
+                            {t("Join")}
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </>
+                </Div>
+                {!(user || guest)?.subscription && accountApp && (
+                  <Text
+                    style={{
+                      fontSize: ".8rem",
+                      color: "var(--shade-7)",
+                    }}
+                  >
+                    🍓{" "}
+                    <A openInNewTab href="/?subscribe=true">
+                      {t("Subscription")}
+                    </A>{" "}
+                    {t(
+                      "is not required, but If you enjoy Tribe, it unlocks limits when you bring your own keys. This also enables on demand Engagements",
+                    )}{" "}
+                    🫐
+                  </Text>
+                )}
+              </>
             </Div>
           </Div>
         ) : !user ? (

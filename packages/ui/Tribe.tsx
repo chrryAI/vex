@@ -1,7 +1,13 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { useAuth, useTribe, useChat, useApp } from "./context/providers"
+import {
+  useAuth,
+  useTribe,
+  useChat,
+  useApp,
+  useNavigationContext,
+} from "./context/providers"
 import {
   Div,
   Span,
@@ -18,6 +24,7 @@ import Skeleton from "./Skeleton"
 import { FRONTEND_URL } from "./utils"
 import isOwner from "./utils/isOwner"
 import Img from "./Image"
+
 import A from "./a/A"
 import { useTribeStyles } from "./Tribe.styles"
 import { useAppContext, COLORS } from "./context/AppContext"
@@ -45,6 +52,7 @@ import {
 import Loading from "./Loading"
 import TribePost from "./TribePost"
 import AppLink from "./AppLink"
+import ConfirmButton from "./ConfirmButton"
 
 export default function Tribe({ children }: { children?: React.ReactNode }) {
   const {
@@ -63,7 +71,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     currentTribe,
     toggleLike,
     isTogglingLike,
+    posting,
+    liveReactions,
+    pendingPostIds,
+    isSwarm,
+    commenting,
+    refetchPosts,
+    setPendingPostIds,
   } = useTribe()
+
   const {
     getAppSlug,
     app,
@@ -84,6 +100,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const [tryAppCharacterProfile, setTryAppCharacterProfile] = useState<
     string | undefined
   >(tryAppCharacterProfileInit)
+
+  const { addParams } = useNavigationContext()
 
   useEffect(() => {
     if (tryAppCharacterProfile === undefined && tryAppCharacterProfileInit) {
@@ -106,6 +124,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const { t } = useAppContext()
   const hasHydrated = useHasHydrated()
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [newPostsCount, setNewPostsCount] = useState(0)
 
   const { utilities } = useStyles()
   const styles = useTribeStyles()
@@ -154,7 +173,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     <>
                       {tribeSlug && currentTribe ? (
                         <>
-                          <A href={`/?tribe=true`}>{t("Tribe")}</A>
+                          <A href={`/tribe`}>{t("Tribe")}</A>
                         </>
                       ) : (
                         <>{t("Tribe")}</>
@@ -307,7 +326,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         <Span>
                           {tribeSlug && currentTribe ? (
                             <>
-                              <A href={`/?tribe=true`}>{t("Tribe's Feed")}</A>
+                              <A href={`/tribe`}>{t("Tribe's Feed")}</A>
                               <P
                                 style={{
                                   margin: 0,
@@ -432,8 +451,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               setIsNewAppChat({ item: app })
                               return
                             }
+                            if (!user) {
+                              addParams({ signIn: "login" })
+                              return
+                            }
                             setAppStatus({
                               part: "settings",
+                              step: "add",
                             })
                           }}
                           className="inverted"
@@ -467,7 +491,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           alignItems: "center",
                           gap: 5,
                         }}
-                        href="/?tribe=true"
+                        href="/tribe"
                       >
                         <ArrowLeft size={20} />
                         <Img logo="coder" size={30} />
@@ -811,6 +835,205 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Div>
                   </Div>
                 )}
+                {isSwarm && (
+                  <Div
+                    style={{
+                      marginTop: "1.5rem",
+                      marginBottom: "1.5rem",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      display: "flex",
+                      gap: "1rem",
+                      flexDirection: "row",
+                    }}
+                  >
+                    <Div
+                      style={{
+                        alignItems: "center",
+                        display: "flex",
+                        gap: ".5rem",
+                      }}
+                    >
+                      <Div
+                        style={{
+                          alignItems: "center",
+                          justifyContent: "center",
+                          display: "flex",
+                          gap: "1rem",
+                        }}
+                      >
+                        {posting.map((item, i) => {
+                          return (
+                            <MotiView
+                              key={`post-${item.app.id}`}
+                              from={{
+                                opacity: 0,
+                                translateY: -8,
+                                translateX: 0,
+                              }}
+                              animate={{
+                                opacity: 1,
+                                translateY: 0,
+                                translateX: 0,
+                              }}
+                              transition={{
+                                duration: reduceMotion ? 0 : 120,
+                                delay: reduceMotion ? 0 : i * 35,
+                              }}
+                            >
+                              <Img slug={item.app.slug} />
+                            </MotiView>
+                          )
+                        })}
+                        {liveReactions.map((item, i) => {
+                          return (
+                            <MotiView
+                              key={`reaction-${item.app.id}`}
+                              from={{
+                                opacity: 0,
+                                translateY: -8,
+                                translateX: 0,
+                              }}
+                              animate={{
+                                opacity: 1,
+                                translateY: 0,
+                                translateX: 0,
+                              }}
+                              transition={{
+                                duration: reduceMotion ? 0 : 120,
+                                delay: reduceMotion ? 0 : i * 35,
+                              }}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: ".5rem",
+                              }}
+                            >
+                              <Img slug={item.app.slug} />
+                              <Span style={{ fontSize: "1.3rem" }}>
+                                {item.reaction.emoji}
+                              </Span>
+                            </MotiView>
+                          )
+                        })}
+                      </Div>
+                      {posting.length ? (
+                        <Div
+                          style={{
+                            justifyContent: "center",
+                            display: "flex",
+                            gap: ".25rem",
+                          }}
+                        >
+                          <Span
+                            style={{
+                              fontSize: ".8rem",
+                              color: "var(--accent-4)",
+                            }}
+                          >
+                            {t("Thinking...")}
+                          </Span>
+                          <Div
+                            className="typing"
+                            data-testid="typing-indicator"
+                            style={{
+                              display: "inline-flex",
+                              gap: 2,
+                              alignItems: "center",
+                              marginLeft: 6,
+                            }}
+                          >
+                            <Span
+                              style={{
+                                width: 4,
+                                height: 4,
+                                backgroundColor: "var(--accent-4)",
+                                borderRadius: "50%",
+                              }}
+                            ></Span>
+                            <Span
+                              style={{
+                                width: 4,
+                                height: 4,
+                                backgroundColor: "var(--accent-4)",
+                                borderRadius: "50%",
+                              }}
+                            ></Span>
+                            <Span
+                              style={{
+                                width: 4,
+                                height: 4,
+                                backgroundColor: "var(--accent-4)",
+                                borderRadius: "50%",
+                              }}
+                            ></Span>
+                          </Div>
+                        </Div>
+                      ) : null}
+                    </Div>
+                    {pendingPostIds.length ? (
+                      <Button
+                        disabled={isLoadingPosts}
+                        onClick={async () => {
+                          await refetchPosts()
+                          setPendingPostIds([])
+                        }}
+                        style={{
+                          fontSize: 13,
+                          padding: "5px 10px",
+                          display: "flex",
+                          alignItems: "center",
+                          marginLeft: "auto",
+                          gap: 5,
+                        }}
+                      >
+                        {isLoadingPosts ? (
+                          <Loading color="#fff" size={16} />
+                        ) : (
+                          <LoaderCircle size={16} />
+                        )}
+                        {t("{{count}} more", {
+                          count: pendingPostIds.length,
+                        })}
+                      </Button>
+                    ) : null}
+                  </Div>
+                )}
+                {newPostsCount > 0 && (
+                  <Div
+                    style={{
+                      marginTop: "1rem",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    <Button
+                      onClick={async () => {
+                        setIsLoadingMore(true)
+                        // Refresh posts to show new ones
+                        window.location.reload()
+                      }}
+                      className="inverted"
+                      style={{
+                        width: "100%",
+                        padding: "0.75rem",
+                        fontSize: "0.95rem",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "0.5rem",
+                        background: "var(--accent-1)",
+                        color: "white",
+                        border: "none",
+                        ...utilities.inverted.style,
+                      }}
+                    >
+                      <Sparkles size={16} />
+                      {t("Load {{count}} new post", {
+                        count: newPostsCount,
+                      }).replace("post", newPostsCount > 1 ? "posts" : "post")}
+                    </Button>
+                  </Div>
+                )}
                 {isLoadingPosts && !isLoadingMore ? null : (
                   <>
                     {tribePosts.posts.map((post, i) => (
@@ -961,13 +1184,26 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 <Span>{post.likesCount || 0}</Span>
                               </Button>
 
-                              <Span
+                              <Div
                                 style={{
                                   marginLeft: "auto",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "0.5rem",
                                 }}
                               >
-                                {timeAgo(post.createdOn)}
-                              </Span>
+                                {(owner || user?.role === "admin") && (
+                                  <ConfirmButton
+                                    className="link"
+                                    onConfirm={function (): void {
+                                      throw new Error(
+                                        "Function not implemented.",
+                                      )
+                                    }}
+                                  ></ConfirmButton>
+                                )}
+                                <Span>{timeAgo(post.createdOn)}</Span>
+                              </Div>
                             </Div>
                             <Div
                               style={{

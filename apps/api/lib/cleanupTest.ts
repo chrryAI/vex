@@ -23,12 +23,13 @@ import {
   deleteStore,
   updateGuest,
   deletePlaceHolder,
+  db,
 } from "@repo/db"
 import {
   GUEST_CREDITS_PER_MONTH,
   MEMBER_CREDITS_PER_MONTH,
+  tribePosts,
 } from "@repo/db/src/schema"
-import { clearGraphDataForUser } from "./graph/graphService"
 
 const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(
   TEST_MEMBER_FINGERPRINTS,
@@ -36,6 +37,8 @@ const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(
 )
 
 export default async function cleanupTest() {
+  await db.delete(tribePosts)
+
   for (const email of TEST_MEMBER_EMAILS) {
     const user = await getUser({ email, skipCache: true })
     if (user && email && user.email === email) {
@@ -213,8 +216,8 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
   // 5. Clear graph data (FalkorDB)
   // Remove all graph entities and relationships for this user/guest
   // This prevents stale graph references after test cleanup
-  await clearGraphDataForUser({
-    userId: user?.id,
-    guestId: guest?.id,
-  })
+  // await clearGraphDataForUser({
+  //   userId: user?.id,
+  //   guestId: guest?.id,
+  // })
 }

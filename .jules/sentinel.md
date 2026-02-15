@@ -57,3 +57,31 @@
 3.  **Verify State:** In the callback, use `getCookie` to retrieve and compare the stored state. Reject mismatch.
 4.  **Clear State:** Delete the cookie after verification.
 5.  **Safe Failure Redirect:** Redirect to a known safe URL upon verification failure.
+
+## 2026-02-14 - Missing Rate Limiting on Authentication Endpoints
+
+**Vulnerability:** The `/signup` and `/signin` endpoints were completely unprotected against brute force and credential stuffing attacks, despite having `@arcjet/node` installed.
+
+**Learning:**
+
+- Always verify that security libraries (like Arcjet) are actually _applied_ to critical routes, not just installed.
+- Arcjet can use `ip.src` characteristic for anonymous rate limiting without user context.
+
+**Prevention:**
+
+- Added strict IP-based rate limiting (10 req/min) to all password-based authentication routes using `checkAuthRateLimit`.
+
+## 2026-05-24 - File Type Validation Bypass in MinIO Upload
+
+**Vulnerability:** The `upload` function in `minio.ts` relied on inferred file types from `fetch` (via MIME type or extension) and blindly accepted them if they were in the supported list (which includes `text/html`). This allowed attackers to upload HTML files as "app images", creating a Stored XSS vector on the public S3 bucket.
+
+**Learning:**
+
+- **Implicit Trust:** Trusting detected MIME types without validating against the _expected_ type is dangerous.
+- **Polyglot Risk:** Even if detection is accurate, a valid text file shouldn't be accepted when an image is required.
+- **Default Behavior:** The `upload` function defaulted to accepting any supported type if strict validation wasn't enforced.
+
+**Prevention:**
+
+- **Strict Enforcement:** Enforce `options.type` in the upload function. If the caller expects an "image", reject everything else, even if it's a valid "text" file.
+- **Explicit Intent:** Callers must explicitly specify the expected type (e.g., `type: "image"`) for sensitive uploads.
