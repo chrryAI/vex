@@ -48,7 +48,6 @@ import { useCallback, useEffect, useMemo, useState, useRef, memo } from "react"
 import { updateMessage, updateThread } from "./lib"
 import toast from "react-hot-toast"
 import Img from "./Image"
-import { useThreadPresence } from "./hooks/useThreadPresence"
 import { useWebSocket } from "./hooks/useWebSocket"
 import { Claude, DeepSeek, Flux, Gemini, OpenAI, Perplexity } from "./icons"
 import { AudioPlayer } from "react-audio-play"
@@ -63,6 +62,8 @@ function Message({
   onToggleLike,
   message,
   onPlayAudio,
+  isTyping,
+  isOnline,
 }: {
   message: {
     message: message & {
@@ -78,6 +79,8 @@ function Message({
   onDelete?: ({ id }: { id: string }) => Promise<void>
   onToggleLike?: (liked: boolean | undefined) => void
   onPlayAudio?: () => void
+  isTyping?: boolean
+  isOnline?: boolean
 }): React.ReactElement | null {
   const { t } = useAppContext()
   const { utilities } = useStyles()
@@ -145,17 +148,7 @@ function Message({
 
   const threadId = message.message.threadId
 
-  const { typingUsers, onlineUsers } = useThreadPresence({
-    threadId,
-  })
-
   const isStreamingStop = message.message.isStreamingStop
-
-  const isTyping = typingUsers.some(
-    (u) =>
-      (u.userId && u.userId === message.user?.id) ||
-      (u.guestId && u.guestId === message.guest?.id),
-  )
 
   const agentImageLoader = useCallback(() => {
     return (
@@ -881,11 +874,7 @@ function Message({
                   ...(isTyping ||
                   message.user?.id === ownerId ||
                   message.guest?.id === ownerId ||
-                  onlineUsers.some(
-                    (u) =>
-                      u.userId === message.user?.id ||
-                      u.guestId === message.guest?.id,
-                  )
+                  isOnline
                     ? styles.online.style
                     : styles.offline.style),
                 }}

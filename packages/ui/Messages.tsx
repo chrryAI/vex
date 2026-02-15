@@ -28,6 +28,7 @@ import { useMessagesStyles } from "./Messages.styles"
 import { useStyles } from "./context/StylesContext"
 import { useUserScroll } from "./hooks/useUserScroll"
 import { isE2E } from "./utils/siteConfig"
+import { useThreadPresence } from "./hooks/useThreadPresence"
 
 export default forwardRef<
   HTMLDivElement,
@@ -114,6 +115,10 @@ export default forwardRef<
   const { scrollToBottom } = useChat()
 
   const threadId = auth.threadId || auth.threadIdRef.current
+
+  const { typingUsers, onlineUsers } = useThreadPresence({
+    threadId,
+  })
 
   // Navigation context (router is the wrapper)
   const { router } = useNavigationContext()
@@ -238,6 +243,18 @@ export default forwardRef<
       )}
       <Div style={{ ...styles.messages.style }}>
         {sortedMessages?.map((message) => {
+          const isTyping = typingUsers.some(
+            (u) =>
+              (u.userId && u.userId === message.user?.id) ||
+              (u.guestId && u.guestId === message.guest?.id),
+          )
+
+          const isOnline = onlineUsers.some(
+            (u) =>
+              (u.userId && u.userId === message.user?.id) ||
+              (u.guestId && u.guestId === message.guest?.id),
+          )
+
           return (
             <Message
               onToggleLike={onToggleLike}
@@ -245,6 +262,8 @@ export default forwardRef<
               onPlayAudio={onPlayAudio}
               key={message.message.id}
               message={message}
+              isTyping={isTyping}
+              isOnline={isOnline}
             />
           )
         })}
