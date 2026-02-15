@@ -24,7 +24,9 @@ vi.mock("@repo/db", () => ({
   gt: vi.fn(),
   db: {
     insert: vi.fn(() => ({ values: vi.fn() })),
-    select: vi.fn(() => ({ from: vi.fn(() => ({ where: vi.fn(() => ({ limit: vi.fn() })) })) })),
+    select: vi.fn(() => ({
+      from: vi.fn(() => ({ where: vi.fn(() => ({ limit: vi.fn() })) })),
+    })),
     update: vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn() })) })),
   },
   authExchangeCodes: {},

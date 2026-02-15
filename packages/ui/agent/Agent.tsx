@@ -27,6 +27,7 @@ import {
   PRO_PRICE,
   API_URL,
   isE2E,
+  isDevelopment,
 } from "../utils"
 import Select from "../Select"
 import Checkbox from "../Checkbox"
@@ -1949,7 +1950,7 @@ export default function Agent({
                   >
                     <Webhook size={16} /> {t("API")}
                   </Button>
-                  {isE2E && (
+                  {(user?.role === "admin" || isDevelopment || isE2E) && (
                     <>
                       <Button
                         data-testid="tribe-tab"

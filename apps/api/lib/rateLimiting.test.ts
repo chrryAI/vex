@@ -12,8 +12,12 @@ const { mockProtect, mockIsDevelopment, mockIsE2E } = vi.hoisted(() => {
 
 // Mock utils
 vi.mock("@chrryai/chrry/utils", () => ({
-  get isDevelopment() { return mockIsDevelopment.value },
-  get isE2E() { return mockIsE2E.value },
+  get isDevelopment() {
+    return mockIsDevelopment.value
+  },
+  get isE2E() {
+    return mockIsE2E.value
+  },
   isOwner: vi.fn(),
 }))
 
