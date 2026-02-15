@@ -24,7 +24,6 @@ import { useTranslation } from "react-i18next"
 import { useData } from "./DataProvider"
 import { instructionBase } from "../../utils/getExampleInstructions"
 import { Paginated, storeWithApps } from "../../types"
-import { getSiteConfig } from "../../utils/siteConfig"
 import { useError } from "./ErrorProvider"
 
 export { COLORS } from "../ThemeContext"
@@ -309,15 +308,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setIsAgentModalOpen = (value: boolean) => {
     setIsAgentModalOpenInternal(value)
-    if (!value) {
-      removeParams(["settings", "tab", "trial"])
-    }
+    // if (!value) {
+    //   removeParams(["settings", "tab", "trial"])
+    // }
   }
 
   useEffect(() => {
     setIsAgentModalOpen(appStatus?.part === "settings")
     appStatus?.part && auth.setShowTribe(false)
-  }, [appStatus])
+  }, [appStatus, auth, setIsAgentModalOpen])
 
   useEffect(() => {
     if (searchParams.get("settings")) {
@@ -728,7 +727,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setShowingCustom(true)
     }
   }
-  const siteConfig = getSiteConfig()
 
   const suggestSaveApp = !!(
     !!appStatus?.part &&
@@ -763,6 +761,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     })
 
     if (payload) {
+      addParams({ settings: "true" })
+
       auth.setShowTribe(false)
       auth.setShowFocus(false)
     }
@@ -773,7 +773,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (part === "settings") {
         addParams({ settings: "true" })
       }
-      ;(appStatus?.step !== step || appStatus?.part !== part) &&
+
+      if (appStatus?.step !== step || appStatus?.part !== part)
         setAppStatusInternal({
           step: step,
           part: part,

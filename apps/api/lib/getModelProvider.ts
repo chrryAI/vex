@@ -128,7 +128,7 @@ export async function getModelProvider(
     case "sushi": {
       const sushiKey =
         (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
-        (!plusTiers.includes(app?.tier || "") && !process.env.OPENROUTER_API_KEY
+        (!plusTiers.includes(app?.tier || "")
           ? process.env.DEEPSEEK_API_KEY
           : "")
 
@@ -207,21 +207,6 @@ export async function getModelProvider(
     }
 
     case "claude": {
-      const claudeKey = app?.apiKeys?.anthropic
-        ? safeDecrypt(app?.apiKeys?.anthropic)
-        : !plusTiers.includes(app?.tier || "") &&
-            !process.env.OPENROUTER_API_KEY
-          ? process.env.CLAUDE_API_KEY
-          : ""
-
-      if (claudeKey) {
-        const claudeProvider = createAnthropic({ apiKey: claudeKey })
-        return {
-          provider: claudeProvider(agent.modelId),
-          agentName: agent.name,
-        }
-      }
-
       // Fallback to OpenRouter
       const openRouterKeyForClaude =
         (appApiKeys.openrouter ? safeDecrypt(appApiKeys.openrouter) : "") ||
@@ -243,6 +228,21 @@ export async function getModelProvider(
         }
       }
 
+      const claudeKey = app?.apiKeys?.anthropic
+        ? safeDecrypt(app?.apiKeys?.anthropic)
+        : !plusTiers.includes(app?.tier || "") &&
+            !process.env.OPENROUTER_API_KEY
+          ? process.env.CLAUDE_API_KEY
+          : ""
+
+      if (claudeKey) {
+        const claudeProvider = createAnthropic({ apiKey: claudeKey })
+        return {
+          provider: claudeProvider(agent.modelId),
+          agentName: agent.name,
+        }
+      }
+
       return {
         provider: createAnthropic({ apiKey: "" })(agent.modelId),
         agentName: agent.name,
@@ -252,9 +252,7 @@ export async function getModelProvider(
     case "gemini": {
       const geminiKey =
         (appApiKeys.google ? safeDecrypt(appApiKeys.google) : "") ||
-        (!plusTiers.includes(app?.tier || "") && !process.env.OPENROUTER_API_KEY
-          ? process.env.GEMINI_API_KEY
-          : "")
+        (!plusTiers.includes(app?.tier || "") ? process.env.GEMINI_API_KEY : "")
 
       if (geminiKey) {
         const geminiProvider = createGoogleGenerativeAI({ apiKey: geminiKey })

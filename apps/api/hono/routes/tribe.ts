@@ -448,7 +448,12 @@ app.get("/p/:id", async (c) => {
             app: c.app ? await getApp({ id: c.app.id }) : null,
           })),
         ),
-        reactions,
+        reactions: await Promise.all(
+          reactions.map(async (c) => ({
+            ...c,
+            app: c.app ? await getApp({ id: c.app.id }) : null,
+          })),
+        ),
         likes,
         stats: {
           commentsCount: post.commentsCount,
@@ -522,8 +527,10 @@ app.post("/p/:id/like", async (c) => {
       .limit(1)
 
     if (existingLike.length > 0) {
+      const existingLikeId = existingLike?.[0]?.id
       // Unlike: delete the existing like
-      await tx.delete(tribeLikes).where(eq(tribeLikes.id, existingLike[0].id))
+      existingLikeId &&
+        (await tx.delete(tribeLikes).where(eq(tribeLikes.id, existingLikeId)))
 
       // Atomic decrement of likes count (ensuring it doesn't go below 0)
       await tx
@@ -540,7 +547,6 @@ app.post("/p/:id/like", async (c) => {
         postId,
         userId: member?.id,
         guestId: guest?.id,
-        appId: member?.appId || guest?.appId,
       })
 
       // Atomic increment of likes count
@@ -559,6 +565,97 @@ app.post("/p/:id/like", async (c) => {
     success: true,
     liked: result.liked,
   })
+})
+
+// Delete tribe post (owner or admin only)
+app.delete("/p/:id", async (c) => {
+  const member = await getMember(c)
+  const guest = await getGuest(c)
+
+  if (!member && !guest) {
+    return c.json({ error: "Invalid credentials" }, { status: 401 })
+  }
+
+  const postId = c.req.param("id")
+
+  try {
+    // Get the post to check ownership
+    const post = await db.query.tribePosts.findFirst({
+      where: eq(tribePosts.id, postId),
+    })
+
+    if (!post) {
+      return c.json({ error: "Post not found" }, { status: 404 })
+    }
+
+    // Check if user is post owner or admin
+    const isOwner = post.userId === member?.id || post.guestId === guest?.id
+    const isAdmin = isDevelopment || member?.role === "admin"
+
+    if (!isOwner && !isAdmin) {
+      return c.json(
+        { error: "Only post owner or tribe admin can delete posts" },
+        { status: 403 },
+      )
+    }
+
+    // Delete the post (comments and reactions will cascade delete if FK constraints are set)
+    await db.delete(tribePosts).where(eq(tribePosts.id, postId))
+
+    return c.json({
+      success: true,
+      message: "Post deleted successfully",
+    })
+  } catch (error) {
+    console.error("Error deleting post:", error)
+    return c.json({ error: "Failed to delete post" }, { status: 500 })
+  }
+})
+
+// Delete tribe comment (owner or admin only)
+app.delete("/c/:id", async (c) => {
+  const member = await getMember(c)
+  const guest = await getGuest(c)
+
+  if (!member && !guest) {
+    return c.json({ error: "Invalid credentials" }, { status: 401 })
+  }
+
+  const commentId = c.req.param("id")
+
+  try {
+    // Get the comment to check ownership
+    const comment = await db.query.tribeComments.findFirst({
+      where: eq(tribeComments.id, commentId),
+    })
+
+    if (!comment) {
+      return c.json({ error: "Comment not found" }, { status: 404 })
+    }
+
+    // Check if user is comment owner or admin
+    const isOwner =
+      comment.userId === member?.id || comment.guestId === guest?.id
+    const isAdmin = isDevelopment || member?.role === "admin"
+
+    if (!isOwner && !isAdmin) {
+      return c.json(
+        { error: "Only comment owner or tribe admin can delete comments" },
+        { status: 403 },
+      )
+    }
+
+    // Delete the comment
+    await db.delete(tribeComments).where(eq(tribeComments.id, commentId))
+
+    return c.json({
+      success: true,
+      message: "Comment deleted successfully",
+    })
+  } catch (error) {
+    console.error("Error deleting comment:", error)
+    return c.json({ error: "Failed to delete comment" }, { status: 500 })
+  }
 })
 
 export default app

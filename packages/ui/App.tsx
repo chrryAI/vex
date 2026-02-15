@@ -1048,6 +1048,11 @@ export default function App({
                       }
                     }
 
+                    if (!user) {
+                      addParams({ signIn: "login" })
+                      return
+                    }
+
                     setAppStatus({
                       part: "settings",
                       step: canEditApp ? "update" : "add",
@@ -1696,11 +1701,13 @@ export default function App({
             isAgentBuilder={true}
             opacity={0}
             onSave={({ content, artifacts }) => {
-              !isManagingApp &&
-                onSave?.({
-                  content,
-                  artifacts,
-                })
+              if (isManagingApp) {
+                return
+              }
+              onSave?.({
+                content,
+                artifacts,
+              })
             }}
           />
         </Div>

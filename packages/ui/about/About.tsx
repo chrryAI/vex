@@ -114,7 +114,7 @@ export default function About() {
               }
             }}
           >
-            {t("About Vex")}
+            {t("About")} {config.name}
           </Span>
         </H1>
         <Section style={{ marginBottom: 15 }}>

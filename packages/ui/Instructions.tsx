@@ -71,7 +71,6 @@ import ConfirmButton from "./ConfirmButton"
 import { FaApple, FaAndroid, FaChrome } from "react-icons/fa"
 import { SiMacos } from "react-icons/si"
 
-import { useLocalStorage } from "./hooks"
 import A from "./a/A"
 import { useInstructionsStyles } from "./Instructions.styles"
 import { useStyles } from "./context/StylesContext"
@@ -90,7 +89,7 @@ export default function Instructions({
   showDownloads = true,
   dataTestId = "instruction",
   showButton = true,
-  showAbout = true,
+  showInstallers = true,
   opacity = 1,
   isAgentBuilder = false,
   onClose,
@@ -107,7 +106,7 @@ export default function Instructions({
   isArtifactsOpen?: boolean
   showButton?: boolean
   showDownloads?: boolean
-  showAbout?: boolean
+  showInstallers?: boolean
   onClose?: () => void
   isAgentBuilder?: boolean
   onSave?: ({
@@ -185,7 +184,7 @@ export default function Instructions({
 
   const { os, isStandalone, isTauri, isCapacitor, isExtension } = usePlatform()
 
-  const offset = isStandalone || isExtension || isCapacitor ? -100 : 0
+  const offset = isStandalone || isExtension || isCapacitor ? -75 : 0
 
   const count = useResponsiveCount(
     [
@@ -360,9 +359,6 @@ export default function Instructions({
     })
   }
 
-  function capitalizeFirstLetter(val: string) {
-    return String(val).charAt(0).toUpperCase() + String(val).slice(1)
-  }
   const handleFileSelect = async (selectedFiles: FileList | null) => {
     if (!selectedFiles) return
 
@@ -504,23 +500,6 @@ export default function Instructions({
 
   const instructionsListRef = useRef<HTMLDivElement>(null)
 
-  // useEffect(() => {
-  //   if (!isMemoryConsentManageVisible) {
-  //     animateInstructions()
-  //   }
-  // }, [isMemoryConsentManageVisible])
-
-  const [hasAnimatedInstructions, setHasAnimatedInstructions] = useLocalStorage(
-    "hasAnimatedInstructions",
-    false,
-  )
-
-  useEffect(() => {
-    setTimeout(() => {
-      hasAnimatedInstructions && setHasAnimatedInstructions(false)
-    }, 100)
-  }, [hasAnimatedInstructions])
-
   const [isOpen, setIsOpenInternal] = useState(false)
 
   const setIsOpen = (open: boolean) => {
@@ -534,7 +513,7 @@ export default function Instructions({
       setIsOpen(true)
       setContent("")
     }
-  }, [collaborationStep])
+  }, [collaborationStep, setIsOpen])
 
   useEffect(() => {
     if (!isOpen && collaborationStep === 1) {
@@ -545,13 +524,13 @@ export default function Instructions({
   const [content, setContent] = useState(thread?.instructions || "")
 
   useEffect(() => {
-    if (selectedInstruction) {
-      !thread &&
-        selectedInstruction?.content &&
+    if (selectedInstruction && !thread) {
+      if (selectedInstruction?.content) {
         setContent(t(selectedInstruction?.content))
-      setIsOpen(true)
+      }
+      // setIsOpen(true)
     }
-  }, [selectedInstruction])
+  }, [selectedInstruction, t, setIsOpen, thread])
 
   const [isSaving, setIsSaving] = useState(false)
 
@@ -1524,142 +1503,147 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
             })}
           </Div>
         )}
-        {!thread && !icon && (showInstructions || showDownloads) && (
-          <Div
-            data-testid={`${dataTestId}-about`}
-            style={{
-              ...styles.bottom.style,
-              marginBottom: showDownloads ? 0 : 30,
-              marginTop: showAbout ? 10 : style?.marginTop,
-              zIndex: 10,
-            }}
-          >
-            {!showGrape && showAbout && (
-              <A style={{ lineHeight: 1.5 }} href={"/about"}>
-                <MousePointerClick color="var(--accent-1)" size={26} />
+        {!thread &&
+          !icon &&
+          ((showInstructions && showDownloads) || !showInstallers) && (
+            <Div
+              data-testid={`${dataTestId}-about`}
+              style={{
+                ...styles.bottom.style,
+                marginBottom: showDownloads ? 0 : 30,
+                marginTop: showInstallers ? 10 : style?.marginTop,
+                zIndex: 10,
+              }}
+            >
+              {!showGrape && showInstallers && (
+                <A style={{ lineHeight: 1.5 }} href={"/about"}>
+                  <MousePointerClick color="var(--accent-1)" size={26} />
 
-                {t(appStatus?.part ? "Description" : "About")}
-              </A>
-            )}
-            {appStatus?.part ? (
-              <Suspense>
-                <Agent />
-              </Suspense>
-            ) : (
-              <Div
-                style={{
-                  display: "flex",
-                  gap: toRem(5),
-                }}
-              >
-                {!isCapacitor && (
-                  <Button
-                    className="transparent"
-                    style={{
-                      ...utilities.small.style,
-                      ...styles.installAppButton.style,
-                    }}
-                    onClick={() => {
-                      addHapticFeedback()
-                      setShowAddToHomeScreen(true)
-                    }}
-                  >
-                    {os === "ios" || os === "macos" ? (
-                      <FaApple
+                  {t(appStatus?.part ? "Description" : "About")}
+                </A>
+              )}
+              {appStatus?.part ? (
+                <Suspense>
+                  <Agent />
+                </Suspense>
+              ) : (
+                <Div
+                  style={{
+                    display: "flex",
+                    gap: toRem(5),
+                  }}
+                >
+                  {!isCapacitor && (
+                    <Button
+                      className="transparent"
+                      style={{
+                        ...utilities.small.style,
+                        ...styles.installAppButton.style,
+                      }}
+                      onClick={() => {
+                        addHapticFeedback()
+                        setShowAddToHomeScreen(true)
+                      }}
+                    >
+                      {os === "ios" || os === "macos" ? (
+                        <FaApple
+                          style={{
+                            position: "relative",
+                            bottom: 1,
+                          }}
+                          size={18}
+                        />
+                      ) : (
+                        <FaAndroid size={18} />
+                      )}
+                      {/* {t("Install")} */}
+                    </Button>
+                  )}
+
+                  {os !== "android" &&
+                  os !== "ios" &&
+                  !isTauri &&
+                  downloadUrl ? (
+                    <Button
+                      className="inverted"
+                      style={{
+                        ...utilities.small.style,
+
+                        ...styles.installAppButton.style,
+                        paddingTop: "0",
+                        paddingBottom: "0",
+                      }}
+                      onClick={() => {
+                        const a = document.createElement("a")
+                        a.href = downloadUrl
+                        a.download = ""
+                        document.body.appendChild(a)
+                        a.click()
+                        document.body.removeChild(a)
+                      }}
+                    >
+                      <SiMacos
                         style={{
                           position: "relative",
                           bottom: 1,
                         }}
-                        size={18}
+                        size={32}
                       />
-                    ) : (
-                      <FaAndroid size={18} />
-                    )}
-                    {/* {t("Install")} */}
-                  </Button>
-                )}
-
-                {os !== "android" && os !== "ios" && !isTauri && downloadUrl ? (
-                  <Button
-                    className="inverted"
-                    style={{
-                      ...utilities.small.style,
-
-                      ...styles.installAppButton.style,
-                      paddingTop: "0",
-                      paddingBottom: "0",
-                    }}
-                    onClick={() => {
-                      const a = document.createElement("a")
-                      a.href = downloadUrl
-                      a.download = ""
-                      document.body.appendChild(a)
-                      a.click()
-                      document.body.removeChild(a)
-                    }}
-                  >
-                    <SiMacos
+                      {/* {t("Install")} */}
+                    </Button>
+                  ) : null}
+                  {productionExtensions.includes("chrome")
+                    ? !showGrape && (
+                        <A
+                          openInNewTab
+                          href={chromeWebStoreUrl}
+                          className="button"
+                          style={{
+                            ...utilities.button.style,
+                            ...utilities.small.style,
+                            ...styles.installButton.style,
+                          }}
+                        >
+                          <FaChrome size={18} />
+                          {/* {t("Extension")} */}
+                        </A>
+                      )
+                    : null}
+                  {canGrape && (
+                    <A
+                      ref={grapeButtonRef}
+                      href="mailto:iliyan@chrry.ai"
+                      className="link"
                       style={{
-                        position: "relative",
-                        bottom: 1,
+                        ...utilities.link.style,
+                        marginLeft: showGrape ? 0 : 5,
+                        fontSize: "0.9rem",
+                        fontWeight: "normal",
+                        padding: "6.25px 0",
                       }}
-                      size={32}
-                    />
-                    {/* {t("Install")} */}
-                  </Button>
-                ) : null}
-                {productionExtensions.includes("chrome")
-                  ? !showGrape && (
-                      <A
-                        openInNewTab
-                        href={chromeWebStoreUrl}
-                        className="button"
-                        style={{
-                          ...utilities.button.style,
-                          ...utilities.small.style,
-                          ...styles.installButton.style,
-                        }}
-                      >
-                        <FaChrome size={18} />
-                        {/* {t("Extension")} */}
-                      </A>
-                    )
-                  : null}
-                {canGrape && (
-                  <A
-                    ref={grapeButtonRef}
-                    href="mailto:iliyan@chrry.ai"
-                    className="link"
-                    style={{
-                      ...utilities.link.style,
-                      marginLeft: showGrape ? 0 : 5,
-                      fontSize: "0.9rem",
-                      fontWeight: "normal",
-                      padding: "6.25px 0",
-                    }}
-                    onClick={(e) => {
-                      setShowGrape(!showGrape)
-                      if (!showGrape) {
-                        e.preventDefault()
-                        // Open email client for advertising inquiries
-                      }
-                    }}
-                  >
-                    {showGrape ? t("Get your brand here") : ""}{" "}
-                    <Span
-                      style={{
-                        marginLeft: 3,
-                        lineHeight: 0.7,
+                      onClick={(e) => {
+                        setShowGrape(!showGrape)
+                        if (!showGrape) {
+                          e.preventDefault()
+                          // Open email client for advertising inquiries
+                        }
                       }}
                     >
-                      🍇
-                    </Span>
-                  </A>
-                )}
-              </Div>
-            )}
-          </Div>
-        )}
+                      {showGrape ? t("Get your brand here") : ""}{" "}
+                      <Span
+                        style={{
+                          marginLeft: 3,
+                          lineHeight: 0.7,
+                        }}
+                      >
+                        🍇
+                      </Span>
+                    </A>
+                  )}
+                </Div>
+              )}
+            </Div>
+          )}
       </Div>
     </Div>
   )

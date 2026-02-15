@@ -1258,6 +1258,7 @@ app.post("/", async (c) => {
     slug,
     placeholder,
     deviceId,
+    tribeCharLimit,
     ...rest
   } = requestData
 
@@ -1318,10 +1319,6 @@ app.post("/", async (c) => {
   const notifyOwnerAndCollaborations = (
     x: Omit<notifyOwnerAndCollaborationsPayload, "c">,
   ) => {
-    if (!shouldStream) {
-      return
-    }
-
     notifyOwnerAndCollaborationsInternal({
       ...x,
       payload: {
@@ -2169,13 +2166,37 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   {
     "title": "Your catchy title here",
     "content": "Your post content here",
-    "submolt": "general"
+    "submolt": "general",
+    "seoKeywords": ["keyword1", "keyword2", "keyword3"]
   }
+
+  **SEO Keywords Guidelines:**
+  - Include 3-5 relevant keywords that describe the main topics
+  - Use specific, searchable terms (e.g., "AI agents", "Moltbook", "development")
+  - Keywords should help users discover this content
   
   Only return the JSON, nothing else.
   `
     : ""
 
+  // Dynamic tribe content length guidance based on charLimit
+  const tribeContentGuidance = (() => {
+    const limit = tribeCharLimit || 2000
+    if (limit <= 500) return "concise and focused (300-500 chars)"
+    if (limit <= 1000) return "engaging and informative (500-1000 chars)"
+    if (limit <= 2000) return "thoughtful and detailed (1000-2000 chars)"
+    return `comprehensive and in-depth (${Math.floor(limit * 0.7)}-${limit} chars)` // Use 70-100% of limit
+  })()
+
+  canPostToTribe &&
+    notifyOwnerAndCollaborations({
+      payload: {
+        type: "new_post_start",
+        data: {
+          app: requestApp,
+        },
+      },
+    })
   const tribeContext = canPostToTribe
     ? `
   ## 🪢 TRIBE SYSTEM INSTRUCTIONS (PRIORITY)
@@ -2200,10 +2221,16 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   **REQUIRED JSON FORMAT:**
   {
     "tribeTitle": "Your catchy title here (max 100 chars)",
-    "tribeContent": "Your engaging, thoughtful post content here (500-2000 chars recommended for quality discussions)",
-    "tribeName": "general"
+    "tribeContent": "Your ${tribeContentGuidance} post content here",
+    "tribeName": "general",
+    "seoKeywords": ["keyword1", "keyword2", "keyword3"]
   }
-  
+
+  **SEO Keywords Guidelines:**
+  - Include 3-5 relevant keywords that describe the main topics
+  - Use specific, searchable terms (e.g., "AI agents", "Wine ecosystem", "automation")
+  - Keywords should help users discover this content
+
   **IMPORTANT**: 
   - Return ONLY the JSON object, nothing else
   - Do not wrap in markdown code blocks
@@ -3742,7 +3769,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     agent?.maxPromptSize || 4000,
   )
 
-  let suggestionMessages
+  let suggestionMessages: typeof contextMessages | null = null
 
   if (!characterProfilesEnabled) {
     const pastMessages = await getMessages({
@@ -6497,10 +6524,12 @@ Respond in JSON format:
         let moltTitle = ""
         let moltContent = ""
         let moltSubmolt = ""
+        let moltSeoKeywords: string[] = []
 
         let tribeTitle = ""
         let tribeContent = ""
         let tribe = ""
+        let tribeSeoKeywords: string[] = []
         let tribePostId
         const moltId = undefined
 
@@ -6531,6 +6560,9 @@ Respond in JSON format:
                   parsed.moltTitle || parsed.title || "Thoughts from Chrry"
                 moltContent = parsed.moltContent || parsed.content || finalText
                 moltSubmolt = parsed.moltSubmolt || parsed.submolt || "general"
+                moltSeoKeywords = Array.isArray(parsed.seoKeywords)
+                  ? parsed.seoKeywords
+                  : []
                 // Two flows: stream (direct post) vs non-stream (parse only)
                 if (shouldStream && moltApiKey) {
                   // STREAM MODE: Direct post to Moltbook
@@ -6591,6 +6623,9 @@ Respond in JSON format:
                 tribeContent =
                   parsed.tribeContent || parsed.content || finalText
                 tribe = parsed.tribeName || parsed.submolt || "general"
+                tribeSeoKeywords = Array.isArray(parsed.seoKeywords)
+                  ? parsed.seoKeywords
+                  : []
 
                 // Two flows: stream (direct post) vs non-stream (parse only, like Moltbook)
                 if (member && requestApp) {
@@ -6809,6 +6844,16 @@ Respond in JSON format:
 
               // Send stream_complete notification
               if (thread && m) {
+                canPostToTribe &&
+                  notifyOwnerAndCollaborations({
+                    payload: {
+                      type: "new_post_end",
+                      data: {
+                        app: requestApp,
+                        tribePostId,
+                      },
+                    },
+                  })
                 // console.log("📡 Sending stream_complete notification...")
                 notifyOwnerAndCollaborations({
                   notifySender: true,
@@ -6855,9 +6900,11 @@ Respond in JSON format:
                 moltTitle,
                 moltContent,
                 moltSubmolt,
+                moltSeoKeywords,
                 tribeTitle,
                 tribeContent,
                 tribeName: tribe,
+                tribeSeoKeywords,
               })
             }
           } catch (createError) {

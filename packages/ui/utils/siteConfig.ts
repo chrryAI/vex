@@ -566,6 +566,37 @@ const istanbul = {
       isOpenSource: true,
     },
   ],
+  about: {
+    intro:
+      "Istanbul is your personal AI assistant designed to connect you with Turkish language support and local insights. Whether you're navigating Istanbul's vibrant culture or collaborating with the broader Turkish community, Istanbul empowers you to communicate naturally and get things done faster.",
+    intro2:
+      "With native Turkish language support, local pricing in Turkish Lira, and insights tailored to Istanbul and Turkey - Istanbul brings the power of AI to your local context.",
+    approach: {
+      title: "Local Intelligence",
+      content:
+        "We're building AI that understands your local context. Istanbul combines Turkish language fluency with cultural awareness to help you navigate daily life, collaborate locally, and access AI in a way that feels natural to you. Every feature is designed with Istanbul and Turkish communities in mind.",
+    },
+    platforms: {
+      title: "Everywhere You Are",
+      content:
+        "Access Istanbul's AI assistance across web, mobile, and browser - always in Turkish, always with local context.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Full Istanbul experience with Turkish language support, local payment methods, and Istanbul-specific insights from any browser.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install Istanbul on your mobile or desktop. Chat in Turkish offline, get local notifications, seamless sync across your devices.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Quick access to Istanbul AI from your browser toolbar. Turkish language support, local context, and toolbar integration for instant assistance.",
+      },
+    },
+  },
 }
 
 const amsterdam = {
@@ -617,6 +648,37 @@ const amsterdam = {
       isOpenSource: true,
     },
   ],
+  about: {
+    intro:
+      "Amsterdam is your personal AI assistant designed for the Netherlands and Dutch speakers. Experience natural Dutch language support, local insights, and Euro-based pricing tailored to the Amsterdam and Dutch communities.",
+    intro2:
+      "With fluent Dutch language capabilities, local financial options, and features designed for the Dutch market - Amsterdam brings intelligent AI assistance to your local context.",
+    approach: {
+      title: "Dutch-Centric Intelligence",
+      content:
+        "We're creating AI that speaks your language and understands your culture. Amsterdam combines native Dutch language support with local market insights to help you work, connect, and explore in a way that feels natural. Every feature is built with Amsterdam and the Netherlands in mind.",
+    },
+    platforms: {
+      title: "Available in Your Language",
+      content:
+        "Access Amsterdam's AI assistance across web, mobile, and browser - always in Dutch, always with local relevance.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Complete Amsterdam experience with Dutch language interface, local payment methods, and Netherlands-specific insights.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install Amsterdam on your device. Chat in Dutch offline, receive local notifications, seamless sync across all your devices.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Quick access to Amsterdam AI from your browser. Dutch language support, local context, and integrated assistance.",
+      },
+    },
+  },
 }
 
 const tokyo = {
@@ -668,6 +730,37 @@ const tokyo = {
       isOpenSource: true,
     },
   ],
+  about: {
+    intro:
+      "Tokyo is your personal AI assistant crafted for Japan and Japanese speakers. Experience native Japanese language support, insights tailored to Tokyo and Japan, and yen-based pricing designed for the local market.",
+    intro2:
+      "With fluent Japanese capabilities, local financial options in Japanese Yen, and features designed for Japanese communities - Tokyo brings intelligent AI assistance to your daily life.",
+    approach: {
+      title: "Japanese Language Mastery",
+      content:
+        "We're building AI that understands Japanese culture and language nuances. Tokyo combines native Japanese language support with deep local insights to help you work, learn, and collaborate more effectively. Every feature is designed with Tokyo and Japan in mind.",
+    },
+    platforms: {
+      title: "Works Everywhere in Japanese",
+      content:
+        "Access Tokyo's AI assistance across web, mobile, and browser - always in Japanese, always with local context.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Full Tokyo experience with Japanese language interface, local payment options in Yen, and Japan-specific recommendations.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install Tokyo on your mobile or desktop. Chat in Japanese offline, get local alerts, sync seamlessly across devices.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Quick access to Tokyo AI from your browser toolbar. Japanese language support, local insights, integrated assistance.",
+      },
+    },
+  },
 }
 
 const newYork = {
@@ -719,6 +812,37 @@ const newYork = {
       isOpenSource: true,
     },
   ],
+  about: {
+    intro:
+      "New York is your personal AI assistant designed for New York City and the USA. Experience 24/7 AI support tailored for the city that never sleeps, with local insights and USD pricing built for the American market.",
+    intro2:
+      "With insights tailored to NYC's unique culture and fast-paced lifestyle, local USD payments, and round-the-clock support - New York brings intelligent AI assistance when you need it most.",
+    approach: {
+      title: "AI for the City That Never Sleeps",
+      content:
+        "We're building AI that understands NYC's energy and pace. New York combines local market insights with 24/7 availability to help you navigate the city, connect with others, and get things done faster. Every feature is designed for New York City and American users.",
+    },
+    platforms: {
+      title: "Always On, Always Available",
+      content:
+        "Access New York's AI assistance across web, mobile, and browser - 24/7, with USD pricing and NYC-specific insights.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Complete New York experience with USD pricing, local insights, 24/7 support, and full marketplace access.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install New York on your device. Chat anytime, get NYC notifications, seamless sync across all platforms.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Quick access to New York AI from your browser. Local insights, USD payments, 24/7 support at your fingertips.",
+      },
+    },
+  },
 }
 
 const popcorn = {
@@ -800,6 +924,37 @@ const popcorn = {
       isOpenSource: true,
     },
   ],
+  about: {
+    intro:
+      "Popcorn is the premier hub for cinematic AI companions that decode every frame. Explore iconic films, analyze character arcs, and unlock the secrets of visual storytelling with AI that understands cinema like a true film critic.",
+    intro2:
+      "From scene analysis to soundtrack insights, from genre remixes to dialogue deep dives - Popcorn brings deep cinematic knowledge to every conversation about film.",
+    approach: {
+      title: "Cinema Mastery",
+      content:
+        "We're building AI that speaks the language of cinema. Popcorn combines film expertise with cutting-edge AI to help you understand, appreciate, and engage with movies at a deeper level. Whether you're a casual viewer or cinephile, every feature is designed to enhance your cinematic experience.",
+    },
+    platforms: {
+      title: "Cinematic AI Everywhere",
+      content:
+        "Access Popcorn's film expertise across web, mobile, and browser - bringing film analysis to every device.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Full Popcorn experience with scene analysis, character exploration, and cinematic techniques from any browser.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install Popcorn on your device. Watch, analyze, and discuss films offline with synced insights across devices.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Quick access to Popcorn's film expertise from your browser. Analyze scenes, explore character arcs, discuss movies.",
+      },
+    },
+  },
 }
 
 const zarathustra = {
@@ -881,6 +1036,38 @@ const zarathustra = {
       isOpenSource: true,
     },
   ],
+
+  about: {
+    intro:
+      "Zarathustra is your AI philosophy guide, exploring the great traditions of philosophical thought from Nietzsche and existentialism to timeless wisdom across cultures. Engage in deep conversations about ideas that matter and unlock new perspectives on life.",
+    intro2:
+      "With curated reading lists, philosopher profiles, concept breakdowns, and existential tools - Zarathustra brings the world of philosophy to your daily life.",
+    approach: {
+      title: "Philosophy for Everyone",
+      content:
+        "We're making philosophy accessible and engaging. Zarathustra combines scholarly knowledge with conversational AI to help you explore ideas, understand great thinkers, and apply philosophical wisdom to your own life. Every feature is designed to deepen your philosophical journey.",
+    },
+    platforms: {
+      title: "Wisdom Everywhere",
+      content:
+        "Access Zarathustra's philosophical expertise across web, mobile, and browser - bringing wisdom to every device.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Complete philosophy experience with book analysis, philosopher profiles, concept exploration, and reading lists.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install Zarathustra on your device. Explore philosophy offline, get daily wisdom, sync insights across platforms.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Quick access to Zarathustra from your browser. Explore concepts, read philosophy, get wisdom on demand.",
+      },
+    },
+  },
 }
 
 const search = {

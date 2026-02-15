@@ -107,7 +107,7 @@ export async function loadServerData(
 ): Promise<ServerData> {
   const { hostname, headers, cookies, url } = request
 
-  const isDev = process.env.MODE === "development"
+  const isDev = process.env.NODE_ENV !== "production"
 
   const API_URL = API_INTERNAL_URL
 
@@ -357,9 +357,12 @@ export async function loadServerData(
           API_URL,
         })
       : undefined
+
+    const showAllTribe =
+      pathname === "/tribe" ||
+      (postId ? true : siteConfig?.mode === "chrryAI" && pathname === "/")
     const canShowTribeProfile =
-      !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "") &&
-      pathname !== "/"
+      !excludedSlugRoutes.includes(pathname.split("?")?.[0]) && !showAllTribe
 
     const [
       translationsResult,

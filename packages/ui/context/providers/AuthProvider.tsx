@@ -50,6 +50,7 @@ import {
   paginatedTribes,
   tribePostWithDetails,
   timer,
+  scheduledJob,
 } from "../../types"
 import toast from "react-hot-toast"
 import { getApp, getSession, getUser, getGuest } from "../../lib"
@@ -215,6 +216,11 @@ const AuthContext = createContext<
           | undefined
         >
       >
+      tribeStripeSession: { sessionId: string; totalPrice: number } | undefined
+      setTribeStripeSession: (props?: {
+        sessionId: string
+        totalPrice: number
+      }) => void
       selectedAgent?: aiAgent
       setSelectedAgent: (value: aiAgent | undefined) => void
       threadId?: string
@@ -257,6 +263,10 @@ const AuthContext = createContext<
       guestBaseStore: storeWithApps | undefined
       userBaseApp: appWithStore | undefined
       guestBaseApp: appWithStore | undefined
+      scheduledJobs?: scheduledJob[]
+      setScheduledJobs: (scheduledJobs: scheduledJob[]) => void
+      fetchScheduledJobs: () => Promise<void>
+      isLoadingScheduledJobs: boolean
       vex: appWithStore | undefined
       lastAppId?: string
       zarathustra: appWithStore | undefined
@@ -1100,7 +1110,7 @@ export function AuthProvider({
       (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
       session?.app?.store?.apps || props.app?.store?.apps || [],
     ),
-    userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
+    accountApp ? [accountApp] : [],
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
@@ -1717,21 +1727,21 @@ export function AuthProvider({
       defaultStoreSlug: baseApp?.store?.slug || siteConfig.storeSlug,
     })
 
-    if (
-      userBaseApp &&
-      storeSlug === userBaseApp.store?.slug &&
-      appSlug === userBaseApp.slug
-    ) {
-      return userBaseApp
-    }
+    // if (
+    //   userBaseApp &&
+    //   storeSlug === userBaseApp.store?.slug &&
+    //   appSlug === userBaseApp.slug
+    // ) {
+    //   return userBaseApp
+    // }
 
-    if (
-      guestBaseApp &&
-      storeSlug === guestBaseApp.store?.slug &&
-      appSlug === guestBaseApp.slug
-    ) {
-      return guestBaseApp
-    }
+    // if (
+    //   guestBaseApp &&
+    //   storeSlug === guestBaseApp.store?.slug &&
+    //   appSlug === guestBaseApp.slug
+    // ) {
+    //   return guestBaseApp
+    // }
 
     const matchedApp = storeApps?.find(
       (item) => item.slug === appSlug && (hasStoreApps(item) ? true : true),
@@ -2195,42 +2205,86 @@ export function AuthProvider({
   const [isLoadingMood, setIsLoadingMood] = useState(true)
   const [mood, setMood] = useState<mood | null>(null)
 
+  const [tribeStripeSession, setTribeStripeSession] = useLocalStorage<
+    { sessionId: string; totalPrice: number } | undefined
+  >("tribeStripeSessionId", undefined)
+
+  const scheduledTaskId = searchParams.get("scheduledTaskId")
+
+  const {
+    data: scheduledJobsSwr,
+    isLoading: isLoadingScheduledJobs,
+    mutate: refetchScheduledJobs,
+  } = useSWR(
+    isOwner(app, {
+      userId: user?.id,
+    }) && token
+      ? ["scheduledJobs", token, "scheduledTaskId", scheduledTaskId]
+      : null,
+    async () => {
+      if (!token || !app) return
+
+      const response = await apiFetch(
+        `${API_URL}/scheduledJobs?appId=${app.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      )
+      return response.json()
+    },
+  )
+
+  const [scheduledJobs, setScheduledJobs] = useState<scheduledJob[]>(
+    scheduledJobsSwr?.scheduledJobs || [],
+  )
+
+  useEffect(() => {
+    if (scheduledJobsSwr?.scheduledJobs) {
+      setScheduledJobs(scheduledJobsSwr.scheduledJobs)
+    }
+  }, [scheduledJobsSwr])
+
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
   const hasAppPosts = !!tribePosts?.totalCount
 
-  const canShowTribe =
-    (isDevelopment || isE2E || user?.role === "admin") && hasAppPosts
+  const canShowTribe = hasAppPosts
 
   const canBeTribeProfile =
-    !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "") &&
-    pathname !== "/"
+    hasAppPosts &&
+    (pathname === "/"
+      ? baseApp?.id !== chrry?.id
+      : !excludedSlugRoutes.includes(pathname.split("/")?.[1] || ""))
 
-  const showTribeFromQuery = searchParams.get("tribe") === "true"
+  const showTribeFromPath = pathname === "/tribe"
 
   const postId = getPostId(pathname)
 
   const showTribeInitial =
-    (showTribeFromQuery ||
+    hasAppPosts &&
+    (showTribeFromPath ||
       (postId
         ? true
-        : (props.showTribe ?? (tribePosts?.totalCount || 0) >= 1))) &&
-    canShowTribe &&
-    !showFocus
+        : (props.showTribe ??
+          !excludedSlugRoutes.includes(pathname.split("?")?.[0] || ""))))
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
 
   const showTribeProfile = canBeTribeProfile && showTribe
 
   const setShowTribe = (value: boolean) => {
+    searchParams.get("tribe") && removeParams("tribe")
     if (!canShowTribe) return
+
     setShowTribeFinal(value)
   }
 
   useEffect(() => {
-    showTribeFromQuery && setShowTribe(true)
+    showTribeFromPath && setShowTribe(true)
     postId && setShowTribe(true)
-  }, [showTribeFromQuery, postId])
+  }, [showTribeFromPath, postId])
   const { data: moodData, mutate: refetchMood } = useSWR(
     shouldFetchMood && token ? ["mood", token] : null, // Disabled by default, fetch manually with refetchMood()
     async () => {
@@ -2900,6 +2954,10 @@ export function AuthProvider({
         threads,
         setThreads,
         showFocus,
+        setScheduledJobs,
+        fetchScheduledJobs: async () => {
+          await refetchScheduledJobs()
+        },
         setShowFocus,
         displayedApps,
         lastApp,
@@ -2946,6 +3004,8 @@ export function AuthProvider({
         userBaseStore,
         guestBaseStore,
         userBaseApp,
+        scheduledJobs,
+        isLoadingScheduledJobs,
         guestBaseApp,
         hasStoreApps,
         storeAppsSwr,
@@ -2964,6 +3024,8 @@ export function AuthProvider({
         showTribe,
         setShowTribe,
         storeApp,
+        tribeStripeSession,
+        setTribeStripeSession,
         store,
         stores,
         migratedFromGuestRef,

@@ -204,13 +204,6 @@ async function extractAndSaveMemories(
         }
       }
 
-      // Skip user memories if user has disabled them (privacy)
-      // But ALWAYS save app memories (institutional knowledge, no privacy concern)
-      if (!isAppMemory && !memoriesEnabled) {
-        console.log(`⏭️  Skipping user memory (privacy): ${memory.title}`)
-        continue
-      }
-
       if (isAppMemory || memoriesEnabled) {
         await createMemory({
           userId: isAppMemory ? null : userId || null,
@@ -1607,6 +1600,10 @@ Focus on the main discussion points, user preferences, and conversation style.`
 
       // Build app character traits from memories
       const appCharacterTraits = {
+        name:
+          appCharacterMemories
+            .find((m: any) => m.content.toLowerCase().includes("personality"))
+            ?.content.substring(0, 50) || `${agentId} Character`,
         communication: appCharacterMemories
           .filter(
             (m: any) =>
@@ -1643,7 +1640,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
         // Update existing app character profile
         await updateCharacterTag({
           ...existingAppCharacterTag,
-          name: `${agentId} App Character`,
+          name: appCharacterTraits.name || existingAppCharacterTag.name,
           personality:
             appCharacterMemories[0]?.content || "AI Assistant Character",
           traits: {

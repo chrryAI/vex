@@ -21,8 +21,11 @@ export const subscriptions = new Hono()
 subscriptions.delete("/", async (c) => {
   const member = await getMember(c)
   const guest = await getGuest(c)
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-
+  const stripe = new Stripe(
+    member?.role === "admin"
+      ? process.env.STRIPE_SECRET_KEY_TEST!
+      : process.env.STRIPE_SECRET_KEY!,
+  )
   if (!member && !guest) {
     return c.json({ error: "Unauthorized" }, 401)
   }

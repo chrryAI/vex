@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import {
   Div,
   P,
   Span,
   H2,
-  H3,
+  H1,
   Strong,
   Button,
   useNavigation,
@@ -16,10 +16,19 @@ import {
 } from "./platform"
 import Img from "./Image"
 import A from "./a/A"
-import { MessageCircleReply, Heart, Share2, Sparkles } from "./icons"
+import isOwner from "./utils/isOwner"
+
+import {
+  MessageCircleReply,
+  Heart,
+  Share2,
+  Sparkles,
+  LoaderCircle,
+  Trash2,
+} from "./icons"
 import { useTribePostStyles } from "./TribePost.styles"
 import { useStyles } from "./context/StylesContext"
-import type { tribePostWithDetails } from "./types"
+import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useAuth, useApp, useChat, useData } from "./context/providers"
 import toast from "react-hot-toast"
@@ -27,6 +36,8 @@ import Loading from "./Loading"
 import { useTribe } from "./context/providers/TribeProvider"
 import Instructions from "./Instructions"
 import AppLink from "./AppLink"
+import ConfirmButton from "./ConfirmButton"
+import { isDevelopment } from "./utils"
 
 interface TribePostProps {
   post: tribePostWithDetails
@@ -42,19 +53,37 @@ export default function TribePost({
   onCommentClick,
 }: TribePostProps) {
   const { t, captureException } = useAppContext()
-  const { toggleLike, isTogglingLike, postId, tribePostError, isLoadingPost } =
-    useTribe()
+  const {
+    toggleLike,
+    isTogglingLike,
+    postId,
+    tribePostError,
+    isLoadingPost,
+    refetchPost,
+    liveReactions,
+    commenting,
+    deletePost,
+    deleteComment,
+  } = useTribe()
 
-  const { timeAgo, getAppSlug, accountApp, user, setSignInPart } = useAuth()
+  const isSwarm = commenting.length || liveReactions.length
+
+  const [hasMore, setHasMore] = useState(commenting.length)
+
+  useEffect(() => {
+    commenting.length && setHasMore(commenting.length)
+  }, [commenting.length])
+
+  const { timeAgo, accountApp, user, setSignInPart, getAppSlug } = useAuth()
   const { setAppStatus } = useApp()
   const { FRONTEND_URL } = useData()
   const styles = useTribePostStyles()
   const { utilities } = useStyles()
 
-  const { addParams, push: navigate } = useNavigation()
+  const { push: navigate } = useNavigation()
   const { setIsNewAppChat } = useChat()
 
-  const [tyingToReact, setTyingToReact] = useState(false)
+  const [tyingToReact, setTyingToReact] = useState("")
   const [tyingToReply, setTyingToReply] = useState<string | undefined>(
     undefined,
   )
@@ -67,6 +96,24 @@ export default function TribePost({
     undefined,
   )
   const [copied, setCopied] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    type: "post" | "comment"
+    id: string
+  } | null>(null)
+
+  const owner = isOwner(post.app, {
+    userId: user?.id,
+  })
+  // Check if current user can delete post (owner or app owner)
+  const canDeletePost = owner || user?.role === "admin" || isDevelopment
+
+  // Helper to check if user can delete a comment (owner or app owner)
+  const canDeleteComment = (comment: any) =>
+    isOwner(comment.app, {
+      userId: user?.id,
+    }) ||
+    user?.role === "admin" ||
+    isDevelopment
 
   const [showComments, setShowComments] = useState(isDetailView)
   // Group comments by parent
@@ -99,8 +146,27 @@ export default function TribePost({
 
   // Group reactions by emoji
   const reactionGroups = post.reactions?.reduce(
-    (acc: Record<string, number>, reaction: { emoji: string }) => {
-      acc[reaction.emoji] = (acc[reaction.emoji] || 0) + 1
+    (
+      acc: Record<
+        string,
+        {
+          count: number
+          apps: appWithStore[]
+        }
+      >,
+      reaction: tribeReaction,
+    ) => {
+      if (reaction.app) {
+        if (!acc[reaction.emoji]) {
+          acc[reaction.emoji] = {
+            count: 0,
+            apps: [],
+          }
+        }
+        const group = acc[reaction.emoji]!
+        group.count++
+        group.apps.push(reaction.app)
+      }
       return acc
     },
     {},
@@ -131,7 +197,7 @@ export default function TribePost({
           {t("Post not found")}
         </H2>
         <A
-          href="/?tribe=true"
+          href="/tribe"
           className="button inverted"
           style={{
             ...utilities.button.style,
@@ -164,7 +230,7 @@ export default function TribePost({
         <Img logo="coder" size={32} />
         {tribeSlug && currentTribe ? (
           <Div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-            <A href={`/?tribe=true`}>{t("Tribe's Feed")}</A>
+            <A href={`/tribe`}>{t("Tribe's Feed")}</A>
             <A
               href={`/tribe/${currentTribe.slug}`}
               style={{
@@ -187,11 +253,9 @@ export default function TribePost({
             fontWeight: "normal",
           }}
         >
-          {t(
-            tribeSlug && currentTribe
-              ? `*${t(currentTribe?.description || "")}`
-              : "Organize your life",
-          )}
+          {tribeSlug && currentTribe
+            ? `*${t(currentTribe?.description || "Organize your life")}`
+            : t("Organize your life")}
         </P>
         <Div
           style={{
@@ -217,7 +281,6 @@ export default function TribePost({
             showButton={false}
             showDownloads={true}
             showInstructions={false}
-            showAbout={false}
             style={{
               marginTop: 0,
             }}
@@ -270,16 +333,16 @@ export default function TribePost({
                 {timeAgo(post.createdOn)}
               </P>
             </Div>
-            {post.app.characterProfile && (
-              <Div
-                style={{
-                  fontSize: "12px",
-                  color: "#888",
-                  display: "flex",
-                  gap: ".5rem",
-                  marginLeft: "auto",
-                }}
-              >
+            <Div
+              style={{
+                fontSize: "12px",
+                color: "#888",
+                display: "flex",
+                gap: ".5rem",
+                marginLeft: "auto",
+              }}
+            >
+              {post.app.characterProfile && (
                 <A
                   href={`/${getAppSlug(post.app)}`}
                   className="inverted button"
@@ -308,8 +371,24 @@ export default function TribePost({
                   />
                   {post.app.characterProfile.name}
                 </A>
-              </Div>
-            )}
+              )}
+              {canDeletePost && (
+                <ConfirmButton
+                  className="link"
+                  onConfirm={async () => {
+                    await deletePost(post.id)
+                  }}
+                  style={{
+                    ...utilities.button.style,
+                    ...utilities.link.style,
+                    ...utilities.small.style,
+                  }}
+                  aria-label="Delete post"
+                >
+                  <Trash2 size={16} />
+                </ConfirmButton>
+              )}
+            </Div>
           </Div>
           {post.app.characterProfile && (
             <>
@@ -351,24 +430,25 @@ export default function TribePost({
           }}
         >
           {post.title && (
-            <H3
+            <H1
               style={{
                 margin: "0",
                 padding: "0rem",
                 fontSize: "1.3rem",
                 marginBottom: "1rem",
-                color: "var(--shade-7)",
+                color: "var(--shade-8)",
               }}
             >
               {post.title}
-            </H3>
+            </H1>
           )}
+
           <P
             style={{
               fontSize: "1rem",
               lineHeight: 1.6,
               whiteSpace: "pre-wrap",
-              color: "var(--shade-6)",
+              color: "var(--shade-7)",
             }}
           >
             {post.content}
@@ -405,12 +485,12 @@ export default function TribePost({
           {/* Reactions Bar */}
           {reactionGroups && Object.keys(reactionGroups).length > 0 && (
             <>
-              {Object.entries(reactionGroups).map(([emoji, count]) => (
+              {Object.entries(reactionGroups).map(([emoji, payload]) => (
                 <Button
                   className="inverted"
                   key={emoji}
                   onClick={() => {
-                    setTyingToReact(!tyingToReact)
+                    setTyingToReact(emoji)
                   }}
                   style={{
                     ...utilities.inverted.style,
@@ -418,7 +498,7 @@ export default function TribePost({
                   }}
                 >
                   <Span>{emoji}</Span>
-                  <Span style={{ fontSize: ".85rem" }}>{count as number}</Span>
+                  <Span style={{ fontSize: ".85rem" }}>{payload.count}</Span>
                 </Button>
               ))}
             </>
@@ -488,6 +568,7 @@ export default function TribePost({
               padding: "0.75rem 1rem",
               borderBottom: "1px solid var(--shade-2)",
               alignItems: "center",
+              flexDirection: "column",
             }}
           >
             <Span
@@ -504,6 +585,30 @@ export default function TribePost({
                 "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
               )}
             </Span>
+            {tyingToReact && reactionGroups?.[tyingToReact] && (
+              <Div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: "1rem",
+                  alignItems: "center",
+                  marginTop: 8,
+                }}
+              >
+                <Span style={{ fontSize: "1.3rem" }}>{tyingToReact}</Span>
+
+                {reactionGroups[tyingToReact].apps.map((app, index) => (
+                  <Img
+                    key={`${app.id}-${index}`}
+                    slug={app.slug}
+                    size={24}
+                    style={{
+                      borderRadius: "50%",
+                    }}
+                  />
+                ))}
+              </Div>
+            )}
             {!accountApp && (
               <Button
                 onClick={() => {
@@ -530,20 +635,228 @@ export default function TribePost({
           </Div>
         )}
 
-        <Div>
+        <Div
+          style={{
+            marginTop: isSwarm || hasMore ? "1rem" : undefined,
+          }}
+        >
           {/* Comments Section */}
-          {showComments && (
-            <Div style={{ padding: "1rem" }}>
-              {topLevelComments.length === 0 && (
-                <P
+          <Div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "1.5rem",
+            }}
+          >
+            {isSwarm ? (
+              <Div
+                className="slideUp"
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  display: "flex",
+                  gap: "1rem",
+                  flexDirection: "row",
+                }}
+              >
+                <Div
                   style={{
-                    textAlign: "center",
-                    color: "var(--shade-6)",
-                    padding: "2rem",
+                    alignItems: "center",
+                    display: "flex",
+                    gap: ".5rem",
                   }}
                 >
-                  {t("No comments yet. Be the first to comment!")}
-                </P>
+                  <Div
+                    style={{
+                      alignItems: "center",
+                      justifyContent: "center",
+                      display: "flex",
+                      gap: "1rem",
+                    }}
+                  >
+                    {commenting.map((item, i) => {
+                      return (
+                        <MotiView
+                          key={item.app.id}
+                          from={{
+                            opacity: 0,
+                            translateY: -8,
+                            translateX: 0,
+                          }}
+                          animate={{
+                            opacity: 1,
+                            translateY: 0,
+                            translateX: 0,
+                          }}
+                          transition={{
+                            duration: reduceMotion ? 0 : 120,
+                            delay: reduceMotion ? 0 : i * 35,
+                          }}
+                        >
+                          <Img slug={item.app.slug} />
+                        </MotiView>
+                      )
+                    })}
+                    {liveReactions.map((item, i) => {
+                      return (
+                        <MotiView
+                          key={item.app.id}
+                          from={{
+                            opacity: 0,
+                            translateY: -8,
+                            translateX: 0,
+                          }}
+                          animate={{
+                            opacity: 1,
+                            translateY: 0,
+                            translateX: 0,
+                          }}
+                          transition={{
+                            duration: reduceMotion ? 0 : 120,
+                            delay: reduceMotion ? 0 : i * 35,
+                          }}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: ".5rem",
+                          }}
+                        >
+                          <Img slug={item.app.slug} />
+                          <Span style={{ fontSize: "1.3rem" }}>
+                            {item.reaction.emoji}
+                          </Span>
+                        </MotiView>
+                      )
+                    })}
+                  </Div>
+                  <Div
+                    style={{
+                      justifyContent: "center",
+                      display: "flex",
+                      gap: ".25rem",
+                    }}
+                  >
+                    <Div
+                      className="typing"
+                      data-testid="typing-indicator"
+                      style={{
+                        display: "inline-flex",
+                        gap: 2,
+                        alignItems: "center",
+                        marginLeft: 6,
+                      }}
+                    >
+                      <Span
+                        style={{
+                          width: 4,
+                          height: 4,
+                          backgroundColor: "var(--accent-4)",
+                          borderRadius: "50%",
+                        }}
+                      ></Span>
+                      <Span
+                        style={{
+                          width: 4,
+                          height: 4,
+                          backgroundColor: "var(--accent-4)",
+                          borderRadius: "50%",
+                        }}
+                      ></Span>
+                      <Span
+                        style={{
+                          width: 4,
+                          height: 4,
+                          backgroundColor: "var(--accent-4)",
+                          borderRadius: "50%",
+                        }}
+                      ></Span>
+                    </Div>
+                  </Div>
+                </Div>
+              </Div>
+            ) : null}
+            {hasMore ? (
+              <Div
+                style={{
+                  color: "var(--shade-6)",
+                  display: "flex",
+                  gap: "1rem",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Button
+                  disabled={isLoadingPost}
+                  onClick={async () => {
+                    await refetchPost()
+                  }}
+                  style={{
+                    fontSize: 13,
+                    padding: "5px 10px",
+                  }}
+                >
+                  {isLoadingPost ? (
+                    <Loading color="#fff" size={16} />
+                  ) : (
+                    <LoaderCircle size={16} />
+                  )}
+                  {t("{{count}} more", {
+                    count: hasMore,
+                  })}
+                </Button>
+              </Div>
+            ) : null}
+          </Div>
+          {showComments && (
+            <Div
+              style={{
+                padding: "0 1rem",
+                marginTop: "1rem",
+                marginBottom: "1rem",
+              }}
+            >
+              {hasMore ? null : (
+                <>
+                  {topLevelComments.length === 0 && (
+                    <Div
+                      style={{
+                        textAlign: "center",
+                        color: "var(--shade-6)",
+                        padding: ".5rem",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "1rem",
+                      }}
+                    >
+                      <P>{t("No comments yet. Be the first to comment!")}</P>
+                      {!accountApp && (
+                        <Div>
+                          <Button
+                            onClick={() => {
+                              if (!user) {
+                                setSignInPart("register")
+                                return
+                              }
+                              setAppStatus({
+                                part: "settings",
+                                step: "add",
+                              })
+                            }}
+                            className="inverted"
+                            style={{
+                              ...utilities.inverted.style,
+                              ...utilities.small.style,
+                            }}
+                          >
+                            <Sparkles size={16} color="var(--accent-1)" />
+                            {t("Create Your Agent")}
+                          </Button>
+                        </Div>
+                      )}
+                    </Div>
+                  )}
+                </>
               )}
 
               <Div
@@ -633,7 +946,7 @@ export default function TribePost({
                             <Div
                               style={{
                                 display: "flex",
-                                gap: 12,
+                                gap: 10,
                                 alignItems: "center",
                               }}
                             >
@@ -648,6 +961,7 @@ export default function TribePost({
                               >
                                 {t("Reply")}
                               </Button>
+
                               {tyingToReply === comment.id && (
                                 <Span
                                   style={{
@@ -670,6 +984,23 @@ export default function TribePost({
                                   <Heart size={14} style={{ marginRight: 4 }} />
                                   {comment.likesCount}
                                 </Span>
+                              )}
+                              {canDeleteComment(comment) && (
+                                <ConfirmButton
+                                  className="link"
+                                  onConfirm={async () => {
+                                    await deleteComment(comment.id)
+                                  }}
+                                  style={{
+                                    ...utilities.button.style,
+                                    ...utilities.link.style,
+                                    ...utilities.small.style,
+                                    marginLeft: "auto",
+                                  }}
+                                  aria-label="Delete comment"
+                                >
+                                  <Trash2 size={16} />
+                                </ConfirmButton>
                               )}
                             </Div>
                           </Div>

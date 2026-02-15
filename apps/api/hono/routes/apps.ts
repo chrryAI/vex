@@ -6,6 +6,7 @@ import {
   getStoreInstalls,
   deleteInstall,
   isE2E,
+  isDevelopment,
   ne,
 } from "@repo/db"
 import { apps } from "@repo/db/src/schema"
@@ -379,6 +380,7 @@ app.post("/", async (c) => {
               fit: "contain", // Center image, don't crop (adds padding if needed)
               position: "center",
               title: `${name}-${size}x${size}`,
+              type: "image",
             },
             context: "apps", // Use apps UploadThing account
           })
@@ -875,6 +877,18 @@ app.patch("/:id", async (c) => {
       tier,
     } = body
 
+    const skipDangerousZone =
+      isDevelopment || isE2E || body.dangerousZone === true
+
+    if (!skipDangerousZone) {
+      if (member?.role === "admin") {
+        return c.json(
+          { error: "Send dangerousZone to confirm" },
+          { status: 401 },
+        )
+      }
+    }
+
     if (tier && tier !== "free" && !member) {
       return c.json(
         { error: "You must be logged in to create a paid app" },
@@ -983,7 +997,7 @@ app.patch("/:id", async (c) => {
         for (const [key, value] of Object.entries(apiKeys)) {
           if (value && typeof value === "string" && value.trim()) {
             // Encrypt the API key using AES-256-GCM
-            hashedApiKeys[key] = await encrypt(value.trim())
+            hashedApiKeys[key] = encrypt(value.trim())
           }
         }
         updateData.apiKeys = hashedApiKeys
@@ -1146,6 +1160,7 @@ app.patch("/:id", async (c) => {
               fit: "contain", // Center image, don't crop (adds padding if needed)
               position: "center",
               title: `${name}-${size}x${size}`,
+              type: "image",
             },
           })
           return {
@@ -1221,6 +1236,9 @@ app.patch("/:id", async (c) => {
 
 app.delete("/:id", async (c) => {
   const id = c.req.param("id")
+  const body = await c.req.json()
+  const skipDangerousZone =
+    isDevelopment || isE2E || body.dangerousZone === true
   try {
     const member = await getMember(c, {
       skipCache: true,
@@ -1233,11 +1251,8 @@ app.delete("/:id", async (c) => {
       return c.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    if (member?.role === "admin" && !isE2E) {
-      return c.json(
-        { error: "Use seed api for deleting apps" },
-        { status: 403 },
-      )
+    if (member?.role === "admin" && !skipDangerousZone) {
+      return c.json({ error: "Send dangerousZone to confirm" }, { status: 401 })
     }
 
     const app = await getAppDb({
@@ -1379,7 +1394,7 @@ app.patch("/:id/moltbook", async (c) => {
 
         // Save agent info if available
         if (agentInfo) {
-          updateData.moltHandle = agentInfo.handle
+          updateData.moltHandle = agentInfo.name
           updateData.moltAgentName = agentInfo.name
           updateData.moltAgentKarma = agentInfo.karma
           updateData.moltAgentVerified = agentInfo.verified
@@ -1395,10 +1410,9 @@ app.patch("/:id/moltbook", async (c) => {
 
     // Fetch updated app
     const updatedApp = await getApp({
-      id: appId,
+      appId: appId,
       c,
       skipCache: true,
-      dept: 1,
     })
 
     return c.json({ app: updatedApp })

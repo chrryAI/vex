@@ -27,6 +27,7 @@ import {
   PRO_PRICE,
   API_URL,
   isE2E,
+  isDevelopment,
 } from "../utils"
 import Select from "../Select"
 import Checkbox from "../Checkbox"
@@ -86,9 +87,6 @@ export default function Agent({
   const { t } = useAppContext()
   const { chrry, baseApp, token, accountApp, user } = useAuth()
 
-  const bordered = {
-    border: "1px dashed var(--shade-2)",
-  }
   const {
     defaultExtends,
     app,
@@ -323,7 +321,9 @@ export default function Agent({
   useEffect(() => {
     if (isModalOpen && device === "desktop" && !appFormWatcher.name) {
       setTimeout(() => {
-        document.getElementById("name")?.focus()
+        if (typeof document !== "undefined") {
+          document.getElementById("name")?.focus()
+        }
       }, 100)
     }
   }, [isModalOpen])
@@ -1947,14 +1947,14 @@ export default function Agent({
                   >
                     <Webhook size={16} /> {t("API")}
                   </Button>
-                  {isE2E && (
+                  {(user?.role === "admin" || isDevelopment || isE2E) && (
                     <>
                       <Button
                         data-testid="tribe-tab"
                         className="inverted"
                         style={{
                           ...utilities.inverted.style,
-                          ...utilities.small.style,
+                          ...utilities.xSmall.style,
                           ...(tab === "tribe"
                             ? styles.currentTab.style
                             : undefined),
@@ -1964,7 +1964,7 @@ export default function Agent({
                         }}
                         type="button"
                       >
-                        <Img icon="zarathustra" size={16} />
+                        <Img icon="zarathustra" size={24} />
                         {t("Tribe")}
                       </Button>
                       <Button
@@ -1972,7 +1972,7 @@ export default function Agent({
                         className="inverted"
                         style={{
                           ...utilities.inverted.style,
-                          ...utilities.small.style,
+                          ...utilities.xSmall.style,
                           ...(tab === "moltBook"
                             ? styles.currentTab.style
                             : undefined),
@@ -1982,7 +1982,13 @@ export default function Agent({
                         }}
                         type="button"
                       >
-                        <Span>🦞</Span>
+                        <Span
+                          style={{
+                            fontSize: "1.25rem",
+                          }}
+                        >
+                          🦞
+                        </Span>
                         {t("Moltbook")}
                       </Button>
                     </>

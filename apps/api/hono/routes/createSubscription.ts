@@ -7,10 +7,13 @@ export const createSubscription = new Hono()
 
 // POST /createSubscription - Create Stripe checkout session for subscription
 createSubscription.post("/", async (c) => {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-
   const member = await getMember(c)
 
+  const stripe = new Stripe(
+    member?.role === "admin"
+      ? process.env.STRIPE_SECRET_KEY_TEST!
+      : process.env.STRIPE_SECRET_KEY!,
+  )
   try {
     const {
       customerEmail,
@@ -21,6 +24,7 @@ createSubscription.post("/", async (c) => {
       plan = "plus",
       tier,
       affiliateCode,
+      scheduledTaskId,
       customPrice, // For Tribe/Molt dynamic pricing (in EUR)
     } = (await c.req.json()) ||
     ({} as {
@@ -161,6 +165,7 @@ createSubscription.post("/", async (c) => {
       metadata: {
         userId,
         guestId,
+        scheduledTaskId,
         plan,
         ...(tier && { tier }),
         ...(affiliateCode && { affiliateCode }),

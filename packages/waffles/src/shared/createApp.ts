@@ -94,6 +94,8 @@ const createApp = async ({
     await wait(2000) // Give hydration a moment
   }
 
+  await signIn({ page })
+
   const capabilities = {
     chatGPT: {
       image: false,
@@ -401,8 +403,6 @@ const createApp = async ({
       await expect(app).toBeVisible()
     }
   }
-
-  await signIn({ page })
 
   await wait(7000)
 
