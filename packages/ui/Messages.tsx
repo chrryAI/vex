@@ -184,6 +184,24 @@ export default forwardRef<
     )
   }, [messages])
 
+  // Optimize lookups with Sets
+  const typingUserIds = useMemo(
+    () => new Set(typingUsers.map((u) => u.userId).filter(Boolean)),
+    [typingUsers],
+  )
+  const typingGuestIds = useMemo(
+    () => new Set(typingUsers.map((u) => u.guestId).filter(Boolean)),
+    [typingUsers],
+  )
+  const onlineUserIds = useMemo(
+    () => new Set(onlineUsers.map((u) => u.userId).filter(Boolean)),
+    [onlineUsers],
+  )
+  const onlineGuestIds = useMemo(
+    () => new Set(onlineUsers.map((u) => u.guestId).filter(Boolean)),
+    [onlineUsers],
+  )
+
   const isStreaming = messages?.some(
     (message) => message.message.isStreaming === true,
   )
@@ -243,17 +261,13 @@ export default forwardRef<
       )}
       <Div style={{ ...styles.messages.style }}>
         {sortedMessages?.map((message) => {
-          const isTyping = typingUsers.some(
-            (u) =>
-              (u.userId && u.userId === message.user?.id) ||
-              (u.guestId && u.guestId === message.guest?.id),
-          )
+          const isTyping =
+            (message.user?.id && typingUserIds.has(message.user.id)) ||
+            (message.guest?.id && typingGuestIds.has(message.guest.id))
 
-          const isOnline = onlineUsers.some(
-            (u) =>
-              (u.userId && u.userId === message.user?.id) ||
-              (u.guestId && u.guestId === message.guest?.id),
-          )
+          const isOnline =
+            (message.user?.id && onlineUserIds.has(message.user.id)) ||
+            (message.guest?.id && onlineGuestIds.has(message.guest.id))
 
           return (
             <Message
