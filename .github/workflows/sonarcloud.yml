@@ -50,7 +50,7 @@ jobs:
             -Dsonar.test.inclusions=**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx,**/__tests__/**,**/tests/**,**/*.test.js
             -Dsonar.exclusions=**/node_modules/**,**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx,**/__tests__/**,**/tests/**,**/*.test.js
             -Dsonar.coverage.exclusions=**/packages/auth/**
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.javascript.lcov.reportPaths=**/coverage/lcov.info
             -Dsonar.javascript.node.maxspace=6144
             -Dsonar.analysis.buildNumber=${{ github.run_number }}
             -Dsonar.analysis.commitHash=${{ github.sha }}

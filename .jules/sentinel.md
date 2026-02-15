@@ -85,3 +85,29 @@
 
 - **Strict Enforcement:** Enforce `options.type` in the upload function. If the caller expects an "image", reject everything else, even if it's a valid "text" file.
 - **Explicit Intent:** Callers must explicitly specify the expected type (e.g., `type: "image"`) for sensitive uploads.
+## 2026-05-25 - Request Object Spread in Arcjet
+
+**Vulnerability:** When creating an Arcjet-compatible request object, spreading a standard `Request` object (`...request`) results in missing properties (like `method`, `url`) because they are getters on the prototype, not enumerable own properties.
+
+**Learning:** Standard `Request` objects behave differently than plain JS objects. Always extract properties explicitly (e.g., `method: request.method`) when converting or cloning them for libraries.
+
+**Prevention:** Manually construct the compatible request object or use a utility that handles `Request` cloning properly.
+
+## 2026-05-25 - Testing Rate Limits in CI
+
+**Vulnerability:** New security code (like rate limiting) often requires "mocking the world" to verify in tests because real enforcement might be bypassed in test environments or depend on external services (like Arcjet).
+
+**Learning:** "0.0% Coverage on New Code" errors in CI usually mean your tests are either not running (wrong runner, e.g., `bun:test` vs `vitest`) or bypassing the logic you added. Integration tests that mock the service boundary (e.g., mocking `checkAuthRateLimit` itself) are crucial for verifying that the *application* correctly handles the security rejection (429), even if the *library* logic is tested separately.
+
+**Prevention:**
+1. Use the project's standard test runner (Vitest here).
+2. Write integration tests that mock the security check to return "fail/deny" to verify the app's response (429).
+3. Write unit tests for the security library logic using mocks for external dependencies.
+
+## 2026-05-25 - SonarCloud Monorepo Coverage
+
+**Vulnerability:** CI checks for code coverage were failing (0%) even with tests passing locally.
+
+**Learning:** In a monorepo setup with workspaces (like Turbo/pnpm), coverage reports are generated in each package directory (e.g., `apps/api/coverage/lcov.info`). However, the SonarCloud action was configured to look only for `coverage/lcov.info` in the root.
+
+**Prevention:** Updated `.github/workflows/sonarcloud.yml` to use the glob pattern `**/coverage/lcov.info` for `sonar.javascript.lcov.reportPaths`. This ensures SonarCloud picks up reports from all sub-projects.
