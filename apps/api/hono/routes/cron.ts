@@ -453,7 +453,6 @@ cron.get("/runScheduledJobs", async (c) => {
 
     // Find all jobs that need to run now
     const jobsToRun = await findJobsToRun()
-    console.log(`🚀 ~ cron.get ~ jobsToRun:`, jobsToRun)
 
     if (jobsToRun.length === 0) {
       console.log("⏭️ No scheduled jobs to run")

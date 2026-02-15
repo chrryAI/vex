@@ -1887,11 +1887,6 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
 
   const LOCK_TTL_MS = 5 * 60 * 1000 // 5 minutes for long-running jobs
 
-  console.log(
-    `🚀 ~ executeScheduledJob ~ new Date(Date.now() + LOCK_TTL_MS):`,
-    new Date(Date.now() + LOCK_TTL_MS),
-  )
-
   // Atomically claim the job by updating nextRunAt
   const claimResult = await db
     .update(scheduledJobs)

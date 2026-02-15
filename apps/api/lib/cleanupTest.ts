@@ -23,10 +23,12 @@ import {
   deleteStore,
   updateGuest,
   deletePlaceHolder,
+  db,
 } from "@repo/db"
 import {
   GUEST_CREDITS_PER_MONTH,
   MEMBER_CREDITS_PER_MONTH,
+  tribePosts,
 } from "@repo/db/src/schema"
 
 const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(
@@ -35,6 +37,8 @@ const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(
 )
 
 export default async function cleanupTest() {
+  await db.delete(tribePosts)
+
   for (const email of TEST_MEMBER_EMAILS) {
     const user = await getUser({ email, skipCache: true })
     if (user && email && user.email === email) {

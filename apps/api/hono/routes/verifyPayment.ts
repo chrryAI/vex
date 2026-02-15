@@ -771,8 +771,6 @@ verifyPayment.post("/", async (c) => {
       // Note: creditTransaction already created in createSubscription as pending (amount=0)
       // It will be updated below when activating the schedule with actual creditsReserved amount
 
-      console.log(`🚀 ~ verifyPayment.post ~ scheduledTaskId:`, scheduledTaskId)
-
       // Activate pending schedule if scheduledTaskId exists in metadata
       if (scheduledTaskId) {
         if (!member) {
@@ -795,7 +793,6 @@ verifyPayment.post("/", async (c) => {
           const expectedPrice = scheduledTask.pendingPayment
             ? scheduledTask.pendingPayment / 100
             : 0
-          console.log(`🚀 ~ verifyPayment.post ~ expectedPrice:`, expectedPrice)
 
           if (expectedPrice > 0) {
             const priceDifference = Math.abs(amountPaidEur - expectedPrice)

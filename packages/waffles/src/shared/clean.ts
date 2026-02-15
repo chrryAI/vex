@@ -26,12 +26,9 @@ export async function clean({
     timeout: 100000,
   })
 
-  await maximize({ page })
+  await page.getByTestId("new-chat-button").click()
 
-  await page.goto(getURL({ isLive, isMember, fingerprint }), {
-    waitUntil: "networkidle",
-    timeout: 100000,
-  })
+  await maximize({ page })
 
   await wait(500)
 

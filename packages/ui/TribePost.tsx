@@ -171,7 +171,6 @@ export default function TribePost({
     },
     {},
   )
-  console.log(`🚀 ~ TribePost ~ post.reactions:`, post.reactions)
 
   // Handle loading and error states when fetching a specific post
   if (postId && isLoadingPost) {
@@ -213,8 +212,6 @@ export default function TribePost({
       </Div>
     )
   }
-
-  console.log(`🚀 ~ TribePost ~ commenting:`, commenting)
 
   if (!post) {
     return <Loading fullScreen />

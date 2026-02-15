@@ -79,8 +79,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     refetchPosts,
     setPendingPostIds,
   } = useTribe()
-  console.log(`🚀 ~ Tribe ~ isSwarm:`, isSwarm)
-  console.log(`🚀 ~ Tribe ~ posting:`, posting)
+
   const {
     getAppSlug,
     app,

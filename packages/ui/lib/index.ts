@@ -174,8 +174,6 @@ export const getImageSrc = ({
     return app.images[0]?.url // 512px
   }
 
-  app && !app.id && console.log(`🚀 ~ getImageSrc ~ app:`, app)
-
   const appImageSrc =
     (logo || store) && !slug
       ? null
@@ -205,7 +203,6 @@ export const getImageSrc = ({
             : canEditApp
               ? image || iconSrc
               : undefined) // Remote web asset
-  app && !app.id && console.log(`🚀 ~ getImageSrc ~ appImageSrc:`, appImageSrc)
 
   const finalSrc =
     src || logoSrc || (!app && iconSrc) || appImageSrc || undefined

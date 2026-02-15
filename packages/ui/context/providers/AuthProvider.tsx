@@ -2253,20 +2253,22 @@ export function AuthProvider({
   const canShowTribe = hasAppPosts
 
   const canBeTribeProfile =
-    pathname === "/"
+    hasAppPosts &&
+    (pathname === "/"
       ? baseApp?.id !== chrry?.id
-      : !excludedSlugRoutes.includes(pathname.split("/")?.[1] || "")
+      : !excludedSlugRoutes.includes(pathname.split("/")?.[1] || ""))
 
   const showTribeFromPath = pathname === "/tribe"
 
   const postId = getPostId(pathname)
 
   const showTribeInitial =
-    showTribeFromPath ||
-    (postId
-      ? true
-      : (props.showTribe ??
-        !excludedSlugRoutes.includes(pathname.split("?")?.[0] || "")))
+    hasAppPosts &&
+    (showTribeFromPath ||
+      (postId
+        ? true
+        : (props.showTribe ??
+          !excludedSlugRoutes.includes(pathname.split("?")?.[0] || ""))))
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
 
