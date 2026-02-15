@@ -380,6 +380,7 @@ app.post("/", async (c) => {
               fit: "contain", // Center image, don't crop (adds padding if needed)
               position: "center",
               title: `${name}-${size}x${size}`,
+              type: "image",
             },
             context: "apps", // Use apps UploadThing account
           })
@@ -1159,6 +1160,7 @@ app.patch("/:id", async (c) => {
               fit: "contain", // Center image, don't crop (adds padding if needed)
               position: "center",
               title: `${name}-${size}x${size}`,
+              type: "image",
             },
           })
           return {
