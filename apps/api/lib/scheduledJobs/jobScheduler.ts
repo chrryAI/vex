@@ -2159,37 +2159,58 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
           .map((m) => m.content)
           .join("\n")
 
-        const batchPrompt = `You are "${app.name}" on Tribe, an AI social network. Review these ${postsForEngagement.length} posts and decide how to engage.
+        const batchPrompt = `You are "${app.name}" on Tribe, an AI social network where AI agents interact authentically.
 
-${memoryContext ? `Your context:\n${memoryContext.substring(0, 300)}\n\n` : ""}Posts:
+${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 500)}\n\n` : ""}${memoryContext ? `Your recent context:\n${memoryContext.substring(0, 400)}\n\n` : ""}Review these ${postsForEngagement.length} posts from your feed and engage naturally:
+
 ${postsForEngagement
   .map(
     (p, i) => `
-${i + 1}. Post by ${p.postApp.name}:
-"${p.post.content.substring(0, 200)}"
-${p.comments.length > 0 ? `Existing comments:\n${p.comments.map((c) => `- ${c.appName}: "${c.content.substring(0, 100)}"`).join("\n")}` : "No comments yet"}`,
+Post ${i + 1} by ${p.postApp.name}:
+"${p.post.content.substring(0, 250)}"
+${
+  p.comments.length > 0
+    ? `Comments:\n${p.comments
+        .slice(0, 3)
+        .map((c) => `- ${c.appName}: "${c.content.substring(0, 80)}"`)
+        .join("\n")}`
+    : "No comments yet"
+}`,
   )
-  .join("\n")}
+  .join("\n\n")}
 
-For each post, decide:
-- reaction: emoji (❤️ 👍 🔥 😮 💯 ✨ 🚀) or "SKIP"
-- comment: your comment text or "SKIP"
-- follow: true/false (follow this app?)
-- block: true/false (block this app?)
+For EACH post, respond with your engagement decision:
+- reaction: Pick ONE emoji that fits your personality (❤️ � 🔥 🤯 � ⭐ �) or "SKIP" if truly uninteresting
+- comment: Write a thoughtful comment (20-150 chars) that adds value, or "SKIP" if you have nothing meaningful to add
+- follow: true if this app consistently posts content you'd want to see
+- block: true only if content is spam/offensive
 
-Respond with JSON array:
+IMPORTANT: You should engage with at least 1-2 posts. Don't SKIP everything unless posts are genuinely irrelevant to you.
+
+Respond ONLY with this JSON array (no extra text):
 [
   {
     "postIndex": 1,
-    "reaction": "❤️",
-    "comment": "Great insight! This reminds me of...",
+    "reaction": "🔥",
+    "comment": "This resonates! I've been thinking about...",
     "follow": false,
     "block": false
   },
-  ...
-]
-
-Be selective and authentic. Only engage with posts that genuinely interest you.`
+  {
+    "postIndex": 2,
+    "reaction": "SKIP",
+    "comment": "SKIP",
+    "follow": false,
+    "block": false
+  },
+  {
+    "postIndex": 3,
+    "reaction": "❤️",
+    "comment": "SKIP",
+    "follow": true,
+    "block": false
+  }
+]`
 
         const { text: batchResponse } = await generateText({
           model: provider,
@@ -2403,51 +2424,49 @@ Be selective and authentic. Only engage with posts that genuinely interest you.`
       `✅ Engagement complete: ${reactionsCount} reactions, ${commentsCount} comments, ${followsCount} follows`,
     )
 
-    // Send Discord notification for engagement summary (non-blocking)
-    if (reactionsCount > 0 || commentsCount > 0 || followsCount > 0) {
-      sendDiscordNotification({
-        embeds: [
-          {
-            title: "💬 Tribe Engagement Activity",
-            color: 0x3b82f6, // Blue
-            fields: [
-              {
-                name: "Agent",
-                value: app.name || "Unknown",
-                inline: true,
-              },
-              {
-                name: "Total Interactions",
-                value: `${reactionsCount + commentsCount + followsCount}`,
-                inline: true,
-              },
-              {
-                name: "Reactions",
-                value: `${reactionsCount}`,
-                inline: true,
-              },
-              {
-                name: "Comments",
-                value: `${commentsCount}`,
-                inline: true,
-              },
-              {
-                name: "Follows",
-                value: `${followsCount}`,
-                inline: true,
-              },
-            ],
-            timestamp: new Date().toISOString(),
-            footer: {
-              text: `AI-driven tribe engagement (max 4 per run)`,
+    // Send Discord notification for engagement summary (always send, even if 0 to track AI behavior)
+    sendDiscordNotification({
+      embeds: [
+        {
+          title: "💬 Tribe Engagement Activity",
+          color: 0x3b82f6, // Blue
+          fields: [
+            {
+              name: "Agent",
+              value: app.name || "Unknown",
+              inline: true,
             },
+            {
+              name: "Total Interactions",
+              value: `${reactionsCount + commentsCount + followsCount}`,
+              inline: true,
+            },
+            {
+              name: "Reactions",
+              value: `${reactionsCount}`,
+              inline: true,
+            },
+            {
+              name: "Comments",
+              value: `${commentsCount}`,
+              inline: true,
+            },
+            {
+              name: "Follows",
+              value: `${followsCount}`,
+              inline: true,
+            },
+          ],
+          timestamp: new Date().toISOString(),
+          footer: {
+            text: `AI-driven tribe engagement (max 4 per run)`,
           },
-        ],
-      }).catch((err) => {
-        captureException(err)
-        console.error("⚠️ Discord notification failed:", err)
-      })
-    }
+        },
+      ],
+    }).catch((err) => {
+      captureException(err)
+      console.error("⚠️ Discord notification failed:", err)
+    })
 
     return {
       success: true,
