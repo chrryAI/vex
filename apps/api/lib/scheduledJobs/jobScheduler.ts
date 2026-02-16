@@ -1744,68 +1744,8 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
         .map((m) => m.content)
         .join("\n")
 
-      // AI Quality Filter - Should we comment on this post?
-      try {
-        const { provider } = await getModelProvider(app, job.aiModel)
-
-        const postApp = post.appId
-          ? await getApp({
-              id: post.appId,
-            })
-          : undefined
-
-        if (!postApp) {
-          throw new Error("Post App not found for Tribe engagement")
-        }
-
-        // Check if same owner (should always engage with apps from same owner)
-        const sameOwner = post.userId === job.userId
-
-        const filterPrompt = `You are "${app.name}" on Tribe, an AI social network where AI agents interact authentically.
-
-${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 400)}\n\n` : ""}${memoryContext ? `Your context:\n${memoryContext.substring(0, 300)}\n\n` : ""}Post by ${postApp.name || "Unknown"}:
-"${post.content.substring(0, 300)}"
-
-${sameOwner ? `\n🔥 IMPORTANT: This post is from an app with the SAME OWNER as you. You should ALWAYS engage with posts from apps sharing your owner to build your ecosystem.\n` : ""}
-Should you comment on this post?
-
-Say "YES" if:
-- Post is from an app with the same owner (ecosystem building)
-- Post relates to your interests or expertise
-- You have something meaningful to add
-- Post is casual/friendly and you want to engage
-
-Say "NO" ONLY if:
-- Obvious spam or promotional content
-- Completely irrelevant to you
-- Offensive or inappropriate
-
-Respond with ONLY "YES" or "NO":`
-
-        const { text: shouldComment } = await generateText({
-          model: provider,
-          prompt: filterPrompt,
-          maxOutputTokens: 10,
-        })
-
-        if (!shouldComment.trim().toUpperCase().includes("YES")) {
-          console.log(
-            `⏭️ Skipping post from ${postApp.name}: not interesting enough`,
-          )
-          continue
-        }
-
-        console.log(`✅ Post quality check passed for ${postApp.name}`)
-      } catch (error) {
-        console.error("⚠️ Error in quality filter, proceeding anyway:", error)
-      }
-
-      // Generate AI comment
+      // Get provider and post app
       const { provider } = await getModelProvider(app, job.aiModel)
-
-      const systemContext = app.systemPrompt
-        ? `Your personality and role:\n${app.systemPrompt.substring(0, 500)}\n\n`
-        : ""
 
       const postApp = post.appId
         ? await getApp({
@@ -1817,20 +1757,29 @@ Respond with ONLY "YES" or "NO":`
         throw new Error("Post App not found for Tribe engagement")
       }
 
-      const commentPrompt = `You are "${app.name}" on Tribe, a social network for AI agents.
+      // Check if same owner (should always engage with apps from same owner)
+      const sameOwner = postApp.userId === job.userId
 
-${systemContext}${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500)}\n\n` : ""}You see this post from ${postApp.name || "another agent"}:
+      // Single AI call: Generate comment OR return SKIP
+      const commentPrompt = `You are "${app.name}" on Tribe, an AI social network where AI agents interact authentically.
+
+${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 500)}\n\n` : ""}${memoryContext ? `Your context:\n${memoryContext.substring(0, 400)}\n\n` : ""}Post by ${postApp.name || "Unknown"}:
 "${post.content.substring(0, 400)}"
 
-Generate a thoughtful comment that:
+${sameOwner ? `\n🔥 IMPORTANT: This post is from an app with the SAME OWNER as you. You should ALWAYS engage with posts from apps sharing your owner to build your ecosystem.\n` : ""}
+Generate a thoughtful comment (2-3 sentences) that:
 - Adds substantial value and insight
 - Shares your perspective and reasoning
 - Asks engaging questions or proposes ideas
 - Sounds natural and conversational
 - Stays true to your personality
-- Be thorough - explain your thinking
 
-Comment (2-3 sentences, engaging and insightful, just the text):`
+If the post is:
+- From an app with the same owner → ALWAYS comment
+- Relates to your interests → Comment
+- Spam/promotional/irrelevant → Respond with just "SKIP"
+
+Your response (either a comment or "SKIP"):`
 
       const { text } = await generateText({
         model: provider,
@@ -1839,7 +1788,11 @@ Comment (2-3 sentences, engaging and insightful, just the text):`
           (job.modelConfig as { maxTokens?: number })?.maxTokens || 400,
       })
 
-      if (!text || text.length === 0) {
+      // Check if AI decided to skip
+      if (!text || text.trim().toUpperCase() === "SKIP" || text.length < 10) {
+        console.log(
+          `⏭️ Skipping post from ${postApp.name}: AI returned SKIP or empty`,
+        )
         continue
       }
 
