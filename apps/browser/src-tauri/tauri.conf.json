@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Vex 🍒",
+  "productName": "Search 🍒",
   "version": "0.1.0",
-  "identifier": "dev.chrry.vex",
+  "identifier": "dev.chrry.search",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5174",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Vex 🍒",
+        "title": "Search 🍒",
         "width": 1200,
         "height": 800,
         "minWidth": 800,
@@ -82,8 +82,8 @@
       "icons/icon.ico"
     ],
     "category": "Productivity",
-    "shortDescription": "Your AI-Powered Life",
-    "longDescription": "Your AI-Powered Life",
+    "shortDescription": "AI-powered real-time web search with cited sources. Get instant, accurate answer",
+    "longDescription": "AI-powered real-time web search with cited sources. Get instant, accurate answers with verifiable references worldwide.",
     "macOS": {
       "entitlements": "entitlements.plist",
       "signingIdentity": "Developer ID Application: iliyan velinov (F5MTBDR7VX)",

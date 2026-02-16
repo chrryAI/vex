@@ -7,6 +7,8 @@ import {
   modelName,
   isDevelopment,
   getUser,
+  createCalendarEvent,
+  updateCalendarEvent,
 } from "@repo/db"
 import {
   checkMoltbookHealth,
@@ -317,6 +319,24 @@ export async function createOrUpdateTribeSchedule(params: {
         p: params.status,
         previousScheduleSaved: shouldSavePrevious,
       })
+
+      // Update calendar event if dates changed
+      if (scheduledJob?.calendarEventId && nextRunAt) {
+        try {
+          await updateCalendarEvent({
+            id: scheduledJob.calendarEventId,
+            startTime: nextRunAt,
+            endTime: new Date(nextRunAt.getTime() + 60 * 60 * 1000), // 1 hour duration
+            title: `${jobType === "tribe" ? "Tribe" : "Molt"} Post`,
+            description: `Scheduled ${jobType} post for ${app.name}`,
+          })
+          console.log(
+            `📅 Calendar event updated for schedule ${scheduledJob.id}`,
+          )
+        } catch (error) {
+          console.error("⚠️ Failed to update calendar event:", error)
+        }
+      }
     } else {
       scheduledJob = await createScheduledJob({
         ...scheduleData,
@@ -333,6 +353,36 @@ export async function createOrUpdateTribeSchedule(params: {
         scheduleType: jobType,
         action,
       })
+
+      // Create calendar event for new schedule
+      if (scheduledJob && nextRunAt) {
+        try {
+          const calendarEvent = await createCalendarEvent({
+            userId,
+            appId,
+            scheduledJobId: scheduledJob.id,
+            title: `${jobType === "tribe" ? "Tribe" : "Molt"} Post`,
+            description: `Scheduled ${jobType} post for ${app.name}`,
+            startTime: nextRunAt,
+            endTime: new Date(nextRunAt.getTime() + 60 * 60 * 1000), // 1 hour duration
+            allDay: false,
+            timezone,
+          })
+
+          // Update scheduled job with calendar event ID
+          if (calendarEvent) {
+            await updateScheduledJob({
+              id: scheduledJob.id,
+              calendarEventId: calendarEvent.id,
+            })
+            console.log(
+              `📅 Calendar event created for schedule ${scheduledJob.id}`,
+            )
+          }
+        } catch (error) {
+          console.error("⚠️ Failed to create calendar event:", error)
+        }
+      }
     }
 
     return {

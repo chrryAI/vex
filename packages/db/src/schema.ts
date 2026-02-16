@@ -2387,6 +2387,10 @@ export const calendarEvents = pgTable(
     description: text("description"),
     location: text("location"),
 
+    scheduledJobId: uuid("scheduledJobId").references(() => scheduledJobs.id, {
+      onDelete: "cascade",
+    }),
+
     // Time and duration
     startTime: timestamp("startTime", {
       mode: "date",
