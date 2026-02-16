@@ -228,9 +228,14 @@ export function checkThreadSummaryLimit({
   } else {
     limit = THREAD_SUMMARY_LIMITS.guest
   }
+  console.log(`🚀 ~ checkThreadSummaryLimit ~ limit:`, limit)
 
   try {
     // Check if summary was created today
+    console.log(
+      `🚀 ~ checkThreadSummaryLimit ~ summary?.createdOn:`,
+      summary?.createdOn,
+    )
     if (summary?.createdOn) {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
@@ -240,6 +245,9 @@ export function checkThreadSummaryLimit({
       // If summary was created today, check if thread message count is under limit
       // This prevents one huge thread from consuming entire daily quota
       if (summaryDate.getTime() === today.getTime()) {
+        console.log(`🚀 ~ checkThreadSummaryLimit ~ today:`, today)
+        console.log(`🚀 ~ checkThreadSummaryLimit ~ summaryDate:`, summaryDate)
+        console.log(`🚀 ~ checkThreadSummaryLimit ~ limit:`, limit)
         return summary.messageCount < limit
       }
     }

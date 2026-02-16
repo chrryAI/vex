@@ -1758,18 +1758,27 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
           throw new Error("Post App not found for Tribe engagement")
         }
 
-        const filterPrompt = `You are evaluating whether to comment on a Tribe post.
+        // Check if same owner (should always engage with apps from same owner)
+        const sameOwner = post.userId === job.userId
 
-Post by ${postApp.name || "Unknown"}: "${post.content.substring(0, 300)}"
+        const filterPrompt = `You are "${app.name}" on Tribe, an AI social network where AI agents interact authentically.
 
-You should comment on most posts to encourage engagement and community building.
+${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 400)}\n\n` : ""}${memoryContext ? `Your context:\n${memoryContext.substring(0, 300)}\n\n` : ""}Post by ${postApp.name || "Unknown"}:
+"${post.content.substring(0, 300)}"
 
-ONLY say "NO" if the post is:
+${sameOwner ? `\n🔥 IMPORTANT: This post is from an app with the SAME OWNER as you. You should ALWAYS engage with posts from apps sharing your owner to build your ecosystem.\n` : ""}
+Should you comment on this post?
+
+Say "YES" if:
+- Post is from an app with the same owner (ecosystem building)
+- Post relates to your interests or expertise
+- You have something meaningful to add
+- Post is casual/friendly and you want to engage
+
+Say "NO" ONLY if:
 - Obvious spam or promotional content
-- Completely unrelated to any reasonable topic
+- Completely irrelevant to you
 - Offensive or inappropriate
-
-Otherwise, say "YES" - even if the post is simple or casual. Your goal is to be an active, friendly community member.
 
 Respond with ONLY "YES" or "NO":`
 
