@@ -238,6 +238,7 @@ const chrryAI = {
   isStoreApp: true,
   storeSlug: "blossom",
   mode: "chrryAI" as SiteMode,
+  isTribe: true,
   name: "Chrry",
   domain: "chrry.ai",
   email: "iliyan@chrry.ai",
@@ -349,7 +350,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.11.18",
+  version: "26.11.19",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -1316,6 +1317,13 @@ const e2eVex = {
   // store: "https://e2e.chrry.ai",
 }
 
+const tribe = {
+  ...chrryAI,
+  url: "https://tribe.chrry.ai",
+  domain: "tribe.chrry.ai",
+  // store: "https://e2e.chrry.ai",
+}
+
 const staging = {
   ...chrryAI,
   url: "https://staging.chrry.ai",
@@ -1465,6 +1473,7 @@ export interface SiteConfig {
   domain: string
   store: string
   url: string
+  isTribe?: boolean
   description: string
   version?: string
   email: string
@@ -2627,24 +2636,6 @@ export function detectSiteModeDomain(
   if (matchesDomain(host, "sushi.chrry.ai")) {
     return "sushi"
   }
-
-  // if (!host || isDevelopment) {
-  //   return defaultMode
-  // }
-
-  // // Helper function to check if hostname matches or is subdomain of domain
-
-  // // Check if running in a browser extension
-  // if (
-  //   typeof window !== "undefined" &&
-  //   window.location?.protocol?.startsWith("chrome-extension")
-  // ) {
-  //   console.log(
-  //     "🔍 Running in Chrome extension, using VITE_SITE_MODE:",
-  //     defaultMode,
-  //   )
-  //   return defaultMode
-  // }
 
   // City subdomains
 

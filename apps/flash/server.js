@@ -18,7 +18,7 @@ import arcjet, { shield, fixedWindow } from "@arcjet/node"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.14.34"
+const VERSION = "1.14.37"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -357,10 +357,11 @@ app.get("/api/health", (req, res) => {
 // Sitemap.xml route - proxy to API
 app.get("/sitemap.xml", async (req, res) => {
   try {
-    const apiUrl =
-      process.env.INTERNAL_API_URL ||
-      process.env.API_URL ||
-      "https://chrry.dev/api"
+    const apiUrl = isDev
+      ? "http://localhost:3001/api"
+      : process.env.INTERNAL_API_URL ||
+        process.env.API_URL ||
+        "https://chrry.dev/api"
 
     // Add timeout to prevent hanging
     const controller = new AbortController()

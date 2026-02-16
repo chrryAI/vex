@@ -266,9 +266,42 @@ export async function createOrUpdateTribeSchedule(params: {
     let action: "CREATE" | "UPDATE"
 
     if (existingSchedule) {
+      // Save previous schedule to metadata ONLY if it's active (not pending)
+      const shouldSavePrevious =
+        scheduleData.status === "pending_payment" &&
+        existingSchedule.status === "active"
+
+      const previousSchedule = shouldSavePrevious
+        ? {
+            scheduledTimes: existingSchedule.scheduledTimes || [],
+            frequency: existingSchedule.frequency,
+            startDate: existingSchedule.startDate?.toISOString() || "",
+            endDate: existingSchedule.endDate?.toISOString(),
+            timezone: existingSchedule.timezone || "UTC",
+            aiModel: existingSchedule.aiModel,
+            modelConfig: existingSchedule.modelConfig || undefined,
+            contentTemplate: existingSchedule.contentTemplate || undefined,
+            contentRules: existingSchedule.contentRules || undefined,
+            estimatedCreditsPerRun:
+              existingSchedule.estimatedCreditsPerRun || 0,
+            totalEstimatedCredits: existingSchedule.totalEstimatedCredits || 0,
+            totalPrice: existingSchedule.totalPrice || 0,
+            isPaid: existingSchedule.isPaid || false,
+            stripePaymentIntentId:
+              existingSchedule.stripePaymentIntentId || undefined,
+            updatedAt: new Date().toISOString(),
+          }
+        : undefined
+
       scheduledJob = await updateScheduledJob({
         id: existingSchedule.id,
         ...scheduleData,
+        metadata: shouldSavePrevious
+          ? {
+              ...existingSchedule.metadata,
+              previousSchedule,
+            }
+          : existingSchedule.metadata,
         nextRunAt: isDevelopment || user?.role === "admin" ? null : undefined,
       })
       action = "UPDATE"
@@ -282,6 +315,7 @@ export async function createOrUpdateTribeSchedule(params: {
         priceDifference,
         scheduleData: scheduleData.status,
         p: params.status,
+        previousScheduleSaved: shouldSavePrevious,
       })
     } else {
       scheduledJob = await createScheduledJob({

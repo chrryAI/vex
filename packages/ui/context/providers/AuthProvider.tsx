@@ -198,6 +198,8 @@ const AuthContext = createContext<
       setShowFocus: (showFocus: boolean) => void
       showFocus: boolean | undefined
       isLoadingTasks: boolean
+      setIsLoadingPosts: (value: boolean) => void
+      isLoadingPosts: boolean
       fetchTasks: () => Promise<void>
       tasks?: {
         tasks: Task[]
@@ -1102,6 +1104,9 @@ export function AuthProvider({
     initialTribePost,
   )
 
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
+
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
 
@@ -1145,8 +1150,12 @@ export function AuthProvider({
         baseApp,
       })
 
-      if (targetApp?.id === baseApp?.id) {
-        return `/${targetApp.slug}`
+      if (
+        chrry?.slug &&
+        baseApp?.id === chrry?.id &&
+        targetApp.id === chrry?.id
+      ) {
+        return `/${chrry?.slug}`
       }
 
       return result
@@ -2248,36 +2257,48 @@ export function AuthProvider({
 
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
-  const hasAppPosts = !!tribePosts?.totalCount
-
-  const canShowTribe = hasAppPosts
-
-  const canBeTribeProfile =
-    hasAppPosts &&
-    (pathname === "/"
-      ? baseApp?.id !== chrry?.id
-      : !excludedSlugRoutes.includes(pathname.split("/")?.[1] || ""))
+  const canShowTribe = true
 
   const showTribeFromPath = pathname === "/tribe"
 
+  const isExcluded = excludedSlugRoutes?.includes(
+    pathname.split("?")?.[0] || "",
+  )
+
   const postId = getPostId(pathname)
 
-  const showTribeInitial =
-    hasAppPosts &&
-    (showTribeFromPath ||
-      (postId
-        ? true
-        : (props.showTribe ??
-          !excludedSlugRoutes.includes(pathname.split("?")?.[0] || ""))))
+  // Only show tribe profile when on app's own page (not /tribe route)
+  const isOnAppPage = app && pathname === getAppSlug(app)
+
+  const showAllTribe =
+    pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
+
+  const canBeTribeProfile =
+    !excludedSlugRoutes.includes(pathname.split("?")?.[0] || "") &&
+    !showAllTribe &&
+    !postId
+  const showTribeInitial = !!(
+    !postId &&
+    (showAllTribe ||
+      postId ||
+      props.showTribe ||
+      (pathname === "/"
+        ? baseApp?.slug === siteConfig.slug && siteConfig.isTribe
+        : !excludedSlugRoutes.includes(pathname.split("?")?.[0] || "")))
+  )
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
+  const showTribeProfileInternal =
+    !!(canBeTribeProfile && showTribe) || canBeTribeProfile
 
-  const showTribeProfile = canBeTribeProfile && showTribe
+  const showTribeProfileMemo = useMemo(
+    () => showTribeProfileInternal,
+    [showTribeProfileInternal],
+  )
+
+  const showTribeProfile = showTribeProfileInternal || showTribeProfileMemo
 
   const setShowTribe = (value: boolean) => {
-    searchParams.get("tribe") && removeParams("tribe")
-    if (!canShowTribe) return
-
     setShowTribeFinal(value)
   }
 
@@ -3143,6 +3164,8 @@ export function AuthProvider({
         PROD_FRONTEND_URL,
         isIDE,
         toggleIDE,
+        isLoadingPosts,
+        setIsLoadingPosts,
         findAppByPathname,
         chromeWebStoreUrl,
         siteConfig,

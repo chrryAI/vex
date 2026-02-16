@@ -62,7 +62,6 @@ describe("GET /resize SSRF Protection", () => {
     // Mock fetch to redirect to a "private" url
     global.fetch = vi.fn(async (req) => {
       // Handle both Request object and URL string
-      // @ts-expect-error
       const url = typeof req === "string" ? req : req.url
 
       // If we are fetching the initial URL (not private)

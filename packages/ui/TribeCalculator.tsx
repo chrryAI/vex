@@ -22,7 +22,6 @@ import ConfirmButton from "./ConfirmButton"
 import A from "./a/A"
 
 import {
-  TimerReset,
   CalendarFold,
   CalendarMinus,
   ClipboardClock,
@@ -125,7 +124,10 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     let schedule =
       (!skipExistingSchedule &&
         (existingSchedule?.scheduledTimes.map((slot: any) => {
-          const [hour, minute] = slot.time.split(":").map(Number)
+          // Parse hour/minute from ISO time string (e.g., "2026-02-15T20:40:51.755Z")
+          // Extract time portion: "20:40:51.755Z" -> ["20", "40"]
+          const timeStr = slot.time.split("T")[1] // Get time part after "T"
+          const [hour, minute] = timeStr.split(":").map(Number)
           return {
             hour,
             minute,
@@ -195,7 +197,12 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
 
     return {
       // Form state
-      frequency: frequency as "daily" | "weekly" | "monthly" | "once",
+      frequency: frequency as
+        | "daily"
+        | "weekly"
+        | "monthly"
+        | "once"
+        | "custom",
       totalPrice: estimate?.totalPrice || 0,
       schedule,
       creditsPerPost: estimate?.creditsPerPost || 0,
@@ -219,7 +226,9 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
 
   // Form state
   const frequency = formData.frequency
-  const setFrequency = (value: "daily" | "weekly" | "monthly") => {
+  const setFrequency = (
+    value: "daily" | "weekly" | "monthly" | "once" | "custom",
+  ) => {
     setFormData({ ...formData, frequency: value })
   }
 
@@ -651,23 +660,25 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
           </Div>
           <Div
             style={{
-              ...utilities.right.style,
               display: "flex",
               alignItems: "center",
               gap: "0.8rem",
+              ...utilities.right.style,
             }}
           >
-            <TimerReset size={20} />
+            <Text style={{ fontSize: "0.8rem", fontWeight: "500" }}>
+              {t("Frequency:")}
+            </Text>
             <Select
               style={{
                 ...agentStyles.select.style,
-                ...utilities.right.style,
               }}
               data-testid="default-model-select"
               options={[
                 { value: "daily", label: "daily" },
                 { value: "weekly", label: "weekly" },
                 { value: "monthly", label: "monthly" },
+                { value: "custom", label: "custom" },
               ]}
               id="defaultModel"
               value={frequency}
@@ -681,7 +692,9 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                   return
                 }
                 const value = typeof e === "string" ? e : e.target.value
-                setFrequency(value as "daily" | "weekly" | "monthly")
+                setFrequency(
+                  value as "daily" | "weekly" | "monthly" | "once" | "custom",
+                )
               }}
             />
           </Div>
@@ -1130,6 +1143,30 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                           { value: "perplexity", label: "🕸️ Perplexity" },
                         ]}
                       />
+                      {frequency === "custom" && (
+                        <Select
+                          style={{
+                            fontSize: ".85rem",
+                          }}
+                          value={String(time.intervalMinutes || 120)}
+                          onChange={(e) =>
+                            updateScheduleTime(index, {
+                              intervalMinutes: parseInt(
+                                typeof e === "string" ? e : e.target.value,
+                              ),
+                            })
+                          }
+                          options={[
+                            { value: "30", label: "⏱️ 30min" },
+                            { value: "60", label: "⏱️ 1h" },
+                            { value: "120", label: "⏱️ 2h" },
+                            { value: "240", label: "⏱️ 4h" },
+                            { value: "480", label: "⏱️ 8h" },
+                            { value: "720", label: "⏱️ 12h" },
+                            { value: "1440", label: "⏱️ 24h" },
+                          ]}
+                        />
+                      )}
                       <Div
                         style={{
                           display: "flex",

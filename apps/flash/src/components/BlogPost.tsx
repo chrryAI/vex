@@ -3,6 +3,7 @@ import type { Components } from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { safeJSONStringify } from "../utils/security"
 import { BlogPostWithContent } from "../blog-loader"
+// @ts-ignore
 import styles from "./BlogPost.module.scss"
 
 interface BlogPostProps {

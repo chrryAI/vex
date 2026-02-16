@@ -2,7 +2,7 @@ import { openai } from "@ai-sdk/openai"
 import { embedMany } from "ai"
 import { db } from "@repo/db"
 import { codeEmbeddings } from "@repo/db"
-import { eq, and } from "drizzle-orm"
+import { eq, and, sql } from "drizzle-orm"
 import type { ASTNode } from "./parseCodebase"
 
 interface CodeChunk {
@@ -113,13 +113,13 @@ export async function storeEmbeddings(chunks: CodeChunk[]) {
           content: chunk.content,
           startLine: chunk.startLine,
           endLine: chunk.endLine,
-          embedding: JSON.stringify(chunk.embedding),
+          embedding: sql`${JSON.stringify(chunk.embedding)}::vector`,
           metadata: chunk.metadata,
         })
         .onConflictDoUpdate({
           target: codeEmbeddings.id,
           set: {
-            embedding: JSON.stringify(chunk.embedding),
+            embedding: sql`${JSON.stringify(chunk.embedding)}::vector`,
             commitHash: chunk.commitHash,
             content: chunk.content,
             updatedAt: new Date(),

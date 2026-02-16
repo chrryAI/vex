@@ -1,8 +1,8 @@
-import { isE2E } from "@chrryai/chrry/utils"
+import { isE2E as isE2EInternal } from "@chrryai/chrry/utils"
 import { generateText } from "ai"
 import { faker } from "@faker-js/faker"
 import captureException from "../lib/captureException"
-import { getThread, getPureApp, VEX_LIVE_FINGERPRINTS } from "@repo/db"
+import { getThread, getPureApp, VEX_LIVE_FINGERPRINTS, getUser } from "@repo/db"
 import { getModelProvider } from "../lib/getModelProvider"
 
 export const trimTitle = (str: string) =>
@@ -21,14 +21,26 @@ export async function generateThreadTitle({
   fingerprint?: string
   threadId?: string
 }): Promise<string> {
-  if (fingerprint && isE2E && !VEX_LIVE_FINGERPRINTS.includes(fingerprint))
-    return faker.lorem.sentence()
-
   const thread = await getThread({
     id: threadId,
   })
 
   if (!thread) return ""
+
+  const member = thread.userId
+    ? await getUser({
+        id: thread.userId,
+      })
+    : undefined
+
+  const isE2E =
+    member?.role !== "admin" &&
+    fingerprint &&
+    !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
+    isE2EInternal
+
+  if (fingerprint && isE2E && !VEX_LIVE_FINGERPRINTS.includes(fingerprint))
+    return faker.lorem.sentence()
 
   const app = thread.appId
     ? await getPureApp({
@@ -125,14 +137,26 @@ export async function generateThreadInstructions({
   threadId?: string
   fingerprint?: string
 }): Promise<string> {
-  if (fingerprint && isE2E && !VEX_LIVE_FINGERPRINTS.includes(fingerprint))
-    return faker.lorem.sentence()
-
   const thread = await getThread({
     id: threadId,
   })
 
   if (!thread) return ""
+
+  const member = thread.userId
+    ? await getUser({
+        id: thread.userId,
+      })
+    : undefined
+
+  const isE2E =
+    member?.role !== "admin" &&
+    fingerprint &&
+    !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
+    isE2EInternal
+
+  if (fingerprint && isE2E && !VEX_LIVE_FINGERPRINTS.includes(fingerprint))
+    return faker.lorem.sentence()
 
   const app = thread.appId
     ? await getPureApp({

@@ -7,19 +7,6 @@ export interface ArcjetCompatibleRequest extends Omit<Request, "headers"> {
   headers: Record<string, string | string[] | undefined>
 }
 
-// Auth rate limiter (IP-based)
-const ajAuth = arcjet({
-  key: process.env.ARCJET_KEY!,
-  characteristics: ["ip.src"], // Use IP address
-  rules: [
-    slidingWindow({
-      mode: "LIVE",
-      interval: 60, // 1 minute
-      max: 10, // 10 attempts per minute
-    }),
-  ],
-})
-
 // Create separate Arcjet instances for each tier
 const ajAnonymous = arcjet({
   key: process.env.ARCJET_KEY!,
@@ -146,10 +133,12 @@ export async function checkRateLimit(
   })
 
   // Create Arcjet-compatible request object
-  const arcjetRequest: ArcjetCompatibleRequest = {
-    ...request,
+  // construct object manually because Request properties are not enumerable
+  const arcjetRequest = {
+    method: request.method,
+    url: request.url,
     headers,
-  }
+  } as unknown as ArcjetCompatibleRequest
 
   // Protect with custom characteristic
   const decision = await arcjetInstance.protect(arcjetRequest, {
@@ -396,10 +385,11 @@ export async function checkGenerationRateLimit(
   })
 
   // Create Arcjet-compatible request object
-  const arcjetRequest: ArcjetCompatibleRequest = {
-    ...request,
+  const arcjetRequest = {
+    method: request.method,
+    url: request.url,
     headers,
-  }
+  } as unknown as ArcjetCompatibleRequest
 
   // Check both limits
   const [hourlyDecision, threadDecision] = await Promise.all([
@@ -453,7 +443,20 @@ export async function checkGenerationRateLimit(
   }
 }
 
-export async function checkAuthRateLimit(request: Request) {
+// Authentication rate limiter (stricter)
+const ajAuth = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["userId"],
+      interval: 60,
+      max: 5, // 5 attempts per minute
+    }),
+  ],
+})
+
+export async function checkAuthRateLimit(request: Request, ip: string) {
   if (isDevelopment || isE2E) {
     return {
       success: true,
@@ -469,12 +472,13 @@ export async function checkAuthRateLimit(request: Request) {
   })
 
   // Create Arcjet-compatible request object
-  const arcjetRequest: ArcjetCompatibleRequest = {
-    ...request,
+  const arcjetRequest = {
+    method: request.method,
+    url: request.url,
     headers,
-  }
+  } as unknown as ArcjetCompatibleRequest
 
-  const decision = await ajAuth.protect(arcjetRequest)
+  const decision = await ajAuth.protect(arcjetRequest, { userId: ip })
 
   let remaining = 0
   for (const result of decision.results) {

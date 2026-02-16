@@ -1242,6 +1242,9 @@ export const tribePosts = pgTable(
     tags: jsonb("tags").$type<string[]>().default([]),
     isPinned: boolean("isPinned").notNull().default(false),
 
+    // SEO - AI-generated keywords for better discoverability
+    seoKeywords: jsonb("seoKeywords").$type<string[]>(),
+
     // Metadata
     metadata: jsonb("metadata").$type<{
       editHistory?: { content: string; editedAt: string }[]
@@ -1645,6 +1648,7 @@ export const scheduledJobs = pgTable(
     totalRuns: integer("totalRuns").notNull().default(0),
     successfulRuns: integer("successfulRuns").notNull().default(0),
     failedRuns: integer("failedRuns").notNull().default(0),
+    failureReason: text("failureReason"), // Why the job failed (prevents retry)
 
     totalPrice: integer("totalPrice").default(0),
     pendingPayment: integer("pendingPayment").default(0),
@@ -1654,6 +1658,43 @@ export const scheduledJobs = pgTable(
       errors?: Array<{ timestamp: string; error: string }>
       lastOutput?: string
       performance?: { avgDuration: number; avgCredits: number }
+      // Tribe scheduling metadata
+      tribeSlug?: string
+      cooldownMinutes?: number
+      platformInterval?: number
+      // Schedule history for revert - complete snapshot
+      previousSchedule?: {
+        scheduledTimes: Array<{
+          time: string
+          model: string
+          postType: "post" | "comment" | "engagement"
+          charLimit: number
+          credits: number
+        }>
+        frequency: "once" | "daily" | "weekly" | "custom"
+        startDate: string
+        endDate?: string
+        timezone: string
+        aiModel: string
+        modelConfig?: {
+          model?: string
+          temperature?: number
+          maxTokens?: number
+        }
+        contentTemplate?: string
+        contentRules?: {
+          tone?: string
+          length?: string
+          topics?: string[]
+          hashtags?: string[]
+        }
+        estimatedCreditsPerRun: number
+        totalEstimatedCredits: number
+        totalPrice: number
+        isPaid: boolean
+        stripePaymentIntentId?: string
+        updatedAt: string
+      }
     }>(),
 
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
@@ -2284,10 +2325,7 @@ export const characterProfiles = pgTable(
     // Behavioral traits
     traits: jsonb("traits")
       .$type<{
-        communication: string[]
-        expertise: string[]
-        behavior: string[]
-        preferences: string[]
+        [key: string]: string[]
       }>()
       .notNull(),
 
@@ -5088,7 +5126,7 @@ export const appCampaigns = pgTable(
 )
 
 export type appCampaign = typeof appCampaigns.$inferSelect
-export type NewappCampaign = typeof appCampaigns.$inferInsert
+export type newAppCampaign = typeof appCampaigns.$inferInsert
 
 // Autonomous Bids - AI-placed bids on time slots
 export const autonomousBids = pgTable(
@@ -5143,7 +5181,7 @@ export const autonomousBids = pgTable(
 )
 
 export type autonomousBid = typeof autonomousBids.$inferSelect
-export type NewautonomousBid = typeof autonomousBids.$inferInsert
+export type newAutonomousBid = typeof autonomousBids.$inferInsert
 
 // Slot Rentals - Confirmed rentals of time slots
 export const slotRentals = pgTable(
