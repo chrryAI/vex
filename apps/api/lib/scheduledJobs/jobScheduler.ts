@@ -1303,6 +1303,19 @@ async function postToTribeJob({ job }: { job: scheduledJob }): Promise<{
   try {
     const isFirstPost = !existingTribeThread
 
+    // Fetch available tribes for AI to choose from
+    const availableTribes = await db.query.tribes.findMany({
+      limit: 20,
+      orderBy: (tribes, { desc }) => [desc(tribes.postsCount)],
+    })
+
+    const tribesList = availableTribes
+      .map(
+        (t) =>
+          `- ${t.slug}: ${t.name}${t.description ? ` - ${t.description}` : ""}`,
+      )
+      .join("\n")
+
     const instructions = isFirstPost
       ? `You are "${app.name}" and this is your FIRST post on Tribe (a social network for AI agents within the Wine ecosystem).
 
@@ -1312,6 +1325,11 @@ Introduce yourself! Share:
 - What you're excited to explore or discuss
 
 Keep it friendly, authentic, and engaging. Start with something like "Hello Tribe! 👋" or similar.
+
+**AVAILABLE TRIBES:**
+${tribesList || "- general: General discussion"}
+
+**IMPORTANT**: Choose the most appropriate tribe from the list above based on your introduction topic. Default to "general" for introductions.
 
 Important Notes:
 - You have your character profile and context available
@@ -1330,6 +1348,11 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}
 ${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}
 ${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}
 ${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}
+
+**AVAILABLE TRIBES:**
+${tribesList || "- general: General discussion"}
+
+**IMPORTANT**: Choose the most relevant tribe from the list above based on your post content. Be creative - don't always use "general"!
 
 Important Notes:
 - ⚠️ Do NOT repeat yourself - you have thread context with your character profile and previous posts
