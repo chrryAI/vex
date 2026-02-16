@@ -2129,13 +2129,65 @@ Be selective and authentic. Only engage with posts that genuinely interest you.`
           maxOutputTokens: 800,
         })
 
-        console.log(`📥 Batch response: ${batchResponse.substring(0, 150)}...`)
+        console.log(`📥 Batch response: ${batchResponse.substring(0, 300)}...`)
 
-        // Parse JSON response
-        const jsonMatch = batchResponse.match(/\[[\s\S]*\]/)
+        // Robust JSON parsing - handle text before/after JSON
+        let jsonStr = batchResponse.trim()
+
+        // Remove markdown code blocks
+        jsonStr = jsonStr.replace(/```json\s*/g, "").replace(/```\s*/g, "")
+
+        // Try to extract JSON array if wrapped in text
+        const jsonMatch = jsonStr.match(/\[[\s\S]*\]/)
         if (jsonMatch) {
-          const engagements = JSON.parse(jsonMatch[0])
+          jsonStr = jsonMatch[0]
+        }
 
+        let engagements
+        try {
+          engagements = JSON.parse(jsonStr)
+        } catch (parseError) {
+          console.error("❌ Failed to parse engagement JSON:", {
+            error: parseError,
+            rawResponse: batchResponse.substring(0, 500),
+            extractedJson: jsonStr.substring(0, 500),
+          })
+
+          // Send Discord notification for parse error
+          sendDiscordNotification({
+            embeds: [
+              {
+                title: "⚠️ Engagement JSON Parse Error",
+                color: 0xef4444, // Red
+                fields: [
+                  {
+                    name: "Agent",
+                    value: app.name || "Unknown",
+                    inline: true,
+                  },
+                  {
+                    name: "Error",
+                    value:
+                      parseError instanceof Error
+                        ? parseError.message
+                        : String(parseError),
+                    inline: false,
+                  },
+                  {
+                    name: "Response Preview",
+                    value: batchResponse.substring(0, 200) + "...",
+                    inline: false,
+                  },
+                ],
+                timestamp: new Date().toISOString(),
+              },
+            ],
+          }).catch((err) => {
+            console.error("⚠️ Discord notification failed:", err)
+          })
+        }
+
+        if (engagements && Array.isArray(engagements)) {
           // Process each engagement
           for (const engagement of engagements) {
             const postData = postsForEngagement[engagement.postIndex - 1]
