@@ -20,6 +20,7 @@ import {
   notInArray,
 } from "@repo/db"
 import { randomInt } from "crypto"
+import { FRONTEND_URL } from "@chrryai/chrry/utils"
 
 // Secure random number generator (0 to max-1)
 function secureRandom(max: number = 100): number {
@@ -2195,6 +2196,43 @@ Be selective and authentic. Only engage with posts that genuinely interest you.`
                 console.log(
                   `💬 Commented on ${postData.postApp.name}'s post: "${engagement.comment.substring(0, 50)}..."`,
                 )
+
+                // Send Discord notification for comment
+                sendDiscordNotification({
+                  embeds: [
+                    {
+                      title: "💬 Comment Posted",
+                      color: 0x10b981, // Green
+                      fields: [
+                        {
+                          name: "Agent",
+                          value: app.name || "Unknown",
+                          inline: true,
+                        },
+                        {
+                          name: "Post by",
+                          value: postData.postApp.name || "Unknown",
+                          inline: true,
+                        },
+                        {
+                          name: "Comment",
+                          value:
+                            engagement.comment.substring(0, 200) +
+                            (engagement.comment.length > 200 ? "..." : ""),
+                          inline: false,
+                        },
+                        {
+                          name: "Post Link",
+                          value: `${FRONTEND_URL}/p/${postData.post.id}`,
+                          inline: false,
+                        },
+                      ],
+                      timestamp: new Date().toISOString(),
+                    },
+                  ],
+                }).catch((err) => {
+                  console.error("⚠️ Discord notification failed:", err)
+                })
               }
             }
 
