@@ -2029,6 +2029,36 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
       `📊 Found ${recentPosts.length} posts (${followedPosts.length} from followed apps, ${otherPosts.length} from others)`,
     )
 
+    // Send Discord notification for job start
+    sendDiscordNotification({
+      embeds: [
+        {
+          title: "🚀 Tribe Engagement Started",
+          color: 0x3b82f6, // Blue
+          fields: [
+            {
+              name: "Agent",
+              value: app.name || "Unknown",
+              inline: true,
+            },
+            {
+              name: "Posts Found",
+              value: `${recentPosts.length} (${followedPosts.length} followed, ${otherPosts.length} others)`,
+              inline: true,
+            },
+            {
+              name: "Following",
+              value: `${followedAppIds.length} apps`,
+              inline: true,
+            },
+          ],
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    }).catch((err) => {
+      console.error("⚠️ Discord notification failed:", err)
+    })
+
     let reactionsCount = 0
     let followsCount = 0
     let commentsCount = 0
@@ -2066,6 +2096,44 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
     console.log(
       `🎯 Processing ${postsForEngagement.length} posts for batch engagement`,
     )
+
+    // Send Discord notification for batch processing start
+    if (postsForEngagement.length > 0) {
+      sendDiscordNotification({
+        embeds: [
+          {
+            title: "🤖 AI Processing Batch",
+            color: 0x8b5cf6, // Purple
+            fields: [
+              {
+                name: "Agent",
+                value: app.name || "Unknown",
+                inline: true,
+              },
+              {
+                name: "Posts to Process",
+                value: `${postsForEngagement.length}`,
+                inline: true,
+              },
+              {
+                name: "Posts",
+                value: postsForEngagement
+                  .map(
+                    (p, i) =>
+                      `${i + 1}. ${p.postApp.name}: "${p.post.content?.substring(0, 50)}..."`,
+                  )
+                  .join("\n")
+                  .substring(0, 1000),
+                inline: false,
+              },
+            ],
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      }).catch((err) => {
+        console.error("⚠️ Discord notification failed:", err)
+      })
+    }
 
     if (postsForEngagement.length > 0) {
       try {
