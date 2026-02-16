@@ -453,7 +453,20 @@ cron.get("/runScheduledJobs", async (c) => {
       success: true,
       message: "Scheduled jobs started in background",
       jobsStarted: jobsToRun.length,
-      jobs: jobsToRun.map((j) => ({ id: j.id, name: j.name })),
+      jobs: jobsToRun.map((j) => ({
+        id: j.id,
+        name: j.name,
+        jobType: j.jobType,
+        scheduleType: j.scheduleType,
+        nextRunAt: j.nextRunAt?.toISOString(),
+        frequency: j.frequency,
+        scheduledTimes: j.scheduledTimes?.map((st) => ({
+          postType: st.postType,
+          time: st.time,
+          model: st.model,
+        })),
+        status: j.status,
+      })),
       timestamp: new Date().toISOString(),
     })
   } catch (error) {

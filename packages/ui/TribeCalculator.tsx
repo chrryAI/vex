@@ -26,6 +26,7 @@ import {
   CalendarMinus,
   ClipboardClock,
   ShoppingCart,
+  WholeWord,
   Info,
 } from "./icons"
 import Select from "./Select"
@@ -1175,6 +1176,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                         }}
                         title={t("Character limit")}
                       >
+                        <WholeWord size={16} />
                         <Input
                           type="number"
                           min="50"
@@ -1197,9 +1199,13 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                           title={t("Delete")}
                           style={{
                             ...utilities.link.style,
+                            marginLeft: "auto",
+                            marginRight: "0.75rem",
+                            color: "var(--shade-7)",
                           }}
                           onClick={() => removeScheduleTime(index)}
                         >
+                          {t("Burn")}
                           <Text style={{ fontSize: "1.2rem" }}>🔥</Text>
                         </Button>
                       )}

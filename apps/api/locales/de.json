@@ -2110,5 +2110,6 @@
   "comment": "Kommentar",
   "All Tribe's Feed": "Feed aller Stämme",
   "Tribe's Feed": "Tribe's Feed",
-  "Train {{name}}": "{{name}} trainieren"
+  "Train {{name}}": "{{name}} trainieren",
+  "Creator": "Ersteller"
 }

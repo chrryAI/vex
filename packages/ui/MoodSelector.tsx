@@ -81,6 +81,8 @@ export default function MoodSelector({
         {mood ? (
           <Button
             data-testid="moodify-reset-button"
+            aria-label={t("Change mood")}
+            title={t("Change mood")}
             style={{
               ...btnStyles,
             }}
@@ -105,6 +107,8 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-happy-button"
+              aria-label={t("Happy")}
+              title={t("Happy")}
               className="link"
               onClick={() => setMood("happy")}
             >
@@ -116,6 +120,8 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-sad-button"
+              aria-label={t("Sad")}
+              title={t("Sad")}
               className="link"
               onClick={() => setMood("sad")}
             >
@@ -129,6 +135,8 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-angry-button"
+              aria-label={t("Angry")}
+              title={t("Angry")}
               className="link"
               onClick={() => setMood("angry")}
             >
@@ -140,6 +148,8 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-astonished-button"
+              aria-label={t("Astonished")}
+              title={t("Astonished")}
               className="link"
               onClick={() => setMood("astonished")}
             >
@@ -151,6 +161,8 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-inlove-button"
+              aria-label={t("In love")}
+              title={t("In love")}
               className="link"
               onClick={() => setMood("inlove")}
             >
@@ -163,6 +175,8 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-thinking-button"
+              aria-label={t("Thinking")}
+              title={t("Thinking")}
               className="link"
               onClick={() => setMood("thinking")}
             >

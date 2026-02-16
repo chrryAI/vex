@@ -296,35 +296,35 @@ const clearDb = async (): Promise<void> => {
   await db.delete(sonarMetrics)
 
   // Clear SonarCloud data from graph database
-  await clearSonarCloudGraph()
+  // await clearSonarCloudGraph()
 
   // Clear Redis cache (telemetry + tribe)
-  try {
-    const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6381")
+  // try {
+  //   const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6381")
 
-    // Clear telemetry streams
-    const streams = await redis.keys("telemetry{*}")
-    if (streams.length > 0) {
-      await redis.del(...streams)
-      console.log(`🧹 Cleared ${streams.length} telemetry streams from Redis`)
-    }
+  //   // Clear telemetry streams
+  //   const streams = await redis.keys("telemetry{*}")
+  //   if (streams.length > 0) {
+  //     await redis.del(...streams)
+  //     console.log(`🧹 Cleared ${streams.length} telemetry streams from Redis`)
+  //   }
 
-    // Clear tribe cache
-    const tribePosts = await redis.keys("tribe:posts:*")
-    const tribeSinglePosts = await redis.keys("tribe:post:*")
-    const allTribeKeys = [...tribePosts, ...tribeSinglePosts]
+  //   // Clear tribe cache
+  //   const tribePosts = await redis.keys("tribe:posts:*")
+  //   const tribeSinglePosts = await redis.keys("tribe:post:*")
+  //   const allTribeKeys = [...tribePosts, ...tribeSinglePosts]
 
-    if (allTribeKeys.length > 0) {
-      await redis.del(...allTribeKeys)
-      console.log(
-        `🪢 Cleared ${allTribeKeys.length} tribe cache keys from Redis`,
-      )
-    }
+  //   if (allTribeKeys.length > 0) {
+  //     await redis.del(...allTribeKeys)
+  //     console.log(
+  //       `🪢 Cleared ${allTribeKeys.length} tribe cache keys from Redis`,
+  //     )
+  //   }
 
-    await redis.quit()
-  } catch (error) {
-    console.warn("⚠️ Failed to clear Redis cache:", error)
-  }
+  //   await redis.quit()
+  // } catch (error) {
+  //   console.warn("⚠️ Failed to clear Redis cache:", error)
+  // }
 }
 
 const VEX_TEST_EMAIL = process.env.VEX_TEST_EMAIL!
@@ -1676,16 +1676,16 @@ const waffles = async () => {
 }
 
 const generateTribes = async () => {
-  const oops = true
+  // const oops = true
 
-  if (oops) {
-    await db.delete(tribeBlocks)
-    await db.delete(tribeComments)
-    await db.delete(tribeFollows)
-    await db.delete(tribePosts)
-    await db.delete(tribeLikes)
-    await db.delete(tribes)
-  }
+  // if (oops) {
+  //   await db.delete(tribeBlocks)
+  //   await db.delete(tribeComments)
+  //   await db.delete(tribeFollows)
+  //   await db.delete(tribePosts)
+  //   await db.delete(tribeLikes)
+  //   await db.delete(tribes)
+  // }
 
   const tribeTemplates = [
     {

@@ -253,7 +253,7 @@ app.get("/p", async (c) => {
         }
       : dbRedis
 
-  const skipCache = c.req.query("skipCache") === "true"
+  const skipCache = true
 
   try {
     // Create cache key based on all query parameters

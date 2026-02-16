@@ -39,7 +39,7 @@ import {
   useTheme,
   Video,
 } from "../platform"
-import { Claude, DeepSeek } from "../icons"
+import { Claude, DeepSeek, Gemini } from "../icons"
 import A from "../a/A"
 import AppLink from "../AppLink"
 import { useAboutStyles } from "./About.styles"
@@ -645,6 +645,24 @@ export default function About() {
             }}
           >
             <Div style={styles.oss.style}>
+              <Span
+                style={{
+                  fontSize: "0.7rem",
+                  color: COLORS.purple,
+                  marginRight: 2,
+                }}
+              >
+                DNA
+              </Span>
+              <A
+                title={t("Creator")}
+                style={{ fontSize: "1rem", marginRight: 3 }}
+                openInNewTab
+                href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
+              >
+                🧬
+              </A>
+
               <Img icon="spaceInvader" size={40} />
               <A
                 href="https://i.chrry.dev"
@@ -655,6 +673,27 @@ export default function About() {
               </A>
             </Div>
             <Div style={styles.oss.style}>
+              <Img slug="sushi" size={40} />
+              <A
+                href="https://github.com/chrryAI/sushi"
+                style={{ ...styles.ossLink.style, color: COLORS.red }}
+                target="_blank"
+                rel="nofollow"
+              >
+                Compiler
+              </A>
+            </Div>
+          </Div>
+          <Div
+            style={{
+              ...styles.ossContainer.style,
+              marginBottom: "2rem",
+              ...(isMobileDevice
+                ? undefined
+                : styles.ossContainerDesktop.style),
+            }}
+          >
+            <Div style={styles.oss.style}>
               <Claude color={COLORS.orange} size={40} />
               <A
                 href="https://claude.com/product/claude-code"
@@ -662,7 +701,29 @@ export default function About() {
                 rel="nofollow"
                 style={{ ...styles.ossLink.style, color: COLORS.orange }}
               >
-                Claude Code
+                Architect
+              </A>
+            </Div>
+            <Div style={styles.oss.style}>
+              <Gemini color={COLORS.blue} size={40} />
+              <A
+                href="https://jules.google.com"
+                target="_blank"
+                rel="nofollow"
+                style={{ ...styles.ossLink.style, color: COLORS.blue }}
+              >
+                Vision
+              </A>
+            </Div>
+            <Div style={styles.oss.style}>
+              <DeepSeek color={COLORS.purple} size={40} />
+              <A
+                href="https://www.deepseek.com"
+                target="_blank"
+                rel="nofollow"
+                style={{ ...styles.ossLink.style, color: COLORS.purple }}
+              >
+                Content
               </A>
             </Div>
           </Div>

@@ -64,6 +64,8 @@ interface TribeContextType {
   setSearch: (search?: string) => void
   setUntil: (val: number) => void
   setCharacterProfileIds: (ids?: string[]) => void
+  optimisticLiked: string[]
+  setOptimisticLiked: (ids: string[]) => void
   refetchPosts: () => Promise<void>
   refetchPost: () => Promise<void>
   refetchTribes: () => Promise<void>
@@ -96,6 +98,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     mergeApps,
     deviceId,
     getAppSlug,
+    tribeSlug,
+    currentTribe,
     app, // Current selected app for filtering
     ...auth
   } = useAuth()
@@ -108,46 +112,37 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   const { captureException, t } = useAppContext()
 
-  // Extract tribe slug from pathname like /tribe/entertainment
-  const tribeSlug = pathname?.startsWith("/tribe/")
-    ? pathname.replace("/tribe/", "").split("?")[0]
-    : undefined
-
   const [sortBy, setSortByInternal] = useLocalStorage<
     "date" | "hot" | "comments"
   >("sortBy", "hot")
 
   const setSortBy = (val: "date" | "hot" | "comments") => {
-    setShouldLoadPosts(true)
     setSortByInternal(val)
   }
 
-  const [shouldLoadPosts, setShouldLoadPostsInternal] = useState<boolean>(true)
-
-  const [shouldLoadPost, setShouldLoadPostInternal] =
-    useState<boolean>(!initialTribePost)
-
-  const setShouldLoadPost = (val: boolean) => {
-    if (shouldLoadPost === val) return
-
-    setShouldLoadPostInternal(val)
-  }
+  const [loadPostsCounter, setLoadPostsCounter] = useState(1)
+  const [loadPostCounter, setLoadPostCounter] = useState(
+    initialTribePost ? 0 : 1,
+  )
 
   const setShouldLoadPosts = (val: boolean) => {
-    val && refetchPosts()
-    if (shouldLoadPosts === val) return
-    setShouldLoadPostsInternal(val)
+    if (!val) return
+    setLoadPostsCounter(loadPostsCounter + 1)
   }
+
+  const setShouldLoadPost = (val: boolean) => {
+    if (!val) return
+    setLoadPostCounter(loadPostCounter + 1)
+  }
+
   const [search, setSearchInitial] = useState<string | undefined>()
 
   const setSearch = (val?: string) => {
-    setShouldLoadPosts(true)
     setSearchInitial(val)
   }
   const [until, setUntilInitial] = useState<number>(1)
 
   const setUntil = (val: number) => {
-    setShouldLoadPosts(true)
     setUntilInitial(val)
   }
   const [characterProfileIds, setCharacterProfileIdsInternal] = useState<
@@ -155,7 +150,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
   >()
 
   const setCharacterProfileIds = (val: string[] | undefined) => {
-    setShouldLoadPosts(true)
     setCharacterProfileIdsInternal(val)
   }
 
@@ -188,9 +182,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     error: tribePostError,
     isLoading: isLoadingPost,
   } = useSWR(
-    shouldLoadPost && postId && token
-      ? ["tribePost", postId, app?.id, shouldLoadPost]
-      : null,
+    postId && token ? ["tribePost", postId, app?.id, loadPostCounter] : null,
     () => {
       if (!token || !postId) return
       return actions.getTribePost({
@@ -211,19 +203,11 @@ export function TribeProvider({ children }: TribeProviderProps) {
   }, [tribePostData, tribePost?.id, setTribePost])
 
   useEffect(() => {
-    if (
-      tribesData &&
-      JSON.stringify(tribesData.tribes?.map((t: any) => t.id)) !==
-        JSON.stringify(tribes?.tribes?.map((t: any) => t.id))
-    ) {
+    if (tribesData) {
       setTribes(tribesData)
     }
-  }, [tribesData, tribes?.tribes, setTribes])
+  }, [tribesData])
 
-  // Find tribe ID from slug
-  const currentTribe = tribeSlug
-    ? tribes?.tribes?.find((t) => t.slug === tribeSlug)
-    : undefined
   const tribeId = currentTribe?.id
 
   const {
@@ -231,7 +215,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     mutate: refetchPosts,
     isLoading: isLoadingPosts,
   } = useSWR(
-    shouldLoadPosts && (search ? search.length > 2 : true) && token
+    (search ? search.length > 2 : true) && token
       ? [
           "tribePosts",
           until,
@@ -240,8 +224,9 @@ export function TribeProvider({ children }: TribeProviderProps) {
           sortBy,
           app?.id,
           tribeId,
+          tribeSlug,
           canShowTribeProfile,
-          shouldLoadPosts,
+          loadPostsCounter,
         ]
       : null,
     () => {
@@ -263,15 +248,11 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   // Use tribePostsData directly from SWR, only update tribePosts manually when needed
   useEffect(() => {
-    if (
-      tribePostsData &&
-      JSON.stringify(tribePostsData.posts?.map((p: any) => p.id)) !==
-        JSON.stringify(tribePosts?.posts?.map((p: any) => p.id))
-    ) {
+    if (tribePostsData) {
       setTribePosts(tribePostsData)
       auth.setIsLoadingPosts(false)
     }
-  }, [tribePostsData, tribePosts?.posts, setTribePosts])
+  }, [tribePostsData])
 
   const [isTogglingLike, setIsTogglingLike] = useState<string | undefined>(
     undefined,
@@ -582,6 +563,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     }
   }
 
+  const [optimisticLiked, setOptimisticLiked] = useState<string[]>([])
+
   const toggleLike = async (postId: string): Promise<{ liked: boolean }> => {
     if (!postId) {
       console.error("Post ID is required")
@@ -611,12 +594,15 @@ export function TribeProvider({ children }: TribeProviderProps) {
       }
 
       const data = await response.json()
-      // Refetch posts to update like counts
-      await refetchPosts()
-      if (tribePost?.id === postId) {
-        setShouldLoadPost(true)
-        await refetchTribePost()
+
+      if (data.liked) {
+        !optimisticLiked.includes(postId) &&
+          setOptimisticLiked((prev) => [...prev, postId])
+      } else {
+        optimisticLiked.includes(postId) &&
+          setOptimisticLiked((prev) => prev.filter((item) => item !== postId))
       }
+      // Refetch posts to update like counts
 
       return { liked: data.liked }
     } catch (error) {
@@ -669,7 +655,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const value: TribeContextType = {
     tribes,
     tribePosts,
-    tribePost,
+    tribePost:
+      tribePost && postId && tribePost.id == postId ? tribePost : undefined,
     search,
     until,
     characterProfileIds,
@@ -688,6 +675,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     postId,
     setUntil,
     setCharacterProfileIds,
+    optimisticLiked,
+    setOptimisticLiked,
     toggleLike,
     deletePost,
     deleteComment,

@@ -1329,11 +1329,25 @@ Focus on the main discussion points, user preferences, and conversation style.`
       let summaryData: SummaryData
       try {
         let jsonText = summaryResult.text.trim()
-        if (jsonText.startsWith("```json")) {
-          jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
-        } else if (jsonText.startsWith("```")) {
-          jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "")
+
+        // Remove markdown code blocks (handle multiple backticks)
+        if (jsonText.includes("```")) {
+          // Find first occurrence of ``` and last occurrence
+          const firstBacktick = jsonText.indexOf("```")
+          const lastBacktick = jsonText.lastIndexOf("```")
+
+          if (
+            firstBacktick !== -1 &&
+            lastBacktick !== -1 &&
+            firstBacktick !== lastBacktick
+          ) {
+            // Extract content between first and last backticks
+            jsonText = jsonText.substring(firstBacktick + 3, lastBacktick)
+            // Remove "json" language identifier if present
+            jsonText = jsonText.replace(/^json\s*/, "").trim()
+          }
         }
+
         const parsedData = JSON.parse(jsonText)
         summaryData = summarySchema.parse(parsedData)
 

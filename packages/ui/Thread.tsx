@@ -125,7 +125,7 @@ const Thread = ({
 
   const { pathname } = useNavigationContext()
 
-  const { isIDE } = usePlatform()
+  const { isIDE, isStandalone } = usePlatform()
 
   // Navigation context
   const {
@@ -388,7 +388,12 @@ const Thread = ({
             hasHydrated && {
               ...styles.threadEmpty.style,
               zIndex: 10,
-              paddingBottom: minimize && !showFocus && !showTribe ? 0 : 186,
+              paddingBottom:
+                minimize && !showFocus && !showTribe
+                  ? 30
+                  : isStandalone
+                    ? 200
+                    : 195,
             }),
           ...{
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,

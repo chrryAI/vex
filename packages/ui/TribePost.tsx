@@ -40,18 +40,12 @@ import ConfirmButton from "./ConfirmButton"
 import { isDevelopment } from "./utils"
 
 interface TribePostProps {
-  post: tribePostWithDetails
   isDetailView?: boolean
-  onCommentClick?: () => void
 }
 
 type comment = NonNullable<tribePostWithDetails["comments"]>[number]
 
-export default function TribePost({
-  post,
-  isDetailView = false,
-  onCommentClick,
-}: TribePostProps) {
+export default function TribePost({ isDetailView = true }: TribePostProps) {
   const { t, captureException } = useAppContext()
   const {
     toggleLike,
@@ -64,7 +58,10 @@ export default function TribePost({
     commenting,
     deletePost,
     deleteComment,
+    optimisticLiked,
+    tribePost: post,
   } = useTribe()
+  console.log(`🚀 ~ TribePost ~ post:`, post)
 
   const isSwarm = commenting.length || liveReactions.length
 
@@ -102,7 +99,7 @@ export default function TribePost({
     id: string
   } | null>(null)
 
-  const owner = isOwner(post.app, {
+  const owner = isOwner(post?.app, {
     userId: user?.id,
   })
 
@@ -122,8 +119,9 @@ export default function TribePost({
   const [showComments, setShowComments] = useState(isDetailView)
   // Group comments by parent
   const topLevelComments =
-    post.comments?.filter((c: comment) => !c.parentCommentId) || []
-  const replies = post.comments?.filter((c: comment) => c.parentCommentId) || []
+    post?.comments?.filter((c: comment) => !c.parentCommentId) || []
+  const replies =
+    post?.comments?.filter((c: comment) => c.parentCommentId) || []
 
   const getReplies = (commentId: string) => {
     return replies.filter((r: comment) => r.parentCommentId === commentId)
@@ -135,6 +133,9 @@ export default function TribePost({
   const { isExtension, isFirefox } = usePlatform()
 
   const copyToClipboard = async () => {
+    if (!post) {
+      return
+    }
     try {
       await navigator.clipboard.writeText(`${FRONTEND_URL}/p/${post.id}`)
       setCopied(true)
@@ -149,7 +150,7 @@ export default function TribePost({
   const { isSmallDevice, reduceMotion } = useTheme()
 
   // Group reactions by emoji
-  const reactionGroups = post.reactions?.reduce(
+  const reactionGroups = post?.reactions?.reduce(
     (
       acc: Record<
         string,
@@ -178,7 +179,17 @@ export default function TribePost({
 
   // Handle loading and error states when fetching a specific post
   if (postId && isLoadingPost) {
-    return <Loading fullScreen />
+    return (
+      <Loading
+        key={"loading"}
+        style={{
+          position: "relative",
+          bottom: "10rem",
+        }}
+        icon={<Img logo="sushi" size={48} />}
+        fullScreen
+      />
+    )
   }
 
   // Show error when post fetch failed
@@ -230,6 +241,7 @@ export default function TribePost({
           gap: 10,
           marginTop: ".25rem",
           marginBottom: "1.25rem",
+          flexWrap: "wrap",
         }}
       >
         <Img logo="coder" size={32} />
@@ -267,7 +279,7 @@ export default function TribePost({
             display: "flex",
             alignItems: "center",
             gap: 10,
-            marginLeft: isSmallDevice ? undefined : "auto",
+            marginLeft: "auto",
           }}
         >
           <A
@@ -309,7 +321,14 @@ export default function TribePost({
             backgroundColor: "var(--shade-1)",
           }}
         >
-          <Div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
             {post.app && <Img app={post.app} size={40} />}
             <Div>
               <A
@@ -684,6 +703,7 @@ export default function TribePost({
             borderTop: "1px solid var(--shade-2)",
             borderBottom: "1px solid var(--shade-2)",
             alignItems: "center",
+            flexWrap: "wrap",
           }}
         >
           {post.app.icon || "🍒"}
@@ -765,7 +785,10 @@ export default function TribePost({
               ) : (
                 <Img icon="heart" width={18} height={18} />
               )}
-              <Span>{post.likesCount || 0}</Span>
+              <Span>
+                {(post.likesCount || 0) +
+                  (optimisticLiked.includes(post.id) ? 1 : 0)}
+              </Span>
             </Button>
             <Button
               className="transparent"

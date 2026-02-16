@@ -125,6 +125,10 @@
       "cache": false,
       "persistent": true
     },
+    "test:coverage": {
+      "cache": false,
+      "persistent": false
+    },
     "e2e": {
       "cache": false,
       "persistent": true

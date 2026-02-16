@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.14.37",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "build": "turbo build",
@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
-    "dotenv": "^16.6.1",
+    "dotenv": "^17.3.1",
     "eslint-plugin-unused-imports": "^4.3.0",
     "husky": "^9.1.7",
     "is-reference": "^3.0.3",

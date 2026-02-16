@@ -126,3 +126,18 @@
 **Prevention:**
 - Added `if (!image.type.startsWith("image/"))` validation in `apps/api/hono/routes/user.ts`.
 - Added `type: "image"` to the `upload` function options in both `user.ts` and `image.ts` to enforce strict type checking in `minio.ts`.
+## 2026-06-15 - Insecure JWT Handling in WebSocket Auth
+
+**Vulnerability:** The WebSocket authentication logic contained a fallback to `jwt.decode` (unsigned) if `NEXTAUTH_SECRET` was missing from the environment or if signature verification failed in non-production. This "fail-open" mechanism allowed attackers to forge tokens signed with any key and impersonate any user.
+
+**Learning:**
+
+- **Fail Securely:** Security mechanisms must fail closed (reject access) when configuration is missing, not open (allow access).
+- **Silent Defaults:** Using dangerous fallbacks (like unsigned decoding) even with a warning is unsafe because logs are often ignored until an incident occurs.
+- **Consistency:** If `NEXTAUTH_SECRET` is missing, ensure all parts of the app use the _same_ fallback (e.g., a dev secret) or crash, rather than one part using a dev secret and another falling back to no security.
+
+**Prevention:**
+
+- **Enforce Verification:** Always use `jwt.verify()`. Never fall back to `jwt.decode()` for authentication purposes.
+- **Unified Configuration:** Ensure secrets are handled consistently across HTTP and WebSocket handlers.
+- **Reject Invalid:** If the secret is missing or the token signature is invalid, reject the connection immediately.
