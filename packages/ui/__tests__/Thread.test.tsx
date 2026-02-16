@@ -210,7 +210,8 @@ describe("Thread", () => {
     ) as HTMLElement
     expect(messagesList).toBeTruthy()
 
-    // Trigger onCharacterProfileUpdate
+    // Trigger onCharacterProfileUpdate (should scroll if not floating)
+    mockChat.isChatFloating = false
     await act(async () => {
       fireEvent.click(messagesList)
     })
@@ -228,12 +229,28 @@ describe("Thread", () => {
     })
     expect(mockChat.refetchThread).toHaveBeenCalled()
 
-    // Trigger onDelete
+    // Trigger onDelete (single message case)
+    mockChat.setMessages.mockClear()
+    mockChat.refetchThread.mockClear()
     await act(async () => {
       fireEvent.contextMenu(messagesList)
     })
-    expect(mockChat.refetchThread).toHaveBeenCalledTimes(2) // Once for like, once for delete
-    expect(mockChat.setMessages).toHaveBeenCalled()
+    expect(mockChat.refetchThread).toHaveBeenCalled()
+    expect(mockChat.setMessages).toHaveBeenCalledWith([])
+
+    // Trigger onDelete (multiple messages case)
+    mockChat.messages = [{ message: { id: "1" } }, { message: { id: "2" } }]
+    // Reset component to pick up new messages ref
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    mockChat.setMessages.mockClear()
+    await act(async () => {
+      fireEvent.contextMenu(messagesList)
+    })
+    expect(mockChat.refetchThread).toHaveBeenCalled()
+    expect(mockChat.setMessages).toHaveBeenCalled() // Called with filtered array
   })
 
   it.skip("renders focus mode when enabled", async () => {
