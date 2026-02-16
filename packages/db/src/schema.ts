@@ -1653,6 +1653,14 @@ export const scheduledJobs = pgTable(
     totalPrice: integer("totalPrice").default(0),
     pendingPayment: integer("pendingPayment").default(0),
 
+    // Calendar integration
+    calendarEventId: uuid("calendarEventId").references(
+      () => calendarEvents.id,
+      {
+        onDelete: "set null",
+      },
+    ),
+
     // Metadata
     metadata: jsonb("metadata").$type<{
       errors?: Array<{ timestamp: string; error: string }>
@@ -2386,10 +2394,6 @@ export const calendarEvents = pgTable(
     title: text("title").notNull(),
     description: text("description"),
     location: text("location"),
-
-    scheduledJobId: uuid("scheduledJobId").references(() => scheduledJobs.id, {
-      onDelete: "cascade",
-    }),
 
     // Time and duration
     startTime: timestamp("startTime", {

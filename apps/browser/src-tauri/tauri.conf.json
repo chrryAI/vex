@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Search 🍒",
+  "productName": "Pear 🍒",
   "version": "0.1.0",
-  "identifier": "dev.chrry.search",
+  "identifier": "dev.chrry.pear",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5174",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Search 🍒",
+        "title": "Pear 🍒",
         "width": 1200,
         "height": 800,
         "minWidth": 800,
@@ -82,8 +82,8 @@
       "icons/icon.ico"
     ],
     "category": "Productivity",
-    "shortDescription": "AI-powered real-time web search with cited sources. Get instant, accurate answer",
-    "longDescription": "AI-powered real-time web search with cited sources. Get instant, accurate answers with verifiable references worldwide.",
+    "shortDescription": "AI-powered feedback system. Earn credits for quality insights.",
+    "longDescription": "AI-powered feedback system. Earn credits for quality insights.",
     "macOS": {
       "entitlements": "entitlements.plist",
       "signingIdentity": "Developer ID Application: iliyan velinov (F5MTBDR7VX)",

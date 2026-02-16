@@ -3993,7 +3993,9 @@ export async function createCalendarEvent(calendarEvent: newCalendarEvent) {
   return inserted
 }
 
-export async function updateCalendarEvent(calendarEvent: calendarEvent) {
+export async function updateCalendarEvent(
+  calendarEvent: Partial<calendarEvent> & { id: string },
+) {
   const [updated] = await db
     .update(calendarEvents)
     .set(calendarEvent)

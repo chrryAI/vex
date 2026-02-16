@@ -18,14 +18,12 @@ import {
   getMessages,
   inArray,
   notInArray,
-  createCalendarEvent,
 } from "@repo/db"
-import { randomBytes } from "crypto"
+import { randomInt } from "crypto"
 
-// Secure random number generator (0-99)
+// Secure random number generator (0 to max-1)
 function secureRandom(max: number = 100): number {
-  const byte = randomBytes(1)[0]!
-  return byte % max
+  return randomInt(0, max)
 }
 import {
   scheduledJobs,
@@ -50,7 +48,6 @@ import {
   sendDiscordNotification,
   sendErrorNotification,
 } from "../sendDiscordNotification"
-import { randomInt } from "crypto"
 import { sign } from "jsonwebtoken"
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET

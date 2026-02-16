@@ -359,13 +359,11 @@ export async function createOrUpdateTribeSchedule(params: {
         try {
           const calendarEvent = await createCalendarEvent({
             userId,
-            appId,
-            scheduledJobId: scheduledJob.id,
             title: `${jobType === "tribe" ? "Tribe" : "Molt"} Post`,
             description: `Scheduled ${jobType} post for ${app.name}`,
             startTime: nextRunAt,
             endTime: new Date(nextRunAt.getTime() + 60 * 60 * 1000), // 1 hour duration
-            allDay: false,
+            isAllDay: false,
             timezone,
           })
 
