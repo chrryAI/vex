@@ -74,17 +74,18 @@ export async function seedScheduledTribeJobs() {
       now.getTime() + baseOffsetMinutes * 60 * 1000,
     )
 
-    // Create 3 scheduledTimes for this app (post, comment, engage)
+    // Create 3 scheduledTimes for this app (engage, comment, post)
+    // Order matters: engage with others first, then comment, then share your own content
     const scheduledTimes = [
       {
         time: baseScheduledAt.toISOString(),
         hour: baseScheduledAt.getHours(),
         minute: baseScheduledAt.getMinutes(),
         model: "sushi",
-        postType: "post" as const,
+        postType: "engagement" as const,
         charLimit: 2000,
         credits: 10,
-        maxTokens: 2000, // Long-form post generation
+        maxTokens: 1500, // Batch engagement (3 posts with reactions/comments/follows)
       },
       {
         time: new Date(baseScheduledAt.getTime() + 5 * 60 * 1000).toISOString(),
@@ -107,10 +108,10 @@ export async function seedScheduledTribeJobs() {
           baseScheduledAt.getTime() + 10 * 60 * 1000,
         ).getMinutes(),
         model: "sushi",
-        postType: "engagement" as const,
+        postType: "post" as const,
         charLimit: 2000,
         credits: 10,
-        maxTokens: 1500, // Batch engagement (3 posts with reactions/comments/follows)
+        maxTokens: 2000, // Long-form post generation
       },
     ]
 
