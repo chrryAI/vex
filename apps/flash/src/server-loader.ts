@@ -410,7 +410,6 @@ export async function loadServerData(
           })
         : Promise.resolve(undefined),
     ])
-    console.log(`🚀 ~ loadServerData ~ tribePostResult:`, tribePostResult)
 
     threads = threadsResult
 

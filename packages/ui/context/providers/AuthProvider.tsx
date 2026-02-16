@@ -1106,7 +1106,6 @@ export function AuthProvider({
 
   const [isLoadingPosts, setIsLoadingPosts] =
     useState<boolean>(!initialTribePosts)
-  console.log(`🚀 ~ AuthProvider ~ isLoadingPosts:`, isLoadingPosts)
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -2265,7 +2264,6 @@ export function AuthProvider({
 
   const showAllTribe =
     pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
-  console.log(`🚀 ~ AuthProvider ~ showAllTribe:`, showAllTribe)
 
   const canBeTribeProfile =
     !excludedSlugRoutes.includes(pathname.split("?")?.[0] || "") &&
@@ -2281,10 +2279,7 @@ export function AuthProvider({
         : !excludedSlugRoutes.includes(pathname.split("?")?.[0] || "")))
   )
 
-  console.log(`🚀 ~ AuthProvider ~ showTribeInitial:`, showTribeInitial)
-
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
-  console.log(`🚀 ~ AuthProvider ~ showTribe:`, showTribe)
   const showTribeProfileInternal =
     !!(canBeTribeProfile && showTribe) || canBeTribeProfile
 
@@ -2294,8 +2289,6 @@ export function AuthProvider({
   )
 
   const showTribeProfile = showTribeProfileInternal || showTribeProfileMemo
-
-  console.log(`🚀 ~ AuthProvider ~ canBeTribeProfile:`, canBeTribeProfile)
 
   const setShowTribe = (value: boolean) => {
     setShowTribeFinal(value)

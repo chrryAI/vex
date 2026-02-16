@@ -1335,7 +1335,7 @@ app.post("/", async (c) => {
           message: !message
             ? undefined
             : shouldStream
-              ? realMessage
+              ? message
               : {
                   message: {
                     threadId: realMessage.threadId,

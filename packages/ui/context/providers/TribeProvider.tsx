@@ -124,15 +124,9 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   const [shouldLoadPosts, setShouldLoadPostsInternal] =
     useState<boolean>(!initialTribePosts)
-  console.log(
-    `🚀 ~ TribeProvider ~ auth.isLoadingPosts:`,
-    auth.isLoadingPosts,
-    shouldLoadPosts,
-  )
 
   const [shouldLoadPost, setShouldLoadPostInternal] =
     useState<boolean>(!initialTribePost)
-  console.log(`🚀 ~ TribeProvider ~ shouldLoadPost:`, shouldLoadPost)
 
   const setShouldLoadPost = (val: boolean) => {
     if (shouldLoadPost === val) return
@@ -269,7 +263,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   // Use tribePostsData directly from SWR, only update tribePosts manually when needed
   useEffect(() => {
-    console.log(`🚀 ~ TribeProvider ~ tribePostsData:`, tribePostsData)
     if (
       tribePostsData &&
       JSON.stringify(tribePostsData.posts?.map((p: any) => p.id)) !==
@@ -277,7 +270,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
     ) {
       setTribePosts(tribePostsData)
       auth.setIsLoadingPosts(false)
-      console.log(`🚀 ~ TribeProvider ~ tribePostsData:`, tribePostsData)
     }
   }, [tribePostsData, tribePosts?.posts, setTribePosts])
 
@@ -418,7 +410,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
     }
   }>({
     onMessage: async ({ type, data }) => {
-      console.log(`🚀 ~ TribeProvider ~ type:`, type, data)
       // Early return for non-Tribe events to avoid expensive operations
       if (!data?.isTribe) {
         return
