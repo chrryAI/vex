@@ -279,7 +279,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
             display: "flex",
             alignItems: "center",
             gap: 10,
-            marginLeft: isSmallDevice ? undefined : "auto",
+            marginLeft: "auto",
           }}
         >
           <A

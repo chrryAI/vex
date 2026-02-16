@@ -25,7 +25,6 @@ import Skeleton from "./Skeleton"
 import { FRONTEND_URL } from "./utils"
 import isOwner from "./utils/isOwner"
 import Img from "./Image"
-
 import A from "./a/A"
 import { useTribeStyles } from "./Tribe.styles"
 import { useAppContext, COLORS } from "./context/AppContext"
@@ -90,6 +89,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     showTribeProfile,
     user,
     setSignInPart,
+    downloadUrl,
   } = useAuth()
   const { setAppStatus, canEditApp } = useApp()
   const { isExtension, isFirefox } = usePlatform()
@@ -139,7 +139,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 <H1
                   style={{
                     display: "flex",
-                    gap: isMobileDevice ? "0.5rem" : ".75rem",
+                    gap: ".5rem",
                     flexWrap: "wrap",
                     alignItems: "center",
                     margin: 0,
@@ -149,7 +149,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                   }}
                 >
                   <Img
-                    size={showTribeProfile ? 35 : 30}
+                    size={isMobileDevice ? 27 : 29}
                     app={showTribeProfile ? app : undefined}
                     icon={showTribeProfile ? undefined : "zarathustra"}
                   />
@@ -166,25 +166,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       )}
                     </>
                   )}
-                  <P
-                    style={{
-                      fontSize: ".85rem",
-                      color: "var(--shade-7)",
-                      fontWeight: "normal",
-                      lineHeight: "1.3rem",
-                    }}
-                  >
-                    {t("🔑 Cloud-based & secure. No download required.")}{" "}
-                    <A
-                      openInNewTab
-                      href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
-                    >
-                      {t("🌀 Learn how")}
-                    </A>
-                  </P>
+
                   <Div
                     style={{
-                      marginLeft: !isSmallDevice ? "auto" : undefined,
+                      marginLeft: "auto",
                       fontSize: ".8rem",
                       display: "flex",
                       alignItems: "center",
@@ -205,23 +190,27 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 <Div
                   style={{
                     display: "flex",
-                    gap: ".7rem",
+                    gap: ".5rem",
                     flexWrap: "wrap",
+                    flexDirection: isMobileDevice ? "column" : "row",
                     position: "relative",
-                    bottom: ".85rem",
-                    marginLeft: "auto",
-                    fontSize: ".85rem",
-                    alignItems: "center",
-                    alignSelf: "flex-end",
-                    justifyContent: "flex-end",
+                    bottom: isMobileDevice ? ".5rem" : ".5rem",
                   }}
                 >
-                  <A href="/about">{app?.store?.app?.icon || "🍒"} /about</A>
-                  <A openInNewTab style={{}} href="/privacy">
-                    /privacy 🤫
-                  </A>
+                  <Div
+                    style={{
+                      display: "flex",
+                      gap: ".7rem",
+                      flexWrap: "wrap",
+                      fontSize: ".85rem",
+                    }}
+                  >
+                    <A href="/about">{app?.store?.app?.icon || "🍒"} /about</A>
+                    <A openInNewTab style={{}} href="/privacy">
+                      /privacy 🤫
+                    </A>
+                  </Div>
                 </Div>
-
                 <Div
                   style={{
                     display: "flex",
@@ -463,7 +452,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 30,
+                      gap: 20,
                       justifyContent: "center",
                       marginTop: 40,
                       marginBottom: 10,
@@ -514,6 +503,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         alignItems: "center",
                         gap: 10,
                         lineHeight: "1.5",
+                        flexWrap: "wrap",
                       }}
                     >
                       <Img app={app?.store?.app || undefined} size={30} />
@@ -524,6 +514,21 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         - {t(app?.store?.description ?? "")}
                       </P>
                     </Div>
+
+                    {downloadUrl && showTribeProfile ? (
+                      <Div>
+                        <Instructions
+                          showButton={false}
+                          showDownloads={true}
+                          showInstructions={false}
+                          showInstallers={false}
+                          style={{
+                            marginTop: 0,
+                          }}
+                        />
+                      </Div>
+                    ) : null}
+
                     <Div
                       style={{
                         display: "flex",
@@ -666,7 +671,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         gap: 10,
                         alignItems: "center",
                         justifyContent: "flex-end",
-                        marginTop: 10,
+                        marginLeft: "auto",
                       }}
                     >
                       {isOwner(app, { userId: user?.id }) && (
@@ -714,17 +719,18 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                   <Div
                     style={{
                       display: "flex",
-                      alignItems: "center",
+                      alignItems: !isMobileDevice ? "center" : undefined,
                       gap: 10,
                       flexWrap: "wrap",
+                      flexDirection: isMobileDevice ? "column" : undefined,
                     }}
                   >
                     <Div
                       style={{
                         display: "flex",
-                        flex: "1",
-
+                        flexWrap: "wrap",
                         alignItems: "center",
+                        flex: !isMobileDevice ? 1 : undefined,
                       }}
                     >
                       <Search
@@ -734,8 +740,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           borderColor:
                             COLORS[app?.themeColor as keyof typeof COLORS] ||
                             "var(--accent-5)",
-                          width: "fill-available",
                           flex: "1",
+                          width: "100%",
                         }}
                       />
                     </Div>

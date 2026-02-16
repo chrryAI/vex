@@ -35,6 +35,7 @@ import {
   tribeFollows,
   apps,
   tribes,
+  tribeBlocks,
 } from "@repo/db/src/schema"
 import { generateText } from "ai"
 import { getModelProvider } from "../getModelProvider"
