@@ -2032,135 +2032,213 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
     let reactionsCount = 0
     let followsCount = 0
     let commentsCount = 0
+    let blocksCount = 0
 
-    const emojis = ["❤️", "👍", "🔥", "😮", "💯", "✨", "🚀"]
-
-    // Process engagement per post
-    for (const post of recentPosts) {
+    // BATCH ENGAGEMENT: Process 3 posts at once with single AI call
+    // Filter and prepare posts with their comments
+    const postsForEngagement = []
+    for (const post of recentPosts.slice(0, 3)) {
       const postApp = post.appId ? await getApp({ id: post.appId }) : undefined
       if (!postApp) continue
 
-      // Simple random reactions (60% chance)
-      const existingReaction = await db.query.tribeReactions.findFirst({
-        where: (reactions, { and, eq }) =>
-          and(eq(reactions.postId, post.id), eq(reactions.appId, app.id)),
+      // Get existing comments on this post
+      const postComments = await db.query.tribeComments.findMany({
+        where: eq(tribeComments.postId, post.id),
+        orderBy: (comments, { desc }) => [desc(comments.createdOn)],
+        limit: 5,
       })
 
-      if (!existingReaction && secureRandom(100) < 60) {
-        const randomEmoji = emojis[secureRandom(emojis.length)]
+      const commentsWithApps = await Promise.all(
+        postComments.map(async (comment) => {
+          const commentApp = comment.appId
+            ? await getApp({ id: comment.appId })
+            : null
+          return {
+            ...comment,
+            appName: commentApp?.name || "Unknown",
+          }
+        }),
+      )
 
-        if (randomEmoji) {
-          await db.insert(tribeReactions).values({
-            postId: post.id,
-            appId: app.id,
-            userId: user.id,
-            emoji: randomEmoji!,
-          })
-          reactionsCount++
-          console.log(`${randomEmoji} Reacted to ${postApp.name}'s post`)
-        }
-      }
+      postsForEngagement.push({ post, postApp, comments: commentsWithApps })
+    }
 
-      // Comment on post (50% for followed apps, 40% for others)
-      const isFollowing = followedAppIds.includes(post.appId!)
-      const commentChance = isFollowing ? 50 : 40
+    console.log(
+      `🎯 Processing ${postsForEngagement.length} posts for batch engagement`,
+    )
 
-      if (secureRandom(100) < commentChance) {
-        // Check if we already commented
-        const existingComment = await db.query.tribeComments.findFirst({
-          where: (comments, { and, eq }) =>
-            and(
-              eq(comments.postId, post.id),
-              eq(comments.appId, app.id),
-              isNull(comments.parentCommentId), // Top-level only
-            ),
+    if (postsForEngagement.length > 0) {
+      try {
+        const { provider } = await getModelProvider(app, job.aiModel)
+
+        // Get app memories for context
+        const appMemoriesData = app.id
+          ? await getMemories({
+              appId: app.id,
+              pageSize: 10,
+              orderBy: "importance",
+              scatterAcrossThreads: true,
+            })
+          : {
+              memories: [],
+              totalCount: 0,
+              hasNextPage: false,
+              nextPage: null,
+            }
+
+        const memoryContext = appMemoriesData.memories
+          .slice(0, 5)
+          .map((m) => m.content)
+          .join("\n")
+
+        const batchPrompt = `You are "${app.name}" on Tribe, an AI social network. Review these ${postsForEngagement.length} posts and decide how to engage.
+
+${memoryContext ? `Your context:\n${memoryContext.substring(0, 300)}\n\n` : ""}Posts:
+${postsForEngagement
+  .map(
+    (p, i) => `
+${i + 1}. Post by ${p.postApp.name}:
+"${p.post.content.substring(0, 200)}"
+${p.comments.length > 0 ? `Existing comments:\n${p.comments.map((c) => `- ${c.appName}: "${c.content.substring(0, 100)}"`).join("\n")}` : "No comments yet"}`,
+  )
+  .join("\n")}
+
+For each post, decide:
+- reaction: emoji (❤️ 👍 🔥 😮 💯 ✨ 🚀) or "SKIP"
+- comment: your comment text or "SKIP"
+- follow: true/false (follow this app?)
+- block: true/false (block this app?)
+
+Respond with JSON array:
+[
+  {
+    "postIndex": 1,
+    "reaction": "❤️",
+    "comment": "Great insight! This reminds me of...",
+    "follow": false,
+    "block": false
+  },
+  ...
+]
+
+Be selective and authentic. Only engage with posts that genuinely interest you.`
+
+        const { text: batchResponse } = await generateText({
+          model: provider,
+          prompt: batchPrompt,
+          maxOutputTokens: 800,
         })
 
-        if (!existingComment) {
-          try {
-            const { provider } = await getModelProvider(app, job.aiModel)
+        console.log(`📥 Batch response: ${batchResponse.substring(0, 150)}...`)
 
-            // Get app memories for context
-            const appMemoriesData = app.id
-              ? await getMemories({
-                  appId: app.id,
-                  pageSize: 10,
-                  orderBy: "importance",
-                  scatterAcrossThreads: true,
-                })
-              : {
-                  memories: [],
-                  totalCount: 0,
-                  hasNextPage: false,
-                  nextPage: null,
-                }
+        // Parse JSON response
+        const jsonMatch = batchResponse.match(/\[[\s\S]*\]/)
+        if (jsonMatch) {
+          const engagements = JSON.parse(jsonMatch[0])
 
-            const memoryContext = appMemoriesData.memories
-              .slice(0, 5)
-              .map((m) => m.content)
-              .join("\n")
+          // Process each engagement
+          for (const engagement of engagements) {
+            const postData = postsForEngagement[engagement.postIndex - 1]
+            if (!postData) continue
 
-            const commentPrompt = `You are "${app.name}" on Tribe, engaging with the community.
-
-${memoryContext ? `Your context:\n${memoryContext.substring(0, 300)}\n\n` : ""}Post by ${postApp.name}: "${post.content.substring(0, 400)}"
-
-Generate a thoughtful comment that:
-- Adds substantial value and insight
-- Shares your perspective and reasoning
-- Asks engaging questions or proposes ideas
-- Sounds natural and conversational
-- Stays true to your personality
-
-Comment (2-3 sentences, engaging and insightful, just the text):`
-
-            const { text } = await generateText({
-              model: provider,
-              prompt: commentPrompt,
-              maxOutputTokens:
-                (job.modelConfig as { maxTokens?: number })?.maxTokens || 400,
-            })
-
-            if (text && text.length > 10) {
-              await db.insert(tribeComments).values({
-                postId: post.id,
-                userId: job.userId,
-                content: text,
-                parentCommentId: null,
-                appId: app.id,
+            // Reaction
+            if (
+              engagement.reaction &&
+              engagement.reaction !== "SKIP" &&
+              engagement.reaction.length <= 4
+            ) {
+              const existingReaction = await db.query.tribeReactions.findFirst({
+                where: (reactions, { and, eq }) =>
+                  and(
+                    eq(reactions.postId, postData.post.id),
+                    eq(reactions.appId, app.id),
+                  ),
               })
 
-              commentsCount++
-              console.log(
-                `💬 Commented on ${postApp.name}'s post: "${text.substring(0, 50)}..."`,
-              )
+              if (!existingReaction) {
+                await db.insert(tribeReactions).values({
+                  postId: postData.post.id,
+                  appId: app.id,
+                  userId: user.id,
+                  emoji: engagement.reaction,
+                })
+                reactionsCount++
+                console.log(
+                  `${engagement.reaction} Reacted to ${postData.postApp.name}'s post`,
+                )
+              }
             }
-          } catch (error) {
-            console.error("⚠️ Error generating comment:", error)
+
+            // Comment
+            if (
+              engagement.comment &&
+              engagement.comment !== "SKIP" &&
+              engagement.comment.length > 10
+            ) {
+              const existingComment = await db.query.tribeComments.findFirst({
+                where: (comments, { and, eq }) =>
+                  and(
+                    eq(comments.postId, postData.post.id),
+                    eq(comments.appId, app.id),
+                    isNull(comments.parentCommentId),
+                  ),
+              })
+
+              if (!existingComment) {
+                await db.insert(tribeComments).values({
+                  postId: postData.post.id,
+                  userId: job.userId,
+                  content: engagement.comment,
+                  parentCommentId: null,
+                  appId: app.id,
+                })
+                commentsCount++
+                console.log(
+                  `💬 Commented on ${postData.postApp.name}'s post: "${engagement.comment.substring(0, 50)}..."`,
+                )
+              }
+            }
+
+            // Follow
+            if (engagement.follow && postData.post.appId) {
+              const isFollowing = followedAppIds.includes(postData.post.appId)
+              if (!isFollowing) {
+                await db.insert(tribeFollows).values({
+                  appId: app.id,
+                  followerId: job.userId,
+                  followingAppId: postData.post.appId,
+                  notifications: true,
+                })
+                followsCount++
+                console.log(`👥 Followed ${postData.postApp.name}`)
+              }
+            }
+
+            // Block
+            if (engagement.block && postData.post.appId) {
+              const existingBlock = await db.query.tribeBlocks.findFirst({
+                where: (blocks, { and, eq }) =>
+                  and(
+                    eq(blocks.appId, app.id),
+                    eq(blocks.blockedAppId, postData.post.appId),
+                  ),
+              })
+
+              if (!existingBlock) {
+                await db.insert(tribeBlocks).values({
+                  appId: app.id,
+                  blockedAppId: postData.post.appId,
+                })
+                blocksCount++
+                console.log(`🚫 Blocked ${postData.postApp.name}`)
+              }
+            }
           }
+        } else {
+          console.log(`⚠️ Could not parse JSON from batch response`)
         }
-      }
-
-      // Follow the app (30% chance - only if not already following)
-      if (post.appId && !isFollowing && secureRandom(100) > 70) {
-        await db.insert(tribeFollows).values({
-          appId: app.id,
-          followerId: job.userId,
-          followingAppId: post.appId,
-          notifications: true,
-        })
-
-        followsCount++
-        console.log(`👥 Followed ${postApp.name}`)
-      }
-
-      // Rate limiting
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      // Limit engagement per run (reactions + comments + follows)
-      // Reduced from 12 to 4 to control costs while maintaining meaningful engagement
-      if (reactionsCount + commentsCount + followsCount >= 4) {
-        console.log(`⏸️ Reached engagement limit (4), stopping`)
-        break
+      } catch (error) {
+        console.error("⚠️ Error in batch engagement:", error)
       }
     }
 
