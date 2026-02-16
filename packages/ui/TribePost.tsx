@@ -64,6 +64,7 @@ export default function TribePost({
     commenting,
     deletePost,
     deleteComment,
+    optimisticLiked,
   } = useTribe()
 
   const isSwarm = commenting.length || liveReactions.length
@@ -774,7 +775,10 @@ export default function TribePost({
               ) : (
                 <Img icon="heart" width={18} height={18} />
               )}
-              <Span>{post.likesCount || 0}</Span>
+              <Span>
+                {(post.likesCount || 0) +
+                  (optimisticLiked.includes(post.id) ? 1 : 0)}
+              </Span>
             </Button>
             <Button
               className="transparent"

@@ -1147,7 +1147,11 @@ export function AuthProvider({
   )
 
   const getAppSlug = useCallback(
-    (targetApp: appWithStore, defaultSlug: string = "/"): string => {
+    (
+      targetApp: appWithStore,
+      defaultSlug: string = "/",
+      addBase = true,
+    ): string => {
       const result = getAppSlugUtil({
         targetApp,
         defaultSlug,
@@ -1155,12 +1159,8 @@ export function AuthProvider({
         baseApp,
       })
 
-      if (
-        chrry?.slug &&
-        baseApp?.id === chrry?.id &&
-        targetApp.id === chrry?.id
-      ) {
-        return `/${chrry?.slug}`
+      if (targetApp && baseApp?.id === targetApp?.id && addBase) {
+        return `/${targetApp?.slug}`
       }
 
       return result
@@ -2286,11 +2286,10 @@ export function AuthProvider({
     pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
 
   const canBeTribeProfile =
-    !tribeSlug &&
-    !excludedSlugRoutes.includes(pathname.split("?")?.[0] || "") &&
-    !showAllTribe &&
-    !postId &&
-    !isExcluded
+    (app
+      ? getAppSlug(app, "/", false) === pathname ||
+        getAppSlug(app, "/") === pathname
+      : false) && !(siteConfig.isTribe && pathname === "/")
 
   const showTribeInitial = !!(
     !postId &&
@@ -2298,14 +2297,11 @@ export function AuthProvider({
       tribeSlug ||
       postId ||
       props.showTribe ||
-      (pathname === "/"
-        ? baseApp?.slug === siteConfig.slug && siteConfig.isTribe
-        : !excludedSlugRoutes.includes(pathname.split("?")?.[0] || "")))
+      canBeTribeProfile)
   )
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
-  const showTribeProfileInternal =
-    !!(canBeTribeProfile && showTribe) || canBeTribeProfile
+  const showTribeProfileInternal = canBeTribeProfile
 
   const showTribeProfileMemo = useMemo(
     () => showTribeProfileInternal,

@@ -64,6 +64,8 @@ interface TribeContextType {
   setSearch: (search?: string) => void
   setUntil: (val: number) => void
   setCharacterProfileIds: (ids?: string[]) => void
+  optimisticLiked: string[]
+  setOptimisticLiked: (ids: string[]) => void
   refetchPosts: () => Promise<void>
   refetchPost: () => Promise<void>
   refetchTribes: () => Promise<void>
@@ -120,14 +122,9 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   const [shouldLoadPosts, setShouldLoadPostsInternal] = useState<boolean>(true)
 
-  const [shouldLoadPost, setShouldLoadPostInternal] =
-    useState<boolean>(!initialTribePost)
-
-  const setShouldLoadPost = (val: boolean) => {
-    if (shouldLoadPost === val) return
-
-    setShouldLoadPostInternal(val)
-  }
+  const [shouldLoadPost, setShouldLoadPost] = useState<number>(
+    !initialTribePost ? 0 : 1,
+  )
 
   const [loadPostsCounter, setLoadPostsCounter] = useState(1)
 
@@ -207,14 +204,10 @@ export function TribeProvider({ children }: TribeProviderProps) {
   }, [tribePostData, tribePost?.id, setTribePost])
 
   useEffect(() => {
-    if (
-      tribesData &&
-      JSON.stringify(tribesData.tribes?.map((t: any) => t.id)) !==
-        JSON.stringify(tribes?.tribes?.map((t: any) => t.id))
-    ) {
+    if (tribesData) {
       setTribes(tribesData)
     }
-  }, [tribesData, tribes?.tribes, setTribes])
+  }, [tribesData])
 
   const tribeId = currentTribe?.id
 
@@ -256,15 +249,11 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   // Use tribePostsData directly from SWR, only update tribePosts manually when needed
   useEffect(() => {
-    if (
-      tribePostsData &&
-      JSON.stringify(tribePostsData.posts?.map((p: any) => p.id)) !==
-        JSON.stringify(tribePosts?.posts?.map((p: any) => p.id))
-    ) {
+    if (tribePostsData) {
       setTribePosts(tribePostsData)
       auth.setIsLoadingPosts(false)
     }
-  }, [tribePostsData, tribePosts?.posts, setTribePosts])
+  }, [tribePostsData])
 
   const [isTogglingLike, setIsTogglingLike] = useState<string | undefined>(
     undefined,
@@ -564,7 +553,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
       toast.success("Comment deleted successfully")
       // Refetch post to update comments
       if (tribePost?.id) {
-        setShouldLoadPost(true)
+        setShouldLoadPost((prev) => prev + 1)
 
         await refetchTribePost()
       }
@@ -574,6 +563,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
       toast.error("Failed to delete comment")
     }
   }
+
+  const [optimisticLiked, setOptimisticLiked] = useState<string[]>([])
 
   const toggleLike = async (postId: string): Promise<{ liked: boolean }> => {
     if (!postId) {
@@ -604,12 +595,15 @@ export function TribeProvider({ children }: TribeProviderProps) {
       }
 
       const data = await response.json()
-      // Refetch posts to update like counts
-      await refetchPosts()
-      if (tribePost?.id === postId) {
-        setShouldLoadPost(true)
-        await refetchTribePost()
+
+      if (data.liked) {
+        !optimisticLiked.includes(postId) &&
+          setOptimisticLiked((prev) => [...prev, postId])
+      } else {
+        optimisticLiked.includes(postId) &&
+          setOptimisticLiked((prev) => prev.filter((item) => item !== postId))
       }
+      // Refetch posts to update like counts
 
       return { liked: data.liked }
     } catch (error) {
@@ -681,6 +675,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     postId,
     setUntil,
     setCharacterProfileIds,
+    optimisticLiked,
+    setOptimisticLiked,
     toggleLike,
     deletePost,
     deleteComment,
@@ -696,7 +692,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
       // return refetchPosts()
     },
     refetchPost: async () => {
-      setShouldLoadPost(true)
+      setShouldLoadPost((prev) => prev + 1)
+
       // return refetchTribePost()
     },
     refetchTribes: async () => {
