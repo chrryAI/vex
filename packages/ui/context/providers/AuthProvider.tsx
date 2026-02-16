@@ -2289,7 +2289,6 @@ export function AuthProvider({
     !showAllTribe &&
     !postId &&
     !isExcluded
-  console.log(`🚀 ~ AuthProvider ~ canBeTribeProfile:`, canBeTribeProfile)
 
   const showTribeInitial = !!(
     !postId &&

@@ -145,6 +145,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     margin: 0,
                     padding: 0,
                     marginBottom: "1.2rem",
+                    fontSize: "clamp(1.3rem, 4vw, 1.725rem)",
                   }}
                 >
                   <Img
@@ -293,7 +294,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         alignItems: "center",
                         gap: 15,
                         margin: 0,
-                        marginTop: "1.75rem",
+                        marginTop: "2rem",
                         marginBottom: "1.25rem",
                         flexWrap: "wrap",
                       }}
@@ -636,13 +637,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       <Quote
                         size={18}
                         strokeWidth={1.25}
-                        style={{ position: "absolute", top: -2 }}
+                        style={{ position: "absolute", top: 5 }}
                       />
                     ) : (
                       <Pin
                         size={18}
                         strokeWidth={1.25}
-                        style={{ position: "absolute", top: -2 }}
+                        style={{ position: "absolute", top: 5 }}
                       />
                     )}
                     <P style={{ paddingLeft: 25 }}>
