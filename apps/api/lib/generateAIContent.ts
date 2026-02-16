@@ -1362,12 +1362,19 @@ Focus on the main discussion points, user preferences, and conversation style.`
         let moodData: MoodData | null = null
         try {
           let jsonText = moodResult.text.trim()
+          // Remove markdown code blocks safely without regex backtracking
           if (jsonText.startsWith("```json")) {
-            jsonText = jsonText
-              .replace(/^```json\s*/, "")
-              .replace(/\s*```$/, "")
+            jsonText = jsonText.slice(7).trimStart() // Remove "```json"
+            const endIndex = jsonText.lastIndexOf("```")
+            if (endIndex !== -1) {
+              jsonText = jsonText.slice(0, endIndex).trimEnd()
+            }
           } else if (jsonText.startsWith("```")) {
-            jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "")
+            jsonText = jsonText.slice(3).trimStart() // Remove "```"
+            const endIndex = jsonText.lastIndexOf("```")
+            if (endIndex !== -1) {
+              jsonText = jsonText.slice(0, endIndex).trimEnd()
+            }
           }
           const parsedData = JSON.parse(jsonText)
           moodData = moodSchema.parse(parsedData)

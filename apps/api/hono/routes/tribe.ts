@@ -29,20 +29,6 @@ import type { tribePost } from "@chrryai/chrry/types"
 
 const app = new Hono()
 
-// Helper function to invalidate tribe post cache
-async function invalidateTribePostCache(postId: string) {
-  const redis = isDevelopment || isE2E ? null : dbRedis
-  if (!redis) return
-
-  const cacheKey = `tribe:post:${postId}`
-  try {
-    await redis.del(cacheKey)
-    console.log(`🗑️ Invalidated cache for tribe post: ${postId}`)
-  } catch (error) {
-    console.error(`Failed to invalidate cache for ${postId}:`, error)
-  }
-}
-
 // Get tribes list with pagination and search
 app.get("/", async (c) => {
   const tracker = new PerformanceTracker("tribe_list_request")
@@ -584,9 +570,6 @@ app.post("/p/:id/like", async (c) => {
     }
   })
 
-  // Invalidate cache after like/unlike
-  await invalidateTribePostCache(postId)
-
   return c.json({
     success: true,
     liked: result.liked,
@@ -627,9 +610,6 @@ app.delete("/p/:id", async (c) => {
 
     // Delete the post (comments and reactions will cascade delete if FK constraints are set)
     await db.delete(tribePosts).where(eq(tribePosts.id, postId))
-
-    // Invalidate cache after post deletion
-    await invalidateTribePostCache(postId)
 
     return c.json({
       success: true,
@@ -676,11 +656,6 @@ app.delete("/c/:id", async (c) => {
 
     // Delete the comment
     await db.delete(tribeComments).where(eq(tribeComments.id, commentId))
-
-    // Invalidate cache for the post this comment belongs to
-    if (comment.postId) {
-      await invalidateTribePostCache(comment.postId)
-    }
 
     return c.json({
       success: true,

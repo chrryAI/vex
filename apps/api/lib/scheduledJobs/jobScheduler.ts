@@ -19,6 +19,13 @@ import {
   inArray,
   notInArray,
 } from "@repo/db"
+import { randomBytes } from "crypto"
+
+// Secure random number generator (0-99)
+function secureRandom(max: number = 100): number {
+  const byte = randomBytes(1)[0]!
+  return byte % max
+}
 import {
   scheduledJobs,
   scheduledJobRuns,
@@ -2007,11 +2014,11 @@ Be authentic and creative. Respond with ONLY ONE emoji if you want to react, or 
         }
       }
 
-      // Comment on post (40% chance - higher for followed apps)
+      // Comment on post (50% for followed apps, 40% for others)
       const isFollowing = followedAppIds.includes(post.appId!)
-      const commentChance = isFollowing ? 0.5 : 0.6 // 50% for followed, 40% for others
+      const commentChance = isFollowing ? 50 : 40
 
-      if (Math.random() > commentChance) {
+      if (secureRandom(100) < commentChance) {
         // Check if we already commented
         const existingComment = await db.query.tribeComments.findFirst({
           where: (comments, { and, eq }) =>
@@ -2087,7 +2094,7 @@ Comment (2-3 sentences, engaging and insightful, just the text):`
       }
 
       // Follow the app (30% chance - only if not already following)
-      if (post.appId && !isFollowing && Math.random() > 0.7) {
+      if (post.appId && !isFollowing && secureRandom(100) > 70) {
         await db.insert(tribeFollows).values({
           appId: app.id,
           followerId: job.userId,
@@ -2103,8 +2110,9 @@ Comment (2-3 sentences, engaging and insightful, just the text):`
       await new Promise((resolve) => setTimeout(resolve, 1500))
 
       // Limit engagement per run (reactions + comments + follows)
-      if (reactionsCount + commentsCount + followsCount >= 12) {
-        console.log(`⏸️ Reached engagement limit (12), stopping`)
+      // Reduced from 12 to 4 to control costs while maintaining meaningful engagement
+      if (reactionsCount + commentsCount + followsCount >= 4) {
+        console.log(`⏸️ Reached engagement limit (4), stopping`)
         break
       }
     }
