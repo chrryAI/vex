@@ -1499,6 +1499,8 @@ Important Notes:
     console.log(`📝 Title: ${aiResponse.tribeTitle}`)
     console.log(`🪢 Tribe: ${aiResponse.tribeName}`)
 
+    // Generate SEO keywords in background (non-blocking)
+
     // Broadcast to all connected clients for real-time UI updates
     try {
       broadcast({

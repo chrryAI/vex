@@ -77,8 +77,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     { sessionId: string; totalPrice: number } | undefined
   >(undefined)
 
-  // console.log(`🚀 ~ TribeCalculator ~ scheduledJobs:`, scheduledJobs)
-
   // Find existing scheduled job for this app
   const existingSchedule = useMemo(() => {
     if (!scheduledJobs || !app?.id) return null
@@ -122,8 +120,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     // 2000 / 78 ≈ 25-26 days
     const today = new Date()
     const defaultStartDate = new Date().toISOString().split("T")[0] || ""
-
-    console.log(`🚀 ~ getFormState ~ slot:`, existingSchedule)
 
     let schedule =
       (!skipExistingSchedule &&
@@ -246,7 +242,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     setFormData({ ...formData, endDate: value })
   }
   const schedule = formData.schedule
-  // console.log(`🚀 ~ TribeCalculator ~ schedule:`, schedule)
   const setSchedule = (value: ScheduleTime[]) => {
     setFormData({ ...formData, schedule: value })
   }
@@ -312,11 +307,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
       ...slot,
       credits: result.creditsPerPost,
     }))
-    // console.log(
-    // `🚀 ~ TribeCalculator ~ scheduleWithCredits:`,
-    // scheduleWithCredits,
-    // schedule,
-    // )
 
     setFormData((prev) => ({
       ...prev,
@@ -489,7 +479,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
       const ADD_TIME_INTERVAL = 30 // minutes
       newMinute = lastSlot.minute + ADD_TIME_INTERVAL
       newHour = lastSlot.hour
-      // console.log(`🚀 ~ addScheduleTime ~ lastSlot.hour:`, lastSlot.hour)
 
       // Handle minute overflow
       if (newMinute >= 60) {

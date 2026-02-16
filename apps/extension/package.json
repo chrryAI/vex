@@ -28,6 +28,7 @@
     "dev:fast": "MODE=chrryAI vite build --mode development --watch",
     "dev:watch": "concurrently \"npm run build:dev:watch\" \"npm run reload:watch\"",
     "lint": "eslint .",
+    "type-check": "tsc --noEmit",
     "preview": "vite preview",
     "reload:watch": "chokidar \"dist/**/*\" -c \"echo Extension updated - please refresh in Chrome\"",
     "zip:chrome": "cd dist && zip -r ../dist-chrome.zip .",

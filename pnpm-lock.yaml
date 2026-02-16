@@ -188,6 +188,15 @@ importers:
       '@aws-sdk/lib-storage':
         specifier: ^3.940.0
         version: 3.980.0(@aws-sdk/client-s3@3.980.0)
+      '@babel/parser':
+        specifier: ^7.24.4
+        version: 7.29.0
+      '@babel/traverse':
+        specifier: ^7.29.0
+        version: 7.29.0
+      '@babel/types':
+        specifier: ^7.29.0
+        version: 7.29.0
       '@chrryai/chrry':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -242,6 +251,9 @@ importers:
       '@smithy/node-http-handler':
         specifier: ^4.4.5
         version: 4.4.8
+      '@types/babel-traverse':
+        specifier: ^6.25.10
+        version: 6.25.10
       '@types/bcrypt':
         specifier: ^5.0.2
         version: 5.0.2
@@ -311,6 +323,9 @@ importers:
       critters:
         specifier: ^0.0.23
         version: 0.0.23
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
       date-fns-tz:
         specifier: ^3.2.0
         version: 3.2.0(date-fns@4.1.0)
@@ -353,6 +368,9 @@ importers:
       index-to-position:
         specifier: ^1.1.0
         version: 1.2.0
+      install:
+        specifier: ^0.13.0
+        version: 0.13.0
       jose:
         specifier: ^6.1.3
         version: 6.1.3
@@ -374,6 +392,9 @@ importers:
       nodemailer:
         specifier: ^7.0.5
         version: 7.0.13
+      npm:
+        specifier: ^11.8.0
+        version: 11.8.0
       oauth:
         specifier: ^0.9.15
         version: 0.9.15
@@ -471,6 +492,9 @@ importers:
       '@rollup/plugin-commonjs':
         specifier: ^28.0.1
         version: 28.0.9(rollup@4.57.0)
+      '@types/babel__traverse':
+        specifier: ^7.28.0
+        version: 7.28.0
       '@types/jsonwebtoken':
         specifier: ^9.0.10
         version: 9.0.10
@@ -6076,6 +6100,12 @@ packages:
   '@types/aria-query@5.0.4':
     resolution: {integrity: sha512-rfT93uj5s0PRL7EzccGMs3brplhcrghnDoV26NqKhCAS1hVo+WdNsPvE/yb6ilfr5hi2MEk6d5EWJTKdxg8jVw==}
 
+  '@types/babel-traverse@6.25.10':
+    resolution: {integrity: sha512-B3XitTFG8YeXb5lr7Nj62t1DikCDuAJ/4BDeK6GCuWREEmdunI9DWnv+81oHl2yQBQPWY/C1PmV3vaRZB4LQmw==}
+
+  '@types/babel-types@7.0.16':
+    resolution: {integrity: sha512-5QXs9GBFTNTmilLlWBhnsprqpjfrotyrnzUdwDrywEL/DA4LuCWQT300BTOXA3Y9ngT9F2uvmCoIxI6z8DlJEA==}
+
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
 
@@ -11054,7 +11084,6 @@ packages:
     resolution: {integrity: sha512-DgtH8GId1/+oj8n9yYEmhTq1QkxOZZzqHJhHEa1bmtV3t3/u2YsE3LSvRUNpVRWVXRcCdn+3Tu6+mD2YXKL7lA==}
     engines: {node: '>=20.18.0'}
     hasBin: true
-    bundledDependencies: []
 
   peberminta@0.9.0:
     resolution: {integrity: sha512-XIxfHpEuSJbITd1H3EeQwpcZbTLHc+VVr8ANI9t5sit565tsI4/xK3KWTUFE2e6QiangUkh3B0jihzmGnNrRsQ==}
@@ -12772,6 +12801,7 @@ packages:
   tar@7.5.7:
     resolution: {integrity: sha512-fov56fJiRuThVFXD6o6/Q354S7pnWMJIVlDBYijsTNx6jKSE4pvrDTs6lUnmGvNyfJwFQQwWy3owKz1ucIhveQ==}
     engines: {node: '>=18'}
+    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   teeny-request@10.1.0:
     resolution: {integrity: sha512-3ZnLvgWF29jikg1sAQ1g0o+lr5JX6sVgYvfUJazn7ZjJroDBUTWp44/+cFVX0bULjv4vci+rBD+oGVAkWqhUbw==}
@@ -20185,6 +20215,12 @@ snapshots:
   '@types/all-the-cities@3.1.3': {}
 
   '@types/aria-query@5.0.4': {}
+
+  '@types/babel-traverse@6.25.10':
+    dependencies:
+      '@types/babel-types': 7.0.16
+
+  '@types/babel-types@7.0.16': {}
 
   '@types/babel__core@7.20.5':
     dependencies:

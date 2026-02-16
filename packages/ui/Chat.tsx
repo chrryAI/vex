@@ -1693,9 +1693,9 @@ export default function Chat({
         isPear && formData.append("pear", JSON.stringify(isPear))
 
         isRetro && formData.append("retro", JSON.stringify(isRetro))
-        postToTribe && formData.append("isTribe", JSON.stringify(postToTribe))
+        postToTribe && formData.append("tribe", JSON.stringify(postToTribe))
         postToMoltbook &&
-          formData.append("isMolt", JSON.stringify(postToMoltbook))
+          formData.append("molt", JSON.stringify(postToMoltbook))
 
         artifacts.forEach((artifact, index) => {
           formData.append(`artifact_${index}`, artifact)
@@ -1724,8 +1724,8 @@ export default function Chat({
           taskId,
           pear: isPear,
           retro: isRetro,
-          isTribe: postToTribe,
-          isMolt: postToMoltbook,
+          tribe: postToTribe,
+          molt: postToMoltbook,
         })
       }
       const userResponse = await apiFetch(`${API_URL}/messages`, {

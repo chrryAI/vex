@@ -10,7 +10,7 @@
     "build:server": "NODE_ENV=production pnpm vite build --ssr src/entry-server.tsx --outDir dist/server",
     "start": "cross-env NODE_ENV=production node server",
     "preview": "cross-env NODE_ENV=production node server",
-    "type-check": "tsc --noEmit",
+    "check-types": "tsc --noEmit",
     "test": "vitest run --coverage.enabled --coverage.provider=v8 --coverage.reporter=text --coverage.reporter=lcov"
   },
   "dependencies": {

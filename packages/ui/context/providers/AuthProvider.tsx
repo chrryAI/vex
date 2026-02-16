@@ -1145,10 +1145,6 @@ export function AuthProvider({
         baseApp,
       })
 
-      if (targetApp?.id === baseApp?.id) {
-        return `/${targetApp.slug}`
-      }
-
       return result
     },
     [pathname, baseApp],
@@ -2252,34 +2248,48 @@ export function AuthProvider({
 
   const canShowTribe = hasAppPosts
 
-  const canBeTribeProfile =
-    hasAppPosts &&
-    (pathname === "/"
-      ? baseApp?.id !== chrry?.id
-      : app && pathname === getAppSlug(app)
-        ? true
-        : false)
-
   const showTribeFromPath = pathname === "/tribe"
+
+  const isExcluded = excludedSlugRoutes?.includes(
+    pathname.split("?")?.[0] || "",
+  )
 
   const postId = getPostId(pathname)
 
-  const showTribeInitial =
+  // Only show tribe profile when on app's own page (not /tribe route)
+  const isOnAppPage = app && pathname === getAppSlug(app)
+
+  const showAllTribe =
+    pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
+  console.log(`🚀 ~ AuthProvider ~ showAllTribe:`, showAllTribe)
+
+  const canBeTribeProfile =
+    !excludedSlugRoutes.includes(pathname.split("?")?.[0] || "") &&
+    !showAllTribe &&
+    !postId
+  const showTribeInitial = !!(
     hasAppPosts &&
-    (showTribeFromPath ||
-      (postId
-        ? true
-        : (props.showTribe ??
-          !excludedSlugRoutes.includes(pathname.split("?")?.[0] || ""))))
+    !postId &&
+    (showAllTribe ||
+      postId ||
+      props.showTribe ||
+      (pathname === "/"
+        ? baseApp?.slug === siteConfig.slug && siteConfig.isTribe
+        : !excludedSlugRoutes.includes(pathname.split("?")?.[0] || "")))
+  )
+  console.log(`🚀 ~ AuthProvider ~ hasAppPosts:`, hasAppPosts)
+
+  console.log(`🚀 ~ AuthProvider ~ showTribeInitial:`, showTribeInitial)
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
+  console.log(`🚀 ~ AuthProvider ~ showTribe:`, showTribe)
 
-  const showTribeProfile = canBeTribeProfile && showTribe
+  const showTribeProfile =
+    !!(canBeTribeProfile && showTribe) || canBeTribeProfile
+  console.log(`🚀 ~ AuthProvider ~ canBeTribeProfile:`, canBeTribeProfile)
 
   const setShowTribe = (value: boolean) => {
-    searchParams.get("tribe") && removeParams("tribe")
     if (!canShowTribe) return
-
     setShowTribeFinal(value)
   }
 

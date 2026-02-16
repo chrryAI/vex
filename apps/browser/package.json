@@ -23,7 +23,8 @@
     "config:generate": "node ../../apps/scripts/generate-tauri-config.js",
     "dev": "MODE=vex pnpm config:generate && MODE=vex pnpm icon:generate && MODE=vex tauri dev",
     "dev:vite": "vite",
-    "icon:generate": "node ../../apps/scripts/generate-icons.js"
+    "icon:generate": "node ../../apps/scripts/generate-icons.js",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",

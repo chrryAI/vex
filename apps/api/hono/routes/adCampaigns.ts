@@ -7,7 +7,7 @@ import {
   autonomousBids,
   slotRentals,
   storeTimeSlots,
-  type NewappCampaign,
+  type newAppCampaign,
 } from "@repo/db"
 import { getMember, getGuest } from "../lib/auth"
 import { runautonomousBidding } from "../../lib/adExchange/autonomousBidding"
@@ -175,7 +175,7 @@ adCampaignsRoute.post("/", async (c) => {
         dailyBudget: body.dailyBudget,
         status: "active",
         metadata: body.metadata ?? null,
-      } as NewappCampaign)
+      } as newAppCampaign)
       .returning()
 
     if (isDevelopment && campaign)
@@ -621,7 +621,8 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
         sql`SELECT * FROM ${storeTimeSlots} WHERE ${storeTimeSlots.id} = ${slotId} FOR UPDATE`,
       )
 
-      if (!lockedSlotResult.rows || lockedSlotResult.rows.length === 0) {
+      const rows = (lockedSlotResult as any).rows
+      if (!rows || rows.length === 0) {
         throw new Error("Slot not found")
       }
 
@@ -685,7 +686,7 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
           biddingStrategy: "smart",
           status: "active",
           metadata: { directRental: true },
-        } as NewappCampaign)
+        } as newAppCampaign)
         .returning()
 
       if (!campaign) {

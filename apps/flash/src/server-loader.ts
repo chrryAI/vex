@@ -336,16 +336,6 @@ export async function loadServerData(
       }
     }
 
-    const appResult = await getApp({
-      chrryUrl,
-      appId,
-      token: apiKey,
-      pathname,
-      API_URL,
-    })
-
-    const postId = getPostId(pathname)
-
     apiKey =
       sessionResult?.user?.token || sessionResult?.guest?.fingerprint || apiKey
 
@@ -358,11 +348,21 @@ export async function loadServerData(
         })
       : undefined
 
+    const appResult = await getApp({
+      chrryUrl,
+      appId: threadResult?.thread?.appId || appId,
+      token: apiKey,
+      pathname,
+      API_URL,
+    })
+
+    const postId = getPostId(pathname)
+
     const showAllTribe =
-      pathname === "/tribe" ||
-      (postId ? true : siteConfig?.mode === "chrryAI" && pathname === "/")
+      pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
+
     const canShowTribeProfile =
-      !excludedSlugRoutes.includes(pathname.split("?")?.[0]) && !showAllTribe
+      !excludedSlugRoutes?.includes(pathname.split("?")?.[0]) && !showAllTribe
 
     const [
       translationsResult,
@@ -410,6 +410,7 @@ export async function loadServerData(
           })
         : Promise.resolve(undefined),
     ])
+    console.log(`🚀 ~ loadServerData ~ tribePostResult:`, tribePostResult)
 
     threads = threadsResult
 

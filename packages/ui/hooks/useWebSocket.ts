@@ -165,15 +165,6 @@ class WebSocketManager {
           return
         }
 
-        // // Send acknowledgment if message has messageId (for E2E testing)
-        // if (data.messageId) {
-        //   console.log(`📨 Sending ACK for message ${data.messageId}`)
-        //   this.send({
-        //     type: "ack",
-        //     messageId: data.messageId,
-        //   })
-        // }
-
         this.handlers.forEach((handler) => handler(data))
       }
 

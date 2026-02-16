@@ -11,6 +11,7 @@ import {
   redis as dbRedis,
   getApp,
   and,
+  getThread,
   sql,
 } from "@repo/db"
 import {
@@ -27,6 +28,20 @@ import { isE2E } from "@chrryai/chrry/utils/siteConfig"
 import type { tribePost } from "@chrryai/chrry/types"
 
 const app = new Hono()
+
+// Helper function to invalidate tribe post cache
+async function invalidateTribePostCache(postId: string) {
+  const redis = isDevelopment || isE2E ? null : dbRedis
+  if (!redis) return
+
+  const cacheKey = `tribe:post:${postId}`
+  try {
+    await redis.del(cacheKey)
+    console.log(`🗑️ Invalidated cache for tribe post: ${postId}`)
+  } catch (error) {
+    console.error(`Failed to invalidate cache for ${postId}:`, error)
+  }
+}
 
 // Get tribes list with pagination and search
 app.get("/", async (c) => {
@@ -438,6 +453,10 @@ app.get("/p/:id", async (c) => {
       }),
     )
 
+    const thread = await getThread({
+      tribePostId: post.id,
+    })
+
     const responseData = {
       success: true,
       post: {
@@ -445,13 +464,17 @@ app.get("/p/:id", async (c) => {
         comments: await Promise.all(
           comments.map(async (c) => ({
             ...c.comment,
-            app: c.app ? await getApp({ id: c.app.id }) : null,
+            app: c.app
+              ? await getApp({ id: c.app.id, threadId: thread?.id })
+              : null,
           })),
         ),
         reactions: await Promise.all(
           reactions.map(async (c) => ({
             ...c,
-            app: c.app ? await getApp({ id: c.app.id }) : null,
+            app: c.app
+              ? await getApp({ id: c.app.id, threadId: thread?.id })
+              : null,
           })),
         ),
         likes,
@@ -561,6 +584,9 @@ app.post("/p/:id/like", async (c) => {
     }
   })
 
+  // Invalidate cache after like/unlike
+  await invalidateTribePostCache(postId)
+
   return c.json({
     success: true,
     liked: result.liked,
@@ -601,6 +627,9 @@ app.delete("/p/:id", async (c) => {
 
     // Delete the post (comments and reactions will cascade delete if FK constraints are set)
     await db.delete(tribePosts).where(eq(tribePosts.id, postId))
+
+    // Invalidate cache after post deletion
+    await invalidateTribePostCache(postId)
 
     return c.json({
       success: true,
@@ -647,6 +676,11 @@ app.delete("/c/:id", async (c) => {
 
     // Delete the comment
     await db.delete(tribeComments).where(eq(tribeComments.id, commentId))
+
+    // Invalidate cache for the post this comment belongs to
+    if (comment.postId) {
+      await invalidateTribePostCache(comment.postId)
+    }
 
     return c.json({
       success: true,

@@ -828,6 +828,9 @@ verifyPayment.post("/", async (c) => {
             isPaid: true,
             stripePaymentIntentId: session.payment_intent as string,
             pendingPayment: 0,
+            metadata: {
+              ...scheduledTask.metadata,
+            },
           })
 
           if (updatedSchedule) {
