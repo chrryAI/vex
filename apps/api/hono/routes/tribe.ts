@@ -290,7 +290,7 @@ app.get("/p", async (c) => {
       )
 
       // Store in Redis cache with 5 minute TTL
-      if (!isDevelopment && !isE2E) {
+      if (!isDevelopment && !isE2E && !skipCache) {
         await redis.setex(cacheKey, 300, JSON.stringify(result))
         console.log(`💾 Cached tribe posts: ${cacheKey}`)
       }
@@ -359,7 +359,7 @@ app.get("/p/:id", async (c) => {
         }
       : dbRedis
 
-  const skipCache = c.req.query("skipCache") === "true"
+  const skipCache = true
 
   try {
     // Create cache key for single post

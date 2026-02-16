@@ -134,6 +134,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
   }
 
   const setShouldLoadPosts = (val: boolean) => {
+    val && refetchPosts()
     if (shouldLoadPosts === val) return
     setShouldLoadPostsInternal(val)
   }
