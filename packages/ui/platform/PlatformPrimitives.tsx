@@ -108,6 +108,8 @@ export interface InputProps extends BaseProps {
   maxLength?: number
   autoComplete?: string
   autoFocus?: boolean
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
 }
 
 export interface TextAreaProps extends BaseProps {
