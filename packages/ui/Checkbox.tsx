@@ -78,7 +78,7 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
             ...styles.formSwitchTrack.style,
             ...(checked && styles.formSwitchTrackChecked.style),
             ...(isFocused && {
-              outlineWidth: "0.5px",
+              outlineWidth: "2px",
               outlineStyle: "solid",
               outlineColor: "var(--link-color, #3b82f6)",
               outlineOffset: "1px",
