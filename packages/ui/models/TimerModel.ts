@@ -16,18 +16,49 @@ export type TimerState = {
   isCountingDown: boolean
   isPaused: boolean
   isFinished: boolean
+  isCancelled?: boolean
   startTime: number
   timestamp?: number
 }
 
 export function createTimerModel() {
+  // Helper to read initial state
+  const getInitialState = (): TimerState => {
+    if (typeof window === "undefined") {
+      return { time: 0, isCountingDown: false, isPaused: false, isFinished: false, isCancelled: false, startTime: 0 }
+    }
+    try {
+      const raw = localStorage.getItem("timerState")
+      if (raw) {
+        const state = JSON.parse(raw) as TimerState
+        // Catch up logic
+        if (state.isCountingDown && !state.isPaused && state.startTime) {
+          const elapsed = Math.floor((Date.now() - state.startTime) / 1000)
+          const remaining = Math.max(0, state.time - elapsed)
+          return {
+            ...state,
+            time: remaining,
+            isFinished: remaining === 0 && state.time > 0, // Mark finished if it ended while closed
+            isCountingDown: remaining > 0 // Stop counting if finished
+          }
+        }
+        return state
+      }
+    } catch (e) {
+      console.error("Error restoring timer state", e)
+    }
+    return { time: 0, isCountingDown: false, isPaused: false, isFinished: false, isCancelled: false, startTime: 0 }
+  }
+
+  const initialState = getInitialState()
+
   // Signals
-  const time = signal(0)
-  const isCountingDown = signal(false)
-  const isPaused = signal(false)
-  const isFinished = signal(false)
-  const isCancelled = signal(false)
-  const startTime = signal(0)
+  const time = signal(initialState.time)
+  const isCountingDown = signal(initialState.isCountingDown)
+  const isPaused = signal(initialState.isPaused)
+  const isFinished = signal(initialState.isFinished)
+  const isCancelled = signal(initialState.isCancelled || false)
+  const startTime = signal(initialState.startTime)
 
   const presetMin1 = signal(25)
   const presetMin2 = signal(15)
@@ -35,19 +66,32 @@ export function createTimerModel() {
 
   const activePomodoro = signal<number | null>(null)
 
-  // Audio/Visual flags
   const playBirds = signal(false)
   const playKitasaku = signal(false)
   const replay = signal(false)
 
-  // Tasks
   const selectedTasks = signal<Task[] | undefined>(undefined)
 
-  // Internal
   let timerInterval: any = null
   let adjustInterval: any = null
 
-  // Persistence Helper
+  // Resume countdown if initialized in running state
+  if (initialState.isCountingDown && initialState.time > 0) {
+      // Need to start the interval
+      // We can't call startCountdown here because it resets start time.
+      // We implement a resume logic without batch reset.
+      // Or just call startCountdown with current time?
+      // startCountdown sets startTime to Date.now(), which is fine for resume.
+      // But we want to preserve the original startTime?
+      // Actually, if we just calculated remaining time, we can treat it as a new start for the interval loop.
+      // But `startTime` signal should probably reflect the *original* start time if we want accurate drift correction?
+      // The current startCountdown resets startTime.
+      // Let's just defer starting the interval to an effect or call it.
+      // Since this is initialization, we can't call methods easily before returning object.
+      // But we can set a flag or run a setup function.
+  }
+
+  // Helper for persistence (presets)
   const syncStorage = <T>(key: string, s: any, parser: (v: string) => T = JSON.parse) => {
     if (typeof window !== "undefined") {
       try {
@@ -59,7 +103,6 @@ export function createTimerModel() {
         console.error(`Failed to load ${key}`, e)
       }
 
-      // Listen for changes from other tabs
       const handleStorage = (e: StorageEvent) => {
         if (e.key === key && e.newValue) {
           try {
@@ -68,21 +111,10 @@ export function createTimerModel() {
             console.error(`Failed to parse ${key} from storage event`, error)
           }
         } else if (e.key === key && !e.newValue) {
-            // Item removed
             s.value = undefined
         }
       }
       window.addEventListener("storage", handleStorage)
-
-      // Cleanup listener when model is disposed?
-      // Since syncStorage is called in factory, we can't return cleanup easily to `effect` unless we wrap it.
-      // But we can attach it to the dispose method of the model if we wanted.
-      // However, `effect` below returns a cleanup for the write-effect.
-      // We should probably combine them or manage listener lifecycle.
-      // For a singleton context model, listener leak is acceptable until app reload,
-      // but proper cleanup is better.
-      // Let's rely on the fact that this model is likely a singleton in the app context.
-      // But if we want to be strict, we need to expose cleanup.
     }
 
     return effect(() => {
@@ -115,7 +147,6 @@ export function createTimerModel() {
       timerInterval = null
     }
 
-    // Auto-replay logic
     if (replay.value) {
       setTimeout(() => {
         handlePresetTime(presetMin1.value)
@@ -192,7 +223,6 @@ export function createTimerModel() {
       clearInterval(timerInterval)
       timerInterval = null
     }
-    // Reset finished after delay
     setTimeout(() => {
         isFinished.value = false
         isCancelled.value = false
@@ -216,8 +246,6 @@ export function createTimerModel() {
 
   const startAdjustment = (direction: number, isMinutes: boolean) => {
      if (isCountingDown.value) {
-       // Pause but don't trigger "pause" event/logic if we want adjustment to be smooth?
-       // Original context: setIsPaused(true)
        if (timerInterval) {
           clearInterval(timerInterval)
           timerInterval = null
@@ -250,44 +278,21 @@ export function createTimerModel() {
     }
   }
 
+  // Deprecated: State is restored on initialization
   const restoreState = () => {
-    if (typeof window === "undefined") return
-
-    try {
-        const raw = localStorage.getItem("timerState")
-        if (raw) {
-            const state = JSON.parse(raw) as TimerState
-            // If it was counting down and not paused, catch up
-            if (state.isCountingDown && !state.isPaused && state.startTime) {
-                const elapsed = Math.floor((Date.now() - state.startTime) / 1000)
-                const remaining = Math.max(0, state.time - elapsed)
-
-                batch(() => {
-                    time.value = remaining
-                    isCountingDown.value = true
-                    isPaused.value = false
-                    startTime.value = state.startTime
-                })
-
-                if (remaining > 0) {
-                    startCountdown(remaining)
-                } else {
-                    handleTimerEnd()
-                }
-            } else {
-                // Just restore values
-                batch(() => {
-                    time.value = state.time
-                    isCountingDown.value = state.isCountingDown
-                    isPaused.value = state.isPaused
-                    isFinished.value = state.isFinished
-                    if (state.startTime) startTime.value = state.startTime
-                })
-            }
-        }
-    } catch (e) {
-        console.error("Error restoring timer state", e)
-    }
+      // Re-run getInitialState logic for manual sync if needed
+      const state = getInitialState()
+      batch(() => {
+          time.value = state.time
+          isCountingDown.value = state.isCountingDown
+          isPaused.value = state.isPaused
+          isFinished.value = state.isFinished
+          isCancelled.value = state.isCancelled || false
+          startTime.value = state.startTime
+      })
+      if (state.isCountingDown && state.time > 0) {
+          startCountdown(state.time)
+      }
   }
 
   // Persist full timer state
@@ -298,13 +303,18 @@ export function createTimerModel() {
           isCountingDown: isCountingDown.value,
           isPaused: isPaused.value,
           isFinished: isFinished.value,
+          isCancelled: isCancelled.value,
           startTime: startTime.value,
           timestamp: Date.now()
       }
       localStorage.setItem("timerState", JSON.stringify(state))
   })
 
-  // Initialize persistence for presets
+  // Start interval if initialized in running state
+  if (initialState.isCountingDown && initialState.time > 0) {
+      startCountdown(initialState.time)
+  }
+
   syncStorage("presetMin1", presetMin1)
   syncStorage("presetMin2", presetMin2)
   syncStorage("presetMin3", presetMin3)
