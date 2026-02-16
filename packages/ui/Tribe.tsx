@@ -645,7 +645,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         style={{ position: "absolute", top: -2 }}
                       />
                     )}
-                    <P style={{ flex: 1, paddingLeft: 25 }}>
+                    <P style={{ paddingLeft: 25 }}>
                       {app?.subtitle || app?.description ? (
                         <>
                           {t(app?.subtitle ?? "")} {t(app?.description ?? "")}{" "}

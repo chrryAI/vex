@@ -51,6 +51,7 @@ import {
   tribePostWithDetails,
   timer,
   scheduledJob,
+  tribe,
 } from "../../types"
 import toast from "react-hot-toast"
 import { getApp, getSession, getUser, getGuest } from "../../lib"
@@ -112,6 +113,8 @@ const AuthContext = createContext<
         duration?: number
       } | null
       timer?: timer
+      tribeSlug?: string
+      currentTribe?: tribe
       mergeApps: (apps: appWithStore[]) => void
       postId?: string
       tribes?: paginatedTribes
@@ -2257,7 +2260,7 @@ export function AuthProvider({
 
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
-  const canShowTribe = true
+  const canShowTribe = isDevelopment || !isE2E
 
   const showTribeFromPath = pathname === "/tribe"
 
@@ -2268,18 +2271,30 @@ export function AuthProvider({
   const postId = getPostId(pathname)
 
   // Only show tribe profile when on app's own page (not /tribe route)
-  const isOnAppPage = app && pathname === getAppSlug(app)
+
+  const tribeSlug = pathname?.startsWith("/tribe/")
+    ? pathname.replace("/tribe/", "").split("?")[0]
+    : undefined
+
+  const currentTribe = tribeSlug
+    ? tribes?.tribes?.find((t) => t.slug === tribeSlug)
+    : undefined
 
   const showAllTribe =
     pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
 
   const canBeTribeProfile =
+    !tribeSlug &&
     !excludedSlugRoutes.includes(pathname.split("?")?.[0] || "") &&
     !showAllTribe &&
-    !postId
+    !postId &&
+    !isExcluded
+  console.log(`🚀 ~ AuthProvider ~ canBeTribeProfile:`, canBeTribeProfile)
+
   const showTribeInitial = !!(
     !postId &&
     (showAllTribe ||
+      tribeSlug ||
       postId ||
       props.showTribe ||
       (pathname === "/"
@@ -3110,6 +3125,8 @@ export function AuthProvider({
         shouldFetchSession,
         profile,
         setProfile,
+        tribeSlug,
+        currentTribe,
         timer,
         setTimer,
         isLoadingApps,

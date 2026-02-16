@@ -250,7 +250,14 @@ export default function Skeleton({
         <Menu showThreads={showThreads} />
         <Main
           style={{
-            ...skeletonStyles.main.style,
+            ...{
+              padding: 15,
+              paddingTop: 50,
+              display: "flex",
+              flexDirection: "column",
+              flex: 1,
+              height: "100dvh",
+            },
             ...{
               display: "flex",
             },

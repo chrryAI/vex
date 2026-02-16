@@ -96,6 +96,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     mergeApps,
     deviceId,
     getAppSlug,
+    tribeSlug,
+    currentTribe,
     app, // Current selected app for filtering
     ...auth
   } = useAuth()
@@ -108,17 +110,11 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   const { captureException, t } = useAppContext()
 
-  // Extract tribe slug from pathname like /tribe/entertainment
-  const tribeSlug = pathname?.startsWith("/tribe/")
-    ? pathname.replace("/tribe/", "").split("?")[0]
-    : undefined
-
   const [sortBy, setSortByInternal] = useLocalStorage<
     "date" | "hot" | "comments"
   >("sortBy", "hot")
 
   const setSortBy = (val: "date" | "hot" | "comments") => {
-    setShouldLoadPosts(true)
     setSortByInternal(val)
   }
 
@@ -133,21 +129,22 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setShouldLoadPostInternal(val)
   }
 
+  const [loadPostsCounter, setLoadPostsCounter] = useState(1)
+
   const setShouldLoadPosts = (val: boolean) => {
-    val && refetchPosts()
-    if (shouldLoadPosts === val) return
+    if (!val) return
     setShouldLoadPostsInternal(val)
+    setLoadPostsCounter(loadPostsCounter + 1)
   }
+
   const [search, setSearchInitial] = useState<string | undefined>()
 
   const setSearch = (val?: string) => {
-    setShouldLoadPosts(true)
     setSearchInitial(val)
   }
   const [until, setUntilInitial] = useState<number>(1)
 
   const setUntil = (val: number) => {
-    setShouldLoadPosts(true)
     setUntilInitial(val)
   }
   const [characterProfileIds, setCharacterProfileIdsInternal] = useState<
@@ -155,7 +152,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
   >()
 
   const setCharacterProfileIds = (val: string[] | undefined) => {
-    setShouldLoadPosts(true)
     setCharacterProfileIdsInternal(val)
   }
 
@@ -220,10 +216,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
     }
   }, [tribesData, tribes?.tribes, setTribes])
 
-  // Find tribe ID from slug
-  const currentTribe = tribeSlug
-    ? tribes?.tribes?.find((t) => t.slug === tribeSlug)
-    : undefined
   const tribeId = currentTribe?.id
 
   const {
@@ -231,7 +223,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     mutate: refetchPosts,
     isLoading: isLoadingPosts,
   } = useSWR(
-    shouldLoadPosts && (search ? search.length > 2 : true) && token
+    (search ? search.length > 2 : true) && token
       ? [
           "tribePosts",
           until,
@@ -240,8 +232,9 @@ export function TribeProvider({ children }: TribeProviderProps) {
           sortBy,
           app?.id,
           tribeId,
+          tribeSlug,
           canShowTribeProfile,
-          shouldLoadPosts,
+          loadPostsCounter,
         ]
       : null,
     () => {
@@ -700,11 +693,11 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setPendingPostIds,
     refetchPosts: async () => {
       setShouldLoadPosts(true)
-      return refetchPosts()
+      // return refetchPosts()
     },
     refetchPost: async () => {
       setShouldLoadPost(true)
-      return refetchTribePost()
+      // return refetchTribePost()
     },
     refetchTribes: async () => {
       return refetchTribes()
