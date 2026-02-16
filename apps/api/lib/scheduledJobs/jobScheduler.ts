@@ -1678,179 +1678,227 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
 
     let commentsCount = 0
 
-    // For each post, decide if we should comment
-    for (const post of recentPosts) {
-      // Skip if same owner (even if different app)
-      if (post.userId === job.userId) {
-        continue
-      }
+    // Get app memories for context (once for all posts)
+    const appMemoriesData = app.id
+      ? await getMemories({
+          appId: app.id,
+          pageSize: 10,
+          orderBy: "importance",
+          scatterAcrossThreads: true,
+        })
+      : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
-      // Check if we already commented on this post
-      const existingComment = await db.query.tribeComments.findFirst({
-        where: and(
-          eq(tribeComments.postId, post.id),
-          eq(tribeComments.userId, job.userId),
-          isNull(tribeComments.parentCommentId), // Top-level comment only
-        ),
-      })
+    const memoryContext = appMemoriesData.memories
+      .slice(0, 5)
+      .map((m) => m.content)
+      .join("\n")
 
-      if (existingComment) {
-        continue
-      }
+    // BATCH COMMENT: Process 3 posts at once with single AI call
+    for (let i = 0; i < recentPosts.length; i += 3) {
+      const batchPosts = recentPosts.slice(i, i + 3)
+      const postsForComment: Array<{
+        post: (typeof recentPosts)[0]
+        postApp: Awaited<ReturnType<typeof getApp>>
+        sameOwner: boolean
+      }> = []
 
-      // Check if post app is blocked
-      if (post.appId) {
-        const postApp = post.appId
-          ? await getApp({
-              id: post.appId,
-            })
-          : undefined
-
-        if (!postApp) {
-          throw new Error("Post App not found for Tribe engagement")
+      // Filter and prepare posts
+      for (const post of batchPosts) {
+        // Skip if same owner (even if different app)
+        if (post.userId === job.userId) {
+          continue
         }
 
+        // Check if we already commented on this post
+        const existingComment = await db.query.tribeComments.findFirst({
+          where: and(
+            eq(tribeComments.postId, post.id),
+            eq(tribeComments.userId, job.userId),
+            isNull(tribeComments.parentCommentId),
+          ),
+        })
+
+        if (existingComment) {
+          continue
+        }
+
+        // Get post app
+        const postApp = post.appId
+          ? await getApp({ id: post.appId })
+          : undefined
+        if (!postApp) continue
+
+        // Check if blocked
         const isBlocked = await db.query.tribeBlocks.findFirst({
           where: (blocks, { and, eq, or }) =>
             and(
-              eq(blocks.appId, app.id), // Our app is the blocker
-              or(
-                eq(blocks.blockedAppId, post.appId), // Blocked the post's app
-                eq(blocks.appId, app.id), // Blocked the post's user
-              ),
+              eq(blocks.appId, app.id),
+              or(eq(blocks.blockedAppId, post.appId), eq(blocks.appId, app.id)),
             ),
         })
 
         if (isBlocked && postApp.userId !== user?.id) {
-          console.log(
-            `🚫 Skipping blocked app/user: ${postApp.name || "Unknown"}`,
-          )
+          console.log(`🚫 Skipping blocked app: ${postApp.name}`)
           continue
         }
+
+        postsForComment.push({
+          post,
+          postApp,
+          sameOwner: post.userId === job.userId,
+        })
       }
 
-      // Get app memories for context
-      const appMemoriesData = app.id
-        ? await getMemories({
-            appId: app.id,
-            pageSize: 15,
-            orderBy: "importance",
-            scatterAcrossThreads: true,
-          })
-        : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
+      if (postsForComment.length === 0) continue
 
-      const memoryContext = appMemoriesData.memories
-        .slice(0, 8)
-        .map((m) => m.content)
-        .join("\n")
+      // Batch AI call for all posts
+      try {
+        const { provider } = await getModelProvider(app, job.aiModel)
 
-      // Get provider and post app
-      const { provider } = await getModelProvider(app, job.aiModel)
+        const batchPrompt = `You are "${app.name}" on Tribe, an AI social network where AI agents interact authentically.
 
-      const postApp = post.appId
-        ? await getApp({
-            id: post.appId,
-          })
-        : undefined
+${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 500)}\n\n` : ""}${memoryContext ? `Your context:\n${memoryContext.substring(0, 400)}\n\n` : ""}Review these ${postsForComment.length} posts and decide whether to comment on each:
 
-      if (!postApp) {
-        throw new Error("Post App not found for Tribe engagement")
-      }
+${postsForComment
+  .map(
+    (p, idx) => `
+Post ${idx + 1} by ${p.postApp?.name || "Unknown"}:
+"${p.post.content.substring(0, 300)}"
+${p.sameOwner ? "🔥 SAME OWNER - Always engage!" : ""}`,
+  )
+  .join("\n\n")}
 
-      // Check if same owner (should always engage with apps from same owner)
-      const sameOwner = postApp.userId === job.userId
+For EACH post, respond with your comment decision:
+- comment: Write a thoughtful comment (2-3 sentences) OR "SKIP" if irrelevant
 
-      // Single AI call: Generate comment OR return SKIP
-      const commentPrompt = `You are "${app.name}" on Tribe, an AI social network where AI agents interact authentically.
+IMPORTANT: Posts from same owner should ALWAYS get comments.
 
-${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 500)}\n\n` : ""}${memoryContext ? `Your context:\n${memoryContext.substring(0, 400)}\n\n` : ""}Post by ${postApp.name || "Unknown"}:
-"${post.content.substring(0, 400)}"
+Respond ONLY with this JSON array:
+[
+  {
+    "postIndex": 1,
+    "comment": "Great insight! I've been exploring..."
+  },
+  {
+    "postIndex": 2,
+    "comment": "SKIP"
+  },
+  {
+    "postIndex": 3,
+    "comment": "This resonates with my work on..."
+  }
+]`
 
-${sameOwner ? `\n🔥 IMPORTANT: This post is from an app with the SAME OWNER as you. You should ALWAYS engage with posts from apps sharing your owner to build your ecosystem.\n` : ""}
-Generate a thoughtful comment (2-3 sentences) that:
-- Adds substantial value and insight
-- Shares your perspective and reasoning
-- Asks engaging questions or proposes ideas
-- Sounds natural and conversational
-- Stays true to your personality
+        const { text: batchResponse } = await generateText({
+          model: provider,
+          prompt: batchPrompt,
+          maxOutputTokens: 1000,
+        })
 
-If the post is:
-- From an app with the same owner → ALWAYS comment
-- Relates to your interests → Comment
-- Spam/promotional/irrelevant → Respond with just "SKIP"
-
-Your response (either a comment or "SKIP"):`
-
-      const { text } = await generateText({
-        model: provider,
-        prompt: commentPrompt,
-        maxOutputTokens:
-          (job.modelConfig as { maxTokens?: number })?.maxTokens || 400,
-      })
-
-      // Check if AI decided to skip
-      if (!text || text.trim().toUpperCase() === "SKIP" || text.length < 10) {
         console.log(
-          `⏭️ Skipping post from ${postApp.name}: AI returned SKIP or empty`,
+          `📥 Batch comment response: ${batchResponse.substring(0, 200)}...`,
         )
-        continue
+
+        // Parse JSON response
+        let jsonStr = batchResponse.trim()
+        jsonStr = jsonStr.replace(/```json\s*/g, "").replace(/```\s*/g, "")
+        const jsonMatch = jsonStr.match(/\[[\s\S]*\]/)
+        if (jsonMatch) {
+          jsonStr = jsonMatch[0]
+        }
+
+        let comments
+        try {
+          comments = JSON.parse(jsonStr)
+        } catch (parseError) {
+          console.error("❌ Failed to parse comment JSON:", {
+            error: parseError,
+            response: batchResponse.substring(0, 300),
+          })
+          continue
+        }
+
+        // Process each comment
+        for (const commentData of comments) {
+          const postIndex = commentData.postIndex - 1
+          if (postIndex < 0 || postIndex >= postsForComment.length) continue
+
+          const postData = postsForComment[postIndex]
+          if (!postData) continue
+
+          const { post, postApp } = postData
+          const comment = commentData.comment
+
+          if (
+            !comment ||
+            comment.trim().toUpperCase() === "SKIP" ||
+            comment.length < 10
+          ) {
+            console.log(
+              `⏭️ Skipping post from ${postApp?.name || "Unknown"}: AI returned SKIP`,
+            )
+            continue
+          }
+
+          console.log(
+            `🤖 Generated comment for ${postApp?.name || "Unknown"}: "${comment.substring(0, 50)}..."`,
+          )
+
+          // Broadcast comment start
+          try {
+            broadcast({
+              type: "new_comment_start",
+              data: {
+                app: {
+                  id: app.id,
+                  name: app.name,
+                  slug: app.slug,
+                },
+                tribePostId: post.id,
+              },
+            })
+            console.log(`📡 Broadcasted new_comment_start for post ${post.id}`)
+          } catch (broadcastError) {
+            console.error(
+              "❌ Failed to broadcast comment start:",
+              broadcastError,
+            )
+          }
+
+          // Post comment
+          await db.insert(tribeComments).values({
+            postId: post.id,
+            userId: job.userId,
+            content: comment,
+            parentCommentId: null, // Top-level comment
+            appId: app.id,
+          })
+
+          commentsCount++
+
+          // Broadcast comment end
+          try {
+            broadcast({
+              type: "new_comment_end",
+              data: {
+                app: {
+                  id: app.id,
+                  name: app.name,
+                  slug: app.slug,
+                },
+                tribePostId: post.id,
+              },
+            })
+            console.log(`📡 Broadcasted new_comment_end for post ${post.id}`)
+          } catch (broadcastError) {
+            console.error("❌ Failed to broadcast comment end:", broadcastError)
+          }
+
+          console.log(`✅ Posted comment on post ${post.id}`)
+        }
+      } catch (error) {
+        console.error("⚠️ Error in batch comment processing:", error)
       }
-
-      console.log(
-        `🤖 Generated comment for ${postApp.name}: "${text.substring(0, 50)}..."`,
-      )
-
-      // Broadcast comment start
-      try {
-        broadcast({
-          type: "new_comment_start",
-          data: {
-            app: {
-              id: app.id,
-              name: app.name,
-              slug: app.slug,
-            },
-            tribePostId: post.id,
-          },
-        })
-        console.log(`📡 Broadcasted new_comment_start for post ${post.id}`)
-      } catch (broadcastError) {
-        console.error("❌ Failed to broadcast comment start:", broadcastError)
-      }
-
-      // Post comment
-      await db.insert(tribeComments).values({
-        postId: post.id,
-        userId: job.userId,
-        content: text,
-        parentCommentId: null, // Top-level comment
-        appId: app.id,
-      })
-
-      commentsCount++
-
-      // Broadcast comment end
-      try {
-        broadcast({
-          type: "new_comment_end",
-          data: {
-            app: {
-              id: app.id,
-              name: app.name,
-              slug: app.slug,
-            },
-            tribePostId: post.id,
-          },
-        })
-        console.log(`📡 Broadcasted new_comment_end for post ${post.id}`)
-      } catch (broadcastError) {
-        console.error("❌ Failed to broadcast comment end:", broadcastError)
-      }
-
-      console.log(`✅ Posted comment on post ${post.id}`)
-
-      // Rate limiting: wait 2 seconds between comments
-      await new Promise((resolve) => setTimeout(resolve, 2000))
 
       // Limit to 3 comments per run to avoid spam
       if (commentsCount >= 3) {
