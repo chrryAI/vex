@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import React from "react"
 import { createRoot } from "react-dom/client"
-import { act } from "@testing-library/react"
+import { act, fireEvent } from "@testing-library/react"
 
 // Make React globally available
 global.React = React
@@ -78,7 +78,16 @@ vi.mock("../hooks/useThreadPresence", () => ({
 
 // Mock other components
 vi.mock("../Messages", () => ({
-  default: () => <div data-testid="messages-list" />,
+  default: (props: any) => (
+    <div
+      data-testid="messages-list"
+      data-props={JSON.stringify(props)}
+      onClick={props.onCharacterProfileUpdate}
+      onMouseEnter={props.onPlayAudio}
+      onMouseLeave={() => props.onToggleLike?.(true)}
+      onContextMenu={() => props.onDelete?.({ id: "1" })}
+    />
+  ),
 }))
 vi.mock("../Chat", () => ({ default: () => <div data-testid="chat-input" /> }))
 vi.mock("../Loading", () => ({ default: () => <div data-testid="loading" /> }))
@@ -159,11 +168,6 @@ describe("Thread", () => {
       root.render(<Thread />)
     })
 
-    // Header actions might be inside a conditional block in Thread.tsx
-    // Let's check if we need to set anything else.
-    // Thread.tsx: {!isVisitor && thread && ( ... )}
-    // isVisitor is false, thread is set - check for instructions and delete button
-
     const instructions = container.querySelector("[data-testid='instructions']")
     expect(instructions).toBeTruthy()
 
@@ -188,6 +192,50 @@ describe("Thread", () => {
     mockChat.isEmpty = false
   })
 
+  it("triggers stable callbacks correctly", async () => {
+    mockChat.thread = { id: "thread-1", title: "Test Thread", messages: [] }
+    mockAuth.threadId = "thread-1"
+    mockAuth.threadIdRef.current = "thread-1"
+    mockChat.messages = [{ message: { id: "1" } }] // Ensure messages for onDelete
+
+    // Mock refetchThread to return a promise
+    mockChat.refetchThread.mockResolvedValue({})
+
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    const messagesList = container.querySelector(
+      "[data-testid='messages-list']",
+    ) as HTMLElement
+    expect(messagesList).toBeTruthy()
+
+    // Trigger onCharacterProfileUpdate
+    await act(async () => {
+      fireEvent.click(messagesList)
+    })
+    expect(mockChat.scrollToBottom).toHaveBeenCalled()
+
+    // Trigger onPlayAudio
+    await act(async () => {
+      fireEvent.mouseEnter(messagesList)
+    })
+    // No direct spy for shouldStopAutoScrollRef, but we verify it doesn't crash
+
+    // Trigger onToggleLike
+    await act(async () => {
+      fireEvent.mouseLeave(messagesList)
+    })
+    expect(mockChat.refetchThread).toHaveBeenCalled()
+
+    // Trigger onDelete
+    await act(async () => {
+      fireEvent.contextMenu(messagesList)
+    })
+    expect(mockChat.refetchThread).toHaveBeenCalledTimes(2) // Once for like, once for delete
+    expect(mockChat.setMessages).toHaveBeenCalled()
+  })
+
   it.skip("renders focus mode when enabled", async () => {
     mockAuth.showFocus = true
     mockChat.isEmpty = true
@@ -196,18 +244,9 @@ describe("Thread", () => {
       root.render(<Thread />)
     })
 
-    // Should show Focus component (lazy loaded, mocked)
-    // Note: Suspense might delay rendering, but in unit test with mocks it might be immediate
-    // or we need to wait. Since we mocked Focus, let's see.
-    // Also need to wrap in Suspense in test if not already handled by component logic?
-    // The component wraps Focus in Suspense.
-
-    // Wait for potential suspense
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0))
     })
-
-    console.log(container.innerHTML)
 
     expect(container.querySelector("[data-testid='focus-mode']")).toBeTruthy()
 
