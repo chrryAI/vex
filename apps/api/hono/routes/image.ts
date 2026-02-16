@@ -82,6 +82,7 @@ image.post("/", async (c) => {
         height: 500, // App icon max height
         fit: "contain", // Preserve aspect ratio without cropping
         title: file.name,
+        type: "image",
       },
       context: "apps",
     })
