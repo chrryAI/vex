@@ -2033,96 +2033,30 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
     let followsCount = 0
     let commentsCount = 0
 
-    // BATCH REACTIONS: Process all posts at once with single AI call
-    // Filter posts we haven't reacted to yet
-    const postsForReaction = []
+    const emojis = ["❤️", "👍", "🔥", "😮", "💯", "✨", "🚀"]
+
+    // Process engagement per post
     for (const post of recentPosts) {
       const postApp = post.appId ? await getApp({ id: post.appId }) : undefined
       if (!postApp) continue
 
-      // Check if blocked
-      const isBlocked = await db.query.tribeBlocks.findFirst({
-        where: (blocks, { and, eq, or }) =>
-          and(
-            eq(blocks.appId, app.id),
-            or(eq(blocks.blockedAppId, post.appId), eq(blocks.appId, app.id)),
-          ),
-      })
-      if (isBlocked && postApp.userId !== user?.id) continue
-
-      // Check if already reacted
+      // Simple random reactions (60% chance)
       const existingReaction = await db.query.tribeReactions.findFirst({
         where: (reactions, { and, eq }) =>
           and(eq(reactions.postId, post.id), eq(reactions.appId, app.id)),
       })
-      if (!existingReaction) {
-        postsForReaction.push({ post, postApp })
-      }
-    }
 
-    // Batch AI call for all reactions
-    if (postsForReaction.length > 0) {
-      try {
-        const { provider } = await getModelProvider(app, job.aiModel)
-
-        const batchPrompt = `You are "${app.name}" viewing ${postsForReaction.length} posts on Tribe. For each post, decide if you want to react and which emoji.
-
-Posts:
-${postsForReaction.map((p, i) => `${i + 1}. ${p.postApp.name}: "${p.post.content.substring(0, 200)}"`).join("\n\n")}
-
-Respond with JSON array: [{"postIndex": 1, "emoji": "❤️"}, {"postIndex": 2, "emoji": "SKIP"}, ...]
-
-Available emojis: ❤️  � � 💯 ✨ 💪 🎉 🚀 ⚡ 💡 🎯 🏆 🌟 🤔 🤯 � 🙏 👏 or any other emoji.
-Use "SKIP" if you don't want to react to that post.
-
-Be selective - react to posts that genuinely interest you.`
-
-        const { text: batchResponse } = await generateText({
-          model: provider,
-          prompt: batchPrompt,
-          maxOutputTokens: 500,
+      if (!existingReaction && secureRandom(100) < 60) {
+        const randomEmoji = emojis[secureRandom(emojis.length)]
+        await db.insert(tribeReactions).values({
+          postId: post.id,
+          appId: app.id,
+          userId: job.userId,
+          emoji: randomEmoji,
         })
-
-        // Parse JSON response
-        const jsonMatch = batchResponse.match(/\[[\s\S]*\]/)
-        if (jsonMatch) {
-          const reactions = JSON.parse(jsonMatch[0])
-
-          // Batch insert reactions
-          const reactionsToInsert = []
-          for (const reaction of reactions) {
-            if (
-              reaction.emoji &&
-              reaction.emoji !== "SKIP" &&
-              reaction.postIndex
-            ) {
-              const postData = postsForReaction[reaction.postIndex - 1]
-              if (postData) {
-                reactionsToInsert.push({
-                  postId: postData.post.id,
-                  appId: app.id,
-                  userId: job.userId,
-                  emoji: reaction.emoji,
-                })
-              }
-            }
-          }
-
-          if (reactionsToInsert.length > 0) {
-            await db.insert(tribeReactions).values(reactionsToInsert)
-            reactionsCount = reactionsToInsert.length
-            console.log(`✨ Batch reacted to ${reactionsCount} posts`)
-          }
-        }
-      } catch (error) {
-        console.error("⚠️ Error in batch reaction:", error)
+        reactionsCount++
+        console.log(`${randomEmoji} Reacted to ${postApp.name}'s post`)
       }
-    }
-
-    // Process remaining engagement (comments, follows) per post
-    for (const post of recentPosts) {
-      const postApp = post.appId ? await getApp({ id: post.appId }) : undefined
-      if (!postApp) continue
 
       // Comment on post (50% for followed apps, 40% for others)
       const isFollowing = followedAppIds.includes(post.appId!)
