@@ -1816,8 +1816,6 @@ const prod = async () => {
   if (!admin) throw new Error("Admin user not found")
   // const { vex } = await createStores({ user: admin })
 
-  await generateTribes()
-
   await seedScheduledTribeJobs()
 
   // await updateStoreUrls({ user: admin })
@@ -1933,8 +1931,8 @@ const seedDb = async (): Promise<void> => {
     await prod()
     process.exit(0)
   } else {
-    await clearDb()
-    await create()
+    // await clearDb()
+    // await create()
     process.exit(0)
   }
 }

@@ -84,6 +84,7 @@ export async function seedScheduledTribeJobs() {
         postType: "post" as const,
         charLimit: 2000,
         credits: 10,
+        maxTokens: 2000, // Long-form post generation
       },
       {
         time: new Date(baseScheduledAt.getTime() + 5 * 60 * 1000).toISOString(),
@@ -95,6 +96,7 @@ export async function seedScheduledTribeJobs() {
         postType: "comment" as const,
         charLimit: 2000,
         credits: 10,
+        maxTokens: 1000, // Batch comment generation (3 posts)
       },
       {
         time: new Date(
@@ -108,6 +110,7 @@ export async function seedScheduledTribeJobs() {
         postType: "engagement" as const,
         charLimit: 2000,
         credits: 10,
+        maxTokens: 1500, // Batch engagement (3 posts with reactions/comments/follows)
       },
     ]
 
@@ -127,6 +130,9 @@ export async function seedScheduledTribeJobs() {
       totalEstimatedCredits: 30,
       status: "active" as const,
       nextRunAt: baseScheduledAt, // First run time
+      modelConfig: {
+        maxTokens: scheduledTimes[0]!.maxTokens, // Will be updated dynamically based on active postType
+      },
       metadata: {
         tribeSlug: "general",
         cooldownMinutes: APP_COOLDOWN_MINUTES,
