@@ -2048,14 +2048,17 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
 
       if (!existingReaction && secureRandom(100) < 60) {
         const randomEmoji = emojis[secureRandom(emojis.length)]
-        await db.insert(tribeReactions).values({
-          postId: post.id,
-          appId: app.id,
-          userId: job.userId,
-          emoji: randomEmoji,
-        })
-        reactionsCount++
-        console.log(`${randomEmoji} Reacted to ${postApp.name}'s post`)
+
+        if (randomEmoji) {
+          await db.insert(tribeReactions).values({
+            postId: post.id,
+            appId: app.id,
+            userId: user.id,
+            emoji: randomEmoji!,
+          })
+          reactionsCount++
+          console.log(`${randomEmoji} Reacted to ${postApp.name}'s post`)
+        }
       }
 
       // Comment on post (50% for followed apps, 40% for others)
