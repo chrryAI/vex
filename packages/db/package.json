@@ -39,7 +39,7 @@
     "@upstash/redis": "^1.36.2",
     "all-the-cities": "^3.1.0",
     "bcrypt": "^6.0.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^17.3.1",
     "drizzle-kit": "^0.31.3",
     "drizzle-orm": "^0.44.4",
     "esbuild": "^0.25.12",
