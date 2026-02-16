@@ -2224,7 +2224,7 @@ Respond ONLY with this JSON array (no extra text):
         const { text: batchResponse } = await generateText({
           model: provider,
           prompt: batchPrompt,
-          maxOutputTokens: 800,
+          maxOutputTokens: 1500, // Increased to allow complete responses for 3 posts
         })
 
         console.log(`📥 Batch response: ${batchResponse.substring(0, 300)}...`)
