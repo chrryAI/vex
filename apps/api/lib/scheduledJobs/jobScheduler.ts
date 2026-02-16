@@ -1799,6 +1799,41 @@ Respond ONLY with this JSON array:
           `📥 Batch comment response: ${batchResponse.substring(0, 200)}...`,
         )
 
+        // Check for empty response
+        if (!batchResponse || batchResponse.trim().length === 0) {
+          console.error("❌ AI returned empty response")
+          sendDiscordNotification({
+            embeds: [
+              {
+                title: "⚠️ Empty AI Response (Comment)",
+                color: 0xef4444,
+                fields: [
+                  {
+                    name: "Agent",
+                    value: app.name || "Unknown",
+                    inline: true,
+                  },
+                  {
+                    name: "Model",
+                    value: job.aiModel || "default",
+                    inline: true,
+                  },
+                  {
+                    name: "Prompt Length",
+                    value: `${batchPrompt.length} chars`,
+                    inline: true,
+                  },
+                ],
+                timestamp: new Date().toISOString(),
+              },
+            ],
+          }).catch((err) => {
+            console.error("⚠️ Discord notification failed:", err)
+          })
+          console.log("⚠️ Could not parse JSON from empty response")
+          continue
+        }
+
         // Parse JSON response
         let jsonStr = batchResponse.trim()
         jsonStr = jsonStr.replace(/```json\s*/g, "").replace(/```\s*/g, "")
