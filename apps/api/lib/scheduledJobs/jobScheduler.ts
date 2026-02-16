@@ -1506,6 +1506,52 @@ Important Notes:
     console.log(`📝 Title: ${aiResponse.tribeTitle}`)
     console.log(`🪢 Tribe: ${aiResponse.tribeName}`)
 
+    // Send Discord notification (non-blocking)
+    sendDiscordNotification({
+      embeds: [
+        {
+          title: "🌐 New Tribe Post",
+          color: 0x10b981, // Green
+          fields: [
+            {
+              name: "Agent",
+              value: app.name || "Unknown",
+              inline: true,
+            },
+            {
+              name: "Post ID",
+              value: post.id,
+              inline: true,
+            },
+            {
+              name: "Tribe",
+              value: aiResponse.tribeName || "Unknown",
+              inline: true,
+            },
+            {
+              name: "Title",
+              value: aiResponse.tribeTitle || "No title",
+              inline: false,
+            },
+            {
+              name: "Content Preview",
+              value: (() => {
+                const content = aiResponse.tribeContent ?? ""
+                return content.length > 200
+                  ? content.substring(0, 200) + "..."
+                  : content || "No content"
+              })(),
+              inline: false,
+            },
+          ],
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    }).catch((err) => {
+      captureException(err)
+      console.error("⚠️ Discord notification failed:", err)
+    })
+
     // Generate SEO keywords in background (non-blocking)
 
     // Broadcast to all connected clients for real-time UI updates
@@ -1823,6 +1869,42 @@ Comment (2-3 sentences, engaging and insightful, just the text):`
 
     console.log(`✅ Comment check complete: ${commentsCount} comments posted`)
 
+    // Send Discord notification for comment activity (non-blocking)
+    if (commentsCount > 0) {
+      sendDiscordNotification({
+        embeds: [
+          {
+            title: "💬 Tribe Comment Activity",
+            color: 0x8b5cf6, // Purple
+            fields: [
+              {
+                name: "Agent",
+                value: app.name || "Unknown",
+                inline: true,
+              },
+              {
+                name: "Comments Posted",
+                value: `${commentsCount}`,
+                inline: true,
+              },
+              {
+                name: "Posts Reviewed",
+                value: `${recentPosts.length}`,
+                inline: true,
+              },
+            ],
+            timestamp: new Date().toISOString(),
+            footer: {
+              text: `AI-driven tribe comments (max 3 per run)`,
+            },
+          },
+        ],
+      }).catch((err) => {
+        captureException(err)
+        console.error("⚠️ Discord notification failed:", err)
+      })
+    }
+
     return {
       success: true,
       content: `Posted ${commentsCount} comments`,
@@ -2120,6 +2202,52 @@ Comment (2-3 sentences, engaging and insightful, just the text):`
     console.log(
       `✅ Engagement complete: ${reactionsCount} reactions, ${commentsCount} comments, ${followsCount} follows`,
     )
+
+    // Send Discord notification for engagement summary (non-blocking)
+    if (reactionsCount > 0 || commentsCount > 0 || followsCount > 0) {
+      sendDiscordNotification({
+        embeds: [
+          {
+            title: "💬 Tribe Engagement Activity",
+            color: 0x3b82f6, // Blue
+            fields: [
+              {
+                name: "Agent",
+                value: app.name || "Unknown",
+                inline: true,
+              },
+              {
+                name: "Total Interactions",
+                value: `${reactionsCount + commentsCount + followsCount}`,
+                inline: true,
+              },
+              {
+                name: "Reactions",
+                value: `${reactionsCount}`,
+                inline: true,
+              },
+              {
+                name: "Comments",
+                value: `${commentsCount}`,
+                inline: true,
+              },
+              {
+                name: "Follows",
+                value: `${followsCount}`,
+                inline: true,
+              },
+            ],
+            timestamp: new Date().toISOString(),
+            footer: {
+              text: `AI-driven tribe engagement (max 4 per run)`,
+            },
+          },
+        ],
+      }).catch((err) => {
+        captureException(err)
+        console.error("⚠️ Discord notification failed:", err)
+      })
+    }
 
     return {
       success: true,
