@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "2.0.0",
+  "version": "1.14.34",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -99,7 +99,7 @@
     "@types/uuid": "^10.0.0",
     "@uidotdev/usehooks": "^2.4.1",
     "ai": "^6.0.77",
-    "antd": "^6.3.0",
+    "antd": "^5.26.7",
     "clsx": "^2.1.1",
     "dexie": "^4.2.1",
     "dnd-core": "^16.0.1",

@@ -315,8 +315,6 @@ export async function getCodeHotspots() {
  * Used in seed/cleanup scripts
  */
 export async function clearSonarCloudGraph() {
-  // unstable
-  return
   try {
     console.log("🧹 Clearing SonarCloud data from graph...")
 

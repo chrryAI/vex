@@ -1,1 +1,0 @@
-ALTER TABLE "scheduledJobs" ADD COLUMN "failureReason" text;

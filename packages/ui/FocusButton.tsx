@@ -131,6 +131,7 @@ export default function FocusButton({
     isPaused: isPausedSignal,
     isFinished: isFinishedSignal,
     setTime,
+    startCountdown,
     fetchTasks,
     handlePresetTime,
     replay: replaySignal,
@@ -138,6 +139,8 @@ export default function FocusButton({
     tasks,
     setTasks,
     handleCancel,
+    handlePause,
+    handleResume,
     presetMin1: presetMin1Signal,
     presetMin2: presetMin2Signal,
     presetMin3: presetMin3Signal,
@@ -147,18 +150,11 @@ export default function FocusButton({
     selectedTasks: selectedTasksSignal,
     setSelectedTasks,
     remoteTimer: remoteTimerSignal,
-    ...timerContext
   } = useTimerContext()
 
   // Unwrap signals for logic that needs primitives
   // Note: accessing .value will subscribe this component to updates
   const time = timeSignal.value
-
-  const startCountdown = (duration?: number) =>
-    timerContext.startCountdown(duration ?? timeSignal.value)
-  const handlePause = timerContext.pause
-  const handleResume = timerContext.resume
-
   const isCountingDown = isCountingDownSignal.value
   const isPaused = isPausedSignal.value
   const isFinished = isFinishedSignal.value
@@ -327,7 +323,7 @@ export default function FocusButton({
     isPaused,
     isExtension,
     startCountdown,
-    timerContext.pause,
+    handlePause,
     handleCancel,
   ])
 
@@ -773,9 +769,7 @@ export default function FocusButton({
             >
               <Bird
                 color={
-                  isCountingDown && playBirdsValue
-                    ? "var(--accent-4)"
-                    : undefined
+                  isCountingDown && playBirdsValue ? "var(--accent-4)" : undefined
                 }
                 size={22}
               />

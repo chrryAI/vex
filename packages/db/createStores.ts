@@ -27,7 +27,6 @@ import {
 import { extractTranslations } from "./extractTranslations"
 import { stores, users, guests, teams, apps, aiAgents } from "./src/schema"
 import { seedTribeEngagement } from "./seedTribeEngagement"
-import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
 
 // ============================================
 // ♾️ INFINITE HUMAN: RPG Seeder Helper

@@ -88,15 +88,26 @@ async function getMemberWithToken(token: string) {
     return null
   }
 
-  // Use default secret if not set (matches auth.ts behavior)
-  const secret = process.env.NEXTAUTH_SECRET || "development-secret"
+  const secret = process.env.NEXTAUTH_SECRET
   let decoded: { email?: string } | null = null
 
-  try {
-    decoded = jwt.verify(token, secret) as { email?: string }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error"
-    console.warn("JWT verification failed:", message)
+  if (secret) {
+    try {
+      decoded = jwt.verify(token, secret) as { email?: string }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error"
+      console.warn("JWT verification failed:", message)
+
+      if (process.env.NODE_ENV !== "production") {
+        decoded = jwt.decode(token) as { email?: string } | null
+        if (decoded) {
+          console.warn("Falling back to unsigned decode in non-production")
+        }
+      }
+    }
+  } else {
+    console.warn("NEXTAUTH_SECRET is not set; falling back to unsigned decode")
+    decoded = jwt.decode(token) as { email?: string } | null
   }
 
   if (decoded?.email) {

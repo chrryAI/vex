@@ -233,7 +233,7 @@ messages.post("/", async (c) => {
       notify: body["notify"],
       appId: body["appId"] as string,
       molt: body["isMolt"] === "true",
-      isTribe: body["tribe"] === "true",
+      isTribe: body["isTribe"] === "true",
       content: body["content"] as string,
       retro: body["retro"] === "true",
       pear: body["pear"] === "true",
@@ -329,7 +329,7 @@ messages.post("/", async (c) => {
     moodId,
     pear,
     molt,
-    tribe: isTribe,
+    isTribe,
     retro,
     ...rest
   } = requestData

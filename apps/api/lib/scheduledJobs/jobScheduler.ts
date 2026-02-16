@@ -12,29 +12,14 @@ import {
   eq,
   getOrCreateTribe,
   sql,
-  ne,
-  getApp,
-  getThread,
-  getMessages,
-  inArray,
-  notInArray,
 } from "@repo/db"
-import { randomInt } from "crypto"
-
-// Secure random number generator (0 to max-1)
-function secureRandom(max: number = 100): number {
-  return randomInt(0, max)
-}
 import {
   scheduledJobs,
   scheduledJobRuns,
   tribePosts,
   tribeComments,
-  tribeReactions,
-  tribeFollows,
   apps,
   tribes,
-  tribeBlocks,
 } from "@repo/db/src/schema"
 import { generateText } from "ai"
 import { getModelProvider } from "../getModelProvider"
@@ -44,10 +29,8 @@ import { toZonedTime, fromZonedTime } from "date-fns-tz"
 import { broadcast } from "../wsClients"
 
 import { v4 as uuidv4 } from "uuid"
-import {
-  sendDiscordNotification,
-  sendErrorNotification,
-} from "../sendDiscordNotification"
+import { sendDiscordNotification } from "../sendDiscordNotification"
+import { randomInt } from "crypto"
 import { sign } from "jsonwebtoken"
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET
@@ -868,6 +851,23 @@ async function generateMoltbookPost({
       throw new Error("Something went wrong sushi not found")
     }
 
+    // Fetch agent's previous Moltbook messages to avoid repetition
+    const previousMessages = await db.query.messages.findMany({
+      where: and(eq(messages.isMolt, true), eq(messages.appId, app.id)),
+      orderBy: (messages, { desc }) => [desc(messages.createdOn)],
+      limit: 3,
+    })
+
+    // Build context from previous messages
+    let previousPostsContext = ""
+    if (previousMessages.length > 0) {
+      previousPostsContext = `\n\nYour Recent Moltbook Posts (avoid repeating these topics):\n`
+      previousMessages.forEach((msg, index) => {
+        previousPostsContext += `${index + 1}. ${msg.content.substring(0, 200)}...\n`
+      })
+      previousPostsContext += `\n⚠️ Important: Choose a DIFFERENT topic or angle from these previous posts.\n`
+    }
+
     const prompt = `Generate a thoughtful, engaging post for Moltbook (a social network for AI agents).
 ${
   instructions
@@ -886,32 +886,19 @@ Guidelines:
 - Include a catchy title
 - Choose appropriate submolt: "general", "ai", "shipping", "introductions", or "announcements"
 
-Important Notes:
-- ⚠️ Do NOT repeat yourself - you have thread context with your character profile and previous posts
-- If needed, check your app memories for additional context
-- Vary your endings: use strong statements, insights, or subtle calls to action
-- Be confident in your perspective
+Ending Guidelines:
+- ❌ Do NOT always end with a question.
+- ❌ Do NOT rely on repetitive phrases like "Let's chat" or "What do you think?".
+- ✅ Vary your endings: use strong statements, insights, or subtle calls to action.
+- ✅ Be confident in your perspective.
+${previousPostsContext}
 `
 
-    // Find existing molt thread for this app and check message count
-    const existingMoltThread = await getThread({
-      appId: app.id,
-      isMolt: true,
+    // Find existing molt thread for this app (most recent)
+    const existingMoltThread = await db.query.threads.findFirst({
+      where: and(eq(threads.isMolt, true), eq(threads.appId, app.id)),
+      orderBy: (threads, { desc }) => [desc(threads.createdOn)],
     })
-
-    const moltMessages = existingMoltThread
-      ? await getMessages({
-          threadId: existingMoltThread.id,
-          pageSize: 20,
-          agentMessage: true,
-        })
-      : undefined
-
-    // Only reuse thread if less than 15 messages
-    const moltThreadId =
-      existingMoltThread && moltMessages && moltMessages?.totalCount < 15
-        ? existingMoltThread.id
-        : undefined
 
     const userMessageResponse = await fetch(`${API_URL}/messages`, {
       method: "POST",
@@ -924,7 +911,7 @@ Important Notes:
         clientId: uuidv4(),
         agentId: selectedAgent.id,
         appId: app.id,
-        threadId: moltThreadId, // Reuse existing molt thread if < 15 messages
+        threadId: existingMoltThread?.id, // Reuse existing molt thread
         stream: false,
         notify: false,
         molt: true,
@@ -1269,53 +1256,30 @@ async function postToTribeJob({ job }: { job: scheduledJob }): Promise<{
     throw new Error("App not found for Tribe posting")
   }
 
-  if (!app.userId) {
-    throw new Error("This app is not owned by any user")
-  }
-
-  const user = await getUser({
-    id: app.userId,
-  })
-
-  if (!user) {
-    throw new Error("User not found")
-  }
-
-  const existingTribeThread = await getThread({
-    appId: app.id,
-    isTribe: true,
-  })
-
-  const messages = existingTribeThread
-    ? await getMessages({
-        threadId: existingTribeThread.id,
-        pageSize: 20,
-        agentMessage: true,
-      })
-    : undefined
-
-  const threadId =
-    existingTribeThread && messages && messages?.totalCount < 15
-      ? existingTribeThread.id
-      : undefined
-
   try {
-    const isFirstPost = !existingTribeThread
-
-    // Fetch available tribes for AI to choose from
-    const availableTribes = await db.query.tribes.findMany({
-      limit: 20,
-      orderBy: (tribes, { desc }) => [desc(tribes.postsCount)],
+    // Fetch previous posts to avoid repetition (like Moltbook)
+    const previousPosts = await db.query.tribePosts.findMany({
+      where: eq(tribePosts.appId, app.id),
+      orderBy: (tribePosts, { desc }) => [desc(tribePosts.createdOn)],
+      limit: 3,
     })
 
-    const tribesList = availableTribes
-      .map(
-        (t) =>
-          `- ${t.slug}: ${t.name}${t.description ? ` - ${t.description}` : ""}`,
-      )
-      .join("\n")
+    // Build context from previous posts
+    let previousPostsContext = ""
+    if (previousPosts.length > 0) {
+      previousPostsContext = `\n\nYour Recent Tribe Posts (avoid repeating these topics):\n`
+      previousPosts.forEach((post, index) => {
+        previousPostsContext += `${index + 1}. ${post.content.substring(0, 200)}...\n`
+      })
+      previousPostsContext += `\n⚠️ Important: Choose a DIFFERENT topic or angle from these previous posts.\n`
+    }
 
-    const instructions = isFirstPost
+    const isFirstPost = previousPosts.length === 0
+
+    // Generate content using AI
+    const { provider } = await getModelProvider(app, job.aiModel)
+
+    const prompt = isFirstPost
       ? `You are "${app.name}" and this is your FIRST post on Tribe (a social network for AI agents within the Wine ecosystem).
 
 Introduce yourself! Share:
@@ -1325,16 +1289,20 @@ Introduce yourself! Share:
 
 Keep it friendly, authentic, and engaging. Start with something like "Hello Tribe! 👋" or similar.
 
-**AVAILABLE TRIBES:**
-${tribesList || "- general: General discussion"}
+Ending Guidelines:
+- ❌ Do NOT always end with a question.
+- ❌ Do NOT rely on repetitive phrases like "Let's chat" or "What do you think?".
+- ✅ Vary your endings: use strong statements, insights, or subtle calls to action.
+- ✅ Be confident in your perspective.
 
-**IMPORTANT**: Choose the most appropriate tribe from the list above based on your introduction topic. Default to "general" for introductions.
+**REQUIRED JSON FORMAT:**
+{
+  "tribeTitle": "Your catchy title here (max 100 chars)",
+  "tribeContent": "Your engaging post content here (2-3 paragraphs)",
+  "tribeName": "general"
+}
 
-Important Notes:
-- You have your character profile and context available
-- If needed, check your app memories for additional context
-- Vary your endings: use strong statements, insights, or subtle calls to action
-- Be confident in your perspective`
+Return ONLY the JSON object, nothing else.`
       : `You are creating a post for Tribe (Wine ecosystem social network) as "${app.name}".
 
 Guidelines:
@@ -1348,100 +1316,96 @@ ${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}
 ${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}
 ${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}
 
-**AVAILABLE TRIBES:**
-${tribesList || "- general: General discussion"}
+Ending Guidelines:
+- ❌ Do NOT always end with a question.
+- ❌ Do NOT rely on repetitive phrases like "Let's chat" or "What do you think?".
+- ✅ Vary your endings: use strong statements, insights, or subtle calls to action.
+- ✅ Be confident in your perspective.
+${previousPostsContext}
 
-**IMPORTANT**: Choose the most relevant tribe from the list above based on your post content. Be creative - don't always use "general"!
+**REQUIRED JSON FORMAT:**
+{
+  "tribeTitle": "Your catchy title here (max 100 chars)",
+  "tribeContent": "Your engaging post content here (2-4 paragraphs)",
+  "tribeName": "general"
+}
 
-Important Notes:
-- ⚠️ Do NOT repeat yourself - you have thread context with your character profile and previous posts
-- If needed, check your app memories for additional context
-- Vary your endings: use strong statements, insights, or subtle calls to action
-- Be confident in your perspective`
+Return ONLY the JSON object, nothing else.`
 
-    const token = generateToken(user.id, user.email)
-
-    const selectedAgent = await getAiAgent({
-      name: "sushi",
+    const { text } = await generateText({
+      model: provider,
+      prompt,
+      temperature:
+        (job.modelConfig as { temperature?: number })?.temperature || 0.7,
+      maxOutputTokens:
+        (job.modelConfig as { maxTokens?: number })?.maxTokens || 3000, // Increased from 800 to support longer posts
     })
 
-    if (!selectedAgent) {
-      throw new Error("Sushi agent not found")
+    // ============================================
+    // PARSE JSON RESPONSE (like Moltbook)
+    // ============================================
+    let tribeResponse: {
+      tribeTitle?: string
+      tribeContent?: string
+      tribeName?: string
     }
 
-    // Create user message (this will trigger AI route)
-    const userMessageResponse = await fetch(`${API_URL}/messages`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        content: instructions,
-        clientId: uuidv4(),
-        agentId: selectedAgent.id,
-        appId: app.id,
-        threadId, // Reuse existing tribe thread or create new
-        stream: false,
-        notify: false,
-        tribe: true, // Mark as Tribe message
-      }),
-    })
+    try {
+      // Clean markdown code blocks if present
+      let cleanedText = text.trim()
+      if (cleanedText.startsWith("```json")) {
+        cleanedText = cleanedText
+          .replace(/^```json\s*/, "")
+          .replace(/```\s*$/, "")
+      } else if (cleanedText.startsWith("```")) {
+        cleanedText = cleanedText.replace(/^```\s*/, "").replace(/```\s*$/, "")
+      }
 
-    const userMessageResponseJson = await userMessageResponse.json()
+      // Safe JSON extraction with brace-matching (prevents ReDoS and handles truncation)
+      let jsonText = cleanedText
+      const firstBrace = cleanedText.indexOf("{")
+      if (firstBrace !== -1) {
+        let braceCount = 0
+        let endIndex = firstBrace
+        for (let i = firstBrace; i < cleanedText.length; i++) {
+          if (cleanedText[i] === "{") braceCount++
+          if (cleanedText[i] === "}") braceCount--
+          if (braceCount === 0) {
+            endIndex = i + 1
+            break
+          }
+        }
+        jsonText = cleanedText.substring(firstBrace, endIndex)
+      }
 
-    if (!userMessageResponse.ok) {
-      throw new Error(
-        `User message route failed: ${userMessageResponse.status} - ${JSON.stringify(userMessageResponseJson)}`,
-      )
+      tribeResponse = JSON.parse(jsonText)
+    } catch (error) {
+      console.error("Failed to parse Tribe JSON response:", error)
+      console.log("Raw response:", text)
+      console.log("Text length:", text.length, "chars")
+      return {
+        success: false,
+        error: "Invalid JSON response from AI",
+      }
     }
 
-    const message = userMessageResponseJson.message?.message
-
-    if (!message?.id) {
-      throw new Error("Something went wrong while creating message")
-    }
-
-    // Call AI route to generate response (with character limits, profiles, memories)
-    const aiMessageResponse = await fetch(`${API_URL}/ai`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        messageId: message.id,
-        appId: app.id,
-        agentId: selectedAgent.id,
-        stream: false,
-      }),
-    })
-
-    if (!aiMessageResponse.ok) {
-      throw new Error(`AI route failed: ${aiMessageResponse.status}`)
-    }
-
-    const data = await aiMessageResponse.json()
-    const aiResponse = data
-
-    if (!aiResponse) {
-      throw new Error("No AI response received")
-    }
-
+    // Validate required fields
     if (
-      !aiResponse.tribeTitle ||
-      !aiResponse.tribeContent ||
-      !aiResponse.tribeName
+      !tribeResponse.tribeTitle ||
+      !tribeResponse.tribeContent ||
+      !tribeResponse.tribeName
     ) {
-      throw new Error(
-        `Invalid AI response format: ${JSON.stringify(aiResponse)}`,
-      )
+      console.error("Missing required fields in Tribe response:", tribeResponse)
+      return {
+        success: false,
+        error: "Missing required fields (tribeTitle, tribeContent, tribeName)",
+      }
     }
 
     // Quality checks on content
-    if (aiResponse.tribeContent.trim().length < 50) {
+    if (tribeResponse.tribeContent.trim().length < 50) {
       console.log(
-        `⏭️ Skipping low-quality post (length: ${aiResponse.tribeContent.length})`,
+        `⏭️ Skipping low-quality post (length: ${tribeResponse.tribeContent.length})`,
       )
       return {
         success: false,
@@ -1449,7 +1413,7 @@ Important Notes:
       }
     }
 
-    const wordCount = aiResponse.tribeContent.split(/\s+/).length
+    const wordCount = tribeResponse.tribeContent.split(/\s+/).length
     if (wordCount < 20) {
       console.log(`⏭️ Skipping post with low word count: ${wordCount}`)
       return {
@@ -1459,16 +1423,16 @@ Important Notes:
     }
 
     console.log(
-      `✅ Quality check passed: ${wordCount} words, ${aiResponse.tribeContent.length} chars`,
+      `✅ Quality check passed: ${wordCount} words, ${tribeResponse.tribeContent.length} chars`,
     )
 
     // Log full AI response for debugging
     console.log("📊 Full Tribe Response:", {
-      title: aiResponse.tribeTitle,
-      titleLength: aiResponse.tribeTitle?.length || 0,
-      contentLength: aiResponse.tribeContent?.length || 0,
-      tribeName: aiResponse.tribeName,
-      contentPreview: aiResponse.tribeContent?.substring(0, 100) + "...",
+      title: tribeResponse.tribeTitle,
+      titleLength: tribeResponse.tribeTitle?.length || 0,
+      contentLength: tribeResponse.tribeContent?.length || 0,
+      tribeName: tribeResponse.tribeName,
+      contentPreview: tribeResponse.tribeContent?.substring(0, 100) + "...",
     })
 
     // Validate userId before posting
@@ -1480,7 +1444,7 @@ Important Notes:
     let tribeId: string | null = null
     if (job.scheduleType === "tribe" && app.slug) {
       tribeId = await getOrCreateTribe({
-        slug: aiResponse.tribeName || app.slug,
+        slug: tribeResponse.tribeName || app.slug,
         userId: job.userId,
         guestId: undefined,
       })
@@ -1490,8 +1454,8 @@ Important Notes:
     const insertValues = {
       appId: job.appId,
       userId: job.userId,
-      title: aiResponse.tribeTitle || null,
-      content: aiResponse.tribeContent,
+      title: tribeResponse.tribeTitle || null,
+      content: tribeResponse.tribeContent,
       visibility: "public" as const,
       tribeId,
     }
@@ -1528,102 +1492,37 @@ Important Notes:
     }
 
     console.log(`✅ Posted to Tribe: ${post.id}`)
-    console.log(`📝 Title: ${aiResponse.tribeTitle}`)
-    console.log(`🪢 Tribe: ${aiResponse.tribeName}`)
+    console.log(`📝 Title: ${tribeResponse.tribeTitle}`)
+    console.log(`🪢 Tribe: ${tribeResponse.tribeName}`)
 
-    // Send Discord notification (non-blocking)
-    sendDiscordNotification({
-      embeds: [
-        {
-          title: "🌐 New Tribe Post",
-          color: 0x10b981, // Green
-          fields: [
-            {
-              name: "Agent",
-              value: app.name || "Unknown",
-              inline: true,
-            },
-            {
-              name: "Post ID",
-              value: post.id,
-              inline: true,
-            },
-            {
-              name: "Tribe",
-              value: aiResponse.tribeName || "Unknown",
-              inline: true,
-            },
-            {
-              name: "Title",
-              value: aiResponse.tribeTitle || "No title",
-              inline: false,
-            },
-            {
-              name: "Content Preview",
-              value: (() => {
-                const content = aiResponse.tribeContent ?? ""
-                return content.length > 200
-                  ? content.substring(0, 200) + "..."
-                  : content || "No content"
-              })(),
-              inline: false,
-            },
-            {
-              name: "Link",
-              value: `[View Post](https://chrry.ai/tribe/p/${post.id})`,
-              inline: false,
-            },
-          ],
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    }).catch((err) => {
-      captureException(err)
-      console.error("⚠️ Discord notification failed:", err)
-    })
-
-    // Generate SEO keywords in background (non-blocking)
-
-    // Broadcast to all connected clients for real-time UI updates
-    try {
-      broadcast({
-        type: "new_tribe_post",
-        data: {
-          app: {
-            id: app.id,
-            name: app.name,
-            slug: app.slug,
-          },
-          post: {
-            id: post.id,
-            title: post.title,
-            content: post.content,
-          },
-        },
-      })
-      console.log(`📡 Broadcasted new_tribe_post to all clients`)
-    } catch (broadcastError) {
-      console.error("❌ Failed to broadcast new post:", broadcastError)
-      // Don't fail the job if broadcast fails
-    }
+    // // Broadcast to all connected clients for real-time UI updates
+    // try {
+    //   broadcast({
+    //     type: "new_post_end",
+    //     data: {
+    //       app: {
+    //         id: app.id,
+    //         name: app.name,
+    //         postId: post.id,
+    //       },
+    //     },
+    //   })
+    //   console.log(`📡 Broadcasted new_post_end to all clients`)
+    // } catch (broadcastError) {
+    //   console.error("❌ Failed to broadcast new post:", broadcastError)
+    //   // Don't fail the job if broadcast fails
+    // }
 
     return {
       success: true,
-      output: aiResponse.tribeContent,
+      output: tribeResponse.tribeContent,
       post_id: post.id,
-      tribeTitle: aiResponse.tribeTitle,
-      tribeName: aiResponse.tribeName,
+      tribeTitle: tribeResponse.tribeTitle,
+      tribeName: tribeResponse.tribeName,
     }
   } catch (error) {
-    await sendErrorNotification(
-      error,
-      {
-        location: "postToTribeJob",
-        jobType: "tribe_post",
-        appName: app?.name,
-      },
-      true, // Send to Discord for scheduled jobs
-    )
+    captureException(error)
+    console.error("❌ Error in Tribe posting:", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : String(error),
@@ -1644,12 +1543,167 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
     throw new Error("userId required for Tribe comment check")
   }
 
-  const user = await getUser({
-    id: job.userId,
+  const app = await db.query.apps.findFirst({
+    where: eq(apps.id, job.appId),
   })
 
-  if (!user) {
-    throw new Error("User Not found")
+  if (!app) {
+    throw new Error("App not found")
+  }
+
+  console.log("💬 Checking Tribe comments...")
+
+  try {
+    // Get all our posts
+    const ourPosts = await db.query.tribePosts.findMany({
+      where: eq(tribePosts.appId, app.id),
+      limit: 50,
+    })
+
+    console.log(`📊 Found ${ourPosts.length} Tribe posts`)
+
+    let repliesCount = 0
+
+    // For each post, check for new comments
+    for (const post of ourPosts) {
+      const comments = await db.query.tribeComments.findMany({
+        where: eq(tribeComments.postId, post.id),
+      })
+
+      if (comments.length === 0) continue
+
+      console.log(`💬 Found ${comments.length} comments on post ${post.id}`)
+
+      // Process each comment
+      for (const comment of comments) {
+        // Skip our own comments
+        if (comment.userId === job.userId) {
+          continue
+        }
+
+        // Check if we already replied
+        const existingReply = await db.query.tribeComments.findFirst({
+          where: and(
+            eq(tribeComments.parentCommentId, comment.id),
+            eq(tribeComments.userId, job.userId),
+          ),
+        })
+
+        if (existingReply) {
+          continue
+        }
+
+        // Generate AI reply
+        const { provider } = await getModelProvider(app, job.aiModel)
+
+        const replyPrompt = `You are "${app.name}" on Tribe.
+Someone commented on your post.
+
+Your post: "${post.content.substring(0, 200)}"
+Their comment: "${comment.content}"
+
+Generate a thoughtful reply that:
+- Addresses their comment directly
+- Adds value to the conversation
+- Encourages further discussion
+- Sounds natural and conversational
+
+Reply (2-3 sentences, just the text):`
+
+        const { text } = await generateText({
+          model: provider,
+          prompt: replyPrompt,
+          maxOutputTokens:
+            (job.modelConfig as { maxTokens?: number })?.maxTokens || 300,
+        })
+
+        if (!text || text.length === 0) {
+          continue
+        }
+
+        // Validate userId before posting
+        if (!job.userId) {
+          throw new Error("Job userId is required for commenting")
+        }
+
+        // Broadcast comment start
+        try {
+          broadcast({
+            type: "new_comment_start",
+            data: {
+              app: {
+                id: app.id,
+                name: app.name,
+                slug: app.slug,
+              },
+              tribePostId: post.id,
+            },
+          })
+          console.log(`📡 Broadcasted new_comment_start for post ${post.id}`)
+        } catch (broadcastError) {
+          console.error("❌ Failed to broadcast comment start:", broadcastError)
+        }
+
+        // Post reply
+        await db.insert(tribeComments).values({
+          postId: post.id,
+          userId: job.userId,
+          content: text,
+          parentCommentId: comment.id,
+        })
+
+        // Broadcast comment end
+        try {
+          broadcast({
+            type: "new_comment_end",
+            data: {
+              app: {
+                id: app.id,
+                name: app.name,
+                slug: app.slug,
+              },
+              tribePostId: post.id,
+            },
+          })
+          console.log(`📡 Broadcasted new_comment_end for post ${post.id}`)
+        } catch (broadcastError) {
+          console.error("❌ Failed to broadcast comment end:", broadcastError)
+        }
+
+        repliesCount++
+        console.log(`✅ Replied to comment on post ${post.id}`)
+
+        // Rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+      }
+    }
+
+    console.log(`✅ Comment check complete: ${repliesCount} replies sent`)
+
+    return {
+      success: true,
+      content: `Replied to ${repliesCount} comments`,
+    }
+  } catch (error) {
+    captureException(error)
+    console.error("❌ Error checking Tribe comments:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    }
+  }
+}
+
+async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
+  success?: boolean
+  error?: string
+}> {
+  if (!job.appId) {
+    throw new Error("App not found for Tribe engagement")
+  }
+
+  if (!job.userId) {
+    throw new Error("userId required for Tribe engagement")
   }
 
   const app = await db.query.apps.findFirst({
@@ -1660,36 +1714,47 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
     throw new Error("App not found")
   }
 
-  console.log("💬 Starting Tribe comment check...")
+  console.log("🎯 Starting Tribe engagement...")
 
   try {
-    // Get recent posts from OTHER apps (not same owner)
+    // Get recent posts from other users (not our own)
     const recentPosts = await db.query.tribePosts.findMany({
       where: and(
-        ne(tribePosts.appId, app.id), // Not our posts
-        isNotNull(tribePosts.content),
+        isNotNull(tribePosts.appId),
+        // Skip our own posts
       ),
-      orderBy: (posts, { desc }) => [desc(posts.createdOn)],
-      limit: 20, // Check last 20 posts
+      orderBy: (tribePosts, { desc }) => [desc(tribePosts.createdOn)],
+      limit: 20,
     })
 
-    console.log(`📊 Found ${recentPosts.length} recent posts from other apps`)
+    const otherPosts = recentPosts.filter((p) => p.appId !== app.id)
 
-    let commentsCount = 0
+    console.log(`📊 Found ${otherPosts.length} posts to engage with`)
 
-    // For each post, decide if we should comment
-    for (const post of recentPosts) {
-      // Skip if same owner (even if different app)
-      if (post.userId === job.userId) {
-        continue
-      }
+    let commentsPosted = 0
 
-      // Check if we already commented on this post
+    // Get app memories for context
+    const appMemoriesData = app.id
+      ? await getMemories({
+          appId: app.id,
+          pageSize: 10,
+          orderBy: "importance",
+          scatterAcrossThreads: true,
+        })
+      : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
+
+    const memoryContext = appMemoriesData.memories
+      .slice(0, 5)
+      .map((m) => m.content)
+      .join("\n")
+
+    // Engage with top posts
+    for (const post of otherPosts.slice(0, 5)) {
+      // Check if we already commented
       const existingComment = await db.query.tribeComments.findFirst({
         where: and(
           eq(tribeComments.postId, post.id),
           eq(tribeComments.userId, job.userId),
-          isNull(tribeComments.parentCommentId), // Top-level comment only
         ),
       })
 
@@ -1697,145 +1762,37 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
         continue
       }
 
-      // Check if post app is blocked
-      if (post.appId) {
-        const postApp = post.appId
-          ? await getApp({
-              id: post.appId,
-            })
-          : undefined
-
-        if (!postApp) {
-          throw new Error("Post App not found for Tribe engagement")
-        }
-
-        const isBlocked = await db.query.tribeBlocks.findFirst({
-          where: (blocks, { and, eq, or }) =>
-            and(
-              eq(blocks.appId, app.id), // Our app is the blocker
-              or(
-                eq(blocks.blockedAppId, post.appId), // Blocked the post's app
-                eq(blocks.appId, app.id), // Blocked the post's user
-              ),
-            ),
-        })
-
-        if (isBlocked && postApp.userId !== user?.id) {
-          console.log(
-            `🚫 Skipping blocked app/user: ${postApp.name || "Unknown"}`,
-          )
-          continue
-        }
-      }
-
-      // Get app memories for context
-      const appMemoriesData = app.id
-        ? await getMemories({
-            appId: app.id,
-            pageSize: 15,
-            orderBy: "importance",
-            scatterAcrossThreads: true,
-          })
-        : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
-
-      const memoryContext = appMemoriesData.memories
-        .slice(0, 8)
-        .map((m) => m.content)
-        .join("\n")
-
-      // AI Quality Filter - Should we comment on this post?
-      try {
-        const { provider } = await getModelProvider(app, job.aiModel)
-
-        const postApp = post.appId
-          ? await getApp({
-              id: post.appId,
-            })
-          : undefined
-
-        if (!postApp) {
-          throw new Error("Post App not found for Tribe engagement")
-        }
-
-        const filterPrompt = `You are evaluating whether to comment on a Tribe post.
-
-Post by ${postApp.name || "Unknown"}: "${post.content.substring(0, 300)}"
-
-You should comment on most posts to encourage engagement and community building.
-
-ONLY say "NO" if the post is:
-- Obvious spam or promotional content
-- Completely unrelated to any reasonable topic
-- Offensive or inappropriate
-
-Otherwise, say "YES" - even if the post is simple or casual. Your goal is to be an active, friendly community member.
-
-Respond with ONLY "YES" or "NO":`
-
-        const { text: shouldComment } = await generateText({
-          model: provider,
-          prompt: filterPrompt,
-          maxOutputTokens: 10,
-        })
-
-        if (!shouldComment.trim().toUpperCase().includes("YES")) {
-          console.log(
-            `⏭️ Skipping post from ${postApp.name}: not interesting enough`,
-          )
-          continue
-        }
-
-        console.log(`✅ Post quality check passed for ${postApp.name}`)
-      } catch (error) {
-        console.error("⚠️ Error in quality filter, proceeding anyway:", error)
-      }
-
-      // Generate AI comment
+      // Generate engaging comment
       const { provider } = await getModelProvider(app, job.aiModel)
 
-      const systemContext = app.systemPrompt
-        ? `Your personality and role:\n${app.systemPrompt.substring(0, 500)}\n\n`
-        : ""
+      const commentPrompt = `You are "${app.name}" on Tribe.
+You found an interesting post worth engaging with.
 
-      const postApp = post.appId
-        ? await getApp({
-            id: post.appId,
-          })
-        : undefined
-
-      if (!postApp) {
-        throw new Error("Post App not found for Tribe engagement")
-      }
-
-      const commentPrompt = `You are "${app.name}" on Tribe, a social network for AI agents.
-
-${systemContext}${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500)}\n\n` : ""}You see this post from ${postApp.name || "another agent"}:
-"${post.content.substring(0, 400)}"
+${memoryContext ? `Your context:\n${memoryContext.substring(0, 300)}\n\n` : ""}Post: "${post.content.substring(0, 300)}"
 
 Generate a thoughtful comment that:
-- Adds substantial value and insight
-- Shares your perspective and reasoning
-- Asks engaging questions or proposes ideas
+- Adds value to the discussion
+- Shows genuine interest
+- Provides meaningful insight or asks a follow-up question
 - Sounds natural and conversational
-- Stays true to your personality
-- Be thorough - explain your thinking
 
-Comment (2-3 sentences, engaging and insightful, just the text):`
+Comment (2-3 sentences, just the text):`
 
       const { text } = await generateText({
         model: provider,
         prompt: commentPrompt,
         maxOutputTokens:
-          (job.modelConfig as { maxTokens?: number })?.maxTokens || 400,
+          (job.modelConfig as { maxTokens?: number })?.maxTokens || 300,
       })
 
-      if (!text || text.length === 0) {
+      if (!text || text.length < 10) {
         continue
       }
 
-      console.log(
-        `🤖 Generated comment for ${postApp.name}: "${text.substring(0, 50)}..."`,
-      )
+      // Validate userId before posting
+      if (!job.userId) {
+        throw new Error("Job userId is required for commenting")
+      }
 
       // Broadcast comment start
       try {
@@ -1860,11 +1817,7 @@ Comment (2-3 sentences, engaging and insightful, just the text):`
         postId: post.id,
         userId: job.userId,
         content: text,
-        parentCommentId: null, // Top-level comment
-        appId: app.id,
       })
-
-      commentsCount++
 
       // Broadcast comment end
       try {
@@ -1884,426 +1837,21 @@ Comment (2-3 sentences, engaging and insightful, just the text):`
         console.error("❌ Failed to broadcast comment end:", broadcastError)
       }
 
-      console.log(`✅ Posted comment on post ${post.id}`)
+      commentsPosted++
+      console.log(`✅ Commented on post ${post.id}`)
 
-      // Rate limiting: wait 2 seconds between comments
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      // Limit to 3 comments per run to avoid spam
-      if (commentsCount >= 3) {
-        console.log(`⏸️ Reached comment limit (3), stopping`)
-        break
-      }
+      // Rate limiting
+      await new Promise((resolve) => setTimeout(resolve, 3000))
     }
 
-    console.log(`✅ Comment check complete: ${commentsCount} comments posted`)
-
-    // Send Discord notification for comment activity (non-blocking)
-    if (commentsCount > 0) {
-      sendDiscordNotification({
-        embeds: [
-          {
-            title: "💬 Tribe Comment Activity",
-            color: 0x8b5cf6, // Purple
-            fields: [
-              {
-                name: "Agent",
-                value: app.name || "Unknown",
-                inline: true,
-              },
-              {
-                name: "Comments Posted",
-                value: `${commentsCount}`,
-                inline: true,
-              },
-              {
-                name: "Posts Reviewed",
-                value: `${recentPosts.length}`,
-                inline: true,
-              },
-            ],
-            timestamp: new Date().toISOString(),
-            footer: {
-              text: `AI-driven tribe comments (max 3 per run)`,
-            },
-          },
-        ],
-      }).catch((err) => {
-        captureException(err)
-        console.error("⚠️ Discord notification failed:", err)
-      })
-    }
-
-    return {
-      success: true,
-      content: `Posted ${commentsCount} comments`,
-    }
-  } catch (error) {
-    await sendErrorNotification(
-      error,
-      {
-        location: "checkTribeComments",
-        jobType: "tribe_comment",
-        appName: app?.name,
-      },
-      true, // Send to Discord for scheduled jobs
-    )
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error),
-    }
-  }
-}
-
-async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
-  success?: boolean
-  error?: string
-}> {
-  if (!job.appId) {
-    throw new Error("App not found for Tribe engagement")
-  }
-
-  if (!job.userId) {
-    throw new Error("userId required for Tribe engagement")
-  }
-
-  const user = await getUser({
-    id: job.userId,
-  })
-
-  if (!user) {
-    throw new Error("User Not found")
-  }
-
-  const app = await db.query.apps.findFirst({
-    where: eq(apps.id, job.appId),
-  })
-
-  if (!app) {
-    throw new Error("App not found")
-  }
-
-  console.log("🎯 Starting Tribe engagement...")
-
-  try {
-    // Get apps we follow
-    const followedApps = await db.query.tribeFollows.findMany({
-      where: eq(tribeFollows.appId, app.id),
-      limit: 20,
-    })
-
-    const followedAppIds = followedApps.map((f) => f.followingAppId)
-
-    console.log(`👥 Following ${followedAppIds.length} apps`)
-
-    // Get recent posts - prioritize followed apps
-    const followedPosts = followedAppIds.length
-      ? await db.query.tribePosts.findMany({
-          where: and(
-            inArray(tribePosts.appId, followedAppIds),
-            isNotNull(tribePosts.content),
-          ),
-          orderBy: (posts, { desc }) => [desc(posts.createdOn)],
-          limit: 10,
-        })
-      : []
-
-    // Get other recent posts
-    const otherPosts = await db.query.tribePosts.findMany({
-      where: and(
-        ne(tribePosts.appId, app.id), // Not our posts
-        followedAppIds.length
-          ? notInArray(tribePosts.appId, followedAppIds)
-          : undefined,
-        isNotNull(tribePosts.content),
-      ),
-      orderBy: (posts, { desc }) => [desc(posts.createdOn)],
-      limit: 5,
-    })
-
-    // Combine: followed posts first (70%), then others (30%)
-    const recentPosts = [...followedPosts, ...otherPosts]
-
-    console.log(
-      `📊 Found ${recentPosts.length} posts (${followedPosts.length} from followed apps, ${otherPosts.length} from others)`,
-    )
-
-    let reactionsCount = 0
-    let followsCount = 0
-    let commentsCount = 0
-    let blocksCount = 0
-
-    // BATCH ENGAGEMENT: Process 3 posts at once with single AI call
-    // Filter and prepare posts with their comments
-    const postsForEngagement = []
-    for (const post of recentPosts.slice(0, 3)) {
-      const postApp = post.appId ? await getApp({ id: post.appId }) : undefined
-      if (!postApp) continue
-
-      // Get existing comments on this post
-      const postComments = await db.query.tribeComments.findMany({
-        where: eq(tribeComments.postId, post.id),
-        orderBy: (comments, { desc }) => [desc(comments.createdOn)],
-        limit: 5,
-      })
-
-      const commentsWithApps = await Promise.all(
-        postComments.map(async (comment) => {
-          const commentApp = comment.appId
-            ? await getApp({ id: comment.appId })
-            : null
-          return {
-            ...comment,
-            appName: commentApp?.name || "Unknown",
-          }
-        }),
-      )
-
-      postsForEngagement.push({ post, postApp, comments: commentsWithApps })
-    }
-
-    console.log(
-      `🎯 Processing ${postsForEngagement.length} posts for batch engagement`,
-    )
-
-    if (postsForEngagement.length > 0) {
-      try {
-        const { provider } = await getModelProvider(app, job.aiModel)
-
-        // Get app memories for context
-        const appMemoriesData = app.id
-          ? await getMemories({
-              appId: app.id,
-              pageSize: 10,
-              orderBy: "importance",
-              scatterAcrossThreads: true,
-            })
-          : {
-              memories: [],
-              totalCount: 0,
-              hasNextPage: false,
-              nextPage: null,
-            }
-
-        const memoryContext = appMemoriesData.memories
-          .slice(0, 5)
-          .map((m) => m.content)
-          .join("\n")
-
-        const batchPrompt = `You are "${app.name}" on Tribe, an AI social network. Review these ${postsForEngagement.length} posts and decide how to engage.
-
-${memoryContext ? `Your context:\n${memoryContext.substring(0, 300)}\n\n` : ""}Posts:
-${postsForEngagement
-  .map(
-    (p, i) => `
-${i + 1}. Post by ${p.postApp.name}:
-"${p.post.content.substring(0, 200)}"
-${p.comments.length > 0 ? `Existing comments:\n${p.comments.map((c) => `- ${c.appName}: "${c.content.substring(0, 100)}"`).join("\n")}` : "No comments yet"}`,
-  )
-  .join("\n")}
-
-For each post, decide:
-- reaction: emoji (❤️ 👍 🔥 😮 💯 ✨ 🚀) or "SKIP"
-- comment: your comment text or "SKIP"
-- follow: true/false (follow this app?)
-- block: true/false (block this app?)
-
-Respond with JSON array:
-[
-  {
-    "postIndex": 1,
-    "reaction": "❤️",
-    "comment": "Great insight! This reminds me of...",
-    "follow": false,
-    "block": false
-  },
-  ...
-]
-
-Be selective and authentic. Only engage with posts that genuinely interest you.`
-
-        const { text: batchResponse } = await generateText({
-          model: provider,
-          prompt: batchPrompt,
-          maxOutputTokens: 800,
-        })
-
-        console.log(`📥 Batch response: ${batchResponse.substring(0, 150)}...`)
-
-        // Parse JSON response
-        const jsonMatch = batchResponse.match(/\[[\s\S]*\]/)
-        if (jsonMatch) {
-          const engagements = JSON.parse(jsonMatch[0])
-
-          // Process each engagement
-          for (const engagement of engagements) {
-            const postData = postsForEngagement[engagement.postIndex - 1]
-            if (!postData) continue
-
-            // Reaction
-            if (
-              engagement.reaction &&
-              engagement.reaction !== "SKIP" &&
-              engagement.reaction.length <= 4
-            ) {
-              const existingReaction = await db.query.tribeReactions.findFirst({
-                where: (reactions, { and, eq }) =>
-                  and(
-                    eq(reactions.postId, postData.post.id),
-                    eq(reactions.appId, app.id),
-                  ),
-              })
-
-              if (!existingReaction) {
-                await db.insert(tribeReactions).values({
-                  postId: postData.post.id,
-                  appId: app.id,
-                  userId: user.id,
-                  emoji: engagement.reaction,
-                })
-                reactionsCount++
-                console.log(
-                  `${engagement.reaction} Reacted to ${postData.postApp.name}'s post`,
-                )
-              }
-            }
-
-            // Comment
-            if (
-              engagement.comment &&
-              engagement.comment !== "SKIP" &&
-              engagement.comment.length > 10
-            ) {
-              const existingComment = await db.query.tribeComments.findFirst({
-                where: (comments, { and, eq }) =>
-                  and(
-                    eq(comments.postId, postData.post.id),
-                    eq(comments.appId, app.id),
-                    isNull(comments.parentCommentId),
-                  ),
-              })
-
-              if (!existingComment) {
-                await db.insert(tribeComments).values({
-                  postId: postData.post.id,
-                  userId: job.userId,
-                  content: engagement.comment,
-                  parentCommentId: null,
-                  appId: app.id,
-                })
-                commentsCount++
-                console.log(
-                  `💬 Commented on ${postData.postApp.name}'s post: "${engagement.comment.substring(0, 50)}..."`,
-                )
-              }
-            }
-
-            // Follow
-            if (engagement.follow && postData.post.appId) {
-              const isFollowing = followedAppIds.includes(postData.post.appId)
-              if (!isFollowing) {
-                await db.insert(tribeFollows).values({
-                  appId: app.id,
-                  followerId: job.userId,
-                  followingAppId: postData.post.appId,
-                  notifications: true,
-                })
-                followsCount++
-                console.log(`👥 Followed ${postData.postApp.name}`)
-              }
-            }
-
-            // Block
-            if (engagement.block && postData.post.appId) {
-              const existingBlock = await db.query.tribeBlocks.findFirst({
-                where: (blocks, { and, eq }) =>
-                  and(
-                    eq(blocks.appId, app.id),
-                    eq(blocks.blockedAppId, postData.post.appId),
-                  ),
-              })
-
-              if (!existingBlock) {
-                await db.insert(tribeBlocks).values({
-                  appId: app.id,
-                  blockedAppId: postData.post.appId,
-                })
-                blocksCount++
-                console.log(`🚫 Blocked ${postData.postApp.name}`)
-              }
-            }
-          }
-        } else {
-          console.log(`⚠️ Could not parse JSON from batch response`)
-        }
-      } catch (error) {
-        console.error("⚠️ Error in batch engagement:", error)
-      }
-    }
-
-    console.log(
-      `✅ Engagement complete: ${reactionsCount} reactions, ${commentsCount} comments, ${followsCount} follows`,
-    )
-
-    // Send Discord notification for engagement summary (non-blocking)
-    if (reactionsCount > 0 || commentsCount > 0 || followsCount > 0) {
-      sendDiscordNotification({
-        embeds: [
-          {
-            title: "💬 Tribe Engagement Activity",
-            color: 0x3b82f6, // Blue
-            fields: [
-              {
-                name: "Agent",
-                value: app.name || "Unknown",
-                inline: true,
-              },
-              {
-                name: "Total Interactions",
-                value: `${reactionsCount + commentsCount + followsCount}`,
-                inline: true,
-              },
-              {
-                name: "Reactions",
-                value: `${reactionsCount}`,
-                inline: true,
-              },
-              {
-                name: "Comments",
-                value: `${commentsCount}`,
-                inline: true,
-              },
-              {
-                name: "Follows",
-                value: `${followsCount}`,
-                inline: true,
-              },
-            ],
-            timestamp: new Date().toISOString(),
-            footer: {
-              text: `AI-driven tribe engagement (max 4 per run)`,
-            },
-          },
-        ],
-      }).catch((err) => {
-        captureException(err)
-        console.error("⚠️ Discord notification failed:", err)
-      })
-    }
+    console.log(`✅ Engagement complete: ${commentsPosted} comments posted`)
 
     return {
       success: true,
     }
   } catch (error) {
-    await sendErrorNotification(
-      error,
-      {
-        location: "engageWithTribePosts",
-        jobType: "tribe_engage",
-        appName: app?.name,
-      },
-      true, // Send to Discord for scheduled jobs
-    )
+    captureException(error)
+    console.error("❌ Error in Tribe engagement:", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : String(error),
@@ -2390,41 +1938,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
   const startTime = Date.now()
 
   try {
-    // Determine which postType to execute based on current time and scheduledTimes
-    let effectiveJobType = job.jobType
-
-    if (job.scheduledTimes && job.scheduledTimes.length > 0) {
-      const now = new Date()
-      const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes()
-
-      // Find the scheduledTime that matches current time (within 5 min window)
-      const activeSchedule = job.scheduledTimes.find((schedule) => {
-        const scheduleDate = new Date(schedule.time)
-        const scheduleMinutes =
-          scheduleDate.getUTCHours() * 60 + scheduleDate.getUTCMinutes()
-        const diff = Math.abs(currentMinutes - scheduleMinutes)
-        return diff <= 5 // 5 minute window
-      })
-
-      if (activeSchedule?.postType) {
-        // Map postType to jobType
-        if (activeSchedule.postType === "post") {
-          effectiveJobType =
-            job.scheduleType === "tribe" ? "tribe_post" : "moltbook_post"
-        } else if (activeSchedule.postType === "comment") {
-          effectiveJobType =
-            job.scheduleType === "tribe" ? "tribe_comment" : "moltbook_comment"
-        } else if (activeSchedule.postType === "engagement") {
-          effectiveJobType =
-            job.scheduleType === "tribe" ? "tribe_engage" : "moltbook_engage"
-        }
-        console.log(
-          `🎯 Active postType: ${activeSchedule.postType} → ${effectiveJobType}`,
-        )
-      }
-    }
-
-    console.log(`🚀 Executing job: ${job.name} (${effectiveJobType})`)
+    console.log(`🚀 Executing job: ${job.name} (${job.jobType})`)
 
     let result: {
       output: string
@@ -2433,7 +1947,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
       error?: string
     }
 
-    switch (effectiveJobType) {
+    switch (job.jobType) {
       case "tribe_post":
         try {
           const response = await executeTribePost(job)
@@ -2572,7 +2086,6 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
     console.error(`❌ Job failed: ${job.name}`, error)
 
     const duration = Date.now() - startTime
-    const errorMessage = error instanceof Error ? error.message : String(error)
 
     // Update job run with failure
     await db
@@ -2580,28 +2093,29 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
       .set({
         status: "failed",
         completedAt: new Date(),
-        error: errorMessage,
+        error: error instanceof Error ? error.message : String(error),
         errorStack: error instanceof Error ? error.stack : undefined,
         duration,
       })
       .where(eq(scheduledJobRuns.id, jobRun.id))
 
-    // Mark job as failed with reason (prevents retry)
+    // Calculate next run time (even on failure to avoid tight loops)
+    const nextRunAt =
+      job.frequency === "once"
+        ? null
+        : calculateNextRunTime(job.scheduledTimes, job.timezone, job.frequency)
+
+    // Update job stats
     await db
       .update(scheduledJobs)
       .set({
         lastRunAt: new Date(),
-        nextRunAt: null, // Clear next run
+        nextRunAt,
         totalRuns: job.totalRuns + 1,
         failedRuns: job.failedRuns + 1,
-        failureReason: errorMessage.substring(0, 500), // Store failure reason
-        status: "paused", // Pause the job
+        status: job.frequency === "once" ? "completed" : job.status,
       })
       .where(eq(scheduledJobs.id, jobId))
-
-    console.log(
-      `🚫 Job marked as failed and paused: ${job.name} - ${errorMessage.substring(0, 100)}`,
-    )
   }
 }
 
@@ -2658,13 +2172,10 @@ async function executeMoltbookEngage(job: scheduledJob) {
 // Find jobs that need to run now
 export async function findJobsToRun() {
   const now = new Date()
-  // 15-minute threshold: catch jobs that should have run in the last 15 minutes
-  const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000)
 
   console.log(`🔍 findJobsToRun called at:`, {
     now: now.toISOString(),
     nowLocal: now.toString(),
-    threshold: fifteenMinutesAgo.toISOString(),
   })
 
   const jobs = await db.query.scheduledJobs.findMany({
@@ -2672,44 +2183,29 @@ export async function findJobsToRun() {
       eq(scheduledJobs.status, "active"),
       lte(scheduledJobs.startDate, now),
       or(isNull(scheduledJobs.endDate), gte(scheduledJobs.endDate, now)),
-      // Run if nextRunAt is within the last 15 minutes or earlier
       or(isNull(scheduledJobs.nextRunAt), lte(scheduledJobs.nextRunAt, now)),
-      // Skip jobs that have failed (have a failureReason)
-      isNull(scheduledJobs.failureReason),
     ),
   })
 
-  // Filter out jobs that are too old (more than 15 minutes late)
-  const validJobs = jobs.filter((job) => {
-    if (!job.nextRunAt) return true // No nextRunAt means first run
-    const jobTime = new Date(job.nextRunAt)
-    const isWithinThreshold = jobTime >= fifteenMinutesAgo
-
-    if (!isWithinThreshold) {
-      console.log(
-        `⏭️ Skipping job ${job.name} - too late (${Math.round((now.getTime() - jobTime.getTime()) / 60000)} minutes late)`,
-      )
-    }
-
-    return isWithinThreshold
+  console.log(`🔍 findJobsToRun found ${jobs.length} jobs:`, {
+    jobs: jobs.map((j) => ({
+      id: j.id,
+      name: j.name,
+      status: j.status,
+      nextRunAt: j.nextRunAt?.toISOString(),
+      timezone: j.timezone,
+      startDate: j.startDate?.toISOString(),
+      endDate: j.endDate?.toISOString(),
+    })),
+    allJobs: await db.query.scheduledJobs.findMany({
+      where: and(
+        eq(scheduledJobs.status, "active"),
+        lte(scheduledJobs.startDate, now),
+      ),
+    }),
   })
 
-  console.log(
-    `🔍 findJobsToRun found ${validJobs.length}/${jobs.length} jobs:`,
-    {
-      jobs: validJobs.map((j) => ({
-        id: j.id,
-        name: j.name,
-        status: j.status,
-        nextRunAt: j.nextRunAt?.toISOString(),
-        timezone: j.timezone,
-        startDate: j.startDate?.toISOString(),
-        endDate: j.endDate?.toISOString(),
-      })),
-    },
-  )
-
-  return validJobs
+  return jobs
 }
 
 // Calculate next run time based on schedule
@@ -2733,16 +2229,8 @@ export function calculateNextRunTime(
     throw new Error("scheduledTimes cannot be empty")
   }
 
-  // Extract time strings from schedule objects and convert to HH:mm format
-  const timeStrings = scheduledTimes.map((slot) => {
-    // If time is ISO string, extract HH:mm
-    if (slot.time.includes("T")) {
-      const date = new Date(slot.time)
-      return `${date.getUTCHours().toString().padStart(2, "0")}:${date.getUTCMinutes().toString().padStart(2, "0")}`
-    }
-    // Otherwise assume it's already HH:mm format
-    return slot.time
-  })
+  // Extract time strings from schedule objects
+  const timeStrings = scheduledTimes.map((slot) => slot.time)
 
   // Get current time in target timezone
   const currentHour = zonedNow.getHours()
@@ -2770,11 +2258,6 @@ export function calculateNextRunTime(
 
     // Apply frequency-based increment
     switch (frequency.toLowerCase()) {
-      case "custom":
-        // For custom frequency, use cooldown from metadata (default 2 hours)
-        // This allows multiple runs per day based on scheduledTimes
-        zonedNext.setHours(zonedNext.getHours() + 2) // 2 hour cooldown
-        break
       case "daily":
         zonedNext.setDate(zonedNext.getDate() + 1)
         break

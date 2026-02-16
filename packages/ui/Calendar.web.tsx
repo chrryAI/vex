@@ -28,7 +28,6 @@ import useSWR from "swr"
 import { dateFnsLocalizer } from "react-big-calendar"
 import { enUS, de, fr, es, ja, ko, pt, zhCN, nl, tr } from "date-fns/locale"
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css"
-// @ts-ignore
 import styles from "./Calendar.module.scss"
 import clsx from "clsx"
 import Skeleton from "./Skeleton"

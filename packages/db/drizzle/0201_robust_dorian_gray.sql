@@ -1,2 +1,0 @@
-ALTER TABLE "calendarEvent" ADD COLUMN "scheduledJobId" uuid;--> statement-breakpoint
-ALTER TABLE "calendarEvent" ADD CONSTRAINT "calendarEvent_scheduledJobId_scheduledJobs_id_fk" FOREIGN KEY ("scheduledJobId") REFERENCES "public"."scheduledJobs"("id") ON DELETE cascade ON UPDATE no action;

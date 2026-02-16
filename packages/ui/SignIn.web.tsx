@@ -1,6 +1,5 @@
 "use client"
 import React, { useEffect, useRef, useState } from "react"
-// @ts-ignore
 import styles from "./SignIn.module.scss"
 import clsx from "clsx"
 import { LinkIcon, LogInIcon, LogIn, UserRoundPlus } from "./icons"

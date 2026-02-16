@@ -1,14 +1,4 @@
-import {
-  db,
-  sql,
-  eq,
-  desc,
-  type app,
-  isE2E as isE2EInternal,
-  isDevelopment,
-  getUser,
-  VEX_LIVE_FINGERPRINTS,
-} from "@repo/db"
+import { db, sql, eq, desc, type app, isE2E, isDevelopment } from "@repo/db"
 import type { appWithStore } from "@chrryai/chrry/types"
 
 import {
@@ -455,18 +445,6 @@ export async function processMessageForRAG({
       console.log("⏭️ Skipping message - empty")
       return
     }
-
-    const member = userId
-      ? await getUser({
-          id: userId,
-        })
-      : undefined
-
-    const isE2E =
-      member?.role !== "admin" &&
-      member?.fingerprint &&
-      !VEX_LIVE_FINGERPRINTS.includes(member?.fingerprint) &&
-      isE2EInternal
 
     // Only log content in E2E/dev mode for debugging (privacy)
     console.log(`📝 Processing ${role} message for RAG:`, {

@@ -16,7 +16,6 @@ export interface scheduleSlot {
     | "flux"
   charLimit: number
   credits?: number // Optional pre-calculated credits for UI display
-  intervalMinutes?: number // Repeat interval in minutes (for custom frequency)
 }
 
 // Model pricing multipliers (matches creditCost from agents seed)

@@ -64,6 +64,16 @@ let savedLang: string | null
 
   const safeLang = LANGUAGES.some((x) => x.code === lang) ? lang : "en"
 
+  // Save to cross-platform storage
+  // try {
+  //   if (typeof BrowserInstance !== "undefined") {
+  //     BrowserInstance?.storage?.local?.set?.({ language: safeLang })
+  //   }
+  //   // Extension-specific storage (if available)
+  // } catch (error) {
+  //   console.log("Error saving language to storage:", error)
+  // }
+
   // Simple i18next configuration for the extension
 
   i18n.use(initReactI18next).init({

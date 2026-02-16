@@ -487,7 +487,6 @@ export type message = {
   userId: string | null
   isMolt?: boolean
   isTribe?: boolean
-  tribePostId?: string
   guestId: string | null
   content: string
   reasoning: string | null
@@ -744,7 +743,10 @@ export type characterProfile = {
 
   pinned: boolean
   traits: {
-    [key: string]: string[]
+    communication: string[]
+    expertise: string[]
+    behavior: string[]
+    preferences: string[]
   }
   threadId: string | null
   tags: string[] | null
@@ -793,8 +795,8 @@ export type app = {
   title: string
   description: string | null
   featureList: string[] | null
-  characterProfiles?: Partial<characterProfile>[] | null
-  characterProfile?: Partial<characterProfile> | null
+  characterProfiles?: characterProfile[] | null
+  characterProfile?: characterProfile | null
   icon: string | null
   tips: Array<{
     id: string
@@ -1035,7 +1037,7 @@ export type appWithStore = app & {
   placeHolder?: placeHolder
   instructions?: instruction[]
   scheduledJobs?: scheduledJob[]
-  characterProfiles?: Partial<characterProfile>[]
+  characterProfiles?: characterProfile[]
   characterProfile?: Partial<characterProfile>
 }
 

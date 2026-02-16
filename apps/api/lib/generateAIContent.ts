@@ -1164,60 +1164,29 @@ async function generateAIContent({
 
     // Get conversation context
 
-    // Extract app character memories early (needed for app character prompt)
-    const appCharacterMemories = memories.filter(
-      (m) => m.category === "character",
-    )
-
-    const characterPrompt = `Based on this conversation, analyze BOTH the USER's personality and the APP's personality (if applicable) and generate their character profiles.
+    const characterPrompt = `Based on this conversation, analyze the USER's personality and generate their character profile.
 
       CONVERSATION:
       ${conversationText}
       
-      ${
-        app
-          ? `APP NAME: ${app.name || "Unknown App"}
-      APP DESCRIPTION: ${app.description || "No description"}
-      
-      CHARACTER MEMORIES:
-      ${appCharacterMemories.map((m: any) => m.content).join("\n") || "No character memories yet"}`
-          : ""
-      }
-      
       Generate ONLY a valid JSON response with no additional text:
       {
-        "userProfile": {
-          "name": "Brief personality archetype (e.g., 'The Strategic Planner', 'The Creative Innovator')",
-          "personality": "2-3 sentence description of communication style and approach",
-          "traits": {
-            "communication": ["communication traits from conversation"],
-            "expertise": ["knowledge areas demonstrated"],
-            "behavior": ["problem-solving patterns observed"],
-            "preferences": ["working style preferences shown"]
-          },
-          "userRelationship": "How this user prefers to interact with AI",
-          "conversationStyle": "formal|casual|technical|friendly",
-          "tags": ["3-5 single-word personality traits"]
-        }${
-          app
-            ? `,
-        "appProfile": {
-          "name": "App display name from memories or conversation",
-          "personality": "2-3 sentence description of the app's character and communication style",
-          "traits": {
-            "communication": ["how the app communicates"],
-            "expertise": ["what the app specializes in"],
-            "behavior": ["how the app behaves and responds"],
-            "preferences": ["app's preferences and style"]
-          },
-          "conversationStyle": "formal|casual|technical|friendly",
-          "tags": ["3-5 single-word traits that capture the app's essence"]
-        }`
-            : ""
-        }
+        "name": "Brief personality archetype (e.g., 'The Strategic Planner', 'The Creative Innovator')",
+        "personality": "2-3 sentence description of communication style and approach",
+        "traits": {
+          "communication": ["communication traits from conversation"],
+          "expertise": ["knowledge areas demonstrated"],
+          "behavior": ["problem-solving patterns observed"],
+          "preferences": ["working style preferences shown"]
+        },
+        "userRelationship": "How this user prefers to interact with AI",
+        "conversationStyle": "formal|casual|technical|friendly",
+        "tags": ["3-5 single-word personality traits that capture their essence"]
       }
       
-      Focus on observable patterns from the USER's messages and APP's character memories. Return only valid JSON.`
+      For tags, use descriptive single words like: analytical, creative, direct, collaborative, methodical, innovative, practical, strategic, empathetic, efficient, curious, detail-oriented, big-picture, results-driven, etc.
+
+      Focus ONLY on observable patterns from the USER's messages. Return only valid JSON.`
 
     // Mood detection prompt (only if character profiles enabled)
     const moodPrompt = `Analyze the USER's emotional state from this conversation:
@@ -1304,7 +1273,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
     })
 
     // Generate summary, memories, character profile, and mood in parallel
-    const promises = [
+    const [summaryResult, characterResult, moodResult] = await Promise.all([
       generateText({
         model,
         prompt: summaryPrompt,
@@ -1317,416 +1286,433 @@ Focus on the main discussion points, user preferences, and conversation style.`
         model,
         prompt: moodPrompt,
       }),
-    ]
+    ])
 
-    const results = await Promise.all(promises)
-    const [summaryResult, characterResult, moodResult] = results
+    // Extract memories using unified function (runs separately to avoid blocking)
 
-    if (summaryResult) {
-      // Extract memories using unified function (runs separately to avoid blocking)
-
-      type SummaryData = z.infer<typeof summarySchema>
-      let summaryData: SummaryData
-      try {
-        let jsonText = summaryResult.text.trim()
-
-        // Remove markdown code blocks (handle multiple backticks)
-        if (jsonText.includes("```")) {
-          // Find first occurrence of ``` and last occurrence
-          const firstBacktick = jsonText.indexOf("```")
-          const lastBacktick = jsonText.lastIndexOf("```")
-
-          if (
-            firstBacktick !== -1 &&
-            lastBacktick !== -1 &&
-            firstBacktick !== lastBacktick
-          ) {
-            // Extract content between first and last backticks
-            jsonText = jsonText.substring(firstBacktick + 3, lastBacktick)
-            // Remove "json" language identifier if present
-            jsonText = jsonText.replace(/^json\s*/, "").trim()
-          }
-        }
-
-        const parsedData = JSON.parse(jsonText)
-        summaryData = summarySchema.parse(parsedData)
-
-        // Log conversation tone for analytics (no validation, DeepSeek is free to use any tone)
-        if (summaryData.conversationTone) {
-          console.log(
-            `📊 Conversation tone detected: "${summaryData.conversationTone}"`,
-          )
-        }
-      } catch (error) {
-        captureException(error)
-        console.log("⚠️ Failed to parse or validate summary:", error)
-        summaryData = {
-          summary: summaryResult.text.slice(0, 200),
-          keyTopics: ["general discussion"],
-          conversationTone: "casual" as const,
-          userPreferences: [],
-        }
+    type SummaryData = z.infer<typeof summarySchema>
+    let summaryData: SummaryData
+    try {
+      let jsonText = summaryResult.text.trim()
+      if (jsonText.startsWith("```json")) {
+        jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
+      } else if (jsonText.startsWith("```")) {
+        jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "")
       }
+      const parsedData = JSON.parse(jsonText)
+      summaryData = summarySchema.parse(parsedData)
 
-      // Wait for memories to be extracted and saved
-
-      if (moodResult) {
-        // Parse mood result
-        type MoodData = z.infer<typeof moodSchema>
-        let moodData: MoodData | null = null
-        try {
-          let jsonText = moodResult.text.trim()
-          // Remove markdown code blocks safely without regex backtracking
-          if (jsonText.startsWith("```json")) {
-            jsonText = jsonText.slice(7).trimStart() // Remove "```json"
-            const endIndex = jsonText.lastIndexOf("```")
-            if (endIndex !== -1) {
-              jsonText = jsonText.slice(0, endIndex).trimEnd()
-            }
-          } else if (jsonText.startsWith("```")) {
-            jsonText = jsonText.slice(3).trimStart() // Remove "```"
-            const endIndex = jsonText.lastIndexOf("```")
-            if (endIndex !== -1) {
-              jsonText = jsonText.slice(0, endIndex).trimEnd()
-            }
-          }
-          const parsedData = JSON.parse(jsonText)
-          moodData = moodSchema.parse(parsedData)
-          console.log(
-            `🎭 Detected mood: ${moodData.type} (confidence: ${moodData.confidence})`,
-          )
-        } catch (error) {
-          captureException(error)
-          console.log("⚠️ Failed to parse or validate mood:", error)
-        }
-
-        // Create mood in database if detected with sufficient confidence
-        if (moodData && moodData.confidence >= 0.6) {
-          try {
-            await createMood({
-              userId: userId || null,
-              guestId: guestId || null,
-              type: moodData.type,
-              messageId: latestMessage.id, // Link to the message that triggered mood detection
-              metadata: {
-                detectedBy: modelName,
-                confidence: moodData.confidence,
-                reason: moodData.reason,
-                conversationContext: getSmartConversationContext(
-                  conversationText,
-                  500,
-                ), // Smart context
-              },
-            })
-            console.log(
-              `✅ Created mood: ${moodData.type} (confidence: ${moodData.confidence}, reason: ${moodData.reason})`,
-            )
-          } catch (error) {
-            captureException(error)
-            console.error("❌ Failed to create mood:", error)
-          }
-        }
-      }
-      // Parse character profiles (both user and app from single AI response)
-
-      type CharacterData = z.infer<typeof characterSchema>
-      let characterData: CharacterData
-      let appCharacterData: CharacterData | null = null
-
-      if (characterResult) {
-        let jsonText = characterResult.text.trim()
-        if (jsonText.startsWith("```json")) {
-          jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
-        } else if (jsonText.startsWith("```")) {
-          jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "")
-        }
-        const parsedData = JSON.parse(jsonText)
-
-        // Extract userProfile
-        characterData = characterSchema.parse(
-          parsedData.userProfile || parsedData,
-        )
-
-        // Extract appProfile if exists
-        if (parsedData.appProfile && appId) {
-          appCharacterData = characterSchema.parse(parsedData.appProfile)
-        }
-
-        // Save to database
-        const messageCount = conversationHistory.length
-        const lastMessageAt = new Date(latestMessage.createdOn)
-
-        // Create or update thread summary
-        const existingSummary = await getThreadSummary({
-          userId,
-          guestId,
-          threadId,
-        })
-
-        // Verify ownership as extra safety layer
-        if (existingSummary && !isOwner(existingSummary, { userId, guestId })) {
-          console.warn("⚠️ Ownership mismatch for thread summary - rejecting")
-          throw new Error("Unauthorized access to thread summary")
-        }
-
-        const threadSummaryData = {
-          threadId,
-          userId: userId || null,
-          guestId: guestId || null,
-          summary: summaryData.summary || "Conversation summary",
-          keyTopics: summaryData.keyTopics || ["general discussion"],
-          messageCount,
-          lastMessageAt,
-          ragContext: {
-            documentSummaries: [],
-            relevantChunks: [],
-            conversationContext: getSmartConversationContext(
-              conversationText,
-              2000,
-            ),
-          },
-          userMemories: memories.map((m: any) => ({
-            id: uuidv4(),
-            content: m.content,
-            tags: m.tags || [],
-            relevanceScore: m.importance / 10,
-            createdAt: new Date().toISOString(),
-          })),
-          characterTags: {
-            agentPersonalities: [
-              {
-                agentId,
-                traits: characterData.traits
-                  ? Object.values(characterData.traits).flat()
-                  : [],
-                behavior: characterData.personality || "friendly",
-              },
-            ],
-            conversationTone: summaryData.conversationTone || "casual",
-            userPreferences: summaryData.userPreferences || [],
-            contextualTags: characterData.tags || [],
-          },
-          metadata: {
-            version: "1.0",
-            generatedBy: "deepseek-chat",
-            confidence: 0.8,
-            lastUpdated: new Date().toISOString(),
-          },
-        }
-
-        if (existingSummary) {
-          await updateThreadSummary({
-            ...existingSummary,
-            ...threadSummaryData,
-          })
-        } else {
-          await createThreadSummary(threadSummaryData)
-        }
-
-        // Memories already created by extractAndSaveMemories() above
-
-        // Create or update TWO character profiles (like memory system):
-        // 1. USER CHARACTER PROFILE: userId/guestId set, appId null (only if shouldGenerateUserProfile)
-        // 2. APP CHARACTER PROFILE: appId set, userId/guestId null (always if appId exists)
-
-        // 1. USER CHARACTER PROFILE (skip if user profile stripped from system prompt)
-        let userCharacterTag
-        if (shouldGenerateUserProfile) {
-          const existingUserCharacterTag = await getCharacterTag({
-            userId,
-            guestId,
-            threadId,
-          })
-
-          if (
-            existingUserCharacterTag &&
-            isOwner(existingUserCharacterTag, {
-              userId,
-              guestId,
-            }) &&
-            !existingUserCharacterTag.appId // Ensure it's a user profile, not app profile
-          ) {
-            // Update existing user character profile
-            userCharacterTag = await updateCharacterTag({
-              ...existingUserCharacterTag,
-              name: characterData.name || existingUserCharacterTag.name,
-              personality:
-                characterData.personality ||
-                existingUserCharacterTag.personality,
-              traits: {
-                communication:
-                  characterData.traits?.communication ??
-                  existingUserCharacterTag.traits?.communication ??
-                  [],
-                expertise:
-                  characterData.traits?.expertise ??
-                  existingUserCharacterTag.traits?.expertise ??
-                  [],
-                behavior:
-                  characterData.traits?.behavior ??
-                  existingUserCharacterTag.traits?.behavior ??
-                  [],
-                preferences:
-                  characterData.traits?.preferences ??
-                  existingUserCharacterTag.traits?.preferences ??
-                  [],
-              },
-              tags: characterData.tags || existingUserCharacterTag.tags,
-              usageCount: existingUserCharacterTag.usageCount + 1,
-              userRelationship:
-                characterData.userRelationship ||
-                existingUserCharacterTag.userRelationship,
-              conversationStyle:
-                characterData.conversationStyle ||
-                existingUserCharacterTag.conversationStyle,
-              metadata: {
-                version: "1.0",
-                createdBy: modelName,
-                effectiveness: 0.8,
-              },
-            })
-          } else if (!existingUserCharacterTag?.appId) {
-            // Create new user character profile (userId/guestId set, appId null)
-            userCharacterTag = await createCharacterTag({
-              agentId,
-              userId: userId || null,
-              guestId: guestId || null,
-              appId: null, // USER profile - no appId
-              name: characterData.name || "User",
-              personality: characterData.personality || "Friendly and helpful",
-              traits: characterData.traits
-                ? {
-                    communication: characterData.traits.communication || [
-                      "clear",
-                      "direct",
-                    ],
-                    expertise: characterData.traits.expertise || [
-                      "general knowledge",
-                    ],
-                    behavior: characterData.traits.behavior || [
-                      "curious",
-                      "analytical",
-                    ],
-                    preferences: characterData.traits.preferences || [
-                      "learning",
-                      "efficiency",
-                    ],
-                  }
-                : {
-                    communication: ["clear", "direct"],
-                    expertise: ["general knowledge"],
-                    behavior: ["curious", "analytical"],
-                    preferences: ["learning", "efficiency"],
-                  },
-              tags: characterData.tags || [],
-              usageCount: 1,
-              userRelationship:
-                characterData.userRelationship || "collaborative",
-              conversationStyle:
-                characterData.conversationStyle || "professional",
-              metadata: {
-                version: "1.0",
-                createdBy: modelName,
-                effectiveness: 0.8,
-              },
-              threadId,
-            })
-          }
-        } else {
-          console.log(
-            `⏭️  Skipping user character profile creation (user profile stripped from system prompt)`,
-          )
-        }
-
-        // 2. APP CHARACTER PROFILE (from AI-generated appProfile)
-        if (appId && appCharacterData) {
-          // Get existing app character profile
-          const existingAppCharacterTag = await getCharacterTag({
-            appId,
-            threadId,
-          })
-
-          if (existingAppCharacterTag && existingAppCharacterTag.appId) {
-            // Update existing app character profile with AI-generated data
-            await updateCharacterTag({
-              ...existingAppCharacterTag,
-              name: appCharacterData.name || existingAppCharacterTag.name,
-              personality:
-                appCharacterData.personality ||
-                existingAppCharacterTag.personality,
-              traits: {
-                communication: [
-                  ...(existingAppCharacterTag.traits?.communication || []),
-                  ...(appCharacterData.traits?.communication || []),
-                ].slice(0, 10),
-                expertise: [
-                  ...(existingAppCharacterTag.traits?.expertise || []),
-                  ...(appCharacterData.traits?.expertise || []),
-                ].slice(0, 10),
-                behavior: [
-                  ...(existingAppCharacterTag.traits?.behavior || []),
-                  ...(appCharacterData.traits?.behavior || []),
-                ].slice(0, 10),
-                preferences: [
-                  ...(existingAppCharacterTag.traits?.preferences || []),
-                  ...(appCharacterData.traits?.preferences || []),
-                ].slice(0, 10),
-              },
-              tags: appCharacterData.tags ||
-                existingAppCharacterTag.tags || ["app-character"],
-              usageCount: existingAppCharacterTag.usageCount + 1,
-              metadata: {
-                version: "1.0",
-                createdBy: modelName,
-                effectiveness: 0.8,
-              },
-            })
-            console.log(`✅ Updated app character profile for app ${appId}`)
-          } else {
-            // Create new app character profile (appId set, userId/guestId null)
-            await createCharacterTag({
-              agentId,
-              userId: null, // APP profile - no userId
-              guestId: null, // APP profile - no guestId
-              appId, // APP profile - appId set
-              name: appCharacterData.name || app?.name || "App Character",
-              personality:
-                appCharacterData.personality || "AI Assistant Character",
-              traits: appCharacterData.traits || {},
-              tags: appCharacterData.tags || ["app-character"],
-              usageCount: 1,
-              userRelationship: null,
-              conversationStyle:
-                appCharacterData.conversationStyle || "learned",
-              metadata: {
-                version: "1.0",
-                createdBy: modelName,
-                effectiveness: 0.8,
-              },
-              threadId,
-            })
-            console.log(`✅ Created app character profile for app ${appId}`)
-          }
-        }
-
-        userCharacterTag &&
-          notifyOwnerAndCollaborations({
-            c,
-            notifySender: true,
-            member: user,
-            guest,
-            thread: thread,
-            payload: {
-              type: "character_tag_created",
-              data: userCharacterTag,
-            },
-          })
+      // Log conversation tone for analytics (no validation, DeepSeek is free to use any tone)
+      if (summaryData.conversationTone) {
         console.log(
-          "✅ DeepSeek content generation completed for thread:",
-          threadId,
+          `📊 Conversation tone detected: "${summaryData.conversationTone}"`,
         )
+      }
+    } catch (error) {
+      captureException(error)
+      console.log("⚠️ Failed to parse or validate summary:", error)
+      summaryData = {
+        summary: summaryResult.text.slice(0, 200),
+        keyTopics: ["general discussion"],
+        conversationTone: "casual" as const,
+        userPreferences: [],
       }
     }
+
+    // Wait for memories to be extracted and saved
+
+    // Parse mood result
+    type MoodData = z.infer<typeof moodSchema>
+    let moodData: MoodData | null = null
+    try {
+      let jsonText = moodResult.text.trim()
+      if (jsonText.startsWith("```json")) {
+        jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
+      } else if (jsonText.startsWith("```")) {
+        jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "")
+      }
+      const parsedData = JSON.parse(jsonText)
+      moodData = moodSchema.parse(parsedData)
+      console.log(
+        `🎭 Detected mood: ${moodData.type} (confidence: ${moodData.confidence})`,
+      )
+    } catch (error) {
+      captureException(error)
+      console.log("⚠️ Failed to parse or validate mood:", error)
+    }
+
+    // Create mood in database if detected with sufficient confidence
+    if (moodData && moodData.confidence >= 0.6) {
+      try {
+        await createMood({
+          userId: userId || null,
+          guestId: guestId || null,
+          type: moodData.type,
+          messageId: latestMessage.id, // Link to the message that triggered mood detection
+          metadata: {
+            detectedBy: modelName,
+            confidence: moodData.confidence,
+            reason: moodData.reason,
+            conversationContext: getSmartConversationContext(
+              conversationText,
+              500,
+            ), // Smart context
+          },
+        })
+        console.log(
+          `✅ Created mood: ${moodData.type} (confidence: ${moodData.confidence}, reason: ${moodData.reason})`,
+        )
+      } catch (error) {
+        captureException(error)
+        console.error("❌ Failed to create mood:", error)
+      }
+    }
+
+    // Generate character profile for the user
+
+    type CharacterData = z.infer<typeof characterSchema>
+    let characterData: CharacterData
+    try {
+      let jsonText = characterResult.text.trim()
+      if (jsonText.startsWith("```json")) {
+        jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
+      } else if (jsonText.startsWith("```")) {
+        jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "")
+      }
+      const parsedData = JSON.parse(jsonText)
+      characterData = characterSchema.parse(parsedData)
+    } catch (error) {
+      captureException(error)
+      console.log("⚠️ Failed to parse or validate character:", error)
+      characterData = {
+        name: "User",
+        personality: "Friendly and helpful",
+        communicationStyle: "Clear and concise",
+        interests: ["technology", "learning"],
+        expertise: ["general knowledge"],
+        traits: {
+          communication: ["clear", "direct"],
+          expertise: ["general knowledge"],
+          behavior: ["curious", "analytical"],
+          preferences: ["learning", "efficiency"],
+        },
+        tags: ["helpful", "tech-savvy"],
+        userRelationship: "collaborative",
+        conversationStyle: "professional",
+      }
+    }
+
+    // Save to database
+    const messageCount = conversationHistory.length
+    const lastMessageAt = new Date(latestMessage.createdOn)
+
+    // Create or update thread summary
+    const existingSummary = await getThreadSummary({
+      userId,
+      guestId,
+      threadId,
+    })
+
+    // Verify ownership as extra safety layer
+    if (existingSummary && !isOwner(existingSummary, { userId, guestId })) {
+      console.warn("⚠️ Ownership mismatch for thread summary - rejecting")
+      throw new Error("Unauthorized access to thread summary")
+    }
+
+    const threadSummaryData = {
+      threadId,
+      userId: userId || null,
+      guestId: guestId || null,
+      summary: summaryData.summary || "Conversation summary",
+      keyTopics: summaryData.keyTopics || ["general discussion"],
+      messageCount,
+      lastMessageAt,
+      ragContext: {
+        documentSummaries: [],
+        relevantChunks: [],
+        conversationContext: getSmartConversationContext(
+          conversationText,
+          2000,
+        ),
+      },
+      userMemories: memories.map((m: any) => ({
+        id: uuidv4(),
+        content: m.content,
+        tags: m.tags || [],
+        relevanceScore: m.importance / 10,
+        createdAt: new Date().toISOString(),
+      })),
+      characterTags: {
+        agentPersonalities: [
+          {
+            agentId,
+            traits: characterData.traits
+              ? Object.values(characterData.traits).flat()
+              : [],
+            behavior: characterData.personality || "friendly",
+          },
+        ],
+        conversationTone: summaryData.conversationTone || "casual",
+        userPreferences: summaryData.userPreferences || [],
+        contextualTags: characterData.tags || [],
+      },
+      metadata: {
+        version: "1.0",
+        generatedBy: "deepseek-chat",
+        confidence: 0.8,
+        lastUpdated: new Date().toISOString(),
+      },
+    }
+
+    if (existingSummary) {
+      await updateThreadSummary({
+        ...existingSummary,
+        ...threadSummaryData,
+      })
+    } else {
+      await createThreadSummary(threadSummaryData)
+    }
+
+    // Memories already created by extractAndSaveMemories() above
+
+    // Create or update TWO character profiles (like memory system):
+    // 1. USER CHARACTER PROFILE: userId/guestId set, appId null (only if shouldGenerateUserProfile)
+    // 2. APP CHARACTER PROFILE: appId set, userId/guestId null (always if appId exists)
+
+    // 1. USER CHARACTER PROFILE (skip if user profile stripped from system prompt)
+    let userCharacterTag
+    if (shouldGenerateUserProfile) {
+      const existingUserCharacterTag = await getCharacterTag({
+        userId,
+        guestId,
+        threadId,
+      })
+
+      if (
+        existingUserCharacterTag &&
+        isOwner(existingUserCharacterTag, {
+          userId,
+          guestId,
+        }) &&
+        !existingUserCharacterTag.appId // Ensure it's a user profile, not app profile
+      ) {
+        // Update existing user character profile
+        userCharacterTag = await updateCharacterTag({
+          ...existingUserCharacterTag,
+          name: characterData.name || existingUserCharacterTag.name,
+          personality:
+            characterData.personality || existingUserCharacterTag.personality,
+          traits: {
+            communication:
+              characterData.traits?.communication ??
+              existingUserCharacterTag.traits?.communication ??
+              [],
+            expertise:
+              characterData.traits?.expertise ??
+              existingUserCharacterTag.traits?.expertise ??
+              [],
+            behavior:
+              characterData.traits?.behavior ??
+              existingUserCharacterTag.traits?.behavior ??
+              [],
+            preferences:
+              characterData.traits?.preferences ??
+              existingUserCharacterTag.traits?.preferences ??
+              [],
+          },
+          tags: characterData.tags || existingUserCharacterTag.tags,
+          usageCount: existingUserCharacterTag.usageCount + 1,
+          userRelationship:
+            characterData.userRelationship ||
+            existingUserCharacterTag.userRelationship,
+          conversationStyle:
+            characterData.conversationStyle ||
+            existingUserCharacterTag.conversationStyle,
+          metadata: {
+            version: "1.0",
+            createdBy: modelName,
+            effectiveness: 0.8,
+          },
+        })
+      } else if (!existingUserCharacterTag?.appId) {
+        // Create new user character profile (userId/guestId set, appId null)
+        userCharacterTag = await createCharacterTag({
+          agentId,
+          userId: userId || null,
+          guestId: guestId || null,
+          appId: null, // USER profile - no appId
+          name: characterData.name || "User",
+          personality: characterData.personality || "Friendly and helpful",
+          traits: characterData.traits
+            ? {
+                communication: characterData.traits.communication || [
+                  "clear",
+                  "direct",
+                ],
+                expertise: characterData.traits.expertise || [
+                  "general knowledge",
+                ],
+                behavior: characterData.traits.behavior || [
+                  "curious",
+                  "analytical",
+                ],
+                preferences: characterData.traits.preferences || [
+                  "learning",
+                  "efficiency",
+                ],
+              }
+            : {
+                communication: ["clear", "direct"],
+                expertise: ["general knowledge"],
+                behavior: ["curious", "analytical"],
+                preferences: ["learning", "efficiency"],
+              },
+          tags: characterData.tags || [],
+          usageCount: 1,
+          userRelationship: characterData.userRelationship || "collaborative",
+          conversationStyle: characterData.conversationStyle || "professional",
+          metadata: {
+            version: "1.0",
+            createdBy: modelName,
+            effectiveness: 0.8,
+          },
+          threadId,
+        })
+      }
+    } else {
+      console.log(
+        `⏭️  Skipping user character profile creation (user profile stripped from system prompt)`,
+      )
+    }
+
+    // 2. APP CHARACTER PROFILE (from character memories)
+    // Extract character traits from app memories
+    const appCharacterMemories = memories.filter(
+      (m: any) => m.category === "character",
+    )
+
+    if (appId && appCharacterMemories.length > 0) {
+      // Get existing app character profile
+      const existingAppCharacterTag = await getCharacterTag({
+        appId,
+        threadId,
+      })
+
+      // Build app character traits from memories
+      const appCharacterTraits = {
+        name:
+          appCharacterMemories
+            .find((m: any) => m.content.toLowerCase().includes("personality"))
+            ?.content.substring(0, 50) || `${agentId} Character`,
+        communication: appCharacterMemories
+          .filter(
+            (m: any) =>
+              m.content.toLowerCase().includes("tone") ||
+              m.content.toLowerCase().includes("language") ||
+              m.content.toLowerCase().includes("style"),
+          )
+          .map((m: any) => m.content.substring(0, 50)),
+        expertise: appCharacterMemories
+          .filter(
+            (m: any) =>
+              m.content.toLowerCase().includes("technical") ||
+              m.content.toLowerCase().includes("knowledge"),
+          )
+          .map((m: any) => m.content.substring(0, 50)),
+        behavior: appCharacterMemories
+          .filter(
+            (m: any) =>
+              m.content.toLowerCase().includes("asks") ||
+              m.content.toLowerCase().includes("responds") ||
+              m.content.toLowerCase().includes("behavior"),
+          )
+          .map((m: any) => m.content.substring(0, 50)),
+        preferences: appCharacterMemories
+          .filter(
+            (m: any) =>
+              m.content.toLowerCase().includes("prefers") ||
+              m.content.toLowerCase().includes("uses"),
+          )
+          .map((m: any) => m.content.substring(0, 50)),
+      }
+
+      if (existingAppCharacterTag && existingAppCharacterTag.appId) {
+        // Update existing app character profile
+        await updateCharacterTag({
+          ...existingAppCharacterTag,
+          name: appCharacterTraits.name || existingAppCharacterTag.name,
+          personality:
+            appCharacterMemories[0]?.content || "AI Assistant Character",
+          traits: {
+            communication: [
+              ...(existingAppCharacterTag.traits?.communication || []),
+              ...appCharacterTraits.communication,
+            ].slice(0, 10),
+            expertise: [
+              ...(existingAppCharacterTag.traits?.expertise || []),
+              ...appCharacterTraits.expertise,
+            ].slice(0, 10),
+            behavior: [
+              ...(existingAppCharacterTag.traits?.behavior || []),
+              ...appCharacterTraits.behavior,
+            ].slice(0, 10),
+            preferences: [
+              ...(existingAppCharacterTag.traits?.preferences || []),
+              ...appCharacterTraits.preferences,
+            ].slice(0, 10),
+          },
+          tags: ["app-character", "learned"],
+          usageCount: existingAppCharacterTag.usageCount + 1,
+          metadata: {
+            version: "1.0",
+            createdBy: modelName,
+            effectiveness: 0.8,
+          },
+        })
+        console.log(`✅ Updated app character profile for app ${appId}`)
+      } else {
+        // Create new app character profile (appId set, userId/guestId null)
+        await createCharacterTag({
+          agentId,
+          userId: null, // APP profile - no userId
+          guestId: null, // APP profile - no guestId
+          appId, // APP profile - appId set
+          name: `${agentId} App Character`,
+          personality:
+            appCharacterMemories[0]?.content || "AI Assistant Character",
+          traits: appCharacterTraits,
+          tags: ["app-character", "learned"],
+          usageCount: 1,
+          userRelationship: null,
+          conversationStyle: "learned",
+          metadata: {
+            version: "1.0",
+            createdBy: modelName,
+            effectiveness: 0.8,
+          },
+          threadId,
+        })
+        console.log(`✅ Created app character profile for app ${appId}`)
+      }
+    }
+
+    userCharacterTag &&
+      notifyOwnerAndCollaborations({
+        c,
+        notifySender: true,
+        member: user,
+        guest,
+        thread: thread,
+        payload: {
+          type: "character_tag_created",
+          data: userCharacterTag,
+        },
+      })
+    console.log(
+      "✅ DeepSeek content generation completed for thread:",
+      threadId,
+    )
+
     // Generate personalized suggestions and placeholders (only if memories enabled)
   } catch (error) {
     captureException(error)

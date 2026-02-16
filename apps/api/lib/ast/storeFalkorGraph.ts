@@ -1,4 +1,4 @@
-import { graph } from "@repo/db"
+import { graph } from "../graph"
 import type { ASTNode } from "./parseCodebase"
 
 export async function storeASTInGraph(
@@ -217,7 +217,7 @@ export async function storeASTInGraph(
   }
 }
 
-export async function queryCodeGraph(query: string): Promise<any> {
+export async function queryCodeGraph(query: string) {
   try {
     const result = await graph.query(query)
     return result
@@ -228,7 +228,7 @@ export async function queryCodeGraph(query: string): Promise<any> {
 }
 
 // Helper: Find all functions that call a specific function
-export async function findFunctionCallers(functionName: string): Promise<any> {
+export async function findFunctionCallers(functionName: string) {
   return queryCodeGraph(`
     MATCH (caller:FUNCTION)-[:CALLS]->(callee:FUNCTION {name: '${functionName}'})
     RETURN caller.name, caller.filepath, caller.startLine
@@ -236,7 +236,7 @@ export async function findFunctionCallers(functionName: string): Promise<any> {
 }
 
 // Helper: Find all files that import a specific module
-export async function findImportUsage(moduleName: string): Promise<any> {
+export async function findImportUsage(moduleName: string) {
   return queryCodeGraph(`
     MATCH (f:FILE)-[:IMPORTS]->(i:IMPORT)
     WHERE i.source CONTAINS '${moduleName}'
@@ -248,7 +248,7 @@ export async function findImportUsage(moduleName: string): Promise<any> {
 export async function getFunctionCallChain(
   functionName: string,
   depth: number = 3,
-): Promise<any> {
+) {
   return queryCodeGraph(`
     MATCH path = (f:FUNCTION {name: '${functionName}'})-[:CALLS*1..${depth}]->(called:FUNCTION)
     RETURN path

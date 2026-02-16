@@ -984,25 +984,6 @@ export async function reorderApps({
   return await response.json()
 }
 
-export const clearSession = async ({
-  API_URL = utils.API_URL,
-  token,
-}: {
-  API_URL?: string
-  token: string
-}) => {
-  const result = await fetch(`${API_URL}/clear`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  const data = await result.json()
-
-  return data
-}
-
 export const getSession = async ({
   deviceId,
   fingerprint,
@@ -1520,11 +1501,6 @@ export const getActions = ({
       VERSION?: string
       app?: "extension" | "pwa" | "web"
     }) => getSession({ ...params, API_URL, token }),
-    clearSession: (
-      params: { API_URL?: string } = {
-        API_URL: utils.API_URL,
-      },
-    ) => clearSession({ ...params, API_URL, token }),
 
     // Tribe operations
     getTribes: (params?: {

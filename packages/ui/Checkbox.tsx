@@ -25,7 +25,6 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
     const styles = useCheckboxStyles()
     const generatedId = React.useId()
     const inputId = `checkbox-${generatedId}`
-    const [isFocused, setIsFocused] = React.useState(false)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       e.preventDefault()
@@ -55,8 +54,6 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
           checked={checked}
           disabled={disabled}
           onChange={handleChange}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
           style={{
             position: "absolute",
             width: 1,
@@ -77,12 +74,6 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
           style={{
             ...styles.formSwitchTrack.style,
             ...(checked && styles.formSwitchTrackChecked.style),
-            ...(isFocused && {
-              outlineWidth: "2px",
-              outlineStyle: "solid",
-              outlineColor: "var(--link-color, #3b82f6)",
-              outlineOffset: "1px",
-            }),
           }}
         >
           <Div

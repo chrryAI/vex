@@ -28,6 +28,6 @@
       "chrry/*": ["../../packages/ui/*"]
     }
   },
-  "include": ["src/**/*", "../../packages/ui/globals.d.ts"]
+  "include": ["src/**/*"]
   // "references": [{ "path": "./tsconfig.node.json" }]
 }

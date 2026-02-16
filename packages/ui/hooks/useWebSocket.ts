@@ -104,13 +104,9 @@ class WebSocketManager {
     // Add timeout to prevent hanging in connecting state
     const connectionTimeout = setTimeout(() => {
       if (this.isConnecting) {
-        console.log("⏰ Connection timeout, attempting reconnect")
+        console.log("⏰ Connection timeout, resetting isConnecting flag")
         this.isConnecting = false
-        if (this.ws) {
-          this.ws.onclose = null // Prevent double reconnect
-          this.ws.close()
-        }
-        this.reconnect()
+        this.ws?.close()
       }
     }, 10000) // 10 second timeout
 
@@ -169,6 +165,15 @@ class WebSocketManager {
           return
         }
 
+        // // Send acknowledgment if message has messageId (for E2E testing)
+        // if (data.messageId) {
+        //   console.log(`📨 Sending ACK for message ${data.messageId}`)
+        //   this.send({
+        //     type: "ack",
+        //     messageId: data.messageId,
+        //   })
+        // }
+
         this.handlers.forEach((handler) => handler(data))
       }
 
@@ -209,18 +214,6 @@ class WebSocketManager {
   private reconnect() {
     // Ensure we're not in connecting state before reconnecting
     this.isConnecting = false
-
-    // Clear any existing WebSocket connection
-    if (this.ws) {
-      this.ws.onclose = null // Prevent triggering another reconnect
-      this.ws.onerror = null
-      this.ws.onmessage = null
-      this.ws.onopen = null
-      if (this.ws.readyState !== WebSocket.CLOSED) {
-        this.ws.close()
-      }
-      this.ws = null
-    }
 
     this.handleReconnecting()
     if (this.reconnectAttempts < this.maxReconnectAttempts) {

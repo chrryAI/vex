@@ -27,7 +27,7 @@ const socket: WebSocket | null = null
 
 const connectionPromise: Promise<void> | null = null
 
-import { notifyClients, broadcast } from "./wsClients"
+import { notifyClients } from "./wsClients"
 
 export async function notify(
   recipientId: string,
@@ -150,8 +150,6 @@ export type notifyOwnerAndCollaborationsPayload = {
         }
   }
 }
-
-export { broadcast }
 
 export const notifyOwnerAndCollaborations = async ({
   c,

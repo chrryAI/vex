@@ -1,5 +1,4 @@
 import { BlogPost } from "../blog-loader"
-// @ts-ignore
 import styles from "./BlogList.module.scss"
 
 interface BlogListProps {

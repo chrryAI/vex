@@ -6,7 +6,6 @@ import {
   TEST_GUEST_FINGERPRINTS,
   TEST_MEMBER_FINGERPRINTS,
   VEX_LIVE_FINGERPRINTS,
-  TEST_MEMBER_EMAILS,
 } from "@repo/db"
 import { corsMiddleware } from "../middleware/cors"
 
@@ -37,9 +36,7 @@ clear.post("/", async (c) => {
     return c.json({ error: "Unauthorized" }, 401)
   }
 
-  const CAN_CLEAR =
-    (member?.email && TEST_MEMBER_EMAILS.includes(member.email)) ||
-    (fingerprint && allFingerprints.includes(fingerprint))
+  const CAN_CLEAR = fingerprint && allFingerprints.includes(fingerprint)
 
   if (CAN_CLEAR) {
     await cleanupTest()

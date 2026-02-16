@@ -8,6 +8,7 @@ const getEnv = () => {
 
   let importMetaEnv: Record<string, any> = {}
   if (typeof import.meta !== "undefined") {
+    // @ts-expect-error - import.meta.env may not exist in all environments
     importMetaEnv = import.meta.env || {}
   }
 
@@ -31,8 +32,7 @@ function isPrivateIP(ip: string): boolean {
     // 10.0.0.0/8 (Private)
     if (parts[0] === 10) return true
     // 172.16.0.0/12 (Private)
-    if (parts[0] === 172 && parts[1] && parts[1] >= 16 && parts[1] <= 31)
-      return true
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true
     // 192.168.0.0/16 (Private)
     if (parts[0] === 192 && parts[1] === 168) return true
     // 169.254.0.0/16 (Link-local)
@@ -40,8 +40,7 @@ function isPrivateIP(ip: string): boolean {
     // 0.0.0.0/8 (Current network)
     if (parts[0] === 0) return true
     // 100.64.0.0/10 (CGNAT - Carrier-Grade NAT)
-    if (parts[0] === 100 && parts[1] && parts[1] >= 64 && parts[1] <= 127)
-      return true
+    if (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) return true
 
     return false
   }
@@ -74,7 +73,7 @@ function isPrivateIP(ip: string): boolean {
       // Handle hex notation (e.g., ::ffff:c0a8:0101)
       // Convert hex to dotted-decimal
       const hexMatch = ipv4Part.match(/^([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i)
-      if (hexMatch && hexMatch[1] && hexMatch[2]) {
+      if (hexMatch) {
         const high = parseInt(hexMatch[1], 16)
         const low = parseInt(hexMatch[2], 16)
         const octet1 = (high >> 8) & 0xff

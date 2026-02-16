@@ -2,12 +2,10 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import ParticleWaveCanvas from "./ParticleWave"
 import { useNavigation, Button } from "../platform"
-// @ts-ignore
 import styles from "./Programme.module.scss"
 import Img from "../Image"
 import clsx from "clsx"
 import { useAuth } from "../context/providers/AuthProvider"
-import { useHasHydrated } from "../hooks"
 
 export default function Programme() {
   const { searchParams, addParams, back, removeParams } = useNavigation()
@@ -18,8 +16,6 @@ export default function Programme() {
   const setEntered = (value: boolean) => {
     setEnteredInternal(value)
   }
-
-  const hasHydrated = useHasHydrated()
 
   useEffect(() => {
     const handlePopState = () => {
@@ -39,7 +35,7 @@ export default function Programme() {
     back()
   }
 
-  if (!isProgramme || !hasHydrated) {
+  if (!isProgramme) {
     return null
   }
 

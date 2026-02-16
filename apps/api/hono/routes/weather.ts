@@ -30,7 +30,7 @@ export const weather = new Hono()
 // GET /weather - Get weather for user's location
 weather.get("/", async (c) => {
   const member = await getMember(c, { full: true, skipCache: true })
-  const guest = await getGuest(c, { skipCache: true })
+  const guest = await getGuest(c, { skipCache: true }, true)
 
   const redis =
     isDevelopment || isE2E

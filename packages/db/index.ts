@@ -22,7 +22,6 @@ import {
   memories,
   analyticsSites,
   tribeReactions,
-  codebaseQueries,
   messageEmbeddings,
   messages,
   tribes,
@@ -143,14 +142,13 @@ export {
   storeTimeSlots,
   slotAuctions,
   codeEmbeddings,
-  codebaseQueries,
 }
 export { type modelName }
 export type {
   appCampaign,
-  newAppCampaign,
+  NewappCampaign,
   autonomousBid,
-  newAutonomousBid,
+  NewautonomousBid,
   slotRental,
   newSlotRental,
   storeTimeSlot,
@@ -1433,7 +1431,6 @@ export const getMessages = async ({
   hasAttachments,
   isPear,
   isAsc,
-  agentMessage,
   ...rest
 }: {
   likedBy?: string
@@ -1451,7 +1448,6 @@ export const getMessages = async ({
   createdAfter?: Date
   isAsc?: boolean
   isPear?: boolean
-  agentMessage?: boolean
 } = {}) => {
   const pageSize = rest.pageSize || 100
 
@@ -1463,9 +1459,7 @@ export const getMessages = async ({
       ? eq(messages.agentId, agentId)
       : agentId === null
         ? isNull(messages.agentId)
-        : agentMessage
-          ? isNotNull(messages.agentId)
-          : undefined,
+        : undefined,
     readOn
       ? sql`DATE_TRUNC('day', ${messages.readOn}) = DATE_TRUNC('day', ${sql.raw(`'${readOn.toISOString()}'`)})`
       : undefined,
@@ -2405,8 +2399,6 @@ export const getThread = async ({
   appId,
   taskId,
   isMolt,
-  isTribe,
-  tribePostId,
 }: {
   id?: string
   userId?: string
@@ -2414,9 +2406,7 @@ export const getThread = async ({
   isMainThread?: boolean
   appId?: string
   taskId?: string
-  tribePostId?: string
   isMolt?: boolean
-  isTribe?: boolean
 }) => {
   const [result] = await db
     .select()
@@ -2430,10 +2420,6 @@ export const getThread = async ({
         guestId ? eq(threads.guestId, guestId) : undefined,
         taskId ? eq(threads.taskId, taskId) : undefined,
         isMolt !== undefined ? eq(threads.isMolt, isMolt) : undefined,
-        tribePostId !== undefined
-          ? eq(threads.tribePostId, tribePostId)
-          : undefined,
-        isTribe !== undefined ? eq(threads.isTribe, isTribe) : undefined,
       ),
     )
     .leftJoin(apps, eq(threads.appId, apps.id))
@@ -3356,31 +3342,9 @@ export async function deleteInvitation({ id }: { id: string }) {
 }
 
 export async function createCharacterTag(characterTag: newCharacterProfile) {
-  const thread = characterTag.threadId
-    ? await getThread({
-        id: characterTag.threadId,
-      })
-    : null
-
-  const app = characterTag.appId
-    ? await getPureApp({
-        id: characterTag.appId,
-      })
-    : null
-
   const [inserted] = await db
     .insert(characterProfiles)
-    .values({
-      ...characterTag,
-      isAppOwner: !!(
-        app &&
-        thread &&
-        isOwner(app, {
-          userId: thread.userId,
-          guestId: thread.guestId,
-        })
-      ),
-    })
+    .values(characterTag)
     .returning()
 
   return inserted
@@ -3993,9 +3957,7 @@ export async function createCalendarEvent(calendarEvent: newCalendarEvent) {
   return inserted
 }
 
-export async function updateCalendarEvent(
-  calendarEvent: Partial<calendarEvent> & { id: string },
-) {
+export async function updateCalendarEvent(calendarEvent: calendarEvent) {
   const [updated] = await db
     .update(calendarEvents)
     .set(calendarEvent)
@@ -5125,15 +5087,14 @@ export const getApp = async ({
       ? await getScheduledJobs({ appId: storeData.app.id, userId })
       : []
 
-  const appCharacterProfiles =
-    (await getCharacterProfiles({
-      appId: app.app.id,
-      threadId,
-    })) ??
+  const appCharacterProfiles = ((await getCharacterProfiles({
+    appId: app.app.id,
+    threadId,
+  })) ??
     (await getCharacterProfiles({
       appId: app.app.id,
       isAppOwner: true,
-    }))
+    }))) as unknown as characterProfile[]
 
   const requestedAppSchedule =
     userId && isOwner(app.app, { userId, guestId })
@@ -5159,6 +5120,8 @@ export const getApp = async ({
             return toSafeApp({
               app: {
                 ...app,
+                characterProfiles:
+                  characterProfiles as unknown as characterProfile[],
               },
               userId,
               guestId,
@@ -5182,7 +5145,7 @@ export const getApp = async ({
           app: { ...app.app, characterProfiles: appCharacterProfiles },
           userId,
           guestId,
-        }) as unknown as app)
+        }) as app)
       : { ...app.app, characterProfiles: appCharacterProfiles }),
     extends: await getAppExtends({
       appId: app.app.id,
@@ -5325,7 +5288,7 @@ const toSafeCharacterProfile = ({
         updatedOn: characterProfile.updatedOn,
         embedding: null,
         metadata: null,
-      } as Partial<characterProfile>)
+      } as characterProfile)
     : undefined
 }
 
@@ -7668,7 +7631,7 @@ export const getTribePosts = async ({
     // Fetch engagement data for all posts in parallel
     const postsWithEngagement = await Promise.all(
       result.map(async (row) => {
-        const [likes, comments, reactions] = await Promise.all([
+        const [likes, comments, reactions, profiles] = await Promise.all([
           // Get likes
           db
             .select({
@@ -7686,10 +7649,12 @@ export const getTribePosts = async ({
           db
             .select({
               comment: tribeComments,
-              app: apps,
+              user: users,
+              guest: guests,
             })
             .from(tribeComments)
-            .innerJoin(apps, eq(tribeComments.appId, apps.id))
+            .leftJoin(users, eq(tribeComments.userId, users.id))
+            .leftJoin(guests, eq(tribeComments.guestId, guests.id))
             .where(eq(tribeComments.postId, row.post.id))
             .orderBy(desc(tribeComments.createdOn))
             .limit(100),
@@ -7698,12 +7663,32 @@ export const getTribePosts = async ({
           db
             .select({
               reaction: tribeReactions,
-              app: apps,
+              user: users,
+              guest: guests,
             })
             .from(tribeReactions)
-            .innerJoin(apps, eq(tribeReactions.appId, apps.id))
+            .leftJoin(users, eq(tribeReactions.userId, users.id))
+            .leftJoin(guests, eq(tribeReactions.guestId, guests.id))
             .where(eq(tribeReactions.postId, row.post.id))
             .limit(100),
+
+          // Get character profiles (isAppOwner true, limit 5)
+          row.app?.id
+            ? db
+                .select({
+                  profile: characterProfiles,
+                  agent: aiAgents,
+                })
+                .from(characterProfiles)
+                .leftJoin(aiAgents, eq(characterProfiles.agentId, aiAgents.id))
+                .where(
+                  and(
+                    eq(characterProfiles.appId, row.app.id),
+                    eq(characterProfiles.isAppOwner, true),
+                  ),
+                )
+                .limit(5)
+            : Promise.resolve([]),
         ])
 
         const [thread] = row.post.tribeId
@@ -7713,18 +7698,6 @@ export const getTribePosts = async ({
               .where(eq(threads.tribeId, row.post.tribeId))
               .limit(1)
           : [undefined]
-
-        // Fetch character profiles for the post's app
-        const characterProfiles = row.app?.id
-          ? ((await getCharacterProfiles({
-              appId: row.app.id,
-              threadId: thread?.id,
-            })) ??
-            (await getCharacterProfiles({
-              appId: row.app.id,
-              isAppOwner: true,
-            })))
-          : null
 
         return {
           id: row.post.id,
@@ -7736,48 +7709,41 @@ export const getTribePosts = async ({
           sharesCount: row.post.sharesCount,
           createdOn: row.post.createdOn,
           updatedOn: row.post.updatedOn,
-          app: row.app
-            ? await (async () => {
-                const appId = row.app?.id!
+          app:
+            row.app && row.store
+              ? await (async () => {
+                  const appId = row.app!.id
+                  // Check cache first
+                  if (appCache.has(appId)) {
+                    const cachedApp = appCache.get(appId)
+                    return toSafeApp({
+                      app: cachedApp,
+                      userId,
+                      guestId,
+                    })
+                  }
 
-                if (appCache.has(appId)) {
-                  const cachedApp = appCache.get(appId)
+                  // Fetch and cache
+                  const appData = await getApp({
+                    id: appId,
+                    userId,
+                    guestId,
+                    threadId: thread?.id,
+                  })
+
+                  if (appData) {
+                    appCache.set(appId, appData)
+                  }
+
                   return toSafeApp({
-                    app: cachedApp,
+                    app: appData,
                     userId,
                     guestId,
                   })
-                }
-
-                const app = row.app?.id
-                  ? await getApp({
-                      id: row.app?.id,
-                      depth: 1,
-                    })
-                  : undefined
-
-                if (!app) return null
-
-                const characterProfiles =
-                  (await getCharacterProfiles({
-                    appId: app.id,
-                    threadId: thread?.id,
-                  })) ??
-                  (await getCharacterProfiles({
-                    appId: app.id,
-                    isAppOwner: true,
-                  }))
-
-                return toSafeApp({
-                  app: {
-                    ...app,
-                    characterProfiles: characterProfiles,
-                  } as unknown as app,
-                  userId,
-                  guestId,
-                })
-              })()
-            : null,
+                })()
+              : row.app
+                ? toSafeApp({ app: row.app, userId, guestId })
+                : null,
           user: row.user
             ? toSafeUser({
                 user: row.user,
@@ -7809,11 +7775,14 @@ export const getTribePosts = async ({
             likesCount: c.comment.likesCount,
             createdOn: c.comment.createdOn,
             updatedOn: c.comment.updatedOn,
-            app: c.app
-              ? toSafeApp({
-                  app: c.app,
-                  userId,
-                  guestId,
+            user: c.user
+              ? toSafeUser({
+                  user: c.user,
+                })
+              : null,
+            guest: c.guest
+              ? toSafeGuest({
+                  guest: c.guest,
                 })
               : null,
           })),
@@ -7821,14 +7790,21 @@ export const getTribePosts = async ({
             id: r.reaction.id,
             emoji: r.reaction.emoji,
             createdOn: r.reaction.createdOn,
-            app: r.app
-              ? toSafeApp({
-                  app: r.app,
-                  userId,
-                  guestId,
+            user: r.user
+              ? toSafeUser({
+                  user: r.user,
+                })
+              : null,
+            guest: r.guest
+              ? toSafeGuest({
+                  guest: r.guest,
                 })
               : null,
           })),
+          characterProfiles: profiles.map((p) => {
+            console.log(`   ↳ Profile: ${p.profile.name} (${p.profile.id})`)
+            return p
+          }),
         }
       }),
     )
@@ -8113,45 +8089,124 @@ export async function getOrCreateTribe(
     where: eq(tribes.slug, normalizedSlug),
   })
 
-  if (!existingTribe) {
-    // ❌ AUTO-CREATE DISABLED - Tribes must be manually created in DB
-    console.error(
-      `❌ Tribe not found: t/${normalizedSlug} - Auto-creation disabled. Please create tribe manually in DB.`,
-    )
-    throw new Error(
-      `Tribe "t/${normalizedSlug}" does not exist. Auto-creation is disabled - tribes must be manually created.`,
-    )
+  if (existingTribe) {
+    // Auto-join using transaction with conflict handling
+    await db.transaction(async (tx) => {
+      const insertResult = await tx
+        .insert(tribeMemberships)
+        .values({
+          tribeId: existingTribe.id,
+          userId: userId || null,
+          guestId: guestId || null,
+          role: "member",
+        })
+        .onConflictDoNothing({
+          target: userId
+            ? [tribeMemberships.tribeId, tribeMemberships.userId]
+            : [tribeMemberships.tribeId, tribeMemberships.guestId],
+        })
+        .returning({ id: tribeMemberships.id })
+
+      // Only increment count if a new row was inserted
+      if (insertResult.length > 0) {
+        await tx
+          .update(tribes)
+          .set({
+            membersCount: existingTribe.membersCount + 1,
+          })
+          .where(eq(tribes.id, existingTribe.id))
+      }
+    })
+
+    return existingTribe.id
   }
 
-  // Auto-join existing tribe using transaction with conflict handling
-  await db.transaction(async (tx) => {
-    const insertResult = await tx
-      .insert(tribeMemberships)
-      .values({
-        tribeId: existingTribe.id,
-        userId: userId || null,
-        guestId: guestId || null,
-        role: "member",
-      })
-      .onConflictDoNothing({
-        target: userId
-          ? [tribeMemberships.tribeId, tribeMemberships.userId]
-          : [tribeMemberships.tribeId, tribeMemberships.guestId],
-      })
-      .returning({ id: tribeMemberships.id })
+  // Auto-create new tribe
+  const defaultIcons: Record<string, string> = {
+    general: "💬",
+    introductions: "👋",
+    announcements: "📢",
+    gaming: "🎮",
+    tech: "💻",
+    music: "🎵",
+    art: "🎨",
+    food: "🍕",
+    sports: "⚽",
+    movies: "🎬",
+    books: "📚",
+    travel: "✈️",
+    fitness: "💪",
+    coding: "👨💻",
+    memes: "😂",
+    news: "📰",
+    science: "🔬",
+    photography: "📷",
+    fashion: "👗",
+    pets: "🐶",
+  }
 
-    // Only increment count if a new row was inserted
-    if (insertResult.length > 0) {
-      await tx
-        .update(tribes)
-        .set({
-          membersCount: existingTribe.membersCount + 1,
-        })
-        .where(eq(tribes.id, existingTribe.id))
+  const icon = defaultIcons[normalizedSlug] || "🦞"
+  const name =
+    normalizedSlug
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ") || "General"
+
+  // Try to insert new tribe with conflict handling
+  const insertResult = await db
+    .insert(tribes)
+    .values({
+      slug: normalizedSlug,
+      name,
+      icon,
+      description: `Welcome to t/${normalizedSlug}!`,
+      visibility: "public",
+      membersCount: 1, // Creator always joins
+    })
+    .onConflictDoNothing({ target: tribes.slug })
+    .returning()
+
+  // If insert failed due to conflict, query for existing tribe
+  let tribeId: string = ""
+  let isCreator = false
+  if (insertResult.length === 0) {
+    const existingTribe = await db.query.tribes.findFirst({
+      where: eq(tribes.slug, normalizedSlug),
+    })
+    if (!existingTribe) {
+      throw new Error(`Failed to create or find tribe: ${normalizedSlug}`)
     }
-  })
+    tribeId = existingTribe.id
+    isCreator = false // Lost the race, join as member
+  } else if (insertResult[0]) {
+    tribeId = insertResult[0].id
+    isCreator = true // Won the race, become admin
+    console.log(`✨ Auto-created tribe: t/${normalizedSlug} (${icon} ${name})`)
+  }
 
-  return existingTribe.id
+  if (!tribeId) {
+    throw new Error("Something went wrong")
+  }
+  // Auto-join creator as first member (admin if creator, member if race loser)
+  await db
+    .insert(tribeMemberships)
+    .values({
+      tribeId,
+      userId: userId || null,
+      guestId: guestId || null,
+      role: isCreator ? "admin" : "member",
+    })
+    .onConflictDoNothing()
+
+  // If we joined an existing tribe (race loser), increment membersCount
+  if (!isCreator) {
+    await db
+      .update(tribes)
+      .set({ membersCount: sql`${tribes.membersCount} + 1` })
+      .where(eq(tribes.id, tribeId))
+  }
+
+  return tribeId
 }
 
 /**

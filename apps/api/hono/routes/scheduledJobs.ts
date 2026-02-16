@@ -1,10 +1,5 @@
 import { Hono } from "hono"
-import {
-  getScheduledJobs,
-  deleteScheduledJob,
-  getScheduledJob,
-  getApp,
-} from "@repo/db"
+import { getScheduledJobs, deleteScheduledJob, getScheduledJob } from "@repo/db"
 import { getMember, getGuest } from "../lib/auth"
 
 import { getApp as getAppDb } from "@repo/db"
@@ -243,93 +238,6 @@ scheduledJobs.post("/", async (c) => {
       { error: err.message || "Failed to create/update Tribe schedule" },
       500,
     )
-  }
-})
-
-// POST /scheduledJobs/:id/revert - Revert to previous schedule
-scheduledJobs.post("/:id/revert", async (c) => {
-  const jobId = c.req.param("id")
-
-  if (!jobId || !validate(jobId)) {
-    return c.json({ error: "Invalid job ID" }, { status: 400 })
-  }
-
-  const member = await getMember(c, { skipCache: true })
-
-  if (!member) {
-    return c.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  // Get the scheduled job
-  const job = await getScheduledJob({
-    id: jobId,
-    userId: member.id,
-    scheduleTypes: ["tribe", "molt"],
-  })
-
-  if (!job) {
-    return c.json({ error: "Job not found or unauthorized" }, { status: 404 })
-  }
-
-  const app = job?.appId
-    ? await getApp({
-        id: job.appId,
-      })
-    : undefined
-
-  if (!app) {
-    return c.json({ error: "App not found or unauthorized" }, { status: 404 })
-  }
-
-  // Verify ownership
-  if (job.userId !== member.id) {
-    return c.json({ error: "Forbidden" }, { status: 403 })
-  }
-
-  // Check if previous schedule exists in metadata
-  const previousSchedule = job.metadata?.previousSchedule
-  if (!previousSchedule) {
-    return c.json(
-      { error: "No previous schedule found to revert to" },
-      { status: 404 },
-    )
-  }
-
-  try {
-    // Restore complete previous schedule configuration
-    const result = await createOrUpdateTribeSchedule({
-      userId: member.id,
-      appId: app.id,
-      jobType: job.scheduleType as "tribe" | "molt",
-      schedule: previousSchedule.scheduledTimes,
-      frequency: previousSchedule.frequency,
-      startDate: new Date(previousSchedule.startDate),
-      endDate: previousSchedule.endDate
-        ? new Date(previousSchedule.endDate)
-        : undefined,
-      timezone: previousSchedule.timezone,
-      contentTemplate: previousSchedule.contentTemplate,
-      contentRules: previousSchedule.contentRules,
-      totalCredits: previousSchedule.totalEstimatedCredits,
-      totalPrice: previousSchedule.totalPrice,
-      sessionId: previousSchedule.stripePaymentIntentId,
-      status: previousSchedule.isPaid ? "active" : "pending_payment",
-      skipCooldownCheck: true, // Allow immediate revert
-    })
-
-    if (!result.success) {
-      return c.json({ error: result.error }, 500)
-    }
-
-    return c.json({
-      success: true,
-      message: "Schedule reverted to previous version",
-      scheduleId: result.scheduleId,
-    })
-  } catch (error) {
-    captureException(error)
-    console.error("Revert schedule error:", error)
-    return c.json({ error: "Failed to revert schedule" }, 500)
   }
 })
 

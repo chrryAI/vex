@@ -1,7 +1,6 @@
 import { parse } from "@babel/parser"
 import traverse from "@babel/traverse"
 import * as t from "@babel/types"
-import type { NodePath } from "@babel/traverse"
 import fs from "fs"
 
 export interface ASTNode {
@@ -52,7 +51,7 @@ export async function parseFile(filepath: string): Promise<ASTNode[]> {
 
     traverse(ast, {
       // Parse function declarations
-      FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
+      FunctionDeclaration(path) {
         const node = path.node
         const functionName = node.id?.name || "anonymous"
 
@@ -64,7 +63,7 @@ export async function parseFile(filepath: string): Promise<ASTNode[]> {
           content: code.slice(node.start!, node.end!),
           startLine: node.loc?.start.line || 0,
           endLine: node.loc?.end.line || 0,
-          params: node.params.map((p: t.Node) =>
+          params: node.params.map((p) =>
             t.isIdentifier(p) ? p.name : "unknown",
           ),
           calls: [],
@@ -76,7 +75,7 @@ export async function parseFile(filepath: string): Promise<ASTNode[]> {
       },
 
       // Parse arrow functions assigned to variables
-      VariableDeclarator(path: NodePath<t.VariableDeclarator>) {
+      VariableDeclarator(path) {
         if (
           t.isArrowFunctionExpression(path.node.init) &&
           t.isIdentifier(path.node.id)
@@ -92,7 +91,7 @@ export async function parseFile(filepath: string): Promise<ASTNode[]> {
             content: code.slice(node.start!, node.end!),
             startLine: node.loc?.start.line || 0,
             endLine: node.loc?.end.line || 0,
-            params: node.params.map((p: t.Node) =>
+            params: node.params.map((p) =>
               t.isIdentifier(p) ? p.name : "unknown",
             ),
             calls: [],
@@ -105,7 +104,7 @@ export async function parseFile(filepath: string): Promise<ASTNode[]> {
       },
 
       // Parse class declarations
-      ClassDeclaration(path: NodePath<t.ClassDeclaration>) {
+      ClassDeclaration(path) {
         const node = path.node
         const className = node.id?.name || "anonymous"
 
@@ -128,9 +127,9 @@ export async function parseFile(filepath: string): Promise<ASTNode[]> {
       },
 
       // Parse imports
-      ImportDeclaration(path: NodePath<t.ImportDeclaration>) {
+      ImportDeclaration(path) {
         const source = path.node.source.value
-        const specifiers = path.node.specifiers.map((s: t.Node) =>
+        const specifiers = path.node.specifiers.map((s) =>
           t.isImportDefaultSpecifier(s)
             ? s.local.name
             : t.isImportSpecifier(s)
@@ -153,7 +152,7 @@ export async function parseFile(filepath: string): Promise<ASTNode[]> {
       },
 
       // Parse exports
-      ExportNamedDeclaration(path: NodePath<t.ExportNamedDeclaration>) {
+      ExportNamedDeclaration(path) {
         const node = path.node
         const exportNames: string[] = []
 
@@ -161,13 +160,11 @@ export async function parseFile(filepath: string): Promise<ASTNode[]> {
           if (t.isFunctionDeclaration(node.declaration)) {
             exportNames.push(node.declaration.id?.name || "anonymous")
           } else if (t.isVariableDeclaration(node.declaration)) {
-            node.declaration.declarations.forEach(
-              (decl: t.VariableDeclarator) => {
-                if (t.isIdentifier(decl.id)) {
-                  exportNames.push(decl.id.name)
-                }
-              },
-            )
+            node.declaration.declarations.forEach((decl) => {
+              if (t.isIdentifier(decl.id)) {
+                exportNames.push(decl.id.name)
+              }
+            })
           }
         }
 
@@ -186,7 +183,7 @@ export async function parseFile(filepath: string): Promise<ASTNode[]> {
       },
 
       // Track function calls
-      CallExpression(path: NodePath<t.CallExpression>) {
+      CallExpression(path) {
         if (t.isIdentifier(path.node.callee)) {
           functionCalls.push(path.node.callee.name)
         } else if (t.isMemberExpression(path.node.callee)) {

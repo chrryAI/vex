@@ -184,7 +184,7 @@ export async function updateSlotAnalytics() {
           .set({
             averageTraffic: avgTraffic,
             averageConversions: avgConversions,
-            totalRentals: (slot.totalRentals || 0) + recentRentals.length,
+            totalRentals: slot.totalRentals + recentRentals.length,
             updatedOn: new Date(),
           })
           .where(eq(storeTimeSlots.id, slot.id))

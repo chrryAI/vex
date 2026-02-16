@@ -11,7 +11,6 @@ import {
   redis as dbRedis,
   getApp,
   and,
-  getThread,
   sql,
 } from "@repo/db"
 import {
@@ -253,7 +252,7 @@ app.get("/p", async (c) => {
         }
       : dbRedis
 
-  const skipCache = true
+  const skipCache = c.req.query("skipCache") === "true"
 
   try {
     // Create cache key based on all query parameters
@@ -290,7 +289,7 @@ app.get("/p", async (c) => {
       )
 
       // Store in Redis cache with 5 minute TTL
-      if (!isDevelopment && !isE2E && !skipCache) {
+      if (!isDevelopment && !isE2E) {
         await redis.setex(cacheKey, 300, JSON.stringify(result))
         console.log(`💾 Cached tribe posts: ${cacheKey}`)
       }
@@ -359,7 +358,7 @@ app.get("/p/:id", async (c) => {
         }
       : dbRedis
 
-  const skipCache = true
+  const skipCache = c.req.query("skipCache") === "true"
 
   try {
     // Create cache key for single post
@@ -439,10 +438,6 @@ app.get("/p/:id", async (c) => {
       }),
     )
 
-    const thread = await getThread({
-      tribePostId: post.id,
-    })
-
     const responseData = {
       success: true,
       post: {
@@ -450,17 +445,13 @@ app.get("/p/:id", async (c) => {
         comments: await Promise.all(
           comments.map(async (c) => ({
             ...c.comment,
-            app: c.app
-              ? await getApp({ id: c.app.id, threadId: thread?.id })
-              : null,
+            app: c.app ? await getApp({ id: c.app.id }) : null,
           })),
         ),
         reactions: await Promise.all(
           reactions.map(async (c) => ({
             ...c,
-            app: c.app
-              ? await getApp({ id: c.app.id, threadId: thread?.id })
-              : null,
+            app: c.app ? await getApp({ id: c.app.id }) : null,
           })),
         ),
         likes,

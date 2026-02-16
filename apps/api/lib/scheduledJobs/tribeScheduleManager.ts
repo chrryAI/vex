@@ -7,8 +7,6 @@ import {
   modelName,
   isDevelopment,
   getUser,
-  createCalendarEvent,
-  updateCalendarEvent,
 } from "@repo/db"
 import {
   checkMoltbookHealth,
@@ -268,42 +266,9 @@ export async function createOrUpdateTribeSchedule(params: {
     let action: "CREATE" | "UPDATE"
 
     if (existingSchedule) {
-      // Save previous schedule to metadata ONLY if it's active (not pending)
-      const shouldSavePrevious =
-        scheduleData.status === "pending_payment" &&
-        existingSchedule.status === "active"
-
-      const previousSchedule = shouldSavePrevious
-        ? {
-            scheduledTimes: existingSchedule.scheduledTimes || [],
-            frequency: existingSchedule.frequency,
-            startDate: existingSchedule.startDate?.toISOString() || "",
-            endDate: existingSchedule.endDate?.toISOString(),
-            timezone: existingSchedule.timezone || "UTC",
-            aiModel: existingSchedule.aiModel,
-            modelConfig: existingSchedule.modelConfig || undefined,
-            contentTemplate: existingSchedule.contentTemplate || undefined,
-            contentRules: existingSchedule.contentRules || undefined,
-            estimatedCreditsPerRun:
-              existingSchedule.estimatedCreditsPerRun || 0,
-            totalEstimatedCredits: existingSchedule.totalEstimatedCredits || 0,
-            totalPrice: existingSchedule.totalPrice || 0,
-            isPaid: existingSchedule.isPaid || false,
-            stripePaymentIntentId:
-              existingSchedule.stripePaymentIntentId || undefined,
-            updatedAt: new Date().toISOString(),
-          }
-        : undefined
-
       scheduledJob = await updateScheduledJob({
         id: existingSchedule.id,
         ...scheduleData,
-        metadata: shouldSavePrevious
-          ? {
-              ...existingSchedule.metadata,
-              previousSchedule,
-            }
-          : existingSchedule.metadata,
         nextRunAt: isDevelopment || user?.role === "admin" ? null : undefined,
       })
       action = "UPDATE"
@@ -317,26 +282,7 @@ export async function createOrUpdateTribeSchedule(params: {
         priceDifference,
         scheduleData: scheduleData.status,
         p: params.status,
-        previousScheduleSaved: shouldSavePrevious,
       })
-
-      // Update calendar event if dates changed
-      if (scheduledJob?.calendarEventId && nextRunAt) {
-        try {
-          await updateCalendarEvent({
-            id: scheduledJob.calendarEventId,
-            startTime: nextRunAt,
-            endTime: new Date(nextRunAt.getTime() + 60 * 60 * 1000), // 1 hour duration
-            title: `${jobType === "tribe" ? "Tribe" : "Molt"} Post`,
-            description: `Scheduled ${jobType} post for ${app.name}`,
-          })
-          console.log(
-            `📅 Calendar event updated for schedule ${scheduledJob.id}`,
-          )
-        } catch (error) {
-          console.error("⚠️ Failed to update calendar event:", error)
-        }
-      }
     } else {
       scheduledJob = await createScheduledJob({
         ...scheduleData,
@@ -353,34 +299,6 @@ export async function createOrUpdateTribeSchedule(params: {
         scheduleType: jobType,
         action,
       })
-
-      // Create calendar event for new schedule
-      if (scheduledJob && nextRunAt) {
-        try {
-          const calendarEvent = await createCalendarEvent({
-            userId,
-            title: `${jobType === "tribe" ? "Tribe" : "Molt"} Post`,
-            description: `Scheduled ${jobType} post for ${app.name}`,
-            startTime: nextRunAt,
-            endTime: new Date(nextRunAt.getTime() + 60 * 60 * 1000), // 1 hour duration
-            isAllDay: false,
-            timezone,
-          })
-
-          // Update scheduled job with calendar event ID
-          if (calendarEvent) {
-            await updateScheduledJob({
-              id: scheduledJob.id,
-              calendarEventId: calendarEvent.id,
-            })
-            console.log(
-              `📅 Calendar event created for schedule ${scheduledJob.id}`,
-            )
-          }
-        } catch (error) {
-          console.error("⚠️ Failed to create calendar event:", error)
-        }
-      }
     }
 
     return {

@@ -399,37 +399,10 @@ export async function extractAndStoreKnowledge(
       temperature: 0,
     })
 
-    // Robust JSON extraction - handle text before/after JSON
-    let jsonStr = text.trim()
+    const jsonStr = text.replace(/```json|```/g, "").trim()
+    const data = JSON.parse(jsonStr)
 
-    // Remove markdown code blocks
-    jsonStr = jsonStr.replace(/```json\s*/g, "").replace(/```\s*/g, "")
-
-    // Try to extract JSON object if wrapped in text
-    const jsonMatch = jsonStr.match(/\{[\s\S]*\}/)
-    if (jsonMatch) {
-      jsonStr = jsonMatch[0]
-    }
-
-    let data
-    try {
-      data = JSON.parse(jsonStr)
-    } catch (parseError) {
-      console.error("❌ Failed to parse graph extraction JSON:", {
-        error: parseError,
-        rawText: text.substring(0, 200),
-        extractedJson: jsonStr.substring(0, 200),
-      })
-      return
-    }
-
-    if (!data.triplets || !Array.isArray(data.triplets)) {
-      console.warn("⚠️ Graph extraction returned invalid structure:", {
-        hasTriplets: !!data.triplets,
-        isArray: Array.isArray(data.triplets),
-      })
-      return
-    }
+    if (!data.triplets || !Array.isArray(data.triplets)) return
 
     // 2. Store in FalkorDB
     // Ensure indices exist before writing

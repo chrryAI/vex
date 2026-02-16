@@ -2,7 +2,6 @@
 import React, { useEffect, useState, memo } from "react"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism"
-// @ts-ignore
 import styles from "./MarkdownContent.module.scss"
 import toast from "react-hot-toast"
 import clx from "clsx"

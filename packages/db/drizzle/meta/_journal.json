@@ -1394,41 +1394,6 @@
       "when": 1771058372506,
       "tag": "0198_acoustic_liz_osborn",
       "breakpoints": true
-    },
-    {
-      "idx": 199,
-      "version": "7",
-      "when": 1771169696779,
-      "tag": "0199_mute_callisto",
-      "breakpoints": true
-    },
-    {
-      "idx": 200,
-      "version": "7",
-      "when": 1771198420875,
-      "tag": "0200_wealthy_old_lace",
-      "breakpoints": true
-    },
-    {
-      "idx": 201,
-      "version": "7",
-      "when": 1771266818467,
-      "tag": "0201_robust_dorian_gray",
-      "breakpoints": true
-    },
-    {
-      "idx": 202,
-      "version": "7",
-      "when": 1771272196253,
-      "tag": "0202_remarkable_nehzno",
-      "breakpoints": true
-    },
-    {
-      "idx": 203,
-      "version": "7",
-      "when": 1771272275645,
-      "tag": "0203_famous_luke_cage",
-      "breakpoints": true
     }
   ]
 }

@@ -19,8 +19,6 @@ declare global {
           }
         }
         runtime: {
-          id?: string
-          getURL?: (path: string) => string
           sendMessage: (message: any) => Promise<any>
           onMessage: {
             addListener: (
@@ -31,12 +29,6 @@ declare global {
             ) => void
           }
         }
-        cookies?: {
-          get: (details: { url: string; name: string }) => Promise<any>
-          getAll: (details: { url: string }) => Promise<any[]>
-          remove: (details: { url: string; name: string }) => Promise<any>
-        }
-        identity?: any
         notifications: {
           onClicked: {
             addListener: (callback: (notificationId: string) => void) => void

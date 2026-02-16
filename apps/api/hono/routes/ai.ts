@@ -63,10 +63,9 @@ import {
   inArray,
   apps as appsSchema,
   getOrCreateTribe,
-  getTribes,
 } from "@repo/db"
 
-import { tribePosts, tribes as tribesSchema } from "@repo/db/src/schema"
+import { tribePosts, tribes } from "@repo/db/src/schema"
 
 import {
   processFileForRAG,
@@ -111,7 +110,6 @@ import slugify from "slug"
 import {
   notifyOwnerAndCollaborations as notifyOwnerAndCollaborationsInternal,
   type notifyOwnerAndCollaborationsPayload,
-  broadcast,
 } from "../../lib/notify"
 import { checkRateLimit } from "../../lib/rateLimiting"
 import { captureException } from "@sentry/node"
@@ -1321,39 +1319,19 @@ app.post("/", async (c) => {
   const notifyOwnerAndCollaborations = (
     x: Omit<notifyOwnerAndCollaborationsPayload, "c">,
   ) => {
-    const message = x?.payload?.data?.message
-    const realMessage = x?.payload?.data?.message?.message
-
-    const payload = {
+    notifyOwnerAndCollaborationsInternal({
       ...x,
       payload: {
         ...x.payload,
         data: {
           ...x.payload.data,
-          isMolt: canPostToMolt,
-          isTribe: canPostToTribe,
-          message: !message
-            ? undefined
-            : shouldStream
-              ? message
-              : {
-                  message: {
-                    threadId: realMessage.threadId,
-                    appId: realMessage.appId,
-                    createdOn: realMessage.createdOn,
-                    tribePostId: realMessage.tribePostId,
-                  },
-                },
           deviceId,
           clientId,
           streamId,
         },
       },
       c,
-    }
-    shouldStream
-      ? notifyOwnerAndCollaborationsInternal(payload)
-      : (canPostToMolt || canPostToTribe) && broadcast(payload)
+    })
   }
 
   async function enhancedStreamChunk({
@@ -2219,18 +2197,6 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
         },
       },
     })
-
-  const tribes = await getTribes({
-    page: 15,
-  })
-
-  const tribesList = tribes?.tribes
-    ?.map(
-      (t) =>
-        `- ${t.slug}: ${t.name}${t.description ? ` - ${t.description}` : ""}`,
-    )
-    .join("\n")
-
   const tribeContext = canPostToTribe
     ? `
   ## 🪢 TRIBE SYSTEM INSTRUCTIONS (PRIORITY)
@@ -2252,14 +2218,11 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   6. **LANGUAGE**: Use ${language} if the user doesn't request otherwise.
   7. **NO TOOL CALLS**: Do NOT attempt to use any tools (calendar, images, etc). Only generate text responses.
 
-  **AVAILABLE TRIBES:**
-${tribesList || "  - general: General discussion"}
-
   **REQUIRED JSON FORMAT:**
   {
     "tribeTitle": "Your catchy title here (max 100 chars)",
     "tribeContent": "Your ${tribeContentGuidance} post content here",
-    "tribeName": "Choose the most relevant tribe slug from the list above",
+    "tribeName": "general",
     "seoKeywords": ["keyword1", "keyword2", "keyword3"]
   }
 
@@ -2272,8 +2235,7 @@ ${tribesList || "  - general: General discussion"}
   - Return ONLY the JSON object, nothing else
   - Do not wrap in markdown code blocks
   - All three fields (tribeTitle, tribeContent, tribeName) are required
-  - Choose the most appropriate tribeName from the available tribes list based on your post content
-  - Default to "general" if no specific tribe fits
+  - tribeName should be "general" unless you have a specific tribe in mind
   `
     : ""
 
@@ -2383,85 +2345,92 @@ ${userInstructions?.map((i) => `${i.emoji} **${i.title}**: ${i.content}`).join("
   let moodContext = ""
 
   if (characterProfilesEnabled && agent) {
-    // Hybrid approach: Fetch profiles in priority order (parallel for performance)
-    const [threadProfile, pinnedProfiles, appCharacterProfiles] =
-      await Promise.all([
-        // 1. PRIORITY 1: Thread-specific profile (highest priority - active character in this conversation)
-        tracker.track("get_thread_character_profile", () =>
-          thread?.id
-            ? getCharacterProfiles({
-                threadId: thread.id,
-                limit: 1,
-              })
-            : Promise.resolve([]),
-        ),
-        // 2. PRIORITY 2: Pinned profiles (user's favorites - general personality preferences)
-        tracker.track("get_pinned_character_profiles", () =>
-          getCharacterProfiles({
-            userId: member?.id,
-            guestId: guest?.id,
-            pinned: true,
-            limit: 3,
-          }),
-        ),
-        // 3. PRIORITY 3: App-specific profiles (domain expertise for Tribe interactions)
-        tracker.track("get_app_character_profiles", () =>
-          requestApp
-            ? getCharacterProfiles({
-                isAppOwner: true,
-                appId: requestApp.id,
-                limit: 2,
-              })
-            : Promise.resolve([]),
-        ),
-      ])
+    // Get ALL user character profiles (not just pinned)
+    const allCharacterProfiles = await tracker.track(
+      "get_character_profiles",
+      () =>
+        getCharacterProfiles({
+          userId: member?.id,
+          guestId: guest?.id,
+          limit: 50,
+        }),
+    )
 
-    // Helper function to format a profile
-    const formatProfile = (profile: any) => {
-      const traits = profile.traits as {
-        communication?: string[]
-        expertise?: string[]
-        behavior?: string[]
-        preferences?: string[]
-      }
-      return `### ${profile.name}
+    // Sort profiles: pinned first, then by creation date
+    const characterProfilesList = allCharacterProfiles.sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1
+      if (!a.pinned && b.pinned) return 1
+      return 0
+    })
+
+    // Get app character profiles (for app-to-app interactions)
+    const appCharacterProfiles = await tracker.track(
+      "get_app_character_profiles",
+      () =>
+        requestApp
+          ? getCharacterProfiles({
+              isAppOwner: true,
+              appId: requestApp.id,
+              limit: 20,
+            })
+          : Promise.resolve([]),
+    )
+
+    // Show all character profiles (pinned first)
+    if (characterProfilesList.length > 0) {
+      const profilesText = characterProfilesList
+        .map((profile) => {
+          const traits = profile.traits as {
+            communication?: string[]
+            expertise?: string[]
+            behavior?: string[]
+            preferences?: string[]
+          }
+
+          return `### ${profile.pinned ? "📌 " : ""}${profile.name}
 - **Personality**: ${profile.personality}
 - **Communication Style**: ${profile.conversationStyle || "Not specified"}
 - **Preferences**: ${traits.preferences?.join(", ") || "None"}
 - **Expertise**: ${traits.expertise?.join(", ") || "None"}
 - **Behavior**: ${traits.behavior?.join(", ") || "None"}`
-    }
+        })
+        .join("\n\n")
 
-    // Build character context with priority order
-    if (threadProfile.length > 0) {
       characterContext = `
 
-## 🎯 ACTIVE CHARACTER (This Thread):
-${formatProfile(threadProfile[0])}
+## 👤 USER CHARACTER PROFILES:
+${profilesText}
 
-**This is your active personality for this conversation. Stay consistent with this character.**
+Adapt your tone and approach to match the user's communication style and preferences across all their profiles.
 `
     }
 
-    if (pinnedProfiles.length > 0) {
-      const pinnedText = pinnedProfiles.map(formatProfile).join("\n\n")
-      characterContext += `
-
-## ⭐ PINNED CHARACTERS (Your Favorites):
-${pinnedText}
-
-These are your preferred personalities across different contexts.
-`
-    }
-
+    // Show app character profiles
     if (appCharacterProfiles.length > 0) {
-      const appText = appCharacterProfiles.map(formatProfile).join("\n\n")
+      const appProfilesText = appCharacterProfiles
+        .map((profile) => {
+          const traits = profile.traits as {
+            communication?: string[]
+            expertise?: string[]
+            behavior?: string[]
+            preferences?: string[]
+          }
+
+          return `### 🤖 ${profile.name}
+- **Personality**: ${profile.personality}
+- **Communication Style**: ${profile.conversationStyle || "Not specified"}
+- **Preferences**: ${traits.preferences?.join(", ") || "None"}
+- **Expertise**: ${traits.expertise?.join(", ") || "None"}
+- **Behavior**: ${traits.behavior?.join(", ") || "None"}`
+        })
+        .join("\n\n")
+
       characterContext += `
 
-## 🤖 APP CHARACTERS (Domain Expertise):
-${appText}
+## 🤖 APP CHARACTER PROFILES (for Tribe interactions):
+${appProfilesText}
 
-When interacting on Tribe, be aware of these app personalities with specialized knowledge.
+When interacting on Tribe, be aware of these app personalities. They represent different AI agents with unique characteristics.
 `
     }
 
@@ -3717,10 +3686,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
   const fingerprint = member?.fingerprint || guest?.fingerprint
 
   const isE2E =
-    member?.role !== "admin" &&
-    fingerprint &&
-    !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
-    isE2EInternal
+    fingerprint && !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
 
   const hourlyLimit =
     isDevelopment && !isE2E
@@ -3917,6 +3883,15 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
   let userContent: any = currentMessageContent
 
   if (files.length > 0) {
+    // Check file upload rate limits
+    // if (!member) {
+    //   console.log(`❌ No member found for file upload rate limiting`)
+    //   return c.json(
+    //     { error: "Authentication required for file uploads" },
+    //     { status: 401 },
+    //   )
+    // }
+
     const rateLimitCheck = await tracker.track("check_file_upload_limits", () =>
       checkFileUploadLimits({
         member,
@@ -6726,13 +6701,6 @@ Respond in JSON format:
                               guestId: undefined,
                             })
 
-                            // Use SEO keywords from AI's JSON response
-                            if (tribeSeoKeywords.length > 0) {
-                              console.log(
-                                `🔍 SEO keywords from AI: ${tribeSeoKeywords.join(", ")}`,
-                              )
-                            }
-
                             // Create post directly
                             const [post] = await db
                               .insert(tribePosts)
@@ -6743,21 +6711,17 @@ Respond in JSON format:
                                 content: tribeContent,
                                 visibility: "public",
                                 tribeId,
-                                seoKeywords:
-                                  tribeSeoKeywords.length > 0
-                                    ? tribeSeoKeywords
-                                    : undefined,
                               })
                               .returning()
 
                             if (post) {
                               // Increment tribe posts count
                               await db
-                                .update(tribesSchema)
+                                .update(tribes)
                                 .set({
-                                  postsCount: sql`${tribesSchema.postsCount} + 1`,
+                                  postsCount: sql`${tribes.postsCount} + 1`,
                                 })
-                                .where(eq(tribesSchema.id, tribeId))
+                                .where(eq(tribes.id, tribeId))
 
                               // Deduct credit (skip for admins)
                               if (member.role !== "admin") {
