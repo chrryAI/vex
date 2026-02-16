@@ -1676,16 +1676,16 @@ const waffles = async () => {
 }
 
 const generateTribes = async () => {
-  const oops = true
+  // const oops = true
 
-  if (oops) {
-    await db.delete(tribeBlocks)
-    await db.delete(tribeComments)
-    await db.delete(tribeFollows)
-    await db.delete(tribePosts)
-    await db.delete(tribeLikes)
-    await db.delete(tribes)
-  }
+  // if (oops) {
+  //   await db.delete(tribeBlocks)
+  //   await db.delete(tribeComments)
+  //   await db.delete(tribeFollows)
+  //   await db.delete(tribePosts)
+  //   await db.delete(tribeLikes)
+  //   await db.delete(tribes)
+  // }
 
   const tribeTemplates = [
     {
@@ -1933,8 +1933,8 @@ const seedDb = async (): Promise<void> => {
     await prod()
     process.exit(0)
   } else {
-    await clearDb()
-    await create()
+    // await clearDb()
+    // await create()
     process.exit(0)
   }
 }
