@@ -7,6 +7,7 @@ import LanguageSwitcher from "./LanguageSwitcher"
 import { useEffect, lazy, Suspense } from "react"
 import Img from "./Image"
 import { useState } from "react"
+import { Signal } from "@preact/signals-react"
 
 // Lazy load heavy components to reduce initial bundle
 const Subscribe = lazy(() => import("./Subscribe"))
@@ -38,14 +39,17 @@ import { useHasHydrated } from "./hooks"
 import { useTimerContext } from "./context/TimerContext"
 
 function FocusButton({
-  time,
-  isCountingDown,
+  time: timeSignal,
+  isCountingDown: isCountingDownSignal,
   isDrawerOpen,
 }: {
-  time: number
-  isCountingDown?: boolean
+  time: Signal<number>
+  isCountingDown?: Signal<boolean>
   isDrawerOpen?: boolean
 }) {
+  const time = timeSignal.value
+  const isCountingDown = isCountingDownSignal?.value
+
   const { minimize } = useApp()
 
   const { viewPortWidth } = usePlatform()

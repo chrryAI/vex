@@ -20,7 +20,9 @@ function FocusButton({
   width?: number
   style?: CSSProperties
 }) {
-  const { time, presetMin1 } = useTimerContext()
+  const { time: timeSignal, presetMin1: presetMin1Signal } = useTimerContext()
+  const time = timeSignal.value
+  const presetMin1 = presetMin1Signal.value
 
   const { appStyles } = useStyles()
   const { isExtension, isFirefox, isWeb: _isWeb } = usePlatform()

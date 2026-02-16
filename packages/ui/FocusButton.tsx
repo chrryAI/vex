@@ -126,31 +126,47 @@ export default function FocusButton({
     playBirds,
     setPlayBirds,
     activePomodoro,
-    time,
-    isCountingDown,
-    isPaused,
-    isFinished,
+    time: timeSignal,
+    isCountingDown: isCountingDownSignal,
+    isPaused: isPausedSignal,
+    isFinished: isFinishedSignal,
     setTime,
     startCountdown,
     fetchTasks,
     handlePresetTime,
-    replay,
+    replay: replaySignal,
     setReplay,
     tasks,
     setTasks,
     handleCancel,
     handlePause,
     handleResume,
-    presetMin1,
-    presetMin2,
-    presetMin3,
+    presetMin1: presetMin1Signal,
+    presetMin2: presetMin2Signal,
+    presetMin3: presetMin3Signal,
     setPresetMin1,
     setPresetMin2,
     setPresetMin3,
-    selectedTasks,
+    selectedTasks: selectedTasksSignal,
     setSelectedTasks,
-    remoteTimer,
+    remoteTimer: remoteTimerSignal,
   } = useTimerContext()
+
+  // Unwrap signals for logic that needs primitives
+  // Note: accessing .value will subscribe this component to updates
+  const time = timeSignal.value
+  const isCountingDown = isCountingDownSignal.value
+  const isPaused = isPausedSignal.value
+  const isFinished = isFinishedSignal.value
+  const presetMin1 = presetMin1Signal.value
+  const presetMin2 = presetMin2Signal.value
+  const presetMin3 = presetMin3Signal.value
+  const activePomodoroValue = activePomodoro.value
+  const playBirdsValue = playBirds.value
+  const playKitasakuValue = playKitasaku.value
+  const replay = replaySignal.value
+  const selectedTasks = selectedTasksSignal.value
+  const remoteTimer = remoteTimerSignal.value
 
   const [isDeletingTask, setIsDeletingTask] = useState(false)
 
@@ -462,7 +478,7 @@ export default function FocusButton({
             style={{
               ...utilities.transparent.style,
               ...styles.timeAdjust.style,
-              ...(activePomodoro === presetMin1
+              ...(activePomodoroValue === presetMin1
                 ? isCountingDown && !isPaused
                   ? styles.active.style
                   : time !== 0 && styles.focusButtonPaused.style
@@ -482,7 +498,7 @@ export default function FocusButton({
             style={{
               ...utilities.transparent.style,
               ...styles.timeAdjust.style,
-              ...(activePomodoro === presetMin2
+              ...(activePomodoroValue === presetMin2
                 ? isCountingDown && !isPaused
                   ? styles.active.style
                   : time !== 0 && styles.focusButtonPaused.style
@@ -503,7 +519,7 @@ export default function FocusButton({
               ...utilities.transparent.style,
               ...utilities.link.style,
               ...styles.timeAdjust.style,
-              ...(activePomodoro === presetMin3
+              ...(activePomodoroValue === presetMin3
                 ? isCountingDown && !isPaused
                   ? styles.active.style
                   : time !== 0 && styles.focusButtonPaused.style
@@ -520,13 +536,13 @@ export default function FocusButton({
         <Span
           onClick={() => {
             if (videoRef.current && os === "ios") {
-              !playKitasaku
+              !playKitasakuValue
                 ? videoRef.current.play().catch((error: any) => {
                     console.error(error)
                   })
                 : videoRef.current.pause()
             }
-            setPlayKitasaku(!playKitasaku)
+            setPlayKitasaku(!playKitasakuValue)
           }}
           style={styles.greeting.style}
         >
@@ -551,7 +567,7 @@ export default function FocusButton({
                 ""
               )}
               <Div style={styles.videoContainer.style} title="Kitasaku">
-                {!playKitasaku ? (
+                {!playKitasakuValue ? (
                   <CirclePlay
                     className="videoPlay"
                     style={styles.videoPlay.style}
@@ -745,15 +761,15 @@ export default function FocusButton({
           <Div style={styles.footerContainer.style}>
             <ThemeSwitcher size={22} style={{ marginTop: 2.5 }} />
             <Button
-              title={playBirds ? t("Pause sound") : t("Play sound")}
-              aria-label={playBirds ? t("Pause sound") : t("Play sound")}
-              onClick={() => setPlayBirds(!playBirds)}
+              title={playBirdsValue ? t("Pause sound") : t("Play sound")}
+              aria-label={playBirdsValue ? t("Pause sound") : t("Play sound")}
+              onClick={() => setPlayBirds(!playBirdsValue)}
               className={"link"}
-              style={{ ...(playBirds ? styles.active : {}) }}
+              style={{ ...(playBirdsValue ? styles.active : {}) }}
             >
               <Bird
                 color={
-                  isCountingDown && playBirds ? "var(--accent-4)" : undefined
+                  isCountingDown && playBirdsValue ? "var(--accent-4)" : undefined
                 }
                 size={22}
               />

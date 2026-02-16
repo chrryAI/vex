@@ -57,7 +57,9 @@ function FocusButton({
   width?: number
   style?: CSSProperties
 }) {
-  const { time, presetMin1 } = useTimerContext()
+  const { time: timeSignal, presetMin1: presetMin1Signal } = useTimerContext()
+  const time = timeSignal.value
+  const presetMin1 = presetMin1Signal.value
 
   const { appStyles } = useStyles()
   const { isExtension, isFirefox, isWeb: _isWeb } = usePlatform()
@@ -127,7 +129,8 @@ export default function App({
   }) => void
 }) {
   const { t } = useAppContext()
-  const { time: _time, playKitasaku, setPlayKitasaku } = useTimerContext()
+  const { time: _time, playKitasaku: playKitasakuSignal, setPlayKitasaku } = useTimerContext()
+  const playKitasaku = playKitasakuSignal.value
 
   const {
     slug,
