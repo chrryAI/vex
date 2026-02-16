@@ -113,3 +113,16 @@
 **Learning:** In a monorepo setup with workspaces (like Turbo/pnpm), coverage reports are generated in each package directory (e.g., `apps/api/coverage/lcov.info`). However, the SonarCloud action was configured to look only for `coverage/lcov.info` in the root.
 
 **Prevention:** Updated `.github/workflows/sonarcloud.yml` to use the glob pattern `**/coverage/lcov.info` for `sonar.javascript.lcov.reportPaths`. This ensures SonarCloud picks up reports from all sub-projects.
+
+## 2026-05-26 - Stored XSS via User Profile Image Upload
+
+**Vulnerability:** The `PATCH /user/image` endpoint accepted a file upload without validating that the file type was actually an image. It passed the user-provided content type to the `upload` function. If a user provided a file with `type: text/html`, it bypassed the image processing logic in `minio.ts` and was uploaded as an HTML file. If this file is then accessed, it executes as HTML/JS (Stored XSS).
+
+**Learning:**
+- **Double Validation:** Relying solely on a utility function (like `upload`) to handle type validation is risky if the utility allows optional types.
+- **Fail Fast:** Always validate input type (e.g., `startsWith("image/")`) as early as possible in the route handler.
+- **Explicit Options:** When calling shared utilities, be explicit about expectations (e.g., `type: "image"`).
+
+**Prevention:**
+- Added `if (!image.type.startsWith("image/"))` validation in `apps/api/hono/routes/user.ts`.
+- Added `type: "image"` to the `upload` function options in both `user.ts` and `image.ts` to enforce strict type checking in `minio.ts`.

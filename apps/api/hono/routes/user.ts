@@ -293,6 +293,11 @@ user.patch("/image", async (c) => {
     return c.json({ url: null })
   }
 
+  // Validate file type
+  if (!image.type.startsWith("image/")) {
+    return c.json({ error: "File must be an image" }, 400)
+  }
+
   try {
     const arrayBuffer = await image.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
@@ -321,6 +326,7 @@ user.patch("/image", async (c) => {
         height: 200,
         fit: "contain", // Preserve aspect ratio without cropping
         title: image.name,
+        type: "image",
       },
     })
 
