@@ -1672,9 +1672,6 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
       ),
       orderBy: (posts, { desc }) => [desc(posts.createdOn)],
       limit: 20, // Check last 20 posts
-      with: {
-        app: true, // Include app info
-      },
     })
 
     console.log(`📊 Found ${recentPosts.length} recent posts from other apps`)
