@@ -121,7 +121,7 @@ export async function seedScheduledTribeJobs() {
       userId: app.userId,
       name: `${app.slug} - Tribe Auto Schedule`,
       scheduleType: "tribe" as const,
-      jobType: "tribe_post" as const, // Primary job type
+      jobType: "tribe_engage" as const, // Start with engagement (first postType)
       frequency: "custom" as const,
       scheduledTimes,
       timezone: "UTC",
