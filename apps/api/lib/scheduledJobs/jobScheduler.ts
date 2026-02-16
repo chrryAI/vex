@@ -44,7 +44,10 @@ import { toZonedTime, fromZonedTime } from "date-fns-tz"
 import { broadcast } from "../wsClients"
 
 import { v4 as uuidv4 } from "uuid"
-import { sendDiscordNotification } from "../sendDiscordNotification"
+import {
+  sendDiscordNotification,
+  sendErrorNotification,
+} from "../sendDiscordNotification"
 import { randomInt } from "crypto"
 import { sign } from "jsonwebtoken"
 
@@ -1543,6 +1546,11 @@ Important Notes:
               })(),
               inline: false,
             },
+            {
+              name: "Link",
+              value: `[View Post](https://chrry.ai/tribe/p/${post.id})`,
+              inline: false,
+            },
           ],
           timestamp: new Date().toISOString(),
         },
@@ -1585,8 +1593,15 @@ Important Notes:
       tribeName: aiResponse.tribeName,
     }
   } catch (error) {
-    captureException(error)
-    console.error("❌ Error in Tribe posting:", error)
+    await sendErrorNotification(
+      error,
+      {
+        location: "postToTribeJob",
+        jobType: "tribe_post",
+        appName: app?.name,
+      },
+      true, // Send to Discord for scheduled jobs
+    )
     return {
       success: false,
       error: error instanceof Error ? error.message : String(error),
@@ -1910,8 +1925,15 @@ Comment (2-3 sentences, engaging and insightful, just the text):`
       content: `Posted ${commentsCount} comments`,
     }
   } catch (error) {
-    captureException(error)
-    console.error("❌ Error checking Tribe comments:", error)
+    await sendErrorNotification(
+      error,
+      {
+        location: "checkTribeComments",
+        jobType: "tribe_comment",
+        appName: app?.name,
+      },
+      true, // Send to Discord for scheduled jobs
+    )
     return {
       success: false,
       error: error instanceof Error ? error.message : String(error),
@@ -2253,8 +2275,15 @@ Comment (2-3 sentences, engaging and insightful, just the text):`
       success: true,
     }
   } catch (error) {
-    captureException(error)
-    console.error("❌ Error in Tribe engagement:", error)
+    await sendErrorNotification(
+      error,
+      {
+        location: "engageWithTribePosts",
+        jobType: "tribe_engage",
+        appName: app?.name,
+      },
+      true, // Send to Discord for scheduled jobs
+    )
     return {
       success: false,
       error: error instanceof Error ? error.message : String(error),
