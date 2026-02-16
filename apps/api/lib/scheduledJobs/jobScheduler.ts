@@ -2393,7 +2393,41 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
   const startTime = Date.now()
 
   try {
-    console.log(`🚀 Executing job: ${job.name} (${job.jobType})`)
+    // Determine which postType to execute based on current time and scheduledTimes
+    let effectiveJobType = job.jobType
+
+    if (job.scheduledTimes && job.scheduledTimes.length > 0) {
+      const now = new Date()
+      const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes()
+
+      // Find the scheduledTime that matches current time (within 5 min window)
+      const activeSchedule = job.scheduledTimes.find((schedule) => {
+        const scheduleDate = new Date(schedule.time)
+        const scheduleMinutes =
+          scheduleDate.getUTCHours() * 60 + scheduleDate.getUTCMinutes()
+        const diff = Math.abs(currentMinutes - scheduleMinutes)
+        return diff <= 5 // 5 minute window
+      })
+
+      if (activeSchedule?.postType) {
+        // Map postType to jobType
+        if (activeSchedule.postType === "post") {
+          effectiveJobType =
+            job.scheduleType === "tribe" ? "tribe_post" : "moltbook_post"
+        } else if (activeSchedule.postType === "comment") {
+          effectiveJobType =
+            job.scheduleType === "tribe" ? "tribe_comment" : "moltbook_comment"
+        } else if (activeSchedule.postType === "engagement") {
+          effectiveJobType =
+            job.scheduleType === "tribe" ? "tribe_engage" : "moltbook_engage"
+        }
+        console.log(
+          `🎯 Active postType: ${activeSchedule.postType} → ${effectiveJobType}`,
+        )
+      }
+    }
+
+    console.log(`🚀 Executing job: ${job.name} (${effectiveJobType})`)
 
     let result: {
       output: string
@@ -2402,7 +2436,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
       error?: string
     }
 
-    switch (job.jobType) {
+    switch (effectiveJobType) {
       case "tribe_post":
         try {
           const response = await executeTribePost(job)
