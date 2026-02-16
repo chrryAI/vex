@@ -113,6 +113,7 @@
 **Learning:** In a monorepo setup with workspaces (like Turbo/pnpm), coverage reports are generated in each package directory (e.g., `apps/api/coverage/lcov.info`). However, the SonarCloud action was configured to look only for `coverage/lcov.info` in the root.
 
 **Prevention:** Updated `.github/workflows/sonarcloud.yml` to use the glob pattern `**/coverage/lcov.info` for `sonar.javascript.lcov.reportPaths`. This ensures SonarCloud picks up reports from all sub-projects.
+
 ## 2026-06-15 - Insecure JWT Handling in WebSocket Auth
 
 **Vulnerability:** The WebSocket authentication logic contained a fallback to `jwt.decode` (unsigned) if `NEXTAUTH_SECRET` was missing from the environment or if signature verification failed in non-production. This "fail-open" mechanism allowed attackers to forge tokens signed with any key and impersonate any user.
@@ -121,7 +122,7 @@
 
 - **Fail Securely:** Security mechanisms must fail closed (reject access) when configuration is missing, not open (allow access).
 - **Silent Defaults:** Using dangerous fallbacks (like unsigned decoding) even with a warning is unsafe because logs are often ignored until an incident occurs.
-- **Consistency:** If `NEXTAUTH_SECRET` is missing, ensure all parts of the app use the *same* fallback (e.g., a dev secret) or crash, rather than one part using a dev secret and another falling back to no security.
+- **Consistency:** If `NEXTAUTH_SECRET` is missing, ensure all parts of the app use the _same_ fallback (e.g., a dev secret) or crash, rather than one part using a dev secret and another falling back to no security.
 
 **Prevention:**
 

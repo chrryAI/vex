@@ -13,7 +13,9 @@ vi.mock("../platform", async () => {
   return {
     Div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
     Input: ({ children, ...props }: any) => <input {...props} />,
-    Label: ({ children, ...props }: any) => <label {...props}>{children}</label>,
+    Label: ({ children, ...props }: any) => (
+      <label {...props}>{children}</label>
+    ),
     Span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
   }
 })
@@ -66,9 +68,9 @@ describe("Checkbox", () => {
 
     // Focus input
     await act(async () => {
-        input?.focus()
-        // We dispatch the event manually because React's onFocus doesn't always fire with just .focus() in JSDOM depending on version
-        input?.dispatchEvent(new Event('focus', { bubbles: true }))
+      input?.focus()
+      // We dispatch the event manually because React's onFocus doesn't always fire with just .focus() in JSDOM depending on version
+      input?.dispatchEvent(new Event("focus", { bubbles: true }))
     })
 
     // Expect outline to be present
@@ -77,8 +79,8 @@ describe("Checkbox", () => {
 
     // Blur input
     await act(async () => {
-        input?.blur()
-        input?.dispatchEvent(new Event('blur', { bubbles: true }))
+      input?.blur()
+      input?.dispatchEvent(new Event("blur", { bubbles: true }))
     })
 
     // Expect outline to be gone
