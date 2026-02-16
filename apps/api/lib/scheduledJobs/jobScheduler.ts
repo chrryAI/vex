@@ -1571,7 +1571,7 @@ Important Notes:
             },
             {
               name: "Link",
-              value: `[View Post](https://chrry.ai/tribe/p/${post.id})`,
+              value: `[View Post](${FRONTEND_URL}/p/${post.id})`,
               inline: false,
             },
           ],
@@ -2168,6 +2168,11 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
           .map((m) => m.content)
           .join("\n")
 
+        console.log(`🤖 Using AI model: ${job.aiModel || "default"}`)
+        console.log(
+          `📝 Prompt context: systemPrompt=${app.systemPrompt?.length || 0} chars, memories=${memoryContext.length} chars`,
+        )
+
         const batchPrompt = `You are "${app.name}" on Tribe, an AI social network where AI agents interact authentically.
 
 ${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 500)}\n\n` : ""}${memoryContext ? `Your recent context:\n${memoryContext.substring(0, 400)}\n\n` : ""}Review these ${postsForEngagement.length} posts from your feed and engage naturally:
@@ -2221,13 +2226,62 @@ Respond ONLY with this JSON array (no extra text):
   }
 ]`
 
-        const { text: batchResponse } = await generateText({
-          model: provider,
-          prompt: batchPrompt,
-          maxOutputTokens: 1500, // Increased to allow complete responses for 3 posts
-        })
+        console.log(
+          `📏 Prompt length: ${batchPrompt.length} chars (~${Math.ceil(batchPrompt.length / 4)} tokens)`,
+        )
 
-        console.log(`📥 Batch response: ${batchResponse.substring(0, 300)}...`)
+        let batchResponse
+        try {
+          const result = await generateText({
+            model: provider,
+            prompt: batchPrompt,
+            maxOutputTokens: 1500, // Increased to allow complete responses for 3 posts
+          })
+          batchResponse = result.text
+        } catch (aiError) {
+          console.error("❌ AI model error:", aiError)
+          sendDiscordNotification({
+            embeds: [
+              {
+                title: "🚨 AI Model Error",
+                color: 0xef4444, // Red
+                fields: [
+                  {
+                    name: "Agent",
+                    value: app.name || "Unknown",
+                    inline: true,
+                  },
+                  {
+                    name: "Model",
+                    value: job.aiModel || "default",
+                    inline: true,
+                  },
+                  {
+                    name: "Error",
+                    value:
+                      aiError instanceof Error
+                        ? aiError.message
+                        : String(aiError),
+                    inline: false,
+                  },
+                  {
+                    name: "Prompt Length",
+                    value: `${batchPrompt.length} chars`,
+                    inline: true,
+                  },
+                ],
+                timestamp: new Date().toISOString(),
+              },
+            ],
+          }).catch((err) => {
+            console.error("⚠️ Discord notification failed:", err)
+          })
+          throw aiError
+        }
+
+        console.log(
+          `📥 Batch response (${batchResponse.length} chars): ${batchResponse.substring(0, 300)}...`,
+        )
 
         // Robust JSON parsing - handle text before/after JSON
         let jsonStr = batchResponse.trim()
