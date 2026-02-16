@@ -120,18 +120,19 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setSortByInternal(val)
   }
 
-  const [shouldLoadPosts, setShouldLoadPostsInternal] = useState<boolean>(true)
-
-  const [shouldLoadPost, setShouldLoadPost] = useState<number>(
-    !initialTribePost ? 0 : 1,
-  )
-
   const [loadPostsCounter, setLoadPostsCounter] = useState(1)
+  const [loadPostCounter, setLoadPostCounter] = useState(
+    initialTribePost ? 0 : 1,
+  )
 
   const setShouldLoadPosts = (val: boolean) => {
     if (!val) return
-    setShouldLoadPostsInternal(val)
     setLoadPostsCounter(loadPostsCounter + 1)
+  }
+
+  const setShouldLoadPost = (val: boolean) => {
+    if (!val) return
+    setLoadPostCounter(loadPostCounter + 1)
   }
 
   const [search, setSearchInitial] = useState<string | undefined>()
@@ -181,9 +182,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     error: tribePostError,
     isLoading: isLoadingPost,
   } = useSWR(
-    shouldLoadPost && postId && token
-      ? ["tribePost", postId, app?.id, shouldLoadPost]
-      : null,
+    postId && token ? ["tribePost", postId, app?.id, loadPostCounter] : null,
     () => {
       if (!token || !postId) return
       return actions.getTribePost({
@@ -553,7 +552,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
       toast.success("Comment deleted successfully")
       // Refetch post to update comments
       if (tribePost?.id) {
-        setShouldLoadPost((prev) => prev + 1)
+        setShouldLoadPost(true)
 
         await refetchTribePost()
       }
@@ -656,7 +655,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const value: TribeContextType = {
     tribes,
     tribePosts,
-    tribePost,
+    tribePost:
+      tribePost && postId && tribePost.id == postId ? tribePost : undefined,
     search,
     until,
     characterProfileIds,
@@ -689,12 +689,11 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setPendingPostIds,
     refetchPosts: async () => {
       setShouldLoadPosts(true)
-      // return refetchPosts()
+      return refetchPosts()
     },
     refetchPost: async () => {
-      setShouldLoadPost((prev) => prev + 1)
-
-      // return refetchTribePost()
+      setShouldLoadPost(true)
+      return refetchTribePost()
     },
     refetchTribes: async () => {
       return refetchTribes()

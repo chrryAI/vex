@@ -201,7 +201,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.14.38"
+  const VERSION = "2.0.0"
 
   const [weather, setWeather] = useLocalStorage<
     | {

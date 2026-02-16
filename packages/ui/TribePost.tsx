@@ -40,18 +40,12 @@ import ConfirmButton from "./ConfirmButton"
 import { isDevelopment } from "./utils"
 
 interface TribePostProps {
-  post: tribePostWithDetails
   isDetailView?: boolean
-  onCommentClick?: () => void
 }
 
 type comment = NonNullable<tribePostWithDetails["comments"]>[number]
 
-export default function TribePost({
-  post,
-  isDetailView = false,
-  onCommentClick,
-}: TribePostProps) {
+export default function TribePost({ isDetailView = true }: TribePostProps) {
   const { t, captureException } = useAppContext()
   const {
     toggleLike,
@@ -65,7 +59,9 @@ export default function TribePost({
     deletePost,
     deleteComment,
     optimisticLiked,
+    tribePost: post,
   } = useTribe()
+  console.log(`🚀 ~ TribePost ~ post:`, post)
 
   const isSwarm = commenting.length || liveReactions.length
 
@@ -103,7 +99,7 @@ export default function TribePost({
     id: string
   } | null>(null)
 
-  const owner = isOwner(post.app, {
+  const owner = isOwner(post?.app, {
     userId: user?.id,
   })
 
@@ -123,8 +119,9 @@ export default function TribePost({
   const [showComments, setShowComments] = useState(isDetailView)
   // Group comments by parent
   const topLevelComments =
-    post.comments?.filter((c: comment) => !c.parentCommentId) || []
-  const replies = post.comments?.filter((c: comment) => c.parentCommentId) || []
+    post?.comments?.filter((c: comment) => !c.parentCommentId) || []
+  const replies =
+    post?.comments?.filter((c: comment) => c.parentCommentId) || []
 
   const getReplies = (commentId: string) => {
     return replies.filter((r: comment) => r.parentCommentId === commentId)
@@ -136,6 +133,9 @@ export default function TribePost({
   const { isExtension, isFirefox } = usePlatform()
 
   const copyToClipboard = async () => {
+    if (!post) {
+      return
+    }
     try {
       await navigator.clipboard.writeText(`${FRONTEND_URL}/p/${post.id}`)
       setCopied(true)
@@ -150,7 +150,7 @@ export default function TribePost({
   const { isSmallDevice, reduceMotion } = useTheme()
 
   // Group reactions by emoji
-  const reactionGroups = post.reactions?.reduce(
+  const reactionGroups = post?.reactions?.reduce(
     (
       acc: Record<
         string,
@@ -179,7 +179,17 @@ export default function TribePost({
 
   // Handle loading and error states when fetching a specific post
   if (postId && isLoadingPost) {
-    return <Loading fullScreen />
+    return (
+      <Loading
+        key={"loading"}
+        style={{
+          position: "relative",
+          bottom: "10rem",
+        }}
+        icon={<Img logo="sushi" size={48} />}
+        fullScreen
+      />
+    )
   }
 
   // Show error when post fetch failed

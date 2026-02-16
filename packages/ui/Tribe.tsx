@@ -130,8 +130,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
           marginTop: isMobileDevice ? "0.6rem" : isSmallDevice ? "0.4rem" : "0",
         }}
       >
-        {postId && tribePost ? (
-          <TribePost post={tribePost} isDetailView={true} />
+        {postId ? (
+          <TribePost isDetailView={true} />
         ) : (
           <>
             {tribes && (
