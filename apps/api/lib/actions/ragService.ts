@@ -465,7 +465,7 @@ export async function processMessageForRAG({
     const isE2E =
       member?.role !== "admin" &&
       member?.fingerprint &&
-      !VEX_LIVE_FINGERPRINTS.includes(member.fingerprint) &&
+      !VEX_LIVE_FINGERPRINTS.includes(member?.fingerprint) &&
       isE2EInternal
 
     // Only log content in E2E/dev mode for debugging (privacy)

@@ -81,7 +81,7 @@ interface TribeProviderProps {
 }
 
 export function TribeProvider({ children }: TribeProviderProps) {
-  const { showTribe } = useChat()
+  const { isEmpty } = useChat()
   const {
     tribes: initialTribes,
     tribePosts: initialTribePosts,
@@ -97,6 +97,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     deviceId,
     getAppSlug,
     app, // Current selected app for filtering
+    ...auth
   } = useAuth()
 
   const [tribes, setTribes] = useState<paginatedTribes | undefined>(
@@ -123,6 +124,11 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   const [shouldLoadPosts, setShouldLoadPostsInternal] =
     useState<boolean>(!initialTribePosts)
+  console.log(
+    `🚀 ~ TribeProvider ~ auth.isLoadingPosts:`,
+    auth.isLoadingPosts,
+    shouldLoadPosts,
+  )
 
   const [shouldLoadPost, setShouldLoadPostInternal] =
     useState<boolean>(!initialTribePost)
@@ -169,7 +175,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     isLoading: isLoadingTribes,
     mutate: refetchTribes,
   } = useSWR(
-    showTribe && token ? ["tribes", app?.id, canShowTribeProfile] : null,
+    token ? ["tribes", app?.id, canShowTribeProfile] : null,
     () => {
       if (!token) return
       return actions.getTribes({
@@ -178,7 +184,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     },
     {
       fallbackData: initialTribes,
-      revalidateOnFocus: false,
+      revalidateOnFocus: !!initialTribes,
     },
   )
 
@@ -200,7 +206,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     },
     {
       fallbackData: initialTribePost,
-      revalidateOnFocus: false,
+      revalidateOnFocus: !!initialTribePost,
     },
   )
 
@@ -231,7 +237,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     mutate: refetchPosts,
     isLoading: isLoadingPosts,
   } = useSWR(
-    shouldLoadPosts && (search ? search.length > 2 : true) && showTribe && token
+    shouldLoadPosts && (search ? search.length > 2 : true) && token
       ? [
           "tribePosts",
           until,
@@ -257,18 +263,21 @@ export function TribeProvider({ children }: TribeProviderProps) {
     },
     {
       fallbackData: initialTribePosts,
-      revalidateOnFocus: false,
+      revalidateOnFocus: !!initialTribePosts,
     },
   )
 
   // Use tribePostsData directly from SWR, only update tribePosts manually when needed
   useEffect(() => {
+    console.log(`🚀 ~ TribeProvider ~ tribePostsData:`, tribePostsData)
     if (
       tribePostsData &&
       JSON.stringify(tribePostsData.posts?.map((p: any) => p.id)) !==
         JSON.stringify(tribePosts?.posts?.map((p: any) => p.id))
     ) {
       setTribePosts(tribePostsData)
+      auth.setIsLoadingPosts(false)
+      console.log(`🚀 ~ TribeProvider ~ tribePostsData:`, tribePostsData)
     }
   }, [tribePostsData, tribePosts?.posts, setTribePosts])
 
@@ -696,7 +705,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     posting,
     liveReactions: liveReactions,
     pendingPostIds,
-    commenting: showTribe ? checkSwarm(commenting) : commenting,
+    commenting: commenting,
     setPendingPostIds,
     refetchPosts: async () => {
       setShouldLoadPosts(true)

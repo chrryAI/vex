@@ -36,7 +36,7 @@ export const uploadArtifacts = async ({
   const isE2E =
     member?.role !== "admin" &&
     fingerprint &&
-    !VEX_LIVE_FINGERPRINTS.includes(member.fingerprint) &&
+    !VEX_LIVE_FINGERPRINTS.includes(member?.fingerprint) &&
     isE2EInternal
   const memoriesEnabled = (member || guest)?.memoriesEnabled
 

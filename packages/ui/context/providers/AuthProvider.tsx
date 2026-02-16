@@ -198,6 +198,8 @@ const AuthContext = createContext<
       setShowFocus: (showFocus: boolean) => void
       showFocus: boolean | undefined
       isLoadingTasks: boolean
+      setIsLoadingPosts: (value: boolean) => void
+      isLoadingPosts: boolean
       fetchTasks: () => Promise<void>
       tasks?: {
         tasks: Task[]
@@ -1101,6 +1103,10 @@ export function AuthProvider({
   const [tribePost, setTribePost] = useState<tribePostWithDetails | undefined>(
     initialTribePost,
   )
+
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
+  console.log(`🚀 ~ AuthProvider ~ isLoadingPosts:`, isLoadingPosts)
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -2244,9 +2250,7 @@ export function AuthProvider({
 
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
-  const hasAppPosts = !!tribePosts?.totalCount
-
-  const canShowTribe = hasAppPosts
+  const canShowTribe = true
 
   const showTribeFromPath = pathname === "/tribe"
 
@@ -2268,7 +2272,6 @@ export function AuthProvider({
     !showAllTribe &&
     !postId
   const showTribeInitial = !!(
-    hasAppPosts &&
     !postId &&
     (showAllTribe ||
       postId ||
@@ -2277,19 +2280,24 @@ export function AuthProvider({
         ? baseApp?.slug === siteConfig.slug && siteConfig.isTribe
         : !excludedSlugRoutes.includes(pathname.split("?")?.[0] || "")))
   )
-  console.log(`🚀 ~ AuthProvider ~ hasAppPosts:`, hasAppPosts)
 
   console.log(`🚀 ~ AuthProvider ~ showTribeInitial:`, showTribeInitial)
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
   console.log(`🚀 ~ AuthProvider ~ showTribe:`, showTribe)
-
-  const showTribeProfile =
+  const showTribeProfileInternal =
     !!(canBeTribeProfile && showTribe) || canBeTribeProfile
+
+  const showTribeProfileMemo = useMemo(
+    () => showTribeProfileInternal,
+    [showTribeProfileInternal],
+  )
+
+  const showTribeProfile = showTribeProfileInternal || showTribeProfileMemo
+
   console.log(`🚀 ~ AuthProvider ~ canBeTribeProfile:`, canBeTribeProfile)
 
   const setShowTribe = (value: boolean) => {
-    if (!canShowTribe) return
     setShowTribeFinal(value)
   }
 
@@ -3155,6 +3163,8 @@ export function AuthProvider({
         PROD_FRONTEND_URL,
         isIDE,
         toggleIDE,
+        isLoadingPosts,
+        setIsLoadingPosts,
         findAppByPathname,
         chromeWebStoreUrl,
         siteConfig,
