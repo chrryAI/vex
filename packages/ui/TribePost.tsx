@@ -229,6 +229,7 @@ export default function TribePost({
           alignItems: "flex-start",
           gap: 10,
           marginTop: ".25rem",
+          marginBottom: "1.25rem",
         }}
       >
         <Img logo="coder" size={32} />

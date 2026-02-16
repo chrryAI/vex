@@ -1150,6 +1150,14 @@ export function AuthProvider({
         baseApp,
       })
 
+      if (
+        chrry?.slug &&
+        baseApp?.id === chrry?.id &&
+        targetApp.id === chrry?.id
+      ) {
+        return `/${chrry?.slug}`
+      }
+
       return result
     },
     [pathname, baseApp],

@@ -122,8 +122,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setSortByInternal(val)
   }
 
-  const [shouldLoadPosts, setShouldLoadPostsInternal] =
-    useState<boolean>(!initialTribePosts)
+  const [shouldLoadPosts, setShouldLoadPostsInternal] = useState<boolean>(true)
 
   const [shouldLoadPost, setShouldLoadPostInternal] =
     useState<boolean>(!initialTribePost)

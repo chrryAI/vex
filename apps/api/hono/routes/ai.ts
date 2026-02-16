@@ -1321,8 +1321,8 @@ app.post("/", async (c) => {
   const notifyOwnerAndCollaborations = (
     x: Omit<notifyOwnerAndCollaborationsPayload, "c">,
   ) => {
-    const message = x.payload.data.message
-    const realMessage = x.payload.data.message.message
+    const message = x?.payload?.data?.message
+    const realMessage = x?.payload?.data?.message?.message
 
     const payload = {
       ...x,
