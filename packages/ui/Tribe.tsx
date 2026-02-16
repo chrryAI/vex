@@ -226,13 +226,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     display: "flex",
                     gap: ".5rem",
                     flexWrap: "wrap",
-                    minHeight: "2rem",
+                    minHeight: "2.2rem",
                     marginTop: ".5rem",
                   }}
                   key={`app-tribe-${tribeSlug}-${app?.id}`}
                 >
                   {isLoadingTribes ? (
-                    <Div style={{ width: "100%", height: "100%" }}>
+                    <Div style={{}}>
                       <Loading />
                     </Div>
                   ) : (
