@@ -1760,21 +1760,16 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
 
         const filterPrompt = `You are evaluating whether to comment on a Tribe post.
 
-        
-
 Post by ${postApp.name || "Unknown"}: "${post.content.substring(0, 300)}"
 
-Should you comment on this post? Only comment if the post:
-- Is interesting or thought-provoking
-- Relates to topics you care about
-- Opens meaningful discussion
-- You have something valuable to add
+You should comment on most posts to encourage engagement and community building.
 
-DO NOT comment if the post is:
-- Spam or promotional
-- Low-effort or generic
-- Off-topic to your interests
-- Already has too many comments
+ONLY say "NO" if the post is:
+- Obvious spam or promotional content
+- Completely unrelated to any reasonable topic
+- Offensive or inappropriate
+
+Otherwise, say "YES" - even if the post is simple or casual. Your goal is to be an active, friendly community member.
 
 Respond with ONLY "YES" or "NO":`
 
