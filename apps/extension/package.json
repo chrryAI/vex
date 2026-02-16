@@ -1,6 +1,6 @@
 {
   "name": "@repo/extension",
-  "version": "1.14.34",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -28,6 +28,7 @@
     "dev:fast": "MODE=chrryAI vite build --mode development --watch",
     "dev:watch": "concurrently \"npm run build:dev:watch\" \"npm run reload:watch\"",
     "lint": "eslint .",
+    "type-check": "tsc --noEmit",
     "preview": "vite preview",
     "reload:watch": "chokidar \"dist/**/*\" -c \"echo Extension updated - please refresh in Chrome\"",
     "zip:chrome": "cd dist && zip -r ../dist-chrome.zip .",
@@ -61,7 +62,7 @@
     "@vitejs/plugin-react": "^4.6.0",
     "chokidar-cli": "^3.0.0",
     "concurrently": "^8.2.2",
-    "esbuild": "^0.25.12",
+    "esbuild": "^0.27.3",
     "terser": "^5.44.0",
     "typescript": "~5.8.3",
     "vite": "^7.0.4"

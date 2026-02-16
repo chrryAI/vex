@@ -25,7 +25,14 @@ export function createTimerModel() {
   // Helper to read initial state
   const getInitialState = (): TimerState => {
     if (typeof window === "undefined") {
-      return { time: 0, isCountingDown: false, isPaused: false, isFinished: false, isCancelled: false, startTime: 0 }
+      return {
+        time: 0,
+        isCountingDown: false,
+        isPaused: false,
+        isFinished: false,
+        isCancelled: false,
+        startTime: 0,
+      }
     }
     try {
       const raw = localStorage.getItem("timerState")
@@ -39,7 +46,7 @@ export function createTimerModel() {
             ...state,
             time: remaining,
             isFinished: remaining === 0 && state.time > 0, // Mark finished if it ended while closed
-            isCountingDown: remaining > 0 // Stop counting if finished
+            isCountingDown: remaining > 0, // Stop counting if finished
           }
         }
         return state
@@ -47,7 +54,14 @@ export function createTimerModel() {
     } catch (e) {
       console.error("Error restoring timer state", e)
     }
-    return { time: 0, isCountingDown: false, isPaused: false, isFinished: false, isCancelled: false, startTime: 0 }
+    return {
+      time: 0,
+      isCountingDown: false,
+      isPaused: false,
+      isFinished: false,
+      isCancelled: false,
+      startTime: 0,
+    }
   }
 
   const initialState = getInitialState()
@@ -77,22 +91,26 @@ export function createTimerModel() {
 
   // Resume countdown if initialized in running state
   if (initialState.isCountingDown && initialState.time > 0) {
-      // Need to start the interval
-      // We can't call startCountdown here because it resets start time.
-      // We implement a resume logic without batch reset.
-      // Or just call startCountdown with current time?
-      // startCountdown sets startTime to Date.now(), which is fine for resume.
-      // But we want to preserve the original startTime?
-      // Actually, if we just calculated remaining time, we can treat it as a new start for the interval loop.
-      // But `startTime` signal should probably reflect the *original* start time if we want accurate drift correction?
-      // The current startCountdown resets startTime.
-      // Let's just defer starting the interval to an effect or call it.
-      // Since this is initialization, we can't call methods easily before returning object.
-      // But we can set a flag or run a setup function.
+    // Need to start the interval
+    // We can't call startCountdown here because it resets start time.
+    // We implement a resume logic without batch reset.
+    // Or just call startCountdown with current time?
+    // startCountdown sets startTime to Date.now(), which is fine for resume.
+    // But we want to preserve the original startTime?
+    // Actually, if we just calculated remaining time, we can treat it as a new start for the interval loop.
+    // But `startTime` signal should probably reflect the *original* start time if we want accurate drift correction?
+    // The current startCountdown resets startTime.
+    // Let's just defer starting the interval to an effect or call it.
+    // Since this is initialization, we can't call methods easily before returning object.
+    // But we can set a flag or run a setup function.
   }
 
   // Helper for persistence (presets)
-  const syncStorage = <T>(key: string, s: any, parser: (v: string) => T = JSON.parse) => {
+  const syncStorage = <T>(
+    key: string,
+    s: any,
+    parser: (v: string) => T = JSON.parse,
+  ) => {
     if (typeof window !== "undefined") {
       try {
         const stored = window.localStorage.getItem(key)
@@ -111,7 +129,7 @@ export function createTimerModel() {
             console.error(`Failed to parse ${key} from storage event`, error)
           }
         } else if (e.key === key && !e.newValue) {
-            s.value = undefined
+          s.value = undefined
         }
       }
       window.addEventListener("storage", handleStorage)
@@ -120,12 +138,12 @@ export function createTimerModel() {
     return effect(() => {
       if (typeof window !== "undefined") {
         try {
-            const val = s.value
-            if (val === undefined) {
-                window.localStorage.removeItem(key)
-            } else {
-                window.localStorage.setItem(key, JSON.stringify(val))
-            }
+          const val = s.value
+          if (val === undefined) {
+            window.localStorage.removeItem(key)
+          } else {
+            window.localStorage.setItem(key, JSON.stringify(val))
+          }
         } catch (e) {
           console.error(`Failed to save ${key}`, e)
         }
@@ -179,11 +197,11 @@ export function createTimerModel() {
         lastUpdate = currentTime - ((currentTime - lastUpdate) % 1000)
 
         if (time.peek() > 0) {
-           time.value = Math.max(0, time.peek() - elapsedTime)
+          time.value = Math.max(0, time.peek() - elapsedTime)
         }
 
         if (time.peek() === 0) {
-           handleTimerEnd()
+          handleTimerEnd()
         }
       }
     }, 100)
@@ -224,8 +242,8 @@ export function createTimerModel() {
       timerInterval = null
     }
     setTimeout(() => {
-        isFinished.value = false
-        isCancelled.value = false
+      isFinished.value = false
+      isCancelled.value = false
     }, 1000)
   }
 
@@ -245,30 +263,30 @@ export function createTimerModel() {
   }
 
   const startAdjustment = (direction: number, isMinutes: boolean) => {
-     if (isCountingDown.value) {
-       if (timerInterval) {
-          clearInterval(timerInterval)
-          timerInterval = null
-       }
-       batch(() => {
-         isCountingDown.value = false
-         isPaused.value = true
-       })
-     } else {
+    if (isCountingDown.value) {
+      if (timerInterval) {
+        clearInterval(timerInterval)
+        timerInterval = null
+      }
+      batch(() => {
+        isCountingDown.value = false
         isPaused.value = true
-     }
+      })
+    } else {
+      isPaused.value = true
+    }
 
-     const increment = isMinutes ? 60 : 1
+    const increment = isMinutes ? 60 : 1
 
-     const adjust = () => {
-       const newVal = time.peek() + (direction * increment)
-       time.value = Math.max(0, Math.min(3600, newVal))
-     }
+    const adjust = () => {
+      const newVal = time.peek() + direction * increment
+      time.value = Math.max(0, Math.min(3600, newVal))
+    }
 
-     adjust()
+    adjust()
 
-     if (adjustInterval) clearInterval(adjustInterval)
-     adjustInterval = setInterval(adjust, isMinutes ? 300 : 250)
+    if (adjustInterval) clearInterval(adjustInterval)
+    adjustInterval = setInterval(adjust, isMinutes ? 300 : 250)
   }
 
   const stopAdjustment = () => {
@@ -280,39 +298,39 @@ export function createTimerModel() {
 
   // Deprecated: State is restored on initialization
   const restoreState = () => {
-      // Re-run getInitialState logic for manual sync if needed
-      const state = getInitialState()
-      batch(() => {
-          time.value = state.time
-          isCountingDown.value = state.isCountingDown
-          isPaused.value = state.isPaused
-          isFinished.value = state.isFinished
-          isCancelled.value = state.isCancelled || false
-          startTime.value = state.startTime
-      })
-      if (state.isCountingDown && state.time > 0) {
-          startCountdown(state.time)
-      }
+    // Re-run getInitialState logic for manual sync if needed
+    const state = getInitialState()
+    batch(() => {
+      time.value = state.time
+      isCountingDown.value = state.isCountingDown
+      isPaused.value = state.isPaused
+      isFinished.value = state.isFinished
+      isCancelled.value = state.isCancelled || false
+      startTime.value = state.startTime
+    })
+    if (state.isCountingDown && state.time > 0) {
+      startCountdown(state.time)
+    }
   }
 
   // Persist full timer state
   effect(() => {
-      if (typeof window === "undefined") return
-      const state: TimerState = {
-          time: time.value,
-          isCountingDown: isCountingDown.value,
-          isPaused: isPaused.value,
-          isFinished: isFinished.value,
-          isCancelled: isCancelled.value,
-          startTime: startTime.value,
-          timestamp: Date.now()
-      }
-      localStorage.setItem("timerState", JSON.stringify(state))
+    if (typeof window === "undefined") return
+    const state: TimerState = {
+      time: time.value,
+      isCountingDown: isCountingDown.value,
+      isPaused: isPaused.value,
+      isFinished: isFinished.value,
+      isCancelled: isCancelled.value,
+      startTime: startTime.value,
+      timestamp: Date.now(),
+    }
+    localStorage.setItem("timerState", JSON.stringify(state))
   })
 
   // Start interval if initialized in running state
   if (initialState.isCountingDown && initialState.time > 0) {
-      startCountdown(initialState.time)
+    startCountdown(initialState.time)
   }
 
   syncStorage("presetMin1", presetMin1)
@@ -347,9 +365,9 @@ export function createTimerModel() {
     restoreState,
 
     dispose: () => {
-        if (timerInterval) clearInterval(timerInterval)
-        if (adjustInterval) clearInterval(adjustInterval)
-    }
+      if (timerInterval) clearInterval(timerInterval)
+      if (adjustInterval) clearInterval(adjustInterval)
+    },
   }
 }
 

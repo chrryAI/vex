@@ -189,7 +189,7 @@ export default function Skeleton({
   // Data context
   const { FRONTEND_URL } = useData()
 
-  const { threadIdRef, isIDE, ...auth } = useAuth()
+  const { threadIdRef, isIDE, showTribeProfile, ...auth } = useAuth()
 
   const threadId = threadIdRef.current
 
@@ -254,7 +254,14 @@ export default function Skeleton({
         <Menu showThreads={showThreads} />
         <Main
           style={{
-            ...skeletonStyles.main.style,
+            ...{
+              padding: 10,
+              paddingTop: 50,
+              display: "flex",
+              flexDirection: "column",
+              flex: 1,
+              height: "100dvh",
+            },
             ...{
               display: "flex",
             },
@@ -367,12 +374,17 @@ export default function Skeleton({
                             })
                           }}
                         >
-                          <Img key={app?.id || "vex"} app={app} size={28} />
+                          <Img
+                            key={app?.id || "vex"}
+                            app={showTribeProfile ? undefined : app}
+                            size={28}
+                            icon={showTribeProfile ? "zarathustra" : undefined}
+                          />
                           <H1
                             key={`title-${app?.id || "vex"}`}
                             style={{ ...skeletonStyles.brand.style }}
                           >
-                            {app?.name || "Vex"}
+                            {showTribeProfile ? "Tribe" : app?.name || "Vex"}
                           </H1>
                         </A>
                       </Div>

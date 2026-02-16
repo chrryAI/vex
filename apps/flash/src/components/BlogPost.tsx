@@ -3,6 +3,7 @@ import type { Components } from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { safeJSONStringify } from "../utils/security"
 import { BlogPostWithContent } from "../blog-loader"
+// @ts-ignore
 import styles from "./BlogPost.module.scss"
 
 interface BlogPostProps {
@@ -106,6 +107,7 @@ export default function BlogPost({ post, locale }: BlogPostProps) {
             }}
             muted
             playsInline
+            aria-hidden="true"
           ></video>{" "}
           {timeAgo(post.date)} by {post.author}
         </div>

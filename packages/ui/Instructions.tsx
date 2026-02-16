@@ -184,7 +184,7 @@ export default function Instructions({
 
   const { os, isStandalone, isTauri, isCapacitor, isExtension } = usePlatform()
 
-  const offset = isStandalone || isExtension || isCapacitor ? -75 : 0
+  const offset = isStandalone || isExtension || isCapacitor ? -80 : 0
 
   const count = useResponsiveCount(
     [

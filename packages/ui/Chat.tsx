@@ -112,6 +112,7 @@ import { useStyles } from "./context/StylesContext"
 
 import A from "./a/A"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+import AppLink from "./AppLink"
 
 const MAX_FILES = MAX_FILE_LIMITS.chat
 
@@ -1692,9 +1693,9 @@ export default function Chat({
         isPear && formData.append("pear", JSON.stringify(isPear))
 
         isRetro && formData.append("retro", JSON.stringify(isRetro))
-        postToTribe && formData.append("isTribe", JSON.stringify(postToTribe))
+        postToTribe && formData.append("tribe", JSON.stringify(postToTribe))
         postToMoltbook &&
-          formData.append("isMolt", JSON.stringify(postToMoltbook))
+          formData.append("molt", JSON.stringify(postToMoltbook))
 
         artifacts.forEach((artifact, index) => {
           formData.append(`artifact_${index}`, artifact)
@@ -1723,8 +1724,8 @@ export default function Chat({
           taskId,
           pear: isPear,
           retro: isRetro,
-          isTribe: postToTribe,
-          isMolt: postToMoltbook,
+          tribe: postToTribe,
+          molt: postToMoltbook,
         })
       }
       const userResponse = await apiFetch(`${API_URL}/messages`, {
@@ -3895,7 +3896,7 @@ export default function Chat({
                       app &&
                       (minimize || showFocus) && (
                         <>
-                          <A
+                          <AppLink
                             style={{
                               marginRight: "auto",
                               left: 5,
@@ -3905,11 +3906,12 @@ export default function Chat({
                               zIndex: 300,
                               fontSize: ".85rem",
                             }}
-                            href={`${getAppSlug(app)}/tribe`}
+                            isTribe
+                            app={app}
+                            icon={<Img logo="coder" size={18} />}
                           >
-                            <Img logo="coder" size={18} />
                             {t("Tribe's Feed")}
-                          </A>
+                          </AppLink>
                         </>
                       )}
                     {isChatFloating ||
@@ -3968,7 +3970,10 @@ export default function Chat({
                       app &&
                       !isChatFloating && (
                         <>
-                          <A
+                          <AppLink
+                            isTribe
+                            app={app}
+                            icon={<Img logo="coder" size={22} />}
                             style={{
                               marginRight: "auto",
                               left: -5,
@@ -3978,11 +3983,9 @@ export default function Chat({
                               zIndex: 300,
                               fontSize: ".85rem",
                             }}
-                            href={`${getAppSlug(app)}/tribe`}
                           >
-                            <Img logo="coder" size={22} />
                             {t("Tribe's Feed")}
-                          </A>
+                          </AppLink>
                         </>
                       )}
                   </Div>

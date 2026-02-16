@@ -216,36 +216,6 @@ async function handleFetchNews(c: any) {
     message: "Maybe later",
     timestamp: new Date().toISOString(),
   })
-  // try {
-  //   // Verify cron secret (optional but recommended)
-  //   const authHeader = c.req.header("authorization")
-  //   const cronSecret = process.env.CRON_SECRET
-
-  //   // Only check auth if CRON_SECRET is set
-  //   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-  //     console.log("❌ Unauthorized: Invalid or missing authorization header")
-  //     return c.json({ error: "Unauthorized" }, 401)
-  //   }
-
-  //   console.log("🗞️ Cron: Starting news fetch...")
-
-  //   await fetchAllNews()
-
-  //   return c.json({
-  //     success: true,
-  //     message: "News fetched successfully",
-  //     timestamp: new Date().toISOString(),
-  //   })
-  // } catch (error) {
-  //   console.error("❌ Cron error:", error)
-  //   return c.json(
-  //     {
-  //       success: false,
-  //       error: error instanceof Error ? error.message : "Unknown error",
-  //     },
-  //     500,
-  //   )
-  // }
 }
 
 // GET /cron/fetchNews - Fetch news (for testing)
@@ -483,7 +453,20 @@ cron.get("/runScheduledJobs", async (c) => {
       success: true,
       message: "Scheduled jobs started in background",
       jobsStarted: jobsToRun.length,
-      jobs: jobsToRun.map((j) => ({ id: j.id, name: j.name })),
+      jobs: jobsToRun.map((j) => ({
+        id: j.id,
+        name: j.name,
+        jobType: j.jobType,
+        scheduleType: j.scheduleType,
+        nextRunAt: j.nextRunAt?.toISOString(),
+        frequency: j.frequency,
+        scheduledTimes: j.scheduledTimes?.map((st) => ({
+          postType: st.postType,
+          time: st.time,
+          model: st.model,
+        })),
+        status: j.status,
+      })),
       timestamp: new Date().toISOString(),
     })
   } catch (error) {

@@ -3,6 +3,7 @@ import {
   appCampaigns,
   autonomousBids,
   slotRentals,
+  storeTimeSlots,
   type slotRental,
 } from "@repo/db"
 import captureException from "../captureException"
@@ -156,7 +157,7 @@ export async function updateCampaignPerformance({
 function calculateROI(rental: slotRental): number {
   // Assume €10 per conversion as revenue
   const revenuePerConversion = 10
-  const revenue = rental.conversions * revenuePerConversion
+  const revenue = (rental.conversions || 0) * revenuePerConversion
 
   // Cost is the credits charged (convert to EUR if needed)
   const cost = rental.priceEur || rental.creditsCharged * 0.01 // Assume 1 credit = €0.01
@@ -347,6 +348,12 @@ export async function processAuctionResults({
     // Find highest bid
     const sortedBids = bids.sort((a, b) => b.bidAmount - a.bidAmount)
     const winningBid = sortedBids[0]
+
+    if (!winningBid) {
+      console.log(`⚠️ No valid winning bid for slot ${slotId}`)
+      return { skipped: true, reason: "No valid winning bid" }
+    }
+
     const losingBids = sortedBids.slice(1)
 
     console.log(
@@ -408,6 +415,10 @@ export async function processAuctionResults({
         knowledgeBaseEnabled: true,
       })
       .returning()
+
+    if (!rental) {
+      throw new Error("Failed to create rental")
+    }
 
     console.log(`✅ Created rental ${rental.id} for winning bid`)
 

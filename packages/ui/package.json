@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "1.14.34",
+  "version": "2.0.0",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -69,7 +69,8 @@
     "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit",
     "prepublishOnly": "npm run build",
-    "test": "pnpm exec vitest run"
+    "test": "pnpm exec vitest run",
+    "test:coverage": "pnpm exec vitest run --coverage"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
@@ -98,7 +99,7 @@
     "@types/uuid": "^10.0.0",
     "@uidotdev/usehooks": "^2.4.1",
     "ai": "^6.0.77",
-    "antd": "^5.26.7",
+    "antd": "^6.3.0",
     "clsx": "^2.1.1",
     "dexie": "^4.2.1",
     "dnd-core": "^16.0.1",

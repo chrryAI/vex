@@ -7,7 +7,13 @@ import { codebaseQueries } from "@repo/db"
 import { eq, and, gte, count } from "drizzle-orm"
 import { startOfDay } from "date-fns"
 
-const codebase = new Hono()
+type Variables = {
+  userId?: string
+  guestId?: string
+  member?: any
+}
+
+const codebase = new Hono<{ Variables: Variables }>()
 
 // Daily query limits by tier
 const DAILY_LIMITS = {
@@ -17,7 +23,11 @@ const DAILY_LIMITS = {
 
 const ALLOWED_REPOS = [
   "chrryAI/vex",
-  "chrryAI/wine-mobile",
+  "chrryAI/chrry",
+  "chrryAI/sushi",
+  "chrryAI/pepper",
+  "chrryAI/waffles",
+  "chrryAI/wine",
   // Add more repos as needed
 ]
 
@@ -65,7 +75,12 @@ codebase.post("/query", async (c) => {
     DAILY_LIMITS[member.sushiTier as keyof typeof DAILY_LIMITS] || 0
 
   if (dailyLimit > 0) {
-    const todayStart = startOfDay(new Date())
+    const now = new Date()
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    )
 
     const [usageResult] = await db
       .select({ count: count() })
@@ -166,14 +181,13 @@ Explain how this code works, referencing specific files, functions, and line num
     const { text, usage } = await generateText({
       model: provider,
       prompt,
-      maxTokens: 1000,
+      maxRetries: 2,
     })
 
     const responseTime = Date.now() - startTime
 
     // Step 4: Log query for rate limiting and cost tracking
-    const tokensUsed =
-      (usage?.promptTokens || 0) + (usage?.completionTokens || 0)
+    const tokensUsed = usage?.totalTokens || 0
     const costUSD = (tokensUsed / 1_000_000) * 0.02 // Rough estimate
 
     await db.insert(codebaseQueries).values({

@@ -2,7 +2,7 @@ import { Hono } from "hono"
 import fs from "fs"
 import path from "path"
 import matter from "gray-matter"
-import { getApp, getStore } from "@repo/db"
+import { getApp, getStore, getTribePosts } from "@repo/db"
 import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import getAppSlug from "@chrryai/chrry/utils/getAppSlug"
 import getWhiteLabelUtil from "@chrryai/chrry/utils/getWhiteLabel"
@@ -34,6 +34,28 @@ function getBlogPosts() {
         date: data.date || new Date().toISOString().split("T")[0],
       }
     })
+}
+
+async function getAllTribePosts() {
+  try {
+    const result = await getTribePosts({
+      pageSize: 1000, // Get all posts for sitemap
+      page: 1,
+      sortBy: "date",
+    })
+
+    return (
+      result.posts?.map((post) => ({
+        id: post.id,
+        title: post.title,
+        createdOn: post.createdOn,
+        updatedOn: post.updatedOn,
+      })) || []
+    )
+  } catch (error) {
+    console.error("Error fetching tribe posts for sitemap:", error)
+    return []
+  }
 }
 
 // Escape XML special characters to prevent XSS
@@ -206,6 +228,7 @@ sitemap.get("/", async (c) => {
   const isVex = baseUrl === "https://vex.chrry.ai"
 
   const blogPosts = !isVex ? [] : getBlogPosts()
+  const tribePosts = await getAllTribePosts()
 
   const staticRoutes = [
     { url: baseUrl, lastModified: new Date(), priority: 1 },
@@ -262,9 +285,15 @@ sitemap.get("/", async (c) => {
     priority: 0.8,
   }))
 
+  const tribeRoutes = tribePosts.map((post) => ({
+    url: `${baseUrl}/p/${post.id}`,
+    lastModified: new Date(post.updatedOn || post.createdOn),
+    priority: 0.7,
+  }))
+
   const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${[...staticRoutes, ...blogRoutes]
+  ${[...staticRoutes, ...blogRoutes, ...tribeRoutes]
     .map(
       (route) =>
         route &&

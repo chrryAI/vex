@@ -12,6 +12,7 @@ import {
   paginatedTribePosts,
   tribePostWithDetails,
   appWithStore,
+  message,
 } from "../../types"
 import { useChat } from "./ChatProvider"
 import { useAuth, useData } from "."
@@ -27,6 +28,7 @@ export type engagement = {
   tribePostId: string
 }
 export type liveReaction = {
+  id?: string
   app: appWithStore
   reaction: { emoji: string }
 } & engagement
@@ -62,6 +64,8 @@ interface TribeContextType {
   setSearch: (search?: string) => void
   setUntil: (val: number) => void
   setCharacterProfileIds: (ids?: string[]) => void
+  optimisticLiked: string[]
+  setOptimisticLiked: (ids: string[]) => void
   refetchPosts: () => Promise<void>
   refetchPost: () => Promise<void>
   refetchTribes: () => Promise<void>
@@ -79,7 +83,7 @@ interface TribeProviderProps {
 }
 
 export function TribeProvider({ children }: TribeProviderProps) {
-  const { showTribe } = useChat()
+  const { isEmpty } = useChat()
   const {
     tribes: initialTribes,
     tribePosts: initialTribePosts,
@@ -94,7 +98,10 @@ export function TribeProvider({ children }: TribeProviderProps) {
     mergeApps,
     deviceId,
     getAppSlug,
+    tribeSlug,
+    currentTribe,
     app, // Current selected app for filtering
+    ...auth
   } = useAuth()
 
   const [tribes, setTribes] = useState<paginatedTribes | undefined>(
@@ -105,38 +112,37 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   const { captureException, t } = useAppContext()
 
-  // Extract tribe slug from pathname like /tribe/entertainment
-  const tribeSlug = pathname?.startsWith("/tribe/")
-    ? pathname.replace("/tribe/", "").split("?")[0]
-    : undefined
-
   const [sortBy, setSortByInternal] = useLocalStorage<
     "date" | "hot" | "comments"
   >("sortBy", "hot")
 
   const setSortBy = (val: "date" | "hot" | "comments") => {
-    setShouldLoadPosts(true)
     setSortByInternal(val)
   }
 
-  const [shouldLoadPosts, setShouldLoadPostsInternal] =
-    useState<boolean>(!initialTribes)
+  const [loadPostsCounter, setLoadPostsCounter] = useState(1)
+  const [loadPostCounter, setLoadPostCounter] = useState(
+    initialTribePost ? 0 : 1,
+  )
 
   const setShouldLoadPosts = (val: boolean) => {
-    if (shouldLoadPosts === val) return
-
-    setShouldLoadPostsInternal(val)
+    if (!val) return
+    setLoadPostsCounter(loadPostsCounter + 1)
   }
+
+  const setShouldLoadPost = (val: boolean) => {
+    if (!val) return
+    setLoadPostCounter(loadPostCounter + 1)
+  }
+
   const [search, setSearchInitial] = useState<string | undefined>()
 
   const setSearch = (val?: string) => {
-    setShouldLoadPosts(true)
     setSearchInitial(val)
   }
   const [until, setUntilInitial] = useState<number>(1)
 
   const setUntil = (val: number) => {
-    setShouldLoadPosts(true)
     setUntilInitial(val)
   }
   const [characterProfileIds, setCharacterProfileIdsInternal] = useState<
@@ -144,14 +150,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
   >()
 
   const setCharacterProfileIds = (val: string[] | undefined) => {
-    setShouldLoadPosts(true)
     setCharacterProfileIdsInternal(val)
   }
-
-  useEffect(() => {
-    // Trigger refetch when sortBy changes
-    setShouldLoadPosts(true)
-  }, [sortBy])
 
   const { actions, API_URL } = useData()
 
@@ -163,7 +163,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     isLoading: isLoadingTribes,
     mutate: refetchTribes,
   } = useSWR(
-    showTribe && token ? ["tribes", app?.id, canShowTribeProfile] : null,
+    token ? ["tribes", app?.id, canShowTribeProfile] : null,
     () => {
       if (!token) return
       return actions.getTribes({
@@ -172,7 +172,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     },
     {
       fallbackData: initialTribes,
-      revalidateOnFocus: false,
+      revalidateOnFocus: !!initialTribes,
     },
   )
 
@@ -182,7 +182,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     error: tribePostError,
     isLoading: isLoadingPost,
   } = useSWR(
-    postId && token ? ["tribePost", postId, app?.id] : null,
+    postId && token ? ["tribePost", postId, app?.id, loadPostCounter] : null,
     () => {
       if (!token || !postId) return
       return actions.getTribePost({
@@ -192,26 +192,22 @@ export function TribeProvider({ children }: TribeProviderProps) {
     },
     {
       fallbackData: initialTribePost,
-      revalidateOnFocus: false,
+      revalidateOnFocus: !!initialTribePost,
     },
   )
 
   useEffect(() => {
-    if (tribePostData && tribePostData !== tribePost) {
+    if (tribePostData && tribePostData.id !== tribePost?.id) {
       setTribePost(tribePostData)
     }
-  }, [tribePostData, tribePost, setTribePost])
+  }, [tribePostData, tribePost?.id, setTribePost])
 
   useEffect(() => {
-    if (tribesData && tribesData !== tribes) {
+    if (tribesData) {
       setTribes(tribesData)
     }
-  }, [tribesData, tribes, setTribes])
+  }, [tribesData])
 
-  // Find tribe ID from slug
-  const currentTribe = tribeSlug
-    ? tribes?.tribes?.find((t) => t.slug === tribeSlug)
-    : undefined
   const tribeId = currentTribe?.id
 
   const {
@@ -219,7 +215,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     mutate: refetchPosts,
     isLoading: isLoadingPosts,
   } = useSWR(
-    (search ? search.length > 2 : true) && showTribe && token
+    (search ? search.length > 2 : true) && token
       ? [
           "tribePosts",
           until,
@@ -228,7 +224,9 @@ export function TribeProvider({ children }: TribeProviderProps) {
           sortBy,
           app?.id,
           tribeId,
+          tribeSlug,
           canShowTribeProfile,
+          loadPostsCounter,
         ]
       : null,
     () => {
@@ -244,16 +242,17 @@ export function TribeProvider({ children }: TribeProviderProps) {
     },
     {
       fallbackData: initialTribePosts,
-      revalidateOnFocus: false,
+      revalidateOnFocus: !!initialTribePosts,
     },
   )
 
   // Use tribePostsData directly from SWR, only update tribePosts manually when needed
   useEffect(() => {
-    if (tribePostsData && !tribePosts) {
+    if (tribePostsData) {
       setTribePosts(tribePostsData)
+      auth.setIsLoadingPosts(false)
     }
-  }, [tribePostsData, tribePosts, setTribePosts])
+  }, [tribePostsData])
 
   const [isTogglingLike, setIsTogglingLike] = useState<string | undefined>(
     undefined,
@@ -354,10 +353,12 @@ export function TribeProvider({ children }: TribeProviderProps) {
           tribePost?.id ||
           mockPostIds[Math.floor(Math.random() * mockPostIds.length)]
         if (!randomApp || !randomEmoji || !randomPostId) return
+        const reactionId = `${randomApp.id}-${randomPostId}-${Date.now()}`
         console.log("💖 Mock: Adding reaction:", randomApp.name, randomEmoji)
         setLiveReactions((prev) => [
           ...prev,
           {
+            id: reactionId,
             app: randomApp,
             tribePostId: randomPostId,
             reaction: { emoji: randomEmoji },
@@ -365,18 +366,13 @@ export function TribeProvider({ children }: TribeProviderProps) {
         ])
         // Remove after 2 seconds
         setTimeout(() => {
-          setLiveReactions((prev) =>
-            prev.filter(
-              (r) =>
-                r.app.id !== randomApp.id || r.tribePostId !== randomPostId,
-            ),
-          )
+          setLiveReactions((prev) => prev.filter((r) => r.id !== reactionId))
         }, 2000)
       } else {
         // 0.7 - 1.0 (30%): Add pending post
         const randomPostId = `post-${Date.now()}`
         console.log("📝 Mock: Adding pending post:", randomPostId)
-        setPendingPostIds((prev) => [...prev, randomPostId])
+        // setPendingPostIds((prev) => [...prev, randomPostId])
       }
     }, 3000) // Every 3 seconds
 
@@ -388,16 +384,25 @@ export function TribeProvider({ children }: TribeProviderProps) {
     data?: {
       app?: appWithStore
       tribePostId?: string
+      isTribe?: boolean
+      message?: {
+        message: message
+      }
     }
   }>({
     onMessage: async ({ type, data }) => {
       // Early return for non-Tribe events to avoid expensive operations
-      if (
-        !type.startsWith("new_post_") &&
-        !type.startsWith("new_comment_") &&
-        !type.startsWith("new_reaction_")
-      ) {
+      if (!data?.isTribe) {
         return
+      }
+
+      if (type === "stream_complete") {
+        const tribePostId = data.message?.message?.tribePostId
+
+        tribePostId &&
+          setPendingPostIds((prev) =>
+            prev?.includes(tribePostId) ? prev : [...prev, tribePostId],
+          )
       }
 
       if (type === "new_post_start") {
@@ -547,6 +552,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
       toast.success("Comment deleted successfully")
       // Refetch post to update comments
       if (tribePost?.id) {
+        setShouldLoadPost(true)
+
         await refetchTribePost()
       }
     } catch (error) {
@@ -555,6 +562,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
       toast.error("Failed to delete comment")
     }
   }
+
+  const [optimisticLiked, setOptimisticLiked] = useState<string[]>([])
 
   const toggleLike = async (postId: string): Promise<{ liked: boolean }> => {
     if (!postId) {
@@ -585,11 +594,15 @@ export function TribeProvider({ children }: TribeProviderProps) {
       }
 
       const data = await response.json()
-      // Refetch posts to update like counts
-      await refetchPosts()
-      if (tribePost?.id === postId) {
-        await refetchTribePost()
+
+      if (data.liked) {
+        !optimisticLiked.includes(postId) &&
+          setOptimisticLiked((prev) => [...prev, postId])
+      } else {
+        optimisticLiked.includes(postId) &&
+          setOptimisticLiked((prev) => prev.filter((item) => item !== postId))
       }
+      // Refetch posts to update like counts
 
       return { liked: data.liked }
     } catch (error) {
@@ -642,7 +655,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const value: TribeContextType = {
     tribes,
     tribePosts,
-    tribePost,
+    tribePost:
+      tribePost && postId && tribePost.id == postId ? tribePost : undefined,
     search,
     until,
     characterProfileIds,
@@ -661,6 +675,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     postId,
     setUntil,
     setCharacterProfileIds,
+    optimisticLiked,
+    setOptimisticLiked,
     toggleLike,
     deletePost,
     deleteComment,
@@ -669,14 +685,14 @@ export function TribeProvider({ children }: TribeProviderProps) {
     posting,
     liveReactions: liveReactions,
     pendingPostIds,
-    commenting: showTribe ? checkSwarm(commenting) : commenting,
+    commenting: commenting,
     setPendingPostIds,
     refetchPosts: async () => {
       setShouldLoadPosts(true)
       return refetchPosts()
     },
     refetchPost: async () => {
-      setShouldLoadPosts(true)
+      setShouldLoadPost(true)
       return refetchTribePost()
     },
     refetchTribes: async () => {

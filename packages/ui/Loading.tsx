@@ -13,6 +13,7 @@ export default function Loading({
   color = "var(--accent-6)",
   fullScreen = false,
   style,
+  icon,
 }: {
   className?: string
   width?: number
@@ -21,6 +22,7 @@ export default function Loading({
   size?: number
   fullScreen?: boolean
   style?: React.CSSProperties
+  icon?: React.ReactNode
 }): React.ReactElement | null {
   const isHydrated = useHasHydrated()
 
@@ -42,14 +44,16 @@ export default function Loading({
   }
   return (
     <LoadingWrapper>
-      <LoaderCircle
-        width={width || size || 24}
-        height={height || size || 24}
-        style={{ ...styles.loadingCircle.style, ...style }}
-        color={color as any}
-        data-testid="imgLoading"
-        className="spinner"
-      />
+      {icon || (
+        <LoaderCircle
+          width={width || size || 24}
+          height={height || size || 24}
+          style={{ ...styles.loadingCircle.style, ...style }}
+          color={color as any}
+          data-testid="imgLoading"
+          className="spinner"
+        />
+      )}
     </LoadingWrapper>
   )
 }

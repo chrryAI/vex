@@ -1,5 +1,6 @@
 import { Page, expect } from "@playwright/test"
 import { getURL, wait } from "../index"
+import { signIn } from "../shared/signIn"
 
 export async function maximize({ page }: { page: Page }) {
   await wait(2000)
@@ -25,6 +26,8 @@ export async function clean({
     waitUntil: "networkidle",
     timeout: 100000,
   })
+
+  await signIn({ page })
 
   await page.getByTestId("new-chat-button").click()
 
@@ -52,6 +55,24 @@ export async function clean({
         timeout: 50000,
       })
     : await wait(5000)
+
+  const accountButton = page.getByTestId("account-button")
+  await expect(accountButton).toBeVisible({
+    timeout: 50000,
+  })
+
+  await wait(5000)
+
+  await accountButton.click()
+
+  const logoutButton = page.getByTestId("account-logout-button")
+  await expect(logoutButton).toBeVisible()
+
+  await logoutButton.click()
+
+  await expect(signInButton).toBeVisible({
+    timeout: 15000,
+  })
 
   // Wait for the API call to complete
   await page.waitForTimeout(5000)

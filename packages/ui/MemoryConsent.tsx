@@ -341,14 +341,8 @@ export default function MemoryConsent({
                         if (!token) return
                         try {
                           setIsDeletingSession(true)
-                          const result = await apiFetch(`${API_URL}/clear`, {
-                            method: "POST",
-                            headers: {
-                              "Content-Type": "application/json",
-                              Authorization: `Bearer ${token}`,
-                            },
-                          })
-                          const data = await result.json()
+
+                          const data = await actions.clearSession()
 
                           if (data.error) {
                             toast.error(data.error)
