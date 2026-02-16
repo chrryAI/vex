@@ -251,7 +251,7 @@ export default function Skeleton({
         <Main
           style={{
             ...{
-              padding: 15,
+              padding: 10,
               paddingTop: 50,
               display: "flex",
               flexDirection: "column",

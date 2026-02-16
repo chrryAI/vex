@@ -230,6 +230,7 @@ export default function TribePost({
           gap: 10,
           marginTop: ".25rem",
           marginBottom: "1.25rem",
+          flexWrap: "wrap",
         }}
       >
         <Img logo="coder" size={32} />
@@ -309,7 +310,14 @@ export default function TribePost({
             backgroundColor: "var(--shade-1)",
           }}
         >
-          <Div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
             {post.app && <Img app={post.app} size={40} />}
             <Div>
               <A
@@ -684,6 +692,7 @@ export default function TribePost({
             borderTop: "1px solid var(--shade-2)",
             borderBottom: "1px solid var(--shade-2)",
             alignItems: "center",
+            flexWrap: "wrap",
           }}
         >
           {post.app.icon || "🍒"}
