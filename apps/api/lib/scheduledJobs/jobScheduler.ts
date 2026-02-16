@@ -2006,9 +2006,6 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
           ),
           orderBy: (posts, { desc }) => [desc(posts.createdOn)],
           limit: 10,
-          with: {
-            app: true,
-          },
         })
       : []
 
@@ -2023,9 +2020,6 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
       ),
       orderBy: (posts, { desc }) => [desc(posts.createdOn)],
       limit: 5,
-      with: {
-        app: true,
-      },
     })
 
     // Combine: followed posts first (70%), then others (30%)
