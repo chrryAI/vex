@@ -61,7 +61,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     optimisticLiked,
     tribePost: post,
   } = useTribe()
-  console.log(`🚀 ~ TribePost ~ post:`, post)
 
   const isSwarm = commenting.length || liveReactions.length
 
