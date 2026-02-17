@@ -17,7 +17,6 @@ class WebSocketManager {
   private connectCallbacks: (() => void)[] = []
   private ws: WebSocket | null = null
   private handlers: Handler<any>[] = []
-  private lastPingTime: any
   private static instance: WebSocketManager | null = null
   private currentUrl: string | null = null
   private isConnecting: boolean = false
