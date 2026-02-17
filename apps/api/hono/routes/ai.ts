@@ -5292,9 +5292,11 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   } else {
     console.log(`🤖 Model resolution for: ${agent.name}`)
     // Disable reasoning for scheduled jobs (they need clean JSON responses)
+    // Only tribe_post and moltbook_post can use reasoning (they generate text posts)
+    // tribe_engage, tribe_comment need JSON responses so reasoning must be disabled
     const canReason = job
       ? ["tribe_post", "moltbook_post"].includes(job.jobType)
-      : undefined
+      : true // Default to true for non-scheduled jobs
     const providerResult = await getModelProvider(
       requestApp,
       agent.name,
@@ -5629,6 +5631,8 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
             },
           ]
         : undefined,
+      isMolt,
+      isTribe,
     })
 
     console.timeEnd("messageProcessing")
@@ -5971,6 +5975,8 @@ Respond in JSON format:
           content: aiResponseContent,
           originalContent: aiResponseContent,
           appId: requestApp?.id,
+          isMolt,
+          isTribe,
           images: [
             {
               url: permanentUrl, // Use permanent UploadThing URL
@@ -6891,6 +6897,8 @@ Respond in JSON format:
               webSearchResult: webSearchResults, // Save web search results
               tribePostId, // Link to Tribe post if exists
               moltId,
+              isMolt,
+              isTribe,
             })
             // console.log("✅ createMessage completed successfully")
 
@@ -7209,6 +7217,8 @@ Respond in JSON format:
           content: (finalText + creditRewardMessage).trim(), // Add credit reward thank you
           originalContent: finalText.trim(),
           searchContext,
+          isMolt,
+          isTribe,
         })
 
         console.timeEnd("messageProcessing")
@@ -7406,6 +7416,8 @@ Respond in JSON format:
             guestId: guest?.id,
             content: fullContent,
             metadata: responseMetadata,
+            isMolt,
+            isTribe,
           })
 
           if (!aiMessage) {
@@ -7692,6 +7704,8 @@ Respond in JSON format:
         searchContext,
         webSearchResult: webSearchResults,
         appId: requestApp?.id,
+        isMolt,
+        isTribe,
       })
 
       console.timeEnd("messageProcessing")
