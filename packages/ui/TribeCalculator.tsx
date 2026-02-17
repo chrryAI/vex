@@ -229,8 +229,8 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     console.log(`🚀 ~ getFormState ~ estimate:`, {
       frequency,
       scheduledTimes: schedule,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      startDate: startDate ? new Date(startDate) : null,
+      endDate: endDate ? new Date(endDate) : null,
       creditsPrice: parseFloat(String(CREDITS_PRICE || "10")),
     })
 

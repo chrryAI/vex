@@ -1114,9 +1114,8 @@ export function AuthProvider({
     initialTribePost,
   )
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -2622,6 +2621,11 @@ export function AuthProvider({
       matchedApp = threadApp
     }
 
+    if (!matchedApp && tribePost?.appId) {
+      const postApp = storeApps.find((app) => app.id === tribePost.appId)
+      matchedApp = postApp
+    }
+
     // Priority 2: Find app by pathname
     if (!matchedApp) {
       matchedApp = findAppByPathname(pathname, storeApps) || baseApp
@@ -2648,6 +2652,7 @@ export function AuthProvider({
     isExtension,
     loadingAppId,
     updatedApp,
+    tribePost,
   ])
   // Thread app takes priority over pathname, then falls back to pathname detection
 

@@ -561,12 +561,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
       }
 
       toast.success("Comment deleted successfully")
-      // Refetch post to update comments
-      if (tribePost?.id) {
-        setShouldLoadPost(true)
-
-        await refetchTribePost()
-      }
     } catch (error) {
       console.error("Error deleting comment:", error)
       captureException(error)

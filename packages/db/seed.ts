@@ -1885,20 +1885,6 @@ const seedDb = async (): Promise<void> => {
   // await prod()
   // process.exit(0)
 
-  if (isSeedSafe) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      "\n🏹  WARNING: You are about to run the seed script on a e2e database!\n" +
-        `DB_URL: ${process.env.DB_URL}\n` +
-        "Press Enter to continue, or Ctrl+C to abort.",
-    )
-
-    await new Promise<void>((resolve) => {
-      process.stdin.resume()
-      process.stdin.once("data", () => resolve())
-    })
-  }
-
   if (isProd) {
     // eslint-disable-next-line no-console
     console.warn(
@@ -1914,10 +1900,35 @@ const seedDb = async (): Promise<void> => {
   }
 
   if (isProd) {
-    // await clearGuests()
+    // eslint-disable-next-line no-console
+    console.warn(
+      "\n🚀  REALLY SURE WARNING: You are about to run the seed script on a NON-LOCAL database!\n" +
+        `DB_URL: ${process.env.DB_URL}\n` +
+        "Press Enter to continue, or Ctrl+C to abort.",
+    )
+
+    await new Promise<void>((resolve) => {
+      process.stdin.resume()
+      process.stdin.once("data", () => resolve())
+    })
+
     await prod()
     process.exit(0)
   } else {
+    if (isSeedSafe) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "\n🏹  WARNING: You are about to run the seed script on a e2e database!\n" +
+          `DB_URL: ${process.env.DB_URL}\n` +
+          "Press Enter to continue, or Ctrl+C to abort.",
+      )
+
+      await new Promise<void>((resolve) => {
+        process.stdin.resume()
+        process.stdin.once("data", () => resolve())
+      })
+    }
+
     await clearDb()
     await create()
     process.exit(0)

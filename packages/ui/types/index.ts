@@ -1136,6 +1136,7 @@ export type tribePost = {
   visibility: "public" | "private" | "tribe"
   likesCount: number
   commentsCount: number
+  appId: string
   sharesCount: number
   createdOn: Date
   updatedOn: Date

@@ -345,15 +345,29 @@ export async function loadServerData(
         })
       : undefined
 
+    const postId = getPostId(pathname)
+
+    let tribePostResult: tribePostWithDetails | undefined = undefined
+    if (postId) {
+      try {
+        tribePostResult = await getTribePost({
+          id: postId,
+          token: apiKey,
+          API_URL,
+        })
+      } catch (error) {
+        console.error("❌ Tribe post fetch failed:", error)
+        tribePostResult = undefined
+      }
+    }
+
     const appResult = await getApp({
       chrryUrl,
-      appId: threadResult?.thread?.appId || appId,
+      appId: threadResult?.thread?.appId || tribePostResult?.appId || appId,
       token: apiKey,
       pathname,
       API_URL,
     })
-
-    const postId = getPostId(pathname)
 
     const showAllTribe =
       pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
@@ -361,52 +375,40 @@ export async function loadServerData(
     const canShowTribeProfile =
       !excludedSlugRoutes?.includes(pathname.split("?")?.[0]) && !showAllTribe
 
-    const [
-      translationsResult,
-      threadsResult,
-      tribesResult,
-      tribePostsResult,
-      tribePostResult,
-    ] = await Promise.all([
-      getTranslations({
-        token: apiKey,
-        locale,
-        API_URL,
-      }),
+    const [translationsResult, threadsResult, tribesResult, tribePostsResult] =
+      await Promise.all([
+        getTranslations({
+          token: apiKey,
+          locale,
+          API_URL,
+        }),
 
-      getThreads({
-        appId: appResult.id,
-        pageSize: pageSizes.menuThreads,
-        sort: "bookmark",
-        token: apiKey,
-        API_URL,
-      }),
-      !isBlogRoute
-        ? getTribes({
-            pageSize: 15,
-            page: 1,
-            token: apiKey,
-            appId: canShowTribeProfile ? appResult.id : undefined,
-            API_URL,
-          })
-        : Promise.resolve(undefined),
-      !isBlogRoute
-        ? getTribePosts({
-            pageSize: 10,
-            page: 1,
-            token: apiKey,
-            appId: canShowTribeProfile ? appResult.id : undefined,
-            API_URL,
-          })
-        : Promise.resolve(undefined),
-      postId
-        ? getTribePost({
-            id: postId,
-            token: apiKey,
-            API_URL,
-          })
-        : Promise.resolve(undefined),
-    ])
+        getThreads({
+          appId: appResult.id,
+          pageSize: pageSizes.menuThreads,
+          sort: "bookmark",
+          token: apiKey,
+          API_URL,
+        }),
+        !isBlogRoute
+          ? getTribes({
+              pageSize: 15,
+              page: 1,
+              token: apiKey,
+              appId: canShowTribeProfile ? appResult.id : undefined,
+              API_URL,
+            })
+          : Promise.resolve(undefined),
+        !isBlogRoute
+          ? getTribePosts({
+              pageSize: 10,
+              page: 1,
+              token: apiKey,
+              appId: canShowTribeProfile ? appResult.id : undefined,
+              API_URL,
+            })
+          : Promise.resolve(undefined),
+      ])
 
     threads = threadsResult
 
