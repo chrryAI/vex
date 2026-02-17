@@ -96,7 +96,7 @@ scheduledJobs.post("/", async (c) => {
 
     // Use sanitized and validated data
     const {
-      sessionId,
+      sessionId: _sessionId,
       appId,
       schedule,
       frequency,

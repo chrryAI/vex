@@ -191,7 +191,7 @@ async function getChrryApp(c: any, chrryUrl: string) {
 }
 
 async function getWhiteLabel(app: appWithStore) {
-  const { storeApp, whiteLabel } = getWhiteLabelUtil({ app })
+  const { storeApp, whiteLabel: _whiteLabel } = getWhiteLabelUtil({ app })
 
   if (!storeApp) {
     // For simplicity, default to generic fallback if failing to resolve

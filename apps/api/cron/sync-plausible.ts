@@ -12,7 +12,7 @@ dotenv.config()
  * Grape reads from DB via getAnalyticsContext()
  */
 
-interface PlausibleResult {
+interface _PlausibleResult {
   visitors: number
   pageviews?: number
   bounce_rate?: number

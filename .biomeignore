@@ -1,0 +1,11 @@
+# Ignore CSS files with SCSS syntax
+**/*.module.css
+**/ChrryDotDev.module.css
+
+# Ignore generated files
+**/*.d.ts
+**/dist
+**/build
+**/.next
+**/.turbo
+**/node_modules

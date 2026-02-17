@@ -17,7 +17,7 @@ import { generateText } from "ai"
 import { getModelProvider } from "../../lib/getModelProvider"
 import captureException from "../captureException"
 
-interface BiddingContext {
+interface _BiddingContext {
   campaign: appCampaign
   availableSlots: storeTimeSlot[]
   historicalPerformance: PerformanceData[]
