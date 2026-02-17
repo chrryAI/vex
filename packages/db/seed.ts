@@ -1931,8 +1931,8 @@ const seedDb = async (): Promise<void> => {
     await prod()
     process.exit(0)
   } else {
-    await clearDb()
-    await create()
+    // await clearDb()
+    // await create()
     process.exit(0)
   }
 }

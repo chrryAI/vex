@@ -19,8 +19,20 @@ import {
   type user,
   deleteMessage,
   updateMessage,
+  getScheduledJob,
+  db,
+  eq,
+  and,
+  ne,
+  isNull,
+  desc,
 } from "@repo/db"
-import { PROMPT_LIMITS, type webSearchResultType } from "@repo/db/src/schema"
+import {
+  PROMPT_LIMITS,
+  type webSearchResultType,
+  tribePosts,
+  tribeComments,
+} from "@repo/db/src/schema"
 import {
   isE2E as isE2EInternal,
   isOwner,
@@ -350,15 +362,97 @@ messages.post("/", async (c) => {
   // Handle scheduled job requests
   if (jobId) {
     console.log(`🤖 Scheduled job request detected: ${jobId}`)
-    // TODO: Import getScheduledJob and handle tribe_comment/tribe_post
-    // This will be implemented in next step
-    return c.json(
-      {
-        error: "Job handling not yet implemented",
-        jobId,
-      },
-      501,
-    )
+
+    const job = await getScheduledJob({ id: jobId })
+    if (!job) {
+      return c.json({ error: "Job not found" }, 404)
+    }
+
+    console.log(`📋 Job type: ${job.jobType}`)
+
+    // Handle tribe_comment - reply to comments on own posts
+    if (job.jobType === "tribe_comment") {
+      if (!app) {
+        return c.json({ error: "App required for tribe comment job" }, 400)
+      }
+
+      console.log("💬 Finding comments on own posts...")
+
+      // Get our posts
+      const ourPosts = await db.query.tribePosts.findMany({
+        where: eq(tribePosts.appId, app.id),
+        orderBy: [desc(tribePosts.createdOn)],
+        limit: 10,
+      })
+
+      console.log(`📊 Found ${ourPosts.length} of our posts`)
+
+      // Collect comments that need replies
+      const commentsToReply: Array<{
+        comment: any
+        post: any
+      }> = []
+
+      for (const post of ourPosts) {
+        const comments = await db.query.tribeComments.findMany({
+          where: and(
+            eq(tribeComments.postId, post.id),
+            ne(tribeComments.appId, app.id), // Not our own comments
+            isNull(tribeComments.parentCommentId), // Only top-level comments
+          ),
+          orderBy: [desc(tribeComments.createdOn)],
+          limit: 3, // Max 3 per post
+        })
+
+        for (const comment of comments) {
+          // Check if we already replied
+          const existingReply = await db.query.tribeComments.findFirst({
+            where: and(
+              eq(tribeComments.parentCommentId, comment.id),
+              eq(tribeComments.appId, app.id),
+            ),
+          })
+
+          if (!existingReply) {
+            commentsToReply.push({ comment, post })
+            if (commentsToReply.length >= 5) break // Max 5 total
+          }
+        }
+
+        if (commentsToReply.length >= 5) break
+      }
+
+      console.log(`💬 Found ${commentsToReply.length} comments to reply to`)
+
+      if (commentsToReply.length === 0) {
+        return c.json({
+          success: true,
+          message: "No comments to reply to",
+          repliesCount: 0,
+        })
+      }
+
+      // TODO: Next step - call AI to generate batch replies
+      // For now, return the comments that need replies
+      return c.json({
+        success: true,
+        message: "Comments found, AI processing not yet implemented",
+        commentsToReply: commentsToReply.length,
+        jobType: job.jobType,
+      })
+    }
+
+    // Handle tribe_post - create post
+    if (job.jobType === "tribe_post") {
+      // TODO: Implement post creation
+      return c.json({
+        success: true,
+        message: "Post creation not yet implemented",
+        jobType: job.jobType,
+      })
+    }
+
+    return c.json({ error: "Unknown job type" }, 400)
   }
 
   if (stopStreamId) {
