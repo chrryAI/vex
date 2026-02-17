@@ -3,7 +3,6 @@ import EmojiPickerReact, {
   SuggestionMode,
   Theme,
 } from "emoji-picker-react"
-import React from "react"
 import type { EmojiPickerProps } from "./EmojiPicker"
 import { Div } from "./platform"
 

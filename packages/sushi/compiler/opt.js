@@ -6,6 +6,7 @@ import "./prefs.js"
 export default (funcs, globals, pages, tags, exceptions) => {
   const optLevel = parseInt(
     process.argv.find((x) => x.startsWith("-O"))?.[2] ?? 1,
+    10,
   )
   if (optLevel === 0) return
 

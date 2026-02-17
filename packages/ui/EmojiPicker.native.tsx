@@ -1,4 +1,3 @@
-import React from "react"
 import EmojiPickerModal from "rn-emoji-keyboard"
 import type { EmojiPickerProps } from "./EmojiPicker"
 

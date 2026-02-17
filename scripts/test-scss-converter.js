@@ -5,10 +5,10 @@
  * Validates that the converter produces correct output
  */
 
-import { execSync } from "child_process"
-import fs from "fs"
-import path, { dirname } from "path"
-import { fileURLToPath } from "url"
+import { execSync } from "node:child_process"
+import fs from "node:fs"
+import path, { dirname } from "node:path"
+import { fileURLToPath } from "node:url"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -32,7 +32,7 @@ try {
       stdio: "inherit",
     },
   )
-} catch (error) {
+} catch (_error) {
   console.error("❌ Failed to generate TypeScript from SCSS")
   process.exit(1)
 }

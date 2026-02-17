@@ -1,10 +1,8 @@
-import { type Browser, expect, type Page, test } from "@playwright/test"
+import { type Browser, expect, type Page } from "@playwright/test"
 import { v4 as uuidv4 } from "uuid"
 import {
   getURL,
   VEX_TEST_EMAIL,
-  VEX_TEST_EMAIL_2,
-  VEX_TEST_EMAIL_3,
   VEX_TEST_EMAIL_4,
   VEX_TEST_PASSWORD_4,
   wait,

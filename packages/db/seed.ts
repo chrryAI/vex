@@ -1,7 +1,5 @@
-import crypto from "crypto"
+import crypto from "node:crypto"
 import { and, eq, inArray, isNull, lt, sql } from "drizzle-orm"
-import { Redis } from "ioredis"
-import { clearSonarCloudGraph } from "../../apps/api/lib/graph/sonarGraphSync"
 import { createCities } from "./createCities"
 import { createEvent } from "./createEvent"
 import { createStores } from "./createStores"
@@ -12,13 +10,9 @@ import {
   createThread,
   createUser,
   db,
-  deleteGuest,
   getApp,
-  getGuest,
-  getGuests,
   getUser,
   getUsers,
-  isCI,
   isProd,
   isSeedSafe,
   isWaffles,
@@ -27,9 +21,6 @@ import {
   sonarMetrics,
   TEST_MEMBER_FINGERPRINTS,
   updateApp,
-  updateGuest,
-  updateThread,
-  updateUser,
   type user,
 } from "./index"
 import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
@@ -48,7 +39,6 @@ import {
   moltQuestions,
   placeHolders,
   realtimeAnalytics,
-  storeInstalls,
   stores,
   subscriptions,
   systemLogs,
@@ -65,7 +55,7 @@ import {
 } from "./src/schema"
 
 const now = new Date()
-const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
 async function createAgents() {
   if (isProd) {
@@ -611,7 +601,7 @@ const secureShuffle = <T>(arr: T[]): T[] => {
 function generateUsername(name: string): string {
   const parts = name.toLowerCase().split(" ")
   const firstName = parts[0] || ""
-  const lastName = parts[1] || ""
+  const _lastName = parts[1] || ""
 
   // Önce sadece first name dene
   const baseUsername = firstName
@@ -638,7 +628,7 @@ function generateEmail(name: string, attempt: number = 0): string {
 
 // Sonra create fonksiyonunun sonuna (admin ve feedback user'lardan sonra) ekleyin:
 
-async function createRealisticUsers() {
+async function _createRealisticUsers() {
   console.log("👥 Creating 150+ UNIQUE realistic users...")
 
   const createdUsers = []
@@ -698,7 +688,7 @@ async function createRealisticUsers() {
         "Architecting",
       ]
       let bio = `${pickCrypto(templates)} ${expertise[0]} and ${expertise[1]}`
-      if (bio.length > 50) bio = bio.substring(0, 47) + "..."
+      if (bio.length > 50) bio = `${bio.substring(0, 47)}...`
 
       // 3. Financial & Availability: cryptoInt ve cryptoFloat kullan
       const hourlyRate = cryptoInt(30, 81) // 30-80 cr (81 exclusive)
@@ -748,7 +738,7 @@ async function createRealisticUsers() {
 
 // seed.ts dosyasının createRealisticUsers fonksiyonundan sonra ekleyin:
 
-async function createCharacterProfiles() {
+async function _createCharacterProfiles() {
   console.log("🎭 Creating character profiles for users...")
 
   const users = await getUsers({ pageSize: 200 })
@@ -925,7 +915,7 @@ async function createCharacterProfiles() {
 // create fonksiyonunun içinde, localswaphub user'dan sonra ekleyin:
 
 // Create 150+ realistic users
-async function clearGuests() {
+async function _clearGuests() {
   const batchSize = 500
   let totalDeleted = 0
   let hasMore = true
@@ -985,7 +975,7 @@ async function clearGuests() {
   )
 }
 
-async function clearMemories() {
+async function _clearMemories() {
   console.log("🧠 Cleaning up inconsistent app memories...")
 
   // Find app memories with user-specific language
@@ -1410,7 +1400,7 @@ const create = async () => {
     const THREAD_COUNT = block ? 2 : 20
     const MESSAGES_PER_THREAD = block ? 5 : 50
     const threadsData = Array.from({ length: THREAD_COUNT }).map((_, t) => {
-      const usedIndexes = new Set<number>()
+      const _usedIndexes = new Set<number>()
       const messages: { role: "user" | "ai"; content: string }[] = []
       // For the first 5 threads, ensure at least 50 messages (25 user/ai pairs)
       const messagePairs =
@@ -1663,16 +1653,16 @@ const updateStoreUrls = async ({ user }: { user: user }) => {
   )
 }
 
-const waffles = async () => {
+const _waffles = async () => {
   const admin = await getUser({
     email: isWaffles ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
 
-  const { vex } = await createStores({ user: admin })
+  await createStores({ user: admin })
 }
 
-const generateTribes = async () => {
+const _generateTribes = async () => {
   // const oops = true
 
   // if (oops) {

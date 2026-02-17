@@ -9,25 +9,22 @@ import {
   getTribes,
 } from "@chrryai/chrry/lib"
 import { type locale, locales } from "@chrryai/chrry/locales"
-import {
-  type appWithStore,
-  type paginatedMessages,
-  type paginatedTribePosts,
-  type paginatedTribes,
-  type session,
-  type thread,
-  type tribe,
-  tribePost,
-  type tribePostWithDetails,
+import type {
+  appWithStore,
+  paginatedMessages,
+  paginatedTribePosts,
+  paginatedTribes,
+  session,
+  thread,
+  tribe,
+  tribePostWithDetails,
 } from "@chrryai/chrry/types"
 import {
   API_INTERNAL_URL,
-  getEnv,
   getPostId,
   getThreadId,
   isE2E,
   pageSizes,
-  VERSION,
 } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
@@ -291,7 +288,7 @@ export async function loadServerData(
   let tribes: paginatedTribes | undefined
   let tribePosts: paginatedTribePosts | undefined
   let tribePost: tribePostWithDetails | undefined
-  let tribe: tribe | undefined
+  let _tribe: tribe | undefined
 
   try {
     appId = threadResult?.thread?.appId || headers["x-app-id"]

@@ -23,7 +23,7 @@
 //   throw new Test262Error(message);
 // };
 
-var $DONOTEVALUATE = () => {
+var _$DONOTEVALUATE = () => {
   throw "Test262: This statement should not be evaluated."
 }
 
@@ -110,7 +110,7 @@ var __assert_compareArray = (actual, expected) => {
 }
 
 /// isConstructor.js
-var isConstructor = (f) => {
+var _isConstructor = (f) => {
   if (typeof f !== "function") {
     throw new Test262Error("isConstructor invoked with a non-function value")
   }
@@ -119,7 +119,7 @@ var isConstructor = (f) => {
 }
 
 /// assertRelativeDateMs.js
-function assertRelativeDateMs(date, expectedMs) {
+function _assertRelativeDateMs(date, expectedMs) {
   var actualMs = date.valueOf()
   var localOffset = date.getTimezoneOffset() * 60000
 
@@ -129,7 +129,7 @@ function assertRelativeDateMs(date, expectedMs) {
 }
 
 /// decimalToHexString.js
-function decimalToHexString(n) {
+function _decimalToHexString(n) {
   var hex = "0123456789ABCDEF"
   n >>>= 0
   var s = ""
@@ -140,37 +140,37 @@ function decimalToHexString(n) {
   return s.padStart(4, "0")
 }
 
-function decimalToPercentHexString(n) {
+function _decimalToPercentHexString(n) {
   var hex = "0123456789ABCDEF"
-  return "%" + hex[(n >> 4) & 0xf] + hex[n & 0xf]
+  return `%${hex[(n >> 4) & 0xf]}${hex[n & 0xf]}`
 }
 
 /// tcoHelper.js
-var $MAX_ITERATIONS = 100000
+var _$MAX_ITERATIONS = 100000
 
 /// dateConstants.js
-var date_1899_end = -2208988800001
-var date_1900_start = -2208988800000
-var date_1969_end = -1
-var date_1970_start = 0
-var date_1999_end = 946684799999
-var date_2000_start = 946684800000
-var date_2099_end = 4102444799999
-var date_2100_start = 4102444800000
+var _date_1899_end = -2208988800001
+var _date_1900_start = -2208988800000
+var _date_1969_end = -1
+var _date_1970_start = 0
+var _date_1999_end = 946684799999
+var _date_2000_start = 946684800000
+var _date_2099_end = 4102444799999
+var _date_2100_start = 4102444800000
 
-var start_of_time = -8.64e15
-var end_of_time = 8.64e15
+var _start_of_time = -8.64e15
+var _end_of_time = 8.64e15
 
 /// nans.js
-var NaNs = [NaN, Number.NaN, NaN * 0, 0 / 0, Infinity / Infinity, -(0 / 0)]
+var _NaNs = [NaN, Number.NaN, NaN * 0, 0 / 0, Infinity / Infinity, -(0 / 0)]
 
 /// testTypedArray.js
 // hack: we do not actually have an underlying TypedArray so just use Int8Array
-var TypedArray = Int8Array
+var _TypedArray = Int8Array
 
 var floatArrayConstructors = [Float64Array, Float32Array]
 
-var nonClampedIntArrayConstructors = [
+var _nonClampedIntArrayConstructors = [
   Int32Array,
   Int16Array,
   Int8Array,
@@ -179,7 +179,7 @@ var nonClampedIntArrayConstructors = [
   Uint8Array,
 ]
 
-var intArrayConstructors = [
+var _intArrayConstructors = [
   Int32Array,
   Int16Array,
   Int8Array,
@@ -214,11 +214,11 @@ var nonAtomicsFriendlyTypedArrayConstructors = [
   Uint8ClampedArray,
 ]
 
-function testWithNonAtomicsFriendlyTypedArrayConstructors(f) {
+function _testWithNonAtomicsFriendlyTypedArrayConstructors(f) {
   testWithTypedArrayConstructors(f, nonAtomicsFriendlyTypedArrayConstructors)
 }
 
-function testWithAtomicsFriendlyTypedArrayConstructors(f) {
+function _testWithAtomicsFriendlyTypedArrayConstructors(f) {
   testWithTypedArrayConstructors(f, [
     Int32Array,
     Int16Array,
@@ -230,7 +230,7 @@ function testWithAtomicsFriendlyTypedArrayConstructors(f) {
 }
 
 var __values, __expected, __fn, __ta, __taName
-function testTypedArrayConversions(byteConversionValues, fn) {
+function _testTypedArrayConversions(byteConversionValues, fn) {
   __values = byteConversionValues.values
   __expected = byteConversionValues.expected
   __fn = fn
@@ -250,11 +250,11 @@ function testTypedArrayConversions(byteConversionValues, fn) {
   })
 }
 
-function isFloatTypedArrayConstructor(arg) {
+function _isFloatTypedArrayConstructor(arg) {
   return floatArrayConstructors.indexOf(arg) !== -1
 }
 
-function floatTypedArrayConstructorPrecision(FA) {
+function _floatTypedArrayConstructorPrecision(FA) {
   if (FA === Float32Array) {
     return "single"
   } else if (FA === Float64Array) {
@@ -266,7 +266,7 @@ function floatTypedArrayConstructorPrecision(FA) {
 // hack: we do not actually have an underlying TypedArray so just use Int8Array
 var TypedArray = Int8Array
 
-function testWithBigIntTypedArrayConstructors(f, selected) {
+function _testWithBigIntTypedArrayConstructors(f, selected) {
   const constructors = selected || [BigInt64Array, BigUint64Array]
 
   for (let i = 0; i < constructors.length; i++) {
@@ -289,23 +289,23 @@ const builtinCtors = [
   BigInt64Array,
 ]
 
-const floatCtors = [Float32Array, Float64Array]
+const _floatCtors = [Float32Array, Float64Array]
 
-const ctors = builtinCtors
+const _ctors = builtinCtors
 
 function CreateResizableArrayBuffer(byteLength, maxByteLength) {
   return new ArrayBuffer(byteLength, { maxByteLength })
 }
 
 function Convert(item) {
-  if (typeof item == "bigint") {
+  if (typeof item === "bigint") {
     return Number(item)
   }
 
   return item
 }
 
-function ToNumbers(array) {
+function _ToNumbers(array) {
   const result = []
   for (let i = 0; i < array.length; i++) {
     const item = array[i]
@@ -322,7 +322,7 @@ function MayNeedBigInt(ta, n) {
   return n
 }
 
-function CreateRabForTest(ctor) {
+function _CreateRabForTest(ctor) {
   const rab = CreateResizableArrayBuffer(
     4 * ctor.BYTES_PER_ELEMENT,
     8 * ctor.BYTES_PER_ELEMENT,
@@ -335,19 +335,19 @@ function CreateRabForTest(ctor) {
   return rab
 }
 
-function CollectValuesAndResize(n, values, rab, resizeAfter, resizeTo) {
-  if (typeof n == "bigint") {
+function _CollectValuesAndResize(n, values, rab, resizeAfter, resizeTo) {
+  if (typeof n === "bigint") {
     values.push(Number(n))
   } else {
     values.push(n)
   }
-  if (values.length == resizeAfter) {
+  if (values.length === resizeAfter) {
     rab.resize(resizeTo)
   }
   return true
 }
 
-function TestIterationAndResize(
+function _TestIterationAndResize(
   iterable,
   expected,
   rab,
@@ -366,7 +366,7 @@ function TestIterationAndResize(
       values.push(Number(value))
     }
 
-    if (!resized && values.length == resizeAfter) {
+    if (!resized && values.length === resizeAfter) {
       rab.resize(newByteLength)
       resized = true
     }
@@ -447,7 +447,7 @@ function isWritable(obj, name, verifyProp, value) {
   return writeSucceeded
 }
 
-function verifyProperty(obj, name, desc, options) {
+function _verifyProperty(obj, name, desc, options) {
   var originalDesc = Object.getOwnPropertyDescriptor(obj, name)
 
   if (desc === undefined) {
@@ -495,20 +495,20 @@ function verifyProperty(obj, name, desc, options) {
     }
   }
 
-  if (options && options.restore) {
+  if (options?.restore) {
     Object.defineProperty(obj, name, originalDesc)
   }
 
   return true
 }
 
-function verifyEqualTo(obj, name, value) {
+function _verifyEqualTo(obj, name, value) {
   if (!isSameValue(obj[name], value)) {
     throw new Test262Error("propertyHelper verifyEqualTo failed")
   }
 }
 
-function verifyWritable(obj, name, verifyProp, value) {
+function _verifyWritable(obj, name, verifyProp, value) {
   if (!verifyProp) {
     if (!Object.getOwnPropertyDescriptor(obj, name).writable)
       throw new Test262Error("propertyHelper verifyWritable failed")
@@ -519,7 +519,7 @@ function verifyWritable(obj, name, verifyProp, value) {
   }
 }
 
-function verifyNotWritable(obj, name, verifyProp, value) {
+function _verifyNotWritable(obj, name, verifyProp, value) {
   if (!verifyProp) {
     if (Object.getOwnPropertyDescriptor(obj, name).writable)
       throw new Test262Error("propertyHelper verifyNotWritable failed")
@@ -530,32 +530,32 @@ function verifyNotWritable(obj, name, verifyProp, value) {
   }
 }
 
-function verifyEnumerable(obj, name) {
+function _verifyEnumerable(obj, name) {
   if (!isEnumerable(obj, name)) {
     throw new Test262Error("propertyHelper verifyEnumerable failed")
   }
 }
 
-function verifyNotEnumerable(obj, name) {
+function _verifyNotEnumerable(obj, name) {
   if (isEnumerable(obj, name)) {
     throw new Test262Error("propertyHelper verifyNotEnumerable failed")
   }
 }
 
-function verifyConfigurable(obj, name) {
+function _verifyConfigurable(obj, name) {
   if (!isConfigurable(obj, name)) {
     throw new Test262Error("propertyHelper verifyConfigurable failed")
   }
 }
 
-function verifyNotConfigurable(obj, name) {
+function _verifyNotConfigurable(obj, name) {
   if (isConfigurable(obj, name)) {
     throw new Test262Error("propertyHelper verifyNotConfigurable failed")
   }
 }
 
 /// promiseHelper.js
-function checkSequence(arr) {
+function _checkSequence(arr) {
   for (let i = 0; i < arr.length; i++) {
     const x = arr[i]
     if (x !== i + 1) {
@@ -566,7 +566,7 @@ function checkSequence(arr) {
   return true
 }
 
-function checkSettledPromises(settleds, expected) {
+function _checkSettledPromises(settleds, expected) {
   assert.sameValue(Array.isArray(settleds), true)
   assert.sameValue(settleds.length, expected.length)
 
@@ -591,12 +591,12 @@ function checkSettledPromises(settleds, expected) {
 }
 
 /// detachArrayBuffer.js
-function $DETACHBUFFER(buffer) {
+function _$DETACHBUFFER(buffer) {
   Porffor.arraybuffer.detach(buffer)
 }
 
 /// fnGlobalObject.js
-function fnGlobalObject() {
+function _fnGlobalObject() {
   return globalThis
 }
 
@@ -610,7 +610,7 @@ function $DONE(error) {
 }
 
 /// byteConversionValues.js
-var byteConversionValues = {
+var _byteConversionValues = {
   values: [
     127, // 2 ** 7 - 1
     128, // 2 ** 7
@@ -1276,11 +1276,11 @@ function getCache(cache, left, right) {
   var result
 
   otherCache = cache.get(left)
-  result = otherCache && otherCache.get(right)
+  result = otherCache?.get(right)
   if (result) return result
 
   otherCache = cache.get(right)
-  result = otherCache && otherCache.get(left)
+  result = otherCache?.get(left)
   if (result) return result
 
   return UNKNOWN
@@ -1377,7 +1377,7 @@ function isNaNEquatable(value) {
 }
 
 function compareNaNEquality(a, b) {
-  return isNaN(a) && isNaN(b) ? EQUAL : NOT_EQUAL
+  return Number.isNaN(a) && Number.isNaN(b) ? EQUAL : NOT_EQUAL
 }
 
 function isObjectEquatable(value) {
@@ -1533,7 +1533,7 @@ var __assert_deepEqual = (actual, expected) => {
 }
 
 /// asyncHelpers.js
-const asyncTest = (testFunc) => {
+const _asyncTest = (testFunc) => {
   if (typeof testFunc !== "function") {
     $DONE(new Test262Error("asyncTest called with non-function argument"))
     return
@@ -1604,7 +1604,7 @@ const validateNativeFunctionSource = (source) => {
   throw new Test262Error("validateNativeFunctionSource failed")
 }
 
-const assertToStringOrNativeFunction = (fn, expected) => {
+const _assertToStringOrNativeFunction = (fn, expected) => {
   const actual = fn.toString()
   try {
     assert.sameValue(actual, expected)
@@ -1637,7 +1637,7 @@ var __assert_compareIterator = (iter, validators) => {
 }
 
 /// regExpUtils.js
-function buildString(args) {
+function _buildString(args) {
   const loneCodePoints = args.loneCodePoints
   const ranges = args.ranges
   let result = String.fromCodePoint(...loneCodePoints)
@@ -1669,7 +1669,7 @@ function buildString(args) {
 //   return buf.join(' ');
 // }
 
-function testPropertyEscapes(regExp, string, expression) {
+function _testPropertyEscapes(regExp, string, expression) {
   if (!regExp.test(string)) {
     for (const symbol of string) {
       // let formatted = printCodePoint(symbol.codePointAt(0));
@@ -1686,7 +1686,7 @@ function testPropertyOfStrings(args) {
   // compatibility with engines that only implement assignment patterns
   // partially or not at all.
   const regExp = args.regExp
-  const expression = args.expression
+  const _expression = args.expression
   const matchStrings = args.matchStrings
   const nonMatchStrings = args.nonMatchStrings
   const allStrings = matchStrings.join("")
@@ -1716,7 +1716,7 @@ function testPropertyOfStrings(args) {
 // as enabled through the RegExp `v` flag. This is useful to test not
 // just standalone properties of strings, but also string literals, and
 // set operations.
-const testExtendedCharacterClass = testPropertyOfStrings
+const _testExtendedCharacterClass = testPropertyOfStrings
 
 // Returns a function that validates a RegExp match result.
 //
@@ -1725,7 +1725,7 @@ const testExtendedCharacterClass = testPropertyOfStrings
 //    var validate = matchValidator(['b'], 1, 'abc');
 //    validate(/b/.exec('abc'));
 //
-function matchValidator(expectedEntries, expectedIndex, expectedInput) {
+function _matchValidator(expectedEntries, expectedIndex, expectedInput) {
   return (match) => {
     assert.compareArray(match, expectedEntries, "Match entries")
     assert.sameValue(match.index, expectedIndex, "Match index")
@@ -1734,13 +1734,13 @@ function matchValidator(expectedEntries, expectedIndex, expectedInput) {
 }
 
 /// sm/non262.js
-function print() {}
-function printBugNumber() {}
-function inSection() {}
-function printStatus() {}
-function writeHeaderToLog() {}
+function _print() {}
+function _printBugNumber() {}
+function _inSection() {}
+function _printStatus() {}
+function _writeHeaderToLog() {}
 
-function assertThrownErrorContains(f) {
+function _assertThrownErrorContains(f) {
   try {
     f()
   } catch {
@@ -1760,40 +1760,40 @@ function assertThrowsInstanceOfWithMessageCheck(f, ctor) {
   throw new Error("assertThrowsInstanceOfWithMessageCheck failed")
 }
 
-function assertEq(a, b) {
+function _assertEq(a, b) {
   assert.sameValue(a, b)
 }
-function reportCompare(a, b) {
+function _reportCompare(a, b) {
   assert.sameValue(a, b)
 }
 
-function reportMatch(expectedRegExp, actual) {
+function _reportMatch(expectedRegExp, actual) {
   assert.sameValue(typeof actual, "string")
   assert.notSameValue(expectedRegExp.exec(actual), null)
 }
 
-function createExternalArrayBuffer(size) {
+function _createExternalArrayBuffer(size) {
   return new ArrayBuffer(size)
 }
 
-function enableGeckoProfilingWithSlowAssertions() {}
-function enableGeckoProfiling() {}
-function disableGeckoProfiling() {}
+function _enableGeckoProfilingWithSlowAssertions() {}
+function _enableGeckoProfiling() {}
+function _disableGeckoProfiling() {}
 
 /// sm/non262-shell.js
-function deepEqual(a, b) {
-  if (typeof a != typeof b) return false
+function _deepEqual(a, b) {
+  if (typeof a !== typeof b) return false
 
-  if (typeof a == "object") {
+  if (typeof a === "object") {
     var props = {}
     for (var prop in a) {
-      if (!deepEqual(a[prop], b[prop])) return false
+      if (!_deepEqual(a[prop], b[prop])) return false
       props[prop] = true
     }
 
     for (var prop in b) if (!props[prop]) return false
 
-    return a.length == b.length
+    return a.length === b.length
   }
 
   if (a === b) {
@@ -1803,8 +1803,8 @@ function deepEqual(a, b) {
   return a !== a && b !== b
 }
 
-function assertThrowsValue(f, val) {
-  var fullmsg
+function _assertThrowsValue(f, val) {
+  var _fullmsg
   try {
     f()
   } catch (exc) {
@@ -1815,14 +1815,14 @@ function assertThrowsValue(f, val) {
   throw new Error("assertThrowsValue failed")
 }
 
-function assertThrowsInstanceOf(f, ctor) {
+function _assertThrowsInstanceOf(f, ctor) {
   assertThrowsInstanceOfWithMessageCheck(f, ctor)
 }
 
-function assertThrowsInstanceOfWithMessage(f, ctor) {
+function _assertThrowsInstanceOfWithMessage(f, ctor) {
   assertThrowsInstanceOfWithMessageCheck(f, ctor)
 }
 
-function assertThrowsInstanceOfWithMessageContains(f, ctor) {
+function _assertThrowsInstanceOfWithMessageContains(f, ctor) {
   assertThrowsInstanceOfWithMessageCheck(f, ctor)
 }

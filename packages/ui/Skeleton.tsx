@@ -200,8 +200,8 @@ export default function Skeleton({
     setIsDrawerOpen(!isDrawerOpen)
   }
 
-  const previous = usePreviousPathname()
-  const isHome = pathname === "/" || pathname === ""
+  const _previous = usePreviousPathname()
+  const _isHome = pathname === "/" || pathname === ""
 
   useEffect(() => {
     // Preload toast icons
@@ -269,8 +269,9 @@ export default function Skeleton({
             onDoubleClick={async () => {
               if (!isTauri) return
               try {
-                const { getCurrentWindow } =
-                  await import("@tauri-apps/api/window")
+                const { getCurrentWindow } = await import(
+                  "@tauri-apps/api/window"
+                )
                 const appWindow = getCurrentWindow()
                 const isMaximized = await appWindow.isMaximized()
                 if (isMaximized) {
@@ -278,7 +279,7 @@ export default function Skeleton({
                 } else {
                   await appWindow.maximize()
                 }
-              } catch (e) {
+              } catch (_e) {
                 // Tauri API not available
               }
             }}

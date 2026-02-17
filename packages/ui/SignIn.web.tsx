@@ -167,7 +167,7 @@ export default function SignIn({
       try {
         new URL(callbackUrl)
         isCallbackUrlURI = true
-      } catch (error) {
+      } catch (_error) {
         isCallbackUrlURI = false
       }
     }
@@ -176,7 +176,7 @@ export default function SignIn({
     // We'll redirect back to the original subdomain after auth
     const baseUrl = isDevelopment ? FRONTEND_URL : siteConfig.url
 
-    const errorUrl = new URL(baseUrl + "/?signIn=login&error")
+    const errorUrl = new URL(`${baseUrl}/?signIn=login&error`)
     // Create URLs for both success and error cases
     const successUrl = new URL(
       callbackUrl
@@ -203,7 +203,7 @@ export default function SignIn({
   }
 
   const [isSignInLoading, setIsSignInLoading] = useState(false)
-  const [redirectUrl, setRedirectUrl] = useState<string | null>(null)
+  const [redirectUrl, _setRedirectUrl] = useState<string | null>(null)
 
   const handleLogin = async () => {
     setIsSignInLoading(true)
@@ -249,7 +249,7 @@ export default function SignIn({
         if (!response.ok) {
           const errorText = await response.text()
           console.error("Apple Backend Error:", errorText)
-          toast.error("Failed: " + errorText)
+          toast.error(`Failed: ${errorText}`)
           return
         }
 
@@ -342,7 +342,7 @@ export default function SignIn({
         if (!response.ok) {
           const errorText = await response.text()
           console.error("Google Backend Error:", errorText)
-          toast.error("Failed: " + errorText)
+          toast.error(`Failed: ${errorText}`)
           return
         }
 

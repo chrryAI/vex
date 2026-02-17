@@ -26,7 +26,6 @@ class WebSocketManager {
   private reconnectInterval = 1000 // Start with 1 second
   private heartbeatInterval: NodeJS.Timeout | null = null
   private reconnectTimeout: NodeJS.Timeout | null = null
-  private lastPingTime: number = 0
   private connectionLostCallbacks: (() => void)[] = []
   private connectionRestoredCallbacks: (() => void)[] = []
 
@@ -155,7 +154,7 @@ class WebSocketManager {
         let data
         try {
           data = JSON.parse(event.data)
-        } catch (e) {
+        } catch (_e) {
           return
         }
 
@@ -232,7 +231,6 @@ class WebSocketManager {
     this.stopHeartbeat()
     this.heartbeatInterval = setInterval(() => {
       if (this.isConnected()) {
-        this.lastPingTime = Date.now()
         this.send({ type: "ping" })
 
         if (this.pongTimeout) clearTimeout(this.pongTimeout)
@@ -452,7 +450,7 @@ export const useWebSocket = <T extends { type: string }>({
     if (!token || !wsManager || !deviceId) {
       return
     }
-    if (deps && deps?.some((dep) => dep === undefined)) {
+    if (deps?.some((dep) => dep === undefined)) {
       return
     }
 

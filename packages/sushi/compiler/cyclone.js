@@ -3,7 +3,7 @@ import { number } from "./encoding.js"
 import { Opcodes, Valtype } from "./wasmSpec.js"
 import "./prefs.js"
 
-const f64ToI32Op = {
+const _f64ToI32Op = {
   [Opcodes.f64_eq]: Opcodes.i32_eq,
   [Opcodes.f64_ne]: Opcodes.i32_ne,
   [Opcodes.f64_lt]: Opcodes.i32_lt_s,

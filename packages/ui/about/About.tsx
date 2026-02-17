@@ -64,7 +64,7 @@ export default function About() {
   const styles = useAboutStyles()
   const { utilities } = useStyles()
 
-  const isChrryAI = config.mode === "chrryAI"
+  const _isChrryAI = config.mode === "chrryAI"
 
   const { t } = useAppContext()
 

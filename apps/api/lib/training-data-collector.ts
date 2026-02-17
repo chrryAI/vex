@@ -295,8 +295,8 @@ export class TrainingDataCollector {
    */
   private async saveToFile(data: TrainingDataPoint): Promise<void> {
     try {
-      const fs = await import("fs/promises")
-      const path = await import("path")
+      const fs = await import("node:fs/promises")
+      const path = await import("node:path")
 
       const trainingDir = path.join(process.cwd(), "training-data")
 
@@ -396,7 +396,7 @@ export class TrainingDataCollector {
     return {
       total_examples: total,
       success_rate:
-        total > 0 ? ((successful / total) * 100).toFixed(1) + "%" : "0%",
+        total > 0 ? `${((successful / total) * 100).toFixed(1)}%` : "0%",
       quality_distribution: byQuality,
       latest_collection: this.collectedData[total - 1]?.timestamp,
     }

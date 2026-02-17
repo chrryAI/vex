@@ -625,7 +625,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     burning,
   ])
 
-  const [storeSlug, setStoreSlug] = useState(pathname.replace("/", ""))
+  const [_storeSlug, setStoreSlug] = useState(pathname.replace("/", ""))
 
   useEffect(() => {
     setStoreSlug(pathname.replace("/", ""))

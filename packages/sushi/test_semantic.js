@@ -10,7 +10,7 @@ function makeAdder(x) {
 `
 
 const ast = parse(code)
-const analyzed = semantic(ast)
+const _analyzed = semantic(ast)
 
 // Find the makeAdder function
 const makeAdder = ast.body[0]

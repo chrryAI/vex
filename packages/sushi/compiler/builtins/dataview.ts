@@ -9,8 +9,8 @@ export const DataView = function (
 
   if (
     Porffor.fastAnd(
-      Porffor.type(arg) != Porffor.TYPES.arraybuffer,
-      Porffor.type(arg) != Porffor.TYPES.sharedarraybuffer,
+      Porffor.type(arg) !== Porffor.TYPES.arraybuffer,
+      Porffor.type(arg) !== Porffor.TYPES.sharedarraybuffer,
     )
   )
     throw new TypeError(
@@ -20,13 +20,13 @@ export const DataView = function (
     throw new TypeError("Constructed DataView with a detached ArrayBuffer")
 
   let offset: i32 = 0
-  if (Porffor.type(byteOffset) != Porffor.TYPES.undefined)
+  if (Porffor.type(byteOffset) !== Porffor.TYPES.undefined)
     offset = Math.trunc(byteOffset)
   if (offset < 0)
     throw new RangeError("Invalid DataView byte offset (negative)")
 
   let len: i32 = 0
-  if (Porffor.type(length) == Porffor.TYPES.undefined) {
+  if (Porffor.type(length) === Porffor.TYPES.undefined) {
     const bufferLen: i32 = Porffor.wasm.i32.load(
       Porffor.wasm`local.get ${arg}`,
       0,

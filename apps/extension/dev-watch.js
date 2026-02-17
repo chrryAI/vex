@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-import { spawn } from "child_process"
-import { watch } from "fs"
-import http from "http"
-import path from "path"
-import { fileURLToPath } from "url"
+import { spawn } from "node:child_process"
+import { watch } from "node:fs"
+import http from "node:http"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -51,7 +51,7 @@ async function reloadExtension() {
     } else {
       console.log("✅ Extension rebuilt! Refresh manually in Chrome.")
     }
-  } catch (err) {
+  } catch (_err) {
     // Chrome not running with debugging or extension not found
     console.log(
       "✅ Extension built! Refresh manually (or start Chrome with --remote-debugging-port=9222)",

@@ -66,7 +66,7 @@ export default function AppMetadata({
 
   // Get title from app context, fallback to "Vex"
 
-  const iconSrc = app
+  const _iconSrc = app
     ? getImageSrc({
         app,
         size: 180,

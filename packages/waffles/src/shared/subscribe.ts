@@ -1,5 +1,5 @@
 import { expect, type Page } from "@playwright/test"
-import { isCI, log, type modelName, wait } from "../index"
+import { log, type modelName, wait } from "../index"
 import { chat } from "./chat"
 import { clean, maximize } from "./clean"
 import { signIn } from "./signIn"
@@ -158,6 +158,7 @@ export const subscribe = async ({
       (await creditsInfo.getAttribute("data-credits-left", {
         timeout: 1000,
       })) || "0",
+      10,
     )
   }
 

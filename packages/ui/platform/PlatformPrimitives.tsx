@@ -27,8 +27,7 @@ interface BaseProps {
 }
 
 export interface BoxProps
-  extends
-    BaseProps,
+  extends BaseProps,
     Omit<React.HTMLAttributes<HTMLDivElement>, keyof BaseProps | "onClick"> {
   as?:
     | "div"

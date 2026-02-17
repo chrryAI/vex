@@ -1,4 +1,4 @@
-import crypto from "crypto"
+import crypto from "node:crypto"
 import { Hono } from "hono"
 import sharp from "sharp"
 import { upload } from "../../lib/minio"
@@ -13,9 +13,11 @@ resize.get("/", async (c) => {
     const url = c.req.query("url")
     const width = Number.parseInt(
       c.req.query("w") || c.req.query("width") || "0",
+      10,
     )
     const height = Number.parseInt(
       c.req.query("h") || c.req.query("height") || "0",
+      10,
     )
     const fit = (c.req.query("fit") || "cover") as
       | "cover"
@@ -25,6 +27,7 @@ resize.get("/", async (c) => {
       | "outside"
     const quality = Number.parseInt(
       c.req.query("q") || c.req.query("quality") || "100",
+      10,
     )
 
     if (!url) {
@@ -150,8 +153,8 @@ resize.get("/", async (c) => {
       if (useFilesystem && localPath) {
         console.log(`⚠️  HTTP fetch failed, trying filesystem: ${localPath}`)
         try {
-          const fs = await import("fs/promises")
-          const path = await import("path")
+          const fs = await import("node:fs/promises")
+          const path = await import("node:path")
           const absolutePath = path.resolve(process.cwd(), localPath)
 
           // Security: Prevent path traversal

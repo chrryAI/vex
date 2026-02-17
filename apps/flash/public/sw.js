@@ -94,7 +94,7 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close()
 
-  if (event.notification.data && event.notification.data.url) {
+  if (event.notification.data?.url) {
     const url = event.notification.data.url
     event.waitUntil(
       clients

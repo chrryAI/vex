@@ -16,7 +16,7 @@ export function useOnlineStatus() {
     window.addEventListener("online", updateStatus)
     window.addEventListener("offline", updateStatus)
 
-    async function checkConnection() {
+    async function _checkConnection() {
       try {
         const response = await apiFetch("/icon.ico", {
           method: "HEAD",

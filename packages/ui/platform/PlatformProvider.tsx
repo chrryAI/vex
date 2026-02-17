@@ -433,7 +433,7 @@ export function PlatformProvider({
   }, [isIDE, idePanelWidth, setViewPortWidth])
 
   // Platform-specific value selector
-  const select = <T,>(options: {
+  const _select = <T,>(options: {
     web?: T
     native?: T
     ios?: T
@@ -453,7 +453,7 @@ export function PlatformProvider({
     if (typeof chrome !== "undefined" && chrome.runtime) return chrome
     // Use globalThis to avoid naming collision with the 'browser' variable above
     const firefoxBrowser = (globalThis as any).browser
-    if (typeof firefoxBrowser !== "undefined" && firefoxBrowser?.runtime) {
+    if (firefoxBrowser?.runtime) {
       // Firefox's browser API is compatible with Chrome's API
       return firefoxBrowser as typeof chrome
     }

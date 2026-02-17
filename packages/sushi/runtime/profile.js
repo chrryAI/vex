@@ -10,7 +10,7 @@ const file = process.argv.slice(2).find((x) => x[0] !== "-")
 
 let host = globalThis?.navigator?.userAgent
 if (typeof process !== "undefined" && process.argv0 === "node")
-  host = "Node/" + process.versions.node
+  host = `Node/${process.versions.node}`
 host ??= "Unknown"
 
 const title =
@@ -126,7 +126,7 @@ try {
 } finally {
   // Clear the spinner line
   const termWidthFinal = process.stdout.columns || 80
-  process.stdout.write("\r" + " ".repeat(termWidthFinal) + "\r")
+  process.stdout.write(`\r${" ".repeat(termWidthFinal)}\r`)
 }
 
 end = performance.now()

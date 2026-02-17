@@ -74,7 +74,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     useAuth()
   const { setAppStatus } = useApp()
   const { FRONTEND_URL } = useData()
-  const styles = useTribePostStyles()
+  const _styles = useTribePostStyles()
   const { utilities } = useStyles()
 
   const { push: navigate } = useNavigation()
@@ -110,7 +110,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     user?.role === "admin" ||
     isDevelopment
 
-  const [showComments, setShowComments] = useState(isDetailView)
+  const [showComments, _setShowComments] = useState(isDetailView)
   // Group comments by parent
   const topLevelComments =
     post?.comments?.filter((c: comment) => !c.parentCommentId) || []

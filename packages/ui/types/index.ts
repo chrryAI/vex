@@ -370,7 +370,7 @@ export type thread = {
     guestId?: string
     createdOn: string
   }> | null
-  metadata: {} | null
+  metadata: Record<string, string> | null
   instructions: string | null
 
   visibility: "private" | "protected" | "public"

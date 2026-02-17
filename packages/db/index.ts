@@ -121,7 +121,6 @@ import {
   users,
   verificationTokens,
 } from "./src/schema"
-import { generateApiKey } from "./src/utils/apiKey"
 
 export {
   realtimeAnalytics,
@@ -494,7 +493,6 @@ export type messageActionType = {
 // Global type declaration for db
 declare global {
   // eslint-disable-next-line no-var
-  // biome-ignore lint/suspicious/noRedeclare: <explanation>
   var db: PostgresJsDatabase<typeof schema> | undefined
 }
 
@@ -536,7 +534,6 @@ const getDb = (): PostgresJsDatabase<typeof schema> => {
   }
 }
 
-// biome-ignore lint/suspicious/noRedeclare: <explanation>
 export const db: PostgresJsDatabase<typeof schema> = getDb()
 
 export function sanitizeSearchTerm(search: string): string {
@@ -548,7 +545,7 @@ export function formatSearchTerm(search: string): string {
   return sanitizeSearchTerm(search)
     .split(" ")
     .filter((word) => word.length > 0)
-    .map((word) => word + ":*")
+    .map((word) => `${word}:*`)
     .join(" & ")
 }
 
@@ -1719,7 +1716,7 @@ export const deleteDocumentChunk = async ({ id }: { id: string }) => {
   return deleted
 }
 
-const getReactions = async ({
+const _getReactions = async ({
   guestId,
   userId,
 }: {
@@ -1747,7 +1744,7 @@ const getReactions = async ({
   }))
 }
 
-const getBookmarks = async ({
+const _getBookmarks = async ({
   guestId,
   userId,
 }: {
@@ -1775,7 +1772,7 @@ const getBookmarks = async ({
   }))
 }
 
-const updateReactions = async ({
+const _updateReactions = async ({
   guestId,
   userId,
   messageId,
@@ -1806,7 +1803,7 @@ const updateReactions = async ({
   return updated
 }
 
-const updateBookmarks = async ({
+const _updateBookmarks = async ({
   guestId,
   userId,
   threadId,
@@ -4108,7 +4105,7 @@ export const getCities = async ({
     return sanitizeSearchTerm(search)
       .split(" ")
       .filter((word) => word.length > 0)
-      .map((word) => word + ":*")
+      .map((word) => `${word}:*`)
       .join(" & ")
   }
 
@@ -5131,7 +5128,7 @@ export const getApp = async ({
           })
         : undefined
 
-  const storeAppSchedule =
+  const _storeAppSchedule =
     userId &&
     storeData?.app &&
     isOwner(storeData.app, {
@@ -5151,7 +5148,7 @@ export const getApp = async ({
       isAppOwner: true,
     }))
 
-  const requestedAppSchedule =
+  const _requestedAppSchedule =
     userId && isOwner(app.app, { userId, guestId })
       ? await getScheduledJobs({ appId: app.app.id, userId })
       : []
@@ -5163,7 +5160,7 @@ export const getApp = async ({
         title: storeData.store.name, // Use name as title
         apps: await Promise.all(
           storeData.apps.map(async (app) => {
-            const characterProfiles =
+            const _characterProfiles =
               (await getCharacterProfiles({
                 appId: app.id,
                 threadId,
@@ -5482,14 +5479,13 @@ export function toSafeApp({
       typeof app.apiKeys === "object" &&
       isOwner(app, { userId, guestId })
         ? Object.keys(app.apiKeys).reduce(
-            (acc, key) => ({
-              ...acc,
-              [key]:
-                app?.apiKeys && app?.apiKeys?.[key as keyof typeof app.apiKeys]
-                  ? "********"
-                  : undefined,
-            }),
-            {},
+            (acc, key) => {
+              acc[key] = app?.apiKeys?.[key as keyof typeof app.apiKeys]
+                ? "********"
+                : undefined
+              return acc
+            },
+            {} as Record<string, string | undefined>,
           )
         : undefined,
   }
@@ -7016,7 +7012,7 @@ export const createTimer = async (timer: newTimer) => {
 export const updateTimer = async (
   timer: Partial<timer> & { userId?: string | null; guestId?: string | null },
 ) => {
-  const [updated] = await db
+  const [_updated] = await db
     .update(timers)
     .set(timer)
     .where(

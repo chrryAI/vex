@@ -6,14 +6,14 @@ import { Opcodes, Valtype } from "./wasmSpec.js"
 import wrap from "./wrap.js"
 import "./prefs.js"
 
-let activeFunc, localData
+let _activeFunc, localData
 export const setup = () => {
   // enable these prefs by default for pgo
   for (const x of [
     "typeswitchUniqueTmp", // use unique tmps for typeswitches
     // 'cyclone', // enable cyclone pre-evaler
   ]) {
-    Prefs[x] = Prefs[x] === false ? false : true
+    Prefs[x] = Prefs[x] !== false
   }
 
   createImport(
@@ -96,28 +96,23 @@ export const run = (obj) => {
 
   time(0, `injected PGO logging`)
   time(1, `running with PGO logging...`)
+  obj.wasm = assemble(
+    obj.funcs,
+    obj.globals,
+    obj.tags,
+    obj.pages,
+    obj.data,
+    true,
+  )
 
-  try {
-    obj.wasm = assemble(
-      obj.funcs,
-      obj.globals,
-      obj.tags,
-      obj.pages,
-      obj.data,
-      true,
-    )
+  Prefs._profileCompiler = Prefs.profileCompiler
+  Prefs.profileCompiler = false
 
-    Prefs._profileCompiler = Prefs.profileCompiler
-    Prefs.profileCompiler = false
+  const priorImports = { ...importedFuncs }
+  const { exports } = wrap(obj, undefined, () => {})
+  exports.main()
 
-    const priorImports = { ...importedFuncs }
-    const { exports } = wrap(obj, undefined, () => {})
-    exports.main()
-
-    setImports(priorImports)
-  } catch (e) {
-    throw e
-  }
+  setImports(priorImports)
 
   Prefs.profileCompiler = Prefs._profileCompiler
 
@@ -211,7 +206,7 @@ export const run = (obj) => {
     }
   }
 
-  time(2, "processed PGO data\n" + log)
+  time(2, `processed PGO data\n${log}`)
   time(3, "optimizing using PGO data...")
 
   log = ""
@@ -248,5 +243,5 @@ export const run = (obj) => {
     // if (targets.length > 0) Havoc.localsToConsts(wasmFunc, targets, consts, { localKeys: x.localKeys });
   }
 
-  time(3, "optimized using PGO data\n" + log)
+  time(3, `optimized using PGO data\n${log}`)
 }

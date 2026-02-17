@@ -418,8 +418,9 @@ cron.get("/runScheduledJobs", async (c) => {
 
   try {
     // Import scheduler module (inside try block to catch import errors)
-    const { findJobsToRun, executeScheduledJob } =
-      await import("../../lib/scheduledJobs/jobScheduler")
+    const { findJobsToRun, executeScheduledJob } = await import(
+      "../../lib/scheduledJobs/jobScheduler"
+    )
 
     // Find all jobs that need to run now
     const jobsToRun = await findJobsToRun()

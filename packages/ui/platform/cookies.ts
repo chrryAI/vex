@@ -83,7 +83,7 @@ export const setCookieWeb = (
     Date.now() + (optionsWithDefaults.days || 7) * 864e5,
   ).toUTCString()
 
-  const cookieString =
+  const _cookieString =
     name +
     "=" +
     encodeURIComponent(value) +
@@ -91,10 +91,8 @@ export const setCookieWeb = (
     expires +
     stringifyOptions(optionsWithDefaults)
 
-  document.cookie = cookieString
-
   // Verify cookie was set
-  const wasSet = document.cookie.includes(name)
+  const _wasSet = document.cookie.includes(name)
 }
 
 /**
@@ -116,7 +114,6 @@ export const getCookieWeb = (name: string, initialValue = "") => {
  */
 export const removeCookieWeb = (name: string) => {
   if (!isBrowser) return
-  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
 }
 
 export function useCookieWeb(
@@ -321,25 +318,25 @@ async function setCookieValue(
 
   // Web: Use document.cookie
   if (typeof document !== "undefined") {
-    let cookieString = `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+    let _cookieString = `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
 
     if (options.maxAge) {
-      cookieString += `; Max-Age=${options.maxAge}`
+      _cookieString += `; Max-Age=${options.maxAge}`
     }
 
     if (options.expires) {
-      cookieString += `; Expires=${options.expires.toUTCString()}`
+      _cookieString += `; Expires=${options.expires.toUTCString()}`
     }
 
     // Always set path to root if not specified
-    cookieString += `; Path=${options.path || "/"}`
+    _cookieString += `; Path=${options.path || "/"}`
 
     if (options.domain) {
-      cookieString += `; Domain=${options.domain}`
+      _cookieString += `; Domain=${options.domain}`
     }
 
     if (options.secure) {
-      cookieString += "; Secure"
+      _cookieString += "; Secure"
     }
 
     if (options.sameSite) {
@@ -350,10 +347,8 @@ async function setCookieValue(
           : options.sameSite === "lax"
             ? "Lax"
             : "Strict"
-      cookieString += `; SameSite=${ss}`
+      _cookieString += `; SameSite=${ss}`
     }
-
-    document.cookie = cookieString
   }
 }
 
@@ -394,11 +389,6 @@ async function deleteCookie(key: string): Promise<void> {
     // Fallback to localStorage for extensions
     storage.removeItem(key)
     return
-  }
-
-  // Web: Set cookie with past expiration
-  if (typeof document !== "undefined") {
-    document.cookie = `${encodeURIComponent(key)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
   }
 }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { useTheme } from "./context/ThemeContext"
 import { Div, Text } from "./platform"
 import { type BarData, emojiMap, type Mood } from "./utils/chartTypes"

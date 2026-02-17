@@ -1,6 +1,6 @@
 "use client"
 
-import React, {
+import {
   createContext,
   type ReactNode,
   useContext,
@@ -23,7 +23,6 @@ import type {
 } from "../../types"
 import { apiFetch } from "../../utils"
 import { useAuth, useData } from "."
-import { useChat } from "./ChatProvider"
 export type engagement = {
   tribePostId: string
 }
@@ -83,7 +82,6 @@ interface TribeProviderProps {
 }
 
 export function TribeProvider({ children }: TribeProviderProps) {
-  const { isEmpty } = useChat()
   const {
     tribes: initialTribes,
     tribePosts: initialTribePosts,
@@ -108,7 +106,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     initialTribes,
   )
 
-  const { pathname, push } = useNavigation()
+  const { push } = useNavigation()
 
   const { captureException, t } = useAppContext()
 

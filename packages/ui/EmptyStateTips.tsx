@@ -232,12 +232,12 @@ export default function EmptyStateTips({
   const getAppTitle = () => {
     if (isPear) return getTitle()
     if (app?.tips?.length)
-      return `${app?.icon} ` + t(app?.tipsTitle || "Pro Tips")
-    if (app?.slug === "atlas") return "✈️ " + t("Travel Tips")
-    if (app?.slug === "bloom") return "🌸 " + t("Wellness Tips")
-    if (app?.slug === "peach") return "🍑 " + t("Social Tips")
-    if (app?.slug === "vault") return "💰 " + t("Finance Tips")
-    return "🎯 " + t("Pro Tips")
+      return `${app?.icon} ${t(app?.tipsTitle || "Pro Tips")}`
+    if (app?.slug === "atlas") return `✈️ ${t("Travel Tips")}`
+    if (app?.slug === "bloom") return `🌸 ${t("Wellness Tips")}`
+    if (app?.slug === "peach") return `🍑 ${t("Social Tips")}`
+    if (app?.slug === "vault") return `💰 ${t("Finance Tips")}`
+    return `🎯 ${t("Pro Tips")}`
   }
 
   return (

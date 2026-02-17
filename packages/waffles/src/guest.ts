@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import { getURL, TEST_MEMBER_FINGERPRINTS } from "."
 import { chat } from "./shared/chat"
 import { collaboration } from "./shared/collaboration"
@@ -82,7 +82,7 @@ test("File upload", async ({ page }) => {
     timeout: 100000,
   })
 
-  const result = await chat({
+  const _result = await chat({
     artifacts: {
       paste: 3,
       pdf: 3,
@@ -135,7 +135,7 @@ test("Thread", async ({ page }) => {
 })
 
 test("Long text", async ({ page }) => {
-  const result = await chat({
+  const _result = await chat({
     page,
     isMember,
     instruction: "Long text",

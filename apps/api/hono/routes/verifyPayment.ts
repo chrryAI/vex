@@ -290,8 +290,7 @@ verifyPayment.post("/", async (c) => {
           await transporter.sendMail({
             from: `${siteConfig.name} <gifts@${siteConfig.domain}>`,
             to: email,
-            subject:
-              "🎁 Your Vex " + capitalizeFirstLetter(plan) + " Gift is Ready!",
+            subject: `🎁 Your Vex ${capitalizeFirstLetter(plan)} Gift is Ready!`,
             html: emailHtml,
             headers: {
               "List-Unsubscribe": `<mailto:unsubscribe@${siteConfig.domain}>`,

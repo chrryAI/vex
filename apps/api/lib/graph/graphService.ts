@@ -264,7 +264,7 @@ function sanitize(label: string): string {
 
   // Eğer ilk karakter rakamsa başına _ ekle (BAM!)
   if (/^[0-9]/.test(sanitized)) {
-    sanitized = "_" + sanitized
+    sanitized = `_${sanitized}`
   }
 
   return sanitized || "Generic"

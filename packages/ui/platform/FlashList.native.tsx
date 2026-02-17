@@ -40,7 +40,7 @@ let NativeFlashList: any
 try {
   const { FlashList: ImportedFlashList } = require("@shopify/flash-list")
   NativeFlashList = ImportedFlashList
-} catch (error) {
+} catch (_error) {
   console.warn(
     "[chrry/platform/FlashList] @shopify/flash-list not found. Using ScrollView fallback.",
   )

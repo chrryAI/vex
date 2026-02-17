@@ -461,7 +461,7 @@ export function AuthProvider({
     return Boolean(app?.store?.app && app?.store?.apps.length)
   }
 
-  const signUp = useCallback(
+  const _signUp = useCallback(
     async (email: string, password: string, name?: string) => {
       try {
         const response = await fetch(`${API_URL}/auth/signup/password`, {
@@ -615,7 +615,7 @@ export function AuthProvider({
 
           console.log(
             "🍎 Native Apple Sign In Success! Token:",
-            result.idToken.substring(0, 10) + "...",
+            `${result.idToken.substring(0, 10)}...`,
           )
 
           // Verify on backend
@@ -718,7 +718,7 @@ export function AuthProvider({
 
   const [user, setUser] = React.useState<sessionUser | undefined>(session?.user)
 
-  const [state, setState] = useState<AuthState>({
+  const [_state, setState] = useState<AuthState>({
     user,
     loading: true,
   })
@@ -1026,7 +1026,7 @@ export function AuthProvider({
     }
   }, [token, fingerprint, isTauri, isStorageReady])
   // setFingerprint/setToken are stable from useLocalStorage/useState
-  const [versions, setVersions] = useState(
+  const [_versions, setVersions] = useState(
     session?.versions || {
       webVersion: VERSION,
       firefoxVersion: VERSION,
@@ -1058,13 +1058,13 @@ export function AuthProvider({
     setTaskId(searchParams.get("taskId") || undefined)
   }, [searchParams])
 
-  const [isGuestTest, setIsLiveGuestTest] = useLocalStorage<boolean>(
+  const [isGuestTest, _setIsLiveGuestTest] = useLocalStorage<boolean>(
     "isGuestTest",
     fingerprintParam
       ? TEST_GUEST_FINGERPRINTS.includes(fingerprintParam)
       : false,
   )
-  const [isMemberTest, setIsLiveMemberTest] = useLocalStorage<boolean>(
+  const [isMemberTest, _setIsLiveMemberTest] = useLocalStorage<boolean>(
     "isMemberTest",
     user?.email
       ? TEST_MEMBER_EMAILS.includes(user.email)
@@ -1114,8 +1114,9 @@ export function AuthProvider({
     initialTribePost,
   )
 
-  const [isLoadingPosts, setIsLoadingPosts] =
-    useState<boolean>(!initialTribePosts)
+  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
+    !initialTribePosts,
+  )
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -1380,7 +1381,7 @@ export function AuthProvider({
   )
   const sessionData = sessionSwr || session
 
-  const getAlterNativeDomains = (store: storeWithApps) => {
+  const _getAlterNativeDomains = (store: storeWithApps) => {
     // Map askvex.com and vex.chrry.ai as equivalent domains
     if (
       store?.domain === "https://vex.chrry.ai" ||
@@ -1392,7 +1393,7 @@ export function AuthProvider({
     return store.domain ? [store.domain] : []
   }
 
-  const [agentName, setAgentName] = useState(session?.aiAgent?.name)
+  const [agentName, _setAgentName] = useState(session?.aiAgent?.name)
   const plausibleEvent = ({
     name,
     url,
@@ -1741,7 +1742,7 @@ export function AuthProvider({
     // if (focus && showFocus) return focus
     if (path === "/" && !showFocus && !showTribe) return undefined
 
-    const { appSlug, storeSlug } = getAppAndStoreSlugs(path, {
+    const { appSlug } = getAppAndStoreSlugs(path, {
       defaultAppSlug: baseApp?.slug || siteConfig.slug,
       defaultStoreSlug: baseApp?.store?.slug || siteConfig.storeSlug,
     })
@@ -1891,7 +1892,7 @@ export function AuthProvider({
         (app) => app.id === updatedApp?.id,
       )
       if (u) {
-        toast.success(t("Updated") + " 🚀")
+        toast.success(`${t("Updated")} 🚀`)
         // if (!isExtension && !isNative) {
         //   // setSlug(getAppSlug(n) || "")
         //   window.location.href = getAppSlug(u)
@@ -2150,7 +2151,7 @@ export function AuthProvider({
     setIsPearInternal(!!value)
     if (value) {
       router.push(`${getAppSlug(value)}?pear=true`)
-      toast.success(t("Let's Pear") + " 🍐")
+      toast.success(`${t("Let's Pear")} 🍐`)
     }
   }
 
@@ -2221,7 +2222,7 @@ export function AuthProvider({
 
   const [moltPlaceHolder, setMoltPlaceHolder] = useState<string[]>([])
 
-  const [isLoadingMood, setIsLoadingMood] = useState(true)
+  const [isLoadingMood, _setIsLoadingMood] = useState(true)
   const [mood, setMood] = useState<mood | null>(null)
 
   const [tribeStripeSession, setTribeStripeSession] = useLocalStorage<
@@ -2271,7 +2272,7 @@ export function AuthProvider({
 
   const showTribeFromPath = pathname === "/tribe"
 
-  const isExcluded = excludedSlugRoutes?.includes(
+  const _isExcluded = excludedSlugRoutes?.includes(
     pathname.split("?")?.[0] || "",
   )
 
@@ -2867,7 +2868,7 @@ export function AuthProvider({
     }
   }, [isLoggedOut, isWelcome])
 
-  const auth_token = searchParams.get("auth_token")
+  const _auth_token = searchParams.get("auth_token")
 
   const fp = searchParams.get("fp")
 

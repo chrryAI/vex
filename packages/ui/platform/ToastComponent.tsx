@@ -3,7 +3,6 @@
  * Wraps react-hot-toast for web and provides native alternative
  */
 
-import React from "react"
 import { type ToasterProps, Toaster as WebToaster } from "react-hot-toast"
 import { useData } from "../context/providers/DataProvider"
 import { usePlatform } from "./PlatformProvider"

@@ -17,7 +17,7 @@ import { Button, Div, ScrollView, Text, useTheme } from "./platform"
 export { processTextWithCitations }
 export type { MarkdownContentProps }
 
-const CodeBlock: React.FC<CodeBlockProps> = ({
+const _CodeBlock: React.FC<CodeBlockProps> = ({
   language,
   children,
   className,
@@ -32,7 +32,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       setCopied(true)
       toast.success(t("Copied"))
       setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to copy code")
     }
   }
@@ -66,7 +66,7 @@ const MarkdownContent = memo(
   }: MarkdownContentProps) => {
     const [isMounted, setIsMounted] = useState(false)
     const { colors } = useTheme()
-    const styles = useMarkdownContentStyles()
+    const _styles = useMarkdownContentStyles()
 
     useEffect(() => {
       setIsMounted(true)

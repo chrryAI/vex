@@ -35,7 +35,7 @@ export interface NavigationParams {
 // Detect if we're in a Next.js environment
 // No longer needed - fully migrated to Vite
 // Keeping function for backwards compatibility but always returns false
-const isNextJsEnvironment = () => false
+const _isNextJsEnvironment = () => false
 
 /**
  * Web navigation hook using client-side router (Vite)

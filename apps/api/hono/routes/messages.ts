@@ -192,7 +192,7 @@ messages.get("/", async (c) => {
   }
 
   const messages = await getMessages({
-    pageSize: Number.parseInt(pageSize || "24"),
+    pageSize: Number.parseInt(pageSize || "24", 10),
     userId: member?.id,
     guestId: guest?.id,
     threadId: threadId || undefined,
@@ -226,29 +226,29 @@ messages.post("/", async (c) => {
   if (contentType.includes("multipart/form-data")) {
     const body = await c.req.parseBody({ all: true })
     requestData = {
-      moodId: body["moodId"] as string,
-      notify: body["notify"],
-      appId: body["appId"] as string,
-      molt: body["isMolt"] === "true",
-      tribe: body["tribe"] === "true",
-      content: body["content"] as string,
-      retro: body["retro"] === "true",
-      pear: body["pear"] === "true",
-      agentId: body["agentId"] as string,
-      debateAgentId: body["debateAgentId"] as string,
-      threadId: body["threadId"] as string,
-      isIncognito: body["isIncognito"] === "true",
-      actionEnabled: body["actionEnabled"] === "true",
-      instructions: body["instructions"] as string,
-      language: (body["language"] as string) || "en",
-      isTasksEnabled: body["isTasksEnabled"] === "true",
-      isAgent: body["isAgent"] === "true",
-      imageGenerationEnabled: body["imageGenerationEnabled"] === "true",
-      attachmentType: body["attachmentType"] as string,
-      clientId: body["clientId"] as string,
-      deviceId: body["deviceId"] as string,
-      taskId: body["taskId"] as string,
-      jobId: body["jobId"] as string,
+      moodId: body.moodId as string,
+      notify: body.notify,
+      appId: body.appId as string,
+      molt: body.isMolt === "true",
+      tribe: body.tribe === "true",
+      content: body.content as string,
+      retro: body.retro === "true",
+      pear: body.pear === "true",
+      agentId: body.agentId as string,
+      debateAgentId: body.debateAgentId as string,
+      threadId: body.threadId as string,
+      isIncognito: body.isIncognito === "true",
+      actionEnabled: body.actionEnabled === "true",
+      instructions: body.instructions as string,
+      language: (body.language as string) || "en",
+      isTasksEnabled: body.isTasksEnabled === "true",
+      isAgent: body.isAgent === "true",
+      imageGenerationEnabled: body.imageGenerationEnabled === "true",
+      attachmentType: body.attachmentType as string,
+      clientId: body.clientId as string,
+      deviceId: body.deviceId as string,
+      taskId: body.taskId as string,
+      jobId: body.jobId as string,
     }
 
     // Extract files - parseBody returns files as File objects in the body map
@@ -732,19 +732,19 @@ messages.delete("/:id", async (c) => {
   // Delete associated files from MinIO
   const filesToDelete: string[] = []
   if (existingMessage.message.images) {
-    existingMessage.message.images.forEach(
-      (img) => img.url && filesToDelete.push(img.url),
-    )
+    existingMessage.message.images.forEach((img) => {
+      img.url && filesToDelete.push(img.url)
+    })
   }
   if (existingMessage.message.files) {
-    existingMessage.message.files.forEach(
-      (f) => f.url && filesToDelete.push(f.url),
-    )
+    existingMessage.message.files.forEach((f) => {
+      f.url && filesToDelete.push(f.url)
+    })
   }
   if (existingMessage.message.video) {
-    existingMessage.message.video.forEach(
-      (v) => v.url && filesToDelete.push(v.url),
-    )
+    existingMessage.message.video.forEach((v) => {
+      v.url && filesToDelete.push(v.url)
+    })
   }
 
   const deletePromises = filesToDelete.map((url) =>

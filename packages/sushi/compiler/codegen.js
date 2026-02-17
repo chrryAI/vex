@@ -112,7 +112,7 @@ const funcRef = (func) => {
   const wrapperArgc = Prefs.indirectWrapperArgc ?? 16
   if (!func.wrapperFunc) {
     const locals = {
-        ["#length"]: { idx: 0, type: Valtype.i32 },
+        "#length": { idx: 0, type: Valtype.i32 },
       },
       params = [Valtype.i32]
 
@@ -160,7 +160,7 @@ const funcRef = (func) => {
     }
 
     const wasm = []
-    const name = "#indirect_" + func.name
+    const name = `#indirect_${func.name}`
     const wrapperFunc = {
       constr: true,
       internal: true,
@@ -694,10 +694,10 @@ const hoistLookupType = (scope, name) => {
       // For hoisted vars, we must read the runtime type, not the inferred type
       // because the access may be before the assignment executes at runtime
       if (name in globals) {
-        const typeLocal = globals[name + "#type"]
+        const typeLocal = globals[`${name}#type`]
         if (typeLocal) return [[Opcodes.global_get, typeLocal.idx]]
       } else if (name in scope.locals) {
-        const typeLocal = scope.locals[name + "#type"]
+        const typeLocal = scope.locals[`${name}#type`]
         if (typeLocal) return [[Opcodes.local_get, typeLocal.idx]]
       }
       return [number(TYPES.undefined, Valtype.i32)]
@@ -724,7 +724,7 @@ const lookup = (scope, name, failEarly = false) => {
 
   if (local?.idx === undefined) {
     // Check if this variable is captured from parent scope
-    if (scope._capturedVars && scope._capturedVars.includes(name)) {
+    if (scope._capturedVars?.includes(name)) {
       // Try to look up in parent scope
       if (scope._parentScope) {
         const parentLocal = scope._parentScope.locals[name]
@@ -798,9 +798,9 @@ const lookup = (scope, name, failEarly = false) => {
     if (name.startsWith("__")) {
       // return undefined if unknown key in already known var
       let parent = name.slice(2).split("_").slice(0, -1).join("_")
-      if (parent.includes("_")) parent = "__" + parent
+      if (parent.includes("_")) parent = `__${parent}`
 
-      if (name + "$get" in builtinFuncs) {
+      if (`${name}$get` in builtinFuncs) {
         // hack: force error as accessors should only be used with objects anyway
         return internalThrow(
           scope,
@@ -1822,13 +1822,13 @@ const asmFuncToAsm = (scope, func, extra) =>
         return funcRef(func)
       },
       glbl: (opcode, name, type) => {
-        const globalName = "#porf#" + name // avoid potential name clashing with user js
+        const globalName = `#porf#${name}` // avoid potential name clashing with user js
         if (!(globalName in globals)) {
           const idx = globals["#ind"]++
           globals[globalName] = { idx, type }
 
           const tmpIdx = globals["#ind"]++
-          globals[globalName + "#glbl_inited"] = {
+          globals[`${globalName}#glbl_inited`] = {
             idx: tmpIdx,
             type: Valtype.i32,
           }
@@ -1842,12 +1842,12 @@ const asmFuncToAsm = (scope, func, extra) =>
           if (scope.globalInits?.[name]) {
             if (typeof scope.globalInits[name] === "function") {
               out.unshift(
-                [Opcodes.global_get, globals[globalName + "#glbl_inited"].idx],
+                [Opcodes.global_get, globals[`${globalName}#glbl_inited`].idx],
                 [Opcodes.i32_eqz],
                 [Opcodes.if, Blocktype.void],
                 ...asmFuncToAsm(scope, scope.globalInits[name]),
                 number(1, Valtype.i32),
-                [Opcodes.global_set, globals[globalName + "#glbl_inited"].idx],
+                [Opcodes.global_set, globals[`${globalName}#glbl_inited`].idx],
                 [Opcodes.end],
               )
             } else {
@@ -1888,7 +1888,7 @@ const asmFuncToAsm = (scope, func, extra) =>
       allocPage,
       allocLargePage: (scope, name) => {
         const _ = allocPage(scope, name)
-        allocPage(scope, name + "#2")
+        allocPage(scope, `${name}#2`)
 
         return _
       },
@@ -2029,11 +2029,11 @@ const getType = (scope, name, failEarly = false) => {
     global = null
   if (name in scope.locals) {
     metadata = scope.locals[name].metadata
-    typeLocal = scope.locals[name + "#type"]
+    typeLocal = scope.locals[`${name}#type`]
     global = false
   } else if (name in globals) {
     metadata = globals[name].metadata
-    typeLocal = globals[name + "#type"]
+    typeLocal = globals[`${name}#type`]
     global = true
   }
 
@@ -2069,10 +2069,10 @@ const setType = (scope, name, type, noInfer = false) => {
     global = false
   if (name in scope.locals) {
     metadata = scope.locals[name].metadata
-    typeLocal = scope.locals[name + "#type"]
+    typeLocal = scope.locals[`${name}#type`]
   } else if (name in globals) {
     metadata = globals[name].metadata
-    typeLocal = globals[name + "#type"]
+    typeLocal = globals[`${name}#type`]
     global = true
   }
 
@@ -2615,7 +2615,7 @@ const createThisArg = (scope, decl) => {
       number(TYPES.object, Valtype.i32),
     ]
   } else {
-    if (name && name.startsWith("__")) {
+    if (name?.startsWith("__")) {
       let node = null
 
       // hack: default this value for primitives, do here instead of inside funcs via ToObject/etc
@@ -2770,16 +2770,16 @@ const generateCall = (scope, decl, _global, _name, unusedValue = false) => {
     target = { ...decl.callee }
     target.name = spl.slice(0, -1).join("_")
 
-    if (builtinFuncs["__" + target.name + "_" + protoName]) protoName = null
+    if (builtinFuncs[`__${target.name}_${protoName}`]) protoName = null
     else if (
       lookupName(scope, target.name)[0] == null &&
       !(target.name in builtinFuncs)
     ) {
       if (
-        lookupName(scope, "__" + target.name)[0] != null ||
-        builtinFuncs["__" + target.name]
+        lookupName(scope, `__${target.name}`)[0] != null ||
+        builtinFuncs[`__${target.name}`]
       )
-        target.name = "__" + target.name
+        target.name = `__${target.name}`
       else protoName = null
     }
   }
@@ -2827,7 +2827,7 @@ const generateCall = (scope, decl, _global, _name, unusedValue = false) => {
     }
 
     const builtinProtoCands = Object.keys(builtinFuncs).filter(
-      (x) => x.startsWith("__") && x.endsWith("_prototype_" + protoName),
+      (x) => x.startsWith("__") && x.endsWith(`_prototype_${protoName}`),
     )
     if (!decl._protoInternalCall && builtinProtoCands.length > 0) {
       out.push(
@@ -3013,7 +3013,7 @@ const generateCall = (scope, decl, _global, _name, unusedValue = false) => {
 
     const opName = name.slice("__Porffor_wasm_".length)
     if (!wasmOps[opName])
-      throw new Error("Unimplemented Porffor.wasm op: " + opName)
+      throw new Error(`Unimplemented Porffor.wasm op: ${opName}`)
 
     const op = wasmOps[opName]
 
@@ -3070,8 +3070,8 @@ const generateCall = (scope, decl, _global, _name, unusedValue = false) => {
       )
     }
 
-    const tmpName = "#indirect" + uniqId() + "_"
-    const calleeLocal = localTmp(scope, tmpName + "callee")
+    const tmpName = `#indirect${uniqId()}_`
+    const calleeLocal = localTmp(scope, `${tmpName}callee`)
     let callee = decl.callee,
       callAsNew = decl._new,
       sup = false,
@@ -3085,10 +3085,10 @@ const generateCall = (scope, decl, _global, _name, unusedValue = false) => {
       const { property, object, computed, optional } =
         callee.expression ?? callee
       if (object && property) {
-        const thisLocal = localTmp(scope, tmpName + "caller")
+        const thisLocal = localTmp(scope, `${tmpName}caller`)
         const thisLocalType = localTmp(
           scope,
-          tmpName + "caller#type",
+          `${tmpName}caller#type`,
           Valtype.i32,
         )
 
@@ -3200,8 +3200,7 @@ const generateCall = (scope, decl, _global, _name, unusedValue = false) => {
     )
   }
 
-  const internalProtoFunc =
-    func && func.internal && func.name.includes("_prototype_")
+  const internalProtoFunc = func?.internal && func.name.includes("_prototype_")
   if (!globalThis.precompile && internalProtoFunc && !decl._protoInternalCall) {
     // just function called, not as prototype, add this to start
     args.unshift(
@@ -3209,7 +3208,7 @@ const generateCall = (scope, decl, _global, _name, unusedValue = false) => {
     )
   }
 
-  if (func && func.constr) {
+  if (func?.constr) {
     out.push(
       ...forceDuoValtype(
         scope,
@@ -3226,7 +3225,7 @@ const generateCall = (scope, decl, _global, _name, unusedValue = false) => {
     paramOffset += 4
   }
 
-  if (func && func.method) {
+  if (func?.method) {
     out.push(
       ...forceDuoValtype(
         scope,
@@ -3244,7 +3243,7 @@ const generateCall = (scope, decl, _global, _name, unusedValue = false) => {
       args.push(func.defaultParam ? func.defaultParam() : DEFAULT_VALUE())
   }
 
-  if (func && func.hasRestArgument) {
+  if (func?.hasRestArgument) {
     // hack: spread + rest special handling
     if (decl.arguments.at(-1)?.type === "SpreadElement") {
       // just use the array being spread
@@ -3455,11 +3454,11 @@ const knownValue = (scope, node) => {
       case "-":
         return left - right
       case "==":
-        return left == right
+        return left === right
       case "===":
         return left === right
       case "!=":
-        return left != right
+        return left !== right
       case "!==":
         return left !== right
     }
@@ -3757,9 +3756,9 @@ const allocVar = (
   if (name in target) {
     if (redecl) {
       // force change old local name(s)
-      target["#redecl_" + name + uniqId()] = target[name]
+      target[`#redecl_${name}${uniqId()}`] = target[name]
       if (type)
-        target["#redecl_" + name + uniqId() + "#type"] = target[name + "#type"]
+        target[`#redecl_${name}${uniqId()}#type`] = target[`${name}#type`]
     } else {
       return target[name].idx
     }
@@ -3770,7 +3769,7 @@ const allocVar = (
 
   if (type) {
     const typeIdx = global ? globals["#ind"]++ : scope.localInd++
-    target[name + "#type"] = { idx: typeIdx, type: Valtype.i32, name }
+    target[`${name}#type`] = { idx: typeIdx, type: Valtype.i32, name }
   }
 
   return idx
@@ -4024,7 +4023,7 @@ const generateVarDstr = (scope, kind, pattern, init, defaultValue, global) => {
           global ? Opcodes.global_set : Opcodes.local_set,
           idx,
         ])
-        if (newOut.at(-1) == Opcodes.i32_from_u) newOut.pop()
+        if (newOut.at(-1) === Opcodes.i32_from_u) newOut.pop()
         newOut.push(
           [Opcodes.drop],
           ...setType(scope, name, getNodeType(scope, init)),
@@ -4066,7 +4065,7 @@ const generateVarDstr = (scope, kind, pattern, init, defaultValue, global) => {
 
   if (pattern.type === "ArrayPattern") {
     const decls = []
-    const tmpName = "#destructure" + uniqId()
+    const tmpName = `#destructure${uniqId()}`
     let out = generateVarDstr(
       scope,
       "const",
@@ -4177,7 +4176,7 @@ const generateVarDstr = (scope, kind, pattern, init, defaultValue, global) => {
 
   if (pattern.type === "ObjectPattern") {
     const decls = []
-    const tmpName = "#destructure" + uniqId()
+    const tmpName = `#destructure${uniqId()}`
     let out = generateVarDstr(
       scope,
       "const",
@@ -4190,7 +4189,7 @@ const generateVarDstr = (scope, kind, pattern, init, defaultValue, global) => {
     const properties = pattern.properties.slice()
     const usedProps = []
     for (const prop of properties) {
-      if (prop.type == "Property") {
+      if (prop.type === "Property") {
         // let { foo } = {}
         usedProps.push(getProperty(prop))
 
@@ -4321,7 +4320,7 @@ const generateVar = (scope, decl) => {
   return out
 }
 
-const privateIDName = (name) => "__#" + name
+const privateIDName = (name) => `__#${name}`
 const getProperty = (decl, forceValueStr = false) => {
   const prop = decl.property ?? decl.key
   if (decl.computed) return prop
@@ -4362,10 +4361,10 @@ const isIdentAssignable = (scope, name, op = "=") => {
 const memberTmpNames = (scope) => {
   const id = uniqId()
 
-  const objectTmpName = "#member_obj" + id
+  const objectTmpName = `#member_obj${id}`
   const objectTmp = localTmp(scope, objectTmpName)
 
-  const propTmpName = "#member_prop" + id
+  const propTmpName = `#member_prop${id}`
   const propertyTmp = localTmp(scope, propTmpName)
 
   return {
@@ -5303,7 +5302,7 @@ const generateAssign = (scope, decl, _global, _name, valueUnused = false) => {
       )
 
     if (type !== "Identifier") {
-      const tmpName = "#rhs" + uniqId()
+      const tmpName = `#rhs${uniqId()}`
       return [
         ...generateVarDstr(
           scope,
@@ -5948,14 +5947,14 @@ const generateForOf = (scope, decl) => {
     if (depth[i] === "forof") count++
   }
 
-  const pointer = localTmp(scope, "#forof_base_pointer" + count, Valtype.i32)
-  const length = localTmp(scope, "#forof_length" + count, Valtype.i32)
-  const counter = localTmp(scope, "#forof_counter" + count, Valtype.i32)
+  const pointer = localTmp(scope, `#forof_base_pointer${count}`, Valtype.i32)
+  const length = localTmp(scope, `#forof_length${count}`, Valtype.i32)
+  const counter = localTmp(scope, `#forof_counter${count}`, Valtype.i32)
 
   const iterType = [
     [
       Opcodes.local_get,
-      localTmp(scope, "#forof_itertype" + count, Valtype.i32),
+      localTmp(scope, `#forof_itertype${count}`, Valtype.i32),
     ],
   ]
 
@@ -5968,7 +5967,7 @@ const generateForOf = (scope, decl) => {
     ...getNodeType(scope, decl.right),
     [
       Opcodes.local_set,
-      localTmp(scope, "#forof_itertype" + count, Valtype.i32),
+      localTmp(scope, `#forof_itertype${count}`, Valtype.i32),
     ],
 
     // set counter as 0 (could be already used)
@@ -6397,9 +6396,9 @@ const generateForIn = (scope, decl) => {
     if (depth[i] === "forin") count++
   }
 
-  const pointer = localTmp(scope, "#forin_base_pointer" + count, Valtype.i32)
-  const length = localTmp(scope, "#forin_length" + count, Valtype.i32)
-  const counter = localTmp(scope, "#forin_counter" + count, Valtype.i32)
+  const pointer = localTmp(scope, `#forin_base_pointer${count}`, Valtype.i32)
+  const length = localTmp(scope, `#forin_length${count}`, Valtype.i32)
+  const counter = localTmp(scope, `#forin_counter${count}`, Valtype.i32)
 
   out.push(
     // set pointer as right
@@ -6425,9 +6424,9 @@ const generateForIn = (scope, decl) => {
   depth.push("block")
   depth.push("if")
 
-  const tmpName = "#forin_tmp" + count
+  const tmpName = `#forin_tmp${count}`
   const tmp = localTmp(scope, tmpName, Valtype.i32)
-  localTmp(scope, tmpName + "#type", Valtype.i32)
+  localTmp(scope, `${tmpName}#type`, Valtype.i32)
 
   let setVar
   if (decl.left.type === "Identifier") {
@@ -6651,9 +6650,9 @@ const generateSwitch = (scope, decl) => {
     }
   }
 
-  const tmpName = "#switch" + uniqId()
+  const tmpName = `#switch${uniqId()}`
   const tmp = localTmp(scope, tmpName)
-  localTmp(scope, tmpName + "#type", Valtype.i32)
+  localTmp(scope, `${tmpName}#type`, Valtype.i32)
 
   const out = [
     ...generate(scope, decl.discriminant),
@@ -6667,7 +6666,7 @@ const generateSwitch = (scope, decl) => {
 
   const cases = decl.cases.slice()
   const defaultCase = cases.findIndex((x) => x.test == null)
-  if (defaultCase != -1) {
+  if (defaultCase !== -1) {
     // move default case to last
     cases.push(cases.splice(defaultCase, 1)[0])
   } else {
@@ -6855,7 +6854,7 @@ const generateThrow = (scope, decl) => {
       message = decl.argument.arguments[0]?.value ?? ""
     }
 
-    if (constructor && constructor.startsWith("__"))
+    if (constructor?.startsWith("__"))
       constructor = constructor.split("_").pop()
 
     let exceptId = exceptions.findIndex(
@@ -6912,9 +6911,9 @@ const generateTry = (scope, decl) => {
         if (depth[i] === "catch") count++
       }
 
-      const tmpName = "#catch_tmp" + count
+      const tmpName = `#catch_tmp${count}`
       const tmp = localTmp(scope, tmpName, valtypeBinary)
-      localTmp(scope, tmpName + "#type", Valtype.i32)
+      localTmp(scope, `${tmpName}#type`, Valtype.i32)
 
       // setup local for param
       out.push(
@@ -7080,7 +7079,7 @@ const generateArray = (
     scope.arrays ??= new Map()
     scope.arrays.set(uniqueName, ptr)
   } else {
-    const tmp = localTmp(scope, "#create_array" + uniqId(), Valtype.i32)
+    const tmp = localTmp(scope, `#create_array${uniqId()}`, Valtype.i32)
 
     // calculate required bytes: 4 (length prefix) + length * 9 (f64 value + type byte)
     const requiredBytes = ValtypeSize.i32 + length * (ValtypeSize[valtype] + 1)
@@ -7275,11 +7274,11 @@ const countLength = (func, name = undefined) => {
   return countParams(func, name ?? func.name)
 }
 
-const generateMember = (scope, decl, _global, _name) => {
+const generateMember = (scope, decl, _global, __name) => {
   let final = [],
     finalEnd,
     extraBC = {}
-  const name = decl.object.name
+  const _name = decl.object.name
 
   // todo: handle globalThis.foo efficiently
 
@@ -7357,7 +7356,7 @@ const generateMember = (scope, decl, _global, _name) => {
     const cands = Object.keys(builtinFuncs).filter(
       (x) =>
         x.startsWith("__") &&
-        x.endsWith("_prototype_" + decl.property.name + "$get"),
+        x.endsWith(`_prototype_${decl.property.name}$get`),
     )
 
     if (cands.length > 0) {
@@ -7395,7 +7394,7 @@ const generateMember = (scope, decl, _global, _name) => {
   const hash = ctHash(decl)
   const coctc = coctcOffset(decl)
   const coctcObjTmp =
-    coctc > 0 && localTmp(scope, "#coctc_obj" + uniqId(), Valtype.i32)
+    coctc > 0 && localTmp(scope, `#coctc_obj${uniqId()}`, Valtype.i32)
 
   const out = typeSwitch(scope, type, {
     ...(decl.computed
@@ -7999,7 +7998,7 @@ const generateClass = (scope, decl) => {
   const constrInsertIndex = func.wasm.findIndex(
     (x) => x.at(-1) === "super marker",
   )
-  if (constrInsertIndex != -1) {
+  if (constrInsertIndex !== -1) {
     func.wasm.splice(constrInsertIndex, 1)
     func.wasm.splice(constrInsertIndex, 0, ...batchedNonStaticPropWasm)
   } else {
@@ -8210,7 +8209,7 @@ const generateTaggedTemplate = (
 }
 
 globalThis._uniqId = 0
-const uniqId = () => "_" + globalThis._uniqId++
+const uniqId = () => `_${globalThis._uniqId++}`
 
 let objectHackers = []
 const objectHack = (node) => {
@@ -8267,15 +8266,15 @@ const objectHack = (node) => {
       )
         return abortOut
 
-      const name = "__" + objectName + "_" + node.property.name
+      const name = `__${objectName}_${node.property.name}`
       if (
         !hasFuncWithName(name) &&
         !(name in builtinVars) &&
-        !hasFuncWithName(name + "$get") &&
+        !hasFuncWithName(`${name}$get`) &&
         (hasFuncWithName(objectName) ||
           objectName in builtinVars ||
-          hasFuncWithName("__" + objectName) ||
-          "__" + objectName in builtinVars)
+          hasFuncWithName(`__${objectName}`) ||
+          `__${objectName}` in builtinVars)
       )
         return abortOut
 
@@ -8754,7 +8753,7 @@ const generateFunc = (scope, decl, forceNoExpr = false) => {
         if (x.left.name) {
           name = x.left.name
         } else {
-          name = "#arg_dstr" + i
+          name = `#arg_dstr${i}`
           destr = x.left
         }
 
@@ -8768,7 +8767,7 @@ const generateFunc = (scope, decl, forceNoExpr = false) => {
       }
 
       default:
-        name = "#arg_dstr" + i
+        name = `#arg_dstr${i}`
         destr = x
         jsLength++
         break

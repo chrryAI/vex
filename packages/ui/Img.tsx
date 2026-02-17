@@ -72,7 +72,7 @@ export default function Img({
         try {
           await img.decode()
           handleDimensionsChange({ width: img.width, height: img.height })
-        } catch (e) {}
+        } catch (_e) {}
       }
       return
     }
@@ -102,10 +102,10 @@ export default function Img({
         // Cache the URL
         imageCache.set(url, url)
         setImageSrc(url)
-      } catch (e) {
+      } catch (_e) {
         // Silently fail if decode/load fails (e.g. 404)
       }
-    } catch (e) {
+    } catch (_e) {
       // Don't show error for network/CORS issues - just fail silently
       setError(null)
     } finally {

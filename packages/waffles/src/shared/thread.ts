@@ -1,8 +1,6 @@
-import { faker } from "@faker-js/faker"
 import { expect, type Page } from "@playwright/test"
 import { wait } from ".."
 import { chat } from "./chat"
-import { signIn } from "./signIn"
 
 export const thread = async ({
   page,
@@ -46,16 +44,16 @@ export const thread = async ({
 
   const getNthMenuThread = async (nth: number) => {
     const threads = page.getByTestId("menu-thread-item")
-    const threadCount = await threads.count()
+    const _threadCount = await threads.count()
     return threads.nth(nth)
   }
-  const getFirstMenuThread = async () => {
+  const _getFirstMenuThread = async () => {
     return getNthMenuThread(0)
   }
 
   const getNthThread = async (nth: number) => {
     const threads = page.getByTestId("threads-item")
-    const threadCount = await threads.count()
+    const _threadCount = await threads.count()
     return threads.nth(nth)
   }
 

@@ -105,13 +105,13 @@ const checkFileUploadLimits = async ({
   let currentHourlyUploads = currentUser.fileUploadsThisHour || 0
   let currentDailyUploads = currentUser.fileUploadsToday || 0
   let currentDailySize = currentUser.totalFileSizeToday || 0
-  let currentDailyImages = currentUser.imagesGeneratedToday || 0
+  let _currentDailyImages = currentUser.imagesGeneratedToday || 0
 
   // Reset counters if needed
   if (needsDailyReset) {
     currentDailyUploads = 0
     currentDailySize = 0
-    currentDailyImages = 0
+    _currentDailyImages = 0
     currentHourlyUploads = 0
   } else if (needsHourlyReset) {
     currentHourlyUploads = 0

@@ -5,14 +5,14 @@
  * Uses the existing MinIO configuration from apps/api
  */
 
+import { readdirSync, readFileSync } from "node:fs"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
 import {
   PutBucketPolicyCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3"
-import { readdirSync, readFileSync } from "fs"
-import { dirname, join } from "path"
-import { fileURLToPath } from "url"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)

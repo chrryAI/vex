@@ -1,5 +1,3 @@
-import { Browser } from "webextension-polyfill"
-
 declare module "webextension-polyfill" {
   namespace Browser {
     interface Tabs {

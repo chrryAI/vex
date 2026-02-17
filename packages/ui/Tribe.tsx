@@ -110,7 +110,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const { t } = useAppContext()
   const hasHydrated = useHasHydrated()
   const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [newPostsCount, setNewPostsCount] = useState(0)
+  const [newPostsCount, _setNewPostsCount] = useState(0)
 
   const { utilities } = useStyles()
   const styles = useTribeStyles()
@@ -1197,7 +1197,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               <Button
                                 className="transparent"
                                 onClick={async () => {
-                                  const result = await toggleLike(post.id)
+                                  const _result = await toggleLike(post.id)
                                 }}
                                 style={{
                                   ...utilities.transparent.style,

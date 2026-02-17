@@ -508,7 +508,7 @@ export default function Chat({
 
   const [isLoading, setIsLoading] = useState(false)
   const [isStreaming, setIsStreaming] = useState(false)
-  const [retroAppIndex, setRetroAppIndex] = useState(0)
+  const [_retroAppIndex, _setRetroAppIndex] = useState(0)
   const controller = new AbortController()
 
   const [files, setFilesInternal] = useState<File[]>([])
@@ -660,7 +660,7 @@ export default function Chat({
   const filteredLogRef = useRef<string>("")
 
   // Filter out technical messages and only show meaningful updates
-  const filterStreamingMessage = (input: string | any): string | null => {
+  const _filterStreamingMessage = (input: string | any): string | null => {
     // Handle workflow messages directly in the filter
     if (typeof input === "object" && input !== null) {
       const msg = input as any
@@ -743,11 +743,11 @@ export default function Chat({
           return null
         }
 
-        return filterStreamingMessage(msg.text)
+        return _filterStreamingMessage(msg.text)
       }
       // If it's a log message object, extract the log string
       if (msg.type === "log" && msg.log) {
-        return filterStreamingMessage(msg.log)
+        return _filterStreamingMessage(msg.log)
       }
 
       return null
@@ -823,7 +823,7 @@ export default function Chat({
             return filteredLogRef.current
           }
           return null
-        } catch (e) {
+        } catch (_e) {
           // Fallback to safe text extraction using DOM
           const tempDiv = document.createElement("div")
           tempDiv.textContent = log // Use textContent to safely extract text without HTML
@@ -836,7 +836,7 @@ export default function Chat({
           }
           return null
         }
-      } catch (e) {
+      } catch (_e) {
         return null
       }
     }
@@ -1114,9 +1114,9 @@ export default function Chat({
       setIsLoading(false)
     }
   }
-  const [isVideoLoading, setIsVideoLoading] = useState(true)
+  const [_isVideoLoading, _setIsVideoLoading] = useState(true)
 
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const _videoRef = useRef<HTMLVideoElement>(null)
   const [voiceMessages, setVoiceMessages] = useState<
     { messageId?: string; text: string }[]
   >([])
@@ -1365,10 +1365,10 @@ export default function Chat({
     }
   }, [recognition])
 
-  const showHourlyLimitInfo = hourlyUsageLeft <= 5
+  const _showHourlyLimitInfo = hourlyUsageLeft <= 5
 
   // Compress images to reduce token usage
-  const compressImage = (
+  const _compressImage = (
     file: File,
     maxWidth = 1920,
     quality = 0.92,
@@ -2203,7 +2203,7 @@ export default function Chat({
   // }
 
   const [isGame, setIsGameInternal] = useState(false)
-  const setIsGame = (value: boolean) => {
+  const _setIsGame = (value: boolean) => {
     setIsGameInternal(value)
     plausible({
       name: ANALYTICS_EVENTS.GAME_TOGGLE,
@@ -2599,13 +2599,13 @@ export default function Chat({
       else if (placeholder && !input) {
         // Get computed styles
         const styles = window.getComputedStyle(el)
-        const lineHeight = Number.parseInt(styles.lineHeight) || 20
-        const paddingTop = Number.parseInt(styles.paddingTop) || 0
-        const paddingBottom = Number.parseInt(styles.paddingBottom) || 0
+        const lineHeight = Number.parseInt(styles.lineHeight, 10) || 20
+        const paddingTop = Number.parseInt(styles.paddingTop, 10) || 0
+        const paddingBottom = Number.parseInt(styles.paddingBottom, 10) || 0
         const width =
           el.clientWidth -
-          Number.parseInt(styles.paddingLeft || "0") -
-          Number.parseInt(styles.paddingRight || "0")
+          Number.parseInt(styles.paddingLeft || "0", 10) -
+          Number.parseInt(styles.paddingRight || "0", 10)
 
         // Only calculate if we have a valid width
         if (width > 0) {
@@ -2621,10 +2621,10 @@ export default function Chat({
 
       // Apply calculated height
       if (isWeb && (input || placeholder)) {
-        el.style.height = newHeight + "px"
+        el.style.height = `${newHeight}px`
       } else if (!input && !placeholder && initialHeight.current) {
         // Reset to initial height when both are empty
-        el.style.height = initialHeight.current + "px"
+        el.style.height = `${initialHeight.current}px`
       }
 
       // Check if exceeded
@@ -2644,7 +2644,7 @@ export default function Chat({
 
   const isVoiceDisabled = isLoading || creditsLeft === 0 || disabled
 
-  const [speechSupported, setSpeechSupported] = useState(false)
+  const [_speechSupported, setSpeechSupported] = useState(false)
 
   useEffect(() => {
     const hasRecognition =
@@ -2999,10 +2999,11 @@ export default function Chat({
                         data-testid={`agent-modal-button-${agent.name}`}
                         className={clsx(
                           `medium ${
-                            (agent.authorization === "user" &&
-                              !user &&
-                              !guest?.subscription) ||
-                            agent.id === sushiAgent?.id
+                            (
+                              agent.authorization === "user" &&
+                                !user &&
+                                !guest?.subscription
+                            ) || agent.id === sushiAgent?.id
                               ? "inverted"
                               : ""
                           }`,
@@ -3113,7 +3114,7 @@ export default function Chat({
                                   data.error || t("Error updating username"),
                                 )
                               }
-                            } catch (error) {
+                            } catch (_error) {
                               toast.error(t("Error updating favorite agent"))
                             } finally {
                             }
@@ -3432,8 +3433,7 @@ export default function Chat({
                           )
                         }
                         return "5"
-                      })()}{" "}
-                      {t("requests")}
+                      })()} {t("requests")}
                     </Span>
                   </Div>
                   <Div style={styles.statItem.style}>
@@ -4324,6 +4324,20 @@ export default function Chat({
                           data-agent-name={selectedAgent.name}
                           data-testid="agent-select-button"
                           onClick={() => {
+                            if (onlyAgent) {
+                              toast.error(
+                                t(
+                                  `{{name}} is only agent on this app. You can try sushi 🍣`,
+                                  {
+                                    name: capitalizeFirstLetter(
+                                      selectedAgent.name,
+                                    ),
+                                  },
+                                ),
+                              )
+
+                              return
+                            }
                             addHapticFeedback()
                             setIsAgentModalOpen(true)
                           }}
@@ -4331,7 +4345,6 @@ export default function Chat({
                           style={{
                             ...utilities.link.style,
                             ...styles.agentButton.style,
-                            color: onlyAgent ? "var(--shade-6)" : undefined,
                           }}
                           type="submit"
                         >

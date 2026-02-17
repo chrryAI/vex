@@ -122,7 +122,7 @@ const _isValidFingerprint = (fp: string | null): boolean => {
 export const session = new Hono()
 
 session.get("/", async (c) => {
-  console.log("🔥 HONO SESSION ROUTE CALLED - This is Hono, not Next.js!")
+  console.log("🔥 HONO SESSION ROUTE CALLED")
   const url = new URL(c.req.url)
 
   // Convert Hono request to standard Request for Arcjet

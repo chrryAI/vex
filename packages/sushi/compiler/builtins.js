@@ -79,7 +79,7 @@ export const BuiltinVars = ({ builtinFuncs }) => {
   _.Infinity = () => [number(Infinity)]
 
   for (const x in TYPES) {
-    _["__Porffor_TYPES_" + x] = () => [number(TYPES[x])]
+    _[`__Porffor_TYPES_${x}`] = () => [number(TYPES[x])]
   }
 
   _.__performance_timeOrigin = [[Opcodes.call, importedFuncs.timeOrigin]]
@@ -135,7 +135,7 @@ export const BuiltinVars = ({ builtinFuncs }) => {
   }
 
   // builtin objects
-  const makePrefix = (name) => (name.startsWith("__") ? "" : "__") + name + "_"
+  const makePrefix = (name) => `${(name.startsWith("__") ? "" : "__") + name}_`
 
   const done = new Set()
   const object = (name, props) => {
@@ -145,7 +145,7 @@ export const BuiltinVars = ({ builtinFuncs }) => {
     // already a func
     const existingFunc = builtinFuncs[name]
 
-    builtinFuncs["#get_" + name] = {
+    builtinFuncs[`#get_${name}`] = {
       params: [],
       locals: [Valtype.i32],
       returns: [Valtype.i32],
@@ -259,7 +259,7 @@ export const BuiltinVars = ({ builtinFuncs }) => {
     }
 
     _[name] = (scope, { builtin }) => [
-      [Opcodes.call, builtin("#get_" + name)],
+      [Opcodes.call, builtin(`#get_${name}`)],
       Opcodes.i32_from_u,
     ]
     _[name].type = existingFunc ? TYPES.function : TYPES.object
@@ -585,7 +585,7 @@ export const BuiltinVars = ({ builtinFuncs }) => {
       }
       if (!t) continue
 
-      if (!done.has(name) && !done.has("__" + name)) {
+      if (!done.has(name) && !done.has(`__${name}`)) {
         console.log(name, !!builtinFuncs[name])
         done.add(name)
       }

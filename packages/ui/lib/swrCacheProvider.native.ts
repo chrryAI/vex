@@ -88,7 +88,7 @@ function createMMKVProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
   let degradedMode = false
 
   // GC timer reference
-  let gcTimer: ReturnType<typeof setInterval> | null = null
+  let _gcTimer: ReturnType<typeof setInterval> | null = null
 
   // -----------------------------------------
   // Helper Functions
@@ -252,7 +252,7 @@ function createMMKVProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
       )
 
       // Start background GC
-      gcTimer = setInterval(runGarbageCollection, config.gcInterval)
+      _gcTimer = setInterval(runGarbageCollection, config.gcInterval)
 
       // Run initial GC after a short delay
       setTimeout(runGarbageCollection, 1000)

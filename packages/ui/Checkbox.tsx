@@ -5,7 +5,7 @@ import { useCheckboxStyles } from "./Checkbox.styles"
 import { Div, Input, Label, Span } from "./platform"
 
 type CheckboxProps = {
-  children: React.ReactNode
+  children?: React.ReactNode
   className?: string
   checked?: boolean
   disabled?: boolean
@@ -93,9 +93,11 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
             }}
           />
         </Div>
-        <Span className="checkboxLabel" style={styles.formSwitchLabel.style}>
-          {children}
-        </Span>
+        {children && (
+          <Span className="checkboxLabel" style={styles.formSwitchLabel.style}>
+            {children}
+          </Span>
+        )}
       </Label>
     )
   },

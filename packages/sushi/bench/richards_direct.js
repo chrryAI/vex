@@ -62,8 +62,8 @@ function runRichards() {
   scheduler_schedule.call(scheduler)
 
   if (
-    scheduler.queueCount != EXPECTED_QUEUE_COUNT ||
-    scheduler.holdCount != EXPECTED_HOLD_COUNT
+    scheduler.queueCount !== EXPECTED_QUEUE_COUNT ||
+    scheduler.holdCount !== EXPECTED_HOLD_COUNT
   ) {
     var msg =
       "Error during execution: queueCount = " +
@@ -316,7 +316,7 @@ function tcb_markAsHeld() {
 }
 
 function tcb_isHeldOrSuspended() {
-  return (this.state & STATE_HELD) != 0 || this.state == STATE_SUSPENDED
+  return (this.state & STATE_HELD) !== 0 || this.state === STATE_SUSPENDED
 }
 
 function tcb_markAsSuspended() {
@@ -332,7 +332,7 @@ function tcb_markAsRunnable() {
  */
 function tcb_run() {
   var packet
-  if (this.state == STATE_SUSPENDED_RUNNABLE) {
+  if (this.state === STATE_SUSPENDED_RUNNABLE) {
     packet = this.queue
     this.queue = packet.link
     if (this.queue == null) {
@@ -364,8 +364,8 @@ function tcb_checkPriorityAdd(task, packet) {
   return task
 }
 
-function tcb_toString() {
-  return "tcb { " + this.task + "@" + this.state + " }"
+function _tcb_toString() {
+  return `tcb { ${this.task}@${this.state} }`
 }
 
 /**
@@ -384,8 +384,8 @@ function IdleTask(scheduler, v1, count) {
 
 function idleTask_run(packet) {
   this.count--
-  if (this.count == 0) return scheduler_holdCurrent.call(this.scheduler)
-  if ((this.v1 & 1) == 0) {
+  if (this.count === 0) return scheduler_holdCurrent.call(this.scheduler)
+  if ((this.v1 & 1) === 0) {
     this.v1 = this.v1 >> 1
     return scheduler_release.call(this.scheduler, ID_DEVICE_A)
   } else {
@@ -448,7 +448,7 @@ function workerTask_run(packet) {
   if (packet == null) {
     return scheduler_suspendCurrent.call(this.scheduler)
   } else {
-    if (this.v1 == ID_HANDLER_A) {
+    if (this.v1 === ID_HANDLER_A) {
       this.v1 = ID_HANDLER_B
     } else {
       this.v1 = ID_HANDLER_A
@@ -484,7 +484,7 @@ function HandlerTask(scheduler) {
 
 function handlerTask_run(packet) {
   if (packet != null) {
-    if (packet.kind == KIND_WORK) {
+    if (packet.kind === KIND_WORK) {
       this.v1 = packet_addTo.call(packet, this.v1)
     } else {
       this.v2 = packet_addTo.call(packet, this.v2)

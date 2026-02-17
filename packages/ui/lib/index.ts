@@ -1111,7 +1111,7 @@ export const getSession = async ({
   try {
     const result = await response.json()
     return result as session
-  } catch (error) {
+  } catch (_error) {
     const text = await response.text()
     return {
       error: `API error (${response.status}): ${text.substring(0, 200)}`,

@@ -570,7 +570,7 @@ async function getSushiStoreOverview() {
     RETURN store.name as name, store.domain as domain, store.description as description
   `)
 
-  if (storeInfo && storeInfo.data && storeInfo.data.length > 0) {
+  if (storeInfo?.data && storeInfo.data.length > 0) {
     const { name, domain, description } = storeInfo.data[0]
     console.log(`🍣 ${name}`)
     console.log(`   ${domain}`)
@@ -586,7 +586,7 @@ async function getSushiStoreOverview() {
   `)
 
   console.log("👥 Agents:")
-  if (agents && agents.data) {
+  if (agents?.data) {
     for (const agent of agents.data) {
       const { icon, name, title, intelligence, level } = agent
       console.log(`   ${icon} ${name} - ${title}`)
@@ -617,7 +617,7 @@ async function getSushiStoreOverview() {
   `)
 
   console.log(`\n🔌 Integrations:`)
-  if (integrations && integrations.data) {
+  if (integrations?.data) {
     for (const int of integrations.data) {
       const { icon, name, type } = int
       console.log(`   ${icon} ${name} (${type})`)
@@ -653,7 +653,7 @@ async function getAgent(agentId) {
     { params: { agentId } },
   )
 
-  if (result && result.data && result.data.length > 0) {
+  if (result?.data && result.data.length > 0) {
     return result.data[0]
   }
 

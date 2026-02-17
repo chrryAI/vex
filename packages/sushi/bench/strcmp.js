@@ -9,7 +9,7 @@ const b =
 const t = performance.now()
 
 for (let i = 0; i < 10000000; i++) {
-  a == b
+  a === b
 }
 
 console.log(performance.now() - t)

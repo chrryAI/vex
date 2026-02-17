@@ -7,7 +7,7 @@ if (typeof window !== "undefined") {
     require("./globals.scss")
     require("./globals.css")
     require("./styles/view-transitions.css")
-  } catch (e) {
+  } catch (_e) {
     // React Native will throw here, which is fine
   }
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import { useState } from "react"
 import toast from "react-hot-toast"
 import { useCollaborateStyles } from "./Collaborate.styles"
 import { useAppContext } from "./context/AppContext"

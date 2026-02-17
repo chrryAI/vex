@@ -125,7 +125,7 @@ export default function Menu({
             const fullscreen = await appWindow.isFullscreen()
             setIsFullscreen(fullscreen)
           }
-        } catch (e) {
+        } catch (_e) {
           // Silent fail - not critical
         }
       }
@@ -317,8 +317,9 @@ export default function Menu({
                 onDoubleClick={async () => {
                   if (!isTauri) return
                   try {
-                    const { getCurrentWindow } =
-                      await import("@tauri-apps/api/window")
+                    const { getCurrentWindow } = await import(
+                      "@tauri-apps/api/window"
+                    )
                     const appWindow = getCurrentWindow()
                     const isMaximized = await appWindow.isMaximized()
                     if (isMaximized) {
@@ -326,7 +327,7 @@ export default function Menu({
                     } else {
                       await appWindow.maximize()
                     }
-                  } catch (e) {
+                  } catch (_e) {
                     // Tauri API not available
                   }
                 }}

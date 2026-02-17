@@ -333,7 +333,7 @@ user.patch("/image", async (c) => {
     await updateUser({ ...member, image: uploadResult.url })
 
     return c.json({ url: uploadResult.url })
-  } catch (error) {
+  } catch (_error) {
     return c.json({ error: "Failed to upload image" }, 500)
   }
 })

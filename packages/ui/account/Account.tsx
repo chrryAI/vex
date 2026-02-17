@@ -65,7 +65,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
   const { setEnv, env, actions } = useData()
 
   const searchParams = useSearchParams()
-  const innerRef = React.useRef<HTMLDivElement>(null)
+  const _innerRef = React.useRef<HTMLDivElement>(null)
   const isExtension = checkIsExtension()
   const isAppleAvailable = false
   const isOAuthAccountNotLinkedError =
@@ -76,7 +76,8 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
   const [userName, setUserName] = React.useState<string>("")
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const [isUserNameNotSet, setIsUserNameNotSet] = React.useState<boolean>(false)
+  const [_isUserNameNotSet, setIsUserNameNotSet] =
+    React.useState<boolean>(false)
 
   useEffect(() => {
     if (user?.userName) {
@@ -108,9 +109,9 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
 
     if (!value || !isValidUsername(value)) {
       if (value.length > 10) {
-        toast.error(t("Oops, 20 characters max please") + " 😅")
+        toast.error(`${t("Oops, 20 characters max please")} 😅`)
       } else {
-        toast.error(t("Need 3-20 letters and numbers only") + " 😅")
+        toast.error(`${t("Need 3-20 letters and numbers only")} 😅`)
       }
 
       setIsSaving(false)
@@ -233,7 +234,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
         const updatedUser = await actions.getUser()
         setUser(updatedUser)
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Error uploading image")
     } finally {
       setIsUploading(false)
@@ -354,7 +355,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
                               const updatedUser = await actions.getUser()
                               setUser(updatedUser)
                             }
-                          } catch (error) {
+                          } catch (_error) {
                             toast.error("Error removing image")
                           } finally {
                             setIsUploading(false)

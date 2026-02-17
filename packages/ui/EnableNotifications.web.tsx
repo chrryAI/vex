@@ -2,7 +2,7 @@
 
 /// <reference types="chrome" />
 
-import React, { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import A from "./a/A"
 import { useAppContext } from "./context/AppContext"

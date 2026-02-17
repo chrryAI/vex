@@ -1,7 +1,7 @@
 "use client"
 
 import clsx from "clsx"
-import React, { useEffect } from "react"
+import { useEffect } from "react"
 import toast from "react-hot-toast"
 import { COLORS, useAppContext } from "../context/AppContext"
 import { useAuth, useData, useNavigationContext } from "../context/providers"

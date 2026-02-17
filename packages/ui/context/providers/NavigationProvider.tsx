@@ -1,7 +1,7 @@
 "use client"
 
 import { t } from "i18next"
-import React, {
+import {
   createContext,
   type ReactNode,
   useContext,
@@ -152,7 +152,6 @@ export function NavigationProvider({
     setIsVisitor,
     refetchThreads,
     userNameByUrl,
-    setShouldFetchThread,
   } = useChat()
 
   const goToCalendar = () => {
@@ -173,7 +172,7 @@ export function NavigationProvider({
   const goToThreads = (params?: Record<string, string>) => {
     setShowFocus(false)
     const url = new URLSearchParams(params)
-    router.push(`/threads${params ? "?" + url : ""}`)
+    router.push(`/threads${params ? `?${url}` : ""}`)
   }
 
   const getStoreSlug = (slug: string) => {
@@ -217,7 +216,7 @@ export function NavigationProvider({
       await navigator.clipboard.writeText(url)
       toast.success(t("Copied"))
       setTimeout(() => (copiedRef.current = false), 2000)
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to copy code")
     }
   }

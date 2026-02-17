@@ -148,7 +148,7 @@
 
     header a {
       color: #e0e4e8;
-      text-decoration: none !important;
+      text-decoration: none;
       font-weight: 600;
     }
 
@@ -665,7 +665,7 @@
 
     @media (max-width: 1000px) {
       .cards {
-        grid-template-columns: 1fr !important;
+        grid-template-columns: 1fr;
       }
 
       .cards > :not(:last-child) {
@@ -677,7 +677,7 @@
       }
 
       #graph ~ * {
-        display: none !important;
+        display: none;
       }
 
       #graph_legend {
@@ -701,8 +701,8 @@
 
     @media (max-width: 800px) {
       .cards > div {
-        border: none !important;
-        border-bottom: 2px solid var(--accent) !important;
+        border: none;
+        border-bottom: 2px solid var(--accent);
         padding: 0;
         padding-bottom: 40px;
         margin-bottom: 40px;
@@ -1107,7 +1107,7 @@ for (let i = 0; i < rows.length; i++) {
 console.log(border);
 `.trim();
 
-      const addOptions = (container, options, def) => {
+      const _addOptions = (container, options, def) => {
         for (const x of options) {
           const el = document.createElement('option');
           el.textContent = x;
@@ -1195,9 +1195,9 @@ console.log(border);
         wasmView.innerHTML = '';
         status.textContent = 'Compiling...';
 
-        let wasm, exports, times, disasms, c;
+        let wasm, exports, times, disasms, _c;
         try {
-          ({ wasm, exports, times, disasms, c } = compile(code, true, print));
+          ({ wasm, exports, times, disasms, _c } = compile(code, true, print));
         } catch (e) {
           console.error(e);
           status.textContent = `${e.constructor.name}: ${e.message}`;
@@ -1244,7 +1244,7 @@ console.log(border);
 
       comp();
 
-      const niceDate = (x) => {
+      const _niceDate = (x) => {
         return x.toLocaleString('default', {
           month: 'long',
           day: 'numeric'
@@ -1276,7 +1276,7 @@ console.log(border);
 
       const makeGraph = () => {
         const oldest = new Date(history.at(-1).time);
-        const now = new Date();
+        const _now = new Date();
         // const months =
         //   now.getMonth() -
         //   oldest.getMonth() +

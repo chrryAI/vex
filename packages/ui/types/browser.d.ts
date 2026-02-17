@@ -17,7 +17,7 @@ declare const browser:
       runtime?: {
         id?: string
         getURL?: (path: string) => string
-        sendMessage: (message: any, options?: any) => Promise<any> | void
+        sendMessage: (message: any, options?: any) => Promise<any> | undefined
       }
       cookies?: {
         get: (details: { url: string; name: string }) => Promise<any>

@@ -94,6 +94,7 @@ export default function GitHubConnectButton({
 
   return (
     <button
+      type="button"
       onClick={handleConnect}
       disabled={isLoading}
       className={buttonClasses}

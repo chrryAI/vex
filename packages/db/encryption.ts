@@ -1,10 +1,10 @@
-import crypto from "crypto"
+import crypto from "node:crypto"
 
 // Encryption configuration
 const ALGORITHM = "aes-256-gcm"
 const IV_LENGTH = 16
 const AUTH_TAG_LENGTH = 16
-const SALT_LENGTH = 64
+const _SALT_LENGTH = 64
 
 /**
  * Get encryption key from environment variable

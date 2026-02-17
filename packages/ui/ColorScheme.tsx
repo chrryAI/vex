@@ -50,7 +50,7 @@ export default function ColorScheme({
     <Div style={{ ...styles.colorScheme.style, ...style }}>
       {Object.entries(COLORS).map(([key, value]) => (
         <Button
-          data-testid={dataTestId + "-" + key}
+          data-testid={`${dataTestId}-${key}`}
           key={key}
           onClick={() => {
             !props.colorScheme && setColorScheme(key as keyof typeof COLORS)

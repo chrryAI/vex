@@ -96,7 +96,7 @@ scheduledJobs.post("/", async (c) => {
 
     // Use sanitized and validated data
     const {
-      sessionId,
+      sessionId: _sessionId,
       appId,
       schedule,
       frequency,
@@ -172,7 +172,7 @@ scheduledJobs.post("/", async (c) => {
         }
 
         // Check cooldown
-        const lastUpdated =
+        const _lastUpdated =
           existingSchedule.updatedOn || existingSchedule.createdOn
 
         let priceDifference = totalPrice // in cents

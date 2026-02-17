@@ -19,7 +19,7 @@
     "test:tauri": "TEST_URL=http://localhost:5173 playwright test --project tauri-macos",
     "build": "pnpm exec tsup",
     "dev": "pnpm exec tsup --watch",
-    "lint": "eslint src"
+    "lint": "biome check ."
   },
   "keywords": [
     "playwright",

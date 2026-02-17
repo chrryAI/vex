@@ -1,8 +1,8 @@
+import { spawn } from "node:child_process"
+import { existsSync, unlinkSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { captureException } from "@sentry/node"
-import { spawn } from "child_process"
-import { existsSync, unlinkSync, writeFileSync } from "fs"
-import { tmpdir } from "os"
-import { join } from "path"
 
 async function extractVideoFrames(
   base64Data: string,
@@ -26,14 +26,14 @@ async function extractVideoFrames(
 
       try {
         // Try to find ffmpeg using which command
-        const { execSync } = require("child_process")
+        const { execSync } = require("node:child_process")
         const whichResult = execSync("which ffmpeg", {
           encoding: "utf8",
         }).trim()
         if (whichResult) {
           ffmpegPath = whichResult
         }
-      } catch (error) {
+      } catch (_error) {
         // Fallback to checking common paths
         const commonPaths = ["/usr/bin/ffmpeg", "/opt/homebrew/bin/ffmpeg"]
         ffmpegPath = commonPaths.find((path) => existsSync(path)) || "ffmpeg"
@@ -77,7 +77,7 @@ async function extractVideoFrames(
         for (let i = 1; i <= 10; i++) {
           const framePath = outputPattern.replace("%d", i.toString())
           if (existsSync(framePath)) {
-            const frameBuffer = require("fs").readFileSync(framePath)
+            const frameBuffer = require("node:fs").readFileSync(framePath)
             frames.push(frameBuffer.toString("base64"))
             unlinkSync(framePath) // Clean up frame file
           }

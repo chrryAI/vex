@@ -1,5 +1,5 @@
 import fs from "node:fs/promises"
-import { dirname, extname, join } from "node:path"
+import { join } from "node:path"
 
 export default async (test262Path, filter, preludes, first = []) => {
   if (filter.startsWith("test/")) filter = filter.slice(5)
@@ -70,7 +70,7 @@ export default async (test262Path, filter, preludes, first = []) => {
     if (flags.negative && !negative) negative = true
 
     tests.push({
-      file: file.replace(testPath + "/", ""),
+      file: file.replace(`${testPath}/`, ""),
       contents,
       flags,
       negative,

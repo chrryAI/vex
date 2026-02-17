@@ -273,7 +273,7 @@ const Subscribe = ({ user, guest }: SubscribeProps) => {
     <Modal>
       {/* Subscription options */}
       {!isGifting && (
-        <button onClick={handleCheckout}>
+        <button type="button"  onClick={handleCheckout}>
           Subscribe Now
         </button>
       )}
@@ -286,14 +286,14 @@ const Subscribe = ({ user, guest }: SubscribeProps) => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <button onClick={handleSearch}>
+          <button type="button"  onClick={handleSearch}>
             <Search />
           </button>
         </div>
       )}
 
       {/* Gift button */}
-      <button onClick={() => setIsGifting(true)}>
+      <button type="button"  onClick={() => setIsGifting(true)}>
         🎁 Gift
       </button>
     </Modal>

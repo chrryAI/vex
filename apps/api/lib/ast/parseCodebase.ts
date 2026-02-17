@@ -1,8 +1,8 @@
+import fs from "node:fs"
 import { parse } from "@babel/parser"
 import type { NodePath } from "@babel/traverse"
 import traverse from "@babel/traverse"
 import * as t from "@babel/types"
-import fs from "fs"
 
 export interface ASTNode {
   id: string

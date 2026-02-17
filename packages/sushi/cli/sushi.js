@@ -5,15 +5,14 @@
  * Lightweight AOT AI with file system access
  */
 
+import crypto from "node:crypto"
+import fs from "node:fs/promises"
+import os from "node:os"
+import path from "node:path"
 import chalk from "chalk"
 import { Command } from "commander"
-import crypto from "crypto"
-import { FalkorDB } from "falkordb"
-import fs from "fs/promises"
 import inquirer from "inquirer"
 import ora from "ora"
-import os from "os"
-import path from "path"
 
 const program = new Command()
 const CONFIG_DIR = path.join(os.homedir(), ".sushi")
@@ -36,7 +35,7 @@ function encrypt(text) {
   const cipher = crypto.createCipheriv("aes-256-cbc", ENCRYPTION_KEY, iv)
   let encrypted = cipher.update(text, "utf8", "hex")
   encrypted += cipher.final("hex")
-  return iv.toString("hex") + ":" + encrypted
+  return `${iv.toString("hex")}:${encrypted}`
 }
 
 function decrypt(text) {
@@ -49,7 +48,7 @@ function decrypt(text) {
     let decrypted = decipher.update(encryptedText, "hex", "utf8")
     decrypted += decipher.final("utf8")
     return decrypted
-  } catch (err) {
+  } catch (_err) {
     // If decryption fails, return null (corrupted or wrong key)
     return null
   }
@@ -62,7 +61,7 @@ function decrypt(text) {
 async function ensureConfigDir() {
   try {
     await fs.mkdir(CONFIG_DIR, { recursive: true })
-  } catch (err) {
+  } catch (_err) {
     // Directory exists
   }
 }
@@ -86,7 +85,7 @@ async function loadConfig() {
     }
 
     return config
-  } catch (err) {
+  } catch (_err) {
     return {
       apiKeys: {},
       mode: "guest",
@@ -124,7 +123,7 @@ async function loadCredits() {
   try {
     const data = await fs.readFile(CREDITS_FILE, "utf-8")
     return JSON.parse(data)
-  } catch (err) {
+  } catch (_err) {
     return {
       total: 100, // Free credits for guest mode
       used: 0,

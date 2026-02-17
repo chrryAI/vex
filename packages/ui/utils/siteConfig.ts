@@ -1321,7 +1321,7 @@ const e2eVex = {
   // store: "https://e2e.chrry.ai",
 }
 
-const tribe = {
+const _tribe = {
   ...chrryAI,
   url: "https://tribe.chrry.ai",
   domain: "tribe.chrry.ai",
@@ -2701,7 +2701,7 @@ export function getSiteConfig(
   caller?: string,
 ): SiteConfig {
   let hostname = hostnameOrMode || getClientHostname()
-  if (hostnameOrMode && hostnameOrMode.includes("://")) {
+  if (hostnameOrMode?.includes("://")) {
     try {
       hostname = new URL(hostnameOrMode).hostname
     } catch {

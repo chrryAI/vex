@@ -131,7 +131,6 @@ export default function MemoryConsent({
             <Checkbox
               style={{ marginLeft: "auto" }}
               checked={auth.burn}
-              children={""}
               onChange={() => {
                 setBurn(!auth.burn)
               }}

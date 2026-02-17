@@ -101,7 +101,7 @@ export default function Modal({
           addParams({ [paramKey]: paramValue || "true" })
         }
       }
-      event && plausible({ ...event, name: event.name + "_open" })
+      event && plausible({ ...event, name: `${event.name}_open` })
     } else {
       if (params) {
         const urlParams = new URLSearchParams(params.split("?")[1] || "")

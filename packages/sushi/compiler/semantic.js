@@ -216,7 +216,7 @@ const annotate = (node) => {
           foundScope = scopes[i]
           foundScopeIdx = i
           const variable = scopes[i]._variables[node.name]
-          if (variable.id > 0) node.name = node.name + "#" + variable.id
+          if (variable.id > 0) node.name = `${node.name}#${variable.id}`
           break
         }
       }
@@ -242,7 +242,7 @@ const annotate = (node) => {
 
         // If variable is from a parent function (not global), mark as captured
         if (ownerFuncIdx >= 0 && currentFuncIdx > ownerFuncIdx && currentFunc) {
-          const ownerFunc = scopes[ownerFuncIdx]
+          const _ownerFunc = scopes[ownerFuncIdx]
 
           // Mark the variable as captured
           foundScope._variables[node.name].captured = true

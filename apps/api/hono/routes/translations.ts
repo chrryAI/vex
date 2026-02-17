@@ -127,8 +127,8 @@ translations.post("/missing", async (c) => {
     }
 
     // Dynamic imports for Node.js fs operations
-    const { writeFile, readFile } = await import("fs/promises")
-    const { join } = await import("path")
+    const { writeFile, readFile } = await import("node:fs/promises")
+    const { join } = await import("node:path")
 
     // Paths to BOTH translation files (sync both locations)
     const uiEnJsonPath = join(process.cwd(), "../../packages/db/en.json")
@@ -187,7 +187,7 @@ translations.post("/missing", async (c) => {
         )
 
       // Generate JSON content
-      const newContent = JSON.stringify(sortedTranslations, null, 2) + "\n"
+      const newContent = `${JSON.stringify(sortedTranslations, null, 2)}\n`
 
       // Validate before writing
       if (!validateJSON(newContent)) {
@@ -218,8 +218,7 @@ translations.post("/missing", async (c) => {
           )
 
           // Write back to API locale file
-          const apiContent =
-            JSON.stringify(sortedApiTranslations, null, 2) + "\n"
+          const apiContent = `${JSON.stringify(sortedApiTranslations, null, 2)}\n`
           await writeFile(apiEnJsonPath, apiContent, "utf-8")
 
           console.log(

@@ -442,7 +442,7 @@ async function getRelevantMemoryContext({
       .join("\n")
 
     // Count unique threads for scatter analysis
-    const uniqueThreads = new Set(
+    const _uniqueThreads = new Set(
       memoriesResult.memories
         .map((m) => m.sourceThreadId)
         .filter((id): id is string => id !== null),
@@ -594,11 +594,11 @@ async function getAnalyticsContext({
     ]
 
     // Log analytics access
-    const userType = member ? "member" : "guest"
-    const userId = member?.id || guest?.id
-    const accessLevel = isAdmin ? "admin-full" : "public-only"
-    const isPro = member?.subscription?.plan === "pro"
-    const isAppOwner = isOwner(app, { userId: member?.id, guestId: guest?.id })
+    const _userType = member ? "member" : "guest"
+    const _userId = member?.id || guest?.id
+    const _accessLevel = isAdmin ? "admin-full" : "public-only"
+    const _isPro = member?.subscription?.plan === "pro"
+    const _isAppOwner = isOwner(app, { userId: member?.id, guestId: guest?.id })
 
     // console.log(
     //   `📊 Analytics Access | User: ${userType}:${userId} | Level: ${accessLevel} | App: ${app?.slug} | Owner: ${isAppOwner} | Pro: ${isPro}`,
@@ -1165,8 +1165,9 @@ ai.post("/", async (c) => {
   const city = member?.city || guest?.city
   const country = member?.country || guest?.country
   // Log user type and tier for analytics
-  const userType = member ? "member" : "guest"
-  const tier = member?.subscription?.plan || guest?.subscription?.plan || "free"
+  const _userType = member ? "member" : "guest"
+  const _tier =
+    member?.subscription?.plan || guest?.subscription?.plan || "free"
   // console.log(
   //   `👤 User: ${userType} | Tier: ${tier} | ID: ${member?.id || guest?.id}`,
   // )
@@ -1306,7 +1307,7 @@ ai.post("/", async (c) => {
 
   // Extract maxTokens from job's active scheduledTime
   let jobMaxTokens: number | undefined
-  if (job && job.scheduledTimes && job.scheduledTimes.length > 0) {
+  if (job?.scheduledTimes && job.scheduledTimes.length > 0) {
     // Find the active scheduledTime based on current time
     const now = new Date()
     const nowMs = now.getTime()
@@ -1899,7 +1900,7 @@ ${
     : undefined
 
   // Log model and features for analytics
-  const modelName =
+  const _modelName =
     selectedAgent?.displayName || debateAgent?.displayName || "default"
   const features = []
   if (message.message.isWebSearchEnabled) features.push("web-search")
@@ -1930,7 +1931,7 @@ ${
 
   const clientId = message.message.clientId
 
-  const tribeCredits = member?.tribeCredits
+  const _tribeCredits = member?.tribeCredits
 
   const currentThreadId = thread?.id || threadId
 
@@ -1950,7 +1951,7 @@ ${
 
   const threadInstructions = thread?.instructions
 
-  const getLocationContext = (
+  const _getLocationContext = (
     city?: string | null,
     country?: string | null,
   ) => {
@@ -2335,7 +2336,6 @@ ${tribesList || "  - general: General discussion"}
   let {
     context: memoryContext,
     memoryIds,
-    isAppCreator,
     recentAnalytics,
   } = await tracker.track("memory_context", () =>
     getRelevantMemoryContext({
@@ -2545,15 +2545,15 @@ This is the conversation starter that prompted their message. Keep this context 
 `
     : ""
 }${
-          appPlaceholder || threadPlaceholder
-            ? `
+  appPlaceholder || threadPlaceholder
+    ? `
 You recently generated these personalized suggestions for the user:
 ${appPlaceholder ? `- App placeholder: "${appPlaceholder.text}"` : ""}
 ${threadPlaceholder ? `- Thread placeholder: "${threadPlaceholder.text}"` : ""}
 
 These reflect the user's interests and recent conversations. If the user seems uncertain about what to discuss or asks for suggestions, you can naturally reference these topics. Be conversational about it - don't just list them, weave them into your response naturally.`
-            : ""
-        }
+    : ""
+}
 `
       : ""
 
@@ -4213,7 +4213,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
     const contentParts = []
 
     // Add text part (always required for Claude)
-    if (userContent.text && userContent.text.trim()) {
+    if (userContent.text?.trim()) {
       contentParts.push({
         type: "text",
         text: userContent.text,
@@ -5373,7 +5373,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
         citations
           .map((match) => {
             const num = match.match(/\[(\d+)\]/)?.[1]
-            return num ? Number.parseInt(num) : null
+            return num ? Number.parseInt(num, 10) : null
           })
           .filter((num) => num !== null),
       ),
@@ -5852,7 +5852,7 @@ Respond in JSON format:
             break
           }
           await enhancedStreamChunk({
-            chunk: word + " ",
+            chunk: `${word} `,
             chunkNumber: currentChunk++,
             totalChunks: descriptionChunks.length,
             streamingMessage: fluxStreamingMessage,
@@ -6088,7 +6088,7 @@ Respond in JSON format:
       let finalText = ""
       let responseMetadata: any = null
       let toolCallsDetected = false
-      let streamCompleted = false
+      let _streamCompleted = false
       let tokenLimitWarning: string | null = null
 
       // Check token limit BEFORE streaming
@@ -6119,8 +6119,7 @@ Respond in JSON format:
           // Inject summary into system prompt
           const updatedSystemPrompt = {
             ...split.systemPrompt,
-            content:
-              split.systemPrompt.content + "\n\n" + split.summarizedContext,
+            content: `${split.systemPrompt.content}\n\n${split.summarizedContext}`,
           }
           newMessages.push(updatedSystemPrompt)
         } else if (split.summarizedContext) {
@@ -6161,7 +6160,7 @@ Respond in JSON format:
             finalText = text
             responseMetadata = response
             toolCallsDetected = toolCalls && toolCalls.length > 0
-            streamCompleted = true
+            _streamCompleted = true
 
             // console.log("🍣 Sushi finished:", {
             //   hasToolCalls: toolCallsDetected,
@@ -6495,7 +6494,7 @@ Respond in JSON format:
               const BATCH_SIZE = 75 // characters
 
               for (const [index, word] of words.entries()) {
-                batchBuffer += word + " "
+                batchBuffer += `${word} `
 
                 // Send when buffer reaches threshold or is last word
                 const shouldFlush =
@@ -6561,7 +6560,7 @@ Respond in JSON format:
               const BATCH_SIZE = 75 // characters
 
               for (const [index, word] of words.entries()) {
-                batchBuffer += word + " "
+                batchBuffer += `${word} `
 
                 // Send when buffer reaches threshold or is last word
                 const shouldFlush =
@@ -7025,7 +7024,7 @@ Respond in JSON format:
       let timeoutId: NodeJS.Timeout
 
       let finalText = ""
-      let responseMetadata: any = null
+      let _responseMetadata: any = null
       let toolCallsDetected = false
 
       console.time("fullProcessing") // Start at beginning
@@ -7040,7 +7039,7 @@ Respond in JSON format:
           tools: allTools,
           async onFinish({ text, usage, response, toolCalls, toolResults }) {
             finalText = text
-            responseMetadata = response
+            _responseMetadata = response
             toolCallsDetected = toolCalls && toolCalls.length > 0
           },
         })
@@ -7185,7 +7184,7 @@ Respond in JSON format:
               const BATCH_SIZE = 75 // characters
 
               for (const [index, word] of words.entries()) {
-                batchBuffer += word + " "
+                batchBuffer += `${word} `
 
                 // Send when buffer reaches threshold or is last word
                 const shouldFlush =
@@ -7367,7 +7366,7 @@ Respond in JSON format:
 
         let currentChunk = 0
         let reasoningText = ""
-        let hasReceivedText = false
+        let _hasReceivedText = false
 
         // Use fullStream to get reasoning parts immediately
         for await (const part of result.fullStream) {
@@ -7378,7 +7377,7 @@ Respond in JSON format:
           }
 
           if (part.type === "text-delta") {
-            hasReceivedText = true
+            _hasReceivedText = true
             await enhancedStreamChunk({
               chunk: part.text,
               chunkNumber: currentChunk++,
@@ -7669,7 +7668,7 @@ Respond in JSON format:
 
             for (const word of words) {
               await enhancedStreamChunk({
-                chunk: word + " ",
+                chunk: `${word} `,
                 chunkNumber: followUpChunk++,
                 totalChunks: -1, // Unknown in streaming
                 streamingMessage: followUpStreamingMessage,

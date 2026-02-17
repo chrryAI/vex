@@ -1,11 +1,6 @@
 "use client"
 
-import React, {
-  createContext,
-  type ReactNode,
-  useContext,
-  useMemo,
-} from "react"
+import { createContext, type ReactNode, useContext, useMemo } from "react"
 import { AppStyleDefs } from "../App.styles"
 import { SkeletonStyleDefs } from "../Skeleton.styles"
 import { StoreStyleDefs } from "../Store.styles"

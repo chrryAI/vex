@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process"
-import fs from "fs"
+import fs from "node:fs"
 
 const log = execSync(`git log -9999 --pretty="%B%n%H %ct"`)
   .toString()
@@ -73,7 +73,7 @@ for (let i = 0; i < log.length; i++) {
     if (i != null) results[i] += number
   }
 
-  out.push({ results, time: parseInt(timestamp) * 1000, hash, title })
+  out.push({ results, time: parseInt(timestamp, 10) * 1000, hash, title })
 }
 
 fs.writeFileSync("test262/history.json", JSON.stringify(out))

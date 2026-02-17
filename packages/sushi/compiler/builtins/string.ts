@@ -4,16 +4,16 @@ import type {} from "./porffor.d.ts"
 export const __Porffor_strcmp = (a: any, b: any): boolean => {
   // a and b must be string or bytestring
   // fast path: check if pointers are equal
-  if (Porffor.wasm`local.get ${a}` == Porffor.wasm`local.get ${b}`) return true
+  if (Porffor.wasm`local.get ${a}` === Porffor.wasm`local.get ${b}`) return true
 
   let al: i32 = Porffor.wasm.i32.load(a, 0, 0)
   let bl: i32 = Porffor.wasm.i32.load(b, 0, 0)
 
   // fast path: check if lengths are inequal
-  if (al != bl) return false
+  if (al !== bl) return false
 
-  if (Porffor.wasm`local.get ${a + 1}` == Porffor.TYPES.bytestring) {
-    if (Porffor.wasm`local.get ${b + 1}` == Porffor.TYPES.bytestring) {
+  if (Porffor.wasm`local.get ${a + 1}` === Porffor.TYPES.bytestring) {
+    if (Porffor.wasm`local.get ${b + 1}` === Porffor.TYPES.bytestring) {
       // bytestring, bytestring
       // this path is hyper-optimized as it is by far the most common and (perf) important
 
@@ -132,9 +132,9 @@ if 64
 end`
 
       // check bonus char if exists
-      if (al == 1) {
+      if (al === 1) {
         if (
-          Porffor.wasm.i32.load8_u(Porffor.wasm`local.get ${a}`, 0, 4) !=
+          Porffor.wasm.i32.load8_u(Porffor.wasm`local.get ${a}`, 0, 4) !==
           Porffor.wasm.i32.load8_u(Porffor.wasm`local.get ${b}`, 0, 4)
         )
           return false
@@ -144,7 +144,7 @@ end`
       // bytestring, string
       for (let i: i32 = 0; i < al; i++) {
         if (
-          Porffor.wasm.i32.load8_u(Porffor.wasm`local.get ${a}` + i, 0, 4) !=
+          Porffor.wasm.i32.load8_u(Porffor.wasm`local.get ${a}` + i, 0, 4) !==
           Porffor.wasm.i32.load16_u(Porffor.wasm`local.get ${b}` + i * 2, 0, 4)
         )
           return false
@@ -152,7 +152,7 @@ end`
       return true
     }
   } else {
-    if (Porffor.wasm`local.get ${b + 1}` == Porffor.TYPES.bytestring) {
+    if (Porffor.wasm`local.get ${b + 1}` === Porffor.TYPES.bytestring) {
       // string, bytestring
       for (let i: i32 = 0; i < al; i++) {
         if (
@@ -160,7 +160,7 @@ end`
             Porffor.wasm`local.get ${a}` + i * 2,
             0,
             4,
-          ) != Porffor.wasm.i32.load8_u(Porffor.wasm`local.get ${b}` + i, 0, 4)
+          ) !== Porffor.wasm.i32.load8_u(Porffor.wasm`local.get ${b}` + i, 0, 4)
         )
           return false
       }
@@ -296,8 +296,8 @@ export const __Porffor_strcat = (a: any, b: any): any => {
   const al: i32 = Porffor.wasm.i32.load(a, 0, 0)
   const bl: i32 = Porffor.wasm.i32.load(b, 0, 0)
 
-  if (Porffor.wasm`local.get ${a + 1}` == Porffor.TYPES.bytestring) {
-    if (Porffor.wasm`local.get ${b + 1}` == Porffor.TYPES.bytestring) {
+  if (Porffor.wasm`local.get ${a + 1}` === Porffor.TYPES.bytestring) {
+    if (Porffor.wasm`local.get ${b + 1}` === Porffor.TYPES.bytestring) {
       // bytestring, bytestring
       const out: bytestring = Porffor.malloc(6 + al + bl)
 
@@ -352,7 +352,7 @@ export const __Porffor_strcat = (a: any, b: any): any => {
       return out
     }
   } else {
-    if (Porffor.wasm`local.get ${b + 1}` == Porffor.TYPES.bytestring) {
+    if (Porffor.wasm`local.get ${b + 1}` === Porffor.TYPES.bytestring) {
       // string, bytestring
       const out: string = Porffor.malloc(6 + (al + bl) * 2)
 
@@ -665,7 +665,7 @@ export const __String_prototype_startsWith = (
     const chr: i32 = Porffor.wasm.i32.load16_u(thisPtr + i, 0, 4)
     const expected: i32 = Porffor.wasm.i32.load16_u(searchPtr + i, 0, 4)
 
-    if (chr != expected) return false
+    if (chr !== expected) return false
   }
 
   return true
@@ -678,7 +678,7 @@ export const __ByteString_prototype_startsWith = (
 ) => {
   // if searching non-bytestring, bytestring will not start with it
   // todo: change this to just check if = string and ToString others
-  if (Porffor.wasm`local.get ${searchString + 1}` != Porffor.TYPES.bytestring)
+  if (Porffor.wasm`local.get ${searchString + 1}` !== Porffor.TYPES.bytestring)
     return false
 
   // todo/perf: investigate whether for counter vs while ++s are faster
@@ -699,7 +699,7 @@ export const __ByteString_prototype_startsWith = (
     const chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
     const expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
 
-    if (chr != expected) return false
+    if (chr !== expected) return false
   }
 
   return true
@@ -721,7 +721,7 @@ export const __String_prototype_endsWith = (
   const len: i32 = _this.length
 
   // endPosition ??= len;
-  if (Porffor.wasm`local.get ${endPosition + 1}` == Porffor.TYPES.undefined)
+  if (Porffor.wasm`local.get ${endPosition + 1}` === Porffor.TYPES.undefined)
     endPosition = len
 
   if (endPosition > 0) {
@@ -742,7 +742,7 @@ export const __String_prototype_endsWith = (
     i += 2
     j += 2
 
-    if (chr != expected) return false
+    if (chr !== expected) return false
   }
 
   return true
@@ -755,7 +755,7 @@ export const __ByteString_prototype_endsWith = (
 ) => {
   // if searching non-bytestring, bytestring will not start with it
   // todo: change this to just check if = string and ToString others
-  if (Porffor.wasm`local.get ${searchString + 1}` != Porffor.TYPES.bytestring)
+  if (Porffor.wasm`local.get ${searchString + 1}` !== Porffor.TYPES.bytestring)
     return false
 
   let i: i32 = Porffor.wasm`local.get ${_this}`,
@@ -767,7 +767,7 @@ export const __ByteString_prototype_endsWith = (
   const len: i32 = _this.length
 
   // endPosition ??= len;
-  if (Porffor.wasm`local.get ${endPosition + 1}` == Porffor.TYPES.undefined)
+  if (Porffor.wasm`local.get ${endPosition + 1}` === Porffor.TYPES.undefined)
     endPosition = len
 
   if (endPosition > 0) {
@@ -785,7 +785,7 @@ export const __ByteString_prototype_endsWith = (
     const chr: i32 = Porffor.wasm.i32.load8_u(i++, 0, 4)
     const expected: i32 = Porffor.wasm.i32.load8_u(j++, 0, 4)
 
-    if (chr != expected) return false
+    if (chr !== expected) return false
   }
 
   return true
@@ -797,7 +797,9 @@ export const __String_prototype_indexOf = (
   position: any = 0,
 ) => {
   searchString = ecma262.ToString(searchString)
-  if (Porffor.wasm`local.get ${searchString + 1}` == Porffor.TYPES.bytestring) {
+  if (
+    Porffor.wasm`local.get ${searchString + 1}` === Porffor.TYPES.bytestring
+  ) {
     searchString = Porffor.bytestringToString(searchString)
   }
   position = ecma262.ToIntegerOrInfinity(position)
@@ -823,7 +825,7 @@ export const __String_prototype_indexOf = (
       const chr: i32 = Porffor.wasm.i32.load16_u(thisPtr + i, 0, 4)
       const expected: i32 = Porffor.wasm.i32.load16_u(searchPtr + i, 0, 4)
 
-      if (chr != expected) {
+      if (chr !== expected) {
         match = false
         break
       }
@@ -843,7 +845,9 @@ export const __ByteString_prototype_indexOf = (
   position: any = 0,
 ) => {
   searchString = ecma262.ToString(searchString)
-  if (Porffor.wasm`local.get ${searchString + 1}` != Porffor.TYPES.bytestring) {
+  if (
+    Porffor.wasm`local.get ${searchString + 1}` !== Porffor.TYPES.bytestring
+  ) {
     return __String_prototype_indexOf(
       Porffor.bytestringToString(_this),
       searchString,
@@ -873,7 +877,7 @@ export const __ByteString_prototype_indexOf = (
       const chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
       const expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
 
-      if (chr != expected) {
+      if (chr !== expected) {
         match = false
         break
       }
@@ -893,7 +897,9 @@ export const __String_prototype_lastIndexOf = (
   position: any = undefined,
 ) => {
   searchString = ecma262.ToString(searchString)
-  if (Porffor.wasm`local.get ${searchString + 1}` == Porffor.TYPES.bytestring) {
+  if (
+    Porffor.wasm`local.get ${searchString + 1}` === Porffor.TYPES.bytestring
+  ) {
     searchString = Porffor.bytestringToString(searchString)
   }
 
@@ -907,7 +913,7 @@ export const __String_prototype_lastIndexOf = (
   const len: i32 = _this.length
 
   // endPosition ??= len;
-  if (Porffor.wasm`local.get ${position + 1}` == Porffor.TYPES.undefined)
+  if (Porffor.wasm`local.get ${position + 1}` === Porffor.TYPES.undefined)
     position = len - searchLen
 
   if (position > 0) {
@@ -925,7 +931,7 @@ export const __String_prototype_lastIndexOf = (
       const chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
       const expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
 
-      if (chr != expected) {
+      if (chr !== expected) {
         match = false
         break
       }
@@ -945,7 +951,9 @@ export const __ByteString_prototype_lastIndexOf = (
   position: any = undefined,
 ) => {
   searchString = ecma262.ToString(searchString)
-  if (Porffor.wasm`local.get ${searchString + 1}` != Porffor.TYPES.bytestring) {
+  if (
+    Porffor.wasm`local.get ${searchString + 1}` !== Porffor.TYPES.bytestring
+  ) {
     return __String_prototype_lastIndexOf(
       Porffor.bytestringToString(_this),
       searchString,
@@ -962,7 +970,7 @@ export const __ByteString_prototype_lastIndexOf = (
   const len: i32 = _this.length
 
   // endPosition ??= len;
-  if (Porffor.wasm`local.get ${position + 1}` == Porffor.TYPES.undefined)
+  if (Porffor.wasm`local.get ${position + 1}` === Porffor.TYPES.undefined)
     position = len - searchLen
 
   if (position > 0) {
@@ -980,7 +988,7 @@ export const __ByteString_prototype_lastIndexOf = (
       const chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
       const expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
 
-      if (chr != expected) {
+      if (chr !== expected) {
         match = false
         break
       }
@@ -1022,7 +1030,7 @@ export const __String_prototype_includes = (
       const chr: i32 = Porffor.wasm.i32.load16_u(thisPtr + i, 0, 4)
       const expected: i32 = Porffor.wasm.i32.load16_u(searchPtr + i, 0, 4)
 
-      if (chr != expected) {
+      if (chr !== expected) {
         match = false
         break
       }
@@ -1043,7 +1051,7 @@ export const __ByteString_prototype_includes = (
 ) => {
   // if searching non-bytestring, bytestring will not start with it
   // todo: change this to just check if = string and ToString others
-  if (Porffor.wasm`local.get ${searchString + 1}` != Porffor.TYPES.bytestring)
+  if (Porffor.wasm`local.get ${searchString + 1}` !== Porffor.TYPES.bytestring)
     return -1
 
   let thisPtr: i32 = Porffor.wasm`local.get ${_this}`
@@ -1067,7 +1075,7 @@ export const __ByteString_prototype_includes = (
       const chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
       const expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
 
-      if (chr != expected) {
+      if (chr !== expected) {
         match = false
         break
       }
@@ -1094,7 +1102,7 @@ export const __String_prototype_padStart = (
   const len: i32 = _this.length
   const todo: i32 = targetLength - len
   if (todo > 0) {
-    if (Porffor.wasm`local.get ${padString + 1}` == Porffor.TYPES.undefined) {
+    if (Porffor.wasm`local.get ${padString + 1}` === Porffor.TYPES.undefined) {
       for (let i: i32 = 0; i < todo; i++) {
         Porffor.wasm.i32.store16(outPtr, 32, 0, 4)
         outPtr += 2
@@ -1106,7 +1114,7 @@ export const __String_prototype_padStart = (
       padString = ecma262.ToString(padString)
       // Convert bytestring to string since we use UTF-16 memory access
       if (
-        Porffor.wasm`local.get ${padString + 1}` == Porffor.TYPES.bytestring
+        Porffor.wasm`local.get ${padString + 1}` === Porffor.TYPES.bytestring
       ) {
         padString = Porffor.bytestringToString(padString)
       }
@@ -1160,7 +1168,7 @@ export const __ByteString_prototype_padStart = (
   const len: i32 = _this.length
   const todo: i32 = targetLength - len
   if (todo > 0) {
-    if (Porffor.wasm`local.get ${padString + 1}` == Porffor.TYPES.undefined) {
+    if (Porffor.wasm`local.get ${padString + 1}` === Porffor.TYPES.undefined) {
       for (let i: i32 = 0; i < todo; i++) {
         Porffor.wasm.i32.store8(outPtr++, 32, 0, 4)
       }
@@ -1171,7 +1179,7 @@ export const __ByteString_prototype_padStart = (
       padString = ecma262.ToString(padString)
       // If padString is non-bytestring, delegate to String version
       if (
-        Porffor.wasm`local.get ${padString + 1}` != Porffor.TYPES.bytestring
+        Porffor.wasm`local.get ${padString + 1}` !== Porffor.TYPES.bytestring
       ) {
         return __String_prototype_padStart(
           Porffor.bytestringToString(_this),
@@ -1241,7 +1249,7 @@ export const __String_prototype_padEnd = (
 
   const todo: i32 = targetLength - len
   if (todo > 0) {
-    if (Porffor.wasm`local.get ${padString + 1}` == Porffor.TYPES.undefined) {
+    if (Porffor.wasm`local.get ${padString + 1}` === Porffor.TYPES.undefined) {
       for (let i: i32 = 0; i < todo; i++) {
         Porffor.wasm.i32.store16(outPtr, 32, 0, 4)
         outPtr += 2
@@ -1253,7 +1261,7 @@ export const __String_prototype_padEnd = (
       padString = ecma262.ToString(padString)
       // Convert bytestring to string since we use UTF-16 memory access
       if (
-        Porffor.wasm`local.get ${padString + 1}` == Porffor.TYPES.bytestring
+        Porffor.wasm`local.get ${padString + 1}` === Porffor.TYPES.bytestring
       ) {
         padString = Porffor.bytestringToString(padString)
       }
@@ -1304,7 +1312,7 @@ export const __ByteString_prototype_padEnd = (
 
   const todo: i32 = targetLength - len
   if (todo > 0) {
-    if (Porffor.wasm`local.get ${padString + 1}` == Porffor.TYPES.undefined) {
+    if (Porffor.wasm`local.get ${padString + 1}` === Porffor.TYPES.undefined) {
       for (let i: i32 = 0; i < todo; i++) {
         Porffor.wasm.i32.store8(outPtr++, 32, 0, 4)
       }
@@ -1315,7 +1323,7 @@ export const __ByteString_prototype_padEnd = (
       padString = ecma262.ToString(padString)
       // If padString is non-bytestring, delegate to String version
       if (
-        Porffor.wasm`local.get ${padString + 1}` != Porffor.TYPES.bytestring
+        Porffor.wasm`local.get ${padString + 1}` !== Porffor.TYPES.bytestring
       ) {
         return __String_prototype_padEnd(
           Porffor.bytestringToString(_this),
@@ -1351,7 +1359,7 @@ export const __String_prototype_substring = (
   end: number,
 ) => {
   const len: i32 = _this.length
-  if (Porffor.wasm`local.get ${end + 1}` == Porffor.TYPES.undefined) end = len
+  if (Porffor.wasm`local.get ${end + 1}` === Porffor.TYPES.undefined) end = len
   else if (start > end) {
     const tmp: i32 = end
     end = start
@@ -1394,7 +1402,7 @@ export const __ByteString_prototype_substring = (
   end: number,
 ) => {
   const len: i32 = _this.length
-  if (Porffor.wasm`local.get ${end + 1}` == Porffor.TYPES.undefined) end = len
+  if (Porffor.wasm`local.get ${end + 1}` === Porffor.TYPES.undefined) end = len
   else if (start > end) {
     const tmp: i32 = end
     end = start
@@ -1439,7 +1447,7 @@ export const __String_prototype_substr = (
     if (start < 0) start = 0
   }
 
-  if (Porffor.wasm`local.get ${length + 1}` == Porffor.TYPES.undefined)
+  if (Porffor.wasm`local.get ${length + 1}` === Porffor.TYPES.undefined)
     length = len - start
   if (start + length > len) length = len - start
 
@@ -1479,7 +1487,7 @@ export const __ByteString_prototype_substr = (
     if (start < 0) start = 0
   }
 
-  if (Porffor.wasm`local.get ${length + 1}` == Porffor.TYPES.undefined)
+  if (Porffor.wasm`local.get ${length + 1}` === Porffor.TYPES.undefined)
     length = len - start
   if (start + length > len) length = len - start
 
@@ -1511,7 +1519,7 @@ export const __String_prototype_slice = (
   end: number,
 ) => {
   const len: i32 = _this.length
-  if (Porffor.wasm`local.get ${end + 1}` == Porffor.TYPES.undefined) end = len
+  if (Porffor.wasm`local.get ${end + 1}` === Porffor.TYPES.undefined) end = len
 
   if (start < 0) {
     start = len + start
@@ -1557,7 +1565,7 @@ export const __ByteString_prototype_slice = (
   end: number,
 ) => {
   const len: i32 = _this.length
-  if (Porffor.wasm`local.get ${end + 1}` == Porffor.TYPES.undefined) end = len
+  if (Porffor.wasm`local.get ${end + 1}` === Porffor.TYPES.undefined) end = len
 
   if (start < 0) {
     start = len + start
@@ -1613,31 +1621,31 @@ export const __String_prototype_trimStart = (_this: string) => {
       // todo: not spec compliant, needs more unicode chars
       if (
         Porffor.fastOr(
-          chr == 0x9,
-          chr == 0xb,
-          chr == 0xc,
-          chr == 0xfeff,
-          chr == 0x20,
-          chr == 0xa0,
-          chr == 0x1680,
-          chr == 0x2000,
-          chr == 0x2001,
-          chr == 0x2002,
-          chr == 0x2003,
-          chr == 0x2004,
-          chr == 0x2005,
-          chr == 0x2006,
-          chr == 0x2007,
-          chr == 0x2008,
-          chr == 0x2009,
-          chr == 0x200a,
-          chr == 0x202f,
-          chr == 0x205f,
-          chr == 0x3000,
-          chr == 0xa,
-          chr == 0xd,
-          chr == 0x2028,
-          chr == 0x2029,
+          chr === 0x9,
+          chr === 0xb,
+          chr === 0xc,
+          chr === 0xfeff,
+          chr === 0x20,
+          chr === 0xa0,
+          chr === 0x1680,
+          chr === 0x2000,
+          chr === 0x2001,
+          chr === 0x2002,
+          chr === 0x2003,
+          chr === 0x2004,
+          chr === 0x2005,
+          chr === 0x2006,
+          chr === 0x2007,
+          chr === 0x2008,
+          chr === 0x2009,
+          chr === 0x200a,
+          chr === 0x202f,
+          chr === 0x205f,
+          chr === 0x3000,
+          chr === 0xa,
+          chr === 0xd,
+          chr === 0x2028,
+          chr === 0x2029,
         )
       ) {
         n++
@@ -1673,31 +1681,31 @@ export const __ByteString_prototype_trimStart = (_this: bytestring) => {
       // todo: not spec compliant, needs more unicode chars
       if (
         Porffor.fastOr(
-          chr == 0x9,
-          chr == 0xb,
-          chr == 0xc,
-          chr == 0xfeff,
-          chr == 0x20,
-          chr == 0xa0,
-          chr == 0x1680,
-          chr == 0x2000,
-          chr == 0x2001,
-          chr == 0x2002,
-          chr == 0x2003,
-          chr == 0x2004,
-          chr == 0x2005,
-          chr == 0x2006,
-          chr == 0x2007,
-          chr == 0x2008,
-          chr == 0x2009,
-          chr == 0x200a,
-          chr == 0x202f,
-          chr == 0x205f,
-          chr == 0x3000,
-          chr == 0xa,
-          chr == 0xd,
-          chr == 0x2028,
-          chr == 0x2029,
+          chr === 0x9,
+          chr === 0xb,
+          chr === 0xc,
+          chr === 0xfeff,
+          chr === 0x20,
+          chr === 0xa0,
+          chr === 0x1680,
+          chr === 0x2000,
+          chr === 0x2001,
+          chr === 0x2002,
+          chr === 0x2003,
+          chr === 0x2004,
+          chr === 0x2005,
+          chr === 0x2006,
+          chr === 0x2007,
+          chr === 0x2008,
+          chr === 0x2009,
+          chr === 0x200a,
+          chr === 0x202f,
+          chr === 0x205f,
+          chr === 0x3000,
+          chr === 0xa,
+          chr === 0xd,
+          chr === 0x2028,
+          chr === 0x2029,
         )
       ) {
         n++
@@ -1738,31 +1746,31 @@ export const __String_prototype_trimEnd = (_this: string) => {
       // todo: not spec compliant, needs more unicode chars
       if (
         Porffor.fastOr(
-          chr == 0x9,
-          chr == 0xb,
-          chr == 0xc,
-          chr == 0xfeff,
-          chr == 0x20,
-          chr == 0xa0,
-          chr == 0x1680,
-          chr == 0x2000,
-          chr == 0x2001,
-          chr == 0x2002,
-          chr == 0x2003,
-          chr == 0x2004,
-          chr == 0x2005,
-          chr == 0x2006,
-          chr == 0x2007,
-          chr == 0x2008,
-          chr == 0x2009,
-          chr == 0x200a,
-          chr == 0x202f,
-          chr == 0x205f,
-          chr == 0x3000,
-          chr == 0xa,
-          chr == 0xd,
-          chr == 0x2028,
-          chr == 0x2029,
+          chr === 0x9,
+          chr === 0xb,
+          chr === 0xc,
+          chr === 0xfeff,
+          chr === 0x20,
+          chr === 0xa0,
+          chr === 0x1680,
+          chr === 0x2000,
+          chr === 0x2001,
+          chr === 0x2002,
+          chr === 0x2003,
+          chr === 0x2004,
+          chr === 0x2005,
+          chr === 0x2006,
+          chr === 0x2007,
+          chr === 0x2008,
+          chr === 0x2009,
+          chr === 0x200a,
+          chr === 0x202f,
+          chr === 0x205f,
+          chr === 0x3000,
+          chr === 0xa,
+          chr === 0xd,
+          chr === 0x2028,
+          chr === 0x2029,
         )
       ) {
         n++
@@ -1802,31 +1810,31 @@ export const __ByteString_prototype_trimEnd = (_this: bytestring) => {
       // todo: not spec compliant, needs more unicode chars
       if (
         Porffor.fastOr(
-          chr == 0x9,
-          chr == 0xb,
-          chr == 0xc,
-          chr == 0xfeff,
-          chr == 0x20,
-          chr == 0xa0,
-          chr == 0x1680,
-          chr == 0x2000,
-          chr == 0x2001,
-          chr == 0x2002,
-          chr == 0x2003,
-          chr == 0x2004,
-          chr == 0x2005,
-          chr == 0x2006,
-          chr == 0x2007,
-          chr == 0x2008,
-          chr == 0x2009,
-          chr == 0x200a,
-          chr == 0x202f,
-          chr == 0x205f,
-          chr == 0x3000,
-          chr == 0xa,
-          chr == 0xd,
-          chr == 0x2028,
-          chr == 0x2029,
+          chr === 0x9,
+          chr === 0xb,
+          chr === 0xc,
+          chr === 0xfeff,
+          chr === 0x20,
+          chr === 0xa0,
+          chr === 0x1680,
+          chr === 0x2000,
+          chr === 0x2001,
+          chr === 0x2002,
+          chr === 0x2003,
+          chr === 0x2004,
+          chr === 0x2005,
+          chr === 0x2006,
+          chr === 0x2007,
+          chr === 0x2008,
+          chr === 0x2009,
+          chr === 0x200a,
+          chr === 0x202f,
+          chr === 0x205f,
+          chr === 0x3000,
+          chr === 0xa,
+          chr === 0xd,
+          chr === 0x2028,
+          chr === 0x2029,
         )
       ) {
         n++
@@ -1939,7 +1947,7 @@ export const __String_prototype_repeat = (_this: string, cnt: any) => {
   if (count < 0) throw new RangeError("Invalid count value")
 
   const thisLen: i32 = _this.length * 2
-  if (thisLen == 0) return ""
+  if (thisLen === 0) return ""
 
   const out: string = Porffor.malloc(6 + thisLen * count * 2)
   for (let i: i32 = 0; i < count; i++) {
@@ -1973,7 +1981,7 @@ export const __ByteString_prototype_repeat = (_this: bytestring, cnt: any) => {
   if (count < 0) throw new RangeError("Invalid count value")
 
   const thisLen: i32 = _this.length
-  if (thisLen == 0) return ""
+  if (thisLen === 0) return ""
 
   const out: bytestring = Porffor.malloc(6 + thisLen * count)
   for (let i: i32 = 0; i < count; i++) {
@@ -2007,18 +2015,18 @@ export const __String_prototype_split = (
   separator: any,
   limit: any,
 ) => {
-  const out: any[] = Porffor.malloc(),
+  let out: any[] = Porffor.malloc(),
     outLen: i32 = 0
 
-  if (Porffor.wasm`local.get ${limit + 1}` == Porffor.TYPES.undefined)
+  if (Porffor.wasm`local.get ${limit + 1}` === Porffor.TYPES.undefined)
     limit = Number.MAX_SAFE_INTEGER
   if (limit < 0) limit = Number.MAX_SAFE_INTEGER
-  if (limit == 0) {
+  if (limit === 0) {
     out.length = 0
     return out
   }
 
-  if (Porffor.wasm`local.get ${separator + 1}` == Porffor.TYPES.undefined) {
+  if (Porffor.wasm`local.get ${separator + 1}` === Porffor.TYPES.undefined) {
     out.length = 1
     // out[0] = _this; (but in wasm as it is a f64 array and we are in i32 space)
     Porffor.wasm`
@@ -2039,7 +2047,7 @@ i32.store8 0 12`
     tmpLen: i32 = 0
   const thisLen: i32 = _this.length * 2,
     sepLen: i32 = separator.length
-  if (sepLen == 1) {
+  if (sepLen === 1) {
     // fast path: single char separator
     const sepChar: i32 = separator.charCodeAt(0)
     for (let i: i32 = 0; i < thisLen; i += 2) {
@@ -2049,7 +2057,7 @@ i32.store8 0 12`
         4,
       )
 
-      if (x == sepChar) {
+      if (x === sepChar) {
         if (outLen >= limit) {
           out.length = outLen
           return out
@@ -2088,7 +2096,7 @@ i32.store8 0 12`
       )
       tmpLen++
     }
-  } else if (sepLen == 0) {
+  } else if (sepLen === 0) {
     tmpLen = 1
     let produced: i32 = 0
     for (let i = 0; i < thisLen && produced < limit; i += 2) {
@@ -2132,8 +2140,8 @@ i32.store8 0 12`
         4,
       )
 
-      if (x == separator.charCodeAt(sepInd)) {
-        if (++sepInd == sepLen) {
+      if (x === separator.charCodeAt(sepInd)) {
+        if (++sepInd === sepLen) {
           if (outLen >= limit) {
             out.length = outLen
             return out
@@ -2207,18 +2215,18 @@ export const __ByteString_prototype_split = (
   separator: any,
   limit: any,
 ) => {
-  const out: any[] = Porffor.malloc(),
+  let out: any[] = Porffor.malloc(),
     outLen: i32 = 0
 
-  if (Porffor.wasm`local.get ${limit + 1}` == Porffor.TYPES.undefined)
+  if (Porffor.wasm`local.get ${limit + 1}` === Porffor.TYPES.undefined)
     limit = Number.MAX_SAFE_INTEGER
   if (limit < 0) limit = Number.MAX_SAFE_INTEGER
-  if (limit == 0) {
+  if (limit === 0) {
     out.length = 0
     return out
   }
 
-  if (Porffor.wasm`local.get ${separator + 1}` == Porffor.TYPES.undefined) {
+  if (Porffor.wasm`local.get ${separator + 1}` === Porffor.TYPES.undefined) {
     out.length = 1
     // out[0] = _this; (but in wasm as it is a f64 array and we are in i32 space)
     Porffor.wasm`
@@ -2239,7 +2247,7 @@ i32.store8 0 12`
     tmpLen: i32 = 0
   const thisLen: i32 = _this.length,
     sepLen: i32 = separator.length
-  if (sepLen == 1) {
+  if (sepLen === 1) {
     // fast path: single char separator
     const sepChar: i32 = separator.charCodeAt(0)
     for (let i: i32 = 0; i < thisLen; i++) {
@@ -2249,7 +2257,7 @@ i32.store8 0 12`
         4,
       )
 
-      if (x == sepChar) {
+      if (x === sepChar) {
         if (outLen >= limit) {
           out.length = outLen
           return out
@@ -2283,7 +2291,7 @@ i32.store8 0 12`
       Porffor.wasm.i32.store8(Porffor.wasm`local.get ${tmp}` + tmpLen, x, 0, 4)
       tmpLen++
     }
-  } else if (sepLen == 0) {
+  } else if (sepLen === 0) {
     tmpLen = 1
     let produced: i32 = 0
     for (let i = 0; i < thisLen && produced < limit; i++) {
@@ -2328,8 +2336,8 @@ i32.store8 0 12`
         4,
       )
 
-      if (x == separator.charCodeAt(sepInd)) {
-        if (++sepInd == sepLen) {
+      if (x === separator.charCodeAt(sepInd)) {
+        if (++sepInd === sepLen) {
           if (outLen >= limit) {
             out.length = outLen
             return out

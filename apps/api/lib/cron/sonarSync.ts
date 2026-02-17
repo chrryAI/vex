@@ -9,7 +9,7 @@ const PROJECT_KEY = "chrryAI_vex"
 /**
  * Check if there's a new analysis since last sync
  */
-async function hasNewAnalysis(projectKey: string): Promise<{
+async function _hasNewAnalysis(projectKey: string): Promise<{
   hasNew: boolean
   lastAnalysis?: Date
   lastSync?: Date

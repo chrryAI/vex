@@ -91,44 +91,44 @@ export const __Porffor_regex_compile = (
     const char: i32 = Porffor.wasm.i32.load8_u(flagsPtr, 0, 4)
     flagsPtr += 1
 
-    if (char == 103) {
+    if (char === 103) {
       // g
       flags |= 0b00000001
       continue
     }
-    if (char == 105) {
+    if (char === 105) {
       // i
       flags |= 0b00000010
       continue
     }
-    if (char == 109) {
+    if (char === 109) {
       // m
       flags |= 0b00000100
       continue
     }
-    if (char == 115) {
+    if (char === 115) {
       // s
       flags |= 0b00001000
       continue
     }
-    if (char == 117) {
+    if (char === 117) {
       // u
       if (flags & 0b10000000)
         throw new SyntaxError("Regex parse: Conflicting unicode flag")
       flags |= 0b00010000
       continue
     }
-    if (char == 121) {
+    if (char === 121) {
       // y
       flags |= 0b00100000
       continue
     }
-    if (char == 100) {
+    if (char === 100) {
       // d
       flags |= 0b01000000
       continue
     }
-    if (char == 118) {
+    if (char === 118) {
       // v
       if (flags & 0b00010000)
         throw new SyntaxError("Regex parse: Conflicting unicode flag")
@@ -163,7 +163,7 @@ export const __Porffor_regex_compile = (
 
     // escape
     let notEscaped: boolean = true
-    if (char == 92) {
+    if (char === 92) {
       // '\'
       notEscaped = false
       if (patternPtr >= patternEndPtr)
@@ -174,7 +174,7 @@ export const __Porffor_regex_compile = (
     }
 
     if (classPtr) {
-      if (notEscaped && char == 93) {
+      if (notEscaped && char === 93) {
         // ']'
         // set class length
         Porffor.wasm.i32.store8(classPtr, classLength, 0, 1)
@@ -192,31 +192,31 @@ export const __Porffor_regex_compile = (
       let v: i32 = char
       let predefClassId: i32 = 0
       if (!notEscaped) {
-        if (char == 100)
+        if (char === 100)
           predefClassId = 1 // \d
-        else if (char == 68)
+        else if (char === 68)
           predefClassId = 2 // \D
-        else if (char == 115)
+        else if (char === 115)
           predefClassId = 3 // \s
-        else if (char == 83)
+        else if (char === 83)
           predefClassId = 4 // \S
-        else if (char == 119)
+        else if (char === 119)
           predefClassId = 5 // \w
-        else if (char == 87)
+        else if (char === 87)
           predefClassId = 6 // \W
-        else if (char == 110)
+        else if (char === 110)
           v = 10 // \n
-        else if (char == 114)
+        else if (char === 114)
           v = 13 // \r
-        else if (char == 116)
+        else if (char === 116)
           v = 9 // \t
-        else if (char == 118)
+        else if (char === 118)
           v = 11 // \v
-        else if (char == 102)
+        else if (char === 102)
           v = 12 // \f
-        else if (char == 48)
+        else if (char === 48)
           v = 0 // \0
-        else if (char == 120) {
+        else if (char === 120) {
           // \x
           if (patternPtr + 1 >= patternEndPtr)
             throw new SyntaxError("Regex parse: invalid \\x escape")
@@ -226,7 +226,7 @@ export const __Porffor_regex_compile = (
           v =
             __Porffor_regex_hexDigitToValue(c1) * 16 +
             __Porffor_regex_hexDigitToValue(c2)
-        } else if (char == 117) {
+        } else if (char === 117) {
           // \u
           if (patternPtr + 3 >= patternEndPtr)
             throw new SyntaxError("Regex parse: invalid \\u escape")
@@ -240,7 +240,7 @@ export const __Porffor_regex_compile = (
             __Porffor_regex_hexDigitToValue(c2) * 256 +
             __Porffor_regex_hexDigitToValue(c3) * 16 +
             __Porffor_regex_hexDigitToValue(c4)
-        } else if (char == 99) {
+        } else if (char === 99) {
           // \c
           if (patternPtr >= patternEndPtr) {
             // No character after \c, treat as literal \c
@@ -263,8 +263,8 @@ export const __Porffor_regex_compile = (
 
       if (
         patternPtr + 1 < patternEndPtr &&
-        Porffor.wasm.i32.load8_u(patternPtr, 0, 4) == 45 &&
-        Porffor.wasm.i32.load8_u(patternPtr, 0, 5) != 93
+        Porffor.wasm.i32.load8_u(patternPtr, 0, 4) === 45 &&
+        Porffor.wasm.i32.load8_u(patternPtr, 0, 5) !== 93
       ) {
         // possible range
         patternPtr += 1
@@ -272,7 +272,7 @@ export const __Porffor_regex_compile = (
         let endNotEscaped: boolean = true
         if (
           patternPtr < patternEndPtr &&
-          Porffor.wasm.i32.load8_u(patternPtr, 0, 4) == 92
+          Porffor.wasm.i32.load8_u(patternPtr, 0, 4) === 92
         ) {
           endNotEscaped = false
           patternPtr += 1
@@ -285,19 +285,19 @@ export const __Porffor_regex_compile = (
 
         let endPredefClassId: i32 = 0
         if (!endNotEscaped) {
-          if (endChar == 100) endPredefClassId = 1
-          else if (endChar == 68) endPredefClassId = 2
-          else if (endChar == 115) endPredefClassId = 3
-          else if (endChar == 83) endPredefClassId = 4
-          else if (endChar == 119) endPredefClassId = 5
-          else if (endChar == 87) endPredefClassId = 6
-          else if (endChar == 110) endChar = 10
-          else if (endChar == 114) endChar = 13
-          else if (endChar == 116) endChar = 9
-          else if (endChar == 118) endChar = 11
-          else if (endChar == 102) endChar = 12
-          else if (endChar == 48) endChar = 0
-          else if (endChar == 120) {
+          if (endChar === 100) endPredefClassId = 1
+          else if (endChar === 68) endPredefClassId = 2
+          else if (endChar === 115) endPredefClassId = 3
+          else if (endChar === 83) endPredefClassId = 4
+          else if (endChar === 119) endPredefClassId = 5
+          else if (endChar === 87) endPredefClassId = 6
+          else if (endChar === 110) endChar = 10
+          else if (endChar === 114) endChar = 13
+          else if (endChar === 116) endChar = 9
+          else if (endChar === 118) endChar = 11
+          else if (endChar === 102) endChar = 12
+          else if (endChar === 48) endChar = 0
+          else if (endChar === 120) {
             // \x
             if (patternPtr + 1 >= patternEndPtr)
               throw new SyntaxError("Regex parse: invalid \\x escape")
@@ -307,7 +307,7 @@ export const __Porffor_regex_compile = (
             endChar =
               __Porffor_regex_hexDigitToValue(c1) * 16 +
               __Porffor_regex_hexDigitToValue(c2)
-          } else if (endChar == 117) {
+          } else if (endChar === 117) {
             // \u
             if (patternPtr + 3 >= patternEndPtr)
               throw new SyntaxError("Regex parse: invalid \\u escape")
@@ -321,7 +321,7 @@ export const __Porffor_regex_compile = (
               __Porffor_regex_hexDigitToValue(c2) * 256 +
               __Porffor_regex_hexDigitToValue(c3) * 16 +
               __Porffor_regex_hexDigitToValue(c4)
-          } else if (endChar == 99) {
+          } else if (endChar === 99) {
             // \c
             if (patternPtr >= patternEndPtr) {
               // No character after \c, treat as literal \c
@@ -397,14 +397,14 @@ export const __Porffor_regex_compile = (
     }
 
     if (notEscaped) {
-      if (char == 91) {
+      if (char === 91) {
         // '['
         lastAtomStart = bcPtr
         classPtr = bcPtr
         classLength = 0
         if (
           patternPtr < patternEndPtr &&
-          Porffor.wasm.i32.load8_u(patternPtr, 0, 4) == 94
+          Porffor.wasm.i32.load8_u(patternPtr, 0, 4) === 94
         ) {
           patternPtr += 1
 
@@ -420,7 +420,7 @@ export const __Porffor_regex_compile = (
         continue
       }
 
-      if (char == 40) {
+      if (char === 40) {
         // '('
         lastAtomStart = bcPtr
 
@@ -431,20 +431,20 @@ export const __Porffor_regex_compile = (
 
         if (
           patternPtr < patternEndPtr &&
-          Porffor.wasm.i32.load8_u(patternPtr, 0, 4) == 63
+          Porffor.wasm.i32.load8_u(patternPtr, 0, 4) === 63
         ) {
           // '?'
           if (patternPtr + 1 < patternEndPtr) {
             const nextChar = Porffor.wasm.i32.load8_u(patternPtr, 0, 5)
-            if (nextChar == 58) {
+            if (nextChar === 58) {
               // ':' - non-capturing group
               ncg = true
               patternPtr += 2
-            } else if (nextChar == 61) {
+            } else if (nextChar === 61) {
               // '=' - positive lookahead
               isLookahead = true
               patternPtr += 2
-            } else if (nextChar == 33) {
+            } else if (nextChar === 33) {
               // '!' - negative lookahead
               isLookahead = true
               isNegativeLookahead = true
@@ -494,9 +494,9 @@ export const __Porffor_regex_compile = (
         continue
       }
 
-      if (char == 41) {
+      if (char === 41) {
         // ')'
-        if (groupDepth == 0) throw new SyntaxError("Regex parse: unmatched )")
+        if (groupDepth === 0) throw new SyntaxError("Regex parse: unmatched )")
 
         let thisAltDepth: i32 = altDepth[groupDepth]
         while (thisAltDepth-- > 0) {
@@ -510,7 +510,7 @@ export const __Porffor_regex_compile = (
         const capturePop: i32 = Porffor.array.fastPopI32(groupStack)
 
         // Handle lookaheads
-        if (capturePop == -2 || capturePop == -3) {
+        if (capturePop === -2 || capturePop === -3) {
           const jumpPtr: i32 = Porffor.array.fastPopI32(groupStack)
 
           // accept
@@ -519,7 +519,7 @@ export const __Porffor_regex_compile = (
 
           // Update the jump target to point past this closing paren
           Porffor.wasm.i32.store16(jumpPtr, bcPtr - jumpPtr - 2, 0, 0)
-        } else if (capturePop != -1) {
+        } else if (capturePop !== -1) {
           Porffor.wasm.i32.store8(bcPtr, 0x31, 0, 0) // end capture
           Porffor.wasm.i32.store8(bcPtr, capturePop, 0, 1)
           bcPtr += 2
@@ -531,14 +531,14 @@ export const __Porffor_regex_compile = (
         continue
       }
 
-      if (char == 124) {
+      if (char === 124) {
         // '|'
         altDepth[groupDepth] += 1
 
         let forkPos: i32 = lastAtomStart
-        if (altDepth[groupDepth] == 1) {
+        if (altDepth[groupDepth] === 1) {
           // First alternation - go back to start of alternation scope
-          if (groupDepth == 0) {
+          if (groupDepth === 0) {
             // Top level alternation
             forkPos = bcStart
           } else {
@@ -567,7 +567,7 @@ export const __Porffor_regex_compile = (
         continue
       }
 
-      if (char == 46) {
+      if (char === 46) {
         // '.'
         lastAtomStart = bcPtr
         Porffor.wasm.i32.store8(bcPtr, 0x09, 0, 0) // dot
@@ -576,14 +576,14 @@ export const __Porffor_regex_compile = (
         continue
       }
 
-      if (char == 94) {
+      if (char === 94) {
         // '^'
         Porffor.wasm.i32.store8(bcPtr, 0x05, 0, 0) // start
         bcPtr += 1
         lastWasAtom = false
         continue
       }
-      if (char == 36) {
+      if (char === 36) {
         // '$'
         Porffor.wasm.i32.store8(bcPtr, 0x06, 0, 0) // end
         bcPtr += 1
@@ -592,7 +592,7 @@ export const __Porffor_regex_compile = (
       }
 
       // quantifiers: *, +, ?
-      if (Porffor.fastOr(char == 42, char == 43, char == 63)) {
+      if (Porffor.fastOr(char === 42, char === 43, char === 63)) {
         if (!lastWasAtom)
           throw new SyntaxError("Regex parser: quantifier without atom")
 
@@ -600,7 +600,7 @@ export const __Porffor_regex_compile = (
         let lazy: boolean = false
         if (
           patternPtr < patternEndPtr &&
-          Porffor.wasm.i32.load8_u(patternPtr, 0, 4) == 63
+          Porffor.wasm.i32.load8_u(patternPtr, 0, 4) === 63
         ) {
           // '?'
           lazy = true
@@ -609,7 +609,7 @@ export const __Porffor_regex_compile = (
 
         // Calculate atom size and move it forward to make space for quantifier logic
         const atomSize: i32 = bcPtr - lastAtomStart
-        if (char == 42) {
+        if (char === 42) {
           // * (zero or more)
           // Move atom forward to make space for fork BEFORE it
           Porffor.wasm.memory.copy(
@@ -636,7 +636,7 @@ export const __Porffor_regex_compile = (
 
           // Update bcPtr to point after the moved atom
           bcPtr += 8
-        } else if (char == 43) {
+        } else if (char === 43) {
           // + (one or more)
           // For +, atom executes once, then add fork for additional matches
           Porffor.wasm.i32.store8(bcPtr, 0x21, 0, 0) // fork
@@ -677,7 +677,7 @@ export const __Porffor_regex_compile = (
         continue
       }
 
-      if (char == 123) {
+      if (char === 123) {
         // {n,m}
         if (!lastWasAtom)
           throw new SyntaxError("Regex parser: quantifier without atom")
@@ -697,14 +697,14 @@ export const __Porffor_regex_compile = (
             continue
           }
 
-          if (d == 44) {
+          if (d === 44) {
             // ','
             sawComma = true
             patternPtr++
             break
           }
 
-          if (d == 125) {
+          if (d === 125) {
             // '}'
             patternPtr++
             break
@@ -731,7 +731,7 @@ export const __Porffor_regex_compile = (
               continue
             }
 
-            if (d == 125) {
+            if (d === 125) {
               patternPtr++
               break
             }
@@ -753,7 +753,7 @@ export const __Porffor_regex_compile = (
         let lazyBrace: boolean = false
         if (
           patternPtr < patternEndPtr &&
-          Porffor.wasm.i32.load8_u(patternPtr, 0, 4) == 63
+          Porffor.wasm.i32.load8_u(patternPtr, 0, 4) === 63
         ) {
           // '?'
           lazyBrace = true
@@ -774,9 +774,9 @@ export const __Porffor_regex_compile = (
           bcPtr += atomSize
         }
 
-        if (m == n) {
+        if (m === n) {
           // exactly n
-        } else if (m == -1) {
+        } else if (m === -1) {
           // {n,} - infinite (like * after n mandatory matches)
           Porffor.wasm.i32.store8(bcPtr, 0x21, 0, 0) // fork
           if (lazyBrace) {
@@ -830,7 +830,7 @@ export const __Porffor_regex_compile = (
         continue
       }
 
-      if (char == 100) {
+      if (char === 100) {
         // \d
         lastAtomStart = bcPtr
         Porffor.wasm.i32.store8(bcPtr, 0x04, 0, 0) // predefined class
@@ -839,7 +839,7 @@ export const __Porffor_regex_compile = (
         lastWasAtom = true
         continue
       }
-      if (char == 68) {
+      if (char === 68) {
         // \D
         lastAtomStart = bcPtr
         Porffor.wasm.i32.store8(bcPtr, 0x04, 0, 0)
@@ -849,7 +849,7 @@ export const __Porffor_regex_compile = (
         continue
       }
 
-      if (char == 115) {
+      if (char === 115) {
         // \s
         lastAtomStart = bcPtr
         Porffor.wasm.i32.store8(bcPtr, 0x04, 0, 0)
@@ -858,7 +858,7 @@ export const __Porffor_regex_compile = (
         lastWasAtom = true
         continue
       }
-      if (char == 83) {
+      if (char === 83) {
         // \S
         lastAtomStart = bcPtr
         Porffor.wasm.i32.store8(bcPtr, 0x04, 0, 0)
@@ -868,7 +868,7 @@ export const __Porffor_regex_compile = (
         continue
       }
 
-      if (char == 119) {
+      if (char === 119) {
         // \w
         lastAtomStart = bcPtr
         Porffor.wasm.i32.store8(bcPtr, 0x04, 0, 0)
@@ -877,7 +877,7 @@ export const __Porffor_regex_compile = (
         lastWasAtom = true
         continue
       }
-      if (char == 87) {
+      if (char === 87) {
         // \W
         lastAtomStart = bcPtr
         Porffor.wasm.i32.store8(bcPtr, 0x04, 0, 0)
@@ -887,14 +887,14 @@ export const __Porffor_regex_compile = (
         continue
       }
 
-      if (char == 98) {
+      if (char === 98) {
         // \b
         Porffor.wasm.i32.store8(bcPtr, 0x07, 0, 0) // word boundary
         bcPtr += 1
         lastWasAtom = false
         continue
       }
-      if (char == 66) {
+      if (char === 66) {
         // \B
         Porffor.wasm.i32.store8(bcPtr, 0x08, 0, 0) // non-word boundary
         bcPtr += 1
@@ -902,7 +902,7 @@ export const __Porffor_regex_compile = (
         continue
       }
 
-      if (char == 110) {
+      if (char === 110) {
         // \n
         lastAtomStart = bcPtr
         Porffor.wasm.i32.store8(bcPtr, 0x01, 0, 0) // single
@@ -911,7 +911,7 @@ export const __Porffor_regex_compile = (
         lastWasAtom = true
         continue
       }
-      if (char == 114) {
+      if (char === 114) {
         // \r
         lastAtomStart = bcPtr
         Porffor.wasm.i32.store8(bcPtr, 0x01, 0, 0)
@@ -920,7 +920,7 @@ export const __Porffor_regex_compile = (
         lastWasAtom = true
         continue
       }
-      if (char == 116) {
+      if (char === 116) {
         // \t
         lastAtomStart = bcPtr
         Porffor.wasm.i32.store8(bcPtr, 0x01, 0, 0)
@@ -929,7 +929,7 @@ export const __Porffor_regex_compile = (
         lastWasAtom = true
         continue
       }
-      if (char == 118) {
+      if (char === 118) {
         // \v
         lastAtomStart = bcPtr
         Porffor.wasm.i32.store8(bcPtr, 0x01, 0, 0)
@@ -938,7 +938,7 @@ export const __Porffor_regex_compile = (
         lastWasAtom = true
         continue
       }
-      if (char == 102) {
+      if (char === 102) {
         // \f
         lastAtomStart = bcPtr
         Porffor.wasm.i32.store8(bcPtr, 0x01, 0, 0)
@@ -947,7 +947,7 @@ export const __Porffor_regex_compile = (
         lastWasAtom = true
         continue
       }
-      if (char == 48) {
+      if (char === 48) {
         // \0
         lastAtomStart = bcPtr
         Porffor.wasm.i32.store8(bcPtr, 0x01, 0, 0)
@@ -956,7 +956,7 @@ export const __Porffor_regex_compile = (
         lastWasAtom = true
         continue
       }
-      if (char == 120) {
+      if (char === 120) {
         // \x
         if (patternPtr + 1 >= patternEndPtr)
           throw new SyntaxError("Regex parse: invalid \\x escape")
@@ -976,7 +976,7 @@ export const __Porffor_regex_compile = (
         lastWasAtom = true
         continue
       }
-      if (char == 117) {
+      if (char === 117) {
         // \u
         if (patternPtr + 3 >= patternEndPtr)
           throw new SyntaxError("Regex parse: invalid \\u escape")
@@ -1001,7 +1001,7 @@ export const __Porffor_regex_compile = (
         lastWasAtom = true
         continue
       }
-      if (char == 99) {
+      if (char === 99) {
         // \c
         if (patternPtr >= patternEndPtr) {
           // No character after \c, treat as literal \c - fall through to default case
@@ -1032,7 +1032,7 @@ export const __Porffor_regex_compile = (
     lastWasAtom = true
   }
 
-  if (groupDepth != 0) throw new SyntaxError("Regex parse: Unmatched (")
+  if (groupDepth !== 0) throw new SyntaxError("Regex parse: Unmatched (")
   if (classPtr) throw new SyntaxError("Regex parse: Unmatched [")
 
   let thisAltDepth: i32 = altDepth[groupDepth]
@@ -1058,11 +1058,11 @@ export const __Porffor_regex_interpret = (
   const flags: i32 = Porffor.wasm.i32.load16_u(regexp, 0, 4)
   const totalCaptures: i32 = Porffor.wasm.i32.load16_u(regexp, 0, 6)
 
-  const ignoreCase: boolean = (flags & 0b00000010) != 0
-  const multiline: boolean = (flags & 0b00000100) != 0
-  const dotAll: boolean = (flags & 0b00001000) != 0
-  const global: boolean = (flags & 0b00000001) != 0
-  const sticky: boolean = (flags & 0b00100000) != 0
+  const ignoreCase: boolean = (flags & 0b00000010) !== 0
+  const multiline: boolean = (flags & 0b00000100) !== 0
+  const dotAll: boolean = (flags & 0b00001000) !== 0
+  const global: boolean = (flags & 0b00000001) !== 0
+  const sticky: boolean = (flags & 0b00100000) !== 0
 
   const inputLen: i32 = Porffor.wasm.i32.load(input, 0, 0)
   let lastIndex: i32 = 0
@@ -1081,16 +1081,16 @@ export const __Porffor_regex_interpret = (
   let fastChar: i32 = -1
   if (!Porffor.fastOr(ignoreCase, sticky)) {
     const firstOp = Porffor.wasm.i32.load8_u(bcBase, 0, 0)
-    if (firstOp == 0x01) {
+    if (firstOp === 0x01) {
       fastChar = Porffor.wasm.i32.load8_u(bcBase, 0, 1)
     }
   }
 
   for (let i: i32 = lastIndex; i <= inputLen; i++) {
-    if (fastChar != -1) {
+    if (fastChar !== -1) {
       while (
         i < inputLen &&
-        Porffor.wasm.i32.load8_u(input + i, 0, 4) != fastChar
+        Porffor.wasm.i32.load8_u(input + i, 0, 4) !== fastChar
       )
         i++
       if (i > inputLen) break
@@ -1115,13 +1115,13 @@ export const __Porffor_regex_interpret = (
           const len: i32 = backtrackStack.length
           if (len >= 4) {
             const marker: i32 = backtrackStack[len - 1]
-            if (marker == -2000 || marker == -3000) {
+            if (marker === -2000 || marker === -3000) {
               // lookahead passed
               sp = backtrackStack[len - 3]
               captures.length = backtrackStack[len - 2]
               backtrackStack.length = len - 4
 
-              if (marker == -2000) {
+              if (marker === -2000) {
                 break interpreter
               } else {
                 pc = backtrackStack[len - 4]
@@ -1146,7 +1146,7 @@ export const __Porffor_regex_interpret = (
               if (c1 >= 97 && c1 <= 122) c1 -= 32
               if (c2 >= 97 && c2 <= 122) c2 -= 32
             }
-            if (c1 == c2) {
+            if (c1 === c2) {
               pc += 2
               sp += 1
             } else {
@@ -1172,9 +1172,9 @@ export const __Porffor_regex_interpret = (
 
             while (true) {
               const marker: i32 = Porffor.wasm.i32.load8_u(pc, 0, 2)
-              if (marker == 0xff) break
+              if (marker === 0xff) break
 
-              if (marker == 0x00) {
+              if (marker === 0x00) {
                 // range
                 let from: i32 = Porffor.wasm.i32.load8_u(pc, 0, 3)
                 let to: i32 = Porffor.wasm.i32.load8_u(pc, 0, 4)
@@ -1186,52 +1186,52 @@ export const __Porffor_regex_interpret = (
                   match = true
                   break
                 }
-              } else if (marker == 0x01) {
+              } else if (marker === 0x01) {
                 // char
                 let check: i32 = Porffor.wasm.i32.load8_u(pc, 0, 3)
                 if (ignoreCase && check >= 97 && check <= 122) check -= 32
-                if (check == char) {
+                if (check === char) {
                   match = true
                   break
                 }
-              } else if (marker == 0x02) {
+              } else if (marker === 0x02) {
                 // predefined
                 const classId: i32 = Porffor.wasm.i32.load8_u(pc, 0, 3)
-                if (classId == 1)
+                if (classId === 1)
                   match = Porffor.fastAnd(char >= 48, char <= 57)
-                else if (classId == 2)
+                else if (classId === 2)
                   match = Porffor.fastOr(char < 48, char > 57)
-                else if (classId == 3)
+                else if (classId === 3)
                   match = Porffor.fastOr(
-                    char == 32,
-                    char == 9,
-                    char == 10,
-                    char == 13,
-                    char == 11,
-                    char == 12,
+                    char === 32,
+                    char === 9,
+                    char === 10,
+                    char === 13,
+                    char === 11,
+                    char === 12,
                   )
-                else if (classId == 4)
+                else if (classId === 4)
                   match = Porffor.fastAnd(
-                    char != 32,
-                    char != 9,
-                    char != 10,
-                    char != 13,
-                    char != 11,
-                    char != 12,
+                    char !== 32,
+                    char !== 9,
+                    char !== 10,
+                    char !== 13,
+                    char !== 11,
+                    char !== 12,
                   )
-                else if (classId == 5)
+                else if (classId === 5)
                   match = Porffor.fastOr(
                     char >= 65 && char <= 90,
                     char >= 97 && char <= 122,
                     char >= 48 && char <= 57,
-                    char == 95,
+                    char === 95,
                   )
-                else if (classId == 6)
+                else if (classId === 6)
                   match = Porffor.fastAnd(
                     char < 65 || char > 90,
                     char < 97 || char > 122,
                     char < 48 || char > 57,
-                    char != 95,
+                    char !== 95,
                   )
 
                 if (match) break
@@ -1240,7 +1240,7 @@ export const __Porffor_regex_interpret = (
               pc += 4
             }
 
-            if (op == 0x03) match = !match
+            if (op === 0x03) match = !match
             if (match) {
               pc = afterClassPc
               sp += 1
@@ -1260,40 +1260,40 @@ export const __Porffor_regex_interpret = (
             const classId: i32 = Porffor.wasm.i32.load8_u(pc, 0, 1)
             const char: i32 = Porffor.wasm.i32.load8_u(input + sp, 0, 4)
             let isMatch: boolean = false
-            if (classId == 1) isMatch = Porffor.fastAnd(char >= 48, char <= 57)
-            else if (classId == 2)
+            if (classId === 1) isMatch = Porffor.fastAnd(char >= 48, char <= 57)
+            else if (classId === 2)
               isMatch = Porffor.fastOr(char < 48, char > 57)
-            else if (classId == 3)
+            else if (classId === 3)
               isMatch = Porffor.fastOr(
-                char == 32,
-                char == 9,
-                char == 10,
-                char == 13,
-                char == 11,
-                char == 12,
+                char === 32,
+                char === 9,
+                char === 10,
+                char === 13,
+                char === 11,
+                char === 12,
               )
-            else if (classId == 4)
+            else if (classId === 4)
               isMatch = Porffor.fastAnd(
-                char != 32,
-                char != 9,
-                char != 10,
-                char != 13,
-                char != 11,
-                char != 12,
+                char !== 32,
+                char !== 9,
+                char !== 10,
+                char !== 13,
+                char !== 11,
+                char !== 12,
               )
-            else if (classId == 5)
+            else if (classId === 5)
               isMatch = Porffor.fastOr(
                 char >= 65 && char <= 90,
                 char >= 97 && char <= 122,
                 char >= 48 && char <= 57,
-                char == 95,
+                char === 95,
               )
-            else if (classId == 6)
+            else if (classId === 6)
               isMatch = Porffor.fastAnd(
                 char < 65 || char > 90,
                 char < 97 || char > 122,
                 char < 48 || char > 57,
-                char != 95,
+                char !== 95,
               )
 
             if (isMatch) {
@@ -1308,10 +1308,10 @@ export const __Porffor_regex_interpret = (
 
         case 0x05: // start
           if (
-            sp == 0 ||
+            sp === 0 ||
             (multiline &&
               sp > 0 &&
-              Porffor.wasm.i32.load8_u(input + sp, 0, 3) == 10)
+              Porffor.wasm.i32.load8_u(input + sp, 0, 3) === 10)
           ) {
             pc += 1
           } else {
@@ -1321,10 +1321,10 @@ export const __Porffor_regex_interpret = (
 
         case 0x06: // end
           if (
-            sp == inputLen ||
+            sp === inputLen ||
             (multiline &&
               sp < inputLen &&
-              Porffor.wasm.i32.load8_u(input + sp, 0, 4) == 10)
+              Porffor.wasm.i32.load8_u(input + sp, 0, 4) === 10)
           ) {
             pc += 1
           } else {
@@ -1342,7 +1342,7 @@ export const __Porffor_regex_interpret = (
               prevChar >= 65 && prevChar <= 90, // A-Z
               prevChar >= 97 && prevChar <= 122, // a-z
               prevChar >= 48 && prevChar <= 57, // 0-9
-              prevChar == 95, // _
+              prevChar === 95, // _
             )
           }
 
@@ -1353,14 +1353,14 @@ export const __Porffor_regex_interpret = (
               nextChar >= 65 && nextChar <= 90, // A-Z
               nextChar >= 97 && nextChar <= 122, // a-z
               nextChar >= 48 && nextChar <= 57, // 0-9
-              nextChar == 95, // _
+              nextChar === 95, // _
             )
           }
 
-          const isWordBoundary: boolean = prevIsWord != nextIsWord
+          const isWordBoundary: boolean = prevIsWord !== nextIsWord
           if (
-            (op == 0x07 && isWordBoundary) ||
-            (op == 0x08 && !isWordBoundary)
+            (op === 0x07 && isWordBoundary) ||
+            (op === 0x08 && !isWordBoundary)
           ) {
             pc += 1
           } else {
@@ -1372,7 +1372,7 @@ export const __Porffor_regex_interpret = (
         case 0x09: // dot
           if (
             sp >= inputLen ||
-            (!dotAll && Porffor.wasm.i32.load8_u(input + sp, 0, 4) == 10)
+            (!dotAll && Porffor.wasm.i32.load8_u(input + sp, 0, 4) === 10)
           ) {
             backtrack = true
           } else {
@@ -1391,7 +1391,7 @@ export const __Porffor_regex_interpret = (
           } else {
             const capStart: i32 = captures[arrIndex]
             const capEnd: i32 = captures[arrIndex + 1]
-            if (capStart == -1 || capEnd == -1) {
+            if (capStart === -1 || capEnd === -1) {
               // reference to unmatched group
               pc += 2
             } else {
@@ -1411,7 +1411,7 @@ export const __Porffor_regex_interpret = (
                     if (c1 >= 97 && c1 <= 122) c1 -= 32
                     if (c2 >= 97 && c2 <= 122) c2 -= 32
                   }
-                  if (c1 != c2) {
+                  if (c1 !== c2) {
                     matches = false
                     break
                   }
@@ -1439,7 +1439,7 @@ export const __Porffor_regex_interpret = (
           backtrackStack[len] = lookaheadEndPc
           backtrackStack[len + 1] = savedSp
           backtrackStack[len + 2] = captures.length
-          if (op == 0x0c) {
+          if (op === 0x0c) {
             // negative lookahead
             backtrackStack[len + 3] = -2000
           } else {
@@ -1501,15 +1501,15 @@ export const __Porffor_regex_interpret = (
 
       if (backtrack) {
         const len: i32 = backtrackStack.length
-        if (len == 0) break
+        if (len === 0) break
 
         if (len >= 4) {
           const marker: i32 = backtrackStack[len - 1]
-          if (marker == -2000 || marker == -3000) {
+          if (marker === -2000 || marker === -3000) {
             // lookahead failed
             sp = backtrackStack[len - 3]
             captures.length = backtrackStack[len - 2]
-            if (marker == -2000) pc = backtrackStack[len - 4]
+            if (marker === -2000) pc = backtrackStack[len - 4]
             backtrackStack.length = len - 4
             continue
           }
@@ -1541,7 +1541,7 @@ export const __Porffor_regex_interpret = (
         if (arrIdx + 1 < captures.length) {
           const capStart: i32 = captures[arrIdx]
           const capEnd: i32 = captures[arrIdx + 1]
-          if (capStart != -1 && capEnd != -1) {
+          if (capStart !== -1 && capEnd !== -1) {
             Porffor.array.fastPush(
               result,
               __ByteString_prototype_substring(input, capStart, capEnd),
@@ -1659,7 +1659,7 @@ export const __RegExp_prototype_unicodeSets$get = (_this: RegExp) => {
 }
 
 export const __RegExp_prototype_toString = (_this: RegExp) => {
-  return "/" + _this.source + "/" + _this.flags
+  return `/${_this.source}/${_this.flags}`
 }
 
 export const RegExp = (pattern: any, flags: any): RegExp => {
@@ -1801,21 +1801,21 @@ export const __RegExp_escape = (str: any) => {
     // ^, $, \, ., *, +, ?, (, ), [, ], {, }, |, /
     if (
       Porffor.fastOr(
-        char == 94,
-        char == 36,
-        char == 92,
-        char == 46,
-        char == 42,
-        char == 43,
-        char == 63,
-        char == 40,
-        char == 41,
-        char == 91,
-        char == 93,
-        char == 123,
-        char == 125,
-        char == 124,
-        char == 47,
+        char === 94,
+        char === 36,
+        char === 92,
+        char === 46,
+        char === 42,
+        char === 43,
+        char === 63,
+        char === 40,
+        char === 41,
+        char === 91,
+        char === 93,
+        char === 123,
+        char === 125,
+        char === 124,
+        char === 47,
       )
     ) {
       // regex syntax, escape with \
@@ -1826,22 +1826,22 @@ export const __RegExp_escape = (str: any) => {
     // ,, -, =, <, >, #, &, !, %, :, ;, @, ~, ', `, "
     if (
       Porffor.fastOr(
-        char == 44,
-        char == 45,
-        char == 61,
-        char == 60,
-        char == 62,
-        char == 35,
-        char == 38,
-        char == 33,
-        char == 37,
-        char == 58,
-        char == 59,
-        char == 64,
-        char == 126,
-        char == 39,
-        char == 96,
-        char == 34,
+        char === 44,
+        char === 45,
+        char === 61,
+        char === 60,
+        char === 62,
+        char === 35,
+        char === 38,
+        char === 33,
+        char === 37,
+        char === 58,
+        char === 59,
+        char === 64,
+        char === 126,
+        char === 39,
+        char === 96,
+        char === 34,
       )
     ) {
       // punctuator, escape with \x
@@ -1850,27 +1850,27 @@ export const __RegExp_escape = (str: any) => {
     }
 
     // \f, \n, \r, \t, \v, \x20
-    if (char == 12) {
+    if (char === 12) {
       Porffor.bytestring.append2Char(out, 92, 102)
       continue
     }
-    if (char == 10) {
+    if (char === 10) {
       Porffor.bytestring.append2Char(out, 92, 110)
       continue
     }
-    if (char == 13) {
+    if (char === 13) {
       Porffor.bytestring.append2Char(out, 92, 114)
       continue
     }
-    if (char == 9) {
+    if (char === 9) {
       Porffor.bytestring.append2Char(out, 92, 116)
       continue
     }
-    if (char == 11) {
+    if (char === 11) {
       Porffor.bytestring.append2Char(out, 92, 118)
       continue
     }
-    if (char == 32) {
+    if (char === 32) {
       Porffor.bytestring.append2Char(out, 92, 120)
       Porffor.bytestring.append2Char(out, 50, 48)
       continue

@@ -22,12 +22,12 @@ globalThis.valtype = Prefs.valtype ?? "f64"
 
 let host = globalThis?.navigator?.userAgent
 if (typeof process !== "undefined" && process.argv0 === "node")
-  host = "Node/" + process.versions.node
+  host = `Node/${process.versions.node}`
 host ??= "Unknown"
 
-if (host.startsWith("Node")) host = "\x1B[92m" + host
-if (host.startsWith("Deno")) host = "\x1B[97m" + host
-if (host.startsWith("Bun")) host = "\x1B[93m" + host
+if (host.startsWith("Node")) host = `\x1B[92m${host}`
+if (host.startsWith("Deno")) host = `\x1B[97m${host}`
+if (host.startsWith("Bun")) host = `\x1B[93m${host}`
 
 console.log(
   `Welcome to \x1B[1m\x1B[35mPorffor\x1B[0m \x1B[2m(${globalThis.version})\x1B[0m running on \x1B[1m${host.replace("/", " \x1B[0m\x1B[2m(")})\x1B[0m`,
@@ -87,14 +87,14 @@ const run = (source, _context, _filename, callback, run = true) => {
 
   source = source.trim()
   if (source.startsWith("{") && source.endsWith("}")) {
-    const wrapped = "(" + source + ")"
+    const wrapped = `(${source})`
     try {
       parse(wrapped)
       source = wrapped
     } catch {}
   }
 
-  const toRun = (prev ? prev + `;\nprint(-0x1337);\n` : "") + source
+  const toRun = (prev ? `${prev};\nprint(-0x1337);\n` : "") + source
 
   let shouldPrint = !prev
   try {
@@ -123,7 +123,7 @@ const run = (source, _context, _filename, callback, run = true) => {
         : "",
     )
 
-    prev = prev + ";\n" + source.trim()
+    prev = `${prev};\n${source.trim()}`
   } catch (e) {
     console.log("Uncaught", e.stack ? e.stack : e)
   }

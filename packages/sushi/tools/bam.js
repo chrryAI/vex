@@ -4,10 +4,10 @@
  * Logs everything to FalkorDB for learning
  */
 
-import { randomBytes } from "crypto"
+import { randomBytes } from "node:crypto"
+import fs from "node:fs"
+import path from "node:path"
 import { FalkorDB } from "falkordb"
-import fs from "fs"
-import path from "path"
 
 let db = null
 let graph = null
@@ -56,7 +56,7 @@ async function detectBugs(filePath, code) {
 
   // Pattern 3: Unused imports
   const importPattern = /import\s+{([^}]+)}\s+from\s+['"]([^'"]+)['"]/g
-  const imports = []
+  const _imports = []
   while ((match = importPattern.exec(code)) !== null) {
     const items = match[1].split(",").map((s) => s.trim())
     items.forEach((item) => {
@@ -185,7 +185,7 @@ async function analyzeBugPatterns() {
   console.log("\n📊 Bug Pattern Analysis:")
 
   // FalkorDB returns ResultSet, need to iterate properly
-  if (result && result.data) {
+  if (result?.data) {
     for (const row of result.data) {
       const type = row[0] || "UNKNOWN"
       const count = row[1] || 0

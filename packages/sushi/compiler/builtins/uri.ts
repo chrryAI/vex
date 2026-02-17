@@ -10,7 +10,7 @@ export const escape = (input: any): bytestring => {
   let i: i32 = Porffor.wasm`local.get ${input}`
 
   // Check if input is bytestring or string
-  if (Porffor.wasm`local.get ${input + 1}` == Porffor.TYPES.bytestring) {
+  if (Porffor.wasm`local.get ${input + 1}` === Porffor.TYPES.bytestring) {
     // Handle bytestring input
     const endPtr: i32 = i + len
 
@@ -23,13 +23,13 @@ export const escape = (input: any): bytestring => {
         (chr >= 48 && chr <= 57) || // 0-9
         (chr >= 65 && chr <= 90) || // A-Z
         (chr >= 97 && chr <= 122) || // a-z
-        chr == 42 ||
-        chr == 43 ||
-        chr == 45 ||
-        chr == 46 ||
-        chr == 47 ||
-        chr == 64 ||
-        chr == 95
+        chr === 42 ||
+        chr === 43 ||
+        chr === 45 ||
+        chr === 46 ||
+        chr === 47 ||
+        chr === 64 ||
+        chr === 95
       ) {
         outLength += 1
       } else {
@@ -51,13 +51,13 @@ export const escape = (input: any): bytestring => {
         (chr >= 48 && chr <= 57) || // 0-9
         (chr >= 65 && chr <= 90) || // A-Z
         (chr >= 97 && chr <= 122) || // a-z
-        chr == 42 ||
-        chr == 43 ||
-        chr == 45 ||
-        chr == 46 ||
-        chr == 47 ||
-        chr == 64 ||
-        chr == 95
+        chr === 42 ||
+        chr === 43 ||
+        chr === 45 ||
+        chr === 46 ||
+        chr === 47 ||
+        chr === 64 ||
+        chr === 95
       ) {
         Porffor.wasm.i32.store8(j++, chr, 0, 4)
       } else {
@@ -95,13 +95,13 @@ export const escape = (input: any): bytestring => {
       (chr >= 48 && chr <= 57) || // 0-9
       (chr >= 65 && chr <= 90) || // A-Z
       (chr >= 97 && chr <= 122) || // a-z
-      chr == 42 ||
-      chr == 43 ||
-      chr == 45 ||
-      chr == 46 ||
-      chr == 47 ||
-      chr == 64 ||
-      chr == 95
+      chr === 42 ||
+      chr === 43 ||
+      chr === 45 ||
+      chr === 46 ||
+      chr === 47 ||
+      chr === 64 ||
+      chr === 95
     ) {
       outLength += 1
     } else if (chr < 256) {
@@ -126,13 +126,13 @@ export const escape = (input: any): bytestring => {
       (chr >= 48 && chr <= 57) || // 0-9
       (chr >= 65 && chr <= 90) || // A-Z
       (chr >= 97 && chr <= 122) || // a-z
-      chr == 42 ||
-      chr == 43 ||
-      chr == 45 ||
-      chr == 46 ||
-      chr == 47 ||
-      chr == 64 ||
-      chr == 95
+      chr === 42 ||
+      chr === 43 ||
+      chr === 45 ||
+      chr === 46 ||
+      chr === 47 ||
+      chr === 64 ||
+      chr === 95
     ) {
       Porffor.wasm.i32.store8(j++, chr, 0, 4)
     } else if (chr < 256) {
@@ -201,9 +201,9 @@ export const unescape = (input: any): string => {
 
   while (i < endPtr) {
     const chr: i32 = Porffor.wasm.i32.load8_u(i++, 0, 4)
-    if (chr == 37) {
+    if (chr === 37) {
       // %
-      if (i + 4 < endPtr && Porffor.wasm.i32.load8_u(i, 0, 4) == 117) {
+      if (i + 4 < endPtr && Porffor.wasm.i32.load8_u(i, 0, 4) === 117) {
         // u
         i += 5
       } else if (i + 1 < endPtr) {
@@ -223,9 +223,9 @@ export const unescape = (input: any): string => {
   while (i < endPtr) {
     const chr: i32 = Porffor.wasm.i32.load8_u(i++, 0, 4)
 
-    if (chr == 37) {
+    if (chr === 37) {
       // %
-      if (i + 4 < endPtr && Porffor.wasm.i32.load8_u(i, 0, 4) == 117) {
+      if (i + 4 < endPtr && Porffor.wasm.i32.load8_u(i, 0, 4) === 117) {
         // u
         // %uXXXX
         const d1: i32 = Porffor.wasm.i32.load8_u(i + 1, 0, 4)
@@ -319,7 +319,7 @@ export const encodeURI = (input: any): bytestring => {
   let i: i32 = Porffor.wasm`local.get ${input}`
 
   // Check if input is bytestring or string
-  if (Porffor.wasm`local.get ${input + 1}` == Porffor.TYPES.bytestring) {
+  if (Porffor.wasm`local.get ${input + 1}` === Porffor.TYPES.bytestring) {
     // Handle bytestring input
     const endPtr: i32 = i + len
 
@@ -332,28 +332,28 @@ export const encodeURI = (input: any): bytestring => {
         (chr >= 48 && chr <= 57) || // 0-9
         (chr >= 65 && chr <= 90) || // A-Z
         (chr >= 97 && chr <= 122) || // a-z
-        chr == 33 ||
-        chr == 35 ||
-        chr == 36 ||
-        chr == 38 ||
-        chr == 39 ||
-        chr == 40 ||
-        chr == 41 ||
-        chr == 42 ||
-        chr == 43 ||
-        chr == 44 ||
-        chr == 45 ||
-        chr == 46 ||
-        chr == 47 ||
-        chr == 58 ||
-        chr == 59 ||
-        chr == 61 ||
-        chr == 63 ||
-        chr == 64 ||
-        chr == 91 ||
-        chr == 93 ||
-        chr == 95 ||
-        chr == 126
+        chr === 33 ||
+        chr === 35 ||
+        chr === 36 ||
+        chr === 38 ||
+        chr === 39 ||
+        chr === 40 ||
+        chr === 41 ||
+        chr === 42 ||
+        chr === 43 ||
+        chr === 44 ||
+        chr === 45 ||
+        chr === 46 ||
+        chr === 47 ||
+        chr === 58 ||
+        chr === 59 ||
+        chr === 61 ||
+        chr === 63 ||
+        chr === 64 ||
+        chr === 91 ||
+        chr === 93 ||
+        chr === 95 ||
+        chr === 126
       ) {
         outLength += 1
       } else {
@@ -375,28 +375,28 @@ export const encodeURI = (input: any): bytestring => {
         (chr >= 48 && chr <= 57) || // 0-9
         (chr >= 65 && chr <= 90) || // A-Z
         (chr >= 97 && chr <= 122) || // a-z
-        chr == 33 ||
-        chr == 35 ||
-        chr == 36 ||
-        chr == 38 ||
-        chr == 39 ||
-        chr == 40 ||
-        chr == 41 ||
-        chr == 42 ||
-        chr == 43 ||
-        chr == 44 ||
-        chr == 45 ||
-        chr == 46 ||
-        chr == 47 ||
-        chr == 58 ||
-        chr == 59 ||
-        chr == 61 ||
-        chr == 63 ||
-        chr == 64 ||
-        chr == 91 ||
-        chr == 93 ||
-        chr == 95 ||
-        chr == 126
+        chr === 33 ||
+        chr === 35 ||
+        chr === 36 ||
+        chr === 38 ||
+        chr === 39 ||
+        chr === 40 ||
+        chr === 41 ||
+        chr === 42 ||
+        chr === 43 ||
+        chr === 44 ||
+        chr === 45 ||
+        chr === 46 ||
+        chr === 47 ||
+        chr === 58 ||
+        chr === 59 ||
+        chr === 61 ||
+        chr === 63 ||
+        chr === 64 ||
+        chr === 91 ||
+        chr === 93 ||
+        chr === 95 ||
+        chr === 126
       ) {
         Porffor.wasm.i32.store8(j++, chr, 0, 4)
       } else {
@@ -435,28 +435,28 @@ export const encodeURI = (input: any): bytestring => {
       (chr >= 48 && chr <= 57) || // 0-9
       (chr >= 65 && chr <= 90) || // A-Z
       (chr >= 97 && chr <= 122) || // a-z
-      chr == 33 ||
-      chr == 35 ||
-      chr == 36 ||
-      chr == 38 ||
-      chr == 39 ||
-      chr == 40 ||
-      chr == 41 ||
-      chr == 42 ||
-      chr == 43 ||
-      chr == 44 ||
-      chr == 45 ||
-      chr == 46 ||
-      chr == 47 ||
-      chr == 58 ||
-      chr == 59 ||
-      chr == 61 ||
-      chr == 63 ||
-      chr == 64 ||
-      chr == 91 ||
-      chr == 93 ||
-      chr == 95 ||
-      chr == 126
+      chr === 33 ||
+      chr === 35 ||
+      chr === 36 ||
+      chr === 38 ||
+      chr === 39 ||
+      chr === 40 ||
+      chr === 41 ||
+      chr === 42 ||
+      chr === 43 ||
+      chr === 44 ||
+      chr === 45 ||
+      chr === 46 ||
+      chr === 47 ||
+      chr === 58 ||
+      chr === 59 ||
+      chr === 61 ||
+      chr === 63 ||
+      chr === 64 ||
+      chr === 91 ||
+      chr === 93 ||
+      chr === 95 ||
+      chr === 126
     ) {
       outLength += 1
     } else if (chr < 128) {
@@ -483,28 +483,28 @@ export const encodeURI = (input: any): bytestring => {
       (chr >= 48 && chr <= 57) || // 0-9
       (chr >= 65 && chr <= 90) || // A-Z
       (chr >= 97 && chr <= 122) || // a-z
-      chr == 33 ||
-      chr == 35 ||
-      chr == 36 ||
-      chr == 38 ||
-      chr == 39 ||
-      chr == 40 ||
-      chr == 41 ||
-      chr == 42 ||
-      chr == 43 ||
-      chr == 44 ||
-      chr == 45 ||
-      chr == 46 ||
-      chr == 47 ||
-      chr == 58 ||
-      chr == 59 ||
-      chr == 61 ||
-      chr == 63 ||
-      chr == 64 ||
-      chr == 91 ||
-      chr == 93 ||
-      chr == 95 ||
-      chr == 126
+      chr === 33 ||
+      chr === 35 ||
+      chr === 36 ||
+      chr === 38 ||
+      chr === 39 ||
+      chr === 40 ||
+      chr === 41 ||
+      chr === 42 ||
+      chr === 43 ||
+      chr === 44 ||
+      chr === 45 ||
+      chr === 46 ||
+      chr === 47 ||
+      chr === 58 ||
+      chr === 59 ||
+      chr === 61 ||
+      chr === 63 ||
+      chr === 64 ||
+      chr === 91 ||
+      chr === 93 ||
+      chr === 95 ||
+      chr === 126
     ) {
       Porffor.wasm.i32.store8(j++, chr, 0, 4)
     } else if (chr < 128) {
@@ -617,7 +617,7 @@ export const encodeURIComponent = (input: any): bytestring => {
   let i: i32 = Porffor.wasm`local.get ${input}`
 
   // Check if input is bytestring or string
-  if (Porffor.wasm`local.get ${input + 1}` == Porffor.TYPES.bytestring) {
+  if (Porffor.wasm`local.get ${input + 1}` === Porffor.TYPES.bytestring) {
     // Handle bytestring input
     const endPtr: i32 = i + len
 
@@ -630,15 +630,15 @@ export const encodeURIComponent = (input: any): bytestring => {
         (chr >= 48 && chr <= 57) || // 0-9
         (chr >= 65 && chr <= 90) || // A-Z
         (chr >= 97 && chr <= 122) || // a-z
-        chr == 33 ||
-        chr == 39 ||
-        chr == 40 ||
-        chr == 41 ||
-        chr == 42 ||
-        chr == 45 ||
-        chr == 46 ||
-        chr == 95 ||
-        chr == 126
+        chr === 33 ||
+        chr === 39 ||
+        chr === 40 ||
+        chr === 41 ||
+        chr === 42 ||
+        chr === 45 ||
+        chr === 46 ||
+        chr === 95 ||
+        chr === 126
       ) {
         outLength += 1
       } else {
@@ -660,15 +660,15 @@ export const encodeURIComponent = (input: any): bytestring => {
         (chr >= 48 && chr <= 57) || // 0-9
         (chr >= 65 && chr <= 90) || // A-Z
         (chr >= 97 && chr <= 122) || // a-z
-        chr == 33 ||
-        chr == 39 ||
-        chr == 40 ||
-        chr == 41 ||
-        chr == 42 ||
-        chr == 45 ||
-        chr == 46 ||
-        chr == 95 ||
-        chr == 126
+        chr === 33 ||
+        chr === 39 ||
+        chr === 40 ||
+        chr === 41 ||
+        chr === 42 ||
+        chr === 45 ||
+        chr === 46 ||
+        chr === 95 ||
+        chr === 126
       ) {
         Porffor.wasm.i32.store8(j++, chr, 0, 4)
       } else {
@@ -707,15 +707,15 @@ export const encodeURIComponent = (input: any): bytestring => {
       (chr >= 48 && chr <= 57) || // 0-9
       (chr >= 65 && chr <= 90) || // A-Z
       (chr >= 97 && chr <= 122) || // a-z
-      chr == 33 ||
-      chr == 39 ||
-      chr == 40 ||
-      chr == 41 ||
-      chr == 42 ||
-      chr == 45 ||
-      chr == 46 ||
-      chr == 95 ||
-      chr == 126
+      chr === 33 ||
+      chr === 39 ||
+      chr === 40 ||
+      chr === 41 ||
+      chr === 42 ||
+      chr === 45 ||
+      chr === 46 ||
+      chr === 95 ||
+      chr === 126
     ) {
       outLength += 1
     } else if (chr < 128) {
@@ -742,15 +742,15 @@ export const encodeURIComponent = (input: any): bytestring => {
       (chr >= 48 && chr <= 57) || // 0-9
       (chr >= 65 && chr <= 90) || // A-Z
       (chr >= 97 && chr <= 122) || // a-z
-      chr == 33 ||
-      chr == 39 ||
-      chr == 40 ||
-      chr == 41 ||
-      chr == 42 ||
-      chr == 45 ||
-      chr == 46 ||
-      chr == 95 ||
-      chr == 126
+      chr === 33 ||
+      chr === 39 ||
+      chr === 40 ||
+      chr === 41 ||
+      chr === 42 ||
+      chr === 45 ||
+      chr === 46 ||
+      chr === 95 ||
+      chr === 126
     ) {
       Porffor.wasm.i32.store8(j++, chr, 0, 4)
     } else if (chr < 128) {
@@ -866,7 +866,7 @@ export const decodeURI = (input: any): string => {
 
   while (i < endPtr) {
     const chr: i32 = Porffor.wasm.i32.load8_u(i++, 0, 4)
-    if (chr == 37 && i + 1 < endPtr) {
+    if (chr === 37 && i + 1 < endPtr) {
       // %
       const h1: i32 = Porffor.wasm.i32.load8_u(i, 0, 4)
       const h2: i32 = Porffor.wasm.i32.load8_u(i + 1, 0, 4)
@@ -883,11 +883,11 @@ export const decodeURI = (input: any): string => {
         i += 2
         const byte: i32 = (n1 << 4) | n2
         // Skip continuation bytes
-        if ((byte & 0x80) == 0) {
+        if ((byte & 0x80) === 0) {
           outLength += 1
-        } else if ((byte & 0xe0) == 0xc0) {
+        } else if ((byte & 0xe0) === 0xc0) {
           outLength += 1
-        } else if ((byte & 0xf0) == 0xe0) {
+        } else if ((byte & 0xf0) === 0xe0) {
           outLength += 1
         }
       } else {
@@ -908,7 +908,7 @@ export const decodeURI = (input: any): string => {
   while (i < endPtr) {
     const chr: i32 = Porffor.wasm.i32.load8_u(i++, 0, 4)
 
-    if (chr == 37 && i + 1 < endPtr) {
+    if (chr === 37 && i + 1 < endPtr) {
       // %
       const h1: i32 = Porffor.wasm.i32.load8_u(i, 0, 4)
       const h2: i32 = Porffor.wasm.i32.load8_u(i + 1, 0, 4)
@@ -929,14 +929,14 @@ export const decodeURI = (input: any): string => {
         i += 2
         const byte1: i32 = (n1 << 4) | n2
 
-        if ((byte1 & 0x80) == 0) {
+        if ((byte1 & 0x80) === 0) {
           // Single byte
           Porffor.wasm.i32.store16(j, byte1, 0, 4)
           j += 2
         } else if (
-          (byte1 & 0xe0) == 0xc0 &&
+          (byte1 & 0xe0) === 0xc0 &&
           i + 2 < endPtr &&
-          Porffor.wasm.i32.load8_u(i, 0, 4) == 37
+          Porffor.wasm.i32.load8_u(i, 0, 4) === 37
         ) {
           // Two byte UTF-8
           const h3: i32 = Porffor.wasm.i32.load8_u(i + 1, 0, 4)
@@ -966,10 +966,10 @@ export const decodeURI = (input: any): string => {
             i -= 2
           }
         } else if (
-          (byte1 & 0xf0) == 0xe0 &&
+          (byte1 & 0xf0) === 0xe0 &&
           i + 5 < endPtr &&
-          Porffor.wasm.i32.load8_u(i, 0, 4) == 37 &&
-          Porffor.wasm.i32.load8_u(i + 3, 0, 4) == 37
+          Porffor.wasm.i32.load8_u(i, 0, 4) === 37 &&
+          Porffor.wasm.i32.load8_u(i + 3, 0, 4) === 37
         ) {
           // Three byte UTF-8
           const h3: i32 = Porffor.wasm.i32.load8_u(i + 1, 0, 4)

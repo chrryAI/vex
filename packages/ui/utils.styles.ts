@@ -112,8 +112,8 @@ export const UtilsStyleDefs = {
   },
 } as const
 
-import { createUnifiedStyles } from "./styles/createUnifiedStyles"
 import { createStyleHook } from "./styles/createStyleHook"
+import { createUnifiedStyles } from "./styles/createUnifiedStyles"
 
 export const UtilsStyles = createUnifiedStyles(UtilsStyleDefs)
 

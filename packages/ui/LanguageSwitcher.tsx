@@ -41,7 +41,7 @@ const LanguageSwitcher = ({
   useEffect(() => {
     if (user && user.language !== language && token) {
       ;(async () => {
-        const result = await apiFetch(`${API_URL}/user`, {
+        const _result = await apiFetch(`${API_URL}/user`, {
           method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,

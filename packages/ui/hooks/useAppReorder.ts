@@ -23,7 +23,7 @@ export function useAppReorder({
 }: UseAppReorderProps) {
   const { t } = useAppContext()
 
-  const { token, API_URL } = useAuth()
+  const { token } = useAuth()
   // Move app during drag (live preview)
   const moveApp = useCallback(
     (dragIndex: number, hoverIndex: number) => {

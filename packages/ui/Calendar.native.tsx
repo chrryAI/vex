@@ -20,7 +20,7 @@ import {
   subWeeks,
 } from "date-fns"
 import { de, enUS, es, fr, ja, ko, nl, pt, tr, zhCN } from "date-fns/locale"
-import React, { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import toast from "react-hot-toast"
 import useSWR from "swr"
 import { useCalendarStyles } from "./Calendar.styles"
@@ -82,7 +82,7 @@ export default function Calendar({
 
   // State
   const [calendarEvents, setCalendarEvents] = useState<calendarEvent[]>([])
-  const [isGoogleConnected, setIsGoogleConnected] = useState(
+  const [isGoogleConnected, _setIsGoogleConnected] = useState(
     !!user?.hasCalendarScope,
   )
   const [isSyncing, setIsSyncing] = useState(false)
@@ -191,7 +191,7 @@ export default function Calendar({
           errorUrl: "/calendar?error=google",
           redirect: true,
         })
-      } catch (error) {
+      } catch (_error) {
         toast.error("Failed to connect Google Calendar")
       }
       return
@@ -205,7 +205,7 @@ export default function Calendar({
         await refetchCalendarEvents()
         toast.success(`Synced ${result.imported} events`)
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to sync")
     } finally {
       setIsSyncing(false)

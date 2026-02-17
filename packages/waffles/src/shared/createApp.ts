@@ -1,9 +1,6 @@
 import { expect, type Page } from "@playwright/test"
-import { getModelCredits, getURL, type modelName, storeApps, wait } from ".."
+import { getURL, type modelName, wait } from ".."
 import app from "./app"
-import { chat } from "./chat"
-import { clean } from "./clean"
-import { grape } from "./grape"
 import { signIn } from "./signIn"
 
 const COLORS = {

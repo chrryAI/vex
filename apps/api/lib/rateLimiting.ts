@@ -68,7 +68,7 @@ const ajPro = arcjet({
   ],
 })
 
-const ajAppOwner = arcjet({
+const _ajAppOwner = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
     slidingWindow({

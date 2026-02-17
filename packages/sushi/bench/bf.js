@@ -3,9 +3,9 @@
 
 let lines = 0
 const done = (x) => {
-  if (x == 10) {
+  if (x === 10) {
     lines++
-    if (lines == 1) return true
+    if (lines === 1) return true
   }
 }
 
@@ -19,27 +19,27 @@ const interpret = (str) => {
   for (let i = 0; i < str.length; i++) {
     const c = str.charCodeAt(i)
 
-    if (c == 62) ptr++
-    if (c == 60) ptr--
+    if (c === 62) ptr++
+    if (c === 60) ptr--
 
-    if (c == 43) memory[ptr] += 1
-    if (c == 45) memory[ptr] -= 1
+    if (c === 43) memory[ptr] += 1
+    if (c === 45) memory[ptr] -= 1
 
     // if (c == 46) printChar(memory[ptr]);
-    if (c == 46) {
+    if (c === 46) {
       if (done(memory[ptr])) i = str.length
     }
 
-    if (c == 91) {
+    if (c === 91) {
       starts.push(i)
       // Porffor.array.fastPush(starts, i);
 
-      if (memory[ptr] == 0) {
+      if (memory[ptr] === 0) {
         let depth = 1
-        while (depth != 0) {
+        while (depth !== 0) {
           const c2 = str.charCodeAt(++i)
-          if (c2 == 91) depth++
-          if (c2 == 93) depth--
+          if (c2 === 91) depth++
+          if (c2 === 93) depth--
         }
 
         i--
@@ -47,8 +47,8 @@ const interpret = (str) => {
       }
     }
 
-    if (c == 93) {
-      if (memory[ptr] == 0) {
+    if (c === 93) {
+      if (memory[ptr] === 0) {
         starts.pop()
         continue
       }
