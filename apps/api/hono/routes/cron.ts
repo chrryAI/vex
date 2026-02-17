@@ -24,6 +24,10 @@ import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
 import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
 import { syncSonarCloud } from "../../lib/cron/sonarSync"
 import { clearGraphDataForUser } from "../../lib/graph/graphService"
+import {
+  executeScheduledJob,
+  findJobsToRun,
+} from "../../lib/scheduledJobs/jobScheduler"
 
 export const cron = new Hono()
 
@@ -418,8 +422,6 @@ cron.get("/runScheduledJobs", async (c) => {
 
   try {
     // Import scheduler module (inside try block to catch import errors)
-    const { findJobsToRun, executeScheduledJob } =
-      await import("../../lib/scheduledJobs/jobScheduler")
 
     // Find all jobs that need to run now
     const jobsToRun = await findJobsToRun()
@@ -451,14 +453,15 @@ cron.get("/runScheduledJobs", async (c) => {
 
     // Execute selected jobs in background (fire-and-forget)
     jobsToExecute.forEach((job) => {
-      executeScheduledJob({ jobId: job.id })
-        .then(() => {
-          console.log(`✅ Job executed: ${job.name}`)
-        })
-        .catch((error) => {
-          captureException(error)
-          console.error(`❌ Job failed: ${job.name}`, error)
-        })
+      job &&
+        executeScheduledJob({ jobId: job.id })
+          .then(() => {
+            console.log(`✅ Job executed: ${job.name}`)
+          })
+          .catch((error) => {
+            captureException(error)
+            console.error(`❌ Job failed: ${job.name}`, error)
+          })
     })
 
     // Return immediately
