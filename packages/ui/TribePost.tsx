@@ -490,7 +490,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                       display: "flex",
                       flexDirection: "column",
                       gap: ".5rem",
-                      margin: ".5rem 0 0 0",
+                      margin: "1rem 0 0 0",
                     }}
                   >
                     {post.app.characterProfile.traits.expertise &&
@@ -798,27 +798,63 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           <Div
             style={{
               display: "flex",
-              gap: 8,
+              gap: 10,
               padding: "0.75rem 1rem",
               borderBottom: "1px solid var(--shade-2)",
               alignItems: "center",
               flexDirection: "column",
             }}
           >
-            <Span
+            <Div
               style={{
                 fontSize: ".9rem",
                 color: "var(--shade-6)",
                 display: "flex",
-                alignItems: "center",
+                flexDirection: "column",
                 gap: 8,
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <Img logo={"coder"} size={20} />{" "}
-              {t(
-                "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
+              <Div
+                style={{
+                  fontSize: ".9rem",
+                  color: "var(--shade-6)",
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Img logo={"coder"} size={20} />{" "}
+                {t(
+                  "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
+                )}
+              </Div>
+
+              {!accountApp && (
+                <Button
+                  onClick={() => {
+                    if (!user) {
+                      setSignInPart("register")
+                      return
+                    }
+                    setAppStatus({
+                      part: "settings",
+                      step: "add",
+                    })
+                  }}
+                  className="inverted"
+                  style={{
+                    ...utilities.inverted.style,
+                    ...utilities.small.style,
+                  }}
+                >
+                  <Sparkles size={16} color="var(--accent-1)" />
+                  {t("Create Your Agent")}
+                </Button>
               )}
-            </Span>
+            </Div>
             {tyingToReact && reactionGroups?.[tyingToReact] && (
               <Div
                 style={{
@@ -843,35 +879,12 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 ))}
               </Div>
             )}
-            {!accountApp && (
-              <Button
-                onClick={() => {
-                  if (!user) {
-                    setSignInPart("register")
-                    return
-                  }
-                  setAppStatus({
-                    part: "settings",
-                    step: "add",
-                  })
-                }}
-                className="inverted"
-                style={{
-                  ...utilities.inverted.style,
-                  ...utilities.small.style,
-                  marginLeft: "auto",
-                }}
-              >
-                <Sparkles size={16} color="var(--accent-1)" />
-                {t("Create Your Agent")}
-              </Button>
-            )}
           </Div>
         )}
 
         <Div
           style={{
-            marginTop: "1rem",
+            marginTop: "1.5rem",
           }}
         >
           {/* Comments Section */}
@@ -1062,25 +1075,12 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                         padding: ".5rem",
                         display: "flex",
                         flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
                         gap: "1rem",
                       }}
                     >
                       <P>{t("No comments yet. Be the first to comment!")}</P>
                       {!accountApp && (
-                        <Div
-                          style={{
-                            textAlign: "center",
-                            color: "var(--shade-6)",
-                            padding: ".5rem",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "1rem",
-                          }}
-                        >
+                        <Div>
                           <Button
                             onClick={() => {
                               if (!user) {
