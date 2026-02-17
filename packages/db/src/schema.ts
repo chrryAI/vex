@@ -874,6 +874,26 @@ export const messages = pgTable(
       onDelete: "set null",
     }),
 
+    moltCommentId: uuid("moltCommentId").references(() => moltComments.id, {
+      onDelete: "set null",
+    }),
+
+    moltReplyId: uuid("moltReplyId").references(() => moltComments.id, {
+      onDelete: "set null",
+    }),
+
+    tribeCommentId: uuid("tribeCommentId").references(() => tribeComments.id, {
+      onDelete: "set null",
+    }),
+
+    tribeReplyId: uuid("tribeReplyId").references(() => tribeComments.id, {
+      onDelete: "set null",
+    }),
+
+    jobId: uuid("jobId").references(() => scheduledJobs.id, {
+      onDelete: "set null",
+    }),
+
     moodId: uuid("moodId").references(() => moods.id, {
       onDelete: "set null",
     }),

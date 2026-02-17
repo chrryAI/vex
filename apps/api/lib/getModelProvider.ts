@@ -40,7 +40,7 @@ function safeDecrypt(encryptedKey: string | undefined): string | undefined {
  */
 export async function getModelProvider(
   app?: app | appWithStore,
-  name:
+  agentName:
     | "deepSeek"
     | "chatGPT"
     | "claude"
@@ -50,7 +50,10 @@ export async function getModelProvider(
     | "flux"
     | "openrouter"
     | string = "deepSeek",
+  canReason = true,
 ): Promise<{ provider: LanguageModel; agentName: string }> {
+  const name = agentName === "sushi" && !canReason ? "deepSeek" : agentName
+
   const appApiKeys = app?.apiKeys || {}
 
   const agents = await getAiAgents({ include: app?.id })
