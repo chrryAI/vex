@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - Verified and consolidated security patches:
-    - CORS Origin Reflection Prevention (`apps/api/hono/middleware/cors.ts`)
-    - SSRF Protection (`apps/api/utils/ssrf.ts`)
-    - MinIO Upload Type Validation (`apps/api/lib/minio.ts`)
-    - Auth Rate Limiting (`apps/api/lib/rateLimiting.ts`)
-    - WebSocket JWT Fallback Logic (`apps/api/lib/websocket.ts`)
+  - CORS Origin Reflection Prevention (`apps/api/hono/middleware/cors.ts`)
+  - SSRF Protection (`apps/api/utils/ssrf.ts`)
+  - MinIO Upload Type Validation (`apps/api/lib/minio.ts`)
+  - Auth Rate Limiting (`apps/api/lib/rateLimiting.ts`)
+  - WebSocket JWT Fallback Logic (`apps/api/lib/websocket.ts`)

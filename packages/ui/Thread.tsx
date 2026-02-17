@@ -198,20 +198,19 @@ const Thread = ({
     refetchRef.current()
   }, [])
 
-  const handleDelete = useCallback(
-    async ({ id }: { id: string }) => {
-      if (currentMessagesRef.current.length === 1) {
-        await refetchRef.current().then(() => setMessagesRef.current([]))
-      } else {
-        await refetchRef.current().then(() =>
+  const handleDelete = useCallback(async ({ id }: { id: string }) => {
+    if (currentMessagesRef.current.length === 1) {
+      await refetchRef.current().then(() => setMessagesRef.current([]))
+    } else {
+      await refetchRef
+        .current()
+        .then(() =>
           setMessagesRef.current(
             currentMessagesRef.current.filter((m) => m.message.id !== id),
           ),
         )
-      }
-    },
-    [],
-  )
+    }
+  }, [])
 
   // plausible last processed threadData to prevent re-processing
   // const lastProcessedThreadDataRef = useRef<any>(null)

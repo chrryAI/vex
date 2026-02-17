@@ -691,7 +691,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
       return refetchPosts()
     },
     refetchPost: async () => {
-      setShouldLoadPost(true)
       return refetchTribePost()
     },
     refetchTribes: async () => {

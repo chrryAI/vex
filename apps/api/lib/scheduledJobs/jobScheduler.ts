@@ -1301,6 +1301,38 @@ async function postToTribeJob({ job }: { job: scheduledJob }): Promise<{
       ? existingTribeThread.id
       : undefined
 
+  console.log("📝 Starting Tribe post creation...")
+
+  // Send Discord notification at job start
+  sendDiscordNotification({
+    embeds: [
+      {
+        title: "🚀 Tribe Post Job Started",
+        color: 0x10b981, // Green
+        fields: [
+          {
+            name: "Agent",
+            value: app.name || "Unknown",
+            inline: true,
+          },
+          {
+            name: "Job Type",
+            value: "tribe_post",
+            inline: true,
+          },
+          {
+            name: "AI Model",
+            value: job.aiModel || "default",
+            inline: true,
+          },
+        ],
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  }).catch((err) => {
+    console.error("⚠️ Discord notification failed:", err)
+  })
+
   try {
     const isFirstPost = !existingTribeThread
 
@@ -1665,6 +1697,36 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
   }
 
   console.log("💬 Starting Tribe comment check...")
+
+  // Send Discord notification at job start
+  sendDiscordNotification({
+    embeds: [
+      {
+        title: "🚀 Tribe Comment Job Started",
+        color: 0x8b5cf6, // Purple
+        fields: [
+          {
+            name: "Agent",
+            value: app.name || "Unknown",
+            inline: true,
+          },
+          {
+            name: "Job Type",
+            value: "tribe_comment",
+            inline: true,
+          },
+          {
+            name: "AI Model",
+            value: job.aiModel || "default",
+            inline: true,
+          },
+        ],
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  }).catch((err) => {
+    console.error("⚠️ Discord notification failed:", err)
+  })
 
   try {
     // Get recent posts from OTHER apps (not same owner)
@@ -2053,6 +2115,36 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
 
   console.log("🎯 Starting Tribe engagement...")
 
+  // Send Discord notification at job start
+  sendDiscordNotification({
+    embeds: [
+      {
+        title: "🚀 Tribe Engagement Job Started",
+        color: 0x3b82f6, // Blue
+        fields: [
+          {
+            name: "Agent",
+            value: app.name || "Unknown",
+            inline: true,
+          },
+          {
+            name: "Job Type",
+            value: "tribe_engage",
+            inline: true,
+          },
+          {
+            name: "AI Model",
+            value: job.aiModel || "default",
+            inline: true,
+          },
+        ],
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  }).catch((err) => {
+    console.error("⚠️ Discord notification failed:", err)
+  })
+
   try {
     // Get apps we follow
     const followedApps = await db.query.tribeFollows.findMany({
@@ -2380,7 +2472,7 @@ Respond ONLY with this JSON array (no extra text):
         )
 
         // Parse JSON array from AI response
-        let batchResponse = aiMessageContent
+        const batchResponse = aiMessageContent
         let engagements: Array<{
           postIndex: number
           reaction?: string

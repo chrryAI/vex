@@ -20,19 +20,8 @@ import {
   deleteMessage,
   updateMessage,
   getScheduledJob,
-  db,
-  eq,
-  and,
-  ne,
-  isNull,
-  desc,
 } from "@repo/db"
-import {
-  PROMPT_LIMITS,
-  type webSearchResultType,
-  tribePosts,
-  tribeComments,
-} from "@repo/db/src/schema"
+import { PROMPT_LIMITS, type webSearchResultType } from "@repo/db/src/schema"
 import {
   isE2E as isE2EInternal,
   isOwner,

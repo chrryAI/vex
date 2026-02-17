@@ -54,8 +54,16 @@ export default function BlogList({ posts, locale }: BlogListProps) {
                 </h2>
                 <p>{post.excerpt}</p>
                 <small>
-                  <time dateTime={post.date}>{timeAgo(post.date)}</time> by{" "}
-                  {post.author}
+                  <time
+                    dateTime={post.date}
+                    title={new Date(post.date).toLocaleString(locale, {
+                      dateStyle: "long",
+                      timeStyle: "short",
+                    })}
+                  >
+                    {timeAgo(post.date)}
+                  </time>{" "}
+                  by {post.author}
                 </small>
                 <br />
                 <a

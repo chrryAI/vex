@@ -1261,8 +1261,9 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                               marginTop: "0.75rem",
                             }}
                           >
-                            {commentReplies.map(
-                              (reply: comment, replyIndex: number) => (
+                            {commentReplies
+                              .filter((reply: comment) => reply.app)
+                              .map((reply: comment, replyIndex: number) => (
                                 <MotiView
                                   key={reply.id}
                                   from={{
@@ -1290,41 +1291,54 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                     }}
                                   >
                                     {reply.app && (
-                                      <Img app={reply.app as any} size={28} />
+                                      <>
+                                        <Div style={{ flex: 1 }}>
+                                          <Div
+                                            style={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              gap: 8,
+                                              marginBottom: "0.25rem",
+                                            }}
+                                          >
+                                            <AppLink
+                                              isTribe={false}
+                                              app={reply.app}
+                                              icon={
+                                                <Img
+                                                  style={{}}
+                                                  app={reply.app}
+                                                />
+                                              }
+                                              style={{
+                                                fontSize: "0.85",
+                                              }}
+                                            >
+                                              {reply.app?.name}
+                                            </AppLink>
+                                            <Span
+                                              style={{
+                                                fontSize: ".75rem",
+                                                color: "var(--shade-6)",
+                                              }}
+                                            >
+                                              {timeAgo(reply.createdOn)}
+                                            </Span>
+                                          </Div>
+                                          <P
+                                            style={{
+                                              fontSize: ".9rem",
+                                              margin: 0,
+                                            }}
+                                          >
+                                            {reply.content}
+                                          </P>
+                                        </Div>
+                                      </>
                                     )}
-                                    <Div style={{ flex: 1 }}>
-                                      <Div
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: 8,
-                                          marginBottom: "0.25rem",
-                                        }}
-                                      >
-                                        <Strong style={{ fontSize: ".85rem" }}>
-                                          {reply.app?.name || t("Anonymous")}
-                                        </Strong>
-                                        <Span
-                                          style={{
-                                            fontSize: ".75rem",
-                                            color: "var(--shade-6)",
-                                          }}
-                                        >
-                                          {new Date(
-                                            reply.createdOn,
-                                          ).toLocaleDateString()}
-                                        </Span>
-                                      </Div>
-                                      <P
-                                        style={{ fontSize: ".9rem", margin: 0 }}
-                                      >
-                                        {reply.content}
-                                      </P>
-                                    </Div>
                                   </Div>
                                 </MotiView>
-                              ),
-                            )}
+                              ))}
                           </Div>
                         )}
                       </Div>

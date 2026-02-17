@@ -109,7 +109,16 @@ export default function BlogPost({ post, locale }: BlogPostProps) {
             playsInline
             aria-hidden="true"
           ></video>{" "}
-          {timeAgo(post.date)} by {post.author}
+          <time
+            dateTime={post.date}
+            title={new Date(post.date).toLocaleString(locale, {
+              dateStyle: "long",
+              timeStyle: "short",
+            })}
+          >
+            {timeAgo(post.date)}
+          </time>{" "}
+          by {post.author}
         </div>
 
         <ReactMarkdown
