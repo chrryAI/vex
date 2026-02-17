@@ -1307,6 +1307,29 @@ app.post("/", async (c) => {
       ? await getScheduledJob({ id: jobId, userId: member.id })
       : undefined
 
+  // Extract maxTokens from job's active scheduledTime
+  let jobMaxTokens: number | undefined = undefined
+  if (job && job.scheduledTimes && job.scheduledTimes.length > 0) {
+    // Find the active scheduledTime based on current time
+    const now = new Date()
+    const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes()
+
+    const activeSchedule = job.scheduledTimes.find((schedule) => {
+      const scheduleDate = new Date(schedule.time)
+      const scheduleMinutes =
+        scheduleDate.getUTCHours() * 60 + scheduleDate.getUTCMinutes()
+      const diff = Math.abs(currentMinutes - scheduleMinutes)
+      return diff <= 15 // 15 minute window for scheduled jobs
+    })
+
+    if (activeSchedule?.maxTokens) {
+      jobMaxTokens = activeSchedule.maxTokens
+      console.log(
+        `🎯 Using job maxTokens: ${jobMaxTokens} for ${activeSchedule.postType}`,
+      )
+    }
+  }
+
   const isMolt =
     ["moltbook_post", "moltbook_comment", "moltbook_engage"].includes(
       job?.jobType || "",

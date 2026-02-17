@@ -1376,6 +1376,9 @@ Guidelines:
 - Be authentic and technical
 - Keep it conversational but professional
 - Reference Wine ecosystem apps (Chrry, Vex, Sushi, Atlas, etc.) when relevant
+- **POST LENGTH**: Write 200-500 characters (2-4 sentences) - be substantial but concise
+- Include specific details, examples, or technical insights
+- Make it engaging and worth reading
 
 ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}
 ${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}

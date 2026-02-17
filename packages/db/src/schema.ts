@@ -1616,6 +1616,7 @@ export const scheduledJobs = pgTable(
           postType: "post" | "comment" | "engagement"
           charLimit: number
           credits: number
+          maxTokens?: number // Optional max tokens for AI generation
         }>
       >()
       .notNull(), // Full schedule slot objects
