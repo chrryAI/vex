@@ -78,7 +78,25 @@ vi.mock("../hooks/useThreadPresence", () => ({
 
 // Mock other components
 vi.mock("../Messages", () => ({
-  default: () => <div data-testid="messages-list" />,
+  default: ({
+    onDelete,
+    onToggleLike,
+    onPlayAudio,
+    onCharacterProfileUpdate,
+  }: any) => (
+    <div data-testid="messages-list">
+      <button
+        data-testid="trigger-delete"
+        onClick={() => onDelete({ id: "msg-1" })}
+      />
+      <button data-testid="trigger-like" onClick={() => onToggleLike(true)} />
+      <button data-testid="trigger-audio" onClick={onPlayAudio} />
+      <button
+        data-testid="trigger-cp-update"
+        onClick={onCharacterProfileUpdate}
+      />
+    </div>
+  ),
 }))
 vi.mock("../Chat", () => ({ default: () => <div data-testid="chat-input" /> }))
 vi.mock("../Loading", () => ({ default: () => <div data-testid="loading" /> }))
@@ -214,5 +232,71 @@ describe("Thread", () => {
     // Reset
     mockAuth.showFocus = false
     mockChat.isEmpty = false
+  })
+
+  it("handles delete message correctly", async () => {
+    mockChat.messages = [{ message: { id: "msg-1" } }, { message: { id: "msg-2" } }]
+    mockChat.refetchThread.mockResolvedValue({})
+
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    const deleteButton = container.querySelector("[data-testid='trigger-delete']")
+    expect(deleteButton).toBeTruthy()
+
+    await act(async () => {
+      deleteButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+    })
+
+    expect(mockChat.refetchThread).toHaveBeenCalled()
+    expect(mockChat.setMessages).toHaveBeenCalled()
+
+    // Verify functional update for setMessages
+    const updateFn = mockChat.setMessages.mock.calls[0][0]
+    expect(typeof updateFn).toBe("function")
+
+    // Verify the update function logic
+    const initialMessages = [{ message: { id: "msg-1" } }, { message: { id: "msg-2" } }]
+    const result = updateFn(initialMessages)
+    expect(result).toHaveLength(1)
+    expect(result[0].message.id).toBe("msg-2")
+
+    // Verify logic when only 1 message remains (should return empty array)
+    const singleMessage = [{ message: { id: "msg-1" } }]
+    const emptyResult = updateFn(singleMessage)
+    expect(emptyResult).toHaveLength(0)
+  })
+
+  it("handles toggle like correctly", async () => {
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    const likeButton = container.querySelector("[data-testid='trigger-like']")
+    expect(likeButton).toBeTruthy()
+
+    await act(async () => {
+      likeButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+    })
+
+    expect(mockChat.refetchThread).toHaveBeenCalled()
+  })
+
+  it("handles character profile update", async () => {
+    mockChat.isChatFloating = false
+
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    const updateButton = container.querySelector("[data-testid='trigger-cp-update']")
+    expect(updateButton).toBeTruthy()
+
+    await act(async () => {
+      updateButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+    })
+
+    expect(mockChat.scrollToBottom).toHaveBeenCalled()
   })
 })
