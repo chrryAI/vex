@@ -1,12 +1,14 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import type React from "react"
+import { useEffect, useState } from "react"
 
 import { useImgStyles } from "./Img.styles"
-import Loading from "./Loading"
 import { ImageIcon } from "./icons"
-import { Div, Image as PlatformImage, MotiView, useTheme } from "./platform"
+import Loading from "./Loading"
+import { Div, MotiView, Image as PlatformImage, useTheme } from "./platform"
 import { useInView } from "./platform/useInView" // Auto-resolves to .web or .native
+
 // Simple in-memory cache
 const imageCache = new Map<string, string>()
 

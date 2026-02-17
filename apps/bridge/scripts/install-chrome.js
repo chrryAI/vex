@@ -7,14 +7,14 @@
 
 import { execFileSync } from "child_process"
 import {
+  chmodSync,
+  copyFileSync,
+  mkdirSync,
   readFileSync,
   writeFileSync,
-  mkdirSync,
-  copyFileSync,
-  chmodSync,
 } from "fs"
-import { join } from "path"
 import { homedir } from "os"
+import { join } from "path"
 
 const BRIDGE_NAME = "com.chrry.sushi.bridge"
 const EXTENSION_ID = process.env.SUSHI_EXTENSION_ID || "YOUR_EXTENSION_ID_HERE"

@@ -1,6 +1,6 @@
-import { ReactNode } from "react"
+import type { locale } from "@chrryai/chrry/locales"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
-import { locale } from "@chrryai/chrry/locales"
+import type { ReactNode } from "react"
 
 interface LayoutProps {
   children: ReactNode

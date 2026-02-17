@@ -1,4 +1,4 @@
-import { openDB, DBSchema, IDBPDatabase } from "idb"
+import { type DBSchema, type IDBPDatabase, openDB } from "idb"
 
 interface CacheDB extends DBSchema {
   cache: {

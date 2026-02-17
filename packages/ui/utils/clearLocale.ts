@@ -1,4 +1,4 @@
-import { locales, locale } from "../locales"
+import { type locale, locales } from "../locales"
 
 export const cleanSlug = (slug: string) => {
   // Remove trailing slashes safely without regex

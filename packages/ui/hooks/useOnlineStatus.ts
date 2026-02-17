@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react"
-import { API_URL, FRONTEND_URL, apiFetch } from "../utils"
-import { isTauri } from "../platform/detection"
+import { useEffect, useState } from "react"
 import { useAuth } from "../context/providers"
+import { isTauri } from "../platform/detection"
+import { API_URL, apiFetch, FRONTEND_URL } from "../utils"
 
 const THROTTLE_MS = 5000 // 5 seconds
 const THROTTLE_KEY = "vex_health_check_throttle"

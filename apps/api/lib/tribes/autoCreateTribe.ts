@@ -1,1 +1,1 @@
-export { getOrCreateTribe, type AutoCreateTribeParams } from "@repo/db"
+export { type AutoCreateTribeParams, getOrCreateTribe } from "@repo/db"

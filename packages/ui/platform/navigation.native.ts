@@ -2,7 +2,7 @@
  * Native Navigation (React Native with Solito)
  */
 
-import React, { createContext, useMemo, useCallback } from "react"
+import React, { createContext, useCallback, useMemo } from "react"
 import { useCustomNavigation } from "./CustomNavigator.native"
 
 export interface NavigationOptions {

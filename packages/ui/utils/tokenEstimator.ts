@@ -1,7 +1,7 @@
 // Client-side token estimation for multilingual support
 // Lightweight approximation without external dependencies
 
-import { taskAnalysis } from "../types"
+import type { taskAnalysis } from "../types"
 
 // Approximate token counting for different languages
 export function estimateTokens(text: string): number {

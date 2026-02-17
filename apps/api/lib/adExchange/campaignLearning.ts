@@ -1,10 +1,12 @@
-import { db, eq, and } from "@repo/db"
 import {
+  and,
   appCampaigns,
   autonomousBids,
+  db,
+  eq,
+  type slotRental,
   slotRentals,
   storeTimeSlots,
-  type slotRental,
 } from "@repo/db"
 import captureException from "../captureException"
 

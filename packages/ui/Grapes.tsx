@@ -1,12 +1,11 @@
-import { useAuth, useChat } from "./context/providers"
-import Modal from "./Modal"
-import { Button, Div, H3, P, Span } from "./platform"
-import { useState } from "react"
-import { appWithStore } from "./types"
+import { useEffect, useState } from "react"
 import { COLORS, useAppContext } from "./context/AppContext"
+import { useAuth, useChat } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
-import { useEffect } from "react"
+import Modal from "./Modal"
+import { Button, Div, H3, P, Span } from "./platform"
+import type { appWithStore } from "./types"
 
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 

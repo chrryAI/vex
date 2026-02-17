@@ -1,12 +1,11 @@
-import { Hono } from "hono"
 import { isE2E } from "@chrryai/chrry/utils"
-
 import {
-  TEST_MEMBER_FINGERPRINTS,
   TEST_GUEST_FINGERPRINTS,
   TEST_MEMBER_EMAILS,
+  TEST_MEMBER_FINGERPRINTS,
   VEX_LIVE_FINGERPRINTS,
 } from "@repo/db"
+import { Hono } from "hono"
 
 export const testConfig = new Hono()
 

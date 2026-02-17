@@ -5,7 +5,7 @@ export const _eval = (source: string) => {
   throw new SyntaxError("Dynamic code evaluation is not supported")
 }
 
-export const Function = function (source: string) {
+export const Function = (source: string) => {
   throw new SyntaxError("Dynamic code evaluation is not supported")
 }
 

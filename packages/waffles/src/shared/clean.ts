@@ -1,4 +1,4 @@
-import { Page, expect } from "@playwright/test"
+import { expect, type Page } from "@playwright/test"
 import { getURL, wait } from "../index"
 import { signIn } from "../shared/signIn"
 

@@ -1,62 +1,65 @@
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { AudioPlayer } from "react-audio-play"
+import toast from "react-hot-toast"
+import A from "./a/A"
+import ConfirmButton from "./ConfirmButton"
+import { useAppContext } from "./context/AppContext"
 import {
+  useApp,
+  useAuth,
+  useChat,
+  useData,
+  useError,
+  useNavigationContext,
+} from "./context/providers"
+import { useStyles } from "./context/StylesContext"
+import { useThreadPresence } from "./hooks/useThreadPresence"
+import { useWebSocket } from "./hooks/useWebSocket"
+import Img from "./Image"
+import {
+  Check,
+  Claude,
+  Coins,
+  Copy,
+  DeepSeek,
   Download,
+  FileText,
+  Flux,
+  Gemini,
   Globe as GlobeIcon,
+  LogIn,
+  OpenAI,
+  Perplexity,
+  Play,
+  Sparkles,
   ThumbsDown,
   ThumbsUp,
   Trash2,
   VolumeX,
-  Play,
-  FileText,
-  LogIn,
-  Coins,
-  Sparkles,
 } from "./icons"
+import Loading from "./Loading"
+import { updateMessage, updateThread } from "./lib"
+import { checkSpeechLimits } from "./lib/speechLimits"
+import { stripMarkdown } from "./lib/stripMarkdown"
+import MarkdownContent from "./MarkdownContent"
+import { useMessageStyles } from "./Message.styles"
 import Modal from "./Modal"
-import { useAppContext } from "./context/AppContext"
-import {
-  useAuth,
-  useNavigationContext,
-  useApp,
-  useError,
-  useData,
-  useChat,
-} from "./context/providers"
-import { useTheme, Div, Button, Span, Video } from "./platform"
+import { Button, Div, Span, useTheme, Video } from "./platform"
 import type {
-  message,
   aiAgent,
-  user,
-  guest,
-  thread,
   app,
+  guest,
+  message,
+  thread,
+  user,
   webSearchResult,
 } from "./types"
-import MarkdownContent from "./MarkdownContent"
+import { apiFetch, getInstructionConfig, isOwner } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
-
-import { isOwner, apiFetch, getInstructionConfig } from "./utils"
 import {
   formatMessageTemplates,
   getCurrentTemplateContext,
 } from "./utils/formatTemplates"
-import Loading from "./Loading"
-import ConfirmButton from "./ConfirmButton"
-
-import { Check, Copy } from "./icons"
-
-import { useCallback, useEffect, useMemo, useState, useRef, memo } from "react"
-import { updateMessage, updateThread } from "./lib"
-import toast from "react-hot-toast"
-import Img from "./Image"
-import { useThreadPresence } from "./hooks/useThreadPresence"
-import { useWebSocket } from "./hooks/useWebSocket"
-import { Claude, DeepSeek, Flux, Gemini, OpenAI, Perplexity } from "./icons"
-import { AudioPlayer } from "react-audio-play"
-import { checkSpeechLimits } from "./lib/speechLimits"
-import { stripMarkdown } from "./lib/stripMarkdown"
-import { useMessageStyles } from "./Message.styles"
-import { useStyles } from "./context/StylesContext"
-import A from "./a/A"
 
 function Message({
   onDelete,
@@ -704,7 +707,7 @@ function Message({
         data-testid="delete-message"
         className="link"
         style={utilities.link.style}
-        onConfirm={async function () {
+        onConfirm={async () => {
           setIsDeleting(true)
 
           if (isStreamingStop) {

@@ -1205,6 +1205,7 @@ export type tribeComment = {
   user?: Partial<user> | null
   guest?: Partial<guest> | null
   app?: appWithStore
+  reactions?: tribeReaction[]
 }
 
 export type tribeLike = {

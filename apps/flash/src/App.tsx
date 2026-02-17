@@ -1,10 +1,10 @@
 import "@chrryai/chrry/globals.scss"
 import "@chrryai/chrry/styles/view-transitions.css"
-import Chrry from "chrry/Chrry"
-import { ServerData } from "./server-loader"
 import AgentProfile from "chrry/AgentProfile"
+import Chrry from "chrry/Chrry"
 import Skeleton from "chrry/Skeleton"
 import { lazy, Suspense } from "react"
+import type { ServerData } from "./server-loader"
 
 // Lazy load blog components to reduce initial bundle size
 const BlogList = lazy(() => import("./components/BlogList"))

@@ -1,5 +1,5 @@
-import { locales, type locale } from "../locales"
-import { appWithStore } from "../types"
+import { type locale, locales } from "../locales"
+import type { appWithStore } from "../types"
 
 const getAppSlug = ({
   targetApp,

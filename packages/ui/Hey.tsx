@@ -9,20 +9,20 @@ import {
   useEffect,
   useState,
 } from "react"
-import Img from "./Image"
+import AgentProfile from "./AgentProfile"
+import { useApp } from "./context/providers"
 // Import hooks directly from their source files to avoid circular dependency with context/providers/index.tsx
 import { useAuth } from "./context/providers/AuthProvider"
 import { useNavigationContext } from "./context/providers/NavigationProvider"
-import { usePlatform, useLocalStorage, Div } from "./platform"
-import { useSidebarStyles } from "./Sidebar.styles"
-import { useHasHydrated } from "./hooks"
 import { ErrorBoundary } from "./ErrorBoundary"
-import Loading from "./Loading"
-import Thread from "./Thread"
 import Home from "./Home"
-import { useApp } from "./context/providers"
+import { useHasHydrated } from "./hooks"
+import Img from "./Image"
+import Loading from "./Loading"
+import { Div, useLocalStorage, usePlatform } from "./platform"
+import { useSidebarStyles } from "./Sidebar.styles"
+import Thread from "./Thread"
 import Programme from "./z/Programme"
-import AgentProfile from "./AgentProfile"
 
 // Lazy load less frequently used components to reduce initial bundle
 const Store = lazy(() => import("./Store"))

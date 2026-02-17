@@ -1,71 +1,68 @@
+import crypto from "crypto"
+import { and, eq, inArray, isNull, lt, sql } from "drizzle-orm"
+import { Redis } from "ioredis"
+import { clearSonarCloudGraph } from "../../apps/api/lib/graph/sonarGraphSync"
+import { createCities } from "./createCities"
+import { createEvent } from "./createEvent"
+import { createStores } from "./createStores"
 import {
   createAiAgent,
   createCollaboration,
+  createMessage,
+  createThread,
   createUser,
   db,
-  passwordToSalt,
-  updateThread,
-  getUser,
-  getApp,
-  createThread,
-  createMessage,
-  TEST_MEMBER_FINGERPRINTS,
-  getUsers,
-  updateUser,
-  getGuests,
-  updateGuest,
-  getGuest,
   deleteGuest,
-  sonarIssues,
-  sonarMetrics,
-  isProd,
+  getApp,
+  getGuest,
+  getGuests,
+  getUser,
+  getUsers,
   isCI,
+  isProd,
   isSeedSafe,
   isWaffles,
-  user,
+  passwordToSalt,
+  sonarIssues,
+  sonarMetrics,
+  TEST_MEMBER_FINGERPRINTS,
   updateApp,
+  updateGuest,
+  updateThread,
+  updateUser,
+  type user,
 } from "./index"
-import { clearSonarCloudGraph } from "../../apps/api/lib/graph/sonarGraphSync"
-import { Redis } from "ioredis"
-import crypto from "crypto"
-import { eq, and, isNull, sql, inArray, lt } from "drizzle-orm"
+import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
+import { seedTribeEngagement } from "./seedTribeEngagement"
 import {
-  users,
-  messages,
-  guests,
   aiAgents,
-  systemLogs,
-  subscriptions,
-  threads,
-  memories,
-  characterProfiles,
-  threadSummaries,
-  calendarEvents,
-  stores,
   apps,
-  instructions,
-  storeInstalls,
-  placeHolders,
+  calendarEvents,
+  characterProfiles,
   cities,
-  timers,
-  realtimeAnalytics,
   expenses,
+  guests,
+  instructions,
+  memories,
+  messages,
   moltQuestions,
+  placeHolders,
+  realtimeAnalytics,
+  storeInstalls,
+  stores,
+  subscriptions,
+  systemLogs,
+  threadSummaries,
+  threads,
+  timers,
   tribeBlocks,
   tribeComments,
   tribeFollows,
-  tribePosts,
   tribeLikes,
+  tribePosts,
   tribes,
+  users,
 } from "./src/schema"
-
-import { seedTribeEngagement } from "./seedTribeEngagement"
-
-import { createEvent } from "./createEvent"
-import { createStores } from "./createStores"
-import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
-
-import { createCities } from "./createCities"
 
 const now = new Date()
 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -1667,7 +1664,7 @@ const updateStoreUrls = async ({ user }: { user: user }) => {
 }
 
 const waffles = async () => {
-  let admin = await getUser({
+  const admin = await getUser({
     email: isWaffles ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
@@ -1810,7 +1807,7 @@ const prod = async () => {
   // Check if admin user already exists
   // await clearMemories()
   // await clearGuests()
-  let admin = await getUser({
+  const admin = await getUser({
     email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
@@ -1931,8 +1928,8 @@ const seedDb = async (): Promise<void> => {
     await prod()
     process.exit(0)
   } else {
-    // await clearDb()
-    // await create()
+    await clearDb()
+    await create()
     process.exit(0)
   }
 }

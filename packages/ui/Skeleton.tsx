@@ -1,41 +1,41 @@
 "use client"
 
 import clsx from "clsx"
-import Menu from "./Menu"
+import { lazy, Suspense, useEffect, useState } from "react"
+import Img from "./Image"
 import { CircleEllipsis } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
-import { useEffect, lazy, Suspense } from "react"
-import Img from "./Image"
-import { useState } from "react"
+import Menu from "./Menu"
 
 // Lazy load heavy components to reduce initial bundle
 const Subscribe = lazy(() => import("./Subscribe"))
 const SignIn = lazy(() => import("./SignIn"))
 const CharacterProfiles = lazy(() => import("./CharacterProfiles"))
+
+import A from "./a/A"
+import AddToHomeScreen from "./addToHomeScreen"
+import {
+  useApp,
+  useAuth,
+  useChat,
+  useData,
+  useNavigationContext,
+} from "./context/providers"
+import { useStyles } from "./context/StylesContext"
+import { useTimerContext } from "./context/TimerContext"
+import { useHasHydrated } from "./hooks"
 import {
   Button,
   Div,
   H1,
   Main,
-  usePreviousPathname,
-  usePlatform,
-  VexToast,
   Span,
+  usePlatform,
+  usePreviousPathname,
+  useTheme,
+  VexToast,
 } from "./platform"
-import { useStyles } from "./context/StylesContext"
-import {
-  useChat,
-  useNavigationContext,
-  useData,
-  useApp,
-  useAuth,
-} from "./context/providers"
-import { useTheme } from "./platform"
-import A from "./a/A"
 import Version from "./Version"
-import AddToHomeScreen from "./addToHomeScreen"
-import { useHasHydrated } from "./hooks"
-import { useTimerContext } from "./context/TimerContext"
 
 function FocusButton({
   time,

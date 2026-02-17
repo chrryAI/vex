@@ -1,5 +1,6 @@
-import React, { useState } from "react"
-import { View, Text, PanResponder } from "react-native"
+import type React from "react"
+import { useState } from "react"
+import { PanResponder, Text, View } from "react-native"
 import { usePlatform } from "./platform"
 
 interface SwipeableTimeControlProps {

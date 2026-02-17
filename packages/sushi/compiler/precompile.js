@@ -1,7 +1,7 @@
-import { Opcodes, Valtype } from "./wasmSpec.js"
-import { TYPES, TYPE_NAMES } from "./types.js"
 import { createImport, importedFuncs } from "./builtins.js"
 import { log } from "./log.js"
+import { TYPE_NAMES, TYPES } from "./types.js"
+import { Opcodes, Valtype } from "./wasmSpec.js"
 
 createImport("print", 1, 0)
 createImport("printChar", 1, 0)
@@ -9,6 +9,7 @@ createImport("time", 0, 1)
 createImport("timeOrigin", 0, 1)
 
 import process from "node:process"
+
 globalThis.process = process
 
 import fs from "node:fs"
@@ -124,9 +125,10 @@ const compile = async (file, _funcs) => {
   let first = source.slice(0, source.indexOf("\n"))
 
   if (first.startsWith("export default")) {
-    source = await (
-      await import("file://" + file)
-    ).default({ TYPES, TYPE_NAMES })
+    source = await (await import("file://" + file)).default({
+      TYPES,
+      TYPE_NAMES,
+    })
     first = source.slice(0, source.indexOf("\n"))
   }
 
@@ -159,7 +161,7 @@ const compile = async (file, _funcs) => {
 
   const porfCompile = (await import(`./index.js?_=${Date.now()}`)).default
 
-  let { funcs, globals, data, exceptions, times } = porfCompile(source)
+  const { funcs, globals, data, exceptions, times } = porfCompile(source)
 
   timing.parse ??= 0
   timing.parse += times[1] - times[0]
@@ -331,7 +333,7 @@ const precompile = async () => {
 
   const t = performance.now()
 
-  let funcs = []
+  const funcs = []
   let fileCount = 0
   for (const file of fs.readdirSync(dir).toSorted()) {
     if (file.endsWith(".d.ts")) continue
@@ -394,7 +396,7 @@ ${funcs
             `...glbl(${opcode},'${name}',${valtype})`,
         )
         .replace(
-          /\"local","(.*?)",(.*?)\]/g,
+          /"local","(.*?)",(.*?)\]/g,
           (_, name, valtype) => `loc('${name}',${valtype})]`,
         )
         .replace(/\[16,"(.*?)"]/g, (_, name) => `[16,builtin('${name}')]`)

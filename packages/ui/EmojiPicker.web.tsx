@@ -1,10 +1,10 @@
-import React from "react"
 import EmojiPickerReact, {
-  EmojiClickData,
-  Theme,
+  type EmojiClickData,
   SuggestionMode,
+  Theme,
 } from "emoji-picker-react"
-import { EmojiPickerProps } from "./EmojiPicker"
+import React from "react"
+import type { EmojiPickerProps } from "./EmojiPicker"
 import { Div } from "./platform"
 
 const EmojiPicker = ({

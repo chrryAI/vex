@@ -1,19 +1,19 @@
+import { FRONTEND_URL } from "@chrryai/chrry/utils"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import {
   type aiAgent,
   type collaboration,
   deletePushSubscription,
   getPushSubscription,
-  type message,
-  type user,
   type guest,
+  type message,
   type thread,
+  type user,
 } from "@repo/db"
-import { FRONTEND_URL } from "@chrryai/chrry/utils"
+import type { Context } from "hono"
 import webpush from "web-push"
 import captureException from "./captureException"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { sendWebPush } from "./sendWebPush"
-import type { Context } from "hono"
 
 const siteConfig = getSiteConfig()
 
@@ -27,7 +27,7 @@ const socket: WebSocket | null = null
 
 const connectionPromise: Promise<void> | null = null
 
-import { notifyClients, broadcast } from "./wsClients"
+import { broadcast, notifyClients } from "./wsClients"
 
 export async function notify(
   recipientId: string,

@@ -223,7 +223,7 @@ export const __Porffor_promise_runNext = (func: Function): void => {
 
 export const __Porffor_promise_runJobs = (): void => {
   while (true) {
-    let x: any = jobQueue.shift()
+    const x: any = jobQueue.shift()
     if (x == null) break
 
     const reaction: any[] = x[0]

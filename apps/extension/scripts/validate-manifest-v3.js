@@ -110,7 +110,7 @@ function checkFile(filePath) {
           index + match.length + 100,
         )
         const isInsideRegex =
-          /\/[^\/]*$/.test(beforeMatch) && /^[^\/]*\//.test(afterMatch)
+          /\/[^/]*$/.test(beforeMatch) && /^[^/]*\//.test(afterMatch)
         const isInsideString = /(["'`])[^"'`]*$/.test(beforeMatch)
         const isPrismPattern =
           context.includes("pattern:") || context.includes("function:")

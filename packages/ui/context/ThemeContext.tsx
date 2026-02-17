@@ -7,28 +7,28 @@
 
 import React, {
   createContext,
+  type ReactNode,
   useContext,
-  ReactNode,
   useEffect,
   useState,
 } from "react"
+import { useTranslation } from "react-i18next"
 import {
-  usePlatform,
   toast,
-  useLocalStorage,
   useCookieOrLocalStorage,
+  useLocalStorage,
+  usePlatform,
 } from "../platform"
 import {
-  lightTheme,
   darkTheme,
-  type Theme,
+  lightTheme,
   resolveCssVar,
   resolveStyleVars,
+  type Theme,
 } from "../styles/theme"
-import { session } from "./providers/AuthProvider"
-import { useTranslation } from "react-i18next"
 import { FRONTEND_URL } from "../utils"
 import console from "../utils/log"
+import type { session } from "./providers/AuthProvider"
 
 export const COLORS = {
   red: "#ef4444", // red-500

@@ -1,8 +1,8 @@
-import { expect, Page } from "@playwright/test"
-import { signIn } from "./signIn"
+import { faker } from "@faker-js/faker"
+import { expect, type Page } from "@playwright/test"
 import { wait } from ".."
 import { chat } from "./chat"
-import { faker } from "@faker-js/faker"
+import { signIn } from "./signIn"
 
 export const thread = async ({
   page,

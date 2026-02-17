@@ -1,17 +1,16 @@
 "use client"
 
 import React, { useState } from "react"
-
-import { Send, UsersRound } from "./icons"
-import { useAppContext } from "./context/AppContext"
-import Modal from "./Modal"
 import toast from "react-hot-toast"
-import { user } from "./types"
-import Loading from "./Loading"
-import { checkIsExtension, BrowserInstance, apiFetch } from "./utils"
-import { useAuth, useNavigationContext } from "./context/providers"
-import { Button, Div, useTheme, TextArea, Span } from "./platform"
 import { useCollaborateStyles } from "./Collaborate.styles"
+import { useAppContext } from "./context/AppContext"
+import { useAuth, useNavigationContext } from "./context/providers"
+import { Send, UsersRound } from "./icons"
+import Loading from "./Loading"
+import Modal from "./Modal"
+import { Button, Div, Span, TextArea, useTheme } from "./platform"
+import type { user } from "./types"
+import { apiFetch, BrowserInstance, checkIsExtension } from "./utils"
 
 const Collaborate = ({ withUser }: { withUser: user }) => {
   const { addParams } = useNavigationContext()

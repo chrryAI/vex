@@ -1,13 +1,13 @@
-import { captureException } from "@sentry/node"
+import { deepseek } from "@ai-sdk/deepseek"
 import { db, getMemories } from "@repo/db"
 import { moltComments } from "@repo/db/src/schema"
-import { getMoltbookFeed, postComment } from "../integrations/moltbook"
-import { sendDiscordNotification } from "../sendDiscordNotification"
+import { captureException } from "@sentry/node"
 import { streamText } from "ai"
-import { deepseek } from "@ai-sdk/deepseek"
-import { isDevelopment, MOLTBOOK_API_KEYS } from ".."
 import type { Context } from "hono"
+import { isDevelopment, MOLTBOOK_API_KEYS } from ".."
+import { getMoltbookFeed, postComment } from "../integrations/moltbook"
 import { redact } from "../redaction"
+import { sendDiscordNotification } from "../sendDiscordNotification"
 import { isExcludedAgent } from "./moltbookExcludeList"
 
 const getReasonerModel = () => {

@@ -1,18 +1,18 @@
 import {
-  S3Client,
-  DeleteObjectCommand,
   CreateBucketCommand,
+  DeleteObjectCommand,
   HeadBucketCommand,
   PutBucketPolicyCommand,
+  S3Client,
 } from "@aws-sdk/client-s3"
 import { Upload } from "@aws-sdk/lib-storage"
+import { isDevelopment } from "@chrryai/chrry/utils"
 import { FetchHttpHandler } from "@smithy/fetch-http-handler"
-import sharp from "sharp"
-import captureException from "./captureException"
 import dns from "dns"
 import net from "net"
+import sharp from "sharp"
 import { parse as parseDomain } from "tldts"
-import { isDevelopment } from "@chrryai/chrry/utils"
+import captureException from "./captureException"
 
 // Validate S3 configuration
 if (
@@ -289,7 +289,7 @@ export async function upload({
       }
 
       // Resolve DNS for hostname to check resolved IPs against private ranges
-      let addresses
+      let addresses = []
       try {
         addresses = await dns.promises.lookup(parsedUrl.hostname, { all: true })
       } catch (e) {
@@ -379,7 +379,8 @@ export async function upload({
       fileType === "image" ? "png" : inferredType.split("/")[1] || "bin"
     const fileName = `${messageId}-${Date.now()}.${ext}`
 
-    let width, height
+    let width: number = 0
+    let height: number = 0
 
     if (fileType === "image") {
       // Get original image metadata
@@ -422,11 +423,11 @@ export async function upload({
 
         // Get the new metadata after processing
         const newMetadata = await processedImage.metadata()
-        width = newMetadata.width
-        height = newMetadata.height
+        width = newMetadata.width || 0
+        height = newMetadata.height || 0
       } else {
-        width = metadata.width
-        height = metadata.height
+        width = metadata.width || 0
+        height = metadata.height || 0
       }
 
       // Convert processed image back to buffer

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 
 test("guest chat flow: send message, bookmark, edit, delete", async ({
   page,

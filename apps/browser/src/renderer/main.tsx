@@ -1,8 +1,8 @@
+import AppProviders from "@chrryai/chrry/context/providers"
 import React, { useEffect, useState } from "react"
 import ReactDOM from "react-dom/client"
-import { TabBar } from "./components/TabBar"
 import { BrowserHeader } from "./components/BrowserHeader"
-import AppProviders from "@chrryai/chrry/context/providers"
+import { TabBar } from "./components/TabBar"
 import "@chrryai/chrry/globals.scss"
 import "./styles/browser-chrome.css"
 

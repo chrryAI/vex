@@ -1,5 +1,5 @@
-import { FRONTEND_URL } from ".."
 import console from "../../utils/log"
+import { FRONTEND_URL } from ".."
 
 const registerServiceWorker =
   async (): Promise<ServiceWorkerRegistration | null> => {

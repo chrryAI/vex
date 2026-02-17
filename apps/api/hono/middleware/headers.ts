@@ -1,5 +1,5 @@
-import type { Context, Next } from "hono"
 import { getSlugFromPathname } from "@chrryai/chrry/utils"
+import type { Context, Next } from "hono"
 
 const RESERVED_PATHS = [
   "threads",

@@ -1,6 +1,6 @@
-import React from "react"
+import type React from "react"
 import DragList from "react-native-draglist"
-import { DraggableListProps, RenderItemParams } from "./DraggableList.web"
+import type { DraggableListProps, RenderItemParams } from "./DraggableList.web"
 
 export default function DraggableList<T>({
   data,

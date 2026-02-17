@@ -1,11 +1,11 @@
 import {
+  boolean,
+  integer,
   pgTable,
+  primaryKey,
   text,
   timestamp,
-  primaryKey,
   uuid,
-  integer,
-  boolean,
 } from "drizzle-orm/pg-core"
 import { users } from "./schema"
 

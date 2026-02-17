@@ -86,7 +86,7 @@ export const String = function (
 }
 
 export const __String_fromCharCode = (...codes: any[]): bytestring | string => {
-  let out: string = Porffor.malloc()
+  const out: string = Porffor.malloc()
 
   const len: i32 = codes.length
   out.length = len
@@ -100,7 +100,7 @@ export const __String_fromCharCode = (...codes: any[]): bytestring | string => {
   }
 
   if (bytestringable) {
-    let out2: bytestring = Porffor.wasm`local.get ${out}`
+    const out2: bytestring = Porffor.wasm`local.get ${out}`
     for (let i: i32 = 0; i < len; i++) {
       Porffor.wasm.i32.store8(
         Porffor.wasm`local.get ${out}` + i,
@@ -117,7 +117,7 @@ export const __String_fromCharCode = (...codes: any[]): bytestring | string => {
 }
 
 export const __String_fromCodePoint = (...codePoints: any[]): string => {
-  let out: string = Porffor.malloc()
+  const out: string = Porffor.malloc()
 
   const len: i32 = codePoints.length
   let outLength: i32 = 0

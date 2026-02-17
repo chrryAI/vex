@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import compile, { createImport } from "../compiler/wrap.js"
-import Byg from "../byg/index.js"
 import fs from "node:fs"
+import Byg from "../byg/index.js"
+import compile, { createImport } from "../compiler/wrap.js"
 
 const file = process.argv.slice(2).find((x) => x[0] !== "-")
 let source = fs.readFileSync(file, "utf8")
@@ -56,7 +56,7 @@ let stepIn = false,
 const callStack = []
 
 let _paused
-let callStarts = []
+const callStarts = []
 let lastLine
 
 let output = ""

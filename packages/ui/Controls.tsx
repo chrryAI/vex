@@ -1,6 +1,6 @@
-import { Button, Div, isTauri } from "./platform"
-import { Circle, ArrowLeft, ArrowRight } from "./icons"
 import { useTheme } from "./context/ThemeContext"
+import { ArrowLeft, ArrowRight, Circle } from "./icons"
+import { Button, Div, isTauri } from "./platform"
 import { colors } from "./styles/theme"
 
 const Controls = () => {

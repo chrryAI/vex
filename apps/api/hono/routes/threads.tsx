@@ -1,51 +1,51 @@
-import { Hono } from "hono"
+import { defaultLocale } from "@chrryai/chrry/locales"
+import { FRONTEND_URL, getMaxFiles, isE2E } from "@chrryai/chrry/utils"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { render } from "@react-email/render"
 import {
   canCollaborate,
   type collaboration,
+  createCollaboration,
+  deleteThread as deleteThreadDb,
   getApp,
+  getCharacterProfile,
+  getInvitation,
+  getMessages,
+  getTask,
   getThread,
   getThreads,
   getUser,
   isOwner,
   type thread,
-  type user,
-  getMessages,
-  deleteThread as deleteThreadDb,
-  updateThread as updateThreadDb,
-  getTask,
-  updateTask,
-  getInvitation,
-  createCollaboration,
-  updateInvitation,
-  getCharacterProfile,
   updateCharacterProfile,
+  updateInvitation,
+  updateTask,
+  updateThread as updateThreadDb,
+  type user,
 } from "@repo/db"
-import {
-  getMember as getMemberAction,
-  getGuest as getGuestAction,
-} from "../lib/auth"
-import { redact } from "../../lib/redaction"
-import sanitizeHtml from "sanitize-html"
-import {
-  checkRateLimit,
-  checkGenerationRateLimit,
-} from "../../lib/rateLimiting"
-import { validate } from "uuid"
 import { PROMPT_LIMITS } from "@repo/db/src/schema"
+import { Hono } from "hono"
+import sanitizeHtml from "sanitize-html"
+import { validate } from "uuid"
+import Collaboration from "../../components/emails/Collaboration"
+import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
+import captureException from "../../lib/captureException"
+import { deleteFile } from "../../lib/minio"
+import {
+  checkGenerationRateLimit,
+  checkRateLimit,
+} from "../../lib/rateLimiting"
+import { redact } from "../../lib/redaction"
+import { scanFileForMalware } from "../../lib/security"
+import { sendEmail } from "../../lib/sendEmail"
 import {
   generateThreadInstructions,
   generateThreadTitle,
 } from "../../utils/titleGenerator"
-import { FRONTEND_URL, isE2E, getMaxFiles } from "@chrryai/chrry/utils"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
-import { render } from "@react-email/render"
-import Collaboration from "../../components/emails/Collaboration"
-import { defaultLocale } from "@chrryai/chrry/locales"
-import captureException from "../../lib/captureException"
-import { scanFileForMalware } from "../../lib/security"
-import { deleteFile } from "../../lib/minio"
-import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
-import { sendEmail } from "../../lib/sendEmail"
+import {
+  getGuest as getGuestAction,
+  getMember as getMemberAction,
+} from "../lib/auth"
 
 export const threads = new Hono()
 

@@ -1,16 +1,21 @@
-import { db, eq, and, gte, inArray, sql } from "@repo/db"
 import {
-  appCampaigns,
-  autonomousBids,
-  storeTimeSlots,
+  and,
   type appCampaign,
-  type storeTimeSlot,
+  appCampaigns,
   type autonomousBid,
+  autonomousBids,
+  db,
+  eq,
+  gte,
+  inArray,
+  sql,
+  type storeTimeSlot,
+  storeTimeSlots,
 } from "@repo/db"
 import { generateText } from "ai"
+import crypto from "crypto"
 import { getModelProvider } from "../../lib/getModelProvider"
 import captureException from "../captureException"
-import crypto from "crypto"
 
 interface BiddingContext {
   campaign: appCampaign

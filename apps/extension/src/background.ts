@@ -297,5 +297,3 @@ type RuntimeMessageHandler = (
   sender: browser.Runtime.MessageSender,
   sendResponse: (response?: unknown) => void,
 ) => boolean | Promise<boolean>
-
-export {}

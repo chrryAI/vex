@@ -34,7 +34,7 @@ export const __Porffor_object_hash = (key: any): i32 => {
   let len: i32 = Porffor.wasm.i32.load(key, 0, 0)
   if (Porffor.wasm`local.get ${key + 1}` == Porffor.TYPES.string) len *= 2
 
-  let hash: i32 = 374761393 + len
+  const hash: i32 = 374761393 + len
   const end: i32 = p + len
   while (p + 4 <= end) {
     // hash in chunks of i32 (4 bytes)
@@ -219,7 +219,7 @@ local.set ${obj}`
 
       // todo: this should somehow be kept in sync?
       for (let i: i32 = 0; i < len; i++) {
-        let ptr: i32 = obj + i * 9
+        const ptr: i32 = obj + i * 9
         Porffor.wasm`
 local x f64
 local x#type i32
@@ -1397,7 +1397,7 @@ export const __Porffor_object_expr_get = (
 
   const hash: i32 = __Porffor_object_hash(key)
   let entryPtr: i32 = __Porffor_object_lookup(obj, key, hash)
-  let set: any = undefined
+  let set: any
   if (entryPtr == -1) {
     // add new entry
     // bump size +1
@@ -1441,7 +1441,7 @@ export const __Porffor_object_expr_set = (
 
   const hash: i32 = __Porffor_object_hash(key)
   let entryPtr: i32 = __Porffor_object_lookup(obj, key, hash)
-  let get: any = undefined
+  let get: any
   if (entryPtr == -1) {
     // add new entry
     // bump size +1
@@ -1565,7 +1565,7 @@ export const __Porffor_object_class_get = (
 
   const hash: i32 = __Porffor_object_hash(key)
   let entryPtr: i32 = __Porffor_object_lookup(obj, key, hash)
-  let set: any = undefined
+  let set: any
   if (entryPtr == -1) {
     // add new entry
     // check if object is inextensible
@@ -1614,7 +1614,7 @@ export const __Porffor_object_class_set = (
 
   const hash: i32 = __Porffor_object_hash(key)
   let entryPtr: i32 = __Porffor_object_lookup(obj, key, hash)
-  let get: any = undefined
+  let get: any
   if (entryPtr == -1) {
     // add new entry
     // check if object is inextensible

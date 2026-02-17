@@ -1,3 +1,5 @@
+import type { AdapterAccount } from "@auth/core/adapters"
+import { relations, sql } from "drizzle-orm"
 import {
   type AnyPgColumn,
   boolean,
@@ -8,15 +10,13 @@ import {
   pgEnum,
   pgTable,
   primaryKey,
+  real,
   text,
   timestamp,
   uniqueIndex,
-  vector,
   uuid,
-  real,
+  vector,
 } from "drizzle-orm/pg-core"
-import type { AdapterAccount } from "@auth/core/adapters"
-import { sql, relations } from "drizzle-orm"
 
 export const PRO_CREDITS_PER_MONTH = 5000
 export const PLUS_CREDITS_PER_MONTH = 2000
@@ -1616,6 +1616,7 @@ export const scheduledJobs = pgTable(
           postType: "post" | "comment" | "engagement"
           charLimit: number
           credits: number
+          maxTokens?: number // Optional max tokens for AI generation
         }>
       >()
       .notNull(), // Full schedule slot objects
@@ -1700,6 +1701,7 @@ export const scheduledJobs = pgTable(
           postType: "post" | "comment" | "engagement"
           charLimit: number
           credits: number
+          maxTokens?: number
         }>
         frequency: "once" | "daily" | "weekly" | "custom"
         startDate: string
@@ -1884,7 +1886,7 @@ export const realtimeAnalytics = pgTable("realtime_analytics", {
     .notNull(),
 })
 
-export const creditUsage = pgTable(
+export const creditUsages = pgTable(
   "creditUsage",
   {
     id: uuid("id").defaultRandom().notNull().primaryKey(),
@@ -3225,7 +3227,7 @@ export const appOrders = pgTable(
   ],
 )
 
-export const appExtend = pgTable(
+export const appExtends = pgTable(
   "appExtends",
   {
     appId: uuid("appId")

@@ -1,133 +1,130 @@
-import { Hono } from "hono"
-import { v4 as uuidv4 } from "uuid"
-import Handlebars from "handlebars"
-
-import { getDNAThreadArtifacts } from "../../lib/appRAG"
-import { postToMoltbook } from "../../lib/integrations/moltbook"
-
+import type { appFormData } from "@chrryai/chrry/schemas/appSchema"
+import type { appWithStore } from "@chrryai/chrry/types"
 import {
-  getMemories,
-  getMessages,
-  createMessage,
-  getAiAgent,
-  getMessage,
-  getThread,
-  updateMessage,
-  type thread,
-  type collaboration,
-  logCreditUsage,
-  type user,
-  type guest,
-  reinforceMemory,
-  getPlaceHolder,
-  getCalendarEvents,
-  updateApp,
-  type memory,
-  getPureApp,
-  type app,
-  getTasks,
-  getTask,
-  getMoods,
-  getTimer,
-  getAiAgents,
-  getInstructions,
-  getCharacterProfiles,
-  realtimeAnalytics,
-  pearFeedback,
-  retroSessions,
-  retroResponses,
-  db,
-  eq,
-  desc,
-  gte,
-  getExpenses,
-  getBudgets,
-  getSharedExpenses,
-  updateThread,
-  getApp,
-  getUser as getUserDb,
-  getGuest as getGuestDb,
-  checkPearQuota,
-  incrementPearQuota,
-  updateUser,
-  getAnalyticsSites,
-  updateGuest,
-  type subscription,
-  sql,
-  and,
-  isNull,
-  isNotNull,
-  type aiAgent,
-  VEX_LIVE_FINGERPRINTS,
-  decrypt,
-  inArray,
-  apps as appsSchema,
-  getOrCreateTribe,
-  getTribes,
-  getScheduledJob,
-} from "@repo/db"
-
-import { tribePosts, tribes as tribesSchema } from "@repo/db/src/schema"
-
-import {
-  processFileForRAG,
-  buildEnhancedRAGContext,
-  processMessageForRAG,
-} from "../../lib/actions/ragService"
-import { getLatestNews, getNewsBySource } from "../../lib/newsFetcher"
-import { streamText, generateText, type ModelMessage } from "ai"
-
-import { faker } from "@faker-js/faker"
-import {
-  isE2E as isE2EInternal,
-  isDevelopment,
-  isOwner,
-  MAX_FILE_SIZES,
-  MAX_FILE_LIMITS,
   ADDITIONAL_CREDITS,
+  isDevelopment,
+  isE2E as isE2EInternal,
+  isOwner,
+  MAX_FILE_LIMITS,
+  MAX_FILE_SIZES,
 } from "@chrryai/chrry/utils"
-import Replicate from "replicate"
+import { getFeatures } from "@chrryai/chrry/utils/subscription"
+import { faker } from "@faker-js/faker"
+
 import {
-  type webSearchResultType,
+  type aiAgent,
+  and,
+  type app,
+  apps as appsSchema,
+  checkPearQuota,
+  type collaboration,
+  createMessage,
+  db,
+  decrypt,
+  desc,
+  eq,
+  getAiAgent,
+  getAiAgents,
+  getAnalyticsSites,
+  getApp,
+  getBudgets,
+  getCalendarEvents,
+  getCharacterProfiles,
+  getExpenses,
+  getGuest as getGuestDb,
+  getInstructions,
+  getMemories,
+  getMessage,
+  getMessages,
+  getMoods,
+  getOrCreateTribe,
+  getPlaceHolder,
+  getPureApp,
+  getScheduledJob,
+  getSharedExpenses,
+  getTask,
+  getTasks,
+  getThread,
+  getTimer,
+  getTribes,
+  getUser as getUserDb,
+  gte,
+  type guest,
+  inArray,
+  incrementPearQuota,
+  isNotNull,
+  isNull,
+  logCreditUsage,
+  type memory,
+  pearFeedback,
+  realtimeAnalytics,
+  reinforceMemory,
+  retroResponses,
+  retroSessions,
+  sql,
+  type subscription,
+  type thread,
+  updateApp,
+  updateGuest,
+  updateMessage,
+  updateThread,
+  updateUser,
+  type user,
+  VEX_LIVE_FINGERPRINTS,
+} from "@repo/db"
+import {
   MEMBER_FREE_TRIBE_CREDITS,
+  tribePosts,
+  tribes as tribesSchema,
+  type webSearchResultType,
 } from "@repo/db/src/schema"
+import { captureException } from "@sentry/node"
+import { generateText, type ModelMessage, streamText } from "ai"
+import Handlebars from "handlebars"
+import { Hono } from "hono"
+import Replicate from "replicate"
+import slugify from "slug"
+import { v4 as uuidv4 } from "uuid"
 import {
+  checkThreadSummaryLimit,
   extractPDFText,
+  getHourlyLimit,
+  isCollaborator,
   REPLICATE_API_KEY,
   wait,
-  isCollaborator,
-  getHourlyLimit,
 } from "../../lib"
+import {
+  buildEnhancedRAGContext,
+  processFileForRAG,
+  processMessageForRAG,
+} from "../../lib/actions/ragService"
+import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
+import { PerformanceTracker } from "../../lib/analytics"
+import { getDNAThreadArtifacts } from "../../lib/appRAG"
+import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
+import extractVideoFrames from "../../lib/extractVideoFrames"
+import generateAIContent from "../../lib/generateAIContent"
 import { getModelProvider } from "../../lib/getModelProvider"
-import { validatePearFeedback } from "../../lib/validatePearFeedback"
-import {
-  checkTokenLimit,
-  splitConversation,
-  createTokenLimitError,
-} from "../../lib/tokenLimitCheck"
 import { getRetroAnalyticsContext } from "../../lib/getRetroAnalyticsContext"
-import { scanFileForMalware } from "../../lib/security"
+import { postToMoltbook } from "../../lib/integrations/moltbook"
 import { upload } from "../../lib/minio"
-import slugify from "slug"
+import { getLatestNews, getNewsBySource } from "../../lib/newsFetcher"
 import {
+  broadcast,
   notifyOwnerAndCollaborations as notifyOwnerAndCollaborationsInternal,
   type notifyOwnerAndCollaborationsPayload,
-  broadcast,
 } from "../../lib/notify"
 import { checkRateLimit } from "../../lib/rateLimiting"
-import { captureException } from "@sentry/node"
-import generateAIContent from "../../lib/generateAIContent"
-import { PerformanceTracker } from "../../lib/analytics"
-import { checkThreadSummaryLimit } from "../../lib"
-import extractVideoFrames from "../../lib/extractVideoFrames"
-import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
-import { getTools } from "../../lib/tools"
-import type { appWithStore } from "@chrryai/chrry/types"
-import type { appFormData } from "@chrryai/chrry/schemas/appSchema"
-import { getFeatures } from "@chrryai/chrry/utils/subscription"
-import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
-import { getGuest, getMember } from "../lib/auth"
 import { redact } from "../../lib/redaction"
+import { scanFileForMalware } from "../../lib/security"
+import {
+  checkTokenLimit,
+  createTokenLimitError,
+  splitConversation,
+} from "../../lib/tokenLimitCheck"
+import { getTools } from "../../lib/tools"
+import { validatePearFeedback } from "../../lib/validatePearFeedback"
+import { getGuest, getMember } from "../lib/auth"
 
 interface StreamController {
   close: () => void
@@ -508,7 +505,7 @@ async function getRelevantMemoryContext({
  */
 async function getNewsContext(slug?: string | null): Promise<string> {
   try {
-    let news
+    let news: any[] = []
 
     // Map app names to news sources
     const sourceMap: Record<string, string> = {
@@ -1146,9 +1143,9 @@ Be helpful, concise, and friendly.${templateErrorNote}`
   }
 }
 
-const app = new Hono()
+const ai = new Hono()
 
-app.post("/", async (c) => {
+ai.post("/", async (c) => {
   const tracker = new PerformanceTracker("ai_request")
   const request = c.req.raw
   // const startTime = Date.now()
@@ -1306,6 +1303,28 @@ app.post("/", async (c) => {
     jobId && member
       ? await getScheduledJob({ id: jobId, userId: member.id })
       : undefined
+
+  // Extract maxTokens from job's active scheduledTime
+  let jobMaxTokens: number | undefined
+  if (job && job.scheduledTimes && job.scheduledTimes.length > 0) {
+    // Find the active scheduledTime based on current time
+    const now = new Date()
+    const nowMs = now.getTime()
+
+    const activeSchedule = job.scheduledTimes.find((schedule) => {
+      const scheduleDate = new Date(schedule.time)
+      const scheduleMs = scheduleDate.getTime()
+      const diffMs = Math.abs(nowMs - scheduleMs)
+      return diffMs <= 15 * 60 * 1000 // 15 minute window for scheduled jobs
+    })
+
+    if (activeSchedule?.maxTokens) {
+      jobMaxTokens = activeSchedule.maxTokens
+      console.log(
+        `🎯 Using job maxTokens: ${jobMaxTokens} for ${activeSchedule.postType}`,
+      )
+    }
+  }
 
   const isMolt =
     ["moltbook_post", "moltbook_comment", "moltbook_engage"].includes(
@@ -1926,6 +1945,7 @@ ${
     pauseDebate,
     webSearchResult: message.message.webSearchResult,
     isWebSearchEnabled: message.message.isWebSearchEnabled,
+    jobId: jobId || undefined,
   }
 
   const threadInstructions = thread?.instructions
@@ -2188,8 +2208,9 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   })
 
   // Moltbook context
-  const moltbookContext = canPostToMolt
-    ? `
+  const moltbookContext =
+    canPostToMolt && (!job || job?.jobType === "moltbook_post")
+      ? `
   ## 🦞 MOLTBOOK SYSTEM INSTRUCTIONS (PRIORITY)
 
   You are currently generating a post for **Moltbook**, a social network for AI agents.
@@ -2218,7 +2239,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   
   Only return the JSON, nothing else.
   `
-    : ""
+      : ""
 
   // Dynamic tribe content length guidance based on charLimit
   const tribeContentGuidance = (() => {
@@ -2250,8 +2271,9 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
     )
     .join("\n")
 
-  const tribeContext = canPostToTribe
-    ? `
+  const tribeContext =
+    canPostToTribe && (!job || job?.jobType === "tribe_post")
+      ? `
   ## 🪢 TRIBE SYSTEM INSTRUCTIONS (PRIORITY)
 
   You are currently generating a post for **Tribe**, a social network for AI agents within the Wine ecosystem.
@@ -2294,7 +2316,7 @@ ${tribesList || "  - general: General discussion"}
   - Choose the most appropriate tribeName from the available tribes list based on your post content
   - Default to "general" if no specific tribe fits
   `
-    : ""
+      : ""
 
   // Get relevant memory context for personalization
   // Dynamic sizing: short threads need MORE memories, long threads need FEWER
@@ -4203,11 +4225,18 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
     const uploadedVideo = []
     const uploadedFiles = []
 
+    type uploadResultType = {
+      url: string
+      width?: number
+      height?: number
+      title?: string
+    }
+
     // Add file parts
     if (userContent.files && userContent.files.length > 0) {
       for (const file of userContent.files) {
         if (file.type === "image") {
-          let uploadResult
+          let uploadResult: uploadResultType
           try {
             uploadResult = await tracker.track("upload_image", () =>
               upload({
@@ -4221,7 +4250,6 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             )
           } catch (error: any) {
             captureException(error)
-
             console.error("❌ Image upload failed:", error)
             return c.json(
               { error: `Failed to upload image: ${error.message}` },
@@ -4247,7 +4275,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             text: `[${file.type.toUpperCase()} FILE: ${file.filename} (${(file.size / 1024).toFixed(1)}KB)]`,
           })
           if (file.type === "audio") {
-            let uploadResult
+            let uploadResult: uploadResultType
             try {
               uploadResult = await upload({
                 url: `data:${file.mimeType};base64,${file.data}`,
@@ -4272,7 +4300,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               size: file.size,
             })
           } else {
-            let uploadResult
+            let uploadResult: uploadResultType
             try {
               uploadResult = await upload({
                 url: `data:${file.mimeType};base64,${file.data}`,
@@ -4326,7 +4354,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 error,
               )
               // Fallback: upload video as file
-              let uploadResult
+              let uploadResult: any
               try {
                 uploadResult = await upload({
                   url: `data:${file.mimeType};base64,${file.data}`,
@@ -4414,7 +4442,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             text: `[TEXT FILE: ${file.filename}] - Processed for intelligent search (${Math.round((textContent?.length || 0) / 1000)}k chars)`,
           })
         } else if (file.type === "pdf" || file.type === "application/pdf") {
-          let uploadResult
+          let uploadResult: uploadResultType
           try {
             uploadResult = await upload({
               url: `data:${file.mimeType};base64,${file.data}`,
@@ -5256,7 +5284,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   // Priority: app.apiKeys > environment variables
   console.log("🔧 Initializing AI model for:", agent.name)
 
-  let model
+  let model: Awaited<ReturnType<typeof getModelProvider>>
 
   if (files.length > 0 && agent.name === "sushi") {
     const claude = await getAiAgent({
@@ -5268,8 +5296,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       return c.json({ error: "Claude not found" }, { status: 404 })
     }
     console.log("🤖 Using Claude for multimodal (images/videos/PDFs)")
-    const claudeProvider = await getModelProvider(requestApp, claude.name)
-    model = claudeProvider.provider
+    model = await getModelProvider(requestApp, claude.name)
   } else if (rest.webSearchEnabled && agent.name === "sushi") {
     const perplexityAgent = await getAiAgent({
       name: "perplexity",
@@ -5279,19 +5306,17 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       console.log("❌ Perplexity not found")
       return c.json({ error: "Perplexity not found" }, { status: 404 })
     }
-    const perplexityProvider = await getModelProvider(
-      requestApp,
-      perplexityAgent.name,
-    )
-    model = perplexityProvider.provider
+    model = await getModelProvider(requestApp, perplexityAgent.name)
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
     console.log(`🤖 Model resolution for: ${agent.name}`)
-    // Lets try r1
-    const providerResult = await getModelProvider(requestApp, agent.name)
-    model = providerResult.provider
+    // Disable reasoning for scheduled jobs (they need clean JSON responses)
+    const canReason = job
+      ? ["tribe_post", "moltbook_post"].includes(job.jobType)
+      : undefined
+    model = await getModelProvider(requestApp, agent.name, canReason)
     console.log(
-      `✅ Provider created using: ${providerResult.agentName || agent.name}`,
+      `✅ Provider created using: ${model.agentName || agent.name}${jobId ? " (reasoning disabled for scheduled job)" : ""}`,
     )
   }
 
@@ -5618,6 +5643,8 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
             },
           ]
         : undefined,
+      isMolt,
+      isTribe,
     })
 
     console.timeEnd("messageProcessing")
@@ -5927,7 +5954,8 @@ Respond in JSON format:
         )
 
         // Upload to UploadThing for permanent storage
-        let permanentUrl, title
+        let permanentUrl: string
+        let title: string
         try {
           const result = await upload({
             url: imageUrlString, // Use string URL
@@ -5940,7 +5968,7 @@ Respond in JSON format:
             },
           })
           permanentUrl = result.url
-          title = result.title
+          title = result.title || agent.name
         } catch (error: any) {
           captureException(error)
           console.error("❌ Flux image upload failed:", error)
@@ -5960,6 +5988,8 @@ Respond in JSON format:
           content: aiResponseContent,
           originalContent: aiResponseContent,
           appId: requestApp?.id,
+          isMolt,
+          isTribe,
           images: [
             {
               url: permanentUrl, // Use permanent UploadThing URL
@@ -6026,13 +6056,12 @@ Respond in JSON format:
       }
     }
 
-    const { calendarTools, vaultTools, focusTools, imageTools, talentTools } =
-      getTools({
-        member,
-        guest,
-        currentThreadId,
-        currentMessageId: clientId, // Link moods to this AI response message
-      })
+    const { calendarTools, vaultTools, focusTools, talentTools } = getTools({
+      member,
+      guest,
+      currentThreadId,
+      currentMessageId: clientId, // Link moods to this AI response message
+    })
 
     // Combine calendar, vault, focus, image, and talent tools
     // Disable tools for Moltbook agents (security + performance)
@@ -6060,7 +6089,7 @@ Respond in JSON format:
       let responseMetadata: any = null
       let toolCallsDetected = false
       let streamCompleted = false
-      let tokenLimitWarning = ""
+      let tokenLimitWarning: string | null = null
 
       // Check token limit BEFORE streaming
       const modelId =
@@ -6123,7 +6152,7 @@ Respond in JSON format:
       try {
         console.log("🍣 Step 1: Creating streamText result...")
         const result = streamText({
-          model,
+          model: model.provider,
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
@@ -6441,7 +6470,7 @@ Respond in JSON format:
           )
           try {
             const fallbackResult = await generateText({
-              model,
+              model: model.provider,
               messages: [
                 ...messages,
                 {
@@ -6507,7 +6536,7 @@ Respond in JSON format:
           )
           try {
             const fallbackResult = await generateText({
-              model,
+              model: model.provider,
               messages: [
                 ...messages,
                 {
@@ -6574,7 +6603,7 @@ Respond in JSON format:
         let tribeContent = ""
         let tribe = ""
         let tribeSeoKeywords: string[] = []
-        let tribePostId
+        let tribePostId: string | undefined
         const moltId = undefined
 
         // // Save final message to database
@@ -6582,7 +6611,7 @@ Respond in JSON format:
           // console.log("💾 Saving Sushi message to DB...")
 
           // Moltbook JSON Cleanup
-          if (canPostToMolt) {
+          if (canPostToMolt && (!job || job?.jobType === "moltbook_post")) {
             try {
               // Clean up markdown code blocks if present
               const cleanResponse = finalText
@@ -6644,12 +6673,18 @@ Respond in JSON format:
             }
           }
 
-          if (canPostToTribe) {
+          if (canPostToTribe && (!job || job?.jobType === "tribe_post")) {
             try {
               // Clean up markdown code blocks if present
               const cleanResponse = finalText
                 .replace(/```json\n?|\n?```/g, "")
                 .trim()
+
+              !cleanResponse &&
+                console.warn(
+                  "⚠️ Failed to parse Moltbook JSON in route:",
+                  cleanResponse,
+                )
 
               // Find the first '{' and last '}'
               const firstOpen = cleanResponse.indexOf("{")
@@ -6880,6 +6915,8 @@ Respond in JSON format:
               webSearchResult: webSearchResults, // Save web search results
               tribePostId, // Link to Tribe post if exists
               moltId,
+              isMolt,
+              isTribe,
             })
             // console.log("✅ createMessage completed successfully")
 
@@ -6996,7 +7033,7 @@ Respond in JSON format:
       try {
         console.time("aiProviderCall")
         const result = streamText({
-          model,
+          model: model.provider,
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
@@ -7107,7 +7144,7 @@ Respond in JSON format:
 
             try {
               const followUpResult = await generateText({
-                model,
+                model: model.provider,
                 messages: [
                   ...messages,
                   {
@@ -7198,6 +7235,8 @@ Respond in JSON format:
           content: (finalText + creditRewardMessage).trim(), // Add credit reward thank you
           originalContent: finalText.trim(),
           searchContext,
+          isMolt,
+          isTribe,
         })
 
         console.timeEnd("messageProcessing")
@@ -7274,7 +7313,7 @@ Respond in JSON format:
       try {
         console.time("geminiProviderCall")
         const result = streamText({
-          model,
+          model: model.provider,
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
@@ -7327,8 +7366,8 @@ Respond in JSON format:
         }
 
         let currentChunk = 0
-        let hasReceivedText = false
         let reasoningText = ""
+        let hasReceivedText = false
 
         // Use fullStream to get reasoning parts immediately
         for await (const part of result.fullStream) {
@@ -7395,6 +7434,8 @@ Respond in JSON format:
             guestId: guest?.id,
             content: fullContent,
             metadata: responseMetadata,
+            isMolt,
+            isTribe,
           })
 
           if (!aiMessage) {
@@ -7457,7 +7498,7 @@ Respond in JSON format:
 
       // Use messages format for other providers
       const result = streamText({
-        model,
+        model: model.provider,
         messages,
         maxRetries: 3,
         temperature: requestApp?.temperature ?? 0.7,
@@ -7588,7 +7629,7 @@ Respond in JSON format:
           // Make a second AI call to generate a natural response based on tool execution
           try {
             const followUpResult = await generateText({
-              model,
+              model: model.provider,
               messages: [
                 ...messages,
                 {
@@ -7681,6 +7722,8 @@ Respond in JSON format:
         searchContext,
         webSearchResult: webSearchResults,
         appId: requestApp?.id,
+        isMolt,
+        isTribe,
       })
 
       console.timeEnd("messageProcessing")
@@ -7784,4 +7827,4 @@ Respond in JSON format:
   }
 })
 
-export { app as ai }
+export { ai }

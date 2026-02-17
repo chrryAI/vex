@@ -1,4 +1,4 @@
-import { appWithStore } from "../types"
+import type { appWithStore } from "../types"
 import { whiteLabels } from "./siteConfig"
 
 const getWhiteLabel = ({ app }: { app?: appWithStore }) => {

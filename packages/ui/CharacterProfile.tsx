@@ -1,14 +1,14 @@
 "use client"
 
-import React, { useEffect, useState, CSSProperties } from "react"
+import React, { type CSSProperties, useEffect, useState } from "react"
+import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useChat, useData } from "./context/providers"
-import { Unlock, CircleX, Share, Lock, Sparkles, PinOff, Pin } from "./icons"
+import { CircleX, Lock, Pin, PinOff, Share, Sparkles, Unlock } from "./icons"
 import Loading from "./Loading"
-import { characterProfile } from "./types"
 import { updateThread } from "./lib"
-import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
 import { Button, Div, Input } from "./platform"
+import type { characterProfile } from "./types"
 
 export default function CharacterProfile({
   onCharacterProfileUpdate,

@@ -1,49 +1,48 @@
 "use client"
 
-import React, { useState, useMemo, useEffect } from "react"
 import {
-  format,
-  startOfMonth,
-  endOfMonth,
-  startOfWeek,
-  endOfWeek,
-  startOfDay,
-  endOfDay,
-  addMonths,
-  subMonths,
-  addWeeks,
-  subWeeks,
   addDays,
-  subDays,
-  isSameDay,
-  eachDayOfInterval,
-  isSameMonth,
+  addMonths,
+  addWeeks,
   differenceInMinutes,
+  eachDayOfInterval,
+  endOfDay,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isSameDay,
+  isSameMonth,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+  subDays,
+  subMonths,
+  subWeeks,
 } from "date-fns"
+import { de, enUS, es, fr, ja, ko, nl, pt, tr, zhCN } from "date-fns/locale"
+import React, { useEffect, useMemo, useState } from "react"
+import toast from "react-hot-toast"
 import useSWR from "swr"
-import { enUS, de, fr, es, ja, ko, pt, zhCN, nl, tr } from "date-fns/locale"
 import { useCalendarStyles } from "./Calendar.styles"
+import { COLORS, useAppContext } from "./context/AppContext"
+import { useAuth, useData, useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
+import { useWebSocket } from "./hooks/useWebSocket"
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  CalendarPlus,
-  RefreshCw,
-  Clock,
-  MapPin,
   Calendar as CalendarIcon,
-  List,
-  LayoutGrid,
+  CalendarPlus,
+  Clock,
   Columns,
+  LayoutGrid,
+  List,
+  MapPin,
+  RefreshCw,
 } from "./icons"
-import { COLORS, useAppContext } from "./context/AppContext"
-
 import Loading from "./Loading"
-import toast from "react-hot-toast"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
-import { usePlatform, Div, Span, H4, Button, P, ScrollView } from "./platform"
-import { useWebSocket } from "./hooks/useWebSocket"
-import { calendarEvent } from "./types"
+import { Button, Div, H4, P, ScrollView, Span, usePlatform } from "./platform"
+import type { calendarEvent } from "./types"
 
 // Setup locales
 const locales = {

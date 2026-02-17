@@ -1,6 +1,6 @@
-import { useState, useRef } from "react"
-import { useWebSocket } from "./useWebSocket"
+import { useRef, useState } from "react"
 import { useAuth } from "../context/providers"
+import { useWebSocket } from "./useWebSocket"
 
 export interface ThreadParticipant {
   userId?: string

@@ -22,3 +22,8 @@
 
 **Learning:** Custom checkbox components that hide the native input often lose keyboard focus indicators. The `Checkbox` component had a hidden input but no visual feedback on the custom track when focused via keyboard.
 **Action:** Use `onFocus`/`onBlur` state on the wrapper to apply focus ring styles to the custom visual element, ensuring keyboard users can see where they are.
+
+## 2026-05-23 - Accessibility of Date/Time Displays
+
+**Learning:** Blog post dates were rendered as simple text (e.g., "2 days ago") or just text strings, making them less useful for assistive technologies and users wanting exact timestamps.
+**Action:** Use the `<time>` element with `dateTime` attribute for machine-readable dates. Add a `title` attribute with the full localized date string to provide exact time on hover, enhancing the "relative time" display pattern. This pattern should be standard for all time-based displays (comments, logs, etc.).

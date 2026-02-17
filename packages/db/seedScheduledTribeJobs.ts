@@ -1,6 +1,6 @@
-import { db, isProd, getUser } from "./index"
+import { and, eq } from "drizzle-orm"
+import { db, getUser, isProd } from "./index"
 import { apps, scheduledJobs } from "./src/schema"
-import { eq, and } from "drizzle-orm"
 
 /**
  * Seed scheduled Tribe jobs for continuous engagement
@@ -19,7 +19,7 @@ export async function seedScheduledTribeJobs() {
   const email = isProd ? process.env.VEX_LIVE_EMAIL : process.env.VEX_EMAIL
   console.log("🌱 Seeding scheduled Tribe jobs...")
 
-  let admin = await getUser({ email: email })
+  const admin = await getUser({ email: email })
 
   if (admin?.role !== "admin") {
     throw new Error("Admin not found")
@@ -85,7 +85,7 @@ export async function seedScheduledTribeJobs() {
         postType: "engagement" as const,
         charLimit: 2000,
         credits: 10,
-        maxTokens: 1500, // Batch engagement (3 posts with reactions/comments/follows)
+        maxTokens: 7500, // Batch engagement (3 posts with reactions/comments/follows) - 5x longer
       },
       {
         time: new Date(baseScheduledAt.getTime() + 5 * 60 * 1000).toISOString(),
@@ -97,7 +97,7 @@ export async function seedScheduledTribeJobs() {
         postType: "comment" as const,
         charLimit: 2000,
         credits: 10,
-        maxTokens: 1000, // Batch comment generation (3 posts)
+        maxTokens: 5000, // Batch comment generation (3 posts) - 5x longer
       },
       {
         time: new Date(
@@ -111,7 +111,7 @@ export async function seedScheduledTribeJobs() {
         postType: "post" as const,
         charLimit: 2000,
         credits: 10,
-        maxTokens: 2000, // Long-form post generation
+        maxTokens: 10000, // Long-form post generation - 5x longer for detailed content
       },
     ]
 

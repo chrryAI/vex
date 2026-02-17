@@ -1,9 +1,12 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import type React from "react"
+import { useEffect, useState } from "react"
 import { useAppContext } from "./context/AppContext"
 import { useApp, useChat } from "./context/providers"
+import { useAuth } from "./context/providers/AuthProvider"
 import { useEmptyStateTipsStyles } from "./EmptyStateTips.styles"
+import { useResponsiveCount } from "./hooks/useResponsiveCount"
 import {
   Div,
   H3,
@@ -13,8 +16,6 @@ import {
   usePlatform,
   useTheme,
 } from "./platform"
-import { useResponsiveCount } from "./hooks/useResponsiveCount"
-import { useAuth } from "./context/providers/AuthProvider"
 
 export default function EmptyStateTips({
   style,

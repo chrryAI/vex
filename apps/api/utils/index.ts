@@ -1,5 +1,5 @@
-import parseJson, { JSONError } from "parse-json"
 import type { messageActionType } from "@repo/db"
+import parseJson, { JSONError } from "parse-json"
 
 export const getMetadata = ({
   // manifest = "/manifest.webmanifest",

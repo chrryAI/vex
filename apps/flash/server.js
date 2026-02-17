@@ -1,9 +1,9 @@
 import "dotenv/config"
 import fs from "node:fs/promises"
-import express from "express"
-import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
-import arcjet, { shield, fixedWindow } from "@arcjet/node"
+import arcjet, { fixedWindow, shield } from "@arcjet/node"
+import cookieParser from "cookie-parser"
+import express from "express"
 
 // const getEnv = () => {
 //   if (typeof import.meta !== "undefined") {

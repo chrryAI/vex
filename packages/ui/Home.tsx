@@ -1,11 +1,10 @@
 "use client"
 
-import Thread from "./Thread"
-import { app } from "./types"
-import { useAuth } from "./context/providers"
-import { useApp } from "./context/providers"
+import { useApp, useAuth } from "./context/providers"
 import { useAppMetadata } from "./hooks"
 import { Div } from "./platform"
+import Thread from "./Thread"
+import type { app } from "./types"
 
 export default function Home({
   className,

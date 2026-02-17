@@ -114,7 +114,7 @@ export const __ecma262_StringToNumber = (str: unknown): number => {
       str.charCodeAt(i + 7) == 121 // y
     ) {
       // no way, it matched
-      let n: f64 = Infinity
+      const n: f64 = Infinity
       return negative ? -n : n
     }
 

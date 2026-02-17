@@ -1,8 +1,7 @@
 import { openai } from "@ai-sdk/openai"
+import { codeEmbeddings, db } from "@repo/db"
 import { embedMany } from "ai"
-import { db } from "@repo/db"
-import { codeEmbeddings } from "@repo/db"
-import { eq, and, sql } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 import type { ASTNode } from "./parseCodebase"
 
 interface CodeChunk {

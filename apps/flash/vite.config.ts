@@ -1,10 +1,10 @@
-import { defineConfig, type PluginOption, loadEnv } from "vite"
 import react from "@vitejs/plugin-react"
+import dotenv from "dotenv"
 import path from "path"
 import type { UserConfig } from "vite"
-import { swVersionPlugin } from "./vite-plugin-sw-version"
+import { defineConfig, loadEnv, type PluginOption } from "vite"
 import { compression } from "vite-plugin-compression2"
-import dotenv from "dotenv"
+import { swVersionPlugin } from "./vite-plugin-sw-version"
 
 // Load environment variables from .env file
 // dotenv.config({ path: path.resolve(__dirname, "../../.env") })

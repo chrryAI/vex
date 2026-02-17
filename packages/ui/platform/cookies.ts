@@ -5,11 +5,11 @@
 
 /// <reference types="chrome" />
 
-import { useState, useCallback } from "react"
-import { isNative, isBrowserExtension } from "./PlatformProvider"
-import { storage } from "./storage"
+import { useCallback, useState } from "react"
 import { getExtensionUrls } from "../utils"
 import console from "../utils/log"
+import { isBrowserExtension, isNative } from "./PlatformProvider"
+import { storage } from "./storage"
 
 const isBrowser = typeof window !== "undefined"
 

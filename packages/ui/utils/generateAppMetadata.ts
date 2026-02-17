@@ -1,10 +1,10 @@
-import { appWithStore, storeWithApps } from "../types"
-import { t as tFunc } from "./t"
-import { locale } from "../locales"
-import getAppSlug from "./getAppSlug"
 import { getImageSrc } from "../lib"
+import type { locale } from "../locales"
+import type { appWithStore, storeWithApps } from "../types"
 import clearLocale from "./clearLocale"
-import { MetadataResult } from "./generateThreadMetadata"
+import type { MetadataResult } from "./generateThreadMetadata"
+import getAppSlug from "./getAppSlug"
+import { t as tFunc } from "./t"
 
 /**
  * Generate dynamic metadata for an app page

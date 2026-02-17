@@ -58,7 +58,7 @@ export const __Number_prototype_toString = (
     return "0"
   }
 
-  let out: bytestring = Porffor.malloc(512)
+  const out: bytestring = Porffor.malloc(512)
   let outPtr: i32 = Porffor.wasm`local.get ${out}`
 
   // if negative value
@@ -69,7 +69,7 @@ export const __Number_prototype_toString = (
 
   let i: f64 = Math.trunc(_this)
 
-  let digits: bytestring = "" // byte "array"
+  const digits: bytestring = "" // byte "array"
 
   let l: i32 = 0
   if (radix == 10) {
@@ -101,7 +101,7 @@ export const __Number_prototype_toString = (
 
       let digitsPtr: i32 = Porffor.wasm`local.get ${digits}` + l
       let endPtr: i32 = outPtr + l
-      let dotPlace: i32 = outPtr + 1
+      const dotPlace: i32 = outPtr + 1
       while (outPtr < endPtr) {
         if (outPtr == dotPlace) {
           Porffor.wasm.i32.store8(outPtr++, 46, 0, 4) // .
@@ -177,7 +177,7 @@ export const __Number_prototype_toString = (
 
       let digitsPtr: i32 = Porffor.wasm`local.get ${digits}` + l
       let endPtr: i32 = outPtr + l
-      let dotPlace: i32 = outPtr + 1
+      const dotPlace: i32 = outPtr + 1
       while (outPtr < endPtr) {
         let digit: i32 = Porffor.wasm.i32.load8_u(--digitsPtr, 0, 4)
 
@@ -260,7 +260,7 @@ export const __Number_prototype_toString = (
     decimal += 1
 
     // todo: doesn't handle non-10 radix properly
-    let decimalDigits: i32 = 16 - l
+    const decimalDigits: i32 = 16 - l
     for (let j: i32 = 0; j < decimalDigits; j++) {
       decimal *= radix
     }
@@ -325,7 +325,7 @@ export const __Number_prototype_toFixed = (
     return "-Infinity"
   }
 
-  let out: bytestring = Porffor.malloc(512)
+  const out: bytestring = Porffor.malloc(512)
   let outPtr: i32 = Porffor.wasm`local.get ${out}`
 
   // if negative value
@@ -336,7 +336,7 @@ export const __Number_prototype_toFixed = (
 
   let i: f64 = Math.trunc(_this)
 
-  let digits: bytestring = "" // byte "array"
+  const digits: bytestring = "" // byte "array"
 
   let l: i32 = 0
 
@@ -437,7 +437,7 @@ export const __Number_prototype_toExponential = (
     }
   }
 
-  let out: bytestring = Porffor.malloc(512)
+  const out: bytestring = Porffor.malloc(512)
   let outPtr: i32 = Porffor.wasm`local.get ${out}`
 
   // if negative value
@@ -448,7 +448,7 @@ export const __Number_prototype_toExponential = (
 
   let i: f64 = _this
 
-  let digits: bytestring = "" // byte "array"
+  const digits: bytestring = "" // byte "array"
 
   let l: i32 = 0
   let e: i32 = 0
@@ -505,7 +505,7 @@ export const __Number_prototype_toExponential = (
 
     digitsPtr = Porffor.wasm`local.get ${digits}` + l
     endPtr = outPtr + l
-    let dotPlace: i32 = outPtr + 1
+    const dotPlace: i32 = outPtr + 1
     while (outPtr < endPtr) {
       let digit: i32 = Porffor.wasm.i32.load8_u(--digitsPtr, 0, 4)
 
@@ -576,7 +576,7 @@ export const __Number_prototype_toExponential = (
 
     digitsPtr = Porffor.wasm`local.get ${digits}` + l
     endPtr = outPtr + l
-    let dotPlace: i32 = outPtr + 1
+    const dotPlace: i32 = outPtr + 1
     while (outPtr < endPtr) {
       if (outPtr == dotPlace) {
         Porffor.wasm.i32.store8(outPtr++, 46, 0, 4) // .

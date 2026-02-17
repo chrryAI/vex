@@ -1,32 +1,31 @@
 "use client"
 
-import { aiAgent, instruction } from "../../types"
 import React, {
   createContext,
+  type ReactNode,
   useContext,
-  ReactNode,
-  useState,
   useEffect,
   useMemo,
+  useState,
 } from "react"
-import {
-  isBrowserExtension,
-  getExtensionId,
-  usePlatform,
-} from "../../platform/PlatformProvider"
-import { getActions, ApiActions } from "../../lib"
-import { useAuth } from "./AuthProvider"
-import console from "../../utils/log"
-
+import useSWR from "swr"
+import { type ApiActions, getActions } from "../../lib"
 import {
   useCookieOrLocalStorage,
   useLocalStorage,
   useNavigation,
 } from "../../platform"
-import useSWR from "swr"
-import { getWeatherCacheTime } from "../../utils/getWeatherCacheTime"
-import { useError } from "./ErrorProvider"
+import {
+  getExtensionId,
+  isBrowserExtension,
+  usePlatform,
+} from "../../platform/PlatformProvider"
+import type { aiAgent, instruction } from "../../types"
 import { ADDITIONAL_CREDITS, apiFetch, isDevelopment, isE2E } from "../../utils"
+import { getWeatherCacheTime } from "../../utils/getWeatherCacheTime"
+import console from "../../utils/log"
+import { useAuth } from "./AuthProvider"
+import { useError } from "./ErrorProvider"
 
 export type affiliateStats = {
   hasAffiliateLink: boolean

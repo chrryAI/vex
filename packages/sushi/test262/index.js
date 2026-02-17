@@ -1,9 +1,9 @@
+import { execFileSync, execSync } from "node:child_process"
 import cluster from "node:cluster"
-import { execSync, execFileSync } from "node:child_process"
 import fs from "node:fs"
 import os from "node:os"
-import process from "node:process"
 import { join } from "node:path"
+import process from "node:process"
 import { log } from "../compiler/log.js"
 import readTest262 from "./read.js"
 
@@ -51,13 +51,13 @@ if (cluster.isPrimary) {
     )
   }
 
-  let minimal = process.argv.includes("--minimal")
+  const minimal = process.argv.includes("--minimal")
   if (minimal) resultOnly = true
   const lastResults = fs.existsSync(join(__dirname, "results.json"))
     ? JSON.parse(fs.readFileSync(join(__dirname, "results.json"), "utf8"))
     : {}
 
-  let lastCommitResults = minimal
+  const lastCommitResults = minimal
     ? []
     : execSync(`git log -200 --pretty=%B`)
         .toString()
@@ -134,8 +134,8 @@ if (cluster.isPrimary) {
   const table = (overall, ...arr) => {
     let out = ""
     for (let i = 0; i < arr.length; i++) {
-      let icon = ["🧪", "🤠", "❌", "💀", "🏗️", "💥", "⏰", "📝"][i]
-      let iconDesc = [
+      const icon = ["🧪", "🤠", "❌", "💀", "🏗️", "💥", "⏰", "📝"][i]
+      const iconDesc = [
         "total",
         "pass",
         "fail",
@@ -148,7 +148,7 @@ if (cluster.isPrimary) {
       // let color = resultOnly ? '' : ['', '\u001b[42m', '\u001b[43m', '\u001b[101m', '\u001b[41m', '\u001b[41m', '\u001b[101m', todoTime === 'runtime' ? '\u001b[101m' : '\u001b[41m'][i];
       // let color = resultOnly ? '' : ('\u001b[1m' + ['', '\u001b[32m', '\u001b[33m', '\u001b[91m', '\u001b[31m', '\u001b[31m', '\u001b[91m', todoTime === 'runtime' ? '\u001b[91m' : '\u001b[31m'][i]);
 
-      let change = arr[i] - lastCommitResults[i + 1]
+      const change = arr[i] - lastCommitResults[i + 1]
       // let str = `${color}${icon} ${arr[i]}${resultOnly ? '' : '\u001b[0m'}${overall && change !== 0 ? ` (${change > 0 ? '+' : ''}${change})` : ''}`;
       let str = `${resultOnly ? "" : "\u001b[1m"}${plainResults ? iconDesc : icon} ${arr[i]}${resultOnly ? "" : "\u001b[0m"}${overall && change !== 0 ? ` (${change > 0 ? "+" : ""}${change})` : ""}`
 
@@ -193,7 +193,7 @@ if (cluster.isPrimary) {
     wasmErrorFiles = [],
     compileErrorFiles = [],
     timeoutFiles = []
-  let dirs = new Map(),
+  const dirs = new Map(),
     features = new Map(),
     errors = new Map(),
     pagesUsed = new Map()
@@ -712,7 +712,7 @@ if (cluster.isPrimary) {
       } catch (e) {
         if (e?.name === "Test262Error" && debugAsserts && log) {
           const [msg, expected, actual] = log.split("\n")
-          let spl = e.stack.split("\n")
+          const spl = e.stack.split("\n")
           spl[0] += `: ${msg} | expected: ${expected} | actual: ${actual}`
           e.stack = spl.join("\n")
         }
@@ -755,7 +755,7 @@ if (cluster.isPrimary) {
             errorName !== "CompileError" &&
             errorName !== "SyntaxError"))
       ) {
-        let errorStr = `${error.constructor.name}: ${error.message}`
+        const errorStr = `${error.constructor.name}: ${error.message}`
         errors[errorStr] = (errors[errorStr] ?? 0) + 1
       }
     }

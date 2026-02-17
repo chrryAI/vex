@@ -1,4 +1,4 @@
-import { chromium, FullConfig } from "@playwright/test"
+import { chromium, type FullConfig } from "@playwright/test"
 import { isDevelopment } from "../db"
 
 async function globalSetup(config: FullConfig) {

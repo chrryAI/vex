@@ -12,19 +12,19 @@ if (typeof window !== "undefined") {
   }
 }
 
-import React from "react"
+import type React from "react"
 import AppProviders from "./context/providers"
-import {
+import type { locale } from "./locales"
+import type {
+  appWithStore,
+  paginatedMessages,
+  paginatedTribePosts,
+  paginatedTribes,
   session,
   thread,
-  paginatedMessages,
-  appWithStore,
-  paginatedTribes,
-  paginatedTribePosts,
   tribePostWithDetails,
 } from "./types"
-import { locale } from "./locales"
-import { getSiteConfig } from "./utils/siteConfig"
+import type { getSiteConfig } from "./utils/siteConfig"
 
 export default function Chrry({
   children,

@@ -1,6 +1,6 @@
 import type {} from "./porffor.d.ts"
 
-export const Object = function (value: any): any {
+export const Object = (value: any): any => {
   if (value == null) {
     // if nullish, return new empty object
     return Porffor.malloc() as object
@@ -624,9 +624,9 @@ export const __Object_defineProperty = (
 
   let flags: i32 = 0b0000
   if (accessor) flags |= 0b0001
-  if (!!configurable) flags |= 0b0010
-  if (!!enumerable) flags |= 0b0100
-  if (!!writable) flags |= 0b1000
+  if (configurable) flags |= 0b0010
+  if (enumerable) flags |= 0b0100
+  if (writable) flags |= 0b1000
 
   if (accessor) value = Porffor.object.packAccessor(get, set)
 

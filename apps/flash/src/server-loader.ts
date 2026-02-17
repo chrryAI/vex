@@ -1,46 +1,46 @@
-import { v4 as uuidv4, validate } from "uuid"
-import { captureException } from "@sentry/node"
-import {
-  VERSION,
-  getThreadId,
-  pageSizes,
-  getPostId,
-  isE2E,
-  getEnv,
-  API_INTERNAL_URL,
-} from "@chrryai/chrry/utils"
-import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
 import {
   getApp,
   getSession,
   getThread,
   getThreads,
   getTranslations,
-  getTribes,
-  getTribePosts,
   getTribePost,
+  getTribePosts,
+  getTribes,
 } from "@chrryai/chrry/lib"
-import { locale, locales } from "@chrryai/chrry/locales"
+import { type locale, locales } from "@chrryai/chrry/locales"
 import {
-  session,
-  thread,
-  paginatedMessages,
-  appWithStore,
-  paginatedTribes,
-  paginatedTribePosts,
-  tribePostWithDetails,
-  tribe,
+  type appWithStore,
+  type paginatedMessages,
+  type paginatedTribePosts,
+  type paginatedTribes,
+  type session,
+  type thread,
+  type tribe,
   tribePost,
+  type tribePostWithDetails,
 } from "@chrryai/chrry/types"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import {
-  getBlogPosts,
-  getBlogPost,
+  API_INTERNAL_URL,
+  getEnv,
+  getPostId,
+  getThreadId,
+  isE2E,
+  pageSizes,
+  VERSION,
+} from "@chrryai/chrry/utils"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
+import { captureException } from "@sentry/node"
+import type { themeType } from "chrry/context/ThemeContext"
+import { v4 as uuidv4, validate } from "uuid"
+import {
   type BlogPost,
   type BlogPostWithContent,
+  getBlogPost,
+  getBlogPosts,
 } from "./blog-loader"
 import { generateServerMetadata } from "./server-metadata"
-import { themeType } from "chrry/context/ThemeContext"
 
 export interface ServerRequest {
   url: string
@@ -170,7 +170,7 @@ export async function loadServerData(
   const urlObj = new URL(url, `http://${hostname}`)
 
   // Parse query string for fp parameter (only if URL contains query params)
-  let fpFromQuery: string | undefined = undefined
+  let fpFromQuery: string | undefined
   if (url.includes("?")) {
     fpFromQuery = urlObj.searchParams.get("fp") || undefined
   }
@@ -243,7 +243,7 @@ export async function loadServerData(
     (isTestFP && fpFromQuery ? fpFromQuery : fingerprintCandidate) ||
     uuidv4()
 
-  let fingerprint = fingerprintCandidate || uuidv4()
+  const fingerprint = fingerprintCandidate || uuidv4()
 
   const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName

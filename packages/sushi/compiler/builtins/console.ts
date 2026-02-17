@@ -223,7 +223,7 @@ export const __Porffor_print = (
       return
 
     case Porffor.TYPES.sharedarraybuffer:
-    case Porffor.TYPES.arraybuffer:
+    case Porffor.TYPES.arraybuffer: {
       if (Porffor.type(arg) == Porffor.TYPES.sharedarraybuffer)
         Porffor.printStatic("SharedArrayBuffer")
       else Porffor.printStatic("ArrayBuffer")
@@ -249,6 +249,7 @@ export const __Porffor_print = (
       if (colors) Porffor.printStatic("\x1b[0m")
       Porffor.printStatic("\n}")
       return
+    }
 
     case Porffor.TYPES.dataview:
       Porffor.printStatic("DataView {\n")
@@ -262,7 +263,7 @@ export const __Porffor_print = (
       return
 
     case Porffor.TYPES.weakmap:
-    case Porffor.TYPES.map:
+    case Porffor.TYPES.map: {
       if (Porffor.type(arg) == Porffor.TYPES.weakmap)
         Porffor.printStatic("WeakMap")
       else Porffor.printStatic("Map")
@@ -283,9 +284,10 @@ export const __Porffor_print = (
 
       Porffor.printStatic(" }")
       return
+    }
 
     case Porffor.TYPES.weakset:
-    case Porffor.TYPES.set:
+    case Porffor.TYPES.set: {
       if (Porffor.type(arg) == Porffor.TYPES.weakset)
         Porffor.printStatic("WeakSet")
       else Porffor.printStatic("Set")
@@ -303,6 +305,7 @@ export const __Porffor_print = (
 
       Porffor.printStatic(" }")
       return
+    }
 
     case Porffor.TYPES.weakref:
       Porffor.printStatic("WeakRef {}")

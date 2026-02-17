@@ -3,12 +3,8 @@
 /// <reference types="chrome" />
 
 import React, { useCallback, useEffect, useState } from "react"
-import { BellRing } from "./icons"
-
-import { customPushSubscription } from "./types"
-import registerServiceWorker, {
-  subscribeToPushNotifications,
-} from "./utils/registerServiceWorker"
+import toast from "react-hot-toast"
+import A from "./a/A"
 import { useAppContext } from "./context/AppContext"
 import {
   useApp,
@@ -16,15 +12,17 @@ import {
   useChat,
   useNavigationContext,
 } from "./context/providers"
-import { apiFetch } from "./utils"
-import { Button, Div, Span, usePlatform } from "./platform"
-import toast from "react-hot-toast"
-import Weather from "./Weather"
-import { isDevelopment, getEnv } from "./utils"
-import { useEnableNotificationsStyles } from "./EnableNotifications.styles"
 import { useStyles } from "./context/StylesContext"
-import A from "./a/A"
+import { useEnableNotificationsStyles } from "./EnableNotifications.styles"
 import Img from "./Image"
+import { BellRing } from "./icons"
+import { Button, Div, Span, usePlatform } from "./platform"
+import type { customPushSubscription } from "./types"
+import { apiFetch, getEnv, isDevelopment } from "./utils"
+import registerServiceWorker, {
+  subscribeToPushNotifications,
+} from "./utils/registerServiceWorker"
+import Weather from "./Weather"
 
 export default function EnableNotifications({
   text = "Notifications",

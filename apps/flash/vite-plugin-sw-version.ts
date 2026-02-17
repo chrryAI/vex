@@ -1,6 +1,6 @@
-import type { Plugin } from "vite"
 import fs from "fs"
 import path from "path"
+import type { Plugin } from "vite"
 
 interface SwVersionPluginOptions {
   swPath?: string

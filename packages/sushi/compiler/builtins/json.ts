@@ -7,7 +7,7 @@ export const __Porffor_bytestring_bufferStr = (
   const len: i32 = str.length
   let strPtr: i32 = Porffor.wasm`local.get ${str}`
   let ptr: i32 = Porffor.wasm`local.get ${buffer}`
-  let endPtr: i32 = ptr + len
+  const endPtr: i32 = ptr + len
 
   while (ptr + 4 <= endPtr) {
     Porffor.wasm.i32.store(ptr, Porffor.wasm.i32.load(strPtr, 0, 4), 0, 4)

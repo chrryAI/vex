@@ -2,80 +2,78 @@
 
 import React, {
   type CSSProperties,
-  Dispatch,
+  type Dispatch,
   lazy,
-  SetStateAction,
+  type SetStateAction,
   Suspense,
   useEffect,
   useRef,
   useState,
 } from "react"
+import toast from "react-hot-toast"
+import { FaAndroid, FaApple, FaChrome } from "react-icons/fa"
+import { SiMacos } from "react-icons/si"
+import A from "./a/A"
+import ConfirmButton from "./ConfirmButton"
+import { useAppContext } from "./context/AppContext"
+import {
+  useApp,
+  useAuth,
+  useChat,
+  useData,
+  useError,
+  useNavigationContext,
+} from "./context/providers"
+import { useStyles } from "./context/StylesContext"
+import { useHasHydrated } from "./hooks"
+import { useResponsiveCount } from "./hooks/useResponsiveCount"
+import { useInstructionsStyles } from "./Instructions.styles"
 import {
   ArrowLeft,
+  ArrowRight,
   Brain,
   BrainCircuit,
+  Circle,
+  CircleCheck,
   CircleX,
+  Copy,
   FileIcon,
+  FileText,
+  FileUp,
   MousePointerClick,
+  Music,
   Plus,
   Sparkles,
   TestTubeDiagonal,
   Trash2,
-  Copy,
-  FileUp,
-  Circle,
-  ArrowRight,
-  CircleCheck,
   VideoIcon,
-  Music,
-  FileText,
 } from "./icons"
+import Loading from "./Loading"
+import { updateThread } from "./lib"
 import Modal from "./Modal"
-import { apiFetch } from "./utils"
-import { formatFileSize } from "./utils/fileValidation"
-import { useAppContext } from "./context/AppContext"
 import {
-  useAuth,
-  useChat,
-  useNavigationContext,
-  useApp,
-  useError,
-  useData,
-} from "./context/providers"
-import {
-  useTheme as usePlatformTheme,
-  usePlatform,
-  Div,
   Button,
-  Span,
+  Div,
   Input,
+  Span,
   TextArea,
   toRem,
+  usePlatform,
+  useTheme as usePlatformTheme,
 } from "./platform"
-import { decodeHtmlEntities } from "./utils"
-import { thread, instruction } from "./types"
-import { updateThread } from "./lib"
-import { useHasHydrated } from "./hooks"
-
-import {
-  getInstructionConfig,
-  PROMPT_LIMITS,
-  instructionBase,
-  isOwner,
-  isDeepEqual,
-  getMaxFiles,
-} from "./utils"
-import toast from "react-hot-toast"
-import Loading from "./Loading"
-import ConfirmButton from "./ConfirmButton"
-import { FaApple, FaAndroid, FaChrome } from "react-icons/fa"
-import { SiMacos } from "react-icons/si"
-
-import A from "./a/A"
-import { useInstructionsStyles } from "./Instructions.styles"
-import { useStyles } from "./context/StylesContext"
 import { MotiView } from "./platform/MotiView"
-import { useResponsiveCount } from "./hooks/useResponsiveCount"
+import type { instruction, thread } from "./types"
+import {
+  apiFetch,
+  decodeHtmlEntities,
+  getInstructionConfig,
+  getMaxFiles,
+  type instructionBase,
+  isDeepEqual,
+  isOwner,
+  PROMPT_LIMITS,
+} from "./utils"
+import { formatFileSize } from "./utils/fileValidation"
 
 const Agent = lazy(() => import("./agent"))
 const EmojiPicker = lazy(() => import("./EmojiPicker"))

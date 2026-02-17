@@ -7,9 +7,7 @@
 import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
-import { getStores, isSeedSafe } from "./index"
-import { isProd } from "./index"
-import { db } from "./index"
+import { db, getStores, isProd, isSeedSafe } from "./index"
 import { apps } from "./src/schema"
 
 const __filename = fileURLToPath(import.meta.url)

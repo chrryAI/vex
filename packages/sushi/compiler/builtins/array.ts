@@ -1,6 +1,6 @@
 import type {} from "./porffor.d.ts"
 
-export const Array = function (...args: any[]): any[] {
+export const Array = (...args: any[]): any[] => {
   const argsLen: number = args.length
   if (argsLen == 0) {
     // 0 args, new 0 length array
@@ -41,7 +41,7 @@ export const __Array_isArray = (x: unknown): boolean =>
 export const __Array_from = (arg: any, mapFn: any): any[] => {
   if (arg == null) throw new TypeError("Argument cannot be nullish")
 
-  let out: any[] = Porffor.malloc()
+  const out: any[] = Porffor.malloc()
 
   if (
     Porffor.fastOr(
@@ -113,7 +113,7 @@ export const __Array_prototype_at = (_this: any[], index: any) => {
 }
 
 export const __Array_prototype_push = (_this: any[], ...items: any[]) => {
-  let len: i32 = _this.length
+  const len: i32 = _this.length
   const itemsLen: i32 = items.length
 
   for (let i: i32 = 0; i < itemsLen; i++) {
@@ -172,7 +172,7 @@ memory.copy 0 0`
 }
 
 export const __Array_prototype_unshift = (_this: any[], ...items: any[]) => {
-  let len: i32 = _this.length
+  const len: i32 = _this.length
   const itemsLen: i32 = items.length
 
   // use memory.copy to move existing elements right
@@ -233,7 +233,7 @@ export const __Array_prototype_slice = (
   }
   if (end > len) end = len
 
-  let out: any[] = Porffor.malloc()
+  const out: any[] = Porffor.malloc()
 
   if (start > end) return out
 
@@ -284,7 +284,7 @@ export const __Array_prototype_splice = (
   if (deleteCount > len - start) deleteCount = len - start
 
   // read values to be deleted into out
-  let out: any[] = Porffor.malloc()
+  const out: any[] = Porffor.malloc()
   out.length = deleteCount
 
   let outPtr: i32 = Porffor.wasm`local.get ${out}`
@@ -504,7 +504,7 @@ export const __Array_prototype_with = (
     throw new RangeError("Invalid index")
   }
 
-  let out: any[] = Porffor.malloc()
+  const out: any[] = Porffor.malloc()
   Porffor.clone(_this, out)
 
   out[index] = value
@@ -557,7 +557,7 @@ export const __Array_prototype_copyWithin = (
 // @porf-typed-array
 export const __Array_prototype_concat = (_this: any[], ...vals: any[]) => {
   // todo/perf: rewrite to use memory.copy (via some Porffor.array.append thing?)
-  let out: any[] = Porffor.malloc()
+  const out: any[] = Porffor.malloc()
   Porffor.clone(_this, out)
 
   let len: i32 = _this.length
@@ -625,7 +625,7 @@ export const __Array_prototype_filter = (
   let j: i32 = 0
   while (i < len) {
     const el: any = _this[i]
-    if (!!callbackFn.call(thisArg, el, i++, _this)) out[j++] = el
+    if (callbackFn.call(thisArg, el, i++, _this)) out[j++] = el
   }
 
   out.length = j
@@ -665,7 +665,7 @@ export const __Array_prototype_flatMap = (
   let i: i32 = 0,
     j: i32 = 0
   while (i < len) {
-    let x: any = callbackFn.call(thisArg, _this[i], i++, _this)
+    const x: any = callbackFn.call(thisArg, _this[i], i++, _this)
     if (Porffor.type(x) == Porffor.TYPES.array) {
       for (const y of x) out[j++] = y
     } else out[j++] = x
@@ -687,7 +687,7 @@ export const __Array_prototype_find = (
   let i: i32 = 0
   while (i < len) {
     const el: any = _this[i]
-    if (!!callbackFn.call(thisArg, el, i++, _this)) return el
+    if (callbackFn.call(thisArg, el, i++, _this)) return el
   }
 }
 
@@ -702,7 +702,7 @@ export const __Array_prototype_findLast = (
   let i: i32 = _this.length
   while (i > 0) {
     const el: any = _this[--i]
-    if (!!callbackFn.call(thisArg, el, i, _this)) return el
+    if (callbackFn.call(thisArg, el, i, _this)) return el
   }
 }
 
@@ -717,7 +717,7 @@ export const __Array_prototype_findIndex = (
   const len: i32 = _this.length
   let i: i32 = 0
   while (i < len) {
-    if (!!callbackFn.call(thisArg, _this[i], i, _this)) return i
+    if (callbackFn.call(thisArg, _this[i], i, _this)) return i
     i++
   }
   return -1
@@ -733,7 +733,7 @@ export const __Array_prototype_findLastIndex = (
     throw new TypeError("Callback must be a function")
   let i: i32 = _this.length
   while (i > 0) {
-    if (!!callbackFn.call(thisArg, _this[--i], i, _this)) return i
+    if (callbackFn.call(thisArg, _this[--i], i, _this)) return i
   }
   return -1
 }
@@ -749,7 +749,7 @@ export const __Array_prototype_every = (
   const len: i32 = _this.length
   let i: i32 = 0
   while (i < len) {
-    if (!!callbackFn.call(thisArg, _this[i], i++, _this)) {
+    if (callbackFn.call(thisArg, _this[i], i++, _this)) {
     } else return false
   }
 
@@ -767,7 +767,7 @@ export const __Array_prototype_some = (
   const len: i32 = _this.length
   let i: i32 = 0
   while (i < len) {
-    if (!!callbackFn.call(thisArg, _this[i], i++, _this)) return true
+    if (callbackFn.call(thisArg, _this[i], i++, _this)) return true
   }
 
   return false
@@ -912,7 +912,7 @@ export const __Array_prototype_sort = (_this: any[], callbackFn: any) => {
 export const __Array_prototype_toString = (_this: any[]) => {
   // todo: this is bytestring only!
 
-  let out: bytestring = Porffor.malloc()
+  const out: bytestring = Porffor.malloc()
   const len: i32 = _this.length
   let i: i32 = 0
   while (i < len) {
@@ -947,7 +947,7 @@ export const __Array_prototype_join = (_this: any[], _separator: any) => {
   if (Porffor.type(_separator) != Porffor.TYPES.undefined)
     separator = ecma262.ToString(_separator)
 
-  let out: bytestring = Porffor.malloc()
+  const out: bytestring = Porffor.malloc()
   const len: i32 = _this.length
   let i: i32 = 0
   while (i < len) {
@@ -980,7 +980,7 @@ export const __Array_prototype_toReversed = (_this: any[]) => {
   let start: i32 = 0
   let end: i32 = len - 1
 
-  let out: any[] = Porffor.malloc()
+  const out: any[] = Porffor.malloc()
   out.length = len
 
   while (true) {
@@ -998,7 +998,7 @@ export const __Array_prototype_toReversed = (_this: any[]) => {
 export const __Array_prototype_toSorted = (_this: any[], callbackFn: any) => {
   // todo/perf: could be rewritten to be its own instead of cloning and using normal sort()
 
-  let out: any[] = Porffor.malloc()
+  const out: any[] = Porffor.malloc()
   Porffor.clone(_this, out)
 
   return __Array_prototype_sort(out, callbackFn)
@@ -1010,7 +1010,7 @@ export const __Array_prototype_toSpliced = (
   _deleteCount: any,
   ...items: any[]
 ) => {
-  let out: any[] = Porffor.malloc()
+  const out: any[] = Porffor.malloc()
   Porffor.clone(_this, out)
 
   const len: i32 = _this.length
@@ -1080,7 +1080,7 @@ memory.copy 0 0`
   if (itemsLen > 0) {
     let itemsPtr: i32 = Porffor.wasm`local.get ${items}`
     let outPtr: i32 = Porffor.wasm`local.get ${out}` + start * 9
-    let outPtrEnd: i32 = outPtr + itemsLen * 9
+    const outPtrEnd: i32 = outPtr + itemsLen * 9
 
     while (outPtr < outPtrEnd) {
       Porffor.wasm.f64.store(
@@ -1106,9 +1106,9 @@ memory.copy 0 0`
 
 export const __Array_prototype_flat = (_this: any[], _depth: any) => {
   if (Porffor.type(_depth) == Porffor.TYPES.undefined) _depth = 1
-  let depth: i32 = ecma262.ToIntegerOrInfinity(_depth)
+  const depth: i32 = ecma262.ToIntegerOrInfinity(_depth)
 
-  let out: any[] = Porffor.malloc()
+  const out: any[] = Porffor.malloc()
   if (depth <= 0) {
     Porffor.clone(_this, out)
     return out

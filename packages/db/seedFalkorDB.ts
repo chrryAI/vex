@@ -3,8 +3,8 @@
  * Run this script to populate the graph database with stores, apps, and ecosystem data
  */
 
-import { graph } from "./src/graph/client"
 import { db } from "./index"
+import { graph } from "./src/graph/client"
 
 async function seedFalkorDB() {
   console.log("🌱 Starting FalkorDB seeding...\n")

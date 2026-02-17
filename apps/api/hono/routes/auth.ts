@@ -1,21 +1,21 @@
-import { Hono } from "hono"
-import { sign, verify } from "jsonwebtoken"
-import { compare, hash } from "bcrypt"
-import {
-  getUser,
-  createUser,
-  getStore,
-  eq,
-  and,
-  gt,
-  db,
-  authExchangeCodes,
-} from "@repo/db"
-import { v4 as uuidv4 } from "uuid"
 import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
+import {
+  and,
+  authExchangeCodes,
+  createUser,
+  db,
+  eq,
+  getStore,
+  getUser,
+  gt,
+} from "@repo/db"
+import { compare, hash } from "bcrypt"
 import { randomBytes } from "crypto"
 import type { Context } from "hono"
-import { getCookie, setCookie, deleteCookie } from "hono/cookie"
+import { Hono } from "hono"
+import { deleteCookie, getCookie, setCookie } from "hono/cookie"
+import { sign, verify } from "jsonwebtoken"
+import { v4 as uuidv4 } from "uuid"
 import { checkAuthRateLimit } from "../../lib/rateLimiting"
 
 const authRoutes = new Hono()
@@ -355,11 +355,11 @@ function buildRedirectUrl(baseUrl: string, authCode: string): string {
 authRoutes.post("/signup/password", async (c) => {
   try {
     const ip = c.req.header("x-forwarded-for")?.split(",")[0] || "127.0.0.1"
-    const { success } = await checkAuthRateLimit(c.req.raw, ip)
+    const { success, errorMessage } = await checkAuthRateLimit(c.req.raw, ip)
 
     if (!success) {
       return c.json(
-        { error: "Too many attempts. Please try again later." },
+        { error: errorMessage || "Too many attempts. Please try again later." },
         429,
       )
     }
@@ -410,11 +410,11 @@ authRoutes.post("/signup/password", async (c) => {
 authRoutes.post("/signin/password", async (c) => {
   try {
     const ip = c.req.header("x-forwarded-for")?.split(",")[0] || "127.0.0.1"
-    const { success } = await checkAuthRateLimit(c.req.raw, ip)
+    const { success, errorMessage } = await checkAuthRateLimit(c.req.raw, ip)
 
     if (!success) {
       return c.json(
-        { error: "Too many attempts. Please try again later." },
+        { error: errorMessage || "Too many attempts. Please try again later." },
         429,
       )
     }

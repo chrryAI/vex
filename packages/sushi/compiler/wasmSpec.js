@@ -1,6 +1,6 @@
-export const Magic = [ 0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00 ];
-export const PageSize = 65536; // 64KiB
-export const FuncType = 0x60;
+export const Magic = [0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]
+export const PageSize = 65536 // 64KiB
+export const FuncType = 0x60
 
 export const Section = {
   custom: 0,
@@ -16,45 +16,45 @@ export const Section = {
   code: 10,
   data: 11,
   data_count: 12,
-  tag: 13
-};
+  tag: 13,
+}
 
 export const ExportDesc = {
   func: 0,
   table: 1,
   mem: 2,
   global: 3,
-  tag: 4
-};
+  tag: 4,
+}
 
 export const Mut = {
   const: 0,
-  var: 1
-};
+  var: 1,
+}
 
 export const Valtype = {
   i32: 0x7f,
   i64: 0x7e,
   f64: 0x7c,
-  v128: 0x7b
-};
+  v128: 0x7b,
+}
 
 export const ValtypeSize = {
   i8: 1,
   i16: 2,
   i32: 4,
   i64: 8,
-  f64: 8
-};
+  f64: 8,
+}
 
 export const Reftype = {
   funcref: 0x70,
-  externref: 0x6f
-};
+  externref: 0x6f,
+}
 
 export const Blocktype = {
-  void: 0x40
-};
+  void: 0x40,
+}
 
 export const Opcodes = {
   unreachable: 0x00,
@@ -225,83 +225,83 @@ export const Opcodes = {
   f32_reinterpret_i32: 0xbe,
   f64_reinterpret_i64: 0xbf,
 
-  i32_trunc_sat_f64_s: [ 0xfc, 0x02 ],
-  i32_trunc_sat_f64_u: [ 0xfc, 0x03 ],
-  i64_trunc_sat_f64_s: [ 0xfc, 0x06 ],
-  i64_trunc_sat_f64_u: [ 0xfc, 0x07 ],
+  i32_trunc_sat_f64_s: [0xfc, 0x02],
+  i32_trunc_sat_f64_u: [0xfc, 0x03],
+  i64_trunc_sat_f64_s: [0xfc, 0x06],
+  i64_trunc_sat_f64_u: [0xfc, 0x07],
 
-  memory_init: [ 0xfc, 0x08 ],
-  data_drop: [ 0xfc, 0x09 ],
-  memory_copy: [ 0xfc, 0x0a ],
+  memory_init: [0xfc, 0x08],
+  data_drop: [0xfc, 0x09],
+  memory_copy: [0xfc, 0x0a],
 
   // simd insts are 0xFD simdop: varuint32
-  v128_load: [ 0xfd, 0x00 ],
-  v128_const: [ 0xfd, 0x0c ],
+  v128_load: [0xfd, 0x00],
+  v128_const: [0xfd, 0x0c],
 
-  i8x16_shuffle: [ 0xfd, 0x0d ],
+  i8x16_shuffle: [0xfd, 0x0d],
 
-  i32x4_splat: [ 0xfd, 0x11 ],
-  i32x4_extract_lane: [ 0xfd, 0x1b ],
-  i32x4_replace_lane: [ 0xfd, 0x1c ],
+  i32x4_splat: [0xfd, 0x11],
+  i32x4_extract_lane: [0xfd, 0x1b],
+  i32x4_replace_lane: [0xfd, 0x1c],
 
-  i16x8_extract_lane: [ 0xfd, 0x18 ], // _s
-  i16x8_replace_lane: [ 0xfd, 0x1a ],
+  i16x8_extract_lane: [0xfd, 0x18], // _s
+  i16x8_replace_lane: [0xfd, 0x1a],
 
-  i32x4_add: [ 0xfd, 0xae, 0x01 ],
-  i32x4_sub: [ 0xfd, 0xb1, 0x01 ],
-  i32x4_mul: [ 0xfd, 0xb5, 0x01 ],
+  i32x4_add: [0xfd, 0xae, 0x01],
+  i32x4_sub: [0xfd, 0xb1, 0x01],
+  i32x4_mul: [0xfd, 0xb5, 0x01],
 
-  v128_or: [ 0xfd, 80 ],
-  v128_xor: [ 0xfd, 81 ],
-  v128_any_true: [ 0xfd, 83 ],
+  v128_or: [0xfd, 80],
+  v128_xor: [0xfd, 81],
+  v128_any_true: [0xfd, 83],
 
   // Atomic memory operations
-  memory_atomic_notify: [ 0xfe, 0x00 ],
-  memory_atomic_wait32: [ 0xfe, 0x01 ],
-  memory_atomic_wait64: [ 0xfe, 0x02 ],
-  atomic_fence: [ 0xfe, 0x03, 0x00 ],
+  memory_atomic_notify: [0xfe, 0x00],
+  memory_atomic_wait32: [0xfe, 0x01],
+  memory_atomic_wait64: [0xfe, 0x02],
+  atomic_fence: [0xfe, 0x03, 0x00],
 
-  i32_atomic_load: [ 0xfe, 0x10 ],
-  i64_atomic_load: [ 0xfe, 0x11 ],
-  i32_atomic_load8: [ 0xfe, 0x12 ],
-  i32_atomic_load16: [ 0xfe, 0x13 ],
-  i32_atomic_store: [ 0xfe, 0x17 ],
-  i64_atomic_store: [ 0xfe, 0x18 ],
-  i32_atomic_store8: [ 0xfe, 0x19 ],
-  i32_atomic_store16: [ 0xfe, 0x1a ],
+  i32_atomic_load: [0xfe, 0x10],
+  i64_atomic_load: [0xfe, 0x11],
+  i32_atomic_load8: [0xfe, 0x12],
+  i32_atomic_load16: [0xfe, 0x13],
+  i32_atomic_store: [0xfe, 0x17],
+  i64_atomic_store: [0xfe, 0x18],
+  i32_atomic_store8: [0xfe, 0x19],
+  i32_atomic_store16: [0xfe, 0x1a],
 
-  i32_atomic_rmw_add: [ 0xfe, 0x1e ],
-  i64_atomic_rmw_add: [ 0xfe, 0x1f ],
-  i32_atomic_rmw_add8: [ 0xfe, 0x20 ],
-  i32_atomic_rmw_add16: [ 0xfe, 0x21 ],
+  i32_atomic_rmw_add: [0xfe, 0x1e],
+  i64_atomic_rmw_add: [0xfe, 0x1f],
+  i32_atomic_rmw_add8: [0xfe, 0x20],
+  i32_atomic_rmw_add16: [0xfe, 0x21],
 
-  i32_atomic_rmw_sub: [ 0xfe, 0x25 ],
-  i64_atomic_rmw_sub: [ 0xfe, 0x26 ],
-  i32_atomic_rmw_sub8: [ 0xfe, 0x27 ],
-  i32_atomic_rmw_sub16: [ 0xfe, 0x28 ],
+  i32_atomic_rmw_sub: [0xfe, 0x25],
+  i64_atomic_rmw_sub: [0xfe, 0x26],
+  i32_atomic_rmw_sub8: [0xfe, 0x27],
+  i32_atomic_rmw_sub16: [0xfe, 0x28],
 
-  i32_atomic_rmw_and: [ 0xfe, 0x2c ],
-  i64_atomic_rmw_and: [ 0xfe, 0x2d ],
-  i32_atomic_rmw_and8: [ 0xfe, 0x2e ],
-  i32_atomic_rmw_and16: [ 0xfe, 0x2f ],
+  i32_atomic_rmw_and: [0xfe, 0x2c],
+  i64_atomic_rmw_and: [0xfe, 0x2d],
+  i32_atomic_rmw_and8: [0xfe, 0x2e],
+  i32_atomic_rmw_and16: [0xfe, 0x2f],
 
-  i32_atomic_rmw_or: [ 0xfe, 0x33 ],
-  i64_atomic_rmw_or: [ 0xfe, 0x34 ],
-  i32_atomic_rmw_or8: [ 0xfe, 0x35 ],
-  i32_atomic_rmw_or16: [ 0xfe, 0x36 ],
+  i32_atomic_rmw_or: [0xfe, 0x33],
+  i64_atomic_rmw_or: [0xfe, 0x34],
+  i32_atomic_rmw_or8: [0xfe, 0x35],
+  i32_atomic_rmw_or16: [0xfe, 0x36],
 
-  i32_atomic_rmw_xor: [ 0xfe, 0x3a ],
-  i64_atomic_rmw_xor: [ 0xfe, 0x3b ],
-  i32_atomic_rmw_xor8: [ 0xfe, 0x3c ],
-  i32_atomic_rmw_xor16: [ 0xfe, 0x3d ],
+  i32_atomic_rmw_xor: [0xfe, 0x3a],
+  i64_atomic_rmw_xor: [0xfe, 0x3b],
+  i32_atomic_rmw_xor8: [0xfe, 0x3c],
+  i32_atomic_rmw_xor16: [0xfe, 0x3d],
 
-  i32_atomic_rmw_xchg: [ 0xfe, 0x41 ],
-  i64_atomic_rmw_xchg: [ 0xfe, 0x42 ],
-  i32_atomic_rmw_xchg8: [ 0xfe, 0x43 ],
-  i32_atomic_rmw_xchg16: [ 0xfe, 0x44 ],
+  i32_atomic_rmw_xchg: [0xfe, 0x41],
+  i64_atomic_rmw_xchg: [0xfe, 0x42],
+  i32_atomic_rmw_xchg8: [0xfe, 0x43],
+  i32_atomic_rmw_xchg16: [0xfe, 0x44],
 
-  i32_atomic_rmw_cmpxchg: [ 0xfe, 0x48 ],
-  i64_atomic_rmw_cmpxchg: [ 0xfe, 0x49 ],
-  i32_atomic_rmw_cmpxchg8: [ 0xfe, 0x4a ],
-  i32_atomic_rmw_cmpxchg16: [ 0xfe, 0x4b ]
-};
+  i32_atomic_rmw_cmpxchg: [0xfe, 0x48],
+  i64_atomic_rmw_cmpxchg: [0xfe, 0x49],
+  i32_atomic_rmw_cmpxchg8: [0xfe, 0x4a],
+  i32_atomic_rmw_cmpxchg16: [0xfe, 0x4b],
+}

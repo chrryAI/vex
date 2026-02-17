@@ -3,8 +3,8 @@
  * Provides secure file system access scoped to project directory
  */
 
-import { readFile, writeFile, readdir, stat } from "fs/promises"
-import { join, resolve, relative } from "path"
+import { readdir, readFile, stat, writeFile } from "fs/promises"
+import { join, relative, resolve } from "path"
 
 export class FileSystemHandler {
   private projectRoot: string

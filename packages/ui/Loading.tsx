@@ -1,7 +1,7 @@
 "use client"
-import React from "react"
-import { LoaderCircle } from "./icons"
+import type React from "react"
 import { useHasHydrated } from "./hooks"
+import { LoaderCircle } from "./icons"
 import { useLoadingStyles } from "./Loading.styles"
 import { Div } from "./platform"
 

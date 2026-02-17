@@ -5,7 +5,7 @@ importScripts(
   "https://storage.googleapis.com/workbox-cdn/releases/6.6.0/workbox-sw.js",
 )
 
-let CACHE_VERSION = "{{CACHE_VERSION}}" // This will be replaced during build
+const CACHE_VERSION = "{{CACHE_VERSION}}" // This will be replaced during build
 
 const IS_DEV =
   location.hostname === "localhost" ||
@@ -14,13 +14,13 @@ const IS_DEV =
 
 // Only enable caching in production
 if (!IS_DEV) {
-  self.addEventListener("activate", function (event) {
+  self.addEventListener("activate", (event) => {
     event.waitUntil(
-      caches.keys().then(function (cacheNames) {
+      caches.keys().then((cacheNames) => {
         // In production, only delete old caches
         return Promise.all(
           cacheNames
-            .map(function (cacheName) {
+            .map((cacheName) => {
               if (cacheName.indexOf(CACHE_VERSION) === -1) {
                 console.log(`Deleting old cache: ${cacheName}`)
                 return caches.delete(cacheName)
@@ -86,12 +86,12 @@ self.addEventListener("activate", (event) => {
 })
 
 // Your existing push notification handlers (unchanged)
-self.addEventListener("push", function (event) {
+self.addEventListener("push", (event) => {
   const data = event.data.json()
   event.waitUntil(self.registration.showNotification(data.title, data))
 })
 
-self.addEventListener("notificationclick", function (event) {
+self.addEventListener("notificationclick", (event) => {
   event.notification.close()
 
   if (event.notification.data && event.notification.data.url) {
@@ -99,7 +99,7 @@ self.addEventListener("notificationclick", function (event) {
     event.waitUntil(
       clients
         .matchAll({ type: "window", includeUncontrolled: true })
-        .then(function (clientList) {
+        .then((clientList) => {
           const targetOrigin = new URL(url).origin
 
           for (let i = 0; i < clientList.length; i++) {
