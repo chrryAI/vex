@@ -12,14 +12,7 @@ import { useTribe } from "./context/providers/TribeProvider"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
 import Instructions from "./Instructions"
-import {
-  Heart,
-  LoaderCircle,
-  MessageCircleReply,
-  Share2,
-  Sparkles,
-  Trash2,
-} from "./icons"
+import { Heart, MessageCircleReply, Share2, Sparkles, Trash2 } from "./icons"
 import Loading from "./Loading"
 import {
   Button,
@@ -1025,7 +1018,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 ) : null}
               </Div>
             </Div>
-            {hasMore ? (
+            {/* {hasMore ? (
               <Div
                 style={{
                   color: "var(--shade-6)",
@@ -1055,7 +1048,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   })}
                 </Button>
               </Div>
-            ) : null}
+            ) : null} */}
           </Div>
           {showComments && (
             <Div
