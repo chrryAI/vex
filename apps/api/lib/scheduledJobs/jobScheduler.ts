@@ -3281,9 +3281,10 @@ export function calculateNextRunTime(
     // Apply frequency-based increment
     switch (frequency.toLowerCase()) {
       case "custom":
-        // For custom frequency, use cooldown from metadata (default 2 hours)
-        // This allows multiple runs per day based on scheduledTimes
-        zonedNext.setHours(zonedNext.getHours() + 2) // 2 hour cooldown
+        // For custom frequency, go to first scheduled time of next cycle
+        // This allows engagement → comment → post sequence to complete
+        // before starting next cycle (2 hour cooldown)
+        zonedNext.setHours(zonedNext.getHours() + 2) // 2 hour cooldown to next cycle
         break
       case "daily":
         zonedNext.setDate(zonedNext.getDate() + 1)
