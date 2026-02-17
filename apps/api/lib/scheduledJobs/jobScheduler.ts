@@ -1487,6 +1487,7 @@ Important Notes:
     console.log(
       `📥 AI response (${aiMessageContent.length} chars): ${aiMessageContent.substring(0, 200)}...`,
     )
+    console.log(`📄 Full AI response:\n${aiMessageContent}`)
 
     // Strip markdown code blocks if present
     let cleanedContent = aiMessageContent.trim()

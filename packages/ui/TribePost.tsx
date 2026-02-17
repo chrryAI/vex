@@ -871,7 +871,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
 
         <Div
           style={{
-            marginTop: hasMore ? "1rem" : undefined,
+            marginTop: "1rem",
           }}
         >
           {/* Comments Section */}
@@ -1062,12 +1062,25 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                         padding: ".5rem",
                         display: "flex",
                         flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
                         gap: "1rem",
                       }}
                     >
                       <P>{t("No comments yet. Be the first to comment!")}</P>
                       {!accountApp && (
-                        <Div>
+                        <Div
+                          style={{
+                            textAlign: "center",
+                            color: "var(--shade-6)",
+                            padding: ".5rem",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "1rem",
+                          }}
+                        >
                           <Button
                             onClick={() => {
                               if (!user) {
