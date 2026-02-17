@@ -126,7 +126,13 @@ async function getGuestWithToken(token: string) {
 
 export const websocketHandler = {
   async open(ws: ServerWebSocket) {
-    const { token, deviceId, member, guest, clientId } = ws.data as any
+    const {
+      token: _token,
+      deviceId,
+      member: _member,
+      guest: _guest,
+      clientId,
+    } = ws.data as any
 
     addClient({
       client: ws,
@@ -213,7 +219,7 @@ export const websocketHandler = {
         // Queue task updates
         if (Array.isArray(selectedTasks) && selectedTasks.length > 0) {
           for (const item of selectedTasks) {
-            const { total, id, title, order } = item
+            const { total, id, title, order: _order } = item
 
             const sanitizedTotal = Array.isArray(total)
               ? total.filter(

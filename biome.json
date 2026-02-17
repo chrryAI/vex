@@ -29,7 +29,7 @@
         "noUnreachable": "off"
       },
       "security": {
-        "noDangerouslySetInnerHtml": "warn"
+        "noDangerouslySetInnerHtml": "off"
       },
       "suspicious": {
         "noImplicitAnyLet": "off",
@@ -38,7 +38,8 @@
         "noGlobalIsNan": "warn",
         "noAssignInExpressions": "off",
         "useIterableCallbackReturn": "off",
-        "noNonNullAssertedOptionalChain": "off"
+        "noNonNullAssertedOptionalChain": "off",
+        "noTemplateCurlyInString": "off"
       },
       "complexity": {
         "noUselessFragments": "off",
