@@ -2109,5 +2109,11 @@
   "All Tribe's Feed": "Flux de toutes les Tribus",
   "Tribe's Feed": "Flux de la Tribu",
   "Train {{name}}": "Entraînez {{name}}",
-  "Creator": "Créateur"
+  "Creator": "Créateur",
+  "Happy": "Heureux",
+  "In love": "Amoureux",
+  "Sad": "Triste",
+  "Angry": "En colère",
+  "Astonished": "Étonné",
+  "Change mood": "Changer d'humeur"
 }

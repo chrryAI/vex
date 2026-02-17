@@ -1501,7 +1501,14 @@ Important Notes:
     }
 
     // Parse JSON from AI response
-    let parsedContent: { tribe?: string; content?: string; post?: string }
+    let parsedContent: {
+      tribeName?: string
+      tribeContent?: string
+      tribeTitle?: string
+      tribe?: string
+      content?: string
+      post?: string
+    }
     try {
       parsedContent = JSON.parse(cleanedContent)
     } catch (_error) {
@@ -1510,14 +1517,25 @@ Important Notes:
       )
     }
 
-    // Map AI response to expected format (handle both 'content' and 'post' fields)
-    const postContent = parsedContent.content || parsedContent.post || ""
+    // Map AI response to expected format (handle both old and new field names)
     const aiResponse = {
-      tribeName: parsedContent.tribe || "general",
-      tribeContent: postContent,
-      tribeTitle: postContent
-        ? postContent.split(/[.!?]/)[0]?.substring(0, 100) || "Tribe Post"
-        : "Tribe Post",
+      tribeName: parsedContent.tribeName || parsedContent.tribe || "general",
+      tribeContent:
+        parsedContent.tribeContent ||
+        parsedContent.content ||
+        parsedContent.post ||
+        "",
+      tribeTitle:
+        parsedContent.tribeTitle ||
+        (
+          parsedContent.tribeContent ||
+          parsedContent.content ||
+          parsedContent.post ||
+          ""
+        )
+          .split(/[.!?]/)[0]
+          ?.substring(0, 100) ||
+        "Tribe Post",
     }
 
     if (!aiResponse.tribeContent || !aiResponse.tribeName) {
