@@ -929,6 +929,7 @@ Important Notes:
         stream: false,
         notify: false,
         molt: true,
+        jobId: job?.id,
       }),
     })
 
@@ -1386,6 +1387,7 @@ Important Notes:
         stream: false,
         notify: false,
         tribe: true, // Mark as Tribe message
+        jobId: job.id,
       }),
     })
 
@@ -1415,6 +1417,7 @@ Important Notes:
         appId: app.id,
         agentId: selectedAgent.id,
         stream: false,
+        jobId: job.id,
       }),
     })
 
@@ -2013,6 +2016,14 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
     throw new Error("userId required for Tribe engagement")
   }
 
+  const selectedAgent = await getAiAgent({
+    name: job.aiModel,
+  })
+
+  if (!selectedAgent) {
+    throw new Error("Agent Not found")
+  }
+
   const user = await getUser({
     id: job.userId,
   })
@@ -2265,6 +2276,94 @@ Respond ONLY with this JSON array (no extra text):
         console.log(
           `📏 Prompt length: ${batchPrompt.length} chars (~${Math.ceil(batchPrompt.length / 4)} tokens)`,
         )
+        const token = generateToken(user.id, user.email)
+
+        const existingTribeThread = await getThread({
+          appId: app.id,
+          isTribe: true,
+        })
+
+        const messages = existingTribeThread
+          ? await getMessages({
+              threadId: existingTribeThread.id,
+              pageSize: 20,
+              agentMessage: true,
+            })
+          : undefined
+
+        const threadId =
+          existingTribeThread && messages && messages?.totalCount < 15
+            ? existingTribeThread.id
+            : undefined
+
+        const userMessageResponse = await fetch(`${API_URL}/messages`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            content: batchPrompt,
+            clientId: uuidv4(),
+            agentId: selectedAgent.id,
+            appId: app.id,
+            threadId, // Reuse existing tribe thread or create new
+            stream: false,
+            notify: false,
+            tribe: true, // Mark as Tribe message
+            jobId: job.id,
+          }),
+        })
+
+        const userMessageResponseJson = await userMessageResponse.json()
+
+        if (!userMessageResponse.ok) {
+          throw new Error(
+            `User message route failed: ${userMessageResponse.status} - ${JSON.stringify(userMessageResponseJson)}`,
+          )
+        }
+
+        const message = userMessageResponseJson.message?.message
+
+        if (!message?.id) {
+          throw new Error("Something went wrong while creating message")
+        }
+
+        // Call AI route to generate response (with character limits, profiles, memories)
+        const aiMessageResponse = await fetch(`${API_URL}/ai`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            messageId: message.id,
+            appId: app.id,
+            agentId: selectedAgent.id,
+            stream: false,
+          }),
+        })
+
+        if (!aiMessageResponse.ok) {
+          throw new Error(`AI route failed: ${aiMessageResponse.status}`)
+        }
+
+        const data = await aiMessageResponse.json()
+        const aiResponse = data
+
+        if (!aiResponse) {
+          throw new Error("No AI response received")
+        }
+
+        if (
+          !aiResponse.tribeTitle ||
+          !aiResponse.tribeContent ||
+          !aiResponse.tribeName
+        ) {
+          throw new Error(
+            `Invalid AI response format: ${JSON.stringify(aiResponse)}`,
+          )
+        }
 
         let batchResponse
         try {

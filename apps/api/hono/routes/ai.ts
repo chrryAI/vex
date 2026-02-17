@@ -64,6 +64,7 @@ import {
   apps as appsSchema,
   getOrCreateTribe,
   getTribes,
+  getScheduledJob,
 } from "@repo/db"
 
 import { tribePosts, tribes as tribesSchema } from "@repo/db/src/schema"
@@ -1298,20 +1299,38 @@ app.post("/", async (c) => {
   const appExtends = requestApp
     ? requestApp?.store?.apps.filter((a) => a.id !== requestApp?.id) || []
     : []
-  const isMolt = thread?.isMolt || message?.thread?.isMolt
-  const isTribe = !!(thread?.isTribe || message.message?.isTribe)
+
+  const jobId = message?.message?.jobId
+
+  const job =
+    jobId && member
+      ? await getScheduledJob({ id: jobId, userId: member.id })
+      : undefined
+
+  const isMolt =
+    ["moltbook_post", "moltbook_comment", "moltbook_engage"].includes(
+      job?.jobType || "",
+    ) ||
+    thread?.isMolt ||
+    message?.thread?.isMolt
+
+  const isTribe =
+    ["tribe_post", "tribe_comment", "tribe_engage"].includes(
+      job?.jobType || "",
+    ) || !!(thread?.isTribe || message.message?.isTribe)
 
   // Use numeric comparison with defaults to prevent negative balances from bypassing
   const canPostToTribe =
     ((member?.tribeCredits ?? MEMBER_FREE_TRIBE_CREDITS) > 0 && isTribe) ||
-    (member?.role === "admin" && isTribe)
+    (member?.role === "admin" && isTribe) ||
+    job
 
   const moltApiKeyInternal = requestApp?.moltApiKey
   const moltApiKey = moltApiKeyInternal ? safeDecrypt(moltApiKeyInternal) : ""
 
   // Use numeric comparison - undefined defaults to 0, negative balances blocked
   const canPostToMolt =
-    ((member?.moltCredits ?? 0) > 0 || member?.role === "admin") &&
+    ((member?.moltCredits ?? 0) > 0 || member?.role === "admin" || job) &&
     moltApiKey &&
     isMolt
 
