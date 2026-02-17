@@ -372,6 +372,33 @@ const Thread = ({
     ],
   )
 
+  const handleCharacterProfileUpdate = useCallback(() => {
+    !isChatFloating && scrollToBottom()
+  }, [isChatFloating, scrollToBottom])
+
+  const handlePlayAudio = useCallback(() => {
+    shouldStopAutoScrollRef.current = true
+  }, [])
+
+  const handleToggleLike = useCallback(
+    (liked: boolean | undefined) => {
+      refetchThread()
+    },
+    [refetchThread],
+  )
+
+  const handleDelete = useCallback(
+    async ({ id }: { id: string }) => {
+      await refetchThread().then(() =>
+        setMessages((prev) => {
+          if (prev.length <= 1) return []
+          return prev.filter((m) => m.message.id !== id)
+        }),
+      )
+    },
+    [refetchThread, setMessages],
+  )
+
   const render = () => {
     return (
       <Div
@@ -491,31 +518,18 @@ const Thread = ({
           <>
             {isGame ? null : (
               <Messages
-                onCharacterProfileUpdate={() => {
-                  !isChatFloating && scrollToBottom()
-                }}
+                onCharacterProfileUpdate={handleCharacterProfileUpdate}
                 isHome={isHome}
                 thread={thread}
-                onPlayAudio={() => {
-                  shouldStopAutoScrollRef.current = true
-                }}
-                onToggleLike={(liked) => {
-                  refetch()
-                }}
+                onPlayAudio={handlePlayAudio}
+                onToggleLike={handleToggleLike}
                 emptyMessage={
                   liked && messages.length === 0
                     ? t("Nothing here yet")
                     : undefined
                 }
                 showEmptyState={!!thread}
-                onDelete={async ({ id }) => {
-                  if (messages.length === 1) {
-                    await refetch().then(() => setMessages([]))
-                  } else
-                    await refetch().then(() =>
-                      setMessages(messages.filter((m) => m.message.id !== id)),
-                    )
-                }}
+                onDelete={handleDelete}
                 ref={messagesRef}
                 messages={messages}
                 setIsLoadingMore={setIsLoadingMore}
