@@ -166,6 +166,53 @@ const Thread = ({
   // plausible if we've already auto-selected an agent for this thread
   const shouldStopAutoScrollRef = useRef(false)
 
+  const refetch = () => {
+    return refetchThread()
+  }
+
+  // ⚡ Bolt: Stable callbacks for Messages component to prevent re-renders
+  const isChatFloatingRef = useRef(isChatFloating)
+  isChatFloatingRef.current = isChatFloating
+
+  const scrollToBottomRef = useRef(scrollToBottom)
+  scrollToBottomRef.current = scrollToBottom
+
+  const refetchRef = useRef(refetch)
+  refetchRef.current = refetch
+
+  const setMessagesRef = useRef(setMessages)
+  setMessagesRef.current = setMessages
+
+  const currentMessagesRef = useRef(messages)
+  currentMessagesRef.current = messages
+
+  const handleCharacterProfileUpdate = useCallback(() => {
+    !isChatFloatingRef.current && scrollToBottomRef.current()
+  }, [])
+
+  const handlePlayAudio = useCallback(() => {
+    shouldStopAutoScrollRef.current = true
+  }, [])
+
+  const handleToggleLike = useCallback((liked: boolean | undefined) => {
+    refetchRef.current()
+  }, [])
+
+  const handleDelete = useCallback(
+    async ({ id }: { id: string }) => {
+      if (currentMessagesRef.current.length === 1) {
+        await refetchRef.current().then(() => setMessagesRef.current([]))
+      } else {
+        await refetchRef.current().then(() =>
+          setMessagesRef.current(
+            currentMessagesRef.current.filter((m) => m.message.id !== id),
+          ),
+        )
+      }
+    },
+    [],
+  )
+
   // plausible last processed threadData to prevent re-processing
   // const lastProcessedThreadDataRef = useRef<any>(null)
 
@@ -197,10 +244,6 @@ const Thread = ({
       collaboration.user.id === user?.id &&
       collaboration.collaboration.status !== "active",
   )
-
-  const refetch = () => {
-    return refetchThread()
-  }
 
   const collaborator = thread && isCollaborator(thread, user?.id)
   const activeCollaborator =
@@ -491,31 +534,18 @@ const Thread = ({
           <>
             {isGame ? null : (
               <Messages
-                onCharacterProfileUpdate={() => {
-                  !isChatFloating && scrollToBottom()
-                }}
+                onCharacterProfileUpdate={handleCharacterProfileUpdate}
                 isHome={isHome}
                 thread={thread}
-                onPlayAudio={() => {
-                  shouldStopAutoScrollRef.current = true
-                }}
-                onToggleLike={(liked) => {
-                  refetch()
-                }}
+                onPlayAudio={handlePlayAudio}
+                onToggleLike={handleToggleLike}
                 emptyMessage={
                   liked && messages.length === 0
                     ? t("Nothing here yet")
                     : undefined
                 }
                 showEmptyState={!!thread}
-                onDelete={async ({ id }) => {
-                  if (messages.length === 1) {
-                    await refetch().then(() => setMessages([]))
-                  } else
-                    await refetch().then(() =>
-                      setMessages(messages.filter((m) => m.message.id !== id)),
-                    )
-                }}
+                onDelete={handleDelete}
                 ref={messagesRef}
                 messages={messages}
                 setIsLoadingMore={setIsLoadingMore}

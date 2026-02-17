@@ -1,6 +1,6 @@
 "use client"
 
-import { forwardRef, useEffect, useState, useMemo, useRef } from "react"
+import { forwardRef, useEffect, useState, useMemo, useRef, memo } from "react"
 import type {
   aiAgent,
   guest,
@@ -29,7 +29,7 @@ import { useStyles } from "./context/StylesContext"
 import { useUserScroll } from "./hooks/useUserScroll"
 import { isE2E } from "./utils/siteConfig"
 
-export default forwardRef<
+export default memo(forwardRef<
   HTMLDivElement,
   {
     showEmptyState?: boolean
@@ -355,4 +355,4 @@ export default forwardRef<
       )}
     </Div>
   )
-})
+}))
