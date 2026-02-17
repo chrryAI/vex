@@ -4324,6 +4324,20 @@ export default function Chat({
                           data-agent-name={selectedAgent.name}
                           data-testid="agent-select-button"
                           onClick={() => {
+                            if (onlyAgent) {
+                              toast.error(
+                                t(
+                                  `{{name}} is only agent on this app. You can try sushi 🍣`,
+                                  {
+                                    name: capitalizeFirstLetter(
+                                      selectedAgent.name,
+                                    ),
+                                  },
+                                ),
+                              )
+
+                              return
+                            }
                             addHapticFeedback()
                             setIsAgentModalOpen(true)
                           }}
@@ -4331,7 +4345,6 @@ export default function Chat({
                           style={{
                             ...utilities.link.style,
                             ...styles.agentButton.style,
-                            color: onlyAgent ? "var(--shade-6)" : undefined,
                           }}
                           type="submit"
                         >

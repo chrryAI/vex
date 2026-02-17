@@ -123,11 +123,11 @@
   --breakpoint-tablet: $breakpoint-table;
   --breakpoint-desktop: $breakpoint-desktop;
   --font-sans:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
-    "Helvetica Neue", sans-serif;
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   --font-mono:
-    Menlo, "Roboto Mono", Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono,
-    Courier New, monospace;
+    Menlo, "Roboto Mono", Monaco, Lucida Console, Liberation Mono,
+    DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
 }
 
 @media print {
@@ -350,8 +350,8 @@ button:hover {
   color: #fff !important;
 }
 
-button:disabled,
-.button.disabled {
+button:disabled:not(.link),
+.button.disabled:not(.link) {
   background-color: var(--background) !important;
   color: var(--foreground) !important;
   border: 0.0625rem solid var(--shade-2) !important;
@@ -359,14 +359,14 @@ button:disabled,
   cursor: not-allowed !important;
 }
 
-button:disabled:hover,
+button:disabled:not(.link):hover,
 .button.disabled:hover {
   background-color: var(--shade-1) !important;
   color: var(--foreground) !important;
 }
 
-button.disabled,
-.button.disabled {
+button.disabled:not(.link),
+.button.disabled:not(.link) {
   background-color: var(--foreground);
   color: var(--background);
   border: 0.0625rem solid var(--shade-2);
