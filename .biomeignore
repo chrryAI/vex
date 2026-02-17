@@ -5,6 +5,9 @@
 # Ignore compiler code (intentional low-level patterns)
 packages/sushi/**
 
+# Ignore generated test files
+**/__tests__/**/*.styles.ts
+
 # Ignore generated files
 **/*.d.ts
 **/dist

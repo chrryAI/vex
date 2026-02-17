@@ -3,7 +3,7 @@
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!!packages/sushi"]
+    "includes": ["**", "!!packages/sushi", "!!**/__tests__/**/*.styles.ts"]
   },
   "formatter": {
     "enabled": true,
