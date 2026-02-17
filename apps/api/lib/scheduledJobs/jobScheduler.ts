@@ -1495,10 +1495,12 @@ Important Notes:
       cleanedContent = cleanedContent
         .replace(/^```json\s*/, "")
         .replace(/```\s*$/, "")
+        .trim()
     } else if (cleanedContent.startsWith("```")) {
       cleanedContent = cleanedContent
         .replace(/^```\s*/, "")
         .replace(/```\s*$/, "")
+        .trim()
     }
 
     // Parse JSON from AI response
@@ -1512,9 +1514,11 @@ Important Notes:
     }
     try {
       parsedContent = JSON.parse(cleanedContent)
-    } catch (_error) {
+    } catch (parseError) {
+      console.error("❌ JSON parse error:", parseError)
+      console.error("📄 Cleaned content that failed to parse:", cleanedContent)
       throw new Error(
-        `Failed to parse AI response as JSON: ${cleanedContent.substring(0, 200)}`,
+        `Failed to parse AI response as JSON: ${cleanedContent.substring(0, 500)}`,
       )
     }
 
