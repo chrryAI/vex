@@ -216,7 +216,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     display: "flex",
                     gap: ".5rem",
                     flexWrap: "wrap",
-                    minHeight: "2.2rem",
                     marginTop: ".5rem",
                   }}
                   key={`app-tribe-${tribeSlug}-${app?.id}`}
@@ -403,47 +402,84 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         </A>{" "}
                         {t("for autonomous coding.")}
                       </P>
-
-                      {accountApp ? (
-                        <Button
-                          onClick={() => {
-                            setIsNewAppChat({ item: accountApp })
-                          }}
-                          className="inverted"
-                          style={{
-                            ...utilities.inverted.style,
-                            ...utilities.small.style,
-                            marginTop: 10,
-                          }}
-                        >
-                          <Img app={accountApp} width={22} height={22} />
-                          {t("Go to Your Agent")}
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={() => {
-                            if (showTribeProfile) {
-                              setIsNewAppChat({ item: app })
-                              return
+                      <Div
+                        style={{
+                          marginTop: 10,
+                          ...utilities.row.style,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {app && (
+                          <AppLink
+                            isTribe={false}
+                            app={app}
+                            icon={
+                              app?.icon ? (
+                                app.icon
+                              ) : (
+                                <Img app={app} width={22} height={22} />
+                              )
                             }
-                            if (!user) {
-                              addParams({ signIn: "login" })
-                              return
-                            }
-                            setAppStatus({
-                              part: "settings",
-                              step: "add",
-                            })
-                          }}
-                          className="inverted"
-                          style={{ ...utilities.inverted.style, marginTop: 10 }}
-                        >
-                          <Sparkles size={16} color="var(--accent-1)" />
-                          {t(showTribeProfile ? TRAIN : "Create Your Agent", {
-                            name: app?.name,
-                          })}
-                        </Button>
-                      )}
+                            className="button inverted"
+                            style={{
+                              ...utilities.inverted.style,
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            {t(TRAIN, {
+                              name: app?.name,
+                            })}
+                          </AppLink>
+                        )}
+                        {accountApp ? (
+                          <Button
+                            onClick={() => {
+                              setIsNewAppChat({ item: accountApp })
+                            }}
+                            className="inverted"
+                            style={{
+                              ...utilities.inverted.style,
+                              ...utilities.small.style,
+                            }}
+                          >
+                            <Img app={accountApp} width={22} height={22} />
+                            {t("Go to Your Agent")}
+                          </Button>
+                        ) : (
+                          <>
+                            <Button
+                              onClick={() => {
+                                if (showTribeProfile) {
+                                  setIsNewAppChat({ item: app })
+                                  return
+                                }
+                                if (!user) {
+                                  addParams({ signIn: "login" })
+                                  return
+                                }
+                                setAppStatus({
+                                  part: "settings",
+                                  step: "add",
+                                })
+                              }}
+                              className="inverted"
+                              style={{
+                                ...utilities.inverted.style,
+                              }}
+                            >
+                              <Sparkles size={16} color="var(--accent-1)" />
+                              {t(
+                                showTribeProfile ? TRAIN : "Create Your Agent",
+                                {
+                                  name: app?.name,
+                                },
+                              )}
+                            </Button>
+                          </>
+                        )}
+                      </Div>
                     </Div>
                   </>
                 )}
@@ -633,9 +669,9 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       lineHeight: "1.6",
                       fontSize: ".95rem",
                       display: "flex",
-                      flexWrap: "wrap",
                       gap: 10,
                       position: "relative",
+                      flexDirection: "column",
                     }}
                   >
                     {app?.subtitle || app?.description ? (
@@ -670,8 +706,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         display: "flex",
                         gap: 10,
                         alignItems: "center",
-                        justifyContent: "flex-end",
-                        marginLeft: "auto",
+                        justifyContent: "center",
                       }}
                     >
                       {isOwner(app, { userId: user?.id }) && (
@@ -686,7 +721,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           }}
                           style={utilities.link.style}
                         >
-                          <Settings2 size={18} /> {t("Edit")}
+                          <Settings2 size={18} />
                         </Button>
                       )}
                       {app && (
@@ -1610,6 +1645,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         </Div>
                       </MotiView>
                     ))}
+
                     {tribePosts?.hasNextPage && (
                       <Div
                         style={{

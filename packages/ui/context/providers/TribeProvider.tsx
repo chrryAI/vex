@@ -664,7 +664,10 @@ export function TribeProvider({ children }: TribeProviderProps) {
     isLoadingPost,
     tribePostError,
     tribeSlug,
-    currentTribe,
+    currentTribe:
+      tribeSlug && currentTribe && currentTribe.slug === tribeSlug
+        ? currentTribe
+        : undefined,
     setTribes,
     setTribePosts,
     setTribePost,
