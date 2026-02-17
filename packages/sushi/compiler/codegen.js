@@ -7274,7 +7274,7 @@ const countLength = (func, name = undefined) => {
   return countParams(func, name ?? func.name)
 }
 
-const generateMember = (scope, decl, _global, _name) => {
+const generateMember = (scope, decl, _global, __name) => {
   let final = [],
     finalEnd,
     extraBC = {}

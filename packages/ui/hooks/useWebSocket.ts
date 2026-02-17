@@ -231,7 +231,6 @@ class WebSocketManager {
     this.stopHeartbeat()
     this.heartbeatInterval = setInterval(() => {
       if (this.isConnected()) {
-        this.lastPingTime = Date.now()
         this.send({ type: "ping" })
 
         if (this.pongTimeout) clearTimeout(this.pongTimeout)
