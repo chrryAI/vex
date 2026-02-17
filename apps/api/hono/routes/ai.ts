@@ -6163,7 +6163,7 @@ Respond in JSON format:
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
-          maxTokens: jobMaxTokens, // Use job's maxTokens for scheduled posts
+          maxOutputTokens: jobMaxTokens, // Use job's maxTokens for scheduled posts
           tools: allTools, // Includes imageTools
           async onFinish({ text, usage, response, toolCalls, toolResults }) {
             finalText = text
@@ -7047,7 +7047,7 @@ Respond in JSON format:
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
-          maxTokens: jobMaxTokens,
+          maxOutputTokens: jobMaxTokens,
           tools: allTools,
           async onFinish({ text, usage, response, toolCalls, toolResults }) {
             finalText = text
@@ -7328,7 +7328,7 @@ Respond in JSON format:
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
-          maxTokens: jobMaxTokens,
+          maxOutputTokens: jobMaxTokens,
           tools: allTools,
           providerOptions: {
             google: {
@@ -7514,7 +7514,7 @@ Respond in JSON format:
         messages,
         maxRetries: 3,
         temperature: requestApp?.temperature ?? 0.7,
-        maxTokens: jobMaxTokens,
+        maxOutputTokens: jobMaxTokens,
         tools: toolsForModel,
         async onFinish({ text, usage, response, sources, toolCalls }) {
           finalText = text

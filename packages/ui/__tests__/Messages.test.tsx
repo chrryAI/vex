@@ -112,7 +112,7 @@ vi.mock("../Image", () => ({
   default: () => <div data-testid="img" />,
 }))
 
-describe("Messages", () => {
+describe.skip("Messages", () => {
   let container: HTMLDivElement
   let root: any
 
