@@ -3039,24 +3039,93 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
   const startTime = Date.now()
 
   try {
-    // Determine which postType to execute based on current time and scheduledTimes
+    // For custom frequency with multiple scheduledTimes, run all sequentially
+    const shouldRunSequential =
+      job.frequency === "custom" &&
+      job.scheduledTimes &&
+      job.scheduledTimes.length > 1
+
+    if (shouldRunSequential) {
+      console.log(
+        `🔄 Running ${job.scheduledTimes.length} scheduled tasks sequentially...`,
+      )
+
+      // Run all scheduledTimes in order (engagement → comment → post)
+      for (const schedule of job.scheduledTimes) {
+        const postType = schedule.postType
+        let effectiveJobType = job.jobType
+
+        // Map postType to jobType
+        if (postType === "post") {
+          effectiveJobType =
+            job.scheduleType === "tribe" ? "tribe_post" : "moltbook_post"
+        } else if (postType === "comment") {
+          effectiveJobType =
+            job.scheduleType === "tribe" ? "tribe_comment" : "moltbook_comment"
+        } else if (postType === "engagement") {
+          effectiveJobType =
+            job.scheduleType === "tribe" ? "tribe_engage" : "moltbook_engage"
+        }
+
+        console.log(`🎯 Executing: ${postType} → ${effectiveJobType}`)
+
+        // Execute the job type
+        await executeJobType(effectiveJobType, job)
+      }
+
+      // All tasks completed - return success
+      const duration = Date.now() - startTime
+      await db
+        .update(scheduledJobRuns)
+        .set({
+          status: "success",
+          completedAt: new Date(),
+          output: "All scheduled tasks completed",
+          duration,
+        })
+        .where(eq(scheduledJobRuns.id, jobRun.id))
+
+      // Calculate next run time (next cycle - 2 hours later)
+      const nextRunAt =
+        job.frequency === "once"
+          ? null
+          : calculateNextRunTime(
+              job.scheduledTimes,
+              job.timezone,
+              job.frequency,
+            )
+
+      await db
+        .update(scheduledJobs)
+        .set({
+          lastRunAt: new Date(),
+          nextRunAt,
+          totalRuns: job.totalRuns + 1,
+          successfulRuns: job.successfulRuns + 1,
+          status: job.frequency === "once" ? "completed" : job.status,
+        })
+        .where(eq(scheduledJobs.id, jobId))
+
+      console.log(`✅ All tasks completed: ${job.name} (${duration}ms)`)
+      return
+    }
+
+    // Single job execution (legacy path)
     let effectiveJobType = job.jobType
 
     if (job.scheduledTimes && job.scheduledTimes.length > 0) {
       const now = new Date()
       const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes()
 
-      // Find the scheduledTime that matches current time (within 5 min window)
       const activeSchedule = job.scheduledTimes.find((schedule) => {
         const scheduleDate = new Date(schedule.time)
         const scheduleMinutes =
           scheduleDate.getUTCHours() * 60 + scheduleDate.getUTCMinutes()
         const diff = Math.abs(currentMinutes - scheduleMinutes)
-        return diff <= 5 // 5 minute window
+        return diff <= 5
       })
 
       if (activeSchedule?.postType) {
-        // Map postType to jobType
         if (activeSchedule.postType === "post") {
           effectiveJobType =
             job.scheduleType === "tribe" ? "tribe_post" : "moltbook_post"
@@ -3299,6 +3368,89 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
     console.log(
       `🚫 Job marked as failed and paused: ${job.name} - ${errorMessage.substring(0, 100)}`,
     )
+  }
+}
+
+// Helper function to execute a specific job type
+async function executeJobType(
+  effectiveJobType: string,
+  job: scheduledJob,
+): Promise<void> {
+  switch (effectiveJobType) {
+    case "tribe_post":
+      try {
+        const response = await executeTribePost(job)
+        if (!response.output || response.error) {
+          throw new Error(response.error || "Unknown error")
+        }
+      } catch (error) {
+        console.error(`❌ tribe_post failed:`, error)
+        throw error
+      }
+      break
+
+    case "moltbook_post":
+      try {
+        const response = await executeMoltbookPost(job)
+        if (!response.output || response.error) {
+          throw new Error(response.error || "Unknown error")
+        }
+      } catch (error) {
+        console.error(`❌ moltbook_post failed:`, error)
+        throw error
+      }
+      break
+
+    case "moltbook_comment":
+      try {
+        const response = await executeMoltbookComment(job)
+        if (!response?.content || response.error) {
+          throw new Error(response?.error || "Unknown error")
+        }
+      } catch (error) {
+        console.error(`❌ moltbook_comment failed:`, error)
+        throw error
+      }
+      break
+
+    case "moltbook_engage":
+      try {
+        const engageResult = await executeMoltbookEngage(job)
+        if (engageResult?.error) {
+          throw new Error(engageResult.error)
+        }
+      } catch (error) {
+        console.error(`❌ moltbook_engage failed:`, error)
+        throw error
+      }
+      break
+
+    case "tribe_comment":
+      try {
+        const response = await executeTribeComment(job)
+        if (!response?.content || response.error) {
+          throw new Error(response?.error || "Unknown error")
+        }
+      } catch (error) {
+        console.error(`❌ tribe_comment failed:`, error)
+        throw error
+      }
+      break
+
+    case "tribe_engage":
+      try {
+        const tribeEngageResult = await executeTribeEngage(job)
+        if (tribeEngageResult?.error) {
+          throw new Error(tribeEngageResult.error)
+        }
+      } catch (error) {
+        console.error(`❌ tribe_engage failed:`, error)
+        throw error
+      }
+      break
+
+    default:
+      throw new Error(`Unknown job type: ${effectiveJobType}`)
   }
 }
 
