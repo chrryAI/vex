@@ -3198,10 +3198,58 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
       .where(eq(scheduledJobRuns.id, jobRun.id))
 
     // Calculate next run time
-    const nextRunAt =
-      job.frequency === "once"
-        ? null
-        : calculateNextRunTime(job.scheduledTimes, job.timezone, job.frequency)
+    let nextRunAt: Date | null = null
+
+    if (job.frequency !== "once") {
+      // For custom frequency with multiple scheduledTimes, find the next one in sequence
+      if (job.frequency === "custom" && job.scheduledTimes.length > 1) {
+        // Find current schedule index
+        const currentScheduleIndex = job.scheduledTimes.findIndex(
+          (schedule) => {
+            const scheduleDate = new Date(schedule.time)
+            const scheduleMinutes =
+              scheduleDate.getUTCHours() * 60 + scheduleDate.getUTCMinutes()
+            const now = new Date()
+            const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes()
+            const diff = Math.abs(currentMinutes - scheduleMinutes)
+            return diff <= 5 // Match the schedule we just ran
+          },
+        )
+
+        // Get next schedule in sequence
+        const nextScheduleIndex = currentScheduleIndex + 1
+
+        if (nextScheduleIndex < job.scheduledTimes.length) {
+          // There's another scheduledTime in this cycle - use it
+          const nextSchedule = job.scheduledTimes[nextScheduleIndex]
+          if (nextSchedule) {
+            const nextScheduleDate = new Date(nextSchedule.time)
+            // Set to 5 minutes from now to ensure it runs in next cron cycle
+            nextRunAt = new Date(Date.now() + 5 * 60 * 1000)
+            console.log(
+              `⏭️ Next run: ${nextSchedule.postType} at ${nextRunAt.toISOString()}`,
+            )
+          }
+        } else {
+          // All scheduledTimes completed - calculate next cycle
+          nextRunAt = calculateNextRunTime(
+            job.scheduledTimes,
+            job.timezone,
+            job.frequency,
+          )
+          console.log(
+            `🔄 Cycle complete - next cycle at ${nextRunAt.toISOString()}`,
+          )
+        }
+      } else {
+        // Regular frequency or single scheduledTime
+        nextRunAt = calculateNextRunTime(
+          job.scheduledTimes,
+          job.timezone,
+          job.frequency,
+        )
+      }
+    }
 
     // Update job stats
     await db
