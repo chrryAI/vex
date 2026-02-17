@@ -3,12 +3,12 @@
  * Connects browser extensions to local file system and CLI
  */
 
-import { ChromeNativeTransport } from "./transports/native"
-import { WebSocketTransport } from "./transports/websocket"
-import { FileSystemHandler } from "./handlers/fs"
 import { CLIHandler } from "./handlers/cli"
+import { FileSystemHandler } from "./handlers/fs"
 import { GitHandler } from "./handlers/git"
 import type { Message } from "./transports/native"
+import { ChromeNativeTransport } from "./transports/native"
+import { WebSocketTransport } from "./transports/websocket"
 
 class SushiBridge {
   private fs: FileSystemHandler

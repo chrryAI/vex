@@ -2,12 +2,12 @@ import type {} from "./porffor.d.ts"
 
 // 20.4.1.1 Symbol ([ description ])
 // https://tc39.es/ecma262/#sec-symbol-description
-export const Symbol = (description: any): Symbol => {
+export const Symbol = (description: any): symbol => {
   // 1. If NewTarget is not undefined, throw a TypeError exception.
   // This is an arrow function so happens implicitly
 
   // 2. If description is undefined, let descString be undefined.
-  let descString: any = undefined
+  let descString: any
 
   // 3. Else, let descString be ? ToString(description).
   if (Porffor.type(description) != Porffor.TYPES.undefined) {
@@ -29,7 +29,7 @@ i32.store8 0 8`
   return symbol
 }
 
-export const __Symbol_prototype_description$get = (_this: Symbol) => {
+export const __Symbol_prototype_description$get = (_this: symbol) => {
   Porffor.wasm`local.get ${_this}
 i32.to_u
 f64.load 0 0
@@ -39,8 +39,8 @@ i32.load8_u 0 8
 return`
 }
 
-export const __Symbol_prototype_toString = (_this: Symbol) => {
-  let out: bytestring = Porffor.malloc()
+export const __Symbol_prototype_toString = (_this: symbol) => {
+  const out: bytestring = Porffor.malloc()
 
   // Symbol(
   Porffor.wasm.i32.store8(out, 83, 0, 4)
@@ -77,20 +77,20 @@ export const __Symbol_prototype_toString = (_this: Symbol) => {
   return out
 }
 
-export const __Symbol_prototype_toLocaleString = (_this: Symbol) =>
+export const __Symbol_prototype_toLocaleString = (_this: symbol) =>
   __Symbol_prototype_toString(_this)
 
-export const __Symbol_prototype_valueOf = (_this: Symbol) => {
+export const __Symbol_prototype_valueOf = (_this: symbol) => {
   return _this
 }
 
 const forStore: Map = new Map()
-export const __Symbol_for = (key: any): Symbol => {
+export const __Symbol_for = (key: any): symbol => {
   key = ecma262.ToString(key)
 
   if (forStore.has(key)) return forStore.get(key)
 
-  const out: Symbol = Symbol(key)
+  const out: symbol = Symbol(key)
   forStore.set(key, out)
 
   return out
@@ -100,10 +100,10 @@ export const __Symbol_keyFor = (arg: any): any => {
   if (Porffor.type(arg) != Porffor.TYPES.symbol)
     throw new TypeError("Symbol.keyFor argument should be a Symbol")
 
-  const sym: Symbol = arg
+  const sym: symbol = arg
   const desc: any = sym.description
 
-  const stored: Symbol = forStore.get(desc)
+  const stored: symbol = forStore.get(desc)
   if (sym == stored) return desc
 
   return undefined

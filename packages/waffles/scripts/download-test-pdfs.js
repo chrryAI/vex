@@ -165,9 +165,7 @@ async function main() {
   console.log(`📁 Location: ${PDFS_DIR}`)
 
   if (completed < samplePDFs.length) {
-    console.log(
-      `\n⚠️  ${samplePDFs.length - completed} PDFs failed to download`,
-    )
+    console.log(`\n⚠️  ${samplePDFs.length - completed} PDFs failed to download`)
   }
 }
 

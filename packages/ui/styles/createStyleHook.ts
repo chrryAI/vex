@@ -5,8 +5,8 @@
 
 import React, { startTransition } from "react"
 import { usePlatform } from "../platform/PlatformProvider"
-import { useTheme } from "./theme"
 import { createStyleProxy } from "./createStyleProxy"
+import { useTheme } from "./theme"
 
 export function createStyleHook<T extends Record<string, any>>(styles: {
   native: Record<string, any>

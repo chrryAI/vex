@@ -1,6 +1,6 @@
 import arcjet, { slidingWindow } from "@arcjet/node"
-import type { user, guest, subscription, app } from "@repo/db"
 import { isDevelopment, isE2E, isOwner } from "@chrryai/chrry/utils"
+import type { app, guest, subscription, user } from "@repo/db"
 
 // Type-safe Arcjet request interface
 export interface ArcjetCompatibleRequest extends Omit<Request, "headers"> {

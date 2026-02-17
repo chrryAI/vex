@@ -1,55 +1,55 @@
+import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import {
-  db,
   and,
-  lte,
-  gte,
-  isNull,
-  or,
-  isNotNull,
+  db,
   decrypt,
-  type scheduledJob,
-  getMemories,
   eq,
-  getOrCreateTribe,
-  sql,
-  ne,
   getApp,
-  getThread,
+  getMemories,
   getMessages,
+  getOrCreateTribe,
+  getThread,
+  gte,
   inArray,
+  isNotNull,
+  isNull,
+  lte,
+  ne,
   notInArray,
+  or,
+  type scheduledJob,
+  sql,
 } from "@repo/db"
 import { randomInt } from "crypto"
-import { FRONTEND_URL } from "@chrryai/chrry/utils"
 
 // Secure random number generator (0 to max-1)
 function secureRandom(max: number = 100): number {
   return randomInt(0, max)
 }
-import {
-  scheduledJobs,
-  scheduledJobRuns,
-  tribePosts,
-  tribeComments,
-  tribeReactions,
-  tribeFollows,
-  apps,
-  tribes,
-  tribeBlocks,
-} from "@repo/db/src/schema"
-import { generateText } from "ai"
-import { getModelProvider } from "../getModelProvider"
-import { captureException } from "@sentry/node"
-import { getMoltbookFeed, postToMoltbook } from "../integrations/moltbook"
-import { toZonedTime, fromZonedTime } from "date-fns-tz"
-import { broadcast } from "../wsClients"
 
+import {
+  apps,
+  scheduledJobRuns,
+  scheduledJobs,
+  tribeBlocks,
+  tribeComments,
+  tribeFollows,
+  tribePosts,
+  tribeReactions,
+  tribes,
+} from "@repo/db/src/schema"
+import { captureException } from "@sentry/node"
+import { generateText } from "ai"
+import { fromZonedTime, toZonedTime } from "date-fns-tz"
+import { sign } from "jsonwebtoken"
 import { v4 as uuidv4 } from "uuid"
+import { getModelProvider } from "../getModelProvider"
+import { getMoltbookFeed, postToMoltbook } from "../integrations/moltbook"
 import {
   sendDiscordNotification,
   sendErrorNotification,
 } from "../sendDiscordNotification"
-import { sign } from "jsonwebtoken"
+import { broadcast } from "../wsClients"
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET
 if (!JWT_SECRET && process.env.NODE_ENV !== "development") {
@@ -61,15 +61,15 @@ import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
 const SECRET = JWT_SECRET || "development-secret"
 
 import {
-  getUser,
   getAiAgent,
-  updateMessage,
+  getUser,
   type thread,
+  updateMessage,
   updateThread,
 } from "@repo/db"
 import { messages, moltQuestions, threads } from "@repo/db/src/schema"
+import { API_URL, isDevelopment } from ".."
 import { checkMoltbookHealth } from "../integrations/moltbook"
-import { isDevelopment, API_URL } from ".."
 
 const JWT_EXPIRY = "30d"
 
@@ -77,14 +77,14 @@ function generateToken(userId: string, email: string): string {
   return sign({ userId, email }, SECRET, { expiresIn: JWT_EXPIRY })
 }
 
-import { moltComments, apps as appsSchema } from "@repo/db/src/schema"
-import {
-  getPostComments,
-  postComment,
-  followAgent,
-} from "../integrations/moltbook"
+import { apps as appsSchema, moltComments } from "@repo/db/src/schema"
 import { streamText } from "ai"
 import { isExcludedAgent } from "../cron/moltbookExcludeList"
+import {
+  followAgent,
+  getPostComments,
+  postComment,
+} from "../integrations/moltbook"
 import { redact } from "../redaction"
 
 // Clean Moltbook's aggressive PII placeholders
@@ -1376,9 +1376,11 @@ Guidelines:
 - Be authentic and technical
 - Keep it conversational but professional
 - Reference Wine ecosystem apps (Chrry, Vex, Sushi, Atlas, etc.) when relevant
-- **POST LENGTH**: Write 200-500 characters (2-4 sentences) - be substantial but concise
-- Include specific details, examples, or technical insights
-- Make it engaging and worth reading
+- **POST LENGTH**: Write 1000-2500 characters (multiple paragraphs) - be detailed and comprehensive
+- Include specific details, examples, code snippets, or technical insights
+- Break content into multiple paragraphs for readability
+- Add context, background, and implications of your work
+- Make it engaging, informative, and worth reading
 
 ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}
 ${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}

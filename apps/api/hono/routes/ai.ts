@@ -1,133 +1,130 @@
-import { Hono } from "hono"
-import { v4 as uuidv4 } from "uuid"
-import Handlebars from "handlebars"
-
-import { getDNAThreadArtifacts } from "../../lib/appRAG"
-import { postToMoltbook } from "../../lib/integrations/moltbook"
-
+import type { appFormData } from "@chrryai/chrry/schemas/appSchema"
+import type { appWithStore } from "@chrryai/chrry/types"
 import {
-  getMemories,
-  getMessages,
-  createMessage,
-  getAiAgent,
-  getMessage,
-  getThread,
-  updateMessage,
-  type thread,
-  type collaboration,
-  logCreditUsage,
-  type user,
-  type guest,
-  reinforceMemory,
-  getPlaceHolder,
-  getCalendarEvents,
-  updateApp,
-  type memory,
-  getPureApp,
-  type app,
-  getTasks,
-  getTask,
-  getMoods,
-  getTimer,
-  getAiAgents,
-  getInstructions,
-  getCharacterProfiles,
-  realtimeAnalytics,
-  pearFeedback,
-  retroSessions,
-  retroResponses,
-  db,
-  eq,
-  desc,
-  gte,
-  getExpenses,
-  getBudgets,
-  getSharedExpenses,
-  updateThread,
-  getApp,
-  getUser as getUserDb,
-  getGuest as getGuestDb,
-  checkPearQuota,
-  incrementPearQuota,
-  updateUser,
-  getAnalyticsSites,
-  updateGuest,
-  type subscription,
-  sql,
-  and,
-  isNull,
-  isNotNull,
-  type aiAgent,
-  VEX_LIVE_FINGERPRINTS,
-  decrypt,
-  inArray,
-  apps as appsSchema,
-  getOrCreateTribe,
-  getTribes,
-  getScheduledJob,
-} from "@repo/db"
-
-import { tribePosts, tribes as tribesSchema } from "@repo/db/src/schema"
-
-import {
-  processFileForRAG,
-  buildEnhancedRAGContext,
-  processMessageForRAG,
-} from "../../lib/actions/ragService"
-import { getLatestNews, getNewsBySource } from "../../lib/newsFetcher"
-import { streamText, generateText, type ModelMessage } from "ai"
-
-import { faker } from "@faker-js/faker"
-import {
-  isE2E as isE2EInternal,
-  isDevelopment,
-  isOwner,
-  MAX_FILE_SIZES,
-  MAX_FILE_LIMITS,
   ADDITIONAL_CREDITS,
+  isDevelopment,
+  isE2E as isE2EInternal,
+  isOwner,
+  MAX_FILE_LIMITS,
+  MAX_FILE_SIZES,
 } from "@chrryai/chrry/utils"
-import Replicate from "replicate"
+import { getFeatures } from "@chrryai/chrry/utils/subscription"
+import { faker } from "@faker-js/faker"
+
 import {
-  type webSearchResultType,
+  type aiAgent,
+  and,
+  type app,
+  apps as appsSchema,
+  checkPearQuota,
+  type collaboration,
+  createMessage,
+  db,
+  decrypt,
+  desc,
+  eq,
+  getAiAgent,
+  getAiAgents,
+  getAnalyticsSites,
+  getApp,
+  getBudgets,
+  getCalendarEvents,
+  getCharacterProfiles,
+  getExpenses,
+  getGuest as getGuestDb,
+  getInstructions,
+  getMemories,
+  getMessage,
+  getMessages,
+  getMoods,
+  getOrCreateTribe,
+  getPlaceHolder,
+  getPureApp,
+  getScheduledJob,
+  getSharedExpenses,
+  getTask,
+  getTasks,
+  getThread,
+  getTimer,
+  getTribes,
+  getUser as getUserDb,
+  gte,
+  type guest,
+  inArray,
+  incrementPearQuota,
+  isNotNull,
+  isNull,
+  logCreditUsage,
+  type memory,
+  pearFeedback,
+  realtimeAnalytics,
+  reinforceMemory,
+  retroResponses,
+  retroSessions,
+  sql,
+  type subscription,
+  type thread,
+  updateApp,
+  updateGuest,
+  updateMessage,
+  updateThread,
+  updateUser,
+  type user,
+  VEX_LIVE_FINGERPRINTS,
+} from "@repo/db"
+import {
   MEMBER_FREE_TRIBE_CREDITS,
+  tribePosts,
+  tribes as tribesSchema,
+  type webSearchResultType,
 } from "@repo/db/src/schema"
+import { captureException } from "@sentry/node"
+import { generateText, type ModelMessage, streamText } from "ai"
+import Handlebars from "handlebars"
+import { Hono } from "hono"
+import Replicate from "replicate"
+import slugify from "slug"
+import { v4 as uuidv4 } from "uuid"
 import {
+  checkThreadSummaryLimit,
   extractPDFText,
+  getHourlyLimit,
+  isCollaborator,
   REPLICATE_API_KEY,
   wait,
-  isCollaborator,
-  getHourlyLimit,
 } from "../../lib"
+import {
+  buildEnhancedRAGContext,
+  processFileForRAG,
+  processMessageForRAG,
+} from "../../lib/actions/ragService"
+import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
+import { PerformanceTracker } from "../../lib/analytics"
+import { getDNAThreadArtifacts } from "../../lib/appRAG"
+import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
+import extractVideoFrames from "../../lib/extractVideoFrames"
+import generateAIContent from "../../lib/generateAIContent"
 import { getModelProvider } from "../../lib/getModelProvider"
-import { validatePearFeedback } from "../../lib/validatePearFeedback"
-import {
-  checkTokenLimit,
-  splitConversation,
-  createTokenLimitError,
-} from "../../lib/tokenLimitCheck"
 import { getRetroAnalyticsContext } from "../../lib/getRetroAnalyticsContext"
-import { scanFileForMalware } from "../../lib/security"
+import { postToMoltbook } from "../../lib/integrations/moltbook"
 import { upload } from "../../lib/minio"
-import slugify from "slug"
+import { getLatestNews, getNewsBySource } from "../../lib/newsFetcher"
 import {
+  broadcast,
   notifyOwnerAndCollaborations as notifyOwnerAndCollaborationsInternal,
   type notifyOwnerAndCollaborationsPayload,
-  broadcast,
 } from "../../lib/notify"
 import { checkRateLimit } from "../../lib/rateLimiting"
-import { captureException } from "@sentry/node"
-import generateAIContent from "../../lib/generateAIContent"
-import { PerformanceTracker } from "../../lib/analytics"
-import { checkThreadSummaryLimit } from "../../lib"
-import extractVideoFrames from "../../lib/extractVideoFrames"
-import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
-import { getTools } from "../../lib/tools"
-import type { appWithStore } from "@chrryai/chrry/types"
-import type { appFormData } from "@chrryai/chrry/schemas/appSchema"
-import { getFeatures } from "@chrryai/chrry/utils/subscription"
-import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
-import { getGuest, getMember } from "../lib/auth"
 import { redact } from "../../lib/redaction"
+import { scanFileForMalware } from "../../lib/security"
+import {
+  checkTokenLimit,
+  createTokenLimitError,
+  splitConversation,
+} from "../../lib/tokenLimitCheck"
+import { getTools } from "../../lib/tools"
+import { validatePearFeedback } from "../../lib/validatePearFeedback"
+import { getGuest, getMember } from "../lib/auth"
 
 interface StreamController {
   close: () => void
@@ -1308,7 +1305,7 @@ app.post("/", async (c) => {
       : undefined
 
   // Extract maxTokens from job's active scheduledTime
-  let jobMaxTokens: number | undefined = undefined
+  let jobMaxTokens: number | undefined
   if (job && job.scheduledTimes && job.scheduledTimes.length > 0) {
     // Find the active scheduledTime based on current time
     const now = new Date()
@@ -2552,15 +2549,15 @@ This is the conversation starter that prompted their message. Keep this context 
 `
     : ""
 }${
-          appPlaceholder || threadPlaceholder
-            ? `
+  appPlaceholder || threadPlaceholder
+    ? `
 You recently generated these personalized suggestions for the user:
 ${appPlaceholder ? `- App placeholder: "${appPlaceholder.text}"` : ""}
 ${threadPlaceholder ? `- Thread placeholder: "${threadPlaceholder.text}"` : ""}
 
 These reflect the user's interests and recent conversations. If the user seems uncertain about what to discuss or asks for suggestions, you can naturally reference these topics. Be conversational about it - don't just list them, weave them into your response naturally.`
-            : ""
-        }
+    : ""
+}
 `
       : ""
 

@@ -1,46 +1,42 @@
-import { Hono } from "hono"
-import { v4 as uuidv4, validate } from "uuid"
-import sanitizeHtml from "sanitize-html"
-import { redact } from "../../lib/redaction"
+import { MAX_FILE_LIMITS } from "@chrryai/chrry/utils"
 import {
-  getMessages,
   createMessage,
-  getAiAgent,
   createThread,
+  deleteMessage,
+  getAiAgent,
   getMessage,
-  type subscription,
-  updateThread,
-  getThread,
+  getMessages,
   getMood,
   getPureApp,
-  getTask,
-  type guest,
-  updateTask,
-  type user,
-  deleteMessage,
-  updateMessage,
   getScheduledJob,
-} from "@repo/db"
-import { PROMPT_LIMITS, type webSearchResultType } from "@repo/db/src/schema"
-import {
+  getTask,
+  getThread,
+  type guest,
   isE2E as isE2EInternal,
   isOwner,
+  type subscription,
+  updateMessage,
+  updateTask,
+  updateThread,
+  type user,
   VEX_LIVE_FINGERPRINTS,
 } from "@repo/db"
-
-import { MAX_FILE_LIMITS } from "@chrryai/chrry/utils"
-
-import { generateThreadTitle, trimTitle } from "../../utils/titleGenerator"
-import { notifyOwnerAndCollaborations } from "../../lib/notify"
+import { PROMPT_LIMITS, type webSearchResultType } from "@repo/db/src/schema"
+import { Hono } from "hono"
+import sanitizeHtml from "sanitize-html"
+import { v4 as uuidv4, validate } from "uuid"
+import { getDailyImageLimit, isCollaborator } from "../../lib"
 import { processMessageForRAG } from "../../lib/actions/ragService"
-import { isCollaborator, getDailyImageLimit } from "../../lib"
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
-import { checkRateLimit } from "../../lib/rateLimiting"
 import captureException from "../../lib/captureException"
-import { scanFileForMalware } from "../../lib/security"
-import { getGuest, getMember } from "../lib/auth"
 import { deleteFile } from "../../lib/minio"
+import { notifyOwnerAndCollaborations } from "../../lib/notify"
+import { checkRateLimit } from "../../lib/rateLimiting"
+import { redact } from "../../lib/redaction"
+import { scanFileForMalware } from "../../lib/security"
 import { streamControllers } from "../../lib/streamControllers"
+import { generateThreadTitle, trimTitle } from "../../utils/titleGenerator"
+import { getGuest, getMember } from "../lib/auth"
 
 export const messages = new Hono()
 

@@ -95,7 +95,7 @@ export const __Math_log = (y: number): number => {
   y-- // 1 <= y < 2 -> 0 <= y < 1
 
   // more accurate series expansion
-  let x = y / (2 + y)
+  const x = y / (2 + y)
   const x2 = x * x
   let sum = x
   let term = x
@@ -545,7 +545,7 @@ export const __Math_sumPrecise = (values: any[]): number => {
         y = sum
 
         // a number fits in slot i if its magnitude is less than 2^(i+SMALL_MIN+1)
-        const slotLimit: number = Math.pow(2, i + SMALL_MIN + 1)
+        const slotLimit: number = 2 ** (i + SMALL_MIN + 1)
         if (y >= -slotLimit && y < slotLimit) {
           small[i] = y
           y = 0

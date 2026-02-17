@@ -1,11 +1,11 @@
 import TimeAgo from "javascript-time-ago"
-import en from "javascript-time-ago/locale/en"
-import ja from "javascript-time-ago/locale/ja"
-import es from "javascript-time-ago/locale/es"
-import pt from "javascript-time-ago/locale/pt"
-import fr from "javascript-time-ago/locale/fr"
-import ko from "javascript-time-ago/locale/ko"
 import de from "javascript-time-ago/locale/de"
+import en from "javascript-time-ago/locale/en"
+import es from "javascript-time-ago/locale/es"
+import fr from "javascript-time-ago/locale/fr"
+import ja from "javascript-time-ago/locale/ja"
+import ko from "javascript-time-ago/locale/ko"
+import pt from "javascript-time-ago/locale/pt"
 import zh from "javascript-time-ago/locale/zh"
 
 TimeAgo.addLocale(en)

@@ -1,17 +1,17 @@
-import { expect, Page } from "@playwright/test"
-import {
-  getURL,
-  simulateInputPaste,
-  wait,
-  capitalizeFirstLetter,
-  simulatePaste,
-  log,
-  getModelCredits,
-  modelName,
-} from ".."
+import { faker } from "@faker-js/faker"
+import { expect, type Page } from "@playwright/test"
 import path from "path"
 import process from "process"
-import { faker } from "@faker-js/faker"
+import {
+  capitalizeFirstLetter,
+  getModelCredits,
+  getURL,
+  log,
+  type modelName,
+  simulateInputPaste,
+  simulatePaste,
+  wait,
+} from ".."
 
 // Resolve paths relative to the waffles package root
 const getTestFilePath = (...pathSegments: string[]) => {
@@ -338,7 +338,7 @@ export const chat = async ({
 
       const fileChooserPromise = page.waitForEvent("filechooser")
 
-      let filesToAttach: string[] = []
+      const filesToAttach: string[] = []
       let filesToPaste = 0
 
       for (const [key, count] of Object.entries(
@@ -538,7 +538,7 @@ export const chat = async ({
       const to = size > MAX_FILES ? MAX_FILES : size
 
       // Create array of individual files to attach
-      let filesToAttach: string[] = []
+      const filesToAttach: string[] = []
       let filesToPaste = 0
 
       for (const [key, count] of Object.entries(prompt.mix)) {

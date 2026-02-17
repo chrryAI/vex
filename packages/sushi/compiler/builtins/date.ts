@@ -398,7 +398,7 @@ export const __ecma262_WeekDayName = (tv: number): bytestring => {
   const lut: bytestring = "SunMonTueWedThuFriSat"
   const weekday: number = __ecma262_WeekDay(tv)
 
-  let out: bytestring = Porffor.malloc(8)
+  const out: bytestring = Porffor.malloc(8)
   out.length = 3
 
   let outPtr: number = Porffor.wasm`local.get ${out}`
@@ -426,7 +426,7 @@ export const __ecma262_MonthName = (tv: number): bytestring => {
   const lut: bytestring = "JanFebMarAprMayJunJulAugSepOctNovDec"
   const month: number = __ecma262_MonthFromTime(tv)
 
-  let out: bytestring = Porffor.malloc(8)
+  const out: bytestring = Porffor.malloc(8)
   out.length = 3
 
   let outPtr: number = Porffor.wasm`local.get ${out}`
@@ -1392,7 +1392,7 @@ export const __Date_prototype_setUTCHours = (
   // 1. Let dateObject be the this value.
   // 2. Perform ? RequireInternalSlot(dateObject, [[DateValue]]).
   // 3. Let t be dateObject.[[DateValue]].
-  let t: number = __Porffor_date_read(_this)
+  const t: number = __Porffor_date_read(_this)
 
   // 4. Let h be ? ToNumber(hour).
   const h: number = ecma262.ToNumber(hour)
@@ -1440,7 +1440,7 @@ export const __Date_prototype_setUTCMilliseconds = (_this: any, ms: any) => {
   // 1. Let dateObject be the this value.
   // 2. Perform ? RequireInternalSlot(dateObject, [[DateValue]]).
   // 3. Let t be dateObject.[[DateValue]].
-  let t: number = __Porffor_date_read(_this)
+  const t: number = __Porffor_date_read(_this)
 
   // ignore old-style spec setting arg instead of having let
   // 4. Set ms to ? ToNumber(ms).
@@ -1480,7 +1480,7 @@ export const __Date_prototype_setUTCMinutes = (
   // 1. Let dateObject be the this value.
   // 2. Perform ? RequireInternalSlot(dateObject, [[DateValue]]).
   // 3. Let t be dateObject.[[DateValue]].
-  let t: number = __Porffor_date_read(_this)
+  const t: number = __Porffor_date_read(_this)
 
   // 4. Let m be ? ToNumber(min).
   const m: number = ecma262.ToNumber(min)
@@ -1526,7 +1526,7 @@ export const __Date_prototype_setUTCMonth = (
   // 1. Let dateObject be the this value.
   // 2. Perform ? RequireInternalSlot(dateObject, [[DateValue]]).
   // 3. Let t be dateObject.[[DateValue]].
-  let t: number = __Porffor_date_read(_this)
+  const t: number = __Porffor_date_read(_this)
 
   // 4. Let m be ? ToNumber(month).
   const m: number = ecma262.ToNumber(month)
@@ -1566,7 +1566,7 @@ export const __Date_prototype_setUTCSeconds = (
   // 1. Let dateObject be the this value.
   // 2. Perform ? RequireInternalSlot(dateObject, [[DateValue]]).
   // 3. Let t be dateObject.[[DateValue]].
-  let t: number = __Porffor_date_read(_this)
+  const t: number = __Porffor_date_read(_this)
 
   // 4. Let s be ? ToNumber(sec).
   const s: number = ecma262.ToNumber(sec)
@@ -1628,7 +1628,7 @@ export const __Porffor_bytestring_appendStr = (
   const appendageLen: i32 = appendage.length
   let strPtr: i32 = Porffor.wasm`local.get ${str}` + strLen
   let appendagePtr: i32 = Porffor.wasm`local.get ${appendage}`
-  let endPtr: i32 = appendagePtr + appendageLen
+  const endPtr: i32 = appendagePtr + appendageLen
 
   while (appendagePtr < endPtr) {
     Porffor.wasm.i32.store8(
@@ -1672,11 +1672,11 @@ export const __Porffor_bytestring_appendPadNum = (
   num: number,
   len: number,
 ): i32 => {
-  let numStr: bytestring = Number.prototype.toFixed(num, 0)
+  const numStr: bytestring = Number.prototype.toFixed(num, 0)
 
   let strPtr: i32 = Porffor.wasm`local.get ${str}` + str.length
 
-  let numStrLen: i32 = numStr.length
+  const numStrLen: i32 = numStr.length
   const strPtrEnd: i32 = strPtr + (len - numStrLen)
   while (strPtr < strPtrEnd) {
     Porffor.wasm.i32.store8(strPtr++, 48, 0, 4)
@@ -1702,7 +1702,7 @@ export const __Porffor_bytestring_appendPadNum = (
 export const __ecma262_ToUTCDTSF = (t: number): bytestring => {
   const year: number = __ecma262_YearFromTime(t)
 
-  let out: bytestring = Porffor.malloc(64)
+  const out: bytestring = Porffor.malloc(64)
   if (Porffor.fastOr(year < 0, year >= 10000)) {
     // extended year format
     // sign
@@ -1794,7 +1794,7 @@ export const __ecma262_TimeString = (tv: number): bytestring => {
   const second: number = __ecma262_SecFromTime(tv)
 
   // 4. Return the string-concatenation of hour, ":", minute, ":", second, the code unit 0x0020 (SPACE), and "GMT".
-  let out: bytestring = Porffor.malloc(64)
+  const out: bytestring = Porffor.malloc(64)
   __Porffor_bytestring_appendPadNum(out, hour, 2)
   __Porffor_bytestring_appendChar(out, 58) // ':'
 
@@ -1830,7 +1830,7 @@ export const __ecma262_DateString = (tv: number): bytestring => {
   // 5. If yv is +0𝔽 or yv > +0𝔽, let yearSign be the empty String; otherwise, let yearSign be "-".
   // 6. Let paddedYear be ToZeroPaddedDecimalString(abs(ℝ(yv)), 4).
   // 7. Return the string-concatenation of weekday, the code unit 0x0020 (SPACE), month, the code unit 0x0020 (SPACE), day, the code unit 0x0020 (SPACE), yearSign, and paddedYear.
-  let out: bytestring = Porffor.malloc(64)
+  const out: bytestring = Porffor.malloc(64)
 
   // weekday
   __Porffor_bytestring_appendStr(out, weekday)

@@ -1,7 +1,7 @@
-import { Hono } from "hono"
 import { createTimer, getTimer, updateTimer } from "@repo/db"
-import { getMember, getGuest } from "../lib/auth"
+import { Hono } from "hono"
 import { notify } from "../../lib/notify"
+import { getGuest, getMember } from "../lib/auth"
 
 export const timers = new Hono()
 

@@ -3,7 +3,8 @@
  * Uses @shopify/flash-list for optimal performance on React Native
  */
 
-import React, { forwardRef } from "react"
+import type React from "react"
+import { forwardRef } from "react"
 
 export interface FlashListProps<T> {
   data: T[]

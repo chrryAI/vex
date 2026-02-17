@@ -12,11 +12,7 @@
       "require": "./dist/index.js"
     }
   },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
     "e2e": "TEST_URL=http://e2e.chrry.ai playwright test --project chromium",
     "e": "TEST_URL=http://localhost:5173 playwright test --project chromium",

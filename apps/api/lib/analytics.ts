@@ -1,6 +1,6 @@
-import { isDevelopment } from "."
+import type { guest, user } from "@repo/db"
 import { isE2E } from "@repo/db"
-import type { user, guest } from "@repo/db"
+import { isDevelopment } from "."
 
 /**
  * Send a server-side event to Plausible Analytics

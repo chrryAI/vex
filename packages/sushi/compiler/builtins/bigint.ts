@@ -9,7 +9,7 @@ export const __Porffor_bigint_fromDigits = (
   if (len > 16383) throw new RangeError("Maximum BigInt size exceeded") // (65536 - 4) / 4
 
   // use digits pointer as bigint pointer, as only used here
-  let ptr: i32 = Porffor.wasm`local.get ${digits}`
+  const ptr: i32 = Porffor.wasm`local.get ${digits}`
 
   Porffor.wasm.i32.store8(ptr, negative ? 1 : 0, 0, 0) // sign
   Porffor.wasm.i32.store16(ptr, len, 0, 2) // digit count
@@ -117,8 +117,8 @@ export const __Porffor_bigint_fromString = (n: string | bytestring): bigint => {
   while (digits.length > 0) {
     let carry: i32 = 0
     for (let j: i32 = 0; j < digits.length; j++) {
-      let value: i32 = carry * 10 + digits[j]
-      let quotient: i32 = Math.floor(value / BASE)
+      const value: i32 = carry * 10 + digits[j]
+      const quotient: i32 = Math.floor(value / BASE)
       carry = value % BASE
 
       digits[j] = quotient

@@ -1,18 +1,18 @@
 import {
-  S3Client,
-  DeleteObjectCommand,
   CreateBucketCommand,
+  DeleteObjectCommand,
   HeadBucketCommand,
   PutBucketPolicyCommand,
+  S3Client,
 } from "@aws-sdk/client-s3"
 import { Upload } from "@aws-sdk/lib-storage"
+import { isDevelopment } from "@chrryai/chrry/utils"
 import { FetchHttpHandler } from "@smithy/fetch-http-handler"
-import sharp from "sharp"
-import captureException from "./captureException"
 import dns from "dns"
 import net from "net"
+import sharp from "sharp"
 import { parse as parseDomain } from "tldts"
-import { isDevelopment } from "@chrryai/chrry/utils"
+import captureException from "./captureException"
 
 // Validate S3 configuration
 if (

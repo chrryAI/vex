@@ -1,6 +1,6 @@
 // packages/ui/src/hooks/useUnifiedStyles.ts
 import { useClsx } from "../platform/clsx"
-import { UnifiedStyles } from "../styles/createUnifiedStyles"
+import type { UnifiedStyles } from "../styles/createUnifiedStyles"
 
 type ClassValue =
   | string

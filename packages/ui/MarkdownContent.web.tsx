@@ -1,25 +1,26 @@
 "use client"
-import React, { useEffect, useState, memo } from "react"
+import clx from "clsx"
+import Markdown from "markdown-to-jsx"
+import type React from "react"
+import { memo, useEffect, useState } from "react"
+import toast from "react-hot-toast"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism"
-// @ts-ignore
-import styles from "./MarkdownContent.module.scss"
-import toast from "react-hot-toast"
-import clx from "clsx"
-import { Check, Copy } from "./icons"
 import { useAppContext } from "./context/AppContext"
 import Img from "./Img"
-import { BrowserInstance, checkIsExtension } from "./utils"
-import TextWithLinks from "./TextWithLinks"
-import Store from "./Store"
-import Markdown from "markdown-to-jsx"
-import { Div, useTheme } from "./platform"
-import { usePlatformStyles } from "./platform/usePlatformStyles"
+import { Check, Copy } from "./icons"
+// @ts-expect-error
+import styles from "./MarkdownContent.module.scss"
 import {
-  MarkdownContentProps,
-  CodeBlockProps,
+  type CodeBlockProps,
+  type MarkdownContentProps,
   processTextWithCitations,
 } from "./MarkdownContent.shared"
+import { Div, useTheme } from "./platform"
+import { usePlatformStyles } from "./platform/usePlatformStyles"
+import Store from "./Store"
+import TextWithLinks from "./TextWithLinks"
+import { BrowserInstance, checkIsExtension } from "./utils"
 
 export { processTextWithCitations }
 export type { MarkdownContentProps }
@@ -125,7 +126,7 @@ const MarkdownContent = memo(
                 // Handle 'json' as a special case
                 if (
                   lang === "json" ||
-                  (!lang && /^[\s]*[{\[]/.test(String(children)))
+                  (!lang && /^[\s]*[{[]/.test(String(children)))
                 ) {
                   try {
                     // Check if it's valid JSON

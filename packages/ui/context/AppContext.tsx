@@ -1,11 +1,12 @@
 "use client"
-import React, { createContext, useContext } from "react"
+import type React from "react"
+import { createContext, useContext } from "react"
 
 import { useTranslation } from "react-i18next"
-import { COLORS } from "./ThemeContext"
-import { useAuth, useError } from "./providers"
 import { isCI, isE2E } from "../utils"
 import { createCustomConsole } from "../utils/log"
+import { useAuth, useError } from "./providers"
+import { COLORS } from "./ThemeContext"
 
 export { COLORS }
 

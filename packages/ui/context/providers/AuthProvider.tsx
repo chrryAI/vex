@@ -1,89 +1,94 @@
 "use client"
 
+import { t } from "i18next"
 import React, {
   createContext,
-  useContext,
-  ReactNode,
-  useState,
-  useEffect,
-  useRef,
+  type ReactNode,
   useCallback,
+  useContext,
+  useEffect,
   useMemo,
+  useRef,
+  useState,
 } from "react"
+import toast from "react-hot-toast"
 import useSWR from "swr"
 import { v4 as uuidv4 } from "uuid"
 import {
-  isBrowserExtension,
-  useNavigation,
-  useCookieOrLocalStorage,
-  usePlatform,
-  useLocalStorage,
-  storage,
-} from "../../platform"
-import { isOwner, capitalizeFirstLetter } from "../../utils"
-import ago from "../../utils/timeAgo"
-import { useTheme } from "../ThemeContext"
-import { cleanSlug } from "../../utils/clearLocale"
-import { dailyQuestions as dailyQuestionsUtil } from "../../utils/dailyQuestions"
-import console from "../../utils/log"
+  initializeGoogleAuth,
+  appleSignIn as nativeAppleSignIn,
+  googleSignIn as nativeGoogleSignIn,
+} from "../../auth/capacitorAuth"
+import { useHasHydrated } from "../../hooks"
 import useCache from "../../hooks/useCache"
-import { SiteConfig, whiteLabels } from "../../utils/siteConfig"
-import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
-import { getHourlyLimit } from "../../utils/getHourlyLimit"
-
+import i18n from "../../i18n"
+import { getApp, getGuest, getSession, getUser } from "../../lib"
+import { defaultLocale, type locale, locales } from "../../locales"
 import {
+  isBrowserExtension,
+  storage,
+  useCookieOrLocalStorage,
+  useLocalStorage,
+  useNavigation,
+  usePlatform,
+} from "../../platform"
+import type {
   aiAgent,
-  characterProfile,
   appWithStore,
-  user,
-  Paginated,
-  session,
-  storeWithApps,
-  sessionUser,
-  sessionGuest,
-  mood,
-  thread,
-  paginatedMessages,
-  moodType,
+  characterProfile,
   instruction,
+  mood,
+  moodType,
+  Paginated,
+  paginatedMessages,
   paginatedTribePosts,
   paginatedTribes,
-  tribePostWithDetails,
-  timer,
   scheduledJob,
+  session,
+  sessionGuest,
+  sessionUser,
+  storeWithApps,
+  thread,
+  timer,
   tribe,
+  tribePostWithDetails,
+  user,
 } from "../../types"
-import toast from "react-hot-toast"
-import { getApp, getSession, getUser, getGuest } from "../../lib"
-import i18n from "../../i18n"
-import { useHasHydrated } from "../../hooks"
-import { defaultLocale, locale, locales } from "../../locales"
-import { MEANINGFUL_EVENTS } from "../../utils/analyticsEvents"
-import { t } from "i18next"
-import { getSiteConfig } from "../../utils/siteConfig"
-import { getAppAndStoreSlugs, excludedSlugRoutes } from "../../utils/url"
-import getAppSlugUtil from "../../utils/getAppSlug"
 import {
   API_URL,
   apiFetch,
   CHRRY_URL,
+  capitalizeFirstLetter,
   FRONTEND_URL,
   getExampleInstructions,
-  getThreadId,
   getPostId,
-  instructionBase,
+  getThreadId,
+  type instructionBase,
+  isCI,
   isDevelopment,
   isE2E,
+  isOwner,
   PROD_FRONTEND_URL,
-  isCI,
   WS_URL,
 } from "../../utils"
 import {
-  googleSignIn as nativeGoogleSignIn,
-  appleSignIn as nativeAppleSignIn,
-  initializeGoogleAuth,
-} from "../../auth/capacitorAuth"
-import { Task } from "../TimerContext"
+  ANALYTICS_EVENTS,
+  MEANINGFUL_EVENTS,
+} from "../../utils/analyticsEvents"
+import { cleanSlug } from "../../utils/clearLocale"
+import { dailyQuestions as dailyQuestionsUtil } from "../../utils/dailyQuestions"
+import getAppSlugUtil from "../../utils/getAppSlug"
+import { getHourlyLimit } from "../../utils/getHourlyLimit"
+import console from "../../utils/log"
+import {
+  getSiteConfig,
+  type SiteConfig,
+  whiteLabels,
+} from "../../utils/siteConfig"
+import ago from "../../utils/timeAgo"
+import { excludedSlugRoutes, getAppAndStoreSlugs } from "../../utils/url"
+import { useTheme } from "../ThemeContext"
+import type { Task } from "../TimerContext"
 import { useError } from "./ErrorProvider"
 
 // Constants (shared with DataProvider)
@@ -1109,8 +1114,9 @@ export function AuthProvider({
     initialTribePost,
   )
 
-  const [isLoadingPosts, setIsLoadingPosts] =
-    useState<boolean>(!initialTribePosts)
+  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
+    !initialTribePosts,
+  )
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)

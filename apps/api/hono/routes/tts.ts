@@ -1,9 +1,9 @@
-import { Hono } from "hono"
-import { getMember, getGuest } from "../lib/auth"
-import { type UserType, checkSpeechLimits } from "../../lib"
 import { updateGuest, updateUser } from "@repo/db"
-import { checkRateLimit } from "../../lib/rateLimiting"
+import { Hono } from "hono"
+import { checkSpeechLimits, type UserType } from "../../lib"
 import captureException from "../../lib/captureException"
+import { checkRateLimit } from "../../lib/rateLimiting"
+import { getGuest, getMember } from "../lib/auth"
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || process.env.CHATGPT_API_KEY
 const OPENAI_TTS_URL = "https://api.openai.com/v1/audio/speech"

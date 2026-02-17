@@ -1,18 +1,19 @@
 import { test } from "@playwright/test"
-import { chat } from "./shared/chat"
-import { subscribe } from "./shared/subscribe"
+import { v4 as uuidv4 } from "uuid"
 import {
   getURL,
   VEX_TEST_EMAIL_3,
   VEX_TEST_FINGERPRINT_3,
   VEX_TEST_PASSWORD_3,
 } from "."
+import { chat } from "./shared/chat"
+import { clean } from "./shared/clean"
+import { collaboration } from "./shared/collaboration"
 import { limit } from "./shared/limit"
 import { signIn } from "./shared/signIn"
+import { subscribe } from "./shared/subscribe"
 import { thread } from "./shared/thread"
-import { v4 as uuidv4 } from "uuid"
-import { collaboration } from "./shared/collaboration"
-import { clean } from "./shared/clean"
+
 const isMember = true
 
 test.beforeEach(async ({ page }) => {

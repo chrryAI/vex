@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { BrowserInstance, checkIsExtension } from "../utils"
 import console from "../utils/log"
 

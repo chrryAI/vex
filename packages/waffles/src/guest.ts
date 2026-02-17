@@ -1,11 +1,13 @@
-import { test, expect } from "@playwright/test"
-import { chat } from "./shared/chat"
-import { subscribe } from "./shared/subscribe"
+import { expect, test } from "@playwright/test"
 import { getURL, TEST_MEMBER_FINGERPRINTS } from "."
-import { thread } from "./shared/thread"
+import { chat } from "./shared/chat"
 import { collaboration } from "./shared/collaboration"
 import { limit } from "./shared/limit"
+import { subscribe } from "./shared/subscribe"
+import { thread } from "./shared/thread"
+
 const isMember = false
+
 import { v4 as uuidv4 } from "uuid"
 import { clean } from "./shared/clean"
 

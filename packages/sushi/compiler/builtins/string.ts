@@ -17,10 +17,10 @@ export const __Porffor_strcmp = (a: any, b: any): boolean => {
       // bytestring, bytestring
       // this path is hyper-optimized as it is by far the most common and (perf) important
 
-      let ap32: i32 = a - 28
-      let bp32: i32 = b - 28
-      let ap8: i32 = a - 4
-      let bp8: i32 = b - 4
+      const ap32: i32 = a - 28
+      const bp32: i32 = b - 28
+      const ap8: i32 = a - 4
+      const bp8: i32 = b - 4
       Porffor.wasm`
 ;; load in 2 i64x2 chunks while length >= 32
 local.get ${al}
@@ -172,10 +172,10 @@ end`
       bl *= 2
 
       // copied from bytestring, bytestring
-      let ap32: i32 = a - 28
-      let bp32: i32 = b - 28
-      let ap8: i32 = a - 4
-      let bp8: i32 = b - 4
+      const ap32: i32 = a - 28
+      const bp32: i32 = b - 28
+      const ap8: i32 = a - 4
+      const bp8: i32 = b - 4
       Porffor.wasm`
 ;; load in 2 i64x2 chunks while length >= 32
 local.get ${al}
@@ -369,7 +369,7 @@ export const __Porffor_strcat = (a: any, b: any): any => {
       )
 
       // copy right (slow bytestring -> string)
-      let ptr: i32 = Porffor.wasm`local.get ${out}` + al * 2
+      const ptr: i32 = Porffor.wasm`local.get ${out}` + al * 2
       for (let i: i32 = 0; i < bl; i++) {
         Porffor.wasm.i32.store16(
           ptr + i * 2,
@@ -662,8 +662,8 @@ export const __String_prototype_startsWith = (
 
   const searchLen: i32 = searchString.length * 2
   for (let i: i32 = 0; i < searchLen; i += 2) {
-    let chr: i32 = Porffor.wasm.i32.load16_u(thisPtr + i, 0, 4)
-    let expected: i32 = Porffor.wasm.i32.load16_u(searchPtr + i, 0, 4)
+    const chr: i32 = Porffor.wasm.i32.load16_u(thisPtr + i, 0, 4)
+    const expected: i32 = Porffor.wasm.i32.load16_u(searchPtr + i, 0, 4)
 
     if (chr != expected) return false
   }
@@ -696,8 +696,8 @@ export const __ByteString_prototype_startsWith = (
 
   const searchLen: i32 = searchString.length
   for (let i: i32 = 0; i < searchLen; i++) {
-    let chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
-    let expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
+    const chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
+    const expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
 
     if (chr != expected) return false
   }
@@ -736,8 +736,8 @@ export const __String_prototype_endsWith = (
 
   const endPtr: i32 = j + searchLen * 2
   while (j < endPtr) {
-    let chr: i32 = Porffor.wasm.i32.load16_u(i, 0, 4)
-    let expected: i32 = Porffor.wasm.i32.load16_u(j, 0, 4)
+    const chr: i32 = Porffor.wasm.i32.load16_u(i, 0, 4)
+    const expected: i32 = Porffor.wasm.i32.load16_u(j, 0, 4)
 
     i += 2
     j += 2
@@ -782,8 +782,8 @@ export const __ByteString_prototype_endsWith = (
 
   const endPtr: i32 = j + searchLen
   while (j < endPtr) {
-    let chr: i32 = Porffor.wasm.i32.load8_u(i++, 0, 4)
-    let expected: i32 = Porffor.wasm.i32.load8_u(j++, 0, 4)
+    const chr: i32 = Porffor.wasm.i32.load8_u(i++, 0, 4)
+    const expected: i32 = Porffor.wasm.i32.load8_u(j++, 0, 4)
 
     if (chr != expected) return false
   }
@@ -820,8 +820,8 @@ export const __String_prototype_indexOf = (
   while (thisPtr <= thisPtrEnd) {
     let match: boolean = true
     for (let i: i32 = 0; i < searchLenX2; i += 2) {
-      let chr: i32 = Porffor.wasm.i32.load16_u(thisPtr + i, 0, 4)
-      let expected: i32 = Porffor.wasm.i32.load16_u(searchPtr + i, 0, 4)
+      const chr: i32 = Porffor.wasm.i32.load16_u(thisPtr + i, 0, 4)
+      const expected: i32 = Porffor.wasm.i32.load16_u(searchPtr + i, 0, 4)
 
       if (chr != expected) {
         match = false
@@ -870,8 +870,8 @@ export const __ByteString_prototype_indexOf = (
   while (thisPtr <= thisPtrEnd) {
     let match: boolean = true
     for (let i: i32 = 0; i < searchLen; i++) {
-      let chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
-      let expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
+      const chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
+      const expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
 
       if (chr != expected) {
         match = false
@@ -922,8 +922,8 @@ export const __String_prototype_lastIndexOf = (
   while (thisPtr >= thisPtrStart) {
     let match: boolean = true
     for (let i: i32 = 0; i < searchLenX2; i += 2) {
-      let chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
-      let expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
+      const chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
+      const expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
 
       if (chr != expected) {
         match = false
@@ -977,8 +977,8 @@ export const __ByteString_prototype_lastIndexOf = (
   while (thisPtr >= thisPtrStart) {
     let match: boolean = true
     for (let i: i32 = 0; i < searchLen; i++) {
-      let chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
-      let expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
+      const chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
+      const expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
 
       if (chr != expected) {
         match = false
@@ -1019,8 +1019,8 @@ export const __String_prototype_includes = (
   while (thisPtr <= thisPtrEnd) {
     let match: boolean = true
     for (let i: i32 = 0; i < searchLenX2; i += 2) {
-      let chr: i32 = Porffor.wasm.i32.load16_u(thisPtr + i, 0, 4)
-      let expected: i32 = Porffor.wasm.i32.load16_u(searchPtr + i, 0, 4)
+      const chr: i32 = Porffor.wasm.i32.load16_u(thisPtr + i, 0, 4)
+      const expected: i32 = Porffor.wasm.i32.load16_u(searchPtr + i, 0, 4)
 
       if (chr != expected) {
         match = false
@@ -1064,8 +1064,8 @@ export const __ByteString_prototype_includes = (
   while (thisPtr <= thisPtrEnd) {
     let match: boolean = true
     for (let i: i32 = 0; i < searchLen; i++) {
-      let chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
-      let expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
+      const chr: i32 = Porffor.wasm.i32.load8_u(thisPtr + i, 0, 4)
+      const expected: i32 = Porffor.wasm.i32.load8_u(searchPtr + i, 0, 4)
 
       if (chr != expected) {
         match = false

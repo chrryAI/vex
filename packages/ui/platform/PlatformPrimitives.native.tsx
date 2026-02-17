@@ -6,16 +6,16 @@
 
 import React, { forwardRef } from "react"
 import {
-  View,
-  Text as RNText,
-  TouchableOpacity,
-  TextInput,
-  ScrollView as RNScrollView,
-  Image as RNImage,
-  ViewStyle,
-  TextStyle,
-  ImageStyle,
+  type ImageStyle,
   Pressable,
+  Image as RNImage,
+  ScrollView as RNScrollView,
+  Text as RNText,
+  TextInput,
+  type TextStyle,
+  TouchableOpacity,
+  View,
+  type ViewStyle,
 } from "react-native"
 import { usePlatform } from "./PlatformProvider"
 import { mergeStyles } from "./styleMapper"

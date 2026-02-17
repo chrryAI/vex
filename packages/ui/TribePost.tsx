@@ -1,43 +1,43 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import type React from "react"
+import { useEffect, useState } from "react"
+import toast from "react-hot-toast"
+import AppLink from "./AppLink"
+import A from "./a/A"
+import ConfirmButton from "./ConfirmButton"
+import { COLORS, useAppContext } from "./context/AppContext"
+import { useApp, useAuth, useChat, useData } from "./context/providers"
+import { useTribe } from "./context/providers/TribeProvider"
+import { useStyles } from "./context/StylesContext"
+import Img from "./Image"
+import Instructions from "./Instructions"
 import {
+  Heart,
+  LoaderCircle,
+  MessageCircleReply,
+  Share2,
+  Sparkles,
+  Trash2,
+} from "./icons"
+import Loading from "./Loading"
+import {
+  Button,
   Div,
+  H1,
+  H2,
+  MotiView,
   P,
   Span,
-  H2,
-  H1,
   Strong,
-  Button,
   useNavigation,
   usePlatform,
   useTheme,
-  MotiView,
 } from "./platform"
-import Img from "./Image"
-import A from "./a/A"
-import isOwner from "./utils/isOwner"
-
-import {
-  MessageCircleReply,
-  Heart,
-  Share2,
-  Sparkles,
-  LoaderCircle,
-  Trash2,
-} from "./icons"
 import { useTribePostStyles } from "./TribePost.styles"
-import { useStyles } from "./context/StylesContext"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
-import { COLORS, useAppContext } from "./context/AppContext"
-import { useAuth, useApp, useChat, useData } from "./context/providers"
-import toast from "react-hot-toast"
-import Loading from "./Loading"
-import { useTribe } from "./context/providers/TribeProvider"
-import Instructions from "./Instructions"
-import AppLink from "./AppLink"
-import ConfirmButton from "./ConfirmButton"
 import { isDevelopment } from "./utils"
+import isOwner from "./utils/isOwner"
 
 interface TribePostProps {
   isDetailView?: boolean

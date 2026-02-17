@@ -1,118 +1,119 @@
 "use client"
+import clsx from "clsx"
+import nProgress from "nprogress"
 import {
-  Dispatch,
-  SetStateAction,
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
-  useMemo,
-  useCallback,
 } from "react"
-import clsx from "clsx"
-import {
-  Paperclip,
-  AudioLines,
-  ChevronDown,
-  TextIcon,
-  ImageIcon,
-  VideoIcon,
-  CircleX,
-  FileIcon,
-  Music,
-  Info,
-  CircleCheck,
-  Coins,
-  Timer,
-  LogIn,
-  Clock,
-  HardDrive,
-  Sparkles,
-  CircleStop,
-  Globe,
-  GlobeLock,
-  Palette,
-  CircleArrowDown,
-  Plus,
-  CircleArrowUp,
-  FileText,
-  Megaphone,
-  ClockPlus,
-  Star,
-  Link,
-} from "./icons"
+import toast from "react-hot-toast"
+import sanitizeHtml from "sanitize-html"
+import useSWR from "swr"
+import { v4 as uuidv4, validate } from "uuid"
+import App from "./App"
+import AppLink from "./AppLink"
+import A from "./a/A"
+import { useChatStyles } from "./Chat.styles"
 import { COLORS, useAppContext } from "./context/AppContext"
-import { validateFile, formatFileSize } from "./utils/fileValidation"
 import {
+  useApp,
   useAuth,
   useChat,
-  useNavigationContext,
-  useApp,
-  useError,
   useData,
+  useError,
+  useNavigationContext,
 } from "./context/providers"
-import {
-  useTheme,
-  usePlatform,
-  Div,
-  Button,
-  Span,
-  Video,
-  Strong,
-  H2,
-  TextArea,
-} from "./platform"
-import {
-  type message,
-  type aiAgent,
-  type user,
-  type guest,
-  type thread,
-  type collaboration,
-  emojiMap,
-} from "./types"
+import { useStyles } from "./context/StylesContext"
+import DeleteThread from "./DeleteThread"
 import Grapes from "./Grapes"
-import { DeepSeek, OpenAI, Claude, Gemini, Flux, Perplexity } from "./icons"
-import Modal from "./Modal"
-import Loading from "./Loading"
-import sanitizeHtml from "sanitize-html"
-import { validate, v4 as uuidv4 } from "uuid"
 import {
   useCountdown,
   useHasHydrated,
   useLocalStorage,
   useSyncedState,
 } from "./hooks"
-import toast from "react-hot-toast"
-import useSWR from "swr"
-
-import DeleteThread from "./DeleteThread"
-
+import { useWebSocket } from "./hooks/useWebSocket"
+import Img from "./Image"
 import {
+  AudioLines,
+  ChevronDown,
+  CircleArrowDown,
+  CircleArrowUp,
+  CircleCheck,
+  CircleStop,
+  CircleX,
+  Claude,
+  Clock,
+  ClockPlus,
+  Coins,
+  DeepSeek,
+  FileIcon,
+  FileText,
+  Flux,
+  Gemini,
+  Globe,
+  GlobeLock,
+  HardDrive,
+  ImageIcon,
+  Info,
+  Link,
+  LogIn,
+  Megaphone,
+  Music,
+  OpenAI,
+  Palette,
+  Paperclip,
+  Perplexity,
+  Plus,
+  Sparkles,
+  Star,
+  TextIcon,
+  Timer,
+  VideoIcon,
+} from "./icons"
+import Loading from "./Loading"
+import Logo from "./Logo"
+import { checkSpeechLimits, SPEECH_LIMITS } from "./lib/speechLimits"
+import { stripMarkdown } from "./lib/stripMarkdown"
+import Modal from "./Modal"
+import MoodSelector from "./MoodSelector"
+import {
+  Button,
+  Div,
+  H2,
+  Span,
+  Strong,
+  TextArea,
+  usePlatform,
+  useTheme,
+  Video,
+} from "./platform"
+import {
+  type aiAgent,
+  type collaboration,
+  emojiMap,
+  type guest,
+  type message,
+  type thread,
+  type user,
+} from "./types"
+import {
+  apiFetch,
   BrowserInstance,
   capitalizeFirstLetter,
   isOwner,
+  MAX_FILE_LIMITS,
   MAX_FILE_SIZES,
   OWNER_CREDITS,
   PROMPT_LIMITS,
-  apiFetch,
-  MAX_FILE_LIMITS,
 } from "./utils"
-import needsWebSearch from "./utils/needsWebSearch"
-import { useWebSocket } from "./hooks/useWebSocket"
-import { checkSpeechLimits, SPEECH_LIMITS } from "./lib/speechLimits"
-import { stripMarkdown } from "./lib/stripMarkdown"
-import nProgress from "nprogress"
-import Logo from "./Logo"
-import App from "./App"
-import Img from "./Image"
-import MoodSelector from "./MoodSelector"
-
-import { useChatStyles } from "./Chat.styles"
-import { useStyles } from "./context/StylesContext"
-
-import A from "./a/A"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
-import AppLink from "./AppLink"
+import { formatFileSize, validateFile } from "./utils/fileValidation"
+import needsWebSearch from "./utils/needsWebSearch"
 
 const MAX_FILES = MAX_FILE_LIMITS.chat
 
@@ -1739,7 +1740,7 @@ export default function Chat({
         toast.success(t("Let's debate!"))
       }
 
-      let result = undefined
+      let result
       if (
         userResponse.headers.get("content-type")?.includes("application/json")
       ) {
@@ -3005,10 +3006,11 @@ export default function Chat({
                         data-testid={`agent-modal-button-${agent.name}`}
                         className={clsx(
                           `medium ${
-                            (agent.authorization === "user" &&
-                              !user &&
-                              !guest?.subscription) ||
-                            agent.id === sushiAgent?.id
+                            (
+                              agent.authorization === "user" &&
+                                !user &&
+                                !guest?.subscription
+                            ) || agent.id === sushiAgent?.id
                               ? "inverted"
                               : ""
                           }`,
@@ -3438,8 +3440,7 @@ export default function Chat({
                           )
                         }
                         return "5"
-                      })()}{" "}
-                      {t("requests")}
+                      })()} {t("requests")}
                     </Span>
                   </Div>
                   <Div style={styles.statItem.style}>
@@ -3537,10 +3538,8 @@ export default function Chat({
                     className="transparent"
                     style={{ ...utilities.transparent.style }}
                     onClick={() => {
-                      {
-                        setIsSpeechActive(false)
-                        addParams({ subscribe: "true" })
-                      }
+                      setIsSpeechActive(false)
+                      addParams({ subscribe: "true" })
                     }}
                   >
                     <Logo isVivid size={19} /> {t("Need more, subscribe!")}

@@ -1,18 +1,17 @@
-import { Browser, expect, test } from "@playwright/test"
+import { type Browser, expect, type Page, test } from "@playwright/test"
+import { v4 as uuidv4 } from "uuid"
 import {
   getURL,
   VEX_TEST_EMAIL,
   VEX_TEST_EMAIL_2,
-  wait,
   VEX_TEST_EMAIL_3,
   VEX_TEST_EMAIL_4,
   VEX_TEST_PASSWORD_4,
+  wait,
 } from ".."
 import { chat } from "./chat"
-import { Page } from "@playwright/test"
-import { signIn } from "./signIn"
-import { v4 as uuidv4 } from "uuid"
 import { clean } from "./clean"
+import { signIn } from "./signIn"
 
 export async function collaboration({
   page,

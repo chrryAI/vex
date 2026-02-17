@@ -1,7 +1,6 @@
 import fs from "fs"
-import path from "path"
+import path, { dirname } from "path"
 import { fileURLToPath } from "url"
-import { dirname } from "path"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -29,7 +28,7 @@ function incrementPatch(version) {
 
 const versionArg = process.argv[2]
 const versionFilePath = path.resolve(__dirname, "..", "VERSION")
-let oldVersion = fs.readFileSync(versionFilePath, "utf8").trim()
+const oldVersion = fs.readFileSync(versionFilePath, "utf8").trim()
 let newVersion
 if (versionArg) {
   newVersion = versionArg

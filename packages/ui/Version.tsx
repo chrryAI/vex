@@ -1,23 +1,23 @@
 import React, { useState } from "react"
-import { useData, useNavigationContext, useAuth } from "./context/providers"
-import Modal from "./Modal"
+import { useTranslation } from "react-i18next"
 import {
-  FaApple,
   FaAndroid,
+  FaApple,
   FaChrome,
   FaFirefox,
-  FaWindows,
   FaLinux,
+  FaWindows,
 } from "react-icons/fa"
 import { FiCheck } from "react-icons/fi"
-import Img from "./Img"
-import { useTranslation } from "react-i18next"
-import { Button, Div, Span, usePlatform, Video } from "./platform"
-import A from "./a/A"
-import { useVersionStyles } from "./Version.styles"
-import { useStyles } from "./context/StylesContext"
 import { SiMacos } from "react-icons/si"
+import A from "./a/A"
+import { useAuth, useData, useNavigationContext } from "./context/providers"
+import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
+import Img from "./Img"
+import Modal from "./Modal"
+import { Button, Div, Span, usePlatform, Video } from "./platform"
+import { useVersionStyles } from "./Version.styles"
 
 export default function Version() {
   const {

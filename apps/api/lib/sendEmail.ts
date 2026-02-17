@@ -1,9 +1,9 @@
-import nodemailer from "nodemailer"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
-import { getChrryUrl } from "../hono/lib/getApp"
-import type { Context } from "hono"
-import { captureException } from "@sentry/node"
 import { isE2E } from "@chrryai/chrry/utils"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { captureException } from "@sentry/node"
+import type { Context } from "hono"
+import nodemailer from "nodemailer"
+import { getChrryUrl } from "../hono/lib/getApp"
 
 export const sendEmail = async ({
   c,

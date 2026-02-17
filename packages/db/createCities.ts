@@ -1,6 +1,6 @@
+import citiesData from "all-the-cities"
 import { db, isProd } from "./index"
 import { cities } from "./src/schema"
-import citiesData from "all-the-cities"
 
 export const createCities = async () => {
   const insertedCities: {

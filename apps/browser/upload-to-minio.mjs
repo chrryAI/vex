@@ -6,20 +6,20 @@
  */
 
 import {
-  S3Client,
-  PutObjectCommand,
   PutBucketPolicyCommand,
+  PutObjectCommand,
+  S3Client,
 } from "@aws-sdk/client-s3"
-import { readFileSync, readdirSync } from "fs"
-import { join } from "path"
+import { readdirSync, readFileSync } from "fs"
+import { dirname, join } from "path"
 import { fileURLToPath } from "url"
-import { dirname } from "path"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 // Load environment variables
 import dotenv from "dotenv"
+
 dotenv.config({ path: join(__dirname, "../../apps/api/.env") })
 
 // MinIO configuration from your existing setup

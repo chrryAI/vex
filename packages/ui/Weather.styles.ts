@@ -78,11 +78,7 @@ export type WeatherStylesHook = {
 
 // Type guard to narrow a StyleDef to InteractiveStyleDef without using any casts
 function isInteractiveStyleDef(def: unknown): def is InteractiveStyleDef {
-  return (
-    typeof def === "object" &&
-    def !== null &&
-    Object.prototype.hasOwnProperty.call(def, "base")
-  )
+  return typeof def === "object" && def !== null && Object.hasOwn(def, "base")
 }
 
 // Create interactive style hooks (safe - calls hooks deterministically)

@@ -5,14 +5,14 @@
 
 import "dotenv/config" // Load .env file
 import {
-  S3Client,
-  PutObjectCommand,
-  PutBucketPolicyCommand,
-  HeadBucketCommand,
   CreateBucketCommand,
+  HeadBucketCommand,
+  PutBucketPolicyCommand,
+  PutObjectCommand,
+  S3Client,
 } from "@aws-sdk/client-s3"
-import { readFileSync, readdirSync } from "fs"
-import { join, dirname } from "path"
+import { readdirSync, readFileSync } from "fs"
+import { dirname, join } from "path"
 import { fileURLToPath } from "url"
 
 const __filename = fileURLToPath(import.meta.url)

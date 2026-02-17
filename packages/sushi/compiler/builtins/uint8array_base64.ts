@@ -224,7 +224,7 @@ export const __Porffor_fromBase64 = (
       c3: i32 = 0,
       c4: i32 = 0
     let chunkLength: i32 = 0
-    let chunkStartPos: i32 = i
+    const chunkStartPos: i32 = i
 
     while (i < strLen) {
       const ch: i32 = Porffor.wasm.i32.load8_u(strPtr + i++, 0, 4)

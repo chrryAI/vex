@@ -1,9 +1,9 @@
-import Parser from "rss-parser"
-import { db, eq, and, desc, sql, cosineDistance } from "@repo/db"
+import { and, cosineDistance, db, desc, eq, sql } from "@repo/db"
 import { newsArticles } from "@repo/db/src/schema"
 import { embed } from "ai"
-import { getEmbeddingProvider } from "./getModelProvider"
 import { asc } from "drizzle-orm"
+import Parser from "rss-parser"
+import { getEmbeddingProvider } from "./getModelProvider"
 
 const parser = new Parser()
 

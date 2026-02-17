@@ -1,5 +1,5 @@
-import { locale } from "@chrryai/chrry/locales"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import type { locale } from "@chrryai/chrry/locales"
+import type { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 interface MetadataResult {
   title?: string

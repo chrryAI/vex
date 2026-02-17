@@ -1,19 +1,19 @@
 "use client"
 
-import React, { useEffect, lazy, Suspense } from "react"
+import React, { lazy, Suspense, useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { customZodResolver } from "../utils/customZodResolver"
-import { z } from "zod"
-import Loading from "../Loading"
-import { Task } from "../FocusButton"
 import sanitizeHtml from "sanitize-html"
+import { z } from "zod"
 import { useAppContext } from "../context/AppContext"
-import { API_URL, apiFetch, GUEST_TASKS_COUNT } from "../utils"
-import { ArrowLeft } from "../icons"
-import { Button, Div, H3, Input, Span, toast, useNavigation } from "../platform"
 import { useAuth } from "../context/providers"
-import { useAddTaskStyles } from "./AddTask.styles"
 import { useStyles } from "../context/StylesContext"
+import type { Task } from "../FocusButton"
+import { ArrowLeft } from "../icons"
+import Loading from "../Loading"
+import { Button, Div, H3, Input, Span, toast, useNavigation } from "../platform"
+import { API_URL, apiFetch, GUEST_TASKS_COUNT } from "../utils"
+import { customZodResolver } from "../utils/customZodResolver"
+import { useAddTaskStyles } from "./AddTask.styles"
 
 // Lazy load heavy components
 const SignIn = lazy(() => import("../SignIn"))

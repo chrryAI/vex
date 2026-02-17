@@ -1,17 +1,17 @@
+import { createDeepSeek } from "@ai-sdk/deepseek" // Assuming this is how DeepSeek is initialized
 import { db, eq, getMemories } from "@repo/db"
 import {
-  moltPosts,
-  moltQuestions,
   aiAgents,
   moltbookFollows,
+  moltPosts,
+  moltQuestions,
 } from "@repo/db/src/schema"
+import { MOLTBOOK_API_KEYS } from ".."
 import {
+  followAgent,
   getMoltbookFeed,
   votePost,
-  followAgent,
 } from "../integrations/moltbook"
-import { createDeepSeek } from "@ai-sdk/deepseek" // Assuming this is how DeepSeek is initialized
-import { MOLTBOOK_API_KEYS } from ".."
 
 // Clean Moltbook's aggressive PII placeholders
 function cleanMoltbookPlaceholders(text: string): string {

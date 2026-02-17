@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 /**
  * Generate Tauri app icons based on MODE environment variable
  *
@@ -8,10 +9,10 @@
  * and generates all required sizes for Tauri (16, 32, 48, 128, 256, 512, 1024)
  */
 
-import { copyFileSync, existsSync } from "fs"
-import { join, dirname } from "path"
-import { fileURLToPath } from "url"
 import { execSync } from "child_process"
+import { copyFileSync, existsSync } from "fs"
+import { dirname, join } from "path"
+import { fileURLToPath } from "url"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)

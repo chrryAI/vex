@@ -59,5 +59,3 @@ declare global {
     browser: FirefoxBrowser
   }
 }
-
-export {}

@@ -1,12 +1,13 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import type React from "react"
+import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { emojiMap, moodType } from "./types"
-import { useMoodSelectorStyles } from "./MoodSelector.styles"
-import { Button, Div, Span } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import { MousePointerClick } from "./icons"
+import { useMoodSelectorStyles } from "./MoodSelector.styles"
+import { Button, Div, Span } from "./platform"
+import { emojiMap, type moodType } from "./types"
 
 export default function MoodSelector({
   onMoodChange,

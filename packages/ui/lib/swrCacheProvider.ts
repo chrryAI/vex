@@ -12,8 +12,8 @@
  * - Retry logic for transient IndexedDB failures
  */
 
-import type { Cache } from "swr"
 import Dexie from "dexie"
+import type { Cache } from "swr"
 
 // -----------------------------------------
 // Configuration
@@ -115,7 +115,7 @@ async function withRetry<T>(
       }
 
       // Exponential backoff
-      const delay = config.retryBaseDelay * Math.pow(2, attempt)
+      const delay = config.retryBaseDelay * 2 ** attempt
       await new Promise((resolve) => setTimeout(resolve, delay))
     }
   }

@@ -3,53 +3,54 @@
 import "react-big-calendar/lib/css/react-big-calendar.css"
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css"
 
-import React, { useState, useCallback, useMemo, useEffect } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import {
   Calendar as BigCalendar,
+  type ToolbarProps,
+  type View,
   Views,
-  View,
-  ToolbarProps,
 } from "react-big-calendar"
 // Import drag and drop - using dynamic import for better compatibility
 import * as DnDModule from "react-big-calendar/lib/addons/dragAndDrop"
+
 const withDragAndDrop = (DnDModule as any).default || DnDModule
+
 import {
-  format,
-  startOfMonth,
-  endOfMonth,
-  startOfWeek,
-  endOfWeek,
-  startOfDay,
   endOfDay,
-  parse,
+  endOfMonth,
+  endOfWeek,
+  format,
   getDay,
+  parse,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
 } from "date-fns"
-import useSWR from "swr"
+import { de, enUS, es, fr, ja, ko, nl, pt, tr, zhCN } from "date-fns/locale"
 import { dateFnsLocalizer } from "react-big-calendar"
-import { enUS, de, fr, es, ja, ko, pt, zhCN, nl, tr } from "date-fns/locale"
+import useSWR from "swr"
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css"
-// @ts-ignore
-import styles from "./Calendar.module.scss"
 import clsx from "clsx"
-import Skeleton from "./Skeleton"
+import toast from "react-hot-toast"
+// @ts-expect-error
+import styles from "./Calendar.module.scss"
+import { COLORS, useAppContext } from "./context/AppContext"
+import { useAuth, useData, useNavigationContext } from "./context/providers"
+import EventModal, { type modalData } from "./EventModal"
+import { useHasHydrated } from "./hooks"
+import { useWebSocket } from "./hooks/useWebSocket"
 import {
+  ArrowLeft,
   ArrowLeftIcon,
   ArrowRightIcon,
-  ArrowLeft,
   CalendarPlus,
   RefreshCw,
 } from "./icons"
-import EventModal from "./EventModal"
-import { COLORS, useAppContext } from "./context/AppContext"
-import { modalData } from "./EventModal"
-import { CalendarEventFormData } from "./lib"
 import Loading from "./Loading"
-import toast from "react-hot-toast"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
+import type { CalendarEventFormData } from "./lib"
 import { usePlatform } from "./platform"
-import { useHasHydrated } from "./hooks"
-import { useWebSocket } from "./hooks/useWebSocket"
-import { calendarEvent } from "./types"
+import Skeleton from "./Skeleton"
+import type { calendarEvent } from "./types"
 
 // Setup localizer with all supported locales
 const locales = {

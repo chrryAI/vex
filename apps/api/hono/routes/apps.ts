@@ -1,43 +1,40 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
-import { Hono } from "hono"
-import {
-  getApps,
-  getStore,
-  getStoreInstalls,
-  deleteInstall,
-  isE2E,
-  isDevelopment,
-  ne,
-} from "@repo/db"
-import { apps } from "@repo/db/src/schema"
-import { getMember, getGuest, getApp } from "../lib/auth"
-import { appSchema } from "@chrryai/chrry/schemas/appSchema"
-import { redact } from "../../lib/redaction"
 
+import { reorderApps } from "@chrryai/chrry/lib"
+import { appSchema } from "@chrryai/chrry/schemas/appSchema"
+import { isOwner } from "@chrryai/chrry/utils"
 import {
-  installApp,
+  and,
+  createAppOrder,
+  createOrUpdateApp,
   createStore,
   createStoreInstall,
-  updateStore,
-  createOrUpdateApp,
-  createAppOrder,
-  getInstall,
   db,
-  and,
-  eq,
-  isNotNull,
-  getApp as getAppDb,
   deleteApp,
+  deleteInstall,
   encrypt,
+  eq,
+  getApp as getAppDb,
+  getApps,
+  getInstall,
+  getStore,
+  getStoreInstalls,
+  installApp,
+  isDevelopment,
+  isE2E,
+  isNotNull,
+  ne,
   safeDecrypt,
+  updateStore,
 } from "@repo/db"
-import { appOrders, storeInstalls } from "@repo/db/src/schema"
-import captureException from "../../lib/captureException"
-import { upload, deleteFile } from "../../lib/minio"
+import { appOrders, apps, storeInstalls } from "@repo/db/src/schema"
+import { Hono } from "hono"
 import slugify from "slug"
 import { v4 as uuid, validate } from "uuid"
-import { reorderApps } from "@chrryai/chrry/lib"
-import { isOwner } from "@chrryai/chrry/utils"
+import captureException from "../../lib/captureException"
+import { deleteFile, upload } from "../../lib/minio"
+import { redact } from "../../lib/redaction"
+import { getApp, getGuest, getMember } from "../lib/auth"
 
 export const app = new Hono()
 
@@ -1386,8 +1383,9 @@ app.patch("/:id/moltbook", async (c) => {
         }
 
         // Fetch agent info from Moltbook
-        const { getMoltbookAgentInfo } =
-          await import("../../lib/integrations/moltbook")
+        const { getMoltbookAgentInfo } = await import(
+          "../../lib/integrations/moltbook"
+        )
         const agentInfo = await getMoltbookAgentInfo(trimmed)
 
         updateData.moltApiKey = await encrypt(trimmed)

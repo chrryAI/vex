@@ -1,5 +1,5 @@
 import type { newSonarIssue, newSonarMetric } from "@repo/db"
-import { db, sonarIssues, sonarMetrics, eq, desc } from "@repo/db"
+import { db, desc, eq, sonarIssues, sonarMetrics } from "@repo/db"
 import { syncIssuesToGraph, syncMetricsToGraph } from "../graph/sonarGraphSync"
 
 const SONAR_CLOUD_URL = "https://sonarcloud.io/api"

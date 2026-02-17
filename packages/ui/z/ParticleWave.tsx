@@ -1,7 +1,8 @@
 // @ts-nocheck - React Three Fiber JSX elements
-import { useRef, useMemo } from "react"
-import { Canvas, useFrame, extend } from "@react-three/fiber"
+
 import { shaderMaterial } from "@react-three/drei"
+import { Canvas, extend, useFrame } from "@react-three/fiber"
+import { useMemo, useRef } from "react"
 import * as THREE from "three"
 
 interface ParticleWaveProps {
@@ -90,7 +91,7 @@ function generateHeadPoints(count: number) {
     const phi = Math.acos(2 * v - 1)
 
     // Concentrate particles more towards the center
-    const r = 2.2 * Math.pow(Math.random(), 0.5)
+    const r = 2.2 * Math.random() ** 0.5
 
     // Perfect sphere (no stretching)
     const x = r * Math.sin(phi) * Math.cos(theta)

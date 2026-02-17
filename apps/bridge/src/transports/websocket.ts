@@ -3,7 +3,7 @@
  * For non-Chrome browsers or when Native Messaging is unavailable
  */
 
-import { WebSocketServer, WebSocket } from "ws"
+import { type WebSocket, WebSocketServer } from "ws"
 import type { Message } from "./native"
 
 export class WebSocketTransport {

@@ -2,9 +2,9 @@
 
 import { spawn } from "child_process"
 import { watch } from "fs"
+import http from "http"
 import path from "path"
 import { fileURLToPath } from "url"
-import http from "http"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

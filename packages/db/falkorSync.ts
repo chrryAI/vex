@@ -7,8 +7,8 @@
  */
 
 import "./sentry.config" // Initialize Sentry
-import { graph } from "./src/graph/client"
 import { captureException } from "@sentry/node"
+import { graph } from "./src/graph/client"
 
 async function getFalkorGraph() {
   try {

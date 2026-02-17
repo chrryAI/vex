@@ -1,36 +1,34 @@
-import React, { useState } from "react"
-// import styles from "./Weather.module.scss"
-import {
-  Sun,
-  CloudSun,
-  Cloud,
-  CloudFog,
-  CloudDrizzle,
-  CloudRain,
-  CloudSnow,
-  CloudLightning,
-  CloudSunRain,
-  Tornado,
-  Snowflake,
-  Cloudy,
-  Settings,
-} from "./icons"
-import AsyncSelect from "react-select/async"
-
 import clsx from "clsx"
-import { city } from "./types"
-import Modal from "./Modal"
-import { t } from "i18next"
-import { getFlag } from "./utils"
-import { apiFetch } from "./utils"
 import countries from "i18n-iso-countries"
 import enLocale from "i18n-iso-countries/langs/en.json"
-import { selectStyles } from "./selectStyles"
+import { t } from "i18next"
+import React, { useState } from "react"
 import { toast } from "react-hot-toast"
+import AsyncSelect from "react-select/async"
 import { useAuth, useData } from "./context/providers"
-import { useWeatherStyles } from "./Weather.styles"
-import { Button, Div, Span } from "./platform"
 import { useStyles } from "./context/StylesContext"
+// import styles from "./Weather.module.scss"
+import {
+  Cloud,
+  CloudDrizzle,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
+  CloudSnow,
+  CloudSun,
+  CloudSunRain,
+  Cloudy,
+  Settings,
+  Snowflake,
+  Sun,
+  Tornado,
+} from "./icons"
+import Modal from "./Modal"
+import { Button, Div, Span } from "./platform"
+import { selectStyles } from "./selectStyles"
+import type { city } from "./types"
+import { apiFetch, getFlag } from "./utils"
+import { useWeatherStyles } from "./Weather.styles"
 
 // Register English locale
 countries.registerLocale(enLocale)

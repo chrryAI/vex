@@ -1,29 +1,28 @@
+import { createOpenAI } from "@ai-sdk/openai"
+import type { appWithStore } from "@chrryai/chrry/types"
 import {
-  db,
-  sql,
-  eq,
-  desc,
   type app,
-  isE2E as isE2EInternal,
-  isDevelopment,
+  db,
+  desc,
+  eq,
   getUser,
+  isDevelopment,
+  isE2E as isE2EInternal,
+  sql,
   VEX_LIVE_FINGERPRINTS,
 } from "@repo/db"
-import type { appWithStore } from "@chrryai/chrry/types"
-
 import {
   documentChunks,
   documentSummaries,
   messageEmbeddings,
 } from "@repo/db/src/schema"
 import { generateText } from "ai"
-import { createOpenAI } from "@ai-sdk/openai"
 import captureException from "../../lib/captureException"
 import {
   extractAndStoreKnowledge,
   getGraphContext,
-  storeDocumentChunk,
   linkChunkToEntities,
+  storeDocumentChunk,
 } from "../../lib/graph/graphService"
 import { getModelProvider } from "../getModelProvider"
 

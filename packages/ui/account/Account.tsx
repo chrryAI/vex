@@ -1,37 +1,34 @@
 "use client"
 import React, { useEffect, useState } from "react"
-import { UserRound, LogOut, AtSign, Trash2, Pencil } from "../icons"
-import { CircleX } from "../icons"
-import { v4 as uuidv4 } from "uuid"
+import toast from "react-hot-toast"
+import { FaApple, FaGoogle } from "react-icons/fa"
+import { v4 as uuidv4, validate } from "uuid"
+import CharacterProfiles from "../CharacterProfiles"
+import Checkbox from "../Checkbox"
+import ConfirmButton from "../ConfirmButton"
+import { useAppContext } from "../context/AppContext"
+import {
+  useAuth,
+  useData,
+  useError,
+  useNavigationContext,
+} from "../context/providers"
+import { useStyles } from "../context/StylesContext"
 
-import { FaGoogle, FaApple } from "react-icons/fa"
+import { useRouter, useSearchParams } from "../hooks/useWindowHistory"
+import Img from "../Image"
+import { AtSign, CircleX, LogOut, Pencil, Trash2, UserRound } from "../icons"
+import Loading from "../Loading"
+import { uploadUserImage } from "../lib"
+import Modal from "../Modal"
+import { Button, Div, FilePicker, Input, useTheme } from "../platform"
 import {
   apiFetch,
   BrowserInstance,
   checkIsExtension,
   isValidUsername,
 } from "../utils"
-import { validate } from "uuid"
-import ConfirmButton from "../ConfirmButton"
-import toast from "react-hot-toast"
-import Loading from "../Loading"
-import Modal from "../Modal"
-
-import { useRouter, useSearchParams } from "../hooks/useWindowHistory"
-import { useAppContext } from "../context/AppContext"
-import {
-  useAuth,
-  useNavigationContext,
-  useError,
-  useData,
-} from "../context/providers"
-import { Button, Div, FilePicker, Input, useTheme } from "../platform"
-import { uploadUserImage } from "../lib"
-import Img from "../Image"
-import CharacterProfiles from "../CharacterProfiles"
-import Checkbox from "../Checkbox"
 import { useAccountStyles } from "./Account.styles"
-import { useStyles } from "../context/StylesContext"
 
 export default function Account({ style }: { style?: React.CSSProperties }) {
   const { push } = useRouter()

@@ -81,7 +81,6 @@ const convertToCSS = (props: Record<string, any>): React.CSSProperties => {
     if (transformKeys.includes(key)) {
       return // Handle in transform
     }
-
     // Direct assignment for CSS properties
     ;(cssProps as any)[key] = value
   })

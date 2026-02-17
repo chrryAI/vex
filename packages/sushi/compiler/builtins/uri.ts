@@ -38,7 +38,7 @@ export const escape = (input: any): bytestring => {
     }
 
     // Second pass: encode
-    let output: bytestring = Porffor.malloc()
+    const output: bytestring = Porffor.malloc()
     output.length = outLength
 
     i = Porffor.wasm`local.get ${input}`
@@ -112,7 +112,7 @@ export const escape = (input: any): bytestring => {
   }
 
   // Second pass: encode
-  let output: bytestring = Porffor.malloc()
+  const output: bytestring = Porffor.malloc()
   output.length = outLength
 
   i = Porffor.wasm`local.get ${input}`
@@ -214,7 +214,7 @@ export const unescape = (input: any): string => {
   }
 
   // Second pass: decode
-  let output: string = Porffor.malloc()
+  const output: string = Porffor.malloc()
   output.length = outLength
 
   i = Porffor.wasm`local.get ${input}`
@@ -362,7 +362,7 @@ export const encodeURI = (input: any): bytestring => {
     }
 
     // Second pass: encode
-    let output: bytestring = Porffor.malloc()
+    const output: bytestring = Porffor.malloc()
     output.length = outLength
 
     i = Porffor.wasm`local.get ${input}`
@@ -469,7 +469,7 @@ export const encodeURI = (input: any): bytestring => {
   }
 
   // Second pass: encode
-  let output: bytestring = Porffor.malloc()
+  const output: bytestring = Porffor.malloc()
   output.length = outLength
 
   i = Porffor.wasm`local.get ${input}`
@@ -647,7 +647,7 @@ export const encodeURIComponent = (input: any): bytestring => {
     }
 
     // Second pass: encode
-    let output: bytestring = Porffor.malloc()
+    const output: bytestring = Porffor.malloc()
     output.length = outLength
 
     i = Porffor.wasm`local.get ${input}`
@@ -728,7 +728,7 @@ export const encodeURIComponent = (input: any): bytestring => {
   }
 
   // Second pass: encode
-  let output: bytestring = Porffor.malloc()
+  const output: bytestring = Porffor.malloc()
   output.length = outLength
 
   i = Porffor.wasm`local.get ${input}`
@@ -899,7 +899,7 @@ export const decodeURI = (input: any): string => {
   }
 
   // Second pass: decode
-  let output: string = Porffor.malloc()
+  const output: string = Porffor.malloc()
   output.length = outLength
 
   i = Porffor.wasm`local.get ${input}`

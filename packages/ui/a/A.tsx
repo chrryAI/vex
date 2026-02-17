@@ -1,6 +1,6 @@
 import React from "react"
-import { A, useNavigation, usePlatform, useTheme } from "../platform"
 import { useData } from "../context/providers"
+import { A, useNavigation, usePlatform, useTheme } from "../platform"
 
 const Anchor = React.forwardRef<
   HTMLAnchorElement,

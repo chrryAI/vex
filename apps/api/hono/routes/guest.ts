@@ -1,7 +1,7 @@
-import { Hono } from "hono"
-import { getGuest as getGuestAction } from "../lib/auth"
-import captureException from "../../lib/captureException"
 import { getGuest, updateGuest } from "@repo/db"
+import { Hono } from "hono"
+import captureException from "../../lib/captureException"
+import { getGuest as getGuestAction } from "../lib/auth"
 
 export const guest = new Hono()
 

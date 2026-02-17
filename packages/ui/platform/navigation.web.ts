@@ -4,8 +4,8 @@
 
 import React, { useCallback, useMemo } from "react"
 import {
-  useRouter as useClientRouter,
   usePathname as useClientPathname,
+  useRouter as useClientRouter,
   useSearchParams as useClientSearchParams,
 } from "../hooks/useWindowHistory"
 

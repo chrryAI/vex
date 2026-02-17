@@ -1,26 +1,27 @@
 // lib/websocket.ts - WebSocket handler for Bun
+
+import {
+  createTimer,
+  getCollaboration,
+  getGuest,
+  getThread,
+  getUser,
+  type task,
+  updateCollaboration,
+  updateGuest,
+  updateTask,
+  updateTimer,
+  updateUser,
+} from "@repo/db"
 import type { ServerWebSocket } from "bun"
 import jwt from "jsonwebtoken"
 import { validate } from "uuid"
 import {
-  getUser,
-  getGuest,
-  getThread,
-  getCollaboration,
-  updateCollaboration,
-  updateGuest,
-  updateUser,
-  updateTask,
-  createTimer,
-  updateTimer,
-  type task,
-} from "@repo/db"
-import {
   addClient,
-  removeClient,
+  handleAcknowledgment,
   notify,
   notifyClients,
-  handleAcknowledgment,
+  removeClient,
 } from "./wsClients"
 
 // Batched task updates

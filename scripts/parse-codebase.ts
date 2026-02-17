@@ -1,15 +1,15 @@
 #!/usr/bin/env tsx
 
-import { parseDirectory } from "../apps/api/lib/ast/parseCodebase"
-import { storeASTInGraph } from "../apps/api/lib/ast/storeFalkorGraph"
-import {
-  generateCodeEmbeddings,
-  storeEmbeddings,
-  estimateTokens,
-  calculateEmbeddingCost,
-} from "../apps/api/lib/ast/generateEmbeddings"
 import { execSync } from "child_process"
 import path from "path"
+import {
+  calculateEmbeddingCost,
+  estimateTokens,
+  generateCodeEmbeddings,
+  storeEmbeddings,
+} from "../apps/api/lib/ast/generateEmbeddings"
+import { parseDirectory } from "../apps/api/lib/ast/parseCodebase"
+import { storeASTInGraph } from "../apps/api/lib/ast/storeFalkorGraph"
 
 const REPO_NAME = "chrryAI/vex"
 const REPO_PATH = path.resolve(__dirname, "..")

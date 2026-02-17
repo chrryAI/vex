@@ -98,10 +98,7 @@
       "markdown-it@>=13.0.0 <14.1.1": ">=14.1.1"
     }
   },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": ["apps/*", "packages/*"],
   "dependencies": {
     "@auth/core": "^0.37.4",
     "@axiomhq/pino": "^1.4.0",

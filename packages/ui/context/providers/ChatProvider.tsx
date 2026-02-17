@@ -2,41 +2,41 @@
 
 import React, {
   createContext,
+  type ReactNode,
   useContext,
-  ReactNode,
-  useState,
   useEffect,
   useRef,
+  useState,
 } from "react"
-import { useAuth } from "./AuthProvider"
-import { useData } from "./DataProvider"
-import {
-  aiAgent,
-  thread,
-  app,
-  collaboration,
-  user,
-  guest,
-  message,
-  messages,
-  paginatedMessages,
-  appWithStore,
-} from "../../types"
-
-import { pageSizes, isOwner } from "../../utils"
-import { hasThreadNotification } from "../../utils/hasThreadNotification"
+import useSWR from "swr"
+import { useUserScroll } from "../../hooks/useUserScroll"
+import { useWebSocket } from "../../hooks/useWebSocket"
 import {
   useLocalStorage,
   useNavigation,
   usePlatform,
   useTheme,
 } from "../../platform"
+import type {
+  aiAgent,
+  app,
+  appWithStore,
+  collaboration,
+  guest,
+  message,
+  messages,
+  paginatedMessages,
+  thread,
+  user,
+} from "../../types"
+import { isOwner, pageSizes } from "../../utils"
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
+import { hasThreadNotification } from "../../utils/hasThreadNotification"
 import { useApp } from "./AppProvider"
-import useSWR from "swr"
-import { useWebSocket } from "../../hooks/useWebSocket"
-import { useUserScroll } from "../../hooks/useUserScroll"
+import { useAuth } from "./AuthProvider"
+import { useData } from "./DataProvider"
 import { useError } from "./ErrorProvider"
+
 interface placeHolder {
   // TODO: Define placeHolder type
   [key: string]: any
@@ -251,7 +251,7 @@ export function ChatProvider({
 
   const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
 
-  let userNameByUrl: string | undefined = undefined
+  let userNameByUrl: string | undefined
 
   const pathSegments = pathname.split("/").filter(Boolean)
 

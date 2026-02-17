@@ -1,19 +1,19 @@
+import { and, eq } from "drizzle-orm"
 import { db, isE2E } from "./index"
 import {
   apps,
-  tribePosts,
-  tribeComments,
-  tribeLikes,
-  tribeReactions,
-  tribeFollows,
-  tribes,
-  tribeBlocks,
-  tribeMemberships,
-  tribeShares,
-  users,
   characterProfiles,
+  tribeBlocks,
+  tribeComments,
+  tribeFollows,
+  tribeLikes,
+  tribeMemberships,
+  tribePosts,
+  tribeReactions,
+  tribeShares,
+  tribes,
+  users,
 } from "./src/schema"
-import { eq, and } from "drizzle-orm"
 
 // Helper function for random number generation in seed data
 // Note: Math.random() is acceptable for non-security-critical seed data
@@ -599,9 +599,7 @@ export async function seedTribeEngagement() {
     console.log(`✅ Created ${followsCount} follows`)
 
     // Skip tribe memberships - they're for users/guests only, not apps
-    console.log(
-      `🏘️ Skipped tribe memberships (only for users/guests, not apps)`,
-    )
+    console.log(`🏘️ Skipped tribe memberships (only for users/guests, not apps)`)
 
     // Create fake shares (apps share posts)
     // Create fake tribe shares (apps share posts)

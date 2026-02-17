@@ -1,47 +1,53 @@
 "use client"
 
-import React, { useEffect, useRef, useState, useCallback } from "react"
-import { useThreadStyles } from "./Thread.styles"
-import {
-  aiAgent,
-  guest,
-  message,
-  thread,
-  user,
-  paginatedMessages,
-} from "./types"
+import React, {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
+import Bookmark from "./Bookmark"
+import Chat from "./Chat"
+import CollaborationStatus from "./CollaborationStatus"
 import { useAppContext } from "./context/AppContext"
 import {
+  useApp,
   useAuth,
   useChat,
   useNavigationContext,
-  useApp,
 } from "./context/providers"
-import Grapes from "./Grapes"
-import { A, usePlatform, useTheme, Div, Button, Span, Input } from "./platform"
-import Loading from "./Loading"
-import { FRONTEND_URL, isCollaborator, isOwner, isE2E } from "./utils"
-import { CircleX, Clock, ClockPlus, InfoIcon, ThumbsUp } from "./icons"
-import Chat from "./Chat"
-import Messages from "./Messages"
-import Skeleton from "./Skeleton"
-import DeleteThread from "./DeleteThread"
-import Instructions from "./Instructions"
-import EditThread from "./EditThread"
-import Share from "./Share"
-import { useUserScroll } from "./hooks/useUserScroll"
-import { useThreadPresence } from "./hooks/useThreadPresence"
-import Bookmark from "./Bookmark"
-import CollaborationStatus from "./CollaborationStatus"
-import EnableSound from "./EnableSound"
-import MemoryConsent from "./MemoryConsent"
-import Img from "./Image"
-import { useHasHydrated, useThreadMetadata } from "./hooks"
-import { lazy, Suspense } from "react"
 import { useStyles } from "./context/StylesContext"
+import DeleteThread from "./DeleteThread"
+import EditThread from "./EditThread"
+import EnableSound from "./EnableSound"
+import Grapes from "./Grapes"
+import { useHasHydrated, useThreadMetadata } from "./hooks"
+import { useThreadPresence } from "./hooks/useThreadPresence"
+import { useUserScroll } from "./hooks/useUserScroll"
+import Img from "./Image"
+import Instructions from "./Instructions"
+import { CircleX, Clock, ClockPlus, InfoIcon, ThumbsUp } from "./icons"
+import Loading from "./Loading"
+import MemoryConsent from "./MemoryConsent"
+import Messages from "./Messages"
+import { A, Button, Div, Input, Span, usePlatform, useTheme } from "./platform"
+import Share from "./Share"
+import Skeleton from "./Skeleton"
 import { BREAKPOINTS } from "./styles/breakpoints"
-import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+import { useThreadStyles } from "./Thread.styles"
 import Tribe from "./Tribe"
+import type {
+  aiAgent,
+  guest,
+  message,
+  paginatedMessages,
+  thread,
+  user,
+} from "./types"
+import { FRONTEND_URL, isCollaborator, isE2E, isOwner } from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 // Lazy load Focus only on web (not extension) to reduce bundle size
 // This component includes timer, tasks, moods, and analytics - heavy dependencies

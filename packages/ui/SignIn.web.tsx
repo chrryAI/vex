@@ -1,22 +1,20 @@
 "use client"
-import React, { useEffect, useRef, useState } from "react"
-// @ts-ignore
-import styles from "./SignIn.module.scss"
 import clsx from "clsx"
-import { LinkIcon, LogInIcon, LogIn, UserRoundPlus } from "./icons"
-import { apiFetch, isDevelopment } from "./utils"
-import { FaGoogle, FaApple, FaGithub } from "react-icons/fa"
+import React, { useEffect, useRef, useState } from "react"
+import { FaApple, FaGithub, FaGoogle } from "react-icons/fa"
 import { v4 as uuidv4 } from "uuid"
 import A from "./a/A"
+import { LinkIcon, LogIn, LogInIcon, UserRoundPlus } from "./icons"
+// @ts-expect-error
+import styles from "./SignIn.module.scss"
+import { apiFetch, isDevelopment } from "./utils"
 export type DesktopAuthHandler = {
   openAuthWindow: (url: string) => Promise<void>
 }
 
-import { BrowserInstance, getRedirectURL } from "./utils"
 import toast from "react-hot-toast"
 import Account from "./account/Account"
 import { useAppContext } from "./context/AppContext"
-import Modal from "./Modal"
 import {
   useAuth,
   useChat,
@@ -24,8 +22,10 @@ import {
   useError,
   useNavigationContext,
 } from "./context/providers"
-import { Button, usePlatform } from "./platform"
 import useCache from "./hooks/useCache"
+import Modal from "./Modal"
+import { Button, usePlatform } from "./platform"
+import { BrowserInstance, getRedirectURL } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function SignIn({

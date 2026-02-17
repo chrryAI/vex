@@ -1,21 +1,21 @@
 "use server"
 
-import slugify from "slug"
-import { upload } from "../../lib/minio"
-import { processFileForRAG } from "./ragService"
+import { isE2E as isE2EInternal } from "@chrryai/chrry/utils"
 // Note: getMember/getGuest are passed as parameters, not imported
 import {
+  createMessage,
   getMessages,
   type thread,
   updateThread,
-  createMessage,
   VEX_LIVE_FINGERPRINTS,
 } from "@repo/db"
-import { extractPDFText } from "../../lib"
-import { redact } from "../redaction"
+import slugify from "slug"
 import { v4 as uuidv4 } from "uuid"
-import { isE2E as isE2EInternal } from "@chrryai/chrry/utils"
+import { extractPDFText } from "../../lib"
 import captureException from "../../lib/captureException"
+import { upload } from "../../lib/minio"
+import { redact } from "../redaction"
+import { processFileForRAG } from "./ragService"
 
 export const uploadArtifacts = async ({
   files,

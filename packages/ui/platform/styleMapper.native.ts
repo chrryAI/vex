@@ -5,7 +5,7 @@
  * by automatically converting CSS classes to React Native style objects
  */
 
-import { ViewStyle, TextStyle, ImageStyle } from "react-native"
+import type { ImageStyle, TextStyle, ViewStyle } from "react-native"
 
 type StyleObject = ViewStyle | TextStyle | ImageStyle
 

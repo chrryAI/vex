@@ -7,13 +7,14 @@
  * On native: render as React Native components with className auto-converted to styles
  */
 
-import React, { forwardRef, CSSProperties, ChangeEvent } from "react"
+import type React from "react"
+import { type ChangeEvent, type CSSProperties, forwardRef } from "react"
+import { extractUtilityClassNames } from "../utils/extractUtilityClassNames"
+import console from "../utils/log"
+import { parseClassName } from "../utils/parseClassName"
+import { sanitizeStyleForDOM } from "../utils/sanitizeStyleForDOM"
 import { usePlatform } from "./PlatformProvider"
 import { mergeStyles } from "./styleMapper"
-import { parseClassName } from "../utils/parseClassName"
-import { extractUtilityClassNames } from "../utils/extractUtilityClassNames"
-import { sanitizeStyleForDOM } from "../utils/sanitizeStyleForDOM"
-import console from "../utils/log"
 
 // ============================================
 // TYPE DEFINITIONS
@@ -26,8 +27,7 @@ interface BaseProps {
 }
 
 export interface BoxProps
-  extends
-    BaseProps,
+  extends BaseProps,
     Omit<React.HTMLAttributes<HTMLDivElement>, keyof BaseProps | "onClick"> {
   as?:
     | "div"
@@ -207,7 +207,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
 
     return (
       <Component
-        // @ts-ignore - ref type varies based on 'as' prop
+        // @ts-expect-error - ref type varies based on 'as' prop
         ref={ref}
         className={hasStyleMappings ? undefined : className}
         style={sanitizedStyle}
@@ -260,7 +260,7 @@ export const Text = forwardRef<HTMLElement, TextProps>(
 
     return (
       <Component
-        // @ts-ignore - ref type varies based on 'as' prop
+        // @ts-expect-error - ref type varies based on 'as' prop
         ref={ref}
         className={hasStyleMappings ? undefined : finalClassName}
         style={sanitizedStyle}

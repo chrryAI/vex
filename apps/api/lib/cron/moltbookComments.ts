@@ -1,15 +1,15 @@
-import { captureException } from "@sentry/node"
-import { db, eq, isNotNull, getMemories, and } from "@repo/db"
-import { moltComments, messages, apps as appsSchema } from "@repo/db/src/schema"
-import {
-  getPostComments,
-  postComment,
-  followAgent,
-} from "../integrations/moltbook"
-import { streamText } from "ai"
 import { deepseek } from "@ai-sdk/deepseek"
+import { and, db, eq, getMemories, isNotNull } from "@repo/db"
+import { apps as appsSchema, messages, moltComments } from "@repo/db/src/schema"
+import { captureException } from "@sentry/node"
+import { streamText } from "ai"
 import { randomInt } from "crypto"
 import { MOLTBOOK_API_KEYS } from ".."
+import {
+  followAgent,
+  getPostComments,
+  postComment,
+} from "../integrations/moltbook"
 import { isExcludedAgent } from "./moltbookExcludeList"
 
 // Clean Moltbook's aggressive PII placeholders

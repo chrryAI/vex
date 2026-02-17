@@ -12,8 +12,8 @@ export const TribeStyleDefs = {
   },
 } as const
 
-import { createUnifiedStyles } from "./styles/createUnifiedStyles"
 import { createStyleHook } from "./styles/createStyleHook"
+import { createUnifiedStyles } from "./styles/createUnifiedStyles"
 
 export const TribeStyles = createUnifiedStyles(TribeStyleDefs)
 

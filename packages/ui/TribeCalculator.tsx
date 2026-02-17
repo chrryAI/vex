@@ -1,36 +1,34 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from "react"
-import { Div, Text, Button, Input, Label, Span, P } from "./platform"
-import { useStyles } from "./context/StylesContext"
+import React, { useEffect, useMemo, useState } from "react"
+import toast from "react-hot-toast"
+import A from "./a/A"
 import { useAgentStyles } from "./agent/Agent.styles"
+import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useData, useNavigationContext } from "./context/providers"
-import {
-  apiFetch,
-  capitalizeFirstLetter,
-  isOwner,
-  isE2E,
-  isDevelopment,
-} from "./utils"
-import { estimateJobCredits, type scheduleSlot } from "./utils/creditCalculator"
-
-import toast from "react-hot-toast"
-import Loading from "./Loading"
+import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
-import ConfirmButton from "./ConfirmButton"
-import A from "./a/A"
-
 import {
   CalendarFold,
   CalendarMinus,
   ClipboardClock,
+  Info,
   ShoppingCart,
   WholeWord,
-  Info,
 } from "./icons"
+import Loading from "./Loading"
+import { Button, Div, Input, Label, P, Span, Text } from "./platform"
 import Select from "./Select"
 import Subscribe from "./Subscribe"
+import {
+  apiFetch,
+  capitalizeFirstLetter,
+  isDevelopment,
+  isE2E,
+  isOwner,
+} from "./utils"
+import { estimateJobCredits, type scheduleSlot } from "./utils/creditCalculator"
 
 // Use scheduleSlot from creditCalculator for consistency
 type ScheduleTime = scheduleSlot

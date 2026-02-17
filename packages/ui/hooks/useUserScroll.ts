@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { usePathname } from "./useWindowHistory"
 
 export const useUserScroll = () => {

@@ -1,32 +1,32 @@
 "use client"
 
-import { forwardRef, useEffect, useState, useMemo, useRef, memo } from "react"
-import type {
-  aiAgent,
-  guest,
-  message,
-  thread,
-  user,
-  characterProfile,
-  threadSummary,
-} from "./types"
-import Message from "./Message"
-import Img from "./Image"
-import { CircleX, Loader, Sparkles } from "./icons"
+import { forwardRef, memo, useEffect, useMemo, useRef, useState } from "react"
+import CharacterProfile from "./CharacterProfile"
 import { useAppContext } from "./context/AppContext"
 import {
+  useApp,
   useAuth,
   useChat,
   useNavigationContext,
-  useApp,
 } from "./context/providers"
-import { Button, Div, useTheme, Video } from "./platform"
-import CharacterProfile from "./CharacterProfile"
-import { useWebSocket } from "./hooks/useWebSocket"
-import { isOwner } from "./utils"
-import { useMessagesStyles } from "./Messages.styles"
 import { useStyles } from "./context/StylesContext"
 import { useUserScroll } from "./hooks/useUserScroll"
+import { useWebSocket } from "./hooks/useWebSocket"
+import Img from "./Image"
+import { CircleX, Loader, Sparkles } from "./icons"
+import Message from "./Message"
+import { useMessagesStyles } from "./Messages.styles"
+import { Button, Div, useTheme, Video } from "./platform"
+import type {
+  aiAgent,
+  characterProfile,
+  guest,
+  message,
+  thread,
+  threadSummary,
+  user,
+} from "./types"
+import { isOwner } from "./utils"
 import { isE2E } from "./utils/siteConfig"
 
 export default memo(

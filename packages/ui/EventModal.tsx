@@ -1,34 +1,34 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
+import { Controller, type SubmitHandler, useForm } from "react-hook-form"
+import toast from "react-hot-toast"
+import Checkbox from "./Checkbox"
+import ColorScheme from "./ColorScheme"
+import ConfirmButton from "./ConfirmButton"
+import { COLORS, useAppContext } from "./context/AppContext"
+import { useAuth, useData } from "./context/providers"
+import { useStyles } from "./context/StylesContext"
+import { useEventModalStyles } from "./EventModal.styles"
 import {
   Calendar,
-  Palette,
-  MapPin,
-  Type,
+  CalendarClock,
   Clock11,
   Clock12,
-  CalendarClock,
   Info,
-  Trash2,
+  MapPin,
+  Palette,
   Pencil,
+  Trash2,
+  Type,
 } from "./icons"
-import Modal from "./Modal"
-import Checkbox from "./Checkbox"
-import { COLORS, useAppContext } from "./context/AppContext"
-import { useForm, Controller, type SubmitHandler } from "react-hook-form"
-import { customZodResolver } from "./utils/customZodResolver"
-import { formCalendarEventSchema } from "./utils/calendarValidation"
-import { CalendarEventFormData } from "./lib"
-import toast from "react-hot-toast"
 import Loading from "./Loading"
+import type { CalendarEventFormData } from "./lib"
 import MarkdownContent from "./MarkdownContent"
-import ConfirmButton from "./ConfirmButton"
-import { useAuth, useData } from "./context/providers"
-import { useEventModalStyles } from "./EventModal.styles"
-import { useStyles } from "./context/StylesContext"
+import Modal from "./Modal"
 import { Button, Div, Form, Input, Label, Span, TextArea } from "./platform"
-import ColorScheme from "./ColorScheme"
+import { formCalendarEventSchema } from "./utils/calendarValidation"
+import { customZodResolver } from "./utils/customZodResolver"
 
 // Use the unified schema - single source of truth!
 

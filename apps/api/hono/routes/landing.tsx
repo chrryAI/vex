@@ -1,8 +1,8 @@
+import { chrryDev } from "@chrryai/chrry/utils/siteConfig"
 import { Hono } from "hono"
+import React from "react"
 import { renderToString } from "react-dom/server"
 import ChrryDotDev from "../../components/ChrryDotDev"
-import React from "react"
-import { chrryDev } from "@chrryai/chrry/utils/siteConfig"
 
 export const landing = new Hono()
 

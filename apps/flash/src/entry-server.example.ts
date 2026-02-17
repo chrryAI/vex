@@ -6,7 +6,7 @@
 import fs from "fs/promises"
 import path from "path"
 import { renderToString } from "react-dom/server"
-import { loadServerData, ServerRequest } from "./server-loader"
+import { loadServerData, type ServerRequest } from "./server-loader"
 import { generateServerMetadata, metadataToHtml } from "./server-metadata"
 
 /**

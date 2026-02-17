@@ -1,127 +1,127 @@
-import { PostgresJsDatabase } from "drizzle-orm/postgres-js"
+import * as bcrypt from "bcrypt"
+import type { appWithStore, modelName } from "chrry/types"
+import * as dotenv from "dotenv"
+import {
+  and,
+  asc,
+  cosineDistance,
+  count,
+  desc,
+  eq,
+  exists,
+  gt,
+  gte,
+  ilike,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  lte,
+  max,
+  ne,
+  notInArray,
+  or,
+  sql,
+  sum,
+} from "drizzle-orm"
+import {
+  type PostgresJsDatabase,
+  drizzle as postgresDrizzle,
+} from "drizzle-orm/postgres-js"
+import postgres from "postgres"
+import { v4 as uuidv4 } from "uuid"
+import { decrypt } from "./encryption"
+// Better Auth tables
+import {
+  baAccounts,
+  baSessions,
+  baVerifications,
+} from "./src/better-auth-schema"
+import {
+  getCache,
+  invalidateApp,
+  invalidateGuest,
+  invalidateStore,
+  invalidateUser,
+  setCache,
+} from "./src/cache"
+import * as schema from "./src/schema"
 import {
   accounts,
+  affiliateClicks,
   affiliateLinks,
   affiliatePayouts,
   affiliateReferrals,
+  agentApiUsage,
   aiAgents,
+  analyticsSites,
+  appCampaigns,
+  appExtend,
+  appOrders,
+  apps,
+  authExchangeCodes,
+  autonomousBids,
+  budgets,
   calendarEvents,
   characterProfiles,
   cities,
+  codebaseQueries,
+  codeEmbeddings,
   collaborations,
   creditTransactions,
   creditUsage,
   devices,
   documentChunks,
+  expenses,
+  feedbackTransactions,
   GUEST_CREDITS_PER_MONTH,
   guests,
+  installs,
+  instructions,
   invitations,
-  authExchangeCodes,
-  tribePosts,
-  tribeComments,
   memories,
-  analyticsSites,
-  tribeReactions,
-  codebaseQueries,
   messageEmbeddings,
   messages,
-  tribes,
-  tribeMemberships,
-  stores,
+  moods,
+  pearFeedback,
+  placeHolders,
+  premiumSubscriptions,
   pushSubscriptions,
+  realtimeAnalytics,
+  recruitmentFlows,
+  retroResponses,
+  retroSessions,
+  scheduledJobs,
+  sharedExpenses,
+  slotAuctions,
+  slotRentals,
+  sonarIssues,
+  sonarMetrics,
+  storeInstalls,
+  stores,
+  storeTimeSlots,
   subscriptions,
   systemLogs,
-  threads,
-  threadSummaries,
-  users,
-  placeHolders,
-  tribeFollows,
-  sonarMetrics,
-  sonarIssues,
-  verificationTokens,
-  instructions,
-  apps,
-  affiliateClicks,
-  sharedExpenses,
-  expenses,
-  budgets,
-  installs,
-  teams,
-  storeInstalls,
-  appOrders,
-  appExtend,
-  tasks,
-  timers,
-  moods,
-  realtimeAnalytics,
-  pearFeedback,
-  retroSessions,
-  retroResponses,
-  talentProfiles,
-  talentThreads,
-  recruitmentFlows,
   talentEarnings,
   talentInvitations,
-  premiumSubscriptions,
-  feedbackTransactions,
+  talentProfiles,
+  talentThreads,
+  tasks,
+  teams,
+  threadSummaries,
+  threads,
+  timers,
+  tribeComments,
+  tribeFollows,
   tribeLikes,
-  scheduledJobs,
-  appCampaigns,
-  autonomousBids,
-  slotRentals,
-  storeTimeSlots,
-  slotAuctions,
-  codeEmbeddings,
-  agentApiUsage,
+  tribeMemberships,
+  tribePosts,
+  tribeReactions,
+  tribes,
+  users,
+  verificationTokens,
 } from "./src/schema"
-// Better Auth tables
-import {
-  baSessions,
-  baAccounts,
-  baVerifications,
-} from "./src/better-auth-schema"
-import { v4 as uuidv4 } from "uuid"
-import * as schema from "./src/schema"
-import { drizzle as postgresDrizzle } from "drizzle-orm/postgres-js"
 import { generateApiKey } from "./src/utils/apiKey"
-import { decrypt } from "./encryption"
-import {
-  and,
-  eq,
-  inArray,
-  or,
-  desc,
-  asc,
-  count,
-  sum,
-  lt,
-  sql,
-  gte,
-  isNotNull,
-  lte,
-  isNull,
-  ilike,
-  max,
-  exists,
-  cosineDistance,
-  notInArray,
-  gt,
-  ne,
-} from "drizzle-orm"
-
-import postgres from "postgres"
-
-import * as dotenv from "dotenv"
-import * as bcrypt from "bcrypt"
-import { appWithStore, modelName } from "chrry/types"
-import {
-  invalidateApp,
-  invalidateStore,
-  invalidateUser,
-  invalidateGuest,
-  getCache,
-  setCache,
-} from "./src/cache"
 
 export {
   realtimeAnalytics,
@@ -145,18 +145,18 @@ export {
   codeEmbeddings,
   codebaseQueries,
 }
-export { type modelName }
+export type { modelName }
 export type {
   appCampaign,
-  newAppCampaign,
   autonomousBid,
+  newAppCampaign,
   newAutonomousBid,
-  slotRental,
+  newSlotAuction,
   newSlotRental,
-  storeTimeSlot,
   newStoreTimeSlot,
   slotAuction,
-  newSlotAuction,
+  slotRental,
+  storeTimeSlot,
 } from "./src/schema"
 
 dotenv.config()
@@ -174,10 +174,10 @@ export const isProd = isSeedSafe
     ? false
     : process.env.DB_URL && !process.env.DB_URL.includes("localhost")
 
+export { decrypt, encrypt, generateEncryptionKey } from "./encryption"
 // Export cache functions and redis instance for external use
 export * from "./src/cache"
 export { redis, upstashRedis } from "./src/redis"
-export { encrypt, decrypt, generateEncryptionKey } from "./encryption"
 export {
   sql,
   eq,
@@ -581,7 +581,7 @@ export async function logCreditUsage({
   appId?: string
   // isWebSearchEnabled?: boolean
 }) {
-  let creditCost = rest.creditCost || 1
+  const creditCost = rest.creditCost || 1
 
   console.log("🎯 logCreditUsage called:", {
     userId: userId?.substring(0, 8),
@@ -5023,7 +5023,7 @@ export const getApp = async ({
   }
 
   // Build query with conditional store join
-  let query = db
+  const query = db
     .select({
       app: apps,
       user: users,
@@ -5535,7 +5535,7 @@ export const getApps = async (
 }> => {
   // Get store's default app and build parent store chain if storeId provided
   let storeDefaultAppId: string | undefined
-  let storeIds: string[] = []
+  const storeIds: string[] = []
 
   if (storeId) {
     const store = await db
@@ -6390,7 +6390,7 @@ export async function getStore({
 
   // Map vex.chrry.ai and askvex.com to the vex store
   let effectiveSlug = slug
-  let effectiveDomain = domain
+  const effectiveDomain = domain
 
   if (domain && !slug) {
     if (["https://vex.chrry.ai"].includes(domain)) {
@@ -6855,7 +6855,7 @@ export const getLastMood = async (userId?: string, guestId?: string) => {
   const todayStart = new Date(utcToday)
   const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000) // Add 24 hours
 
-  let mood = recentMoods.moods.find((m) => {
+  const mood = recentMoods.moods.find((m) => {
     const moodDate = new Date(m.createdOn)
     return moodDate >= todayStart && moodDate < todayEnd
   })
@@ -7065,7 +7065,7 @@ export const deleteInstall = async ({
 }
 
 // Export API key utilities
-export { generateApiKey, isValidApiKey, getApiKeyEnv } from "./src/utils/apiKey"
+export { generateApiKey, getApiKeyEnv, isValidApiKey } from "./src/utils/apiKey"
 
 export const getAnalyticsSite = async ({
   id,

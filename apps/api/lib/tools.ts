@@ -1,38 +1,38 @@
-import { z } from "zod"
-import {
-  updateCalendarEvent,
-  getCalendarEvent,
-  createCalendarEvent,
-  deleteCalendarEvent,
-  getExpenses,
-  createExpense,
-  updateExpense,
-  deleteExpense,
-  getBudgets,
-  createBudget,
-  updateBudget,
-  deleteBudget,
-  createSharedExpense,
-  getSharedExpenses,
-  updateSharedExpense,
-  deleteSharedExpense,
-  type budgetCategory,
-  type user,
-  type subscription,
-  type guest,
-  getCalendarEvents,
-  createMood,
-  createTask,
-  updateTask,
-  deleteTask,
-  updateTimer,
-  getLastMood,
-  updateMood,
-  getTimer,
-  type timer,
-  createTalentProfile,
-} from "@repo/db"
 import type { expenseCategoryType } from "@chrryai/chrry/utils"
+import {
+  type budgetCategory,
+  createBudget,
+  createCalendarEvent,
+  createExpense,
+  createMood,
+  createSharedExpense,
+  createTalentProfile,
+  createTask,
+  deleteBudget,
+  deleteCalendarEvent,
+  deleteExpense,
+  deleteSharedExpense,
+  deleteTask,
+  getBudgets,
+  getCalendarEvent,
+  getCalendarEvents,
+  getExpenses,
+  getLastMood,
+  getSharedExpenses,
+  getTimer,
+  type guest,
+  type subscription,
+  type timer,
+  updateBudget,
+  updateCalendarEvent,
+  updateExpense,
+  updateMood,
+  updateSharedExpense,
+  updateTask,
+  updateTimer,
+  type user,
+} from "@repo/db"
+import { z } from "zod"
 
 import { notify } from "./notify"
 
@@ -1291,9 +1291,7 @@ export const getTools = ({
           member?.characterProfilesEnabled || guest?.characterProfilesEnabled
 
         if (!characterProfilesEnabled) {
-          console.log(
-            "⚠️ Mood creation blocked: Character profiles not enabled",
-          )
+          console.log("⚠️ Mood creation blocked: Character profiles not enabled")
           return {
             success: false,
             requiresConsent: true,

@@ -1,9 +1,10 @@
-import { getUser, getGuest as getGuestDb } from "@repo/db"
-import jwt from "jsonwebtoken"
-import captureException from "../../lib/captureException"
-import type { Context } from "hono"
-import { validate } from "uuid"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
+import { getGuest as getGuestDb, getUser } from "@repo/db"
+import type { Context } from "hono"
+import jwt from "jsonwebtoken"
+import { validate } from "uuid"
+import captureException from "../../lib/captureException"
+
 export { getApp } from "./getApp"
 
 // ==================== MAIN FUNCTION ====================

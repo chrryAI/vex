@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import ParticleWaveCanvas from "./ParticleWave"
-import { useNavigation, Button } from "../platform"
-// @ts-ignore
-import styles from "./Programme.module.scss"
-import Img from "../Image"
 import clsx from "clsx"
+import { AnimatePresence, motion } from "framer-motion"
+import { useEffect, useState } from "react"
 import { useAuth } from "../context/providers/AuthProvider"
 import { useHasHydrated } from "../hooks"
+import Img from "../Image"
+import { Button, useNavigation } from "../platform"
+import ParticleWaveCanvas from "./ParticleWave"
+// @ts-expect-error
+import styles from "./Programme.module.scss"
 
 export default function Programme() {
   const { searchParams, addParams, back, removeParams } = useNavigation()

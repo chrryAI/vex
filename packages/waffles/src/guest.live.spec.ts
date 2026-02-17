@@ -1,20 +1,19 @@
 import { test } from "@playwright/test"
-import { chat } from "./shared/chat"
-import { clean } from "./shared/clean"
-import { limit } from "./shared/limit"
-
+import { v4 as uuidv4 } from "uuid"
 import {
   getURL,
-  wait,
   VEX_TEST_EMAIL_3,
-  VEX_TEST_PASSWORD_3,
   VEX_TEST_EMAIL_4,
+  VEX_TEST_PASSWORD_3,
+  wait,
 } from "."
-import { subscribe } from "./shared/subscribe"
+import { chat } from "./shared/chat"
+import { clean } from "./shared/clean"
 import { collaboration } from "./shared/collaboration"
-import { thread } from "./shared/thread"
-import { v4 as uuidv4 } from "uuid"
 import createApp from "./shared/createApp"
+import { limit } from "./shared/limit"
+import { subscribe } from "./shared/subscribe"
+import { thread } from "./shared/thread"
 
 const isMember = false
 

@@ -4,8 +4,9 @@
  * On web: returns className string
  * On native: returns merged style object
  */
-import React from "react"
+
 import clsxOriginal from "clsx"
+import React from "react"
 
 type ClassValue =
   | string

@@ -1,6 +1,6 @@
-import type { user, app, guest } from "../types"
-import isOwner from "./isOwner"
+import type { app, guest, user } from "../types"
 import { isE2E } from "../utils"
+import isOwner from "./isOwner"
 
 export const getHourlyLimit = ({
   member,

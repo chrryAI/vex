@@ -1,7 +1,7 @@
 "use client"
 
-import { ExternalLink, Github, Package } from "lucide-react"
 import { chrryDev } from "@chrryai/chrry/utils/siteConfig"
+import { ExternalLink, Github, Package } from "lucide-react"
 
 const css = `
 

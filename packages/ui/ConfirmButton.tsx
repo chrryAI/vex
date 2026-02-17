@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
-import { Button, Span } from "./platform"
-import Loading from "./Loading"
-import { Trash2 } from "./icons"
+import { useEffect, useRef, useState } from "react"
 import { useAuth } from "./context/providers"
+import { Trash2 } from "./icons"
+import Loading from "./Loading"
+import { Button, Span } from "./platform"
 
 const ConfirmButton = ({
   children = (

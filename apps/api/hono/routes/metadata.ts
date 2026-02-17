@@ -1,5 +1,4 @@
-import { Hono } from "hono"
-import { getThread, getStore, getApp as getAppDb } from "@repo/db"
+import { getTranslations } from "@chrryai/chrry/lib"
 import type { locale } from "@chrryai/chrry/locales"
 import {
   generateStoreMetadata,
@@ -7,8 +6,9 @@ import {
   getThreadId,
 } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
-import { getTranslations } from "@chrryai/chrry/lib"
 import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
+import { getApp as getAppDb, getStore, getThread } from "@repo/db"
+import { Hono } from "hono"
 
 const app = new Hono()
 

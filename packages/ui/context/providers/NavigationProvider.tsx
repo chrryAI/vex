@@ -1,28 +1,27 @@
 "use client"
 
+import { t } from "i18next"
 import React, {
   createContext,
+  type ReactNode,
   useContext,
-  ReactNode,
-  useState,
   useEffect,
   useRef,
+  useState,
 } from "react"
+import { defaultLocale } from "../../locales"
 import {
+  type NavigationParams,
   toast,
   useNavigation,
   usePlatform,
-  NavigationParams,
 } from "../../platform"
-import { useApp } from "./AppProvider"
-import { useChat } from "./ChatProvider"
-import { useAuth } from "./AuthProvider"
+import type { thread } from "../../types"
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
-
-import { thread } from "../../types"
-import { t } from "i18next"
-import { defaultLocale } from "../../locales"
 import { whiteLabels } from "../../utils/siteConfig"
+import { useApp } from "./AppProvider"
+import { useAuth } from "./AuthProvider"
+import { useChat } from "./ChatProvider"
 
 const NavigationContext = createContext<
   | {

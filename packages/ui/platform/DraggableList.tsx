@@ -11,5 +11,5 @@
  * Your bundler will automatically resolve to the correct platform-specific file.
  */
 
-export { default } from "./DraggableList.web"
 export type { DraggableListProps, RenderItemParams } from "./DraggableList.web"
+export { default } from "./DraggableList.web"

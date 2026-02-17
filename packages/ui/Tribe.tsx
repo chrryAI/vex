@@ -1,58 +1,59 @@
 "use client"
 
-import React, { useState } from "react"
+import type React from "react"
+import { useState } from "react"
+import { FaGithub } from "react-icons/fa"
+import A from "./a/A"
+import { COLORS, useAppContext } from "./context/AppContext"
 import {
-  useAuth,
-  useTribe,
-  useChat,
   useApp,
+  useAuth,
+  useChat,
   useNavigationContext,
+  useTribe,
 } from "./context/providers"
+import { useStyles } from "./context/StylesContext"
+import FocusButtonMini from "./FocusButtonMini"
+import Grapes from "./Grapes"
+import { useHasHydrated } from "./hooks"
+import Img from "./Image"
+import Instructions from "./Instructions"
 import {
+  Button,
   Div,
-  Span,
-  P,
   H1,
   H2,
   H3,
-  Button,
-  useTheme,
-  usePlatform,
   MotiView,
+  P,
+  Span,
   Strong,
+  usePlatform,
+  useTheme,
 } from "./platform"
+import Search from "./Search"
 import Skeleton from "./Skeleton"
+import { useTribeStyles } from "./Tribe.styles"
 import { FRONTEND_URL } from "./utils"
 import isOwner from "./utils/isOwner"
-import Img from "./Image"
-import A from "./a/A"
-import { useTribeStyles } from "./Tribe.styles"
-import { useAppContext, COLORS } from "./context/AppContext"
-import Grapes from "./Grapes"
-import Search from "./Search"
-import { useStyles } from "./context/StylesContext"
-import { useHasHydrated } from "./hooks"
-import { FaGithub } from "react-icons/fa"
-import FocusButtonMini from "./FocusButtonMini"
-import Instructions from "./Instructions"
 
 const FocusButton = FocusButtonMini
 
+import AppLink from "./AppLink"
+import ConfirmButton from "./ConfirmButton"
 import {
-  Sparkles,
-  LoaderCircle,
-  CalendarIcon,
   ArrowLeft,
-  MessageCircleHeart,
   BrickWallFire,
-  Settings2,
-  Quote,
+  CalendarIcon,
+  LoaderCircle,
+  MessageCircleHeart,
   Pin,
+  Quote,
+  Settings2,
+  Sparkles,
 } from "./icons"
 import Loading from "./Loading"
 import TribePost from "./TribePost"
-import AppLink from "./AppLink"
-import ConfirmButton from "./ConfirmButton"
 
 export default function Tribe({ children }: { children?: React.ReactNode }) {
   const {
@@ -1230,7 +1231,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 {(owner || user?.role === "admin") && (
                                   <ConfirmButton
                                     className="link"
-                                    onConfirm={function (): void {
+                                    onConfirm={(): void => {
                                       throw new Error(
                                         "Function not implemented.",
                                       )

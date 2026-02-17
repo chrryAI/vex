@@ -2,12 +2,12 @@
 import type {} from "./porffor.d.ts"
 
 export const __crypto_randomUUID = (): bytestring => {
-  let bytes: bytestring = "................"
+  const bytes: bytestring = "................"
 
   const bytesPtr: i32 = Porffor.wasm`local.get ${bytes}`
 
   let a: i32 = bytesPtr
-  let aEndPtr: i32 = a + 16
+  const aEndPtr: i32 = a + 16
   while (a < aEndPtr) {
     Porffor.wasm.i32.store8(a++, Porffor.randomByte(), 0, 4)
   }
@@ -28,7 +28,7 @@ export const __crypto_randomUUID = (): bytestring => {
     12, // 4 + 8
   )
 
-  let output: bytestring = Porffor.malloc()
+  const output: bytestring = Porffor.malloc()
 
   let i: i32 = Porffor.wasm`local.get ${output}`
   let j: i32 = bytesPtr
@@ -121,7 +121,7 @@ export const __crypto_randomUUID = (): bytestring => {
 
 export const __crypto_getRandomValues = (buffer: Uint8Array): Uint8Array => {
   let i: i32 = 0
-  let endPtr: i32 = buffer.length
+  const endPtr: i32 = buffer.length
   while (i < endPtr) {
     buffer[i] = Porffor.randomByte()
     i++

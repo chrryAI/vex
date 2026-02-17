@@ -13,10 +13,10 @@ const done = (x) => {
 
 const interpret = (str: bytestring) => {
   let ptr: i32 = 0
-  let memory: i32[] = new Array(8000)
+  const memory: i32[] = new Array(8000)
   memory.fill(0)
 
-  let starts: i32[] = []
+  const starts: i32[] = []
 
   for (let i: i32 = 0; i < str.length; i++) {
     const c: i32 = str.charCodeAt(i)

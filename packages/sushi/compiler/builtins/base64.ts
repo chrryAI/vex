@@ -8,8 +8,8 @@ export const btoa = (input: bytestring): bytestring => {
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
   const keyStrPtr: i32 = Porffor.wasm`local.get ${keyStr}`
 
-  let len: i32 = input.length
-  let output: bytestring = Porffor.malloc()
+  const len: i32 = input.length
+  const output: bytestring = Porffor.malloc()
 
   let i: i32 = Porffor.wasm`local.get ${input}`,
     j: i32 = Porffor.wasm`local.get ${output}`
@@ -71,7 +71,7 @@ export const atob = (input: bytestring): bytestring => {
     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@>@@@?456789:;<=@@@@@@@\x00\x01\x02\x03\x04\x05\x06\x07\b\t\n\x0B\f\r\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19@@@@@@\x1A\x1B\x1C\x1D\x1E\x1F !\"#$%&'()*+,-./0123"
   const lutPtr: i32 = Porffor.wasm`local.get ${lut}`
 
-  let output: bytestring = Porffor.malloc()
+  const output: bytestring = Porffor.malloc()
 
   let i: i32 = Porffor.wasm`local.get ${input}`,
     j: i32 = Porffor.wasm`local.get ${output}`

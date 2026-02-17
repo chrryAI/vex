@@ -3,35 +3,35 @@
  * Seeds all SUSHI agents to FalkorDB with capabilities, permissions, and relationships
  */
 
-import { FalkorDB } from "falkordb";
+import { FalkorDB } from "falkordb"
 
-let db = null;
-let graph = null;
+let db = null
+let graph = null
 
 async function initSushiSeeder() {
-  if (graph) return;
+  if (graph) return
 
   db = await FalkorDB.connect({
     socket: { host: "localhost", port: 6380 },
-  });
-  graph = db.selectGraph("sushi_store");
-  console.log("🍣 SUSHI Store Seeder initialized\n");
+  })
+  graph = db.selectGraph("sushi_store")
+  console.log("🍣 SUSHI Store Seeder initialized\n")
 }
 
 /**
  * Seed SUSHI Store - All Agents
  */
 async function seedSushiStore() {
-  if (!graph) await initSushiSeeder();
+  if (!graph) await initSushiSeeder()
 
-  console.log("═══════════════════════════════════════════════════════");
-  console.log("           🍣 SEEDING SUSHI STORE TO FALKORDB          ");
-  console.log("═══════════════════════════════════════════════════════\n");
+  console.log("═══════════════════════════════════════════════════════")
+  console.log("           🍣 SEEDING SUSHI STORE TO FALKORDB          ")
+  console.log("═══════════════════════════════════════════════════════\n")
 
   // ============================================
   // SUSHI STORE NODE
   // ============================================
-  console.log("📦 Creating SUSHI Store...");
+  console.log("📦 Creating SUSHI Store...")
 
   await graph.query(`
     MERGE (store:Store {id: 'sushi-store'})
@@ -44,14 +44,14 @@ async function seedSushiStore() {
         store.icon = '🍣',
         store.themeColor = 'violet',
         store.createdAt = timestamp()
-  `);
+  `)
 
-  console.log("   ✅ SUSHI Store created\n");
+  console.log("   ✅ SUSHI Store created\n")
 
   // ============================================
   // CODER AGENT ⚡
   // ============================================
-  console.log("⚡ Creating Coder Agent...");
+  console.log("⚡ Creating Coder Agent...")
 
   await graph.query(`
     MERGE (agent:Agent {id: 'coder'})
@@ -71,7 +71,7 @@ async function seedSushiStore() {
         agent.description = 'Generate production-ready code in any language. Lightning-fast generation with best practices.',
         agent.placeholder = 'What code should I generate?',
         agent.createdAt = timestamp()
-  `);
+  `)
 
   // Coder capabilities
   await graph.query(`
@@ -92,7 +92,7 @@ async function seedSushiStore() {
     MERGE (agent)-[:HAS_CAPABILITY]->(cap6)
     MERGE (agent)-[:HAS_CAPABILITY]->(cap7)
     MERGE (agent)-[:HAS_CAPABILITY]->(cap8)
-  `);
+  `)
 
   // Coder file system permissions
   await graph.query(`
@@ -105,7 +105,7 @@ async function seedSushiStore() {
     MERGE (agent)-[:HAS_PERMISSION]->(perm3)
     MERGE (perm4:FilePermission {type: 'write', pattern: 'tests/**'})
     MERGE (agent)-[:HAS_PERMISSION]->(perm4)
-  `);
+  `)
 
   // Coder tools
   await graph.query(`
@@ -122,14 +122,16 @@ async function seedSushiStore() {
     MERGE (agent)-[:CAN_USE]->(tool4)
     MERGE (agent)-[:CAN_USE]->(tool5)
     MERGE (agent)-[:CAN_USE]->(tool6)
-  `);
+  `)
 
-  console.log("   ✅ Coder Agent created with 8 capabilities, 4 permissions, 6 tools\n");
+  console.log(
+    "   ✅ Coder Agent created with 8 capabilities, 4 permissions, 6 tools\n",
+  )
 
   // ============================================
   // DEBUGGER AGENT 🐛
   // ============================================
-  console.log("🐛 Creating Debugger Agent...");
+  console.log("🐛 Creating Debugger Agent...")
 
   await graph.query(`
     MERGE (agent:Agent {id: 'debugger'})
@@ -149,7 +151,7 @@ async function seedSushiStore() {
         agent.description = 'Find and fix bugs faster. Analyzes stack traces, identifies root causes, and suggests optimal solutions.',
         agent.placeholder = 'Paste your error or bug...',
         agent.createdAt = timestamp()
-  `);
+  `)
 
   // Debugger capabilities
   await graph.query(`
@@ -170,7 +172,7 @@ async function seedSushiStore() {
     MERGE (agent)-[:HAS_CAPABILITY]->(cap6)
     MERGE (agent)-[:HAS_CAPABILITY]->(cap7)
     MERGE (agent)-[:HAS_CAPABILITY]->(cap8)
-  `);
+  `)
 
   // Debugger file system permissions
   await graph.query(`
@@ -185,7 +187,7 @@ async function seedSushiStore() {
     MERGE (agent)-[:HAS_PERMISSION]->(perm4)
     MERGE (perm5:FilePermission {type: 'write', pattern: 'packages/**'})
     MERGE (agent)-[:HAS_PERMISSION]->(perm5)
-  `);
+  `)
 
   // Debugger tools
   await graph.query(`
@@ -202,14 +204,16 @@ async function seedSushiStore() {
     MERGE (agent)-[:CAN_USE]->(tool4)
     MERGE (agent)-[:CAN_USE]->(tool5)
     MERGE (agent)-[:CAN_USE]->(tool6)
-  `);
+  `)
 
-  console.log("   ✅ Debugger Agent created with 8 capabilities, 5 permissions, 6 tools\n");
+  console.log(
+    "   ✅ Debugger Agent created with 8 capabilities, 5 permissions, 6 tools\n",
+  )
 
   // ============================================
   // ARCHITECT AGENT 🏗️
   // ============================================
-  console.log("🏗️ Creating Architect Agent...");
+  console.log("🏗️ Creating Architect Agent...")
 
   await graph.query(`
     MERGE (agent:Agent {id: 'architect'})
@@ -229,7 +233,7 @@ async function seedSushiStore() {
         agent.description = 'Design scalable system architectures. Plan microservices, databases, APIs, and infrastructure with best practices.',
         agent.placeholder = 'Describe your system architecture...',
         agent.createdAt = timestamp()
-  `);
+  `)
 
   // Architect capabilities
   await graph.query(`
@@ -254,7 +258,7 @@ async function seedSushiStore() {
     MERGE (agent)-[:HAS_CAPABILITY]->(cap8)
     MERGE (agent)-[:HAS_CAPABILITY]->(cap9)
     MERGE (agent)-[:HAS_CAPABILITY]->(cap10)
-  `);
+  `)
 
   // Architect file system permissions (read-only mostly)
   await graph.query(`
@@ -267,7 +271,7 @@ async function seedSushiStore() {
     MERGE (agent)-[:HAS_PERMISSION]->(perm3)
     MERGE (perm4:FilePermission {type: 'write', pattern: '*.md'})
     MERGE (agent)-[:HAS_PERMISSION]->(perm4)
-  `);
+  `)
 
   // Architect tools
   await graph.query(`
@@ -284,14 +288,16 @@ async function seedSushiStore() {
     MERGE (agent)-[:CAN_USE]->(tool4)
     MERGE (agent)-[:CAN_USE]->(tool5)
     MERGE (agent)-[:CAN_USE]->(tool6)
-  `);
+  `)
 
-  console.log("   ✅ Architect Agent created with 10 capabilities, 4 permissions, 6 tools\n");
+  console.log(
+    "   ✅ Architect Agent created with 10 capabilities, 4 permissions, 6 tools\n",
+  )
 
   // ============================================
   // PM AGENT 🍜
   // ============================================
-  console.log("🍜 Creating PM Agent...");
+  console.log("🍜 Creating PM Agent...")
 
   await graph.query(`
     MERGE (agent:Agent {id: 'pm'})
@@ -311,7 +317,7 @@ async function seedSushiStore() {
         agent.description = 'Coordinate multiple agents, manage Kanban boards, track progress, and optimize team workload.',
         agent.placeholder = 'What should the team work on?',
         agent.createdAt = timestamp()
-  `);
+  `)
 
   // PM capabilities
   await graph.query(`
@@ -332,7 +338,7 @@ async function seedSushiStore() {
     MERGE (agent)-[:HAS_CAPABILITY]->(cap6)
     MERGE (agent)-[:HAS_CAPABILITY]->(cap7)
     MERGE (agent)-[:HAS_CAPABILITY]->(cap8)
-  `);
+  `)
 
   // PM file system permissions
   await graph.query(`
@@ -345,7 +351,7 @@ async function seedSushiStore() {
     MERGE (agent)-[:HAS_PERMISSION]->(perm3)
     MERGE (perm4:FilePermission {type: 'write', pattern: '*.md'})
     MERGE (agent)-[:HAS_PERMISSION]->(perm4)
-  `);
+  `)
 
   // PM tools
   await graph.query(`
@@ -364,14 +370,16 @@ async function seedSushiStore() {
     MERGE (agent)-[:CAN_USE]->(tool5)
     MERGE (agent)-[:CAN_USE]->(tool6)
     MERGE (agent)-[:CAN_USE]->(tool7)
-  `);
+  `)
 
-  console.log("   ✅ PM Agent created with 8 capabilities, 4 permissions, 7 tools\n");
+  console.log(
+    "   ✅ PM Agent created with 8 capabilities, 4 permissions, 7 tools\n",
+  )
 
   // ============================================
   // AGENT RELATIONSHIPS
   // ============================================
-  console.log("🔗 Creating Agent Relationships...");
+  console.log("🔗 Creating Agent Relationships...")
 
   // Connect all agents to store
   await graph.query(`
@@ -384,7 +392,7 @@ async function seedSushiStore() {
     MERGE (store)-[:HOSTS]->(debugger)
     MERGE (store)-[:HOSTS]->(architect)
     MERGE (store)-[:HOSTS]->(pm)
-  `);
+  `)
 
   // PM coordinates all other agents
   await graph.query(`
@@ -395,28 +403,28 @@ async function seedSushiStore() {
     MERGE (pm)-[:COORDINATES]->(coder)
     MERGE (pm)-[:COORDINATES]->(debugger)
     MERGE (pm)-[:COORDINATES]->(architect)
-  `);
+  `)
 
   // Architect designs, Coder implements
   await graph.query(`
     MATCH (architect:Agent {id: 'architect'})
     MATCH (coder:Agent {id: 'coder'})
     MERGE (architect)-[:DESIGNS_FOR]->(coder)
-  `);
+  `)
 
   // Coder generates, Debugger tests
   await graph.query(`
     MATCH (coder:Agent {id: 'coder'})
     MATCH (debugger:Agent {id: 'debugger'})
     MERGE (coder)-[:GENERATES_FOR]->(debugger)
-  `);
+  `)
 
   // Debugger fixes, Coder updates
   await graph.query(`
     MATCH (debugger:Agent {id: 'debugger'})
     MATCH (coder:Agent {id: 'coder'})
     MERGE (debugger)-[:REPORTS_TO]->(coder)
-  `);
+  `)
 
   // All agents can communicate with each other
   await graph.query(`
@@ -430,14 +438,14 @@ async function seedSushiStore() {
     MERGE (debugger)-[:COMMUNICATES_WITH]->(architect)
     MERGE (debugger)-[:COMMUNICATES_WITH]->(pm)
     MERGE (architect)-[:COMMUNICATES_WITH]->(pm)
-  `);
+  `)
 
-  console.log("   ✅ Created 13 relationships between agents\n");
+  console.log("   ✅ Created 13 relationships between agents\n")
 
   // ============================================
   // INTEGRATION NODES
   // ============================================
-  console.log("🔌 Creating Integration Nodes...");
+  console.log("🔌 Creating Integration Nodes...")
 
   // BAM Integration
   await graph.query(`
@@ -449,7 +457,7 @@ async function seedSushiStore() {
     WITH bam
     MATCH (debugger:Agent {id: 'debugger'})
     MERGE (debugger)-[:USES_INTEGRATION]->(bam)
-  `);
+  `)
 
   // STRIKE Integration
   await graph.query(`
@@ -463,7 +471,7 @@ async function seedSushiStore() {
     MATCH (coder:Agent {id: 'coder'})
     MERGE (debugger)-[:USES_INTEGRATION]->(strike)
     MERGE (coder)-[:USES_INTEGRATION]->(strike)
-  `);
+  `)
 
   // Memory Integration
   await graph.query(`
@@ -475,7 +483,7 @@ async function seedSushiStore() {
     WITH memory
     MATCH (pm:Agent {id: 'pm'})
     MERGE (pm)-[:USES_INTEGRATION]->(memory)
-  `);
+  `)
 
   // Spatial Agents Integration
   await graph.query(`
@@ -487,7 +495,7 @@ async function seedSushiStore() {
     WITH spatial
     MATCH (pm:Agent {id: 'pm'})
     MERGE (pm)-[:USES_INTEGRATION]->(spatial)
-  `);
+  `)
 
   // Porffor Integration
   await graph.query(`
@@ -501,14 +509,16 @@ async function seedSushiStore() {
     MATCH (architect:Agent {id: 'architect'})
     MERGE (coder)-[:USES_INTEGRATION]->(porffor)
     MERGE (architect)-[:USES_INTEGRATION]->(porffor)
-  `);
+  `)
 
-  console.log("   ✅ Created 5 integrations (BAM, STRIKE, Memory, Spatial, Porffor)\n");
+  console.log(
+    "   ✅ Created 5 integrations (BAM, STRIKE, Memory, Spatial, Porffor)\n",
+  )
 
   // ============================================
   // LIFEOS ECOSYSTEM
   // ============================================
-  console.log("🌍 Creating LifeOS Ecosystem Connections...");
+  console.log("🌍 Creating LifeOS Ecosystem Connections...")
 
   await graph.query(`
     MERGE (lifeos:Ecosystem {id: 'lifeos'})
@@ -518,7 +528,7 @@ async function seedSushiStore() {
     WITH lifeos
     MATCH (store:Store {id: 'sushi-store'})
     MERGE (store)-[:PART_OF]->(lifeos)
-  `);
+  `)
 
   // Other LifeOS apps
   await graph.query(`
@@ -537,34 +547,34 @@ async function seedSushiStore() {
     MERGE (peach)-[:PART_OF]->(lifeos)
     MERGE (vault)-[:PART_OF]->(lifeos)
     MERGE (focus)-[:PART_OF]->(lifeos)
-  `);
+  `)
 
-  console.log("   ✅ Connected SUSHI to LifeOS ecosystem with 7 other apps\n");
+  console.log("   ✅ Connected SUSHI to LifeOS ecosystem with 7 other apps\n")
 
-  console.log("═══════════════════════════════════════════════════════");
-  console.log("           ✅ SUSHI STORE SEEDING COMPLETE!            ");
-  console.log("═══════════════════════════════════════════════════════\n");
+  console.log("═══════════════════════════════════════════════════════")
+  console.log("           ✅ SUSHI STORE SEEDING COMPLETE!            ")
+  console.log("═══════════════════════════════════════════════════════\n")
 }
 
 /**
  * Get SUSHI Store Overview
  */
 async function getSushiStoreOverview() {
-  if (!graph) await initSushiSeeder();
+  if (!graph) await initSushiSeeder()
 
-  console.log("\n📊 SUSHI STORE OVERVIEW\n");
+  console.log("\n📊 SUSHI STORE OVERVIEW\n")
 
   // Get store info
   const storeInfo = await graph.query(`
     MATCH (store:Store {id: 'sushi-store'})
     RETURN store.name as name, store.domain as domain, store.description as description
-  `);
+  `)
 
   if (storeInfo && storeInfo.data && storeInfo.data.length > 0) {
-    const { name, domain, description } = storeInfo.data[0];
-    console.log(`🍣 ${name}`);
-    console.log(`   ${domain}`);
-    console.log(`   ${description}\n`);
+    const { name, domain, description } = storeInfo.data[0]
+    console.log(`🍣 ${name}`)
+    console.log(`   ${domain}`)
+    console.log(`   ${description}\n`)
   }
 
   // Get agents
@@ -573,14 +583,14 @@ async function getSushiStoreOverview() {
     RETURN agent.icon as icon, agent.name as name, agent.title as title, 
            agent.intelligence as intelligence, agent.level as level
     ORDER BY agent.level DESC
-  `);
+  `)
 
-  console.log("👥 Agents:");
+  console.log("👥 Agents:")
   if (agents && agents.data) {
     for (const agent of agents.data) {
-      const { icon, name, title, intelligence, level } = agent;
-      console.log(`   ${icon} ${name} - ${title}`);
-      console.log(`      INT: ${intelligence} | Level: ${level}`);
+      const { icon, name, title, intelligence, level } = agent
+      console.log(`   ${icon} ${name} - ${title}`)
+      console.log(`      INT: ${intelligence} | Level: ${level}`)
     }
   }
 
@@ -588,29 +598,29 @@ async function getSushiStoreOverview() {
   const capCount = await graph.query(`
     MATCH (cap:Capability)
     RETURN COUNT(cap) as count
-  `);
+  `)
 
-  console.log(`\n🎯 Total Capabilities: ${capCount?.data?.[0]?.count || 0}`);
+  console.log(`\n🎯 Total Capabilities: ${capCount?.data?.[0]?.count || 0}`)
 
   // Get tools count
   const toolCount = await graph.query(`
     MATCH (tool:Tool)
     RETURN COUNT(tool) as count
-  `);
+  `)
 
-  console.log(`🔧 Total Tools: ${toolCount?.data?.[0]?.count || 0}`);
+  console.log(`🔧 Total Tools: ${toolCount?.data?.[0]?.count || 0}`)
 
   // Get integrations
   const integrations = await graph.query(`
     MATCH (int:Integration)
     RETURN int.icon as icon, int.name as name, int.type as type
-  `);
+  `)
 
-  console.log(`\n🔌 Integrations:`);
+  console.log(`\n🔌 Integrations:`)
   if (integrations && integrations.data) {
     for (const int of integrations.data) {
-      const { icon, name, type } = int;
-      console.log(`   ${icon} ${name} (${type})`);
+      const { icon, name, type } = int
+      console.log(`   ${icon} ${name} (${type})`)
     }
   }
 
@@ -618,16 +628,16 @@ async function getSushiStoreOverview() {
   const relCount = await graph.query(`
     MATCH ()-[r]->()
     RETURN COUNT(r) as count
-  `);
+  `)
 
-  console.log(`\n🔗 Total Relationships: ${relCount?.data?.[0]?.count || 0}\n`);
+  console.log(`\n🔗 Total Relationships: ${relCount?.data?.[0]?.count || 0}\n`)
 }
 
 /**
  * Query Agent by ID
  */
 async function getAgent(agentId) {
-  if (!graph) await initSushiSeeder();
+  if (!graph) await initSushiSeeder()
 
   const result = await graph.query(
     `
@@ -640,33 +650,33 @@ async function getAgent(agentId) {
            COLLECT(DISTINCT tool.name) as tools,
            COLLECT(DISTINCT {type: perm.type, pattern: perm.pattern}) as permissions
   `,
-    { params: { agentId } }
-  );
+    { params: { agentId } },
+  )
 
   if (result && result.data && result.data.length > 0) {
-    return result.data[0];
+    return result.data[0]
   }
 
-  return null;
+  return null
 }
 
 async function closeSushiSeeder() {
   if (db) {
-    await db.close();
-    db = null;
-    graph = null;
-    console.log("👋 SUSHI Seeder closed");
+    await db.close()
+    db = null
+    graph = null
+    console.log("👋 SUSHI Seeder closed")
   }
 }
 
 async function main() {
-  await seedSushiStore();
-  await getSushiStoreOverview();
-  await closeSushiSeeder();
+  await seedSushiStore()
+  await getSushiStoreOverview()
+  await closeSushiSeeder()
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch(console.error);
+  main().catch(console.error)
 }
 
 export {
@@ -675,4 +685,4 @@ export {
   getSushiStoreOverview,
   getAgent,
   closeSushiSeeder,
-};
+}

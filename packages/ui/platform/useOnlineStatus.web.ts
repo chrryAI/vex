@@ -1,7 +1,7 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { apiFetch } from "../utils"
-import { useState, useEffect } from "react"
 
 export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(

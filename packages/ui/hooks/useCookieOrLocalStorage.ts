@@ -1,8 +1,8 @@
-import useLocalStorage from "./useLocalStorage"
-
-import { usePlatform, useCookie } from "../platform"
-import { platformCookies } from "../platform/cookies"
 import { useCallback, useEffect } from "react"
+
+import { useCookie, usePlatform } from "../platform"
+import { platformCookies } from "../platform/cookies"
+import useLocalStorage from "./useLocalStorage"
 export default function useCookieOrLocalStorage(
   key: string,
   initialValue: any,

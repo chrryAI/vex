@@ -1,6 +1,6 @@
-import { thread } from "../types"
+import type { locale } from "../locales"
+import type { thread } from "../types"
 import { t as tFunc } from "./t"
-import { locale } from "../locales"
 
 export interface MetadataResult {
   title?: string

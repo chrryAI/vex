@@ -1,7 +1,7 @@
 "use client"
 
 import { captureException as captureExceptionSentry } from "@sentry/react"
-import React, { createContext, useContext, ReactNode } from "react"
+import React, { createContext, type ReactNode, useContext } from "react"
 
 interface ErrorContextType {
   captureException: (

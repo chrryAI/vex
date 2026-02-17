@@ -1,5 +1,5 @@
-import { BlogPost } from "../blog-loader"
-// @ts-ignore
+import type { BlogPost } from "../blog-loader"
+// @ts-expect-error
 import styles from "./BlogList.module.scss"
 
 interface BlogListProps {

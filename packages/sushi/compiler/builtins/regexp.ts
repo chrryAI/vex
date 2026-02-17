@@ -143,7 +143,7 @@ export const __Porffor_regex_compile = (
   let bcPtr: i32 = ptr + 10
   const bcStart: i32 = bcPtr
   let patternPtr: i32 = patternStr
-  let patternEndPtr: i32 = patternPtr + patternStr.length
+  const patternEndPtr: i32 = patternPtr + patternStr.length
 
   let lastWasAtom: boolean = false
   let lastAtomStart: i32 = 0
@@ -1662,7 +1662,7 @@ export const __RegExp_prototype_toString = (_this: RegExp) => {
   return "/" + _this.source + "/" + _this.flags
 }
 
-export const RegExp = function (pattern: any, flags: any): RegExp {
+export const RegExp = (pattern: any, flags: any): RegExp => {
   let patternSrc, flagsSrc
   if (Porffor.type(pattern) === Porffor.TYPES.regexp) {
     patternSrc = __RegExp_prototype_source$get(pattern)

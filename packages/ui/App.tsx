@@ -1,42 +1,16 @@
 "use client"
 
 import React, {
+  type CSSProperties,
   useCallback,
   useEffect,
-  useState,
-  CSSProperties,
   useMemo,
+  useState,
 } from "react"
-
-import { clsx, FilePicker, usePlatform, useTheme } from "./platform"
-import EnableNotifications from "./EnableNotifications"
-import Logo from "./Image"
-import Img from "./Image"
-import Instructions from "./Instructions"
-import {
-  ArrowRight,
-  CircleCheck,
-  CircleMinus,
-  Grip,
-  Info,
-  Pencil,
-  RefreshCw,
-  Settings2,
-  Trash2,
-  CirclePlay,
-  CirclePause,
-} from "./icons"
 import toast from "react-hot-toast"
-import Loading from "./Loading"
-import ConfirmButton from "./ConfirmButton"
-import { useHasHydrated } from "./hooks"
-import { Div, H1, Button, Label, Span, Input, Video } from "./platform"
 import A from "./a/A"
-import { apiFetch, BrowserInstance } from "./utils"
-import { useStyles } from "./context/StylesContext"
-
-import { useFocusButtonStyles } from "./FocusButton.styles"
-
+import ConfirmButton from "./ConfirmButton"
+import { COLORS, useAppContext } from "./context/AppContext"
 import {
   useApp,
   useAuth,
@@ -44,10 +18,44 @@ import {
   useData,
   useNavigationContext,
 } from "./context/providers"
-import { COLORS, useAppContext } from "./context/AppContext"
+import { useStyles } from "./context/StylesContext"
 import { useTimerContext } from "./context/TimerContext"
-import { appWithStore } from "./types"
+import EnableNotifications from "./EnableNotifications"
+import { useFocusButtonStyles } from "./FocusButton.styles"
 import Grapes from "./Grapes"
+import { useHasHydrated } from "./hooks"
+import Logo from "./Image"
+import Img from "./Image"
+import Instructions from "./Instructions"
+import {
+  ArrowRight,
+  CircleCheck,
+  CircleMinus,
+  CirclePause,
+  CirclePlay,
+  Grip,
+  Info,
+  Pencil,
+  RefreshCw,
+  Settings2,
+  Trash2,
+} from "./icons"
+import Loading from "./Loading"
+import {
+  Button,
+  clsx,
+  Div,
+  FilePicker,
+  H1,
+  Input,
+  Label,
+  Span,
+  usePlatform,
+  useTheme,
+  Video,
+} from "./platform"
+import type { appWithStore } from "./types"
+import { apiFetch, BrowserInstance } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 function FocusButton({
