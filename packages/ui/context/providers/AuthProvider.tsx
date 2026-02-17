@@ -1114,9 +1114,8 @@ export function AuthProvider({
     initialTribePost,
   )
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)

@@ -110,7 +110,7 @@ test.describe("Tauri Desktop App", () => {
     // Test window maximize
     await window.evaluate(() => {
       // Access Tauri API
-      // @ts-expect-error
+
       window.__TAURI__.window.appWindow.maximize()
     })
 

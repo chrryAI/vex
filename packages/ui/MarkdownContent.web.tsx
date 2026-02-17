@@ -9,7 +9,7 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism"
 import { useAppContext } from "./context/AppContext"
 import Img from "./Img"
 import { Check, Copy } from "./icons"
-// @ts-expect-error
+
 import styles from "./MarkdownContent.module.scss"
 import {
   type CodeBlockProps,

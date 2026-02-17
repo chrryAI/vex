@@ -15,7 +15,9 @@ export const sonarWebhook = new Hono()
  */
 function verifySignature(payload: string, signature: string): boolean {
   if (!SONAR_WEBHOOK_SECRET) {
-    console.warn("⚠️ SONAR_WEBHOOK_SECRET not configured, skipping verification")
+    console.warn(
+      "⚠️ SONAR_WEBHOOK_SECRET not configured, skipping verification",
+    )
     return true // Allow in dev/testing
   }
 

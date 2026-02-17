@@ -6,7 +6,7 @@ import { useHasHydrated } from "../hooks"
 import Img from "../Image"
 import { Button, useNavigation } from "../platform"
 import ParticleWaveCanvas from "./ParticleWave"
-// @ts-expect-error
+
 import styles from "./Programme.module.scss"
 
 export default function Programme() {

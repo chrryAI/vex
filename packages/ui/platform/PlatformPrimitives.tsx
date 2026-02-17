@@ -27,7 +27,8 @@ interface BaseProps {
 }
 
 export interface BoxProps
-  extends BaseProps,
+  extends
+    BaseProps,
     Omit<React.HTMLAttributes<HTMLDivElement>, keyof BaseProps | "onClick"> {
   as?:
     | "div"
@@ -207,7 +208,6 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
 
     return (
       <Component
-        // @ts-expect-error - ref type varies based on 'as' prop
         ref={ref}
         className={hasStyleMappings ? undefined : className}
         style={sanitizedStyle}
@@ -260,7 +260,6 @@ export const Text = forwardRef<HTMLElement, TextProps>(
 
     return (
       <Component
-        // @ts-expect-error - ref type varies based on 'as' prop
         ref={ref}
         className={hasStyleMappings ? undefined : finalClassName}
         style={sanitizedStyle}

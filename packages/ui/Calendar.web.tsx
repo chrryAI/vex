@@ -32,7 +32,7 @@ import useSWR from "swr"
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css"
 import clsx from "clsx"
 import toast from "react-hot-toast"
-// @ts-expect-error
+
 import styles from "./Calendar.module.scss"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useAuth, useData, useNavigationContext } from "./context/providers"

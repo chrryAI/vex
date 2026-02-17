@@ -34,7 +34,7 @@ export function isNative(): boolean {
 export function isIOS(): boolean {
   // React Native iOS
   if (isNative()) {
-    // @ts-expect-error - React Native Platform
+    // React Native Platform
     return typeof Platform !== "undefined" && Platform.OS === "ios"
   }
 
@@ -64,7 +64,6 @@ export function isIOS(): boolean {
 export function isAndroid(): boolean {
   // React Native Android
   if (isNative()) {
-    // @ts-expect-error - React Native Platform
     return typeof Platform !== "undefined" && Platform.OS === "android"
   }
 

@@ -317,9 +317,8 @@ export default function Menu({
                 onDoubleClick={async () => {
                   if (!isTauri) return
                   try {
-                    const { getCurrentWindow } = await import(
-                      "@tauri-apps/api/window"
-                    )
+                    const { getCurrentWindow } =
+                      await import("@tauri-apps/api/window")
                     const appWindow = getCurrentWindow()
                     const isMaximized = await appWindow.isMaximized()
                     if (isMaximized) {

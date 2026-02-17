@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import type { BlogPostWithContent } from "../blog-loader"
 import { safeJSONStringify } from "../utils/security"
-// @ts-expect-error
+
 import styles from "./BlogPost.module.scss"
 
 interface BlogPostProps {

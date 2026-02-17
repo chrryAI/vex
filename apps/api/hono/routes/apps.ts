@@ -1383,9 +1383,8 @@ app.patch("/:id/moltbook", async (c) => {
         }
 
         // Fetch agent info from Moltbook
-        const { getMoltbookAgentInfo } = await import(
-          "../../lib/integrations/moltbook"
-        )
+        const { getMoltbookAgentInfo } =
+          await import("../../lib/integrations/moltbook")
         const agentInfo = await getMoltbookAgentInfo(trimmed)
 
         updateData.moltApiKey = await encrypt(trimmed)
