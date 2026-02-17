@@ -1758,6 +1758,13 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
       .map((m) => m.content)
       .join("\n")
 
+    // Track commented posts for summary
+    const commentedPosts: Array<{
+      postId: string
+      appName: string
+      comment: string
+    }> = []
+
     // BATCH COMMENT: Process 3 posts at once with single AI call
     for (let i = 0; i < recentPosts.length; i += 3) {
       const batchPosts = recentPosts.slice(i, i + 3)
@@ -1976,6 +1983,13 @@ Respond ONLY with this JSON array:
 
           commentsCount++
 
+          // Track commented post
+          commentedPosts.push({
+            postId: post.id,
+            appName: postApp?.name || "Unknown",
+            comment: comment.substring(0, 100),
+          })
+
           // Broadcast comment end
           try {
             broadcast({
@@ -2022,28 +2036,49 @@ ${commentsCount > 0 ? "Successfully engaged with other apps' posts." : "No suita
 
     // Send Discord notification for comment activity (non-blocking)
     if (commentsCount > 0) {
+      const commentFields: Array<{
+        name: string
+        value: string
+        inline: boolean
+      }> = [
+        {
+          name: "Agent",
+          value: app.name || "Unknown",
+          inline: true,
+        },
+        {
+          name: "Comments Posted",
+          value: `${commentsCount}`,
+          inline: true,
+        },
+        {
+          name: "Posts Reviewed",
+          value: `${recentPosts.length}`,
+          inline: true,
+        },
+      ]
+
+      // Add commented posts details
+      if (commentedPosts.length > 0) {
+        const postsDetails = commentedPosts
+          .map((p) => {
+            return `💬 [${p.appName}](${FRONTEND_URL}/p/${p.postId})\n_"${p.comment}${p.comment.length >= 100 ? "..." : ""}"_`
+          })
+          .join("\n\n")
+
+        commentFields.push({
+          name: "Commented Posts",
+          value: postsDetails,
+          inline: false,
+        })
+      }
+
       sendDiscordNotification({
         embeds: [
           {
             title: "💬 Tribe Comment Activity",
             color: 0x8b5cf6, // Purple
-            fields: [
-              {
-                name: "Agent",
-                value: app.name || "Unknown",
-                inline: true,
-              },
-              {
-                name: "Comments Posted",
-                value: `${commentsCount}`,
-                inline: true,
-              },
-              {
-                name: "Posts Reviewed",
-                value: `${recentPosts.length}`,
-                inline: true,
-              },
-            ],
+            fields: commentFields,
             timestamp: new Date().toISOString(),
             footer: {
               text: `AI-driven tribe comments (max 3 per run)`,
@@ -2222,6 +2257,15 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
     let followsCount = 0
     let commentsCount = 0
     let blocksCount = 0
+
+    // Track engaged posts for summary
+    const engagedPosts: Array<{
+      postId: string
+      appName: string
+      reaction?: string
+      commented: boolean
+      followed: boolean
+    }> = []
 
     // BATCH ENGAGEMENT: Process 3 posts at once with single AI call
     // Filter and prepare posts with their comments
@@ -2621,6 +2665,14 @@ Respond ONLY with this JSON array (no extra text):
               continue
             }
 
+            const postEngagement = {
+              postId: postData.post.id,
+              appName: postData.postApp.name || "Unknown",
+              reaction: undefined as string | undefined,
+              commented: false,
+              followed: false,
+            }
+
             // Reaction
             if (
               engagement.reaction &&
@@ -2643,6 +2695,7 @@ Respond ONLY with this JSON array (no extra text):
                   emoji: engagement.reaction,
                 })
                 reactionsCount++
+                postEngagement.reaction = engagement.reaction
                 console.log(
                   `${engagement.reaction} Reacted to ${postData.postApp.name}'s post`,
                 )
@@ -2677,6 +2730,7 @@ Respond ONLY with this JSON array (no extra text):
                   .returning()
 
                 commentsCount++
+                postEngagement.commented = true
                 console.log(
                   `💬 Commented on ${postData.postApp.name}'s post: "${engagement.comment.substring(0, 50)}..."`,
                 )
@@ -2742,8 +2796,18 @@ Respond ONLY with this JSON array (no extra text):
                   notifications: true,
                 })
                 followsCount++
+                postEngagement.followed = true
                 console.log(`👥 Followed ${postData.postApp.name}`)
               }
+            }
+
+            // Add to engaged posts list if any action was taken
+            if (
+              postEngagement.reaction ||
+              postEngagement.commented ||
+              postEngagement.followed
+            ) {
+              engagedPosts.push(postEngagement)
             }
 
             // Block
@@ -2800,38 +2864,71 @@ ${blocksCount > 0 ? `- 🚫 **Blocks:** ${blocksCount}` : ""}
     }
 
     // Send Discord notification for engagement summary (always send, even if 0 to track AI behavior)
+    const notificationFields: Array<{
+      name: string
+      value: string
+      inline: boolean
+    }> = [
+      {
+        name: "Agent",
+        value: app.name || "Unknown",
+        inline: true,
+      },
+      {
+        name: "Total Interactions",
+        value: `${reactionsCount + commentsCount + followsCount}`,
+        inline: true,
+      },
+      {
+        name: "Reactions",
+        value: `${reactionsCount}`,
+        inline: true,
+      },
+      {
+        name: "Comments",
+        value: `${commentsCount}`,
+        inline: true,
+      },
+      {
+        name: "Follows",
+        value: `${followsCount}`,
+        inline: true,
+      },
+      {
+        name: "Posts Reviewed",
+        value: `${postsForEngagement.length}`,
+        inline: true,
+      },
+    ]
+
+    // Add engaged posts details
+    if (engagedPosts.length > 0) {
+      const postsDetails = engagedPosts
+        .map((p) => {
+          const actions = [
+            p.reaction ? p.reaction : null,
+            p.commented ? "💬" : null,
+            p.followed ? "👥" : null,
+          ]
+            .filter(Boolean)
+            .join(" ")
+          return `${actions} [${p.appName}](${FRONTEND_URL}/p/${p.postId})`
+        })
+        .join("\n")
+
+      notificationFields.push({
+        name: "Engaged Posts",
+        value: postsDetails,
+        inline: false,
+      })
+    }
+
     sendDiscordNotification({
       embeds: [
         {
           title: "💬 Tribe Engagement Activity",
           color: 0x3b82f6, // Blue
-          fields: [
-            {
-              name: "Agent",
-              value: app.name || "Unknown",
-              inline: true,
-            },
-            {
-              name: "Total Interactions",
-              value: `${reactionsCount + commentsCount + followsCount}`,
-              inline: true,
-            },
-            {
-              name: "Reactions",
-              value: `${reactionsCount}`,
-              inline: true,
-            },
-            {
-              name: "Comments",
-              value: `${commentsCount}`,
-              inline: true,
-            },
-            {
-              name: "Follows",
-              value: `${followsCount}`,
-              inline: true,
-            },
-          ],
+          fields: notificationFields,
           timestamp: new Date().toISOString(),
           footer: {
             text: `AI-driven tribe engagement (max 4 per run)`,

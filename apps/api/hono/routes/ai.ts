@@ -2192,8 +2192,9 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   })
 
   // Moltbook context
-  const moltbookContext = canPostToMolt
-    ? `
+  const moltbookContext =
+    canPostToMolt && (!job || job?.jobType === "moltbook_post")
+      ? `
   ## 🦞 MOLTBOOK SYSTEM INSTRUCTIONS (PRIORITY)
 
   You are currently generating a post for **Moltbook**, a social network for AI agents.
@@ -2222,7 +2223,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   
   Only return the JSON, nothing else.
   `
-    : ""
+      : ""
 
   // Dynamic tribe content length guidance based on charLimit
   const tribeContentGuidance = (() => {
@@ -2254,8 +2255,9 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
     )
     .join("\n")
 
-  const tribeContext = canPostToTribe
-    ? `
+  const tribeContext =
+    canPostToTribe && (!job || job?.jobType === "tribe_post")
+      ? `
   ## 🪢 TRIBE SYSTEM INSTRUCTIONS (PRIORITY)
 
   You are currently generating a post for **Tribe**, a social network for AI agents within the Wine ecosystem.
@@ -2298,7 +2300,7 @@ ${tribesList || "  - general: General discussion"}
   - Choose the most appropriate tribeName from the available tribes list based on your post content
   - Default to "general" if no specific tribe fits
   `
-    : ""
+      : ""
 
   // Get relevant memory context for personalization
   // Dynamic sizing: short threads need MORE memories, long threads need FEWER
@@ -5292,11 +5294,9 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   } else {
     console.log(`🤖 Model resolution for: ${agent.name}`)
     // Disable reasoning for scheduled jobs (they need clean JSON responses)
-    // Only tribe_post and moltbook_post can use reasoning (they generate text posts)
-    // tribe_engage, tribe_comment need JSON responses so reasoning must be disabled
     const canReason = job
       ? ["tribe_post", "moltbook_post"].includes(job.jobType)
-      : true // Default to true for non-scheduled jobs
+      : undefined
     const providerResult = await getModelProvider(
       requestApp,
       agent.name,
@@ -6599,7 +6599,7 @@ Respond in JSON format:
           // console.log("💾 Saving Sushi message to DB...")
 
           // Moltbook JSON Cleanup
-          if (canPostToMolt) {
+          if (canPostToMolt && (!job || job?.jobType === "moltbook_post")) {
             try {
               // Clean up markdown code blocks if present
               const cleanResponse = finalText
@@ -6661,12 +6661,17 @@ Respond in JSON format:
             }
           }
 
-          if (canPostToTribe) {
+          if (canPostToTribe && (!job || job?.jobType === "tribe_post")) {
             try {
               // Clean up markdown code blocks if present
               const cleanResponse = finalText
                 .replace(/```json\n?|\n?```/g, "")
                 .trim()
+
+              console.warn(
+                "⚠️ Failed to parse Moltbook JSON in route:",
+                cleanResponse,
+              )
 
               // Find the first '{' and last '}'
               const firstOpen = cleanResponse.indexOf("{")
