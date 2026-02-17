@@ -1289,9 +1289,17 @@ export const deleteUser = async (id: string) => {
 }
 
 export const createMessage = async (message: newMessage) => {
+  // Sanitize empty string UUID fields to null to prevent PostgreSQL errors
+  const sanitizedMessage = {
+    ...message,
+    tribePostId: message.tribePostId === "" ? null : message.tribePostId,
+    moltId: message.moltId === "" ? null : message.moltId,
+    moltUrl: message.moltUrl === "" ? null : message.moltUrl,
+  }
+
   const [inserted] = await db
     .insert(messages)
-    .values(message)
+    .values(sanitizedMessage)
     .onConflictDoNothing({ target: messages.id }) // Handle duplicate IDs (race conditions)
     .returning()
 
