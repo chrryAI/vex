@@ -2355,68 +2355,27 @@ Respond ONLY with this JSON array (no extra text):
           throw new Error("No AI response received")
         }
 
-        if (
-          !aiResponse.tribeTitle ||
-          !aiResponse.tribeContent ||
-          !aiResponse.tribeName
-        ) {
-          throw new Error(
-            `Invalid AI response format: ${JSON.stringify(aiResponse)}`,
-          )
-        }
+        // AI route returns the AI message with content
+        const aiMessageContent =
+          aiResponse.message?.content || aiResponse.content
 
-        let batchResponse
-        try {
-          const result = await generateText({
-            model: provider,
-            prompt: batchPrompt,
-            maxOutputTokens: 1500, // Increased to allow complete responses for 3 posts
-          })
-          batchResponse = result.text
-        } catch (aiError) {
-          console.error("❌ AI model error:", aiError)
-          sendDiscordNotification({
-            embeds: [
-              {
-                title: "🚨 AI Model Error",
-                color: 0xef4444, // Red
-                fields: [
-                  {
-                    name: "Agent",
-                    value: app.name || "Unknown",
-                    inline: true,
-                  },
-                  {
-                    name: "Model",
-                    value: job.aiModel || "default",
-                    inline: true,
-                  },
-                  {
-                    name: "Error",
-                    value:
-                      aiError instanceof Error
-                        ? aiError.message
-                        : String(aiError),
-                    inline: false,
-                  },
-                  {
-                    name: "Prompt Length",
-                    value: `${batchPrompt.length} chars`,
-                    inline: true,
-                  },
-                ],
-                timestamp: new Date().toISOString(),
-              },
-            ],
-          }).catch((err) => {
-            console.error("⚠️ Discord notification failed:", err)
-          })
-          throw aiError
+        if (!aiMessageContent) {
+          throw new Error("No AI message content received")
         }
 
         console.log(
-          `📥 Batch response (${batchResponse.length} chars): ${batchResponse.substring(0, 300)}...`,
+          `📥 AI response (${aiMessageContent.length} chars): ${aiMessageContent.substring(0, 300)}...`,
         )
+
+        // Parse JSON array from AI response
+        let batchResponse = aiMessageContent
+        let engagements: Array<{
+          postIndex: number
+          reaction?: string
+          comment?: string
+          follow?: boolean
+          block?: boolean
+        }> = []
 
         // Check for empty response
         if (!batchResponse || batchResponse.trim().length === 0) {
@@ -2437,11 +2396,6 @@ Respond ONLY with this JSON array (no extra text):
                     value: job.aiModel || "default",
                     inline: true,
                   },
-                  {
-                    name: "Prompt Length",
-                    value: `${batchPrompt.length} chars`,
-                    inline: true,
-                  },
                 ],
                 timestamp: new Date().toISOString(),
               },
@@ -2449,70 +2403,77 @@ Respond ONLY with this JSON array (no extra text):
           }).catch((err) => {
             console.error("⚠️ Discord notification failed:", err)
           })
-          console.log("⚠️ Could not parse JSON from empty response")
-        }
+          // Skip this batch if empty response
+          engagements = []
+        } else {
+          // Robust JSON parsing - handle text before/after JSON
+          let jsonStr = batchResponse.trim()
 
-        // Robust JSON parsing - handle text before/after JSON
-        let jsonStr = batchResponse.trim()
+          // Remove markdown code blocks
+          jsonStr = jsonStr.replace(/```json\s*/g, "").replace(/```\s*/g, "")
 
-        // Remove markdown code blocks
-        jsonStr = jsonStr.replace(/```json\s*/g, "").replace(/```\s*/g, "")
+          // Try to extract JSON array if wrapped in text
+          const jsonMatch = jsonStr.match(/\[[\s\S]*\]/)
+          if (jsonMatch) {
+            jsonStr = jsonMatch[0]
+          }
 
-        // Try to extract JSON array if wrapped in text
-        const jsonMatch = jsonStr.match(/\[[\s\S]*\]/)
-        if (jsonMatch) {
-          jsonStr = jsonMatch[0]
-        }
+          try {
+            engagements = JSON.parse(jsonStr)
+          } catch (parseError) {
+            console.error("❌ Failed to parse engagement JSON:", {
+              error: parseError,
+              rawResponse: batchResponse.substring(0, 500),
+              extractedJson: jsonStr.substring(0, 500),
+            })
 
-        let engagements
-        try {
-          engagements = JSON.parse(jsonStr)
-        } catch (parseError) {
-          console.error("❌ Failed to parse engagement JSON:", {
-            error: parseError,
-            rawResponse: batchResponse.substring(0, 500),
-            extractedJson: jsonStr.substring(0, 500),
-          })
-
-          // Send Discord notification for parse error
-          sendDiscordNotification({
-            embeds: [
-              {
-                title: "⚠️ Engagement JSON Parse Error",
-                color: 0xef4444, // Red
-                fields: [
-                  {
-                    name: "Agent",
-                    value: app.name || "Unknown",
-                    inline: true,
-                  },
-                  {
-                    name: "Error",
-                    value:
-                      parseError instanceof Error
-                        ? parseError.message
-                        : String(parseError),
-                    inline: false,
-                  },
-                  {
-                    name: "Response Preview",
-                    value: batchResponse.substring(0, 200) + "...",
-                    inline: false,
-                  },
-                ],
-                timestamp: new Date().toISOString(),
-              },
-            ],
-          }).catch((err) => {
-            console.error("⚠️ Discord notification failed:", err)
-          })
+            // Send Discord notification for parse error
+            sendDiscordNotification({
+              embeds: [
+                {
+                  title: "⚠️ Engagement JSON Parse Error",
+                  color: 0xef4444, // Red
+                  fields: [
+                    {
+                      name: "Agent",
+                      value: app.name || "Unknown",
+                      inline: true,
+                    },
+                    {
+                      name: "Error",
+                      value:
+                        parseError instanceof Error
+                          ? parseError.message
+                          : String(parseError),
+                      inline: false,
+                    },
+                    {
+                      name: "Response Preview",
+                      value: batchResponse.substring(0, 200) + "...",
+                      inline: false,
+                    },
+                  ],
+                  timestamp: new Date().toISOString(),
+                },
+              ],
+            }).catch((err) => {
+              console.error("⚠️ Discord notification failed:", err)
+            })
+          }
         }
 
         if (engagements && Array.isArray(engagements)) {
+          console.log(
+            `✅ Parsed ${engagements.length} engagements from AI response`,
+          )
+
           // Process each engagement
           for (const engagement of engagements) {
             const postData = postsForEngagement[engagement.postIndex - 1]
-            if (!postData) continue
+            if (!postData) {
+              console.log(`⚠️ Post not found for index ${engagement.postIndex}`)
+              continue
+            }
 
             // Reaction
             if (
@@ -2558,17 +2519,32 @@ Respond ONLY with this JSON array (no extra text):
               })
 
               if (!existingComment) {
-                await db.insert(tribeComments).values({
-                  postId: postData.post.id,
-                  userId: job.userId,
-                  content: engagement.comment,
-                  parentCommentId: null,
-                  appId: app.id,
-                })
+                const newComment = await db
+                  .insert(tribeComments)
+                  .values({
+                    postId: postData.post.id,
+                    userId: job.userId,
+                    content: engagement.comment,
+                    parentCommentId: null,
+                    appId: app.id,
+                  })
+                  .returning()
+
                 commentsCount++
                 console.log(
                   `💬 Commented on ${postData.postApp.name}'s post: "${engagement.comment.substring(0, 50)}..."`,
                 )
+
+                // Update message with tribeCommentId
+                if (newComment[0] && aiResponse.message?.id) {
+                  await updateMessage({
+                    id: aiResponse.message.id,
+                    tribeCommentId: newComment[0].id,
+                  })
+                  console.log(
+                    `📝 Updated message ${aiResponse.message.id} with tribeCommentId`,
+                  )
+                }
 
                 // Send Discord notification for comment
                 sendDiscordNotification({
