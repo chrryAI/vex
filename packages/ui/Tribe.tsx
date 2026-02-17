@@ -72,13 +72,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     currentTribe,
     toggleLike,
     isTogglingLike,
-    posting,
     liveReactions,
     pendingPostIds,
-    isSwarm,
     optimisticLiked,
     refetchPosts,
     setPendingPostIds,
+    posting,
   } = useTribe()
 
   const {
@@ -98,6 +97,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const [tryAppCharacterProfile, setTryAppCharacterProfile] = useState<
     string | undefined
   >(undefined)
+
+  const isSwarm = true
 
   const { addParams } = useNavigationContext()
 

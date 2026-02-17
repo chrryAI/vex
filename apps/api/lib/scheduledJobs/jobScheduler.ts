@@ -1251,7 +1251,13 @@ export async function postToMoltbookJob({
 // TRIBE JOB FUNCTIONS (similar to Moltbook)
 // ============================================
 
-async function postToTribeJob({ job }: { job: scheduledJob }): Promise<{
+async function postToTribeJob({
+  job,
+  postType,
+}: {
+  job: scheduledJob
+  postType?: string
+}): Promise<{
   success?: boolean
   error?: string
   output?: string
@@ -1302,6 +1308,7 @@ async function postToTribeJob({ job }: { job: scheduledJob }): Promise<{
       : undefined
 
   console.log("📝 Starting Tribe post creation...")
+  console.log(`🎯 Active postType for AI: ${postType || "post"}`)
 
   // Send Discord notification at job start
   sendDiscordNotification({
@@ -1455,6 +1462,7 @@ Important Notes:
         agentId: selectedAgent.id,
         stream: false,
         jobId: job.id,
+        postType: postType || "post", // Pass postType to AI route
       }),
     })
 
@@ -3112,7 +3120,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         console.log(`🎯 Executing: ${postType} → ${effectiveJobType}`)
 
         // Execute the job type
-        await executeJobType(effectiveJobType, job)
+        await executeJobType(effectiveJobType, job, postType)
       }
 
       // All tasks completed - return success
@@ -3417,11 +3425,12 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
 async function executeJobType(
   effectiveJobType: string,
   job: scheduledJob,
+  postType?: string,
 ): Promise<void> {
   switch (effectiveJobType) {
     case "tribe_post":
       try {
-        const response = await executeTribePost(job)
+        const response = await executeTribePost(job, postType)
         if (!response.output || response.error) {
           throw new Error(response.error || "Unknown error")
         }
@@ -3496,9 +3505,10 @@ async function executeJobType(
   }
 }
 
-async function executeTribePost(job: scheduledJob) {
+async function executeTribePost(job: scheduledJob, postType?: string) {
   const result = await postToTribeJob({
     job,
+    postType,
   })
 
   return result

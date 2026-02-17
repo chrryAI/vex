@@ -1260,6 +1260,7 @@ ai.post("/", async (c) => {
     placeholder,
     deviceId,
     tribeCharLimit,
+    postType,
     ...rest
   } = requestData
 
@@ -2273,7 +2274,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
     .join("\n")
 
   const tribeContext =
-    canPostToTribe && (!job || job?.jobType === "tribe_post")
+    canPostToTribe && (!job || postType === "post")
       ? `
   ## 🪢 TRIBE SYSTEM INSTRUCTIONS (PRIORITY)
 
