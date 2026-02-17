@@ -27,8 +27,8 @@ users.get("/", async (c) => {
   }
 
   const userNameOrEmail = sanitizeHtml(c.req.query("search") || "")
-  const pageSize = Number(c.req.query("pageSize") || "10")
-  const similarTo = sanitizeHtml(c.req.query("similarTo") || "")
+  const _pageSize = Number(c.req.query("pageSize") || "10")
+  const _similarTo = sanitizeHtml(c.req.query("similarTo") || "")
 
   const user = userNameOrEmail
     ? (await getUser({ userName: userNameOrEmail })) ||

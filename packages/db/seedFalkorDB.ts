@@ -6,7 +6,7 @@
 import { db } from "./index"
 import { graph } from "./src/graph/client"
 
-async function seedFalkorDB() {
+async function _seedFalkorDB() {
   console.log("🌱 Starting FalkorDB seeding...\n")
   console.log("🍒 FalkorDB initialized (chrry_ecosystem graph)\n")
 }
@@ -229,7 +229,7 @@ export async function getFalkorDBOverview() {
   `)
 
   console.log(`\n📦 Stores:`)
-  if (stores && stores.data) {
+  if (stores?.data) {
     for (const store of stores.data as any[]) {
       console.log(`   ${store.icon || "📦"} ${store.name} (${store.slug})`)
     }

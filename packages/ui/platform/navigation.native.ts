@@ -102,7 +102,7 @@ export function useNavigation(): NavigationParams {
   let customNav: any = null
   try {
     customNav = useCustomNavigation()
-  } catch (e) {
+  } catch (_e) {
     // Not inside a navigator
   }
 

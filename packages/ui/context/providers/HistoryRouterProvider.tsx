@@ -57,7 +57,7 @@ export function HistoryRouterProvider({
   children,
 }: HistoryRouterProviderProps): React.ReactElement {
   const [state, setState] = useState(() => clientRouter.getState())
-  const [updateTrigger, setUpdateTrigger] = useState(0)
+  const [_updateTrigger, setUpdateTrigger] = useState(0)
 
   useEffect(() => {
     // Subscribe to router changes

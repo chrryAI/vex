@@ -7,13 +7,13 @@ export const Number = function (value: any): number | NumberObject {
 
   // 1. If value is present, then
   // todo: handle undefined (NaN) and not present (0) args differently
-  if (Porffor.type(value) != Porffor.TYPES.undefined) {
+  if (Porffor.type(value) !== Porffor.TYPES.undefined) {
     // a. Let prim be ? ToNumeric(value).
     n = ecma262.ToNumeric(value)
 
     // b. If prim is a BigInt, let n be 𝔽(ℝ(prim)).
     if (Porffor.comptime.flag`hasType.bigint`) {
-      if (Porffor.type(n) == Porffor.TYPES.bigint)
+      if (Porffor.type(n) === Porffor.TYPES.bigint)
         n = Porffor.bigint.toNumber(n)
     }
 
@@ -38,7 +38,7 @@ export const __Number_prototype_toString = (
   _this: number,
   radix: number | any,
 ) => {
-  if (Porffor.type(radix) != Porffor.TYPES.number) {
+  if (Porffor.type(radix) !== Porffor.TYPES.number) {
     // todo: string to number
     radix = 10
   }
@@ -50,11 +50,11 @@ export const __Number_prototype_toString = (
 
   if (!Number.isFinite(_this)) {
     if (Number.isNaN(_this)) return "NaN"
-    if (_this == Infinity) return "Infinity"
+    if (_this === Infinity) return "Infinity"
     return "-Infinity"
   }
 
-  if (_this == 0) {
+  if (_this === 0) {
     return "0"
   }
 
@@ -72,7 +72,7 @@ export const __Number_prototype_toString = (
   const digits: bytestring = "" // byte "array"
 
   let l: i32 = 0
-  if (radix == 10) {
+  if (radix === 10) {
     if (i >= 1e21) {
       // large exponential
       let trailing: boolean = true
@@ -83,7 +83,7 @@ export const __Number_prototype_toString = (
 
         e++
         if (trailing) {
-          if (digit == 0) {
+          if (digit === 0) {
             // skip trailing 0s
             continue
           }
@@ -103,7 +103,7 @@ export const __Number_prototype_toString = (
       let endPtr: i32 = outPtr + l
       const dotPlace: i32 = outPtr + 1
       while (outPtr < endPtr) {
-        if (outPtr == dotPlace) {
+        if (outPtr === dotPlace) {
           Porffor.wasm.i32.store8(outPtr++, 46, 0, 4) // .
           endPtr++
         }
@@ -181,7 +181,7 @@ export const __Number_prototype_toString = (
       while (outPtr < endPtr) {
         let digit: i32 = Porffor.wasm.i32.load8_u(--digitsPtr, 0, 4)
 
-        if (outPtr == dotPlace) {
+        if (outPtr === dotPlace) {
           Porffor.wasm.i32.store8(outPtr++, 46, 0, 4) // .
           endPtr++
         }
@@ -226,7 +226,7 @@ export const __Number_prototype_toString = (
     }
   }
 
-  if (i == 0) {
+  if (i === 0) {
     Porffor.wasm.i32.store8(Porffor.wasm`local.get ${digits}`, 0, 0, 4)
     l = 1
   } else {
@@ -274,7 +274,7 @@ export const __Number_prototype_toString = (
       decimal = Math.trunc(decimal / radix)
 
       if (trailing) {
-        if (digit == 0) {
+        if (digit === 0) {
           // skip trailing 0s
           continue
         }
@@ -321,7 +321,7 @@ export const __Number_prototype_toFixed = (
 
   if (!Number.isFinite(_this)) {
     if (Number.isNaN(_this)) return "NaN"
-    if (_this == Infinity) return "Infinity"
+    if (_this === Infinity) return "Infinity"
     return "-Infinity"
   }
 
@@ -340,7 +340,7 @@ export const __Number_prototype_toFixed = (
 
   let l: i32 = 0
 
-  if (i == 0) {
+  if (i === 0) {
     Porffor.wasm.i32.store8(Porffor.wasm`local.get ${digits}`, 0, 0, 4)
     l = 1
   } else {
@@ -421,11 +421,11 @@ export const __Number_prototype_toExponential = (
 ) => {
   if (!Number.isFinite(_this)) {
     if (Number.isNaN(_this)) return "NaN"
-    if (_this == Infinity) return "Infinity"
+    if (_this === Infinity) return "Infinity"
     return "-Infinity"
   }
 
-  if (Porffor.type(fractionDigits) != Porffor.TYPES.number) {
+  if (Porffor.type(fractionDigits) !== Porffor.TYPES.number) {
     // todo: string to number
     fractionDigits = undefined
   } else {
@@ -454,7 +454,7 @@ export const __Number_prototype_toExponential = (
   let e: i32 = 0
   let digitsPtr: i32
   let endPtr: i32
-  if (_this == 0) {
+  if (_this === 0) {
     Porffor.wasm.i32.store8(outPtr++, 48, 0, 4) // 0
 
     if (fractionDigits > 0) {
@@ -468,7 +468,7 @@ export const __Number_prototype_toExponential = (
     Porffor.wasm.i32.store8(outPtr++, 43, 0, 4) // +
   } else if (_this < 1) {
     // small exponential
-    if (Porffor.type(fractionDigits) != Porffor.TYPES.number) {
+    if (Porffor.type(fractionDigits) !== Porffor.TYPES.number) {
       e = 1
       while (true) {
         i *= 10
@@ -485,7 +485,7 @@ export const __Number_prototype_toExponential = (
         i *= 10
 
         const intPart: i32 = Math.trunc(i)
-        if (intPart == 0) e++
+        if (intPart === 0) e++
         else j++
       }
     }
@@ -509,7 +509,7 @@ export const __Number_prototype_toExponential = (
     while (outPtr < endPtr) {
       let digit: i32 = Porffor.wasm.i32.load8_u(--digitsPtr, 0, 4)
 
-      if (outPtr == dotPlace) {
+      if (outPtr === dotPlace) {
         Porffor.wasm.i32.store8(outPtr++, 46, 0, 4) // .
         endPtr++
       }
@@ -531,7 +531,7 @@ export const __Number_prototype_toExponential = (
       e++
     }
 
-    if (Porffor.type(fractionDigits) != Porffor.TYPES.number) {
+    if (Porffor.type(fractionDigits) !== Porffor.TYPES.number) {
       while (true) {
         i *= 10
 
@@ -578,7 +578,7 @@ export const __Number_prototype_toExponential = (
     endPtr = outPtr + l
     const dotPlace: i32 = outPtr + 1
     while (outPtr < endPtr) {
-      if (outPtr == dotPlace) {
+      if (outPtr === dotPlace) {
         Porffor.wasm.i32.store8(outPtr++, 46, 0, 4) // .
         endPtr++
       }
@@ -596,7 +596,7 @@ export const __Number_prototype_toExponential = (
     Porffor.wasm.i32.store8(outPtr++, 43, 0, 4) // +
   }
 
-  if (e == 0) {
+  if (e === 0) {
     Porffor.wasm.i32.store8(Porffor.wasm`local.get ${digits}`, 0, 0, 4)
     l = 1
   } else {
@@ -646,7 +646,7 @@ export const parseInt = (input: any, radix: any): f64 => {
   radix = ecma262.ToIntegerOrInfinity(radix)
   if (!Number.isFinite(radix)) radix = 0 // infinity/NaN -> default
 
-  if (radix == 0) {
+  if (radix === 0) {
     defaultRadix = true
     radix = 10
   }
@@ -663,26 +663,26 @@ export const parseInt = (input: any, radix: any): f64 => {
 
   let negative: boolean = false
 
-  if (Porffor.type(input) == Porffor.TYPES.bytestring) {
+  if (Porffor.type(input) === Porffor.TYPES.bytestring) {
     const endPtr: i32 = i + len
 
     // check start of string
     const startChr: i32 = Porffor.wasm.i32.load8_u(i, 0, 4)
 
     // +, ignore
-    if (startChr == 43) i++
+    if (startChr === 43) i++
 
     // -, switch to negative
-    if (startChr == 45) {
+    if (startChr === 45) {
       negative = true
       i++
     }
 
     // 0, potential start of hex
-    if ((defaultRadix || radix == 16) && startChr == 48) {
+    if ((defaultRadix || radix === 16) && startChr === 48) {
       const second: i32 = Porffor.wasm.i32.load8_u(i + 1, 0, 4)
       // 0x or 0X
-      if (second == 120 || second == 88) {
+      if (second === 120 || second === 88) {
         // set radix to 16 and skip leading 2 chars
         i += 2
         radix = 16
@@ -720,19 +720,19 @@ export const parseInt = (input: any, radix: any): f64 => {
   const startChr: i32 = Porffor.wasm.i32.load16_u(i, 0, 4)
 
   // +, ignore
-  if (startChr == 43) i += 2
+  if (startChr === 43) i += 2
 
   // -, switch to negative
-  if (startChr == 45) {
+  if (startChr === 45) {
     negative = true
     i += 2
   }
 
   // 0, potential start of hex
-  if ((defaultRadix || radix == 16) && startChr == 48) {
+  if ((defaultRadix || radix === 16) && startChr === 48) {
     const second: i32 = Porffor.wasm.i32.load16_u(i + 2, 0, 4)
     // 0x or 0X
-    if (second == 120 || second == 88) {
+    if (second === 120 || second === 88) {
       // set radix to 16 and skip leading 2 chars
       i += 4
       radix = 16
@@ -779,17 +779,17 @@ export const parseFloat = (input: any): f64 => {
   let i: i32 = 0
   const len: i32 = input.length
 
-  if (len == 0) return NaN
+  if (len === 0) return NaN
 
   const start: i32 = input.charCodeAt(0)
 
   // +, ignore
-  if (start == 43) {
+  if (start === 43) {
     i++
   }
 
   // -, negative
-  if (start == 45) {
+  if (start === 45) {
     i++
     negative = true
   }
@@ -798,14 +798,14 @@ export const parseFloat = (input: any): f64 => {
   if (len - i >= 8) {
     // Check if remaining string starts with "Infinity"
     if (
-      input.charCodeAt(i) == 73 && // I
-      input.charCodeAt(i + 1) == 110 && // n
-      input.charCodeAt(i + 2) == 102 && // f
-      input.charCodeAt(i + 3) == 105 && // i
-      input.charCodeAt(i + 4) == 110 && // n
-      input.charCodeAt(i + 5) == 105 && // i
-      input.charCodeAt(i + 6) == 116 && // t
-      input.charCodeAt(i + 7) == 121
+      input.charCodeAt(i) === 73 && // I
+      input.charCodeAt(i + 1) === 110 && // n
+      input.charCodeAt(i + 2) === 102 && // f
+      input.charCodeAt(i + 3) === 105 && // i
+      input.charCodeAt(i + 4) === 110 && // n
+      input.charCodeAt(i + 5) === 105 && // i
+      input.charCodeAt(i + 6) === 116 && // t
+      input.charCodeAt(i + 7) === 121
     ) {
       // y
       if (negative) return -Infinity
@@ -823,7 +823,7 @@ export const parseFloat = (input: any): f64 => {
         dec *= 10
         n += (chr - 48) / dec
       } else n = n * 10 + chr - 48
-    } else if (chr == 46) {
+    } else if (chr === 46) {
       // .
       if (dec) break
       dec = 1

@@ -127,7 +127,7 @@ const MarkdownContent = memo(
                     // Check if it's valid JSON
                     JSON.parse(String(children))
                     lang = "json"
-                  } catch (e) {
+                  } catch (_e) {
                     // Not valid JSON, use detected language or default
                   }
                 }

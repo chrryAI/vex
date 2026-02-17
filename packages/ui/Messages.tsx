@@ -125,7 +125,7 @@ export default memo(
     // Theme context
     const { addHapticFeedback } = useTheme()
 
-    const [isUpdating, setIsUpdating] = useState(false)
+    const [isUpdating, _setIsUpdating] = useState(false)
 
     const [loadingCharacterProfile, setLoadingCharacterProfile] = useState<
       characterProfile | undefined

@@ -76,7 +76,7 @@ function matchRoute(
   // Check if pathname starts with route path
   return (
     cleanPathname === cleanRoutePath ||
-    cleanPathname.startsWith(cleanRoutePath + "/")
+    cleanPathname.startsWith(`${cleanRoutePath}/`)
   )
 }
 

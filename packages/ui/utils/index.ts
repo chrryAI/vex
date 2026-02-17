@@ -94,7 +94,7 @@ export function getThreadId(pathname?: string): string | undefined {
   if (!pathname) return undefined
   // Server-safe: check if window exists
   const segments = pathname.split("/").filter(Boolean)
-  const threadsIndex = segments.findIndex((segment) => segment === "threads")
+  const threadsIndex = segments.indexOf("threads")
 
   if (threadsIndex === -1) return undefined
 
@@ -108,7 +108,7 @@ export function getPostId(pathname?: string): string | undefined {
   if (!pathname) return undefined
   // Server-safe: check if window exists
   const segments = pathname.split("/").filter(Boolean)
-  const pIndex = segments.findIndex((segment) => segment === "p")
+  const pIndex = segments.indexOf("p")
 
   if (pIndex === -1) return undefined
 

@@ -1,6 +1,5 @@
 "use client"
 
-import React from "react"
 import { useAboutStyles } from "./about/About.styles"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"

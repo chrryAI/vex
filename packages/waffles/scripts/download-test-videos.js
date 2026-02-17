@@ -5,7 +5,7 @@
  * All videos under 15MB to avoid GitHub file size limits
  */
 
-const fs = require("fs")
+const fs = require("node:fs")
 const path = require("node:path")
 const https = require("node:https")
 

@@ -361,7 +361,7 @@ export default function Agent({
       const tier = appFormWatcher.tier || "free"
       const capabilities = appFormWatcher.capabilities
       const apiKeys = appFormWatcher.apiKeys || {}
-      const tools = appFormWatcher.tools || []
+      const _tools = appFormWatcher.tools || []
 
       // For paid tiers (plus/pro), OpenRouter is REQUIRED
       // If no OpenRouter API key, automatically set to free tier

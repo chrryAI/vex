@@ -1,4 +1,4 @@
-import { execFileSync, execSync } from "node:child_process"
+import { execSync } from "node:child_process"
 import cluster from "node:cluster"
 import fs from "node:fs"
 import os from "node:os"
@@ -13,7 +13,7 @@ let resultOnly = process.env.RESULT_ONLY
 
 const workerDataPath = "/tmp/workerData.json"
 if (cluster.isPrimary) {
-  const veryStart = performance.now()
+  const _veryStart = performance.now()
 
   const test262Path = join(__dirname, "test262")
   let whatTests = process.argv.slice(2).find((x) => x[0] !== "-") ?? ""
@@ -26,10 +26,14 @@ if (cluster.isPrimary) {
 
   let threads = parseInt(
     process.argv.find((x) => x.startsWith("--threads="))?.split("=")?.[1],
+    10,
   )
   if (Number.isNaN(threads))
     try {
-      threads = parseInt(fs.readFileSync(join(__dirname, ".threads"), "utf8"))
+      threads = parseInt(
+        fs.readFileSync(join(__dirname, ".threads"), "utf8"),
+        10,
+      )
     } catch {
       threads = Math.min(12, os.cpus().length) - 4
       log.warning(
@@ -85,7 +89,7 @@ if (cluster.isPrimary) {
     .split("///")
     .reduce((acc, x) => {
       const [k, ...content] = x.split("\n")
-      acc[k.trim()] = content.join("\n").trim() + "\n"
+      acc[k.trim()] = `${content.join("\n").trim()}\n`
       return acc
     }, {})
 
@@ -113,7 +117,7 @@ if (cluster.isPrimary) {
   const profileStats = new Array(7).fill(0)
 
   const trackErrors = process.argv.includes("--errors")
-  const onlyTrackCompilerErrors = process.argv.includes(
+  const _onlyTrackCompilerErrors = process.argv.includes(
     "--compiler-errors-only",
   )
   const logErrors = process.argv.includes("--log-errors")
@@ -178,7 +182,7 @@ if (cluster.isPrimary) {
       const label = arr[i].toString()
       const showLabel = width > label.length + 2
 
-      out += `${color}\u001b[97m${showLabel ? " " + label : ""}${" ".repeat(width - (showLabel ? label.length + 1 : 0))}\u001b[0m`
+      out += `${color}\u001b[97m${showLabel ? ` ${label}` : ""}${" ".repeat(width - (showLabel ? label.length + 1 : 0))}\u001b[0m`
     }
 
     return out
@@ -194,9 +198,9 @@ if (cluster.isPrimary) {
     compileErrorFiles = [],
     timeoutFiles = []
   const dirs = new Map(),
-    features = new Map(),
+    _features = new Map(),
     errors = new Map(),
-    pagesUsed = new Map()
+    _pagesUsed = new Map()
   let total = 0,
     passes = 0,
     fails = 0,
@@ -221,7 +225,7 @@ if (cluster.isPrimary) {
 
   // Remove ANSI escape sequences - construct regex from string to avoid control character in literal
   const noAnsi = (s) =>
-    s.replace(new RegExp(String.fromCharCode(27) + "\\[[0-9]+m", "g"), "")
+    s.replace(new RegExp(`${String.fromCharCode(27)}\\[[0-9]+m`, "g"), "")
 
   let queue = 0
   const spawn = () => {
@@ -336,7 +340,7 @@ if (cluster.isPrimary) {
               )
 
             process.stdout.write(
-              (lastPercent != 0
+              (lastPercent !== 0
                 ? `\u001b[2F\u001b[0J`
                 : `\r${" ".repeat(100)}\r`) +
                 bar(
@@ -736,7 +740,7 @@ if (cluster.isPrimary) {
 
     let out = 0
     if (!pass) {
-      const errorName = error && error.name
+      const errorName = error?.name
       if (stage === 0) {
         out = errorName === "CompileError" ? 2 : 3
       } else if (stage === 1) {

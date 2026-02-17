@@ -1,9 +1,7 @@
 import type { locale } from "@chrryai/chrry/locales"
 import {
   generateAppMetadata,
-  generateStoreMetadata,
   generateThreadMetadata,
-  getThreadId,
 } from "@chrryai/chrry/utils"
 import clearLocale from "@chrryai/chrry/utils/clearLocale"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"

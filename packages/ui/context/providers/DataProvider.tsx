@@ -1,6 +1,6 @@
 "use client"
 
-import React, {
+import {
   createContext,
   type ReactNode,
   useContext,
@@ -149,13 +149,13 @@ const DataContext = createContext<
 // Check if running in development mode
 // For extensions: check if extension ID matches dev ID
 // For web: check NODE_ENV
-const isExtension = isBrowserExtension()
-const extensionId = getExtensionId()
+const _isExtension = isBrowserExtension()
+const _extensionId = getExtensionId()
 
 export const MONTHLY_GUEST_CREDITS = 30
 
 export function DataProvider({ children, ...rest }: { children: ReactNode }) {
-  const expenseCategory = [
+  const _expenseCategory = [
     "food",
     "transport",
     "entertainment",
@@ -193,7 +193,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
     return affiliateCodeData.code
   }, [affiliateCodeData, setAffiliateCodeData])
 
-  const [instructions, setInstructions] = useState<instruction[]>([])
+  const [instructions, _setInstructions] = useState<instruction[]>([])
   const [affiliateStats, setAffiliateStats] = useState<
     affiliateStats | null | undefined
   >(null)
@@ -417,7 +417,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
     // Pad with zeros if needed and convert each part
     const [major = 0, minor = 0, patch = 0] = parts.map((part) => {
       const num = Number.parseInt(part.replace(/\D/g, ""), 10)
-      return isNaN(num) ? 0 : num
+      return Number.isNaN(num) ? 0 : num
     })
 
     // Create a comparable number: major * 10000 + minor * 100 + patch

@@ -276,7 +276,7 @@ export const uploadArtifacts = async ({
   }
 
   // Update thread artifacts - append new files to existing ones
-  const t = await updateThread({
+  const _t = await updateThread({
     id: thread.id,
     artifacts: uploadedFiles,
   })

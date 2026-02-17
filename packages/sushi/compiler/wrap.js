@@ -4,7 +4,7 @@ import compile from "./index.js"
 import { TYPE_NAMES, TYPES } from "./types.js"
 import "./prefs.js"
 
-const fs =
+const _fs =
   typeof process?.version !== "undefined" ? await import("node:fs") : undefined
 
 let dv
@@ -17,14 +17,14 @@ const read = (ta, memory, ptr, length) => {
   )
 }
 
-const readByteStr = (memory, ptr) => {
+const _readByteStr = (memory, ptr) => {
   const length = read(Uint32Array, memory, ptr, 1)[0]
   return Array.from(read(Uint8Array, memory, ptr + 4, length))
     .map((x) => String.fromCharCode(x))
     .join("")
 }
 
-const writeByteStr = (memory, ptr, str) => {
+const _writeByteStr = (memory, ptr, str) => {
   const length = str.length
 
   if (dv?.memory !== memory) dv = new DataView(memory.buffer)
@@ -306,12 +306,8 @@ ${
     }
 
     case TYPES.promise: {
-      const [result, _state, fulfillReactions, rejectReactions] = porfToJSValue(
-        { memory, funcs, pages },
-        value,
-        TYPES.array,
-        4,
-      )
+      const [result, _state, _fulfillReactions, _rejectReactions] =
+        porfToJSValue({ memory, funcs, pages }, value, TYPES.array, 4)
 
       const state = {
         0: "pending",
@@ -409,7 +405,7 @@ ${
 
             case 0x02:
             case 0x03: {
-              const length = bc[i++]
+              const _length = bc[i++]
               const negated = opcode === 0x03
               console.log(
                 `\x1b[31m${negated ? "negated " : ""}class\x1b[0m\x1b[2m:\x1b[0m`,
@@ -623,7 +619,7 @@ export default (
       .split("\n")
       .filter((x) => !x.startsWith("\x1B[2m;;"))
 
-    const noAnsi = (s) => s && s.replace(/\u001b\[[0-9]+m/g, "")
+    const noAnsi = (s) => s?.replace(/\u001b\[[0-9]+m/g, "")
     let longest = 0
     for (let j = 0; j < disasm.length; j++) {
       longest = Math.max(longest, noAnsi(disasm[j])?.length ?? 0)
@@ -635,7 +631,7 @@ export default (
         `\x1B[47m\x1B[30m${noAnsi(disasm[middle])}${"\u00a0".repeat(longest - noAnsi(disasm[middle]).length)}\x1B[0m`
     }
 
-    if (min != 0) console.log("\x1B[2m...\x1B[0m")
+    if (min !== 0) console.log("\x1B[2m...\x1B[0m")
     console.log(disasm.join("\n"))
     if (max > func.wasm.length) console.log("\x1B[2m...\x1B[0m\n")
   }
@@ -675,8 +671,8 @@ export default (
     if (!Prefs.d) throw e
     if (!(e instanceof WebAssembly.CompileError)) throw e
 
-    const funcInd = parseInt(e.message.match(/function #([0-9]+)/)?.[1])
-    const blobOffset = parseInt(e.message.split("@")?.[1])
+    const funcInd = parseInt(e.message.match(/function #([0-9]+)/)?.[1], 10)
+    const blobOffset = parseInt(e.message.split("@")?.[1], 10)
 
     backtrace(funcInd, blobOffset)
     throw e
@@ -692,7 +688,7 @@ export default (
   const rawValues = Prefs.d
 
   const exceptTag = instance.exports["0"],
-    memory = instance.exports["$"]
+    memory = instance.exports.$
   for (const x in instance.exports) {
     if (x === "0") continue
     if (x === "$") {
@@ -715,7 +711,7 @@ export default (
 
         return porfToJSValue({ memory, funcs, pages }, ret[0], ret[1])
       } catch (e) {
-        if (e.is && e.is(exceptTag)) {
+        if (e.is?.(exceptTag)) {
           const exceptionMode = Prefs.exceptionMode ?? "stack"
           if (exceptionMode === "lut") {
             const exceptId = e.getArg(exceptTag, 0)
@@ -741,8 +737,8 @@ export default (
 
           const match =
             e.stack.match(/wasm-function\[([0-9]+)\]:([0-9a-z]+)/) ?? []
-          const funcInd = parseInt(match[1])
-          const blobOffset = parseInt(match[2])
+          const funcInd = parseInt(match[1], 10)
+          const blobOffset = parseInt(match[2], 10)
 
           backtrace(funcInd, blobOffset)
         }

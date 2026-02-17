@@ -35,7 +35,7 @@ export const sendEmail = async ({
   }
 
   const chrryUrl = getChrryUrl(c.req.raw)
-  const siteConfig = getSiteConfig(chrryUrl)
+  const _siteConfig = getSiteConfig(chrryUrl)
 
   const transporter = nodemailer.createTransport({
     host: "smtp.zeptomail.eu",

@@ -7,11 +7,12 @@ import { generateProgram } from "./generator.js"
 const workerDataPath = "/tmp/fuzzWorkerData.json"
 
 if (cluster.isPrimary) {
-  const veryStart = performance.now()
+  const _veryStart = performance.now()
 
   // Parse CLI arguments
   let threads = parseInt(
     process.argv.find((x) => x.startsWith("--threads="))?.split("=")?.[1],
+    10,
   )
   if (Number.isNaN(threads)) {
     threads = Math.max(1, os.cpus().length - 1)
@@ -27,12 +28,14 @@ if (cluster.isPrimary) {
       process.argv
         .find((x) => x.startsWith("--max-statements="))
         ?.split("=")?.[1],
+      10,
     ) || 20
   const maxFunctions =
     parseInt(
       process.argv
         .find((x) => x.startsWith("--max-functions="))
         ?.split("=")?.[1],
+      10,
     ) || 4
   const verbose = process.argv.includes("--verbose")
   const saveFailures = process.argv.includes("--save-failures")
@@ -60,7 +63,7 @@ if (cluster.isPrimary) {
       ][i]
 
       let data = arr[i]
-      if (i > 0) data = ((data / total) * 100).toPrecision(2) + "%"
+      if (i > 0) data = `${((data / total) * 100).toPrecision(2)}%`
       let str = `${plainResults ? iconDesc : icon} ${data}`
       if (i !== arr.length - 1)
         str += plainResults ? " | " : "\u001b[90m | \u001b[0m"
@@ -268,7 +271,7 @@ if (cluster.isPrimary) {
     console.log("\u001b[2F\u001b[0J\u001b[1m\u001b[4mfuzzing complete\u001b[0m")
 
     console.log(
-      table(
+      `${table(
         totalTests,
         passes,
         fails,
@@ -277,7 +280,7 @@ if (cluster.isPrimary) {
         compileErrors,
         timeouts,
         todos,
-      ) + "\n\n",
+      )}\n\n`,
     )
 
     if (errorCounts.size > 0) {
@@ -328,22 +331,22 @@ if (cluster.isPrimary) {
 
     let result = 0 // pass
     let error = null
-    let stage = 0
+    let _stage = 0
 
     try {
       const out = compile(code, false)
 
       try {
         out.exports.main()
-        stage = 2
+        _stage = 2
         result = 0 // pass
       } catch (runtimeError) {
-        stage = 1
+        _stage = 1
         error = runtimeError
         result = 6 // runtime error
       }
     } catch (compileError) {
-      stage = 0
+      _stage = 0
       error = compileError
 
       // Classify compile errors same as test262

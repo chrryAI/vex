@@ -1,15 +1,15 @@
 import type {} from "./porffor.d.ts"
 
 export const __Porffor_compareStrings = (a: any, b: any): boolean => {
-  if ((Porffor.type(a) | 0b10000000) != Porffor.TYPES.bytestring) {
+  if ((Porffor.type(a) | 0b10000000) !== Porffor.TYPES.bytestring) {
     // a is not string or bytestring
     // check if it is bad type or value
     if (
       Porffor.fastOr(
         a == null,
 
-        Porffor.type(a) == Porffor.TYPES.symbol,
-        Porffor.type(a) == Porffor.TYPES.boolean,
+        Porffor.type(a) === Porffor.TYPES.symbol,
+        Porffor.type(a) === Porffor.TYPES.boolean,
       )
     )
       return false
@@ -17,15 +17,15 @@ export const __Porffor_compareStrings = (a: any, b: any): boolean => {
     a = ecma262.ToString(a)
   }
 
-  if ((Porffor.type(b) | 0b10000000) != Porffor.TYPES.bytestring) {
+  if ((Porffor.type(b) | 0b10000000) !== Porffor.TYPES.bytestring) {
     // b is not string or bytestring
     // check if it is bad type or value
     if (
       Porffor.fastOr(
         b == null,
 
-        Porffor.type(b) == Porffor.TYPES.symbol,
-        Porffor.type(b) == Porffor.TYPES.boolean,
+        Porffor.type(b) === Porffor.TYPES.symbol,
+        Porffor.type(b) === Porffor.TYPES.boolean,
       )
     )
       return false
@@ -37,12 +37,12 @@ export const __Porffor_compareStrings = (a: any, b: any): boolean => {
 }
 
 export const __Porffor_concatStrings = (a: any, b: any): any => {
-  if ((Porffor.type(a) | 0b10000000) != Porffor.TYPES.bytestring) {
+  if ((Porffor.type(a) | 0b10000000) !== Porffor.TYPES.bytestring) {
     // a is not string or bytestring
     a = ecma262.ToString(a)
   }
 
-  if ((Porffor.type(b) | 0b10000000) != Porffor.TYPES.bytestring) {
+  if ((Porffor.type(b) | 0b10000000) !== Porffor.TYPES.bytestring) {
     // b is not string or bytestring
     b = ecma262.ToString(b)
   }
@@ -66,7 +66,7 @@ export const String = function (
     const value: any = args[0]
 
     // a. If NewTarget is undefined and value is a Symbol, return SymbolDescriptiveString(value).
-    if (!new.target && Porffor.type(value) == Porffor.TYPES.symbol)
+    if (!new.target && Porffor.type(value) === Porffor.TYPES.symbol)
       return __Symbol_prototype_toString(value)
 
     // b. Let s be ? ToString(value).
@@ -79,7 +79,7 @@ export const String = function (
   // 4. Return StringCreate(s, ? GetPrototypeFromConstructor(NewTarget, "%String.prototype%")).
 
   // force bytestrings to strings
-  if (Porffor.type(s) == Porffor.TYPES.bytestring)
+  if (Porffor.type(s) === Porffor.TYPES.bytestring)
     s = Porffor.bytestringToString(s)
 
   return s as StringObject
@@ -125,7 +125,7 @@ export const __String_fromCodePoint = (...codePoints: any[]): string => {
   for (let i: i32 = 0; i < len; i++) {
     const codepoint: number = ecma262.ToNumber(codePoints[i])
 
-    if (codepoint != Math.trunc(codepoint)) {
+    if (codepoint !== Math.trunc(codepoint)) {
       throw new RangeError("Invalid code point")
     }
 
@@ -230,8 +230,8 @@ export const __String_raw = (
 
   // 4. Let literalCount be ? LengthOfArrayLike(literals).
   const literalCount: number = ecma262.ToIntegerOrInfinity(
-    Porffor.type(literals) == Porffor.TYPES.object
-      ? (literals as object)["length"]
+    Porffor.type(literals) === Porffor.TYPES.object
+      ? (literals as object).length
       : literals.length,
   )
 
@@ -252,7 +252,7 @@ export const __String_raw = (
     R = __Porffor_concatStrings(R, literals[nextIndex])
 
     // d. If nextIndex + 1 = literalCount, return R.
-    if (nextIndex + 1 == literalCount) return R
+    if (nextIndex + 1 === literalCount) return R
 
     // e. If nextIndex < substitutionCount, then
     if (nextIndex < substitutionCount) {

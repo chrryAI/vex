@@ -172,7 +172,7 @@ scheduledJobs.post("/", async (c) => {
         }
 
         // Check cooldown
-        const lastUpdated =
+        const _lastUpdated =
           existingSchedule.updatedOn || existingSchedule.createdOn
 
         let priceDifference = totalPrice // in cents

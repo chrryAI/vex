@@ -1,6 +1,5 @@
 import "@chrryai/chrry/globals.scss"
 import "@chrryai/chrry/styles/view-transitions.css"
-import AgentProfile from "chrry/AgentProfile"
 import Chrry from "chrry/Chrry"
 import Skeleton from "chrry/Skeleton"
 import { lazy, Suspense } from "react"

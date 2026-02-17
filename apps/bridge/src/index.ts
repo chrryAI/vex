@@ -14,7 +14,6 @@ class SushiBridge {
   private fs: FileSystemHandler
   private cli: CLIHandler
   private git: GitHandler
-  private projectRoot: string
 
   constructor(projectRoot: string) {
     this.projectRoot = projectRoot

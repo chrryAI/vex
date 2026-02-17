@@ -9,10 +9,10 @@
  * and generates all required sizes for Tauri (16, 32, 48, 128, 256, 512, 1024)
  */
 
-import { execSync } from "child_process"
-import { copyFileSync, existsSync } from "fs"
-import { dirname, join } from "path"
-import { fileURLToPath } from "url"
+import { execSync } from "node:child_process"
+import { copyFileSync, existsSync } from "node:fs"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -27,7 +27,7 @@ if (mode === "chrryAI") {
 // Check for ImageMagick dependency
 try {
   execSync("magick --version", { stdio: "pipe" })
-} catch (error) {
+} catch (_error) {
   console.error("❌ ImageMagick is required but not found!")
   console.error("")
   console.error("📦 Installation instructions:")

@@ -1,7 +1,7 @@
+import path from "node:path"
+import process from "node:process"
 import { faker } from "@faker-js/faker"
 import { expect, type Page } from "@playwright/test"
-import path from "path"
-import process from "process"
 import {
   capitalizeFirstLetter,
   getModelCredits,
@@ -14,7 +14,7 @@ import {
 } from ".."
 
 // Resolve paths relative to the waffles package root
-const getTestFilePath = (...pathSegments: string[]) => {
+const _getTestFilePath = (...pathSegments: string[]) => {
   const cwd = process.cwd()
   // Check if we're already in the waffles directory
   if (cwd.endsWith("packages/waffles") || cwd.endsWith("waffles")) {
@@ -129,7 +129,7 @@ export const chat = async ({
 
   const hourlyLimit = isSubscriber ? 100 : isMember ? 30 : 10 // guests: 10, members: 30, subscribers: 100
 
-  const MAX_FILE_SIZE = 4
+  const _MAX_FILE_SIZE = 4
 
   if (isNewChat) {
     await page.goto(getURL({ isLive, isMember }), {
@@ -257,7 +257,7 @@ export const chat = async ({
   // Update credits from page before final assertion (accounts for earned credits)
   const finalCreditsLeft = await getCreditsLeft()
   if (finalCreditsLeft !== null) {
-    credits = Number.parseInt(finalCreditsLeft)
+    credits = Number.parseInt(finalCreditsLeft, 10)
   }
 
   expect(await getCreditsLeft()).toBe(credits.toString())
@@ -408,7 +408,7 @@ export const chat = async ({
 
   const imageGenerationButton = page.getByTestId("image-generation-button")
 
-  const isImageGnerationVisible = await imageGenerationButton.isVisible()
+  const _isImageGnerationVisible = await imageGenerationButton.isVisible()
 
   const clearDebate = async () => {
     const debateAgentDeleteButton = page.getByTestId(
@@ -896,7 +896,7 @@ export const chat = async ({
 
       // Check if hourly limit info should be visible based on actual component logic
       // Component shows hourly limit when: hourlyUsageLeft < (selectedAgent?.creditCost || 0) * 3
-      const hourlyLimitInfo = page.getByTestId("hourly-limit-info")
+      const _hourlyLimitInfo = page.getByTestId("hourly-limit-info")
 
       // await expect(hourlyLimitInfo).toBeVisible({
       //   visible: 30 - hourlyUsage <= 10,
@@ -911,7 +911,7 @@ export const chat = async ({
       // Update hourlyUsage from page (actual usage count)
       const hourlyUsageLeft = await getHourlyUsageLeft()
       if (hourlyUsageLeft !== null) {
-        hourlyUsage = hourlyLimit - Number.parseInt(hourlyUsageLeft)
+        hourlyUsage = hourlyLimit - Number.parseInt(hourlyUsageLeft, 10)
       }
 
       expect(hourlyUsageLeft).toBe((hourlyLimit - hourlyUsage).toString())
@@ -921,7 +921,7 @@ export const chat = async ({
       // Update credits from page (accounts for earned credits like Pear feedback)
       const creditsLeftFromPage = await getCreditsLeft()
       if (creditsLeftFromPage !== null) {
-        credits = Number.parseInt(creditsLeftFromPage)
+        credits = Number.parseInt(creditsLeftFromPage, 10)
       }
 
       // When credits are shown, assert the credits left value
@@ -1047,7 +1047,7 @@ export const chat = async ({
     return threads.nth(nth)
   }
 
-  const getFirstMenuThread = async () => {
+  const _getFirstMenuThread = async () => {
     return getNthMenuThread(0)
   }
 

@@ -533,7 +533,7 @@ adCampaignsRoute.post("/auctions/process", async (c) => {
       auctionDate: z.string().refine(
         (dateStr) => {
           const date = new Date(dateStr)
-          return !isNaN(date.getTime())
+          return !Number.isNaN(date.getTime())
         },
         { message: "Invalid date format" },
       ),
@@ -580,7 +580,7 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
 
     const rentSchema = z.object({
       appId: z.string().uuid(),
-      startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+      startDate: z.string().refine((date) => !Number.isNaN(Date.parse(date)), {
         message: "Invalid start date",
       }),
     })
@@ -761,7 +761,7 @@ adCampaignsRoute.get("/slots/:id/availability", async (c) => {
     }
 
     const requestedDate = new Date(dateParam)
-    if (isNaN(requestedDate.getTime())) {
+    if (Number.isNaN(requestedDate.getTime())) {
       return c.json({ error: "Invalid date parameter" }, 400)
     }
 

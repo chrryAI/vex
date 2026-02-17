@@ -113,7 +113,7 @@ export default function MoodSelector({
               className="link"
               onClick={() => setMood("happy")}
             >
-              {emojiMap["happy"]}
+              {emojiMap.happy}
             </Button>
             <Button
               style={{
@@ -126,7 +126,7 @@ export default function MoodSelector({
               className="link"
               onClick={() => setMood("sad")}
             >
-              {emojiMap["sad"]}
+              {emojiMap.sad}
             </Button>
             <Button
               style={{
@@ -141,7 +141,7 @@ export default function MoodSelector({
               className="link"
               onClick={() => setMood("angry")}
             >
-              {emojiMap["angry"]}
+              {emojiMap.angry}
             </Button>
             <Button
               style={{
@@ -154,7 +154,7 @@ export default function MoodSelector({
               className="link"
               onClick={() => setMood("astonished")}
             >
-              {emojiMap["astonished"]}
+              {emojiMap.astonished}
             </Button>
             <Button
               style={{
@@ -167,7 +167,7 @@ export default function MoodSelector({
               className="link"
               onClick={() => setMood("inlove")}
             >
-              {emojiMap["inlove"]}
+              {emojiMap.inlove}
             </Button>
 
             <Button

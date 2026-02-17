@@ -68,7 +68,7 @@ export const Hey = memo(
 
     const styles = useSidebarStyles()
 
-    const [pathnameLocal, setPathnameLocal] = useLocalStorage<
+    const [_pathnameLocal, setPathnameLocal] = useLocalStorage<
       string | undefined
     >("pathname", isExtension ? pathname : undefined)
 

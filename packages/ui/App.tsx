@@ -535,7 +535,7 @@ export default function App({
 
   const { appStyles: styles, utilities } = useStyles()
 
-  const [selectedGrapeApp, setSelectedGrapeApp] = useState<
+  const [_selectedGrapeApp, _setSelectedGrapeApp] = useState<
     appWithStore | undefined
   >()
 
@@ -789,7 +789,7 @@ export default function App({
                     </Button>
                   )}
               </Div>
-            ) : appFormWatcher && appFormWatcher.canSubmit && hasHydrated ? (
+            ) : appFormWatcher?.canSubmit && hasHydrated ? (
               <Div style={styles.titleFormTitle.style}>
                 {app?.id === focus?.id ? (
                   <FocusButton width={38} style={{ marginRight: 5 }} />
@@ -939,7 +939,6 @@ export default function App({
                     <Img icon="raspberry" size={22} /> {t("Subscribe")}
                   </Button>
                 ) : (
-                  user &&
                   user?.subscription && (
                     <Button
                       data-testid="subscription-from-minimize-button"
@@ -1537,8 +1536,8 @@ export default function App({
                                   key={item.slug}
                                   title={t(item.title)}
                                   className={clsx(`button`, {
-                                    ["transparent"]: isManagingApp,
-                                    ["inverted"]: !isManagingApp,
+                                    transparent: isManagingApp,
+                                    inverted: !isManagingApp,
                                     glow: loadingApp?.id === item.id,
                                   })}
                                   style={{

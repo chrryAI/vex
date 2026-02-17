@@ -109,7 +109,7 @@ tasks.patch("/:id", async (c) => {
   const sanitizedTotal = Array.isArray(total)
     ? total.filter(
         (item) =>
-          typeof item.date === "string" && !isNaN(Date.parse(item.date)),
+          typeof item.date === "string" && !Number.isNaN(Date.parse(item.date)),
       )
     : []
 

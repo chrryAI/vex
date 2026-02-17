@@ -598,7 +598,7 @@ export const getTools = ({
         )
         const totalInDollars = (total / 100).toFixed(2)
 
-        const byCategory = expenses.expenses.reduce(
+        const _byCategory = expenses.expenses.reduce(
           (acc, exp) => {
             acc[exp.category] = (acc[exp.category] || 0) + exp.amount
             return acc
@@ -853,7 +853,7 @@ export const getTools = ({
           (sum, exp) => sum + exp.amount,
           0,
         )
-        const totalSpentDollars = (totalSpent / 100).toFixed(2)
+        const _totalSpentDollars = (totalSpent / 100).toFixed(2)
 
         const budgetStatus = budgets.budgets.map((b) => {
           const budgetAmount = (b.amount / 100).toFixed(2)

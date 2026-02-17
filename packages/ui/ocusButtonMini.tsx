@@ -1,6 +1,6 @@
 "use client"
 
-import React, { type CSSProperties, memo, useEffect, useState } from "react"
+import { type CSSProperties, memo, useEffect, useState } from "react"
 import A from "./a/A"
 import { useAuth } from "./context/providers"
 import { useStyles } from "./context/StylesContext"

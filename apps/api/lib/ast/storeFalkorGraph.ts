@@ -122,7 +122,7 @@ export async function storeASTInGraph(
                 },
               },
             )
-          } catch (error) {
+          } catch (_error) {
             // Ignore if callee doesn't exist yet
           }
         }
@@ -178,7 +178,7 @@ export async function storeASTInGraph(
               },
             },
           )
-        } catch (error) {
+        } catch (_error) {
           // Ignore if parent class doesn't exist
         }
       }

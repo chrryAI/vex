@@ -1,3 +1,5 @@
+import dns from "node:dns"
+import net from "node:net"
 import {
   CreateBucketCommand,
   DeleteObjectCommand,
@@ -8,8 +10,6 @@ import {
 import { Upload } from "@aws-sdk/lib-storage"
 import { isDevelopment } from "@chrryai/chrry/utils"
 import { FetchHttpHandler } from "@smithy/fetch-http-handler"
-import dns from "dns"
-import net from "net"
 import sharp from "sharp"
 import { parse as parseDomain } from "tldts"
 import captureException from "./captureException"
@@ -292,7 +292,7 @@ export async function upload({
       let addresses = []
       try {
         addresses = await dns.promises.lookup(parsedUrl.hostname, { all: true })
-      } catch (e) {
+      } catch (_e) {
         throw new Error("Failed to resolve file hosting domain")
       }
 

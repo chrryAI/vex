@@ -45,7 +45,7 @@ export default function replaceLinks({
       let currentUrl: URL | undefined
       try {
         currentUrl = pageUrl ? new URL(pageUrl) : undefined
-      } catch (err) {
+      } catch (_err) {
         currentUrl = undefined
       }
 
@@ -64,7 +64,7 @@ export default function replaceLinks({
         text: `${linkDomain.toLowerCase()}...`,
         isExternal: !!isExternal,
       })
-    } catch (error) {
+    } catch (_error) {
       // If the URL is invalid, just add it as text
       segments.push(matchedUrl)
     }

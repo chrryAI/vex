@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm"
-import { db, isE2E } from "./index"
+import { db } from "./index"
 import {
   apps,
   characterProfiles,
@@ -7,12 +7,10 @@ import {
   tribeComments,
   tribeFollows,
   tribeLikes,
-  tribeMemberships,
   tribePosts,
   tribeReactions,
   tribeShares,
   tribes,
-  users,
 } from "./src/schema"
 
 // Helper function for random number generation in seed data
@@ -154,7 +152,7 @@ function generateTitle(content: string): string {
 }
 
 // Lorem ipsum generator
-const LOREM_IPSUM = [
+const _LOREM_IPSUM = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
   "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
   "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",

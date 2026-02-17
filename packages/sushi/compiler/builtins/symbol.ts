@@ -10,7 +10,7 @@ export const Symbol = (description: any): symbol => {
   let descString: any
 
   // 3. Else, let descString be ? ToString(description).
-  if (Porffor.type(description) != Porffor.TYPES.undefined) {
+  if (Porffor.type(description) !== Porffor.TYPES.undefined) {
     descString = ecma262.ToString(description)
   }
 
@@ -97,14 +97,14 @@ export const __Symbol_for = (key: any): symbol => {
 }
 
 export const __Symbol_keyFor = (arg: any): any => {
-  if (Porffor.type(arg) != Porffor.TYPES.symbol)
+  if (Porffor.type(arg) !== Porffor.TYPES.symbol)
     throw new TypeError("Symbol.keyFor argument should be a Symbol")
 
   const sym: symbol = arg
   const desc: any = sym.description
 
   const stored: symbol = forStore.get(desc)
-  if (sym == stored) return desc
+  if (sym === stored) return desc
 
   return undefined
 }

@@ -70,7 +70,7 @@ export default function DeleteThread({
               onDelete?.()
             }
           }
-        } catch (error) {
+        } catch (_error) {
           toast.error("Failed to delete thread")
         } finally {
           setIsDeleting(false)

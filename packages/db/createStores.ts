@@ -6,7 +6,6 @@ import {
   type instructionBase,
 } from "./getExampleInstructions"
 import {
-  createPureApp as createApp,
   createOrUpdateApp,
   createOrUpdateStoreInstall,
   createStore,
@@ -16,17 +15,12 @@ import {
   getPureApp,
   getStore,
   getStoreInstall,
-  getStores,
-  isProd,
-  isWaffles,
   type store,
-  updatePureApp as updateApp,
   updateStore,
   type user,
 } from "./index"
-import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
 import { seedTribeEngagement } from "./seedTribeEngagement"
-import { aiAgents, apps, guests, stores, teams, users } from "./src/schema"
+import { aiAgents, apps, guests, stores, users } from "./src/schema"
 
 // ============================================
 // ♾️ INFINITE HUMAN: RPG Seeder Helper
@@ -92,7 +86,7 @@ const defaultInstructions = getExampleInstructions({ slug: "vex" }).map(
 )
 
 // Common section for all app system prompts
-const commonAppSection = `
+const _commonAppSection = `
 You are {{app.name}}{{#if app.title}}, {{app.title}}{{else}}, a specialized AI assistant{{/if}}.{{#if app.description}} {{app.description}}{{else}} You help users accomplish their goals efficiently.{{/if}}
 
 {{#if app.highlights}}
@@ -1574,7 +1568,7 @@ const perplexityScholarInstructions = [
 ]
 
 // Perplexity general (old specialized highlights - keeping for base app)
-const perplexityOldSearchInstructions = [
+const _perplexityOldSearchInstructions = [
   {
     id: "perplexity-1",
     title: "Real-Time Web Search",
@@ -1909,7 +1903,7 @@ const sushiArchitectInstructions = [
 ]
 
 // Sushi general (old specialized highlights - keeping for base app)
-const sushiCodeInstructions = [
+const _sushiCodeInstructions = [
   {
     id: "sushi-1",
     title: "Code Generation Master",
@@ -5119,7 +5113,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
 
   // Install Meditations in Books store
   {
-    const storeInstall = await createOrUpdateStoreInstall({
+    const _storeInstall = await createOrUpdateStoreInstall({
       storeId: books.id,
       appId: meditations.id,
       featured: true,

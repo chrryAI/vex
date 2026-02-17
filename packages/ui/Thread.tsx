@@ -1,13 +1,6 @@
 "use client"
 
-import React, {
-  lazy,
-  Suspense,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react"
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
 import Bookmark from "./Bookmark"
 import Chat from "./Chat"
 import CollaborationStatus from "./CollaborationStatus"

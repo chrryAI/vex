@@ -1,9 +1,9 @@
 const start = Date.now()
-const total = 0
+const _total = 0
 for (let i = 0; i < 10_000_000; i++) {
   try {
     throw i
-  } catch (e) {}
+  } catch (_e) {}
 }
 
 console.log(Date.now() - start)

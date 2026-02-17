@@ -12,7 +12,6 @@ import {
   Text,
 } from "@react-email/components"
 import type { thread, user } from "@repo/db"
-import * as React from "react"
 
 type CollaborationEmailProps = {
   origin?: string

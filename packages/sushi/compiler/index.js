@@ -13,7 +13,7 @@ import "./prefs.js"
 globalThis.disassemble = disassemble
 
 const logFuncs = (funcs, globals, exceptions) => {
-  console.log("\n" + underline(bold("funcs")))
+  console.log(`\n${underline(bold("funcs"))}`)
 
   let wanted = Prefs.f
   if (typeof wanted !== "string") wanted = null
@@ -97,6 +97,7 @@ export default (code, module = Prefs.module) => {
 
   const optLevel = parseInt(
     process.argv.find((x) => x.startsWith("-O"))?.[2] ?? 1,
+    10,
   )
 
   let target = Prefs.target ?? "wasm"
@@ -116,7 +117,7 @@ export default (code, module = Prefs.module) => {
 
   // change some prefs by default for -O2
   if (optLevel >= 2) {
-    Prefs.cyclone = Prefs.cyclone === false ? false : true // enable cyclone
+    Prefs.cyclone = Prefs.cyclone !== false // enable cyclone
   }
 
   if (Prefs.pgo) pgo.setup()
@@ -258,11 +259,11 @@ export default (code, module = Prefs.module) => {
         for (let i = 0; i < inc.length; i++) {
           if (inc[i][1].length === 0) continue
           process.stdout.write(
-            `${depth.join(" ")}${depth.length > 0 ? " " : ""}${i != inc.length - 1 ? "├" : "└"} `,
+            `${depth.join(" ")}${depth.length > 0 ? " " : ""}${i !== inc.length - 1 ? "├" : "└"} `,
           )
 
           const newDepth = [...depth]
-          newDepth.push(i != inc.length - 1 ? "│" : "")
+          newDepth.push(i !== inc.length - 1 ? "│" : "")
 
           print([inc[i]], newDepth)
         }
@@ -297,7 +298,7 @@ export default (code, module = Prefs.module) => {
       `\x1B[1mallocated ${bytes / 1024}KiB\x1B[0m for ${pages.size} things using ${wasmPages} Wasm page${wasmPages === 1 ? "" : "s"}`,
     )
     console.log(
-      [...pages.keys()].map((x) => `\x1B[36m - ${x}\x1B[0m`).join("\n") + "\n",
+      `${[...pages.keys()].map((x) => `\x1B[36m - ${x}\x1B[0m`).join("\n")}\n`,
     )
   }
 
@@ -373,7 +374,7 @@ export default (code, module = Prefs.module) => {
       "-fno-ident",
       "-ffunction-sections",
       "-fdata-sections", // remove unneeded binary sections
-      "-" + cO,
+      `-${cO}`,
     ]
 
     if (Prefs.clangFast)

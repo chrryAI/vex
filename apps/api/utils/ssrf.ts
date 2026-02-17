@@ -74,7 +74,7 @@ function isPrivateIP(ip: string): boolean {
       // Handle hex notation (e.g., ::ffff:c0a8:0101)
       // Convert hex to dotted-decimal
       const hexMatch = ipv4Part.match(/^([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i)
-      if (hexMatch && hexMatch[1] && hexMatch[2]) {
+      if (hexMatch?.[1] && hexMatch[2]) {
         const high = parseInt(hexMatch[1], 16)
         const low = parseInt(hexMatch[2], 16)
         const octet1 = (high >> 8) & 0xff

@@ -4,10 +4,9 @@
  * Logs mutations and results to FalkorDB
  */
 
-import { execSync } from "child_process"
+import { execSync } from "node:child_process"
+import fs from "node:fs"
 import { FalkorDB } from "falkordb"
-import fs from "fs"
-import path from "path"
 
 let db = null
 let graph = null
@@ -127,12 +126,12 @@ function escapeRegex(str) {
 
 async function testMutation(mutation, testCommand) {
   // Write mutated code to temp file
-  const tempFile = mutation.file + ".mutant"
-  const originalCode = fs.readFileSync(mutation.file, "utf-8")
+  const tempFile = `${mutation.file}.mutant`
+  const _originalCode = fs.readFileSync(mutation.file, "utf-8")
 
   try {
     fs.writeFileSync(tempFile, mutation.code)
-    fs.renameSync(mutation.file, mutation.file + ".original")
+    fs.renameSync(mutation.file, `${mutation.file}.original`)
     fs.renameSync(tempFile, mutation.file)
 
     // Run tests
@@ -156,8 +155,8 @@ async function testMutation(mutation, testCommand) {
     }
   } finally {
     // Restore original file
-    if (fs.existsSync(mutation.file + ".original")) {
-      fs.renameSync(mutation.file + ".original", mutation.file)
+    if (fs.existsSync(`${mutation.file}.original`)) {
+      fs.renameSync(`${mutation.file}.original`, mutation.file)
     }
     if (fs.existsSync(tempFile)) {
       fs.unlinkSync(tempFile)
@@ -216,7 +215,7 @@ async function analyzeMutationScore() {
     RETURN total, killed, (killed * 100.0 / total) as score
   `)
 
-  if (result && result.data && result.data.length > 0) {
+  if (result?.data && result.data.length > 0) {
     const [total, killed, score] = result.data[0]
     console.log("\n📊 Mutation Score:")
     console.log(`   Total Mutations: ${total}`)
@@ -241,7 +240,7 @@ async function findWeakSpots() {
   `)
 
   console.log("\n🎯 Weak Spots (Survived Mutations):")
-  if (result && result.data) {
+  if (result?.data) {
     for (const row of result.data) {
       const [file, line, operator, count] = row
       console.log(`   ${file}:${line} - ${operator} (${count}x)`)

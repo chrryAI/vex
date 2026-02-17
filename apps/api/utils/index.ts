@@ -93,7 +93,7 @@ export const extractActionFromResponse = (
 
   // Extract just the JSON part (array or object)
   let jsonPart = null
-  if (actionMatch && actionMatch[1]) {
+  if (actionMatch?.[1]) {
     const actionContent = actionMatch[1].trim()
     // Look for array format first
     const arrayMatch = actionContent.match(/\[[\s\S]*\]/)
@@ -144,7 +144,7 @@ export const extractActionFromResponse = (
         /["']?targetKeywords["']?\s*:\s*\[([^\]]+)\]/,
       )
 
-      if (typeMatch && typeMatch[1]) {
+      if (typeMatch?.[1]) {
         console.log(`🔧 FALLBACK: Extracted action type: ${typeMatch[1]}`)
 
         const params: any = {
@@ -201,9 +201,9 @@ export const extractActionFromResponse = (
       aiResponse.match(/\[([0-9]+)\]/),
     ].find((match) => match)
 
-    if (indexMatches && indexMatches[1]) {
-      const elementIndex = Number.parseInt(indexMatches[1])
-      if (!isNaN(elementIndex)) {
+    if (indexMatches?.[1]) {
+      const elementIndex = Number.parseInt(indexMatches[1], 10)
+      if (!Number.isNaN(elementIndex)) {
         const singleAction = {
           type: "click_element",
           params: {

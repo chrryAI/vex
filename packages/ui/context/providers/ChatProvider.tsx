@@ -360,8 +360,7 @@ export function ChatProvider({
       collaborationStatus: "active",
       appId: app?.id,
     })
-    threads &&
-      threads.totalCount &&
+    threads?.totalCount &&
       setActiveCollaborationThreadsCount(threads.totalCount)
   }
 
@@ -380,8 +379,7 @@ export function ChatProvider({
       myPendingCollaborations: true,
       appId: app?.id,
     })
-    threads &&
-      threads.totalCount &&
+    threads?.totalCount &&
       setPendingCollaborationThreadsCount(threads.totalCount)
   }
 
@@ -645,10 +643,10 @@ export function ChatProvider({
 
   useEffect(() => {
     if (profile) {
-      setIsVisitor(user?.id == profile.id)
+      setIsVisitor(user?.id === profile.id)
       return
     } else if (userNameByUrl) {
-      setIsVisitor(user?.userName == userNameByUrl)
+      setIsVisitor(user?.userName === userNameByUrl)
       return
     }
 
@@ -682,7 +680,7 @@ export function ChatProvider({
   useEffect(() => {
     if (!token || !fingerprint || !connected) return
     // Listen for navigation messages from service worker
-    const handleServiceWorkerMessage = (event: MessageEvent) => {
+    const _handleServiceWorkerMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === "NAVIGATE_TO_URL") {
         window.location.href = event.data.url
       }

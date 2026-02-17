@@ -263,8 +263,8 @@ export function TimerContextProvider({
   const [isFinished, setIsFinished] = useState(false)
   const [isCancelled, setIsCancelled] = useState(false)
 
-  const [timerTasks, setTimerTasks] = useState<Task[]>([])
-  const lastProcessedFingerprintRef = useRef<string | undefined>(undefined)
+  const [timerTasks, _setTimerTasks] = useState<Task[]>([])
+  const _lastProcessedFingerprintRef = useRef<string | undefined>(undefined)
   const lastFilteredTasksRef = useRef<string>("")
 
   useEffect(() => {
@@ -361,7 +361,7 @@ export function TimerContextProvider({
     (data: timer) => {
       if (!token) return
 
-      const deviceId = fingerprint
+      const _deviceId = fingerprint
 
       // Filter out tasks with empty total arrays (not actively running)
       const activeTasks = selectedTasks?.filter(
@@ -1147,7 +1147,7 @@ export function TimerContextProvider({
 
   useEffect(() => {
     if (isExtension) {
-      const handleMessage = (message: any) => {
+      const _handleMessage = (message: any) => {
         console.log("Received message:", message)
 
         if (message.type === "TIMER_UPDATE") {

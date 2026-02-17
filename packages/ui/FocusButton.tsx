@@ -214,7 +214,7 @@ export default function FocusButton({
     }
   }, [showSettings])
 
-  const setTheme = (theme: themeType) => {
+  const _setTheme = (theme: themeType) => {
     setThemeInContext(theme)
     theme === "dark"
       ? plausibleEvent({ name: "dark_mode" })
@@ -1153,7 +1153,7 @@ export default function FocusButton({
                                     }
                                     await fetchTasks()
                                     toast.success(t("Deleted"))
-                                  } catch (error) {
+                                  } catch (_error) {
                                     toast.error(t("Something went wrong"))
                                   } finally {
                                     setIsDeletingTask(false)

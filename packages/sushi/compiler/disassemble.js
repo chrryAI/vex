@@ -49,7 +49,7 @@ export default (
 
   let i = -1,
     lastInst
-  let byte = 0
+  let _byte = 0
   for (let inst of wasm) {
     i++
     if (inst[0] === null) continue
@@ -83,7 +83,7 @@ export default (
     }
 
     // out += '0x' + byte.toString(10).padStart(2, '0');
-    byte += inst.length
+    _byte += inst.length
 
     out += opStr
       .replace("_", ".")

@@ -2,7 +2,7 @@ import type {} from "./porffor.d.ts"
 
 export const __Porffor_printString = (arg: bytestring | string): void => {
   let ptr: i32 = Porffor.wasm`local.get ${arg}`
-  if (Porffor.type(arg) == Porffor.TYPES.bytestring) {
+  if (Porffor.type(arg) === Porffor.TYPES.bytestring) {
     const end: i32 = ptr + arg.length
     while (ptr < end) {
       printChar(Porffor.wasm.i32.load8_u(ptr++, 0, 4))
@@ -70,13 +70,13 @@ export const __Porffor_print = (
       Porffor.printStatic(") ")
     }
 
-    if (arrLen == 0) {
+    if (arrLen === 0) {
       Porffor.printStatic("[]")
     } else {
       Porffor.printStatic("[ ")
       for (let i: i32 = 0; i < arrLen; i++) {
         __Porffor_print(arg[i], colors)
-        if (i != arrLen - 1) Porffor.printStatic(", ")
+        if (i !== arrLen - 1) Porffor.printStatic(", ")
       }
       Porffor.printStatic(" ]")
     }
@@ -121,7 +121,7 @@ export const __Porffor_print = (
     case Porffor.TYPES.object:
       if (arg) {
         const keys: any[] = Object.keys(arg)
-        if (keys.length == 0) {
+        if (keys.length === 0) {
           Porffor.printStatic("{}")
           return
         }
@@ -141,7 +141,7 @@ export const __Porffor_print = (
             depth + 1,
           )
 
-          if (i != len) Porffor.printStatic(",\n")
+          if (i !== len) Porffor.printStatic(",\n")
         }
 
         Porffor.printStatic("\n")
@@ -224,7 +224,7 @@ export const __Porffor_print = (
 
     case Porffor.TYPES.sharedarraybuffer:
     case Porffor.TYPES.arraybuffer: {
-      if (Porffor.type(arg) == Porffor.TYPES.sharedarraybuffer)
+      if (Porffor.type(arg) === Porffor.TYPES.sharedarraybuffer)
         Porffor.printStatic("SharedArrayBuffer")
       else Porffor.printStatic("ArrayBuffer")
       Porffor.printStatic(" {\n")
@@ -240,7 +240,7 @@ export const __Porffor_print = (
         const ele = buffer[i]
         __Porffor_printHexDigit((ele & 0xf0) / 16)
         __Porffor_printHexDigit(ele & 0xf)
-        if (i != bufferLen) Porffor.printStatic(" ")
+        if (i !== bufferLen) Porffor.printStatic(" ")
       }
 
       Porffor.printStatic(">,\n  byteLength: ")
@@ -264,7 +264,7 @@ export const __Porffor_print = (
 
     case Porffor.TYPES.weakmap:
     case Porffor.TYPES.map: {
-      if (Porffor.type(arg) == Porffor.TYPES.weakmap)
+      if (Porffor.type(arg) === Porffor.TYPES.weakmap)
         Porffor.printStatic("WeakMap")
       else Porffor.printStatic("Map")
       Porffor.printStatic("(")
@@ -279,7 +279,7 @@ export const __Porffor_print = (
         __Porffor_print(key, colors)
         Porffor.printStatic(" => ")
         __Porffor_print(__Map_prototype_get(arg, key), colors)
-        if (i != mapLen) Porffor.printStatic(", ")
+        if (i !== mapLen) Porffor.printStatic(", ")
       }
 
       Porffor.printStatic(" }")
@@ -288,7 +288,7 @@ export const __Porffor_print = (
 
     case Porffor.TYPES.weakset:
     case Porffor.TYPES.set: {
-      if (Porffor.type(arg) == Porffor.TYPES.weakset)
+      if (Porffor.type(arg) === Porffor.TYPES.weakset)
         Porffor.printStatic("WeakSet")
       else Porffor.printStatic("Set")
       Porffor.printStatic("(")
@@ -300,7 +300,7 @@ export const __Porffor_print = (
 
       for (let i: i32 = 0; i <= setLen; i++) {
         __Porffor_print(set[i], colors)
-        if (i != setLen) Porffor.printStatic(", ")
+        if (i !== setLen) Porffor.printStatic(", ")
       }
 
       Porffor.printStatic(" }")
@@ -356,8 +356,8 @@ export const __console_clear = (): void => {
 export const __Porffor_consolePrint = (arg: any): void => {
   if (
     Porffor.fastOr(
-      Porffor.type(arg) == Porffor.TYPES.bytestring,
-      Porffor.type(arg) == Porffor.TYPES.string,
+      Porffor.type(arg) === Porffor.TYPES.bytestring,
+      Porffor.type(arg) === Porffor.TYPES.string,
     )
   ) {
     __Porffor_printString(arg)
@@ -367,7 +367,7 @@ export const __Porffor_consolePrint = (arg: any): void => {
 }
 
 export const __console_group = (label: bytestring): void => {
-  if (Porffor.type(label) != Porffor.TYPES.undefined) {
+  if (Porffor.type(label) !== Porffor.TYPES.undefined) {
     __Porffor_consoleIndent()
     __Porffor_consolePrint(label)
   }
@@ -389,7 +389,7 @@ export const __console_log = (...args: any[]): void => {
     __Porffor_consoleIndent()
     __Porffor_consolePrint(args[i])
 
-    if (i != argLen) Porffor.printStatic(" ")
+    if (i !== argLen) Porffor.printStatic(" ")
   }
 
   Porffor.printStatic("\n")
@@ -401,7 +401,7 @@ export const __console_debug = (...args: any[]): void => {
     __Porffor_consoleIndent()
     __Porffor_consolePrint(args[i])
 
-    if (i != argLen) Porffor.printStatic(" ")
+    if (i !== argLen) Porffor.printStatic(" ")
   }
 
   Porffor.printStatic("\n")
@@ -413,7 +413,7 @@ export const __console_info = (...args: any[]): void => {
     __Porffor_consoleIndent()
     __Porffor_consolePrint(args[i])
 
-    if (i != argLen) Porffor.printStatic(" ")
+    if (i !== argLen) Porffor.printStatic(" ")
   }
 
   Porffor.printStatic("\n")
@@ -425,7 +425,7 @@ export const __console_warn = (...args: any[]): void => {
     __Porffor_consoleIndent()
     __Porffor_consolePrint(args[i])
 
-    if (i != argLen) Porffor.printStatic(" ")
+    if (i !== argLen) Porffor.printStatic(" ")
   }
 
   Porffor.printStatic("\n")
@@ -437,7 +437,7 @@ export const __console_error = (...args: any[]): void => {
     __Porffor_consoleIndent()
     __Porffor_consolePrint(args[i])
 
-    if (i != argLen) Porffor.printStatic(" ")
+    if (i !== argLen) Porffor.printStatic(" ")
   }
 
   Porffor.printStatic("\n")
@@ -448,14 +448,14 @@ export const __console_assert = (assertion: any, ...args: any[]): void => {
 
   __Porffor_consoleIndent()
   Porffor.printStatic("Assertion failed")
-  if (args.length != 0) {
+  if (args.length !== 0) {
     Porffor.printStatic(": ")
   }
 
   const argLen: i32 = args.length - 1
   for (let i: i32 = 0; i <= argLen; i++) {
     __Porffor_consolePrint(args[i])
-    if (i != argLen) Porffor.printStatic(" ")
+    if (i !== argLen) Porffor.printStatic(" ")
   }
 
   Porffor.printStatic("\n")
@@ -467,7 +467,7 @@ export const __Porffor_dirObject = (
   depth: i32,
   showHidden: boolean,
 ): void => {
-  if (Porffor.type(obj) != Porffor.TYPES.object || depth == 0) {
+  if (Porffor.type(obj) !== Porffor.TYPES.object || depth === 0) {
     __Porffor_print(obj, colors)
     return
   }
@@ -484,7 +484,7 @@ export const __Porffor_dirObject = (
     const value = __Porffor_object_get(obj, key)
     __Porffor_dirObject(value, colors, depth - 1, showHidden)
 
-    if (i != keysLen) Porffor.printStatic(", ")
+    if (i !== keysLen) Porffor.printStatic(", ")
   }
 
   Porffor.printStatic(" }")

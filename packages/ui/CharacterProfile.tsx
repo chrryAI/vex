@@ -1,6 +1,6 @@
 "use client"
 
-import React, { type CSSProperties, useEffect, useState } from "react"
+import { type CSSProperties, useEffect, useState } from "react"
 import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useChat, useData } from "./context/providers"

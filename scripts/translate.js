@@ -1,7 +1,7 @@
+import fs from "node:fs"
+import path, { dirname } from "node:path"
+import { fileURLToPath } from "node:url"
 import dotenv from "dotenv"
-import fs from "fs"
-import path, { dirname } from "path"
-import { fileURLToPath } from "url"
 
 dotenv.config()
 

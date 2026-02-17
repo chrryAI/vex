@@ -147,7 +147,7 @@ export async function clearOldEmbeddings(
   )
 
   try {
-    const result = await db.delete(codeEmbeddings).where(
+    const _result = await db.delete(codeEmbeddings).where(
       and(
         eq(codeEmbeddings.repoName, repoName),
         // Delete embeddings from different commit hashes

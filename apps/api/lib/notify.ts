@@ -15,17 +15,17 @@ import webpush from "web-push"
 import captureException from "./captureException"
 import { sendWebPush } from "./sendWebPush"
 
-const siteConfig = getSiteConfig()
+const _siteConfig = getSiteConfig()
 
 interface CustomWebSocket {
   new (url: string): WebSocket
   OPEN: number
 }
 
-const WebSocket: CustomWebSocket = (global as any).WebSocket || require("ws")
-const socket: WebSocket | null = null
+const _WebSocket: CustomWebSocket = (global as any).WebSocket || require("ws")
+const _socket: WebSocket | null = null
 
-const connectionPromise: Promise<void> | null = null
+const _connectionPromise: Promise<void> | null = null
 
 import { broadcast, notifyClients } from "./wsClients"
 

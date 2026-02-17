@@ -304,7 +304,7 @@ function generateInsights(history: PerformanceData[]): string[] {
   }
 
   // Budget efficiency
-  const avgBid =
+  const _avgBid =
     history.reduce((sum, e) => sum + e.bidAmount, 0) / history.length
   const avgROIValue =
     history.reduce((sum, e) => sum + e.actualROI, 0) / history.length

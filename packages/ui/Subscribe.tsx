@@ -360,7 +360,7 @@ export default function Subscribe({
       } else {
         toast.error(data.error)
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to change plan")
     } finally {
       setLoading(false)
@@ -545,7 +545,7 @@ export default function Subscribe({
 
         return
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error(t("Failed to fetch users"))
     } finally {
       setIsAdding(false)

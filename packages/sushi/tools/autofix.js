@@ -3,9 +3,8 @@
  * Uses Memory learnings to generate and apply code fixes
  */
 
+import fs from "node:fs"
 import { FalkorDB } from "falkordb"
-import fs from "fs"
-import path from "path"
 
 let db = null
 let memoryGraph = null
@@ -48,7 +47,7 @@ function generateErrorHandlingFix(code, functionName, startLine, endLine) {
     "\n  try {" +
     funcBody
       .split("\n")
-      .map((line) => "  " + line)
+      .map((line) => `  ${line}`)
       .join("\n") +
     "\n  } catch (error) {\n    console.error(`Error in ${functionName}:`, error);\n    throw error;\n  }" +
     "\n" +
@@ -160,7 +159,7 @@ async function getFixesForFile(filePath) {
   const code = fs.readFileSync(filePath, "utf-8")
 
   // Generate fixes based on rules
-  if (rules && rules.data) {
+  if (rules?.data) {
     for (const rule of rules.data) {
       const { type, suggestion, confidence } = rule
 
@@ -220,7 +219,7 @@ async function getFixesForFile(filePath) {
   }
 
   // Generate fixes for weak spots
-  if (weakSpots && weakSpots.data) {
+  if (weakSpots?.data) {
     for (const weakSpot of weakSpots.data) {
       const fix = generateWeakSpotFix(weakSpot)
       fixes.push({

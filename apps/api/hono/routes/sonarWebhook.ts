@@ -1,6 +1,6 @@
+import { createHmac } from "node:crypto"
 import type { newSonarMetric } from "@repo/db"
 import { db, sonarIssues, sonarMetrics } from "@repo/db"
-import { createHmac } from "crypto"
 import { Hono } from "hono"
 import captureException from "../../lib/captureException"
 

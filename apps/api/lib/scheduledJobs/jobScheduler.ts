@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import {
   and,
@@ -20,10 +21,9 @@ import {
   type scheduledJob,
   sql,
 } from "@repo/db"
-import { randomInt } from "crypto"
 
 // Secure random number generator (0 to max-1)
-function secureRandom(max: number = 100): number {
+function _secureRandom(max: number = 100): number {
   return randomInt(0, max)
 }
 
@@ -1156,7 +1156,7 @@ export async function postToMoltbookJob({
       console.log(`✅ Marked question ${questionId} as asked`)
 
       // Send Discord notification (non-blocking) - only if post was successful
-      if (result && result.post_id) {
+      if (result?.post_id) {
         sendDiscordNotification({
           embeds: [
             {
@@ -1183,7 +1183,7 @@ export async function postToMoltbookJob({
                   value: (() => {
                     const content = post.content ?? ""
                     return content.length > 200
-                      ? content.substring(0, 200) + "..."
+                      ? `${content.substring(0, 200)}...`
                       : content || "No content"
                   })(),
                   inline: false,
@@ -1496,7 +1496,7 @@ Important Notes:
     let parsedContent: { tribe?: string; content?: string; post?: string }
     try {
       parsedContent = JSON.parse(cleanedContent)
-    } catch (error) {
+    } catch (_error) {
       throw new Error(
         `Failed to parse AI response as JSON: ${cleanedContent.substring(0, 200)}`,
       )
@@ -1548,7 +1548,7 @@ Important Notes:
       titleLength: aiResponse.tribeTitle?.length || 0,
       contentLength: aiResponse.tribeContent?.length || 0,
       tribeName: aiResponse.tribeName,
-      contentPreview: aiResponse.tribeContent?.substring(0, 100) + "...",
+      contentPreview: `${aiResponse.tribeContent?.substring(0, 100)}...`,
     })
 
     // Validate userId before posting
@@ -1643,7 +1643,7 @@ Important Notes:
               value: (() => {
                 const content = aiResponse.tribeContent ?? ""
                 return content.length > 200
-                  ? content.substring(0, 200) + "..."
+                  ? `${content.substring(0, 200)}...`
                   : content || "No content"
               })(),
               inline: false,
@@ -2068,7 +2068,7 @@ Respond ONLY with this JSON array:
     console.log(`✅ Comment check complete: ${commentsCount} comments posted`)
 
     // Create summary (simple text for now - can be enhanced later)
-    const commentSummary = `## 💬 Tribe Comment Summary
+    const _commentSummary = `## 💬 Tribe Comment Summary
 
 **Comments Posted:** ${commentsCount}
 **Posts Reviewed:** ${recentPosts.length}
@@ -2683,7 +2683,7 @@ Respond ONLY with this JSON array (no extra text):
                     },
                     {
                       name: "Response Preview",
-                      value: batchResponse.substring(0, 200) + "...",
+                      value: `${batchResponse.substring(0, 200)}...`,
                       inline: false,
                     },
                   ],
@@ -3336,7 +3336,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
           // There's another scheduledTime in this cycle - use it
           const nextSchedule = job.scheduledTimes[nextScheduleIndex]
           if (nextSchedule) {
-            const nextScheduleDate = new Date(nextSchedule.time)
+            const _nextScheduleDate = new Date(nextSchedule.time)
             // Set to 5 minutes from now to ensure it runs in next cron cycle
             nextRunAt = new Date(Date.now() + 5 * 60 * 1000)
             console.log(

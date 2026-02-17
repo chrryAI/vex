@@ -95,7 +95,7 @@ export function generateThreadMetadata({
   const baseUrl = currentDomain
   const canonicalUrl = `${baseUrl}/threads/${thread.id}`
 
-  const t = (key: string) => {
+  const _t = (key: string) => {
     return tFunc(translations)(key)
   }
 

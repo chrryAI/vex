@@ -175,7 +175,7 @@ async function getLearningStats() {
 
   console.log("\n📊 Learning Statistics:")
 
-  if (fixStats && fixStats.data && fixStats.data.length > 0) {
+  if (fixStats?.data && fixStats.data.length > 0) {
     const { total, successful, successRate } = fixStats.data[0]
     console.log(`\n🔧 Fix Results:`)
     console.log(`   Total fixes attempted: ${total}`)
@@ -183,7 +183,7 @@ async function getLearningStats() {
     console.log(`   Success rate: ${successRate?.toFixed(2)}%`)
   }
 
-  if (ruleStats && ruleStats.data && ruleStats.data.length > 0) {
+  if (ruleStats?.data && ruleStats.data.length > 0) {
     console.log(`\n📋 Updated Rule Confidences:`)
     for (const rule of ruleStats.data) {
       const { type, confidence, successCount, failureCount } = rule
@@ -193,7 +193,7 @@ async function getLearningStats() {
     }
   }
 
-  if (weakSpotStats && weakSpotStats.data && weakSpotStats.data.length > 0) {
+  if (weakSpotStats?.data && weakSpotStats.data.length > 0) {
     const { total, fixed, fixedRate } = weakSpotStats.data[0]
     console.log(`\n🎯 Weak Spots:`)
     console.log(`   Total: ${total}`)
@@ -226,7 +226,7 @@ async function exportLearningData() {
     MATCH (r:Rule)
     RETURN r
   `)
-  if (rules && rules.data) {
+  if (rules?.data) {
     data.rules = rules.data
   }
 
@@ -237,7 +237,7 @@ async function exportLearningData() {
     ORDER BY f.timestamp DESC
     LIMIT 100
   `)
-  if (fixes && fixes.data) {
+  if (fixes?.data) {
     data.fixes = fixes.data
   }
 
@@ -246,7 +246,7 @@ async function exportLearningData() {
     MATCH (w:WeakSpot)
     RETURN w
   `)
-  if (weakSpots && weakSpots.data) {
+  if (weakSpots?.data) {
     data.weakSpots = weakSpots.data
   }
 

@@ -8,7 +8,7 @@ let MMKV: any
 try {
   const mmkvModule = require("react-native-mmkv")
   MMKV = mmkvModule.MMKV
-} catch (error) {
+} catch (_error) {
   console.warn(
     "[chrry/platform/storage] react-native-mmkv not found. Using fallback.",
   )

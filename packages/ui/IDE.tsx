@@ -4,7 +4,7 @@
  * Basic IDE UI that will be enhanced with Monaco Editor and filesystem later
  */
 
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useTheme } from "./context/ThemeContext"
 import GitHubConnectButton from "./GitHubConnectButton"

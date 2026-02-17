@@ -218,7 +218,8 @@ export const websocketHandler = {
             const sanitizedTotal = Array.isArray(total)
               ? total.filter(
                   (t) =>
-                    typeof t.date === "string" && !isNaN(Date.parse(t.date)),
+                    typeof t.date === "string" &&
+                    !Number.isNaN(Date.parse(t.date)),
                 )
               : []
 
@@ -456,7 +457,7 @@ export async function upgradeWebSocket(
   const deviceId = url.searchParams.get("deviceId")
 
   console.log("🔌 WebSocket upgrade attempt:", {
-    token: token?.substring(0, 10) + "...",
+    token: `${token?.substring(0, 10)}...`,
     deviceId,
     timestamp: new Date().toISOString(),
   })

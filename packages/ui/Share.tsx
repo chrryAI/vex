@@ -51,7 +51,7 @@ export default function Share({
   const dataTestId = rest.dataTestId ? `${rest.dataTestId}-` : ""
 
   const [isOpen, setIsOpen] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [_copied, setCopied] = useState(false)
   const { collaborationStep } = useNavigationContext()
   const { token, FRONTEND_URL, API_URL } = useAuth()
 

@@ -38,14 +38,14 @@ export const __ecma262_TriggerPromiseReactions = (
 // https://tc39.es/ecma262/#sec-ispromise
 export const __ecma262_IsPromise = (x: any): boolean => {
   // custom impl
-  return Porffor.type(x) == Porffor.TYPES.promise
+  return Porffor.type(x) === Porffor.TYPES.promise
 }
 
 // 27.2.1.4 FulfillPromise (promise, value)
 // https://tc39.es/ecma262/#sec-fulfillpromise
 export const __ecma262_FulfillPromise = (promise: any[], value: any): void => {
   // 1. Assert: The value of promise.[[PromiseState]] is pending.
-  if (promise[1] != 0) return
+  if (promise[1] !== 0) return
 
   // 2. Let reactions be promise.[[PromiseFulfillReactions]].
   const reactions: any[] = promise[2] // fulfillReactions
@@ -72,7 +72,7 @@ export const __ecma262_FulfillPromise = (promise: any[], value: any): void => {
 // https://tc39.es/ecma262/#sec-rejectpromise
 export const __ecma262_RejectPromise = (promise: any[], reason: any): void => {
   // 1. Assert: The value of promise.[[PromiseState]] is pending.
-  if (promise[1] != 0) return
+  if (promise[1] !== 0) return
 
   // 2. Let reactions be promise.[[PromiseRejectReactions]].
   const reactions: any[] = promise[3] // rejectReactions
@@ -125,7 +125,7 @@ export const __Porffor_then = (
   // https://tc39.es/ecma262/#sec-performpromisethen
 
   // 9. If promise.[[PromiseState]] is pending, then
-  if (state == 0) {
+  if (state === 0) {
     // pending
     // a. Append fulfillReaction to promise.[[PromiseFulfillReactions]].
     const fulfillReactions: any[] = promise[2]
@@ -134,7 +134,7 @@ export const __Porffor_then = (
     // b. Append rejectReaction to promise.[[PromiseRejectReactions]].
     const rejectReactions: any[] = promise[3]
     Porffor.array.fastPush(rejectReactions, rejectReaction)
-  } else if (state == 1) {
+  } else if (state === 1) {
     // fulfilled
     // 10. Else if promise.[[PromiseState]] is fulfilled, then
     // a. Let value be promise.[[PromiseResult]].
@@ -264,7 +264,7 @@ export const __Porffor_promise_rejectActive = (reason: any): void =>
 
 export const Promise = function (executor: any): Promise {
   if (!new.target) throw new TypeError("Constructor Promise requires 'new'")
-  if (Porffor.type(executor) != Porffor.TYPES.function)
+  if (Porffor.type(executor) !== Porffor.TYPES.function)
     throw new TypeError("Promise executor is not a function")
 
   const obj: any[] = __Porffor_promise_create()
@@ -321,9 +321,9 @@ export const __Promise_prototype_then = (
   if (!__ecma262_IsPromise(_this))
     throw new TypeError("Promise.prototype.then called on non-Promise")
 
-  if (Porffor.type(onFulfilled) != Porffor.TYPES.function)
+  if (Porffor.type(onFulfilled) !== Porffor.TYPES.function)
     onFulfilled = __Porffor_promise_noop
-  if (Porffor.type(onRejected) != Porffor.TYPES.function)
+  if (Porffor.type(onRejected) !== Porffor.TYPES.function)
     onRejected = __Porffor_promise_noop
 
   const outPromise: any[] = __Porffor_promise_create()
@@ -357,7 +357,7 @@ export const __Promise_prototype_finally = (_this: any, onFinally: any) => {
   if (!__ecma262_IsPromise(_this))
     throw new TypeError("Promise.prototype.then called on non-Promise")
 
-  if (Porffor.type(onFinally) != Porffor.TYPES.function)
+  if (Porffor.type(onFinally) !== Porffor.TYPES.function)
     onFinally = __Porffor_promise_noop
 
   const promise: any[] = _this
@@ -371,7 +371,7 @@ export const __Promise_prototype_finally = (_this: any, onFinally: any) => {
     1,
   )
 
-  if (state == 0) {
+  if (state === 0) {
     // pending
     const fulfillReactions: any[] = promise[2]
     Porffor.array.fastPush(fulfillReactions, finallyReaction)
@@ -409,7 +409,7 @@ export const __Promise_all = (promises: any): Promise => {
       if (__ecma262_IsPromise(x)) {
         x.then(
           (r) => {
-            if (Porffor.array.fastPush(_allOut, r) == _allLen) _allRes(_allOut)
+            if (Porffor.array.fastPush(_allOut, r) === _allLen) _allRes(_allOut)
           },
           (r) => {
             _allRej(r)
@@ -420,10 +420,10 @@ export const __Promise_all = (promises: any): Promise => {
       }
     }
 
-    if (_allLen == 0) {
+    if (_allLen === 0) {
       // empty iterable: immediately resolve
       _allRes(_allOut)
-    } else if (_allOut.length == _allLen) {
+    } else if (_allOut.length === _allLen) {
       // given only non-promises, resolve next
       __Porffor_promise_runNext(() => {
         _allRes(_allOut)
@@ -451,13 +451,13 @@ export const __Promise_allSettled = (promises: any): Promise => {
             const o: object = {}
             o.status = "fulfilled"
             o.value = r
-            if (Porffor.array.fastPush(_allOut, o) == _allLen) _allRes(_allOut)
+            if (Porffor.array.fastPush(_allOut, o) === _allLen) _allRes(_allOut)
           },
           (r) => {
             const o: object = {}
             o.status = "rejected"
             o.reason = r
-            if (Porffor.array.fastPush(_allOut, o) == _allLen) _allRes(_allOut)
+            if (Porffor.array.fastPush(_allOut, o) === _allLen) _allRes(_allOut)
           },
         )
       } else {
@@ -468,10 +468,10 @@ export const __Promise_allSettled = (promises: any): Promise => {
       }
     }
 
-    if (_allLen == 0) {
+    if (_allLen === 0) {
       // empty iterable: immediately resolve
       _allRes(_allOut)
-    } else if (_allOut.length == _allLen) {
+    } else if (_allOut.length === _allLen) {
       // given only non-promises, resolve next
       __Porffor_promise_runNext(() => {
         _allRes(_allOut)
@@ -499,7 +499,7 @@ export const __Promise_any = (promises: any): Promise => {
             _allRes(r)
           },
           (r) => {
-            if (Porffor.array.fastPush(_allOut, r) == _allLen)
+            if (Porffor.array.fastPush(_allOut, r) === _allLen)
               _allRes(new AggregateError())
           },
         )
@@ -508,7 +508,7 @@ export const __Promise_any = (promises: any): Promise => {
       }
     }
 
-    if (_allLen == 0) {
+    if (_allLen === 0) {
       // empty iterable: immediately reject
       _allRej(new AggregateError())
     }
@@ -546,18 +546,18 @@ export const __Promise_prototype_toLocaleString = (_this: any) =>
   __Promise_prototype_toString(_this)
 
 export const __Porffor_promise_await = (value: any): any => {
-  if (Porffor.type(value) != Porffor.TYPES.promise) return value
+  if (Porffor.type(value) !== Porffor.TYPES.promise) return value
 
   // hack: peek value instead of awaiting
   const state: i32 = (value as any[])[1]
 
   // pending
-  if (state == 0) return value
+  if (state === 0) return value
 
   const result: any = (value as any[])[0]
 
   // fulfilled
-  if (state == 1) return result
+  if (state === 1) return result
 
   // rejected
   throw result

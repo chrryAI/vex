@@ -24,7 +24,7 @@ const SwipeableTimeControl = ({
   Down,
 }: SwipeableTimeControlProps) => {
   const { os } = usePlatform()
-  const [startY, setStartY] = useState(0)
+  const [_startY, setStartY] = useState(0)
 
   const maxValue = isMinute ? 59 : Infinity
   const minValue = 0

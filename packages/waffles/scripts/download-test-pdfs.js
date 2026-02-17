@@ -5,7 +5,7 @@
  * Small, reliable PDFs from trusted sources
  */
 
-const fs = require("fs")
+const fs = require("node:fs")
 const path = require("node:path")
 const https = require("node:https")
 const http = require("node:http")

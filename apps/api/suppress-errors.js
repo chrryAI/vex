@@ -1,5 +1,5 @@
 // Suppress ECONNRESET errors before Next.js starts
-const EventEmitter = require("events")
+const EventEmitter = require("node:events")
 
 // Patch EventEmitter globally
 const originalEmit = EventEmitter.prototype.emit

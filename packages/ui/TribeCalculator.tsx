@@ -285,8 +285,8 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     [schedule],
   )
 
-  const MINIMUM_PRICE_EUR = 5
-  const PRICE_TOLERANCE = 1 // 1 cent tolerance
+  const _MINIMUM_PRICE_EUR = 5
+  const _PRICE_TOLERANCE = 1 // 1 cent tolerance
 
   const isSubscriptionEnabled = existingSchedule?.status === "pending_payment"
 
@@ -325,7 +325,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     }
   }, [frequency, startDate, endDate, scheduleKey, onCalculate, CREDITS_PRICE])
 
-  const [tried, setTried] = useState(false)
+  const [_tried, _setTried] = useState(false)
 
   // Cooldown: 30 seconds in dev/e2e, 30 minutes in production
   // Slot interval validation (minimum time between posts of same type)
@@ -396,7 +396,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
             (formData as any).timezone ||
             Intl.DateTimeFormat().resolvedOptions().timeZone,
           jobType: tribeType === "Tribe" ? "tribe" : "molt",
-          createPending: existingSchedule ? false : true, // Signal to create with pending_payment status
+          createPending: !existingSchedule, // Signal to create with pending_payment status
         }),
       })
 
@@ -1090,8 +1090,8 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                         onChange={(e) => {
                           const [hour, minute] = e.target.value.split(":")
                           updateScheduleTime(index, {
-                            hour: parseInt(hour || "0") || 0,
-                            minute: parseInt(minute || "0") || 0,
+                            hour: parseInt(hour || "0", 10) || 0,
+                            minute: parseInt(minute || "0", 10) || 0,
                           })
                         }}
                         style={{
@@ -1152,6 +1152,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                             updateScheduleTime(index, {
                               intervalMinutes: parseInt(
                                 typeof e === "string" ? e : e.target.value,
+                                10,
                               ),
                             })
                           }
@@ -1182,7 +1183,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                           value={String(time.charLimit)}
                           onChange={(e) =>
                             updateScheduleTime(index, {
-                              charLimit: parseInt(e.target.value) || 500,
+                              charLimit: parseInt(e.target.value, 10) || 500,
                             })
                           }
                           style={{
@@ -1287,7 +1288,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                               onChange={(e) =>
                                 setRepeatInterval({
                                   ...repeatInterval,
-                                  [index]: parseInt(e.target.value) || 60,
+                                  [index]: parseInt(e.target.value, 10) || 60,
                                 })
                               }
                               style={{
@@ -1320,7 +1321,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                               onChange={(e) =>
                                 setRepeatCount({
                                   ...repeatCount,
-                                  [index]: parseInt(e.target.value) || 3,
+                                  [index]: parseInt(e.target.value, 10) || 3,
                                 })
                               }
                               style={{
@@ -1810,7 +1811,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                                   {deletingSchedule ? (
                                     <Loading size={16} />
                                   ) : (
-                                    "🗑️ " + t("Delete")
+                                    `🗑️ ${t("Delete")}`
                                   )}
                                 </ConfirmButton>
                               )}

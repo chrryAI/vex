@@ -2,7 +2,7 @@
 import type {} from "./porffor.d.ts"
 
 export const __Porffor_uint8array_validate = (ta: any) => {
-  if (Porffor.type(ta) != Porffor.TYPES.uint8array) {
+  if (Porffor.type(ta) !== Porffor.TYPES.uint8array) {
     throw new TypeError("Method called on incompatible receiver")
   }
 
@@ -11,7 +11,7 @@ export const __Porffor_uint8array_validate = (ta: any) => {
       Porffor.wasm.i32.load(Porffor.wasm`local.get ${ta}`, 0, 4),
       0,
       0,
-    ) == 4294967295
+    ) === 4294967295
   ) {
     throw new TypeError("Uint8Array has a detached ArrayBuffer")
   }
@@ -24,18 +24,18 @@ export const __Uint8Array_prototype_toBase64 = (
   let alphabet: string = "base64"
   let omitPadding: boolean = false
 
-  if (Porffor.type(options) != Porffor.TYPES.undefined) {
-    if (Porffor.type(options) != Porffor.TYPES.object) {
+  if (Porffor.type(options) !== Porffor.TYPES.undefined) {
+    if (Porffor.type(options) !== Porffor.TYPES.object) {
       throw new TypeError("Options must be an object")
     }
 
     const alphabetProp: any = options.alphabet
-    if (Porffor.type(alphabetProp) != Porffor.TYPES.undefined) {
+    if (Porffor.type(alphabetProp) !== Porffor.TYPES.undefined) {
       alphabet = alphabetProp
     }
 
     const paddingProp: any = options.omitPadding
-    if (Porffor.type(paddingProp) != Porffor.TYPES.undefined) {
+    if (Porffor.type(paddingProp) !== Porffor.TYPES.undefined) {
       omitPadding = !!paddingProp
     }
   }
@@ -106,7 +106,7 @@ export const __Uint8Array_prototype_toBase64 = (
   }
 
   const remaining: i32 = len - i
-  if (remaining == 1) {
+  if (remaining === 1) {
     const b1: i32 = Porffor.wasm.i32.load8_u(bufferPtr + i, 0, 4)
     const enc1: i32 = b1 >> 2
     const enc2: i32 = (b1 & 3) << 4
@@ -127,7 +127,7 @@ export const __Uint8Array_prototype_toBase64 = (
       Porffor.wasm.i32.store8(j++, 61, 0, 4) // '='
       Porffor.wasm.i32.store8(j++, 61, 0, 4) // '='
     }
-  } else if (remaining == 2) {
+  } else if (remaining === 2) {
     const b1: i32 = Porffor.wasm.i32.load8_u(bufferPtr + i, 0, 4)
     const b2: i32 = Porffor.wasm.i32.load8_u(bufferPtr + i + 1, 0, 4)
     const enc1: i32 = b1 >> 2
@@ -246,7 +246,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 1
         break
       }
-      if (ch == 43) {
+      if (ch === 43) {
         // +
         if (isBase64Url) {
           throw new SyntaxError("Invalid base64url character")
@@ -255,7 +255,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 1
         break
       }
-      if (ch == 47) {
+      if (ch === 47) {
         // /
         if (isBase64Url) {
           throw new SyntaxError("Invalid base64url character")
@@ -264,7 +264,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 1
         break
       }
-      if (ch == 45) {
+      if (ch === 45) {
         // -
         if (!isBase64Url) {
           throw new SyntaxError("Invalid base64 character")
@@ -273,7 +273,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 1
         break
       }
-      if (ch == 95) {
+      if (ch === 95) {
         // _
         if (!isBase64Url) {
           throw new SyntaxError("Invalid base64 character")
@@ -282,7 +282,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 1
         break
       }
-      if (ch == 61) {
+      if (ch === 61) {
         // =
         return (i << 16) | (j - destPtr)
       }
@@ -308,7 +308,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 2
         break
       }
-      if (ch == 43) {
+      if (ch === 43) {
         // +
         if (isBase64Url) {
           throw new SyntaxError("Invalid base64url character")
@@ -317,7 +317,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 2
         break
       }
-      if (ch == 47) {
+      if (ch === 47) {
         // /
         if (isBase64Url) {
           throw new SyntaxError("Invalid base64url character")
@@ -326,7 +326,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 2
         break
       }
-      if (ch == 45) {
+      if (ch === 45) {
         // -
         if (!isBase64Url) {
           throw new SyntaxError("Invalid base64 character")
@@ -335,7 +335,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 2
         break
       }
-      if (ch == 95) {
+      if (ch === 95) {
         // _
         if (!isBase64Url) {
           throw new SyntaxError("Invalid base64 character")
@@ -344,7 +344,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 2
         break
       }
-      if (ch == 61) {
+      if (ch === 61) {
         // =
         return (i << 16) | (j - destPtr)
       }
@@ -370,7 +370,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 3
         break
       }
-      if (ch == 43) {
+      if (ch === 43) {
         // +
         if (isBase64Url) {
           throw new SyntaxError("Invalid base64url character")
@@ -379,7 +379,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 3
         break
       }
-      if (ch == 47) {
+      if (ch === 47) {
         // /
         if (isBase64Url) {
           throw new SyntaxError("Invalid base64url character")
@@ -388,7 +388,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 3
         break
       }
-      if (ch == 45) {
+      if (ch === 45) {
         // -
         if (!isBase64Url) {
           throw new SyntaxError("Invalid base64 character")
@@ -397,7 +397,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 3
         break
       }
-      if (ch == 95) {
+      if (ch === 95) {
         // _
         if (!isBase64Url) {
           throw new SyntaxError("Invalid base64 character")
@@ -406,19 +406,19 @@ export const __Porffor_fromBase64 = (
         chunkLength = 3
         break
       }
-      if (ch == 61) {
+      if (ch === 61) {
         // =
         if (j - destPtr + 1 > maxLength) {
           return (chunkStartPos << 16) | (j - destPtr) // Not enough space
         }
-        if (Porffor.strcmp(lastChunkHandling, "strict") && (c2 & 15) != 0) {
+        if (Porffor.strcmp(lastChunkHandling, "strict") && (c2 & 15) !== 0) {
           throw new SyntaxError("Invalid base64 padding")
         }
         const b1: i32 = (c1 << 2) | (c2 >> 4)
         Porffor.wasm.i32.store8(j++, b1, 0, 4)
 
         // Check if there's a second padding character and consume it
-        if (i < strLen && Porffor.wasm.i32.load8_u(strPtr + i, 0, 4) == 61) {
+        if (i < strLen && Porffor.wasm.i32.load8_u(strPtr + i, 0, 4) === 61) {
           i++
         }
 
@@ -446,7 +446,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 4
         break
       }
-      if (ch == 43) {
+      if (ch === 43) {
         // +
         if (isBase64Url) {
           throw new SyntaxError("Invalid base64url character")
@@ -455,7 +455,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 4
         break
       }
-      if (ch == 47) {
+      if (ch === 47) {
         // /
         if (isBase64Url) {
           throw new SyntaxError("Invalid base64url character")
@@ -464,7 +464,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 4
         break
       }
-      if (ch == 45) {
+      if (ch === 45) {
         // -
         if (!isBase64Url) {
           throw new SyntaxError("Invalid base64 character")
@@ -473,7 +473,7 @@ export const __Porffor_fromBase64 = (
         chunkLength = 4
         break
       }
-      if (ch == 95) {
+      if (ch === 95) {
         // _
         if (!isBase64Url) {
           throw new SyntaxError("Invalid base64 character")
@@ -482,12 +482,12 @@ export const __Porffor_fromBase64 = (
         chunkLength = 4
         break
       }
-      if (ch == 61) {
+      if (ch === 61) {
         // =
         if (j - destPtr + 2 > maxLength) {
           return (chunkStartPos << 16) | (j - destPtr) // Not enough space
         }
-        if (Porffor.strcmp(lastChunkHandling, "strict") && (c3 & 3) != 0) {
+        if (Porffor.strcmp(lastChunkHandling, "strict") && (c3 & 3) !== 0) {
           throw new SyntaxError("Invalid base64 padding")
         }
         const b1: i32 = (c1 << 2) | (c2 >> 4)
@@ -499,7 +499,7 @@ export const __Porffor_fromBase64 = (
     }
 
     // Only check if we have space for 3 bytes if we actually have a complete 4-character chunk
-    if (chunkLength == 4) {
+    if (chunkLength === 4) {
       if (j - destPtr + 3 > maxLength) {
         return (chunkStartPos << 16) | (j - destPtr) // Stop if not enough space
       }
@@ -525,24 +525,24 @@ export const __Porffor_fromBase64 = (
     }
 
     // 'loose' handling - decode partial chunk
-    if (chunkLength == 1) {
+    if (chunkLength === 1) {
       throw new SyntaxError("Invalid base64 string") // 1 char is always invalid
     }
 
-    if (chunkLength == 2) {
+    if (chunkLength === 2) {
       if (j - destPtr + 1 > maxLength) {
         return (chunkStartPos << 16) | (j - destPtr) // Not enough space for 1 byte
       }
-      if (Porffor.strcmp(lastChunkHandling, "strict") && (c2 & 15) != 0) {
+      if (Porffor.strcmp(lastChunkHandling, "strict") && (c2 & 15) !== 0) {
         throw new SyntaxError("Invalid base64 padding")
       }
       const b1: i32 = (c1 << 2) | (c2 >> 4)
       Porffor.wasm.i32.store8(j++, b1, 0, 4)
-    } else if (chunkLength == 3) {
+    } else if (chunkLength === 3) {
       if (j - destPtr + 2 > maxLength) {
         return (chunkStartPos << 16) | (j - destPtr) // Not enough space for 2 bytes
       }
-      if (Porffor.strcmp(lastChunkHandling, "strict") && (c3 & 3) != 0) {
+      if (Porffor.strcmp(lastChunkHandling, "strict") && (c3 & 3) !== 0) {
         throw new SyntaxError("Invalid base64 padding")
       }
       const b1: i32 = (c1 << 2) | (c2 >> 4)
@@ -556,25 +556,25 @@ export const __Porffor_fromBase64 = (
 }
 
 export const __Uint8Array_fromBase64 = (str: any, options: any = undefined) => {
-  if (Porffor.type(str) != Porffor.TYPES.bytestring) {
+  if (Porffor.type(str) !== Porffor.TYPES.bytestring) {
     throw new TypeError("First argument must be a string")
   }
 
   let alphabet: string = "base64"
   let lastChunkHandling: string = "loose"
 
-  if (Porffor.type(options) != Porffor.TYPES.undefined) {
-    if (Porffor.type(options) != Porffor.TYPES.object) {
+  if (Porffor.type(options) !== Porffor.TYPES.undefined) {
+    if (Porffor.type(options) !== Porffor.TYPES.object) {
       throw new TypeError("Options must be an object")
     }
 
     const alphabetProp: any = options.alphabet
-    if (Porffor.type(alphabetProp) != Porffor.TYPES.undefined) {
+    if (Porffor.type(alphabetProp) !== Porffor.TYPES.undefined) {
       alphabet = alphabetProp
     }
 
     const lastChunkProp: any = options.lastChunkHandling
-    if (Porffor.type(lastChunkProp) != Porffor.TYPES.undefined) {
+    if (Porffor.type(lastChunkProp) !== Porffor.TYPES.undefined) {
       lastChunkHandling = lastChunkProp
     }
   }
@@ -598,14 +598,14 @@ export const __Uint8Array_fromBase64 = (str: any, options: any = undefined) => {
   let exactSize: i32 = 0
   const strLen: i32 = str.length
 
-  if (strLen == 0) {
+  if (strLen === 0) {
     exactSize = 0
   } else {
     // Count padding characters from the end
     let paddingCount: i32 = 0
     const strPtr: i32 = Porffor.wasm`local.get ${str}`
     let i: i32 = strLen - 1
-    while (i >= 0 && Porffor.wasm.i32.load8_u(strPtr + i, 0, 4) == 61) {
+    while (i >= 0 && Porffor.wasm.i32.load8_u(strPtr + i, 0, 4) === 61) {
       paddingCount++
       i--
     }
@@ -629,25 +629,25 @@ export const __Uint8Array_prototype_setFromBase64 = (
   str: any,
   options: any = undefined,
 ) => {
-  if (Porffor.type(str) != Porffor.TYPES.bytestring) {
+  if (Porffor.type(str) !== Porffor.TYPES.bytestring) {
     throw new TypeError("First argument must be a string")
   }
 
   let alphabet: string = "base64"
   let lastChunkHandling: string = "loose"
 
-  if (Porffor.type(options) != Porffor.TYPES.undefined) {
-    if (Porffor.type(options) != Porffor.TYPES.object) {
+  if (Porffor.type(options) !== Porffor.TYPES.undefined) {
+    if (Porffor.type(options) !== Porffor.TYPES.object) {
       throw new TypeError("Options must be an object")
     }
 
     const alphabetProp: any = options.alphabet
-    if (Porffor.type(alphabetProp) != Porffor.TYPES.undefined) {
+    if (Porffor.type(alphabetProp) !== Porffor.TYPES.undefined) {
       alphabet = alphabetProp
     }
 
     const lastChunkProp: any = options.lastChunkHandling
-    if (Porffor.type(lastChunkProp) != Porffor.TYPES.undefined) {
+    if (Porffor.type(lastChunkProp) !== Porffor.TYPES.undefined) {
       lastChunkHandling = lastChunkProp
     }
   }
@@ -698,7 +698,7 @@ export const __Porffor_fromHex = (
   const strPtr: i32 = Porffor.wasm`local.get ${str}`
   const strLen: i32 = str.length
 
-  if ((strLen & 1) != 0) {
+  if ((strLen & 1) !== 0) {
     throw new SyntaxError("Hex string must have even length")
   }
 
@@ -727,7 +727,7 @@ export const __Porffor_fromHex = (
       v2 = h2 - 87 // a-f
     else if (h2 >= 65 && h2 <= 70) v2 = h2 - 55 // A-F
 
-    if (v1 == -1 || v2 == -1) {
+    if (v1 === -1 || v2 === -1) {
       throw new SyntaxError("Invalid hex character")
     }
 
@@ -742,7 +742,7 @@ export const __Porffor_fromHex = (
 }
 
 export const __Uint8Array_fromHex = (str: any) => {
-  if (Porffor.type(str) != Porffor.TYPES.bytestring) {
+  if (Porffor.type(str) !== Porffor.TYPES.bytestring) {
     throw new TypeError("First argument must be a string")
   }
 
@@ -761,7 +761,7 @@ export const __Uint8Array_prototype_setFromHex = (
   _this: Uint8Array,
   str: any,
 ) => {
-  if (Porffor.type(str) != Porffor.TYPES.bytestring) {
+  if (Porffor.type(str) !== Porffor.TYPES.bytestring) {
     throw new TypeError("First argument must be a string")
   }
 

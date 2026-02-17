@@ -1,6 +1,6 @@
 "use client"
 
-import React, {
+import {
   type CSSProperties,
   type Dispatch,
   lazy,
@@ -458,8 +458,7 @@ export default function Instructions({
 
       // Use existing highlight from form if it exists and has real content
       if (
-        existingHighlight &&
-        existingHighlight.content &&
+        existingHighlight?.content &&
         !existingHighlight.content.startsWith("atlas.instruction")
       ) {
         setEditedTitle(existingHighlight.title || selectedInstruction.title)
@@ -871,7 +870,7 @@ export default function Instructions({
         },
       })
       setThreadArtifacts((prev) => prev.filter((a) => a.id !== id))
-    } catch (error) {
+    } catch (_error) {
       toast.error(t("Error deleting file"))
     } finally {
       setDeletingId(null)
@@ -924,7 +923,7 @@ export default function Instructions({
       )}
       <Modal
         dataTestId={`${dataTestId}-modal`}
-        borderHeader={isArtifactsOpen ? true : true}
+        borderHeader={true}
         style={styles.modal.style}
         hasCloseButton
         hideOnClickOutside={false}

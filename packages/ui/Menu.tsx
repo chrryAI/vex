@@ -125,7 +125,7 @@ export default function Menu({
             const fullscreen = await appWindow.isFullscreen()
             setIsFullscreen(fullscreen)
           }
-        } catch (e) {
+        } catch (_e) {
           // Silent fail - not critical
         }
       }
@@ -327,7 +327,7 @@ export default function Menu({
                     } else {
                       await appWindow.maximize()
                     }
-                  } catch (e) {
+                  } catch (_e) {
                     // Tauri API not available
                   }
                 }}

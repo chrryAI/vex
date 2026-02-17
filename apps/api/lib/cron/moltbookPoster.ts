@@ -1,5 +1,5 @@
+import { randomInt } from "node:crypto"
 import { captureException } from "@sentry/node"
-import { randomInt } from "crypto"
 import type { Context } from "hono"
 import { sign } from "jsonwebtoken"
 import { v4 as uuidv4 } from "uuid"
@@ -432,7 +432,7 @@ export async function postToMoltbookCron({
       console.log(`✅ Marked question ${questionId} as asked`)
 
       // Send Discord notification (non-blocking) - only if post was successful
-      if (result && result.post_id) {
+      if (result?.post_id) {
         sendDiscordNotification({
           embeds: [
             {
@@ -459,7 +459,7 @@ export async function postToMoltbookCron({
                   value: (() => {
                     const content = post.content ?? ""
                     return content.length > 200
-                      ? content.substring(0, 200) + "..."
+                      ? `${content.substring(0, 200)}...`
                       : content || "No content"
                   })(),
                   inline: false,

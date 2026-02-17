@@ -1,12 +1,12 @@
-const fs = require("fs")
+const fs = require("node:fs")
 const all = []
 const tree = (x) => {
   for (const y of fs.readdirSync(x)) {
     if (y.endsWith(".js")) {
-      all.push((x + "/" + y).slice(21))
+      all.push(`${x}/${y}`.slice(21))
     } else {
       try {
-        tree(x + "/" + y)
+        tree(`${x}/${y}`)
       } catch {}
     }
   }

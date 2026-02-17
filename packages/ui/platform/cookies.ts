@@ -94,7 +94,7 @@ export const setCookieWeb = (
   document.cookie = cookieString
 
   // Verify cookie was set
-  const wasSet = document.cookie.includes(name)
+  const _wasSet = document.cookie.includes(name)
 }
 
 /**

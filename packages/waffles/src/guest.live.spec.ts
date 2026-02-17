@@ -1,12 +1,6 @@
 import { test } from "@playwright/test"
 import { v4 as uuidv4 } from "uuid"
-import {
-  getURL,
-  VEX_TEST_EMAIL_3,
-  VEX_TEST_EMAIL_4,
-  VEX_TEST_PASSWORD_3,
-  wait,
-} from "."
+import { getURL, VEX_TEST_EMAIL_3, VEX_TEST_PASSWORD_3, wait } from "."
 import { chat } from "./shared/chat"
 import { clean } from "./shared/clean"
 import { collaboration } from "./shared/collaboration"
@@ -91,7 +85,7 @@ test("Gift", async ({ page }) => {
 })
 
 test("Long text", async ({ page }) => {
-  const result = await chat({
+  const _result = await chat({
     page,
     isMember,
     isLive,
@@ -180,7 +174,7 @@ test.skip("File upload", async ({ page }) => {
     timeout: 100000,
   })
 
-  const result = await chat({
+  const _result = await chat({
     artifacts: {
       paste: 2,
       pdf: 1,

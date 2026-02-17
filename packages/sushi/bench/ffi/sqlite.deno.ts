@@ -14,7 +14,7 @@ const unwrap = (code: i32) => {
 
 const encoder = new TextEncoder()
 function toCString(str) {
-  return encoder.encode(str + "\0")
+  return encoder.encode(`${str}\0`)
 }
 
 // based on https://github.com/littledivy/blazing-fast-ffi-talk/blob/main/sqlite.deno.ts

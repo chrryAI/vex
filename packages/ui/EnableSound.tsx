@@ -1,4 +1,3 @@
-import React from "react"
 import { Volume2, VolumeX } from "./icons"
 import { Button, useTheme } from "./platform"
 export default function EnableSound() {

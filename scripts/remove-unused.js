@@ -5,14 +5,13 @@
  * Run with: pnpm cleanup:unused
  */
 
-import { execSync } from "child_process"
-import fs from "fs"
-import path from "path"
+import { execSync } from "node:child_process"
+import path from "node:path"
 
 console.log("🧹 Removing unused imports and variables...\n")
 
 // Patterns to process
-const patterns = ["apps/api/**/*.{ts,tsx}", "packages/ui/**/*.{ts,tsx}"]
+const _patterns = ["apps/api/**/*.{ts,tsx}", "packages/ui/**/*.{ts,tsx}"]
 
 try {
   // Run ESLint with fix on all TypeScript files

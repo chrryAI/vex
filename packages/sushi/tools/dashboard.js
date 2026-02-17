@@ -33,7 +33,7 @@ async function showDashboard() {
 
   console.log("🥋 BAM - Bug Detection")
   console.log("─────────────────────────────────────────────────────")
-  if (bugStats && bugStats.data && bugStats.data.length > 0) {
+  if (bugStats?.data && bugStats.data.length > 0) {
     let totalBugs = 0
     for (const bug of bugStats.data) {
       const { type, severity, count } = bug
@@ -59,7 +59,7 @@ async function showDashboard() {
 
   console.log("⚡ STRIKE - Mutation Testing")
   console.log("─────────────────────────────────────────────────────")
-  if (mutationStats && mutationStats.data && mutationStats.data.length > 0) {
+  if (mutationStats?.data && mutationStats.data.length > 0) {
     const { total, survived, killed, killRate } = mutationStats.data[0]
     console.log(`  🎯 Total mutations: ${total}`)
     console.log(`  ✅ Killed: ${killed}`)
@@ -85,13 +85,13 @@ async function showDashboard() {
 
   console.log("🧠 MEMORY - Learning System")
   console.log("─────────────────────────────────────────────────────")
-  if (ruleStats && ruleStats.data && ruleStats.data.length > 0) {
+  if (ruleStats?.data && ruleStats.data.length > 0) {
     const { ruleCount, avgConfidence } = ruleStats.data[0]
     console.log(`  📋 Rules learned: ${ruleCount}`)
     console.log(`  💯 Avg confidence: ${avgConfidence?.toFixed(2)}%`)
   }
 
-  if (weakSpotStats && weakSpotStats.data && weakSpotStats.data.length > 0) {
+  if (weakSpotStats?.data && weakSpotStats.data.length > 0) {
     const { total, fixed } = weakSpotStats.data[0]
     console.log(`  ⚠️  Weak spots: ${total}`)
     console.log(`  ✅ Fixed: ${fixed || 0}\n`)
@@ -110,7 +110,7 @@ async function showDashboard() {
 
   console.log("🔄 LEARNING LOOP - Continuous Improvement")
   console.log("─────────────────────────────────────────────────────")
-  if (fixStats && fixStats.data && fixStats.data.length > 0) {
+  if (fixStats?.data && fixStats.data.length > 0) {
     const { total, successful, successRate } = fixStats.data[0]
     console.log(`  🔧 Fixes applied: ${total}`)
     console.log(`  ✅ Successful: ${successful}`)
@@ -129,7 +129,7 @@ async function showDashboard() {
 
   console.log("💡 TOP RECOMMENDATIONS")
   console.log("─────────────────────────────────────────────────────")
-  if (topRules && topRules.data && topRules.data.length > 0) {
+  if (topRules?.data && topRules.data.length > 0) {
     for (const rule of topRules.data) {
       const { type, confidence, suggestion } = rule
       console.log(`  ${confidence}% - ${type}`)

@@ -5,16 +5,10 @@
  * Compiles the bridge and registers it as a Chrome native host
  */
 
-import { execFileSync } from "child_process"
-import {
-  chmodSync,
-  copyFileSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from "fs"
-import { homedir } from "os"
-import { join } from "path"
+import { execFileSync } from "node:child_process"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { homedir } from "node:os"
+import { join } from "node:path"
 
 const BRIDGE_NAME = "com.chrry.sushi.bridge"
 const EXTENSION_ID = process.env.SUSHI_EXTENSION_ID || "YOUR_EXTENSION_ID_HERE"

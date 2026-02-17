@@ -35,11 +35,11 @@ export const processTextWithCitations = ({
       parts.push(content.substring(lastIndex, match.index))
     }
 
-    const citationNumber = Number.parseInt(match[1] || "0")
+    const citationNumber = Number.parseInt(match[1] || "0", 10)
     const sourceIndex = citationNumber - 1 // Convert to 0-based index
     const source = webSearchResults[sourceIndex]
 
-    if (source && source.url && source.url !== "#") {
+    if (source?.url && source.url !== "#") {
       // Create clickable citation
       parts.push(
         <A

@@ -238,7 +238,7 @@ function Message({
             }
           }
         }
-      } catch (e) {
+      } catch (_e) {
         // If parsing fails, return original content
       }
     }
@@ -443,7 +443,7 @@ function Message({
       setCopied(true)
       toast.success(t("Copied"))
       setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to copy code")
     }
   }

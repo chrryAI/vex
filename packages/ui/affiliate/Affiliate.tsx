@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import { useState } from "react"
 import toast from "react-hot-toast"
 import { COLORS, useAppContext } from "../context/AppContext"
 import { useAuth, useData, useNavigationContext } from "../context/providers"
@@ -62,7 +62,7 @@ export default function Affiliate() {
     }
   }
 
-  const isChrryAI = config.mode === "chrryAI"
+  const _isChrryAI = config.mode === "chrryAI"
 
   if (!is) return null
 

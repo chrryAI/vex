@@ -237,7 +237,7 @@ export default function Weather({
                 toast.success(t("Updated"))
 
                 refetchWeather()
-              } catch (error) {
+              } catch (_error) {
                 toast.error(t("Something went wrong"))
               }
             }}

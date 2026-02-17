@@ -5,7 +5,7 @@
  * Provides theme colors that work on web (CSS vars) and native (JS values)
  */
 
-import React, {
+import {
   createContext,
   type ReactNode,
   useContext,
@@ -127,7 +127,7 @@ export function ThemeProvider({
   )
 
   const [isSmallDevice, setIsSmallDeviceInternal] = useState(
-    viewPortWidth != undefined ? viewPortWidth < 960 : device !== "desktop",
+    viewPortWidth !== undefined ? viewPortWidth < 960 : device !== "desktop",
   )
 
   const setIsSmallDevice = (isSmallDevice: boolean) => {
@@ -163,10 +163,10 @@ export function ThemeProvider({
   }, [viewPortWidth])
 
   const [isMobileDevice, setIsMobileDevice] = useState(
-    (viewPortWidth && viewPortWidth < 600) ||
+    !!(
+      (viewPortWidth && viewPortWidth < 600) ||
       (os && ["ios", "android"].includes(os) && device !== "desktop")
-      ? true
-      : false,
+    ),
   )
 
   // Apply color scheme to HTML element (web only)

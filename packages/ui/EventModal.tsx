@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import Checkbox from "./Checkbox"
@@ -51,7 +51,7 @@ const formatDateForInput = (
   const dateObj = date instanceof Date ? date : new Date(date)
 
   // Check if it's a valid date
-  if (isNaN(dateObj.getTime())) return ""
+  if (Number.isNaN(dateObj.getTime())) return ""
 
   if (isAllDay) {
     // For all-day events, just return the date part in local timezone
@@ -116,7 +116,7 @@ export default function EventModal({
   const { utilities } = useStyles()
   const { t } = useAppContext()
   const { token } = useAuth()
-  const colorOptions = getColorOptions(t)
+  const _colorOptions = getColorOptions(t)
 
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -240,7 +240,7 @@ export default function EventModal({
       hideOnClickOutside={false}
       icon={<CalendarClock />}
       onToggle={(open) => {
-        if (open == undefined) return
+        if (open === undefined) return
         if (!open) onClose()
       }}
       isModalOpen={isOpen}

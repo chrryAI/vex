@@ -1,5 +1,5 @@
+import path from "node:path"
 import { _electron as electron, expect, test } from "@playwright/test"
-import path from "path"
 
 /**
  * Tauri Desktop App E2E Tests

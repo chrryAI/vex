@@ -101,7 +101,7 @@ export function useOnlineStatus() {
 
           setIsOnline(apiOnline && webOnline)
         }
-      } catch (error) {
+      } catch (_error) {
         // Silent fail - network errors are expected when offline
         // Don't send to Sentry as this is normal behavior
         setIsOnline(false)

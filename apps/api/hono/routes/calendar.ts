@@ -53,7 +53,7 @@ calendar.get("/", async (c) => {
 
   todayUTC.setHours(0, 0, 0, 0)
 
-  const thisMonthUTC = new Date(
+  const _thisMonthUTC = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth()),
   )
 

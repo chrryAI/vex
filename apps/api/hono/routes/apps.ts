@@ -325,7 +325,7 @@ app.post("/", async (c) => {
       height?: number
       id: string
     }> = []
-    if (imageUrl && imageUrl.startsWith("http")) {
+    if (imageUrl?.startsWith("http")) {
       try {
         console.log("📸 Processing app image from URL:", imageUrl)
 
@@ -361,7 +361,7 @@ app.post("/", async (c) => {
           // Generate content-based hash for deduplication
           // Same image + same size = same hash = no duplicates
           // Using SHA256 for security compliance (MD5 flagged by security scanners)
-          const crypto = await import("crypto")
+          const crypto = await import("node:crypto")
           const contentHash = crypto
             .createHash("sha256")
             .update(`${imageUrl}-${size}x${size}`)
@@ -433,7 +433,7 @@ app.post("/", async (c) => {
       const created = await createStore({
         slug: storeSlug,
         name: member?.userName || `GuestStore`,
-        title: `${member?.userName + "'s" || "My"} Store`,
+        title: `${`${member?.userName}'s` || "My"} Store`,
         // domain: `${storeSlug}.chrry.dev`,
         userId: member?.id,
         guestId: guest?.id,
@@ -1112,7 +1112,7 @@ app.patch("/:id", async (c) => {
       shouldUpdateImages = true
     }
     // If new image URL provided, process it
-    else if (imageUrl && imageUrl.startsWith("http")) {
+    else if (imageUrl?.startsWith("http")) {
       try {
         console.log("📸 Processing updated app image from URL:", imageUrl)
 
@@ -1141,7 +1141,7 @@ app.patch("/:id", async (c) => {
           // Generate content-based hash for deduplication
           // Same image + same size = same hash = no duplicates
           // Using SHA256 for security compliance (MD5 flagged by security scanners)
-          const crypto = await import("crypto")
+          const crypto = await import("node:crypto")
           const contentHash = crypto
             .createHash("sha256")
             .update(`${imageUrl}-${size}x${size}`)

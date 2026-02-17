@@ -303,7 +303,7 @@ async function getRecommendations(filePath) {
 
   console.log(`\n Recommendations for ${filePath}:`)
 
-  if (rules && rules.data && rules.data.length > 0) {
+  if (rules?.data && rules.data.length > 0) {
     console.log("\n Prevention Rules:")
     for (const row of rules.data) {
       const { type, suggestion, confidence } = row
@@ -311,7 +311,7 @@ async function getRecommendations(filePath) {
     }
   }
 
-  if (weakSpots && weakSpots.data && weakSpots.data.length > 0) {
+  if (weakSpots?.data && weakSpots.data.length > 0) {
     console.log("\n  Weak Spots to Fix:")
     for (const row of weakSpots.data) {
       const { line, operator, suggestion } = row
@@ -337,7 +337,7 @@ async function generateReport() {
 
   console.log("\n Memory System Report:")
 
-  if (stats && stats.data && stats.data.length > 0) {
+  if (stats?.data && stats.data.length > 0) {
     const { ruleCount, avgConfidence, weakSpotCount } = stats.data[0]
     console.log(`   Rules Learned: ${ruleCount}`)
     console.log(`   Average Confidence: ${avgConfidence?.toFixed(2)}%`)
@@ -354,7 +354,7 @@ async function generateReport() {
     LIMIT 3
   `)
 
-  if (topRules && topRules.data && topRules.data.length > 0) {
+  if (topRules?.data && topRules.data.length > 0) {
     console.log("\n Top Prevention Rules:")
     for (const row of topRules.data) {
       const { type, confidence } = row

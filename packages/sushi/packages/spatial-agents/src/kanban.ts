@@ -317,7 +317,7 @@ export class KanbanSystem {
     )
 
     const cards: KanbanCard[] = []
-    if (cardsResult && cardsResult.data) {
+    if (cardsResult?.data) {
       for (const row of cardsResult.data) {
         cards.push({
           id: row.id,
@@ -394,7 +394,7 @@ export class KanbanSystem {
       byColumn: {} as Record<string, number>,
     }
 
-    if (result && result.data) {
+    if (result?.data) {
       for (const row of result.data) {
         workload.byColumn[row.columnId] = row.count
         workload.total += row.count
@@ -438,14 +438,14 @@ export class KanbanSystem {
       cardsByAgent: {} as Record<string, number>,
     }
 
-    if (columnStats && columnStats.data) {
+    if (columnStats?.data) {
       for (const row of columnStats.data) {
         stats.cardsByColumn[row.columnId] = row.count
         stats.totalCards += row.count
       }
     }
 
-    if (agentStats && agentStats.data) {
+    if (agentStats?.data) {
       for (const row of agentStats.data) {
         stats.cardsByAgent[row.agentId] = row.count
       }

@@ -62,8 +62,8 @@ function runRichards() {
   scheduler.schedule()
 
   if (
-    scheduler.queueCount != EXPECTED_QUEUE_COUNT ||
-    scheduler.holdCount != EXPECTED_HOLD_COUNT
+    scheduler.queueCount !== EXPECTED_QUEUE_COUNT ||
+    scheduler.holdCount !== EXPECTED_HOLD_COUNT
   ) {
     var msg =
       "Error during execution: queueCount = " +
@@ -332,7 +332,7 @@ TaskControlBlock.prototype.markAsHeld = function tcb_markAsHeld() {
 
 TaskControlBlock.prototype.isHeldOrSuspended =
   function tcb_isHeldOrSuspended() {
-    return (this.state & STATE_HELD) != 0 || this.state == STATE_SUSPENDED
+    return (this.state & STATE_HELD) !== 0 || this.state === STATE_SUSPENDED
   }
 
 TaskControlBlock.prototype.markAsSuspended = function tcb_markAsSuspended() {
@@ -348,7 +348,7 @@ TaskControlBlock.prototype.markAsRunnable = function tcb_markAsRunnable() {
  */
 TaskControlBlock.prototype.run = function tcb_run() {
   var packet
-  if (this.state == STATE_SUSPENDED_RUNNABLE) {
+  if (this.state === STATE_SUSPENDED_RUNNABLE) {
     packet = this.queue
     this.queue = packet.link
     if (this.queue == null) {
@@ -382,7 +382,7 @@ TaskControlBlock.prototype.checkPriorityAdd = function tcb_checkPriorityAdd(
 }
 
 TaskControlBlock.prototype.toString = function tcb_toString() {
-  return "tcb { " + this.task + "@" + this.state + " }"
+  return `tcb { ${this.task}@${this.state} }`
 }
 
 /**
@@ -401,8 +401,8 @@ function IdleTask(scheduler, v1, count) {
 
 IdleTask.prototype.run = function idleTask_run(packet) {
   this.count--
-  if (this.count == 0) return this.scheduler.holdCurrent()
-  if ((this.v1 & 1) == 0) {
+  if (this.count === 0) return this.scheduler.holdCurrent()
+  if ((this.v1 & 1) === 0) {
     this.v1 = this.v1 >> 1
     return this.scheduler.release(ID_DEVICE_A)
   } else {
@@ -459,7 +459,7 @@ WorkerTask.prototype.run = function workerTask_run(packet) {
   if (packet == null) {
     return this.scheduler.suspendCurrent()
   } else {
-    if (this.v1 == ID_HANDLER_A) {
+    if (this.v1 === ID_HANDLER_A) {
       this.v1 = ID_HANDLER_B
     } else {
       this.v1 = ID_HANDLER_A
@@ -492,7 +492,7 @@ function HandlerTask(scheduler) {
 
 HandlerTask.prototype.run = function handlerTask_run(packet) {
   if (packet != null) {
-    if (packet.kind == KIND_WORK) {
+    if (packet.kind === KIND_WORK) {
       this.v1 = packet.addTo(this.v1)
     } else {
       this.v2 = packet.addTo(this.v2)

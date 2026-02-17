@@ -1,6 +1,5 @@
 "use client"
 
-import React from "react"
 import { useData } from "./context/providers"
 import Img from "./Img"
 import { usePlatform } from "./platform"

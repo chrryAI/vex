@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto"
 import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
 import {
   and,
@@ -10,7 +11,6 @@ import {
   gt,
 } from "@repo/db"
 import { compare, hash } from "bcrypt"
-import { randomBytes } from "crypto"
 import type { Context } from "hono"
 import { Hono } from "hono"
 import { deleteCookie, getCookie, setCookie } from "hono/cookie"
@@ -23,8 +23,8 @@ const authRoutes = new Hono()
 // ==================== CONSTANTS ====================
 const GOOGLE_WEB_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID
 const GOOGLE_WEB_CLIENT_SECRET = process.env.GOOGLE_WEB_CLIENT_SECRET
-const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
-const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET
+const _GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
+const _GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || "development-secret"
 const JWT_EXPIRY = "30d"
 const ALLOWED_DOMAINS = [".chrry.ai", ".chrry.dev", ".chrry.store", "localhost"]
@@ -251,12 +251,12 @@ function getCallbackUrls(c: Context): {
   // Validate error URL to prevent open redirect
   if (errorUrl && !validateCallbackUrl(errorUrl)) {
     console.warn("⚠️ Invalid errorUrl provided, using safe fallback")
-    errorUrl = callbackUrl + "/?error=oauth_failed"
+    errorUrl = `${callbackUrl}/?error=oauth_failed`
   }
 
   // Fallback error URL
   if (!errorUrl) {
-    errorUrl = callbackUrl + "/?error=oauth_failed"
+    errorUrl = `${callbackUrl}/?error=oauth_failed`
   }
 
   return { callbackUrl, errorUrl }
@@ -857,7 +857,7 @@ authRoutes.post("/callback/apple", async (c) => {
         const userData = JSON.parse(body.user as string)
         name =
           `${userData.name?.firstName || ""} ${userData.name?.lastName || ""}`.trim()
-      } catch (e) {
+      } catch (_e) {
         // Name not provided
       }
     }

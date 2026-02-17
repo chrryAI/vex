@@ -237,7 +237,7 @@ export async function searchNews(
     .select()
     .from(newsArticles)
     .where(
-      sql`${newsArticles.title} ILIKE ${"%" + query + "%"} OR ${newsArticles.description} ILIKE ${"%" + query + "%"}`,
+      sql`${newsArticles.title} ILIKE ${`%${query}%`} OR ${newsArticles.description} ILIKE ${`%${query}%`}`,
     )
     .orderBy(desc(newsArticles.publishedAt))
     .limit(limit)

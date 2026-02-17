@@ -211,10 +211,10 @@ function generateFunction() {
   const stmtCount = Math.floor(Math.random() * 3) + 1
   const statements = []
   for (let i = 0; i < stmtCount; i++) {
-    statements.push("  " + generateStatement(0, true))
+    statements.push(`  ${generateStatement(0, true)}`)
   }
 
-  statements.push("  return " + generateExpression() + ";")
+  statements.push(`  return ${generateExpression()};`)
 
   // Restore variables
   declaredVars = savedVars
@@ -247,12 +247,12 @@ function generateProgram(options = {}) {
 
   const funcCount = Math.floor(Math.random() * maxFunctions) + 1
   for (let i = 0; i < funcCount; i++) {
-    code += generateFunction() + "\n\n"
+    code += `${generateFunction()}\n\n`
   }
 
   const stmtCount = Math.floor(Math.random() * maxStatements) + 2
   for (let i = 0; i < stmtCount; i++) {
-    code += generateStatement() + "\n"
+    code += `${generateStatement()}\n`
   }
 
   // Always end with a result

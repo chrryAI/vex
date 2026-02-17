@@ -28,7 +28,7 @@ function cleanMoltbookPlaceholders(text: string): string {
 async function getAIModel() {
   // In a real scenario, we might want to fetch the configured provider from the app/agent settings
   // For now, we'll try to use the "sushi" agent configuration or fallback to a default DeepSeek setup
-  const agent = await db.query.aiAgents.findFirst({
+  const _agent = await db.query.aiAgents.findFirst({
     where: eq(aiAgents.name, "sushi"),
   })
 

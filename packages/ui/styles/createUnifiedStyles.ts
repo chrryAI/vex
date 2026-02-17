@@ -106,7 +106,9 @@ function normalizeValue(
 
       const prefix = prop === "border" ? "border" : prop
       return {
-        [`${prefix}Width`]: width?.endsWith("px") ? Number.parseInt(width) : 1,
+        [`${prefix}Width`]: width?.endsWith("px")
+          ? Number.parseInt(width, 10)
+          : 1,
         [`${prefix}Style`]: style,
         [`${prefix}Color`]: theme ? resolveCssVar(color, theme, false) : color,
       }
@@ -126,7 +128,7 @@ function normalizeValue(
 
   // Single value conversions
   if (typeof unwrappedValue === "string" && unwrappedValue.endsWith("px")) {
-    return Number.parseInt(unwrappedValue)
+    return Number.parseInt(unwrappedValue, 10)
   }
 
   if (typeof unwrappedValue === "string" && unwrappedValue.endsWith("rem")) {

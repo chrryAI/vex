@@ -1,4 +1,4 @@
-import React, { type CSSProperties, useEffect, useState } from "react"
+import { type CSSProperties, useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useCollaborationStatusStyles } from "./CollaborationStatus.styles"
 import ConfirmButton from "./ConfirmButton"
@@ -82,7 +82,7 @@ export default function CollaborationStatus({
       } else {
         setCollaborationStatus(status)
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error(t("Failed to update collaboration"))
     } finally {
       setIsLoading(false)

@@ -106,7 +106,7 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
           </div>
         )}
         <div style={styles.actions.style}>
-          {user && user.adConsent ? (
+          {user?.adConsent ? (
             <button>Continue</button>
           ) : (
             <div style={styles.adConsent.style}>

@@ -1,4 +1,4 @@
-import { createHash } from "crypto"
+import { createHash } from "node:crypto"
 import { Hono } from "hono"
 import { upload } from "../../lib/minio"
 import { scanFileForMalware } from "../../lib/security"

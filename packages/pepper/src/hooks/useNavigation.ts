@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { clientRouter, NavigateOptions } from "../core/ClientRouter"
+import { clientRouter } from "../core/ClientRouter"
 
 export function useRouter() {
   return {

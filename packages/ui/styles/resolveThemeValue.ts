@@ -73,7 +73,7 @@ export function resolveThemeValue(value: any, theme: Theme): any {
     // Resolve toRem.toRem() calls
     if (value.includes("toRem.toRem(")) {
       const match = value.match(/toRem\.toRem\(([0-9.-]+)\)/)
-      if (match && match[1]) {
+      if (match?.[1]) {
         return Math.round(parseFloat(match[1]))
       }
     }

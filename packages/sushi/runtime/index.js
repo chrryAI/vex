@@ -45,7 +45,7 @@ const help = () => {
       continue
     }
 
-    if (cmd.length > 0) post = " " + post
+    if (cmd.length > 0) post = ` ${post}`
 
     console.log(
       `  \x1B[2mporf\x1B[0m \x1B[1m\x1B[${color}m${cmd}\x1B[0m${post} ${" ".repeat(30 - cmd.length - post.length)}${desc}`,
@@ -61,8 +61,8 @@ const help = () => {
     module: "Parse input as a module",
     secure: "Secure mode (error on unsafe Porffor features eg FFI)",
   })) {
-    flag = "-" + flag
-    if (flag.length > 3) flag = "-" + flag
+    flag = `-${flag}`
+    if (flag.length > 3) flag = `-${flag}`
 
     console.log(`  \x1B[1m${flag}\x1B[0m${" ".repeat(36 - flag.length)}${desc}`)
   }
@@ -83,8 +83,8 @@ const help = () => {
         "Log general compiler performance (on by default when compiling to a file)",
       prng: "PRNG algorithm to use (xorshift32+|xorshift64+|\x1B[1mxorshift128+\x1B[0m|xoroshiro128+|xoshiro128+)",
     })) {
-      flag = "-" + flag
-      if (flag.length > 3) flag = "-" + flag
+      flag = `-${flag}`
+      if (flag.length > 3) flag = `-${flag}`
 
       console.log(
         `  \x1B[1m${flag}\x1B[0m${" ".repeat(36 - flag.length)}${desc}`,
@@ -198,7 +198,7 @@ if (process.argv.length >= 4) {
   }
 }
 
-if (file && file.startsWith("https://")) {
+if (file?.startsWith("https://")) {
   // https only :)
   // rce warning, make user confirm (disabled)
   // const rl = (await import('readline')).createInterface({ input: process.stdin, output: process.stdout });

@@ -1,6 +1,5 @@
+import path from "node:path"
 import react from "@vitejs/plugin-react"
-import dotenv from "dotenv"
-import path from "path"
 import type { UserConfig } from "vite"
 import { defineConfig, loadEnv, type PluginOption } from "vite"
 import { compression } from "vite-plugin-compression2"

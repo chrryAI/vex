@@ -15,7 +15,7 @@ export { NavigationProvider, useNavigationContext } from "./NavigationProvider"
 export { TribeProvider, useTribe } from "./TribeProvider"
 
 // Composition root - combines all providers
-import React, { type ReactNode, useMemo, useState } from "react"
+import { type ReactNode, useMemo, useState } from "react"
 import { SWRConfig } from "swr"
 import { Hey } from "../../Hey"
 import getCacheProvider from "../../lib/swrCacheProvider"
@@ -133,7 +133,7 @@ export default function AppProviders({
           const now = Date.now()
 
           // Only show toast if it's been more than 30 seconds since last one
-          if (!lastShown || now - Number.parseInt(lastShown) > 30000) {
+          if (!lastShown || now - Number.parseInt(lastShown, 10) > 30000) {
             setError(
               "Rate limit exceeded. Please wait a moment before trying again.",
             )

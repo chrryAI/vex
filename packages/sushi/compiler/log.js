@@ -18,4 +18,4 @@ export const log = (area, ...args) =>
     ...args,
   )
 log.warning = (area, ...args) =>
-  log(area, "\u001b[93m" + args[0], ...args.slice(1), "\u001b[0m")
+  log(area, `\u001b[93m${args[0]}`, ...args.slice(1), "\u001b[0m")

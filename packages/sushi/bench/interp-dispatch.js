@@ -13,5 +13,5 @@ function bench(lc, fc) {
 }
 
 const t1 = performance.now()
-var res = bench(4e6, 100)
+var _res = bench(4e6, 100)
 console.log(performance.now() - t1)

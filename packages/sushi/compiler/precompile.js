@@ -125,7 +125,7 @@ const compile = async (file, _funcs) => {
   let first = source.slice(0, source.indexOf("\n"))
 
   if (first.startsWith("export default")) {
-    source = await (await import("file://" + file)).default({
+    source = await (await import(`file://${file}`)).default({
       TYPES,
       TYPE_NAMES,
     })
@@ -181,8 +181,9 @@ const compile = async (file, _funcs) => {
   const exports = funcs.filter((x) => x.export && x.name !== "#main")
   for (const x of exports) {
     const body = globalThis.funcBodies[x.name]
-    const bodyHasTopLevelThrow =
-      body?.body && body.body.some((x) => x.type === "ThrowStatement")
+    const bodyHasTopLevelThrow = body?.body?.some(
+      (x) => x.type === "ThrowStatement",
+    )
 
     if (x.name === "_eval") x.name = "eval"
     if (x.data) {
@@ -468,12 +469,10 @@ ${funcs
         )
         .replaceAll('"-0"', "-0")
 
-      return (
-        `(_,{${str.includes("usedTypes.") ? "usedTypes," : ""}${str.includes("hasFunc(") ? "hasFunc," : ""}${str.includes("Valtype") ? "Valtype," : ""}${str.includes("i32ify") ? "i32ify," : ""}${str.includes("Opcodes") ? "Opcodes," : ""}${str.includes("...t(") ? "t," : ""}${`${str.includes("allocPage(") ? "allocPage," : ""}${str.includes("makeString(") ? "makeString," : ""}${str.includes("glbl(") ? "glbl," : ""}${str.includes("loc(") ? "loc," : ""}${str.includes("builtin(") ? "builtin," : ""}${str.includes("funcRef(") ? "funcRef," : ""}${str.includes("internalThrow(") ? "internalThrow," : ""}${str.includes("generateIdent(") ? "generateIdent," : ""}${str.includes("generate(") ? "generate," : ""}`.slice(0, -1)}})=>`.replace(
-          "_,{}",
-          "",
-        ) + `eval(${JSON.stringify(str)})`
-      )
+      return `${`(_,{${str.includes("usedTypes.") ? "usedTypes," : ""}${str.includes("hasFunc(") ? "hasFunc," : ""}${str.includes("Valtype") ? "Valtype," : ""}${str.includes("i32ify") ? "i32ify," : ""}${str.includes("Opcodes") ? "Opcodes," : ""}${str.includes("...t(") ? "t," : ""}${`${str.includes("allocPage(") ? "allocPage," : ""}${str.includes("makeString(") ? "makeString," : ""}${str.includes("glbl(") ? "glbl," : ""}${str.includes("loc(") ? "loc," : ""}${str.includes("builtin(") ? "builtin," : ""}${str.includes("funcRef(") ? "funcRef," : ""}${str.includes("internalThrow(") ? "internalThrow," : ""}${str.includes("generateIdent(") ? "generateIdent," : ""}${str.includes("generate(") ? "generate," : ""}`.slice(0, -1)}})=>`.replace(
+        "_,{}",
+        "",
+      )}eval(${JSON.stringify(str)})`
     }
 
     const locals = Object.entries(x.locals).sort((a, b) => a[1].idx - b[1].idx)

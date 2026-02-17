@@ -50,7 +50,7 @@ export const limit = async ({
     shouldFail: true, // Flag to indicate this should fail
   }
 
-  const result = await chat({
+  const _result = await chat({
     isNewChat: true,
     page,
     isMember,

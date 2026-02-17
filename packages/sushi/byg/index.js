@@ -29,19 +29,19 @@ const box = (
 
     // top
     process.stdout.write(
-      `\x1b[48m\x1b[${y + 1};${x + 1}H\x1b[${color[0]}m` + "▄".repeat(width),
+      `\x1b[48m\x1b[${y + 1};${x + 1}H\x1b[${color[0]}m${"▄".repeat(width)}`,
     )
     // bottom
     process.stdout.write(
-      `\x1b[${y + height + 1};${x + 1}H▝` + "▀".repeat(width - 1) + "▘",
+      `\x1b[${y + height + 1};${x + 1}H▝${"▀".repeat(width - 1)}▘`,
     )
     // left
     process.stdout.write(
-      `\x1b[${y + 1};${x + 1}H▗` + "\x1b[1B\x1b[1D▐".repeat(height - 1),
+      `\x1b[${y + 1};${x + 1}H▗${"\x1b[1B\x1b[1D▐".repeat(height - 1)}`,
     )
     // right
     process.stdout.write(
-      `\x1b[${y + 1};${x + width + 1}H▖` + "\x1b[1B\x1b[1D▌".repeat(height - 1),
+      `\x1b[${y + 1};${x + width + 1}H▖${"\x1b[1B\x1b[1D▌".repeat(height - 1)}`,
     )
 
     x += 1
@@ -54,7 +54,7 @@ const box = (
   process.stdout.write(
     `\x1b[${y + 1};${x + 1}H\x1b[${color[1]}m` +
       " ".repeat(width) +
-      (`\x1b[1B\x1b[${width}D` + " ".repeat(width)).repeat(
+      `\x1b[1B\x1b[${width}D${" ".repeat(width)}`.repeat(
         Math.max(0, height - 1),
       ),
   )
@@ -80,7 +80,7 @@ const controls = {
 }
 
 const controlInfo = Object.keys(controls).reduce(
-  (acc, x, i) => acc + `\x1B[45m\x1B[97m${x}\x1b[105m\x1b[37m ${controls[x]}  `,
+  (acc, x, i) => `${acc}\x1B[45m\x1B[97m${x}\x1b[105m\x1b[37m ${controls[x]}  `,
   "",
 )
 const plainControlInfo = noAnsi(controlInfo)

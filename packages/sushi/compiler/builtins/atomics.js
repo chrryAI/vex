@@ -114,8 +114,8 @@ ${
       const [name, _] = arg.split(":")
       if (!_) return
 
-      const [type, value] = _.split("=")
-      const nonfinite = value && value.includes("Infinity")
+      const [_type, value] = _.split("=")
+      const nonfinite = value?.includes("Infinity")
 
       return `
 ${name} = ecma262.ToIntegerOrInfinity(${name});

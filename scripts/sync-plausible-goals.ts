@@ -119,7 +119,7 @@ async function syncAllSites() {
     }
   }
 
-  console.log("\n" + "=".repeat(60))
+  console.log(`\n${"=".repeat(60)}`)
   console.log("🎉 ALL SITES SYNC COMPLETE!")
   console.log("=".repeat(60))
   console.log(`✅ Total goals created: ${totalCreated}`)

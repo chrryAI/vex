@@ -14,7 +14,7 @@ async function globalSetup(config: FullConfig) {
     apiURL = "http://localhost:3001/health"
   } else {
     // CI: https://e2e.chrry.dev/api/health
-    apiURL = baseURL.replace("chrry.ai", "chrry.dev") + "/api/health"
+    apiURL = `${baseURL.replace("chrry.ai", "chrry.dev")}/api/health`
   }
 
   console.log("🔧 Global Setup: Warming up backend...")
@@ -39,7 +39,7 @@ async function globalSetup(config: FullConfig) {
       } else {
         console.log(`⏳ API returned ${response.status}, waiting...`)
       }
-    } catch (error) {
+    } catch (_error) {
       const elapsed = Math.round((Date.now() - startTime) / 1000)
       console.log(`⏳ API not ready yet (${elapsed}s elapsed)...`)
     }

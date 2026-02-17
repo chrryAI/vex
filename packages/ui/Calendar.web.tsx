@@ -3,7 +3,7 @@
 import "react-big-calendar/lib/css/react-big-calendar.css"
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css"
 
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   Calendar as BigCalendar,
   type ToolbarProps,
@@ -106,7 +106,7 @@ const CustomToolbar = (
     isSyncing,
   } = props
   const { t } = useAppContext()
-  const [view, setView] = useState<View>(initialView)
+  const [view, _setView] = useState<View>(initialView)
 
   const { searchParams, goToThread, goToApp } = useNavigationContext()
 
@@ -338,7 +338,9 @@ export default function Calendar({
   }, [defaultView])
   const hasCalendarScope = user?.hasCalendarScope
 
-  const [isGoogleConnected, setIsGoogleConnected] = useState(!!hasCalendarScope)
+  const [isGoogleConnected, _setIsGoogleConnected] = useState(
+    !!hasCalendarScope,
+  )
   const [isSyncing, setIsSyncing] = useState(false)
 
   const [calendarEventsStartDate, setCalendarEventsStartDate] = useState<

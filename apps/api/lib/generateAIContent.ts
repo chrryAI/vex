@@ -1129,7 +1129,7 @@ async function generateAIContent({
 
   // Character profiles: if disabled (user profile stripped), only create app profile
   const shouldGenerateUserProfile = characterProfilesEnabled
-  const shouldGenerateAppProfile = true // Always try to create app profile if appId exists
+  const _shouldGenerateAppProfile = true // Always try to create app profile if appId exists
 
   const threadId = thread.id
   const appId = app?.id
@@ -1641,7 +1641,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
             threadId,
           })
 
-          if (existingAppCharacterTag && existingAppCharacterTag.appId) {
+          if (existingAppCharacterTag?.appId) {
             // Update existing app character profile with AI-generated data
             await updateCharacterTag({
               ...existingAppCharacterTag,

@@ -85,7 +85,7 @@ weather.get("/", async (c) => {
       country: location.country,
       temperature: `${current.temp_c}°C`,
       condition: current.condition.text,
-      code: Number.parseInt(current.condition.code),
+      code: Number.parseInt(current.condition.code, 10),
       createdOn: new Date(),
       lastUpdated: new Date(),
     }
@@ -210,7 +210,7 @@ weather.get("/", async (c) => {
       country: weatherData.location.country,
       temperature: `${weatherData.current.temp_c}`,
       condition: weatherData.current.condition.text,
-      code: Number.parseInt(weatherData.current.condition.code),
+      code: Number.parseInt(weatherData.current.condition.code, 10),
       createdOn: new Date(),
       lastUpdated: new Date(),
     }
