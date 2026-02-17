@@ -5,7 +5,7 @@ import toast from "react-hot-toast"
 import A from "./a/A"
 import { useAgentStyles } from "./agent/Agent.styles"
 import ConfirmButton from "./ConfirmButton"
-import { useAppContext } from "./context/AppContext"
+import { useAppContext, COLORS } from "./context/AppContext"
 import { useAuth, useData, useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
@@ -203,7 +203,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
         }) as ScheduleTime[])) ||
       getDefaultScheduleTimes()
 
-    const frequency = existingSchedule?.frequency || "daily"
+    const frequency = existingSchedule?.frequency || "custom"
 
     const startDate =
       !skipExistingSchedule && existingSchedule?.startDate
@@ -226,6 +226,13 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
             creditsPrice: parseFloat(String(CREDITS_PRICE || "10")),
           })
         : undefined
+    console.log(`🚀 ~ getFormState ~ estimate:`, {
+      frequency,
+      scheduledTimes: schedule,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      creditsPrice: parseFloat(String(CREDITS_PRICE || "10")),
+    })
 
     schedule = schedule.map((slot) => {
       return {
@@ -234,7 +241,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
       }
     })
 
-    return {
+    const result = {
       // Form state
       frequency: frequency as
         | "daily"
@@ -250,13 +257,16 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
       startDate,
       endDate,
     }
+
+    return result
   }
   const [formData, setFormData] = useState(getFormState())
 
   const totalPosts = formData?.totalPosts
+  console.log(`🚀 ~ TribeCalculator ~ formData:`, formData)
 
   useEffect(() => {
-    setFormData(getFormState())
+    existingSchedule && setFormData(getFormState())
   }, [existingSchedule])
 
   const totalPrice = formData.totalPrice
@@ -1079,7 +1089,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
               display: "flex",
               flexDirection: "column",
               gap: ".5rem",
-              maxHeight: "20vh",
+              maxHeight: "40vh",
               overflowY: "auto",
               ...agentStyles.bordered.style,
             }}
@@ -1240,7 +1250,9 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                             ...utilities.link.style,
                             marginLeft: "auto",
                             marginRight: "0.75rem",
-                            color: "var(--shade-7)",
+                            fontSize: "0.75rem",
+                            minHeight: "1.8rem",
+                            color: COLORS.red,
                           }}
                           onClick={() => removeScheduleTime(index)}
                         >
@@ -1553,6 +1565,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
             })}
           </Div>
         </Div>
+        {totalPosts}
         {/* Results */}
         {totalPosts > 0 ? (
           <Div
