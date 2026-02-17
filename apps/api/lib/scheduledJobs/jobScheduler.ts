@@ -1458,19 +1458,46 @@ Important Notes:
     }
 
     const data = await aiMessageResponse.json()
-    const aiResponse = data
 
-    if (!aiResponse) {
+    if (!data) {
       throw new Error("No AI response received")
     }
 
-    if (
-      !aiResponse.tribeTitle ||
-      !aiResponse.tribeContent ||
-      !aiResponse.tribeName
-    ) {
+    // Extract content from AI response
+    const aiMessageContent =
+      data.message?.message?.content || data.text || data.content
+
+    if (!aiMessageContent) {
+      throw new Error("No AI message content received")
+    }
+
+    console.log(
+      `📥 AI response (${aiMessageContent.length} chars): ${aiMessageContent.substring(0, 200)}...`,
+    )
+
+    // Parse JSON from AI response
+    let parsedContent: { tribe?: string; content?: string }
+    try {
+      parsedContent = JSON.parse(aiMessageContent)
+    } catch (error) {
       throw new Error(
-        `Invalid AI response format: ${JSON.stringify(aiResponse)}`,
+        `Failed to parse AI response as JSON: ${aiMessageContent.substring(0, 200)}`,
+      )
+    }
+
+    // Map AI response to expected format
+    const aiResponse = {
+      tribeName: parsedContent.tribe || "general",
+      tribeContent: parsedContent.content || "",
+      tribeTitle: parsedContent.content
+        ? parsedContent.content.split(/[.!?]/)[0]?.substring(0, 100) ||
+          "Tribe Post"
+        : "Tribe Post",
+    }
+
+    if (!aiResponse.tribeContent || !aiResponse.tribeName) {
+      throw new Error(
+        `Invalid AI response format: ${JSON.stringify(parsedContent)}`,
       )
     }
 
