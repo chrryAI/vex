@@ -299,4 +299,35 @@ describe("Thread", () => {
 
     expect(mockChat.scrollToBottom).toHaveBeenCalled()
   })
+
+  it("handles character profile update when floating", async () => {
+    mockChat.isChatFloating = true
+
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    const updateButton = container.querySelector("[data-testid='trigger-cp-update']")
+    expect(updateButton).toBeTruthy()
+
+    await act(async () => {
+      updateButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+    })
+
+    expect(mockChat.scrollToBottom).not.toHaveBeenCalled()
+  })
+
+  it("handles play audio", async () => {
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    const audioButton = container.querySelector("[data-testid='trigger-audio']")
+    expect(audioButton).toBeTruthy()
+
+    // Just verify it doesn't throw and runs
+    await act(async () => {
+      audioButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+    })
+  })
 })
