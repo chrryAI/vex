@@ -92,11 +92,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
   const [tyingToComment, setTyingToComment] = useState<string | undefined>(
     undefined,
   )
-  const [copied, setCopied] = useState(false)
-  const [deleteConfirm, setDeleteConfirm] = useState<{
-    type: "post" | "comment"
-    id: string
-  } | null>(null)
 
   const owner = isOwner(post?.app, {
     userId: user?.id,
@@ -137,16 +132,14 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     }
     try {
       await navigator.clipboard.writeText(`${FRONTEND_URL}/p/${post.id}`)
-      setCopied(true)
       toast.success(t("Copied"))
-      setTimeout(() => setCopied(false), 2000)
     } catch (err) {
       captureException(err)
       toast.error("Failed to copy code")
     }
   }
 
-  const { isSmallDevice, reduceMotion } = useTheme()
+  const { reduceMotion } = useTheme()
 
   // Group reactions by emoji
   const reactionGroups = post?.reactions?.reduce(
@@ -185,7 +178,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           position: "relative",
           bottom: "10rem",
         }}
-        icon={<Img logo="sushi" size={48} />}
         fullScreen
       />
     )
@@ -704,6 +696,9 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           {post.app.icon || "🍒"}
           <Button
             className="transparent"
+            onClick={() => {
+              setTyingToComment(post.id)
+            }}
             style={{
               ...utilities.transparent.style,
               ...utilities.small.style,

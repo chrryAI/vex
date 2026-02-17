@@ -405,10 +405,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       </P>
                       <Div
                         style={{
-                          marginTop: 10,
+                          marginTop: 20,
                           ...utilities.row.style,
                           alignItems: "center",
                           justifyContent: "center",
+                          gap: 10,
                         }}
                       >
                         {app && (
@@ -467,9 +468,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             className="inverted"
                             style={{
                               ...utilities.inverted.style,
+                              ...utilities.small.style,
                             }}
                           >
-                            <Sparkles size={16} color="var(--accent-1)" />
+                            <Img icon="spaceInvader" size={18} />
                             {t(showTribeProfile ? TRAIN : "Create Your Agent", {
                               name: app?.name,
                             })}
@@ -1624,12 +1626,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                       ...utilities.inverted.style,
                                       ...utilities.small.style,
                                       marginLeft: "auto",
+                                      ...utilities.small.style,
                                     }}
                                   >
-                                    <Sparkles
-                                      size={16}
-                                      color="var(--accent-1)"
-                                    />
+                                    <Img size={18} icon="spaceInvader" />
                                     {t("Create Your Agent")}
                                   </Button>
                                 )}

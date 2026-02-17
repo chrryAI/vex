@@ -526,8 +526,8 @@ session.get("/", async (c) => {
 
         if (toMigrate && !toMigrate?.migratedToUser) {
           await migrateUser({
-            user: member,
-            guest: toMigrate,
+            user: member as any,
+            guest: toMigrate as any,
           })
 
           member.migratedFromGuest = true

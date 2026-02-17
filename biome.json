@@ -24,6 +24,15 @@
       },
       "security": {
         "noDangerouslySetInnerHtml": "warn"
+      },
+      "suspicious": {
+        "noImplicitAnyLet": "warn"
+      },
+      "complexity": {
+        "noUselessFragments": "off"
+      },
+      "style": {
+        "noNonNullAssertion": "warn"
       }
     }
   },
