@@ -234,7 +234,7 @@ messages.post("/", async (c) => {
       notify: body["notify"],
       appId: body["appId"] as string,
       molt: body["isMolt"] === "true",
-      isTribe: body["tribe"] === "true",
+      tribe: body["tribe"] === "true",
       content: body["content"] as string,
       retro: body["retro"] === "true",
       pear: body["pear"] === "true",
@@ -252,6 +252,7 @@ messages.post("/", async (c) => {
       clientId: body["clientId"] as string,
       deviceId: body["deviceId"] as string,
       taskId: body["taskId"] as string,
+      jobId: body["jobId"] as string,
     }
 
     // Extract files - parseBody returns files as File objects in the body map
@@ -276,8 +277,8 @@ messages.post("/", async (c) => {
     requestData = {
       ...jsonBody,
       // Parse boolean fields for JSON requests (same as multipart)
-      molt: jsonBody.isMolt === "true" || jsonBody.isMolt === true,
-      isTribe: jsonBody.isTribe === "true" || jsonBody.isTribe === true,
+      molt: jsonBody.molt === "true" || jsonBody.molt === true,
+      tribe: jsonBody.tribe === "true" || jsonBody.tribe === true,
     }
   }
 
@@ -330,7 +331,7 @@ messages.post("/", async (c) => {
     moodId,
     pear,
     molt,
-    tribe: isTribe,
+    tribe,
     retro,
     jobId,
     ...rest
@@ -340,6 +341,7 @@ messages.post("/", async (c) => {
     molt,
     retro,
     contentPreview: content?.substring(0, 20),
+    jobId,
   })
 
   const notify = requestData.notify !== false && requestData.notify !== "false"
@@ -347,16 +349,15 @@ messages.post("/", async (c) => {
   const task = taskId ? await getTask({ id: taskId }) : undefined
   const mood = moodId ? await getMood({ id: moodId }) : undefined
   const app = appId ? await getPureApp({ id: appId }) : undefined
+  const job = jobId ? await getScheduledJob({ id: jobId }) : undefined
 
   // Handle scheduled job requests
-  if (jobId) {
-    console.log(`🤖 Scheduled job request detected: ${jobId}`)
-
-    const job = await getScheduledJob({ id: jobId })
-    if (!job) {
-      return c.json({ error: "Job not found" }, 404)
-    }
+  if (jobId && !job) {
+    return c.json({ error: "Job not found" }, 404)
   }
+
+  const isMolt = job?.jobType ? job.jobType?.startsWith("molt") : molt
+  const isTribe = job?.jobType ? job.jobType?.startsWith("tribe") : tribe
 
   if (stopStreamId) {
     const controller = streamControllers.get(stopStreamId)
@@ -417,8 +418,8 @@ messages.post("/", async (c) => {
       isIncognito,
       instructions,
       appId: app?.id,
-      isMolt: !!molt,
-      isTribe: !!isTribe,
+      isMolt,
+      isTribe,
     })
 
     if (!newThread) {
@@ -491,7 +492,8 @@ messages.post("/", async (c) => {
       agentId: selectedAgent.id,
       agentVersion: selectedAgent.version,
       appId: app?.id,
-      isMolt: !!molt,
+      isMolt,
+      isTribe,
       jobId,
     })
 
@@ -519,7 +521,9 @@ messages.post("/", async (c) => {
     isPear: pear || false, // Track Pear feedback submissions
     debateAgentId: selectedDebateAgent?.id,
     appId: app?.id,
-    isMolt: !!molt,
+    isMolt,
+    isTribe,
+    jobId: job?.id,
   })
 
   if (userMessage) {

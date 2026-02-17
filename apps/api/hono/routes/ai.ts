@@ -1926,6 +1926,7 @@ ${
     pauseDebate,
     webSearchResult: message.message.webSearchResult,
     isWebSearchEnabled: message.message.isWebSearchEnabled,
+    jobId: jobId || undefined,
   }
 
   const threadInstructions = thread?.instructions
@@ -5290,7 +5291,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
     // Disable reasoning for scheduled jobs (they need clean JSON responses)
     const canReason = job
       ? ["tribe_post", "moltbook_post"].includes(job.jobType)
-      : false
+      : undefined
     const providerResult = await getModelProvider(
       requestApp,
       agent.name,
