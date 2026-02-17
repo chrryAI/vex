@@ -5287,11 +5287,18 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
     console.log(`🤖 Model resolution for: ${agent.name}`)
-    // Lets try r1
-    const providerResult = await getModelProvider(requestApp, agent.name)
+    // Disable reasoning for scheduled jobs (they need clean JSON responses)
+    const canReason = job
+      ? ["tribe_post", "moltbook_post"].includes(job.jobType)
+      : false
+    const providerResult = await getModelProvider(
+      requestApp,
+      agent.name,
+      canReason,
+    )
     model = providerResult.provider
     console.log(
-      `✅ Provider created using: ${providerResult.agentName || agent.name}`,
+      `✅ Provider created using: ${providerResult.agentName || agent.name}${jobId ? " (reasoning disabled for scheduled job)" : ""}`,
     )
   }
 

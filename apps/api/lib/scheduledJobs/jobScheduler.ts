@@ -2464,6 +2464,46 @@ Respond ONLY with this JSON array (no extra text):
           batchAiResponse.message?.content || batchAiResponse.content
 
         if (!aiMessageContent) {
+          console.error("❌ No AI message content received")
+          console.error(
+            "📦 batchAiResponse:",
+            JSON.stringify(batchAiResponse, null, 2),
+          )
+
+          sendDiscordNotification({
+            embeds: [
+              {
+                title: "❌ No AI Content in Response",
+                color: 0xef4444,
+                fields: [
+                  {
+                    name: "Agent",
+                    value: app.name || "Unknown",
+                    inline: true,
+                  },
+                  {
+                    name: "Model",
+                    value: job.aiModel || "default",
+                    inline: true,
+                  },
+                  {
+                    name: "Job Type",
+                    value: "tribe_engage",
+                    inline: true,
+                  },
+                  {
+                    name: "Response Structure",
+                    value: `Has message: ${!!batchAiResponse.message}\nHas content: ${!!batchAiResponse.content}`,
+                    inline: false,
+                  },
+                ],
+                timestamp: new Date().toISOString(),
+              },
+            ],
+          }).catch((err) => {
+            console.error("⚠️ Discord notification failed:", err)
+          })
+
           throw new Error("No AI message content received")
         }
 
