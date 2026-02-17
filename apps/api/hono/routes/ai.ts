@@ -5288,7 +5288,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   // Priority: app.apiKeys > environment variables
   console.log("🔧 Initializing AI model for:", agent.name)
 
-  let model: ReturnType<getModelProvider>
+  let model: Awaited<ReturnType<typeof getModelProvider>>
 
   if (files.length > 0 && agent.name === "sushi") {
     const claude = await getAiAgent({
@@ -5300,8 +5300,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       return c.json({ error: "Claude not found" }, { status: 404 })
     }
     console.log("🤖 Using Claude for multimodal (images/videos/PDFs)")
-    const claudeProvider = await getModelProvider(requestApp, claude.name)
-    model = claudeProvider.provider
+    model = await getModelProvider(requestApp, claude.name)
   } else if (rest.webSearchEnabled && agent.name === "sushi") {
     const perplexityAgent = await getAiAgent({
       name: "perplexity",
@@ -5311,11 +5310,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       console.log("❌ Perplexity not found")
       return c.json({ error: "Perplexity not found" }, { status: 404 })
     }
-    const perplexityProvider = await getModelProvider(
-      requestApp,
-      perplexityAgent.name,
-    )
-    model = perplexityProvider.provider
+    model = await getModelProvider(requestApp, perplexityAgent.name)
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
     console.log(`🤖 Model resolution for: ${agent.name}`)
@@ -5323,14 +5318,9 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
     const canReason = job
       ? ["tribe_post", "moltbook_post"].includes(job.jobType)
       : undefined
-    const providerResult = await getModelProvider(
-      requestApp,
-      agent.name,
-      canReason,
-    )
-    model = providerResult.provider
+    model = await getModelProvider(requestApp, agent.name, canReason)
     console.log(
-      `✅ Provider created using: ${providerResult.agentName || agent.name}${jobId ? " (reasoning disabled for scheduled job)" : ""}`,
+      `✅ Provider created using: ${model.agentName || agent.name}${jobId ? " (reasoning disabled for scheduled job)" : ""}`,
     )
   }
 
@@ -5982,7 +5972,7 @@ Respond in JSON format:
             },
           })
           permanentUrl = result.url
-          title = result.title
+          title = result.title || agent.name
         } catch (error: any) {
           captureException(error)
           console.error("❌ Flux image upload failed:", error)
@@ -6070,13 +6060,12 @@ Respond in JSON format:
       }
     }
 
-    const { calendarTools, vaultTools, focusTools, imageTools, talentTools } =
-      getTools({
-        member,
-        guest,
-        currentThreadId,
-        currentMessageId: clientId, // Link moods to this AI response message
-      })
+    const { calendarTools, vaultTools, focusTools, talentTools } = getTools({
+      member,
+      guest,
+      currentThreadId,
+      currentMessageId: clientId, // Link moods to this AI response message
+    })
 
     // Combine calendar, vault, focus, image, and talent tools
     // Disable tools for Moltbook agents (security + performance)
@@ -6104,7 +6093,7 @@ Respond in JSON format:
       let responseMetadata: any = null
       let toolCallsDetected = false
       let streamCompleted = false
-      let tokenLimitWarning = ""
+      let tokenLimitWarning: string | null = null
 
       // Check token limit BEFORE streaming
       const modelId =
@@ -6167,7 +6156,7 @@ Respond in JSON format:
       try {
         console.log("🍣 Step 1: Creating streamText result...")
         const result = streamText({
-          model,
+          model: model.provider,
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
@@ -6485,7 +6474,7 @@ Respond in JSON format:
           )
           try {
             const fallbackResult = await generateText({
-              model,
+              model: model.provider,
               messages: [
                 ...messages,
                 {
@@ -6551,7 +6540,7 @@ Respond in JSON format:
           )
           try {
             const fallbackResult = await generateText({
-              model,
+              model: model.provider,
               messages: [
                 ...messages,
                 {
@@ -6618,7 +6607,7 @@ Respond in JSON format:
         let tribeContent = ""
         let tribe = ""
         let tribeSeoKeywords: string[] = []
-        let tribePostId = ""
+        let tribePostId: string | undefined
         const moltId = undefined
 
         // // Save final message to database
@@ -7047,7 +7036,7 @@ Respond in JSON format:
       try {
         console.time("aiProviderCall")
         const result = streamText({
-          model,
+          model: model.provider,
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
@@ -7158,7 +7147,7 @@ Respond in JSON format:
 
             try {
               const followUpResult = await generateText({
-                model,
+                model: model.provider,
                 messages: [
                   ...messages,
                   {
@@ -7327,7 +7316,7 @@ Respond in JSON format:
       try {
         console.time("geminiProviderCall")
         const result = streamText({
-          model,
+          model: model.provider,
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
@@ -7380,8 +7369,8 @@ Respond in JSON format:
         }
 
         let currentChunk = 0
-        let hasReceivedText = false
         let reasoningText = ""
+        let hasReceivedText = false
 
         // Use fullStream to get reasoning parts immediately
         for await (const part of result.fullStream) {
@@ -7512,7 +7501,7 @@ Respond in JSON format:
 
       // Use messages format for other providers
       const result = streamText({
-        model,
+        model: model.provider,
         messages,
         maxRetries: 3,
         temperature: requestApp?.temperature ?? 0.7,
@@ -7643,7 +7632,7 @@ Respond in JSON format:
           // Make a second AI call to generate a natural response based on tool execution
           try {
             const followUpResult = await generateText({
-              model,
+              model: model.provider,
               messages: [
                 ...messages,
                 {
