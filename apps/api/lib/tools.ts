@@ -1291,9 +1291,7 @@ export const getTools = ({
           member?.characterProfilesEnabled || guest?.characterProfilesEnabled
 
         if (!characterProfilesEnabled) {
-          console.log(
-            "⚠️ Mood creation blocked: Character profiles not enabled",
-          )
+          console.log("⚠️ Mood creation blocked: Character profiles not enabled")
           return {
             success: false,
             requiresConsent: true,

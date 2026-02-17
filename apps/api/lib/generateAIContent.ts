@@ -813,9 +813,7 @@ Return only valid JSON object.`
 
       // If placeholder creation failed (e.g., guest doesn't exist), log and continue
       if (!homePlaceholder) {
-        console.warn(
-          "⚠️ Home placeholder creation failed - guest may not exist",
-        )
+        console.warn("⚠️ Home placeholder creation failed - guest may not exist")
       }
     }
   }
@@ -1153,10 +1151,7 @@ async function generateAIContent({
 
     // Check rate limits first
     if (!checkThreadSummaryLimit({ user, guest, thread })) {
-      console.log(
-        "⚠️ Thread summary limit reached for user:",
-        userId || guestId,
-      )
+      console.log("⚠️ Thread summary limit reached for user:", userId || guestId)
       return
     }
 

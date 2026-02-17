@@ -757,7 +757,7 @@ export const chat = async ({
         timeout: 8000,
       })
 
-      prompt.model && (credits -= getModelCredits(prompt.model))
+      if (prompt.model) credits -= getModelCredits(prompt.model)
     } else {
       // Don't count Pear feedback messages towards hourly limit
       if (!isPear) {

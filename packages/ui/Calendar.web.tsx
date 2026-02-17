@@ -13,6 +13,7 @@ import {
 // Import drag and drop - using dynamic import for better compatibility
 import * as DnDModule from "react-big-calendar/lib/addons/dragAndDrop"
 import { Button } from "./platform"
+
 const withDragAndDrop = (DnDModule as any).default || DnDModule
 
 import {

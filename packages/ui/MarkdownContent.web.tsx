@@ -9,16 +9,13 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism"
 import { useAppContext } from "./context/AppContext"
 import Img from "./Img"
 import { Check, Copy } from "./icons"
-
-import { Button } from "./platform"
-
 import styles from "./MarkdownContent.module.scss"
 import {
   type CodeBlockProps,
   type MarkdownContentProps,
   processTextWithCitations,
 } from "./MarkdownContent.shared"
-import { Div, useTheme } from "./platform"
+import { Button, Div, useTheme } from "./platform"
 import { usePlatformStyles } from "./platform/usePlatformStyles"
 import Store from "./Store"
 import TextWithLinks from "./TextWithLinks"

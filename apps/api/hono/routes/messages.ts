@@ -732,19 +732,19 @@ messages.delete("/:id", async (c) => {
   // Delete associated files from MinIO
   const filesToDelete: string[] = []
   if (existingMessage.message.images) {
-    existingMessage.message.images.forEach(
-      (img) => img.url && filesToDelete.push(img.url),
-    )
+    existingMessage.message.images.forEach((img) => {
+      img.url && filesToDelete.push(img.url)
+    })
   }
   if (existingMessage.message.files) {
-    existingMessage.message.files.forEach(
-      (f) => f.url && filesToDelete.push(f.url),
-    )
+    existingMessage.message.files.forEach((f) => {
+      f.url && filesToDelete.push(f.url)
+    })
   }
   if (existingMessage.message.video) {
-    existingMessage.message.video.forEach(
-      (v) => v.url && filesToDelete.push(v.url),
-    )
+    existingMessage.message.video.forEach((v) => {
+      v.url && filesToDelete.push(v.url)
+    })
   }
 
   const deletePromises = filesToDelete.map((url) =>

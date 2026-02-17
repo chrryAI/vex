@@ -47,6 +47,7 @@
     "@biomejs/biome": "^2.4.2",
     "concurrently": "^9.2.1",
     "dotenv": "^17.3.1",
+    "eslint": "^8.57.1",
     "eslint-plugin-unused-imports": "^4.3.0",
     "husky": "^9.1.7",
     "is-reference": "^3.0.3",
@@ -70,6 +71,7 @@
   "packageManager": "pnpm@9.15.0",
   "pnpm": {
     "overrides": {
+      "eslint": "^8.57.1",
       "next": ">=16.1.5",
       "react-native": "0.78.3",
       "markdown-it@<12.3.2": ">=12.3.2",
@@ -99,10 +101,7 @@
       "ajv@<8.18.0": ">=8.18.0"
     }
   },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": ["apps/*", "packages/*"],
   "dependencies": {
     "@auth/core": "^0.37.4",
     "@axiomhq/pino": "^1.4.0",
@@ -119,7 +118,6 @@
     "@tauri-apps/api": "^2.9.1",
     "@tauri-apps/plugin-shell": "^2.3.4",
     "@types/ioredis": "^5.0.0",
-    "eslint": "^9.39.2",
     "eventsource-parser": "^3.0.6",
     "fast-xml-parser": "^5.3.4",
     "i18next": "^25.4.1",

@@ -2999,10 +2999,11 @@ export default function Chat({
                         data-testid={`agent-modal-button-${agent.name}`}
                         className={clsx(
                           `medium ${
-                            (agent.authorization === "user" &&
-                              !user &&
-                              !guest?.subscription) ||
-                            agent.id === sushiAgent?.id
+                            (
+                              agent.authorization === "user" &&
+                                !user &&
+                                !guest?.subscription
+                            ) || agent.id === sushiAgent?.id
                               ? "inverted"
                               : ""
                           }`,
@@ -3432,8 +3433,7 @@ export default function Chat({
                           )
                         }
                         return "5"
-                      })()}{" "}
-                      {t("requests")}
+                      })()} {t("requests")}
                     </Span>
                   </Div>
                   <Div style={styles.statItem.style}>

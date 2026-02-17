@@ -398,7 +398,7 @@ export const __Promise_all = (promises: any): Promise => {
   _allPromises = promises
 
   return new Promise((res, rej) => {
-    ;((_allRes = res), (_allRej = rej))
+    ;(_allRes = res), (_allRej = rej)
 
     const arr: any[] = Porffor.malloc()
     _allOut = arr
@@ -437,7 +437,7 @@ export const __Promise_allSettled = (promises: any): Promise => {
   _allPromises = promises
 
   return new Promise((res, rej) => {
-    ;((_allRes = res), (_allRej = rej))
+    ;(_allRes = res), (_allRej = rej)
 
     const arr: any[] = Porffor.malloc()
     _allOut = arr
@@ -485,7 +485,7 @@ export const __Promise_any = (promises: any): Promise => {
   _allPromises = promises
 
   return new Promise((res, rej) => {
-    ;((_allRes = res), (_allRej = rej))
+    ;(_allRes = res), (_allRej = rej)
 
     const arr: any[] = Porffor.malloc()
     _allOut = arr // list of rejections
@@ -519,7 +519,7 @@ export const __Promise_race = (promises: any): Promise => {
   _allPromises = promises
 
   return new Promise((res, rej) => {
-    ;((_allRes = res), (_allRej = rej))
+    ;(_allRes = res), (_allRej = rej)
 
     for (const x of _allPromises) {
       if (__ecma262_IsPromise(x)) {

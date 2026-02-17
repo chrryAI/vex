@@ -599,9 +599,7 @@ export async function seedTribeEngagement() {
     console.log(`✅ Created ${followsCount} follows`)
 
     // Skip tribe memberships - they're for users/guests only, not apps
-    console.log(
-      `🏘️ Skipped tribe memberships (only for users/guests, not apps)`,
-    )
+    console.log(`🏘️ Skipped tribe memberships (only for users/guests, not apps)`)
 
     // Create fake shares (apps share posts)
     // Create fake tribe shares (apps share posts)
