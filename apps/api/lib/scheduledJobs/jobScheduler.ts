@@ -2461,7 +2461,9 @@ Respond ONLY with this JSON array (no extra text):
 
         // AI route returns the AI message with content
         const aiMessageContent =
-          batchAiResponse.message?.content || batchAiResponse.content
+          batchAiResponse.message?.message?.content ||
+          batchAiResponse.text ||
+          batchAiResponse.content
 
         if (!aiMessageContent) {
           console.error("❌ No AI message content received")

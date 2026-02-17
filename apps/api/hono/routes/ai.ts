@@ -1319,6 +1319,9 @@ app.post("/", async (c) => {
       job?.jobType || "",
     ) || !!(thread?.isTribe || message.message?.isTribe)
 
+  if (!isTribe) return c.json({ error: "not a tribe" })
+  if (!job) return c.json({ error: "not a job" })
+
   // Use numeric comparison with defaults to prevent negative balances from bypassing
   const canPostToTribe =
     ((member?.tribeCredits ?? MEMBER_FREE_TRIBE_CREDITS) > 0 && isTribe) ||
