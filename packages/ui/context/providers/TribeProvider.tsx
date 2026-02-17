@@ -599,8 +599,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
         !optimisticLiked.includes(postId) &&
           setOptimisticLiked((prev) => [...prev, postId])
       } else {
-        optimisticLiked.includes(postId) &&
-          setOptimisticLiked((prev) => prev.filter((item) => item !== postId))
+        setOptimisticLiked((prev) => prev.filter((item) => item !== postId))
       }
       // Refetch posts to update like counts
 

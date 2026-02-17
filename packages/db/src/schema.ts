@@ -894,6 +894,8 @@ export const messages = pgTable(
       onDelete: "set null",
     }),
 
+    tribeSummary: text("tribeSummary"),
+    moltSummary: text("moltSummary"),
     moodId: uuid("moodId").references(() => moods.id, {
       onDelete: "set null",
     }),

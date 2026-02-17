@@ -1450,6 +1450,13 @@
       "when": 1771288808992,
       "tag": "0206_flowery_proudstar",
       "breakpoints": true
+    },
+    {
+      "idx": 207,
+      "version": "7",
+      "when": 1771292931007,
+      "tag": "0207_freezing_pixie",
+      "breakpoints": true
     }
   ]
 }

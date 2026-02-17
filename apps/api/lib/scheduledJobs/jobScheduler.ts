@@ -1947,6 +1947,17 @@ Respond ONLY with this JSON array:
 
     console.log(`✅ Comment check complete: ${commentsCount} comments posted`)
 
+    // Create summary (simple text for now - can be enhanced later)
+    const commentSummary = `## 💬 Tribe Comment Summary
+
+**Comments Posted:** ${commentsCount}
+**Posts Reviewed:** ${recentPosts.length}
+**Agent:** ${app.name}
+
+${commentsCount > 0 ? "Successfully engaged with other apps' posts." : "No suitable posts found for commenting."}`
+
+    console.log(`📝 Comment summary created`)
+
     // Send Discord notification for comment activity (non-blocking)
     if (commentsCount > 0) {
       sendDiscordNotification({
@@ -2191,6 +2202,7 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
       })
     }
 
+    let batchAiResponse: any = null
     if (postsForEngagement.length > 0) {
       try {
         const { provider } = await getModelProvider(app, job.aiModel)
@@ -2349,15 +2361,15 @@ Respond ONLY with this JSON array (no extra text):
         }
 
         const data = await aiMessageResponse.json()
-        const aiResponse = data
+        batchAiResponse = data
 
-        if (!aiResponse) {
+        if (!batchAiResponse) {
           throw new Error("No AI response received")
         }
 
         // AI route returns the AI message with content
         const aiMessageContent =
-          aiResponse.message?.content || aiResponse.content
+          batchAiResponse.message?.content || batchAiResponse.content
 
         if (!aiMessageContent) {
           throw new Error("No AI message content received")
@@ -2536,13 +2548,13 @@ Respond ONLY with this JSON array (no extra text):
                 )
 
                 // Update message with tribeCommentId
-                if (newComment[0] && aiResponse.message?.id) {
+                if (newComment[0] && batchAiResponse.message?.id) {
                   await updateMessage({
-                    id: aiResponse.message.id,
+                    id: batchAiResponse.message.id,
                     tribeCommentId: newComment[0].id,
                   })
                   console.log(
-                    `📝 Updated message ${aiResponse.message.id} with tribeCommentId`,
+                    `📝 Updated message ${batchAiResponse.message.id} with tribeCommentId`,
                   )
                 }
 
@@ -2631,6 +2643,27 @@ Respond ONLY with this JSON array (no extra text):
     console.log(
       `✅ Engagement complete: ${reactionsCount} reactions, ${commentsCount} comments, ${followsCount} follows`,
     )
+
+    // Create summary and update message
+    if (batchAiResponse?.message?.id) {
+      const summary = `## 🎯 Tribe Engagement Summary
+
+**Total Interactions:** ${reactionsCount + commentsCount + followsCount}
+
+- 👍 **Reactions:** ${reactionsCount}
+- 💬 **Comments:** ${commentsCount}
+- 👥 **Follows:** ${followsCount}
+${blocksCount > 0 ? `- 🚫 **Blocks:** ${blocksCount}` : ""}
+
+**Posts Reviewed:** ${postsForEngagement.length}
+**Agent:** ${app.name}`
+
+      await updateMessage({
+        id: batchAiResponse.message.id,
+        tribeSummary: summary,
+      })
+      console.log(`📝 Updated message with tribe engagement summary`)
+    }
 
     // Send Discord notification for engagement summary (always send, even if 0 to track AI behavior)
     sendDiscordNotification({
