@@ -493,7 +493,6 @@ export type messageActionType = {
 // Global type declaration for db
 declare global {
   // eslint-disable-next-line no-var
-  // biome-ignore lint/suspicious/noRedeclare: <explanation>
   var db: PostgresJsDatabase<typeof schema> | undefined
 }
 
@@ -535,7 +534,6 @@ const getDb = (): PostgresJsDatabase<typeof schema> => {
   }
 }
 
-// biome-ignore lint/suspicious/noRedeclare: <explanation>
 export const db: PostgresJsDatabase<typeof schema> = getDb()
 
 export function sanitizeSearchTerm(search: string): string {
@@ -5481,13 +5479,13 @@ export function toSafeApp({
       typeof app.apiKeys === "object" &&
       isOwner(app, { userId, guestId })
         ? Object.keys(app.apiKeys).reduce(
-            (acc, key) => ({
-              ...acc,
-              [key]: app?.apiKeys?.[key as keyof typeof app.apiKeys]
+            (acc, key) => {
+              acc[key] = app?.apiKeys?.[key as keyof typeof app.apiKeys]
                 ? "********"
-                : undefined,
-            }),
-            {},
+                : undefined
+              return acc
+            },
+            {} as Record<string, string | undefined>,
           )
         : undefined,
   }

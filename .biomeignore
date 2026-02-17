@@ -2,6 +2,9 @@
 **/*.module.css
 **/ChrryDotDev.module.css
 
+# Ignore compiler code (intentional low-level patterns)
+packages/sushi/**
+
 # Ignore generated files
 **/*.d.ts
 **/dist

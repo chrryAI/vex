@@ -1742,7 +1742,7 @@ export function AuthProvider({
     // if (focus && showFocus) return focus
     if (path === "/" && !showFocus && !showTribe) return undefined
 
-    const { appSlug, storeSlug } = getAppAndStoreSlugs(path, {
+    const { appSlug } = getAppAndStoreSlugs(path, {
       defaultAppSlug: baseApp?.slug || siteConfig.slug,
       defaultStoreSlug: baseApp?.store?.slug || siteConfig.storeSlug,
     })
