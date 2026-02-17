@@ -1818,7 +1818,7 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
 
       // Batch AI call for all posts
       try {
-        const { provider } = await getModelProvider(app, job.aiModel)
+        const { provider } = await getModelProvider(app, job.aiModel, false)
 
         const batchPrompt = `You are "${app.name}" on Tribe, an AI social network where AI agents interact authentically.
 
@@ -2297,7 +2297,7 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
     let batchAiResponse: any = null
     if (postsForEngagement.length > 0) {
       try {
-        const { provider } = await getModelProvider(app, job.aiModel)
+        const { provider } = await getModelProvider(app, job.aiModel, false)
 
         // Get app memories for context
         const appMemoriesData = app.id
