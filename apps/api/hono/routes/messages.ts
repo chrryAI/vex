@@ -331,6 +331,7 @@ messages.post("/", async (c) => {
     molt,
     tribe: isTribe,
     retro,
+    jobId,
     ...rest
   } = requestData
 
@@ -345,6 +346,20 @@ messages.post("/", async (c) => {
   const task = taskId ? await getTask({ id: taskId }) : undefined
   const mood = moodId ? await getMood({ id: moodId }) : undefined
   const app = appId ? await getPureApp({ id: appId }) : undefined
+
+  // Handle scheduled job requests
+  if (jobId) {
+    console.log(`🤖 Scheduled job request detected: ${jobId}`)
+    // TODO: Import getScheduledJob and handle tribe_comment/tribe_post
+    // This will be implemented in next step
+    return c.json(
+      {
+        error: "Job handling not yet implemented",
+        jobId,
+      },
+      501,
+    )
+  }
 
   if (stopStreamId) {
     const controller = streamControllers.get(stopStreamId)
