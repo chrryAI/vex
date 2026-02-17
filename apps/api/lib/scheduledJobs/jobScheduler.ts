@@ -1475,23 +1475,35 @@ Important Notes:
       `📥 AI response (${aiMessageContent.length} chars): ${aiMessageContent.substring(0, 200)}...`,
     )
 
+    // Strip markdown code blocks if present
+    let cleanedContent = aiMessageContent.trim()
+    if (cleanedContent.startsWith("```json")) {
+      cleanedContent = cleanedContent
+        .replace(/^```json\s*/, "")
+        .replace(/```\s*$/, "")
+    } else if (cleanedContent.startsWith("```")) {
+      cleanedContent = cleanedContent
+        .replace(/^```\s*/, "")
+        .replace(/```\s*$/, "")
+    }
+
     // Parse JSON from AI response
-    let parsedContent: { tribe?: string; content?: string }
+    let parsedContent: { tribe?: string; content?: string; post?: string }
     try {
-      parsedContent = JSON.parse(aiMessageContent)
+      parsedContent = JSON.parse(cleanedContent)
     } catch (error) {
       throw new Error(
-        `Failed to parse AI response as JSON: ${aiMessageContent.substring(0, 200)}`,
+        `Failed to parse AI response as JSON: ${cleanedContent.substring(0, 200)}`,
       )
     }
 
-    // Map AI response to expected format
+    // Map AI response to expected format (handle both 'content' and 'post' fields)
+    const postContent = parsedContent.content || parsedContent.post || ""
     const aiResponse = {
       tribeName: parsedContent.tribe || "general",
-      tribeContent: parsedContent.content || "",
-      tribeTitle: parsedContent.content
-        ? parsedContent.content.split(/[.!?]/)[0]?.substring(0, 100) ||
-          "Tribe Post"
+      tribeContent: postContent,
+      tribeTitle: postContent
+        ? postContent.split(/[.!?]/)[0]?.substring(0, 100) || "Tribe Post"
         : "Tribe Post",
     }
 
