@@ -9,8 +9,9 @@
     "dev:all": "concurrently \"turbo dev --filter=api\" \"turbo dev --filter=flash\"",
     "start:all": "concurrently \"turbo start --filter=api\" \"turbo start --filter=flash\"",
     "native": "cd apps/native && npm start",
-    "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
     "setup:env": "bash scripts/setup-env.sh",
     "translate": "node scripts/translate.js",
     "update-version": "node scripts/update-version.js",
@@ -39,7 +40,7 @@
     "test:coverage": "turbo run test:coverage",
     "validate:chrry": "node scripts/validate-chrry-config.js",
     "generate:icons": "bash scripts/generate-app-icons.sh",
-    "cleanup": "turbo lint -- --fix",
+    "cleanup": "biome check --write --unsafe .",
     "cleanup:unused": "node scripts/remove-unused.js",
     "browser": "bash scripts/run-browser.sh"
   },
@@ -47,12 +48,9 @@
     "@biomejs/biome": "^2.4.2",
     "concurrently": "^9.2.1",
     "dotenv": "^17.3.1",
-    "eslint": "^8.57.1",
-    "eslint-plugin-unused-imports": "^4.3.0",
     "husky": "^9.1.7",
     "is-reference": "^3.0.3",
     "openai": "^6.17.0",
-    "prettier": "^3.8.1",
     "tsx": "^4.21.0"
   },
   "overrides": {
@@ -71,7 +69,6 @@
   "packageManager": "pnpm@9.15.0",
   "pnpm": {
     "overrides": {
-      "eslint": "^8.57.1",
       "next": ">=16.1.5",
       "react-native": "0.78.3",
       "markdown-it@<12.3.2": ">=12.3.2",
@@ -101,7 +98,10 @@
       "ajv@<8.18.0": ">=8.18.0"
     }
   },
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "dependencies": {
     "@auth/core": "^0.37.4",
     "@axiomhq/pino": "^1.4.0",

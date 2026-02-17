@@ -32,7 +32,13 @@
     "./package.json": "./package.json",
     "./*": "./*"
   },
-  "files": ["dist", "locales", "**/*.css", "**/*.scss", "README.md"],
+  "files": [
+    "dist",
+    "locales",
+    "**/*.css",
+    "**/*.scss",
+    "README.md"
+  ],
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -59,7 +65,7 @@
   "scripts": {
     "build": "pnpm exec tsup",
     "dev": "pnpm exec tsup --watch",
-    "lint": "eslint . --max-warnings 2000",
+    "lint": "biome check .",
     "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit",
     "prepublishOnly": "npm run build",
