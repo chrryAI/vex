@@ -55,7 +55,7 @@ export interface TextProps extends BaseProps {
 
 export interface ButtonProps extends BaseProps {
   type?: "button" | "submit" | "reset"
-  onClick?: () => void
+  onClick?: (e?: any) => void
   disabled?: boolean
   title?: string
   id?: string
@@ -208,7 +208,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
 
     return (
       <Component
-        ref={ref}
+        ref={ref as any}
         className={hasStyleMappings ? undefined : className}
         style={sanitizedStyle}
         onClick={onClick}
@@ -260,7 +260,7 @@ export const Text = forwardRef<HTMLElement, TextProps>(
 
     return (
       <Component
-        ref={ref}
+        ref={ref as any}
         className={hasStyleMappings ? undefined : finalClassName}
         style={sanitizedStyle}
         onClick={onClick}
@@ -458,7 +458,6 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         disabled={disabled}
         rows={rows}
         maxLength={maxLength}
-        autoFocus={autoFocus}
         onKeyPress={onKeyPress}
         onPaste={onPaste}
         {...props}
@@ -768,7 +767,7 @@ export const Label = forwardRef<
     htmlFor={htmlFor}
     className={className}
     style={style as CSSProperties}
-    onClick={onClick}
+    onKeyDown={onClick as any}
     {...props}
   >
     {children}

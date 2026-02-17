@@ -1958,7 +1958,7 @@ Respond ONLY with this JSON array:
           jsonStr = jsonMatch[0]
         }
 
-        let comments
+        let comments: any[] = []
         try {
           comments = JSON.parse(jsonStr)
         } catch (parseError) {

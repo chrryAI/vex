@@ -5,6 +5,15 @@
 
 /// <reference types="chrome" />
 
+// React Native Platform API type declaration
+declare const Platform:
+  | {
+      OS: "ios" | "android" | "windows" | "macos" | "web"
+      Version?: number | string
+      select: <T>(obj: { ios?: T; android?: T; native?: T; default: T }) => T
+    }
+  | undefined
+
 export type PlatformType = "web" | "ios" | "android" | "native" | "extension"
 export type BrowserType = "chrome" | "firefox" | "safari" | "edge" | "unknown"
 

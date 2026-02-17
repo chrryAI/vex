@@ -10,6 +10,8 @@ import { useAppContext } from "./context/AppContext"
 import Img from "./Img"
 import { Check, Copy } from "./icons"
 
+import { Button } from "./platform"
+
 import styles from "./MarkdownContent.module.scss"
 import {
   type CodeBlockProps,
@@ -42,7 +44,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       setCopied(true)
       toast.success(t("Copied"))
       setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to copy code")
     }
   }
@@ -51,13 +53,13 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     <div className={styles.codeBlockContainer}>
       <div className={styles.codeBlockHeader}>
         <span className={styles.language}>{language}</span>
-        <button
+        <Button
           onClick={copyToClipboard}
           className={clx("link", styles.copyButton, copied && styles.copied)}
           title="Copy code"
         >
           {copied ? <Check size={18} /> : <Copy size={18} />}
-        </button>
+        </Button>
       </div>
       <SyntaxHighlighter
         style={vscDarkPlus}
@@ -104,10 +106,6 @@ const MarkdownContent = memo(
 
     if (!isMounted) return null
 
-    // Process content with citations if webSearchResults are available
-    const processedContent =
-      webSearchResults && webSearchResults.length > 0 ? content : content
-
     return (
       <Div
         style={style}
@@ -151,7 +149,7 @@ const MarkdownContent = memo(
                 )
               },
               // Customize other markdown elements as needed
-              p: ({ node, children }) => {
+              p: ({ _node, children }) => {
                 return (
                   <Div
                     data-testid="markdown-paragraph"
@@ -162,7 +160,7 @@ const MarkdownContent = memo(
                 )
               },
 
-              div: ({ node, children }) => {
+              div: ({ _node, children }) => {
                 return (
                   <Div
                     data-testid="markdown-paragraph"
@@ -269,9 +267,9 @@ const MarkdownContent = memo(
 
                   return (
                     <Div style={galleryContainerStyles}>
-                      {images.map((image, index) => (
+                      {images.map((image) => (
                         <Img
-                          key={index}
+                          key={image.src}
                           showLoading={false}
                           src={image.src}
                           alt={image.alt}

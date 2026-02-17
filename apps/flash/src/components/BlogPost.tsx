@@ -20,6 +20,7 @@ const MARKDOWN_COMPONENTS: Components = {
     <img
       {...props}
       loading="lazy"
+      alt={props.alt}
       decoding="async"
       style={{ maxWidth: "100%", height: "auto" }}
     />
@@ -107,7 +108,6 @@ export default function BlogPost({ post, locale }: BlogPostProps) {
             }}
             muted
             playsInline
-            aria-hidden="true"
           ></video>{" "}
           <time
             dateTime={post.date}

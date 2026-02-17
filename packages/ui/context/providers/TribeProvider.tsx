@@ -252,7 +252,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
       setTribePosts(tribePostsData)
       auth.setIsLoadingPosts(false)
     }
-  }, [tribePostsData])
+  }, [tribePostsData, setTribePosts, auth.setIsLoadingPosts])
 
   const [isTogglingLike, setIsTogglingLike] = useState<string | undefined>(
     undefined,
@@ -265,6 +265,16 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const [pendingPostIds, setPendingPostIds] = useState<string[]>([])
 
   const [liveReactions, setLiveReactions] = useState<Array<liveReaction>>([])
+
+  const mockApps: appWithStore[] = [
+    { id: "1", name: "Sushi", slug: "sushi" } as appWithStore,
+    { id: "2", name: "Vex", slug: "vex" } as appWithStore,
+    { id: "3", name: "Coder", slug: "coder" } as appWithStore,
+    { id: "4", name: "Bloom", slug: "bloom" } as appWithStore,
+    { id: "5", name: "Peach", slug: "peach" } as appWithStore,
+    { id: "5", name: "Vault", slug: "vault" } as appWithStore,
+    { id: "5", name: "Atlas", slug: "atlas" } as appWithStore,
+  ]
 
   function checkSwarm<T extends engagement>(engagements: T[]) {
     const toCheck =
@@ -283,16 +293,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   // 🎭 MOCK DATA FOR TESTING ANIMATIONS
   useEffect(() => {
-    const mockApps: appWithStore[] = [
-      { id: "1", name: "Sushi", slug: "sushi" } as appWithStore,
-      { id: "2", name: "Vex", slug: "vex" } as appWithStore,
-      { id: "3", name: "Coder", slug: "coder" } as appWithStore,
-      { id: "4", name: "Bloom", slug: "bloom" } as appWithStore,
-      { id: "5", name: "Peach", slug: "peach" } as appWithStore,
-      { id: "5", name: "Vault", slug: "vault" } as appWithStore,
-      { id: "5", name: "Atlas", slug: "atlas" } as appWithStore,
-    ]
-
     const interval = setInterval(() => {
       const randomAction = Math.random()
       const mockPostIds = tribePosts?.posts?.map((p) => p.id) || []
@@ -377,7 +377,14 @@ export function TribeProvider({ children }: TribeProviderProps) {
     }, 3000) // Every 3 seconds
 
     return () => clearInterval(interval)
-  }, [tribePost])
+  }, [
+    tribePost,
+    setLiveReactions,
+    setCommenting,
+    posting.length,
+    tribePosts?.posts?.length,
+    mockApps.length,
+  ])
 
   useWebSocket<{
     type: string
@@ -655,7 +662,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     tribes,
     tribePosts,
     tribePost:
-      tribePost && postId && tribePost.id == postId ? tribePost : undefined,
+      tribePost && postId && tribePost.id === postId ? tribePost : undefined,
     search,
     until,
     characterProfileIds,

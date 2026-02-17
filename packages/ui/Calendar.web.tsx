@@ -12,7 +12,7 @@ import {
 } from "react-big-calendar"
 // Import drag and drop - using dynamic import for better compatibility
 import * as DnDModule from "react-big-calendar/lib/addons/dragAndDrop"
-
+import { Button } from "./platform"
 const withDragAndDrop = (DnDModule as any).default || DnDModule
 
 import {
@@ -120,30 +120,38 @@ const CustomToolbar = (
     <div className={styles.toolbar}>
       <div className={styles.toolbarSection}>
         {(threadId || app) && (
-          <button
-            onClick={() => (app ? goToApp(app) : goToThread(threadId!))}
+          <Button
+            onClick={() =>
+              app ? goToApp(app) : threadId && goToThread(threadId)
+            }
             className="transparent"
             title={t("Back to chat")}
           >
             <ArrowLeft size={16} />
             {t("Back")}
-          </button>
+          </Button>
         )}
-        <button onClick={() => onNavigate("TODAY")}>{t("Today")}</button>
-        <button
+        <Button
+          onClick={() => {
+            onNavigate("TODAY")
+          }}
+        >
+          {t("Today")}
+        </Button>
+        <Button
           className={clsx("inverted", styles.arrowButton)}
           onClick={() => onNavigate("PREV")}
         >
           <ArrowLeftIcon size={16} />
-        </button>
-        <button
+        </Button>
+        <Button
           className={clsx("inverted", styles.arrowButton)}
           onClick={() => onNavigate("NEXT")}
         >
           <ArrowRightIcon size={16} />
-        </button>
+        </Button>
         {onGoogleSync && (
-          <button
+          <Button
             onClick={onGoogleSync}
             disabled={isSyncing}
             className="transparent"
@@ -166,7 +174,7 @@ const CustomToolbar = (
                 {t("Connect Google")}
               </>
             )}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -174,7 +182,7 @@ const CustomToolbar = (
 
       <div className={clsx(styles.toolbarSection, styles.viewButtons)}>
         {availableViews.map((viewName) => (
-          <button
+          <Button
             key={viewName}
             className={clsx(view !== viewName ? "transparent" : "inverted")}
             onClick={() => onView(viewName)}
@@ -183,7 +191,7 @@ const CustomToolbar = (
             {viewName === Views.WEEK && t("Week")}
             {viewName === Views.DAY && t("Day")}
             {viewName === Views.AGENDA && t("Agenda")}
-          </button>
+          </Button>
         ))}
       </div>
     </div>
@@ -515,7 +523,7 @@ export default function Calendar({
         >
           <div>{children}</div>
           {hasMoreEvents && isLastVisibleEvent && (
-            <button
+            <Button
               className="show-more-link"
               onClick={(e) => {
                 e.stopPropagation()
@@ -525,7 +533,7 @@ export default function Calendar({
               }}
             >
               +{dayEvents.length - 4} more
-            </button>
+            </Button>
           )}
         </div>
       )
@@ -887,7 +895,7 @@ export default function Calendar({
       month: {
         dateHeader: ({ date }: any) => (
           <div className={clsx(styles.dateHeader, device && styles[device])}>
-            <button
+            <Button
               className={clsx("link", styles.addEventButton)}
               onClick={(e) => {
                 e.stopPropagation()
@@ -911,8 +919,8 @@ export default function Calendar({
               }}
             >
               <CalendarPlus className={styles.calendarPlus} size={16} />
-            </button>
-            <button
+            </Button>
+            <Button
               className={clsx("small transparent", styles.dateButton)}
               onClick={(e) => {
                 e.stopPropagation()
@@ -922,7 +930,7 @@ export default function Calendar({
               }}
             >
               {date.getDate()}
-            </button>
+            </Button>
           </div>
         ),
       },
@@ -971,55 +979,49 @@ export default function Calendar({
           device && styles[device],
         )}
       >
-        {false ? (
-          <div className={styles.loadingContainer}>
-            <Loading className={styles.loading} />
-          </div>
-        ) : (
-          <DnDCalendar
-            localizer={localizer}
-            messages={messages}
-            events={transformedEvents}
-            startAccessor={(event: any) => event.start}
-            endAccessor={(event: any) => event.end}
-            titleAccessor="title"
-            allDayAccessor={(event: any) => event.isAllDay}
-            // Views
-            views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
-            view={view}
-            onView={handleViewChange}
-            // Date navigation
-            date={date}
-            onNavigate={handleNavigate}
-            // Disable built-in popup (we use custom wrapper)
-            popup={false}
-            // Event handlers
-            onSelectEvent={handleSelectEvent}
-            onSelectSlot={view !== Views.MONTH ? handleSelectSlot : undefined}
-            onEventDrop={handleEventDrop}
-            onEventResize={handleEventResize}
-            // Selection
-            selectable={true}
-            resizable={true}
-            // Time configuration
-            step={15} // 15-minute increments
-            timeslots={4} // 4 slots per hour (15min each)
-            min={new Date(2024, 0, 1, 6, 0)} // Start at 6 AM
-            max={new Date(2024, 0, 1, 22, 0)} // End at 10 PM
-            // Styling
-            eventPropGetter={eventStyleGetter}
-            dayPropGetter={dayPropGetter}
-            slotPropGetter={slotPropGetter}
-            // Custom components
-            components={components}
-            // Remove popup-based overflow detection
-            showMultiDayTimes={false} // Don't show times for multi-day events
-            // Drag and drop
-            draggableAccessor={() => true}
-            // Formats
-            formats={formats}
-          />
-        )}
+        <DnDCalendar
+          localizer={localizer}
+          messages={messages}
+          events={transformedEvents}
+          startAccessor={(event: any) => event.start}
+          endAccessor={(event: any) => event.end}
+          titleAccessor="title"
+          allDayAccessor={(event: any) => event.isAllDay}
+          // Views
+          views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
+          view={view}
+          onView={handleViewChange}
+          // Date navigation
+          date={date}
+          onNavigate={handleNavigate}
+          // Disable built-in popup (we use custom wrapper)
+          popup={false}
+          // Event handlers
+          onSelectEvent={handleSelectEvent}
+          onSelectSlot={view !== Views.MONTH ? handleSelectSlot : undefined}
+          onEventDrop={handleEventDrop}
+          onEventResize={handleEventResize}
+          // Selection
+          selectable={true}
+          resizable={true}
+          // Time configuration
+          step={15} // 15-minute increments
+          timeslots={4} // 4 slots per hour (15min each)
+          min={new Date(2024, 0, 1, 6, 0)} // Start at 6 AM
+          max={new Date(2024, 0, 1, 22, 0)} // End at 10 PM
+          // Styling
+          eventPropGetter={eventStyleGetter}
+          dayPropGetter={dayPropGetter}
+          slotPropGetter={slotPropGetter}
+          // Custom components
+          components={components}
+          // Remove popup-based overflow detection
+          showMultiDayTimes={false} // Don't show times for multi-day events
+          // Drag and drop
+          draggableAccessor={() => true}
+          // Formats
+          formats={formats}
+        />
       </div>
 
       {/* Event Creation Modal */}

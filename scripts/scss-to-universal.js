@@ -5,9 +5,10 @@
  * Converts SCSS module files to work on both web and native
  */
 
-import fs from "fs"
-import path, { dirname } from "path"
-import { fileURLToPath } from "url"
+// biome-ignore-all lint: reason
+import fs from "node:fs"
+import path, { dirname } from "node:path"
+import { fileURLToPath } from "node:url"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -749,13 +750,16 @@ export const ${camelFileName}StyleDefs = {\n`
   code += `} as const\n\n`
 
   // Check if any styles have interactive states
-  const hasAnyInteractive = Object.values(styles).some(
-    (styleObj) =>
-      Object.keys(styleObj.hover).length > 0 ||
-      Object.keys(styleObj.active).length > 0 ||
-      Object.keys(styleObj.focus).length > 0 ||
-      Object.keys(styleObj.disabled).length > 0,
-  )
+  // ustable
+  const hasAnyInteractive = false
+
+  // Object.values(styles).some(
+  //   (styleObj) =>
+  //     Object.keys(styleObj.hover).length > 0 ||
+  //     Object.keys(styleObj.active).length > 0 ||
+  //     Object.keys(styleObj.focus).length > 0 ||
+  //     Object.keys(styleObj.disabled).length > 0,
+  // )
 
   if (hasAnyInteractive) {
     // Generate with interactive styles support

@@ -47,7 +47,6 @@ export default function Select({
         required={required}
         options={options}
         style={{ ...styles.select.style }}
-        {...styles.select.handlers}
         {...rest}
       />
       <CircleArrowDown

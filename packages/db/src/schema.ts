@@ -1885,7 +1885,7 @@ export const realtimeAnalytics = pgTable("realtime_analytics", {
     .notNull(),
 })
 
-export const creditUsage = pgTable(
+export const creditUsages = pgTable(
   "creditUsage",
   {
     id: uuid("id").defaultRandom().notNull().primaryKey(),
@@ -3226,7 +3226,7 @@ export const appOrders = pgTable(
   ],
 )
 
-export const appExtend = pgTable(
+export const appExtends = pgTable(
   "appExtends",
   {
     appId: uuid("appId")

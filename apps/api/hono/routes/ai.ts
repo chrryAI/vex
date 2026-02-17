@@ -505,7 +505,7 @@ async function getRelevantMemoryContext({
  */
 async function getNewsContext(slug?: string | null): Promise<string> {
   try {
-    let news
+    let news: any[] = []
 
     // Map app names to news sources
     const sourceMap: Record<string, string> = {
@@ -1143,9 +1143,9 @@ Be helpful, concise, and friendly.${templateErrorNote}`
   }
 }
 
-const app = new Hono()
+const ai = new Hono()
 
-app.post("/", async (c) => {
+ai.post("/", async (c) => {
   const tracker = new PerformanceTracker("ai_request")
   const request = c.req.raw
   // const startTime = Date.now()
@@ -4229,11 +4229,18 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
     const uploadedVideo = []
     const uploadedFiles = []
 
+    type uploadResultType = {
+      url: string
+      width?: number
+      height?: number
+      title?: string
+    }
+
     // Add file parts
     if (userContent.files && userContent.files.length > 0) {
       for (const file of userContent.files) {
         if (file.type === "image") {
-          let uploadResult
+          let uploadResult: uploadResultType
           try {
             uploadResult = await tracker.track("upload_image", () =>
               upload({
@@ -4247,7 +4254,6 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             )
           } catch (error: any) {
             captureException(error)
-
             console.error("❌ Image upload failed:", error)
             return c.json(
               { error: `Failed to upload image: ${error.message}` },
@@ -4273,7 +4279,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             text: `[${file.type.toUpperCase()} FILE: ${file.filename} (${(file.size / 1024).toFixed(1)}KB)]`,
           })
           if (file.type === "audio") {
-            let uploadResult
+            let uploadResult: uploadResultType
             try {
               uploadResult = await upload({
                 url: `data:${file.mimeType};base64,${file.data}`,
@@ -4298,7 +4304,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               size: file.size,
             })
           } else {
-            let uploadResult
+            let uploadResult: uploadResultType
             try {
               uploadResult = await upload({
                 url: `data:${file.mimeType};base64,${file.data}`,
@@ -4352,7 +4358,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 error,
               )
               // Fallback: upload video as file
-              let uploadResult
+              let uploadResult: any
               try {
                 uploadResult = await upload({
                   url: `data:${file.mimeType};base64,${file.data}`,
@@ -4440,7 +4446,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             text: `[TEXT FILE: ${file.filename}] - Processed for intelligent search (${Math.round((textContent?.length || 0) / 1000)}k chars)`,
           })
         } else if (file.type === "pdf" || file.type === "application/pdf") {
-          let uploadResult
+          let uploadResult: uploadResultType
           try {
             uploadResult = await upload({
               url: `data:${file.mimeType};base64,${file.data}`,
@@ -5282,7 +5288,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   // Priority: app.apiKeys > environment variables
   console.log("🔧 Initializing AI model for:", agent.name)
 
-  let model
+  let model: ReturnType<getModelProvider>
 
   if (files.length > 0 && agent.name === "sushi") {
     const claude = await getAiAgent({
@@ -5962,7 +5968,8 @@ Respond in JSON format:
         )
 
         // Upload to UploadThing for permanent storage
-        let permanentUrl, title
+        let permanentUrl: string
+        let title: string
         try {
           const result = await upload({
             url: imageUrlString, // Use string URL
@@ -6611,7 +6618,7 @@ Respond in JSON format:
         let tribeContent = ""
         let tribe = ""
         let tribeSeoKeywords: string[] = []
-        let tribePostId
+        let tribePostId = ""
         const moltId = undefined
 
         // // Save final message to database
@@ -7834,4 +7841,4 @@ Respond in JSON format:
   }
 })
 
-export { app as ai }
+export { ai }

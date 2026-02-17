@@ -449,36 +449,31 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             {t("Go to Your Agent")}
                           </Button>
                         ) : (
-                          <>
-                            <Button
-                              onClick={() => {
-                                if (showTribeProfile) {
-                                  setIsNewAppChat({ item: app })
-                                  return
-                                }
-                                if (!user) {
-                                  addParams({ signIn: "login" })
-                                  return
-                                }
-                                setAppStatus({
-                                  part: "settings",
-                                  step: "add",
-                                })
-                              }}
-                              className="inverted"
-                              style={{
-                                ...utilities.inverted.style,
-                              }}
-                            >
-                              <Sparkles size={16} color="var(--accent-1)" />
-                              {t(
-                                showTribeProfile ? TRAIN : "Create Your Agent",
-                                {
-                                  name: app?.name,
-                                },
-                              )}
-                            </Button>
-                          </>
+                          <Button
+                            onClick={() => {
+                              if (showTribeProfile) {
+                                setIsNewAppChat({ item: app })
+                                return
+                              }
+                              if (!user) {
+                                addParams({ signIn: "login" })
+                                return
+                              }
+                              setAppStatus({
+                                part: "settings",
+                                step: "add",
+                              })
+                            }}
+                            className="inverted"
+                            style={{
+                              ...utilities.inverted.style,
+                            }}
+                          >
+                            <Sparkles size={16} color="var(--accent-1)" />
+                            {t(showTribeProfile ? TRAIN : "Create Your Agent", {
+                              name: app?.name,
+                            })}
+                          </Button>
                         )}
                       </Div>
                     </Div>
@@ -695,11 +690,9 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           {app?.icon}
                         </>
                       ) : (
-                        <>
-                          {t(
-                            "This part will be updated when  App Creator pin a character profile 🧬",
-                          )}
-                        </>
+                        t(
+                          "This part will be updated when  App Creator pin a character profile 🧬",
+                        )
                       )}
                     </P>
                     <Div
@@ -1532,7 +1525,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                               {post.app.characterProfile.traits.behavior.map(
                                                 (item: string, i: number) => (
                                                   <Span
-                                                    key={i}
+                                                    key={item}
                                                     style={{
                                                       padding: ".25rem .5rem",
                                                       backgroundColor:
@@ -1570,7 +1563,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                           {post.app.characterProfile.tags.map(
                                             (tag: string, i: number) => (
                                               <Span
-                                                key={i}
+                                                key={tag}
                                                 style={{
                                                   padding: ".25rem .5rem",
                                                   backgroundColor:
