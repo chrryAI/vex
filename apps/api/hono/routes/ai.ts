@@ -1309,16 +1309,23 @@ ai.post("/", async (c) => {
   // Extract maxTokens from job's active scheduledTime
   let jobMaxTokens: number | undefined
   if (job?.scheduledTimes && job.scheduledTimes.length > 0) {
-    // Find the active scheduledTime based on current time
-    const now = new Date()
-    const nowMs = now.getTime()
+    // First try to find by postType if provided (most accurate)
+    let activeSchedule = postType
+      ? job.scheduledTimes.find((schedule) => schedule.postType === postType)
+      : undefined
 
-    const activeSchedule = job.scheduledTimes.find((schedule) => {
-      const scheduleDate = new Date(schedule.time)
-      const scheduleMs = scheduleDate.getTime()
-      const diffMs = Math.abs(nowMs - scheduleMs)
-      return diffMs <= 15 * 60 * 1000 // 15 minute window for scheduled jobs
-    })
+    // Fallback to time-based matching if postType not found
+    if (!activeSchedule) {
+      const now = new Date()
+      const nowMs = now.getTime()
+
+      activeSchedule = job.scheduledTimes.find((schedule) => {
+        const scheduleDate = new Date(schedule.time)
+        const scheduleMs = scheduleDate.getTime()
+        const diffMs = Math.abs(nowMs - scheduleMs)
+        return diffMs <= 15 * 60 * 1000 // 15 minute window for scheduled jobs
+      })
+    }
 
     if (activeSchedule?.maxTokens) {
       jobMaxTokens = activeSchedule.maxTokens
