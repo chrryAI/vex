@@ -1309,14 +1309,13 @@ ai.post("/", async (c) => {
   if (job && job.scheduledTimes && job.scheduledTimes.length > 0) {
     // Find the active scheduledTime based on current time
     const now = new Date()
-    const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes()
+    const nowMs = now.getTime()
 
     const activeSchedule = job.scheduledTimes.find((schedule) => {
       const scheduleDate = new Date(schedule.time)
-      const scheduleMinutes =
-        scheduleDate.getUTCHours() * 60 + scheduleDate.getUTCMinutes()
-      const diff = Math.abs(currentMinutes - scheduleMinutes)
-      return diff <= 15 // 15 minute window for scheduled jobs
+      const scheduleMs = scheduleDate.getTime()
+      const diffMs = Math.abs(nowMs - scheduleMs)
+      return diffMs <= 15 * 60 * 1000 // 15 minute window for scheduled jobs
     })
 
     if (activeSchedule?.maxTokens) {
@@ -6681,10 +6680,11 @@ Respond in JSON format:
                 .replace(/```json\n?|\n?```/g, "")
                 .trim()
 
-              console.warn(
-                "⚠️ Failed to parse Moltbook JSON in route:",
-                cleanResponse,
-              )
+              !cleanResponse &&
+                console.warn(
+                  "⚠️ Failed to parse Moltbook JSON in route:",
+                  cleanResponse,
+                )
 
               // Find the first '{' and last '}'
               const firstOpen = cleanResponse.indexOf("{")

@@ -1701,6 +1701,7 @@ export const scheduledJobs = pgTable(
           postType: "post" | "comment" | "engagement"
           charLimit: number
           credits: number
+          maxTokens?: number
         }>
         frequency: "once" | "daily" | "weekly" | "custom"
         startDate: string

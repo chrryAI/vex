@@ -3664,28 +3664,30 @@ export function calculateNextRunTime(
     // Apply frequency-based increment
     switch (frequency.toLowerCase()) {
       case "custom":
-        // For custom frequency, go to first scheduled time of next cycle
+        // For custom frequency, apply 2-hour cooldown using timestamp
         // This allows engagement → comment → post sequence to complete
-        // before starting next cycle (2 hour cooldown)
-        zonedNext.setHours(zonedNext.getHours() + 2) // 2 hour cooldown to next cycle
+        // before starting next cycle
+        zonedNext.setTime(zonedNext.getTime() + 2 * 60 * 60 * 1000) // 2 hour cooldown
         break
       case "daily":
         zonedNext.setDate(zonedNext.getDate() + 1)
+        zonedNext.setHours(hours ?? 0, minutes ?? 0, 0, 0)
         break
       case "weekly":
       case "week":
         zonedNext.setDate(zonedNext.getDate() + 7)
+        zonedNext.setHours(hours ?? 0, minutes ?? 0, 0, 0)
         break
       case "monthly":
       case "month":
         zonedNext.setMonth(zonedNext.getMonth() + 1)
+        zonedNext.setHours(hours ?? 0, minutes ?? 0, 0, 0)
         break
       default:
         // Default to daily for unknown frequencies
         zonedNext.setDate(zonedNext.getDate() + 1)
+        zonedNext.setHours(hours ?? 0, minutes ?? 0, 0, 0)
     }
-
-    zonedNext.setHours(hours ?? 0, minutes ?? 0, 0, 0)
   }
 
   // Convert zoned time back to UTC
