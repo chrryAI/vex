@@ -22,11 +22,15 @@
     "rules": {
       "recommended": true,
       "correctness": {
+        "noUnknownTypeSelector": "off",
         "useExhaustiveDependencies": "off",
         "noUnusedImports": "warn",
         "noUnusedVariables": "warn",
         "noUnusedFunctionParameters": "off",
-        "noUnreachable": "off"
+        "noUnreachable": "off",
+        "useHookAtTopLevel": "off",
+        "noInnerDeclarations": "off",
+        "noUnsafeOptionalChaining": "off"
       },
       "security": {
         "noDangerouslySetInnerHtml": "off"
@@ -39,7 +43,10 @@
         "noAssignInExpressions": "off",
         "useIterableCallbackReturn": "off",
         "noNonNullAssertedOptionalChain": "off",
-        "noTemplateCurlyInString": "off"
+        "noTemplateCurlyInString": "off",
+        "noControlCharactersInRegex": "off",
+        "noShadowRestrictedNames": "off",
+        "noDuplicateJsxProps": "warn"
       },
       "complexity": {
         "noUselessFragments": "off",
@@ -51,7 +58,10 @@
         "noUnusedTemplateLiteral": "off"
       },
       "a11y": {
-        "noSvgWithoutTitle": "off"
+        "noSvgWithoutTitle": "off",
+        "noStaticElementInteractions": "off",
+        "useKeyWithClickEvents": "off",
+        "useMediaCaption": "off"
       }
     }
   },

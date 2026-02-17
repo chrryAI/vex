@@ -1659,7 +1659,7 @@ const _waffles = async () => {
   })
   if (!admin) throw new Error("Admin user not found")
 
-  const { vex } = await createStores({ user: admin })
+  await createStores({ user: admin })
 }
 
 const _generateTribes = async () => {

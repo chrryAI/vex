@@ -247,7 +247,7 @@ export function ChatProvider({
 
   const setShowTribe = auth.setShowTribe
 
-  const { isExtension, isMobile, isTauri, isCapacitor } = usePlatform()
+  const { isExtension, isMobile, isTauri } = usePlatform()
 
   const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
 
@@ -815,7 +815,7 @@ export function ChatProvider({
     }
   }, [placeHolder, app])
 
-  const { appStatus, setIsSavingApp, setIsManagingApp } = useApp()
+  const { appStatus } = useApp()
 
   const { captureException } = useError()
 
@@ -1030,7 +1030,7 @@ export function ChatProvider({
     setDebateAgent(null)
   }, [app, aiAgents])
 
-  const { isDevelopment, isE2E, actions } = useData()
+  const { actions } = useData()
 
   const isDebating = !!debateAgent
 

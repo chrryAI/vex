@@ -69,12 +69,14 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
         {/* <p>Choose how you want to use Grape:</p> */}
         <div style={styles.icons.style}>
           <button
+            type="button"
             // style={{ ...styles.icon.style, ...(option === "consumer" && styles.selected) }}
             onClick={() => setOption("consumer")}
           >
             <Img icon="pacman" size={128} />
           </button>
           <button
+            type="button"
             // style={{ ...styles.icon.style, ...(option === "advertiser" && styles.selected) }}
             onClick={() => setOption("advertiser")}
           >
@@ -107,17 +109,17 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
         )}
         <div style={styles.actions.style}>
           {user?.adConsent ? (
-            <button>Continue</button>
+            <button type="button">Continue</button>
           ) : (
             <div style={styles.adConsent.style}>
               <p>Some info and privacy link</p>
-              <button>Accept</button>
+              <button type="button">Accept</button>
             </div>
           )}
           {guest ? (
             <>
-              <button>Create Account</button>
-              <button>Sign In</button>
+              <button type="button">Create Account</button>
+              <button type="button">Sign In</button>
             </>
           ) : null}
         </div>
@@ -207,7 +209,7 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
           <p>$0.00</p>
         </div>
 
-        <button disabled>
+        <button type="button" disabled>
           <span>💸</span>
           Request Payout
         </button>
@@ -246,7 +248,10 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
           <p>0</p>
         </div>
 
-        <button onClick={() => setCurrentView("advertiser-campaigns")}>
+        <button
+          type="button"
+          onClick={() => setCurrentView("advertiser-campaigns")}
+        >
           <span>➕</span>
           Create Campaign
         </button>
@@ -262,7 +267,7 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
       </header>
 
       <article>
-        <button>
+        <button type="button">
           <span>➕</span>
           Create New Campaign
         </button>
@@ -340,13 +345,15 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
 
         <div>
           <h3>Change Role</h3>
-          <button onClick={() => handleRoleSelect("consumer")}>
+          <button type="button" onClick={() => handleRoleSelect("consumer")}>
             👤 Consumer
           </button>
-          <button onClick={() => handleRoleSelect("advertiser")}>
+          <button type="button" onClick={() => handleRoleSelect("advertiser")}>
             📢 Advertiser
           </button>
-          <button onClick={() => handleRoleSelect("both")}>🔄 Both</button>
+          <button type="button" onClick={() => handleRoleSelect("both")}>
+            🔄 Both
+          </button>
         </div>
 
         <div>
@@ -361,6 +368,7 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
         </div>
 
         <button
+          type="button"
           onClick={() => {
             setUserRole("both")
             setCurrentView("onboarding")
@@ -402,19 +410,28 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
       return (
         <footer>
           <nav>
-            <button onClick={() => setCurrentView("consumer-home")}>
+            <button
+              type="button"
+              onClick={() => setCurrentView("consumer-home")}
+            >
               <span>🏠</span>
               <small>Home</small>
             </button>
-            <button onClick={() => setCurrentView("consumer-stats")}>
+            <button
+              type="button"
+              onClick={() => setCurrentView("consumer-stats")}
+            >
               <span>📊</span>
               <small>Stats</small>
             </button>
-            <button onClick={() => setCurrentView("consumer-earnings")}>
+            <button
+              type="button"
+              onClick={() => setCurrentView("consumer-earnings")}
+            >
               <span>💰</span>
               <small>Earnings</small>
             </button>
-            <button onClick={() => setCurrentView("settings")}>
+            <button type="button" onClick={() => setCurrentView("settings")}>
               <span>⚙️</span>
               <small>Settings</small>
             </button>
@@ -427,19 +444,28 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
       return (
         <footer>
           <nav>
-            <button onClick={() => setCurrentView("advertiser-home")}>
+            <button
+              type="button"
+              onClick={() => setCurrentView("advertiser-home")}
+            >
               <span>🏠</span>
               <small>Home</small>
             </button>
-            <button onClick={() => setCurrentView("advertiser-campaigns")}>
+            <button
+              type="button"
+              onClick={() => setCurrentView("advertiser-campaigns")}
+            >
               <span>📢</span>
               <small>Campaigns</small>
             </button>
-            <button onClick={() => setCurrentView("advertiser-analytics")}>
+            <button
+              type="button"
+              onClick={() => setCurrentView("advertiser-analytics")}
+            >
               <span>📊</span>
               <small>Analytics</small>
             </button>
-            <button onClick={() => setCurrentView("settings")}>
+            <button type="button" onClick={() => setCurrentView("settings")}>
               <span>⚙️</span>
               <small>Settings</small>
             </button>
@@ -452,23 +478,35 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
       return (
         <footer>
           <nav>
-            <button onClick={() => setCurrentView("consumer-home")}>
+            <button
+              type="button"
+              onClick={() => setCurrentView("consumer-home")}
+            >
               <span>🏠</span>
               <small>Home</small>
             </button>
-            <button onClick={() => setCurrentView("consumer-earnings")}>
+            <button
+              type="button"
+              onClick={() => setCurrentView("consumer-earnings")}
+            >
               <span>💰</span>
               <small>Earn</small>
             </button>
-            <button onClick={() => setCurrentView("advertiser-campaigns")}>
+            <button
+              type="button"
+              onClick={() => setCurrentView("advertiser-campaigns")}
+            >
               <span>📢</span>
               <small>Advertise</small>
             </button>
-            <button onClick={() => setCurrentView("advertiser-analytics")}>
+            <button
+              type="button"
+              onClick={() => setCurrentView("advertiser-analytics")}
+            >
               <span>📊</span>
               <small>Stats</small>
             </button>
-            <button onClick={() => setCurrentView("settings")}>
+            <button type="button" onClick={() => setCurrentView("settings")}>
               <span>⚙️</span>
               <small>Settings</small>
             </button>

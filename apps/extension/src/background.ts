@@ -292,7 +292,7 @@ declare module "webextension-polyfill" {
   }
 }
 
-type RuntimeMessageHandler = (
+export type RuntimeMessageHandler = (
   request: unknown,
   sender: browser.Runtime.MessageSender,
   sendResponse: (response?: unknown) => void,

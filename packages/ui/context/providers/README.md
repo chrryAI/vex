@@ -215,7 +215,7 @@ function PromptLimitsConfig() {
       <p>Input: {PROMPT_LIMITS.INPUT}</p>
       <p>Instructions: {PROMPT_LIMITS.INSTRUCTIONS}</p>
       <p>Total: {PROMPT_LIMITS.TOTAL}</p>
-      <button onClick={handleUpdate}>Update Limits</button>
+      <button type="button"  onClick={handleUpdate}>Update Limits</button>
     </div>
   )
 }

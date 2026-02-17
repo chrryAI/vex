@@ -152,7 +152,6 @@ export function NavigationProvider({
     setIsVisitor,
     refetchThreads,
     userNameByUrl,
-    setShouldFetchThread,
   } = useChat()
 
   const goToCalendar = () => {

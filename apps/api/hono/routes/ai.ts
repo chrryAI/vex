@@ -2336,7 +2336,6 @@ ${tribesList || "  - general: General discussion"}
   let {
     context: memoryContext,
     memoryIds,
-    isAppCreator,
     recentAnalytics,
   } = await tracker.track("memory_context", () =>
     getRelevantMemoryContext({

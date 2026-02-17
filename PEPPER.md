@@ -31,7 +31,7 @@ function App() {
   const { navigate, pathname } = useNavigation()
 
   return (
-    <button onClick={() => navigate("/about")}>
+    <button type="button"  onClick={() => navigate("/about")}>
       Go to About
     </button>
   )
@@ -122,9 +122,9 @@ function Navigation() {
 
   return (
     <nav>
-      <button onClick={() => navigate("/")}>Home</button>
-      <button onClick={() => navigate("/about")}>About</button>
-      <button onClick={() => navigate("/calendar")}>Calendar</button>
+      <button type="button"  onClick={() => navigate("/")}>Home</button>
+      <button type="button"  onClick={() => navigate("/about")}>About</button>
+      <button type="button"  onClick={() => navigate("/calendar")}>Calendar</button>
     </nav>
   )
 }
@@ -413,7 +413,7 @@ export default function Home() {
   const { navigate } = useNavigation()
 
   // Instant client-side navigation by default!
-  return <button onClick={() => navigate("/about")}>About</button>
+  return <button type="button"  onClick={() => navigate("/about")}>About</button>
 }
 ```
 

@@ -46,7 +46,9 @@ vi.mock("../platform", async (importOriginal) => {
     // Mock primitive components to avoid context dependency
     Div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
     Button: ({ children, ...props }: any) => (
-      <button {...props}>{children}</button>
+      <button type="button" {...props}>
+        {children}
+      </button>
     ),
     Span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
     A: ({ children, ...props }: any) => <a {...props}>{children}</a>,
@@ -70,7 +72,11 @@ vi.mock("../Modal", () => ({
   default: ({ children, isModalOpen, onToggle }: any) =>
     isModalOpen ? (
       <div data-testid="modal">
-        <button data-testid="close-modal" onClick={() => onToggle(false)}>
+        <button
+          type="button"
+          data-testid="close-modal"
+          onClick={() => onToggle(false)}
+        >
           Close
         </button>
         {children}
@@ -83,7 +89,7 @@ vi.mock("../CharacterProfile", () => ({
 }))
 vi.mock("../ConfirmButton", () => ({
   default: ({ children, onConfirm }: any) => (
-    <button data-testid="confirm-button" onClick={onConfirm}>
+    <button type="button" data-testid="confirm-button" onClick={onConfirm}>
       {children}
     </button>
   ),

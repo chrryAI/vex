@@ -2385,8 +2385,6 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
     let batchAiResponse: any = null
     if (postsForEngagement.length > 0) {
       try {
-        const { provider } = await getModelProvider(app, job.aiModel, false)
-
         // Get app memories for context
         const appMemoriesData = app.id
           ? await getMemories({

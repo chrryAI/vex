@@ -41,7 +41,6 @@ export const FlashList = forwardRef(
     const {
       data,
       renderItem,
-      estimatedItemSize = 50,
       keyExtractor,
       horizontal = false,
       numColumns = 1,

@@ -46,7 +46,9 @@ vi.mock("../platform", async (importOriginal) => {
     // Mock primitive components to avoid context dependency
     Div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
     Button: ({ children, ...props }: any) => (
-      <button {...props}>{children}</button>
+      <button type="button" {...props}>
+        {children}
+      </button>
     ),
     Span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
     TextArea: ({ ...props }: any) => <textarea {...props} />,

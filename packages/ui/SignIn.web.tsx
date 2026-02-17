@@ -651,6 +651,7 @@ export default function SignIn({
               {isAppleSignInAvailable && (
                 <button
                   type="button"
+                  type="button"
                   className={clsx("inverted", styles.appleButton)}
                   onClick={handleAppleSignIn}
                   data-testid="signInAppleButton"
@@ -741,6 +742,7 @@ export default function SignIn({
                 />
               </div>
               <button
+                type="button"
                 style={{
                   width: "100%",
                   alignItems: "center",

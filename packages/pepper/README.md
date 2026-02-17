@@ -35,7 +35,7 @@ function App() {
 function YourComponent() {
   const { navigate, pathname } = useNavigation()
 
-  return <button onClick={() => navigate("/about")}>Go to About</button>
+  return <button type="button"  onClick={() => navigate("/about")}>Go to About</button>
 }
 ```
 
