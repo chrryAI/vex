@@ -132,7 +132,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
       <Div
         style={{
           ...styles.container.style,
-          marginTop: isMobileDevice ? "0.6rem" : isSmallDevice ? "0.4rem" : "0",
+          marginTop: isMobileDevice
+            ? "0.8rem"
+            : isSmallDevice
+              ? "0.6rem"
+              : ".25rem",
         }}
       >
         {postId ? (
@@ -161,7 +165,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         ? app
                         : undefined
                     }
-                    slug={showTribeProfile ? undefined : "search"}
+                    slug={showTribeProfile ? undefined : "tribe"}
                   />
 
                   {showTribeProfile ? (
@@ -248,7 +252,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     >
                       {maxTribes.map((tribe, i) => (
                         <MotiView
-                          key={tribe.id}
+                          key={tribe.id + i}
                           from={{ opacity: 0, translateY: 0, translateX: -10 }}
                           animate={{ opacity: 1, translateY: 0, translateX: 0 }}
                           transition={{
@@ -772,6 +776,29 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           <Img icon="spaceInvader" size={18} />
                           {t("Create Your Agent")}
                         </Button>
+                      )}
+                      {app && (
+                        <AppLink
+                          isTribe={false}
+                          app={app}
+                          icon={
+                            app?.icon ? (
+                              app.icon
+                            ) : (
+                              <Img app={app} width={24} height={24} />
+                            )
+                          }
+                          className="button inverted"
+                          style={{
+                            ...utilities.inverted.style,
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          {t(TRAIN, {
+                            name: app?.name,
+                          })}
+                        </AppLink>
                       )}
                     </Div>
                   </Div>
@@ -1636,6 +1663,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
                                   )}
                                 </Span>
+
                                 {!accountApp && (
                                   <Button
                                     onClick={() => {

@@ -196,6 +196,8 @@ export const getImageSrc = ({
             "pear",
             "coder",
             "architect",
+            "tribe",
+            "nebula",
           ].includes(app?.slug || slug || "")
         ? `${BASE_URL}/images/apps/${app?.slug || slug}.png`
         : getImageBySize(size) ||
