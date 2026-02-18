@@ -1,13 +1,13 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { BellRing } from "./icons"
+import { useEffect, useState } from "react"
+import toast from "react-hot-toast"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"
-import { usePlatform, Div, Button } from "./platform"
-import toast from "react-hot-toast"
-import { useEnableNotificationsStyles } from "./EnableNotifications.styles"
 import { useStyles } from "./context/StylesContext"
+import { useEnableNotificationsStyles } from "./EnableNotifications.styles"
+import { BellRing } from "./icons"
+import { Button, Div, usePlatform } from "./platform"
 import Weather from "./Weather"
 
 // TODO: Install Firebase for React Native

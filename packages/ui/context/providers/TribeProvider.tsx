@@ -1,29 +1,28 @@
 "use client"
 
-import React, {
-  createContext,
-  useContext,
-  ReactNode,
-  useState,
-  useEffect,
-} from "react"
 import {
-  paginatedTribes,
-  paginatedTribePosts,
-  tribePostWithDetails,
-  appWithStore,
-  message,
-} from "../../types"
-import { useChat } from "./ChatProvider"
-import { useAuth, useData } from "."
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react"
+import toast from "react-hot-toast"
 import useSWR from "swr"
+import { useAppContext } from "../../context/AppContext"
 import { useLocalStorage } from "../../hooks"
+import { useWebSocket } from "../../hooks/useWebSocket"
 
 import { useNavigation } from "../../platform"
+import type {
+  appWithStore,
+  message,
+  paginatedTribePosts,
+  paginatedTribes,
+  tribePostWithDetails,
+} from "../../types"
 import { apiFetch } from "../../utils"
-import { useAppContext } from "../../context/AppContext"
-import toast from "react-hot-toast"
-import { useWebSocket } from "../../hooks/useWebSocket"
+import { useAuth, useData } from "."
 export type engagement = {
   tribePostId: string
 }
@@ -83,7 +82,6 @@ interface TribeProviderProps {
 }
 
 export function TribeProvider({ children }: TribeProviderProps) {
-  const { isEmpty } = useChat()
   const {
     tribes: initialTribes,
     tribePosts: initialTribePosts,
@@ -108,7 +106,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     initialTribes,
   )
 
-  const { pathname, push } = useNavigation()
+  const { push } = useNavigation()
 
   const { captureException, t } = useAppContext()
 
@@ -252,7 +250,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
       setTribePosts(tribePostsData)
       auth.setIsLoadingPosts(false)
     }
-  }, [tribePostsData])
+  }, [tribePostsData, setTribePosts, auth.setIsLoadingPosts])
 
   const [isTogglingLike, setIsTogglingLike] = useState<string | undefined>(
     undefined,
@@ -265,6 +263,22 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const [pendingPostIds, setPendingPostIds] = useState<string[]>([])
 
   const [liveReactions, setLiveReactions] = useState<Array<liveReaction>>([])
+
+  const mockApps: appWithStore[] = [
+    { id: "1", name: "Sushi", slug: "sushi" } as appWithStore,
+    { id: "2", name: "Vex", slug: "vex" } as appWithStore,
+    { id: "3", name: "Coder", slug: "coder" } as appWithStore,
+    { id: "4", name: "Bloom", slug: "bloom" } as appWithStore,
+    { id: "5", name: "Peach", slug: "peach" } as appWithStore,
+    { id: "6", name: "Vault", slug: "vault" } as appWithStore,
+    { id: "7", name: "Atlas", slug: "atlas" } as appWithStore,
+    { id: "8", name: "Architect", slug: "architect" } as appWithStore,
+    { id: "9", name: "Grape", slug: "grape" } as appWithStore,
+    { id: "10", name: "Pear", slug: "Pear" } as appWithStore,
+    { id: "11", name: "Zarathustra", slug: "zarathustra" } as appWithStore,
+    { id: "12", name: "Popcorn", slug: "popcorn" } as appWithStore,
+    { id: "13", name: "Focus", slug: "focus" } as appWithStore,
+  ]
 
   function checkSwarm<T extends engagement>(engagements: T[]) {
     const toCheck =
@@ -283,16 +297,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   // 🎭 MOCK DATA FOR TESTING ANIMATIONS
   useEffect(() => {
-    const mockApps: appWithStore[] = [
-      { id: "1", name: "Sushi", slug: "sushi" } as appWithStore,
-      { id: "2", name: "Vex", slug: "vex" } as appWithStore,
-      { id: "3", name: "Coder", slug: "coder" } as appWithStore,
-      { id: "4", name: "Bloom", slug: "bloom" } as appWithStore,
-      { id: "5", name: "Peach", slug: "peach" } as appWithStore,
-      { id: "5", name: "Vault", slug: "vault" } as appWithStore,
-      { id: "5", name: "Atlas", slug: "atlas" } as appWithStore,
-    ]
-
     const interval = setInterval(() => {
       const randomAction = Math.random()
       const mockPostIds = tribePosts?.posts?.map((p) => p.id) || []
@@ -377,7 +381,14 @@ export function TribeProvider({ children }: TribeProviderProps) {
     }, 3000) // Every 3 seconds
 
     return () => clearInterval(interval)
-  }, [tribePost])
+  }, [
+    tribePost,
+    setLiveReactions,
+    setCommenting,
+    posting.length,
+    tribePosts?.posts?.length,
+    mockApps.length,
+  ])
 
   useWebSocket<{
     type: string
@@ -550,12 +561,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
       }
 
       toast.success("Comment deleted successfully")
-      // Refetch post to update comments
-      if (tribePost?.id) {
-        setShouldLoadPost(true)
-
-        await refetchTribePost()
-      }
     } catch (error) {
       console.error("Error deleting comment:", error)
       captureException(error)
@@ -655,7 +660,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     tribes,
     tribePosts,
     tribePost:
-      tribePost && postId && tribePost.id == postId ? tribePost : undefined,
+      tribePost && postId && tribePost.id === postId ? tribePost : undefined,
     search,
     until,
     characterProfileIds,
@@ -664,7 +669,10 @@ export function TribeProvider({ children }: TribeProviderProps) {
     isLoadingPost,
     tribePostError,
     tribeSlug,
-    currentTribe,
+    currentTribe:
+      tribeSlug && currentTribe && currentTribe.slug === tribeSlug
+        ? currentTribe
+        : undefined,
     setTribes,
     setTribePosts,
     setTribePost,
@@ -681,17 +689,26 @@ export function TribeProvider({ children }: TribeProviderProps) {
     deleteComment,
     isSwarm,
     isTogglingLike,
-    posting,
+    posting:
+      app && posting?.some((a) => a.app.slug === app.slug)
+        ? posting
+        : app
+          ? (posting || []).concat({ app })
+          : posting,
     liveReactions: liveReactions,
     pendingPostIds,
-    commenting: commenting,
+    commenting:
+      app && commenting?.some((a) => a.app.slug === app.slug)
+        ? commenting
+        : tribePost && app
+          ? (commenting || []).concat({ app, tribePostId: tribePost.id })
+          : commenting,
     setPendingPostIds,
     refetchPosts: async () => {
       setShouldLoadPosts(true)
       return refetchPosts()
     },
     refetchPost: async () => {
-      setShouldLoadPost(true)
       return refetchTribePost()
     },
     refetchTribes: async () => {

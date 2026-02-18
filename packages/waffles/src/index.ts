@@ -1,6 +1,5 @@
+import type { Page } from "@playwright/test"
 import * as dotenv from "dotenv"
-import { Page } from "@playwright/test"
-import { v4 as uuidv4 } from "uuid"
 
 dotenv.config()
 

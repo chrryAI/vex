@@ -1,26 +1,27 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import Skeleton from "./Skeleton"
+import type React from "react"
+import { useEffect, useState } from "react"
+import AppLink from "./AppLink"
+import A from "./a/A"
+import { COLORS, useAppContext } from "./context/AppContext"
 import {
   useApp,
   useAuth,
+  useChat,
   useData,
   useNavigationContext,
-  useChat,
 } from "./context/providers"
-import Img from "./Image"
-import { COLORS, useAppContext } from "./context/AppContext"
-import { appWithStore, storeWithApps } from "./types"
-import { Button, Div, H1, H3, H4, P, Span, useTheme } from "./platform"
-import { useStoreStyles } from "./Store.styles"
-import { Sparkles, ArrowRight } from "./icons"
-import A from "./a/A"
-import { useStoreMetadata } from "./hooks/useMetadata"
 import { useStyles } from "./context/StylesContext"
+import { useStoreMetadata } from "./hooks/useMetadata"
+import Img from "./Image"
+import { ArrowRight, Sparkles } from "./icons"
 import Loading from "./Loading"
+import { Button, Div, H1, H3, H4, P, Span, useTheme } from "./platform"
+import Skeleton from "./Skeleton"
+import { useStoreStyles } from "./Store.styles"
+import type { appWithStore, storeWithApps } from "./types"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
-import AppLink from "./AppLink"
 
 export default function Store({
   compact,

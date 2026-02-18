@@ -1,50 +1,46 @@
 "use client"
+import { capitalizeFirstLetter } from "@chrryai/chrry/utils"
+import clsx from "clsx"
 import React, { useEffect, useState } from "react"
-
-import { user, subscription } from "./types"
-import { MotiView } from "./platform/MotiView"
+import toast from "react-hot-toast"
+import A from "./a/A"
+import ConfirmButton from "./ConfirmButton"
+import { useAppContext } from "./context/AppContext"
 import {
+  useApp,
   useAuth,
-  useNavigationContext,
   useData,
   useError,
-  useApp,
+  useNavigationContext,
 } from "./context/providers"
-import { capitalizeFirstLetter } from "@chrryai/chrry/utils"
-
-import { Button, Div, Input, P, Span, usePlatform, useTheme } from "./platform"
-
-import clsx from "clsx"
+import { useStyles } from "./context/StylesContext"
+import { useHasHydrated } from "./hooks"
+import Img from "./Image"
 import {
   ArrowLeft,
+  AtSign,
+  CircleArrowDown,
+  CircleArrowUp,
   CircleX,
   Coins,
-  SmilePlus,
   LogIn,
   Plus,
   Search,
-  UserRound,
-  UsersRound,
-  UserRoundPlus,
-  CircleArrowDown,
-  CircleArrowUp,
-  AtSign,
+  SmilePlus,
   Sparkles,
+  UserRound,
+  UserRoundPlus,
+  UsersRound,
 } from "./icons"
-import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
-import toast from "react-hot-toast"
 import Loading from "./Loading"
-import { useAppContext } from "./context/AppContext"
-import { apiFetch } from "./utils"
 import Modal from "./Modal"
-import ConfirmButton from "./ConfirmButton"
-
-import Img from "./Image"
-import { getFeatures } from "./utils/subscription"
-import A from "./a/A"
+import { Button, Div, Input, P, Span, usePlatform, useTheme } from "./platform"
+import { MotiView } from "./platform/MotiView"
 import { useSubscribeStyles } from "./Subscribe.styles"
-import { useStyles } from "./context/StylesContext"
-import { useHasHydrated } from "./hooks"
+import type { subscription, user } from "./types"
+import { apiFetch } from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+import { getFeatures } from "./utils/subscription"
 
 export type selectedPlanType =
   | "plus"
@@ -364,7 +360,7 @@ export default function Subscribe({
       } else {
         toast.error(data.error)
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to change plan")
     } finally {
       setLoading(false)
@@ -549,7 +545,7 @@ export default function Subscribe({
 
         return
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error(t("Failed to fetch users"))
     } finally {
       setIsAdding(false)

@@ -1,127 +1,126 @@
-import { PostgresJsDatabase } from "drizzle-orm/postgres-js"
+import * as bcrypt from "bcrypt"
+import type { appWithStore, modelName } from "chrry/types"
+import * as dotenv from "dotenv"
+import {
+  and,
+  asc,
+  cosineDistance,
+  count,
+  desc,
+  eq,
+  exists,
+  gt,
+  gte,
+  ilike,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  lte,
+  max,
+  ne,
+  notInArray,
+  or,
+  sql,
+  sum,
+} from "drizzle-orm"
+import {
+  type PostgresJsDatabase,
+  drizzle as postgresDrizzle,
+} from "drizzle-orm/postgres-js"
+import postgres from "postgres"
+import { v4 as uuidv4 } from "uuid"
+import { decrypt } from "./encryption"
+// Better Auth tables
+import {
+  baAccounts,
+  baSessions,
+  baVerifications,
+} from "./src/better-auth-schema"
+import {
+  getCache,
+  invalidateApp,
+  invalidateGuest,
+  invalidateStore,
+  invalidateUser,
+  setCache,
+} from "./src/cache"
+import * as schema from "./src/schema"
 import {
   accounts,
+  affiliateClicks,
   affiliateLinks,
   affiliatePayouts,
   affiliateReferrals,
+  agentApiUsage,
   aiAgents,
+  analyticsSites,
+  appCampaigns,
+  appExtends,
+  appOrders,
+  apps,
+  authExchangeCodes,
+  autonomousBids,
+  budgets,
   calendarEvents,
   characterProfiles,
   cities,
+  codebaseQueries,
+  codeEmbeddings,
   collaborations,
   creditTransactions,
-  creditUsage,
+  creditUsages,
   devices,
   documentChunks,
+  expenses,
+  feedbackTransactions,
   GUEST_CREDITS_PER_MONTH,
   guests,
+  installs,
+  instructions,
   invitations,
-  authExchangeCodes,
-  tribePosts,
-  tribeComments,
   memories,
-  analyticsSites,
-  tribeReactions,
-  codebaseQueries,
   messageEmbeddings,
   messages,
-  tribes,
-  tribeMemberships,
-  stores,
+  moods,
+  pearFeedback,
+  placeHolders,
+  premiumSubscriptions,
   pushSubscriptions,
+  realtimeAnalytics,
+  recruitmentFlows,
+  retroResponses,
+  retroSessions,
+  scheduledJobs,
+  sharedExpenses,
+  slotAuctions,
+  slotRentals,
+  sonarIssues,
+  sonarMetrics,
+  storeInstalls,
+  stores,
+  storeTimeSlots,
   subscriptions,
   systemLogs,
-  threads,
-  threadSummaries,
-  users,
-  placeHolders,
-  tribeFollows,
-  sonarMetrics,
-  sonarIssues,
-  verificationTokens,
-  instructions,
-  apps,
-  affiliateClicks,
-  sharedExpenses,
-  expenses,
-  budgets,
-  installs,
-  teams,
-  storeInstalls,
-  appOrders,
-  appExtend,
-  tasks,
-  timers,
-  moods,
-  realtimeAnalytics,
-  pearFeedback,
-  retroSessions,
-  retroResponses,
-  talentProfiles,
-  talentThreads,
-  recruitmentFlows,
   talentEarnings,
   talentInvitations,
-  premiumSubscriptions,
-  feedbackTransactions,
+  talentProfiles,
+  talentThreads,
+  tasks,
+  teams,
+  threadSummaries,
+  threads,
+  timers,
+  tribeComments,
+  tribeFollows,
   tribeLikes,
-  scheduledJobs,
-  appCampaigns,
-  autonomousBids,
-  slotRentals,
-  storeTimeSlots,
-  slotAuctions,
-  codeEmbeddings,
-  agentApiUsage,
+  tribeMemberships,
+  tribePosts,
+  tribeReactions,
+  tribes,
+  users,
+  verificationTokens,
 } from "./src/schema"
-// Better Auth tables
-import {
-  baSessions,
-  baAccounts,
-  baVerifications,
-} from "./src/better-auth-schema"
-import { v4 as uuidv4 } from "uuid"
-import * as schema from "./src/schema"
-import { drizzle as postgresDrizzle } from "drizzle-orm/postgres-js"
-import { generateApiKey } from "./src/utils/apiKey"
-import { decrypt } from "./encryption"
-import {
-  and,
-  eq,
-  inArray,
-  or,
-  desc,
-  asc,
-  count,
-  sum,
-  lt,
-  sql,
-  gte,
-  isNotNull,
-  lte,
-  isNull,
-  ilike,
-  max,
-  exists,
-  cosineDistance,
-  notInArray,
-  gt,
-  ne,
-} from "drizzle-orm"
-
-import postgres from "postgres"
-
-import * as dotenv from "dotenv"
-import * as bcrypt from "bcrypt"
-import { appWithStore, modelName } from "chrry/types"
-import {
-  invalidateApp,
-  invalidateStore,
-  invalidateUser,
-  invalidateGuest,
-  getCache,
-  setCache,
-} from "./src/cache"
 
 export {
   realtimeAnalytics,
@@ -145,18 +144,18 @@ export {
   codeEmbeddings,
   codebaseQueries,
 }
-export { type modelName }
+export type { modelName }
 export type {
   appCampaign,
-  newAppCampaign,
   autonomousBid,
+  newAppCampaign,
   newAutonomousBid,
-  slotRental,
+  newSlotAuction,
   newSlotRental,
-  storeTimeSlot,
   newStoreTimeSlot,
   slotAuction,
-  newSlotAuction,
+  slotRental,
+  storeTimeSlot,
 } from "./src/schema"
 
 dotenv.config()
@@ -174,10 +173,10 @@ export const isProd = isSeedSafe
     ? false
     : process.env.DB_URL && !process.env.DB_URL.includes("localhost")
 
+export { decrypt, encrypt, generateEncryptionKey } from "./encryption"
 // Export cache functions and redis instance for external use
 export * from "./src/cache"
 export { redis, upstashRedis } from "./src/redis"
-export { encrypt, decrypt, generateEncryptionKey } from "./encryption"
 export {
   sql,
   eq,
@@ -192,6 +191,7 @@ export {
   cosineDistance,
   notInArray,
   or,
+  max,
   sonarIssues,
   lte,
   sonarMetrics,
@@ -298,8 +298,8 @@ export type newFeedbackTransaction = typeof feedbackTransactions.$inferInsert
 export type appOrder = typeof appOrders.$inferSelect
 export type newAppOrder = typeof appOrders.$inferInsert
 
-export type appExtend = typeof appExtend.$inferSelect
-export type newAppExtend = typeof appExtend.$inferInsert
+export type appExtend = typeof appExtends.$inferSelect
+export type newAppExtend = typeof appExtends.$inferInsert
 
 export type storeInstall = typeof storeInstalls.$inferSelect
 export type newStoreInstall = typeof storeInstalls.$inferInsert
@@ -375,8 +375,8 @@ export type newSystemLog = typeof systemLogs.$inferInsert
 export type collaboration = typeof collaborations.$inferSelect
 export type newCollaboration = typeof collaborations.$inferInsert
 
-export type creditUsage = typeof creditUsage.$inferSelect
-export type newCreditUsage = typeof creditUsage.$inferInsert
+export type creditUsage = typeof creditUsages.$inferSelect
+export type newCreditUsage = typeof creditUsages.$inferInsert
 
 export type invitation = typeof invitations.$inferSelect
 export type newInvitation = typeof invitations.$inferInsert
@@ -430,7 +430,6 @@ export type newApp = typeof apps.$inferInsert
 export type scheduledJob = typeof scheduledJobs.$inferSelect
 export type newScheduledJob = typeof scheduledJobs.$inferInsert
 
-export type affiliateClicks = typeof affiliateClicks.$inferSelect
 export type newAffiliateClicks = typeof affiliateClicks.$inferInsert
 
 export type expense = typeof expenses.$inferSelect
@@ -491,6 +490,12 @@ export type messageActionType = {
   remember?: boolean
 }
 
+// Global type declaration for db
+declare global {
+  // eslint-disable-next-line no-var
+  var db: PostgresJsDatabase<typeof schema> | undefined
+}
+
 const NODE_ENV = process.env.NODE_ENV
 
 const connectionString = process.env.DB_URL
@@ -522,7 +527,7 @@ const client = postgres(
 
 const getDb = (): PostgresJsDatabase<typeof schema> => {
   if (NODE_ENV !== "production" && !isCI) {
-    if (!globalThis.db) global.db = postgresDrizzle(client, { schema })
+    if (!globalThis.db) globalThis.db = postgresDrizzle(client, { schema })
     return globalThis.db!
   } else {
     return postgresDrizzle(client, { schema })
@@ -540,7 +545,7 @@ export function formatSearchTerm(search: string): string {
   return sanitizeSearchTerm(search)
     .split(" ")
     .filter((word) => word.length > 0)
-    .map((word) => word + ":*")
+    .map((word) => `${word}:*`)
     .join(" & ")
 }
 
@@ -581,7 +586,7 @@ export async function logCreditUsage({
   appId?: string
   // isWebSearchEnabled?: boolean
 }) {
-  let creditCost = rest.creditCost || 1
+  const creditCost = rest.creditCost || 1
 
   console.log("🎯 logCreditUsage called:", {
     userId: userId?.substring(0, 8),
@@ -598,7 +603,7 @@ export async function logCreditUsage({
   //   creditCost += 1
   // }
   try {
-    await db!.insert(creditUsage).values({
+    await db!.insert(creditUsages).values({
       userId,
       guestId,
       agentId,
@@ -653,14 +658,14 @@ export async function getCreditsSpent({
 
     // Get credits from the dedicated credit usage table
     const result = await db!
-      .select({ totalCredits: sum(creditUsage.creditCost) })
-      .from(creditUsage)
+      .select({ totalCredits: sum(creditUsages.creditCost) })
+      .from(creditUsages)
       .where(
         and(
-          userId ? eq(creditUsage.userId, userId) : undefined,
-          guestId ? eq(creditUsage.guestId, guestId) : undefined,
-          gte(creditUsage.createdOn, startOfMonth),
-          lte(creditUsage.createdOn, endOfMonth),
+          userId ? eq(creditUsages.userId, userId) : undefined,
+          guestId ? eq(creditUsages.guestId, guestId) : undefined,
+          gte(creditUsages.createdOn, startOfMonth),
+          lte(creditUsages.createdOn, endOfMonth),
         ),
       )
 
@@ -696,12 +701,12 @@ export async function getHourlyUsage({
 
     const result = await db!
       .select({ count: count() })
-      .from(creditUsage)
+      .from(creditUsages)
       .where(
         and(
-          userId ? eq(creditUsage.userId, userId) : undefined,
-          guestId ? eq(creditUsage.guestId, guestId) : undefined,
-          gte(creditUsage.createdOn, oneHourAgo),
+          userId ? eq(creditUsages.userId, userId) : undefined,
+          guestId ? eq(creditUsages.guestId, guestId) : undefined,
+          gte(creditUsages.createdOn, oneHourAgo),
         ),
       )
 
@@ -1281,9 +1286,17 @@ export const deleteUser = async (id: string) => {
 }
 
 export const createMessage = async (message: newMessage) => {
+  // Sanitize empty string UUID fields to null to prevent PostgreSQL errors
+  const sanitizedMessage = {
+    ...message,
+    tribePostId: message.tribePostId === "" ? null : message.tribePostId,
+    moltId: message.moltId === "" ? null : message.moltId,
+    moltUrl: message.moltUrl === "" ? null : message.moltUrl,
+  }
+
   const [inserted] = await db
     .insert(messages)
-    .values(message)
+    .values(sanitizedMessage)
     .onConflictDoNothing({ target: messages.id }) // Handle duplicate IDs (race conditions)
     .returning()
 
@@ -1703,7 +1716,7 @@ export const deleteDocumentChunk = async ({ id }: { id: string }) => {
   return deleted
 }
 
-const getReactions = async ({
+const _getReactions = async ({
   guestId,
   userId,
 }: {
@@ -1731,7 +1744,7 @@ const getReactions = async ({
   }))
 }
 
-const getBookmarks = async ({
+const _getBookmarks = async ({
   guestId,
   userId,
 }: {
@@ -1759,7 +1772,7 @@ const getBookmarks = async ({
   }))
 }
 
-const updateReactions = async ({
+const _updateReactions = async ({
   guestId,
   userId,
   messageId,
@@ -1790,7 +1803,7 @@ const updateReactions = async ({
   return updated
 }
 
-const updateBookmarks = async ({
+const _updateBookmarks = async ({
   guestId,
   userId,
   threadId,
@@ -1887,8 +1900,8 @@ export async function migrateUser({
   user,
   guest,
 }: {
-  user: any // Tip tanımların varsa 'user' tipini kullan
-  guest: any
+  user: userWithRelations
+  guest: guestWithRelations
 }) {
   if (!guest || !user) return { success: false, error: "Missing records" }
 
@@ -1942,9 +1955,9 @@ export async function migrateUser({
           .where(eq(memories.guestId, guestId))
           .returning({ id: memories.id }),
         tx
-          .update(creditUsage)
+          .update(creditUsages)
           .set({ userId, guestId: null })
-          .where(eq(creditUsage.guestId, guestId)),
+          .where(eq(creditUsages.guestId, guestId)),
         tx
           .update(instructions)
           .set({ userId, guestId: null, updatedOn: now })
@@ -3155,24 +3168,24 @@ export const getCreditUsage = async ({
 }) => {
   const result = await db
     .select()
-    .from(creditUsage)
+    .from(creditUsages)
     .where(
       and(
-        userId ? eq(creditUsage.userId, userId) : undefined,
-        guestId ? eq(creditUsage.guestId, guestId) : undefined,
-        fromDate ? gte(creditUsage.createdOn, fromDate) : undefined,
+        userId ? eq(creditUsages.userId, userId) : undefined,
+        guestId ? eq(creditUsages.guestId, guestId) : undefined,
+        fromDate ? gte(creditUsages.createdOn, fromDate) : undefined,
       ),
     )
-    .orderBy(desc(creditUsage.createdOn))
+    .orderBy(desc(creditUsages.createdOn))
 
   return result
 }
 
 export const updateCreditUsage = async (data: creditUsage) => {
   const [updated] = await db
-    .update(creditUsage)
+    .update(creditUsages)
     .set(data)
-    .where(eq(creditUsage.id, data.id))
+    .where(eq(creditUsages.id, data.id))
     .returning()
 
   return updated
@@ -3191,12 +3204,12 @@ export const deleteCreditUsage = async ({
     throw new Error("Missing id or guestId or userId")
   }
   const [deleted] = await db
-    .delete(creditUsage)
+    .delete(creditUsages)
     .where(
       and(
-        id ? eq(creditUsage.id, id) : undefined,
-        guestId ? eq(creditUsage.guestId, guestId) : undefined,
-        userId ? eq(creditUsage.userId, userId) : undefined,
+        id ? eq(creditUsages.id, id) : undefined,
+        guestId ? eq(creditUsages.guestId, guestId) : undefined,
+        userId ? eq(creditUsages.userId, userId) : undefined,
       ),
     )
     .returning()
@@ -4092,7 +4105,7 @@ export const getCities = async ({
     return sanitizeSearchTerm(search)
       .split(" ")
       .filter((word) => word.length > 0)
-      .map((word) => word + ":*")
+      .map((word) => `${word}:*`)
       .join(" & ")
   }
 
@@ -4784,7 +4797,7 @@ export const createOrUpdateApp = async ({
 }) => {
   const existingApp = app.id ? await getPureApp({ id: app.id }) : null
 
-  let result
+  let result: app | undefined
 
   if (existingApp) {
     // Update existing app
@@ -4826,7 +4839,7 @@ export const createOrUpdateApp = async ({
   // Handle extends relationships
   if (extendsList && extendsList.length > 0) {
     // Delete existing extends relationships
-    await db.delete(appExtend).where(eq(appExtend.appId, result.id))
+    await db.delete(appExtends).where(eq(appExtends.appId, result.id))
 
     // Insert new extends relationships
     const extendsData = extendsList.map((toId) => ({
@@ -4834,7 +4847,7 @@ export const createOrUpdateApp = async ({
       toId,
     }))
 
-    await db.insert(appExtend).values(extendsData)
+    await db.insert(appExtends).values(extendsData)
     console.log(`✅ Created ${extendsData.length} extends relationships`)
 
     // Install extended apps to the same store
@@ -5023,7 +5036,7 @@ export const getApp = async ({
   }
 
   // Build query with conditional store join
-  let query = db
+  const query = db
     .select({
       app: apps,
       user: users,
@@ -5115,7 +5128,7 @@ export const getApp = async ({
           })
         : undefined
 
-  const storeAppSchedule =
+  const _storeAppSchedule =
     userId &&
     storeData?.app &&
     isOwner(storeData.app, {
@@ -5135,7 +5148,7 @@ export const getApp = async ({
       isAppOwner: true,
     }))
 
-  const requestedAppSchedule =
+  const _requestedAppSchedule =
     userId && isOwner(app.app, { userId, guestId })
       ? await getScheduledJobs({ appId: app.app.id, userId })
       : []
@@ -5147,7 +5160,7 @@ export const getApp = async ({
         title: storeData.store.name, // Use name as title
         apps: await Promise.all(
           storeData.apps.map(async (app) => {
-            const characterProfiles =
+            const _characterProfiles =
               (await getCharacterProfiles({
                 appId: app.id,
                 threadId,
@@ -5466,14 +5479,13 @@ export function toSafeApp({
       typeof app.apiKeys === "object" &&
       isOwner(app, { userId, guestId })
         ? Object.keys(app.apiKeys).reduce(
-            (acc, key) => ({
-              ...acc,
-              [key]:
-                app?.apiKeys && app?.apiKeys?.[key as keyof typeof app.apiKeys]
-                  ? "********"
-                  : undefined,
-            }),
-            {},
+            (acc, key) => {
+              acc[key] = app?.apiKeys?.[key as keyof typeof app.apiKeys]
+                ? "********"
+                : undefined
+              return acc
+            },
+            {} as Record<string, string | undefined>,
           )
         : undefined,
   }
@@ -5535,7 +5547,7 @@ export const getApps = async (
 }> => {
   // Get store's default app and build parent store chain if storeId provided
   let storeDefaultAppId: string | undefined
-  let storeIds: string[] = []
+  const storeIds: string[] = []
 
   if (storeId) {
     const store = await db
@@ -6390,7 +6402,7 @@ export async function getStore({
 
   // Map vex.chrry.ai and askvex.com to the vex store
   let effectiveSlug = slug
-  let effectiveDomain = domain
+  const effectiveDomain = domain
 
   if (domain && !slug) {
     if (["https://vex.chrry.ai"].includes(domain)) {
@@ -6477,7 +6489,7 @@ export async function getStore({
         extends: await getAppExtends({
           appId: result.app.id,
         }),
-      } as appWithStore)
+      } as unknown as appWithStore)
     : undefined
 
   const storeResult = {
@@ -6594,7 +6606,7 @@ export async function deleteStoreInstall({ id }: { id: string }) {
 }
 
 export async function createAppExtend(data: newAppExtend) {
-  const [result] = await db.insert(appExtend).values(data).returning()
+  const [result] = await db.insert(appExtends).values(data).returning()
   return result
 }
 
@@ -6609,29 +6621,25 @@ export async function getAppExtends({
     .select({
       app: apps,
     })
-    .from(appExtend)
-    .innerJoin(apps, eq(appExtend.toId, apps.id))
-    .where(eq(appExtend.appId, appId))
+    .from(appExtends)
+    .innerJoin(apps, eq(appExtends.toId, apps.id))
+    .where(eq(appExtends.appId, appId))
 
   // Return apps with extends property set to empty array to prevent infinite recursion
   return result.map((r) => ({
-    ...(true
-      ? {
-          id: r.app.id,
-          slug: r.app.slug,
-          name: r.app.name,
-          storeId: r.app.storeId,
-          description: r.app.description,
-        }
-      : r.app),
+    id: r.app.id,
+    slug: r.app.slug,
+    name: r.app.name,
+    storeId: r.app.storeId,
+    description: r.app.description,
     extends: [],
   }))
 }
 
 export async function deleteAppExtend({ appId }: { appId: string }) {
   const [deleted] = await db
-    .delete(appExtend)
-    .where(eq(appExtend.appId, appId))
+    .delete(appExtends)
+    .where(eq(appExtends.appId, appId))
     .returning()
   return deleted
 }
@@ -6855,7 +6863,7 @@ export const getLastMood = async (userId?: string, guestId?: string) => {
   const todayStart = new Date(utcToday)
   const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000) // Add 24 hours
 
-  let mood = recentMoods.moods.find((m) => {
+  const mood = recentMoods.moods.find((m) => {
     const moodDate = new Date(m.createdOn)
     return moodDate >= todayStart && moodDate < todayEnd
   })
@@ -7004,7 +7012,7 @@ export const createTimer = async (timer: newTimer) => {
 export const updateTimer = async (
   timer: Partial<timer> & { userId?: string | null; guestId?: string | null },
 ) => {
-  const [updated] = await db
+  const [_updated] = await db
     .update(timers)
     .set(timer)
     .where(
@@ -7065,7 +7073,7 @@ export const deleteInstall = async ({
 }
 
 // Export API key utilities
-export { generateApiKey, isValidApiKey, getApiKeyEnv } from "./src/utils/apiKey"
+export { generateApiKey, getApiKeyEnv, isValidApiKey } from "./src/utils/apiKey"
 
 export const getAnalyticsSite = async ({
   id,
@@ -7558,11 +7566,13 @@ export const getTribePosts = async ({
   characterProfileIds,
   page = 1,
   pageSize = 10,
+  id,
   sortBy = "date",
 }: {
   tribeId?: string
   appId?: string
   userId?: string
+  id?: string
   guestId?: string
   search?: string
   characterProfileIds?: string[]
@@ -7575,6 +7585,7 @@ export const getTribePosts = async ({
       tribeId ? eq(tribePosts.tribeId, tribeId) : undefined,
       appId ? eq(tribePosts.appId, appId) : undefined,
       userId ? eq(tribePosts.userId, userId) : undefined,
+      id ? eq(tribePosts.id, id) : undefined,
       guestId ? eq(tribePosts.guestId, guestId) : undefined,
       search && search.length >= 3
         ? sql`(
@@ -7615,7 +7626,7 @@ export const getTribePosts = async ({
     }
 
     // Dynamic sorting based on sortBy parameter
-    let orderByClause
+    let orderByClause: any
     if (sortBy === "comments") {
       // Sort by comment count descending
       orderByClause = desc(tribePosts.commentsCount)
@@ -7714,18 +7725,6 @@ export const getTribePosts = async ({
               .limit(1)
           : [undefined]
 
-        // Fetch character profiles for the post's app
-        const characterProfiles = row.app?.id
-          ? ((await getCharacterProfiles({
-              appId: row.app.id,
-              threadId: thread?.id,
-            })) ??
-            (await getCharacterProfiles({
-              appId: row.app.id,
-              isAppOwner: true,
-            })))
-          : null
-
         return {
           id: row.post.id,
           title: row.post.title,
@@ -7738,7 +7737,8 @@ export const getTribePosts = async ({
           updatedOn: row.post.updatedOn,
           app: row.app
             ? await (async () => {
-                const appId = row.app?.id!
+                const appId = row.app?.id
+                if (!appId) return
 
                 if (appCache.has(appId)) {
                   const cachedApp = appCache.get(appId)
@@ -7848,6 +7848,31 @@ export const getTribePosts = async ({
       nextPage: null,
     }
   }
+}
+
+export const getTribePost = async ({
+  tribeId,
+  appId,
+  userId,
+  guestId,
+  id,
+}: {
+  tribeId?: string
+  appId?: string
+  userId?: string
+  guestId?: string
+  id: string
+}) => {
+  const result = await getTribePosts({
+    tribeId,
+    appId,
+    userId,
+    guestId,
+    pageSize: 1,
+    id,
+  })
+
+  return result?.posts?.[0]
 }
 
 export const getTribeFollows = async ({

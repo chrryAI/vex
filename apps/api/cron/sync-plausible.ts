@@ -1,7 +1,7 @@
+import { analyticsDomains as whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import { db } from "@repo/db"
 import * as schema from "@repo/db/src/schema"
 import * as dotenv from "dotenv"
-import { analyticsDomains as whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 
 // Load environment variables
 dotenv.config()
@@ -12,7 +12,7 @@ dotenv.config()
  * Grape reads from DB via getAnalyticsContext()
  */
 
-interface PlausibleResult {
+interface _PlausibleResult {
   visitors: number
   pageviews?: number
   bounce_rate?: number

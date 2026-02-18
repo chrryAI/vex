@@ -1,9 +1,9 @@
-import { graph, type app, isDevelopment, isE2E, db, eq } from "@repo/db"
-import { threads } from "@repo/db/src/schema"
-import { generateText, embed } from "ai"
-import captureException from "../../lib/captureException"
-import { getModelProvider, getEmbeddingProvider } from "../getModelProvider"
 import type { appWithStore } from "@chrryai/chrry/types"
+import { type app, db, eq, graph, isDevelopment, isE2E } from "@repo/db"
+import { threads } from "@repo/db/src/schema"
+import { embed, generateText } from "ai"
+import captureException from "../../lib/captureException"
+import { getEmbeddingProvider, getModelProvider } from "../getModelProvider"
 
 /**
  * FUTURE: App-level provider configuration
@@ -264,7 +264,7 @@ function sanitize(label: string): string {
 
   // Eğer ilk karakter rakamsa başına _ ekle (BAM!)
   if (/^[0-9]/.test(sanitized)) {
-    sanitized = "_" + sanitized
+    sanitized = `_${sanitized}`
   }
 
   return sanitized || "Generic"

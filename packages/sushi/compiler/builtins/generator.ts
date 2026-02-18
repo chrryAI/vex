@@ -24,7 +24,7 @@ export const __Porffor_Generator_return = (
 export const __Porffor_Generator_prototype_next = (vals: any[]) => {
   const obj: object = {}
   obj.value = vals.shift()
-  obj.done = vals.length == 0
+  obj.done = vals.length === 0
 
   return obj
 }
@@ -76,7 +76,7 @@ export const __Porffor_AsyncGenerator_return = (
 export const __Porffor_AsyncGenerator_prototype_next = async (vals: any[]) => {
   const obj: object = {}
   obj.value = await vals.shift()
-  obj.done = vals.length == 0
+  obj.done = vals.length === 0
 
   return obj
 }

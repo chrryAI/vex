@@ -4,43 +4,43 @@
  * Centralized exports for all context providers and hooks
  */
 
-// Providers
-export { ErrorProvider, useError } from "./ErrorProvider"
-export { NavigationProvider, useNavigationContext } from "./NavigationProvider"
+export { PlatformProvider } from "../../platform"
+export { AppProvider, type TabType, useApp } from "./AppProvider"
 export { AuthProvider, useAuth } from "./AuthProvider"
 export { ChatProvider, useChat } from "./ChatProvider"
 export { DataProvider, useData } from "./DataProvider"
-export { AppProvider, useApp, type TabType } from "./AppProvider"
+// Providers
+export { ErrorProvider, useError } from "./ErrorProvider"
+export { NavigationProvider, useNavigationContext } from "./NavigationProvider"
 export { TribeProvider, useTribe } from "./TribeProvider"
-export { PlatformProvider } from "../../platform"
 
 // Composition root - combines all providers
-import React, { ReactNode, useState, useMemo } from "react"
-import { PlatformProvider } from "../../platform"
-import { ThemeProvider } from "../ThemeContext"
-import { StylesProvider } from "../StylesContext"
-import { ErrorProvider } from "./ErrorProvider"
-import { NavigationProvider } from "./NavigationProvider"
-import { AuthProvider, session } from "./AuthProvider"
-import { DataProvider } from "./DataProvider"
-import { ChatProvider } from "./ChatProvider"
-import { AppProvider } from "./AppProvider"
-import { TribeProvider } from "./TribeProvider"
-import { AppContextProvider } from "../AppContext"
-import { locale } from "../../locales"
+import { type ReactNode, useMemo, useState } from "react"
 import { SWRConfig } from "swr"
-import {
-  thread,
-  paginatedMessages,
-  appWithStore,
-  paginatedTribes,
-  paginatedTribePosts,
-  tribePostWithDetails,
-} from "../../types"
-import { TimerContextProvider } from "../TimerContext"
 import { Hey } from "../../Hey"
 import getCacheProvider from "../../lib/swrCacheProvider"
-import { getSiteConfig } from "../../utils/siteConfig"
+import type { locale } from "../../locales"
+import { PlatformProvider } from "../../platform"
+import type {
+  appWithStore,
+  paginatedMessages,
+  paginatedTribePosts,
+  paginatedTribes,
+  thread,
+  tribePostWithDetails,
+} from "../../types"
+import type { getSiteConfig } from "../../utils/siteConfig"
+import { AppContextProvider } from "../AppContext"
+import { StylesProvider } from "../StylesContext"
+import { ThemeProvider } from "../ThemeContext"
+import { TimerContextProvider } from "../TimerContext"
+import { AppProvider } from "./AppProvider"
+import { AuthProvider, type session } from "./AuthProvider"
+import { ChatProvider } from "./ChatProvider"
+import { DataProvider } from "./DataProvider"
+import { ErrorProvider } from "./ErrorProvider"
+import { NavigationProvider } from "./NavigationProvider"
+import { TribeProvider } from "./TribeProvider"
 
 export interface AppProvidersProps {
   translations?: Record<string, any>
@@ -133,7 +133,7 @@ export default function AppProviders({
           const now = Date.now()
 
           // Only show toast if it's been more than 30 seconds since last one
-          if (!lastShown || now - Number.parseInt(lastShown) > 30000) {
+          if (!lastShown || now - Number.parseInt(lastShown, 10) > 30000) {
             setError(
               "Rate limit exceeded. Please wait a moment before trying again.",
             )

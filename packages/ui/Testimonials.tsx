@@ -1,8 +1,8 @@
 "use client"
 
-import React from "react"
-import { ChartColumnBig, Quote } from "./icons"
+import type React from "react"
 import { useTranslation } from "react-i18next"
+import { ChartColumnBig, Quote } from "./icons"
 import { Div, Span, useTheme } from "./platform"
 import { useTestimonialsStyles } from "./Testimonials.styles"
 

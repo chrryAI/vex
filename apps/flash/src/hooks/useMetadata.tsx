@@ -1,6 +1,6 @@
+import type { locale } from "@chrryai/chrry/locales"
 import { useEffect, useState } from "react"
 import { Helmet } from "react-helmet-async"
-import { locale } from "@chrryai/chrry/locales"
 
 interface MetadataResponse {
   title?: string

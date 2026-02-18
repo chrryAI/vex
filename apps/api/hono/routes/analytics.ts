@@ -1,8 +1,7 @@
-import { Hono } from "hono"
-import { db } from "@repo/db"
-import { realtimeAnalytics, isE2E } from "@repo/db"
-import { getGuest, getMember } from "../lib/auth"
+import { db, isE2E, realtimeAnalytics } from "@repo/db"
 import { captureException } from "@sentry/node"
+import { Hono } from "hono"
+import { getGuest, getMember } from "../lib/auth"
 
 type Variables = {
   auth: {

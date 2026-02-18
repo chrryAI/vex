@@ -7,7 +7,7 @@
  * Perfect for SPA-style navigation with instant route switching
  */
 
-import { ReactNode, Suspense, CSSProperties } from "react"
+import { type CSSProperties, type ReactNode, Suspense } from "react"
 import { useNavigation } from "./navigation"
 
 // Default full-screen loading component
@@ -76,7 +76,7 @@ function matchRoute(
   // Check if pathname starts with route path
   return (
     cleanPathname === cleanRoutePath ||
-    cleanPathname.startsWith(cleanRoutePath + "/")
+    cleanPathname.startsWith(`${cleanRoutePath}/`)
   )
 }
 

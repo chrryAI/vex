@@ -7,8 +7,10 @@ export function withUnstyled<T extends React.ElementType>(Component: T) {
     return <Component ref={ref} {...props} unstyled />
   })
 
-  // @ts-ignore - displayName type complexity
-  UnstyledComponent.displayName = `Unstyled(${Component.displayName || Component.name || "Component"})`
+  // displayName type complexity
+  const componentName =
+    (Component as any).displayName || (Component as any).name || "Component"
+  UnstyledComponent.displayName = `Unstyled(${componentName})`
 
   return UnstyledComponent as any
 }

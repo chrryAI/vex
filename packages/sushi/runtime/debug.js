@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import compile, { createImport } from "../compiler/wrap.js"
-import Byg from "../byg/index.js"
 import fs from "node:fs"
+import Byg from "../byg/index.js"
+import compile, { createImport } from "../compiler/wrap.js"
 
 const file = process.argv.slice(2).find((x) => x[0] !== "-")
 let source = fs.readFileSync(file, "utf8")
@@ -21,7 +21,7 @@ source = source.replace(
 )
 
 // Helper to escape special characters and prevent code injection
-const escapeForConcat = (str) => {
+const _escapeForConcat = (str) => {
   // Don't modify the actual code, just ensure safe concatenation
   // The profiling call is prepended, not interpolated into a template
   return str
@@ -33,7 +33,7 @@ for (let i = 0; i < lines.length; i++) {
   // No interpolation of line content into template literals, so no injection risk
   // Use replaceAll to handle multiple closing braces correctly
   if (lines[i].trim().replaceAll("}", "") !== "") {
-    lines[i] = `profile1(Porffor.wasm.i32.const(${i}));` + lines[i]
+    lines[i] = `profile1(Porffor.wasm.i32.const(${i}));${lines[i]}`
   }
 }
 source = lines.join("\n")
@@ -52,11 +52,11 @@ const byg = Byg({
 })
 
 let stepIn = false,
-  stepOut = false
+  _stepOut = false
 const callStack = []
 
 let _paused
-let callStarts = []
+const callStarts = []
 let lastLine
 
 let output = ""
@@ -77,7 +77,7 @@ createImport("profile1", 1, 0, (n) => {
 
   if (paused) {
     stepIn = false
-    stepOut = false
+    _stepOut = false
 
     switch (
       byg(
@@ -112,7 +112,7 @@ createImport("profile1", 1, 0, (n) => {
       }
 
       case "stepOut": {
-        stepOut = true
+        _stepOut = true
         paused = false
         break
       }

@@ -5,7 +5,7 @@ export const _eval = (source: string) => {
   throw new SyntaxError("Dynamic code evaluation is not supported")
 }
 
-export const Function = function (source: string) {
+export const Function = (source: string) => {
   throw new SyntaxError("Dynamic code evaluation is not supported")
 }
 
@@ -22,7 +22,7 @@ export const __Function_prototype_toLocaleString = (_this: Function) =>
   __Function_prototype_toString(_this)
 
 export const __Function_prototype_apply = (
-  _this: Function,
+  _this: object,
   thisArg: any,
   argsArray: any,
 ) => {
@@ -35,7 +35,7 @@ export const __Function_prototype_apply = (
 }
 
 export const __Function_prototype_bind = (
-  _this: Function,
+  _this: object,
   thisArg: any,
   argsArray: any,
 ) => {

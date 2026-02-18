@@ -3,7 +3,8 @@
  * Uses @shopify/flash-list for optimal performance on React Native
  */
 
-import React, { forwardRef } from "react"
+import type React from "react"
+import { forwardRef } from "react"
 
 export interface FlashListProps<T> {
   data: T[]
@@ -39,7 +40,7 @@ let NativeFlashList: any
 try {
   const { FlashList: ImportedFlashList } = require("@shopify/flash-list")
   NativeFlashList = ImportedFlashList
-} catch (error) {
+} catch (_error) {
   console.warn(
     "[chrry/platform/FlashList] @shopify/flash-list not found. Using ScrollView fallback.",
   )

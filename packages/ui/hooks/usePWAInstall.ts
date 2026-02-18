@@ -3,7 +3,7 @@
  * Detects install capability and triggers native install prompt
  */
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import console from "../utils/log"
 
 interface BeforeInstallPromptEvent extends Event {

@@ -1,16 +1,15 @@
-import * as React from "react"
+import { getSiteConfig, type SiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import {
-  Html,
-  Head,
   Body,
   Container,
-  Section,
-  Img,
+  Head,
   Heading,
-  Text,
+  Html,
+  Img,
   Link,
+  Section,
+  Text,
 } from "@react-email/components"
-import { type SiteConfig, getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 export default function InviteEmail({
   origin,

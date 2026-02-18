@@ -1,29 +1,33 @@
-import { Hono } from "hono"
 import {
-  decayMemories,
+  and,
   cleanupIncognitoThreads,
   db,
-  and,
+  decayMemories,
   eq,
-  isNull,
   inArray,
+  isNull,
   lt,
   sql,
 } from "@repo/db"
-import { syncPlausibleAnalytics } from "../../cron/sync-plausible"
-import { guests, subscriptions, messages, apps } from "@repo/db/src/schema"
-import { clearGraphDataForUser } from "../../lib/graph/graphService"
-import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
-import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
-import { checkMoltbookComments } from "../../lib/cron/moltbookComments"
-import { engageWithMoltbookPosts } from "../../lib/cron/moltbookEngagement"
-import { syncSonarCloud } from "../../lib/cron/sonarSync"
-import { isDevelopment } from "../../lib"
+import { apps, guests, messages, subscriptions } from "@repo/db/src/schema"
 import { captureException } from "@sentry/node"
+import { Hono } from "hono"
+import { syncPlausibleAnalytics } from "../../cron/sync-plausible"
+import { isDevelopment } from "../../lib"
 import {
   runAutonomousAgentsCron,
   updateSlotAnalytics,
 } from "../../lib/cron/autonomousAgentsCron"
+import { checkMoltbookComments } from "../../lib/cron/moltbookComments"
+import { engageWithMoltbookPosts } from "../../lib/cron/moltbookEngagement"
+import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
+import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
+import { syncSonarCloud } from "../../lib/cron/sonarSync"
+import { clearGraphDataForUser } from "../../lib/graph/graphService"
+import {
+  executeScheduledJob,
+  findJobsToRun,
+} from "../../lib/scheduledJobs/jobScheduler"
 
 export const cron = new Hono()
 
@@ -418,8 +422,6 @@ cron.get("/runScheduledJobs", async (c) => {
 
   try {
     // Import scheduler module (inside try block to catch import errors)
-    const { findJobsToRun, executeScheduledJob } =
-      await import("../../lib/scheduledJobs/jobScheduler")
 
     // Find all jobs that need to run now
     const jobsToRun = await findJobsToRun()
@@ -436,16 +438,30 @@ cron.get("/runScheduledJobs", async (c) => {
 
     console.log(`🚀 Found ${jobsToRun.length} jobs to execute`)
 
-    // Execute all jobs in background (fire-and-forget)
-    jobsToRun.forEach((job) => {
-      executeScheduledJob({ jobId: job.id })
-        .then(() => {
-          console.log(`✅ Job executed: ${job.name}`)
-        })
-        .catch((error) => {
-          captureException(error)
-          console.error(`❌ Job failed: ${job.name}`, error)
-        })
+    // Limit: Only execute 1 tribe job per cron cycle to avoid overwhelming system
+    const tribeJobs = jobsToRun.filter((j) => j.scheduleType === "tribe")
+    const otherJobs = jobsToRun.filter((j) => j.scheduleType !== "tribe")
+
+    const jobsToExecute = [
+      ...otherJobs, // Execute all non-tribe jobs
+      ...(tribeJobs.length > 0 ? [tribeJobs[0]] : []), // Only 1 tribe job
+    ]
+
+    console.log(
+      `📊 Executing ${jobsToExecute.length} jobs (${tribeJobs.length} tribe jobs found, executing 1)`,
+    )
+
+    // Execute selected jobs in background (fire-and-forget)
+    jobsToExecute.forEach((job) => {
+      job &&
+        executeScheduledJob({ jobId: job.id })
+          .then(() => {
+            console.log(`✅ Job executed: ${job.name}`)
+          })
+          .catch((error) => {
+            captureException(error)
+            console.error(`❌ Job failed: ${job.name}`, error)
+          })
     })
 
     // Return immediately

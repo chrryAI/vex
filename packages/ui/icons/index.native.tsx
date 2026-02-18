@@ -4,10 +4,10 @@
  * Automatically resolves CSS variable colors like var(--accent-1)
  */
 
-import React from "react"
 import * as LucideIcons from "lucide-react-native"
-import { resolveThemeValue } from "../styles/resolveThemeValue"
+import React from "react"
 import { useTheme } from "../context/ThemeContext"
+import { resolveThemeValue } from "../styles/resolveThemeValue"
 
 // AI Brand Icons (simple emoji-based for React Native)
 export * from "./BrandIcons.native"

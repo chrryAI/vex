@@ -1,7 +1,7 @@
 import "@chrryai/chrry/globals.scss"
 import Chrry from "@chrryai/chrry/Chrry"
 import { HistoryRouterProvider } from "@chrryai/pepper"
-import { Component, ReactNode, useEffect } from "react"
+import { Component, type ReactNode, useEffect } from "react"
 import VConsole from "vconsole"
 
 // Error Boundary to catch crashes

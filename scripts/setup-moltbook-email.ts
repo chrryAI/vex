@@ -1,9 +1,9 @@
 #!/usr/bin/env tsx
 
-import { setupOwnerEmail } from "../apps/api/lib/integrations/moltbook"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
 import dotenv from "dotenv"
-import path from "path"
-import { fileURLToPath } from "url"
+import { setupOwnerEmail } from "../apps/api/lib/integrations/moltbook"
 
 // ESM __dirname equivalent
 const __filename = fileURLToPath(import.meta.url)

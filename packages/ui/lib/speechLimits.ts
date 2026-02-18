@@ -1,4 +1,4 @@
-import { user, guest } from "../types"
+import type { guest, user } from "../types"
 
 export const SPEECH_LIMITS = {
   GUEST: {

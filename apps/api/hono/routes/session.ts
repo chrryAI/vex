@@ -1,49 +1,46 @@
-import { Hono } from "hono"
-import { getCookie, setCookie } from "hono/cookie"
-import {
-  getMember as getMemberAction,
-  getGuest as getGuestAction,
-  getChrryUrl,
-  getApp as getAppAction,
-} from "../lib/auth"
+import arcjet, { detectBot } from "@arcjet/node"
+import { type locale, locales } from "@chrryai/chrry/locales"
+import { isDevelopment, isE2E, VERSION } from "@chrryai/chrry/utils"
+import { whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import {
   createGuest,
+  getAiAgent,
+  getAiAgents,
   getCreditTransactions,
   getCreditUsage,
   getGuest,
+  type guest,
   hasThreadNotifications,
   migrateUser,
+  TEST_GUEST_FINGERPRINTS,
+  TEST_MEMBER_EMAILS,
+  TEST_MEMBER_FINGERPRINTS,
   updateGuest,
   updateUser,
-  type user,
-  type guest,
   upsertDevice,
-  getAiAgents,
-  getAiAgent,
-  TEST_MEMBER_FINGERPRINTS,
-  TEST_GUEST_FINGERPRINTS,
+  type user,
   VEX_LIVE_FINGERPRINTS,
-  TEST_MEMBER_EMAILS,
 } from "@repo/db"
-import * as lib from "../../lib"
-
-import { validate as validateUuid } from "uuid"
-import { UAParser } from "ua-parser-js"
-import arcjet, { detectBot } from "@arcjet/node"
-
-import { isDevelopment, isE2E, VERSION } from "@chrryai/chrry/utils"
-import { locales, type locale } from "@chrryai/chrry/locales"
-import { v4 as uuidv4 } from "uuid"
 import {
   GUEST_CREDITS_PER_MONTH,
   MEMBER_CREDITS_PER_MONTH,
   PLUS_CREDITS_PER_MONTH,
   PRO_CREDITS_PER_MONTH,
 } from "@repo/db/src/schema"
+import { Hono } from "hono"
+import { getCookie, setCookie } from "hono/cookie"
+import { UAParser } from "ua-parser-js"
+import { v4 as uuidv4, validate as validateUuid } from "uuid"
+import * as lib from "../../lib"
 
 import captureException from "../../lib/captureException"
-import { whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import { checkRateLimit } from "../../lib/rateLimiting"
+import {
+  getApp as getAppAction,
+  getChrryUrl,
+  getGuest as getGuestAction,
+  getMember as getMemberAction,
+} from "../lib/auth"
 
 const isNewBillingPeriod = (subscribedOn: Date) => {
   const subscriptionDate = new Date(subscribedOn)
@@ -125,7 +122,7 @@ const _isValidFingerprint = (fp: string | null): boolean => {
 export const session = new Hono()
 
 session.get("/", async (c) => {
-  console.log("🔥 HONO SESSION ROUTE CALLED - This is Hono, not Next.js!")
+  console.log("🔥 HONO SESSION ROUTE CALLED")
   const url = new URL(c.req.url)
 
   // Convert Hono request to standard Request for Arcjet
@@ -529,8 +526,8 @@ session.get("/", async (c) => {
 
         if (toMigrate && !toMigrate?.migratedToUser) {
           await migrateUser({
-            user: member,
-            guest: toMigrate,
+            user: member as any,
+            guest: toMigrate as any,
           })
 
           member.migratedFromGuest = true

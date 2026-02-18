@@ -1,28 +1,29 @@
 "use client"
-import { appWithStore, store } from "./types"
-import { CircleFlag } from "react-circle-flags"
-import {
-  PROD_FRONTEND_URL,
-  FRONTEND_URL,
-  API_URL,
-  isDevelopment,
-} from "./utils"
 
-import React, { useEffect } from "react"
-import Img from "./Img"
+import type React from "react"
+import { useEffect } from "react"
+import { CircleFlag } from "react-circle-flags"
 import { COLORS } from "./context/AppContext"
-import { Text } from "./platform"
 import { useApp } from "./context/providers"
+import Img from "./Img"
 import {
-  DeepSeek,
-  OpenAI,
-  Claude,
-  Gemini,
-  Flux,
-  Perplexity,
   Clapperboard,
+  Claude,
+  DeepSeek,
+  Flux,
+  Gemini,
+  OpenAI,
+  Perplexity,
 } from "./icons"
 import { getImageSrc } from "./lib"
+import { Text } from "./platform"
+import type { appWithStore, store } from "./types"
+import {
+  API_URL,
+  FRONTEND_URL,
+  isDevelopment,
+  PROD_FRONTEND_URL,
+} from "./utils"
 
 type ImageProps = {
   slug?: "atlas" | "peach" | "vault" | "bloom" | string

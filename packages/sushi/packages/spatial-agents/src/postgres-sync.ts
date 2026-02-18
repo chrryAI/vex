@@ -3,7 +3,7 @@
  * Syncs Drizzle ORM entities to FalkorDB graph
  */
 
-import { HybridDB } from "./hybrid-schema"
+import type { HybridDB } from "./hybrid-schema"
 
 /**
  * Sync utilities for different entity types

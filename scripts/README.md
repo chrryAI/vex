@@ -244,7 +244,7 @@ pnpm vs
 <form onSubmit={launchCity}>
   <input name="city" />
   <input name="country" />
-  <button>Launch City</button>
+  <button type="button" >Launch City</button>
 </form>
 ```
 

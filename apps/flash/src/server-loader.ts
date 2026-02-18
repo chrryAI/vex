@@ -1,46 +1,43 @@
-import { v4 as uuidv4, validate } from "uuid"
-import { captureException } from "@sentry/node"
-import {
-  VERSION,
-  getThreadId,
-  pageSizes,
-  getPostId,
-  isE2E,
-  getEnv,
-  API_INTERNAL_URL,
-} from "@chrryai/chrry/utils"
-import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
 import {
   getApp,
   getSession,
   getThread,
   getThreads,
   getTranslations,
-  getTribes,
-  getTribePosts,
   getTribePost,
+  getTribePosts,
+  getTribes,
 } from "@chrryai/chrry/lib"
-import { locale, locales } from "@chrryai/chrry/locales"
-import {
+import { type locale, locales } from "@chrryai/chrry/locales"
+import type {
+  appWithStore,
+  paginatedMessages,
+  paginatedTribePosts,
+  paginatedTribes,
   session,
   thread,
-  paginatedMessages,
-  appWithStore,
-  paginatedTribes,
-  paginatedTribePosts,
-  tribePostWithDetails,
   tribe,
-  tribePost,
+  tribePostWithDetails,
 } from "@chrryai/chrry/types"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import {
-  getBlogPosts,
-  getBlogPost,
+  API_INTERNAL_URL,
+  getPostId,
+  getThreadId,
+  isE2E,
+  pageSizes,
+} from "@chrryai/chrry/utils"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
+import { captureException } from "@sentry/node"
+import type { themeType } from "chrry/context/ThemeContext"
+import { v4 as uuidv4, validate } from "uuid"
+import {
   type BlogPost,
   type BlogPostWithContent,
+  getBlogPost,
+  getBlogPosts,
 } from "./blog-loader"
 import { generateServerMetadata } from "./server-metadata"
-import { themeType } from "chrry/context/ThemeContext"
 
 export interface ServerRequest {
   url: string
@@ -170,7 +167,7 @@ export async function loadServerData(
   const urlObj = new URL(url, `http://${hostname}`)
 
   // Parse query string for fp parameter (only if URL contains query params)
-  let fpFromQuery: string | undefined = undefined
+  let fpFromQuery: string | undefined
   if (url.includes("?")) {
     fpFromQuery = urlObj.searchParams.get("fp") || undefined
   }
@@ -243,7 +240,7 @@ export async function loadServerData(
     (isTestFP && fpFromQuery ? fpFromQuery : fingerprintCandidate) ||
     uuidv4()
 
-  let fingerprint = fingerprintCandidate || uuidv4()
+  const fingerprint = fingerprintCandidate || uuidv4()
 
   const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName
@@ -291,7 +288,7 @@ export async function loadServerData(
   let tribes: paginatedTribes | undefined
   let tribePosts: paginatedTribePosts | undefined
   let tribePost: tribePostWithDetails | undefined
-  let tribe: tribe | undefined
+  let _tribe: tribe | undefined
 
   try {
     appId = threadResult?.thread?.appId || headers["x-app-id"]
@@ -348,15 +345,29 @@ export async function loadServerData(
         })
       : undefined
 
+    const postId = getPostId(pathname)
+
+    let tribePostResult: tribePostWithDetails | undefined = undefined
+    if (postId) {
+      try {
+        tribePostResult = await getTribePost({
+          id: postId,
+          token: apiKey,
+          API_URL,
+        })
+      } catch (error) {
+        console.error("❌ Tribe post fetch failed:", error)
+        tribePostResult = undefined
+      }
+    }
+
     const appResult = await getApp({
       chrryUrl,
-      appId: threadResult?.thread?.appId || appId,
+      appId: threadResult?.thread?.appId || tribePostResult?.appId || appId,
       token: apiKey,
       pathname,
       API_URL,
     })
-
-    const postId = getPostId(pathname)
 
     const showAllTribe =
       pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
@@ -364,52 +375,40 @@ export async function loadServerData(
     const canShowTribeProfile =
       !excludedSlugRoutes?.includes(pathname.split("?")?.[0]) && !showAllTribe
 
-    const [
-      translationsResult,
-      threadsResult,
-      tribesResult,
-      tribePostsResult,
-      tribePostResult,
-    ] = await Promise.all([
-      getTranslations({
-        token: apiKey,
-        locale,
-        API_URL,
-      }),
+    const [translationsResult, threadsResult, tribesResult, tribePostsResult] =
+      await Promise.all([
+        getTranslations({
+          token: apiKey,
+          locale,
+          API_URL,
+        }),
 
-      getThreads({
-        appId: appResult.id,
-        pageSize: pageSizes.menuThreads,
-        sort: "bookmark",
-        token: apiKey,
-        API_URL,
-      }),
-      !isBlogRoute
-        ? getTribes({
-            pageSize: 15,
-            page: 1,
-            token: apiKey,
-            appId: canShowTribeProfile ? appResult.id : undefined,
-            API_URL,
-          })
-        : Promise.resolve(undefined),
-      !isBlogRoute
-        ? getTribePosts({
-            pageSize: 10,
-            page: 1,
-            token: apiKey,
-            appId: canShowTribeProfile ? appResult.id : undefined,
-            API_URL,
-          })
-        : Promise.resolve(undefined),
-      postId
-        ? getTribePost({
-            id: postId,
-            token: apiKey,
-            API_URL,
-          })
-        : Promise.resolve(undefined),
-    ])
+        getThreads({
+          appId: appResult.id,
+          pageSize: pageSizes.menuThreads,
+          sort: "bookmark",
+          token: apiKey,
+          API_URL,
+        }),
+        !isBlogRoute
+          ? getTribes({
+              pageSize: 15,
+              page: 1,
+              token: apiKey,
+              appId: canShowTribeProfile ? appResult.id : undefined,
+              API_URL,
+            })
+          : Promise.resolve(undefined),
+        !isBlogRoute
+          ? getTribePosts({
+              pageSize: 10,
+              page: 1,
+              token: apiKey,
+              appId: canShowTribeProfile ? appResult.id : undefined,
+              API_URL,
+            })
+          : Promise.resolve(undefined),
+      ])
 
     threads = threadsResult
 

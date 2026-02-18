@@ -1,9 +1,8 @@
 import "dotenv/config"
 import fs from "node:fs/promises"
-import express from "express"
+import arcjet, { fixedWindow, shield } from "@arcjet/node"
 import cookieParser from "cookie-parser"
-import { Transform } from "node:stream"
-import arcjet, { shield, fixedWindow } from "@arcjet/node"
+import express from "express"
 
 // const getEnv = () => {
 //   if (typeof import.meta !== "undefined") {
@@ -18,12 +17,12 @@ import arcjet, { shield, fixedWindow } from "@arcjet/node"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "2.0.0"
+const VERSION = "2.0.1"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
 const base = process.env.BASE || "/"
-const ABORT_DELAY = 10000
+const _ABORT_DELAY = 10000
 
 const isDev = process.env.NODE_ENV === "development"
 
@@ -71,7 +70,7 @@ app.use((req, res, next) => {
           "Content-Type, Authorization",
         )
       }
-    } catch (e) {
+    } catch (_e) {
       // Invalid origin URL, skip CORS headers
     }
   }
@@ -543,7 +542,7 @@ app.use(async (req, res) => {
     /** @type {string} */
     let template
     /** @type {import('./src/entry-server.ts').render} */
-    let render
+    let _render
     /** @type {import('./src/entry-server.ts').loadData} */
     let loadData
     if (!isProduction) {
@@ -551,12 +550,12 @@ app.use(async (req, res) => {
       template = await fs.readFile("./index.html", "utf-8")
       template = await vite.transformIndexHtml(url, template)
       const entryServer = await vite.ssrLoadModule("/src/entry-server.tsx")
-      render = entryServer.render
+      _render = entryServer.render
       loadData = entryServer.loadData
     } else {
       template = templateHtml
       const entryServer = await import("./dist/server/entry-server.js")
-      render = entryServer.render
+      _render = entryServer.render
       loadData = entryServer.loadData
     }
 

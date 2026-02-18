@@ -1,23 +1,29 @@
-import { Hono } from "hono"
 import crypto from "node:crypto"
-import { z } from "zod"
-import { db, eq, and, desc, gte, lte, sql } from "@repo/db"
+import { isDevelopment } from "@chrryai/chrry/utils"
 import {
+  and,
   appCampaigns,
   autonomousBids,
-  slotRentals,
-  storeTimeSlots,
+  db,
+  desc,
+  eq,
+  gte,
+  lte,
   type newAppCampaign,
+  slotRentals,
+  sql,
+  storeTimeSlots,
 } from "@repo/db"
-import { getMember, getGuest } from "../lib/auth"
+import { guests, users } from "@repo/db/src/schema"
+import { Hono } from "hono"
+import { z } from "zod"
 import { runautonomousBidding } from "../../lib/adExchange/autonomousBidding"
 import {
-  updateCampaignPerformance,
   processAuctionResults,
+  updateCampaignPerformance,
 } from "../../lib/adExchange/campaignLearning"
 import captureException from "../../lib/captureException"
-import { isDevelopment } from "@chrryai/chrry/utils"
-import { users, guests } from "@repo/db/src/schema"
+import { getGuest, getMember } from "../lib/auth"
 
 export const adCampaignsRoute = new Hono()
 
@@ -527,7 +533,7 @@ adCampaignsRoute.post("/auctions/process", async (c) => {
       auctionDate: z.string().refine(
         (dateStr) => {
           const date = new Date(dateStr)
-          return !isNaN(date.getTime())
+          return !Number.isNaN(date.getTime())
         },
         { message: "Invalid date format" },
       ),
@@ -574,7 +580,7 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
 
     const rentSchema = z.object({
       appId: z.string().uuid(),
-      startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+      startDate: z.string().refine((date) => !Number.isNaN(Date.parse(date)), {
         message: "Invalid start date",
       }),
     })
@@ -755,7 +761,7 @@ adCampaignsRoute.get("/slots/:id/availability", async (c) => {
     }
 
     const requestedDate = new Date(dateParam)
-    if (isNaN(requestedDate.getTime())) {
+    if (Number.isNaN(requestedDate.getTime())) {
       return c.json({ error: "Invalid date parameter" }, 400)
     }
 

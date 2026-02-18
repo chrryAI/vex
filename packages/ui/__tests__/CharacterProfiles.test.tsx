@@ -1,23 +1,24 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+
+import { act } from "@testing-library/react"
 import React from "react"
 import { createRoot } from "react-dom/client"
-import { act } from "@testing-library/react"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 // Make React globally available
 global.React = React
 
 import CharacterProfiles from "../CharacterProfiles"
 import {
+  mockApp,
+  mockAppContext,
   mockAuth,
   mockChat,
-  mockApp,
+  mockData,
   mockNavigation,
   mockPlatform,
-  mockTheme,
-  mockData,
-  mockAppContext,
   mockStyles,
+  mockTheme,
 } from "./mocks/mockContexts"
 
 // Mock the dependencies
@@ -45,7 +46,9 @@ vi.mock("../platform", async (importOriginal) => {
     // Mock primitive components to avoid context dependency
     Div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
     Button: ({ children, ...props }: any) => (
-      <button {...props}>{children}</button>
+      <button type="button" {...props}>
+        {children}
+      </button>
     ),
     Span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
     A: ({ children, ...props }: any) => <a {...props}>{children}</a>,
@@ -69,7 +72,11 @@ vi.mock("../Modal", () => ({
   default: ({ children, isModalOpen, onToggle }: any) =>
     isModalOpen ? (
       <div data-testid="modal">
-        <button data-testid="close-modal" onClick={() => onToggle(false)}>
+        <button
+          type="button"
+          data-testid="close-modal"
+          onClick={() => onToggle(false)}
+        >
           Close
         </button>
         {children}
@@ -82,7 +89,7 @@ vi.mock("../CharacterProfile", () => ({
 }))
 vi.mock("../ConfirmButton", () => ({
   default: ({ children, onConfirm }: any) => (
-    <button data-testid="confirm-button" onClick={onConfirm}>
+    <button type="button" data-testid="confirm-button" onClick={onConfirm}>
       {children}
     </button>
   ),

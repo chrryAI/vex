@@ -5,8 +5,8 @@
 
 import React, { startTransition } from "react"
 import { usePlatform } from "../platform/PlatformProvider"
-import { useTheme } from "./theme"
 import { createStyleProxy } from "./createStyleProxy"
+import { useTheme } from "./theme"
 
 export function createStyleHook<T extends Record<string, any>>(styles: {
   native: Record<string, any>
@@ -22,7 +22,7 @@ export function createStyleHook<T extends Record<string, any>>(styles: {
     let platform
     try {
       platform = usePlatform()
-    } catch (error) {
+    } catch (_error) {
       // PlatformProvider not available - use defaults
       platform = null
     }
@@ -83,10 +83,10 @@ export function createStyleHook<T extends Record<string, any>>(styles: {
       // 3. Default to web for SSR (window undefined)
       isWeb: platform
         ? !platform.isNative
-        : typeof navigator !== "undefined" &&
+        : !(
+            typeof navigator !== "undefined" &&
             navigator.product === "ReactNative"
-          ? false
-          : true, // Default to web (SSR or browser without platform context)
+          ), // Default to web (SSR or browser without platform context)
     })
   }
 }

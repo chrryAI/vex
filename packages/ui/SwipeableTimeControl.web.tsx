@@ -1,5 +1,6 @@
-import React, { useRef, useCallback, useEffect } from "react"
 import NumberFlow from "@number-flow/react"
+import type React from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { usePlatform } from "./platform"
 
 interface SwipeableTimeControlProps {

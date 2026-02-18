@@ -1,4 +1,4 @@
-const str = 'The quick brown fox jumps over the lazy dog'
+const str = "The quick brown fox jumps over the lazy dog"
 const iterations = 8000
 
 const argsMap = {

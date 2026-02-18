@@ -1,76 +1,75 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { type appFormData } from "../schemas/appSchema"
 import clsx from "clsx"
+import type React from "react"
+import { useEffect, useState } from "react"
+import { Controller, useForm } from "react-hook-form"
+import toast from "react-hot-toast"
+import Checkbox from "../Checkbox"
+import ColorScheme from "../ColorScheme"
 import { useAppContext } from "../context/AppContext"
-import Modal from "../Modal"
+import {
+  type TabType,
+  useApp,
+  useAuth,
+  useChat,
+  useNavigationContext,
+} from "../context/providers"
+import { useStyles } from "../context/StylesContext"
+import { useHasHydrated } from "../hooks"
+import Img from "../Image"
 import {
   Blocks,
   Boxes,
   Brain,
+  Claude,
   Coins,
-  GlobeLock,
+  DeepSeek,
+  Flux,
+  Gemini,
   Globe,
+  GlobeLock,
   MicVocal,
+  OpenAI,
+  OpenRouter,
+  Perplexity,
   Settings2,
   Sparkles,
   ThermometerSun,
   VectorSquare,
   Webhook,
 } from "../icons"
-import Img from "../Image"
-import {
-  capitalizeFirstLetter,
-  FRONTEND_URL,
-  PLUS_PRICE,
-  PRO_PRICE,
-  API_URL,
-  isE2E,
-  isDevelopment,
-} from "../utils"
-import Select from "../Select"
-import Checkbox from "../Checkbox"
-import ColorScheme from "../ColorScheme"
-import { useHasHydrated } from "../hooks"
-import { Controller, useForm } from "react-hook-form"
-import toast from "react-hot-toast"
-import { customZodResolver } from "../utils/customZodResolver"
-import {
-  createCustomAiAgentSchema,
-  type CreateCustomAiAgent,
-} from "../schemas/agentSchema"
-import {
-  DeepSeek,
-  OpenAI,
-  Claude,
-  Gemini,
-  Flux,
-  Perplexity,
-  OpenRouter,
-} from "../icons"
+import Modal from "../Modal"
 import {
   Button,
   Div,
   Input,
   Label,
-  usePlatform,
-  TextArea,
   P,
   Span,
+  TextArea,
+  usePlatform,
+  useTheme,
 } from "../platform"
+import Select from "../Select"
 import {
-  useChat,
-  useNavigationContext,
-  useApp,
-  useAuth,
-  type TabType,
-} from "../context/providers"
+  type CreateCustomAiAgent,
+  createCustomAiAgentSchema,
+} from "../schemas/agentSchema"
+import type { appFormData } from "../schemas/appSchema"
 import ThemeSwitcher from "../ThemeSwitcher"
-import { useTheme } from "../platform"
-import { useAgentStyles } from "./Agent.styles"
-import { useStyles } from "../context/StylesContext"
 import { TribeCalculator } from "../TribeCalculator"
+import {
+  API_URL,
+  capitalizeFirstLetter,
+  FRONTEND_URL,
+  isDevelopment,
+  isE2E,
+  PLUS_PRICE,
+  PRO_PRICE,
+} from "../utils"
+import { customZodResolver } from "../utils/customZodResolver"
+import { useAgentStyles } from "./Agent.styles"
 
 export default function Agent({
   style,
@@ -362,7 +361,7 @@ export default function Agent({
       const tier = appFormWatcher.tier || "free"
       const capabilities = appFormWatcher.capabilities
       const apiKeys = appFormWatcher.apiKeys || {}
-      const tools = appFormWatcher.tools || []
+      const _tools = appFormWatcher.tools || []
 
       // For paid tiers (plus/pro), OpenRouter is REQUIRED
       // If no OpenRouter API key, automatically set to free tier

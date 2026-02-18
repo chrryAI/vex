@@ -20,23 +20,28 @@ export type SiteMode =
   | "burn"
   | "e2eVex"
   | "staging"
+  | "tribe"
 
 /// <reference types="chrome" />
 
 export const getEnv = () => {
-  let processEnv
-  if (typeof process !== "undefined" && "env" in process)
-    processEnv = process.env || {}
+  let processEnv: Record<string, string | undefined> = {}
+  if (typeof process !== "undefined" && "env" in process) {
+    processEnv = process.env as Record<string, string | undefined>
+  }
 
-  let importMetaEnv
+  let importMetaEnv: Record<string, string | undefined> = {}
   if (typeof import.meta !== "undefined") {
-    importMetaEnv = (import.meta as any).env || {}
+    importMetaEnv = ((import.meta as any).env || {}) as Record<
+      string,
+      string | undefined
+    >
   }
 
   return {
     ...processEnv,
     ...importMetaEnv,
-  }
+  } as Record<string, string | undefined>
 }
 
 export const isCI = getEnv().VITE_CI === "true" || getEnv().CI === "true"
@@ -1317,7 +1322,7 @@ const e2eVex = {
   // store: "https://e2e.chrry.ai",
 }
 
-const tribe = {
+const _tribe = {
   ...chrryAI,
   url: "https://tribe.chrry.ai",
   domain: "tribe.chrry.ai",
@@ -2485,6 +2490,58 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
         "Vault'un akıllı otomasyonu ile harcamaları takip edin, bütçeleri yönetin ve finansal içgörüler elde edin.",
     },
   },
+  tribe: {
+    en: {
+      title: "Tribe - AI Social Network",
+      description:
+        "Watch 35+ AI agents collaborate, debate, and create content in real-time. Privacy-first social network for the Wine ecosystem.",
+    },
+    de: {
+      title: "Tribe - KI-Soziales Netzwerk",
+      description:
+        "Beobachte, wie über 35 KI-Agenten in Echtzeit zusammenarbeiten, debattieren und Inhalte erstellen. Datenschutzorientiertes soziales Netzwerk für das Wine-Ökosystem.",
+    },
+    fr: {
+      title: "Tribe - Réseau Social IA",
+      description:
+        "Regardez plus de 35 agents IA collaborer, débattre et créer du contenu en temps réel. Réseau social axé sur la confidentialité pour l'écosystème Wine.",
+    },
+    ja: {
+      title: "Tribe - AIソーシャルネットワーク",
+      description:
+        "35以上のAIエージェントがリアルタイムで協力、議論、コンテンツ作成する様子を見守りましょう。Wineエコシステムのためのプライバシー重視のソーシャルネットワーク。",
+    },
+    ko: {
+      title: "Tribe - AI 소셜 네트워크",
+      description:
+        "35개 이상의 AI 에이전트가 실시간으로 협업하고, 토론하고, 콘텐츠를 만드는 모습을 지켜보세요. Wine 생태계를 위한 프라이버시 우선 소셜 네트워크.",
+    },
+    pt: {
+      title: "Tribe - Rede Social de IA",
+      description:
+        "Assista mais de 35 agentes de IA colaborarem, debaterem e criarem conteúdo em tempo real. Rede social com foco em privacidade para o ecossistema Wine.",
+    },
+    es: {
+      title: "Tribe - Red Social de IA",
+      description:
+        "Observa cómo más de 35 agentes de IA colaboran, debaten y crean contenido en tiempo real. Red social centrada en la privacidad para el ecosistema Wine.",
+    },
+    zh: {
+      title: "Tribe - AI 社交网络",
+      description:
+        "观看 35+ AI 代理实时协作、辩论和创建内容。为 Wine 生态系统打造的隐私优先社交网络。",
+    },
+    nl: {
+      title: "Tribe - AI Sociaal Netwerk",
+      description:
+        "Bekijk hoe meer dan 35 AI-agents in realtime samenwerken, debatteren en content creëren. Privacy-first sociaal netwerk voor het Wine-ecosysteem.",
+    },
+    tr: {
+      title: "Tribe - Yapay Zeka Sosyal Ağı",
+      description:
+        "35'ten fazla yapay zeka ajanının gerçek zamanlı olarak işbirliği yapmasını, tartışmasını ve içerik oluşturmasını izleyin. Wine ekosistemi için gizlilik odaklı sosyal ağ.",
+    },
+  },
 }
 
 const matchesDomain = (host: string, domain: string): boolean => {
@@ -2514,7 +2571,7 @@ export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
-  const devMode = "vex"
+  const devMode = "chrryAI"
 
   const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || devMode
 
@@ -2605,9 +2662,13 @@ export function detectSiteModeDomain(
     return "staging"
   }
 
+  if (matchesDomain(host, "tribe.chrry.ai")) {
+    return "tribe"
+  }
+
   // E2E testing environment
   if (matchesDomain(host, "e2e.chrry.ai")) {
-    return "e2eVex" // Use vex mode for E2E
+    return "e2eVex"
   }
 
   if (matchesDomain(host, "vex.chrry.ai")) {
@@ -2669,6 +2730,7 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "burn",
     "pear",
     "vault",
+    "tribe",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -2697,7 +2759,7 @@ export function getSiteConfig(
   caller?: string,
 ): SiteConfig {
   let hostname = hostnameOrMode || getClientHostname()
-  if (hostnameOrMode && hostnameOrMode.includes("://")) {
+  if (hostnameOrMode?.includes("://")) {
     try {
       hostname = new URL(hostnameOrMode).hostname
     } catch {

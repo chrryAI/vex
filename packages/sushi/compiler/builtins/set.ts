@@ -74,7 +74,7 @@ export const __Set_prototype_forEach = (
   callbackFn: any,
   thisArg: any = undefined,
 ) => {
-  if (Porffor.type(callbackFn) != Porffor.TYPES.function)
+  if (Porffor.type(callbackFn) !== Porffor.TYPES.function)
     throw new TypeError("callbackFn is not a function")
 
   for (const x of _this) {
@@ -96,7 +96,7 @@ export const Set = function (iterable: any): Set {
 }
 
 export const __Set_prototype_union = (_this: Set, other: any) => {
-  if (Porffor.type(other) != Porffor.TYPES.set)
+  if (Porffor.type(other) !== Porffor.TYPES.set)
     throw new TypeError("other argument must be a Set")
 
   const out: Set = new Set(_this)
@@ -108,7 +108,7 @@ export const __Set_prototype_union = (_this: Set, other: any) => {
 }
 
 export const __Set_prototype_intersection = (_this: Set, other: any) => {
-  if (Porffor.type(other) != Porffor.TYPES.set)
+  if (Porffor.type(other) !== Porffor.TYPES.set)
     throw new TypeError("other argument must be a Set")
 
   const out: Set = new Set()
@@ -120,7 +120,7 @@ export const __Set_prototype_intersection = (_this: Set, other: any) => {
 }
 
 export const __Set_prototype_difference = (_this: Set, other: any) => {
-  if (Porffor.type(other) != Porffor.TYPES.set)
+  if (Porffor.type(other) !== Porffor.TYPES.set)
     throw new TypeError("other argument must be a Set")
 
   const out: Set = new Set(_this)
@@ -132,7 +132,7 @@ export const __Set_prototype_difference = (_this: Set, other: any) => {
 }
 
 export const __Set_prototype_symmetricDifference = (_this: Set, other: any) => {
-  if (Porffor.type(other) != Porffor.TYPES.set)
+  if (Porffor.type(other) !== Porffor.TYPES.set)
     throw new TypeError("other argument must be a Set")
 
   const out: Set = new Set(_this)
@@ -145,7 +145,7 @@ export const __Set_prototype_symmetricDifference = (_this: Set, other: any) => {
 }
 
 export const __Set_prototype_isSubsetOf = (_this: Set, other: any) => {
-  if (Porffor.type(other) != Porffor.TYPES.set)
+  if (Porffor.type(other) !== Porffor.TYPES.set)
     throw new TypeError("other argument must be a Set")
 
   for (const x of _this) {
@@ -156,7 +156,7 @@ export const __Set_prototype_isSubsetOf = (_this: Set, other: any) => {
 }
 
 export const __Set_prototype_isSupersetOf = (_this: Set, other: any) => {
-  if (Porffor.type(other) != Porffor.TYPES.set)
+  if (Porffor.type(other) !== Porffor.TYPES.set)
     throw new TypeError("other argument must be a Set")
 
   for (const x of other) {
@@ -167,7 +167,7 @@ export const __Set_prototype_isSupersetOf = (_this: Set, other: any) => {
 }
 
 export const __Set_prototype_isDisjointFrom = (_this: Set, other: any) => {
-  if (Porffor.type(other) != Porffor.TYPES.set)
+  if (Porffor.type(other) !== Porffor.TYPES.set)
     throw new TypeError("other argument must be a Set")
 
   for (const x of _this) {

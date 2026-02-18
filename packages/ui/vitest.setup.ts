@@ -4,7 +4,7 @@ if (!globalThis.crypto) {
   try {
     const { webcrypto } = require("node:crypto")
     globalThis.crypto = webcrypto as any
-  } catch (e) {
+  } catch (_e) {
     // console.warn('Failed to polyfill crypto', e)
   }
 }

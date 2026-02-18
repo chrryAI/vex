@@ -1,21 +1,21 @@
-import { Hono } from "hono"
-import { sign, verify } from "jsonwebtoken"
-import { compare, hash } from "bcrypt"
-import {
-  getUser,
-  createUser,
-  getStore,
-  eq,
-  and,
-  gt,
-  db,
-  authExchangeCodes,
-} from "@repo/db"
-import { v4 as uuidv4 } from "uuid"
+import { randomBytes } from "node:crypto"
 import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
-import { randomBytes } from "crypto"
+import {
+  and,
+  authExchangeCodes,
+  createUser,
+  db,
+  eq,
+  getStore,
+  getUser,
+  gt,
+} from "@repo/db"
+import { compare, hash } from "bcrypt"
 import type { Context } from "hono"
-import { getCookie, setCookie, deleteCookie } from "hono/cookie"
+import { Hono } from "hono"
+import { deleteCookie, getCookie, setCookie } from "hono/cookie"
+import { sign, verify } from "jsonwebtoken"
+import { v4 as uuidv4 } from "uuid"
 import { checkAuthRateLimit } from "../../lib/rateLimiting"
 
 const authRoutes = new Hono()
@@ -23,8 +23,8 @@ const authRoutes = new Hono()
 // ==================== CONSTANTS ====================
 const GOOGLE_WEB_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID
 const GOOGLE_WEB_CLIENT_SECRET = process.env.GOOGLE_WEB_CLIENT_SECRET
-const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
-const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET
+const _GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
+const _GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || "development-secret"
 const JWT_EXPIRY = "30d"
 const ALLOWED_DOMAINS = [".chrry.ai", ".chrry.dev", ".chrry.store", "localhost"]
@@ -251,12 +251,12 @@ function getCallbackUrls(c: Context): {
   // Validate error URL to prevent open redirect
   if (errorUrl && !validateCallbackUrl(errorUrl)) {
     console.warn("⚠️ Invalid errorUrl provided, using safe fallback")
-    errorUrl = callbackUrl + "/?error=oauth_failed"
+    errorUrl = `${callbackUrl}/?error=oauth_failed`
   }
 
   // Fallback error URL
   if (!errorUrl) {
-    errorUrl = callbackUrl + "/?error=oauth_failed"
+    errorUrl = `${callbackUrl}/?error=oauth_failed`
   }
 
   return { callbackUrl, errorUrl }
@@ -355,11 +355,11 @@ function buildRedirectUrl(baseUrl: string, authCode: string): string {
 authRoutes.post("/signup/password", async (c) => {
   try {
     const ip = c.req.header("x-forwarded-for")?.split(",")[0] || "127.0.0.1"
-    const { success } = await checkAuthRateLimit(c.req.raw, ip)
+    const { success, errorMessage } = await checkAuthRateLimit(c.req.raw, ip)
 
     if (!success) {
       return c.json(
-        { error: "Too many attempts. Please try again later." },
+        { error: errorMessage || "Too many attempts. Please try again later." },
         429,
       )
     }
@@ -410,11 +410,11 @@ authRoutes.post("/signup/password", async (c) => {
 authRoutes.post("/signin/password", async (c) => {
   try {
     const ip = c.req.header("x-forwarded-for")?.split(",")[0] || "127.0.0.1"
-    const { success } = await checkAuthRateLimit(c.req.raw, ip)
+    const { success, errorMessage } = await checkAuthRateLimit(c.req.raw, ip)
 
     if (!success) {
       return c.json(
-        { error: "Too many attempts. Please try again later." },
+        { error: errorMessage || "Too many attempts. Please try again later." },
         429,
       )
     }
@@ -857,7 +857,7 @@ authRoutes.post("/callback/apple", async (c) => {
         const userData = JSON.parse(body.user as string)
         name =
           `${userData.name?.firstName || ""} ${userData.name?.lastName || ""}`.trim()
-      } catch (e) {
+      } catch (_e) {
         // Name not provided
       }
     }

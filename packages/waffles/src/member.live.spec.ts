@@ -1,10 +1,10 @@
 import { test } from "@playwright/test"
-import { clean } from "./shared/clean"
-import { getURL, wait, VEX_TEST_EMAIL_3, VEX_TEST_PASSWORD_3 } from "."
-import { subscribe } from "./shared/subscribe"
 import { v4 as uuidv4 } from "uuid"
+import { getURL, VEX_TEST_EMAIL_3, VEX_TEST_PASSWORD_3, wait } from "."
 import app from "./shared/app"
+import { clean } from "./shared/clean"
 import { signIn } from "./shared/signIn"
+import { subscribe } from "./shared/subscribe"
 
 const isMember = true
 

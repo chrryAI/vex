@@ -9,8 +9,8 @@ export const DataView = function (
 
   if (
     Porffor.fastAnd(
-      Porffor.type(arg) != Porffor.TYPES.arraybuffer,
-      Porffor.type(arg) != Porffor.TYPES.sharedarraybuffer,
+      Porffor.type(arg) !== Porffor.TYPES.arraybuffer,
+      Porffor.type(arg) !== Porffor.TYPES.sharedarraybuffer,
     )
   )
     throw new TypeError(
@@ -20,13 +20,13 @@ export const DataView = function (
     throw new TypeError("Constructed DataView with a detached ArrayBuffer")
 
   let offset: i32 = 0
-  if (Porffor.type(byteOffset) != Porffor.TYPES.undefined)
+  if (Porffor.type(byteOffset) !== Porffor.TYPES.undefined)
     offset = Math.trunc(byteOffset)
   if (offset < 0)
     throw new RangeError("Invalid DataView byte offset (negative)")
 
   let len: i32 = 0
-  if (Porffor.type(length) == Porffor.TYPES.undefined) {
+  if (Porffor.type(length) === Porffor.TYPES.undefined) {
     const bufferLen: i32 = Porffor.wasm.i32.load(
       Porffor.wasm`local.get ${arg}`,
       0,
@@ -141,7 +141,7 @@ export const __DataView_prototype_getUint16 = (
   if (Porffor.fastOr(byteOffset < 0, byteOffset + 1 >= len))
     throw new RangeError("Byte offset is out of bounds of the DataView")
 
-  let int: i32 = 0
+  const int: i32 = 0
   Porffor.wasm`
 local.get ${_this}
 i32.to_u
@@ -154,7 +154,7 @@ i32.load16_u 0 4
 i32.from_u
 local.set ${int}`
 
-  if (!!littleEndian) return int
+  if (littleEndian) return int
   return (int >>> 8) | ((int & 0xff) << 8)
 }
 
@@ -172,7 +172,7 @@ export const __DataView_prototype_setUint16 = (
     throw new RangeError("Byte offset is out of bounds of the DataView")
 
   let int: i32 = 0
-  if (!!littleEndian) {
+  if (littleEndian) {
     int = value
   } else {
     int = (value >>> 8) | ((value & 0xff) << 8)
@@ -228,7 +228,7 @@ export const __DataView_prototype_getUint32 = (
   if (Porffor.fastOr(byteOffset < 0, byteOffset + 3 >= len))
     throw new RangeError("Byte offset is out of bounds of the DataView")
 
-  let int: i32 = 0
+  const int: i32 = 0
   Porffor.wasm`
 local.get ${_this}
 i32.to_u
@@ -241,7 +241,7 @@ i32.load 0 4
 i32.from_u
 local.set ${int}`
 
-  if (!!littleEndian) return int
+  if (littleEndian) return int
   return (
     (int >>> 24) |
     ((int >>> 8) & 0x0000ff00) |
@@ -264,7 +264,7 @@ export const __DataView_prototype_setUint32 = (
     throw new RangeError("Byte offset is out of bounds of the DataView")
 
   let int: i32 = 0
-  if (!!littleEndian) {
+  if (littleEndian) {
     int = value
   } else {
     int =
@@ -337,7 +337,7 @@ export const __DataView_prototype_setFloat32 = (
   value: number,
   littleEndian: any,
 ) => {
-  let int: i32 = 0
+  const int: i32 = 0
   Porffor.wasm`
 local.get ${value}
 f32.demote_f64

@@ -5,11 +5,10 @@
  * Detects git staged changes and converts them
  */
 
-import { execSync } from "child_process"
-import fs from "fs"
-import path from "path"
-import { fileURLToPath } from "url"
-import { dirname } from "path"
+import { execSync } from "node:child_process"
+import fs from "node:fs"
+import path, { dirname } from "node:path"
+import { fileURLToPath } from "node:url"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -23,7 +22,7 @@ try {
     encoding: "utf-8",
   })
   stagedFiles = output.trim().split("\n").filter(Boolean)
-} catch (error) {
+} catch (_error) {
   console.log("⚠️  Not in a git repository or no staged files")
   process.exit(0)
 }

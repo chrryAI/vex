@@ -1,5 +1,3 @@
-import React from "react"
-
 export interface EmojiPickerProps {
   onEmojiClick: (emojiData: { emoji: string }) => void
   open: boolean

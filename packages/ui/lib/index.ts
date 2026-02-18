@@ -1,21 +1,22 @@
-import {
+import type z from "zod"
+import type { session } from "../context/providers/AuthProvider"
+import type { appFormData } from "../schemas/appSchema"
+import type {
   aiAgent,
   app,
   appWithStore,
   collaboration,
   guest,
   message,
+  paginatedMessages,
   store,
   thread,
   user,
-  paginatedMessages,
 } from "../types"
 import * as utils from "../utils"
-import z from "zod"
-import { createCalendarEventSchema } from "../utils/calendarValidation"
+import type { createCalendarEventSchema } from "../utils/calendarValidation"
 import { stringify as superjsonStringify } from "./superjson"
-import { appFormData } from "../schemas/appSchema"
-import { session } from "../context/providers/AuthProvider"
+
 export { simpleRedact } from "./redaction"
 
 export const getImageSrc = ({
@@ -1110,7 +1111,7 @@ export const getSession = async ({
   try {
     const result = await response.json()
     return result as session
-  } catch (error) {
+  } catch (_error) {
     const text = await response.text()
     return {
       error: `API error (${response.status}): ${text.substring(0, 200)}`,

@@ -4,18 +4,18 @@
  * Uses type assertions to work around React 18/19 type mismatch
  */
 
-import React from "react"
+import type React from "react"
+import { BiLogoPostgresql } from "react-icons/bi"
 import {
-  FaGoogle,
+  FaAndroid,
   FaApple,
   FaChrome,
   FaFirefox,
-  FaAndroid,
+  FaGoogle,
 } from "react-icons/fa"
-import { RiNextjsFill } from "react-icons/ri"
-import { BiLogoPostgresql } from "react-icons/bi"
-import { SiCssmodules, SiJest, SiDrizzle, SiTypescript } from "react-icons/si"
 import { MdAddToHomeScreen } from "react-icons/md"
+import { RiNextjsFill } from "react-icons/ri"
+import { SiCssmodules, SiDrizzle, SiJest, SiTypescript } from "react-icons/si"
 
 // Type assertion helper to work around React version conflicts
 const Icon = (Component: any) =>

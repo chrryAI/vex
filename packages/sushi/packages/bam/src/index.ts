@@ -178,8 +178,8 @@ export class BAM {
   }
 
   async scanDirectory(dirPath: string): Promise<Bug[]> {
-    const fs = await import("fs")
-    const path = await import("path")
+    const fs = await import("node:fs")
+    const path = await import("node:path")
     const bugs: Bug[] = []
 
     const scanDir = async (dir: string): Promise<void> => {
@@ -243,13 +243,13 @@ export class BAM {
       bySeverity: {} as Record<string, number>,
     }
 
-    if (typeResult && typeResult.data) {
+    if (typeResult?.data) {
       for (const row of typeResult.data) {
         stats.byType[row.type] = row.count
       }
     }
 
-    if (severityResult && severityResult.data) {
+    if (severityResult?.data) {
       for (const row of severityResult.data) {
         stats.bySeverity[row.severity] = row.count
       }

@@ -94,7 +94,7 @@ export const storage = {
       // Try to parse as JSON
       try {
         return JSON.parse(value)
-      } catch (parseError) {
+      } catch (_parseError) {
         // If it's a plain string (not JSON), re-save it as JSON and return
         console.warn(
           `Could not parse ${key} as JSON, migrating to JSON format:`,

@@ -1,14 +1,14 @@
 import { isE2E } from "@chrryai/chrry/utils/siteConfig"
 import {
-  type user,
-  type threadSummary,
-  type thread,
-  type guest,
-  type subscription,
-  type message,
-  type collaboration,
   type app,
+  type collaboration,
+  type guest,
   isOwner,
+  type message,
+  type subscription,
+  type thread,
+  type threadSummary,
+  type user,
 } from "@repo/db"
 // import { headers } from "next/headers" // Not needed for Hono standalone
 export const DEV_IP = "192.168.2.27"
@@ -228,14 +228,10 @@ export function checkThreadSummaryLimit({
   } else {
     limit = THREAD_SUMMARY_LIMITS.guest
   }
-  console.log(`🚀 ~ checkThreadSummaryLimit ~ limit:`, limit)
 
   try {
     // Check if summary was created today
-    console.log(
-      `🚀 ~ checkThreadSummaryLimit ~ summary?.createdOn:`,
-      summary?.createdOn,
-    )
+
     if (summary?.createdOn) {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
@@ -245,9 +241,6 @@ export function checkThreadSummaryLimit({
       // If summary was created today, check if thread message count is under limit
       // This prevents one huge thread from consuming entire daily quota
       if (summaryDate.getTime() === today.getTime()) {
-        console.log(`🚀 ~ checkThreadSummaryLimit ~ today:`, today)
-        console.log(`🚀 ~ checkThreadSummaryLimit ~ summaryDate:`, summaryDate)
-        console.log(`🚀 ~ checkThreadSummaryLimit ~ limit:`, limit)
         return summary.messageCount < limit
       }
     }

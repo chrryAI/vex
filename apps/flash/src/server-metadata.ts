@@ -1,23 +1,21 @@
+import type { locale } from "@chrryai/chrry/locales"
 import {
   generateAppMetadata,
-  generateStoreMetadata,
   generateThreadMetadata,
-  getThreadId,
 } from "@chrryai/chrry/utils"
+import clearLocale from "@chrryai/chrry/utils/clearLocale"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
-import { locale } from "@chrryai/chrry/locales"
-import clearLocale from "@chrryai/chrry/utils/clearLocale"
-import { ServerData } from "./server-loader"
-import { BlogPostWithContent } from "./blog-loader"
+import type { BlogPostWithContent } from "./blog-loader"
+import type { ServerData } from "./server-loader"
 import {
   generateAboutMetadata,
-  generateWhyMetadata,
+  generateAffiliateMetadata,
+  generateCalendarMetadata,
   generatePrivacyMetadata,
   generateTermsMetadata,
-  generateCalendarMetadata,
-  generateAffiliateMetadata,
   generateUsersMetadata,
+  generateWhyMetadata,
 } from "./static-route-metadata"
 
 interface MetadataResult {

@@ -1,5 +1,10 @@
-import { ZodError, ZodType } from "zod"
-import { FieldError, FieldErrors, FieldValues, Resolver } from "react-hook-form"
+import type {
+  FieldError,
+  FieldErrors,
+  FieldValues,
+  Resolver,
+} from "react-hook-form"
+import type { ZodError, ZodType } from "zod"
 
 // Utility to convert ZodError to Hook Form-compatible FieldErrors
 const zodToHookFormErrors = <TFieldValues extends FieldValues>(

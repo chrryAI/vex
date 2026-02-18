@@ -1,6 +1,6 @@
-import React from "react"
-import { Providers } from "./Providers"
+import type React from "react"
 import { Hey } from "./Hey"
+import { Providers } from "./Providers"
 
 export default function Sidebar({
   useExtensionIcon,

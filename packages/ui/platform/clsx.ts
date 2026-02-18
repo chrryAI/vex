@@ -4,8 +4,9 @@
  * On web: returns className string
  * On native: returns merged style object
  */
-import React from "react"
+
 import clsxOriginal from "clsx"
+import React from "react"
 
 type ClassValue =
   | string
@@ -63,7 +64,7 @@ export function useClsx<T extends Record<string, Record<string, any>>>(
         if (styleObj && typeof styleObj === "object") {
           registry.set(key, styleObj)
 
-          if (webClasses && webClasses[key]) {
+          if (webClasses?.[key]) {
             const webClassName = webClasses[key]
             registry.set(webClassName, styleObj)
           }
@@ -197,7 +198,7 @@ export function createStyleRegistry<
       if (styleObj && typeof styleObj === "object") {
         registry.set(key, styleObj)
 
-        if (webClasses && webClasses[key]) {
+        if (webClasses?.[key]) {
           const webClassName = webClasses[key]
           registry.set(webClassName, styleObj)
         }

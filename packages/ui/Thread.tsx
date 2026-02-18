@@ -1,47 +1,46 @@
 "use client"
 
-import React, { useEffect, useRef, useState, useCallback } from "react"
-import { useThreadStyles } from "./Thread.styles"
-import {
-  aiAgent,
-  guest,
-  message,
-  thread,
-  user,
-  paginatedMessages,
-} from "./types"
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
+import Bookmark from "./Bookmark"
+import Chat from "./Chat"
+import CollaborationStatus from "./CollaborationStatus"
 import { useAppContext } from "./context/AppContext"
 import {
+  useApp,
   useAuth,
   useChat,
   useNavigationContext,
-  useApp,
 } from "./context/providers"
-import Grapes from "./Grapes"
-import { A, usePlatform, useTheme, Div, Button, Span, Input } from "./platform"
-import Loading from "./Loading"
-import { FRONTEND_URL, isCollaborator, isOwner, isE2E } from "./utils"
-import { CircleX, Clock, ClockPlus, InfoIcon, ThumbsUp } from "./icons"
-import Chat from "./Chat"
-import Messages from "./Messages"
-import Skeleton from "./Skeleton"
-import DeleteThread from "./DeleteThread"
-import Instructions from "./Instructions"
-import EditThread from "./EditThread"
-import Share from "./Share"
-import { useUserScroll } from "./hooks/useUserScroll"
-import { useThreadPresence } from "./hooks/useThreadPresence"
-import Bookmark from "./Bookmark"
-import CollaborationStatus from "./CollaborationStatus"
-import EnableSound from "./EnableSound"
-import MemoryConsent from "./MemoryConsent"
-import Img from "./Image"
-import { useHasHydrated, useThreadMetadata } from "./hooks"
-import { lazy, Suspense } from "react"
 import { useStyles } from "./context/StylesContext"
+import DeleteThread from "./DeleteThread"
+import EditThread from "./EditThread"
+import EnableSound from "./EnableSound"
+import Grapes from "./Grapes"
+import { useHasHydrated, useThreadMetadata } from "./hooks"
+import { useThreadPresence } from "./hooks/useThreadPresence"
+import { useUserScroll } from "./hooks/useUserScroll"
+import Img from "./Image"
+import Instructions from "./Instructions"
+import { CircleX, Clock, ClockPlus, InfoIcon, ThumbsUp } from "./icons"
+import Loading from "./Loading"
+import MemoryConsent from "./MemoryConsent"
+import Messages from "./Messages"
+import { A, Button, Div, Input, Span, usePlatform, useTheme } from "./platform"
+import Share from "./Share"
+import Skeleton from "./Skeleton"
 import { BREAKPOINTS } from "./styles/breakpoints"
-import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+import { useThreadStyles } from "./Thread.styles"
 import Tribe from "./Tribe"
+import type {
+  aiAgent,
+  guest,
+  message,
+  paginatedMessages,
+  thread,
+  user,
+} from "./types"
+import { FRONTEND_URL, isCollaborator, isE2E, isOwner } from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 // Lazy load Focus only on web (not extension) to reduce bundle size
 // This component includes timer, tasks, moods, and analytics - heavy dependencies
@@ -166,6 +165,52 @@ const Thread = ({
   // plausible if we've already auto-selected an agent for this thread
   const shouldStopAutoScrollRef = useRef(false)
 
+  const refetch = () => {
+    return refetchThread()
+  }
+
+  // ⚡ Bolt: Stable callbacks for Messages component to prevent re-renders
+  const isChatFloatingRef = useRef(isChatFloating)
+  isChatFloatingRef.current = isChatFloating
+
+  const scrollToBottomRef = useRef(scrollToBottom)
+  scrollToBottomRef.current = scrollToBottom
+
+  const refetchRef = useRef(refetch)
+  refetchRef.current = refetch
+
+  const setMessagesRef = useRef(setMessages)
+  setMessagesRef.current = setMessages
+
+  const currentMessagesRef = useRef(messages)
+  currentMessagesRef.current = messages
+
+  const handlePlayAudio = useCallback(() => {
+    shouldStopAutoScrollRef.current = true
+  }, [])
+
+  const handleCharacterProfileUpdate = useCallback(() => {
+    !isChatFloating && scrollToBottom()
+  }, [isChatFloating, scrollToBottom])
+
+  const handleToggleLike = useCallback((liked: boolean | undefined) => {
+    refetchRef.current()
+  }, [])
+
+  const handleDelete = useCallback(async ({ id }: { id: string }) => {
+    if (currentMessagesRef.current.length === 1) {
+      await refetchRef.current().then(() => setMessagesRef.current([]))
+    } else {
+      await refetchRef
+        .current()
+        .then(() =>
+          setMessagesRef.current(
+            currentMessagesRef.current.filter((m) => m.message.id !== id),
+          ),
+        )
+    }
+  }, [])
+
   // plausible last processed threadData to prevent re-processing
   // const lastProcessedThreadDataRef = useRef<any>(null)
 
@@ -197,10 +242,6 @@ const Thread = ({
       collaboration.user.id === user?.id &&
       collaboration.collaboration.status !== "active",
   )
-
-  const refetch = () => {
-    return refetchThread()
-  }
 
   const collaborator = thread && isCollaborator(thread, user?.id)
   const activeCollaborator =
@@ -491,31 +532,18 @@ const Thread = ({
           <>
             {isGame ? null : (
               <Messages
-                onCharacterProfileUpdate={() => {
-                  !isChatFloating && scrollToBottom()
-                }}
+                onCharacterProfileUpdate={handleCharacterProfileUpdate}
                 isHome={isHome}
                 thread={thread}
-                onPlayAudio={() => {
-                  shouldStopAutoScrollRef.current = true
-                }}
-                onToggleLike={(liked) => {
-                  refetch()
-                }}
+                onPlayAudio={handlePlayAudio}
+                onToggleLike={handleToggleLike}
                 emptyMessage={
                   liked && messages.length === 0
                     ? t("Nothing here yet")
                     : undefined
                 }
                 showEmptyState={!!thread}
-                onDelete={async ({ id }) => {
-                  if (messages.length === 1) {
-                    await refetch().then(() => setMessages([]))
-                  } else
-                    await refetch().then(() =>
-                      setMessages(messages.filter((m) => m.message.id !== id)),
-                    )
-                }}
+                onDelete={handleDelete}
                 ref={messagesRef}
                 messages={messages}
                 setIsLoadingMore={setIsLoadingMore}

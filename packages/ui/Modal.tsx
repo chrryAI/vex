@@ -1,8 +1,11 @@
 "use client"
 import React, { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
-import { CircleX } from "./icons"
 import { useAuth } from "./context/providers"
+import { useStyles } from "./context/StylesContext"
+import { useHasHydrated } from "./hooks"
+import { CircleX } from "./icons"
+import { useModalStyles } from "./Modal.styles"
 import {
   Button,
   Div,
@@ -13,10 +16,7 @@ import {
   useTheme,
   Video,
 } from "./platform"
-import { useHasHydrated } from "./hooks"
 import { FRONTEND_URL } from "./utils"
-import { useModalStyles } from "./Modal.styles"
-import { useStyles } from "./context/StylesContext"
 
 export default function Modal({
   title,
@@ -101,7 +101,7 @@ export default function Modal({
           addParams({ [paramKey]: paramValue || "true" })
         }
       }
-      event && plausible({ ...event, name: event.name + "_open" })
+      event && plausible({ ...event, name: `${event.name}_open` })
     } else {
       if (params) {
         const urlParams = new URLSearchParams(params.split("?")[1] || "")

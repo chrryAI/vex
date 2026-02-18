@@ -1,10 +1,9 @@
 "use client"
-import { app } from "./types"
 
-import React from "react"
+import { useData } from "./context/providers"
 import Img from "./Img"
 import { usePlatform } from "./platform"
-import { useData } from "./context/providers"
+import type { app } from "./types"
 
 export default function Logo({
   className,

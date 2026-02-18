@@ -1,5 +1,5 @@
-import { Hono } from "hono"
 import { getStores } from "@repo/db"
+import { Hono } from "hono"
 import { getGuest, getMember } from "../lib/auth"
 
 export const stores = new Hono()

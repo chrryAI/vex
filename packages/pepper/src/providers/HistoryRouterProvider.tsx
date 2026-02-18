@@ -7,10 +7,10 @@
 
 import {
   createContext,
+  type ReactNode,
   useContext,
   useEffect,
   useState,
-  ReactNode,
 } from "react"
 import { clientRouter } from "../core/ClientRouter"
 
@@ -56,7 +56,7 @@ export function HistoryRouterProvider({
   children,
 }: HistoryRouterProviderProps) {
   const [state, setState] = useState(() => clientRouter.getState())
-  const [updateTrigger, setUpdateTrigger] = useState(0)
+  const [_updateTrigger, setUpdateTrigger] = useState(0)
 
   useEffect(() => {
     // Subscribe to router changes

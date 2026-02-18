@@ -1,4 +1,3 @@
-import React from "react"
 import "../styles/browser-chrome.css"
 
 interface Tab {
@@ -25,6 +24,7 @@ export function Tab({ tab, isActive, onSelect, onClose }: TabProps) {
       {tab.favicon && <img src={tab.favicon} alt="" className="tab-favicon" />}
       <span className="tab-title">{tab.title || "New Tab"}</span>
       <button
+        type="button"
         className="tab-close"
         onClick={(e) => {
           e.stopPropagation()
@@ -66,7 +66,12 @@ export function TabBar({
           />
         ))}
       </div>
-      <button className="new-tab-btn" onClick={onNewTab} aria-label="New tab">
+      <button
+        type="button"
+        className="new-tab-btn"
+        onClick={onNewTab}
+        aria-label="New tab"
+      >
         +
       </button>
     </div>

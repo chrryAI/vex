@@ -1,11 +1,13 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+
+import { act } from "@testing-library/react"
 import React from "react"
 import { createRoot } from "react-dom/client"
-import { act } from "@testing-library/react"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 // Make React globally available
 global.React = React
+
 import Checkbox from "../Checkbox"
 
 // Mock platform components

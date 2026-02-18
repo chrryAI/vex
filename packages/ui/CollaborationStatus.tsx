@@ -1,16 +1,16 @@
-import React, { useState, useEffect, CSSProperties } from "react"
-import type { thread } from "./types"
-import { useAppContext } from "./context/AppContext"
-import { CircleCheck, CircleX, UsersRound } from "./icons"
+import { type CSSProperties, useEffect, useState } from "react"
 import toast from "react-hot-toast"
-import Loading from "./Loading"
-import ConfirmButton from "./ConfirmButton"
-import { useAuth } from "./context/providers"
-import { useData } from "./context/providers/DataProvider"
-import { Button, Div, useTheme } from "./platform"
-import { useStyles } from "./context/StylesContext"
 import { useCollaborationStatusStyles } from "./CollaborationStatus.styles"
+import ConfirmButton from "./ConfirmButton"
+import { useAppContext } from "./context/AppContext"
+import { useAuth } from "./context/providers"
 import { useChat } from "./context/providers/ChatProvider"
+import { useData } from "./context/providers/DataProvider"
+import { useStyles } from "./context/StylesContext"
+import { CircleCheck, CircleX, UsersRound } from "./icons"
+import Loading from "./Loading"
+import { Button, Div, useTheme } from "./platform"
+import type { thread } from "./types"
 
 export default function CollaborationStatus({
   thread,
@@ -82,7 +82,7 @@ export default function CollaborationStatus({
       } else {
         setCollaborationStatus(status)
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error(t("Failed to update collaboration"))
     } finally {
       setIsLoading(false)

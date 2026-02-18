@@ -1,5 +1,5 @@
 import type { newSonarIssue, newSonarMetric } from "@repo/db"
-import { db, sonarIssues, sonarMetrics, eq, desc } from "@repo/db"
+import { db, desc, eq, sonarIssues, sonarMetrics } from "@repo/db"
 import { syncIssuesToGraph, syncMetricsToGraph } from "../graph/sonarGraphSync"
 
 const SONAR_CLOUD_URL = "https://sonarcloud.io/api"
@@ -9,7 +9,7 @@ const PROJECT_KEY = "chrryAI_vex"
 /**
  * Check if there's a new analysis since last sync
  */
-async function hasNewAnalysis(projectKey: string): Promise<{
+async function _hasNewAnalysis(projectKey: string): Promise<{
   hasNew: boolean
   lastAnalysis?: Date
   lastSync?: Date

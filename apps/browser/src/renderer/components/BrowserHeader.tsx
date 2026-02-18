@@ -49,6 +49,7 @@ export function BrowserHeader({
     <div className="browser-header">
       <div className="nav-controls">
         <button
+          type="button"
           className="nav-btn"
           onClick={onBack}
           disabled={!canGoBack}
@@ -57,6 +58,7 @@ export function BrowserHeader({
           ←
         </button>
         <button
+          type="button"
           className="nav-btn"
           onClick={onForward}
           disabled={!canGoForward}
@@ -64,7 +66,12 @@ export function BrowserHeader({
         >
           →
         </button>
-        <button className="nav-btn" onClick={onReload} aria-label="Reload">
+        <button
+          type="button"
+          className="nav-btn"
+          onClick={onReload}
+          aria-label="Reload"
+        >
           ⟳
         </button>
       </div>
@@ -80,7 +87,7 @@ export function BrowserHeader({
       </form>
 
       <div className="extension-tray">
-        <button className="extension-icon" title="Extensions">
+        <button type="button" className="extension-icon" title="Extensions">
           🧩
         </button>
       </div>

@@ -1,11 +1,11 @@
-import React from "react"
-import { useHasHydrated } from "./hooks"
-import { useAppContext } from "./context/AppContext"
 import clsx from "clsx"
+import type React from "react"
+import { useAppContext } from "./context/AppContext"
+import { useAuth } from "./context/providers/AuthProvider"
+import { useStyles } from "./context/StylesContext"
+import { useHasHydrated } from "./hooks"
 import { Moon, Sun } from "./icons"
 import { Button, Div, useTheme } from "./platform"
-import { useStyles } from "./context/StylesContext"
-import { useAuth } from "./context/providers/AuthProvider"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function ThemeSwitcher({

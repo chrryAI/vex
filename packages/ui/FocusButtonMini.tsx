@@ -1,17 +1,13 @@
 "use client"
 
-import React, { useEffect, useState, CSSProperties, memo } from "react"
-
-import { usePlatform } from "./platform"
-import Img from "./Image"
-
-import { useHasHydrated } from "./hooks"
-import { Span } from "./platform"
+import { type CSSProperties, memo, useEffect, useState } from "react"
 import A from "./a/A"
-import { useStyles } from "./context/StylesContext"
-
 import { useAuth } from "./context/providers"
+import { useStyles } from "./context/StylesContext"
 import { useTimerContext } from "./context/TimerContext"
+import { useHasHydrated } from "./hooks"
+import Img from "./Image"
+import { Span, usePlatform } from "./platform"
 
 function FocusButton({
   style,

@@ -1,8 +1,8 @@
+import type { user } from "@repo/db"
+import { getUser } from "@repo/db"
 import { Hono } from "hono"
 import sanitizeHtml from "sanitize-html"
-import { getUser } from "@repo/db"
-import { getMember, getGuest } from "../lib/auth"
-import type { user } from "@repo/db"
+import { getGuest, getMember } from "../lib/auth"
 
 export const users = new Hono()
 
@@ -27,8 +27,8 @@ users.get("/", async (c) => {
   }
 
   const userNameOrEmail = sanitizeHtml(c.req.query("search") || "")
-  const pageSize = Number(c.req.query("pageSize") || "10")
-  const similarTo = sanitizeHtml(c.req.query("similarTo") || "")
+  const _pageSize = Number(c.req.query("pageSize") || "10")
+  const _similarTo = sanitizeHtml(c.req.query("similarTo") || "")
 
   const user = userNameOrEmail
     ? (await getUser({ userName: userNameOrEmail })) ||

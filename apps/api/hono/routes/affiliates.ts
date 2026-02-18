@@ -1,14 +1,14 @@
-import { Hono } from "hono"
-import {
-  getAffiliateLink,
-  createAffiliateLink,
-  getAffiliateReferrals,
-  getAffiliatePayouts,
-} from "@repo/db"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
-import { getMember } from "../lib/auth"
+import {
+  createAffiliateLink,
+  getAffiliateLink,
+  getAffiliatePayouts,
+  getAffiliateReferrals,
+} from "@repo/db"
+import { Hono } from "hono"
 import { generateSecureCode } from "../../lib/secureRandom"
+import { getMember } from "../lib/auth"
 
 const app = new Hono()
 

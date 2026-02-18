@@ -1,12 +1,12 @@
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { storeWithApps, thread } from "../types"
+import { useApp, useAuth } from "../context/providers"
+import type { storeWithApps, thread } from "../types"
 import {
-  generateStoreMetadata,
   generateAppMetadata,
+  generateStoreMetadata,
   generateThreadMetadata,
 } from "../utils"
-import { useAuth, useApp } from "../context/providers"
 import getWhiteLabel from "../utils/getWhiteLabel"
 
 /**

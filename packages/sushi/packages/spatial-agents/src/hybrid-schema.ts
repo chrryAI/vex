@@ -68,7 +68,6 @@ export interface SyncStrategy {
  * Manages both PostgreSQL and FalkorDB
  */
 export class HybridDB {
-  private pgClient: any = null
   private falkorDB: any = null
   private graph: any = null
   private config: HybridConfig
@@ -275,14 +274,14 @@ export class HybridDB {
     )
 
     const tasksByStatus: Record<string, number> = {}
-    if (tasksResult && tasksResult.data) {
+    if (tasksResult?.data) {
       for (const row of tasksResult.data) {
         tasksByStatus[row.status] = row.total
       }
     }
 
     const agentWorkloads: Array<{ agentId: string; taskCount: number }> = []
-    if (workloadResult && workloadResult.data) {
+    if (workloadResult?.data) {
       for (const row of workloadResult.data) {
         agentWorkloads.push({
           agentId: row.agentId,
@@ -373,7 +372,7 @@ export class HybridDB {
     )
 
     const agents: Array<{ id: string; name: string; distance: number }> = []
-    if (result && result.data) {
+    if (result?.data) {
       for (const row of result.data) {
         agents.push({
           id: row.id,
@@ -398,7 +397,7 @@ export class HybridDB {
     )
 
     const connections: Array<{ from: string; to: string; type: string }> = []
-    if (connectionsResult && connectionsResult.data) {
+    if (connectionsResult?.data) {
       for (const row of connectionsResult.data) {
         connections.push({
           from: row.from,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 
 export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(true)
@@ -14,7 +14,7 @@ export function useOnlineStatus() {
         unsubscribe = NetInfo.default.addEventListener((state: any) => {
           setIsOnline(state.isConnected ?? true)
         })
-      } catch (error) {
+      } catch (_error) {
         // NetInfo not available, assume always online
         console.warn(
           "NetInfo not installed. Install @react-native-community/netinfo for network detection.",

@@ -1,22 +1,23 @@
 "use client"
-import React, { useEffect, useState, memo } from "react"
-import { StyleSheet, Clipboard } from "react-native"
+import type React from "react"
+import { memo, useEffect, useState } from "react"
 import toast from "react-hot-toast"
-import { Check, Copy } from "./icons"
-import { useAppContext } from "./context/AppContext"
+import { Clipboard, StyleSheet } from "react-native"
 import Markdown from "react-native-markdown-display"
-import { Button, Div, ScrollView, Text, useTheme } from "./platform"
-import { useMarkdownContentStyles } from "./MarkdownContent.styles"
+import { useAppContext } from "./context/AppContext"
+import { Check, Copy } from "./icons"
 import {
-  MarkdownContentProps,
-  CodeBlockProps,
+  type CodeBlockProps,
+  type MarkdownContentProps,
   processTextWithCitations,
 } from "./MarkdownContent.shared"
+import { useMarkdownContentStyles } from "./MarkdownContent.styles"
+import { Button, Div, ScrollView, Text, useTheme } from "./platform"
 
 export { processTextWithCitations }
 export type { MarkdownContentProps }
 
-const CodeBlock: React.FC<CodeBlockProps> = ({
+const _CodeBlock: React.FC<CodeBlockProps> = ({
   language,
   children,
   className,
@@ -31,7 +32,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       setCopied(true)
       toast.success(t("Copied"))
       setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to copy code")
     }
   }
@@ -65,7 +66,7 @@ const MarkdownContent = memo(
   }: MarkdownContentProps) => {
     const [isMounted, setIsMounted] = useState(false)
     const { colors } = useTheme()
-    const styles = useMarkdownContentStyles()
+    const _styles = useMarkdownContentStyles()
 
     useEffect(() => {
       setIsMounted(true)

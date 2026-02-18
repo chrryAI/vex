@@ -1,89 +1,94 @@
 "use client"
 
+import { t } from "i18next"
 import React, {
   createContext,
-  useContext,
-  ReactNode,
-  useState,
-  useEffect,
-  useRef,
+  type ReactNode,
   useCallback,
+  useContext,
+  useEffect,
   useMemo,
+  useRef,
+  useState,
 } from "react"
+import toast from "react-hot-toast"
 import useSWR from "swr"
 import { v4 as uuidv4 } from "uuid"
 import {
-  isBrowserExtension,
-  useNavigation,
-  useCookieOrLocalStorage,
-  usePlatform,
-  useLocalStorage,
-  storage,
-} from "../../platform"
-import { isOwner, capitalizeFirstLetter } from "../../utils"
-import ago from "../../utils/timeAgo"
-import { useTheme } from "../ThemeContext"
-import { cleanSlug } from "../../utils/clearLocale"
-import { dailyQuestions as dailyQuestionsUtil } from "../../utils/dailyQuestions"
-import console from "../../utils/log"
+  initializeGoogleAuth,
+  appleSignIn as nativeAppleSignIn,
+  googleSignIn as nativeGoogleSignIn,
+} from "../../auth/capacitorAuth"
+import { useHasHydrated } from "../../hooks"
 import useCache from "../../hooks/useCache"
-import { SiteConfig, whiteLabels } from "../../utils/siteConfig"
-import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
-import { getHourlyLimit } from "../../utils/getHourlyLimit"
-
+import i18n from "../../i18n"
+import { getApp, getGuest, getSession, getUser } from "../../lib"
+import { defaultLocale, type locale, locales } from "../../locales"
 import {
+  isBrowserExtension,
+  storage,
+  useCookieOrLocalStorage,
+  useLocalStorage,
+  useNavigation,
+  usePlatform,
+} from "../../platform"
+import type {
   aiAgent,
-  characterProfile,
   appWithStore,
-  user,
-  Paginated,
-  session,
-  storeWithApps,
-  sessionUser,
-  sessionGuest,
-  mood,
-  thread,
-  paginatedMessages,
-  moodType,
+  characterProfile,
   instruction,
+  mood,
+  moodType,
+  Paginated,
+  paginatedMessages,
   paginatedTribePosts,
   paginatedTribes,
-  tribePostWithDetails,
-  timer,
   scheduledJob,
+  session,
+  sessionGuest,
+  sessionUser,
+  storeWithApps,
+  thread,
+  timer,
   tribe,
+  tribePostWithDetails,
+  user,
 } from "../../types"
-import toast from "react-hot-toast"
-import { getApp, getSession, getUser, getGuest } from "../../lib"
-import i18n from "../../i18n"
-import { useHasHydrated } from "../../hooks"
-import { defaultLocale, locale, locales } from "../../locales"
-import { MEANINGFUL_EVENTS } from "../../utils/analyticsEvents"
-import { t } from "i18next"
-import { getSiteConfig } from "../../utils/siteConfig"
-import { getAppAndStoreSlugs, excludedSlugRoutes } from "../../utils/url"
-import getAppSlugUtil from "../../utils/getAppSlug"
 import {
   API_URL,
   apiFetch,
   CHRRY_URL,
+  capitalizeFirstLetter,
   FRONTEND_URL,
   getExampleInstructions,
-  getThreadId,
   getPostId,
-  instructionBase,
+  getThreadId,
+  type instructionBase,
+  isCI,
   isDevelopment,
   isE2E,
+  isOwner,
   PROD_FRONTEND_URL,
-  isCI,
   WS_URL,
 } from "../../utils"
 import {
-  googleSignIn as nativeGoogleSignIn,
-  appleSignIn as nativeAppleSignIn,
-  initializeGoogleAuth,
-} from "../../auth/capacitorAuth"
-import { Task } from "../TimerContext"
+  ANALYTICS_EVENTS,
+  MEANINGFUL_EVENTS,
+} from "../../utils/analyticsEvents"
+import { cleanSlug } from "../../utils/clearLocale"
+import { dailyQuestions as dailyQuestionsUtil } from "../../utils/dailyQuestions"
+import getAppSlugUtil from "../../utils/getAppSlug"
+import { getHourlyLimit } from "../../utils/getHourlyLimit"
+import console from "../../utils/log"
+import {
+  getSiteConfig,
+  type SiteConfig,
+  whiteLabels,
+} from "../../utils/siteConfig"
+import ago from "../../utils/timeAgo"
+import { excludedSlugRoutes, getAppAndStoreSlugs } from "../../utils/url"
+import { useTheme } from "../ThemeContext"
+import type { Task } from "../TimerContext"
 import { useError } from "./ErrorProvider"
 
 // Constants (shared with DataProvider)
@@ -456,7 +461,7 @@ export function AuthProvider({
     return Boolean(app?.store?.app && app?.store?.apps.length)
   }
 
-  const signUp = useCallback(
+  const _signUp = useCallback(
     async (email: string, password: string, name?: string) => {
       try {
         const response = await fetch(`${API_URL}/auth/signup/password`, {
@@ -610,7 +615,7 @@ export function AuthProvider({
 
           console.log(
             "🍎 Native Apple Sign In Success! Token:",
-            result.idToken.substring(0, 10) + "...",
+            `${result.idToken.substring(0, 10)}...`,
           )
 
           // Verify on backend
@@ -713,7 +718,7 @@ export function AuthProvider({
 
   const [user, setUser] = React.useState<sessionUser | undefined>(session?.user)
 
-  const [state, setState] = useState<AuthState>({
+  const [_state, setState] = useState<AuthState>({
     user,
     loading: true,
   })
@@ -824,20 +829,6 @@ export function AuthProvider({
     "deviceId",
     props.session?.deviceId,
   )
-
-  useEffect(() => {
-    if (!isStorageReady && !(isTauri || isCapacitor || isExtension)) return
-    if (!deviceId) {
-      console.log("📝 Updating deviceId from session:", session?.deviceId)
-      if (isExtension || isCapacitor) {
-        setDeviceId(uuidv4())
-
-        return
-      } else if (isTauri) {
-        setDeviceId(uuidv4())
-      }
-    }
-  }, [deviceId, setDeviceId, isStorageReady, isTauri])
 
   const [enableNotifications, setEnableNotifications] = useLocalStorage<
     boolean | undefined
@@ -1021,7 +1012,7 @@ export function AuthProvider({
     }
   }, [token, fingerprint, isTauri, isStorageReady])
   // setFingerprint/setToken are stable from useLocalStorage/useState
-  const [versions, setVersions] = useState(
+  const [_versions, setVersions] = useState(
     session?.versions || {
       webVersion: VERSION,
       firefoxVersion: VERSION,
@@ -1053,13 +1044,13 @@ export function AuthProvider({
     setTaskId(searchParams.get("taskId") || undefined)
   }, [searchParams])
 
-  const [isGuestTest, setIsLiveGuestTest] = useLocalStorage<boolean>(
+  const [isGuestTest, _setIsLiveGuestTest] = useLocalStorage<boolean>(
     "isGuestTest",
     fingerprintParam
       ? TEST_GUEST_FINGERPRINTS.includes(fingerprintParam)
       : false,
   )
-  const [isMemberTest, setIsLiveMemberTest] = useLocalStorage<boolean>(
+  const [isMemberTest, _setIsLiveMemberTest] = useLocalStorage<boolean>(
     "isMemberTest",
     user?.email
       ? TEST_MEMBER_EMAILS.includes(user.email)
@@ -1109,8 +1100,9 @@ export function AuthProvider({
     initialTribePost,
   )
 
-  const [isLoadingPosts, setIsLoadingPosts] =
-    useState<boolean>(!initialTribePosts)
+  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
+    !initialTribePosts,
+  )
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -1375,7 +1367,7 @@ export function AuthProvider({
   )
   const sessionData = sessionSwr || session
 
-  const getAlterNativeDomains = (store: storeWithApps) => {
+  const _getAlterNativeDomains = (store: storeWithApps) => {
     // Map askvex.com and vex.chrry.ai as equivalent domains
     if (
       store?.domain === "https://vex.chrry.ai" ||
@@ -1387,7 +1379,7 @@ export function AuthProvider({
     return store.domain ? [store.domain] : []
   }
 
-  const [agentName, setAgentName] = useState(session?.aiAgent?.name)
+  const [agentName, _setAgentName] = useState(session?.aiAgent?.name)
   const plausibleEvent = ({
     name,
     url,
@@ -1736,7 +1728,7 @@ export function AuthProvider({
     // if (focus && showFocus) return focus
     if (path === "/" && !showFocus && !showTribe) return undefined
 
-    const { appSlug, storeSlug } = getAppAndStoreSlugs(path, {
+    const { appSlug } = getAppAndStoreSlugs(path, {
       defaultAppSlug: baseApp?.slug || siteConfig.slug,
       defaultStoreSlug: baseApp?.store?.slug || siteConfig.storeSlug,
     })
@@ -1886,7 +1878,7 @@ export function AuthProvider({
         (app) => app.id === updatedApp?.id,
       )
       if (u) {
-        toast.success(t("Updated") + " 🚀")
+        toast.success(`${t("Updated")} 🚀`)
         // if (!isExtension && !isNative) {
         //   // setSlug(getAppSlug(n) || "")
         //   window.location.href = getAppSlug(u)
@@ -2145,7 +2137,7 @@ export function AuthProvider({
     setIsPearInternal(!!value)
     if (value) {
       router.push(`${getAppSlug(value)}?pear=true`)
-      toast.success(t("Let's Pear") + " 🍐")
+      toast.success(`${t("Let's Pear")} 🍐`)
     }
   }
 
@@ -2216,7 +2208,7 @@ export function AuthProvider({
 
   const [moltPlaceHolder, setMoltPlaceHolder] = useState<string[]>([])
 
-  const [isLoadingMood, setIsLoadingMood] = useState(true)
+  const [isLoadingMood, _setIsLoadingMood] = useState(true)
   const [mood, setMood] = useState<mood | null>(null)
 
   const [tribeStripeSession, setTribeStripeSession] = useLocalStorage<
@@ -2266,7 +2258,7 @@ export function AuthProvider({
 
   const showTribeFromPath = pathname === "/tribe"
 
-  const isExcluded = excludedSlugRoutes?.includes(
+  const _isExcluded = excludedSlugRoutes?.includes(
     pathname.split("?")?.[0] || "",
   )
 
@@ -2616,6 +2608,11 @@ export function AuthProvider({
       matchedApp = threadApp
     }
 
+    if (!matchedApp && tribePost?.appId) {
+      const postApp = storeApps.find((app) => app.id === tribePost.appId)
+      matchedApp = postApp
+    }
+
     // Priority 2: Find app by pathname
     if (!matchedApp) {
       matchedApp = findAppByPathname(pathname, storeApps) || baseApp
@@ -2642,6 +2639,7 @@ export function AuthProvider({
     isExtension,
     loadingAppId,
     updatedApp,
+    tribePost,
   ])
   // Thread app takes priority over pathname, then falls back to pathname detection
 
@@ -2862,7 +2860,7 @@ export function AuthProvider({
     }
   }, [isLoggedOut, isWelcome])
 
-  const auth_token = searchParams.get("auth_token")
+  const _auth_token = searchParams.get("auth_token")
 
   const fp = searchParams.get("fp")
 

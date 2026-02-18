@@ -1,22 +1,20 @@
 "use client"
-import React, { useEffect, useRef, useState } from "react"
-// @ts-ignore
-import styles from "./SignIn.module.scss"
 import clsx from "clsx"
-import { LinkIcon, LogInIcon, LogIn, UserRoundPlus } from "./icons"
-import { apiFetch, isDevelopment } from "./utils"
-import { FaGoogle, FaApple, FaGithub } from "react-icons/fa"
+import React, { useEffect, useRef, useState } from "react"
+import { FaApple, FaGithub, FaGoogle } from "react-icons/fa"
 import { v4 as uuidv4 } from "uuid"
 import A from "./a/A"
+import { LinkIcon, LogIn, LogInIcon, UserRoundPlus } from "./icons"
+
+import styles from "./SignIn.module.scss"
+import { apiFetch, isDevelopment } from "./utils"
 export type DesktopAuthHandler = {
   openAuthWindow: (url: string) => Promise<void>
 }
 
-import { BrowserInstance, getRedirectURL } from "./utils"
 import toast from "react-hot-toast"
 import Account from "./account/Account"
 import { useAppContext } from "./context/AppContext"
-import Modal from "./Modal"
 import {
   useAuth,
   useChat,
@@ -24,8 +22,10 @@ import {
   useError,
   useNavigationContext,
 } from "./context/providers"
-import { Button, usePlatform } from "./platform"
 import useCache from "./hooks/useCache"
+import Modal from "./Modal"
+import { Button, usePlatform } from "./platform"
+import { BrowserInstance, getRedirectURL } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function SignIn({
@@ -78,7 +78,6 @@ export default function SignIn({
       errorUrl: string
     },
   ) => {
-    setDeviceId(uuidv4())
     clear()
     return signInContextInternal?.(provider, options)
   }
@@ -167,7 +166,7 @@ export default function SignIn({
       try {
         new URL(callbackUrl)
         isCallbackUrlURI = true
-      } catch (error) {
+      } catch (_error) {
         isCallbackUrlURI = false
       }
     }
@@ -176,7 +175,7 @@ export default function SignIn({
     // We'll redirect back to the original subdomain after auth
     const baseUrl = isDevelopment ? FRONTEND_URL : siteConfig.url
 
-    const errorUrl = new URL(baseUrl + "/?signIn=login&error")
+    const errorUrl = new URL(`${baseUrl}/?signIn=login&error`)
     // Create URLs for both success and error cases
     const successUrl = new URL(
       callbackUrl
@@ -203,7 +202,7 @@ export default function SignIn({
   }
 
   const [isSignInLoading, setIsSignInLoading] = useState(false)
-  const [redirectUrl, setRedirectUrl] = useState<string | null>(null)
+  const [redirectUrl, _setRedirectUrl] = useState<string | null>(null)
 
   const handleLogin = async () => {
     setIsSignInLoading(true)
@@ -249,7 +248,7 @@ export default function SignIn({
         if (!response.ok) {
           const errorText = await response.text()
           console.error("Apple Backend Error:", errorText)
-          toast.error("Failed: " + errorText)
+          toast.error(`Failed: ${errorText}`)
           return
         }
 
@@ -342,7 +341,7 @@ export default function SignIn({
         if (!response.ok) {
           const errorText = await response.text()
           console.error("Google Backend Error:", errorText)
-          toast.error("Failed: " + errorText)
+          toast.error(`Failed: ${errorText}`)
           return
         }
 
@@ -544,61 +543,59 @@ export default function SignIn({
 
   return (
     <>
-      <>
-        {!user ? (
-          <>
-            {showSignIn && (
-              <button
-                data-testid="login-button"
-                id="login-button"
-                onClick={() => handleSignIn("login")}
-                className={clsx("transparent small", styles.signInButton)}
-              >
-                <LogIn color="var(--accent-6)" size={16} />
-                <span className={styles.signInButtonText}>
-                  {signInButtonText || t("Login")}
-                </span>
-              </button>
-            )}
-            {showRegister && (
-              <Button
-                data-testid="register-button"
-                onClick={() => {
-                  const plan = (user || guest)?.subscription?.plan || "member"
-                  if (isExtension) {
-                    BrowserInstance?.runtime?.sendMessage({
-                      action: "openInSameTab",
-                      url: `${FRONTEND_URL}?subscribe=true&plan=${plan}`,
-                    })
-                    return
-                  }
+      {!user ? (
+        <>
+          {showSignIn && (
+            <Button
+              data-testid="login-button"
+              id="login-button"
+              onClick={() => handleSignIn("login")}
+              className={clsx("transparent small", styles.signInButton)}
+            >
+              <LogIn color="var(--accent-6)" size={16} />
+              <span className={styles.signInButtonText}>
+                {signInButtonText || t("Login")}
+              </span>
+            </Button>
+          )}
+          {showRegister && (
+            <Button
+              data-testid="register-button"
+              onClick={() => {
+                const plan = (user || guest)?.subscription?.plan || "member"
+                if (isExtension) {
+                  BrowserInstance?.runtime?.sendMessage({
+                    action: "openInSameTab",
+                    url: `${FRONTEND_URL}?subscribe=true&plan=${plan}`,
+                  })
+                  return
+                }
 
-                  if (guest) {
-                    threadId
-                      ? router.push(
-                          `/threads/${threadId}?subscribe=true&plan=${plan}`,
-                        )
-                      : router.push(`/?subscribe=true&plan=${plan}`)
-                    return
-                  }
-
+                if (guest) {
                   threadId
                     ? router.push(
                         `/threads/${threadId}?subscribe=true&plan=${plan}`,
                       )
                     : router.push(`/?subscribe=true&plan=${plan}`)
-                }}
-                className={clsx("transparent small", styles.registerButton)}
-              >
-                <UserRoundPlus color="var(--accent-6)" size={16} />
-                {registerButtonText || t("Register")}
-              </Button>
-            )}
-          </>
-        ) : (
-          user && <Account />
-        )}
-      </>
+                  return
+                }
+
+                threadId
+                  ? router.push(
+                      `/threads/${threadId}?subscribe=true&plan=${plan}`,
+                    )
+                  : router.push(`/?subscribe=true&plan=${plan}`)
+              }}
+              className={clsx("transparent small", styles.registerButton)}
+            >
+              <UserRoundPlus color="var(--accent-6)" size={16} />
+              {registerButtonText || t("Register")}
+            </Button>
+          )}
+        </>
+      ) : (
+        user && <Account />
+      )}
       {part && (
         <Modal
           icon={
@@ -622,7 +619,7 @@ export default function SignIn({
         >
           {part !== "credentials" ? (
             <div className={styles.signInButtons}>
-              <button
+              <Button
                 data-testid={
                   part === "login"
                     ? "sign-in-google-button"
@@ -633,9 +630,9 @@ export default function SignIn({
               >
                 <FaGoogle size={16} />{" "}
                 {t(`${part === "login" ? "Sign in" : "Register"} with Google`)}
-              </button>
+              </Button>
               {isGithubSignInAvailable && (
-                <button
+                <Button
                   data-testid={
                     part === "login"
                       ? "sign-in-github-button"
@@ -648,7 +645,7 @@ export default function SignIn({
                   {t(
                     `${part === "login" ? "Sign in" : "Register"} with GitHub`,
                   )}
-                </button>
+                </Button>
               )}
               {isAppleSignInAvailable && (
                 <button
@@ -688,26 +685,24 @@ export default function SignIn({
                   >
                     <LinkIcon size={16} /> {t("Privacy")}
                   </A>
-                  <button
+                  <Button
                     className="button small"
                     onClick={() => {
                       setPart("login")
                     }}
                   >
                     <LogInIcon size={16} /> {t("Login")}
-                  </button>
+                  </Button>
                 </div>
               ) : (
-                <>
-                  <button
-                    className="button small"
-                    onClick={() => {
-                      setPart("register")
-                    }}
-                  >
-                    <UserRoundPlus size={16} /> {t("Register")}
-                  </button>
-                </>
+                <Button
+                  className="button small"
+                  onClick={() => {
+                    setPart("register")
+                  }}
+                >
+                  <UserRoundPlus size={16} /> {t("Register")}
+                </Button>
               )}
             </div>
           ) : (

@@ -1,10 +1,14 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
-import { collaboration, thread, user } from "../ui/types"
-import { useAppContext } from "./context/AppContext"
-import Loading from "./Loading"
+import { useEffect, useRef, useState } from "react"
 import useSWR from "swr"
+import type { collaboration, thread, user } from "../ui/types"
+import Bookmark from "./Bookmark"
+import { useAppContext } from "./context/AppContext"
+import { useAuth, useData, useNavigationContext } from "./context/providers"
+import EditThread from "./EditThread"
+import { useLocalStorage } from "./hooks"
+import Img from "./Image"
 import {
   AtSign,
   BellDot,
@@ -14,18 +18,14 @@ import {
   StarIcon,
   UsersRound,
 } from "./icons"
-import { pageSizes } from "./utils"
+import Loading from "./Loading"
+import { A, Button, Div, H2, P, Span, useTheme } from "./platform"
 import { MotiView } from "./platform/MotiView"
 import Search from "./Search"
-import Skeleton from "./Skeleton"
-import EditThread from "./EditThread"
-import { useLocalStorage } from "./hooks"
 import Share from "./Share"
-import Bookmark from "./Bookmark"
-import Img from "./Image"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
-import { A, Button, Div, H2, P, Span, useTheme } from "./platform"
+import Skeleton from "./Skeleton"
 import { useThreadsStyles } from "./Threads.styles"
+import { pageSizes } from "./utils"
 
 const Threads = ({ className }: { className?: string; userName?: string }) => {
   const { t } = useAppContext()

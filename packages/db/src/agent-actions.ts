@@ -5,15 +5,15 @@
  * and manage agent progression.
  */
 
+import { eq } from "drizzle-orm"
 import { db } from "../index"
-import { agents, agentActions, skills } from "./agent-schema"
+import { agentActions, agents, skills } from "./agent-schema"
 import {
-  calculateXP,
   calculateLevel,
   calculateTrustScore,
+  calculateXP,
   getSkillsForLevel,
 } from "./agent-xp"
-import { eq } from "drizzle-orm"
 
 /**
  * Record an agent action and award XP

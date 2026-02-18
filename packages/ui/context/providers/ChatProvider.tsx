@@ -2,41 +2,41 @@
 
 import React, {
   createContext,
+  type ReactNode,
   useContext,
-  ReactNode,
-  useState,
   useEffect,
   useRef,
+  useState,
 } from "react"
-import { useAuth } from "./AuthProvider"
-import { useData } from "./DataProvider"
-import {
-  aiAgent,
-  thread,
-  app,
-  collaboration,
-  user,
-  guest,
-  message,
-  messages,
-  paginatedMessages,
-  appWithStore,
-} from "../../types"
-
-import { pageSizes, isOwner } from "../../utils"
-import { hasThreadNotification } from "../../utils/hasThreadNotification"
+import useSWR from "swr"
+import { useUserScroll } from "../../hooks/useUserScroll"
+import { useWebSocket } from "../../hooks/useWebSocket"
 import {
   useLocalStorage,
   useNavigation,
   usePlatform,
   useTheme,
 } from "../../platform"
+import type {
+  aiAgent,
+  app,
+  appWithStore,
+  collaboration,
+  guest,
+  message,
+  messages,
+  paginatedMessages,
+  thread,
+  user,
+} from "../../types"
+import { isOwner, pageSizes } from "../../utils"
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
+import { hasThreadNotification } from "../../utils/hasThreadNotification"
 import { useApp } from "./AppProvider"
-import useSWR from "swr"
-import { useWebSocket } from "../../hooks/useWebSocket"
-import { useUserScroll } from "../../hooks/useUserScroll"
+import { useAuth } from "./AuthProvider"
+import { useData } from "./DataProvider"
 import { useError } from "./ErrorProvider"
+
 interface placeHolder {
   // TODO: Define placeHolder type
   [key: string]: any
@@ -247,11 +247,11 @@ export function ChatProvider({
 
   const setShowTribe = auth.setShowTribe
 
-  const { isExtension, isMobile, isTauri, isCapacitor } = usePlatform()
+  const { isExtension, isMobile, isTauri } = usePlatform()
 
   const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
 
-  let userNameByUrl: string | undefined = undefined
+  let userNameByUrl: string | undefined
 
   const pathSegments = pathname.split("/").filter(Boolean)
 
@@ -360,8 +360,7 @@ export function ChatProvider({
       collaborationStatus: "active",
       appId: app?.id,
     })
-    threads &&
-      threads.totalCount &&
+    threads?.totalCount &&
       setActiveCollaborationThreadsCount(threads.totalCount)
   }
 
@@ -380,8 +379,7 @@ export function ChatProvider({
       myPendingCollaborations: true,
       appId: app?.id,
     })
-    threads &&
-      threads.totalCount &&
+    threads?.totalCount &&
       setPendingCollaborationThreadsCount(threads.totalCount)
   }
 
@@ -645,10 +643,10 @@ export function ChatProvider({
 
   useEffect(() => {
     if (profile) {
-      setIsVisitor(user?.id == profile.id)
+      setIsVisitor(user?.id === profile.id)
       return
     } else if (userNameByUrl) {
-      setIsVisitor(user?.userName == userNameByUrl)
+      setIsVisitor(user?.userName === userNameByUrl)
       return
     }
 
@@ -682,7 +680,7 @@ export function ChatProvider({
   useEffect(() => {
     if (!token || !fingerprint || !connected) return
     // Listen for navigation messages from service worker
-    const handleServiceWorkerMessage = (event: MessageEvent) => {
+    const _handleServiceWorkerMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === "NAVIGATE_TO_URL") {
         window.location.href = event.data.url
       }
@@ -817,7 +815,7 @@ export function ChatProvider({
     }
   }, [placeHolder, app])
 
-  const { appStatus, setIsSavingApp, setIsManagingApp } = useApp()
+  const { appStatus } = useApp()
 
   const { captureException } = useError()
 
@@ -1032,7 +1030,7 @@ export function ChatProvider({
     setDebateAgent(null)
   }, [app, aiAgents])
 
-  const { isDevelopment, isE2E, actions } = useData()
+  const { actions } = useData()
 
   const isDebating = !!debateAgent
 

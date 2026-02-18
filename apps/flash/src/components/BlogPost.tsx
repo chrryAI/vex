@@ -1,9 +1,9 @@
-import ReactMarkdown from "react-markdown"
 import type { Components } from "react-markdown"
+import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import type { BlogPostWithContent } from "../blog-loader"
 import { safeJSONStringify } from "../utils/security"
-import { BlogPostWithContent } from "../blog-loader"
-// @ts-ignore
+
 import styles from "./BlogPost.module.scss"
 
 interface BlogPostProps {
@@ -20,6 +20,7 @@ const MARKDOWN_COMPONENTS: Components = {
     <img
       {...props}
       loading="lazy"
+      alt={props.alt}
       decoding="async"
       style={{ maxWidth: "100%", height: "auto" }}
     />
@@ -107,9 +108,17 @@ export default function BlogPost({ post, locale }: BlogPostProps) {
             }}
             muted
             playsInline
-            aria-hidden="true"
           ></video>{" "}
-          {timeAgo(post.date)} by {post.author}
+          <time
+            dateTime={post.date}
+            title={new Date(post.date).toLocaleString(locale, {
+              dateStyle: "long",
+              timeStyle: "short",
+            })}
+          >
+            {timeAgo(post.date)}
+          </time>{" "}
+          by {post.author}
         </div>
 
         <ReactMarkdown

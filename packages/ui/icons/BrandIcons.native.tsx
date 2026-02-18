@@ -5,7 +5,6 @@
  * These avoid the dependency issues with @lobehub/icons
  */
 
-import React from "react"
 import { Text } from "react-native"
 import { useResolveColor } from "../context/ThemeContext"
 
