@@ -1006,7 +1006,7 @@ export const getUser = async ({
         await getMessages({
           userId: result.user.id,
           pageSize: 1,
-          isTribe: true,
+          isMolt: true,
         })
       )?.messages.at(0)?.message
     : undefined
@@ -1084,7 +1084,7 @@ export const getUser = async ({
               ...lastTribe,
               content: "",
             }
-          : lastMessage,
+          : lastTribe,
         messageCount: lastMessageInfo?.totalCount,
 
         pendingCollaborationThreadsCount: await getThreads({
@@ -1523,7 +1523,6 @@ export const getMessages = async ({
   const conditionsArray = [
     isPear ? eq(messages.isPear, true) : undefined,
     userId ? eq(messages.userId, userId) : undefined,
-    guestId ? eq(messages.guestId, guestId) : undefined,
     isTribe !== undefined ? eq(messages.isTribe, isTribe) : undefined,
     isMolt !== undefined ? eq(messages.isMolt, isMolt) : undefined,
     appId ? eq(messages.appId, appId) : undefined,

@@ -474,27 +474,44 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           >
                             {t("Go to Your Agent")}
                           </AppLink>
+                        ) : app && showTribeProfile ? (
+                          <AppLink
+                            app={app}
+                            icon={<Img icon="spaceInvader" size={18} />}
+                            loading={<Loading size={18} />}
+                            className="inverted button"
+                            style={{
+                              ...utilities.button.style,
+                              ...utilities.inverted.style,
+                              ...utilities.small.style,
+                            }}
+                          >
+                            {t(TRAIN, {
+                              name: app?.name,
+                            })}
+                          </AppLink>
                         ) : (
-                          app && (
-                            <AppLink
-                              app={app}
-                              icon={<Img icon="spaceInvader" size={18} />}
-                              loading={<Loading size={18} />}
-                              className="inverted button"
-                              style={{
-                                ...utilities.button.style,
-                                ...utilities.inverted.style,
-                                ...utilities.small.style,
-                              }}
-                            >
-                              {t(
-                                showTribeProfile ? TRAIN : "Create Your Agent",
-                                {
-                                  name: app?.name,
-                                },
-                              )}
-                            </AppLink>
-                          )
+                          <Button
+                            onClick={() => {
+                              if (showTribeProfile) {
+                                setIsNewAppChat({ item: app })
+                                return
+                              }
+                              if (!user) {
+                                addParams({ signIn: "login" })
+                                return
+                              }
+                              push("/?settings=true")
+                            }}
+                            className="inverted"
+                            style={{
+                              ...utilities.inverted.style,
+                              ...utilities.small.style,
+                            }}
+                          >
+                            <Img icon="spaceInvader" size={18} />
+                            {t("Create Your Agent")}
+                          </Button>
                         )}
                       </Div>
                     </Div>
