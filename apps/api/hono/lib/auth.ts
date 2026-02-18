@@ -1,5 +1,9 @@
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
-import { getGuest as getGuestDb, getUser } from "@repo/db"
+import {
+  getGuest as getGuestDb,
+  getUser,
+  type userWithRelations,
+} from "@repo/db"
 import type { Context } from "hono"
 import jwt from "jsonwebtoken"
 import { validate } from "uuid"
@@ -66,7 +70,7 @@ export async function getMember(
             ...result,
             token,
             password: full ? result.password : null,
-          }
+          } as userWithRelations
         }
 
         return
@@ -86,7 +90,7 @@ export async function getMember(
             ...user,
             token,
             password: full ? user.password : null,
-          }
+          } as userWithRelations
         }
         return
       }

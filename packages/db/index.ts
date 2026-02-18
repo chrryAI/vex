@@ -285,7 +285,10 @@ export type userWithRelations = user & {
   characterProfiles: characterProfile[]
   lastMessage: string | undefined
   messageCount: number | undefined
+  token?: string
   subscription: subscription | undefined
+  lastTribe: message | undefined
+  lastMolt: message | undefined
 }
 
 declare global {
