@@ -1216,9 +1216,6 @@ ai.post("/", async (c) => {
       weather: formData.get("weather")
         ? JSON.parse(formData.get("weather") as string)
         : null,
-      draft: formData.get("draft")
-        ? JSON.parse(formData.get("draft") as string)
-        : null,
       deviceId: formData.get("deviceId") as string,
     }
 
@@ -1340,16 +1337,11 @@ ai.post("/", async (c) => {
   }
 
   const isMolt =
-    ["moltbook_post", "moltbook_comment", "moltbook_engage"].includes(
-      job?.jobType || "",
-    ) ||
-    thread?.isMolt ||
-    message?.thread?.isMolt
+    job?.jobType.startsWith("molt") || thread?.isMolt || message?.thread?.isMolt
 
   const isTribe =
-    ["tribe_post", "tribe_comment", "tribe_engage"].includes(
-      job?.jobType || "",
-    ) || !!(thread?.isTribe || message.message?.isTribe)
+    job?.jobType.startsWith("tribe") ||
+    !!(thread?.isTribe || message.message?.isTribe)
 
   // Use numeric comparison with defaults to prevent negative balances from bypassing
   const canPostToTribe =
@@ -1482,10 +1474,6 @@ ai.post("/", async (c) => {
   }
 
   // console.log("🔍 Request data:", { agentId, messageId, stopStreamId })
-
-  const draft = rest.draft as appFormData & {
-    canSubmit?: boolean
-  }
 
   // Build inheritance context from parent apps
   // Build inheritance context from parent apps
@@ -3210,356 +3198,6 @@ This is the **first message** in your newly created app "${requestApp.name}"!
 Now, how can I help you get started with ${requestApp.name}?
 `
       : "" // Not the main thread, don't show the special message
-  } else if (draft) {
-    const isNewApp = !draft.id
-    const isUpdate = !!draft.id
-    const hasName = !!draft.name
-    const hasTitle = !!draft.title
-    const hasHighlights = draft?.highlights && draft.highlights?.length > 0
-    const hasSystemPrompt = !!draft?.systemPrompt
-    const hasTools = draft?.tools && draft.tools?.length > 0
-    const hasExtends = draft?.extends && draft.extends?.length > 0
-    const hasDescription = !!draft?.description
-    const hasThemeColor = !!draft?.themeColor
-    const hasImage = !!draft?.image
-
-    // Check if app was just saved (has ID and all required fields)
-    const wasJustSaved = draft?.id && hasName && hasTitle && draft?.canSubmit
-
-    // Check if ready to save
-    const isReadyToSave = hasName && hasTitle && draft?.canSubmit
-
-    // Detect missing recommended items
-    const missingRecommended = []
-    if (!hasSystemPrompt) missingRecommended.push("System Prompt")
-    if (!hasHighlights || (draft?.highlights && draft?.highlights?.length < 3))
-      missingRecommended.push("More suggestions (3-5 recommended)")
-    if (!hasTools)
-      missingRecommended.push("Tools (calendar, location, weather)")
-    if (!hasDescription) missingRecommended.push("Description")
-    if (!hasThemeColor) missingRecommended.push("Theme color")
-
-    // Publishing-specific recommendations (not required for saving, but important for public apps)
-    const publishingRecommendations = []
-    if (!hasImage && draft?.visibility === "public")
-      publishingRecommendations.push(
-        "App image/logo (500x500px PNG recommended for professional appearance)",
-      )
-
-    // Template detection - check if highlights use any template variables
-    const templatePatterns = {
-      location: ["{{city}}", "{{country}}", "{{location}}"],
-      weather: ["{{weather}}", "{{temp}}", "{{temperature}}"],
-      calendar: ["{{date}}", "{{time}}", "{{event}}"],
-    }
-
-    const usesLocationTemplates = draft.highlights?.some((h: any) =>
-      templatePatterns.location.some((pattern) =>
-        h.description?.includes(pattern),
-      ),
-    )
-    const usesWeatherTemplates = draft.highlights?.some((h: any) =>
-      templatePatterns.weather.some((pattern) =>
-        h.description?.includes(pattern),
-      ),
-    )
-    const usesCalendarTemplates = draft.highlights?.some((h: any) =>
-      templatePatterns.calendar.some((pattern) =>
-        h.description?.includes(pattern),
-      ),
-    )
-
-    // Base app knowledge - what each base app is for and what tools they need
-    const baseAppRecommendations: Record<
-      string,
-      { description: string; tools: string[]; systemPromptHint?: string }
-    > = {
-      Atlas: {
-        description: "location and travel app",
-        tools: ["location", "weather"],
-      },
-      Vault: {
-        description: "finance and expense tracking app",
-        tools: ["calendar"],
-      },
-      Peach: {
-        description: "dating and social connection app",
-        tools: ["location"],
-      },
-      Bloom: {
-        description: "wellness and mental health app",
-        tools: ["calendar"],
-        systemPromptHint: "supportive, encouraging, and empathetic",
-      },
-    }
-
-    // Generate smart recommendations based on configuration
-    const smartRecommendations: string[] = []
-
-    // Template-based recommendations
-    if (usesLocationTemplates && !draft.tools?.includes("location")) {
-      smartRecommendations.push(
-        "💡 I notice suggestions use location templates ({{city}}, {{location}}) - recommend enabling Location tool!",
-      )
-    }
-    if (usesWeatherTemplates && !draft.tools?.includes("weather")) {
-      smartRecommendations.push(
-        "💡 I notice suggestions use weather templates ({{weather}}, {{temp}}) - recommend enabling Weather tool!",
-      )
-    }
-    if (usesCalendarTemplates && !draft.tools?.includes("calendar")) {
-      smartRecommendations.push(
-        "💡 I notice suggestions use calendar templates ({{date}}, {{time}}) - recommend enabling Calendar tool!",
-      )
-    }
-
-    // Base app extension recommendations
-    draft.extends?.forEach((baseApp: string) => {
-      const appConfig = baseAppRecommendations[baseApp]
-      if (appConfig) {
-        // Check for missing tools
-        const missingTools = appConfig.tools.filter(
-          (tool) => !draft.tools?.includes(tool),
-        )
-        if (missingTools.length > 0 && hasTools) {
-          smartRecommendations.push(
-            `💡 Since extending ${baseApp} (${appConfig.description}), recommend enabling ${missingTools.join(" + ")} tool${missingTools.length > 1 ? "s" : ""}!`,
-          )
-        } else if (missingTools.length > 0 && !hasTools) {
-          smartRecommendations.push(
-            `💡 Since extending ${baseApp} (${appConfig.description}), recommend enabling ${appConfig.tools.join(" + ")} tools!`,
-          )
-        }
-
-        // System prompt hint
-        if (appConfig.systemPromptHint && !hasSystemPrompt) {
-          smartRecommendations.push(
-            `💡 Since extending ${baseApp} (${appConfig.description}), create a ${appConfig.systemPromptHint} system prompt!`,
-          )
-        }
-      }
-    })
-
-    // Model-specific recommendations
-    if (draft.defaultModel === "claude" && !hasSystemPrompt) {
-      smartRecommendations.push(
-        "💡 Claude works best with detailed system prompts - suggest creating one!",
-      )
-    }
-    if (
-      draft?.defaultModel === "gemini" &&
-      draft?.temperature &&
-      draft.temperature < 0.7
-    ) {
-      smartRecommendations.push(
-        "💡 Gemini performs better with temperature 0.7+ for creative responses!",
-      )
-    }
-    if (draft.defaultModel === "perplexity") {
-      smartRecommendations.push(
-        "⚠️ WARNING: Perplexity ALWAYS tries web search first, even for simple questions. Only use for apps that need real-time web data. For general conversation, use ChatGPT or Claude instead!",
-      )
-    }
-
-    // Capability-based recommendations
-    const capabilityHighlightMap: Record<
-      string,
-      { keywords: string[]; suggestion: string }
-    > = {
-      imageGeneration: {
-        keywords: ["image", "generate", "create", "draw"],
-        suggestion:
-          "💡 Image generation is enabled - suggest adding a highlight like 'Generate images' to showcase this!",
-      },
-      webSearch: {
-        keywords: ["search", "find", "lookup", "browse"],
-        suggestion:
-          "💡 Web search is enabled - add a highlight like 'Search the web' to showcase this!",
-      },
-      codeExecution: {
-        keywords: ["code", "run", "execute", "program"],
-        suggestion:
-          "💡 Code execution is enabled - add a highlight like 'Run code' to showcase this!",
-      },
-    }
-
-    Object.entries(capabilityHighlightMap).forEach(([capability, config]) => {
-      if (draft.capabilities?.[capability as keyof typeof draft.capabilities]) {
-        const hasRelatedHighlight = draft.highlights?.some((h: any) =>
-          config.keywords.some(
-            (keyword) =>
-              h.title?.toLowerCase().includes(keyword) ||
-              h.description?.toLowerCase().includes(keyword),
-          ),
-        )
-        if (!hasRelatedHighlight) {
-          smartRecommendations.push(config.suggestion)
-        }
-      }
-    })
-
-    // Image recommendations
-    if (!hasImage && draft?.visibility === "public") {
-      smartRecommendations.push(
-        "📸 PUBLISHING TIP: Add an app image/logo (500x500px PNG) for professional appearance in the app store! You can upload an image in chat and I'll analyze it to ensure it meets requirements.",
-      )
-    } else if (hasImage && draft?.visibility === "public") {
-      smartRecommendations.push(
-        "✅ Great! You have an app image. Make sure it's 500x500px PNG for best quality!",
-      )
-    } else if (!hasImage && draft?.visibility === "private") {
-      smartRecommendations.push(
-        "💡 App image not required for private apps, but you can add one later when you're ready to publish!",
-      )
-    }
-
-    // Quality recommendations
-    if (
-      hasHighlights &&
-      draft.highlights?.length &&
-      draft.highlights.length > 5
-    ) {
-      smartRecommendations.push(
-        `⚠️ You have ${draft.highlights.length} suggestions - consider keeping only the best 3-5 for clarity!`,
-      )
-    }
-    if (
-      hasSystemPrompt &&
-      draft.systemPrompt?.length &&
-      draft.systemPrompt.length < 100
-    ) {
-      smartRecommendations.push(
-        `⚠️ System prompt is quite short (${draft.systemPrompt.length} chars) - consider adding more detail about personality, approach, and boundaries!`,
-      )
-    }
-    if (!draft?.tone && hasSystemPrompt) {
-      smartRecommendations.push(
-        "💡 Set a tone (professional/casual/friendly/technical/creative) to match your system prompt!",
-      )
-    }
-    if (!draft?.temperature && hasSystemPrompt) {
-      smartRecommendations.push(
-        "💡 Set temperature (0=focused, 2=creative) to control response style!",
-      )
-    }
-
-    aiCoachContext = `
-
-🎯 APP ${isUpdate ? "UPDATE" : "CREATION"} COACH MODE ACTIVE
-
-${
-  wasJustSaved
-    ? `
-✅ APP SUCCESSFULLY SAVED!
-
-The user just saved their app "${draft.name}" (ID: ${draft.id}). The app is now live and ready to use!
-
-YOUR RESPONSE SHOULD:
-1. **Congratulate them** on creating/updating their app 🎉
-2. **Summarize what they built** - highlight key features they configured
-3. **Explain what the app does** - based on their title, system prompt, and suggestions
-4. **Next steps** - suggest trying it out, sharing it, or adding more features
-5. **Be enthusiastic and supportive** - this is a big accomplishment!
-
-DO NOT suggest saving the app again - it's already saved!
-`
-    : `You are helping the user ${isNewApp ? "create a new app" : `update their existing app`}${draft.name ? ` called "${draft.name}"` : ""}.
-
-${
-  isUpdate
-    ? `
-⚠️ UPDATE MODE: This app already exists. You're helping improve it.
-- Be careful about major changes (name, base model)
-- Suggest enhancements and optimizations
-- Review what's working vs what could be better
-- Recommend A/B testing for significant changes
-`
-    : ""
-}`
-}
-
-CURRENT APP STATE:
-${isNewApp ? "✨ Creating new app" : `📝 Updating existing app (ID: ${draft.id})`}
-${hasName ? `✅ Name: "${draft.name}" (${draft.name.length}/10 characters)` : "❌ Name: Not set (required, 3-10 characters)"}
-${hasTitle ? `✅ Title: "${draft.title}" (${draft.title.length}/30 characters)` : "❌ Title: Not set (required, max 30 characters)"}
-${hasDescription ? `✅ Description: Set (${draft.description?.length}/500 characters)` : "⚠️ Description: Not set (recommended for discoverability)"}
-${hasHighlights ? `✅ Suggestions: ${draft.highlights?.length} added${draft.highlights?.length && draft.highlights?.length < 3 ? " (recommend 3-5)" : draft.highlights?.length && draft.highlights?.length > 5 ? " (consider reducing to 3-5 best ones)" : " (perfect!)"}` : "⚠️ Suggestions: None yet (recommended to add 3-5)"}
-${hasSystemPrompt ? `✅ System Prompt: Set (${draft?.systemPrompt?.length} characters)${draft?.systemPrompt?.length && draft?.systemPrompt?.length < 100 ? " (consider adding more detail)" : ""}` : "⚠️ System Prompt: Not set (recommended for better responses)"}
-${draft?.defaultModel ? `✅ Base Model: ${draft.defaultModel}` : "⚠️ Base Model: Not set (defaults to chatGPT)"}
-${hasTools ? `✅ Tools enabled: ${draft.tools?.join(", ")}` : "⚠️ Tools: None enabled"}
-${hasExtends ? `✅ Extends: ${draft.extends?.join(", ")}` : ""}
-${hasThemeColor ? `✅ Theme Color: ${draft.themeColor}` : "⚠️ Theme Color: Not set (recommend choosing one)"}
-${hasImage ? `✅ App Image: Uploaded` : "⚠️ App Image: Not uploaded (not required for private apps, but important for publishing)"}
-${draft?.tone ? `✅ Tone: ${draft.tone}` : ""}
-${draft?.temperature !== undefined ? `✅ Temperature: ${draft.temperature}` : ""}
-${draft?.visibility ? `✅ Visibility: ${draft.visibility}` : ""}
-
-READINESS STATUS:
-${isReadyToSave ? "🚀 READY TO SAVE! All required fields complete." : "⏳ NOT READY - Missing required fields"}
-${missingRecommended.length > 0 ? `\n💡 RECOMMENDED BEFORE SAVING:\n${missingRecommended.map((item) => `   - ${item}`).join("\n")}` : ""}
-${publishingRecommendations.length > 0 ? `\n📱 PUBLISHING RECOMMENDATIONS (for public apps):\n${publishingRecommendations.map((item) => `   - ${item}`).join("\n")}` : ""}
-
-SCHEMA REFERENCE FOR GUIDANCE:
-- name: string (3-10 chars, short & memorable)
-- title: string (max 30 chars, describes what it does)
-- highlights: array of suggestions (3-5 recommended, can use templates like {{city}}, {{weather}}, {{location}})
-- systemPrompt: string (defines behavior, tone, expertise)
-- defaultModel: "chatGPT" | "claude" | "gemini" | "perplexity" | "sushi"
-- tools: ["calendar", "location", "weather"] - enable based on app needs
-- extends: ["Atlas", "Peach", "Vault", "Bloom"] - inherit features from base apps
-- capabilities: {webSearch, imageGeneration, fileAnalysis, voice, video, codeExecution}
-- themeColor: hex color (e.g., #F97316 for orange)
-- tone: "professional" | "casual" | "friendly" | "technical" | "creative"
-- temperature: 0-2 (0=focused, 2=creative)
-
-PLACEHOLDER TEMPLATES (explain when relevant):
-- {{city}} - User's current city
-- {{country}} - User's country
-- {{location}} - Full location
-- {{weather}} - Current weather description
-- {{temp}} - Current temperature
-- These templates auto-populate with real data when tools are enabled!
-
-YOUR ROLE AS AI COACH:
-1. **Guide progressively**: Help them complete missing required fields first (name → title → suggestions → system prompt)
-2. **Explain benefits**: When suggesting tools/features, explain WHY they're useful for their app
-3. **Analyze choices**: If they select suggestions with {{weather}}, recommend enabling weather tool
-4. **Provide examples**: Give concrete examples based on their app type
-5. **Encourage best practices**: Suggest 3-5 suggestions, meaningful system prompts, appropriate tools
-6. **Be conversational**: Act like a helpful product manager, not a form validator
-7. **Celebrate progress**: Acknowledge what they've completed
-8. **Context-aware**: If they upload files, suggest how to reference them in system prompt
-9. **Use emojis appropriately**: Make responses engaging and visual with relevant emojis (🎯 for goals, ✅ for completed items, 💡 for tips, 🚀 for next steps, etc.)
-10. **Pre-save review**: When user asks "what else should I add" or "is it ready", provide comprehensive review with specific suggestions
-11. **Update mode awareness**: ${isUpdate ? "This is an UPDATE - be careful about breaking changes, suggest A/B testing for major modifications" : "This is NEW - encourage experimentation and iteration"}
-12. **Image analysis**: If user uploads an image for their app logo, analyze it for:
-    - Size (recommend 500x500px PNG)
-    - Quality (professional, clear, recognizable)
-    - Branding (matches app theme and purpose)
-    - Suggest improvements if needed
-    - Offer to help create one if they don't have a proper image yet
-
-SMART RECOMMENDATIONS:
-${smartRecommendations.join("\n")}
-
-NEXT STEPS GUIDANCE:
-${!hasName ? "🎯 First, let's choose a short, memorable name (3-10 characters)" : !hasTitle ? "🎯 Great name! Now add a title that explains what it does" : !hasHighlights ? "🎯 Perfect! Now add 3-5 suggestions to showcase key features" : !hasSystemPrompt ? "🎯 Excellent! Last step: define how your app should behave with a system prompt" : isReadyToSave && missingRecommended.length === 0 ? "🎉 PERFECT! Your app is complete and ready to save! 🚀" : isReadyToSave ? `🚀 Ready to save! Optional improvements: ${missingRecommended.join(", ")}` : "⏳ Almost there! Complete the required fields to save"}
-
-${
-  isReadyToSave && isUpdate
-    ? `
-⚠️ UPDATE CHECKLIST BEFORE SAVING:
-- Review changes carefully - existing users will see them immediately
-- Major changes (name, base model) may confuse existing users
-- Test new system prompts thoroughly before deploying
-- Consider keeping a backup of the old version
-- If changing tools, ensure suggestions still work
-`
-    : ""
-}
-
-Remember: Be encouraging, explain concepts clearly, and help them build an amazing app!${isUpdate ? " For updates, prioritize user experience continuity." : ""}
-`
   }
 
   const spatialNavigationContext = `
@@ -4576,7 +4214,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
       uploadedImages.length > 0
     ) {
       await updateMessage({
-        ...message.message,
+        id: message.message.id,
         video: uploadedVideo?.length
           ? uploadedVideo.map((video) => ({
               ...video,
@@ -6696,6 +6334,11 @@ Respond in JSON format:
                         moltId: result.post_id,
                         updatedOn: new Date(),
                       })
+
+                      await updateMessage({
+                        id: message.message.id,
+                        moltId: result.post_id,
+                      })
                     }
 
                     finalText = `${moltContent}\n\n✅ Posted to Moltbook! Post ID: ${result.post_id}`
@@ -6898,6 +6541,10 @@ Respond in JSON format:
                                 })
                               }
 
+                              await updateMessage({
+                                id: message.message.id,
+                                tribePostId,
+                              })
                               const creditsRemaining =
                                 member.role === "admin"
                                   ? "∞"

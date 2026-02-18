@@ -1863,11 +1863,6 @@ export default function Chat({
         app?.id && formData.append("appId", app.id)
         ask && formData.append("ask", ask)
         about && formData.append("about", about)
-        !appFormWatcher.id &&
-          app?.id === chrry?.id &&
-          suggestSaveApp &&
-          appStatus?.part &&
-          formData.append("draft", JSON.stringify(appFormWatcher))
         formData.append("messageId", userMessage?.message.id || "")
         debateAgent && formData.append("debateAgentId", debateAgent.id)
         formData.append("agentId", selectedAgent.id)
@@ -1920,10 +1915,6 @@ export default function Chat({
           about,
           retro: isRetro,
           appId: app?.id,
-          draft:
-            app?.id === chrry?.id && suggestSaveApp && appStatus?.part
-              ? appFormWatcher
-              : undefined,
         })
       }
 
