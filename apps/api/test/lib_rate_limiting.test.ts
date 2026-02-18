@@ -18,7 +18,11 @@ vi.mock("@arcjet/node", () => ({
   slidingWindow: () => ({}),
 }))
 
-import { checkAuthRateLimit, checkGenerationRateLimit, checkRateLimit } from "../lib/rateLimiting"
+import {
+  checkAuthRateLimit,
+  checkGenerationRateLimit,
+  checkRateLimit,
+} from "../lib/rateLimiting"
 
 describe("checkAuthRateLimit Logic", () => {
   beforeEach(() => {
@@ -77,7 +81,9 @@ describe("checkRateLimit Logic", () => {
 
     expect(result.success).toBe(true)
     expect(result.isAuthenticated).toBe(false)
-    expect(protectMock).toHaveBeenCalledWith(expect.anything(), { userId: "anonymous" })
+    expect(protectMock).toHaveBeenCalledWith(expect.anything(), {
+      userId: "anonymous",
+    })
   })
 
   it("should enforce limits for guests", async () => {
@@ -92,7 +98,9 @@ describe("checkRateLimit Logic", () => {
 
     expect(result.success).toBe(true)
     expect(result.isAuthenticated).toBe(true)
-    expect(protectMock).toHaveBeenCalledWith(expect.anything(), { userId: "guest-123" })
+    expect(protectMock).toHaveBeenCalledWith(expect.anything(), {
+      userId: "guest-123",
+    })
   })
 
   it("should enforce limits for members (free)", async () => {
@@ -107,7 +115,9 @@ describe("checkRateLimit Logic", () => {
 
     expect(result.success).toBe(true)
     expect(result.isAuthenticated).toBe(true)
-    expect(protectMock).toHaveBeenCalledWith(expect.anything(), { userId: "user-123" })
+    expect(protectMock).toHaveBeenCalledWith(expect.anything(), {
+      userId: "user-123",
+    })
   })
 
   it("should enforce limits for pro members", async () => {
