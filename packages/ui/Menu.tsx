@@ -904,6 +904,7 @@ export default function Menu({
               {!hasHydrated ? null : isThemeLocked ? (
                 <Button
                   title={t("Unlock theme")}
+                  aria-label={t("Unlock theme")}
                   onClick={() => {
                     setIsThemeLocked(false)
                     toast.success(t("Theme unlocked"))
@@ -920,6 +921,7 @@ export default function Menu({
               ) : (
                 <Button
                   title={t("Lock theme")}
+                  aria-label={t("Lock theme")}
                   onClick={() => {
                     setIsThemeLocked(true)
                     toast.success(t("Theme locked"))
@@ -938,6 +940,11 @@ export default function Menu({
               {hasHydrated && (
                 <Button
                   title={t("Motion")}
+                  aria-label={
+                    reduceMotionContext
+                      ? t("Enable motion")
+                      : t("Reduce motion")
+                  }
                   onClick={() => {
                     setReduceMotion(!reduceMotionContext)
                   }}
