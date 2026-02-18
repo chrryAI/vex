@@ -1944,26 +1944,26 @@ export default function Agent({
                   >
                     <Webhook size={16} /> {t("API")}
                   </Button>
+                  <Button
+                    data-testid="tribe-tab"
+                    className="inverted"
+                    style={{
+                      ...utilities.inverted.style,
+                      ...utilities.xSmall.style,
+                      ...(tab === "tribe"
+                        ? styles.currentTab.style
+                        : undefined),
+                    }}
+                    onClick={() => {
+                      setTab("tribe")
+                    }}
+                    type="button"
+                  >
+                    <Img icon="zarathustra" size={24} />
+                    {t("Tribe")}
+                  </Button>
                   {(user?.role === "admin" || isDevelopment || isE2E) && (
                     <>
-                      <Button
-                        data-testid="tribe-tab"
-                        className="inverted"
-                        style={{
-                          ...utilities.inverted.style,
-                          ...utilities.xSmall.style,
-                          ...(tab === "tribe"
-                            ? styles.currentTab.style
-                            : undefined),
-                        }}
-                        onClick={() => {
-                          setTab("tribe")
-                        }}
-                        type="button"
-                      >
-                        <Img icon="zarathustra" size={24} />
-                        {t("Tribe")}
-                      </Button>
                       <Button
                         data-testid="moltbook-tab"
                         className="inverted"

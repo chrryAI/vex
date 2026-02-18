@@ -480,8 +480,9 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               app={app}
                               icon={<Img icon="spaceInvader" size={18} />}
                               loading={<Loading size={18} />}
-                              className="inverted"
+                              className="inverted button"
                               style={{
+                                ...utilities.button.style,
                                 ...utilities.inverted.style,
                                 ...utilities.small.style,
                               }}
@@ -742,9 +743,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         <AppLink
                           app={accountApp}
                           loading={<Loading size={20} />}
-                          className="inverted"
+                          className="inverted button"
                           icon={<Img app={accountApp} size={20} />}
                           style={{
+                            ...utilities.button.style,
                             ...utilities.inverted.style,
                             ...utilities.small.style,
                           }}

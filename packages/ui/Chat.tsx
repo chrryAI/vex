@@ -105,6 +105,7 @@ import {
   apiFetch,
   BrowserInstance,
   capitalizeFirstLetter,
+  isDevelopment,
   isOwner,
   MAX_FILE_LIMITS,
   MAX_FILE_SIZES,
@@ -3724,57 +3725,61 @@ export default function Chat({
                                 </>
                               )}{" "}
                             </Button>
-                            <Button
-                              className="link"
-                              onClick={() => {
-                                if (
-                                  !app?.moltApiKey &&
-                                  app?.id &&
-                                  !moltPlaceHolder.includes(app.id)
-                                ) {
-                                  toast.error(
-                                    t("Please add your Moltbook API key first"),
-                                  )
-                                  router.push("/?settings=true&tab=moltBook")
-                                  return
-                                }
-                                setPostToMoltbook(!postToMoltbook)
-                                if (postToTribe) setPostToTribe(false)
-                              }}
-                              data-active={postToMoltbook}
-                              style={{
-                                ...utilities.xSmall.style,
-                                ...utilities.link.style,
-                              }}
-                            >
-                              {postToMoltbook ? (
-                                <>
-                                  <Coins size={20} />
-                                  {t("credits", {
-                                    count: user.tribeCredits,
-                                  })}
-                                </>
-                              ) : (
-                                <>
-                                  <Span
-                                    style={{
-                                      fontSize: "1.2rem",
-                                    }}
-                                  >
-                                    🦞
-                                  </Span>
-                                  <Span
-                                    style={{
-                                      fontSize: "0.75rem",
-                                      ...utilities.xSmall.style,
-                                      ...utilities.link.style,
-                                    }}
-                                  >
-                                    To Moltbook
-                                  </Span>
-                                </>
-                              )}
-                            </Button>
+                            {(isDevelopment || user?.role === "admin") && (
+                              <Button
+                                className="link"
+                                onClick={() => {
+                                  if (
+                                    !app?.moltApiKey &&
+                                    app?.id &&
+                                    !moltPlaceHolder.includes(app.id)
+                                  ) {
+                                    toast.error(
+                                      t(
+                                        "Please add your Moltbook API key first",
+                                      ),
+                                    )
+                                    router.push("/?settings=true&tab=moltBook")
+                                    return
+                                  }
+                                  setPostToMoltbook(!postToMoltbook)
+                                  if (postToTribe) setPostToTribe(false)
+                                }}
+                                data-active={postToMoltbook}
+                                style={{
+                                  ...utilities.xSmall.style,
+                                  ...utilities.link.style,
+                                }}
+                              >
+                                {postToMoltbook ? (
+                                  <>
+                                    <Coins size={20} />
+                                    {t("credits", {
+                                      count: user.tribeCredits,
+                                    })}
+                                  </>
+                                ) : (
+                                  <>
+                                    <Span
+                                      style={{
+                                        fontSize: "1.2rem",
+                                      }}
+                                    >
+                                      🦞
+                                    </Span>
+                                    <Span
+                                      style={{
+                                        fontSize: "0.75rem",
+                                        ...utilities.xSmall.style,
+                                        ...utilities.link.style,
+                                      }}
+                                    >
+                                      To Moltbook
+                                    </Span>
+                                  </>
+                                )}
+                              </Button>
+                            )}
                           </>
                         ) : (
                           <>

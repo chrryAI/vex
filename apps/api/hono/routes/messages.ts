@@ -12,6 +12,7 @@ import {
   getTask,
   getThread,
   type guest,
+  isDevelopment,
   isE2E as isE2EInternal,
   isOwner,
   type subscription,
@@ -20,7 +21,6 @@ import {
   updateThread,
   type user,
   VEX_LIVE_FINGERPRINTS,
-  isDevelopment,
 } from "@repo/db"
 import { PROMPT_LIMITS, type webSearchResultType } from "@repo/db/src/schema"
 import { Hono } from "hono"

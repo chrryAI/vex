@@ -7,7 +7,7 @@ import AppLink from "./AppLink"
 import A from "./a/A"
 import ConfirmButton from "./ConfirmButton"
 import { COLORS, useAppContext } from "./context/AppContext"
-import { useApp, useAuth, useChat, useData } from "./context/providers"
+import { useApp, useAuth, useData } from "./context/providers"
 import { useTribe } from "./context/providers/TribeProvider"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
@@ -23,11 +23,9 @@ import {
   P,
   Span,
   Strong,
-  useNavigation,
   usePlatform,
   useTheme,
 } from "./platform"
-import { useTribePostStyles } from "./TribePost.styles"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
 import { isDevelopment } from "./utils"
 import isOwner from "./utils/isOwner"
@@ -46,7 +44,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     postId,
     tribePostError,
     isLoadingPost,
-    refetchPost,
     liveReactions,
     commenting,
     deletePost,
@@ -990,37 +987,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 ) : null}
               </Div>
             </Div>
-            {/* {hasMore ? (
-              <Div
-                style={{
-                  color: "var(--shade-6)",
-                  display: "flex",
-                  gap: "1rem",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Button
-                  disabled={isLoadingPost}
-                  onClick={async () => {
-                    await refetchPost()
-                  }}
-                  style={{
-                    fontSize: 13,
-                    padding: "5px 10px",
-                  }}
-                >
-                  {isLoadingPost ? (
-                    <Loading color="#fff" size={16} />
-                  ) : (
-                    <LoaderCircle size={16} />
-                  )}
-                  {t("{{count}} more", {
-                    count: hasMore,
-                  })}
-                </Button>
-              </Div>
-            ) : null} */}
           </Div>
           {showComments && (
             <Div
