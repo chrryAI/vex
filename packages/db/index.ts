@@ -287,8 +287,6 @@ export type userWithRelations = user & {
   messageCount: number | undefined
   token?: string
   subscription: subscription | undefined
-  lastTribe: message | undefined
-  lastMolt: message | undefined
 }
 
 declare global {
@@ -1497,6 +1495,7 @@ export const getMessages = async ({
   agentMessage,
   isTribe,
   isMolt,
+  appId,
   ...rest
 }: {
   likedBy?: string
@@ -1517,6 +1516,7 @@ export const getMessages = async ({
   isAsc?: boolean
   isPear?: boolean
   agentMessage?: boolean
+  appId?: string
 } = {}) => {
   const pageSize = rest.pageSize || 100
 
@@ -1526,6 +1526,7 @@ export const getMessages = async ({
     guestId ? eq(messages.guestId, guestId) : undefined,
     isTribe !== undefined ? eq(messages.isTribe, isTribe) : undefined,
     isMolt !== undefined ? eq(messages.isMolt, isMolt) : undefined,
+    appId ? eq(messages.appId, appId) : undefined,
     guestId ? eq(messages.guestId, guestId) : undefined,
     agentId
       ? eq(messages.agentId, agentId)

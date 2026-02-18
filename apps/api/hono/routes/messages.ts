@@ -20,6 +20,7 @@ import {
   updateThread,
   type user,
   VEX_LIVE_FINGERPRINTS,
+  isDevelopment,
 } from "@repo/db"
 import { PROMPT_LIMITS, type webSearchResultType } from "@repo/db/src/schema"
 import { Hono } from "hono"
@@ -203,12 +204,7 @@ messages.get("/", async (c) => {
 
 // POST /messages - Create new message (and potentially thread)
 messages.post("/", async (c) => {
-  const member = await getMember(c, {
-    skipCache: true,
-  })
-
-  const lastTribe = member?.lastTribe
-  const lastMolt = member?.lastMolt
+  const member = await getMember(c)
   const guest = member ? undefined : await getGuest(c)
   if (!member && !guest) {
     return c.json({ error: "Invalid credentials" }, 401)
@@ -364,34 +360,30 @@ messages.post("/", async (c) => {
   const isMolt = job?.jobType ? job.jobType?.startsWith("molt") : molt
   const isTribe = job?.jobType ? job.jobType?.startsWith("tribe") : tribe
 
-  const COOLDOWN_MS = 30 * 60 * 1000 // 30 minutes
-  const now = Date.now()
-
-  if (isTribe && lastTribe?.createdOn) {
-    const elapsed = now - new Date(lastTribe.createdOn).getTime()
-    if (elapsed < COOLDOWN_MS) {
-      const remainingSeconds = Math.ceil((COOLDOWN_MS - elapsed) / 1000)
-      return c.json(
-        {
-          error: `Tribe cooldown active. Please wait ${Math.ceil(remainingSeconds / 60)} more minute(s).`,
-          cooldown: { remaining: remainingSeconds, type: "tribe" },
-        },
-        429,
-      )
-    }
-  }
-
-  if (isMolt && lastMolt?.createdOn) {
-    const elapsed = now - new Date(lastMolt.createdOn).getTime()
-    if (elapsed < COOLDOWN_MS) {
-      const remainingSeconds = Math.ceil((COOLDOWN_MS - elapsed) / 1000)
-      return c.json(
-        {
-          error: `Molt cooldown active. Please wait ${Math.ceil(remainingSeconds / 60)} more minute(s).`,
-          cooldown: { remaining: remainingSeconds, type: "molt" },
-        },
-        429,
-      )
+  if (member && app && (isTribe || isMolt)) {
+    const COOLDOWN_MS = isDevelopment ? 0 : 30 * 60 * 1000 // 30 minutes
+    const cooldownType = isTribe ? "tribe" : "molt"
+    const recentMessages = await getMessages({
+      userId: member.id,
+      appId: app.id,
+      isTribe: isTribe || undefined,
+      isMolt: isMolt || undefined,
+      pageSize: 1,
+      isAsc: false,
+    })
+    const lastMessage = recentMessages.messages[0]?.message
+    if (lastMessage?.createdOn) {
+      const elapsed = Date.now() - new Date(lastMessage.createdOn).getTime()
+      if (elapsed < COOLDOWN_MS) {
+        const remainingSeconds = Math.ceil((COOLDOWN_MS - elapsed) / 1000)
+        return c.json(
+          {
+            error: `${cooldownType === "tribe" ? "Tribe" : "Molt"} cooldown active. Please wait ${Math.ceil(remainingSeconds / 60)} more minute(s).`,
+            cooldown: { remaining: remainingSeconds, type: cooldownType },
+          },
+          429,
+        )
+      }
     }
   }
 
