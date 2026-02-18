@@ -2,7 +2,6 @@
 import clsx from "clsx"
 import React, { useEffect, useRef, useState } from "react"
 import { FaApple, FaGithub, FaGoogle } from "react-icons/fa"
-import { v4 as uuidv4 } from "uuid"
 import A from "./a/A"
 import { LinkIcon, LogIn, LogInIcon, UserRoundPlus } from "./icons"
 
