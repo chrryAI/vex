@@ -23,6 +23,10 @@
 **Learning:** Custom checkbox components that hide the native input often lose keyboard focus indicators. The `Checkbox` component had a hidden input but no visual feedback on the custom track when focused via keyboard.
 **Action:** Use `onFocus`/`onBlur` state on the wrapper to apply focus ring styles to the custom visual element, ensuring keyboard users can see where they are.
 
+## 2026-06-25 - Accessible Loading States
+
+**Learning:** The `Loading` component relied purely on a visual spinner (Lucide icon) without any semantic meaning for screen readers. This makes loading states invisible to non-visual users, causing confusion about whether content is ready.
+**Action:** Always add `role="status"` and `aria-label="Loading"` (or a context-specific label) to loading indicators. For full-screen loaders, apply these to the wrapper; for inline icons, apply directly to the SVG component.
 ## 2026-05-23 - Accessibility of Date/Time Displays
 
 **Learning:** Blog post dates were rendered as simple text (e.g., "2 days ago") or just text strings, making them less useful for assistive technologies and users wanting exact timestamps.
