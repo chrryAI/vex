@@ -90,6 +90,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     user,
     setSignInPart,
     downloadUrl,
+    siteConfig,
+    getTribeUrl,
   } = useAuth()
   const { setAppStatus, canEditApp } = useApp()
   const { isExtension, isFirefox } = usePlatform()
@@ -100,7 +102,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
   const isSwarm = true
 
-  const { addParams, push } = useNavigationContext()
+  const { addParams, push, pathname } = useNavigationContext()
 
   const [tyingToReact, setTyingToReact] = useState<string | undefined>(
     undefined,
@@ -147,23 +149,29 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     alignItems: "center",
                     margin: 0,
                     padding: 0,
-                    marginBottom: "1.2rem",
+                    marginBottom: "1.5rem",
                     fontSize: "clamp(1.3rem, 4vw, 1.725rem)",
                   }}
                 >
                   <Img
-                    size={isMobileDevice ? 27 : 29}
-                    app={showTribeProfile ? app : undefined}
-                    icon={showTribeProfile ? undefined : "zarathustra"}
+                    size={isMobileDevice ? 34 : 37}
+                    app={
+                      showTribeProfile &&
+                      !(pathname === "/" && siteConfig.isTribe)
+                        ? app
+                        : undefined
+                    }
+                    slug={showTribeProfile ? undefined : "search"}
                   />
                   {showTribeProfile ? (
                     t(app?.name || "")
                   ) : (
                     <>
                       {tribeSlug && currentTribe ? (
-                        <>
-                          <A href={`/tribe`}>{t("Tribe")}</A>
-                        </>
+                        <A href={getTribeUrl()}>{t("Tribe")}</A>
+                      ) : (pathname === "/" || tribeSlug) &&
+                        siteConfig.isTribe ? (
+                        <A href={`/?programme=true`}>{t("Tribe")}</A>
                       ) : (
                         <>{t("Tribe")}</>
                       )}
@@ -253,6 +261,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               display: "flex",
                               alignItems: "center",
                               gap: "0.25rem",
+                              color:
+                                tribe.slug === tribeSlug
+                                  ? "var(--shade-7)"
+                                  : undefined,
                             }}
                             href={`/tribe/${tribe.slug}`}
                           >
@@ -260,14 +272,20 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               style={{
                                 fontSize: ".65rem",
                                 color: "var(--background)",
-                                background: "var(--accent-1)",
                                 borderRadius: 20,
                                 padding: ".1rem 0.3rem",
+                                background:
+                                  tribe.slug !== tribeSlug
+                                    ? "var(--accent-1)"
+                                    : "var(--shade-7)",
                               }}
                             >
                               {tribe.postsCount || 0}
                             </Span>
-                            <Span>/{tribe.slug}</Span>
+                            <Span>
+                              {tribe.slug === tribeSlug ? "" : "/"}
+                              {tribe.slug}
+                            </Span>
                           </A>
                         </MotiView>
                       ))}
@@ -304,7 +322,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         <Span>
                           {tribeSlug && currentTribe ? (
                             <>
-                              <A href={`/tribe`}>{t("Tribe's Feed")}</A>
+                              <A href={getTribeUrl()}>{t("Tribe's Feed")}</A>
                               <P
                                 style={{
                                   margin: 0,
@@ -423,7 +441,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               app?.icon ? (
                                 app.icon
                               ) : (
-                                <Img app={app} width={22} height={22} />
+                                <Img app={app} width={24} height={24} />
                               )
                             }
                             className="button inverted"
@@ -449,7 +467,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               ...utilities.small.style,
                             }}
                           >
-                            <Img app={accountApp} width={22} height={22} />
+                            <Img app={accountApp} size={18} />
                             {t("Go to Your Agent")}
                           </Button>
                         ) : (
@@ -471,7 +489,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               ...utilities.small.style,
                             }}
                           >
-                            <Img icon="spaceInvader" size={18} />
+                            <Img icon="spaceInvader" size={16} />
                             {t(showTribeProfile ? TRAIN : "Create Your Agent", {
                               name: app?.name,
                             })}
@@ -500,7 +518,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           alignItems: "center",
                           gap: 5,
                         }}
-                        href="/tribe"
+                        href={getTribeUrl()}
                       >
                         <ArrowLeft size={20} />
                         <Img logo="coder" size={30} />
@@ -731,7 +749,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             ...utilities.small.style,
                           }}
                         >
-                          <Img app={accountApp} width={22} height={22} />
+                          <Img app={accountApp} size={18} />
                           {t("Go to Your Agent")}
                         </Button>
                       ) : (

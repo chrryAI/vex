@@ -120,6 +120,7 @@ const AuthContext = createContext<
       timer?: timer
       tribeSlug?: string
       currentTribe?: tribe
+      getTribeUrl: () => string
       mergeApps: (apps: appWithStore[]) => void
       postId?: string
       tribes?: paginatedTribes
@@ -2038,14 +2039,17 @@ export function AuthProvider({
     }
   }
 
+  const getTribeUrl = () => {
+    return siteConfig?.isTribe ? "/" : `/tribe`
+  }
+
   const canBurn = true
+
+  const isZ = searchParams?.get("programme") === "true"
 
   const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage<
     boolean | undefined
-  >(
-    "prog",
-    baseApp ? isBaseAppZarathustra && app?.slug === "zarathustra" : undefined,
-  )
+  >("prog", baseApp ? isBaseAppZarathustra && app?.slug === "zarathustra" : isZ)
 
   useEffect(() => {
     if (!baseApp || !app) return
@@ -2147,8 +2151,8 @@ export function AuthProvider({
   }, [isPearInternal])
 
   const isProgramme =
-    !!(isProgrammeInternal || searchParams.get("programme") === "true") &&
-    !siteConfig.isTribe
+    (!!isProgrammeInternal && !siteConfig.isTribe) ||
+    searchParams.get("programme") === "true"
 
   const setStoreApp = (appWithStore?: appWithStore) => {
     appWithStore?.id !== storeApp?.id && setStoreAppInternal(appWithStore)
@@ -3201,6 +3205,7 @@ export function AuthProvider({
         showTribeProfile,
         postId,
         mergeApps,
+        getTribeUrl,
       }}
     >
       {children}
