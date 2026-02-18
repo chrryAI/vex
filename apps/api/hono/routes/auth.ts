@@ -82,9 +82,10 @@ async function generateExchangeCode(token: string): Promise<string> {
 async function exchangeCodeForToken(code: string): Promise<string | null> {
   const now = new Date()
 
+  // Use a single atomic UPDATE ... RETURNING query to prevent race conditions (TOCTOU)
   const [result] = await db
-    .select()
-    .from(authExchangeCodes)
+    .update(authExchangeCodes)
+    .set({ used: true })
     .where(
       and(
         eq(authExchangeCodes.code, code),
@@ -92,14 +93,9 @@ async function exchangeCodeForToken(code: string): Promise<string | null> {
         gt(authExchangeCodes.expiresOn, now),
       ),
     )
-    .limit(1)
+    .returning()
 
   if (!result) return null
-
-  await db
-    .update(authExchangeCodes)
-    .set({ used: true })
-    .where(eq(authExchangeCodes.id, result.id))
 
   return result.token
 }

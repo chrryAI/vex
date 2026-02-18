@@ -144,3 +144,16 @@
 - **Enforce Verification:** Always use `jwt.verify()`. Never fall back to `jwt.decode()` for authentication purposes.
 - **Unified Configuration:** Ensure secrets are handled consistently across HTTP and WebSocket handlers.
 - **Reject Invalid:** If the secret is missing or the token signature is invalid, reject the connection immediately.
+
+## 2026-06-15 - Race Condition in One-Time Code Exchange
+
+**Vulnerability:** The `exchangeCodeForToken` function used a `SELECT` followed by an `UPDATE` to check and consume one-time auth codes. This introduced a race condition (TOCTOU) where two concurrent requests with the same code could both pass the check before either update completed, allowing the code to be used twice.
+
+**Learning:**
+
+- **Atomicity:** Critical state transitions (like marking a code as used) must be atomic. Separating read and write operations creates a window for race conditions.
+- **Database Features:** Modern databases (like Postgres) support `UPDATE ... RETURNING`, allowing you to update and retrieve the result in a single atomic query.
+
+**Prevention:**
+
+- **Atomic Update:** Replaced the `SELECT`-then-`UPDATE` pattern with a single `db.update(...).where(...).returning()` query. This ensures that only one request can successfully "claim" and use the code.
