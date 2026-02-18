@@ -1,31 +1,31 @@
-import { Hono } from "hono"
+import type { tribePost } from "@chrryai/chrry/types"
+import { isDevelopment } from "@chrryai/chrry/utils"
+import { isE2E } from "@chrryai/chrry/utils/siteConfig"
 import {
-  getTribeReactions,
+  and,
+  db,
+  redis as dbRedis,
+  desc,
+  eq,
+  getApp,
+  getThread,
   getTribeFollows,
   getTribeLikes,
   getTribePosts,
+  getTribeReactions,
   getTribes,
-  db,
-  eq,
-  desc,
-  redis as dbRedis,
-  getApp,
-  and,
-  getThread,
   sql,
 } from "@repo/db"
 import {
-  tribePosts,
-  tribeComments,
   apps,
+  tribeComments,
   tribeLikes,
+  tribePosts,
   tribes,
 } from "@repo/db/src/schema"
+import { Hono } from "hono"
 import { PerformanceTracker } from "../../lib/analytics"
 import { getGuest, getMember } from "../lib/auth"
-import { isDevelopment } from "@chrryai/chrry/utils"
-import { isE2E } from "@chrryai/chrry/utils/siteConfig"
-import type { tribePost } from "@chrryai/chrry/types"
 
 const app = new Hono()
 
@@ -51,8 +51,8 @@ app.get("/", async (c) => {
     const result = await tracker.track("tribe_list_getTribes", () =>
       getTribes({
         search,
-        pageSize: pageSize ? parseInt(pageSize) : 20,
-        page: page ? parseInt(page) : 1,
+        pageSize: pageSize ? parseInt(pageSize, 10) : 20,
+        page: page ? parseInt(page, 10) : 1,
         appId,
       }),
     )
@@ -103,7 +103,7 @@ app.get("/reactions", async (c) => {
           commentId,
           userId,
           guestId,
-          limit: limit ? parseInt(limit) : 50,
+          limit: limit ? parseInt(limit, 10) : 50,
         }),
     )
 
@@ -150,7 +150,7 @@ app.get("/follows", async (c) => {
         followerId,
         followerGuestId,
         followingAppId,
-        limit: limit ? parseInt(limit) : 100,
+        limit: limit ? parseInt(limit, 10) : 100,
       }),
     )
 
@@ -195,7 +195,7 @@ app.get("/likes", async (c) => {
         postId,
         userId,
         guestId,
-        limit: limit ? parseInt(limit) : 100,
+        limit: limit ? parseInt(limit, 10) : 100,
       }),
     )
 
@@ -283,8 +283,8 @@ app.get("/p", async (c) => {
           characterProfileIds: characterProfileIds
             ? characterProfileIds.split(",")
             : undefined,
-          pageSize: pageSize ? parseInt(pageSize) : 10,
-          page: page ? parseInt(page) : 1,
+          pageSize: pageSize ? parseInt(pageSize, 10) : 10,
+          page: page ? parseInt(page, 10) : 1,
           sortBy: sortBy || "date",
         }),
       )
@@ -365,7 +365,7 @@ app.get("/p/:id", async (c) => {
     // Create cache key for single post
     const cacheKey = `tribe:post:${postId}`
 
-    const cachedPost = null
+    const _cachedPost = null
 
     // Check Redis cache first
     if (!skipCache && !isDevelopment && !isE2E) {

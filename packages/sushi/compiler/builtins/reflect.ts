@@ -105,7 +105,7 @@ export const __Reflect_ownKeys = (target: any) => {
   const out: any[] = Porffor.malloc()
 
   target = __Porffor_object_underlying(target)
-  if (Porffor.type(target) == Porffor.TYPES.object) {
+  if (Porffor.type(target) === Porffor.TYPES.object) {
     let ptr: i32 = Porffor.wasm`local.get ${target}` + 8
     const endPtr: i32 = ptr + Porffor.wasm.i32.load16_u(target, 0, 0) * 18
 

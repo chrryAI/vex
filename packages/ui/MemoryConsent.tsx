@@ -1,28 +1,27 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { Brain, CircleX, Download, LinkIcon, Settings2, Trash2 } from "./icons"
-
+import { useEffect, useRef, useState } from "react"
+import toast from "react-hot-toast"
+import Checkbox from "./Checkbox"
+import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
 import {
-  useAuth,
-  useNavigationContext,
   useApp,
-  useError,
+  useAuth,
   useData,
+  useError,
+  useNavigationContext,
 } from "./context/providers"
-import { apiFetch, isE2E } from "./utils"
-import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
-import ConfirmButton from "./ConfirmButton"
-import Loading from "./Loading"
-import { updateUser } from "./lib"
-import toast from "react-hot-toast"
-import { useMemoryConsentStyles } from "./MemoryConsent.styles"
-import { Button, Div, Input } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
 import useCache from "./hooks/useCache"
-import Checkbox from "./Checkbox"
+import { Brain, CircleX, Download, LinkIcon, Settings2, Trash2 } from "./icons"
+import Loading from "./Loading"
+import { updateUser } from "./lib"
+import { useMemoryConsentStyles } from "./MemoryConsent.styles"
+import { Button, Div, Input } from "./platform"
+import { apiFetch, isE2E } from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function MemoryConsent({
   style,
@@ -132,7 +131,6 @@ export default function MemoryConsent({
             <Checkbox
               style={{ marginLeft: "auto" }}
               checked={auth.burn}
-              children={""}
               onChange={() => {
                 setBurn(!auth.burn)
               }}

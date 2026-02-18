@@ -1,17 +1,18 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import Modal from "./Modal"
+import type React from "react"
+import { useEffect, useState } from "react"
+import A from "./a/A"
+import CharacterProfile from "./CharacterProfile"
+import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
+import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useData } from "./context/providers"
-import { Button, Div } from "./platform"
 import { CircleX, Link, Sparkles, Trash2 } from "./icons"
-import CharacterProfile from "./CharacterProfile"
-import ConfirmButton from "./ConfirmButton"
-import { updateUser } from "./lib"
 import Loading from "./Loading"
-import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
-import A from "./a/A"
+import { updateUser } from "./lib"
+import Modal from "./Modal"
+import { Button, Div } from "./platform"
 
 export default function CharacterProfiles({
   style,

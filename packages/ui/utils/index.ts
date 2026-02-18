@@ -1,31 +1,34 @@
 /// <reference types="chrome" />
 
-import type { guest, subscription, user, thread, threadSummary } from "../types"
 import countries from "i18n-iso-countries"
+import type { guest, subscription, thread, threadSummary, user } from "../types"
 import { getEnv } from "./env"
 
 // Browser API type for extension compatibility
 type BrowserAPIType = typeof chrome | typeof browser
-import isOwner from "./isOwner"
+
+import { locales } from "../locales"
 import {
   exampleInstructions,
   getExampleInstructions,
 } from "./getExampleInstructions"
 
 import { getWeatherCacheTime } from "./getWeatherCacheTime"
-import { locales } from "../locales"
-import { getSiteConfig } from "./siteConfig"
-import { getAppAndStoreSlugs, excludedSlugRoutes } from "./url"
+import isOwner from "./isOwner"
 import replaceLinks from "./replaceLinks"
+import { getSiteConfig } from "./siteConfig"
+import { excludedSlugRoutes, getAppAndStoreSlugs } from "./url"
+
 export * from "./env"
-import { isE2E } from "./env"
+
 import {
-  isDevelopment,
-  isTestingDevice,
-  isProduction,
   checkIsExtension,
   getExtensionUrl,
   isCI,
+  isDevelopment,
+  isE2E,
+  isProduction,
+  isTestingDevice,
 } from "./env"
 
 export {
@@ -91,7 +94,7 @@ export function getThreadId(pathname?: string): string | undefined {
   if (!pathname) return undefined
   // Server-safe: check if window exists
   const segments = pathname.split("/").filter(Boolean)
-  const threadsIndex = segments.findIndex((segment) => segment === "threads")
+  const threadsIndex = segments.indexOf("threads")
 
   if (threadsIndex === -1) return undefined
 
@@ -105,7 +108,7 @@ export function getPostId(pathname?: string): string | undefined {
   if (!pathname) return undefined
   // Server-safe: check if window exists
   const segments = pathname.split("/").filter(Boolean)
-  const pIndex = segments.findIndex((segment) => segment === "p")
+  const pIndex = segments.indexOf("p")
 
   if (pIndex === -1) return undefined
 
@@ -410,7 +413,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "2.0.0"
+export const VERSION = config.version || "2.0.1"
 export type instructionBase = {
   id: string
   title: string
@@ -716,40 +719,35 @@ export const isDeepEqual = (obj1: any, obj2: any): boolean => {
   return true
 }
 
-// Export getHourlyLimit
-export { decodeHtmlEntities } from "./decodeHtmlEntities"
-export { getHourlyLimit } from "./getHourlyLimit"
-
-// Export generateAppMetadata
-export { generateAppMetadata } from "./generateAppMetadata"
-
-// Export generateStoreMetadata
-export { generateStoreMetadata } from "./generateStoreMetadata"
-
-// Export generateThreadMetadata
-export { generateThreadMetadata } from "./generateThreadMetadata"
-
-// Export file validation utilities
-export {
-  validateFile,
-  getMaxFileSize,
-  isTextFile,
-  formatFileSize,
-} from "./fileValidation"
-export type {
-  FileValidationResult,
-  AgentCapabilities,
-  AgentModel,
-} from "./fileValidation"
-
+export type { estimateJobCreditsParams, scheduleSlot } from "./creditCalculator"
 // Export credit calculator utilities
 export {
+  calculateSlotCredits,
   estimateJobCredits,
+  formatCredits,
   getModelMultiplier,
   getPostTypeMultiplier,
-  calculateSlotCredits,
-  formatCredits,
 } from "./creditCalculator"
-export type { scheduleSlot, estimateJobCreditsParams } from "./creditCalculator"
+// Export getHourlyLimit
+export { decodeHtmlEntities } from "./decodeHtmlEntities"
+export type {
+  AgentCapabilities,
+  AgentModel,
+  FileValidationResult,
+} from "./fileValidation"
+// Export file validation utilities
+export {
+  formatFileSize,
+  getMaxFileSize,
+  isTextFile,
+  validateFile,
+} from "./fileValidation"
+// Export generateAppMetadata
+export { generateAppMetadata } from "./generateAppMetadata"
+// Export generateStoreMetadata
+export { generateStoreMetadata } from "./generateStoreMetadata"
+// Export generateThreadMetadata
+export { generateThreadMetadata } from "./generateThreadMetadata"
+export { getHourlyLimit } from "./getHourlyLimit"
 
 // Export API URL utilities

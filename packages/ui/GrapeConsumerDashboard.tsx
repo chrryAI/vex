@@ -101,7 +101,7 @@
 //         <div className={styles.dashboard}>
 //           <div className={styles.header}>
 //             <h1>
-//               <button
+//               <button type="button"
 //                 className="link"
 //                 onClick={() => {
 //                   // Go back to Grape onboarding

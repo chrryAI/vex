@@ -19,13 +19,13 @@ export const __ecma262_TimeWithinDay = (t: number): number =>
 export const __ecma262_DaysInYear = (y: number): number => {
   // 1. Let ry be ℝ(y).
   // 2. If (ry modulo 400) = 0, return 366𝔽.
-  if (__ecma262_Modulo(y, 400) == 0) return 366
+  if (__ecma262_Modulo(y, 400) === 0) return 366
 
   // 3. If (ry modulo 100) = 0, return 365𝔽.
-  if (__ecma262_Modulo(y, 100) == 0) return 365
+  if (__ecma262_Modulo(y, 100) === 0) return 365
 
   // 4. If (ry modulo 4) = 0, return 366𝔽.
-  if (__ecma262_Modulo(y, 4) == 0) return 366
+  if (__ecma262_Modulo(y, 4) === 0) return 366
 
   // 5. Return 365𝔽.
   return 365
@@ -88,7 +88,7 @@ export const __ecma262_DayWithinYear = (t: number): number =>
 // https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-inleapyear
 // 1. If DaysInYear(YearFromTime(t)) is 366𝔽, return 1𝔽; else return +0𝔽.
 export const __ecma262_InLeapYear = (t: number): number =>
-  __ecma262_DaysInYear(__ecma262_YearFromTime(t)) == 366 ? 1 : 0
+  __ecma262_DaysInYear(__ecma262_YearFromTime(t)) === 366 ? 1 : 0
 
 // 21.4.1.11 MonthFromTime (t)
 // https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-monthfromtime
@@ -137,27 +137,27 @@ export const __ecma262_DateFromTime = (t: number): number => {
   const month: number = __ecma262_MonthFromTime(t)
 
   // 4. If month is +0𝔽, return dayWithinYear + 1𝔽.
-  if (month == 0) return dayWithinYear + 1
+  if (month === 0) return dayWithinYear + 1
   // 5. If month is 1𝔽, return dayWithinYear - 30𝔽.
-  if (month == 1) return dayWithinYear - 30
+  if (month === 1) return dayWithinYear - 30
   // 6. If month is 2𝔽, return dayWithinYear - 58𝔽 - inLeapYear.
-  if (month == 2) return dayWithinYear - 58 - inLeapYear
+  if (month === 2) return dayWithinYear - 58 - inLeapYear
   // 7. If month is 3𝔽, return dayWithinYear - 89𝔽 - inLeapYear.
-  if (month == 3) return dayWithinYear - 89 - inLeapYear
+  if (month === 3) return dayWithinYear - 89 - inLeapYear
   // 8. If month is 4𝔽, return dayWithinYear - 119𝔽 - inLeapYear.
-  if (month == 4) return dayWithinYear - 119 - inLeapYear
+  if (month === 4) return dayWithinYear - 119 - inLeapYear
   // 9. If month is 5𝔽, return dayWithinYear - 150𝔽 - inLeapYear.
-  if (month == 5) return dayWithinYear - 150 - inLeapYear
+  if (month === 5) return dayWithinYear - 150 - inLeapYear
   // 10. If month is 6𝔽, return dayWithinYear - 180𝔽 - inLeapYear.
-  if (month == 6) return dayWithinYear - 180 - inLeapYear
+  if (month === 6) return dayWithinYear - 180 - inLeapYear
   // 11. If month is 7𝔽, return dayWithinYear - 211𝔽 - inLeapYear.
-  if (month == 7) return dayWithinYear - 211 - inLeapYear
+  if (month === 7) return dayWithinYear - 211 - inLeapYear
   // 12. If month is 8𝔽, return dayWithinYear - 242𝔽 - inLeapYear.
-  if (month == 8) return dayWithinYear - 242 - inLeapYear
+  if (month === 8) return dayWithinYear - 242 - inLeapYear
   // 13. If month is 9𝔽, return dayWithinYear - 272𝔽 - inLeapYear.
-  if (month == 9) return dayWithinYear - 272 - inLeapYear
+  if (month === 9) return dayWithinYear - 272 - inLeapYear
   // 14. If month is 10𝔽, return dayWithinYear - 303𝔽 - inLeapYear.
-  if (month == 10) return dayWithinYear - 303 - inLeapYear
+  if (month === 10) return dayWithinYear - 303 - inLeapYear
 
   // 15. Assert: month is 11𝔽.
   // 16. Return dayWithinYear - 333𝔽 - inLeapYear.
@@ -356,31 +356,32 @@ export const __Date_UTC = (
 
   // 2. If month is present, let m be ? ToNumber(month); else let m be +0𝔽.
   let m: number = 0
-  if (Porffor.type(month) != Porffor.TYPES.undefined)
+  if (Porffor.type(month) !== Porffor.TYPES.undefined)
     m = ecma262.ToNumber(month)
 
   // 3. If date is present, let dt be ? ToNumber(date); else let dt be 1𝔽.
   let dt: number = 1
-  if (Porffor.type(date) != Porffor.TYPES.undefined) dt = ecma262.ToNumber(date)
+  if (Porffor.type(date) !== Porffor.TYPES.undefined)
+    dt = ecma262.ToNumber(date)
 
   // 4. If hours is present, let h be ? ToNumber(hours); else let h be +0𝔽.
   let h: number = 0
-  if (Porffor.type(hours) != Porffor.TYPES.undefined)
+  if (Porffor.type(hours) !== Porffor.TYPES.undefined)
     h = ecma262.ToNumber(hours)
 
   // 5. If minutes is present, let min be ? ToNumber(minutes); else let min be +0𝔽.
   let min: number = 0
-  if (Porffor.type(minutes) != Porffor.TYPES.undefined)
+  if (Porffor.type(minutes) !== Porffor.TYPES.undefined)
     min = ecma262.ToNumber(minutes)
 
   // 6. If seconds is present, let s be ? ToNumber(seconds); else let s be +0𝔽.
   let s: number = 0
-  if (Porffor.type(seconds) != Porffor.TYPES.undefined)
+  if (Porffor.type(seconds) !== Porffor.TYPES.undefined)
     s = ecma262.ToNumber(seconds)
 
   // 7. If ms is present, let milli be ? ToNumber(ms); else let milli be +0𝔽.
   let milli: number = 0
-  if (Porffor.type(ms) != Porffor.TYPES.undefined) milli = ecma262.ToNumber(ms)
+  if (Porffor.type(ms) !== Porffor.TYPES.undefined) milli = ecma262.ToNumber(ms)
 
   // 8. Let yr be MakeFullYear(y).
   // 9. Return TimeClip(MakeDate(MakeDay(yr, m, dt), MakeTime(h, min, s, milli))).
@@ -398,7 +399,7 @@ export const __ecma262_WeekDayName = (tv: number): bytestring => {
   const lut: bytestring = "SunMonTueWedThuFriSat"
   const weekday: number = __ecma262_WeekDay(tv)
 
-  let out: bytestring = Porffor.malloc(8)
+  const out: bytestring = Porffor.malloc(8)
   out.length = 3
 
   let outPtr: number = Porffor.wasm`local.get ${out}`
@@ -426,7 +427,7 @@ export const __ecma262_MonthName = (tv: number): bytestring => {
   const lut: bytestring = "JanFebMarAprMayJunJulAugSepOctNovDec"
   const month: number = __ecma262_MonthFromTime(tv)
 
-  let out: bytestring = Porffor.malloc(8)
+  const out: bytestring = Porffor.malloc(8)
   out.length = 3
 
   let outPtr: number = Porffor.wasm`local.get ${out}`
@@ -451,42 +452,42 @@ export const __ecma262_MonthName = (tv: number): bytestring => {
 export const __ecma262_ParseMonthName = (ptr: number): number => {
   const a: i32 = Porffor.wasm.i32.load8_u(ptr, 0, 4)
 
-  if (a == 74) {
+  if (a === 74) {
     // J
     const b: i32 = Porffor.wasm.i32.load8_u(ptr, 0, 5)
 
-    if (b == 97) return 0 // a - Jan
-    if (b == 117) {
+    if (b === 97) return 0 // a - Jan
+    if (b === 117) {
       // u
       const c: i32 = Porffor.wasm.i32.load8_u(ptr, 0, 6)
-      if (c == 110) return 5 // n - Jun
-      if (c == 108) return 6 // l - Jul
+      if (c === 110) return 5 // n - Jun
+      if (c === 108) return 6 // l - Jul
     }
   }
 
-  if (a == 77) {
+  if (a === 77) {
     // M
     const b: i32 = Porffor.wasm.i32.load8_u(ptr, 0, 5)
-    if (b == 97) {
+    if (b === 97) {
       // a
       const c: i32 = Porffor.wasm.i32.load8_u(ptr, 0, 6)
-      if (c == 114) return 2 // r - Mar
-      if (c == 121) return 4 // y - May
+      if (c === 114) return 2 // r - Mar
+      if (c === 121) return 4 // y - May
     }
   }
 
-  if (a == 65) {
+  if (a === 65) {
     // A
     const b: i32 = Porffor.wasm.i32.load8_u(ptr, 0, 5)
-    if (b == 112) return 3 // p - Apr
-    if (b == 117) return 7 // u - Aug
+    if (b === 112) return 3 // p - Apr
+    if (b === 117) return 7 // u - Aug
   }
 
-  if (a == 70) return 1 // F - Feb
-  if (a == 83) return 8 // S - Sep
-  if (a == 79) return 9 // O - Oct
-  if (a == 78) return 10 // N - Nov
-  if (a == 68) return 11 // D - Dec
+  if (a === 70) return 1 // F - Feb
+  if (a === 83) return 8 // S - Sep
+  if (a === 79) return 9 // O - Oct
+  if (a === 78) return 10 // N - Nov
+  if (a === 68) return 11 // D - Dec
 
   return -1
 }
@@ -524,22 +525,22 @@ export const __ecma262_ParseDTSF = (string: bytestring): number => {
       continue
     }
 
-    if (chr == 45) {
+    if (chr === 45) {
       // -
-      if (Porffor.fastOr(ptr == Porffor.wasm`local.get ${string}`, nInd == 7))
+      if (Porffor.fastOr(ptr === Porffor.wasm`local.get ${string}`, nInd === 7))
         n = -n
     }
 
     if (n > 0) {
-      if (nInd == 0) y = n
-      else if (nInd == 1) m = n - 1
-      else if (nInd == 2) dt = n
-      else if (nInd == 3) h = n
-      else if (nInd == 4) min = n
-      else if (nInd == 5) s = n
-      else if (nInd == 6) milli = n
-      else if (nInd == 7) tzHour = n
-      else if (nInd == 8) tzMin = n
+      if (nInd === 0) y = n
+      else if (nInd === 1) m = n - 1
+      else if (nInd === 2) dt = n
+      else if (nInd === 3) h = n
+      else if (nInd === 4) min = n
+      else if (nInd === 5) s = n
+      else if (nInd === 6) milli = n
+      else if (nInd === 7) tzHour = n
+      else if (nInd === 8) tzMin = n
 
       n = 0
       nInd++
@@ -571,7 +572,7 @@ export const __ecma262_ParseRFC7231OrToString = (
   let ptr: i32 = Porffor.wasm`local.get ${string}` + 4
 
   // skip potential ' '
-  if (Porffor.wasm.i32.load8_u(ptr, 0, 4) == 32) ptr++
+  if (Porffor.wasm.i32.load8_u(ptr, 0, 4) === 32) ptr++
 
   let dt: number = 0
   let m: number = -1
@@ -608,7 +609,7 @@ export const __ecma262_ParseRFC7231OrToString = (
   }
 
   // check we parsed month and date correctly
-  if (Porffor.fastOr(m == -1, dt == 0, dt > 31)) {
+  if (Porffor.fastOr(m === -1, dt === 0, dt > 31)) {
     return NaN
   }
 
@@ -616,7 +617,7 @@ export const __ecma262_ParseRFC7231OrToString = (
   let h: number = 0
   let min: number = 0
   let s: number = 0
-  let tz: number = 0
+  let _tz: number = 0
 
   let n: number = 0
   let nInd: number = 0
@@ -634,17 +635,17 @@ export const __ecma262_ParseRFC7231OrToString = (
       continue
     }
 
-    if (chr == 45) {
+    if (chr === 45) {
       // -
-      if (nInd == 4) n = -n
+      if (nInd === 4) n = -n
     }
 
     if (n > 0) {
-      if (nInd == 0) y = n
-      else if (nInd == 1) h = n
-      else if (nInd == 2) min = n
-      else if (nInd == 3) s = n
-      else if (nInd == 4) tz = n
+      if (nInd === 0) y = n
+      else if (nInd === 1) h = n
+      else if (nInd === 2) min = n
+      else if (nInd === 3) s = n
+      else if (nInd === 4) _tz = n
 
       n = 0
       nInd++
@@ -682,13 +683,13 @@ export const __Date_parse = (string: bytestring): number => {
 }
 
 export const __Porffor_date_read = (date: any): number => {
-  if (Porffor.type(date) != Porffor.TYPES.date)
+  if (Porffor.type(date) !== Porffor.TYPES.date)
     throw TypeError("Date prototype methods require this to be a Date object")
   return Porffor.wasm.f64.load(date, 0, 0)
 }
 
 export const __Porffor_date_write = (date: any, val: number) => {
-  if (Porffor.type(date) != Porffor.TYPES.date)
+  if (Porffor.type(date) !== Porffor.TYPES.date)
     throw TypeError("Date prototype methods require this to be a Date object")
   Porffor.wasm.f64.store(date, val, 0, 0)
 }
@@ -1019,13 +1020,13 @@ export const __Date_prototype_setFullYear = (
 
   // 6. If month is not present, let m be MonthFromTime(t); otherwise, let m be ? ToNumber(month).
   let m: number
-  if (Porffor.type(month) == Porffor.TYPES.undefined)
+  if (Porffor.type(month) === Porffor.TYPES.undefined)
     m = __ecma262_MonthFromTime(t)
   else m = ecma262.ToNumber(month)
 
   // 7. If date is not present, let dt be DateFromTime(t); otherwise, let dt be ? ToNumber(date).
   let dt: number
-  if (Porffor.type(date) == Porffor.TYPES.undefined)
+  if (Porffor.type(date) === Porffor.TYPES.undefined)
     dt = __ecma262_DateFromTime(t)
   else dt = ecma262.ToNumber(date)
 
@@ -1067,19 +1068,19 @@ export const __Date_prototype_setHours = (
 
   // 5. If min is present, let m be ? ToNumber(min).
   let m: number
-  if (Porffor.type(min) != Porffor.TYPES.undefined) m = ecma262.ToNumber(min)
+  if (Porffor.type(min) !== Porffor.TYPES.undefined) m = ecma262.ToNumber(min)
   // 10. If min is not present, let m be MinFromTime(t).
   else m = __ecma262_MinFromTime(t)
 
   // 6. If sec is present, let s be ? ToNumber(sec).
   let s: number
-  if (Porffor.type(sec) != Porffor.TYPES.undefined) s = ecma262.ToNumber(sec)
+  if (Porffor.type(sec) !== Porffor.TYPES.undefined) s = ecma262.ToNumber(sec)
   // 11. If sec is not present, let s be SecFromTime(t).
   else s = __ecma262_SecFromTime(t)
 
   // 7. If ms is present, let milli be ? ToNumber(ms).
   let milli: number
-  if (Porffor.type(ms) != Porffor.TYPES.undefined) milli = ecma262.ToNumber(ms)
+  if (Porffor.type(ms) !== Porffor.TYPES.undefined) milli = ecma262.ToNumber(ms)
   // 12. If ms is not present, let milli be msFromTime(t).
   else milli = __ecma262_msFromTime(t)
 
@@ -1161,13 +1162,13 @@ export const __Date_prototype_setMinutes = (
 
   // 5. If sec is present, let s be ? ToNumber(sec).
   let s: number
-  if (Porffor.type(sec) != Porffor.TYPES.undefined) s = ecma262.ToNumber(sec)
+  if (Porffor.type(sec) !== Porffor.TYPES.undefined) s = ecma262.ToNumber(sec)
   // 9. If sec is not present, let s be SecFromTime(t).
   else s = __ecma262_SecFromTime(t)
 
   // 6. If ms is present, let milli be ? ToNumber(ms).
   let milli: number
-  if (Porffor.type(ms) != Porffor.TYPES.undefined) milli = ecma262.ToNumber(ms)
+  if (Porffor.type(ms) !== Porffor.TYPES.undefined) milli = ecma262.ToNumber(ms)
   // 10. If ms is not present, let milli be msFromTime(t).
   else milli = __ecma262_msFromTime(t)
 
@@ -1210,7 +1211,8 @@ export const __Date_prototype_setMonth = (
 
   // 5. If date is present, let dt be ? ToNumber(date).
   let dt: number
-  if (Porffor.type(date) != Porffor.TYPES.undefined) dt = ecma262.ToNumber(date)
+  if (Porffor.type(date) !== Porffor.TYPES.undefined)
+    dt = ecma262.ToNumber(date)
   // 8. If date is not present, let dt be DateFromTime(t).
   else dt = __ecma262_DateFromTime(t)
 
@@ -1249,7 +1251,7 @@ export const __Date_prototype_setSeconds = (_this: any, sec: any, ms: any) => {
 
   // 5. If ms is present, let milli be ? ToNumber(ms).
   let milli: number
-  if (Porffor.type(ms) != Porffor.TYPES.undefined) milli = ecma262.ToNumber(ms)
+  if (Porffor.type(ms) !== Porffor.TYPES.undefined) milli = ecma262.ToNumber(ms)
   // 8. If ms is not present, let milli be msFromTime(t).
   else milli = __ecma262_msFromTime(t)
 
@@ -1283,7 +1285,7 @@ export const __Date_prototype_setTime = (_this: any, time: any) => {
   // 1. Let dateObject be the this value.
   // 2. Perform ? RequireInternalSlot(dateObject, [[DateValue]]).
   // extra check here to check ensure this type before coerce as only function where coerce is done before any true read
-  if (Porffor.type(_this) != Porffor.TYPES.date)
+  if (Porffor.type(_this) !== Porffor.TYPES.date)
     throw TypeError("Date prototype methods require this to be a Date object")
 
   // 3. Let t be ? ToNumber(time).
@@ -1354,13 +1356,13 @@ export const __Date_prototype_setUTCFullYear = (
 
   // 6. If month is not present, let m be MonthFromTime(t); otherwise, let m be ? ToNumber(month).
   let m: number
-  if (Porffor.type(month) == Porffor.TYPES.undefined)
+  if (Porffor.type(month) === Porffor.TYPES.undefined)
     m = __ecma262_MonthFromTime(t)
   else m = ecma262.ToNumber(month)
 
   // 7. If date is not present, let dt be DateFromTime(t); otherwise, let dt be ? ToNumber(date).
   let dt: number
-  if (Porffor.type(date) == Porffor.TYPES.undefined)
+  if (Porffor.type(date) === Porffor.TYPES.undefined)
     dt = __ecma262_DateFromTime(t)
   else dt = ecma262.ToNumber(date)
 
@@ -1392,26 +1394,26 @@ export const __Date_prototype_setUTCHours = (
   // 1. Let dateObject be the this value.
   // 2. Perform ? RequireInternalSlot(dateObject, [[DateValue]]).
   // 3. Let t be dateObject.[[DateValue]].
-  let t: number = __Porffor_date_read(_this)
+  const t: number = __Porffor_date_read(_this)
 
   // 4. Let h be ? ToNumber(hour).
   const h: number = ecma262.ToNumber(hour)
 
   // 5. If min is present, let m be ? ToNumber(min).
   let m: number
-  if (Porffor.type(min) != Porffor.TYPES.undefined) m = ecma262.ToNumber(min)
+  if (Porffor.type(min) !== Porffor.TYPES.undefined) m = ecma262.ToNumber(min)
   // 9. If min is not present, let m be MinFromTime(t).
   else m = __ecma262_MinFromTime(t)
 
   // 6. If sec is present, let s be ? ToNumber(sec).
   let s: number
-  if (Porffor.type(sec) != Porffor.TYPES.undefined) s = ecma262.ToNumber(sec)
+  if (Porffor.type(sec) !== Porffor.TYPES.undefined) s = ecma262.ToNumber(sec)
   // 10. If sec is not present, let s be SecFromTime(t).
   else s = __ecma262_SecFromTime(t)
 
   // 7. If ms is present, let milli be ? ToNumber(ms).
   let milli: number
-  if (Porffor.type(ms) != Porffor.TYPES.undefined) milli = ecma262.ToNumber(ms)
+  if (Porffor.type(ms) !== Porffor.TYPES.undefined) milli = ecma262.ToNumber(ms)
   // 11. If ms is not present, let milli be msFromTime(t).
   else milli = __ecma262_msFromTime(t)
 
@@ -1440,7 +1442,7 @@ export const __Date_prototype_setUTCMilliseconds = (_this: any, ms: any) => {
   // 1. Let dateObject be the this value.
   // 2. Perform ? RequireInternalSlot(dateObject, [[DateValue]]).
   // 3. Let t be dateObject.[[DateValue]].
-  let t: number = __Porffor_date_read(_this)
+  const t: number = __Porffor_date_read(_this)
 
   // ignore old-style spec setting arg instead of having let
   // 4. Set ms to ? ToNumber(ms).
@@ -1480,20 +1482,20 @@ export const __Date_prototype_setUTCMinutes = (
   // 1. Let dateObject be the this value.
   // 2. Perform ? RequireInternalSlot(dateObject, [[DateValue]]).
   // 3. Let t be dateObject.[[DateValue]].
-  let t: number = __Porffor_date_read(_this)
+  const t: number = __Porffor_date_read(_this)
 
   // 4. Let m be ? ToNumber(min).
   const m: number = ecma262.ToNumber(min)
 
   // 5. If sec is present, let s be ? ToNumber(sec).
   let s: number
-  if (Porffor.type(sec) != Porffor.TYPES.undefined) s = ecma262.ToNumber(sec)
+  if (Porffor.type(sec) !== Porffor.TYPES.undefined) s = ecma262.ToNumber(sec)
   // 8. If sec is not present, let s be SecFromTime(t).
   else s = __ecma262_SecFromTime(t)
 
   // 6. If ms is present, let milli be ? ToNumber(ms).
   let milli: number
-  if (Porffor.type(ms) != Porffor.TYPES.undefined) milli = ecma262.ToNumber(ms)
+  if (Porffor.type(ms) !== Porffor.TYPES.undefined) milli = ecma262.ToNumber(ms)
   // 9. If ms is not present, let milli be msFromTime(t).
   else milli = __ecma262_msFromTime(t)
 
@@ -1526,14 +1528,15 @@ export const __Date_prototype_setUTCMonth = (
   // 1. Let dateObject be the this value.
   // 2. Perform ? RequireInternalSlot(dateObject, [[DateValue]]).
   // 3. Let t be dateObject.[[DateValue]].
-  let t: number = __Porffor_date_read(_this)
+  const t: number = __Porffor_date_read(_this)
 
   // 4. Let m be ? ToNumber(month).
   const m: number = ecma262.ToNumber(month)
 
   // 5. If date is present, let dt be ? ToNumber(date).
   let dt: number
-  if (Porffor.type(date) != Porffor.TYPES.undefined) dt = ecma262.ToNumber(date)
+  if (Porffor.type(date) !== Porffor.TYPES.undefined)
+    dt = ecma262.ToNumber(date)
   // 7. If date is not present, let dt be DateFromTime(t).
   else dt = __ecma262_DateFromTime(t)
 
@@ -1566,20 +1569,20 @@ export const __Date_prototype_setUTCSeconds = (
   // 1. Let dateObject be the this value.
   // 2. Perform ? RequireInternalSlot(dateObject, [[DateValue]]).
   // 3. Let t be dateObject.[[DateValue]].
-  let t: number = __Porffor_date_read(_this)
+  const t: number = __Porffor_date_read(_this)
 
   // 4. Let s be ? ToNumber(sec).
   const s: number = ecma262.ToNumber(sec)
 
   // 5. If ms is present, let milli be ? ToNumber(ms).
   let milli: number
-  if (Porffor.type(ms) != Porffor.TYPES.undefined) milli = ecma262.ToNumber(ms)
+  if (Porffor.type(ms) !== Porffor.TYPES.undefined) milli = ecma262.ToNumber(ms)
 
   // 6. If t is NaN, return NaN.
   if (Number.isNaN(t)) return NaN
 
   // 7. If ms is not present, let milli be msFromTime(t).
-  if (Porffor.type(ms) == Porffor.TYPES.undefined)
+  if (Porffor.type(ms) === Porffor.TYPES.undefined)
     milli = __ecma262_msFromTime(t)
 
   // 8. Let date be MakeDate(Day(t), MakeTime(HourFromTime(t), MinFromTime(t), s, milli)).
@@ -1628,7 +1631,7 @@ export const __Porffor_bytestring_appendStr = (
   const appendageLen: i32 = appendage.length
   let strPtr: i32 = Porffor.wasm`local.get ${str}` + strLen
   let appendagePtr: i32 = Porffor.wasm`local.get ${appendage}`
-  let endPtr: i32 = appendagePtr + appendageLen
+  const endPtr: i32 = appendagePtr + appendageLen
 
   while (appendagePtr < endPtr) {
     Porffor.wasm.i32.store8(
@@ -1672,11 +1675,11 @@ export const __Porffor_bytestring_appendPadNum = (
   num: number,
   len: number,
 ): i32 => {
-  let numStr: bytestring = Number.prototype.toFixed(num, 0)
+  const numStr: bytestring = Number.prototype.toFixed(num, 0)
 
   let strPtr: i32 = Porffor.wasm`local.get ${str}` + str.length
 
-  let numStrLen: i32 = numStr.length
+  const numStrLen: i32 = numStr.length
   const strPtrEnd: i32 = strPtr + (len - numStrLen)
   while (strPtr < strPtrEnd) {
     Porffor.wasm.i32.store8(strPtr++, 48, 0, 4)
@@ -1702,7 +1705,7 @@ export const __Porffor_bytestring_appendPadNum = (
 export const __ecma262_ToUTCDTSF = (t: number): bytestring => {
   const year: number = __ecma262_YearFromTime(t)
 
-  let out: bytestring = Porffor.malloc(64)
+  const out: bytestring = Porffor.malloc(64)
   if (Porffor.fastOr(year < 0, year >= 10000)) {
     // extended year format
     // sign
@@ -1794,7 +1797,7 @@ export const __ecma262_TimeString = (tv: number): bytestring => {
   const second: number = __ecma262_SecFromTime(tv)
 
   // 4. Return the string-concatenation of hour, ":", minute, ":", second, the code unit 0x0020 (SPACE), and "GMT".
-  let out: bytestring = Porffor.malloc(64)
+  const out: bytestring = Porffor.malloc(64)
   __Porffor_bytestring_appendPadNum(out, hour, 2)
   __Porffor_bytestring_appendChar(out, 58) // ':'
 
@@ -1830,7 +1833,7 @@ export const __ecma262_DateString = (tv: number): bytestring => {
   // 5. If yv is +0𝔽 or yv > +0𝔽, let yearSign be the empty String; otherwise, let yearSign be "-".
   // 6. Let paddedYear be ToZeroPaddedDecimalString(abs(ℝ(yv)), 4).
   // 7. Return the string-concatenation of weekday, the code unit 0x0020 (SPACE), month, the code unit 0x0020 (SPACE), day, the code unit 0x0020 (SPACE), yearSign, and paddedYear.
-  let out: bytestring = Porffor.malloc(64)
+  const out: bytestring = Porffor.malloc(64)
 
   // weekday
   __Porffor_bytestring_appendStr(out, weekday)
@@ -2035,24 +2038,24 @@ export const Date = function (...values: any[]): bytestring | Date {
   let dv: number = 0
 
   // 3. If numberOfArgs = 0, then
-  if (numberOfArgs == 0) {
+  if (numberOfArgs === 0) {
     // a. Let dv be the time value (UTC) identifying the current time.
     dv = __Date_now()
-  } else if (numberOfArgs == 1) {
+  } else if (numberOfArgs === 1) {
     // 4. Else if numberOfArgs = 1, then
     // a. Let value be values[0].
     const value: any = values[0]
     let tv: number = 0
 
     // b. If value is an Object and value has a [[DateValue]] internal slot, then
-    if (Porffor.type(value) == Porffor.TYPES.date) {
+    if (Porffor.type(value) === Porffor.TYPES.date) {
       // i. Let tv be value.[[DateValue]].
       tv = __Porffor_date_read(value)
     } else {
       // c. Else,
       // i. Let v be ? ToPrimitive(value).
       // ii. If v is a String, then
-      if ((Porffor.type(value) | 0b10000000) == Porffor.TYPES.bytestring) {
+      if ((Porffor.type(value) | 0b10000000) === Porffor.TYPES.bytestring) {
         // 1. Assert: The next step never returns an abrupt completion because v is a String.
 
         // 2. Let tv be the result of parsing v as a date, in exactly the same manner as for the parse method (21.4.3.2).

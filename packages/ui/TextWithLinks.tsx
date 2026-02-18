@@ -1,6 +1,6 @@
 import React from "react"
-import { FRONTEND_URL } from "./utils"
 import { A, Span } from "./platform"
+import { FRONTEND_URL } from "./utils"
 
 interface LinkProps {
   type: "link"
@@ -67,7 +67,7 @@ export function replaceLinks({
 }): TextSegment[] {
   if (!url) return []
   const Rexp =
-    /\b((?:https?:\/\/|www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*))/gi
+    /\b((?:https?:\/\/|www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&//=]*))/gi
 
   const segments: TextSegment[] = []
   let lastIndex = 0

@@ -1,13 +1,13 @@
-import { Hono } from "hono"
-import fs from "fs"
-import path from "path"
-import matter from "gray-matter"
-import { getApp, getStore, getTribePosts } from "@repo/db"
-import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
+import fs from "node:fs"
+import path from "node:path"
+import type { appWithStore } from "@chrryai/chrry/types"
 import getAppSlug from "@chrryai/chrry/utils/getAppSlug"
 import getWhiteLabelUtil from "@chrryai/chrry/utils/getWhiteLabel"
+import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
-import type { appWithStore } from "@chrryai/chrry/types"
+import { getApp, getStore, getTribePosts } from "@repo/db"
+import matter from "gray-matter"
+import { Hono } from "hono"
 
 export const sitemap = new Hono()
 
@@ -191,7 +191,7 @@ async function getChrryApp(c: any, chrryUrl: string) {
 }
 
 async function getWhiteLabel(app: appWithStore) {
-  const { storeApp, whiteLabel } = getWhiteLabelUtil({ app })
+  const { storeApp, whiteLabel: _whiteLabel } = getWhiteLabelUtil({ app })
 
   if (!storeApp) {
     // For simplicity, default to generic fallback if failing to resolve

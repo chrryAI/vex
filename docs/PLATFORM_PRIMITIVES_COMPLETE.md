@@ -80,7 +80,7 @@ const { isWeb } = usePlatform()
 
 if (isWeb) {
   // Render HTML element
-  return <button {...webProps}>{children}</button>
+  return <button type="button"  {...webProps}>{children}</button>
 }
 
 // Render React Native component

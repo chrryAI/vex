@@ -1,8 +1,8 @@
-import { Hono } from "hono"
-import { defaultLocale, locales, type locale } from "@chrryai/chrry/locales"
-import { getCachedTranslations, setCachedTranslations } from "@repo/db"
+import { defaultLocale, type locale, locales } from "@chrryai/chrry/locales"
 import { isDevelopment } from "@chrryai/chrry/utils"
-
+import { getCachedTranslations, setCachedTranslations } from "@repo/db"
+import { captureException } from "@sentry/node"
+import { Hono } from "hono"
 // Static imports for all locales
 import de from "../../locales/de.json"
 import en from "../../locales/en.json"
@@ -14,7 +14,6 @@ import nl from "../../locales/nl.json"
 import pt from "../../locales/pt.json"
 import tr from "../../locales/tr.json"
 import zh from "../../locales/zh.json"
-import { captureException } from "@sentry/node"
 
 // Translation map for quick lookup
 const translationMap: Record<string, Record<string, any>> = {
@@ -128,8 +127,8 @@ translations.post("/missing", async (c) => {
     }
 
     // Dynamic imports for Node.js fs operations
-    const { writeFile, readFile } = await import("fs/promises")
-    const { join } = await import("path")
+    const { writeFile, readFile } = await import("node:fs/promises")
+    const { join } = await import("node:path")
 
     // Paths to BOTH translation files (sync both locations)
     const uiEnJsonPath = join(process.cwd(), "../../packages/db/en.json")
@@ -188,7 +187,7 @@ translations.post("/missing", async (c) => {
         )
 
       // Generate JSON content
-      const newContent = JSON.stringify(sortedTranslations, null, 2) + "\n"
+      const newContent = `${JSON.stringify(sortedTranslations, null, 2)}\n`
 
       // Validate before writing
       if (!validateJSON(newContent)) {
@@ -219,8 +218,7 @@ translations.post("/missing", async (c) => {
           )
 
           // Write back to API locale file
-          const apiContent =
-            JSON.stringify(sortedApiTranslations, null, 2) + "\n"
+          const apiContent = `${JSON.stringify(sortedApiTranslations, null, 2)}\n`
           await writeFile(apiEnJsonPath, apiContent, "utf-8")
 
           console.log(

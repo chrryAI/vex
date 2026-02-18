@@ -43,7 +43,7 @@ import { useNavigation } from "@vex/router"
 function App() {
   const { router } = useNavigation()
 
-  return <button onClick={() => router.push("/calendar")}>Navigate</button>
+  return <button type="button"  onClick={() => router.push("/calendar")}>Navigate</button>
 }
 ```
 

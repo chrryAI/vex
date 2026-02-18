@@ -7,13 +7,13 @@
  */
 
 import "./sentry.config" // Initialize Sentry
-import { graph } from "./src/graph/client"
 import { captureException } from "@sentry/node"
+import { graph } from "./src/graph/client"
 
 async function getFalkorGraph() {
   try {
     return graph
-  } catch (error) {
+  } catch (_error) {
     console.warn("⚠️ FalkorDB not available, skipping graph cleanup")
     // Don't send to Sentry - FalkorDB being down is expected in some envs
     return null

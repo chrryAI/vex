@@ -1,7 +1,7 @@
-import { Page } from "@playwright/test"
-import { chat } from "./chat"
 import { faker } from "@faker-js/faker"
-import { modelName } from ".."
+import type { Page } from "@playwright/test"
+import type { modelName } from ".."
+import { chat } from "./chat"
 
 export const limit = async ({
   page,
@@ -50,7 +50,7 @@ export const limit = async ({
     shouldFail: true, // Flag to indicate this should fail
   }
 
-  const result = await chat({
+  const _result = await chat({
     isNewChat: true,
     page,
     isMember,

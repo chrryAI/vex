@@ -1,7 +1,7 @@
-import { Hono } from "hono"
-import { getMember, getGuest } from "../lib/auth"
 import { getCities } from "@repo/db"
+import { Hono } from "hono"
 import countries from "i18n-iso-countries"
+import { getGuest, getMember } from "../lib/auth"
 
 export const cities = new Hono()
 

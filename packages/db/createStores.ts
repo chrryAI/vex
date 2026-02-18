@@ -1,33 +1,26 @@
-import {
-  user,
-  createPureApp as createApp,
-  createStore,
-  getStores,
-  updateStore,
-  createStoreInstall,
-  getPureApp,
-  getStoreInstall,
-  store,
-  updatePureApp as updateApp,
-  createOrUpdateApp,
-  createOrUpdateStoreInstall,
-  getStore,
-  eq,
-  db,
-  isWaffles,
-  isProd,
-} from "./index"
-
 import enTranslations from "./en.json"
+import { extractTranslations } from "./extractTranslations"
 
 import {
   getExampleInstructions,
   type instructionBase,
 } from "./getExampleInstructions"
-import { extractTranslations } from "./extractTranslations"
-import { stores, users, guests, teams, apps, aiAgents } from "./src/schema"
+import {
+  createOrUpdateApp,
+  createOrUpdateStoreInstall,
+  createStore,
+  createStoreInstall,
+  db,
+  eq,
+  getPureApp,
+  getStore,
+  getStoreInstall,
+  type store,
+  updateStore,
+  type user,
+} from "./index"
 import { seedTribeEngagement } from "./seedTribeEngagement"
-import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
+import { aiAgents, apps, guests, stores, users } from "./src/schema"
 
 // ============================================
 // ♾️ INFINITE HUMAN: RPG Seeder Helper
@@ -93,7 +86,7 @@ const defaultInstructions = getExampleInstructions({ slug: "vex" }).map(
 )
 
 // Common section for all app system prompts
-const commonAppSection = `
+const _commonAppSection = `
 You are {{app.name}}{{#if app.title}}, {{app.title}}{{else}}, a specialized AI assistant{{/if}}.{{#if app.description}} {{app.description}}{{else}} You help users accomplish their goals efficiently.{{/if}}
 
 {{#if app.highlights}}
@@ -1575,7 +1568,7 @@ const perplexityScholarInstructions = [
 ]
 
 // Perplexity general (old specialized highlights - keeping for base app)
-const perplexityOldSearchInstructions = [
+const _perplexityOldSearchInstructions = [
   {
     id: "perplexity-1",
     title: "Real-Time Web Search",
@@ -1910,7 +1903,7 @@ const sushiArchitectInstructions = [
 ]
 
 // Sushi general (old specialized highlights - keeping for base app)
-const sushiCodeInstructions = [
+const _sushiCodeInstructions = [
   {
     id: "sushi-1",
     title: "Code Generation Master",
@@ -2797,16 +2790,12 @@ Remember: You're helping people experience Amsterdam like a local, not like a to
   })
 
   if (!amsterdam) throw new Error("Failed to add Amsterdam app")
-
-  // Install Amsterdam in Compass store
-  {
-    await createOrUpdateStoreInstall({
-      storeId: compass.id,
-      appId: amsterdam.id,
-      featured: true,
-      displayOrder: 1,
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: compass.id,
+    appId: amsterdam.id,
+    featured: true,
+    displayOrder: 1,
+  })
 
   // ============================================
   // TOKYO APP - City Guide
@@ -3050,16 +3039,12 @@ Remember: Tokyo is a city of contrasts - ultra-modern and deeply traditional. He
   })
 
   if (!tokyo) throw new Error("Failed to add app")
-
-  // Install Tokyo in Compass store
-  {
-    await createOrUpdateStoreInstall({
-      storeId: compass.id,
-      appId: tokyo.id,
-      featured: true,
-      displayOrder: 2,
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: compass.id,
+    appId: tokyo.id,
+    featured: true,
+    displayOrder: 2,
+  })
 
   // ============================================
   // ISTANBUL APP - City Guide
@@ -3310,16 +3295,12 @@ Remember: Istanbul is where East meets West, ancient meets modern, secular meets
   })
 
   if (!istanbul) throw new Error("Failed to add app")
-
-  // Install Istanbul in Compass store
-  {
-    await createOrUpdateStoreInstall({
-      storeId: compass.id,
-      appId: istanbul.id,
-      featured: true,
-      displayOrder: 3,
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: compass.id,
+    appId: istanbul.id,
+    featured: true,
+    displayOrder: 3,
+  })
 
   // ============================================
   // NEW YORK APP - City Guide
@@ -3581,16 +3562,12 @@ Remember: NYC moves fast. Help visitors keep up while experiencing the real New 
   if (!newYork) {
     throw new Error("New York app not found")
   }
-
-  // Install New York in Compass store
-  {
-    await createOrUpdateStoreInstall({
-      storeId: compass.id,
-      appId: newYork.id,
-      featured: true,
-      displayOrder: 4,
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: compass.id,
+    appId: newYork.id,
+    featured: true,
+    displayOrder: 4,
+  })
 
   const movies = await getOrCreateStore({
     slug: "movies",
@@ -3775,24 +3752,18 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   })
 
   if (!popcorn) throw new Error("Failed to create or update Movies app")
-
-  {
-    await createOrUpdateStoreInstall({
-      storeId: movies.id,
-      appId: popcorn.id,
-      featured: true,
-      displayOrder: 0,
-    })
-  }
-
-  {
-    await createOrUpdateStoreInstall({
-      storeId: blossom.id,
-      appId: popcorn.id,
-      featured: true,
-      displayOrder: 2,
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: movies.id,
+    appId: popcorn.id,
+    featured: true,
+    displayOrder: 0,
+  })
+  await createOrUpdateStoreInstall({
+    storeId: blossom.id,
+    appId: popcorn.id,
+    featured: true,
+    displayOrder: 2,
+  })
 
   await updateStore({
     ...movies,
@@ -3952,15 +3923,12 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   })
 
   if (!fightClub) throw new Error("Failed to create or update Fight Club app")
-
-  {
-    await createOrUpdateStoreInstall({
-      storeId: movies.id,
-      appId: fightClub.id,
-      featured: true,
-      displayOrder: 1,
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: movies.id,
+    appId: fightClub.id,
+    featured: true,
+    displayOrder: 1,
+  })
 
   const inceptionInstructions = [
     {
@@ -4113,15 +4081,12 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   })
 
   if (!inception) throw new Error("Failed to create or update Inception app")
-
-  {
-    await createOrUpdateStoreInstall({
-      storeId: movies.id,
-      appId: inception.id,
-      featured: true,
-      displayOrder: 2,
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: movies.id,
+    appId: inception.id,
+    featured: true,
+    displayOrder: 2,
+  })
 
   const pulpFictionInstructions = [
     {
@@ -4275,15 +4240,12 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
 
   if (!pulpFiction)
     throw new Error("Failed to create or update Pulp Fiction app")
-
-  {
-    await createOrUpdateStoreInstall({
-      storeId: movies.id,
-      appId: pulpFiction.id,
-      featured: true,
-      displayOrder: 3,
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: movies.id,
+    appId: pulpFiction.id,
+    featured: true,
+    displayOrder: 3,
+  })
 
   const hungerGamesInstructions = [
     {
@@ -4437,15 +4399,12 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
 
   if (!hungerGames)
     throw new Error("Failed to create or update Hunger Games app")
-
-  {
-    await createOrUpdateStoreInstall({
-      storeId: movies.id,
-      appId: hungerGames.id,
-      featured: true,
-      displayOrder: 4,
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: movies.id,
+    appId: hungerGames.id,
+    featured: true,
+    displayOrder: 4,
+  })
 
   // ============================================
   // BOOKS STORE - Philosophy & Literature Hub
@@ -4689,30 +4648,22 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     userId: admin.id,
     guestId: null,
   })
-
-  // Install Zarathustra in Books store
-  {
-    await createOrUpdateStoreInstall({
-      storeId: books.id,
-      appId: zarathustra.id,
-      featured: true,
-      displayOrder: 0,
-      customDescription:
-        "Your philosophical companion for deep reading. Explore literature and ideas through Nietzschean wisdom. Question everything, create your own values.",
-    })
-  }
-
-  // Install Zarathustra in Chrry AI store
-  {
-    await createOrUpdateStoreInstall({
-      storeId: blossom.id,
-      appId: zarathustra.id,
-      featured: true,
-      displayOrder: 4,
-      customDescription:
-        "Your philosophical companion for deep reading. Explore literature and ideas through Nietzschean wisdom.",
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: books.id,
+    appId: zarathustra.id,
+    featured: true,
+    displayOrder: 0,
+    customDescription:
+      "Your philosophical companion for deep reading. Explore literature and ideas through Nietzschean wisdom. Question everything, create your own values.",
+  })
+  await createOrUpdateStoreInstall({
+    storeId: blossom.id,
+    appId: zarathustra.id,
+    featured: true,
+    displayOrder: 4,
+    customDescription:
+      "Your philosophical companion for deep reading. Explore literature and ideas through Nietzschean wisdom.",
+  })
 
   // ============================================
   // 1984 APP - Dystopian Literature
@@ -4933,16 +4884,12 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
   if (!nineteen84) {
     throw new Error("1984 app not found")
   }
-
-  // Install 1984 in Books store
-  {
-    await createOrUpdateStoreInstall({
-      storeId: books.id,
-      appId: nineteen84.id,
-      featured: true,
-      displayOrder: 1,
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: books.id,
+    appId: nineteen84.id,
+    featured: true,
+    displayOrder: 1,
+  })
 
   // ============================================
   // MEDITATIONS APP - Stoic Philosophy
@@ -5166,7 +5113,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
 
   // Install Meditations in Books store
   {
-    const storeInstall = await createOrUpdateStoreInstall({
+    const _storeInstall = await createOrUpdateStoreInstall({
       storeId: books.id,
       appId: meditations.id,
       featured: true,
@@ -5395,28 +5342,20 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
   if (!dune) {
     throw new Error("Dune app not found")
   }
-
-  // Install Dune in Books store
-  {
-    await createOrUpdateStoreInstall({
-      storeId: books.id,
-      appId: dune.id,
-      featured: true,
-      displayOrder: 3,
-    })
-  }
-
-  // Install Fight Club in Books store (bridge to Movies!)
-  {
-    await createOrUpdateStoreInstall({
-      storeId: books.id,
-      appId: fightClub.id,
-      featured: true,
-      displayOrder: 4,
-      customDescription:
-        "Chuck Palahniuk's masterpiece through Zarathustra's lens. Explore masculinity, consumerism, and self-destruction. From Tyler Durden's philosophy to Project Mayhem, question everything.",
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: books.id,
+    appId: dune.id,
+    featured: true,
+    displayOrder: 3,
+  })
+  await createOrUpdateStoreInstall({
+    storeId: books.id,
+    appId: fightClub.id,
+    featured: true,
+    displayOrder: 4,
+    customDescription:
+      "Chuck Palahniuk's masterpiece through Zarathustra's lens. Explore masculinity, consumerism, and self-destruction. From Tyler Durden's philosophy to Project Mayhem, question everything.",
+  })
 
   // Create LifeOS store
   const lifeOS = await getOrCreateStore({
@@ -5507,7 +5446,7 @@ You have access to calendar, location, and weather tools to provide context-awar
     },
   ]
 
-  let wine = await getOrCreateStore({
+  const wine = await getOrCreateStore({
     slug: "wine",
     name: "Wine",
     title: "Grape Advertising Platform",
@@ -6062,22 +6001,19 @@ You provide helpful AI assistance while respecting user privacy completely.`
     efficiency: 50,
     level: 5, // Starts slightly experienced
   })
+  await createOrUpdateStoreInstall({
+    storeId: lifeOS.id,
+    appId: vex.id,
+    featured: true,
+    displayOrder: 0,
+  })
 
-  {
-    await createOrUpdateStoreInstall({
-      storeId: lifeOS.id,
-      appId: vex.id,
-      featured: true,
-      displayOrder: 0,
-    })
-
-    await createOrUpdateStoreInstall({
-      storeId: wine.id,
-      appId: vex.id,
-      featured: true,
-      displayOrder: 1,
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: wine.id,
+    appId: vex.id,
+    featured: true,
+    displayOrder: 1,
+  })
 
   await updateStore({
     ...lifeOS,
@@ -6085,28 +6021,22 @@ You provide helpful AI assistance while respecting user privacy completely.`
     userId: admin.id,
     guestId: null,
   })
-
-  {
-    await createOrUpdateStoreInstall({
-      storeId: compass.id,
-      appId: atlas.id,
-      featured: true,
-      displayOrder: 0,
-      customDescription:
-        "Your intelligent travel companion powered by OpenAI. Plan trips, discover destinations, and navigate the world with AI-powered insights.",
-    })
-  }
-
-  {
-    await createOrUpdateStoreInstall({
-      storeId: blossom.id,
-      appId: atlas.id,
-      featured: true,
-      displayOrder: 3,
-      customDescription:
-        "Your intelligent travel companion powered by OpenAI. Plan trips, discover destinations, and navigate the world with AI-powered insights.",
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: compass.id,
+    appId: atlas.id,
+    featured: true,
+    displayOrder: 0,
+    customDescription:
+      "Your intelligent travel companion powered by OpenAI. Plan trips, discover destinations, and navigate the world with AI-powered insights.",
+  })
+  await createOrUpdateStoreInstall({
+    storeId: blossom.id,
+    appId: atlas.id,
+    featured: true,
+    displayOrder: 3,
+    customDescription:
+      "Your intelligent travel companion powered by OpenAI. Plan trips, discover destinations, and navigate the world with AI-powered insights.",
+  })
 
   // Note: Grape is already in Blossom store via storeId, no need for explicit install
 
@@ -7493,80 +7423,48 @@ Please follow these instructions throughout our conversation.
     userId: admin.id,
     guestId: null,
   })
-
-  // ============================================
-  // FOCUS APP - PRODUCTIVITY & TIME MANAGEMENT
-  // ============================================
-
-  // ============================================
-  // INSTALL CHRRY IN ALL STORES (CROSS-STORE)
-  // ============================================
-
-  // Install Chrry in LifeOS
-  {
-    await createOrUpdateStoreInstall({
-      storeId: lifeOS.id,
-      appId: chrry.id,
-      featured: true,
-      displayOrder: 1,
-    })
-  }
-
-  {
-    await createOrUpdateStoreInstall({
-      storeId: lifeOS.id,
-      appId: peach.id,
-      featured: true,
-      displayOrder: 2,
-    })
-  }
-
-  {
-    await createOrUpdateStoreInstall({
-      storeId: lifeOS.id,
-      appId: bloom.id,
-      featured: true,
-      displayOrder: 3,
-    })
-  }
-
-  {
-    await createOrUpdateStoreInstall({
-      storeId: lifeOS.id,
-      appId: vault.id,
-      featured: true,
-      displayOrder: 4,
-    })
-
-    {
-      await createOrUpdateStoreInstall({
-        storeId: lifeOS.id,
-        appId: atlas.id,
-        featured: true,
-        displayOrder: 5,
-      })
-    }
-
-    // Install Focus in LifeOS
-    {
-      await createOrUpdateStoreInstall({
-        storeId: lifeOS.id,
-        appId: focus.id,
-        featured: true,
-        displayOrder: 6,
-      })
-    }
-  }
-
-  // Install Focus in Blossom (chrryAI) - its primary store
-  {
-    await createOrUpdateStoreInstall({
-      storeId: blossom.id,
-      appId: focus.id,
-      featured: true,
-      displayOrder: 2, // After Chrry itself
-    })
-  }
+  await createOrUpdateStoreInstall({
+    storeId: lifeOS.id,
+    appId: chrry.id,
+    featured: true,
+    displayOrder: 1,
+  })
+  await createOrUpdateStoreInstall({
+    storeId: lifeOS.id,
+    appId: peach.id,
+    featured: true,
+    displayOrder: 2,
+  })
+  await createOrUpdateStoreInstall({
+    storeId: lifeOS.id,
+    appId: bloom.id,
+    featured: true,
+    displayOrder: 3,
+  })
+  await createOrUpdateStoreInstall({
+    storeId: lifeOS.id,
+    appId: vault.id,
+    featured: true,
+    displayOrder: 4,
+  })
+  await createOrUpdateStoreInstall({
+    storeId: lifeOS.id,
+    appId: atlas.id,
+    featured: true,
+    displayOrder: 5,
+  })
+  await createOrUpdateStoreInstall({
+    storeId: lifeOS.id,
+    appId: focus.id,
+    featured: true,
+    displayOrder: 6,
+  })
+  await createOrUpdateStoreInstall({
+    storeId: blossom.id,
+    appId: focus.id,
+    featured: true,
+    displayOrder: 2, // After Chrry itself
+  })
 
   // Install Chrry in Claude store
   {

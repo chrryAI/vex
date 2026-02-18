@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 // Generate Tauri config with mode-specific names from template
-import { readFileSync, writeFileSync } from "fs"
-import { fileURLToPath } from "url"
-import { dirname, join } from "path"
+import { readFileSync, writeFileSync } from "node:fs"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)

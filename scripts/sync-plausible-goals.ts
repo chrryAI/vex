@@ -8,9 +8,9 @@
  * Plausible is always in sync with the codebase.
  */
 
+import * as dotenv from "dotenv"
 import { ALL_TRACKABLE_EVENTS } from "../packages/ui/utils/analyticsEvents"
 import { whiteLabels } from "../packages/ui/utils/siteConfig"
-import * as dotenv from "dotenv"
 
 // Load environment variables from .env
 dotenv.config()
@@ -106,7 +106,7 @@ async function syncAllSites() {
 
   let totalCreated = 0
   let totalSkipped = 0
-  let failedSites: string[] = []
+  const failedSites: string[] = []
 
   for (const site of whiteLabels) {
     const result = await syncGoalsForSite(site.domain)
@@ -119,7 +119,7 @@ async function syncAllSites() {
     }
   }
 
-  console.log("\n" + "=".repeat(60))
+  console.log(`\n${"=".repeat(60)}`)
   console.log("🎉 ALL SITES SYNC COMPLETE!")
   console.log("=".repeat(60))
   console.log(`✅ Total goals created: ${totalCreated}`)

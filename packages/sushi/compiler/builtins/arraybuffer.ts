@@ -2,7 +2,7 @@ import type {} from "./porffor.d.ts"
 
 export const __ArrayBuffer_isView = (value: any): boolean => {
   return Porffor.fastOr(
-    Porffor.type(value) == Porffor.TYPES.dataview,
+    Porffor.type(value) === Porffor.TYPES.dataview,
     Porffor.fastAnd(
       Porffor.type(value) >= Porffor.TYPES.uint8clampedarray,
       Porffor.type(value) <= Porffor.TYPES.float64array,
@@ -98,7 +98,7 @@ export const __ArrayBuffer_prototype_slice = (
     )
 
   const len: i32 = Porffor.wasm.i32.load(_this, 0, 0)
-  if (Porffor.type(end) == Porffor.TYPES.undefined) end = len
+  if (Porffor.type(end) === Porffor.TYPES.undefined) end = len
 
   start = ecma262.ToIntegerOrInfinity(start)
   end = ecma262.ToIntegerOrInfinity(end)
@@ -155,7 +155,7 @@ export const __ArrayBuffer_prototype_transfer = (
     )
 
   const len: i32 = Porffor.wasm.i32.load(_this, 0, 0)
-  if (Porffor.type(newLength) == Porffor.TYPES.undefined) newLength = len
+  if (Porffor.type(newLength) === Porffor.TYPES.undefined) newLength = len
 
   // make new arraybuffer
   const out: ArrayBuffer = new ArrayBuffer(newLength)
@@ -248,7 +248,7 @@ export const __SharedArrayBuffer_prototype_slice = (
   end: any,
 ) => {
   const len: i32 = Porffor.wasm.i32.load(_this, 0, 0)
-  if (Porffor.type(end) == Porffor.TYPES.undefined) end = len
+  if (Porffor.type(end) === Porffor.TYPES.undefined) end = len
 
   start = ecma262.ToIntegerOrInfinity(start)
   end = ecma262.ToIntegerOrInfinity(end)

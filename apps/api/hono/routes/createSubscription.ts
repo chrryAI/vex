@@ -1,6 +1,6 @@
+import { captureException } from "@sentry/node"
 import { Hono } from "hono"
 import Stripe from "stripe"
-import { captureException } from "@sentry/node"
 import { getMember } from "../lib/auth"
 
 export const createSubscription = new Hono()

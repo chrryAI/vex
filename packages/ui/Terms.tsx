@@ -1,15 +1,14 @@
 "use client"
 
-import React from "react"
-import Skeleton from "./Skeleton"
-import { useAppContext } from "./context/AppContext"
-import { CircleArrowLeft } from "./icons"
-import Img from "./Img"
-import { FRONTEND_URL } from "./utils"
-import { useNavigationContext } from "./context/providers"
-import { Button, Div, H1, H2, P, Section, useTheme } from "./platform"
 import { useAboutStyles } from "./about/About.styles"
+import { useAppContext } from "./context/AppContext"
+import { useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
+import Img from "./Img"
+import { CircleArrowLeft } from "./icons"
+import { Button, Div, H1, H2, P, Section, useTheme } from "./platform"
+import Skeleton from "./Skeleton"
+import { FRONTEND_URL } from "./utils"
 
 export default function Terms() {
   const { router } = useNavigationContext()

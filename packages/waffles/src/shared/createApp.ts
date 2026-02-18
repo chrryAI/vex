@@ -1,8 +1,5 @@
-import { Page, expect } from "@playwright/test"
-import { getURL, modelName, wait, storeApps, getModelCredits } from ".."
-import { chat } from "./chat"
-import { clean } from "./clean"
-import { grape } from "./grape"
+import { expect, type Page } from "@playwright/test"
+import { getURL, type modelName, wait } from ".."
 import app from "./app"
 import { signIn } from "./signIn"
 

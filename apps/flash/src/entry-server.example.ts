@@ -3,10 +3,9 @@
  * This shows how to integrate the metadata generation into your SSR flow
  */
 
-import fs from "fs/promises"
-import path from "path"
-import { renderToString } from "react-dom/server"
-import { loadServerData, ServerRequest } from "./server-loader"
+import fs from "node:fs/promises"
+import path from "node:path"
+import { loadServerData, type ServerRequest } from "./server-loader"
 import { generateServerMetadata, metadataToHtml } from "./server-metadata"
 
 /**

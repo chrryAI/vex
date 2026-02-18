@@ -5,6 +5,15 @@
 
 /// <reference types="chrome" />
 
+// React Native Platform API type declaration
+declare const Platform:
+  | {
+      OS: "ios" | "android" | "windows" | "macos" | "web"
+      Version?: number | string
+      select: <T>(obj: { ios?: T; android?: T; native?: T; default: T }) => T
+    }
+  | undefined
+
 export type PlatformType = "web" | "ios" | "android" | "native" | "extension"
 export type BrowserType = "chrome" | "firefox" | "safari" | "edge" | "unknown"
 
@@ -34,7 +43,7 @@ export function isNative(): boolean {
 export function isIOS(): boolean {
   // React Native iOS
   if (isNative()) {
-    // @ts-ignore - React Native Platform
+    // React Native Platform
     return typeof Platform !== "undefined" && Platform.OS === "ios"
   }
 
@@ -64,7 +73,6 @@ export function isIOS(): boolean {
 export function isAndroid(): boolean {
   // React Native Android
   if (isNative()) {
-    // @ts-ignore - React Native Platform
     return typeof Platform !== "undefined" && Platform.OS === "android"
   }
 

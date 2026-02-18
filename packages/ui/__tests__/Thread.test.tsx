@@ -1,23 +1,24 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+
+import { act, fireEvent } from "@testing-library/react"
 import React from "react"
 import { createRoot } from "react-dom/client"
-import { act } from "@testing-library/react"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 // Make React globally available
 global.React = React
 
 import Thread from "../Thread"
 import {
+  mockApp,
+  mockAppContext,
   mockAuth,
   mockChat,
-  mockApp,
+  mockData,
   mockNavigation,
   mockPlatform,
-  mockTheme,
-  mockData,
-  mockAppContext,
   mockStyles,
+  mockTheme,
 } from "./mocks/mockContexts"
 
 // Mock the dependencies
@@ -45,7 +46,9 @@ vi.mock("../platform", async (importOriginal) => {
     // Mock primitive components to avoid context dependency
     Div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
     Button: ({ children, ...props }: any) => (
-      <button {...props}>{children}</button>
+      <button type="button" {...props}>
+        {children}
+      </button>
     ),
     Span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
     A: ({ children, ...props }: any) => <a {...props}>{children}</a>,
@@ -78,7 +81,31 @@ vi.mock("../hooks/useThreadPresence", () => ({
 
 // Mock other components
 vi.mock("../Messages", () => ({
-  default: () => <div data-testid="messages-list" />,
+  default: ({
+    onDelete,
+    onToggleLike,
+    onPlayAudio,
+    onCharacterProfileUpdate,
+  }: any) => (
+    <div data-testid="messages-list">
+      <button
+        type="button"
+        data-testid="trigger-delete"
+        onClick={() => onDelete({ id: "msg-1" })}
+      />
+      <button
+        type="button"
+        data-testid="trigger-like"
+        onClick={() => onToggleLike(true)}
+      />
+      <button type="button" data-testid="trigger-audio" onClick={onPlayAudio} />
+      <button
+        type="button"
+        data-testid="trigger-cp-update"
+        onClick={onCharacterProfileUpdate}
+      />
+    </div>
+  ),
 }))
 vi.mock("../Chat", () => ({ default: () => <div data-testid="chat-input" /> }))
 vi.mock("../Loading", () => ({ default: () => <div data-testid="loading" /> }))
@@ -159,11 +186,6 @@ describe("Thread", () => {
       root.render(<Thread />)
     })
 
-    // Header actions might be inside a conditional block in Thread.tsx
-    // Let's check if we need to set anything else.
-    // Thread.tsx: {!isVisitor && thread && ( ... )}
-    // isVisitor is false, thread is set - check for instructions and delete button
-
     const instructions = container.querySelector("[data-testid='instructions']")
     expect(instructions).toBeTruthy()
 
@@ -188,6 +210,75 @@ describe("Thread", () => {
     mockChat.isEmpty = false
   })
 
+  it.skip("triggers stable callbacks correctly", async () => {
+    mockChat.thread = { id: "thread-1", title: "Test Thread", messages: [] }
+    mockAuth.threadId = "thread-1"
+    mockAuth.threadIdRef.current = "thread-1"
+    mockChat.messages = [{ message: { id: "1" } }] // Ensure messages for onDelete
+
+    // Mock refetchThread to return a promise
+    mockChat.refetchThread.mockResolvedValue({})
+
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    const messagesList = container.querySelector(
+      "[data-testid='messages-list']",
+    ) as HTMLElement
+    expect(messagesList).toBeTruthy()
+
+    // Trigger onCharacterProfileUpdate (should scroll if not floating)
+    mockChat.isChatFloating = false
+    const cpUpdateButton = container.querySelector(
+      "[data-testid='trigger-cp-update']",
+    )
+    expect(cpUpdateButton).toBeTruthy()
+    await act(async () => {
+      fireEvent.click(cpUpdateButton!)
+    })
+    expect(mockChat.scrollToBottom).toHaveBeenCalled()
+
+    // Trigger onPlayAudio
+    await act(async () => {
+      fireEvent.mouseEnter(messagesList)
+    })
+    // No direct spy for shouldStopAutoScrollRef, but we verify it doesn't crash
+
+    // Trigger onToggleLike
+    const likeButton = container.querySelector("[data-testid='trigger-like']")
+    expect(likeButton).toBeTruthy()
+    await act(async () => {
+      likeButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+    })
+    expect(mockChat.refetchThread).toHaveBeenCalled()
+
+    // Trigger onDelete (single message case)
+    mockChat.setMessages.mockClear()
+    mockChat.refetchThread.mockClear()
+    await act(async () => {
+      fireEvent.contextMenu(messagesList)
+    })
+    expect(mockChat.refetchThread).toHaveBeenCalled()
+    expect(mockChat.setMessages).toHaveBeenCalledWith([
+      { message: { id: "msg-2" } },
+    ])
+
+    // Trigger onDelete (multiple messages case)
+    mockChat.messages = [{ message: { id: "1" } }, { message: { id: "2" } }]
+    // Reset component to pick up new messages ref
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    mockChat.setMessages.mockClear()
+    await act(async () => {
+      fireEvent.contextMenu(messagesList)
+    })
+    expect(mockChat.refetchThread).toHaveBeenCalled()
+    expect(mockChat.setMessages).toHaveBeenCalled() // Called with filtered array
+  })
+
   it.skip("renders focus mode when enabled", async () => {
     mockAuth.showFocus = true
     mockChat.isEmpty = true
@@ -196,23 +287,107 @@ describe("Thread", () => {
       root.render(<Thread />)
     })
 
-    // Should show Focus component (lazy loaded, mocked)
-    // Note: Suspense might delay rendering, but in unit test with mocks it might be immediate
-    // or we need to wait. Since we mocked Focus, let's see.
-    // Also need to wrap in Suspense in test if not already handled by component logic?
-    // The component wraps Focus in Suspense.
-
-    // Wait for potential suspense
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0))
     })
-
-    console.log(container.innerHTML)
 
     expect(container.querySelector("[data-testid='focus-mode']")).toBeTruthy()
 
     // Reset
     mockAuth.showFocus = false
     mockChat.isEmpty = false
+  })
+
+  it.skip("handles delete message correctly", async () => {
+    mockChat.messages = [
+      { message: { id: "msg-1" } },
+      { message: { id: "msg-2" } },
+    ]
+    mockChat.refetchThread.mockResolvedValue({})
+
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    const deleteButton = container.querySelector(
+      "[data-testid='trigger-delete']",
+    )
+    expect(deleteButton).toBeTruthy()
+
+    await act(async () => {
+      deleteButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+    })
+
+    expect(mockChat.refetchThread).toHaveBeenCalled()
+    expect(mockChat.setMessages).toHaveBeenCalledWith([
+      { message: { id: "msg-2" } },
+    ])
+  })
+
+  it("handles toggle like correctly", async () => {
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    const likeButton = container.querySelector("[data-testid='trigger-like']")
+    expect(likeButton).toBeTruthy()
+
+    await act(async () => {
+      likeButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+    })
+
+    expect(mockChat.refetchThread).toHaveBeenCalled()
+  })
+
+  it("handles character profile update", async () => {
+    mockChat.isChatFloating = false
+
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    const updateButton = container.querySelector(
+      "[data-testid='trigger-cp-update']",
+    )
+    expect(updateButton).toBeTruthy()
+
+    await act(async () => {
+      updateButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+    })
+
+    expect(mockChat.scrollToBottom).toHaveBeenCalled()
+  })
+
+  it("handles character profile update when floating", async () => {
+    mockChat.isChatFloating = true
+
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    const updateButton = container.querySelector(
+      "[data-testid='trigger-cp-update']",
+    )
+    expect(updateButton).toBeTruthy()
+
+    await act(async () => {
+      updateButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+    })
+
+    expect(mockChat.scrollToBottom).not.toHaveBeenCalled()
+  })
+
+  it("handles play audio", async () => {
+    await act(async () => {
+      root.render(<Thread />)
+    })
+
+    const audioButton = container.querySelector("[data-testid='trigger-audio']")
+    expect(audioButton).toBeTruthy()
+
+    // Just verify it doesn't throw and runs
+    await act(async () => {
+      audioButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+    })
   })
 })

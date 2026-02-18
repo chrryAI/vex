@@ -1,36 +1,37 @@
-import { v4 as uuidv4 } from "uuid"
-
 import {
-  createCharacterTag,
-  createMemory,
-  createThreadSummary,
-  getCharacterTag,
-  getThreadSummary,
-  updateCharacterTag,
-  updateThreadSummary,
-  type threadSummary,
-  type thread,
-  type collaboration,
-  type user,
-  type guest,
-  getPlaceHolder,
-  updatePlaceHolder,
-  createPlaceHolder,
-  getApps,
-  createInstruction,
-  type message,
-  type calendarEvent,
-  createMood,
+  and,
   type app,
+  type calendarEvent,
+  type collaboration,
+  createCharacterTag,
+  createInstruction,
+  createMemory,
+  createMood,
+  createPlaceHolder,
+  createThreadSummary,
   db,
+  eq,
+  getApps,
+  getCharacterTag,
   getMoods,
+  getPlaceHolder,
   getTasks,
+  getThreadSummary,
   getTimer,
+  type guest,
+  isNull,
   isOwner,
+  type message,
   retroSessions,
+  type thread,
+  type threadSummary,
+  updateCharacterTag,
+  updatePlaceHolder,
+  updateThreadSummary,
+  type user,
 } from "@repo/db"
-import { and, eq, isNull } from "@repo/db"
 import { instructions, threads } from "@repo/db/src/schema"
+import { v4 as uuidv4 } from "uuid"
 
 const memorySchema = z.array(
   z.object({
@@ -54,15 +55,14 @@ const memorySchema = z.array(
 
 type MemoryData = z.infer<typeof memorySchema>
 
-import { generateText, type ModelMessage } from "ai"
-import { checkThreadSummaryLimit } from "./index"
-import { getModelProvider } from "./getModelProvider"
-
-import { captureException } from "@sentry/node"
-import { z } from "zod"
-import { notifyOwnerAndCollaborations } from "./notify"
 import type { appWithStore } from "@chrryai/chrry/types"
+import { captureException } from "@sentry/node"
+import { generateText, type ModelMessage } from "ai"
 import type { Context } from "hono"
+import { z } from "zod"
+import { getModelProvider } from "./getModelProvider"
+import { checkThreadSummaryLimit } from "./index"
+import { notifyOwnerAndCollaborations } from "./notify"
 
 // Smart context retrieval from memories
 
@@ -813,9 +813,7 @@ Return only valid JSON object.`
 
       // If placeholder creation failed (e.g., guest doesn't exist), log and continue
       if (!homePlaceholder) {
-        console.warn(
-          "⚠️ Home placeholder creation failed - guest may not exist",
-        )
+        console.warn("⚠️ Home placeholder creation failed - guest may not exist")
       }
     }
   }
@@ -1131,7 +1129,7 @@ async function generateAIContent({
 
   // Character profiles: if disabled (user profile stripped), only create app profile
   const shouldGenerateUserProfile = characterProfilesEnabled
-  const shouldGenerateAppProfile = true // Always try to create app profile if appId exists
+  const _shouldGenerateAppProfile = true // Always try to create app profile if appId exists
 
   const threadId = thread.id
   const appId = app?.id
@@ -1153,10 +1151,7 @@ async function generateAIContent({
 
     // Check rate limits first
     if (!checkThreadSummaryLimit({ user, guest, thread })) {
-      console.log(
-        "⚠️ Thread summary limit reached for user:",
-        userId || guestId,
-      )
+      console.log("⚠️ Thread summary limit reached for user:", userId || guestId)
       return
     }
 
@@ -1646,7 +1641,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
             threadId,
           })
 
-          if (existingAppCharacterTag && existingAppCharacterTag.appId) {
+          if (existingAppCharacterTag?.appId) {
             // Update existing app character profile with AI-generated data
             await updateCharacterTag({
               ...existingAppCharacterTag,

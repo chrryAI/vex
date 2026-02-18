@@ -4,7 +4,7 @@ export const securityHeadersMiddleware = async (c: Context, next: Next) => {
   await next()
 
   // Remove X-Powered-By if present
-  if (c.res && c.res.headers) {
+  if (c.res?.headers) {
     c.res.headers.delete("X-Powered-By")
   }
 

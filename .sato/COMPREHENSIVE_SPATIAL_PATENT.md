@@ -304,16 +304,16 @@ export { Button, Input, Card, Modal, Dropdown, Tabs, Table, Form, ... } // 151+ 
 // Example: Button component works everywhere
 import { Button } from "@chrryai/chrry"
 
-// Web PWA: renders <button> with CSS
+// Web PWA: renders <button type="button" > with CSS
 <Button label="Click me" />
 
 // React Native: renders <Touchable> with RN styles
 <Button label="Click me" />
 
-// Chrome Extension: renders <button> with scoped CSS
+// Chrome Extension: renders <button type="button" > with scoped CSS
 <Button label="Click me" />
 
-// Tauri Desktop: renders <button> with CSS
+// Tauri Desktop: renders <button type="button" > with CSS
 <Button label="Click me" />
 ```
 

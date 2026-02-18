@@ -1,7 +1,13 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { collaboration, thread, user } from "./types"
+import type React from "react"
+import { useEffect, useState } from "react"
+import toast from "react-hot-toast"
+import ConfirmButton from "./ConfirmButton"
+import { useAppContext } from "./context/AppContext"
+import { useAuth, useData, useNavigationContext } from "./context/providers"
+import { useStyles } from "./context/StylesContext"
+import Img from "./Img"
 import {
   Circle,
   CircleCheck,
@@ -15,18 +21,13 @@ import {
   Trash2,
   UsersRound,
 } from "./icons"
-import Modal from "./Modal"
-import toast from "react-hot-toast"
-import { useAppContext } from "./context/AppContext"
-import { updateThread } from "./lib"
 import Loading from "./Loading"
-import ConfirmButton from "./ConfirmButton"
-import Img from "./Img"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
-import { apiFetch } from "./utils"
-import { useShareStyles } from "./Share.styles"
-import { useStyles } from "./context/StylesContext"
+import { updateThread } from "./lib"
+import Modal from "./Modal"
 import { Button, Div, Input, P, Span } from "./platform"
+import { useShareStyles } from "./Share.styles"
+import type { collaboration, thread, user } from "./types"
+import { apiFetch } from "./utils"
 
 export default function Share({
   size,
@@ -50,7 +51,7 @@ export default function Share({
   const dataTestId = rest.dataTestId ? `${rest.dataTestId}-` : ""
 
   const [isOpen, setIsOpen] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [_copied, setCopied] = useState(false)
   const { collaborationStep } = useNavigationContext()
   const { token, FRONTEND_URL, API_URL } = useAuth()
 

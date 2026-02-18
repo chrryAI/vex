@@ -37,8 +37,8 @@ export const BlogPostStyleDefs = {
   },
 } as const
 
-import { createUnifiedStyles } from "../../../../packages/ui/styles/createUnifiedStyles"
 import { createStyleHook } from "../../../../packages/ui/styles/createStyleHook"
+import { createUnifiedStyles } from "../../../../packages/ui/styles/createUnifiedStyles"
 
 export const BlogPostStyles = createUnifiedStyles(BlogPostStyleDefs)
 

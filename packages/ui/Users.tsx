@@ -1,13 +1,16 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import Skeleton from "./Skeleton"
 import clsx from "clsx"
+import type React from "react"
+import { useEffect, useState } from "react"
+import toast from "react-hot-toast"
 import useSWR from "swr"
+import Collaborate from "./Collaborate"
 import { useAppContext } from "./context/AppContext"
-import { pageSizes } from "./utils"
-import { user, characterProfile } from "./types"
-import Search from "./Search"
+import { useAuth, useData, useNavigationContext } from "./context/providers"
+import { useStyles } from "./context/StylesContext"
+import { useWindowHistory } from "./hooks/useWindowHistory"
+import Img from "./Img"
 import {
   ArrowLeft,
   ArrowRight,
@@ -16,15 +19,13 @@ import {
   Sparkles,
   UsersRound,
 } from "./icons"
-import Img from "./Img"
-import { useWindowHistory } from "./hooks/useWindowHistory"
 import Loading from "./Loading"
-import toast from "react-hot-toast"
-import Collaborate from "./Collaborate"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
-import { useUsersStyles } from "./Users.styles"
 import { A, Button, Div, H1, P } from "./platform"
-import { useStyles } from "./context/StylesContext"
+import Search from "./Search"
+import Skeleton from "./Skeleton"
+import type { characterProfile, user } from "./types"
+import { useUsersStyles } from "./Users.styles"
+import { pageSizes } from "./utils"
 
 const Users = ({ style }: { style?: React.CSSProperties }) => {
   const styles = useUsersStyles()

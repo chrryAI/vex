@@ -1,7 +1,7 @@
 "use client"
-import React from "react"
-import { LoaderCircle } from "./icons"
+import type React from "react"
 import { useHasHydrated } from "./hooks"
+import { LoaderCircle } from "./icons"
 import { useLoadingStyles } from "./Loading.styles"
 import { Div } from "./platform"
 
@@ -14,6 +14,7 @@ export default function Loading({
   fullScreen = false,
   style,
   icon,
+  "aria-label": ariaLabel,
 }: {
   className?: string
   width?: number
@@ -23,6 +24,7 @@ export default function Loading({
   fullScreen?: boolean
   style?: React.CSSProperties
   icon?: React.ReactNode
+  "aria-label"?: string
 }): React.ReactElement | null {
   const isHydrated = useHasHydrated()
 
@@ -32,6 +34,8 @@ export default function Loading({
       <Div
         className={"fullScreen"}
         style={{ ...styles.loadingWrapper.style, ...style }}
+        role="status"
+        aria-label={ariaLabel || "Loading"}
       >
         {children}
       </Div>
@@ -52,6 +56,8 @@ export default function Loading({
           color={color as any}
           data-testid="imgLoading"
           className="spinner"
+          role={fullScreen ? undefined : "status"}
+          aria-label={fullScreen ? undefined : ariaLabel || "Loading"}
         />
       )}
     </LoadingWrapper>

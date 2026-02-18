@@ -209,9 +209,11 @@ export function mergeStyles(...styles: any[]) {
   return styles.reduce((acc, style) => {
     if (!style) return acc
     if (Array.isArray(style)) {
-      return { ...acc, ...mergeStyles(...style) }
+      Object.assign(acc, mergeStyles(...style))
+      return acc
     }
-    return { ...acc, ...style }
+    Object.assign(acc, style)
+    return acc
   }, {})
 }
 

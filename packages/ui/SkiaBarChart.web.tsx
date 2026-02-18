@@ -1,7 +1,7 @@
-import React, { useRef, useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useTheme } from "./context/ThemeContext"
-import { BarData, Mood, emojiMap } from "./utils/chartTypes"
 import { Div, Text } from "./platform"
+import { type BarData, emojiMap, type Mood } from "./utils/chartTypes"
 
 interface SkiaBarChartProps {
   data: BarData[]

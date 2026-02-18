@@ -1,57 +1,42 @@
-import { Hono } from "hono"
-import { v4 as uuidv4, validate } from "uuid"
-import sanitizeHtml from "sanitize-html"
-import { redact } from "../../lib/redaction"
+import { MAX_FILE_LIMITS } from "@chrryai/chrry/utils"
 import {
-  getMessages,
   createMessage,
-  getAiAgent,
   createThread,
+  deleteMessage,
+  getAiAgent,
   getMessage,
-  type subscription,
-  updateThread,
-  getThread,
+  getMessages,
   getMood,
   getPureApp,
-  getTask,
-  type guest,
-  updateTask,
-  type user,
-  deleteMessage,
-  updateMessage,
   getScheduledJob,
-  db,
-  eq,
-  and,
-  ne,
-  isNull,
-  desc,
-} from "@repo/db"
-import {
-  PROMPT_LIMITS,
-  type webSearchResultType,
-  tribePosts,
-  tribeComments,
-} from "@repo/db/src/schema"
-import {
+  getTask,
+  getThread,
+  type guest,
   isE2E as isE2EInternal,
   isOwner,
+  type subscription,
+  updateMessage,
+  updateTask,
+  updateThread,
+  type user,
   VEX_LIVE_FINGERPRINTS,
 } from "@repo/db"
-
-import { MAX_FILE_LIMITS } from "@chrryai/chrry/utils"
-
-import { generateThreadTitle, trimTitle } from "../../utils/titleGenerator"
-import { notifyOwnerAndCollaborations } from "../../lib/notify"
+import { PROMPT_LIMITS, type webSearchResultType } from "@repo/db/src/schema"
+import { Hono } from "hono"
+import sanitizeHtml from "sanitize-html"
+import { v4 as uuidv4, validate } from "uuid"
+import { getDailyImageLimit, isCollaborator } from "../../lib"
 import { processMessageForRAG } from "../../lib/actions/ragService"
-import { isCollaborator, getDailyImageLimit } from "../../lib"
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
-import { checkRateLimit } from "../../lib/rateLimiting"
 import captureException from "../../lib/captureException"
-import { scanFileForMalware } from "../../lib/security"
-import { getGuest, getMember } from "../lib/auth"
 import { deleteFile } from "../../lib/minio"
+import { notifyOwnerAndCollaborations } from "../../lib/notify"
+import { checkRateLimit } from "../../lib/rateLimiting"
+import { redact } from "../../lib/redaction"
+import { scanFileForMalware } from "../../lib/security"
 import { streamControllers } from "../../lib/streamControllers"
+import { generateThreadTitle, trimTitle } from "../../utils/titleGenerator"
+import { getGuest, getMember } from "../lib/auth"
 
 export const messages = new Hono()
 
@@ -207,7 +192,7 @@ messages.get("/", async (c) => {
   }
 
   const messages = await getMessages({
-    pageSize: Number.parseInt(pageSize || "24"),
+    pageSize: Number.parseInt(pageSize || "24", 10),
     userId: member?.id,
     guestId: guest?.id,
     threadId: threadId || undefined,
@@ -241,28 +226,29 @@ messages.post("/", async (c) => {
   if (contentType.includes("multipart/form-data")) {
     const body = await c.req.parseBody({ all: true })
     requestData = {
-      moodId: body["moodId"] as string,
-      notify: body["notify"],
-      appId: body["appId"] as string,
-      molt: body["isMolt"] === "true",
-      isTribe: body["tribe"] === "true",
-      content: body["content"] as string,
-      retro: body["retro"] === "true",
-      pear: body["pear"] === "true",
-      agentId: body["agentId"] as string,
-      debateAgentId: body["debateAgentId"] as string,
-      threadId: body["threadId"] as string,
-      isIncognito: body["isIncognito"] === "true",
-      actionEnabled: body["actionEnabled"] === "true",
-      instructions: body["instructions"] as string,
-      language: (body["language"] as string) || "en",
-      isTasksEnabled: body["isTasksEnabled"] === "true",
-      isAgent: body["isAgent"] === "true",
-      imageGenerationEnabled: body["imageGenerationEnabled"] === "true",
-      attachmentType: body["attachmentType"] as string,
-      clientId: body["clientId"] as string,
-      deviceId: body["deviceId"] as string,
-      taskId: body["taskId"] as string,
+      moodId: body.moodId as string,
+      notify: body.notify,
+      appId: body.appId as string,
+      molt: body.isMolt === "true",
+      tribe: body.tribe === "true",
+      content: body.content as string,
+      retro: body.retro === "true",
+      pear: body.pear === "true",
+      agentId: body.agentId as string,
+      debateAgentId: body.debateAgentId as string,
+      threadId: body.threadId as string,
+      isIncognito: body.isIncognito === "true",
+      actionEnabled: body.actionEnabled === "true",
+      instructions: body.instructions as string,
+      language: (body.language as string) || "en",
+      isTasksEnabled: body.isTasksEnabled === "true",
+      isAgent: body.isAgent === "true",
+      imageGenerationEnabled: body.imageGenerationEnabled === "true",
+      attachmentType: body.attachmentType as string,
+      clientId: body.clientId as string,
+      deviceId: body.deviceId as string,
+      taskId: body.taskId as string,
+      jobId: body.jobId as string,
     }
 
     // Extract files - parseBody returns files as File objects in the body map
@@ -287,8 +273,8 @@ messages.post("/", async (c) => {
     requestData = {
       ...jsonBody,
       // Parse boolean fields for JSON requests (same as multipart)
-      molt: jsonBody.isMolt === "true" || jsonBody.isMolt === true,
-      isTribe: jsonBody.isTribe === "true" || jsonBody.isTribe === true,
+      molt: jsonBody.molt === "true" || jsonBody.molt === true,
+      tribe: jsonBody.tribe === "true" || jsonBody.tribe === true,
     }
   }
 
@@ -341,7 +327,7 @@ messages.post("/", async (c) => {
     moodId,
     pear,
     molt,
-    tribe: isTribe,
+    tribe,
     retro,
     jobId,
     ...rest
@@ -351,6 +337,7 @@ messages.post("/", async (c) => {
     molt,
     retro,
     contentPreview: content?.substring(0, 20),
+    jobId,
   })
 
   const notify = requestData.notify !== false && requestData.notify !== "false"
@@ -358,16 +345,15 @@ messages.post("/", async (c) => {
   const task = taskId ? await getTask({ id: taskId }) : undefined
   const mood = moodId ? await getMood({ id: moodId }) : undefined
   const app = appId ? await getPureApp({ id: appId }) : undefined
+  const job = jobId ? await getScheduledJob({ id: jobId }) : undefined
 
   // Handle scheduled job requests
-  if (jobId) {
-    console.log(`🤖 Scheduled job request detected: ${jobId}`)
-
-    const job = await getScheduledJob({ id: jobId })
-    if (!job) {
-      return c.json({ error: "Job not found" }, 404)
-    }
+  if (jobId && !job) {
+    return c.json({ error: "Job not found" }, 404)
   }
+
+  const isMolt = job?.jobType ? job.jobType?.startsWith("molt") : molt
+  const isTribe = job?.jobType ? job.jobType?.startsWith("tribe") : tribe
 
   if (stopStreamId) {
     const controller = streamControllers.get(stopStreamId)
@@ -428,8 +414,8 @@ messages.post("/", async (c) => {
       isIncognito,
       instructions,
       appId: app?.id,
-      isMolt: !!molt,
-      isTribe: !!isTribe,
+      isMolt,
+      isTribe,
     })
 
     if (!newThread) {
@@ -502,7 +488,8 @@ messages.post("/", async (c) => {
       agentId: selectedAgent.id,
       agentVersion: selectedAgent.version,
       appId: app?.id,
-      isMolt: !!molt,
+      isMolt,
+      isTribe,
       jobId,
     })
 
@@ -530,7 +517,9 @@ messages.post("/", async (c) => {
     isPear: pear || false, // Track Pear feedback submissions
     debateAgentId: selectedDebateAgent?.id,
     appId: app?.id,
-    isMolt: !!molt,
+    isMolt,
+    isTribe,
+    jobId: job?.id,
   })
 
   if (userMessage) {
@@ -743,19 +732,19 @@ messages.delete("/:id", async (c) => {
   // Delete associated files from MinIO
   const filesToDelete: string[] = []
   if (existingMessage.message.images) {
-    existingMessage.message.images.forEach(
-      (img) => img.url && filesToDelete.push(img.url),
-    )
+    existingMessage.message.images.forEach((img) => {
+      img.url && filesToDelete.push(img.url)
+    })
   }
   if (existingMessage.message.files) {
-    existingMessage.message.files.forEach(
-      (f) => f.url && filesToDelete.push(f.url),
-    )
+    existingMessage.message.files.forEach((f) => {
+      f.url && filesToDelete.push(f.url)
+    })
   }
   if (existingMessage.message.video) {
-    existingMessage.message.video.forEach(
-      (v) => v.url && filesToDelete.push(v.url),
-    )
+    existingMessage.message.video.forEach((v) => {
+      v.url && filesToDelete.push(v.url)
+    })
   }
 
   const deletePromises = filesToDelete.map((url) =>

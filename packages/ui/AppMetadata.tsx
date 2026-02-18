@@ -1,8 +1,8 @@
 "use client"
 
-import { useMemo, type ReactElement } from "react"
-import { appWithStore } from "./types"
+import { type ReactElement, useMemo } from "react"
 import { getImageSrc } from "./lib"
+import type { appWithStore } from "./types"
 import { generateAppMetadata } from "./utils"
 
 // Simplified list of most common splash screens
@@ -66,7 +66,7 @@ export default function AppMetadata({
 
   // Get title from app context, fallback to "Vex"
 
-  const iconSrc = app
+  const _iconSrc = app
     ? getImageSrc({
         app,
         size: 180,

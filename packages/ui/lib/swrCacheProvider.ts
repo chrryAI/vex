@@ -12,8 +12,8 @@
  * - Retry logic for transient IndexedDB failures
  */
 
-import type { Cache } from "swr"
 import Dexie from "dexie"
+import type { Cache } from "swr"
 
 // -----------------------------------------
 // Configuration
@@ -115,7 +115,7 @@ async function withRetry<T>(
       }
 
       // Exponential backoff
-      const delay = config.retryBaseDelay * Math.pow(2, attempt)
+      const delay = config.retryBaseDelay * 2 ** attempt
       await new Promise((resolve) => setTimeout(resolve, delay))
     }
   }
@@ -142,7 +142,7 @@ function isQuotaExceeded(error: unknown): boolean {
 // Dexie Provider Factory
 // -----------------------------------------
 
-function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
+function _createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
   let db: SWRDexieDB | null = null
 
   // Try to initialize Dexie DB
@@ -162,7 +162,7 @@ function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
   let degradedMode = !db
 
   // GC timer reference for cleanup
-  let gcTimer: ReturnType<typeof setInterval> | null = null
+  let _gcTimer: ReturnType<typeof setInterval> | null = null
 
   // -----------------------------------------
   // Garbage Collection
@@ -257,7 +257,7 @@ function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
       )
 
       // Start background GC
-      gcTimer = setInterval(runGarbageCollection, config.gcInterval)
+      _gcTimer = setInterval(runGarbageCollection, config.gcInterval)
 
       // Run initial GC after a short delay
       setTimeout(runGarbageCollection, 1000)
@@ -313,11 +313,10 @@ function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
                 // Try to free up space
                 runGarbageCollection().then(() => {
                   // Retry once after GC
-                  db &&
-                    db.cache.put(entry).catch(() => {
-                      console.warn("[SWR Cache] Switching to degraded mode")
-                      degradedMode = true
-                    })
+                  db?.cache.put(entry).catch(() => {
+                    console.warn("[SWR Cache] Switching to degraded mode")
+                    degradedMode = true
+                  })
                 })
               }
             },
@@ -494,7 +493,7 @@ export function getCacheProvider(_parentCache?: Readonly<Cache>): Cache {
 export function createCacheProvider(
   config?: Partial<CacheConfig>,
 ): (parentCache?: Readonly<Cache>) => Cache {
-  const mergedConfig = { ...DEFAULT_CONFIG, ...config }
+  const _mergedConfig = { ...DEFAULT_CONFIG, ...config }
 
   return (_parentCache?: Readonly<Cache>) => {
     // IndexedDB disabled - always use memory cache

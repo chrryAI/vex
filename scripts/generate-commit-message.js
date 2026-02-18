@@ -6,7 +6,7 @@
  */
 
 const { execSync } = require("node:child_process")
-const fs = require("fs")
+const fs = require("node:fs")
 const path = require("node:path")
 const OpenAI = require("openai").default
 

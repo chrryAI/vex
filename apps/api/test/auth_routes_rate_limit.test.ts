@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
 import { Hono } from "hono"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 // Mock dependencies for rate limiting check
 vi.mock("@chrryai/chrry/utils", () => ({
@@ -37,9 +37,9 @@ vi.mock("@repo/db", () => ({
   authExchangeCodes: {},
 }))
 
-import { checkAuthRateLimit } from "../lib/rateLimiting"
 // Import routes AFTER mocking
 import authRoutes from "../hono/routes/auth"
+import { checkAuthRateLimit } from "../lib/rateLimiting"
 
 describe("Auth Route Rate Limiting Integration", () => {
   const app = new Hono()

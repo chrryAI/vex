@@ -179,6 +179,7 @@ export const TestComponentStyleDefs = {
   },
 } as const
 
+<<<<<<< sentinel-fix-auth-race-condition-11238712672788964902
 import { createUnifiedStyles } from '../styles/createUnifiedStyles'
 import { useInteractiveStyles } from '../styles/useInteractiveStyles'
 
@@ -260,3 +261,21 @@ export const useTestComponentStyles = (): TestComponentStylesHook => {
 
   return styleResults as TestComponentStylesHook
 }
+=======
+import { createUnifiedStyles } from "../styles/createUnifiedStyles"
+import { createStyleHook } from "../styles/createStyleHook"
+
+export const TestComponentStyles = createUnifiedStyles(TestComponentStyleDefs)
+
+// Type for the hook return value
+type TestComponentStylesHook = {
+  [K in keyof typeof TestComponentStyleDefs]: {
+    className?: string
+    style?: Record<string, any>
+  }
+}
+
+// Create the style hook using the factory
+export const useTestComponentStyles =
+  createStyleHook<TestComponentStylesHook>(TestComponentStyles)
+>>>>>>> main

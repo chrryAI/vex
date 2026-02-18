@@ -12,27 +12,27 @@
 
 import React, {
   createContext,
-  useContext,
-  ReactNode,
-  useState,
-  useEffect,
+  type ReactNode,
   startTransition,
+  useContext,
+  useEffect,
+  useState,
 } from "react"
 import console from "../utils/log"
 import { useCookie } from "./cookies"
 import {
-  type PlatformType,
-  type BrowserType,
-  isWeb as _isWeb,
-  isNative as _isNative,
-  isIOS as _isIOS,
+  detectPlatform as _detectPlatform,
+  getBrowser as _getBrowser,
   isAndroid as _isAndroid,
   isBrowserExtension as _isBrowserExtension,
+  isCapacitor as _isCapacitor,
+  isIOS as _isIOS,
+  isNative as _isNative,
   isStandalone as _isStandalone,
   isTauri as _isTauri,
-  isCapacitor as _isCapacitor,
-  getBrowser as _getBrowser,
-  detectPlatform as _detectPlatform,
+  isWeb as _isWeb,
+  type BrowserType,
+  type PlatformType,
 } from "./detection"
 
 // Dimensions will be imported dynamically when needed
@@ -40,16 +40,16 @@ import {
 // Re-export for backwards compatibility
 export type { PlatformType, BrowserType }
 export {
-  isWeb,
-  isNative,
-  isIOS,
+  detectPlatform,
+  getBrowser,
   isAndroid,
   isBrowserExtension,
+  isCapacitor,
+  isIOS,
+  isNative,
   isStandalone,
   isTauri,
-  isCapacitor,
-  getBrowser,
-  detectPlatform,
+  isWeb,
 } from "./detection"
 
 // Get extension URL (works for Chrome, Firefox, etc.)
@@ -433,7 +433,7 @@ export function PlatformProvider({
   }, [isIDE, idePanelWidth, setViewPortWidth])
 
   // Platform-specific value selector
-  const select = <T,>(options: {
+  const _select = <T,>(options: {
     web?: T
     native?: T
     ios?: T
@@ -453,7 +453,7 @@ export function PlatformProvider({
     if (typeof chrome !== "undefined" && chrome.runtime) return chrome
     // Use globalThis to avoid naming collision with the 'browser' variable above
     const firefoxBrowser = (globalThis as any).browser
-    if (typeof firefoxBrowser !== "undefined" && firefoxBrowser?.runtime) {
+    if (firefoxBrowser?.runtime) {
       // Firefox's browser API is compatible with Chrome's API
       return firefoxBrowser as typeof chrome
     }

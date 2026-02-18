@@ -1,3 +1,5 @@
+import type { AdapterAccount } from "@auth/core/adapters"
+import { relations, sql } from "drizzle-orm"
 import {
   type AnyPgColumn,
   boolean,
@@ -8,15 +10,13 @@ import {
   pgEnum,
   pgTable,
   primaryKey,
+  real,
   text,
   timestamp,
   uniqueIndex,
-  vector,
   uuid,
-  real,
+  vector,
 } from "drizzle-orm/pg-core"
-import type { AdapterAccount } from "@auth/core/adapters"
-import { sql, relations } from "drizzle-orm"
 
 export const PRO_CREDITS_PER_MONTH = 5000
 export const PLUS_CREDITS_PER_MONTH = 2000
@@ -702,16 +702,17 @@ export const threads = pgTable("threads", {
   })
     .notNull()
     .default("private"),
-  artifacts: jsonb("artifacts").$type<
-    {
-      type: string
-      url?: string
-      name: string
-      size: number
-      data?: string
-      id: string
-    }[]
-  >(),
+  artifacts:
+    jsonb("artifacts").$type<
+      {
+        type: string
+        url?: string
+        name: string
+        size: number
+        data?: string
+        id: string
+      }[]
+    >(),
 })
 
 export const pushSubscriptions = pgTable("pushSubscriptions", {
@@ -944,58 +945,63 @@ export const messages = pgTable(
     })
       .notNull()
       .default("chat"),
-    files: jsonb("files").$type<
-      {
-        type: string
-        url?: string
-        name: string
-        size: number
-        data?: string
-        id: string
-      }[]
-    >(),
-    reactions: jsonb("reactions").$type<
-      {
-        like: boolean
-        dislike: boolean
-        userId?: string
-        guestId?: string
-        createdOn: string
-      }[]
-    >(),
+    files:
+      jsonb("files").$type<
+        {
+          type: string
+          url?: string
+          name: string
+          size: number
+          data?: string
+          id: string
+        }[]
+      >(),
+    reactions:
+      jsonb("reactions").$type<
+        {
+          like: boolean
+          dislike: boolean
+          userId?: string
+          guestId?: string
+          createdOn: string
+        }[]
+      >(),
     creditCost: integer("creditCost").notNull().default(1),
     webSearchResult: jsonb("webSearchResult").$type<webSearchResultType[]>(),
     searchContext: text("searchContext"),
-    images: jsonb("images").$type<
-      {
-        url: string
-        prompt: string
-        model?: string
-        width?: number
-        height?: number
-        title?: string
-        id: string
-      }[]
-    >(),
-    audio: jsonb("audio").$type<
-      {
-        url: string
-        size?: number
-        title?: string
-        id: string
-      }[]
-    >(),
+    images:
+      jsonb("images").$type<
+        {
+          url: string
+          prompt: string
+          model?: string
+          width?: number
+          height?: number
+          title?: string
+          id: string
+        }[]
+      >(),
+    audio:
+      jsonb("audio").$type<
+        {
+          url: string
+          size?: number
+          title?: string
+          id: string
+        }[]
+      >(),
     appId: uuid("appId").references(() => apps.id, {
       onDelete: "cascade",
     }),
-    video: jsonb("video").$type<
-      {
-        url: string
-        size?: number
-        title?: string
-        id: string
-      }[]
-    >(),
+    video:
+      jsonb("video").$type<
+        {
+          url: string
+          size?: number
+          title?: string
+          id: string
+        }[]
+      >(),
     isPear: boolean("isPear").notNull().default(false), // Pear feedback submission
   },
 
@@ -1235,21 +1241,23 @@ export const tribePosts = pgTable(
       .default("public"),
 
     // Media attachments
-    images: jsonb("images").$type<
-      {
-        url: string
-        width?: number
-        height?: number
-        alt?: string
-      }[]
-    >(),
-    videos: jsonb("videos").$type<
-      {
-        url: string
-        thumbnail?: string
-        duration?: number
-      }[]
-    >(),
+    images:
+      jsonb("images").$type<
+        {
+          url: string
+          width?: number
+          height?: number
+          alt?: string
+        }[]
+      >(),
+    videos:
+      jsonb("videos").$type<
+        {
+          url: string
+          thumbnail?: string
+          duration?: number
+        }[]
+      >(),
 
     // Engagement metrics
     likesCount: integer("likesCount").notNull().default(0),
@@ -1616,6 +1624,7 @@ export const scheduledJobs = pgTable(
           postType: "post" | "comment" | "engagement"
           charLimit: number
           credits: number
+          maxTokens?: number // Optional max tokens for AI generation
         }>
       >()
       .notNull(), // Full schedule slot objects
@@ -1700,6 +1709,7 @@ export const scheduledJobs = pgTable(
           postType: "post" | "comment" | "engagement"
           charLimit: number
           credits: number
+          maxTokens?: number
         }>
         frequency: "once" | "daily" | "weekly" | "custom"
         startDate: string
@@ -1884,7 +1894,7 @@ export const realtimeAnalytics = pgTable("realtime_analytics", {
     .notNull(),
 })
 
-export const creditUsage = pgTable(
+export const creditUsages = pgTable(
   "creditUsage",
   {
     id: uuid("id").defaultRandom().notNull().primaryKey(),
@@ -2132,15 +2142,16 @@ export const threadSummaries = pgTable(
     }>(),
 
     // User memories associated with this thread
-    userMemories: jsonb("userMemories").$type<
-      {
-        id: string
-        content: string
-        tags: string[]
-        relevanceScore: number
-        createdAt: string
-      }[]
-    >(),
+    userMemories:
+      jsonb("userMemories").$type<
+        {
+          id: string
+          content: string
+          tags: string[]
+          relevanceScore: number
+          createdAt: string
+        }[]
+      >(),
 
     // Character/agent tags and personality context
     characterTags: jsonb("characterTags").$type<{
@@ -2849,14 +2860,15 @@ export const apps = pgTable(
     subtitle: text("subtitle"), // Subtitle (e.g., "AI Travel Companion")
     description: text("description"), // Full description
     icon: text("icon"), // URL, emoji, or base64 image
-    images: jsonb("images").$type<
-      {
-        url: string
-        width?: number
-        height?: number
-        id: string
-      }[]
-    >(), // 500x500px PNG image URL (required for published agents)
+    images:
+      jsonb("images").$type<
+        {
+          url: string
+          width?: number
+          height?: number
+          id: string
+        }[]
+      >(), // 500x500px PNG image URL (required for published agents)
     slug: text("slug").notNull(), // Auto-generated from displayName
 
     onlyAgent: boolean("onlyAgent").notNull().default(false),
@@ -2871,14 +2883,15 @@ export const apps = pgTable(
     tipsTitle: text("tipsTitle"),
 
     // Structured content for app details
-    highlights: jsonb("highlights").$type<
-      Array<{
-        id: string
-        title: string
-        content?: string
-        emoji?: string
-      }>
-    >(), // Key features/highlights (e.g., ["Smart Itineraries", "Local Insights", "Weather Integration"])
+    highlights:
+      jsonb("highlights").$type<
+        Array<{
+          id: string
+          title: string
+          content?: string
+          emoji?: string
+        }>
+      >(), // Key features/highlights (e.g., ["Smart Itineraries", "Local Insights", "Weather Integration"])
     featureList: jsonb("featureList").$type<string[]>(), // Simple feature list for display (e.g., ["Smart Matching", "Travel Connections"])
 
     // Version & Status
@@ -3225,7 +3238,7 @@ export const appOrders = pgTable(
   ],
 )
 
-export const appExtend = pgTable(
+export const appExtends = pgTable(
   "appExtends",
   {
     appId: uuid("appId")
@@ -3264,14 +3277,15 @@ export const stores = pgTable(
     description: text("description"),
     slug: text("slug").notNull(),
     title: text("title").notNull(),
-    images: jsonb("images").$type<
-      {
-        url: string
-        width?: number
-        height?: number
-        id: string
-      }[]
-    >(),
+    images:
+      jsonb("images").$type<
+        {
+          url: string
+          width?: number
+          height?: number
+          id: string
+        }[]
+      >(),
     teamId: uuid("teamId").references(() => teams.id, {
       onDelete: "cascade",
     }),
@@ -5272,13 +5286,14 @@ export const slotRentals = pgTable(
 
     // Knowledge base integration
     knowledgeBaseEnabled: boolean("knowledge_base_enabled").default(true),
-    knowledgeEntries: jsonb("knowledge_entries").$type<
-      Array<{
-        id: string
-        content: string
-        timestamp: string
-      }>
-    >(),
+    knowledgeEntries:
+      jsonb("knowledge_entries").$type<
+        Array<{
+          id: string
+          content: string
+          timestamp: string
+        }>
+      >(),
 
     // Metadata
     createdOn: timestamp("created_on", { mode: "date", withTimezone: true })

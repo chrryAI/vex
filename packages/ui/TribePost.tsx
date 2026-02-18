@@ -1,43 +1,36 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import type React from "react"
+import { useEffect, useState } from "react"
+import toast from "react-hot-toast"
+import AppLink from "./AppLink"
+import A from "./a/A"
+import ConfirmButton from "./ConfirmButton"
+import { COLORS, useAppContext } from "./context/AppContext"
+import { useApp, useAuth, useChat, useData } from "./context/providers"
+import { useTribe } from "./context/providers/TribeProvider"
+import { useStyles } from "./context/StylesContext"
+import Img from "./Image"
+import Instructions from "./Instructions"
+import { Heart, MessageCircleReply, Share2, Sparkles, Trash2 } from "./icons"
+import Loading from "./Loading"
 import {
+  Button,
   Div,
+  H1,
+  H2,
+  MotiView,
   P,
   Span,
-  H2,
-  H1,
   Strong,
-  Button,
   useNavigation,
   usePlatform,
   useTheme,
-  MotiView,
 } from "./platform"
-import Img from "./Image"
-import A from "./a/A"
-import isOwner from "./utils/isOwner"
-
-import {
-  MessageCircleReply,
-  Heart,
-  Share2,
-  Sparkles,
-  LoaderCircle,
-  Trash2,
-} from "./icons"
 import { useTribePostStyles } from "./TribePost.styles"
-import { useStyles } from "./context/StylesContext"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
-import { COLORS, useAppContext } from "./context/AppContext"
-import { useAuth, useApp, useChat, useData } from "./context/providers"
-import toast from "react-hot-toast"
-import Loading from "./Loading"
-import { useTribe } from "./context/providers/TribeProvider"
-import Instructions from "./Instructions"
-import AppLink from "./AppLink"
-import ConfirmButton from "./ConfirmButton"
 import { isDevelopment } from "./utils"
+import isOwner from "./utils/isOwner"
 
 interface TribePostProps {
   isDetailView?: boolean
@@ -61,7 +54,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     optimisticLiked,
     tribePost: post,
   } = useTribe()
-  console.log(`🚀 ~ TribePost ~ post:`, post)
 
   const isSwarm = commenting.length || liveReactions.length
 
@@ -93,11 +85,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
   const [tyingToComment, setTyingToComment] = useState<string | undefined>(
     undefined,
   )
-  const [copied, setCopied] = useState(false)
-  const [deleteConfirm, setDeleteConfirm] = useState<{
-    type: "post" | "comment"
-    id: string
-  } | null>(null)
 
   const owner = isOwner(post?.app, {
     userId: user?.id,
@@ -138,16 +125,14 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     }
     try {
       await navigator.clipboard.writeText(`${FRONTEND_URL}/p/${post.id}`)
-      setCopied(true)
       toast.success(t("Copied"))
-      setTimeout(() => setCopied(false), 2000)
     } catch (err) {
       captureException(err)
       toast.error("Failed to copy code")
     }
   }
 
-  const { isSmallDevice, reduceMotion } = useTheme()
+  const { reduceMotion } = useTheme()
 
   // Group reactions by emoji
   const reactionGroups = post?.reactions?.reduce(
@@ -186,7 +171,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           position: "relative",
           bottom: "10rem",
         }}
-        icon={<Img logo="sushi" size={48} />}
         fullScreen
       />
     )
@@ -413,245 +397,206 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               )}
             </Div>
           </Div>
-          {post.app.characterProfile && (
-            <>
-              {tryAppCharacterProfile === post.id &&
-                post.app?.characterProfile && (
-                  <Div
-                    className="slideUp"
-                    style={{
-                      padding: ".75rem",
-                      backgroundColor: "var(--shade-1)",
-                      borderRadius: 15,
-                      fontSize: ".85rem",
-                      marginTop: "1.5rem",
-                      border: "1px solid var(--shade-3)",
-                      borderColor:
-                        COLORS[post.app?.themeColor as keyof typeof COLORS],
+
+          {post.app.characterProfile &&
+            tryAppCharacterProfile === post.id &&
+            post.app?.characterProfile && (
+              <Div
+                className="slideUp"
+                style={{
+                  padding: ".75rem",
+                  backgroundColor: "var(--shade-1)",
+                  borderRadius: 15,
+                  fontSize: ".85rem",
+                  marginTop: "1.5rem",
+                  border: "1px solid var(--shade-3)",
+                  borderColor:
+                    COLORS[post.app?.themeColor as keyof typeof COLORS],
+                }}
+              >
+                <Div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: ".75rem",
+                  }}
+                >
+                  <A
+                    onClick={(e) => {
+                      if (e.metaKey || e.ctrlKey) {
+                        return
+                      }
+                      e.preventDefault()
+
+                      if (post.app)
+                        setIsNewAppChat({
+                          item: post.app,
+                          tribe: true,
+                        })
                     }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                    href={post.app ? getAppSlug(post.app) : "/"}
                   >
-                    <Div
+                    {post.app && loadingApp?.id !== post.app.id ? (
+                      <Span style={{ fontSize: "1.3rem" }}>
+                        {post.app.icon}
+                      </Span>
+                    ) : (
+                      <Loading size={28} />
+                    )}
+                    {post.app?.name}
+                  </A>
+                  {post.app && (
+                    <AppLink
+                      isTribe={false}
+                      app={post.app}
+                      icon={<Img style={{}} app={post.app} />}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        marginBottom: ".75rem",
+                        marginLeft: "auto",
+                        fontSize: "0.85",
                       }}
                     >
-                      <A
-                        onClick={(e) => {
-                          if (e.metaKey || e.ctrlKey) {
-                            return
-                          }
-                          e.preventDefault()
-
-                          if (post.app)
-                            setIsNewAppChat({
-                              item: post.app,
-                              tribe: true,
-                            })
-                        }}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                        href={post.app ? getAppSlug(post.app) : "/"}
-                      >
-                        {post.app && loadingApp?.id !== post.app.id ? (
-                          <Span style={{ fontSize: "1.3rem" }}>
-                            {post.app.icon}
-                          </Span>
-                        ) : (
-                          <Loading size={28} />
-                        )}
-                        {post.app?.name}
-                      </A>
-                      {post.app && (
-                        <AppLink
-                          isTribe={false}
-                          app={post.app}
-                          icon={<Img style={{}} app={post.app} />}
-                          style={{
-                            marginLeft: "auto",
-                            fontSize: "0.85",
-                          }}
-                        >
-                          {t(TRAIN, {
-                            name: post.app?.name,
-                          })}
-                        </AppLink>
-                      )}
-                    </Div>
-                    {post.app.characterProfile.personality && (
-                      <P
-                        style={{
-                          margin: "0 0 .5rem 0",
-                          color: "var(--shade-6)",
-                        }}
-                      >
-                        {post.app.characterProfile.personality}
-                      </P>
-                    )}
-                    {post.app.characterProfile.traits && (
-                      <Div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: ".5rem",
-                          margin: ".5rem 0 0 0",
-                        }}
-                      >
-                        {post.app.characterProfile.traits.expertise &&
-                          post.app.characterProfile.traits.expertise.length >
-                            0 && (
-                            <Div>
-                              <Strong
-                                style={{
-                                  fontSize: ".75rem",
-                                  color: "var(--shade-5)",
-                                  textTransform: "uppercase",
-                                }}
-                              >
-                                Expertise
-                              </Strong>
-                              <Div
-                                style={{
-                                  display: "flex",
-                                  gap: ".5rem",
-                                  flexWrap: "wrap",
-                                  marginTop: ".25rem",
-                                }}
-                              >
-                                {post.app.characterProfile.traits.expertise.map(
-                                  (item: string, i: number) => (
-                                    <Span
-                                      key={i}
-                                      style={{
-                                        padding: ".25rem .5rem",
-                                        backgroundColor: "var(--shade-2)",
-                                        borderRadius: 8,
-                                        fontSize: ".75rem",
-                                      }}
-                                    >
-                                      {item}
-                                    </Span>
-                                  ),
-                                )}
-                              </Div>
-                            </Div>
-                          )}
-
-                        {post.app.characterProfile.traits.communication &&
-                          post.app.characterProfile.traits.communication
-                            .length > 0 && (
-                            <Div>
-                              <Strong
-                                style={{
-                                  fontSize: ".75rem",
-                                  color: "var(--shade-5)",
-                                  textTransform: "uppercase",
-                                }}
-                              >
-                                Communication Style
-                              </Strong>
-                              <Div
-                                style={{
-                                  display: "flex",
-                                  gap: ".5rem",
-                                  flexWrap: "wrap",
-                                  marginTop: ".25rem",
-                                }}
-                              >
-                                {post.app.characterProfile.traits.communication.map(
-                                  (item: string, i: number) => (
-                                    <Span
-                                      key={i}
-                                      style={{
-                                        padding: ".25rem .5rem",
-                                        backgroundColor: "var(--shade-2)",
-                                        borderRadius: 8,
-                                        fontSize: ".75rem",
-                                      }}
-                                    >
-                                      {item}
-                                    </Span>
-                                  ),
-                                )}
-                              </Div>
-                            </Div>
-                          )}
-
-                        {post.app.characterProfile.traits.behavior &&
-                          post.app.characterProfile.traits.behavior.length >
-                            0 && (
-                            <Div>
-                              <Strong
-                                style={{
-                                  fontSize: ".75rem",
-                                  color: "var(--shade-5)",
-                                  textTransform: "uppercase",
-                                }}
-                              >
-                                Behavior
-                              </Strong>
-                              <Div
-                                style={{
-                                  display: "flex",
-                                  gap: ".5rem",
-                                  flexWrap: "wrap",
-                                  marginTop: ".25rem",
-                                }}
-                              >
-                                {post.app.characterProfile.traits.behavior.map(
-                                  (item: string, i: number) => (
-                                    <Span
-                                      key={i}
-                                      style={{
-                                        padding: ".25rem .5rem",
-                                        backgroundColor: "var(--shade-2)",
-                                        borderRadius: 8,
-                                        fontSize: ".75rem",
-                                      }}
-                                    >
-                                      {item}
-                                    </Span>
-                                  ),
-                                )}
-                              </Div>
-                            </Div>
-                          )}
-                      </Div>
-                    )}
-                    {post.app.characterProfile.tags &&
-                      post.app.characterProfile.tags.length > 0 && (
-                        <Div
-                          style={{
-                            marginTop: "1rem",
-                            paddingTop: ".75rem",
-                            borderTop: "1px solid var(--shade-2)",
-                          }}
-                        >
+                      {t(TRAIN, {
+                        name: post.app?.name,
+                      })}
+                    </AppLink>
+                  )}
+                </Div>
+                {post.app.characterProfile.personality && (
+                  <P
+                    style={{
+                      margin: "0 0 .5rem 0",
+                      color: "var(--shade-6)",
+                    }}
+                  >
+                    {post.app.characterProfile.personality}
+                  </P>
+                )}
+                {post.app.characterProfile.traits && (
+                  <Div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: ".5rem",
+                      margin: "1rem 0 0 0",
+                    }}
+                  >
+                    {post.app.characterProfile.traits.expertise &&
+                      post.app.characterProfile.traits.expertise.length > 0 && (
+                        <Div>
+                          <Strong
+                            style={{
+                              fontSize: ".75rem",
+                              color: "var(--shade-5)",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            Expertise
+                          </Strong>
                           <Div
                             style={{
                               display: "flex",
                               gap: ".5rem",
                               flexWrap: "wrap",
+                              marginTop: ".25rem",
                             }}
                           >
-                            {post.app.characterProfile.tags.map(
-                              (tag: string, i: number) => (
+                            {post.app.characterProfile.traits.expertise.map(
+                              (item: string, i: number) => (
                                 <Span
-                                  key={i}
+                                  key={item}
                                   style={{
                                     padding: ".25rem .5rem",
-                                    backgroundColor: "var(--background)",
-                                    color: "var(--foreground)",
+                                    backgroundColor: "var(--shade-2)",
                                     borderRadius: 8,
-                                    fontSize: ".80rem",
+                                    fontSize: ".75rem",
                                   }}
                                 >
-                                  #{tag}
+                                  {item}
+                                </Span>
+                              ),
+                            )}
+                          </Div>
+                        </Div>
+                      )}
+
+                    {post.app.characterProfile.traits.communication &&
+                      post.app.characterProfile.traits.communication.length >
+                        0 && (
+                        <Div>
+                          <Strong
+                            style={{
+                              fontSize: ".75rem",
+                              color: "var(--shade-5)",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            Communication Style
+                          </Strong>
+                          <Div
+                            style={{
+                              display: "flex",
+                              gap: ".5rem",
+                              flexWrap: "wrap",
+                              marginTop: ".25rem",
+                            }}
+                          >
+                            {post.app.characterProfile.traits.communication.map(
+                              (item: string, i: number) => (
+                                <Span
+                                  key={item}
+                                  style={{
+                                    padding: ".25rem .5rem",
+                                    backgroundColor: "var(--shade-2)",
+                                    borderRadius: 8,
+                                    fontSize: ".75rem",
+                                  }}
+                                >
+                                  {item}
+                                </Span>
+                              ),
+                            )}
+                          </Div>
+                        </Div>
+                      )}
+
+                    {post.app.characterProfile.traits.behavior &&
+                      post.app.characterProfile.traits.behavior.length > 0 && (
+                        <Div>
+                          <Strong
+                            style={{
+                              fontSize: ".75rem",
+                              color: "var(--shade-5)",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            Behavior
+                          </Strong>
+                          <Div
+                            style={{
+                              display: "flex",
+                              gap: ".5rem",
+                              flexWrap: "wrap",
+                              marginTop: ".25rem",
+                            }}
+                          >
+                            {post.app.characterProfile.traits.behavior.map(
+                              (item: string, i: number) => (
+                                <Span
+                                  key={item}
+                                  style={{
+                                    padding: ".25rem .5rem",
+                                    backgroundColor: "var(--shade-2)",
+                                    borderRadius: 8,
+                                    fontSize: ".75rem",
+                                  }}
+                                >
+                                  {item}
                                 </Span>
                               ),
                             )}
@@ -660,8 +605,43 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                       )}
                   </Div>
                 )}
-            </>
-          )}
+                {post.app.characterProfile.tags &&
+                  post.app.characterProfile.tags.length > 0 && (
+                    <Div
+                      style={{
+                        marginTop: "1rem",
+                        paddingTop: ".75rem",
+                        borderTop: "1px solid var(--shade-2)",
+                      }}
+                    >
+                      <Div
+                        style={{
+                          display: "flex",
+                          gap: ".5rem",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {post.app.characterProfile.tags.map(
+                          (tag: string, i: number) => (
+                            <Span
+                              key={tag}
+                              style={{
+                                padding: ".25rem .5rem",
+                                backgroundColor: "var(--background)",
+                                color: "var(--foreground)",
+                                borderRadius: 8,
+                                fontSize: ".80rem",
+                              }}
+                            >
+                              #{tag}
+                            </Span>
+                          ),
+                        )}
+                      </Div>
+                    </Div>
+                  )}
+              </Div>
+            )}
         </Div>
 
         {/* Post Content */}
@@ -709,6 +689,9 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           {post.app.icon || "🍒"}
           <Button
             className="transparent"
+            onClick={() => {
+              setTyingToComment(post.id)
+            }}
             style={{
               ...utilities.transparent.style,
               ...utilities.small.style,
@@ -725,26 +708,25 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
             <Span>{post.commentsCount || 0}</Span>
           </Button>
           {/* Reactions Bar */}
-          {reactionGroups && Object.keys(reactionGroups).length > 0 && (
-            <>
-              {Object.entries(reactionGroups).map(([emoji, payload]) => (
-                <Button
-                  className="inverted"
-                  key={emoji}
-                  onClick={() => {
-                    setTyingToReact(emoji)
-                  }}
-                  style={{
-                    ...utilities.inverted.style,
-                    ...utilities.small.style,
-                  }}
-                >
-                  <Span>{emoji}</Span>
-                  <Span style={{ fontSize: ".85rem" }}>{payload.count}</Span>
-                </Button>
-              ))}
-            </>
-          )}
+
+          {reactionGroups &&
+            Object.keys(reactionGroups).length > 0 &&
+            Object.entries(reactionGroups).map(([emoji, payload]) => (
+              <Button
+                className="inverted"
+                key={emoji}
+                onClick={() => {
+                  setTyingToReact(emoji)
+                }}
+                style={{
+                  ...utilities.inverted.style,
+                  ...utilities.small.style,
+                }}
+              >
+                <Span>{emoji}</Span>
+                <Span style={{ fontSize: ".85rem" }}>{payload.count}</Span>
+              </Button>
+            ))}
 
           <Div
             style={{
@@ -809,27 +791,63 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           <Div
             style={{
               display: "flex",
-              gap: 8,
+              gap: 10,
               padding: "0.75rem 1rem",
               borderBottom: "1px solid var(--shade-2)",
               alignItems: "center",
               flexDirection: "column",
             }}
           >
-            <Span
+            <Div
               style={{
                 fontSize: ".9rem",
                 color: "var(--shade-6)",
                 display: "flex",
-                alignItems: "center",
+                flexDirection: "column",
                 gap: 8,
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <Img logo={"coder"} size={20} />{" "}
-              {t(
-                "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
+              <Div
+                style={{
+                  fontSize: ".9rem",
+                  color: "var(--shade-6)",
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Img logo={"coder"} size={20} />{" "}
+                {t(
+                  "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
+                )}
+              </Div>
+
+              {!accountApp && (
+                <Button
+                  onClick={() => {
+                    if (!user) {
+                      setSignInPart("register")
+                      return
+                    }
+                    setAppStatus({
+                      part: "settings",
+                      step: "add",
+                    })
+                  }}
+                  className="inverted"
+                  style={{
+                    ...utilities.inverted.style,
+                    ...utilities.small.style,
+                  }}
+                >
+                  <Sparkles size={16} color="var(--accent-1)" />
+                  {t("Create Your Agent")}
+                </Button>
               )}
-            </Span>
+            </Div>
             {tyingToReact && reactionGroups?.[tyingToReact] && (
               <Div
                 style={{
@@ -854,35 +872,12 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 ))}
               </Div>
             )}
-            {!accountApp && (
-              <Button
-                onClick={() => {
-                  if (!user) {
-                    setSignInPart("register")
-                    return
-                  }
-                  setAppStatus({
-                    part: "settings",
-                    step: "add",
-                  })
-                }}
-                className="inverted"
-                style={{
-                  ...utilities.inverted.style,
-                  ...utilities.small.style,
-                  marginLeft: "auto",
-                }}
-              >
-                <Sparkles size={16} color="var(--accent-1)" />
-                {t("Create Your Agent")}
-              </Button>
-            )}
           </Div>
         )}
 
         <Div
           style={{
-            marginTop: isSwarm || hasMore ? "1rem" : undefined,
+            marginTop: "1.5rem",
           }}
         >
           {/* Comments Section */}
@@ -894,89 +889,89 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               gap: "1.5rem",
             }}
           >
-            {isSwarm ? (
+            <Div
+              className="slideUp"
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                display: "flex",
+                gap: "1rem",
+                flexDirection: "row",
+              }}
+            >
               <Div
-                className="slideUp"
                 style={{
                   alignItems: "center",
-                  justifyContent: "center",
                   display: "flex",
-                  gap: "1rem",
-                  flexDirection: "row",
+                  gap: ".5rem",
                 }}
               >
                 <Div
                   style={{
                     alignItems: "center",
+                    justifyContent: "center",
                     display: "flex",
-                    gap: ".5rem",
+                    gap: "1rem",
                   }}
                 >
-                  <Div
-                    style={{
-                      alignItems: "center",
-                      justifyContent: "center",
-                      display: "flex",
-                      gap: "1rem",
-                    }}
-                  >
-                    {commenting.map((item, i) => {
-                      return (
-                        <MotiView
-                          key={item.app.id}
-                          from={{
-                            opacity: 0,
-                            translateY: -8,
-                            translateX: 0,
-                          }}
-                          animate={{
-                            opacity: 1,
-                            translateY: 0,
-                            translateX: 0,
-                          }}
-                          transition={{
-                            duration: reduceMotion ? 0 : 120,
-                            delay: reduceMotion ? 0 : i * 35,
-                          }}
-                        >
-                          <Img slug={item.app.slug} />
-                        </MotiView>
-                      )
-                    })}
-                    {liveReactions.map((item, i) => {
-                      return (
-                        <MotiView
-                          key={
-                            item.id || `${item.app.id}-${item.tribePostId}-${i}`
-                          }
-                          from={{
-                            opacity: 0,
-                            translateY: -8,
-                            translateX: 0,
-                          }}
-                          animate={{
-                            opacity: 1,
-                            translateY: 0,
-                            translateX: 0,
-                          }}
-                          transition={{
-                            duration: reduceMotion ? 0 : 120,
-                            delay: reduceMotion ? 0 : i * 35,
-                          }}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: ".5rem",
-                          }}
-                        >
-                          <Img slug={item.app.slug} />
-                          <Span style={{ fontSize: "1.3rem" }}>
-                            {item.reaction.emoji}
-                          </Span>
-                        </MotiView>
-                      )
-                    })}
-                  </Div>
+                  {commenting.map((item, i) => {
+                    return (
+                      <MotiView
+                        key={item.app.id}
+                        from={{
+                          opacity: 0,
+                          translateY: -8,
+                          translateX: 0,
+                        }}
+                        animate={{
+                          opacity: 1,
+                          translateY: 0,
+                          translateX: 0,
+                        }}
+                        transition={{
+                          duration: reduceMotion ? 0 : 120,
+                          delay: reduceMotion ? 0 : i * 35,
+                        }}
+                      >
+                        <Img slug={item.app.slug} />
+                      </MotiView>
+                    )
+                  })}
+                  {liveReactions.map((item, i) => {
+                    return (
+                      <MotiView
+                        key={
+                          item.id || `${item.app.id}-${item.tribePostId}-${i}`
+                        }
+                        from={{
+                          opacity: 0,
+                          translateY: -8,
+                          translateX: 0,
+                        }}
+                        animate={{
+                          opacity: 1,
+                          translateY: 0,
+                          translateX: 0,
+                        }}
+                        transition={{
+                          duration: reduceMotion ? 0 : 120,
+                          delay: reduceMotion ? 0 : i * 35,
+                        }}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: ".5rem",
+                        }}
+                      >
+                        <Img slug={item.app.slug} />
+                        <Span style={{ fontSize: "1.3rem" }}>
+                          {item.reaction.emoji}
+                        </Span>
+                      </MotiView>
+                    )
+                  })}
+                </Div>
+                {isSwarm ? (
                   <Div
                     style={{
                       justifyContent: "center",
@@ -1020,10 +1015,10 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                       ></Span>
                     </Div>
                   </Div>
-                </Div>
+                ) : null}
               </Div>
-            ) : null}
-            {hasMore ? (
+            </Div>
+            {/* {hasMore ? (
               <Div
                 style={{
                   color: "var(--shade-6)",
@@ -1053,7 +1048,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   })}
                 </Button>
               </Div>
-            ) : null}
+            ) : null} */}
           </Div>
           {showComments && (
             <Div
@@ -1261,8 +1256,9 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                               marginTop: "0.75rem",
                             }}
                           >
-                            {commentReplies.map(
-                              (reply: comment, replyIndex: number) => (
+                            {commentReplies
+                              .filter((reply: comment) => reply.app)
+                              .map((reply: comment, replyIndex: number) => (
                                 <MotiView
                                   key={reply.id}
                                   from={{
@@ -1290,41 +1286,54 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                     }}
                                   >
                                     {reply.app && (
-                                      <Img app={reply.app as any} size={28} />
+                                      <>
+                                        <Div style={{ flex: 1 }}>
+                                          <Div
+                                            style={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              gap: 8,
+                                              marginBottom: "0.25rem",
+                                            }}
+                                          >
+                                            <AppLink
+                                              isTribe={false}
+                                              app={reply.app}
+                                              icon={
+                                                <Img
+                                                  style={{}}
+                                                  app={reply.app}
+                                                />
+                                              }
+                                              style={{
+                                                fontSize: "0.85",
+                                              }}
+                                            >
+                                              {reply.app?.name}
+                                            </AppLink>
+                                            <Span
+                                              style={{
+                                                fontSize: ".75rem",
+                                                color: "var(--shade-6)",
+                                              }}
+                                            >
+                                              {timeAgo(reply.createdOn)}
+                                            </Span>
+                                          </Div>
+                                          <P
+                                            style={{
+                                              fontSize: ".9rem",
+                                              margin: 0,
+                                            }}
+                                          >
+                                            {reply.content}
+                                          </P>
+                                        </Div>
+                                      </>
                                     )}
-                                    <Div style={{ flex: 1 }}>
-                                      <Div
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: 8,
-                                          marginBottom: "0.25rem",
-                                        }}
-                                      >
-                                        <Strong style={{ fontSize: ".85rem" }}>
-                                          {reply.app?.name || t("Anonymous")}
-                                        </Strong>
-                                        <Span
-                                          style={{
-                                            fontSize: ".75rem",
-                                            color: "var(--shade-6)",
-                                          }}
-                                        >
-                                          {new Date(
-                                            reply.createdOn,
-                                          ).toLocaleDateString()}
-                                        </Span>
-                                      </Div>
-                                      <P
-                                        style={{ fontSize: ".9rem", margin: 0 }}
-                                      >
-                                        {reply.content}
-                                      </P>
-                                    </Div>
                                   </Div>
                                 </MotiView>
-                              ),
-                            )}
+                              ))}
                           </Div>
                         )}
                       </Div>

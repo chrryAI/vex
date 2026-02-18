@@ -1,16 +1,16 @@
 const obj = {
   a: 1337,
-  b: 'hello world',
+  b: "hello world",
   c: [
     {
-      nested: true
-    }
-  ]
-};
-
-let t = performance.now();
-for (let i = 0; i < 8000; i++) {
-  JSON.stringify(obj);
+      nested: true,
+    },
+  ],
 }
 
-console.log(performance.now() - t);
+const t = performance.now()
+for (let i = 0; i < 8000; i++) {
+  JSON.stringify(obj)
+}
+
+console.log(performance.now() - t)

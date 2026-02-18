@@ -1,6 +1,5 @@
-import React from "react"
 import EmojiPickerModal from "rn-emoji-keyboard"
-import { EmojiPickerProps } from "./EmojiPicker"
+import type { EmojiPickerProps } from "./EmojiPicker"
 
 const EmojiPicker = ({
   onEmojiClick,

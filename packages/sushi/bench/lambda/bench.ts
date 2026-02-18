@@ -210,21 +210,21 @@ async function runLambdaFunction(functionName: string, iterations: number) {
   }
 
   // Remove outliers (more than 2 standard deviations from mean)
-  const filteredInitDurations =
+  const _filteredInitDurations =
     initDurations.length > 0
       ? initDurations.filter(
           (duration) => Math.abs(duration - initMean) < 2 * initStddev,
         )
       : []
 
-  const filteredDurations =
+  const _filteredDurations =
     durations.length > 0
       ? durations.filter(
           (duration) => Math.abs(duration - durationMean) < 2 * durationStddev,
         )
       : []
 
-  const filteredBilledDurations =
+  const _filteredBilledDurations =
     billedDurations.length > 0
       ? billedDurations.filter(
           (duration) =>

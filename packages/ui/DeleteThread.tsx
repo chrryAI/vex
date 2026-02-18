@@ -1,14 +1,15 @@
-import React, { useState } from "react"
 import clsx from "clsx"
-import { Trash2 } from "./icons"
+import type React from "react"
+import { useState } from "react"
 import toast from "react-hot-toast"
 import ConfirmButton from "./ConfirmButton"
-import Loading from "./Loading"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"
-import { apiFetch } from "./utils"
-import { Span } from "./platform"
 import { useHasHydrated } from "./hooks"
+import { Trash2 } from "./icons"
+import Loading from "./Loading"
+import { Span } from "./platform"
+import { apiFetch } from "./utils"
 
 export default function DeleteThread({
   className,
@@ -69,7 +70,7 @@ export default function DeleteThread({
               onDelete?.()
             }
           }
-        } catch (error) {
+        } catch (_error) {
           toast.error("Failed to delete thread")
         } finally {
           setIsDeleting(false)

@@ -1,11 +1,11 @@
-import { Hono } from "hono"
-import { getMember, getGuest } from "../lib/auth"
-import { checkRateLimit } from "../../lib/rateLimiting"
-import { getIp } from "../../lib"
-import { getLocationFromIP, type GeoLocation } from "../../lib/geoLocation"
-import { updateGuest, updateUser, redis as dbRedis } from "@repo/db"
 import { getWeatherCacheTime, isDevelopment } from "@chrryai/chrry/utils"
 import { isE2E } from "@chrryai/chrry/utils/siteConfig"
+import { redis as dbRedis, updateGuest, updateUser } from "@repo/db"
+import { Hono } from "hono"
+import { getIp } from "../../lib"
+import { type GeoLocation, getLocationFromIP } from "../../lib/geoLocation"
+import { checkRateLimit } from "../../lib/rateLimiting"
+import { getGuest, getMember } from "../lib/auth"
 
 interface WeatherApiResponse {
   location: {
@@ -85,7 +85,7 @@ weather.get("/", async (c) => {
       country: location.country,
       temperature: `${current.temp_c}°C`,
       condition: current.condition.text,
-      code: Number.parseInt(current.condition.code),
+      code: Number.parseInt(current.condition.code, 10),
       createdOn: new Date(),
       lastUpdated: new Date(),
     }
@@ -210,7 +210,7 @@ weather.get("/", async (c) => {
       country: weatherData.location.country,
       temperature: `${weatherData.current.temp_c}`,
       condition: weatherData.current.condition.text,
-      code: Number.parseInt(weatherData.current.condition.code),
+      code: Number.parseInt(weatherData.current.condition.code, 10),
       createdOn: new Date(),
       lastUpdated: new Date(),
     }

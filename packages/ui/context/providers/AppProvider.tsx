@@ -1,29 +1,34 @@
 "use client"
 
-import React, {
+import type React from "react"
+import {
   createContext,
+  type ReactNode,
   useContext,
-  ReactNode,
-  useState,
   useEffect,
   useMemo,
+  useState,
 } from "react"
-import { useLocalStorage, useNavigation, toast } from "../../platform"
-import useCache from "../../hooks/useCache"
-import console from "../../utils/log"
-import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
-
-import { appFormData, appSchema } from "../../schemas/appSchema"
 import { useForm } from "react-hook-form"
-import { customZodResolver } from "../../utils/customZodResolver"
-import isOwner from "../../utils/isOwner"
-import { useAuth } from "./AuthProvider"
-import type { appWithStore, instruction } from "../../types"
-import { getExampleInstructions } from "../../utils"
 import { useTranslation } from "react-i18next"
+import useCache from "../../hooks/useCache"
+import { toast, useLocalStorage, useNavigation } from "../../platform"
+
+import { type appFormData, appSchema } from "../../schemas/appSchema"
+import type {
+  appWithStore,
+  instruction,
+  Paginated,
+  storeWithApps,
+} from "../../types"
+import { getExampleInstructions } from "../../utils"
+import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
+import { customZodResolver } from "../../utils/customZodResolver"
+import type { instructionBase } from "../../utils/getExampleInstructions"
+import isOwner from "../../utils/isOwner"
+import console from "../../utils/log"
+import { useAuth } from "./AuthProvider"
 import { useData } from "./DataProvider"
-import { instructionBase } from "../../utils/getExampleInstructions"
-import { Paginated, storeWithApps } from "../../types"
 import { useError } from "./ErrorProvider"
 
 export { COLORS } from "../ThemeContext"
@@ -620,7 +625,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     burning,
   ])
 
-  const [storeSlug, setStoreSlug] = useState(pathname.replace("/", ""))
+  const [_storeSlug, setStoreSlug] = useState(pathname.replace("/", ""))
 
   useEffect(() => {
     setStoreSlug(pathname.replace("/", ""))

@@ -16,7 +16,7 @@ export default function replaceLinks({
 }): Array<TextSegment> {
   // Updated regex to match bare domains like gulpdash.com as well as URLs with protocols and www
   const Rexp =
-    /\b((?:https?:\/\/|www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*))/gi
+    /\b((?:https?:\/\/|www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&//=]*))/gi
 
   const segments: TextSegment[] = []
   let lastIndex = 0
@@ -45,7 +45,7 @@ export default function replaceLinks({
       let currentUrl: URL | undefined
       try {
         currentUrl = pageUrl ? new URL(pageUrl) : undefined
-      } catch (err) {
+      } catch (_err) {
         currentUrl = undefined
       }
 
@@ -64,7 +64,7 @@ export default function replaceLinks({
         text: `${linkDomain.toLowerCase()}...`,
         isExternal: !!isExternal,
       })
-    } catch (error) {
+    } catch (_error) {
       // If the URL is invalid, just add it as text
       segments.push(matchedUrl)
     }

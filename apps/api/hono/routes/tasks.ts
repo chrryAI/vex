@@ -1,9 +1,9 @@
+import { createTask, deleteTask, getTask, getTasks, updateTask } from "@repo/db"
 import { Hono } from "hono"
-import { createTask, getTasks, updateTask, getTask, deleteTask } from "@repo/db"
 import sanitizeHtml from "sanitize-html"
-import { redact } from "../../lib/redaction"
-import { getMember, getGuest } from "../lib/auth"
 import captureException from "../../lib/captureException"
+import { redact } from "../../lib/redaction"
+import { getGuest, getMember } from "../lib/auth"
 
 export const tasks = new Hono()
 
@@ -109,7 +109,7 @@ tasks.patch("/:id", async (c) => {
   const sanitizedTotal = Array.isArray(total)
     ? total.filter(
         (item) =>
-          typeof item.date === "string" && !isNaN(Date.parse(item.date)),
+          typeof item.date === "string" && !Number.isNaN(Date.parse(item.date)),
       )
     : []
 

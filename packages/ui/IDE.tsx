@@ -4,13 +4,13 @@
  * Basic IDE UI that will be enhanced with Monaco Editor and filesystem later
  */
 
-import React, { useEffect, useState } from "react"
-import { Div, H1, Button, P, usePlatform } from "./platform"
+import { useEffect, useState } from "react"
 import { useAuth } from "./context/providers/AuthProvider"
-import { CodeXml, FolderOpen, File } from "./icons"
-import Home from "./Home"
 import { useTheme } from "./context/ThemeContext"
 import GitHubConnectButton from "./GitHubConnectButton"
+import Home from "./Home"
+import { CodeXml, File, FolderOpen } from "./icons"
+import { Button, Div, H1, P, usePlatform } from "./platform"
 
 export interface IDEProps {
   rootPath?: string

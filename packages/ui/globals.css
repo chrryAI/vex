@@ -35,7 +35,7 @@ button.xSmall,
 }
 
 a.link:hover {
-  color: var(--accent-5) !important;
+  color: var(--accent-5);
 }
 
 button.large,

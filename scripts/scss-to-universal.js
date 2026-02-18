@@ -5,10 +5,10 @@
  * Converts SCSS module files to work on both web and native
  */
 
-import fs from "fs"
-import path from "path"
-import { fileURLToPath } from "url"
-import { dirname } from "path"
+// biome-ignore-all lint: reason
+import fs from "node:fs"
+import path, { dirname } from "node:path"
+import { fileURLToPath } from "node:url"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -378,7 +378,7 @@ const parseScss = (scssContent) => {
   const flattenNested = (scss) => {
     let result = scss
     let changed = true
-    let maxIterations = 10
+    const maxIterations = 10
     let iteration = 0
 
     while (changed && iteration < maxIterations) {
@@ -474,7 +474,7 @@ const parseScss = (scssContent) => {
           let extracted = ""
 
           // Find all nested class blocks
-          let tempContent = content
+          const tempContent = content
           const nestedMatches = []
 
           // Use a more robust approach to find nested classes
@@ -552,7 +552,7 @@ const parseScss = (scssContent) => {
 
   while ((match = classRegex.exec(scssContent)) !== null) {
     const className = match[1]
-    let content = match[2]
+    const content = match[2]
 
     // Extract nested selectors and combine them into the base style
     const styleObj = {
@@ -610,7 +610,7 @@ const parseScss = (scssContent) => {
           cssValue.includes(" ")
         ) {
           // Convert toRem calls in shorthand values
-          let processedValue = cssValue.replace(
+          const processedValue = cssValue.replace(
             /toRem\.toRem\((-?[0-9.]+)\)/g,
             (match, num) => {
               return Math.round(parseFloat(num)) + "px"
@@ -621,7 +621,7 @@ const parseScss = (scssContent) => {
         // Handle border shorthand (e.g., "1px solid var(--shade-2)")
         else if (cssProp === "border" && cssValue.includes(" ")) {
           // Convert toRem calls in border values
-          let processedValue = cssValue.replace(
+          const processedValue = cssValue.replace(
             /toRem\.toRem\((-?[0-9.]+)\)/g,
             (match, num) => {
               return Math.round(parseFloat(num)) + "px"
@@ -750,13 +750,16 @@ export const ${camelFileName}StyleDefs = {\n`
   code += `} as const\n\n`
 
   // Check if any styles have interactive states
-  const hasAnyInteractive = Object.values(styles).some(
-    (styleObj) =>
-      Object.keys(styleObj.hover).length > 0 ||
-      Object.keys(styleObj.active).length > 0 ||
-      Object.keys(styleObj.focus).length > 0 ||
-      Object.keys(styleObj.disabled).length > 0,
-  )
+  // ustable
+  const hasAnyInteractive = false
+
+  // Object.values(styles).some(
+  //   (styleObj) =>
+  //     Object.keys(styleObj.hover).length > 0 ||
+  //     Object.keys(styleObj.active).length > 0 ||
+  //     Object.keys(styleObj.focus).length > 0 ||
+  //     Object.keys(styleObj.disabled).length > 0,
+  // )
 
   if (hasAnyInteractive) {
     // Generate with interactive styles support

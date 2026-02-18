@@ -1,18 +1,23 @@
-import { db, eq, and, gte, inArray, sql } from "@repo/db"
+import crypto from "node:crypto"
 import {
-  appCampaigns,
-  autonomousBids,
-  storeTimeSlots,
+  and,
   type appCampaign,
-  type storeTimeSlot,
+  appCampaigns,
   type autonomousBid,
+  autonomousBids,
+  db,
+  eq,
+  gte,
+  inArray,
+  sql,
+  type storeTimeSlot,
+  storeTimeSlots,
 } from "@repo/db"
 import { generateText } from "ai"
 import { getModelProvider } from "../../lib/getModelProvider"
 import captureException from "../captureException"
-import crypto from "crypto"
 
-interface BiddingContext {
+interface _BiddingContext {
   campaign: appCampaign
   availableSlots: storeTimeSlot[]
   historicalPerformance: PerformanceData[]
@@ -250,7 +255,7 @@ async function scoreSlots({
       "claude-sonnet-4",
     )
     provider = result.provider
-  } catch (error) {
+  } catch (_error) {
     console.warn("⚠️ Failed to get AI provider, using heuristic scoring")
     // Fallback to heuristic scoring for all slots
     return slots.map((slot) => ({

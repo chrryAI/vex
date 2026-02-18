@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 /**
  * A hook that syncs local state with a derived/computed value.
@@ -23,7 +23,7 @@ export function useSyncedState<T>(
   deps?: React.DependencyList,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [localValue, setLocalValue] = useState<T>(computedValue)
-  const isFirstRender = useRef(true)
+  const _isFirstRender = useRef(true)
 
   useEffect(() => {
     // On first render, just use the initial computed value

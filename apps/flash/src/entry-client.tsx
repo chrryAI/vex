@@ -9,7 +9,7 @@ import "@chrryai/chrry/styles/view-transitions.css"
 import { StrictMode } from "react"
 import { hydrateRoot } from "react-dom/client"
 import App from "./App"
-import { ServerData } from "./server-loader"
+import type { ServerData } from "./server-loader"
 
 // Polyfill process.env for compatibility with libraries expecting it
 if (typeof process === "undefined") {

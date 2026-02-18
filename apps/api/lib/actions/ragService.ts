@@ -1,35 +1,34 @@
+import { createOpenAI } from "@ai-sdk/openai"
+import type { appWithStore } from "@chrryai/chrry/types"
 import {
-  db,
-  sql,
-  eq,
-  desc,
   type app,
-  isE2E as isE2EInternal,
-  isDevelopment,
+  db,
+  desc,
+  eq,
   getUser,
+  isDevelopment,
+  isE2E as isE2EInternal,
+  sql,
   VEX_LIVE_FINGERPRINTS,
 } from "@repo/db"
-import type { appWithStore } from "@chrryai/chrry/types"
-
 import {
   documentChunks,
   documentSummaries,
   messageEmbeddings,
 } from "@repo/db/src/schema"
 import { generateText } from "ai"
-import { createOpenAI } from "@ai-sdk/openai"
 import captureException from "../../lib/captureException"
 import {
   extractAndStoreKnowledge,
   getGraphContext,
-  storeDocumentChunk,
   linkChunkToEntities,
+  storeDocumentChunk,
 } from "../../lib/graph/graphService"
 import { getModelProvider } from "../getModelProvider"
 
 const API_KEY = process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY
 
-const openaiProvider = createOpenAI({
+const _openaiProvider = createOpenAI({
   apiKey: API_KEY,
 })
 
@@ -52,7 +51,7 @@ export function chunkText(
       chunks.push(currentChunk.trim())
       const words = currentChunk.split(" ")
       const overlapWords = words.slice(-Math.floor(overlap / 6))
-      currentChunk = overlapWords.join(" ") + " " + paragraph
+      currentChunk = `${overlapWords.join(" ")} ${paragraph}`
     } else {
       currentChunk += (currentChunk ? "\n\n" : "") + paragraph
     }
@@ -476,7 +475,7 @@ export async function processMessageForRAG({
       hasApp: !!app,
       appId: app?.id,
       ...((isE2E || isDevelopment) && {
-        contentPreview: content.substring(0, 250) + "...",
+        contentPreview: `${content.substring(0, 250)}...`,
       }), // Redacted preview ❤️ 🐰
     })
 
@@ -502,7 +501,7 @@ export async function processMessageForRAG({
     })
 
     console.log(
-      `📝 Processed message for RAG: ${isE2E || isDevelopment ? content.substring(0, 50) + "..." : "[content hidden]"}`,
+      `📝 Processed message for RAG: ${isE2E || isDevelopment ? `${content.substring(0, 50)}...` : "[content hidden]"}`,
     )
 
     // Extract and Store Knowledge Graph Data
@@ -624,7 +623,7 @@ export async function buildEnhancedRAGContext({
 
   // Add Graph Context (FalkorDB)
   if (graphContext) {
-    context += "\n" + graphContext + "\n"
+    context += `\n${graphContext}\n`
   }
 
   // Add document summaries for broad context

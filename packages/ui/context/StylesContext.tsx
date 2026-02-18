@@ -1,10 +1,10 @@
 "use client"
 
-import React, { createContext, useContext, ReactNode, useMemo } from "react"
+import { createContext, type ReactNode, useContext, useMemo } from "react"
 import { AppStyleDefs } from "../App.styles"
+import { SkeletonStyleDefs } from "../Skeleton.styles"
 import { StoreStyleDefs } from "../Store.styles"
 import { UtilsStyleDefs } from "../utils.styles"
-import { SkeletonStyleDefs } from "../Skeleton.styles"
 
 // Style object that can be spread directly into style prop
 // Also has className property for CSS classes and style property for inline styles

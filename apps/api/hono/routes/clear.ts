@@ -1,13 +1,13 @@
-import { Hono } from "hono"
-import { getMember, getGuest } from "../lib/auth"
 import { isE2E } from "@chrryai/chrry/utils"
-import cleanupTest from "../../lib/cleanupTest"
 import {
   TEST_GUEST_FINGERPRINTS,
+  TEST_MEMBER_EMAILS,
   TEST_MEMBER_FINGERPRINTS,
   VEX_LIVE_FINGERPRINTS,
-  TEST_MEMBER_EMAILS,
 } from "@repo/db"
+import { Hono } from "hono"
+import cleanupTest from "../../lib/cleanupTest"
+import { getGuest, getMember } from "../lib/auth"
 import { corsMiddleware } from "../middleware/cors"
 
 export const clear = new Hono()

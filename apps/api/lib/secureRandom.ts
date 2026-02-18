@@ -1,4 +1,4 @@
-import { randomBytes } from "crypto"
+import { randomBytes } from "node:crypto"
 
 /**
  * Generate a cryptographically secure random ID

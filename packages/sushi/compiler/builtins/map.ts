@@ -77,7 +77,7 @@ export const __Map_prototype_forEach = (
   callbackFn: any,
   thisArg: any = undefined,
 ) => {
-  if (Porffor.type(callbackFn) != Porffor.TYPES.function)
+  if (Porffor.type(callbackFn) !== Porffor.TYPES.function)
     throw new TypeError("callbackFn is not a function")
 
   const keys: any[] = Porffor.wasm.i32.load(_this, 0, 0)

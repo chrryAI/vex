@@ -4,7 +4,7 @@
  * Works on web and React Native
  */
 
-import React from "react"
+import type React from "react"
 
 interface WannathisIconProps {
   width?: number

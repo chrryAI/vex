@@ -7,24 +7,24 @@ if (typeof window !== "undefined") {
     require("./globals.scss")
     require("./globals.css")
     require("./styles/view-transitions.css")
-  } catch (e) {
+  } catch (_e) {
     // React Native will throw here, which is fine
   }
 }
 
-import React from "react"
+import type React from "react"
 import AppProviders from "./context/providers"
-import {
+import type { locale } from "./locales"
+import type {
+  appWithStore,
+  paginatedMessages,
+  paginatedTribePosts,
+  paginatedTribes,
   session,
   thread,
-  paginatedMessages,
-  appWithStore,
-  paginatedTribes,
-  paginatedTribePosts,
   tribePostWithDetails,
 } from "./types"
-import { locale } from "./locales"
-import { getSiteConfig } from "./utils/siteConfig"
+import type { getSiteConfig } from "./utils/siteConfig"
 
 export default function Chrry({
   children,

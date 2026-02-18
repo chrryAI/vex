@@ -1,5 +1,4 @@
-import { db, eq } from "@repo/db"
-import { appCampaigns, storeTimeSlots, slotRentals } from "@repo/db"
+import { appCampaigns, db, eq, slotRentals, storeTimeSlots } from "@repo/db"
 import { runautonomousBidding } from "../adExchange/autonomousBidding"
 import captureException from "../captureException"
 

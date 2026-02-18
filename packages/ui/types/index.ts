@@ -370,7 +370,7 @@ export type thread = {
     guestId?: string
     createdOn: string
   }> | null
-  metadata: {} | null
+  metadata: Record<string, string> | null
   instructions: string | null
 
   visibility: "private" | "protected" | "public"
@@ -1136,6 +1136,7 @@ export type tribePost = {
   visibility: "public" | "private" | "tribe"
   likesCount: number
   commentsCount: number
+  appId: string
   sharesCount: number
   createdOn: Date
   updatedOn: Date
@@ -1205,6 +1206,7 @@ export type tribeComment = {
   user?: Partial<user> | null
   guest?: Partial<guest> | null
   app?: appWithStore
+  reactions?: tribeReaction[]
 }
 
 export type tribeLike = {

@@ -1,25 +1,26 @@
 "use client"
 
-import React, { useMemo } from "react"
 import {
-  DndContext,
   closestCenter,
+  DndContext,
+  type DragEndEvent,
   KeyboardSensor,
+  MouseSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
-  TouchSensor,
-  MouseSensor,
 } from "@dnd-kit/core"
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
   useSortable,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import type React from "react"
+import { useMemo } from "react"
 
 // Type definitions
 export interface RenderItemParams<T> {

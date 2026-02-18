@@ -5,7 +5,7 @@
  * Small, reliable PDFs from trusted sources
  */
 
-const fs = require("fs")
+const fs = require("node:fs")
 const path = require("node:path")
 const https = require("node:https")
 const http = require("node:http")
@@ -165,9 +165,7 @@ async function main() {
   console.log(`📁 Location: ${PDFS_DIR}`)
 
   if (completed < samplePDFs.length) {
-    console.log(
-      `\n⚠️  ${samplePDFs.length - completed} PDFs failed to download`,
-    )
+    console.log(`\n⚠️  ${samplePDFs.length - completed} PDFs failed to download`)
   }
 }
 

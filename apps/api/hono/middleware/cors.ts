@@ -120,7 +120,7 @@ function setCorsHeaders(c: Context) {
   setCommonHeaders(c)
 }
 
-const RESERVED_PATHS = [
+const _RESERVED_PATHS = [
   "threads",
   "about",
   "settings",

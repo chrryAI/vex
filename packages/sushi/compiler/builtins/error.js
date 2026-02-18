@@ -1,9 +1,9 @@
 export default () => {
-  let out = '';
+  let out = ""
 
-  const errors = [];
-  const error = name => {
-    errors.push(name);
+  const errors = []
+  const error = (name) => {
+    errors.push(name)
     out += `export const ${name} = function (message: any): ${name} {
   if (message === undefined) message = '';
     else message = ecma262.ToString(message);
@@ -44,25 +44,25 @@ export const __${name}_prototype_toString = (_this: ${name}) => {
   }
 
   return name + ': ' + message;
-};\n`;
-  };
+};\n`
+  }
 
-  error('Error');
-  error('AggregateError');
-  error('TypeError');
-  error('ReferenceError');
-  error('SyntaxError');
-  error('RangeError');
-  error('EvalError');
-  error('URIError');
-  error('Test262Error');
+  error("Error")
+  error("AggregateError")
+  error("TypeError")
+  error("ReferenceError")
+  error("SyntaxError")
+  error("RangeError")
+  error("EvalError")
+  error("URIError")
+  error("Test262Error")
 
   out += `
 export const __Test262Error_thrower = message => {
   throw new Test262Error(message);
 };
 
-export const __Error_isError = (x: unknown): boolean => Porffor.fastAnd(Porffor.type(x) >= Porffor.TYPES.error, Porffor.type(x) <= Porffor.TYPES.test262error);`;
+export const __Error_isError = (x: unknown): boolean => Porffor.fastAnd(Porffor.type(x) >= Porffor.TYPES.error, Porffor.type(x) <= Porffor.TYPES.test262error);`
 
-  return out;
-};
+  return out
+}

@@ -6,8 +6,8 @@ import {
 import App from "./App"
 import {
   loadServerData,
-  type ServerRequest,
   type ServerData,
+  type ServerRequest,
 } from "./server-loader"
 
 // Export App for server.js

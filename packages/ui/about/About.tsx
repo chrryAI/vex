@@ -1,30 +1,37 @@
 "use client"
 
 import React from "react"
-import Skeleton from "../Skeleton"
-import { COLORS, useAppContext } from "../context/AppContext"
-import { BrowserInstance, checkIsExtension } from "../utils"
-import { BadgeCheck, CircleArrowLeft, Shell, UserRoundPlus } from "../icons"
 import { BiLogoPostgresql } from "react-icons/bi"
-
+import { FaChrome } from "react-icons/fa"
 import {
+  SiBun,
   SiCssmodules,
+  SiHono,
   SiJest,
   SiTypescript,
-  SiBun,
-  SiHono,
   SiVite,
 } from "react-icons/si"
-import { FaChrome } from "react-icons/fa"
-import Logo from "../Logo"
-import Img from "../Image"
-import { getFeatures } from "../utils/subscription"
+import AppLink from "../AppLink"
+import A from "../a/A"
+import { COLORS, useAppContext } from "../context/AppContext"
 import {
   useAuth,
   useData,
   useError,
   useNavigationContext,
 } from "../context/providers"
+import { useStyles } from "../context/StylesContext"
+import Img from "../Image"
+import {
+  BadgeCheck,
+  CircleArrowLeft,
+  Claude,
+  DeepSeek,
+  Gemini,
+  Shell,
+  UserRoundPlus,
+} from "../icons"
+import Logo from "../Logo"
 import {
   Button,
   Div,
@@ -39,12 +46,11 @@ import {
   useTheme,
   Video,
 } from "../platform"
-import { Claude, DeepSeek, Gemini } from "../icons"
-import A from "../a/A"
-import AppLink from "../AppLink"
-import { useAboutStyles } from "./About.styles"
-import { useStyles } from "../context/StylesContext"
+import Skeleton from "../Skeleton"
 import type { appWithStore } from "../types"
+import { BrowserInstance, checkIsExtension } from "../utils"
+import { getFeatures } from "../utils/subscription"
+import { useAboutStyles } from "./About.styles"
 export default function About() {
   const {
     chrry,
@@ -58,7 +64,7 @@ export default function About() {
   const styles = useAboutStyles()
   const { utilities } = useStyles()
 
-  const isChrryAI = config.mode === "chrryAI"
+  const _isChrryAI = config.mode === "chrryAI"
 
   const { t } = useAppContext()
 

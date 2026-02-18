@@ -1,11 +1,11 @@
-import React from "react"
-import { CheckIcon, Circle } from "./icons"
-import { COLORS } from "./context/AppContext"
-import { useHasHydrated } from "./hooks"
-import { Button, Div, useTheme } from "./platform"
+import type React from "react"
 import { useColorSchemeStyles } from "./ColorScheme.styles"
-import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+import { COLORS } from "./context/AppContext"
 import { useAuth } from "./context/providers/AuthProvider"
+import { useHasHydrated } from "./hooks"
+import { CheckIcon, Circle } from "./icons"
+import { Button, Div, useTheme } from "./platform"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function ColorScheme({
   style,
@@ -50,7 +50,7 @@ export default function ColorScheme({
     <Div style={{ ...styles.colorScheme.style, ...style }}>
       {Object.entries(COLORS).map(([key, value]) => (
         <Button
-          data-testid={dataTestId + "-" + key}
+          data-testid={`${dataTestId}-${key}`}
           key={key}
           onClick={() => {
             !props.colorScheme && setColorScheme(key as keyof typeof COLORS)

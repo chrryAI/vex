@@ -1,5 +1,6 @@
 import type { Runtime } from "webextension-polyfill"
 import browser from "webextension-polyfill"
+
 /// <reference types="chrome" />
 
 // Declare chrome global for TypeScript

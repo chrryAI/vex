@@ -3,7 +3,7 @@
  * Cross-platform chart calculation logic
  */
 
-import { Mood, moodValues, emojiMap } from "./chartTypes"
+import { emojiMap, type Mood, moodValues } from "./chartTypes"
 
 export const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 

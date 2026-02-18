@@ -1,15 +1,16 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { Languages } from "./icons"
-import Modal from "./Modal"
-import { locale, LANGUAGES } from "./locales"
+import type React from "react"
+import { useEffect, useState } from "react"
 import { useAppContext } from "./context/AppContext"
 import { useAuth } from "./context/providers"
-import { apiFetch } from "./utils"
-import { useLanguageSwitcherStyles } from "./LanguageSwitcher.styles"
-import { Button, Div } from "./platform"
 import { useStyles } from "./context/StylesContext"
+import { Languages } from "./icons"
+import { useLanguageSwitcherStyles } from "./LanguageSwitcher.styles"
+import { LANGUAGES, type locale } from "./locales"
+import Modal from "./Modal"
+import { Button, Div } from "./platform"
+import { apiFetch } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 const LanguageSwitcher = ({
@@ -40,7 +41,7 @@ const LanguageSwitcher = ({
   useEffect(() => {
     if (user && user.language !== language && token) {
       ;(async () => {
-        const result = await apiFetch(`${API_URL}/user`, {
+        const _result = await apiFetch(`${API_URL}/user`, {
           method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
