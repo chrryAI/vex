@@ -1,6 +1,6 @@
 import type React from "react"
 import { useColorSchemeStyles } from "./ColorScheme.styles"
-import { COLORS } from "./context/AppContext"
+import { COLORS, useAppContext } from "./context/AppContext"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useHasHydrated } from "./hooks"
 import { CheckIcon, Circle } from "./icons"
@@ -20,6 +20,7 @@ export default function ColorScheme({
 }) {
   const styles = useColorSchemeStyles()
   const { plausible } = useAuth()
+  const { t } = useAppContext()
   const {
     colorScheme: colorSchemeInternal,
     setColorScheme: setColorSchemeInternal,
@@ -52,6 +53,7 @@ export default function ColorScheme({
         <Button
           data-testid={`${dataTestId}-${key}`}
           key={key}
+          aria-label={t("Set color scheme to {{color}}", { color: key })}
           onClick={() => {
             !props.colorScheme && setColorScheme(key as keyof typeof COLORS)
             onChange?.(key as keyof typeof COLORS)
