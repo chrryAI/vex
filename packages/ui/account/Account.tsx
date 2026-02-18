@@ -175,7 +175,6 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
       signOutContext?.({
         callbackUrl: `${FRONTEND_URL}/?loggedOut=true${isExtensionRedirect ? "&extension=true" : ""}`,
       })
-      setDeviceId(uuidv4())
     }
 
     const searchParams = new URLSearchParams(window.location.search)

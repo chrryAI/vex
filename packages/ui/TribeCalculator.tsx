@@ -5,7 +5,7 @@ import toast from "react-hot-toast"
 import A from "./a/A"
 import { useAgentStyles } from "./agent/Agent.styles"
 import ConfirmButton from "./ConfirmButton"
-import { useAppContext, COLORS } from "./context/AppContext"
+import { COLORS, useAppContext } from "./context/AppContext"
 import { useAuth, useData, useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
@@ -226,13 +226,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
             creditsPrice: parseFloat(String(CREDITS_PRICE || "10")),
           })
         : undefined
-    console.log(`🚀 ~ getFormState ~ estimate:`, {
-      frequency,
-      scheduledTimes: schedule,
-      startDate: startDate ? new Date(startDate) : null,
-      endDate: endDate ? new Date(endDate) : null,
-      creditsPrice: parseFloat(String(CREDITS_PRICE || "10")),
-    })
 
     schedule = schedule.map((slot) => {
       return {
@@ -263,7 +256,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   const [formData, setFormData] = useState(getFormState())
 
   const totalPosts = formData?.totalPosts
-  console.log(`🚀 ~ TribeCalculator ~ formData:`, formData)
 
   useEffect(() => {
     existingSchedule && setFormData(getFormState())
@@ -704,7 +696,9 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
               </A>
             </Div>
             <Text style={{ fontSize: "0.8rem" }}>
-              {t("Calculate credits needed for scheduled tribe posts")}
+              {t(`Calculate credits needed for scheduled {{tribeType}} posts`, {
+                tribeType,
+              })}
             </Text>
           </Div>
           <Div
@@ -1565,7 +1559,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
             })}
           </Div>
         </Div>
-        {totalPosts}
         {/* Results */}
         {totalPosts > 0 ? (
           <Div

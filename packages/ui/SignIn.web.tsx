@@ -78,7 +78,6 @@ export default function SignIn({
       errorUrl: string
     },
   ) => {
-    setDeviceId(uuidv4())
     clear()
     return signInContextInternal?.(provider, options)
   }

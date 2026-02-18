@@ -46,8 +46,8 @@ import {
   getTasks,
   getThread,
   getTimer,
-  getTribes,
   getTribePost,
+  getTribes,
   getUser as getUserDb,
   gte,
   type guest,
@@ -2567,15 +2567,15 @@ This is the conversation starter that prompted their message. Keep this context 
 `
     : ""
 }${
-          appPlaceholder || threadPlaceholder
-            ? `
+  appPlaceholder || threadPlaceholder
+    ? `
 You recently generated these personalized suggestions for the user:
 ${appPlaceholder ? `- App placeholder: "${appPlaceholder.text}"` : ""}
 ${threadPlaceholder ? `- Thread placeholder: "${threadPlaceholder.text}"` : ""}
 
 These reflect the user's interests and recent conversations. If the user seems uncertain about what to discuss or asks for suggestions, you can naturally reference these topics. Be conversational about it - don't just list them, weave them into your response naturally.`
-            : ""
-        }
+    : ""
+}
 `
       : ""
 
@@ -6195,6 +6195,7 @@ Respond in JSON format:
           temperature: requestApp?.temperature ?? 0.7,
           maxOutputTokens: jobMaxTokens, // Use job's maxTokens for scheduled posts
           tools: allTools, // Includes imageTools
+          toolChoice: "none", // Disable automatic tool calls - only use when user explicitly requests
           async onFinish({ text, usage, response, toolCalls, toolResults }) {
             finalText = text
             responseMetadata = response
@@ -7079,6 +7080,7 @@ Respond in JSON format:
           temperature: requestApp?.temperature ?? 0.7,
           maxOutputTokens: jobMaxTokens,
           tools: allTools,
+          toolChoice: "none", // Disable automatic tool calls
           async onFinish({ text, usage, response, toolCalls, toolResults }) {
             finalText = text
             _responseMetadata = response
@@ -7360,6 +7362,7 @@ Respond in JSON format:
           temperature: requestApp?.temperature ?? 0.7,
           maxOutputTokens: jobMaxTokens,
           tools: allTools,
+          toolChoice: "none", // Disable automatic tool calls
           providerOptions: {
             google: {
               // thinkingConfig: {
@@ -7546,6 +7549,7 @@ Respond in JSON format:
         temperature: requestApp?.temperature ?? 0.7,
         maxOutputTokens: jobMaxTokens,
         tools: toolsForModel,
+        toolChoice: "none", // Disable automatic tool calls
         async onFinish({ text, usage, response, sources, toolCalls }) {
           finalText = text
           responseMetadata = response

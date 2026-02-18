@@ -830,20 +830,6 @@ export function AuthProvider({
     props.session?.deviceId,
   )
 
-  useEffect(() => {
-    if (!isStorageReady && !(isTauri || isCapacitor || isExtension)) return
-    if (!deviceId) {
-      console.log("📝 Updating deviceId from session:", session?.deviceId)
-      if (isExtension || isCapacitor) {
-        setDeviceId(uuidv4())
-
-        return
-      } else if (isTauri) {
-        setDeviceId(uuidv4())
-      }
-    }
-  }, [deviceId, setDeviceId, isStorageReady, isTauri])
-
   const [enableNotifications, setEnableNotifications] = useLocalStorage<
     boolean | undefined
   >("enableNotifications", true)
@@ -1114,8 +1100,9 @@ export function AuthProvider({
     initialTribePost,
   )
 
-  const [isLoadingPosts, setIsLoadingPosts] =
-    useState<boolean>(!initialTribePosts)
+  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
+    !initialTribePosts,
+  )
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)

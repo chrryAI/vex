@@ -78,6 +78,135 @@ function generateToken(userId: string, email: string): string {
 }
 
 import { apps as appsSchema, moltComments } from "@repo/db/src/schema"
+
+/**
+ * Robust JSON parser for AI responses
+ * Handles markdown code blocks, trailing commas, and truncated JSON
+ */
+function parseAIJsonResponse(content: string): {
+  tribeName?: string
+  tribeContent?: string
+  tribeTitle?: string
+  tribe?: string
+  content?: string
+  post?: string
+  seoKeywords?: string[]
+  moltTitle?: string
+  moltContent?: string
+  moltSubmolt?: string
+  submolt?: string
+} {
+  if (!content || content.trim().length === 0) {
+    throw new Error("Empty AI response content")
+  }
+
+  // Strip markdown code blocks
+  let cleaned = content.trim()
+  if (cleaned.startsWith("```json")) {
+    cleaned = cleaned
+      .replace(/^```json\s*/, "")
+      .replace(/```\s*$/, "")
+      .trim()
+  } else if (cleaned.startsWith("```")) {
+    cleaned = cleaned
+      .replace(/^```\s*/, "")
+      .replace(/```\s*$/, "")
+      .trim()
+  }
+
+  // Try direct parse first
+  try {
+    return JSON.parse(cleaned)
+  } catch {
+    // Continue to fix attempts
+  }
+
+  // Try to extract JSON object boundaries
+  const firstBrace = cleaned.indexOf("{")
+  const lastBrace = cleaned.lastIndexOf("}")
+
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    const jsonString = cleaned.substring(firstBrace, lastBrace + 1)
+
+    try {
+      return JSON.parse(jsonString)
+    } catch {
+      // Continue to more aggressive fixes
+    }
+
+    // Fix common issues: trailing commas, unclosed strings
+    const fixed = jsonString
+      // Remove trailing commas before } or ]
+      .replace(/,\s*([}\]])/g, "$1")
+      // Fix unclosed strings by finding unmatched quotes
+      .replace(/: "([^"]*)$/, ': "$1"') // Simple unclosed string fix
+
+    try {
+      return JSON.parse(fixed)
+    } catch {
+      // Continue to extraction fallback
+    }
+  }
+
+  // Last resort: try to extract key fields with regex
+  const extractField = (field: string): string | undefined => {
+    const patterns = [
+      new RegExp(`"${field}"\\s*:\\s*"([^"]*)"`, "i"),
+      new RegExp(`"${field}"\\s*:\\s*"([^"]*)$`, "i"), // Unclosed string
+    ]
+    for (const pattern of patterns) {
+      const match = cleaned.match(pattern)
+      if (match?.[1]) return match[1]
+    }
+    return undefined
+  }
+
+  const result: Record<string, unknown> = {}
+  const fields = [
+    "tribeName",
+    "tribeContent",
+    "tribeTitle",
+    "tribe",
+    "content",
+    "post",
+    "seoKeywords",
+    "moltTitle",
+    "moltContent",
+    "moltSubmolt",
+    "submolt",
+  ]
+
+  for (const field of fields) {
+    const value = extractField(field)
+    if (value !== undefined) {
+      if (field === "seoKeywords") {
+        // Try to parse as JSON array or extract manually
+        try {
+          result[field] = JSON.parse(value)
+        } catch {
+          // Extract comma-separated or quoted items
+          result[field] =
+            value.match(/"([^"]+)"/g)?.map((s) => s.replace(/"/g, "")) || []
+        }
+      } else {
+        result[field] = value
+      }
+    }
+  }
+
+  // Check if we extracted anything meaningful
+  const hasContent =
+    result.tribeContent || result.content || result.moltContent || result.post
+  if (hasContent) {
+    console.log("⚠️  Used regex fallback to extract AI response fields")
+    return result as ReturnType<typeof parseAIJsonResponse>
+  }
+
+  throw new Error(
+    `Failed to parse AI response. Content preview: ${cleaned.substring(0, 200)}...`,
+  )
+}
+
 import { streamText } from "ai"
 import { isExcludedAgent } from "../cron/moltbookExcludeList"
 import {
@@ -1489,38 +1618,8 @@ Important Notes:
     )
     console.log(`📄 Full AI response:\n${aiMessageContent}`)
 
-    // Strip markdown code blocks if present
-    let cleanedContent = aiMessageContent.trim()
-    if (cleanedContent.startsWith("```json")) {
-      cleanedContent = cleanedContent
-        .replace(/^```json\s*/, "")
-        .replace(/```\s*$/, "")
-        .trim()
-    } else if (cleanedContent.startsWith("```")) {
-      cleanedContent = cleanedContent
-        .replace(/^```\s*/, "")
-        .replace(/```\s*$/, "")
-        .trim()
-    }
-
-    // Parse JSON from AI response
-    let parsedContent: {
-      tribeName?: string
-      tribeContent?: string
-      tribeTitle?: string
-      tribe?: string
-      content?: string
-      post?: string
-    }
-    try {
-      parsedContent = JSON.parse(cleanedContent)
-    } catch (parseError) {
-      console.error("❌ JSON parse error:", parseError)
-      console.error("📄 Cleaned content that failed to parse:", cleanedContent)
-      throw new Error(
-        `Failed to parse AI response as JSON: ${cleanedContent.substring(0, 500)}`,
-      )
-    }
+    // Parse JSON from AI response using robust helper
+    const parsedContent = parseAIJsonResponse(aiMessageContent)
 
     // Map AI response to expected format (handle both old and new field names)
     const aiResponse = {
