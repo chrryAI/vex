@@ -1361,7 +1361,9 @@ ai.post("/", async (c) => {
     isMolt
 
   const shouldStream =
-    requestData.stream !== "false" && requestData.stream !== false && !job
+    (typeof requestData.stream === "string"
+      ? requestData.stream !== "false"
+      : requestData?.stream !== false) && !jobId
 
   const notifyOwnerAndCollaborations = (
     x: Omit<notifyOwnerAndCollaborationsPayload, "c">,
