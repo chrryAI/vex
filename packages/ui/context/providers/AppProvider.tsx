@@ -651,7 +651,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const lastSegment = pathSegments[pathSegments.length - 1] || ""
 
     const matchedApp = storeApps?.find(
-      (app) => app?.store?.slug === lastSegment,
+      (app) => app?.store?.slug === lastSegment && app?.store?.apps?.length,
     )
 
     return matchedApp

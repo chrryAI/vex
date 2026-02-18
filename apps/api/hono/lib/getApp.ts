@@ -2,7 +2,8 @@ import type { appWithStore } from "@chrryai/chrry/types"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
-import { getApp as getAppDb, getStore } from "@repo/db"
+import { db, eq, getApp as getAppDb, getStore } from "@repo/db"
+import { stores } from "@repo/db/src/schema"
 import type { Context } from "hono"
 import { getActiveRentalsForStore } from "../../lib/adExchange/getActiveRentals"
 import { getGuest, getMember } from "./auth"
@@ -202,6 +203,42 @@ async function resolveAppFromPathname(
   })
 
   return { app, path: whiteLabel ? "whiteLabel" : "pathname" }
+}
+
+async function resolveAppFromStoreCandidate(
+  requestParams: RequestParams,
+
+  auth: AuthContext,
+  siteConfig: any,
+): Promise<{ app: any; path: string }> {
+  const pathname = requestParams.pathname
+  const { appSlug: storeSlugCandidate } = getAppAndStoreSlugs(pathname, {
+    defaultAppSlug: siteConfig.slug,
+    defaultStoreSlug: siteConfig.storeSlug,
+  })
+
+  const [dbStore] = storeSlugCandidate
+    ? await db
+        .select({
+          id: stores.id,
+          appId: stores.appId,
+        })
+        .from(stores)
+        .where(eq(stores.slug, storeSlugCandidate))
+        .limit(1)
+    : []
+
+  const app = dbStore?.appId
+    ? await getAppDb({
+        id: dbStore?.appId,
+        userId: auth.member?.id,
+        guestId: auth.guest?.id,
+        depth: 1,
+        skipCache: requestParams.skipCache,
+      })
+    : undefined
+
+  return { app, path: "storeCandidate" }
 }
 
 /**
@@ -481,11 +518,9 @@ export async function getApp({
     appInternal = result.app
     resolutionPath = result.path
   } else {
-    const result = await resolveAppFromStoreContext(
-      requestParams,
-      auth,
-      siteConfig,
-    )
+    const result =
+      (await resolveAppFromStoreCandidate(requestParams, auth, siteConfig)) ||
+      (await resolveAppFromStoreContext(requestParams, auth, siteConfig))
     appInternal = result.app
     resolutionPath = result.path
   }

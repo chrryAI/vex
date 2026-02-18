@@ -8688,8 +8688,6 @@ You are an architecture expert. Design systems that grow with users, follow indu
   })
   if (!architect) throw new Error("Failed to add architect app")
 
-  await extractTranslations()
-
   // // ============================================
   // // DEMO: POPULAR AI APPS WITH NATIVE VERSIONS
   // // ============================================
@@ -8789,13 +8787,13 @@ You are an architecture expert. Design systems that grow with users, follow indu
   // })
 
   // ============================================
-  // 🌌 NEBULA STORE - Science & Exploration Hub
+  // 🌌 ORBIT STORE - Science & Exploration Hub
   // ============================================
-  const nebulaStore = await getOrCreateStore({
-    slug: "nebula",
-    name: "Nebula",
+  const orbitStore = await getOrCreateStore({
+    slug: "orbit",
+    name: "Orbit",
     title: "Science & Exploration Hub",
-    domain: "https://nebula.chrry.ai",
+    domain: "https://orbit.chrry.ai",
     parentStoreId: blossom.id,
     userId: admin.id,
     visibility: "public" as const,
@@ -8810,7 +8808,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     slug: "nebula",
     name: "Nebula",
     subtitle: "Science & Exploration AI",
-    domain: "https://nebula.chrry.ai",
+    domain: "https://orbit.chrry.ai",
     version: "1.0.0",
     status: "active" as const,
     title: "Your Science Companion",
@@ -8818,11 +8816,11 @@ You are an architecture expert. Design systems that grow with users, follow indu
     backgroundColor: "#000000",
     icon: "🌌",
     visibility: "public" as const,
-    storeId: nebulaStore.id,
+    storeId: orbitStore.id,
     userId: admin.id,
     systemPrompt: nebulaSystemPrompt,
     highlights: nebulaInstructions,
-    defaultModel: "gemini" as const,
+    defaultModel: "sushi" as const,
     onlyAgent: false,
     placeholder: "Ask me anything about science, physics, or the universe...",
     tipsTitle: "Science Tips",
@@ -8893,7 +8891,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
   if (!nebulaApp) throw new Error("Failed to create or update nebula app")
 
   await updateStore({
-    ...nebulaStore,
+    ...orbitStore,
     appId: nebulaApp.id,
     userId: admin.id,
     guestId: null,
@@ -8901,15 +8899,30 @@ You are an architecture expert. Design systems that grow with users, follow indu
 
   {
     const storeInstall = await getStoreInstall({
-      storeId: nebulaStore.id,
+      storeId: orbitStore.id,
       appId: nebulaApp.id,
     })
     if (!storeInstall) {
       await createStoreInstall({
-        storeId: nebulaStore.id,
+        storeId: orbitStore.id,
         appId: nebulaApp.id,
         featured: true,
         displayOrder: 0,
+      })
+    }
+  }
+
+  {
+    const blossomNebulaInstall = await getStoreInstall({
+      storeId: blossom.id,
+      appId: nebulaApp.id,
+    })
+    if (!blossomNebulaInstall) {
+      await createStoreInstall({
+        storeId: blossom.id,
+        appId: nebulaApp.id,
+        featured: true,
+        displayOrder: 10,
       })
     }
   }
@@ -8940,11 +8953,11 @@ You are an architecture expert. Design systems that grow with users, follow indu
     backgroundColor: "#000000",
     icon: "⚛️",
     visibility: "public" as const,
-    storeId: nebulaStore.id,
+    storeId: orbitStore.id,
     userId: admin.id,
     systemPrompt: quantumLabSystemPrompt,
     highlights: quantumLabInstructions,
-    defaultModel: "gemini" as const,
+    defaultModel: "sushi" as const,
     onlyAgent: false,
     placeholder:
       "Build a quantum circuit, explain a gate, or simulate an algorithm...",
@@ -9042,11 +9055,11 @@ You are an architecture expert. Design systems that grow with users, follow indu
     backgroundColor: "#000000",
     icon: "🌠",
     visibility: "public" as const,
-    storeId: nebulaStore.id,
+    storeId: orbitStore.id,
     userId: admin.id,
     systemPrompt: starMapSystemPrompt,
     highlights: starMapInstructions,
-    defaultModel: "gemini" as const,
+    defaultModel: "sushi" as const,
     onlyAgent: false,
     placeholder:
       "What's in the night sky tonight? Ask about stars, planets, or black holes...",
@@ -9144,11 +9157,11 @@ You are an architecture expert. Design systems that grow with users, follow indu
     backgroundColor: "#000000",
     icon: "🧪",
     visibility: "public" as const,
-    storeId: nebulaStore.id,
+    storeId: orbitStore.id,
     userId: admin.id,
     systemPrompt: cosmosSystemPrompt,
     highlights: cosmosInstructions,
-    defaultModel: "gemini" as const,
+    defaultModel: "sushi" as const,
     onlyAgent: false,
     placeholder:
       "Solve a physics problem, derive an equation, or explain a theorem...",
@@ -9229,9 +9242,25 @@ You are an architecture expert. Design systems that grow with users, follow indu
     })
   }
 
+  // Add Sushi to Orbit store
+  if (sushiApp) {
+    const orbitSushiInstall = await getStoreInstall({
+      storeId: orbitStore.id,
+      appId: sushiApp.id,
+    })
+    if (!orbitSushiInstall) {
+      await createStoreInstall({
+        storeId: orbitStore.id,
+        appId: sushiApp.id,
+        featured: false,
+        displayOrder: 10,
+      })
+    }
+  }
+
+  await extractTranslations()
+
   // Seed fake Tribe engagement (posts, likes, reactions, comments, follows)
-  console.log("🌱 Seeding Tribe engagement...")
-  !isProd && (await seedTribeEngagement())
 
   return { vex, coder, fightClub }
 }

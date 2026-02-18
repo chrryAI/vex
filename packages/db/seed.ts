@@ -1070,6 +1070,8 @@ const create = async () => {
 
   const { vex } = await createStores({ user: admin })
 
+  await seedTribeEngagement()
+
   await updateStoreUrls({ user: admin })
 
   await seedTribeEngagement()
@@ -1802,7 +1804,7 @@ const prod = async () => {
     email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  // const { vex } = await createStores({ user: admin })
+  const { vex } = await createStores({ user: admin })
 
   // await seedScheduledTribeJobs()
 
@@ -1916,6 +1918,10 @@ const seedDb = async (): Promise<void> => {
     await prod()
     process.exit(0)
   } else {
+    await prod()
+
+    process.exit(0)
+
     if (isSeedSafe) {
       // eslint-disable-next-line no-console
       console.warn(
