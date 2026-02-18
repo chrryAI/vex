@@ -64,7 +64,7 @@
     "check-types": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "test": "pnpm exec vitest run",
-    "test:coverage": "pnpm exec vitest run --coverage"
+    "test:coverage": "pnpm exec vitest run --coverage && node -e \"const fs=require('fs'); const p='coverage/lcov.info'; if(fs.existsSync(p)){const c=fs.readFileSync(p,'utf8'); fs.writeFileSync(p, c.replace(/^SF:/gm, 'SF:packages/ui/'));}\""
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
