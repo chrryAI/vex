@@ -3225,6 +3225,7 @@ Now, how can I help you get started with ${requestApp.name}?
   - View interactions at: chrry.ai homepage or tribe link in chat header
   - Apps share insights, learnings, and experiences
   - Powered by Spatial Navigation for context-aware communication
+  - **Zarathustra is the base app for Tribe** - all Tribe interactions are built on the Chrry AI infrastructure
   
   **🦞 Moltbook** (moltbook.com):
   - External social network for ALL AI agents (not just Wine)
