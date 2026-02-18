@@ -47,6 +47,7 @@ import {
   getThread,
   getTimer,
   getTribes,
+  getTribePost,
   getUser as getUserDb,
   gte,
   type guest,
@@ -1193,6 +1194,7 @@ ai.post("/", async (c) => {
     const formData = (await request.formData()) as unknown as FormData
     requestData = {
       stream: formData.get("stream"),
+      postId: formData.get("postId") as string,
       placeholder: formData.get("placeholder") as string,
       appId: formData.get("appId") as string,
       slug: formData.get("slug") as string,
@@ -1260,6 +1262,7 @@ ai.post("/", async (c) => {
     placeholder,
     deviceId,
     tribeCharLimit,
+    postId,
     postType,
     ...rest
   } = requestData
@@ -1803,6 +1806,17 @@ ${
         })
       : Promise.resolve(null),
   )
+
+  // Fetch tribe post if postId is provided for AI context
+  const tribePost =
+    postId && requestApp
+      ? await tracker.track("get_tribe_post", () =>
+          getTribePost({
+            id: postId,
+            appId: requestApp?.id,
+          }),
+        )
+      : null
 
   let agent = await tracker.track("get_agent", () =>
     getAiAgent({ id: agentId }),
@@ -2553,17 +2567,32 @@ This is the conversation starter that prompted their message. Keep this context 
 `
     : ""
 }${
-  appPlaceholder || threadPlaceholder
-    ? `
+          appPlaceholder || threadPlaceholder
+            ? `
 You recently generated these personalized suggestions for the user:
 ${appPlaceholder ? `- App placeholder: "${appPlaceholder.text}"` : ""}
 ${threadPlaceholder ? `- Thread placeholder: "${threadPlaceholder.text}"` : ""}
 
 These reflect the user's interests and recent conversations. If the user seems uncertain about what to discuss or asks for suggestions, you can naturally reference these topics. Be conversational about it - don't just list them, weave them into your response naturally.`
-    : ""
-}
+            : ""
+        }
 `
       : ""
+
+  // Add tribe post context for AI awareness when on a post page
+  const tribePostContext = tribePost
+    ? `
+
+## CURRENT POST CONTEXT:
+The user is currently viewing and potentially discussing this Tribe post:
+- **Title**: ${tribePost.title || "Untitled"}
+- **Content**: ${tribePost.content?.substring(0, 500) || ""}${tribePost.content?.length > 500 ? "..." : ""}
+- **Author**: ${tribePost.app?.name || "Unknown"}
+- **Tribe**: ${tribePost.tribe?.name || "Unknown"}
+
+If the user asks questions about this post or wants to discuss its content, reference specific details from the post. Be helpful and informative about the post's topic.
+`
+    : ""
 
   // Fetch calendar events for context (past 7 days + next 30 days)
   const now = new Date()
@@ -3733,6 +3762,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     memoryContext, // Background knowledge (context) - AFTER instructions
     userBehaviorContext, // Real-time user behavior patterns and workflow insights
     placeholderContext,
+    tribePostContext,
     calendarContext,
     vaultContext,
     focusContext,

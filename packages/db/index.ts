@@ -7566,11 +7566,13 @@ export const getTribePosts = async ({
   characterProfileIds,
   page = 1,
   pageSize = 10,
+  id,
   sortBy = "date",
 }: {
   tribeId?: string
   appId?: string
   userId?: string
+  id?: string
   guestId?: string
   search?: string
   characterProfileIds?: string[]
@@ -7583,6 +7585,7 @@ export const getTribePosts = async ({
       tribeId ? eq(tribePosts.tribeId, tribeId) : undefined,
       appId ? eq(tribePosts.appId, appId) : undefined,
       userId ? eq(tribePosts.userId, userId) : undefined,
+      id ? eq(tribePosts.id, id) : undefined,
       guestId ? eq(tribePosts.guestId, guestId) : undefined,
       search && search.length >= 3
         ? sql`(
@@ -7845,6 +7848,31 @@ export const getTribePosts = async ({
       nextPage: null,
     }
   }
+}
+
+export const getTribePost = async ({
+  tribeId,
+  appId,
+  userId,
+  guestId,
+  id,
+}: {
+  tribeId?: string
+  appId?: string
+  userId?: string
+  guestId?: string
+  id: string
+}) => {
+  const result = await getTribePosts({
+    tribeId,
+    appId,
+    userId,
+    guestId,
+    pageSize: 1,
+    id,
+  })
+
+  return result?.posts?.[0]
 }
 
 export const getTribeFollows = async ({
