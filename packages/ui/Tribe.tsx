@@ -462,43 +462,38 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           </AppLink>
                         )}
                         {accountApp ? (
-                          <Button
-                            onClick={() => {
-                              setIsNewAppChat({ item: accountApp })
-                            }}
+                          <AppLink
+                            app={accountApp}
+                            loading={<Loading size={20} />}
                             className="inverted"
+                            icon={<Img app={accountApp} size={20} />}
                             style={{
                               ...utilities.inverted.style,
                               ...utilities.small.style,
                             }}
                           >
-                            <Img app={accountApp} size={20} />
                             {t("Go to Your Agent")}
-                          </Button>
+                          </AppLink>
                         ) : (
-                          <Button
-                            onClick={() => {
-                              if (showTribeProfile) {
-                                setIsNewAppChat({ item: app })
-                                return
-                              }
-                              if (!user) {
-                                addParams({ signIn: "login" })
-                                return
-                              }
-                              push("/?settings=true")
-                            }}
-                            className="inverted"
-                            style={{
-                              ...utilities.inverted.style,
-                              ...utilities.small.style,
-                            }}
-                          >
-                            <Img icon="spaceInvader" size={18} />
-                            {t(showTribeProfile ? TRAIN : "Create Your Agent", {
-                              name: app?.name,
-                            })}
-                          </Button>
+                          app && (
+                            <AppLink
+                              app={app}
+                              icon={<Img icon="spaceInvader" size={18} />}
+                              loading={<Loading size={18} />}
+                              className="inverted"
+                              style={{
+                                ...utilities.inverted.style,
+                                ...utilities.small.style,
+                              }}
+                            >
+                              {t(
+                                showTribeProfile ? TRAIN : "Create Your Agent",
+                                {
+                                  name: app?.name,
+                                },
+                              )}
+                            </AppLink>
+                          )
                         )}
                       </Div>
                     </Div>
@@ -744,19 +739,18 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         </Button>
                       )}
                       {accountApp ? (
-                        <Button
-                          onClick={() => {
-                            setIsNewAppChat({ item: accountApp })
-                          }}
+                        <AppLink
+                          app={accountApp}
+                          loading={<Loading size={20} />}
                           className="inverted"
+                          icon={<Img app={accountApp} size={20} />}
                           style={{
                             ...utilities.inverted.style,
                             ...utilities.small.style,
                           }}
                         >
-                          <Img app={accountApp} size={20} />
                           {t("Go to Your Agent")}
-                        </Button>
+                        </AppLink>
                       ) : (
                         <Button
                           onClick={() => {
@@ -1149,28 +1143,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               fontSize: ".9rem",
                             }}
                           >
-                            <A
-                              onClick={(e) => {
-                                if (e.metaKey || e.ctrlKey) {
-                                  return
-                                }
-                                e.preventDefault()
-
-                                if (post.app)
-                                  setIsNewAppChat({
-                                    item: post.app,
-                                    tribe: true,
-                                  })
-                              }}
-                              href={post.app ? getAppSlug(post.app) : "/"}
+                            <AppLink
+                              app={post.app}
+                              icon={<Img app={post.app} />}
+                              loading={<Loading size={28} />}
                             >
-                              {post.app && loadingApp?.id !== post.app.id ? (
-                                <Img app={post.app} />
-                              ) : (
-                                <Loading size={28} />
-                              )}
                               {post.app?.name}
-                            </A>
+                            </AppLink>
                             <A
                               href={`/tribe/${post.tribe?.slug || "general"}`}
                               style={{
@@ -1413,38 +1392,23 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                       marginBottom: "1rem",
                                     }}
                                   >
-                                    <A
-                                      onClick={(e) => {
-                                        if (e.metaKey || e.ctrlKey) {
-                                          return
-                                        }
-                                        e.preventDefault()
-
-                                        if (post.app)
-                                          setIsNewAppChat({
-                                            item: post.app,
-                                            tribe: true,
-                                          })
-                                      }}
+                                    <AppLink
+                                      app={post.app}
+                                      isTribe
+                                      icon={
+                                        <Span style={{ fontSize: "1.3rem" }}>
+                                          {post.app.icon}
+                                        </Span>
+                                      }
+                                      loading={<Loading size={28} />}
                                       style={{
                                         display: "flex",
                                         alignItems: "center",
                                         gap: 8,
                                       }}
-                                      href={
-                                        post.app ? getAppSlug(post.app) : "/"
-                                      }
                                     >
-                                      {post.app &&
-                                      loadingApp?.id !== post.app.id ? (
-                                        <Span style={{ fontSize: "1.3rem" }}>
-                                          {post.app.icon}
-                                        </Span>
-                                      ) : (
-                                        <Loading size={28} />
-                                      )}
                                       {post.app?.name}
-                                    </A>
+                                    </AppLink>
                                     {post.app.icon && (
                                       <Img
                                         style={{

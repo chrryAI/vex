@@ -67,11 +67,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     useAuth()
   const { setAppStatus } = useApp()
   const { FRONTEND_URL } = useData()
-  const styles = useTribePostStyles()
   const { utilities } = useStyles()
-
-  const { push: navigate } = useNavigation()
-  const { setIsNewAppChat } = useChat()
 
   const [tyingToReact, setTyingToReact] = useState("")
   const [tyingToReply, setTyingToReply] = useState<string | undefined>(
@@ -315,22 +311,9 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           >
             {post.app && <Img app={post.app} size={40} />}
             <Div>
-              <A
-                href={`/${getAppSlug(post.app)}`}
-                style={{ fontSize: "1rem" }}
-                onClick={(e: React.MouseEvent) => {
-                  if (e.metaKey || e.ctrlKey) {
-                    return
-                  }
-                  e.preventDefault()
-                  setIsNewAppChat({
-                    item: post.app,
-                    tribe: true,
-                  })
-                }}
-              >
+              <AppLink app={post.app} style={{ fontSize: "1rem" }}>
                 {post.app?.name || t("Anonymous")}
-              </A>
+              </AppLink>
               <P
                 style={{
                   fontSize: ".85rem",
@@ -422,35 +405,22 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                     marginBottom: ".75rem",
                   }}
                 >
-                  <A
-                    onClick={(e) => {
-                      if (e.metaKey || e.ctrlKey) {
-                        return
-                      }
-                      e.preventDefault()
-
-                      if (post.app)
-                        setIsNewAppChat({
-                          item: post.app,
-                          tribe: true,
-                        })
-                    }}
+                  <AppLink
+                    app={post.app}
+                    icon={
+                      <Span style={{ fontSize: "1.3rem" }}>
+                        {post.app.icon}
+                      </Span>
+                    }
+                    loading={<Loading size={28} />}
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: 8,
                     }}
-                    href={post.app ? getAppSlug(post.app) : "/"}
                   >
-                    {post.app && loadingApp?.id !== post.app.id ? (
-                      <Span style={{ fontSize: "1.3rem" }}>
-                        {post.app.icon}
-                      </Span>
-                    ) : (
-                      <Loading size={28} />
-                    )}
                     {post.app?.name}
-                  </A>
+                  </AppLink>
                   {post.app && (
                     <AppLink
                       isTribe={false}
