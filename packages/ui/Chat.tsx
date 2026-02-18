@@ -246,15 +246,46 @@ export default function Chat({
     setShowGrapes,
     grapes,
     postToTribe,
-    setPostToTribe,
+    setPostToTribe: setPostToTribeInternal,
     postToMoltbook,
-    setPostToMoltbook,
+    setPostToMoltbook: setPostToMoltbookInternal,
     moltPlaceHolder,
     canShowTribe,
     showFocus,
     postId,
     ...auth
   } = useAuth()
+
+  const lastTribe = user?.lastTribe
+  const lastMolt = user?.lastTribe
+  const now = new Date()
+
+  const cooldownMinutes = user?.role === "admin" ? 0 : 30
+  const cooldownMs = cooldownMinutes * 60 * 1000
+
+  const setPostToTribe = (value: boolean) => {
+    if (value && lastTribe && lastTribe.createdOn) {
+      const timeSinceLastPost =
+        now.getTime() - new Date(lastTribe.createdOn).getTime()
+      const remainingCooldown = cooldownMs - timeSinceLastPost
+
+      // Cooldown still active
+      if (remainingCooldown > 0) {
+        const remainingMinutes = Math.ceil(remainingCooldown / (60 * 1000))
+        toast.error(
+          `Please wait ${remainingMinutes} more minute${remainingMinutes > 1 ? "s" : ""} before posting to tribe again`,
+        )
+        return // Don't set the value, just return
+      }
+    }
+    setPostToTribeInternal(value)
+  }
+
+  const setPostToMoltbook = (value: boolean) => {
+    if (value && lastMolt) {
+    }
+    setPostToMoltbookInternal(value)
+  }
 
   const threadId = auth.threadId || auth.threadIdRef.current
 
@@ -3663,7 +3694,7 @@ export default function Chat({
                       <Div
                         style={{
                           position: "relative",
-                          top: !isChatFloating ? 32 : 0,
+                          top: !isChatFloating ? 27 : 0,
                           zIndex: 50,
                           display: "inline-flex",
                           gap: 10,
@@ -3887,6 +3918,7 @@ export default function Chat({
                     canShowTribe &&
                     empty &&
                     app &&
+                    !appStatus?.part &&
                     (minimize || showFocus) && (
                       <>
                         <AppLink
@@ -3961,6 +3993,7 @@ export default function Chat({
                     empty &&
                     canShowTribe &&
                     app &&
+                    !appStatus?.part &&
                     !isChatFloating && (
                       <>
                         <AppLink

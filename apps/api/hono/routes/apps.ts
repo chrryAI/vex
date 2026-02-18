@@ -1233,7 +1233,15 @@ app.patch("/:id", async (c) => {
 
 app.delete("/:id", async (c) => {
   const id = c.req.param("id")
-  const body = await c.req.json()
+
+  // Body is optional for DELETE - handle case where no body is sent
+  let body: { dangerousZone?: boolean } = {}
+  try {
+    body = await c.req.json()
+  } catch {
+    // No body or invalid JSON - use defaults
+  }
+
   const skipDangerousZone =
     isDevelopment || isE2E || body.dangerousZone === true
   try {

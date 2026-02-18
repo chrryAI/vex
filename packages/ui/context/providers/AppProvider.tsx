@@ -452,7 +452,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   const defaultExtends = baseApp?.store?.apps
-    ?.slice(0, 5)
+    ?.slice(0, baseApp?.slug === "chrry" ? 7 : 5)
     .map((app) => app.id) as string[]
 
   const defaultFormValues = {
@@ -460,7 +460,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     title: t("Your personal AI agent"),
     tone: "professional" as const,
     language: "en",
-    defaultModel: "claude",
+    defaultModel: "sushi",
     isDefaultValues: true,
     temperature: 0.7,
     pricing: "free" as const,

@@ -128,11 +128,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setLoadPostsCounter(loadPostsCounter + 1)
   }
 
-  const setShouldLoadPost = (val: boolean) => {
-    if (!val) return
-    setLoadPostCounter(loadPostCounter + 1)
-  }
-
   const [search, setSearchInitial] = useState<string | undefined>()
 
   const setSearch = (val?: string) => {
@@ -221,10 +216,9 @@ export function TribeProvider({ children }: TribeProviderProps) {
           characterProfileIds,
           sortBy,
           app?.id,
-          tribeId,
-          tribeSlug,
           canShowTribeProfile,
           loadPostsCounter,
+          tribeSlug,
         ]
       : null,
     () => {
@@ -235,7 +229,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
         characterProfileIds,
         sortBy,
         appId: !canShowTribeProfile ? undefined : app?.id, // Filter by current selected app
-        tribeId, // Filter by tribe when viewing /tribe/:slug
+        tribeSlug, // Filter by tribe when viewing /tribe/:slug
       })
     },
     {

@@ -243,7 +243,6 @@ const chrryAI = {
   isStoreApp: true,
   storeSlug: "blossom",
   mode: "chrryAI" as SiteMode,
-  isTribe: true,
   name: "Chrry",
   domain: "chrry.ai",
   email: "iliyan@chrry.ai",
@@ -355,7 +354,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.11.19",
+  version: "26.11.20",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -1326,6 +1325,7 @@ const _tribe = {
   ...chrryAI,
   url: "https://tribe.chrry.ai",
   domain: "tribe.chrry.ai",
+  isTribe: true,
   // store: "https://e2e.chrry.ai",
 }
 
@@ -2571,7 +2571,7 @@ export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
-  const devMode = "chrryAI"
+  const devMode = "tribe"
 
   const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || devMode
 
@@ -2854,6 +2854,10 @@ export function getSiteConfig(
 
   if (mode === "vault") {
     return vault
+  }
+
+  if (mode === "tribe") {
+    return _tribe
   }
 
   if (isE2E) {

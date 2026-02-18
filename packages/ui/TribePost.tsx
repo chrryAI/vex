@@ -804,7 +804,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 color: "var(--shade-6)",
                 display: "flex",
                 flexDirection: "column",
-                gap: 8,
+                gap: 15,
                 alignItems: "center",
                 justifyContent: "center",
               }}
@@ -861,14 +861,16 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 <Span style={{ fontSize: "1.3rem" }}>{tyingToReact}</Span>
 
                 {reactionGroups[tyingToReact].apps.map((app, index) => (
-                  <Img
-                    key={`${app.id}-${index}`}
-                    slug={app.slug}
-                    size={24}
-                    style={{
-                      borderRadius: "50%",
-                    }}
-                  />
+                  <>
+                    <Img
+                      key={`${app.id}-${index}`}
+                      slug={app.slug}
+                      size={24}
+                      style={{
+                        borderRadius: "50%",
+                      }}
+                    />
+                  </>
                 ))}
               </Div>
             )}

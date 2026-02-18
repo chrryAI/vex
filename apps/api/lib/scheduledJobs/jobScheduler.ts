@@ -1495,6 +1495,20 @@ Introduce yourself! Share:
 
 Keep it friendly, authentic, and engaging. Start with something like "Hello Tribe! 👋" or similar.
 
+**RESPONSE FORMAT - CRITICAL:**
+You MUST respond ONLY with a valid JSON object in this exact format (no markdown, no explanations):
+{
+  "tribeName": "general",
+  "tribeTitle": "Your post title here",
+  "tribeContent": "Your full post content here...",
+  "seoKeywords": ["keyword1", "keyword2", "keyword3"]
+}
+
+- tribeName: Choose from the available tribes list below
+- tribeTitle: A catchy title (max 100 chars)
+- tribeContent: The full post content (1000-2500 chars)
+- seoKeywords: 3-5 relevant keywords for searchability
+
 **AVAILABLE TRIBES:**
 ${tribesList || "- general: General discussion"}
 
@@ -3152,7 +3166,77 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
     throw new Error(`Job not found: ${jobId}`)
   }
 
-  // Check if job is active
+  // DEBUG: Log job timing details
+  const now = new Date()
+  console.log(`🔍 [DEBUG] executeScheduledJob called for job: ${job.name}`)
+  console.log(`🔍 [DEBUG] Current time (UTC): ${now.toISOString()}`)
+  console.log(
+    `🔍 [DEBUG] Job nextRunAt: ${job.nextRunAt?.toISOString() || "null"}`,
+  )
+  console.log(
+    `🔍 [DEBUG] Job lastRunAt: ${job.lastRunAt?.toISOString() || "null"}`,
+  )
+  console.log(`🔍 [DEBUG] Job frequency: ${job.frequency}`)
+
+  if (job.nextRunAt) {
+    const diffMs = job.nextRunAt.getTime() - now.getTime()
+    const diffMinutes = Math.round(diffMs / 60000)
+    console.log(
+      `🔍 [DEBUG] Time until nextRunAt: ${diffMinutes} minutes (${diffMs}ms)`,
+    )
+
+    if (diffMs > 0) {
+      console.log(
+        `⚠️ [DEBUG] WARNING: Job is being executed ${diffMinutes} minutes BEFORE nextRunAt!`,
+      )
+
+      // Send Discord notification for early job execution
+      sendDiscordNotification({
+        embeds: [
+          {
+            title: "⚠️ Job Executed Before Scheduled Time",
+            color: 0xffa500, // Orange
+            fields: [
+              {
+                name: "Job",
+                value: job.name || "Unknown",
+                inline: true,
+              },
+              {
+                name: "Job ID",
+                value: job.id,
+                inline: true,
+              },
+              {
+                name: "Early By",
+                value: `${diffMinutes} minutes`,
+                inline: true,
+              },
+              {
+                name: "Current Time (UTC)",
+                value: now.toISOString(),
+                inline: false,
+              },
+              {
+                name: "Scheduled nextRunAt",
+                value: job.nextRunAt.toISOString(),
+                inline: false,
+              },
+              {
+                name: "Last Run",
+                value: job.lastRunAt?.toISOString() || "Never",
+                inline: false,
+              },
+            ],
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      }).catch((err) => {
+        console.error("⚠️ Discord notification failed:", err)
+      })
+    }
+  }
+
   if (job.status !== "active") {
     console.log(`⏭️ Job ${job.name} is not active (status: ${job.status})`)
     return

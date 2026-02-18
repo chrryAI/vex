@@ -1421,6 +1421,8 @@ function Message({
                   {timeAgo(message.message.createdOn, language)}
                 </Span>
               </Div>
+              {message.message.tribeId}
+              <Img slug="zarathustra" />
 
               {getLikeButtons()}
 

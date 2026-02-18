@@ -1901,7 +1901,6 @@ export default function Subscribe({
           style={{
             ...utilities.transparent.style,
             ...utilities.small.style,
-            ...styles.subscribeButton.style,
           }}
         >
           <Img icon="strawberry" showLoading={false} size={18} />

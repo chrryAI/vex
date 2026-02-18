@@ -1024,7 +1024,7 @@ export default function App({
             }}
           >
             <Div style={{ ...styles.section.style }}>
-              {appStatus?.part || app?.id === accountApp?.id ? null : (
+              {appStatus?.part ? null : (
                 <Button
                   data-testid="add-agent-button"
                   className="link"
@@ -1036,6 +1036,12 @@ export default function App({
                   }}
                   key={suggestSaveApp ? "highlights" : "settings"}
                   onClick={() => {
+                    if (accountApp?.id === app?.id) {
+                      setAppStatus({
+                        step: canEditApp ? "update" : "add",
+                        part: "name",
+                      })
+                    }
                     if (accountApp) {
                       setIsNewAppChat({ item: accountApp })
                       return
@@ -1070,7 +1076,9 @@ export default function App({
                       ? "Cancel"
                       : !accountApp
                         ? "Add agent"
-                        : "Go to agent",
+                        : app?.id === accountApp?.id
+                          ? "Edit your agent"
+                          : "Go to agent",
                   )}
                 >
                   <Span
@@ -1087,7 +1095,9 @@ export default function App({
                       ? "Cancel"
                       : !accountApp
                         ? "Add agent"
-                        : "Go to agent",
+                        : app?.id === accountApp?.id
+                          ? "Edit your agent"
+                          : "Go to agent",
                   )}
                   <Img
                     showLoading={false}
@@ -1241,10 +1251,11 @@ export default function App({
                       onClick={() => {
                         setAppStatus(undefined)
                       }}
-                      style={utilities.link.style}
+                      style={{ ...utilities.link.style, color: COLORS.red }}
                       title={t(isManagingApp ? "Cancel" : "Add agent")}
                     >
-                      <CircleMinus color="var(--accent-1)" size={24} />
+                      <CircleMinus color={COLORS.red} size={24} />
+                      <Span> {t("Cancel")}</Span>
                     </Button>
                   )}
                 </Div>

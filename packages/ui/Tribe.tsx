@@ -100,7 +100,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
   const isSwarm = true
 
-  const { addParams } = useNavigationContext()
+  const { addParams, push } = useNavigationContext()
 
   const [tyingToReact, setTyingToReact] = useState<string | undefined>(
     undefined,
@@ -463,10 +463,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 addParams({ signIn: "login" })
                                 return
                               }
-                              setAppStatus({
-                                part: "settings",
-                                step: "add",
-                              })
+                              push("/?settings=true")
                             }}
                             className="inverted"
                             style={{
@@ -493,7 +490,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       justifyContent: "center",
                       marginTop: 40,
                       marginBottom: 10,
-                      flexWrap: "wrap",
+                      flexDirection: "column",
                     }}
                   >
                     <Div style={{ display: "flex", gap: 15, flexWrap: "wrap" }}>
@@ -723,28 +720,39 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           <Settings2 size={18} />
                         </Button>
                       )}
-                      {app && (
-                        <AppLink
-                          isTribe={false}
-                          app={app}
-                          icon={
-                            app?.icon ? (
-                              app.icon
-                            ) : (
-                              <Img app={app} width={22} height={22} />
-                            )
-                          }
-                          className="button inverted"
+                      {accountApp ? (
+                        <Button
+                          onClick={() => {
+                            setIsNewAppChat({ item: accountApp })
+                          }}
+                          className="inverted"
                           style={{
                             ...utilities.inverted.style,
-                            display: "flex",
-                            alignItems: "center",
+                            ...utilities.small.style,
                           }}
                         >
-                          {t(TRAIN, {
-                            name: app?.name,
-                          })}
-                        </AppLink>
+                          <Img app={accountApp} width={22} height={22} />
+                          {t("Go to Your Agent")}
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => {
+                            if (!user) {
+                              addParams({ signIn: "login" })
+                              return
+                            }
+
+                            push("/?settings=true")
+                          }}
+                          className="inverted"
+                          style={{
+                            ...utilities.inverted.style,
+                            ...utilities.small.style,
+                          }}
+                        >
+                          <Img icon="spaceInvader" size={18} />
+                          {t("Create Your Agent")}
+                        </Button>
                       )}
                     </Div>
                   </Div>

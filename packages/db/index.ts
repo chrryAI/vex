@@ -497,8 +497,14 @@ declare global {
 }
 
 const NODE_ENV = process.env.NODE_ENV
+const MODE = process.env.MODE
 
-const connectionString = process.env.DB_URL
+const connectionString =
+  MODE === "prod"
+    ? process.env.DB_PROD_URL
+    : MODE === "e2e"
+      ? process.env.DB_E2E_URL
+      : process.env.DB_URL
 
 if (!connectionString) {
   throw new Error(
@@ -975,11 +981,33 @@ export const getUser = async ({
       }).then((res) => res.totalCount)
     : undefined
 
-  const lastMessage = result
+  const lastMessageInfo = result
     ? await getMessages({
         userId: result.user.id,
         pageSize: 1,
       })
+    : undefined
+
+  const lastMessage = lastMessageInfo?.messages.at(0)?.message
+
+  const lastTribe = result
+    ? (
+        await getMessages({
+          userId: result.user.id,
+          pageSize: 1,
+          isTribe: true,
+        })
+      )?.messages.at(0)?.message
+    : undefined
+
+  const lastMolt = result
+    ? (
+        await getMessages({
+          userId: result.user.id,
+          pageSize: 1,
+          isTribe: true,
+        })
+      )?.messages.at(0)?.message
     : undefined
 
   const isAppOwner =
@@ -1038,8 +1066,25 @@ export const getUser = async ({
           userId: result.user.id,
           pinned: true,
         }),
-        lastMessage: lastMessage?.messages.at(0)?.message,
-        messageCount: lastMessage?.totalCount,
+        lastMessage: lastMessage
+          ? {
+              ...lastMessage,
+              content: "",
+            }
+          : lastMessage,
+        lastMolt: lastMolt
+          ? {
+              ...lastMolt,
+              content: "",
+            }
+          : lastMolt,
+        lastTribe: lastTribe
+          ? {
+              ...lastTribe,
+              content: "",
+            }
+          : lastMessage,
+        messageCount: lastMessageInfo?.totalCount,
 
         pendingCollaborationThreadsCount: await getThreads({
           userId: result.user.id,
@@ -1447,6 +1492,8 @@ export const getMessages = async ({
   isPear,
   isAsc,
   agentMessage,
+  isTribe,
+  isMolt,
   ...rest
 }: {
   likedBy?: string
@@ -1457,6 +1504,8 @@ export const getMessages = async ({
   agentId?: string | null
   readOn?: Date
   aiAgent?: boolean
+  isMolt?: boolean
+  isTribe?: boolean
   createdOn?: Date
   hasAttachments?: boolean
   threadId?: string
@@ -1471,6 +1520,9 @@ export const getMessages = async ({
   const conditionsArray = [
     isPear ? eq(messages.isPear, true) : undefined,
     userId ? eq(messages.userId, userId) : undefined,
+    guestId ? eq(messages.guestId, guestId) : undefined,
+    isTribe !== undefined ? eq(messages.isTribe, isTribe) : undefined,
+    isMolt !== undefined ? eq(messages.isMolt, isMolt) : undefined,
     guestId ? eq(messages.guestId, guestId) : undefined,
     agentId
       ? eq(messages.agentId, agentId)
@@ -7568,6 +7620,7 @@ export const getTribePosts = async ({
   pageSize = 10,
   id,
   sortBy = "date",
+  tribeSlug,
 }: {
   tribeId?: string
   appId?: string
@@ -7577,12 +7630,14 @@ export const getTribePosts = async ({
   search?: string
   characterProfileIds?: string[]
   page?: number
+  tribeSlug?: string
   pageSize?: number
   sortBy?: "date" | "hot" | "comments"
 }) => {
   try {
     const conditions = [
       tribeId ? eq(tribePosts.tribeId, tribeId) : undefined,
+      tribeSlug ? eq(tribes.slug, tribeSlug) : undefined,
       appId ? eq(tribePosts.appId, appId) : undefined,
       userId ? eq(tribePosts.userId, userId) : undefined,
       id ? eq(tribePosts.id, id) : undefined,
@@ -7666,6 +7721,7 @@ export const getTribePosts = async ({
         await db
           .select({ count: count(tribePosts.id) })
           .from(tribePosts)
+          .leftJoin(tribes, eq(tribePosts.tribeId, tribes.id))
           .leftJoin(apps, eq(tribePosts.appId, apps.id))
           .where(and(...conditions))
       )[0]?.count ?? 0

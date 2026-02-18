@@ -115,13 +115,20 @@ export default function ImageComponent(props: ImageProps) {
     slug,
   })
 
+  const agents = [
+    "deepSeek",
+    "chatGPT",
+    "claude",
+    "gemini",
+    "flux",
+    "perplexity",
+  ]
   const isAgent =
-    app?.onlyAgent &&
-    app?.defaultModel &&
-    app?.slug !== "search" &&
-    ["deepSeek", "chatGPT", "claude", "gemini", "flux", "perplexity"].includes(
-      app?.defaultModel,
-    )
+    (slug && agents.includes(slug)) ||
+    (app?.onlyAgent &&
+      app?.defaultModel &&
+      app?.slug !== "search" &&
+      agents.includes(app?.defaultModel))
 
   const isEmoji =
     !src &&
@@ -193,69 +200,65 @@ export default function ImageComponent(props: ImageProps) {
         : 24 // Default size for emojis when size is CSS unit
 
   const emojiSize = intSize <= 50 ? intSize * 0.85 : intSize
-  if (isEmoji) {
-    if (app?.store?.slug === "books") {
-      if (app.slug === "zarathustra") {
-        return <Text style={{ fontSize: emojiSize }}>📕</Text>
-      }
-
-      if (app.slug === "1984") {
-        return <Text style={{ fontSize: emojiSize }}>👁️</Text>
-      }
-
-      if (app.slug === "meditations") {
-        return <Text style={{ fontSize: emojiSize }}>🏛️</Text>
-      }
-
-      if (app.slug === "dune") {
-        return <Text style={{ fontSize: emojiSize }}>🏜️</Text>
-      }
+  // if (isEmoji) {
+  if (app?.store?.slug === "books") {
+    if (app.slug === "zarathustra") {
+      return <Text style={{ fontSize: emojiSize }}>📕</Text>
     }
 
-    if (app?.store?.slug === "movies") {
-      if (app.slug === "fightClub") {
-        return <Text style={{ fontSize: emojiSize }}>🧼</Text>
-      }
-
-      if (app.slug === "inception") {
-        return <Text style={{ fontSize: emojiSize }}>🌀</Text>
-      }
-
-      if (app.slug === "pulpFiction") {
-        return <Text style={{ fontSize: emojiSize }}>🍔</Text>
-      }
-
-      if (app.slug === "hungerGames") {
-        return <Text style={{ fontSize: emojiSize }}>🏹</Text>
-      }
-
-      return <Clapperboard color={color} size={size} />
+    if (app.slug === "1984") {
+      return <Text style={{ fontSize: emojiSize }}>👁️</Text>
     }
 
-    if (app?.store?.slug === "compass") {
-      if (app.slug === "amsterdam") {
-        return <CircleFlag height={emojiSize} countryCode="nl" />
-      }
+    if (app.slug === "meditations") {
+      return <Text style={{ fontSize: emojiSize }}>🏛️</Text>
+    }
 
-      if (app.slug === "tokyo") {
-        return <CircleFlag height={emojiSize} countryCode="jp" />
-      }
-
-      if (app.slug === "paris") {
-        return <CircleFlag height={emojiSize} countryCode="fr" />
-      }
-
-      if (app.slug === "istanbul") {
-        return <CircleFlag height={emojiSize} countryCode="tr" />
-      }
-
-      if (app.slug === "newYork") {
-        return <CircleFlag height={emojiSize} countryCode="us" />
-      }
+    if (app.slug === "dune") {
+      return <Text style={{ fontSize: emojiSize }}>🏜️</Text>
     }
   }
 
-  if (isAgent) {
+  const appSlug = app?.slug || slug
+
+  if (appSlug === "fightClub") {
+    return <Text style={{ fontSize: emojiSize }}>🧼</Text>
+  }
+
+  if (appSlug === "inception") {
+    return <Text style={{ fontSize: emojiSize }}>🌀</Text>
+  }
+
+  if (appSlug === "pulpFiction") {
+    return <Text style={{ fontSize: emojiSize }}>🍔</Text>
+  }
+
+  if (appSlug === "hungerGames") {
+    return <Text style={{ fontSize: emojiSize }}>🏹</Text>
+  }
+
+  if (appSlug === "amsterdam") {
+    return <CircleFlag height={emojiSize} countryCode="nl" />
+  }
+
+  if (appSlug === "tokyo") {
+    return <CircleFlag height={emojiSize} countryCode="jp" />
+  }
+
+  if (appSlug === "paris") {
+    return <CircleFlag height={emojiSize} countryCode="fr" />
+  }
+
+  if (appSlug === "istanbul") {
+    return <CircleFlag height={emojiSize} countryCode="tr" />
+  }
+
+  if (appSlug === "newYork") {
+    return <CircleFlag height={emojiSize} countryCode="us" />
+  }
+  // }
+
+  if (isAgent && app) {
     return app.defaultModel === "deepSeek" ? (
       <DeepSeek color={color} size={size} />
     ) : app.defaultModel === "chatGPT" ? (
@@ -271,6 +274,21 @@ export default function ImageComponent(props: ImageProps) {
     ) : null
   }
 
+  if (isAgent && slug) {
+    return slug === "deepSeek" ? (
+      <DeepSeek color={color} size={size} />
+    ) : slug === "chatGPT" ? (
+      <OpenAI color={color} size={size} />
+    ) : slug === "claude" ? (
+      <Claude color={color} size={size} />
+    ) : slug === "gemini" ? (
+      <Gemini color={color} size={size} />
+    ) : slug === "flux" ? (
+      <Flux color={color} size={size} />
+    ) : slug === "perplexity" ? (
+      <Perplexity color={color} size={size} />
+    ) : null
+  }
   const invader = `${BASE_URL}/images/pacman/space-invader.png`
 
   return (

@@ -1352,9 +1352,12 @@ ai.post("/", async (c) => {
 
   // Use numeric comparison with defaults to prevent negative balances from bypassing
   const canPostToTribe =
-    ((member?.tribeCredits ?? MEMBER_FREE_TRIBE_CREDITS) > 0 && isTribe) ||
-    (member?.role === "admin" && isTribe) ||
-    job
+    ((member?.tribeCredits ?? 0) > 0 || member?.role === "admin" || job) &&
+    isTribe
+
+  if (!canPostToTribe) {
+    return c.json({ error: job ? "heys" : "Test :(" }, { status: 404 })
+  }
 
   const moltApiKeyInternal = requestApp?.moltApiKey
   const moltApiKey = moltApiKeyInternal ? safeDecrypt(moltApiKeyInternal) : ""
@@ -3799,7 +3802,8 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     member?.role !== "admin" &&
     fingerprint &&
     !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
-    isE2EInternal
+    isE2EInternal &&
+    !job
 
   const hourlyLimit =
     isDevelopment && !isE2E
@@ -5349,9 +5353,8 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   } else {
     console.log(`🤖 Model resolution for: ${agent.name}`)
     // Disable reasoning for scheduled jobs (they need clean JSON responses)
-    const canReason = job
-      ? ["tribe_post", "moltbook_post"].includes(job.jobType)
-      : undefined
+    const canReason = !!shouldStream
+
     model = await getModelProvider(requestApp, agent.name, canReason)
     console.log(
       `✅ Provider created using: ${model.agentName || agent.name}${jobId ? " (reasoning disabled for scheduled job)" : ""}`,

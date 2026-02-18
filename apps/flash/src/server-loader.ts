@@ -347,7 +347,7 @@ export async function loadServerData(
 
     const postId = getPostId(pathname)
 
-    let tribePostResult: tribePostWithDetails | undefined = undefined
+    let tribePostResult: tribePostWithDetails | undefined
     if (postId) {
       try {
         tribePostResult = await getTribePost({

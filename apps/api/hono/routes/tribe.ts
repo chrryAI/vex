@@ -220,6 +220,7 @@ app.get("/likes", async (c) => {
 app.get("/p", async (c) => {
   const tracker = new PerformanceTracker("tribe_posts_request")
   const tribeId = c.req.query("tribeId")
+  const tribeSlug = c.req.query("tribeSlug")
   const appId = c.req.query("appId")
   const userId = c.req.query("userId")
   const guestId = c.req.query("guestId")
@@ -280,6 +281,7 @@ app.get("/p", async (c) => {
           userId,
           guestId,
           search,
+          tribeSlug,
           characterProfileIds: characterProfileIds
             ? characterProfileIds.split(",")
             : undefined,
