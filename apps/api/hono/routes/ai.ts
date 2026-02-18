@@ -1361,7 +1361,7 @@ ai.post("/", async (c) => {
     isMolt
 
   const shouldStream =
-    requestData.stream !== "false" && requestData.stream !== false
+    requestData.stream !== "false" && requestData.stream !== false && !job
 
   const notifyOwnerAndCollaborations = (
     x: Omit<notifyOwnerAndCollaborationsPayload, "c">,
@@ -4992,7 +4992,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   } else {
     console.log(`🤖 Model resolution for: ${agent.name}`)
     // Disable reasoning for scheduled jobs (they need clean JSON responses)
-    const canReason = !!shouldStream && !job
+    const canReason = !!shouldStream
 
     model = await getModelProvider(requestApp, agent.name, canReason)
     console.log(
