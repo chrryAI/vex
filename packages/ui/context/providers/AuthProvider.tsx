@@ -2077,15 +2077,11 @@ export function AuthProvider({
     removeParams("programme")
   }
 
-  const grapes =
-    app?.id === zarathustra?.id
-      ? []
-      : storeApps.filter(
-          (app) =>
-            whiteLabels.some((w) => w.slug === app.slug) &&
-            app.store?.appId === app.id &&
-            app.id !== zarathustra?.id,
-        )
+  const grapes = storeApps.filter(
+    (app) =>
+      whiteLabels.some((w) => w.slug === app.slug) &&
+      app.store?.appId === app.id,
+  )
 
   const grape = storeApps.find((app) => app.slug === "grape")
 

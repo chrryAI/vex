@@ -209,6 +209,7 @@ export default function App({
   const zarathustra = apps.find((app) => app.slug === "zarathustra")
 
   const isBlossom = app?.store?.id === chrry?.store?.id
+  const isLifeOs = app?.store?.id === chrry?.store?.id
 
   const getApps = () => {
     return apps
@@ -217,13 +218,11 @@ export default function App({
           item.id !== burnApp?.id &&
           item.id !== store?.appId &&
           item.id !== chrry?.id &&
-          (item.id !== grape?.id || !isBlossom) &&
-          (item.id !== zarathustra?.id || !isBlossom) &&
-          (item.id === atlas?.id
-            ? app?.store?.app?.id === vex?.id || baseApp?.id === vex?.id
-            : true) &&
+          (item.id !== grape?.id || (!isBlossom && !accountApp)) &&
+          (item.id !== zarathustra?.id || (!isBlossom && !accountApp)) &&
+          (item.id === atlas?.id ? !isBlossom : true) &&
           item.id !== popcorn?.id &&
-          (isBlossom ? item.id !== atlas?.id : true),
+          (isBlossom || isAppOwner ? item.id !== atlas?.id : true),
       )
       .filter((item) => item.id !== focus?.id)
       .sort((a, b) => {
@@ -1360,22 +1359,25 @@ export default function App({
               >
                 <Div style={{ ...styles.apps.style, overflowWrap: "anywhere" }}>
                   {appsState.slice(0, 5)?.map((item, index) => {
-                    const showAtlasHere = index === 1 && isBlossom
+                    const showAtlasHere =
+                      index === 1 && (isBlossom || accountApp?.id === app?.id)
 
                     const showFocusHere = focus && !showAtlasHere && index === 1
-
-                    const showPacmanHere =
-                      // !showAtlasThere &&
-                      app?.store?.id !== popcorn?.store?.id && index === 2
 
                     const showSpaceInvaderHere = index === 3
 
                     const showChrryHere =
                       index === 0 && chrry && app?.id !== chrry.id
+
                     const showZarathustraHere =
+                      store?.slug !== "books" &&
                       !showChrryHere &&
-                      index === 0 &&
-                      store?.appId !== zarathustra?.id
+                      index === (accountApp?.id === app?.id ? 2 : 0)
+
+                    const showPacmanHere =
+                      !showZarathustraHere &&
+                      app?.store?.id !== popcorn?.store?.id &&
+                      index === 2
 
                     return (
                       <Div
@@ -1423,7 +1425,6 @@ export default function App({
                               )}
                             </A>
                           )}
-
                           {showZarathustraHere &&
                             zarathustra &&
                             store &&
@@ -1465,14 +1466,12 @@ export default function App({
                               </A>
                             )}
                           {showPacmanHere ? (
-                            isSettingVisible ? (
-                              <BurnButton style={{ ...styles.popcorn.style }} />
-                            ) : popcorn &&
-                              store &&
-                              store?.appId !== popcorn?.id &&
-                              store?.apps?.some(
-                                (app) => app.id === popcorn.id,
-                              ) ? (
+                            popcorn &&
+                            store &&
+                            store?.appId !== popcorn?.id &&
+                            store?.apps?.some(
+                              (app) => app.id === popcorn.id,
+                            ) ? (
                               <A
                                 preventDefault
                                 href={getAppSlug(popcorn)}
@@ -1525,7 +1524,6 @@ export default function App({
                               )
                             )
                           ) : null}
-
                           {item.id === app?.id ? (
                             <>
                               <StoreApp key={"vex"} />

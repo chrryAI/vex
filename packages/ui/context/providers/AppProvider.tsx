@@ -451,9 +451,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return true
   }
 
-  const defaultExtends = baseApp?.store?.apps
-    ?.slice(0, baseApp?.slug === "chrry" ? 7 : 5)
-    .map((app) => app.id) as string[]
+  const defaultExtends =
+    chrry?.store?.apps
+      ?.filter((a) =>
+        [
+          "sushi",
+          "vex",
+          "chrry",
+          "grape",
+          "zarathustra",
+          "claude",
+          "atlas",
+          "perplexity",
+        ].includes(a.slug),
+      )
+      .map((app) => app.id) || []
 
   const defaultFormValues = {
     name: t("MyAgent"),
@@ -500,12 +512,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setFormDraftInternal(draft)
   }
 
+  const blossom = chrry?.store?.apps
+
   useEffect(() => {
+    if (!blossom) return
     // Guard: Only run if formDraft has extends
     if (!formDraft?.extends || formDraft.extends.length === 0) return
 
     // Filter out stale app IDs that no longer exist in storeApps
-    const validAppIds = new Set(storeApps.map((app) => app.id))
+    const validAppIds = new Set(blossom.map((app) => app.id))
     const validExtends = formDraft.extends.filter((id) => validAppIds.has(id))
 
     // Guard: Only update if something actually changed
@@ -531,7 +546,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...formDraft,
       extends: validExtends,
     })
-  }, [storeApps, defaultExtends]) // Removed formDraft from deps
+  }, [blossom, defaultExtends]) // Removed formDraft from deps
 
   const getInitialFormValues = (): Partial<appFormData> => {
     if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {

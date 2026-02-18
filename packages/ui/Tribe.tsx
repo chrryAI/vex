@@ -149,7 +149,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     alignItems: "center",
                     margin: 0,
                     padding: 0,
-                    marginBottom: "1.5rem",
+                    marginBottom: "1.75rem",
                     fontSize: "clamp(1.3rem, 4vw, 1.725rem)",
                   }}
                 >
@@ -163,8 +163,9 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     }
                     slug={showTribeProfile ? undefined : "search"}
                   />
+
                   {showTribeProfile ? (
-                    t(app?.name || "")
+                    app?.name
                   ) : (
                     <>
                       {tribeSlug && currentTribe ? (
@@ -467,7 +468,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               ...utilities.small.style,
                             }}
                           >
-                            <Img app={accountApp} size={18} />
+                            <Img app={accountApp} size={20} />
                             {t("Go to Your Agent")}
                           </Button>
                         ) : (
@@ -489,7 +490,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               ...utilities.small.style,
                             }}
                           >
-                            <Img icon="spaceInvader" size={16} />
+                            <Img icon="spaceInvader" size={18} />
                             {t(showTribeProfile ? TRAIN : "Create Your Agent", {
                               name: app?.name,
                             })}
@@ -593,7 +594,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       {storeApps?.map((item, i) => {
                         return (
                           <MotiView
-                            key={item.id}
+                            key={`store-app${item.id}`}
                             from={{ opacity: 0, translateY: -8, translateX: 0 }}
                             animate={{
                               opacity: 1,
@@ -749,7 +750,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             ...utilities.small.style,
                           }}
                         >
-                          <Img app={accountApp} size={18} />
+                          <Img app={accountApp} size={20} />
                           {t("Go to Your Agent")}
                         </Button>
                       ) : (
@@ -940,10 +941,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {liveReactions.map((item, i) => {
                           return (
                             <MotiView
-                              key={
-                                item.id ||
-                                `reaction-${item.app.id}-${item.tribePostId}-${i}`
-                              }
+                              key={`reaction-${item.app.id}-${item.tribePostId}-${i}`}
                               from={{
                                 opacity: 0,
                                 translateY: -8,
@@ -1095,7 +1093,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       new Map(tribePosts.posts.map((p) => [p.id, p])).values(),
                     ).map((post, i) => (
                       <MotiView
-                        key={post.id}
+                        key={`moti-${post.id}`}
                         from={{ opacity: 0, translateY: 0, translateX: -10 }}
                         animate={{ opacity: 1, translateY: 0, translateX: 0 }}
                         transition={{
@@ -1293,10 +1291,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   ).map(([emoji, count]) => (
                                     <Button
                                       className="transparent"
-                                      key={emoji + count}
+                                      key={`${emoji}`}
                                       onClick={() => {
                                         if (tyingToReact === post.id) {
-                                          setTyingToReact(undefined)
+                                          return
                                         } else {
                                           setTyingToReact(post.id)
                                         }
@@ -1474,7 +1472,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                               {post.app.characterProfile.traits.expertise.map(
                                                 (item: string, i: number) => (
                                                   <Span
-                                                    key={`trait-${item}`}
+                                                    key={`trait-${item + i}`}
                                                     style={{
                                                       padding: ".25rem .5rem",
                                                       backgroundColor:
@@ -1515,7 +1513,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                               {post.app.characterProfile.traits.communication.map(
                                                 (item: string, i: number) => (
                                                   <Span
-                                                    key={`trait-${item}`}
+                                                    key={`trait-${item + i}`}
                                                     style={{
                                                       padding: ".25rem .5rem",
                                                       backgroundColor:
@@ -1556,7 +1554,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                               {post.app.characterProfile.traits.behavior.map(
                                                 (item: string, i: number) => (
                                                   <Span
-                                                    key={item}
+                                                    key={item + i}
                                                     style={{
                                                       padding: ".25rem .5rem",
                                                       backgroundColor:
@@ -1594,7 +1592,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                           {post.app.characterProfile.tags.map(
                                             (tag: string, i: number) => (
                                               <Span
-                                                key={tag}
+                                                key={tag + i}
                                                 style={{
                                                   padding: ".25rem .5rem",
                                                   backgroundColor:

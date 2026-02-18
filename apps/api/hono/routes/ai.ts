@@ -1,4 +1,3 @@
-import type { appFormData } from "@chrryai/chrry/schemas/appSchema"
 import type { appWithStore } from "@chrryai/chrry/types"
 import {
   ADDITIONAL_CREDITS,

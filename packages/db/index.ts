@@ -160,18 +160,28 @@ export type {
 
 dotenv.config()
 
+const NODE_ENV = process.env.NODE_ENV
+const MODE = process.env.MODE
+
+export const DB_URL =
+  MODE === "prod"
+    ? process.env.DB_PROD_URL
+    : MODE === "e2e"
+      ? process.env.DB_E2E_URL
+      : process.env.DB_URL
+
 export const isCI = process.env.CI
 
-export const isSeedSafe = process.env.DB_URL?.includes("pb9ME51YnaFcs")
+export const isSeedSafe = MODE === "e2e" && DB_URL?.includes("pb9ME51YnaFcs")
 
 export const isWaffles = false
 // export const isWaffles = process.env.DB_URL?.includes("waffles")
 
 export const isProd = isSeedSafe
   ? false
-  : isCI
+  : isCI || !DB_URL
     ? false
-    : process.env.DB_URL && !process.env.DB_URL.includes("localhost")
+    : !DB_URL?.includes("localhost")
 
 export { decrypt, encrypt, generateEncryptionKey } from "./encryption"
 // Export cache functions and redis instance for external use
@@ -496,17 +506,7 @@ declare global {
   var db: PostgresJsDatabase<typeof schema> | undefined
 }
 
-const NODE_ENV = process.env.NODE_ENV
-const MODE = process.env.MODE
-
-const connectionString =
-  MODE === "prod"
-    ? process.env.DB_PROD_URL
-    : MODE === "e2e"
-      ? process.env.DB_E2E_URL
-      : process.env.DB_URL
-
-if (!connectionString) {
+if (!DB_URL) {
   throw new Error(
     "DB_URL environment variable is not set. Please configure your database connection string.",
   )
@@ -514,11 +514,11 @@ if (!connectionString) {
 
 // Configure SSL for production databases (non-localhost)
 // Can be disabled with DISABLE_DB_SSL=true for internal databases
-const isRemoteDB = connectionString && !connectionString.includes("localhost")
+const isRemoteDB = DB_URL && !DB_URL.includes("localhost")
 const disableSSL = process.env.DISABLE_DB_SSL === "true"
 
 const client = postgres(
-  connectionString,
+  DB_URL,
   isDevelopment
     ? undefined
     : {
