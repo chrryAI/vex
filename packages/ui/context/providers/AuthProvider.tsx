@@ -1937,7 +1937,7 @@ export function AuthProvider({
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
-  const storeAppIternal = storeApps?.find(
+  const storeAppInternal = storeApps?.find(
     (item) =>
       app?.store?.appId &&
       item.id === app?.store?.appId &&
@@ -1946,7 +1946,7 @@ export function AuthProvider({
   )
 
   const [storeApp, setStoreAppInternal] = useState<appWithStore | undefined>(
-    storeAppIternal,
+    storeAppInternal,
   )
 
   const installs = [
@@ -2146,17 +2146,17 @@ export function AuthProvider({
     if (isPearInternal) setShowFocus(false)
   }, [isPearInternal])
 
-  const isProgramme = !!(
-    isProgrammeInternal || searchParams.get("programme") === "true"
-  )
+  const isProgramme =
+    !!(isProgrammeInternal || searchParams.get("programme") === "true") &&
+    !siteConfig.isTribe
 
   const setStoreApp = (appWithStore?: appWithStore) => {
     appWithStore?.id !== storeApp?.id && setStoreAppInternal(appWithStore)
   }
 
   useEffect(() => {
-    hasStoreApps(app) && setStoreApp(storeAppIternal)
-  }, [storeAppIternal])
+    hasStoreApps(app) && setStoreApp(storeAppInternal)
+  }, [storeAppInternal])
 
   const [slugState, setSlugState] = useState<string | undefined>(
     (app && getAppSlug(app)) || undefined,

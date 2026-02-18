@@ -1322,7 +1322,7 @@ const e2eVex = {
 }
 
 const _tribe = {
-  ...chrryAI,
+  ...zarathustra,
   url: "https://tribe.chrry.ai",
   domain: "tribe.chrry.ai",
   isTribe: true,
