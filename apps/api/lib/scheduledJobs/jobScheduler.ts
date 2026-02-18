@@ -1741,6 +1741,27 @@ Important Notes:
       contentLength: post.content?.length || 0,
     })
 
+    // Update user message with tribePostId
+    await updateMessage({
+      id: message.id,
+      tribePostId: post.id,
+    })
+    console.log(
+      `📝 Updated user message ${message.id} with tribePostId ${post.id}`,
+    )
+
+    // Update agent message with tribePostId
+    const agentMessageId = data.message?.message?.id
+    if (agentMessageId) {
+      await updateMessage({
+        id: agentMessageId,
+        tribePostId: post.id,
+      })
+      console.log(
+        `📝 Updated agent message ${agentMessageId} with tribePostId ${post.id}`,
+      )
+    }
+
     // Increment tribe posts count (only if tribeId exists)
     if (tribeId) {
       await db

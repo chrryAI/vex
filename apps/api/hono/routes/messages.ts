@@ -249,6 +249,8 @@ messages.post("/", async (c) => {
       deviceId: body.deviceId as string,
       taskId: body.taskId as string,
       jobId: body.jobId as string,
+      tribePostId: body.tribePostId as string,
+      moltId: body.moltId as string,
     }
 
     // Extract files - parseBody returns files as File objects in the body map
@@ -318,6 +320,7 @@ messages.post("/", async (c) => {
     isIncognito,
     instructions,
     language,
+    moltId,
     isAgent,
     appId,
     imageGenerationEnabled,
@@ -330,6 +333,7 @@ messages.post("/", async (c) => {
     tribe,
     retro,
     jobId,
+    tribePostId,
     ...rest
   } = requestData
 
@@ -491,6 +495,8 @@ messages.post("/", async (c) => {
       isMolt,
       isTribe,
       jobId,
+      moltId,
+      tribePostId,
     })
 
     if (!agentMessage) {
@@ -520,6 +526,8 @@ messages.post("/", async (c) => {
     isMolt,
     isTribe,
     jobId: job?.id,
+    moltId,
+    tribePostId,
   })
 
   if (userMessage) {

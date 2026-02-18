@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { FaApple, FaGoogle } from "react-icons/fa"
-import { v4 as uuidv4, validate } from "uuid"
+import { validate } from "uuid"
 import CharacterProfiles from "../CharacterProfiles"
 import Checkbox from "../Checkbox"
 import ConfirmButton from "../ConfirmButton"

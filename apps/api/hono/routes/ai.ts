@@ -1262,7 +1262,6 @@ ai.post("/", async (c) => {
     placeholder,
     deviceId,
     tribeCharLimit,
-    postId,
     postType,
     ...rest
   } = requestData
@@ -1274,6 +1273,8 @@ ai.post("/", async (c) => {
       guestId: guest?.id,
     }),
   )
+
+  const postId = requestData.postId || message?.message?.tribePostId
 
   if (!message) {
     return c.json({ error: "Message not found" }, { status: 404 })
@@ -1355,9 +1356,9 @@ ai.post("/", async (c) => {
     ((member?.tribeCredits ?? 0) > 0 || member?.role === "admin" || job) &&
     isTribe
 
-  if (!canPostToTribe) {
-    return c.json({ error: job ? "heys" : "Test :(" }, { status: 404 })
-  }
+  // if (!canPostToTribe) {
+  //   return c.json({ error: job ? "heys" : "Test :(" }, { status: 404 })
+  // }
 
   const moltApiKeyInternal = requestApp?.moltApiKey
   const moltApiKey = moltApiKeyInternal ? safeDecrypt(moltApiKeyInternal) : ""

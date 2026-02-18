@@ -6,15 +6,7 @@ import { CircleFlag } from "react-circle-flags"
 import { COLORS } from "./context/AppContext"
 import { useApp } from "./context/providers"
 import Img from "./Img"
-import {
-  Clapperboard,
-  Claude,
-  DeepSeek,
-  Flux,
-  Gemini,
-  OpenAI,
-  Perplexity,
-} from "./icons"
+import { Claude, DeepSeek, Flux, Gemini, OpenAI, Perplexity } from "./icons"
 import { getImageSrc } from "./lib"
 import { Text } from "./platform"
 import type { appWithStore, store } from "./types"
@@ -70,6 +62,7 @@ type ImageProps = {
     | "strawberry"
     | "sushi"
     | "zarathustra"
+    | "molt"
 
   app?: appWithStore
   width?: number | string
@@ -91,7 +84,6 @@ export default function ImageComponent(props: ImageProps) {
     className,
     showLoading,
     logo,
-    store,
     title,
     alt,
     slug,
@@ -100,6 +92,7 @@ export default function ImageComponent(props: ImageProps) {
     containerClass,
     dataTestId,
     onLoad,
+    icon,
   } = props
 
   const BASE_URL = FRONTEND_URL
@@ -200,12 +193,12 @@ export default function ImageComponent(props: ImageProps) {
         : 24 // Default size for emojis when size is CSS unit
 
   const emojiSize = intSize <= 50 ? intSize * 0.85 : intSize
+
+  if (icon === "molt") {
+    return <Text style={{ fontSize: emojiSize }}>🦞</Text>
+  }
   // if (isEmoji) {
   if (app?.store?.slug === "books") {
-    if (app.slug === "zarathustra") {
-      return <Text style={{ fontSize: emojiSize }}>📕</Text>
-    }
-
     if (app.slug === "1984") {
       return <Text style={{ fontSize: emojiSize }}>👁️</Text>
     }

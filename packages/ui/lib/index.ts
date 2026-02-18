@@ -76,6 +76,7 @@ export const getImageSrc = ({
     | "strawberry"
     | "sushi"
     | "zarathustra"
+    | "molt"
 
   app?: appWithStore
   width?: number | string

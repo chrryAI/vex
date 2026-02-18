@@ -2281,7 +2281,7 @@ export function AuthProvider({
     (app
       ? getAppSlug(app, "/", false) === pathname ||
         getAppSlug(app, "/") === pathname
-      : false) && !(siteConfig.isTribe && pathname === "/")
+      : !_isExcluded) && !(siteConfig.isTribe && pathname === "/")
 
   const showTribeInitial = !!(
     !postId &&

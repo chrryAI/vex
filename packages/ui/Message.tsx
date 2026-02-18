@@ -1385,6 +1385,21 @@ function Message({
             )}
             <Div style={styles.footer.style}>
               <Div style={styles.left.style}>
+                {message.message.tribeId && (
+                  <A href={`/p${message.message.tribeId}`}>
+                    <Img slug="zarathustra" />
+                    {t("Tribe")}
+                  </A>
+                )}
+                {message.message.moltId && (
+                  <A
+                    openInNewTab
+                    href={`https://www.moltbook.com/post/${message.message.moltId}`}
+                  >
+                    <Img icon="molt" />
+                    {t("Moltbook")}
+                  </A>
+                )}
                 <Button
                   className="link"
                   onClick={() => copyToClipboard(message.message.content)}
@@ -1421,11 +1436,8 @@ function Message({
                   {timeAgo(message.message.createdOn, language)}
                 </Span>
               </Div>
-              {message.message.tribeId}
-              <Img slug="zarathustra" />
 
               {getLikeButtons()}
-
               <Button
                 disabled={isSpeechLoading}
                 className="link"

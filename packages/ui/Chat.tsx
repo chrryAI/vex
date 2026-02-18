@@ -1706,6 +1706,7 @@ export default function Chat({
         const formData = new FormData()
 
         app && formData.append("appId", app?.id)
+        postId && formData.append("tribePostId", postId)
 
         formData.append("content", userMessageText)
         formData.append("isIncognito", JSON.stringify(burn))
@@ -1760,6 +1761,7 @@ export default function Chat({
           retro: isRetro,
           tribe: postToTribe,
           molt: postToMoltbook,
+          tribePostId: postId,
         })
       }
       const userResponse = await apiFetch(`${API_URL}/messages`, {
@@ -1857,7 +1859,6 @@ export default function Chat({
       if (files && files.length > 0) {
         // Use FormData for file uploads
         const formData = new FormData()
-        postId && formData.append("postId", postId)
         slug && formData.append("slug", slug)
         app?.id && formData.append("appId", app.id)
         ask && formData.append("ask", ask)
@@ -1917,7 +1918,6 @@ export default function Chat({
           placeholder,
           ask,
           about,
-          postId,
           retro: isRetro,
           appId: app?.id,
           draft:
