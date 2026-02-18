@@ -157,3 +157,14 @@
 **Prevention:**
 
 - **Atomic Update:** Replaced the `SELECT`-then-`UPDATE` pattern with a single `db.update(...).where(...).returning()` query. This ensures that only one request can successfully "claim" and use the code.
+
+## 2026-06-16 - Weak JWT Secret Default in Production
+
+**Vulnerability:** The application was configured to fallback to `"development-secret"` if `NEXTAUTH_SECRET` was missing, even in production. This meant a misconfigured production deployment would be silently insecure, allowing attackers to forge tokens using the known default secret.
+
+**Learning:**
+
+- **Fail Securely:** Security-critical configuration (like secrets) must be enforced. Falling back to a weak default in production is a "fail-open" vulnerability.
+- **Explicit Checks:** Checking `NODE_ENV === "production"` allows us to enforce stricter security rules in production while keeping development easy.
+
+**Prevention:** Added a startup check in `apps/api/hono/routes/auth.ts` that throws an error if `NODE_ENV` is production and `NEXTAUTH_SECRET` is missing. This ensures the application fails to start rather than starting insecurely.

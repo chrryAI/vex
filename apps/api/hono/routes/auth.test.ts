@@ -85,7 +85,7 @@ describe("Auth Routes Rate Limiting", () => {
     expect(res.status).toBe(429)
     const body = await res.json()
     expect(body).toEqual({
-      error: "Too many attempts. Please try again later.",
+      error: "Too many login attempts",
     })
     expect(mockCheckAuthRateLimit).toHaveBeenCalled()
   })
@@ -109,7 +109,7 @@ describe("Auth Routes Rate Limiting", () => {
     expect(res.status).toBe(429)
     const body = await res.json()
     expect(body).toEqual({
-      error: "Too many attempts. Please try again later.",
+      error: "Too many login attempts",
     })
     expect(mockCheckAuthRateLimit).toHaveBeenCalled()
   })
