@@ -109,7 +109,8 @@ export function estimateJobCredits(params: {
   }
 
   let totalRuns = 0
-  if (frequency === "daily") {
+  if (frequency === "daily" || frequency === "custom") {
+    // Custom frequency runs daily with specific time slots
     totalRuns = days
   } else if (frequency === "weekly") {
     // Use Math.ceil to count partial weeks, minimum 1 run
@@ -117,6 +118,9 @@ export function estimateJobCredits(params: {
   } else if (frequency === "monthly") {
     // Use Math.ceil to count partial months, minimum 1 run
     totalRuns = Math.max(1, Math.ceil(days / 30))
+  } else if (frequency === "once") {
+    // One-time job - single run
+    totalRuns = 1
   }
 
   // Calculate total credits based on each slot's configuration

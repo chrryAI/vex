@@ -72,13 +72,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     currentTribe,
     toggleLike,
     isTogglingLike,
-    posting,
     liveReactions,
     pendingPostIds,
-    isSwarm,
     optimisticLiked,
     refetchPosts,
     setPendingPostIds,
+    posting,
   } = useTribe()
 
   const {
@@ -98,6 +97,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const [tryAppCharacterProfile, setTryAppCharacterProfile] = useState<
     string | undefined
   >(undefined)
+
+  const isSwarm = true
 
   const { addParams } = useNavigationContext()
 
@@ -119,6 +120,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     userId: user?.id,
   })
 
+  const maxTribes = tribes?.tribes?.slice(0, 25) || []
   const TRAIN = owner ? `Train {{name}}` : `Try {{name}}`
 
   const storeApps = app?.store?.apps
@@ -227,6 +229,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Div>
                   ) : (
                     <Div
+                      key={maxTribes?.map((item) => item.slug)?.join("-")}
                       style={{
                         display: "flex",
                         flexDirection: "row",
@@ -234,7 +237,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         flexWrap: "wrap",
                       }}
                     >
-                      {tribes.tribes?.slice(0, 25).map((tribe, i) => (
+                      {maxTribes.map((tribe, i) => (
                         <MotiView
                           key={tribe.id}
                           from={{ opacity: 0, translateY: 0, translateX: -10 }}

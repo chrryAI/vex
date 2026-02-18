@@ -5,7 +5,7 @@ import toast from "react-hot-toast"
 import A from "./a/A"
 import { useAgentStyles } from "./agent/Agent.styles"
 import ConfirmButton from "./ConfirmButton"
-import { useAppContext } from "./context/AppContext"
+import { COLORS, useAppContext } from "./context/AppContext"
 import { useAuth, useData, useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
@@ -32,6 +32,71 @@ import { estimateJobCredits, type scheduleSlot } from "./utils/creditCalculator"
 
 // Use scheduleSlot from creditCalculator for consistency
 type ScheduleTime = scheduleSlot
+
+// Generate default schedule times starting from current user time
+const getDefaultScheduleTimes = (): ScheduleTime[] => {
+  const now = new Date()
+  const currentHour = now.getHours()
+  const currentMinute = now.getMinutes()
+
+  // Round up to next 5-minute interval for cleaner times
+  const roundedMinute = Math.ceil(currentMinute / 5) * 5
+  let startHour = currentHour
+  let startMinute = roundedMinute
+
+  // Handle minute overflow (e.g., 58 -> 60, so hour+1 and minute 0)
+  if (startMinute >= 60) {
+    startMinute = 0
+    startHour = (startHour + 1) % 24
+  }
+
+  // Helper to add minutes to a time
+  const addMinutes = (hour: number, minute: number, addMin: number) => {
+    let newMinute = minute + addMin
+    let newHour = hour
+    if (newMinute >= 60) {
+      newMinute -= 60
+      newHour = (newHour + 1) % 24
+    }
+    return { hour: newHour, minute: newMinute }
+  }
+
+  // Slot 1: Now + 5 min (post)
+  const slot1 = addMinutes(startHour, startMinute, 5)
+
+  // Slot 2: +30 min (comment)
+  const slot2 = addMinutes(slot1.hour, slot1.minute, 30)
+
+  // Slot 3: +30 min (engagement)
+  const slot3 = addMinutes(slot2.hour, slot2.minute, 30)
+
+  return [
+    {
+      hour: slot1.hour,
+      minute: slot1.minute,
+      postType: "post",
+      model: "sushi",
+      charLimit: 500,
+      credits: 0,
+    },
+    {
+      hour: slot2.hour,
+      minute: slot2.minute,
+      postType: "comment",
+      model: "sushi",
+      charLimit: 300,
+      credits: 0,
+    },
+    {
+      hour: slot3.hour,
+      minute: slot3.minute,
+      postType: "engagement",
+      model: "sushi",
+      charLimit: 200,
+      credits: 0,
+    },
+  ]
+}
 
 interface TribeCalculatorProps {
   onCalculate?: (result: {
@@ -136,34 +201,9 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
             credits: slot.credits || 0,
           }
         }) as ScheduleTime[])) ||
-      ([
-        {
-          hour: 9,
-          minute: 0,
-          postType: "post",
-          model: "sushi",
-          charLimit: 500,
-          credits: 0,
-        },
-        {
-          hour: 14,
-          minute: 0,
-          postType: "comment",
-          model: "sushi",
-          charLimit: 300,
-          credits: 0,
-        },
-        {
-          hour: 20,
-          minute: 0,
-          postType: "engagement",
-          model: "sushi",
-          charLimit: 200,
-          credits: 0,
-        },
-      ] as ScheduleTime[])
+      getDefaultScheduleTimes()
 
-    const frequency = existingSchedule?.frequency || "daily"
+    const frequency = existingSchedule?.frequency || "custom"
 
     const startDate =
       !skipExistingSchedule && existingSchedule?.startDate
@@ -194,7 +234,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
       }
     })
 
-    return {
+    const result = {
       // Form state
       frequency: frequency as
         | "daily"
@@ -210,13 +250,15 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
       startDate,
       endDate,
     }
+
+    return result
   }
   const [formData, setFormData] = useState(getFormState())
 
   const totalPosts = formData?.totalPosts
 
   useEffect(() => {
-    setFormData(getFormState())
+    existingSchedule && setFormData(getFormState())
   }, [existingSchedule])
 
   const totalPrice = formData.totalPrice
@@ -654,7 +696,9 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
               </A>
             </Div>
             <Text style={{ fontSize: "0.8rem" }}>
-              {t("Calculate credits needed for scheduled tribe posts")}
+              {t(`Calculate credits needed for scheduled {{tribeType}} posts`, {
+                tribeType,
+              })}
             </Text>
           </Div>
           <Div
@@ -1039,7 +1083,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
               display: "flex",
               flexDirection: "column",
               gap: ".5rem",
-              maxHeight: "20vh",
+              maxHeight: "40vh",
               overflowY: "auto",
               ...agentStyles.bordered.style,
             }}
@@ -1200,7 +1244,9 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                             ...utilities.link.style,
                             marginLeft: "auto",
                             marginRight: "0.75rem",
-                            color: "var(--shade-7)",
+                            fontSize: "0.75rem",
+                            minHeight: "1.8rem",
+                            color: COLORS.red,
                           }}
                           onClick={() => removeScheduleTime(index)}
                         >

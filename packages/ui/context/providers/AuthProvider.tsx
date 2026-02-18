@@ -830,20 +830,6 @@ export function AuthProvider({
     props.session?.deviceId,
   )
 
-  useEffect(() => {
-    if (!isStorageReady && !(isTauri || isCapacitor || isExtension)) return
-    if (!deviceId) {
-      console.log("📝 Updating deviceId from session:", session?.deviceId)
-      if (isExtension || isCapacitor) {
-        setDeviceId(uuidv4())
-
-        return
-      } else if (isTauri) {
-        setDeviceId(uuidv4())
-      }
-    }
-  }, [deviceId, setDeviceId, isStorageReady, isTauri])
-
   const [enableNotifications, setEnableNotifications] = useLocalStorage<
     boolean | undefined
   >("enableNotifications", true)
@@ -2622,6 +2608,11 @@ export function AuthProvider({
       matchedApp = threadApp
     }
 
+    if (!matchedApp && tribePost?.appId) {
+      const postApp = storeApps.find((app) => app.id === tribePost.appId)
+      matchedApp = postApp
+    }
+
     // Priority 2: Find app by pathname
     if (!matchedApp) {
       matchedApp = findAppByPathname(pathname, storeApps) || baseApp
@@ -2648,6 +2639,7 @@ export function AuthProvider({
     isExtension,
     loadingAppId,
     updatedApp,
+    tribePost,
   ])
   // Thread app takes priority over pathname, then falls back to pathname detection
 

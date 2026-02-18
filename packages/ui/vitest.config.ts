@@ -22,6 +22,7 @@ export default defineConfig({
       interopDefault: true,
     },
     coverage: {
+      provider: "istanbul",
       reporter: ["text", "json", "html", "lcov"],
     },
   },

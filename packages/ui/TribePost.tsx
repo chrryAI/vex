@@ -12,14 +12,7 @@ import { useTribe } from "./context/providers/TribeProvider"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
 import Instructions from "./Instructions"
-import {
-  Heart,
-  LoaderCircle,
-  MessageCircleReply,
-  Share2,
-  Sparkles,
-  Trash2,
-} from "./icons"
+import { Heart, MessageCircleReply, Share2, Sparkles, Trash2 } from "./icons"
 import Loading from "./Loading"
 import {
   Button,
@@ -74,7 +67,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     useAuth()
   const { setAppStatus } = useApp()
   const { FRONTEND_URL } = useData()
-  const _styles = useTribePostStyles()
+  const styles = useTribePostStyles()
   const { utilities } = useStyles()
 
   const { push: navigate } = useNavigation()
@@ -110,7 +103,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     user?.role === "admin" ||
     isDevelopment
 
-  const [showComments, _setShowComments] = useState(isDetailView)
+  const [showComments, setShowComments] = useState(isDetailView)
   // Group comments by parent
   const topLevelComments =
     post?.comments?.filter((c: comment) => !c.parentCommentId) || []
@@ -490,7 +483,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                       display: "flex",
                       flexDirection: "column",
                       gap: ".5rem",
-                      margin: ".5rem 0 0 0",
+                      margin: "1rem 0 0 0",
                     }}
                   >
                     {post.app.characterProfile.traits.expertise &&
@@ -798,27 +791,63 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           <Div
             style={{
               display: "flex",
-              gap: 8,
+              gap: 10,
               padding: "0.75rem 1rem",
               borderBottom: "1px solid var(--shade-2)",
               alignItems: "center",
               flexDirection: "column",
             }}
           >
-            <Span
+            <Div
               style={{
                 fontSize: ".9rem",
                 color: "var(--shade-6)",
                 display: "flex",
-                alignItems: "center",
+                flexDirection: "column",
                 gap: 8,
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <Img logo={"coder"} size={20} />{" "}
-              {t(
-                "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
+              <Div
+                style={{
+                  fontSize: ".9rem",
+                  color: "var(--shade-6)",
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Img logo={"coder"} size={20} />{" "}
+                {t(
+                  "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
+                )}
+              </Div>
+
+              {!accountApp && (
+                <Button
+                  onClick={() => {
+                    if (!user) {
+                      setSignInPart("register")
+                      return
+                    }
+                    setAppStatus({
+                      part: "settings",
+                      step: "add",
+                    })
+                  }}
+                  className="inverted"
+                  style={{
+                    ...utilities.inverted.style,
+                    ...utilities.small.style,
+                  }}
+                >
+                  <Sparkles size={16} color="var(--accent-1)" />
+                  {t("Create Your Agent")}
+                </Button>
               )}
-            </Span>
+            </Div>
             {tyingToReact && reactionGroups?.[tyingToReact] && (
               <Div
                 style={{
@@ -843,35 +872,12 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 ))}
               </Div>
             )}
-            {!accountApp && (
-              <Button
-                onClick={() => {
-                  if (!user) {
-                    setSignInPart("register")
-                    return
-                  }
-                  setAppStatus({
-                    part: "settings",
-                    step: "add",
-                  })
-                }}
-                className="inverted"
-                style={{
-                  ...utilities.inverted.style,
-                  ...utilities.small.style,
-                  marginLeft: "auto",
-                }}
-              >
-                <Sparkles size={16} color="var(--accent-1)" />
-                {t("Create Your Agent")}
-              </Button>
-            )}
           </Div>
         )}
 
         <Div
           style={{
-            marginTop: isSwarm || hasMore ? "1rem" : undefined,
+            marginTop: "1.5rem",
           }}
         >
           {/* Comments Section */}
@@ -883,89 +889,89 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               gap: "1.5rem",
             }}
           >
-            {isSwarm ? (
+            <Div
+              className="slideUp"
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                display: "flex",
+                gap: "1rem",
+                flexDirection: "row",
+              }}
+            >
               <Div
-                className="slideUp"
                 style={{
                   alignItems: "center",
-                  justifyContent: "center",
                   display: "flex",
-                  gap: "1rem",
-                  flexDirection: "row",
+                  gap: ".5rem",
                 }}
               >
                 <Div
                   style={{
                     alignItems: "center",
+                    justifyContent: "center",
                     display: "flex",
-                    gap: ".5rem",
+                    gap: "1rem",
                   }}
                 >
-                  <Div
-                    style={{
-                      alignItems: "center",
-                      justifyContent: "center",
-                      display: "flex",
-                      gap: "1rem",
-                    }}
-                  >
-                    {commenting.map((item, i) => {
-                      return (
-                        <MotiView
-                          key={item.app.id}
-                          from={{
-                            opacity: 0,
-                            translateY: -8,
-                            translateX: 0,
-                          }}
-                          animate={{
-                            opacity: 1,
-                            translateY: 0,
-                            translateX: 0,
-                          }}
-                          transition={{
-                            duration: reduceMotion ? 0 : 120,
-                            delay: reduceMotion ? 0 : i * 35,
-                          }}
-                        >
-                          <Img slug={item.app.slug} />
-                        </MotiView>
-                      )
-                    })}
-                    {liveReactions.map((item, i) => {
-                      return (
-                        <MotiView
-                          key={
-                            item.id || `${item.app.id}-${item.tribePostId}-${i}`
-                          }
-                          from={{
-                            opacity: 0,
-                            translateY: -8,
-                            translateX: 0,
-                          }}
-                          animate={{
-                            opacity: 1,
-                            translateY: 0,
-                            translateX: 0,
-                          }}
-                          transition={{
-                            duration: reduceMotion ? 0 : 120,
-                            delay: reduceMotion ? 0 : i * 35,
-                          }}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: ".5rem",
-                          }}
-                        >
-                          <Img slug={item.app.slug} />
-                          <Span style={{ fontSize: "1.3rem" }}>
-                            {item.reaction.emoji}
-                          </Span>
-                        </MotiView>
-                      )
-                    })}
-                  </Div>
+                  {commenting.map((item, i) => {
+                    return (
+                      <MotiView
+                        key={item.app.id}
+                        from={{
+                          opacity: 0,
+                          translateY: -8,
+                          translateX: 0,
+                        }}
+                        animate={{
+                          opacity: 1,
+                          translateY: 0,
+                          translateX: 0,
+                        }}
+                        transition={{
+                          duration: reduceMotion ? 0 : 120,
+                          delay: reduceMotion ? 0 : i * 35,
+                        }}
+                      >
+                        <Img slug={item.app.slug} />
+                      </MotiView>
+                    )
+                  })}
+                  {liveReactions.map((item, i) => {
+                    return (
+                      <MotiView
+                        key={
+                          item.id || `${item.app.id}-${item.tribePostId}-${i}`
+                        }
+                        from={{
+                          opacity: 0,
+                          translateY: -8,
+                          translateX: 0,
+                        }}
+                        animate={{
+                          opacity: 1,
+                          translateY: 0,
+                          translateX: 0,
+                        }}
+                        transition={{
+                          duration: reduceMotion ? 0 : 120,
+                          delay: reduceMotion ? 0 : i * 35,
+                        }}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: ".5rem",
+                        }}
+                      >
+                        <Img slug={item.app.slug} />
+                        <Span style={{ fontSize: "1.3rem" }}>
+                          {item.reaction.emoji}
+                        </Span>
+                      </MotiView>
+                    )
+                  })}
+                </Div>
+                {isSwarm ? (
                   <Div
                     style={{
                       justifyContent: "center",
@@ -1009,10 +1015,10 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                       ></Span>
                     </Div>
                   </Div>
-                </Div>
+                ) : null}
               </Div>
-            ) : null}
-            {hasMore ? (
+            </Div>
+            {/* {hasMore ? (
               <Div
                 style={{
                   color: "var(--shade-6)",
@@ -1042,7 +1048,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   })}
                 </Button>
               </Div>
-            ) : null}
+            ) : null} */}
           </Div>
           {showComments && (
             <Div

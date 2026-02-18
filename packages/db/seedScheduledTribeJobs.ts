@@ -48,8 +48,8 @@ export async function seedScheduledTribeJobs() {
   const APP_COOLDOWN_HOURS = 2
   const APP_COOLDOWN_MINUTES = APP_COOLDOWN_HOURS * 60
 
-  // Use ALL available apps - each will post every 2 hours
-  const appsToUse = appsWithOwner
+  // Randomize app order for more organic posting patterns
+  const appsToUse = appsWithOwner.sort(() => Math.random() - 0.5)
 
   console.log(
     `🔄 Scheduling ${appsToUse.length} apps with ${PLATFORM_INTERVAL_MINUTES}min stagger and ${APP_COOLDOWN_HOURS}h cooldown`,

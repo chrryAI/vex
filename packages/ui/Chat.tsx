@@ -252,6 +252,7 @@ export default function Chat({
     moltPlaceHolder,
     canShowTribe,
     showFocus,
+    postId,
     ...auth
   } = useAuth()
 
@@ -1825,6 +1826,7 @@ export default function Chat({
       if (files && files.length > 0) {
         // Use FormData for file uploads
         const formData = new FormData()
+        postId && formData.append("postId", postId)
         slug && formData.append("slug", slug)
         app?.id && formData.append("appId", app.id)
         ask && formData.append("ask", ask)
@@ -1884,6 +1886,7 @@ export default function Chat({
           placeholder,
           ask,
           about,
+          postId,
           retro: isRetro,
           appId: app?.id,
           draft:
@@ -4345,6 +4348,7 @@ export default function Chat({
                           style={{
                             ...utilities.link.style,
                             ...styles.agentButton.style,
+                            background: "transparent",
                           }}
                           type="submit"
                         >

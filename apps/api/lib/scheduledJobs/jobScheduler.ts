@@ -78,6 +78,135 @@ function generateToken(userId: string, email: string): string {
 }
 
 import { apps as appsSchema, moltComments } from "@repo/db/src/schema"
+
+/**
+ * Robust JSON parser for AI responses
+ * Handles markdown code blocks, trailing commas, and truncated JSON
+ */
+function parseAIJsonResponse(content: string): {
+  tribeName?: string
+  tribeContent?: string
+  tribeTitle?: string
+  tribe?: string
+  content?: string
+  post?: string
+  seoKeywords?: string[]
+  moltTitle?: string
+  moltContent?: string
+  moltSubmolt?: string
+  submolt?: string
+} {
+  if (!content || content.trim().length === 0) {
+    throw new Error("Empty AI response content")
+  }
+
+  // Strip markdown code blocks
+  let cleaned = content.trim()
+  if (cleaned.startsWith("```json")) {
+    cleaned = cleaned
+      .replace(/^```json\s*/, "")
+      .replace(/```\s*$/, "")
+      .trim()
+  } else if (cleaned.startsWith("```")) {
+    cleaned = cleaned
+      .replace(/^```\s*/, "")
+      .replace(/```\s*$/, "")
+      .trim()
+  }
+
+  // Try direct parse first
+  try {
+    return JSON.parse(cleaned)
+  } catch {
+    // Continue to fix attempts
+  }
+
+  // Try to extract JSON object boundaries
+  const firstBrace = cleaned.indexOf("{")
+  const lastBrace = cleaned.lastIndexOf("}")
+
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    const jsonString = cleaned.substring(firstBrace, lastBrace + 1)
+
+    try {
+      return JSON.parse(jsonString)
+    } catch {
+      // Continue to more aggressive fixes
+    }
+
+    // Fix common issues: trailing commas, unclosed strings
+    const fixed = jsonString
+      // Remove trailing commas before } or ]
+      .replace(/,\s*([}\]])/g, "$1")
+      // Fix unclosed strings by finding unmatched quotes
+      .replace(/: "([^"]*)$/, ': "$1"') // Simple unclosed string fix
+
+    try {
+      return JSON.parse(fixed)
+    } catch {
+      // Continue to extraction fallback
+    }
+  }
+
+  // Last resort: try to extract key fields with regex
+  const extractField = (field: string): string | undefined => {
+    const patterns = [
+      new RegExp(`"${field}"\\s*:\\s*"([^"]*)"`, "i"),
+      new RegExp(`"${field}"\\s*:\\s*"([^"]*)$`, "i"), // Unclosed string
+    ]
+    for (const pattern of patterns) {
+      const match = cleaned.match(pattern)
+      if (match?.[1]) return match[1]
+    }
+    return undefined
+  }
+
+  const result: Record<string, unknown> = {}
+  const fields = [
+    "tribeName",
+    "tribeContent",
+    "tribeTitle",
+    "tribe",
+    "content",
+    "post",
+    "seoKeywords",
+    "moltTitle",
+    "moltContent",
+    "moltSubmolt",
+    "submolt",
+  ]
+
+  for (const field of fields) {
+    const value = extractField(field)
+    if (value !== undefined) {
+      if (field === "seoKeywords") {
+        // Try to parse as JSON array or extract manually
+        try {
+          result[field] = JSON.parse(value)
+        } catch {
+          // Extract comma-separated or quoted items
+          result[field] =
+            value.match(/"([^"]+)"/g)?.map((s) => s.replace(/"/g, "")) || []
+        }
+      } else {
+        result[field] = value
+      }
+    }
+  }
+
+  // Check if we extracted anything meaningful
+  const hasContent =
+    result.tribeContent || result.content || result.moltContent || result.post
+  if (hasContent) {
+    console.log("⚠️  Used regex fallback to extract AI response fields")
+    return result as ReturnType<typeof parseAIJsonResponse>
+  }
+
+  throw new Error(
+    `Failed to parse AI response. Content preview: ${cleaned.substring(0, 200)}...`,
+  )
+}
+
 import { streamText } from "ai"
 import { isExcludedAgent } from "../cron/moltbookExcludeList"
 import {
@@ -1251,7 +1380,13 @@ export async function postToMoltbookJob({
 // TRIBE JOB FUNCTIONS (similar to Moltbook)
 // ============================================
 
-async function postToTribeJob({ job }: { job: scheduledJob }): Promise<{
+async function postToTribeJob({
+  job,
+  postType,
+}: {
+  job: scheduledJob
+  postType?: string
+}): Promise<{
   success?: boolean
   error?: string
   output?: string
@@ -1302,6 +1437,7 @@ async function postToTribeJob({ job }: { job: scheduledJob }): Promise<{
       : undefined
 
   console.log("📝 Starting Tribe post creation...")
+  console.log(`🎯 Active postType for AI: ${postType || "post"}`)
 
   // Send Discord notification at job start
   sendDiscordNotification({
@@ -1455,6 +1591,7 @@ Important Notes:
         agentId: selectedAgent.id,
         stream: false,
         jobId: job.id,
+        postType: postType || "post", // Pass postType to AI route
       }),
     })
 
@@ -1479,37 +1616,30 @@ Important Notes:
     console.log(
       `📥 AI response (${aiMessageContent.length} chars): ${aiMessageContent.substring(0, 200)}...`,
     )
+    console.log(`📄 Full AI response:\n${aiMessageContent}`)
 
-    // Strip markdown code blocks if present
-    let cleanedContent = aiMessageContent.trim()
-    if (cleanedContent.startsWith("```json")) {
-      cleanedContent = cleanedContent
-        .replace(/^```json\s*/, "")
-        .replace(/```\s*$/, "")
-    } else if (cleanedContent.startsWith("```")) {
-      cleanedContent = cleanedContent
-        .replace(/^```\s*/, "")
-        .replace(/```\s*$/, "")
-    }
+    // Parse JSON from AI response using robust helper
+    const parsedContent = parseAIJsonResponse(aiMessageContent)
 
-    // Parse JSON from AI response
-    let parsedContent: { tribe?: string; content?: string; post?: string }
-    try {
-      parsedContent = JSON.parse(cleanedContent)
-    } catch (_error) {
-      throw new Error(
-        `Failed to parse AI response as JSON: ${cleanedContent.substring(0, 200)}`,
-      )
-    }
-
-    // Map AI response to expected format (handle both 'content' and 'post' fields)
-    const postContent = parsedContent.content || parsedContent.post || ""
+    // Map AI response to expected format (handle both old and new field names)
     const aiResponse = {
-      tribeName: parsedContent.tribe || "general",
-      tribeContent: postContent,
-      tribeTitle: postContent
-        ? postContent.split(/[.!?]/)[0]?.substring(0, 100) || "Tribe Post"
-        : "Tribe Post",
+      tribeName: parsedContent.tribeName || parsedContent.tribe || "general",
+      tribeContent:
+        parsedContent.tribeContent ||
+        parsedContent.content ||
+        parsedContent.post ||
+        "",
+      tribeTitle:
+        parsedContent.tribeTitle ||
+        (
+          parsedContent.tribeContent ||
+          parsedContent.content ||
+          parsedContent.post ||
+          ""
+        )
+          .split(/[.!?]/)[0]
+          ?.substring(0, 100) ||
+        "Tribe Post",
     }
 
     if (!aiResponse.tribeContent || !aiResponse.tribeName) {
@@ -3112,7 +3242,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         console.log(`🎯 Executing: ${postType} → ${effectiveJobType}`)
 
         // Execute the job type
-        await executeJobType(effectiveJobType, job)
+        await executeJobType(effectiveJobType, job, postType)
       }
 
       // All tasks completed - return success
@@ -3417,11 +3547,12 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
 async function executeJobType(
   effectiveJobType: string,
   job: scheduledJob,
+  postType?: string,
 ): Promise<void> {
   switch (effectiveJobType) {
     case "tribe_post":
       try {
-        const response = await executeTribePost(job)
+        const response = await executeTribePost(job, postType)
         if (!response.output || response.error) {
           throw new Error(response.error || "Unknown error")
         }
@@ -3496,9 +3627,10 @@ async function executeJobType(
   }
 }
 
-async function executeTribePost(job: scheduledJob) {
+async function executeTribePost(job: scheduledJob, postType?: string) {
   const result = await postToTribeJob({
     job,
+    postType,
   })
 
   return result

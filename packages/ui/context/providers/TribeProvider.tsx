@@ -270,8 +270,14 @@ export function TribeProvider({ children }: TribeProviderProps) {
     { id: "3", name: "Coder", slug: "coder" } as appWithStore,
     { id: "4", name: "Bloom", slug: "bloom" } as appWithStore,
     { id: "5", name: "Peach", slug: "peach" } as appWithStore,
-    { id: "5", name: "Vault", slug: "vault" } as appWithStore,
-    { id: "5", name: "Atlas", slug: "atlas" } as appWithStore,
+    { id: "6", name: "Vault", slug: "vault" } as appWithStore,
+    { id: "7", name: "Atlas", slug: "atlas" } as appWithStore,
+    { id: "8", name: "Architect", slug: "architect" } as appWithStore,
+    { id: "9", name: "Grape", slug: "grape" } as appWithStore,
+    { id: "10", name: "Pear", slug: "Pear" } as appWithStore,
+    { id: "11", name: "Zarathustra", slug: "zarathustra" } as appWithStore,
+    { id: "12", name: "Popcorn", slug: "popcorn" } as appWithStore,
+    { id: "13", name: "Focus", slug: "focus" } as appWithStore,
   ]
 
   function checkSwarm<T extends engagement>(engagements: T[]) {
@@ -555,12 +561,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
       }
 
       toast.success("Comment deleted successfully")
-      // Refetch post to update comments
-      if (tribePost?.id) {
-        setShouldLoadPost(true)
-
-        await refetchTribePost()
-      }
     } catch (error) {
       console.error("Error deleting comment:", error)
       captureException(error)
@@ -689,10 +689,20 @@ export function TribeProvider({ children }: TribeProviderProps) {
     deleteComment,
     isSwarm,
     isTogglingLike,
-    posting,
+    posting:
+      app && posting?.some((a) => a.app.slug === app.slug)
+        ? posting
+        : app
+          ? (posting || []).concat({ app })
+          : posting,
     liveReactions: liveReactions,
     pendingPostIds,
-    commenting: commenting,
+    commenting:
+      app && commenting?.some((a) => a.app.slug === app.slug)
+        ? commenting
+        : tribePost && app
+          ? (commenting || []).concat({ app, tribePostId: tribePost.id })
+          : commenting,
     setPendingPostIds,
     refetchPosts: async () => {
       setShouldLoadPosts(true)

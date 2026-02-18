@@ -46,6 +46,7 @@ import {
   getTasks,
   getThread,
   getTimer,
+  getTribePost,
   getTribes,
   getUser as getUserDb,
   gte,
@@ -1193,6 +1194,7 @@ ai.post("/", async (c) => {
     const formData = (await request.formData()) as unknown as FormData
     requestData = {
       stream: formData.get("stream"),
+      postId: formData.get("postId") as string,
       placeholder: formData.get("placeholder") as string,
       appId: formData.get("appId") as string,
       slug: formData.get("slug") as string,
@@ -1260,6 +1262,8 @@ ai.post("/", async (c) => {
     placeholder,
     deviceId,
     tribeCharLimit,
+    postId,
+    postType,
     ...rest
   } = requestData
 
@@ -1308,16 +1312,23 @@ ai.post("/", async (c) => {
   // Extract maxTokens from job's active scheduledTime
   let jobMaxTokens: number | undefined
   if (job?.scheduledTimes && job.scheduledTimes.length > 0) {
-    // Find the active scheduledTime based on current time
-    const now = new Date()
-    const nowMs = now.getTime()
+    // First try to find by postType if provided (most accurate)
+    let activeSchedule = postType
+      ? job.scheduledTimes.find((schedule) => schedule.postType === postType)
+      : undefined
 
-    const activeSchedule = job.scheduledTimes.find((schedule) => {
-      const scheduleDate = new Date(schedule.time)
-      const scheduleMs = scheduleDate.getTime()
-      const diffMs = Math.abs(nowMs - scheduleMs)
-      return diffMs <= 15 * 60 * 1000 // 15 minute window for scheduled jobs
-    })
+    // Fallback to time-based matching if postType not found
+    if (!activeSchedule) {
+      const now = new Date()
+      const nowMs = now.getTime()
+
+      activeSchedule = job.scheduledTimes.find((schedule) => {
+        const scheduleDate = new Date(schedule.time)
+        const scheduleMs = scheduleDate.getTime()
+        const diffMs = Math.abs(nowMs - scheduleMs)
+        return diffMs <= 15 * 60 * 1000 // 15 minute window for scheduled jobs
+      })
+    }
 
     if (activeSchedule?.maxTokens) {
       jobMaxTokens = activeSchedule.maxTokens
@@ -1796,6 +1807,17 @@ ${
       : Promise.resolve(null),
   )
 
+  // Fetch tribe post if postId is provided for AI context
+  const tribePost =
+    postId && requestApp
+      ? await tracker.track("get_tribe_post", () =>
+          getTribePost({
+            id: postId,
+            appId: requestApp?.id,
+          }),
+        )
+      : null
+
   let agent = await tracker.track("get_agent", () =>
     getAiAgent({ id: agentId }),
   )
@@ -2273,7 +2295,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
     .join("\n")
 
   const tribeContext =
-    canPostToTribe && (!job || job?.jobType === "tribe_post")
+    canPostToTribe && (!job || postType === "post")
       ? `
   ## 🪢 TRIBE SYSTEM INSTRUCTIONS (PRIORITY)
 
@@ -2556,6 +2578,21 @@ These reflect the user's interests and recent conversations. If the user seems u
 }
 `
       : ""
+
+  // Add tribe post context for AI awareness when on a post page
+  const tribePostContext = tribePost
+    ? `
+
+## CURRENT POST CONTEXT:
+The user is currently viewing and potentially discussing this Tribe post:
+- **Title**: ${tribePost.title || "Untitled"}
+- **Content**: ${tribePost.content?.substring(0, 500) || ""}${tribePost.content?.length > 500 ? "..." : ""}
+- **Author**: ${tribePost.app?.name || "Unknown"}
+- **Tribe**: ${tribePost.tribe?.name || "Unknown"}
+
+If the user asks questions about this post or wants to discuss its content, reference specific details from the post. Be helpful and informative about the post's topic.
+`
+    : ""
 
   // Fetch calendar events for context (past 7 days + next 30 days)
   const now = new Date()
@@ -3725,6 +3762,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     memoryContext, // Background knowledge (context) - AFTER instructions
     userBehaviorContext, // Real-time user behavior patterns and workflow insights
     placeholderContext,
+    tribePostContext,
     calendarContext,
     vaultContext,
     focusContext,
@@ -6155,7 +6193,9 @@ Respond in JSON format:
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
+          maxOutputTokens: jobMaxTokens, // Use job's maxTokens for scheduled posts
           tools: allTools, // Includes imageTools
+          toolChoice: "none", // Disable automatic tool calls - only use when user explicitly requests
           async onFinish({ text, usage, response, toolCalls, toolResults }) {
             finalText = text
             responseMetadata = response
@@ -6706,7 +6746,9 @@ Respond in JSON format:
                   : []
 
                 // Two flows: stream (direct post) vs non-stream (parse only, like Moltbook)
-                if (member && requestApp) {
+                // IMPORTANT: Skip posting if this is a scheduled job (jobId exists)
+                // The scheduler will handle the actual posting to avoid duplicates
+                if (member && requestApp && !jobId) {
                   try {
                     if (shouldStream) {
                       // STREAM MODE: Direct post to Tribe (user sees content + post confirmation)
@@ -7036,7 +7078,9 @@ Respond in JSON format:
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
+          maxOutputTokens: jobMaxTokens,
           tools: allTools,
+          toolChoice: "none", // Disable automatic tool calls
           async onFinish({ text, usage, response, toolCalls, toolResults }) {
             finalText = text
             _responseMetadata = response
@@ -7316,7 +7360,9 @@ Respond in JSON format:
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
+          maxOutputTokens: jobMaxTokens,
           tools: allTools,
+          toolChoice: "none", // Disable automatic tool calls
           providerOptions: {
             google: {
               // thinkingConfig: {
@@ -7501,7 +7547,9 @@ Respond in JSON format:
         messages,
         maxRetries: 3,
         temperature: requestApp?.temperature ?? 0.7,
+        maxOutputTokens: jobMaxTokens,
         tools: toolsForModel,
+        toolChoice: "none", // Disable automatic tool calls
         async onFinish({ text, usage, response, sources, toolCalls }) {
           finalText = text
           responseMetadata = response

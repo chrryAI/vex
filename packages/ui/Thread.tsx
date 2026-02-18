@@ -185,13 +185,13 @@ const Thread = ({
   const currentMessagesRef = useRef(messages)
   currentMessagesRef.current = messages
 
-  const handleCharacterProfileUpdate = useCallback(() => {
-    !isChatFloatingRef.current && scrollToBottomRef.current()
-  }, [])
-
   const handlePlayAudio = useCallback(() => {
     shouldStopAutoScrollRef.current = true
   }, [])
+
+  const handleCharacterProfileUpdate = useCallback(() => {
+    !isChatFloating && scrollToBottom()
+  }, [isChatFloating, scrollToBottom])
 
   const handleToggleLike = useCallback((liked: boolean | undefined) => {
     refetchRef.current()
