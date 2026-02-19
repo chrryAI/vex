@@ -1399,10 +1399,10 @@ const e2eVex = {
 
 const _tribe = {
   ...zarathustra,
+  mode: "tribe" as SiteMode,
   url: "https://tribe.chrry.ai",
   domain: "tribe.chrry.ai",
   isTribe: true,
-  // store: "https://e2e.chrry.ai",
 }
 
 const staging = {
