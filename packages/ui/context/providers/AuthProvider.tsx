@@ -832,10 +832,23 @@ export function AuthProvider({
 
   const [showGrapes, setShowGrapes] = useState(false)
 
-  const [deviceId, setDeviceId] = useCookieOrLocalStorage(
+  const [deviceIdExtension, setDeviceIdExtension] = useCookieOrLocalStorage(
     "deviceId",
     props.session?.deviceId,
   )
+
+  const [deviceIdWeb, setDeviceIdWeb] = useCookie(
+    "deviceId",
+    props.session?.deviceId,
+  )
+
+  const deviceId =
+    isExtension || isTauri || isCapacitor ? deviceIdExtension : deviceIdWeb
+
+  const setDeviceId =
+    isExtension || isTauri || isCapacitor
+      ? setDeviceIdExtension
+      : setDeviceIdWeb
 
   const [enableNotifications, setEnableNotifications] = useLocalStorage<
     boolean | undefined
@@ -1004,10 +1017,12 @@ export function AuthProvider({
       return
     }
     if (!fingerprint) {
-      const fp = uuidv4()
-      setFingerprint(fp)
+      setFingerprint(uuidv4())
     }
-  }, [fingerprint, isStorageReady])
+    if (!deviceId) {
+      setDeviceId(uuidv4())
+    }
+  }, [fingerprint, isStorageReady, deviceId])
 
   useEffect(() => {
     if (isTauri && !isStorageReady) {
@@ -1118,12 +1133,18 @@ export function AuthProvider({
       (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
       session?.app?.store?.apps || props.app?.store?.apps || [],
     ),
-    accountApp ? [accountApp] : [],
+
+    merge(
+      (tribePost?.comments.map((p) => p.app) as appWithStore[]) || [],
+      accountApp ? [accountApp] : [],
+    ),
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
   useEffect(() => {
-    const diff = allApps.filter((app) => !storeApps?.includes(app))
+    const diff = allApps.filter(
+      (app) => !storeApps?.some((a) => a.id === app.id),
+    )
     if (diff && diff.length > 0) {
       mergeApps(diff)
     }
@@ -1732,7 +1753,7 @@ export function AuthProvider({
     apps: appWithStore[],
   ): appWithStore | undefined => {
     // if (focus && showFocus) return focus
-    if (path === "/" && !showFocus && !showTribe) return undefined
+    if (path === "/" && !showFocus) return undefined
 
     const { appSlug } = getAppAndStoreSlugs(path, {
       defaultAppSlug: baseApp?.slug || siteConfig.slug,
@@ -2613,7 +2634,7 @@ export function AuthProvider({
       matchedApp = threadApp
     }
 
-    if (!matchedApp && tribePost?.appId) {
+    if (!matchedApp && postId && tribePost) {
       const postApp = storeApps.find((app) => app.id === tribePost.appId)
       matchedApp = postApp
     }
@@ -2641,6 +2662,7 @@ export function AuthProvider({
     thread,
     threadId,
     lastAppId,
+    postId,
     isExtension,
     loadingAppId,
     updatedApp,

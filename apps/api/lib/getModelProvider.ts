@@ -210,6 +210,21 @@ export async function getModelProvider(
     }
 
     case "claude": {
+      const claudeKey = app?.apiKeys?.anthropic
+        ? safeDecrypt(app?.apiKeys?.anthropic)
+        : !plusTiers.includes(app?.tier || "") &&
+            !process.env.OPENROUTER_API_KEY
+          ? process.env.CLAUDE_API_KEY
+          : ""
+
+      if (claudeKey) {
+        const claudeProvider = createAnthropic({ apiKey: claudeKey })
+        return {
+          provider: claudeProvider(agent.modelId),
+          agentName: agent.name,
+        }
+      }
+
       // Fallback to OpenRouter
       const openRouterKeyForClaude =
         (appApiKeys.openrouter ? safeDecrypt(appApiKeys.openrouter) : "") ||
@@ -227,21 +242,6 @@ export async function getModelProvider(
 
         return {
           provider: openRouterProvider(modelId),
-          agentName: agent.name,
-        }
-      }
-
-      const claudeKey = app?.apiKeys?.anthropic
-        ? safeDecrypt(app?.apiKeys?.anthropic)
-        : !plusTiers.includes(app?.tier || "") &&
-            !process.env.OPENROUTER_API_KEY
-          ? process.env.CLAUDE_API_KEY
-          : ""
-
-      if (claudeKey) {
-        const claudeProvider = createAnthropic({ apiKey: claudeKey })
-        return {
-          provider: claudeProvider(agent.modelId),
           agentName: agent.name,
         }
       }

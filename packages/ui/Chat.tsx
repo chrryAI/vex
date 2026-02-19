@@ -455,7 +455,9 @@ export default function Chat({
     }
   }, [isNewChat])
   // Determine if we should use compact mode based on bottom offset
-  const [hasBottomOffset, setHasBottomOffset] = useState(false)
+  const [hasBottomOffsetInternal, setHasBottomOffset] = useState(false)
+  const hasBottomOffset = hasBottomOffsetInternal && !empty
+
   const shouldUseCompactMode = compactMode || hasBottomOffset
 
   const floatingInitial =
@@ -1576,6 +1578,11 @@ export default function Chat({
       return
     }
 
+    if (creditsLeft === 0) {
+      toast.error(t("credits_left_other", { count: 0 }))
+      return
+    }
+
     if (!isPrivacyApproved && !approve) {
       setNeedsReview(true)
       return
@@ -2674,10 +2681,7 @@ export default function Chat({
   const inputText = inputRef.current?.trim() || input?.trim() || ""
 
   const getIsSendDisabled = () =>
-    (inputText === "" && files.length === 0) ||
-    isLoading ||
-    creditsLeft === 0 ||
-    disabled
+    (inputText === "" && files.length === 0) || isLoading || disabled
 
   const isVoiceDisabled = isLoading || creditsLeft === 0 || disabled
 
@@ -4680,7 +4684,6 @@ export default function Chat({
                     <A
                       target="_blank"
                       className="button small transparent"
-                      openInNewTab
                       href="/privacy"
                       style={{
                         position: "relative",

@@ -1418,12 +1418,42 @@ async function postToTribeJob({
     throw new Error("User not found")
   }
 
+  // Cooldown check: don't post if last post was within cooldownMinutes
+  const cooldownMinutes = job.metadata?.cooldownMinutes ?? 120
+  const recentPosts = await db.query.tribePosts.findMany({
+    where: eq(tribePosts.appId, app.id),
+    orderBy: (tribePosts, { desc }) => [desc(tribePosts.createdOn)],
+    limit: 5,
+    columns: { id: true, title: true, createdOn: true },
+  })
+
+  const lastPost = recentPosts[0]
+  if (lastPost) {
+    const minutesSinceLastPost =
+      (Date.now() - lastPost.createdOn.getTime()) / 60000
+    if (minutesSinceLastPost < cooldownMinutes) {
+      const minutesLeft = Math.ceil(cooldownMinutes - minutesSinceLastPost)
+      console.log(
+        `⏸️ Tribe cooldown: Last post was ${Math.floor(minutesSinceLastPost)} minutes ago. Wait ${minutesLeft} more minutes.`,
+      )
+      return {
+        success: false,
+        error: `Cooldown active. Try again in ${minutesLeft} minutes.`,
+      }
+    }
+  }
+
+  const recentPostTitles = recentPosts
+    .map((p) => p.title)
+    .filter(Boolean)
+    .join("\n- ")
+
   const existingTribeThread = await getThread({
     appId: app.id,
     isTribe: true,
   })
 
-  const messages = existingTribeThread
+  const tribeThreadMessages = existingTribeThread
     ? await getMessages({
         threadId: existingTribeThread.id,
         pageSize: 20,
@@ -1432,7 +1462,9 @@ async function postToTribeJob({
     : undefined
 
   const threadId =
-    existingTribeThread && messages && messages?.totalCount < 15
+    existingTribeThread &&
+    tribeThreadMessages &&
+    tribeThreadMessages.totalCount < 15
       ? existingTribeThread.id
       : undefined
 
@@ -1542,6 +1574,7 @@ ${tribesList || "- general: General discussion"}
 
 **IMPORTANT**: Choose the most relevant tribe from the list above based on your post content. Be creative - don't always use "general"!
 
+${recentPostTitles ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n- ${recentPostTitles}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}
 Important Notes:
 - ⚠️ Do NOT repeat yourself - you have thread context with your character profile and previous posts
 - If needed, check your app memories for additional context

@@ -22,6 +22,7 @@ import Loading from "./Loading"
 import { Div, useLocalStorage, usePlatform } from "./platform"
 import { useSidebarStyles } from "./Sidebar.styles"
 import Thread from "./Thread"
+import { excludedSlugRoutes, getAppAndStoreSlugs } from "./utils/url"
 import Programme from "./z/Programme"
 
 // Lazy load less frequently used components to reduce initial bundle
@@ -88,7 +89,13 @@ export const Hey = memo(
       isIDE,
       baseApp,
       isLoadingPosts,
+      siteConfig,
     } = useAuth()
+
+    const { appSlug } = getAppAndStoreSlugs(pathname, {
+      defaultAppSlug: baseApp?.slug || siteConfig.slug,
+      defaultStoreSlug: baseApp?.store?.slug || siteConfig.storeSlug,
+    })
 
     const { currentStore } = useApp()
 
@@ -109,16 +116,7 @@ export const Hey = memo(
       .slice(1)
       .split("?")[0]
 
-    // useEffect(() => {
-    //   if (
-    //     pathnameLocal &&
-    //     isExtension &&
-    //     pathnameLocal !== "/" &&
-    //     pathnameLocal !== pathname
-    //   ) {
-    //     router.push(pathnameLocal)
-    //   }
-    // }, [pathnameLocal, isExtension, pathname])
+    const showTribeLogo = siteConfig.isTribe && pathname === "/"
 
     // Check if current route is a store slug by checking all apps
     const isStorePage = storeApps?.find(
@@ -172,7 +170,15 @@ export const Hey = memo(
       (isSplash: boolean) => {
         const splashStyle = styles.splash
         const hiddenStyle = styles.splashHidden
-        if (!app) return null
+        if (!app)
+          return (
+            <Img
+              slug={showTribeLogo ? "tribe" : appSlug}
+              showLoading={false}
+              size={64}
+            />
+          )
+
         return (
           <Div
             style={{
@@ -184,7 +190,8 @@ export const Hey = memo(
               onLoad={(src) => {
                 setIsImageLoaded(true)
               }}
-              app={app}
+              slug={showTribeLogo ? "tribe" : undefined}
+              app={showTribeLogo ? undefined : app}
               // logo={isChrry ? "blossom" : undefined}
               showLoading={false}
               size={64}
@@ -203,7 +210,8 @@ export const Hey = memo(
         isHydrated &&
         minSplashTimeElapsed &&
         !isLoadingPosts &&
-        setIsSplash(!app?.store?.apps?.length)
+        app?.store?.apps?.length &&
+        setIsSplash(false)
     }, [
       isImageLoaded,
       isHydrated,
@@ -221,36 +229,28 @@ export const Hey = memo(
     return (
       <Div>
         <ErrorBoundary>
-          {!app ? (
-            <Div style={styles.splash.style}>
-              <Img logo="blossom" showLoading={false} size={64} />
+          {splash}
+          <Suspense fallback={<Loading fullScreen />}>
+            <Programme />
+            <Div style={{ display: isProgramme ? "none" : "block" }}>
+              {isIDE ? (
+                // IDE mode - show code editor
+                <IDE />
+              ) : isClientRoute ? (
+                // Client-side routes: SWAP content
+                // Check thread detail FIRST before RouteComponent
+                threadId ? (
+                  <Thread key={threadId} />
+                ) : RouteComponent ? (
+                  <RouteComponent />
+                ) : (
+                  <Home />
+                )
+              ) : (
+                children
+              )}
             </Div>
-          ) : (
-            <>
-              {splash}
-              <Suspense fallback={<Loading fullScreen />}>
-                <Programme />
-                <Div style={{ display: isProgramme ? "none" : "block" }}>
-                  {isIDE ? (
-                    // IDE mode - show code editor
-                    <IDE />
-                  ) : isClientRoute ? (
-                    // Client-side routes: SWAP content
-                    // Check thread detail FIRST before RouteComponent
-                    threadId ? (
-                      <Thread key={threadId} />
-                    ) : RouteComponent ? (
-                      <RouteComponent />
-                    ) : (
-                      <Home />
-                    )
-                  ) : (
-                    children
-                  )}
-                </Div>
-              </Suspense>
-            </>
-          )}
+          </Suspense>
         </ErrorBoundary>
       </Div>
     )

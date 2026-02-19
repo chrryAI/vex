@@ -221,11 +221,10 @@ export default function App({
           (item.id !== nebula?.id || !isBlossom) &&
           (item.id !== grape?.id || (!isBlossom && !accountApp)) &&
           (item.id !== zarathustra?.id || (!isBlossom && !accountApp)) &&
-          (item.id === atlas?.id ? !isBlossom : true) &&
-          item.id !== popcorn?.id &&
-          (isBlossom && accountApp?.id !== app?.id
-            ? item.id !== atlas?.id
-            : true),
+          (item.id === atlas?.id
+            ? !isBlossom && accountApp?.id !== app?.id
+            : true) &&
+          item.id !== popcorn?.id,
       )
       .filter((item) => item.id !== focus?.id)
       .sort((a, b) => {

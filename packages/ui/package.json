@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "2.0.4",
+  "version": "2.0.6",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -64,7 +64,7 @@
     "check-types": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "test": "pnpm exec vitest run",
-    "test:coverage": "pnpm exec vitest run --coverage"
+    "test:coverage": "pnpm exec vitest run --coverage && node -e \"const fs=require('fs');const p='coverage/lcov.info';if(fs.existsSync(p)){const c=fs.readFileSync(p,'utf8');const lines=c.split('\\n');const newLines=lines.map(l=>{if(l.startsWith('SF:')){let f=l.substring(3);if(f.includes('packages/ui/')){return 'SF:'+f.substring(f.indexOf('packages/ui/'));}return 'SF:packages/ui/'+f;}return l;});fs.writeFileSync(p,newLines.join('\\n'));}\""
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

@@ -51,6 +51,10 @@ const Anchor = React.forwardRef<
         onClick={(e) => {
           props.onClick?.(e)
 
+          if (e.defaultPrevented) {
+            return
+          }
+
           if (clientOnly) {
             return
           }
