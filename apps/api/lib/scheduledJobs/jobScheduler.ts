@@ -3269,6 +3269,22 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
 
   const LOCK_TTL_MS = 5 * 60 * 1000 // 5 minutes for long-running jobs
 
+  // Check if a run is already in progress (started within last 5 minutes)
+  const activeRun = await db.query.scheduledJobRuns.findFirst({
+    where: and(
+      eq(scheduledJobRuns.jobId, job.id),
+      eq(scheduledJobRuns.status, "running"),
+      gte(scheduledJobRuns.startedAt, new Date(Date.now() - LOCK_TTL_MS)),
+    ),
+  })
+
+  if (activeRun) {
+    console.log(
+      `⏭️ Job ${job.name} already running (started ${Math.round((Date.now() - activeRun.startedAt.getTime()) / 1000)}s ago), skipping`,
+    )
+    return
+  }
+
   // Atomically claim the job by updating nextRunAt
   const claimResult = await db
     .update(scheduledJobs)
