@@ -306,8 +306,9 @@ function metadataToHtml(metadata, serverData) {
 
   // Favicon and Apple Touch Icons - use hostname for white-label detection
   // Use serverData.siteConfig which is already available from server-loader
-  const iconSlug =
-    serverData?.siteConfig?.storeSlug === "compass"
+  const iconSlug = serverData?.siteConfig?.isTribe
+    ? "tribe"
+    : serverData?.siteConfig?.storeSlug === "compass"
       ? "atlas"
       : serverData?.siteConfig?.slug || serverData?.app?.slug || "chrry"
   const baseIcon = `/images/apps/${iconSlug}.png`

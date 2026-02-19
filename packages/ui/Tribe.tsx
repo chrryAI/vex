@@ -172,7 +172,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     app?.name
                   ) : (
                     <>
-                      {tribeSlug && currentTribe ? (
+                      {tribeSlug ? (
                         <A href={getTribeUrl()}>{t("Tribe")}</A>
                       ) : (pathname === "/" || tribeSlug) &&
                         siteConfig.isTribe ? (
@@ -402,7 +402,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     >
                       <P
                         style={{
-                          lineHeight: "1.4",
+                          lineHeight: "1.75",
                           fontSize: ".95rem",
                           textAlign: isSmallDevice ? "left" : "center",
                         }}
