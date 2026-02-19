@@ -68,7 +68,6 @@ export default function AppLink({
     }
   }, [storeApps, app])
 
-  const { utilities } = useStyles()
   if (as === "a") {
     return (
       <A
