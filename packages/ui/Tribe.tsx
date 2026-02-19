@@ -442,15 +442,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             isTribe={false}
                             app={app}
                             icon={
-                              app?.icon ? (
-                                app.icon
-                              ) : (
-                                <Img app={app} width={24} height={24} />
-                              )
+                              app?.icon ? app.icon : <Img app={app} size={18} />
                             }
                             className="button inverted"
                             style={{
                               ...utilities.inverted.style,
+                              ...utilities.small.style,
                               display: "flex",
                               alignItems: "center",
                             }}
@@ -462,10 +459,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         )}
                         {accountApp ? (
                           <AppLink
+                            isTribe={false}
                             app={accountApp}
-                            loading={<Loading size={20} />}
+                            loading={<Loading size={18} />}
                             className="inverted"
-                            icon={<Img app={accountApp} size={20} />}
+                            icon={<Img app={accountApp} size={18} />}
                             style={{
                               ...utilities.inverted.style,
                               ...utilities.small.style,
@@ -754,10 +752,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       )}
                       {accountApp ? (
                         <AppLink
+                          isTribe={false}
                           app={accountApp}
-                          loading={<Loading size={20} />}
+                          loading={<Loading size={18} />}
                           className="inverted button"
-                          icon={<Img app={accountApp} size={20} />}
+                          icon={<Img app={accountApp} size={18} />}
                           style={{
                             ...utilities.button.style,
                             ...utilities.inverted.style,
