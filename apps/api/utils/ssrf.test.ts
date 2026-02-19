@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest"
-import { getSafeUrl } from "./ssrf"
+import { afterAll, describe, expect, it, vi } from "vitest"
+import { getSafeUrl, safeFetch } from "./ssrf"
 
 describe("validateUrl / getSafeUrl", () => {
   it("should allow public URLs", async () => {
@@ -93,6 +93,75 @@ describe("validateUrl / getSafeUrl", () => {
     // ::ffff:0a00:0001 format (10.0.0.1 in hex) should be blocked
     await expect(getSafeUrl("http://[::ffff:0a00:0001]")).rejects.toThrow(
       "Access to private IP",
+    )
+  })
+})
+
+describe("safeFetch", () => {
+  const originalFetch = global.fetch
+
+  afterAll(() => {
+    global.fetch = originalFetch
+  })
+
+  it("should follow safe redirects", async () => {
+    // Mock fetch to redirect once then succeed
+    global.fetch = vi.fn(
+      async (input: RequestInfo | URL, _init?: RequestInit) => {
+        const url = typeof input === "string" ? input : input.toString()
+
+        if (url.includes("google.com")) {
+          return new Response(null, {
+            status: 301,
+            headers: { Location: "https://example.com/dest" },
+          })
+        }
+
+        if (url.includes("example.com")) {
+          return new Response("ok", { status: 200 })
+        }
+
+        return new Response("not found", { status: 404 })
+      },
+    )
+
+    const response = await safeFetch("https://google.com/source")
+    expect(response.status).toBe(200)
+    expect(await response.text()).toBe("ok")
+  })
+
+  it("should block redirect to private IP", async () => {
+    // Mock fetch to redirect to a private IP
+    global.fetch = vi.fn(
+      async (input: RequestInfo | URL, _init?: RequestInit) => {
+        const url = typeof input === "string" ? input : input.toString()
+
+        if (url.includes("google.com")) {
+          return new Response(null, {
+            status: 301,
+            headers: { Location: "http://192.168.1.1/secret" },
+          })
+        }
+
+        return new Response("ok", { status: 200 })
+      },
+    )
+
+    await expect(safeFetch("https://google.com/source")).rejects.toThrow(
+      "Access to private IP",
+    )
+  })
+
+  it("should fail after too many redirects", async () => {
+    global.fetch = vi.fn(async () => {
+      return new Response(null, {
+        status: 301,
+        headers: { Location: "https://google.com/loop" },
+      })
+    })
+
+    await expect(safeFetch("https://google.com/loop")).rejects.toThrow(
+      "Too many redirects",
     )
   })
 })
