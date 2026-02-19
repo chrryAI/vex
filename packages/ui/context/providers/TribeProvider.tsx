@@ -19,6 +19,7 @@ import type {
   message,
   paginatedTribePosts,
   paginatedTribes,
+  tribe,
   tribePostWithDetails,
 } from "../../types"
 import { apiFetch } from "../../utils"
@@ -197,12 +198,13 @@ export function TribeProvider({ children }: TribeProviderProps) {
   }, [tribePostData, tribePost?.id, setTribePost])
 
   useEffect(() => {
-    if (tribesData) {
+    if (!tribesData) return
+    const incomingSlugs = tribesData.tribes?.map((t: tribe) => t.slug).join(",")
+    const currentSlugs = tribes?.tribes?.map((t) => t.slug).join(",")
+    if (incomingSlugs !== currentSlugs) {
       setTribes(tribesData)
     }
   }, [tribesData])
-
-  const tribeId = currentTribe?.id
 
   const {
     data: tribePostsData,
