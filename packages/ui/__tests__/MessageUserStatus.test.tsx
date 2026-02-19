@@ -46,7 +46,9 @@ vi.mock("../utils", () => ({
 vi.mock("../platform", () => ({
   Div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   Span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
-  Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+  Button: ({ children, ...props }: any) => (
+    <button {...props}>{children}</button>
+  ),
 }))
 
 describe("MessageUserStatus", () => {
@@ -173,7 +175,9 @@ describe("MessageUserStatus", () => {
       },
     }
 
-    const { getByTestId } = render(<MessageUserStatus message={message as any} />)
+    const { getByTestId } = render(
+      <MessageUserStatus message={message as any} />,
+    )
     expect(getByTestId("typing-indicator")).toBeTruthy()
   })
 
@@ -195,7 +199,9 @@ describe("MessageUserStatus", () => {
       },
     }
 
-    const { getByTestId } = render(<MessageUserStatus message={message as any} />)
+    const { getByTestId } = render(
+      <MessageUserStatus message={message as any} />,
+    )
     expect(getByTestId("typing-indicator")).toBeTruthy()
   })
 

@@ -56,8 +56,7 @@ function MessageUserStatus({ message }: MessageUserStatusProps) {
           message.guest?.id === ownerId ||
           onlineUsers.some(
             (u) =>
-              u.userId === message.user?.id ||
-              u.guestId === message.guest?.id,
+              u.userId === message.user?.id || u.guestId === message.guest?.id,
           )
             ? styles.online.style
             : styles.offline.style),
