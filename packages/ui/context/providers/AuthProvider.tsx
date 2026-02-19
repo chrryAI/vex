@@ -867,7 +867,6 @@ export function AuthProvider({
       ? setTokenExtension
       : (token: string | undefined) => {
           token ? setTokenWeb(token) : removeTokenWeb()
-          setTokenExtension(token)
         }
 
   useEffect(() => {
