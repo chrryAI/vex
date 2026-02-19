@@ -1,5 +1,4 @@
 import enTranslations from "./en.json"
-import { extractTranslations } from "./extractTranslations"
 
 import {
   getExampleInstructions,
@@ -19,7 +18,6 @@ import {
   updateStore,
   type user,
 } from "./index"
-import { seedTribeEngagement } from "./seedTribeEngagement"
 import { aiAgents, apps, guests, stores, users } from "./src/schema"
 
 // ============================================

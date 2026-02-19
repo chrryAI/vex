@@ -341,6 +341,7 @@ function buildAuthResponse(
       image: user.image,
     },
     token: token ?? authCode,
+    authCode,
     ...(callbackUrl && {
       callbackUrl: `${callbackUrl}${callbackUrl.includes("?") ? "&" : "?"}auth_token=${authCode}`,
     }),

@@ -514,7 +514,12 @@ export function AuthProvider({
         if (response.ok) {
           const data = await response.json()
           setState({ user: data.user, loading: false })
-          return { success: true, user: data.user, token: data.token }
+          return {
+            success: true,
+            user: data.user,
+            token: data.token,
+            authCode: data.authCode,
+          }
         } else {
           const error = await response.json()
           return { success: false, error: error.error || "Sign in failed" }

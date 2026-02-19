@@ -223,7 +223,7 @@ export default function SignIn({
       const redirectUrl = signInResult?.url || successUrl.toString()
 
       const separator = redirectUrl.includes("?") ? "&" : "?"
-      window.location.href = `${redirectUrl}${separator}auth_token=${signInResult?.token}`
+      window.location.href = `${redirectUrl}${separator}auth_token=${signInResult?.authCode}`
     }
   }
 

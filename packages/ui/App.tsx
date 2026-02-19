@@ -223,7 +223,9 @@ export default function App({
           (item.id !== zarathustra?.id || (!isBlossom && !accountApp)) &&
           (item.id === atlas?.id ? !isBlossom : true) &&
           item.id !== popcorn?.id &&
-          (isBlossom || isAppOwner ? item.id !== atlas?.id : true),
+          (isBlossom && accountApp?.id !== app?.id
+            ? item.id !== atlas?.id
+            : true),
       )
       .filter((item) => item.id !== focus?.id)
       .sort((a, b) => {
