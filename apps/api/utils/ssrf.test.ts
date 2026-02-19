@@ -110,14 +110,14 @@ describe("safeFetch", () => {
       async (input: RequestInfo | URL, _init?: RequestInit) => {
         const url = typeof input === "string" ? input : input.toString()
 
-        if (url.includes("google.com")) {
+        if (url === "https://google.com/source") {
           return new Response(null, {
             status: 301,
             headers: { Location: "https://example.com/dest" },
           })
         }
 
-        if (url.includes("example.com")) {
+        if (url === "https://example.com/dest") {
           return new Response("ok", { status: 200 })
         }
 
@@ -136,7 +136,7 @@ describe("safeFetch", () => {
       async (input: RequestInfo | URL, _init?: RequestInit) => {
         const url = typeof input === "string" ? input : input.toString()
 
-        if (url.includes("google.com")) {
+        if (url === "https://google.com/source") {
           return new Response(null, {
             status: 301,
             headers: { Location: "http://192.168.1.1/secret" },
