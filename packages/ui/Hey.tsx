@@ -203,7 +203,8 @@ export const Hey = memo(
         isHydrated &&
         minSplashTimeElapsed &&
         !isLoadingPosts &&
-        setIsSplash(!app?.store?.apps?.length)
+        app?.store?.apps?.length &&
+        setIsSplash(false)
     }, [
       isImageLoaded,
       isHydrated,

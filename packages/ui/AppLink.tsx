@@ -33,14 +33,8 @@ export default function AppLink({
   setIsNewAppChat?: (item: appWithStore) => void
 }) {
   const { setIsNewAppChat } = useChat()
-  const {
-    loadingApp,
-    getAppSlug,
-    hasStoreApps,
-    setLoadingApp,
-    storeApps,
-    mergeApps,
-  } = useAuth()
+  const { loadingApp, getAppSlug, setLoadingAppId, storeApps, mergeApps } =
+    useAuth()
 
   const [isLoadingInternal, setIsLoading] = React.useState(
     loadingApp && loadingApp?.id === app?.id,
@@ -95,8 +89,8 @@ export default function AppLink({
           }
           e.preventDefault()
 
-          if (!hasStoreApps(app)) {
-            setLoadingApp(app)
+          if (!currentApp) {
+            setLoadingAppId(app.id)
             onLoading?.()
             return
           }

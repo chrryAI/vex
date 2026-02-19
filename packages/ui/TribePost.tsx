@@ -48,8 +48,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     commenting,
     deletePost,
     deleteComment,
-    optimisticLiked,
-    optimisticDelta,
     tribePost: post,
   } = useTribe()
 

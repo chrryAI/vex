@@ -455,7 +455,9 @@ export default function Chat({
     }
   }, [isNewChat])
   // Determine if we should use compact mode based on bottom offset
-  const [hasBottomOffset, setHasBottomOffset] = useState(false)
+  const [hasBottomOffsetInternal, setHasBottomOffset] = useState(false)
+  const hasBottomOffset = hasBottomOffsetInternal && !empty
+
   const shouldUseCompactMode = compactMode || hasBottomOffset
 
   const floatingInitial =

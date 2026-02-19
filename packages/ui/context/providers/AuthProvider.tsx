@@ -2634,7 +2634,7 @@ export function AuthProvider({
       matchedApp = threadApp
     }
 
-    if (!matchedApp && tribePost?.appId) {
+    if (!matchedApp && postId && tribePost) {
       const postApp = storeApps.find((app) => app.id === tribePost.appId)
       matchedApp = postApp
     }
@@ -2662,6 +2662,7 @@ export function AuthProvider({
     thread,
     threadId,
     lastAppId,
+    postId,
     isExtension,
     loadingAppId,
     updatedApp,
