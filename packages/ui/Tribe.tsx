@@ -222,9 +222,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     }}
                   >
                     <A href="/about">{app?.store?.app?.icon || "🍒"} /about</A>
-                    <A openInNewTab style={{}} href="/privacy">
-                      /privacy 🤫
-                    </A>
+                    <A href="/privacy">/privacy 🤫</A>
                   </Div>
                 </Div>
                 <Div

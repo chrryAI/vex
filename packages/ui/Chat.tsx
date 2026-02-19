@@ -4680,7 +4680,6 @@ export default function Chat({
                     <A
                       target="_blank"
                       className="button small transparent"
-                      openInNewTab
                       href="/privacy"
                       style={{
                         position: "relative",
