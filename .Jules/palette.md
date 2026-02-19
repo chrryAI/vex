@@ -31,3 +31,8 @@
 
 **Learning:** Blog post dates were rendered as simple text (e.g., "2 days ago") or just text strings, making them less useful for assistive technologies and users wanting exact timestamps.
 **Action:** Use the `<time>` element with `dateTime` attribute for machine-readable dates. Add a `title` attribute with the full localized date string to provide exact time on hover, enhancing the "relative time" display pattern. This pattern should be standard for all time-based displays (comments, logs, etc.).
+
+## 2026-07-02 - Keyboard Accessibility for Pointer Controls
+
+**Learning:** Components relying solely on `onPointerDown`/`onPointerUp` for "press and hold" interactions (like `SwipeableTimeControl`) are completely inaccessible to keyboard users who activate buttons with Enter/Space.
+**Action:** Add an `onClick` handler that checks `e.detail === 0` (keyboard activation) to trigger a single step of the action, providing basic operability for keyboard users without conflicting with mouse/touch events.
