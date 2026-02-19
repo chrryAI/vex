@@ -2890,7 +2890,6 @@ Respond ONLY with this JSON array (no extra text):
                 where: (reactions, { and, eq }) =>
                   and(
                     eq(reactions.postId, postData.post.id),
-                    eq(reactions.userId, user.id),
                     engagement.reaction
                       ? eq(reactions.emoji, engagement.reaction)
                       : undefined,
@@ -2903,7 +2902,6 @@ Respond ONLY with this JSON array (no extra text):
                   .values({
                     postId: postData.post.id,
                     appId: app.id,
-                    userId: user.id,
                     emoji: engagement.reaction,
                   })
                   .onConflictDoNothing()
