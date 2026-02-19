@@ -21,6 +21,7 @@ export type SiteMode =
   | "e2eVex"
   | "staging"
   | "tribe"
+  | "nebula"
 
 /// <reference types="chrome" />
 
@@ -243,7 +244,6 @@ const chrryAI = {
   isStoreApp: true,
   storeSlug: "blossom",
   mode: "chrryAI" as SiteMode,
-  isTribe: true,
   name: "Chrry",
   domain: "chrry.ai",
   email: "iliyan@chrry.ai",
@@ -355,7 +355,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.11.19",
+  version: "26.11.20",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -1157,6 +1157,81 @@ const search = {
   ],
 }
 
+const nebula = {
+  url: "https://orbit.chrry.ai",
+  mode: "nebula" as SiteMode,
+  slug: "nebula",
+  favicon: "nebula",
+  storeSlug: "orbit",
+  name: "Nebula",
+  isStoreApp: true,
+  domain: "orbit.chrry.ai",
+  store: "https://orbit.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description: "Science & Exploration Hub",
+  logo: "🌌",
+  primaryColor: "#7C3AED", // Violet
+  links: {
+    docs: "https://orbit.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Quantum Computing",
+      description: "Build circuits, simulate algorithms, export Qiskit code",
+      icon: "⚛️",
+      link: "/quantumlab",
+      isOpenSource: true,
+    },
+    {
+      title: "Astronomy",
+      description: "Explore stars, black holes, and the cosmos",
+      icon: "🌠",
+      link: "/starmap",
+      isOpenSource: true,
+    },
+    {
+      title: "Physics & Math",
+      description: "Step-by-step problem solving and derivations",
+      icon: "🧪",
+      link: "/cosmos",
+      isOpenSource: true,
+    },
+    {
+      title: "Scientific Code",
+      description: "Python, Julia, and MATLAB simulations",
+      icon: "💻",
+      link: "/nebula",
+      isOpenSource: true,
+    },
+  ],
+  about: {
+    intro:
+      "Nebula is your AI-powered science and exploration hub. From quantum circuits to black holes, advanced mathematics to physics derivations — Nebula makes the frontiers of science accessible, exciting, and practical.",
+    intro2:
+      "Powered by Sushi AI with multimodal capabilities, Nebula generates working code, explains research papers, solves complex problems step-by-step, and adapts to any depth — from curious beginner to graduate researcher.",
+    approach: {
+      title: "Our Philosophy",
+      content:
+        "Science should be accessible to everyone. Nebula builds intuition before formalism, uses analogies to make abstract concepts concrete, and always connects theory to real-world applications and working code.",
+    },
+    platforms: {
+      title: "Multi-Platform Science Hub",
+      content:
+        "Nebula is available across web and mobile as a first-class experience.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Full-featured web experience with real-time collaboration, file uploads for research papers, and all science capabilities accessible from any browser.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App (PWA)",
+        content:
+          "Install Nebula as a native app on your mobile device or desktop. Seamless sync across all your devices.",
+      },
+    },
+  },
+}
+
 const vex = {
   url: "https://vex.chrry.ai",
   mode: "vex" as SiteMode,
@@ -1323,10 +1398,11 @@ const e2eVex = {
 }
 
 const _tribe = {
-  ...chrryAI,
+  ...zarathustra,
+  mode: "tribe" as SiteMode,
   url: "https://tribe.chrry.ai",
   domain: "tribe.chrry.ai",
-  // store: "https://e2e.chrry.ai",
+  isTribe: true,
 }
 
 const staging = {
@@ -2490,6 +2566,58 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
         "Vault'un akıllı otomasyonu ile harcamaları takip edin, bütçeleri yönetin ve finansal içgörüler elde edin.",
     },
   },
+  nebula: {
+    en: {
+      title: "Nebula - Science & Exploration AI",
+      description:
+        "Explore quantum computing, astrophysics, and advanced mathematics with AI. Build circuits, solve physics problems, and discover the universe.",
+    },
+    de: {
+      title: "Nebula - KI für Wissenschaft & Entdeckung",
+      description:
+        "Erkunde Quantencomputing, Astrophysik und fortgeschrittene Mathematik mit KI. Baue Schaltkreise, löse Physikprobleme und entdecke das Universum.",
+    },
+    fr: {
+      title: "Nebula - IA Science & Exploration",
+      description:
+        "Explorez l'informatique quantique, l'astrophysique et les mathématiques avancées avec l'IA. Construisez des circuits, résolvez des problèmes de physique et découvrez l'univers.",
+    },
+    ja: {
+      title: "Nebula - 科学・探求AI",
+      description:
+        "AIで量子コンピューティング、天体物理学、高度な数学を探求。回路を構築し、物理問題を解き、宇宙を発見しよう。",
+    },
+    ko: {
+      title: "Nebula - 과학 & 탐구 AI",
+      description:
+        "AI로 양자 컴퓨팅, 천체물리학, 고급 수학을 탐구하세요. 회로를 만들고, 물리 문제를 풀고, 우주를 발견하세요.",
+    },
+    pt: {
+      title: "Nebula - IA de Ciência & Exploração",
+      description:
+        "Explore computação quântica, astrofísica e matemática avançada com IA. Construa circuitos, resolva problemas de física e descubra o universo.",
+    },
+    es: {
+      title: "Nebula - IA de Ciencia & Exploración",
+      description:
+        "Explora la computación cuántica, la astrofísica y las matemáticas avanzadas con IA. Construye circuitos, resuelve problemas de física y descubre el universo.",
+    },
+    zh: {
+      title: "Nebula - 科学与探索 AI",
+      description:
+        "用 AI 探索量子计算、天体物理学和高等数学。构建电路、解决物理问题，发现宇宙的奥秘。",
+    },
+    nl: {
+      title: "Nebula - Wetenschap & Verkenning AI",
+      description:
+        "Verken kwantumcomputing, astrofysica en geavanceerde wiskunde met AI. Bouw circuits, los natuurkundeproblemen op en ontdek het universum.",
+    },
+    tr: {
+      title: "Nebula - Bilim & Keşif Yapay Zekası",
+      description:
+        "Yapay zeka ile kuantum bilişim, astrofizik ve ileri matematik keşfedin. Devreler kurun, fizik problemleri çözün ve evreni keşfedin.",
+    },
+  },
   tribe: {
     en: {
       title: "Tribe - AI Social Network",
@@ -2571,7 +2699,7 @@ export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
-  const devMode = "chrryAI"
+  const devMode = "tribe"
 
   const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || devMode
 
@@ -2671,6 +2799,10 @@ export function detectSiteModeDomain(
     return "e2eVex"
   }
 
+  if (matchesDomain(host, "orbit.chrry.ai")) {
+    return "nebula"
+  }
+
   if (matchesDomain(host, "vex.chrry.ai")) {
     return "vex"
   }
@@ -2731,6 +2863,7 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "pear",
     "vault",
     "tribe",
+    "nebula",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -2767,6 +2900,10 @@ export function getSiteConfig(
     }
   }
   const mode = detectSiteMode(hostname)
+
+  if (mode === "nebula") {
+    return nebula
+  }
 
   if (mode === "sushi") {
     return sushi
@@ -2854,6 +2991,10 @@ export function getSiteConfig(
 
   if (mode === "vault") {
     return vault
+  }
+
+  if (mode === "tribe") {
+    return _tribe
   }
 
   if (isE2E) {

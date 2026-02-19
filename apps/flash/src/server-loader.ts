@@ -191,7 +191,10 @@ export async function loadServerData(
 
   // Handle OAuth callback - exchange auth_code for token (more secure than token in URL)
   const authCode = urlObj.searchParams.get("auth_token")
-  let authToken: string | null = null
+
+  const cookieToken = cookies.token
+
+  let authToken: string | null = cookieToken || null
 
   if (authCode) {
     try {
@@ -217,11 +220,11 @@ export async function loadServerData(
 
   const apiKeyCandidate = authToken
     ? authToken
-    : cookies.token && !validate(cookies.token) // member token
-      ? cookies.token
+    : cookieToken && !validate(cookieToken) // member token
+      ? cookieToken
       : isTestFP
         ? fpFromQuery
-        : cookies.token ||
+        : cookieToken ||
           headers["x-token"] ||
           cookies.fingerprint ||
           headers["x-fp"]
@@ -347,7 +350,7 @@ export async function loadServerData(
 
     const postId = getPostId(pathname)
 
-    let tribePostResult: tribePostWithDetails | undefined = undefined
+    let tribePostResult: tribePostWithDetails | undefined
     if (postId) {
       try {
         tribePostResult = await getTribePost({

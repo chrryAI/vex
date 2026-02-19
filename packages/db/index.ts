@@ -160,18 +160,28 @@ export type {
 
 dotenv.config()
 
+const NODE_ENV = process.env.NODE_ENV
+const MODE = process.env.MODE
+
+export const DB_URL =
+  MODE === "prod"
+    ? process.env.DB_PROD_URL
+    : MODE === "e2e"
+      ? process.env.DB_E2E_URL
+      : process.env.DB_URL
+
 export const isCI = process.env.CI
 
-export const isSeedSafe = process.env.DB_URL?.includes("pb9ME51YnaFcs")
+export const isSeedSafe = MODE === "e2e" && DB_URL?.includes("pb9ME51YnaFcs")
 
 export const isWaffles = false
 // export const isWaffles = process.env.DB_URL?.includes("waffles")
 
 export const isProd = isSeedSafe
   ? false
-  : isCI
+  : isCI || !DB_URL
     ? false
-    : process.env.DB_URL && !process.env.DB_URL.includes("localhost")
+    : !DB_URL?.includes("localhost")
 
 export { decrypt, encrypt, generateEncryptionKey } from "./encryption"
 // Export cache functions and redis instance for external use
@@ -275,6 +285,7 @@ export type userWithRelations = user & {
   characterProfiles: characterProfile[]
   lastMessage: string | undefined
   messageCount: number | undefined
+  token?: string
   subscription: subscription | undefined
 }
 
@@ -496,11 +507,7 @@ declare global {
   var db: PostgresJsDatabase<typeof schema> | undefined
 }
 
-const NODE_ENV = process.env.NODE_ENV
-
-const connectionString = process.env.DB_URL
-
-if (!connectionString) {
+if (!DB_URL) {
   throw new Error(
     "DB_URL environment variable is not set. Please configure your database connection string.",
   )
@@ -508,11 +515,11 @@ if (!connectionString) {
 
 // Configure SSL for production databases (non-localhost)
 // Can be disabled with DISABLE_DB_SSL=true for internal databases
-const isRemoteDB = connectionString && !connectionString.includes("localhost")
+const isRemoteDB = DB_URL && !DB_URL.includes("localhost")
 const disableSSL = process.env.DISABLE_DB_SSL === "true"
 
 const client = postgres(
-  connectionString,
+  DB_URL,
   isDevelopment
     ? undefined
     : {
@@ -975,11 +982,33 @@ export const getUser = async ({
       }).then((res) => res.totalCount)
     : undefined
 
-  const lastMessage = result
+  const lastMessageInfo = result
     ? await getMessages({
         userId: result.user.id,
         pageSize: 1,
       })
+    : undefined
+
+  const lastMessage = lastMessageInfo?.messages.at(0)?.message
+
+  const lastTribe = result
+    ? (
+        await getMessages({
+          userId: result.user.id,
+          pageSize: 1,
+          isTribe: true,
+        })
+      )?.messages.at(0)?.message
+    : undefined
+
+  const lastMolt = result
+    ? (
+        await getMessages({
+          userId: result.user.id,
+          pageSize: 1,
+          isMolt: true,
+        })
+      )?.messages.at(0)?.message
     : undefined
 
   const isAppOwner =
@@ -1038,8 +1067,25 @@ export const getUser = async ({
           userId: result.user.id,
           pinned: true,
         }),
-        lastMessage: lastMessage?.messages.at(0)?.message,
-        messageCount: lastMessage?.totalCount,
+        lastMessage: lastMessage
+          ? {
+              ...lastMessage,
+              content: "",
+            }
+          : lastMessage,
+        lastMolt: lastMolt
+          ? {
+              ...lastMolt,
+              content: "",
+            }
+          : lastMolt,
+        lastTribe: lastTribe
+          ? {
+              ...lastTribe,
+              content: "",
+            }
+          : lastTribe,
+        messageCount: lastMessageInfo?.totalCount,
 
         pendingCollaborationThreadsCount: await getThreads({
           userId: result.user.id,
@@ -1447,6 +1493,9 @@ export const getMessages = async ({
   isPear,
   isAsc,
   agentMessage,
+  isTribe,
+  isMolt,
+  appId,
   ...rest
 }: {
   likedBy?: string
@@ -1457,6 +1506,8 @@ export const getMessages = async ({
   agentId?: string | null
   readOn?: Date
   aiAgent?: boolean
+  isMolt?: boolean
+  isTribe?: boolean
   createdOn?: Date
   hasAttachments?: boolean
   threadId?: string
@@ -1465,12 +1516,16 @@ export const getMessages = async ({
   isAsc?: boolean
   isPear?: boolean
   agentMessage?: boolean
+  appId?: string
 } = {}) => {
   const pageSize = rest.pageSize || 100
 
   const conditionsArray = [
     isPear ? eq(messages.isPear, true) : undefined,
     userId ? eq(messages.userId, userId) : undefined,
+    isTribe !== undefined ? eq(messages.isTribe, isTribe) : undefined,
+    isMolt !== undefined ? eq(messages.isMolt, isMolt) : undefined,
+    appId ? eq(messages.appId, appId) : undefined,
     guestId ? eq(messages.guestId, guestId) : undefined,
     agentId
       ? eq(messages.agentId, agentId)
@@ -7568,6 +7623,7 @@ export const getTribePosts = async ({
   pageSize = 10,
   id,
   sortBy = "date",
+  tribeSlug,
 }: {
   tribeId?: string
   appId?: string
@@ -7577,12 +7633,14 @@ export const getTribePosts = async ({
   search?: string
   characterProfileIds?: string[]
   page?: number
+  tribeSlug?: string
   pageSize?: number
   sortBy?: "date" | "hot" | "comments"
 }) => {
   try {
     const conditions = [
       tribeId ? eq(tribePosts.tribeId, tribeId) : undefined,
+      tribeSlug ? eq(tribes.slug, tribeSlug) : undefined,
       appId ? eq(tribePosts.appId, appId) : undefined,
       userId ? eq(tribePosts.userId, userId) : undefined,
       id ? eq(tribePosts.id, id) : undefined,
@@ -7666,6 +7724,7 @@ export const getTribePosts = async ({
         await db
           .select({ count: count(tribePosts.id) })
           .from(tribePosts)
+          .leftJoin(tribes, eq(tribePosts.tribeId, tribes.id))
           .leftJoin(apps, eq(tribePosts.appId, apps.id))
           .where(and(...conditions))
       )[0]?.count ?? 0

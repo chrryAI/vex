@@ -109,9 +109,11 @@ export function estimateJobCredits(params: {
   }
 
   let totalRuns = 0
-  if (frequency === "daily" || frequency === "custom") {
-    // Custom frequency runs daily with specific time slots
+  if (frequency === "daily") {
     totalRuns = days
+  } else if (frequency === "custom") {
+    // Custom frequency: each scheduled time slot runs daily
+    totalRuns = days * scheduledTimes.length
   } else if (frequency === "weekly") {
     // Use Math.ceil to count partial weeks, minimum 1 run
     totalRuns = Math.max(1, Math.ceil(days / 7))
@@ -128,7 +130,14 @@ export function estimateJobCredits(params: {
   let totalPostsCount = 0
 
   scheduledTimes.forEach((slot) => {
-    const runsForThisSlot = totalRuns
+    // For custom frequency, calculate runs based on each slot's intervalMinutes
+    let runsForThisSlot = totalRuns
+    if (frequency === "custom" && slot.intervalMinutes) {
+      // Calculate how many times this slot runs per day
+      const runsPerDay = Math.floor((24 * 60) / slot.intervalMinutes)
+      runsForThisSlot = days * runsPerDay
+    }
+
     totalPostsCount += runsForThisSlot
 
     const creditsPerRun = calculateSlotCredits(slot)

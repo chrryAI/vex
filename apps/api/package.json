@@ -9,7 +9,7 @@
     ".": "./index.ts"
   },
   "scripts": {
-    "dev": "bun server.ts",
+    "dev": "bun --watch server.ts",
     "start": "bun server.ts",
     "check-types": "tsc --noEmit",
     "build": "bun run check-types && bun build server.ts --outdir ./dist --target bun",

@@ -27,6 +27,7 @@ import { defaultLocale, type locale, locales } from "../../locales"
 import {
   isBrowserExtension,
   storage,
+  useCookie,
   useCookieOrLocalStorage,
   useLocalStorage,
   useNavigation,
@@ -120,6 +121,7 @@ const AuthContext = createContext<
       timer?: timer
       tribeSlug?: string
       currentTribe?: tribe
+      getTribeUrl: () => string
       mergeApps: (apps: appWithStore[]) => void
       postId?: string
       tribes?: paginatedTribes
@@ -512,7 +514,12 @@ export function AuthProvider({
         if (response.ok) {
           const data = await response.json()
           setState({ user: data.user, loading: false })
-          return { success: true, user: data.user, token: data.token }
+          return {
+            success: true,
+            user: data.user,
+            token: data.token,
+            authCode: data.authCode,
+          }
         } else {
           const error = await response.json()
           return { success: false, error: error.error || "Sign in failed" }
@@ -855,7 +862,7 @@ export function AuthProvider({
     isExtension,
   )
 
-  const [tokenWeb, setTokenWeb] = useState(ssrToken)
+  const [tokenWeb, setTokenWeb, removeTokenWeb] = useCookie("token", ssrToken)
 
   const token =
     isExtension || isTauri || isCapacitor ? tokenExtension : tokenWeb
@@ -864,8 +871,7 @@ export function AuthProvider({
     isExtension || isTauri || isCapacitor
       ? setTokenExtension
       : (token: string | undefined) => {
-          setTokenWeb(token)
-          setTokenExtension(token)
+          token ? setTokenWeb(token) : removeTokenWeb()
         }
 
   useEffect(() => {
@@ -1937,7 +1943,7 @@ export function AuthProvider({
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
-  const storeAppIternal = storeApps?.find(
+  const storeAppInternal = storeApps?.find(
     (item) =>
       app?.store?.appId &&
       item.id === app?.store?.appId &&
@@ -1946,7 +1952,7 @@ export function AuthProvider({
   )
 
   const [storeApp, setStoreAppInternal] = useState<appWithStore | undefined>(
-    storeAppIternal,
+    storeAppInternal,
   )
 
   const installs = [
@@ -2038,14 +2044,17 @@ export function AuthProvider({
     }
   }
 
+  const getTribeUrl = () => {
+    return siteConfig?.isTribe ? "/" : `/tribe`
+  }
+
   const canBurn = true
+
+  const isZ = searchParams?.get("programme") === "true"
 
   const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage<
     boolean | undefined
-  >(
-    "prog",
-    baseApp ? isBaseAppZarathustra && app?.slug === "zarathustra" : undefined,
-  )
+  >("prog", baseApp ? isBaseAppZarathustra && app?.slug === "zarathustra" : isZ)
 
   useEffect(() => {
     if (!baseApp || !app) return
@@ -2073,15 +2082,11 @@ export function AuthProvider({
     removeParams("programme")
   }
 
-  const grapes =
-    app?.id === zarathustra?.id
-      ? []
-      : storeApps.filter(
-          (app) =>
-            whiteLabels.some((w) => w.slug === app.slug) &&
-            app.store?.appId === app.id &&
-            app.id !== zarathustra?.id,
-        )
+  const grapes = storeApps.filter(
+    (app) =>
+      whiteLabels.some((w) => w.slug === app.slug) &&
+      app.store?.appId === app.id,
+  )
 
   const grape = storeApps.find((app) => app.slug === "grape")
 
@@ -2146,17 +2151,17 @@ export function AuthProvider({
     if (isPearInternal) setShowFocus(false)
   }, [isPearInternal])
 
-  const isProgramme = !!(
-    isProgrammeInternal || searchParams.get("programme") === "true"
-  )
+  const isProgramme =
+    (!!isProgrammeInternal && !siteConfig.isTribe) ||
+    searchParams.get("programme") === "true"
 
   const setStoreApp = (appWithStore?: appWithStore) => {
     appWithStore?.id !== storeApp?.id && setStoreAppInternal(appWithStore)
   }
 
   useEffect(() => {
-    hasStoreApps(app) && setStoreApp(storeAppIternal)
-  }, [storeAppIternal])
+    hasStoreApps(app) && setStoreApp(storeAppInternal)
+  }, [storeAppInternal])
 
   const [slugState, setSlugState] = useState<string | undefined>(
     (app && getAppSlug(app)) || undefined,
@@ -2281,7 +2286,7 @@ export function AuthProvider({
     (app
       ? getAppSlug(app, "/", false) === pathname ||
         getAppSlug(app, "/") === pathname
-      : false) && !(siteConfig.isTribe && pathname === "/")
+      : !_isExcluded) && !(siteConfig.isTribe && pathname === "/")
 
   const showTribeInitial = !!(
     !postId &&
@@ -3201,6 +3206,7 @@ export function AuthProvider({
         showTribeProfile,
         postId,
         mergeApps,
+        getTribeUrl,
       }}
     >
       {children}

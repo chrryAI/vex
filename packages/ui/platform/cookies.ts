@@ -83,7 +83,7 @@ export const setCookieWeb = (
     Date.now() + (optionsWithDefaults.days || 7) * 864e5,
   ).toUTCString()
 
-  const _cookieString =
+  const cookieString =
     name +
     "=" +
     encodeURIComponent(value) +
@@ -91,8 +91,7 @@ export const setCookieWeb = (
     expires +
     stringifyOptions(optionsWithDefaults)
 
-  // Verify cookie was set
-  const _wasSet = document.cookie.includes(name)
+  document.cookie = cookieString
 }
 
 /**
@@ -114,6 +113,7 @@ export const getCookieWeb = (name: string, initialValue = "") => {
  */
 export const removeCookieWeb = (name: string) => {
   if (!isBrowser) return
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
 }
 
 export function useCookieWeb(

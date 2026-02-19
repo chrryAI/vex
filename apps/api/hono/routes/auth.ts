@@ -327,7 +327,12 @@ function extractTokenFromRequest(c: Context): string | null {
 
 // ==================== RESPONSE BUILDERS ====================
 
-function buildAuthResponse(user: any, authCode: string, callbackUrl?: string) {
+function buildAuthResponse(
+  user: any,
+  authCode: string,
+  callbackUrl?: string,
+  token?: string,
+) {
   return {
     user: {
       id: user.id,
@@ -335,7 +340,8 @@ function buildAuthResponse(user: any, authCode: string, callbackUrl?: string) {
       name: user.name,
       image: user.image,
     },
-    token: authCode,
+    token: token ?? authCode,
+    authCode,
     ...(callbackUrl && {
       callbackUrl: `${callbackUrl}${callbackUrl.includes("?") ? "&" : "?"}auth_token=${authCode}`,
     }),
@@ -440,7 +446,7 @@ authRoutes.post("/signin/password", async (c) => {
     setCookieFromHost(c, token, "None")
 
     const authCode = await generateExchangeCode(token)
-    return c.json(buildAuthResponse(user, authCode, callbackUrl))
+    return c.json(buildAuthResponse(user, authCode, callbackUrl, token))
   } catch (error) {
     console.error("Signin error:", error)
     return c.json({ error: "Signin failed" }, 500)
@@ -565,7 +571,7 @@ authRoutes.post("/native/google", async (c) => {
     const authCode = await generateExchangeCode(token)
 
     return c.json({
-      ...buildAuthResponse(user, authCode),
+      ...buildAuthResponse(user, authCode, undefined, token),
       jwt: token,
     })
   } catch (error) {
@@ -583,7 +589,7 @@ authRoutes.get("/signin/google", async (c) => {
     const { callbackUrl, errorUrl } = getCallbackUrls(c)
     const state = createOAuthState(callbackUrl, errorUrl)
 
-    setCookie(c, "oauth_state", state, {
+    setCookie(c, "token", state, {
       httpOnly: true,
       secure: true,
       sameSite: "Lax",
@@ -620,7 +626,7 @@ authRoutes.get("/callback/google", async (c) => {
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
     }
 
-    const storedState = getCookie(c, "oauth_state")
+    const storedState = getCookie(c, "token")
 
     if (state !== storedState) {
       // Redirect to static URL to prevent Open Redirect
@@ -675,7 +681,7 @@ authRoutes.get("/callback/google", async (c) => {
 
     const token = generateToken(user.id, user.email)
 
-    deleteCookie(c, "oauth_state", {
+    deleteCookie(c, "token", {
       path: "/",
       secure: true,
       sameSite: "Lax",
@@ -752,7 +758,7 @@ authRoutes.post("/native/apple", async (c) => {
     const authCode = await generateExchangeCode(token)
 
     return c.json({
-      ...buildAuthResponse(user, authCode),
+      ...buildAuthResponse(user, authCode, undefined, token),
       jwt: token,
     })
   } catch (error) {
@@ -772,7 +778,7 @@ authRoutes.get("/signin/apple", async (c) => {
     const { callbackUrl, errorUrl } = getCallbackUrls(c)
     const state = createOAuthState(callbackUrl, errorUrl)
 
-    setCookie(c, "oauth_state", state, {
+    setCookie(c, "token", state, {
       httpOnly: true,
       secure: true,
       sameSite: "None", // Required for form_post callback from Apple
@@ -811,7 +817,7 @@ authRoutes.post("/callback/apple", async (c) => {
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
     }
 
-    const storedState = getCookie(c, "oauth_state")
+    const storedState = getCookie(c, "token")
 
     if (state !== storedState) {
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
@@ -875,7 +881,7 @@ authRoutes.post("/callback/apple", async (c) => {
 
     const token = generateToken(user.id, user.email)
 
-    deleteCookie(c, "oauth_state", {
+    deleteCookie(c, "token", {
       path: "/",
       secure: true,
       sameSite: "None",

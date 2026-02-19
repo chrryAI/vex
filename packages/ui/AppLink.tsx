@@ -16,7 +16,7 @@ export default function AppLink({
   title,
   as = "a",
   loadingStyle,
-  isTribe,
+  isTribe = true,
   icon,
   ...props
 }: {
@@ -33,7 +33,7 @@ export default function AppLink({
   icon?: React.ReactNode
   setIsNewAppChat?: (item: appWithStore) => void
 }) {
-  const { setIsWebSearchEnabled, setIsNewAppChat } = useChat()
+  const { setIsNewAppChat } = useChat()
   const {
     loadingApp,
     getAppSlug,

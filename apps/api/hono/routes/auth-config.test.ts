@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 // Mock dependencies to prevent side effects and module loading errors
 vi.mock("@repo/db", () => ({
@@ -44,12 +44,12 @@ vi.mock("uuid", () => ({
 vi.mock("hono", async (importOriginal) => {
   const actual = await importOriginal()
   return {
-    ...actual as any,
+    ...(actual as any),
     Hono: class MockHono {
       post() {}
       get() {}
       route() {}
-    }
+    },
   }
 })
 
@@ -77,7 +77,9 @@ describe("Auth Configuration Security", () => {
 
     await expect(async () => {
       await import("./auth")
-    }).rejects.toThrow("❌ NEXTAUTH_SECRET is not set in production environment")
+    }).rejects.toThrow(
+      "❌ NEXTAUTH_SECRET is not set in production environment",
+    )
   })
 
   it("should NOT throw error in production if NEXTAUTH_SECRET is present", async () => {

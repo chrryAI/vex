@@ -1,5 +1,4 @@
 "use client"
-import { capitalizeFirstLetter } from "@chrryai/chrry/utils"
 import clsx from "clsx"
 import React, { useEffect, useState } from "react"
 import toast from "react-hot-toast"
@@ -38,7 +37,7 @@ import { Button, Div, Input, P, Span, usePlatform, useTheme } from "./platform"
 import { MotiView } from "./platform/MotiView"
 import { useSubscribeStyles } from "./Subscribe.styles"
 import type { subscription, user } from "./types"
-import { apiFetch } from "./utils"
+import { apiFetch, capitalizeFirstLetter } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import { getFeatures } from "./utils/subscription"
 
@@ -1901,7 +1900,6 @@ export default function Subscribe({
           style={{
             ...utilities.transparent.style,
             ...utilities.small.style,
-            ...styles.subscribeButton.style,
           }}
         >
           <Img icon="strawberry" showLoading={false} size={18} />

@@ -9,6 +9,7 @@ import {
   createMessage,
   createThread,
   createUser,
+  DB_URL,
   db,
   getApp,
   getUser,
@@ -1069,6 +1070,8 @@ const create = async () => {
 
   const { vex } = await createStores({ user: admin })
 
+  await seedTribeEngagement()
+
   await updateStoreUrls({ user: admin })
 
   await seedTribeEngagement()
@@ -1889,7 +1892,7 @@ const seedDb = async (): Promise<void> => {
     // eslint-disable-next-line no-console
     console.warn(
       "\n⚠️  WARNING: You are about to run the seed script on a NON-LOCAL database!\n" +
-        `DB_URL: ${process.env.DB_URL}\n` +
+        `DB_URL: ${DB_URL}\n` +
         "Press Enter to continue, or Ctrl+C to abort.",
     )
 
@@ -1903,7 +1906,7 @@ const seedDb = async (): Promise<void> => {
     // eslint-disable-next-line no-console
     console.warn(
       "\n🚀  REALLY SURE WARNING: You are about to run the seed script on a NON-LOCAL database!\n" +
-        `DB_URL: ${process.env.DB_URL}\n` +
+        `DB_URL: ${DB_URL}\n` +
         "Press Enter to continue, or Ctrl+C to abort.",
     )
 

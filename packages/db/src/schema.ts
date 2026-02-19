@@ -1625,6 +1625,7 @@ export const scheduledJobs = pgTable(
           charLimit: number
           credits: number
           maxTokens?: number // Optional max tokens for AI generation
+          intervalMinutes?: number // Optional interval for custom frequency (e.g., 60 = every hour)
         }>
       >()
       .notNull(), // Full schedule slot objects
@@ -1710,6 +1711,7 @@ export const scheduledJobs = pgTable(
           charLimit: number
           credits: number
           maxTokens?: number
+          intervalMinutes?: number // Optional interval for custom frequency
         }>
         frequency: "once" | "daily" | "weekly" | "custom"
         startDate: string

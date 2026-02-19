@@ -12,6 +12,7 @@ import {
   getTask,
   getThread,
   type guest,
+  isDevelopment,
   isE2E as isE2EInternal,
   isOwner,
   type subscription,
@@ -249,6 +250,8 @@ messages.post("/", async (c) => {
       deviceId: body.deviceId as string,
       taskId: body.taskId as string,
       jobId: body.jobId as string,
+      tribePostId: body.tribePostId as string,
+      moltId: body.moltId as string,
     }
 
     // Extract files - parseBody returns files as File objects in the body map
@@ -318,6 +321,7 @@ messages.post("/", async (c) => {
     isIncognito,
     instructions,
     language,
+    moltId,
     isAgent,
     appId,
     imageGenerationEnabled,
@@ -330,6 +334,7 @@ messages.post("/", async (c) => {
     tribe,
     retro,
     jobId,
+    tribePostId,
     ...rest
   } = requestData
 
@@ -354,6 +359,33 @@ messages.post("/", async (c) => {
 
   const isMolt = job?.jobType ? job.jobType?.startsWith("molt") : molt
   const isTribe = job?.jobType ? job.jobType?.startsWith("tribe") : tribe
+
+  if (member && app && (isTribe || isMolt) && !isAgent && !jobId) {
+    const COOLDOWN_MS = isDevelopment ? 0 : 30 * 60 * 1000 // 30 minutes
+    const cooldownType = isTribe ? "tribe" : "molt"
+    const recentMessages = await getMessages({
+      userId: member.id,
+      appId: app.id,
+      isTribe: isTribe || undefined,
+      isMolt: isMolt || undefined,
+      pageSize: 1,
+      isAsc: false,
+    })
+    const lastMessage = recentMessages.messages[0]?.message
+    if (lastMessage?.createdOn) {
+      const elapsed = Date.now() - new Date(lastMessage.createdOn).getTime()
+      if (elapsed < COOLDOWN_MS) {
+        const remainingSeconds = Math.ceil((COOLDOWN_MS - elapsed) / 1000)
+        return c.json(
+          {
+            error: `${cooldownType === "tribe" ? "Tribe" : "Molt"} cooldown active. Please wait ${Math.ceil(remainingSeconds / 60)} more minute(s).`,
+            cooldown: { remaining: remainingSeconds, type: cooldownType },
+          },
+          429,
+        )
+      }
+    }
+  }
 
   if (stopStreamId) {
     const controller = streamControllers.get(stopStreamId)
@@ -491,6 +523,8 @@ messages.post("/", async (c) => {
       isMolt,
       isTribe,
       jobId,
+      moltId,
+      tribePostId,
     })
 
     if (!agentMessage) {
@@ -520,6 +554,8 @@ messages.post("/", async (c) => {
     isMolt,
     isTribe,
     jobId: job?.id,
+    moltId,
+    tribePostId,
   })
 
   if (userMessage) {

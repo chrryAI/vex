@@ -937,8 +937,9 @@ export default function Agent({
                       control={control}
                       render={({ field }) => {
                         // Get store-based apps from Chrry store
-                        const storeApps = (baseApp?.store?.apps || []).filter(
-                          (item) => item.id !== app?.id,
+                        const storeApps = (chrry?.store?.apps || []).filter(
+                          (item) =>
+                            item.id !== app?.id || app?.id !== accountApp?.id,
                         )
 
                         return (
@@ -950,10 +951,7 @@ export default function Agent({
                               // Vex is optional (checked by default but can be unchecked)
                               const isBaseApp = item.id === baseApp?.id
 
-                              const checked =
-                                isChrry ||
-                                isBaseApp ||
-                                !!appFormWatcher?.extends?.includes(item.id)
+                              const checked = defaultExtends.includes(item.id)
                               return (
                                 <Label key={item.id || item.name}>
                                   <Checkbox
@@ -1946,26 +1944,26 @@ export default function Agent({
                   >
                     <Webhook size={16} /> {t("API")}
                   </Button>
+                  <Button
+                    data-testid="tribe-tab"
+                    className="inverted"
+                    style={{
+                      ...utilities.inverted.style,
+                      ...utilities.xSmall.style,
+                      ...(tab === "tribe"
+                        ? styles.currentTab.style
+                        : undefined),
+                    }}
+                    onClick={() => {
+                      setTab("tribe")
+                    }}
+                    type="button"
+                  >
+                    <Img icon="zarathustra" size={24} />
+                    {t("Tribe")}
+                  </Button>
                   {(user?.role === "admin" || isDevelopment || isE2E) && (
                     <>
-                      <Button
-                        data-testid="tribe-tab"
-                        className="inverted"
-                        style={{
-                          ...utilities.inverted.style,
-                          ...utilities.xSmall.style,
-                          ...(tab === "tribe"
-                            ? styles.currentTab.style
-                            : undefined),
-                        }}
-                        onClick={() => {
-                          setTab("tribe")
-                        }}
-                        type="button"
-                      >
-                        <Img icon="zarathustra" size={24} />
-                        {t("Tribe")}
-                      </Button>
                       <Button
                         data-testid="moltbook-tab"
                         className="inverted"

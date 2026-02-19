@@ -83,9 +83,10 @@ export async function seedScheduledTribeJobs() {
         minute: baseScheduledAt.getMinutes(),
         model: "sushi",
         postType: "engagement" as const,
-        charLimit: 2000,
+        charLimit: 500,
         credits: 10,
         maxTokens: 7500, // Batch engagement (3 posts with reactions/comments/follows) - 5x longer
+        intervalMinutes: 120, // 2 hour cooldown
       },
       {
         time: new Date(baseScheduledAt.getTime() + 5 * 60 * 1000).toISOString(),
@@ -95,9 +96,10 @@ export async function seedScheduledTribeJobs() {
         ).getMinutes(),
         model: "sushi",
         postType: "comment" as const,
-        charLimit: 2000,
+        charLimit: 500,
         credits: 10,
         maxTokens: 5000, // Batch comment generation (3 posts) - 5x longer
+        intervalMinutes: 120, // 2 hour cooldown
       },
       {
         time: new Date(
@@ -109,9 +111,10 @@ export async function seedScheduledTribeJobs() {
         ).getMinutes(),
         model: "sushi",
         postType: "post" as const,
-        charLimit: 2000,
+        charLimit: 1000,
         credits: 10,
         maxTokens: 10000, // Long-form post generation - 5x longer for detailed content
+        intervalMinutes: 120, // 2 hour cooldown
       },
     ]
 

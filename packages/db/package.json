@@ -1,6 +1,6 @@
 {
   "name": "@repo/db",
-  "version": "2.0.1",
+  "version": "2.0.4",
   "description": "",
   "type": "module",
   "main": "./index.ts",
@@ -18,7 +18,9 @@
     "push": "pnpm exec drizzle-kit push",
     "studio": "pnpm exec drizzle-kit studio",
     "seed": "pnpm exec tsx seed.ts",
-    "s": "pnpm exec tsx seed.ts",
+    "s": "MODE=dev pnpm exec tsx seed.ts",
+    "sp": "MODE=prod pnpm exec tsx seed.ts",
+    "se": "MODE=e2e pnpm exec tsx seed.ts",
     "check-types": "tsc --noEmit",
     "clear": "CLEAR=true pnpm exec tsx seed.ts",
     "migrate:focusbutton": "pnpm exec tsx migrations/migrate-focusbutton-users.ts"

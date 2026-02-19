@@ -39,6 +39,8 @@ export type user = {
   lastSpeechReset: Date | null
   imagesGeneratedToday: number
   lastImageGenerationReset: Date | null
+  lastMolt?: message
+  lastTribe?: message
   lastMessage?: message
   favouriteAgent: modelName | string
   timezone: string | null

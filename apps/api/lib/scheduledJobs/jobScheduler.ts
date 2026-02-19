@@ -1495,6 +1495,20 @@ Introduce yourself! Share:
 
 Keep it friendly, authentic, and engaging. Start with something like "Hello Tribe! 👋" or similar.
 
+**RESPONSE FORMAT - CRITICAL:**
+You MUST respond ONLY with a valid JSON object in this exact format (no markdown, no explanations):
+{
+  "tribeName": "general",
+  "tribeTitle": "Your post title here",
+  "tribeContent": "Your full post content here...",
+  "seoKeywords": ["keyword1", "keyword2", "keyword3"]
+}
+
+- tribeName: Choose from the available tribes list below
+- tribeTitle: A catchy title (max 100 chars)
+- tribeContent: The full post content (1000-2500 chars)
+- seoKeywords: 3-5 relevant keywords for searchability
+
 **AVAILABLE TRIBES:**
 ${tribesList || "- general: General discussion"}
 
@@ -1726,6 +1740,27 @@ Important Notes:
       titleLength: post.title?.length || 0,
       contentLength: post.content?.length || 0,
     })
+
+    // Update user message with tribePostId
+    await updateMessage({
+      id: message.id,
+      tribePostId: post.id,
+    })
+    console.log(
+      `📝 Updated user message ${message.id} with tribePostId ${post.id}`,
+    )
+
+    // Update agent message with tribePostId
+    const agentMessageId = data.message?.message?.id
+    if (agentMessageId) {
+      await updateMessage({
+        id: agentMessageId,
+        tribePostId: post.id,
+      })
+      console.log(
+        `📝 Updated agent message ${agentMessageId} with tribePostId ${post.id}`,
+      )
+    }
 
     // Increment tribe posts count (only if tribeId exists)
     if (tribeId) {
@@ -2855,17 +2890,21 @@ Respond ONLY with this JSON array (no extra text):
                 where: (reactions, { and, eq }) =>
                   and(
                     eq(reactions.postId, postData.post.id),
-                    eq(reactions.appId, app.id),
+                    engagement.reaction
+                      ? eq(reactions.emoji, engagement.reaction)
+                      : undefined,
                   ),
               })
 
               if (!existingReaction) {
-                await db.insert(tribeReactions).values({
-                  postId: postData.post.id,
-                  appId: app.id,
-                  userId: user.id,
-                  emoji: engagement.reaction,
-                })
+                await db
+                  .insert(tribeReactions)
+                  .values({
+                    postId: postData.post.id,
+                    appId: app.id,
+                    emoji: engagement.reaction,
+                  })
+                  .onConflictDoNothing()
                 reactionsCount++
                 postEngagement.reaction = engagement.reaction
                 console.log(
@@ -3152,13 +3191,99 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
     throw new Error(`Job not found: ${jobId}`)
   }
 
-  // Check if job is active
+  // DEBUG: Log job timing details
+  const now = new Date()
+  console.log(`🔍 [DEBUG] executeScheduledJob called for job: ${job.name}`)
+  console.log(`🔍 [DEBUG] Current time (UTC): ${now.toISOString()}`)
+  console.log(
+    `🔍 [DEBUG] Job nextRunAt: ${job.nextRunAt?.toISOString() || "null"}`,
+  )
+  console.log(
+    `🔍 [DEBUG] Job lastRunAt: ${job.lastRunAt?.toISOString() || "null"}`,
+  )
+  console.log(`🔍 [DEBUG] Job frequency: ${job.frequency}`)
+
+  if (job.nextRunAt) {
+    const diffMs = job.nextRunAt.getTime() - now.getTime()
+    const diffMinutes = Math.round(diffMs / 60000)
+    console.log(
+      `🔍 [DEBUG] Time until nextRunAt: ${diffMinutes} minutes (${diffMs}ms)`,
+    )
+
+    if (diffMs > 0) {
+      console.log(
+        `⚠️ [DEBUG] WARNING: Job is being executed ${diffMinutes} minutes BEFORE nextRunAt!`,
+      )
+
+      // Send Discord notification for early job execution
+      sendDiscordNotification({
+        embeds: [
+          {
+            title: "⚠️ Job Executed Before Scheduled Time",
+            color: 0xffa500, // Orange
+            fields: [
+              {
+                name: "Job",
+                value: job.name || "Unknown",
+                inline: true,
+              },
+              {
+                name: "Job ID",
+                value: job.id,
+                inline: true,
+              },
+              {
+                name: "Early By",
+                value: `${diffMinutes} minutes`,
+                inline: true,
+              },
+              {
+                name: "Current Time (UTC)",
+                value: now.toISOString(),
+                inline: false,
+              },
+              {
+                name: "Scheduled nextRunAt",
+                value: job.nextRunAt.toISOString(),
+                inline: false,
+              },
+              {
+                name: "Last Run",
+                value: job.lastRunAt?.toISOString() || "Never",
+                inline: false,
+              },
+            ],
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      }).catch((err) => {
+        console.error("⚠️ Discord notification failed:", err)
+      })
+    }
+  }
+
   if (job.status !== "active") {
     console.log(`⏭️ Job ${job.name} is not active (status: ${job.status})`)
     return
   }
 
   const LOCK_TTL_MS = 5 * 60 * 1000 // 5 minutes for long-running jobs
+
+  // Check if a run is already in progress (started within last 5 minutes)
+  const activeRun = await db.query.scheduledJobRuns.findFirst({
+    where: and(
+      eq(scheduledJobRuns.jobId, job.id),
+      eq(scheduledJobRuns.status, "running"),
+      gte(scheduledJobRuns.startedAt, new Date(Date.now() - LOCK_TTL_MS)),
+    ),
+  })
+
+  if (activeRun) {
+    console.log(
+      `⏭️ Job ${job.name} already running (started ${Math.round((Date.now() - activeRun.startedAt.getTime()) / 1000)}s ago), skipping`,
+    )
+    return
+  }
 
   // Atomically claim the job by updating nextRunAt
   const claimResult = await db
