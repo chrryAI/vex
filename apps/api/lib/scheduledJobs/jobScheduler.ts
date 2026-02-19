@@ -2890,17 +2890,23 @@ Respond ONLY with this JSON array (no extra text):
                 where: (reactions, { and, eq }) =>
                   and(
                     eq(reactions.postId, postData.post.id),
-                    eq(reactions.appId, app.id),
+                    eq(reactions.userId, user.id),
+                    engagement.reaction
+                      ? eq(reactions.emoji, engagement.reaction)
+                      : undefined,
                   ),
               })
 
               if (!existingReaction) {
-                await db.insert(tribeReactions).values({
-                  postId: postData.post.id,
-                  appId: app.id,
-                  userId: user.id,
-                  emoji: engagement.reaction,
-                })
+                await db
+                  .insert(tribeReactions)
+                  .values({
+                    postId: postData.post.id,
+                    appId: app.id,
+                    userId: user.id,
+                    emoji: engagement.reaction,
+                  })
+                  .onConflictDoNothing()
                 reactionsCount++
                 postEngagement.reaction = engagement.reaction
                 console.log(
