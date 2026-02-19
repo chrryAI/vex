@@ -832,10 +832,23 @@ export function AuthProvider({
 
   const [showGrapes, setShowGrapes] = useState(false)
 
-  const [deviceId, setDeviceId] = useCookieOrLocalStorage(
+  const [deviceIdExtension, setDeviceIdExtension] = useCookieOrLocalStorage(
     "deviceId",
     props.session?.deviceId,
   )
+
+  const [deviceIdWeb, setDeviceIdWeb] = useCookie(
+    "deviceId",
+    props.session?.deviceId,
+  )
+
+  const deviceId =
+    isExtension || isTauri || isCapacitor ? deviceIdExtension : deviceIdWeb
+
+  const setDeviceId =
+    isExtension || isTauri || isCapacitor
+      ? setDeviceIdExtension
+      : setDeviceIdWeb
 
   const [enableNotifications, setEnableNotifications] = useLocalStorage<
     boolean | undefined
@@ -1004,10 +1017,12 @@ export function AuthProvider({
       return
     }
     if (!fingerprint) {
-      const fp = uuidv4()
-      setFingerprint(fp)
+      setFingerprint(uuidv4())
     }
-  }, [fingerprint, isStorageReady])
+    if (!deviceId) {
+      setDeviceId(uuidv4())
+    }
+  }, [fingerprint, isStorageReady, deviceId])
 
   useEffect(() => {
     if (isTauri && !isStorageReady) {

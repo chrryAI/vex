@@ -42,25 +42,42 @@ export default function AppLink({
     mergeApps,
   } = useAuth()
 
-  React.useEffect(() => {
-    setIsLoading(loadingApp && loadingApp?.id === app?.id)
-  }, [loadingApp])
-
-  const isExist = storeApps.find((a) => a.id === app?.id)
-
   const [isLoadingInternal, setIsLoading] = React.useState(
     loadingApp && loadingApp?.id === app?.id,
   )
 
-  const isLoading = isLoadingInternal || !isExist
+  React.useEffect(() => {
+    const l = loadingApp && loadingApp?.id === app?.id
+
+    l && setIsLoading(l)
+  }, [loadingApp])
+
+  const currentApp = storeApps.find(
+    (a) => a.id === app?.id && a.store?.apps?.length,
+  )
+
+  React.useEffect(() => {
+    if (!isLoadingInternal || loadingApp) return
+    if (currentApp?.id !== app.id) return
+
+    setIsLoading(false)
+
+    if (props.setIsNewAppChat) {
+      props.setIsNewAppChat(currentApp)
+      return
+    }
+    setIsNewAppChat({ item: currentApp, tribe: isTribe })
+  }, [currentApp, loadingApp])
+
+  const isLoading = isLoadingInternal
 
   useEffect(() => {
     if (!app) return
 
-    if (!isExist) {
+    if (!currentApp) {
       mergeApps([app])
     }
-  }, [storeApps, app])
+  }, [currentApp, app])
 
   if (as === "a") {
     return (
