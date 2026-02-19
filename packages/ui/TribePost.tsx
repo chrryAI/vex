@@ -455,6 +455,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   >
                     {post.app.characterProfile.traits.expertise &&
                       post.app.characterProfile.traits.expertise.length > 0 && (
+                        // deduplicate
                         <Div>
                           <Strong
                             style={{
@@ -473,21 +474,23 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                               marginTop: ".25rem",
                             }}
                           >
-                            {post.app.characterProfile.traits.expertise.map(
-                              (item: string, i: number) => (
-                                <Span
-                                  key={item}
-                                  style={{
-                                    padding: ".25rem .5rem",
-                                    backgroundColor: "var(--shade-2)",
-                                    borderRadius: 8,
-                                    fontSize: ".75rem",
-                                  }}
-                                >
-                                  {item}
-                                </Span>
+                            {[
+                              ...new Set(
+                                post.app.characterProfile.traits.expertise,
                               ),
-                            )}
+                            ].map((item: string, i: number) => (
+                              <Span
+                                key={item}
+                                style={{
+                                  padding: ".25rem .5rem",
+                                  backgroundColor: "var(--shade-2)",
+                                  borderRadius: 8,
+                                  fontSize: ".75rem",
+                                }}
+                              >
+                                {item}
+                              </Span>
+                            ))}
                           </Div>
                         </Div>
                       )}
@@ -495,6 +498,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                     {post.app.characterProfile.traits.communication &&
                       post.app.characterProfile.traits.communication.length >
                         0 && (
+                        // deduplicate
                         <Div>
                           <Strong
                             style={{
@@ -513,27 +517,30 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                               marginTop: ".25rem",
                             }}
                           >
-                            {post.app.characterProfile.traits.communication.map(
-                              (item: string, i: number) => (
-                                <Span
-                                  key={item}
-                                  style={{
-                                    padding: ".25rem .5rem",
-                                    backgroundColor: "var(--shade-2)",
-                                    borderRadius: 8,
-                                    fontSize: ".75rem",
-                                  }}
-                                >
-                                  {item}
-                                </Span>
+                            {[
+                              ...new Set(
+                                post.app.characterProfile.traits.communication,
                               ),
-                            )}
+                            ].map((item: string, i: number) => (
+                              <Span
+                                key={item}
+                                style={{
+                                  padding: ".25rem .5rem",
+                                  backgroundColor: "var(--shade-2)",
+                                  borderRadius: 8,
+                                  fontSize: ".75rem",
+                                }}
+                              >
+                                {item}
+                              </Span>
+                            ))}
                           </Div>
                         </Div>
                       )}
 
                     {post.app.characterProfile.traits.behavior &&
                       post.app.characterProfile.traits.behavior.length > 0 && (
+                        // deduplicate
                         <Div>
                           <Strong
                             style={{
@@ -552,21 +559,23 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                               marginTop: ".25rem",
                             }}
                           >
-                            {post.app.characterProfile.traits.behavior.map(
-                              (item: string, i: number) => (
-                                <Span
-                                  key={item}
-                                  style={{
-                                    padding: ".25rem .5rem",
-                                    backgroundColor: "var(--shade-2)",
-                                    borderRadius: 8,
-                                    fontSize: ".75rem",
-                                  }}
-                                >
-                                  {item}
-                                </Span>
+                            {[
+                              ...new Set(
+                                post.app.characterProfile.traits.behavior,
                               ),
-                            )}
+                            ].map((item: string, i: number) => (
+                              <Span
+                                key={item}
+                                style={{
+                                  padding: ".25rem .5rem",
+                                  backgroundColor: "var(--shade-2)",
+                                  borderRadius: 8,
+                                  fontSize: ".75rem",
+                                }}
+                              >
+                                {item}
+                              </Span>
+                            ))}
                           </Div>
                         </Div>
                       )}

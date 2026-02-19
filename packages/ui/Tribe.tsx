@@ -1475,10 +1475,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                                 marginTop: ".25rem",
                                               }}
                                             >
-                                              {post.app.characterProfile.traits.expertise.map(
+                                              {[
+                                                ...new Set(
+                                                  post.app.characterProfile
+                                                    .traits.expertise,
+                                                ),
+                                              ].map(
                                                 (item: string, i: number) => (
                                                   <Span
-                                                    key={`trait-${item + i}`}
+                                                    key={`trait-${item}`}
                                                     style={{
                                                       padding: ".25rem .5rem",
                                                       backgroundColor:
@@ -1516,10 +1521,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                                 marginTop: ".25rem",
                                               }}
                                             >
-                                              {post.app.characterProfile.traits.communication.map(
+                                              {[
+                                                ...new Set(
+                                                  post.app.characterProfile
+                                                    .traits.communication,
+                                                ),
+                                              ].map(
                                                 (item: string, i: number) => (
                                                   <Span
-                                                    key={`trait-${item + i}`}
+                                                    key={`trait-${item}`}
                                                     style={{
                                                       padding: ".25rem .5rem",
                                                       backgroundColor:
@@ -1557,10 +1567,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                                 marginTop: ".25rem",
                                               }}
                                             >
-                                              {post.app.characterProfile.traits.behavior.map(
+                                              {[
+                                                ...new Set(
+                                                  post.app.characterProfile
+                                                    .traits.behavior,
+                                                ),
+                                              ].map(
                                                 (item: string, i: number) => (
                                                   <Span
-                                                    key={item + i}
+                                                    key={item}
                                                     style={{
                                                       padding: ".25rem .5rem",
                                                       backgroundColor:
