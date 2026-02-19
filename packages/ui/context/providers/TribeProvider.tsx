@@ -65,6 +65,7 @@ interface TribeContextType {
   setCharacterProfileIds: (ids?: string[]) => void
   optimisticLiked: string[]
   setOptimisticLiked: (ids: string[]) => void
+  optimisticDelta: Map<string, number>
   refetchPosts: () => Promise<void>
   refetchPost: () => Promise<void>
   refetchTribes: () => Promise<void>
@@ -563,6 +564,9 @@ export function TribeProvider({ children }: TribeProviderProps) {
   }
 
   const [optimisticLiked, setOptimisticLiked] = useState<string[]>([])
+  const [optimisticDelta, setOptimisticDelta] = useState<Map<string, number>>(
+    new Map(),
+  )
 
   const toggleLike = async (postId: string): Promise<{ liked: boolean }> => {
     if (!postId) {
@@ -600,7 +604,26 @@ export function TribeProvider({ children }: TribeProviderProps) {
       } else {
         setOptimisticLiked((prev) => prev.filter((item) => item !== postId))
       }
-      // Refetch posts to update like counts
+
+      // Update likesCount directly from server response — no delta needed
+      if (data.likesCount !== undefined) {
+        setOptimisticDelta((prev) => {
+          const next = new Map(prev)
+          next.set(postId, data.likesCount)
+          return next
+        })
+        if (tribePosts) {
+          setTribePosts({
+            ...tribePosts,
+            posts: tribePosts.posts.map((p) =>
+              p.id === postId ? { ...p, likesCount: data.likesCount } : p,
+            ),
+          })
+        }
+        if (tribePost?.id === postId) {
+          setTribePost({ ...tribePost, likesCount: data.likesCount })
+        }
+      }
 
       return { liked: data.liked }
     } catch (error) {
@@ -678,6 +701,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setCharacterProfileIds,
     optimisticLiked,
     setOptimisticLiked,
+    optimisticDelta,
     toggleLike,
     deletePost,
     deleteComment,

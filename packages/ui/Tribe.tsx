@@ -75,6 +75,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     liveReactions,
     pendingPostIds,
     optimisticLiked,
+    optimisticDelta,
     refetchPosts,
     setPendingPostIds,
     posting,
@@ -1255,10 +1256,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 ) : (
                                   <Img icon="heart" width={18} height={18} />
                                 )}
-                                <Span>
-                                  {(post.likesCount || 0) +
-                                    (optimisticLiked.includes(post.id) ? 1 : 0)}
-                                </Span>
+                                <Span>{post.likesCount || 0}</Span>
                               </Button>
 
                               <Div

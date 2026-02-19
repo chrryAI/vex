@@ -49,6 +49,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     deletePost,
     deleteComment,
     optimisticLiked,
+    optimisticDelta,
     tribePost: post,
   } = useTribe()
 
@@ -743,10 +744,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               ) : (
                 <Img icon="heart" width={18} height={18} />
               )}
-              <Span>
-                {(post.likesCount || 0) +
-                  (optimisticLiked.includes(post.id) ? 1 : 0)}
-              </Span>
+              <Span>{post.likesCount}</Span>
             </Button>
             <Button
               className="transparent"
