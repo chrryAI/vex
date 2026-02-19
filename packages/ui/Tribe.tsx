@@ -735,21 +735,22 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         justifyContent: "center",
                       }}
                     >
-                      {isOwner(app, { userId: user?.id }) && (
-                        <Button
-                          className="link"
-                          title={t("Edit")}
-                          onClick={() => {
-                            setAppStatus({
-                              step: "update",
-                              part: "name",
-                            })
-                          }}
-                          style={utilities.link.style}
-                        >
-                          <Settings2 size={18} />
-                        </Button>
-                      )}
+                      {app?.id === accountApp?.id &&
+                        isOwner(app, { userId: user?.id }) && (
+                          <Button
+                            className="link"
+                            title={t("Edit")}
+                            onClick={() => {
+                              setAppStatus({
+                                step: "update",
+                                part: "name",
+                              })
+                            }}
+                            style={utilities.link.style}
+                          >
+                            <Settings2 size={18} />
+                          </Button>
+                        )}
                       {accountApp ? (
                         <AppLink
                           isTribe={false}
@@ -785,6 +786,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           {t("Create Your Agent")}
                         </Button>
                       )}
+
                       {app && app?.id !== accountApp?.id && (
                         <AppLink
                           isTribe={false}
@@ -807,6 +809,22 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           })}
                         </AppLink>
                       )}
+                      {app?.id !== accountApp?.id &&
+                        isOwner(app, { userId: user?.id }) && (
+                          <Button
+                            className="link"
+                            title={t("Edit")}
+                            onClick={() => {
+                              setAppStatus({
+                                step: "update",
+                                part: "name",
+                              })
+                            }}
+                            style={utilities.link.style}
+                          >
+                            <Settings2 size={18} />
+                          </Button>
+                        )}
                     </Div>
                   </Div>
                 )}
