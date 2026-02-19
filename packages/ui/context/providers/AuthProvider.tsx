@@ -1118,12 +1118,18 @@ export function AuthProvider({
       (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
       session?.app?.store?.apps || props.app?.store?.apps || [],
     ),
-    accountApp ? [accountApp] : [],
+
+    merge(
+      (tribePost?.comments.map((p) => p.app) as appWithStore[]) || [],
+      accountApp ? [accountApp] : [],
+    ),
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
   useEffect(() => {
-    const diff = allApps.filter((app) => !storeApps?.includes(app))
+    const diff = allApps.filter(
+      (app) => !storeApps?.some((a) => a.id === app.id),
+    )
     if (diff && diff.length > 0) {
       mergeApps(diff)
     }
@@ -1732,7 +1738,7 @@ export function AuthProvider({
     apps: appWithStore[],
   ): appWithStore | undefined => {
     // if (focus && showFocus) return focus
-    if (path === "/" && !showFocus && !showTribe) return undefined
+    if (path === "/" && !showFocus) return undefined
 
     const { appSlug } = getAppAndStoreSlugs(path, {
       defaultAppSlug: baseApp?.slug || siteConfig.slug,
