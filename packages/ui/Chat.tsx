@@ -258,7 +258,7 @@ export default function Chat({
   } = useAuth()
 
   const lastTribe = user?.lastTribe
-  const lastMolt = user?.lastTribe
+  const lastMolt = user?.lastMolt
   const now = new Date()
 
   const cooldownMinutes = user?.role === "admin" ? 0 : 30
@@ -283,7 +283,18 @@ export default function Chat({
   }
 
   const setPostToMoltbook = (value: boolean) => {
-    if (value && lastMolt) {
+    if (value && lastMolt && lastMolt.createdOn) {
+      const timeSinceLastPost =
+        now.getTime() - new Date(lastMolt.createdOn).getTime()
+      const remainingCooldown = cooldownMs - timeSinceLastPost
+
+      if (remainingCooldown > 0) {
+        const remainingMinutes = Math.ceil(remainingCooldown / (60 * 1000))
+        toast.error(
+          `Please wait ${remainingMinutes} more minute${remainingMinutes > 1 ? "s" : ""} before posting to Moltbook again`,
+        )
+        return
+      }
     }
     setPostToMoltbookInternal(value)
   }

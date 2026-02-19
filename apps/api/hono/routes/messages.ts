@@ -360,7 +360,7 @@ messages.post("/", async (c) => {
   const isMolt = job?.jobType ? job.jobType?.startsWith("molt") : molt
   const isTribe = job?.jobType ? job.jobType?.startsWith("tribe") : tribe
 
-  if (member && app && (isTribe || isMolt)) {
+  if (member && app && (isTribe || isMolt) && !isAgent && !jobId) {
     const COOLDOWN_MS = isDevelopment ? 0 : 30 * 60 * 1000 // 30 minutes
     const cooldownType = isTribe ? "tribe" : "molt"
     const recentMessages = await getMessages({

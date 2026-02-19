@@ -2264,7 +2264,7 @@ const chrryInstructions = [
 // 🌌 NEBULA STORE - Science & Exploration Hub
 // ============================================
 
-const nebulaSystemPrompt = `You are Nebula, an advanced science and exploration AI assistant powered by Google Gemini. Your purpose is to make complex scientific concepts accessible, spark curiosity, and guide users through the frontiers of human knowledge.
+const nebulaSystemPrompt = `You are Nebula, an advanced science and exploration AI assistant powered by Sushi AI. Your purpose is to make complex scientific concepts accessible, spark curiosity, and guide users through the frontiers of human knowledge.
 
 Core Principles:
 - Make science exciting and accessible to everyone
@@ -2481,7 +2481,7 @@ const nebulaInstructions = [
 // ⚛️ QUANTUMLAB - Quantum Computing App
 // ============================================
 
-const quantumLabSystemPrompt = `You are QuantumLab, a specialized quantum computing assistant powered by Google Gemini. Your purpose is to make quantum computing accessible, educational, and practical — from first principles to advanced algorithms.
+const quantumLabSystemPrompt = `You are QuantumLab, a specialized quantum computing assistant powered by Sushi AI. Your purpose is to make quantum computing accessible, educational, and practical — from first principles to advanced algorithms.
 
 Core Principles:
 - Build intuition before introducing formalism
@@ -2649,7 +2649,7 @@ const quantumLabInstructions = [
 // 🌠 STARMAP - Astronomy & Space App
 // ============================================
 
-const starMapSystemPrompt = `You are StarMap, a dedicated astronomy and space exploration assistant powered by Google Gemini. Your purpose is to guide users through the cosmos — from backyard stargazing to the deepest mysteries of the universe.
+const starMapSystemPrompt = `You are StarMap, a dedicated astronomy and space exploration assistant powered by Sushi AI. Your purpose is to guide users through the cosmos — from backyard stargazing to the deepest mysteries of the universe.
 
 Core Principles:
 - Inspire wonder for the cosmos at every scale
@@ -2813,7 +2813,7 @@ const starMapInstructions = [
 // 🧪 COSMOS - Physics & Math Solver App
 // ============================================
 
-const cosmosSystemPrompt = `You are Cosmos, a deep physics and mathematics assistant powered by Google Gemini. Your purpose is to help users master the mathematical language of the universe — from high school calculus to graduate-level theoretical physics.
+const cosmosSystemPrompt = `You are Cosmos, a deep physics and mathematics assistant powered by Sushi AI. Your purpose is to help users master the mathematical language of the universe — from high school calculus to graduate-level theoretical physics.
 
 Core Principles:
 - Build rigorous understanding, not just answers
@@ -8798,7 +8798,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     userId: admin.id,
     visibility: "public" as const,
     description:
-      "Explore the frontiers of science. Quantum computing, astrophysics, advanced mathematics, and physics — powered by Google Gemini's multimodal intelligence.",
+      "Explore the frontiers of science. Quantum computing, astrophysics, advanced mathematics, and physics — powered by Sushi AI's multimodal intelligence.",
   })
 
   let nebulaApp = await getApp({ slug: "nebula" })
@@ -8927,14 +8927,12 @@ You are an architecture expert. Design systems that grow with users, follow indu
     }
   }
 
-  if (nebulaApp) {
-    await seedAgentRPG(nebulaApp.id, {
-      intelligence: 95,
-      creativity: 75,
-      empathy: 50,
-      efficiency: 80,
-    })
-  }
+  await seedAgentRPG(nebulaApp.id, {
+    intelligence: 95,
+    creativity: 75,
+    empathy: 50,
+    efficiency: 80,
+  })
 
   // ============================================
   // ⚛️ QUANTUMLAB - Quantum Computing App
@@ -9029,14 +9027,12 @@ You are an architecture expert. Design systems that grow with users, follow indu
   })
   if (!quantumLabApp) throw new Error("Failed to add quantumlab app")
 
-  if (quantumLabApp) {
-    await seedAgentRPG(quantumLabApp.id, {
-      intelligence: 98,
-      creativity: 65,
-      empathy: 40,
-      efficiency: 85,
-    })
-  }
+  await seedAgentRPG(quantumLabApp.id, {
+    intelligence: 98,
+    creativity: 65,
+    empathy: 40,
+    efficiency: 85,
+  })
 
   // ============================================
   // 🌠 STARMAP - Astronomy & Space App
@@ -9131,14 +9127,12 @@ You are an architecture expert. Design systems that grow with users, follow indu
   })
   if (!starMapApp) throw new Error("Failed to add starmap app")
 
-  if (starMapApp) {
-    await seedAgentRPG(starMapApp.id, {
-      intelligence: 90,
-      creativity: 85,
-      empathy: 60,
-      efficiency: 75,
-    })
-  }
+  await seedAgentRPG(starMapApp.id, {
+    intelligence: 90,
+    creativity: 85,
+    empathy: 60,
+    efficiency: 75,
+  })
 
   // ============================================
   // 🧪 COSMOS - Physics & Math Solver App
@@ -9233,29 +9227,25 @@ You are an architecture expert. Design systems that grow with users, follow indu
   })
   if (!cosmosApp) throw new Error("Failed to add cosmos app")
 
-  if (cosmosApp) {
-    await seedAgentRPG(cosmosApp.id, {
-      intelligence: 97,
-      creativity: 60,
-      empathy: 45,
-      efficiency: 88,
-    })
-  }
+  await seedAgentRPG(cosmosApp.id, {
+    intelligence: 97,
+    creativity: 60,
+    empathy: 45,
+    efficiency: 88,
+  })
 
   // Add Sushi to Orbit store
-  if (sushiApp) {
-    const orbitSushiInstall = await getStoreInstall({
+  const orbitSushiInstall = await getStoreInstall({
+    storeId: orbitStore.id,
+    appId: sushiApp.id,
+  })
+  if (!orbitSushiInstall) {
+    await createStoreInstall({
       storeId: orbitStore.id,
       appId: sushiApp.id,
+      featured: false,
+      displayOrder: 10,
     })
-    if (!orbitSushiInstall) {
-      await createStoreInstall({
-        storeId: orbitStore.id,
-        appId: sushiApp.id,
-        featured: false,
-        displayOrder: 10,
-      })
-    }
   }
 
   // await extractTranslations()

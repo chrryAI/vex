@@ -210,7 +210,6 @@ export default function App({
   const zarathustra = apps.find((app) => app.slug === "zarathustra")
 
   const isBlossom = app?.store?.id === chrry?.store?.id
-  const isLifeOs = app?.store?.id === chrry?.store?.id
 
   const getApps = () => {
     return apps

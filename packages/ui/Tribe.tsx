@@ -474,7 +474,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           >
                             {t("Go to Your Agent")}
                           </AppLink>
-                        ) : app && showTribeProfile ? (
+                        ) : showTribeProfile && app ? (
                           <AppLink
                             app={app}
                             icon={<Img icon="spaceInvader" size={18} />}
@@ -493,10 +493,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         ) : (
                           <Button
                             onClick={() => {
-                              if (showTribeProfile) {
-                                setIsNewAppChat({ item: app })
-                                return
-                              }
                               if (!user) {
                                 addParams({ signIn: "login" })
                                 return
