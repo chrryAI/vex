@@ -207,15 +207,19 @@ async function resolveAppFromPathname(
 
 async function resolveAppFromStoreCandidate(
   requestParams: RequestParams,
-
   auth: AuthContext,
   siteConfig: any,
-): Promise<{ app: any; path: string }> {
+): Promise<{ app: any; path: string } | null> {
   const pathname = requestParams.pathname
-  const { appSlug: storeSlugCandidate } = getAppAndStoreSlugs(pathname, {
-    defaultAppSlug: siteConfig.slug,
-    defaultStoreSlug: siteConfig.storeSlug,
-  })
+
+  const segments = pathname?.split("/").filter(Boolean) ?? []
+  if (segments.length === 0) return null
+
+  // First segment is always the store slug candidate
+  const storeSlugCandidate = segments[0]
+  // Second+ segment is the app slug (only present for store/app paths)
+  const appSlugCandidate =
+    segments.length >= 2 ? segments[segments.length - 1] : undefined
 
   const [dbStore] = storeSlugCandidate
     ? await db
@@ -228,15 +232,30 @@ async function resolveAppFromStoreCandidate(
         .limit(1)
     : []
 
-  const app = dbStore?.appId
+  if (!dbStore) return null
+
+  // Single segment (/lifeos) → return store's main app
+  // Two+ segments (/sushistore/sakabsii) → return specific app within store
+  const app = appSlugCandidate
     ? await getAppDb({
-        id: dbStore?.appId,
+        slug: appSlugCandidate,
+        storeSlug: storeSlugCandidate,
         userId: auth.member?.id,
         guestId: auth.guest?.id,
         depth: 1,
         skipCache: requestParams.skipCache,
       })
-    : undefined
+    : dbStore.appId
+      ? await getAppDb({
+          id: dbStore.appId,
+          userId: auth.member?.id,
+          guestId: auth.guest?.id,
+          depth: 1,
+          skipCache: requestParams.skipCache,
+        })
+      : undefined
+
+  if (!app) return null
 
   return { app, path: "storeCandidate" }
 }
@@ -519,10 +538,10 @@ export async function getApp({
     resolutionPath = result.path
   } else {
     const result =
-      (await resolveAppFromStoreCandidate(requestParams, auth, siteConfig)) ||
+      (await resolveAppFromStoreCandidate(requestParams, auth, siteConfig)) ??
       (await resolveAppFromStoreContext(requestParams, auth, siteConfig))
-    appInternal = result.app
-    resolutionPath = result.path
+    appInternal = result?.app
+    resolutionPath = result?.path ?? "storeContext"
   }
 
   // 6. Get fallback apps

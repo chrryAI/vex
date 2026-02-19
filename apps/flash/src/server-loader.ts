@@ -191,7 +191,10 @@ export async function loadServerData(
 
   // Handle OAuth callback - exchange auth_code for token (more secure than token in URL)
   const authCode = urlObj.searchParams.get("auth_token")
-  let authToken: string | null = null
+
+  const cookieToken = cookies.token
+
+  let authToken: string | null = cookieToken || null
 
   if (authCode) {
     try {
@@ -214,8 +217,6 @@ export async function loadServerData(
       console.error("❌ Auth code exchange error:", error)
     }
   }
-
-  const cookieToken = cookies.token
 
   const apiKeyCandidate = authToken
     ? authToken

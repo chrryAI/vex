@@ -327,7 +327,12 @@ function extractTokenFromRequest(c: Context): string | null {
 
 // ==================== RESPONSE BUILDERS ====================
 
-function buildAuthResponse(user: any, authCode: string, callbackUrl?: string) {
+function buildAuthResponse(
+  user: any,
+  authCode: string,
+  callbackUrl?: string,
+  token?: string,
+) {
   return {
     user: {
       id: user.id,
@@ -335,7 +340,7 @@ function buildAuthResponse(user: any, authCode: string, callbackUrl?: string) {
       name: user.name,
       image: user.image,
     },
-    token: authCode,
+    token: token ?? authCode,
     ...(callbackUrl && {
       callbackUrl: `${callbackUrl}${callbackUrl.includes("?") ? "&" : "?"}auth_token=${authCode}`,
     }),
@@ -440,7 +445,7 @@ authRoutes.post("/signin/password", async (c) => {
     setCookieFromHost(c, token, "None")
 
     const authCode = await generateExchangeCode(token)
-    return c.json(buildAuthResponse(user, authCode, callbackUrl))
+    return c.json(buildAuthResponse(user, authCode, callbackUrl, token))
   } catch (error) {
     console.error("Signin error:", error)
     return c.json({ error: "Signin failed" }, 500)
@@ -565,7 +570,7 @@ authRoutes.post("/native/google", async (c) => {
     const authCode = await generateExchangeCode(token)
 
     return c.json({
-      ...buildAuthResponse(user, authCode),
+      ...buildAuthResponse(user, authCode, undefined, token),
       jwt: token,
     })
   } catch (error) {
@@ -752,7 +757,7 @@ authRoutes.post("/native/apple", async (c) => {
     const authCode = await generateExchangeCode(token)
 
     return c.json({
-      ...buildAuthResponse(user, authCode),
+      ...buildAuthResponse(user, authCode, undefined, token),
       jwt: token,
     })
   } catch (error) {
