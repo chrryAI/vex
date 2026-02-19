@@ -27,6 +27,7 @@ import { defaultLocale, type locale, locales } from "../../locales"
 import {
   isBrowserExtension,
   storage,
+  useCookie,
   useCookieOrLocalStorage,
   useLocalStorage,
   useNavigation,
@@ -856,7 +857,7 @@ export function AuthProvider({
     isExtension,
   )
 
-  const [tokenWeb, setTokenWeb] = useState(ssrToken)
+  const [tokenWeb, setTokenWeb, removeTokenWeb] = useCookie("token", ssrToken)
 
   const token =
     isExtension || isTauri || isCapacitor ? tokenExtension : tokenWeb
@@ -865,7 +866,7 @@ export function AuthProvider({
     isExtension || isTauri || isCapacitor
       ? setTokenExtension
       : (token: string | undefined) => {
-          setTokenWeb(token)
+          token ? setTokenWeb(token) : removeTokenWeb()
           setTokenExtension(token)
         }
 

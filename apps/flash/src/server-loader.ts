@@ -215,13 +215,15 @@ export async function loadServerData(
     }
   }
 
+  const cookieToken = cookies.token
+
   const apiKeyCandidate = authToken
     ? authToken
-    : cookies.token && !validate(cookies.token) // member token
-      ? cookies.token
+    : cookieToken && !validate(cookieToken) // member token
+      ? cookieToken
       : isTestFP
         ? fpFromQuery
-        : cookies.token ||
+        : cookieToken ||
           headers["x-token"] ||
           cookies.fingerprint ||
           headers["x-fp"]

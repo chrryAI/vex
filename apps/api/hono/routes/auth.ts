@@ -583,7 +583,7 @@ authRoutes.get("/signin/google", async (c) => {
     const { callbackUrl, errorUrl } = getCallbackUrls(c)
     const state = createOAuthState(callbackUrl, errorUrl)
 
-    setCookie(c, "oauth_state", state, {
+    setCookie(c, "token", state, {
       httpOnly: true,
       secure: true,
       sameSite: "Lax",
@@ -620,7 +620,7 @@ authRoutes.get("/callback/google", async (c) => {
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
     }
 
-    const storedState = getCookie(c, "oauth_state")
+    const storedState = getCookie(c, "token")
 
     if (state !== storedState) {
       // Redirect to static URL to prevent Open Redirect
@@ -675,7 +675,7 @@ authRoutes.get("/callback/google", async (c) => {
 
     const token = generateToken(user.id, user.email)
 
-    deleteCookie(c, "oauth_state", {
+    deleteCookie(c, "token", {
       path: "/",
       secure: true,
       sameSite: "Lax",
@@ -772,7 +772,7 @@ authRoutes.get("/signin/apple", async (c) => {
     const { callbackUrl, errorUrl } = getCallbackUrls(c)
     const state = createOAuthState(callbackUrl, errorUrl)
 
-    setCookie(c, "oauth_state", state, {
+    setCookie(c, "token", state, {
       httpOnly: true,
       secure: true,
       sameSite: "None", // Required for form_post callback from Apple
@@ -811,7 +811,7 @@ authRoutes.post("/callback/apple", async (c) => {
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
     }
 
-    const storedState = getCookie(c, "oauth_state")
+    const storedState = getCookie(c, "token")
 
     if (state !== storedState) {
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
@@ -875,7 +875,7 @@ authRoutes.post("/callback/apple", async (c) => {
 
     const token = generateToken(user.id, user.email)
 
-    deleteCookie(c, "oauth_state", {
+    deleteCookie(c, "token", {
       path: "/",
       secure: true,
       sameSite: "None",
