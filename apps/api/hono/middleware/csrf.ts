@@ -28,11 +28,19 @@ function sanitizeOriginForLogging(origin: string): string {
     .substring(0, 200) // Limit length to prevent log flooding
 }
 
+// Paths exempt from CSRF checks (server-to-server callbacks)
+const CSRF_EXEMPT_PATHS = ["/auth/callback/apple"]
+
 export const csrfMiddleware = async (c: Context, next: Next) => {
   const method = c.req.method
 
   // Only check state-changing methods
   if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+    // Skip CSRF for server-to-server callbacks
+    if (CSRF_EXEMPT_PATHS.some((path) => c.req.path.endsWith(path))) {
+      return next()
+    }
+
     const origin = c.req.header("origin")
 
     if (origin) {

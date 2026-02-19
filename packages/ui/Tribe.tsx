@@ -701,6 +701,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       gap: 10,
                       position: "relative",
                       flexDirection: "column",
+                      textAlign: "center",
                     }}
                   >
                     {app?.subtitle || app?.description ? (
@@ -785,7 +786,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           {t("Create Your Agent")}
                         </Button>
                       )}
-                      {app && (
+                      {app && app?.id !== accountApp?.id && (
                         <AppLink
                           isTribe={false}
                           app={app}
@@ -793,14 +794,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             app?.icon ? (
                               app.icon
                             ) : (
-                              <Img app={app} width={24} height={24} />
+                              <Img app={app} width={18} height={18} />
                             )
                           }
                           className="button inverted"
                           style={{
                             ...utilities.inverted.style,
-                            display: "flex",
-                            alignItems: "center",
+                            ...utilities.small.style,
                           }}
                         >
                           {t(TRAIN, {
@@ -846,7 +846,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         display: "flex",
                         alignItems: "center",
                         gap: 10,
-                        justifyContent: "flex-end",
+                        justifyContent: isMobileDevice ? "center" : "flex-end",
                       }}
                     >
                       <Button

@@ -223,7 +223,7 @@ export default function App({
           (item.id !== zarathustra?.id || (!isBlossom && !accountApp)) &&
           (item.id === atlas?.id ? !isBlossom : true) &&
           item.id !== popcorn?.id &&
-          (isBlossom && accountApp?.id !== app?.id
+          (isBlossom && accountApp?.id === app?.id
             ? item.id !== atlas?.id
             : true),
       )
