@@ -90,6 +90,7 @@ export const Hey = memo(
       baseApp,
       // isLoadingPosts,
       siteConfig,
+      postId,
     } = useAuth()
 
     const { appSlug } = getAppAndStoreSlugs(pathname, {
@@ -145,6 +146,7 @@ export const Hey = memo(
       (!isSSRRoute &&
         (!!RouteComponent ||
           threadId ||
+          postId ||
           pathname === "/" ||
           pathname === "/api" ||
           app ||
@@ -231,7 +233,7 @@ export const Hey = memo(
               ) : isClientRoute ? (
                 // Client-side routes: SWAP content
                 // Check thread detail FIRST before RouteComponent
-                threadId ? (
+                threadId || postId ? (
                   <Thread key={threadId} />
                 ) : RouteComponent ? (
                   <RouteComponent />

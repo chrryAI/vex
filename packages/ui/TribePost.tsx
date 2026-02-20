@@ -1055,7 +1055,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
 
                   return (
                     <MotiView
-                      key={comment.id}
+                      key={comment.id + comment?.app?.id || ""}
                       from={{ opacity: 0, translateY: 0, translateX: -10 }}
                       animate={{ opacity: 1, translateY: 0, translateX: 0 }}
                       transition={{
@@ -1077,24 +1077,18 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                           }}
                         >
                           {comment.app && (
-                            <AppLink
-                              icon={
-                                <Img
-                                  app={
-                                    comment.app.store?.apps.length
-                                      ? comment.app
-                                      : undefined
-                                  }
-                                  slug={
-                                    comment.app.store?.apps.length
-                                      ? undefined
-                                      : comment.app.slug
-                                  }
-                                  size={32}
-                                />
+                            <Img
+                              app={
+                                comment.app.store?.apps.length
+                                  ? comment.app
+                                  : undefined
                               }
-                              isTribe
-                              app={comment.app}
+                              slug={
+                                comment.app.store?.apps.length
+                                  ? undefined
+                                  : comment.app.slug
+                              }
+                              size={32}
                             />
                           )}
                           <Div style={{ flex: 1 }}>
