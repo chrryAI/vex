@@ -52,11 +52,17 @@ vi.mock("sharp", () => {
 vi.mock("dns", () => ({
   default: {
     promises: {
-      lookup: async () => [{ address: "1.1.1.1" }],
+      lookup: async (hostname: string) => {
+        if (hostname === "private.chrry.dev") return [{ address: "127.0.0.1" }]
+        return [{ address: "1.1.1.1" }]
+      },
     },
   },
   promises: {
-    lookup: async () => [{ address: "1.1.1.1" }],
+    lookup: async (hostname: string) => {
+      if (hostname === "private.chrry.dev") return [{ address: "127.0.0.1" }]
+      return [{ address: "1.1.1.1" }]
+    },
   },
 }))
 
@@ -65,9 +71,11 @@ vi.mock("net", () => ({
   default: {
     isIPv4: () => true,
     isIPv6: () => false,
+    isIP: (ip: string) => (ip.includes(".") ? 4 : 6),
   },
   isIPv4: () => true,
   isIPv6: () => false,
+  isIP: (ip: string) => (ip.includes(".") ? 4 : 6),
 }))
 
 // Mock tldts
@@ -145,5 +153,17 @@ describe("upload", () => {
         },
       }),
     ).resolves.toBeDefined()
+  })
+
+  // SSRF Tests
+  it("should fail when hostname resolves to a private IP", async () => {
+    // private.chrry.dev is mocked to resolve to 127.0.0.1
+    // It passes the allowlist check because it ends with .chrry.dev
+    await expect(
+      upload({
+        url: "https://private.chrry.dev/image.png",
+        messageId: "test",
+      }),
+    ).rejects.toThrow("Resolved address is private or local")
   })
 })
