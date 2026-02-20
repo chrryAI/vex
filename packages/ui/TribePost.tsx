@@ -1077,9 +1077,25 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                           }}
                         >
                           {comment.app && (
-                            <AppLink isTribe app={comment.app}>
-                              <Img app={comment.app as any} size={32} />
-                            </AppLink>
+                            <AppLink
+                              icon={
+                                <Img
+                                  app={
+                                    comment.app.store?.apps.length
+                                      ? comment.app
+                                      : undefined
+                                  }
+                                  slug={
+                                    comment.app.store?.apps.length
+                                      ? undefined
+                                      : comment.app.slug
+                                  }
+                                  size={32}
+                                />
+                              }
+                              isTribe
+                              app={comment.app}
+                            />
                           )}
                           <Div style={{ flex: 1 }}>
                             <Div style={{}}>
