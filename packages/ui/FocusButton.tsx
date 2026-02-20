@@ -651,6 +651,14 @@ export default function FocusButton({
                       e.stopPropagation()
                       if (adjustIntervalRef.current) stopAdjustment()
                     }}
+                    onClick={(e) => {
+                      // Handle keyboard activation (Enter/Space)
+                      if (e.detail === 0) {
+                        e.stopPropagation()
+                        startAdjustment(1, true)
+                        stopAdjustment()
+                      }
+                    }}
                   >
                     <ChevronUp size={18} />
                   </Button>
@@ -673,6 +681,14 @@ export default function FocusButton({
                     onPointerLeave={(e) => {
                       e.stopPropagation()
                       if (adjustIntervalRef.current) stopAdjustment()
+                    }}
+                    onClick={(e) => {
+                      // Handle keyboard activation (Enter/Space)
+                      if (e.detail === 0) {
+                        e.stopPropagation()
+                        startAdjustment(-1, true)
+                        stopAdjustment()
+                      }
                     }}
                   >
                     <ChevronDown size={18} />
@@ -701,6 +717,14 @@ export default function FocusButton({
                       e.stopPropagation()
                       if (adjustIntervalRef.current) stopAdjustment()
                     }}
+                    onClick={(e) => {
+                      // Handle keyboard activation (Enter/Space)
+                      if (e.detail === 0) {
+                        e.stopPropagation()
+                        startAdjustment(1, false)
+                        stopAdjustment()
+                      }
+                    }}
                   >
                     <ChevronUp size={18} />
                   </Button>
@@ -724,6 +748,14 @@ export default function FocusButton({
                     onPointerLeave={(e) => {
                       e.stopPropagation()
                       if (adjustIntervalRef.current) stopAdjustment()
+                    }}
+                    onClick={(e) => {
+                      // Handle keyboard activation (Enter/Space)
+                      if (e.detail === 0) {
+                        e.stopPropagation()
+                        startAdjustment(-1, false)
+                        stopAdjustment()
+                      }
                     }}
                   >
                     <ChevronDown size={18} />
