@@ -22,11 +22,13 @@ interface MessageUserStatusProps {
     parentMessage?: message
   }
   isTyping?: boolean
+  isOnline?: boolean
 }
 
 function MessageUserStatus({
   message,
   isTyping: isTypingProp,
+  isOnline: isOnlineProp,
 }: MessageUserStatusProps) {
   const { t } = useAppContext()
   const { user, guest } = useAuth()
@@ -47,6 +49,12 @@ function MessageUserStatus({
 
   const isTyping = isTypingProp ?? isTypingFromPresence
 
+  const isOnlineFromPresence = onlineUsers.some(
+    (u) => u.userId === message.user?.id || u.guestId === message.guest?.id,
+  )
+
+  const isOnline = isOnlineProp ?? isOnlineFromPresence
+
   const owner = isOwner(message.message, {
     userId: user?.id,
     guestId: guest?.id,
@@ -60,10 +68,7 @@ function MessageUserStatus({
           ...(isTyping ||
           message.user?.id === ownerId ||
           message.guest?.id === ownerId ||
-          onlineUsers.some(
-            (u) =>
-              u.userId === message.user?.id || u.guestId === message.guest?.id,
-          )
+          isOnline
             ? styles.online.style
             : styles.offline.style),
         }}
