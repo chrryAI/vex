@@ -63,7 +63,7 @@ export default function AppLink({
     setIsNewAppChat({ item: currentApp, tribe: isTribe })
   }, [currentApp, loadingApp])
 
-  const isLoading = isLoadingInternal
+  const isLoading = isLoadingInternal && !currentApp
 
   useEffect(() => {
     if (!app) return
