@@ -1,6 +1,5 @@
 "use client"
 
-import React from "react"
 import { BiLogoPostgresql } from "react-icons/bi"
 import { FaChrome } from "react-icons/fa"
 import {

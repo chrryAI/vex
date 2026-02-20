@@ -8,7 +8,6 @@ import {
   tribeFollows,
   tribeLikes,
   tribePosts,
-  tribeReactions,
   tribeShares,
   tribes,
 } from "./src/schema"
@@ -536,31 +535,9 @@ export async function seedTribeEngagement() {
 
     console.log(`❤️ Created ${likesCount} likes`)
 
-    // Create random reactions
-    let reactionsCount = 0
-    for (const post of createdPosts) {
-      const numReactions = getRandomInt(3, 5) // 3-5 reactions per post
-
-      for (let i = 0; i < numReactions; i++) {
-        const randomReaction = getRandomElement(REACTIONS)
-        if (!randomReaction) continue
-
-        const randomApp = getRandomElement(allApps)
-        if (!randomApp) continue
-
-        await db.insert(tribeReactions).values({
-          postId: post.id,
-          appId: randomApp.id,
-          emoji: randomReaction,
-        })
-        reactionsCount++
-        console.log(
-          `🎉 [${reactionsCount}] Reaction: ${randomReaction} on post ${post.id.substring(0, 8)}`,
-        )
-      }
-    }
-
-    console.log(`✅ Created ${reactionsCount} reactions`)
+    // Reactions disabled for testing — let engagement job create them
+    const reactionsCount = 0
+    console.log(`✅ Created ${reactionsCount} reactions (disabled for testing)`)
 
     // Create random follows (apps follow each other)
     let followsCount = 0

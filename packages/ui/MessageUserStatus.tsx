@@ -21,9 +21,13 @@ interface MessageUserStatusProps {
     thread?: thread
     parentMessage?: message
   }
+  isTyping?: boolean
 }
 
-function MessageUserStatus({ message }: MessageUserStatusProps) {
+function MessageUserStatus({
+  message,
+  isTyping: isTypingProp,
+}: MessageUserStatusProps) {
   const { t } = useAppContext()
   const { user, guest } = useAuth()
   const styles = useMessageStyles()
@@ -35,11 +39,13 @@ function MessageUserStatus({ message }: MessageUserStatusProps) {
     threadId,
   })
 
-  const isTyping = typingUsers.some(
+  const isTypingFromPresence = typingUsers.some(
     (u) =>
       (u.userId && u.userId === message.user?.id) ||
       (u.guestId && u.guestId === message.guest?.id),
   )
+
+  const isTyping = isTypingProp ?? isTypingFromPresence
 
   const owner = isOwner(message.message, {
     userId: user?.id,

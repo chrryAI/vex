@@ -1177,7 +1177,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             <AppLink
                               app={post.app}
                               icon={<Img app={post.app} />}
-                              loading={<Loading size={28} />}
+                              loading={<Loading size={18} />}
                             >
                               {post.app?.name}
                             </AppLink>
@@ -1223,7 +1223,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           >
                             {post.content}
                           </P>
-
                           <Div
                             style={{
                               display: "flex",

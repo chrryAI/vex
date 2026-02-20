@@ -833,16 +833,19 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 <Span style={{ fontSize: "1.3rem" }}>{tyingToReact}</Span>
 
                 {reactionGroups[tyingToReact].apps.map((app, index) => (
-                  <>
+                  <AppLink
+                    loading={<Loading size={24} />}
+                    key={`${app.id}-${index}`}
+                    app={app}
+                  >
                     <Img
-                      key={`${app.id}-${index}`}
-                      slug={app.slug}
+                      app={app}
                       size={24}
                       style={{
                         borderRadius: "50%",
                       }}
                     />
-                  </>
+                  </AppLink>
                 ))}
               </Div>
             )}

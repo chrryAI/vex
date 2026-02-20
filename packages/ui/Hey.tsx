@@ -22,7 +22,7 @@ import Loading from "./Loading"
 import { Div, useLocalStorage, usePlatform } from "./platform"
 import { useSidebarStyles } from "./Sidebar.styles"
 import Thread from "./Thread"
-import { excludedSlugRoutes, getAppAndStoreSlugs } from "./utils/url"
+import { getAppAndStoreSlugs } from "./utils/url"
 import Programme from "./z/Programme"
 
 // Lazy load less frequently used components to reduce initial bundle

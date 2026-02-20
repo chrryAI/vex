@@ -67,6 +67,8 @@ function Message({
   onToggleLike,
   message,
   onPlayAudio,
+  isTyping,
+  isOnline,
 }: {
   message: {
     message: message & {
@@ -82,6 +84,8 @@ function Message({
   onDelete?: ({ id }: { id: string }) => Promise<void>
   onToggleLike?: (liked: boolean | undefined) => void
   onPlayAudio?: () => void
+  isTyping?: boolean
+  isOnline?: boolean
 }): React.ReactElement | null {
   const { t } = useAppContext()
   const { utilities } = useStyles()
@@ -870,7 +874,7 @@ function Message({
               ...(owner && styles.owner.style),
             }}
           >
-            <MessageUserStatus message={message} />
+            <MessageUserStatus message={message} isTyping={isTyping} />
             {remoteDeleted ? (
               <Div style={{ ...styles.userMessageContent.style, marginTop: 5 }}>
                 <Span>
