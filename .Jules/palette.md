@@ -18,6 +18,10 @@
 **Learning:** The `Bookmark` component relied solely on visual icon changes (filled vs empty star) to indicate state. This is invisible to screen readers who just hear "button".
 **Action:** Added `aria-pressed` for state and dynamic `aria-label` for action description ("Bookmark thread" vs "Remove bookmark"). This pattern should be applied to all toggle buttons (Like, Subscribe, etc.).
 
+## 2026-06-15 - Focus Visibility for Custom Controls
+
+**Learning:** The custom `Checkbox` implementation visually hid the native input but did not replicate the focus state on the custom UI elements (track/thumb). This made keyboard navigation invisible, failing WCAG 2.4.7.
+**Action:** When hiding native inputs for custom styling, always add a `:focus-visible` rule that targets the custom sibling element (e.g., `input:focus-visible + .track { outline: ... }`) to ensure keyboard users can see where they are.
 ## 2026-03-03 - Focus Styles on Custom Checkboxes
 
 **Learning:** Custom checkbox components that hide the native input often lose keyboard focus indicators. The `Checkbox` component had a hidden input but no visual feedback on the custom track when focused via keyboard.
