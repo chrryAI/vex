@@ -2009,10 +2009,7 @@ export function AuthProvider({
 
   const isBaseAppZarathustra = baseApp?.slug === "zarathustra"
 
-  const [burnInternal, setBurnInternal] = useLocalStorage<boolean | null>(
-    "burn",
-    null,
-  )
+  const [burnInternal, setBurnInternal] = useState<boolean | null>(null)
 
   // MinIO download URLs (production bucket)
 
@@ -2042,7 +2039,7 @@ export function AuthProvider({
     if (value) {
       if (!hasInformedRef.current) {
         hasInformedRef.current = true
-        toast.error(t("When you burn there is nothing to remember"))
+        toast.error(`${t("When you burn there is nothing to remember")} 🔥`)
       }
       plausible({
         name: ANALYTICS_EVENTS.BURN,

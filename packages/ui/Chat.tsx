@@ -254,6 +254,7 @@ export default function Chat({
     canShowTribe,
     showFocus,
     postId,
+    burnApp,
     ...auth
   } = useAuth()
 
@@ -481,19 +482,22 @@ export default function Chat({
 
   const [needsReview, setNeedsReviewInternal] = useState(false)
   const needsReviewRef = useRef(needsReview)
-  const placeholder = isImageGenerationEnabled
-    ? `🎨 ${t("Describe the image you want to create")} ✨`
-    : isSelectingMood
-      ? `📊 ${t("Track your mood daily")} 🎭`
-      : needsReview
-        ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
-        : isPear
-          ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
-          : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
-            ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
-            : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
-              ? `✨ ${t("Explore new apps while you chat")} 🍇`
-              : placeHolderInternal
+  const placeholder =
+    burnApp?.placeholder && burn
+      ? burnApp.placeholder
+      : isImageGenerationEnabled
+        ? `🎨 ${t("Describe the image you want to create")} ✨`
+        : isSelectingMood
+          ? `📊 ${t("Track your mood daily")} 🎭`
+          : needsReview
+            ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
+            : isPear
+              ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
+              : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
+                ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
+                : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
+                  ? `✨ ${t("Explore new apps while you chat")} 🍇`
+                  : placeHolderInternal
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])

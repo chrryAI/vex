@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
+
 import A from "./a/A"
 import Bookmark from "./Bookmark"
 import CollaborationStatus from "./CollaborationStatus"
@@ -12,6 +13,7 @@ import {
   useChat,
   useNavigationContext,
 } from "./context/providers"
+import { useStyles } from "./context/StylesContext"
 import EmptyStateTips from "./EmptyStateTips"
 import { useHasHydrated } from "./hooks"
 import Img from "./Image"
@@ -71,22 +73,19 @@ export default function Menu({
     guest,
     profile,
     plausible,
-    showFocus,
     setShowFocus,
-    getAppSlug,
     loadingAppId,
     storeApps,
     setLoadingAppId,
     hasStoreApps,
     setBurn,
     burn,
-    showTribe,
   } = useAuth()
 
   const { setShowTribe } = useChat()
 
   const city = (user || guest)?.city || ""
-  // const { utilities } = useStyles()
+  const { utilities } = useStyles()
 
   const styles = useMenuStyles()
 
@@ -412,6 +411,47 @@ export default function Menu({
                   !viewPortHeight || viewPortHeight > 700 ? "1rem" : undefined,
               }}
             >
+              <Div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: ".5rem",
+                }}
+              >
+                <Button
+                  title={t("Incognito Chat")}
+                  onClick={() => {
+                    plausible({
+                      name: ANALYTICS_EVENTS.PRIVATE_CHAT_CLICK,
+                    })
+                    setShowFocus(false)
+                    setShowTribe(false)
+
+                    isSmallDevice ? toggleMenu() : addHapticFeedback()
+                    setBurn(!burn)
+                    reload()
+                  }}
+                  style={{
+                    ...styles.menuItemButton.style,
+                    ...utilities.inverted.style,
+                    ...utilities.small.style,
+                    color: burn ? COLORS.orange : undefined,
+                    paddingLeft: ".5rem",
+                  }}
+                  className="button inverted"
+                >
+                  <Span style={{ fontSize: "1.097rem" }}>🔥</Span>{" "}
+                  {t(burn ? "Burning" : "Burn")}
+                  <CircleCheck
+                    size={14}
+                    strokeWidth={3}
+                    style={{
+                      marginLeft: "0.3rem",
+                    }}
+                    color={burn ? COLORS.orange : colors.shade6}
+                  />
+                </Button>
+              </Div>
               <A
                 data-testid="new-chat-button"
                 href={FRONTEND_URL}
@@ -424,6 +464,7 @@ export default function Menu({
                   }
                   e.preventDefault()
 
+                  setBurn(false)
                   setShowFocus(false)
                   setShowTribe(false)
 
@@ -448,38 +489,7 @@ export default function Menu({
               >
                 <Search size={18} /> {t("Search chats")}
               </Button>
-              <Div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: ".5rem",
-                }}
-              >
-                <Button
-                  onClick={() => {
-                    plausible({
-                      name: ANALYTICS_EVENTS.PRIVATE_CHAT_CLICK,
-                    })
-                    setShowFocus(false)
-                    setShowTribe(false)
 
-                    isSmallDevice ? toggleMenu() : addHapticFeedback()
-                    setBurn(!burn)
-                    reload()
-                  }}
-                  style={styles.menuItemButton.style}
-                  className="button transparent"
-                >
-                  <Span>🔥</Span> {t(burn ? "Burning" : "Burn")}
-                  <CircleCheck
-                    size={12}
-                    style={{
-                      marginLeft: "0.25rem",
-                    }}
-                    color={burn ? COLORS.orange : "var(--shade-2)"}
-                  />
-                </Button>
-              </Div>
               {showThreads && (
                 <Div
                   style={{
