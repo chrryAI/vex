@@ -45,8 +45,9 @@ import {
   ArrowLeft,
   BrickWallFire,
   CalendarIcon,
+  Heart,
+  HeartPlus,
   LoaderCircle,
-  MessageCircleHeart,
   Pin,
   Quote,
   Settings2,
@@ -897,7 +898,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           order === "desc" ? (
                             "📅"
                           ) : (
-                            "🔼"
+                            "⌚️"
                           )
                         ) : (
                           <CalendarIcon color="var(--shade-3)" size={20} />
@@ -922,35 +923,31 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {sortBy === "hot" ? (
                           "🔥"
                         ) : (
-                          <BrickWallFire color="var(--shade-3)" size={20} />
+                          <BrickWallFire color={COLORS.orange} size={20} />
                         )}
                       </Button>
 
                       <Button
-                        data-testid="threads-sort-button-comments"
+                        data-testid="threads-sort-button-liked"
                         title={
-                          sortBy !== "comments"
-                            ? t("Sort comments")
-                            : t("Un-sort comments")
+                          sortBy !== "liked"
+                            ? t("Sort by liked")
+                            : t("Un-sort liked")
                         }
                         className={"inverted"}
                         disabled={isLoadingPosts}
                         onClick={() => {
-                          const newSort =
-                            sortBy === "comments" ? "date" : "comments"
+                          const newSort = sortBy === "liked" ? "date" : "liked"
                           setSortBy(newSort)
                         }}
                         style={{
                           fontSize: "1.15rem",
                         }}
                       >
-                        {sortBy === "comments" ? (
-                          "💬"
+                        {sortBy === "liked" ? (
+                          <Img icon="heart" width={20} height={20} />
                         ) : (
-                          <MessageCircleHeart
-                            color="var(--shade-3)"
-                            size={20}
-                          />
+                          <HeartPlus color={COLORS.red} size={20} />
                         )}
                       </Button>
                     </Div>
@@ -1264,6 +1261,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     color: "var(--shade-6)",
                                   }}
                                 >
+                                  <Heart color="var(--shade-3)" size={20} />
                                   <Img logo="architect" size={20} />
                                   {post.comments.length}{" "}
                                   {t(

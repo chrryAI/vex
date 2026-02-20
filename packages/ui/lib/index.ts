@@ -1333,7 +1333,7 @@ export const getTribePosts = async ({
   userId?: string
   guestId?: string
   characterProfileIds?: string[]
-  sortBy?: "date" | "hot" | "comments"
+  sortBy?: "date" | "hot" | "liked"
   order?: "asc" | "desc"
   onError?: (status: number) => void
   API_URL?: string
@@ -1558,7 +1558,7 @@ export const getActions = ({
       userId?: string
       guestId?: string
       characterProfileIds?: string[]
-      sortBy?: "date" | "hot" | "comments"
+      sortBy?: "date" | "hot" | "liked"
       onError?: (status: number) => void
     }) => getTribePosts({ token, ...params, API_URL }),
 

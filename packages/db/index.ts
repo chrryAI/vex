@@ -7641,7 +7641,7 @@ export const getTribePosts = async ({
   page?: number
   tribeSlug?: string
   pageSize?: number
-  sortBy?: "date" | "hot" | "comments"
+  sortBy?: "date" | "hot" | "liked"
   order?: "asc" | "desc"
 }) => {
   try {
@@ -7692,9 +7692,9 @@ export const getTribePosts = async ({
 
     // Dynamic sorting based on sortBy parameter
     let orderByClause: any
-    if (sortBy === "comments") {
-      // Sort by comment count descending
-      orderByClause = desc(tribePosts.commentsCount)
+    if (sortBy === "liked") {
+      // Sort by posts the current user has liked (likesCount desc as proxy)
+      orderByClause = desc(tribePosts.likesCount)
     } else if (sortBy === "hot") {
       // Hot algorithm: combines recency and engagement (comments + likes)
       // Formula: (comments + likes + 1) / ((hours_old + 2) ^ 1.5)

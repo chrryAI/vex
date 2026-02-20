@@ -854,7 +854,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
 
         <Div
           style={{
-            marginTop: "1.5rem",
+            margin: "1.5rem -0.5rem 0 -0.5rem",
           }}
         >
           {/* Comments Section */}
@@ -1069,8 +1069,8 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                           style={{
                             display: "flex",
                             gap: 12,
-                            padding: "0.75rem",
-                            borderRadius: 12,
+                            padding: "0.65rem 0.5rem",
+                            borderRadius: 15,
                             backgroundColor: "var(--shade-1)",
                             border: "1px solid var(--shade-2)",
                             alignItems: "flex-start",

@@ -1,6 +1,6 @@
 import React, { type CSSProperties, useEffect } from "react"
 import A from "./a/A"
-import { useAuth, useChat } from "./context/providers"
+import { useAuth, useChat, useNavigationContext } from "./context/providers"
 import Loading from "./Loading"
 import { Button, Span } from "./platform"
 import type { appWithStore } from "./types"
@@ -32,13 +32,15 @@ export default function AppLink({
   icon?: React.ReactNode
   setIsNewAppChat?: (item: appWithStore) => void
 }) {
-  const { setIsNewAppChat } = useChat()
+  const { setIsNewChat } = useChat()
   const { loadingApp, getAppSlug, setLoadingAppId, storeApps, mergeApps } =
     useAuth()
 
   const [isLoadingInternal, setIsLoading] = React.useState(
     loadingApp && loadingApp?.id === app?.id,
   )
+
+  const { pathname } = useNavigationContext()
 
   React.useEffect(() => {
     const l = loadingApp && loadingApp?.id === app?.id
@@ -57,13 +59,13 @@ export default function AppLink({
     setIsLoading(false)
 
     if (props.setIsNewAppChat) {
-      props.setIsNewAppChat(currentApp)
+      props.setIsNewAppChat(app)
       return
     }
-    setIsNewAppChat({ item: currentApp, tribe: isTribe })
-  }, [currentApp, loadingApp])
+    setIsNewChat({ value: true, to: getAppSlug(app), tribe: isTribe })
+  }, [currentApp, loadingApp, isTribe])
 
-  const isLoading = isLoadingInternal && !currentApp
+  const isLoading = isLoadingInternal && pathname !== getAppSlug(app)
 
   useEffect(() => {
     if (!app) return
@@ -99,7 +101,8 @@ export default function AppLink({
             props.setIsNewAppChat(app)
             return
           }
-          setIsNewAppChat({ item: app, tribe: isTribe })
+
+          setIsNewChat({ value: true, to: getAppSlug(app), tribe: isTribe })
         }}
         className={`${className}`}
       >
@@ -115,20 +118,32 @@ export default function AppLink({
 
   return (
     <Button
-      title={title}
       aria-label={title}
-      style={{ ...style, ...(isLoading ? loadingStyle : {}) }}
+      style={{
+        ...style,
+        ...(isLoading ? loadingStyle : {}),
+      }}
       onClick={() => {
-        if (isLoading) {
+        if (!currentApp) {
+          setLoadingAppId(app.id)
           onLoading?.()
           return
         }
-        setIsNewAppChat({ item: app })
-      }}
-      className={className}
-    >
-      {isLoading ? <Span>{loading || <Loading />}</Span> : <Span>{icon}</Span>}
 
+        if (props.setIsNewAppChat) {
+          props.setIsNewAppChat(app)
+          return
+        }
+
+        setIsNewChat({ value: true, to: getAppSlug(app), tribe: isTribe })
+      }}
+      className={`${className}`}
+    >
+      {isLoading && loading ? (
+        <Span>{loading}</Span>
+      ) : (
+        icon && <Span>{icon}</Span>
+      )}
       <Span>{children}</Span>
     </Button>
   )

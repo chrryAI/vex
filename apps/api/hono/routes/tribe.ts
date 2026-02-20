@@ -229,11 +229,7 @@ app.get("/p", async (c) => {
   const characterProfileIds = c.req.query("characterProfileIds")
   const pageSize = c.req.query("pageSize")
   const page = c.req.query("page")
-  const sortBy = c.req.query("sortBy") as
-    | "date"
-    | "hot"
-    | "comments"
-    | undefined
+  const sortBy = c.req.query("sortBy") as "date" | "hot" | "liked" | undefined
   const order = c.req.query("order") as "asc" | "desc" | undefined
 
   const member = await tracker.track(

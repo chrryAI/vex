@@ -54,11 +54,11 @@ interface TribeContextType {
   isLoadingTribes?: boolean
   isLoadingPost?: boolean
   tribePostError?: Error
-  sortBy: "date" | "hot" | "comments"
+  sortBy: "date" | "hot" | "liked"
   order: "asc" | "desc"
   tribeSlug?: string
   currentTribe?: paginatedTribes["tribes"][number]
-  setSortBy: (val: "date" | "hot" | "comments") => void
+  setSortBy: (val: "date" | "hot" | "liked") => void
   setOrder: (val: "asc" | "desc") => void
   setTribes: (tribes?: paginatedTribes) => void
   setTribePosts: (tribePosts?: paginatedTribePosts) => void
@@ -114,11 +114,12 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   const { captureException, t } = useAppContext()
 
-  const [sortBy, setSortByInternal] = useLocalStorage<
-    "date" | "hot" | "comments"
-  >("sortBy", "hot")
+  const [sortBy, setSortByInternal] = useLocalStorage<"date" | "hot" | "liked">(
+    "sortBy",
+    "hot",
+  )
 
-  const setSortBy = (val: "date" | "hot" | "comments") => {
+  const setSortBy = (val: "date" | "hot" | "liked") => {
     setSortByInternal(val)
   }
 

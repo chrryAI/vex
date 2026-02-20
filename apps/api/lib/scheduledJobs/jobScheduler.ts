@@ -4110,16 +4110,21 @@ export async function findJobsToRun() {
     ),
   })
 
-  // Filter out jobs that are too old (more than 15 minutes late)
+  // Filter out jobs that are too old (more than 15 minutes late) and reschedule them
   const validJobs = jobs.filter((job) => {
     if (!job.nextRunAt) return true // No nextRunAt means first run
     const jobTime = new Date(job.nextRunAt)
     const isWithinThreshold = jobTime >= fifteenMinutesAgo
 
     if (!isWithinThreshold) {
-      console.log(
-        `⏭️ Skipping job ${job.name} - too late (${Math.round((now.getTime() - jobTime.getTime()) / 60000)} minutes late)`,
+      const minutesLate = Math.round(
+        (now.getTime() - jobTime.getTime()) / 60000,
       )
+      console.log(
+        `⏭️ Stale job ${job.name} (${minutesLate} minutes late) — running now instead of skipping`,
+      )
+      // Run stale jobs immediately by treating them as valid
+      return true
     }
 
     return isWithinThreshold

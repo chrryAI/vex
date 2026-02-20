@@ -1,6 +1,6 @@
 {
   "name": "@repo/extension",
-  "version": "2.0.13",
+  "version": "2.0.14",
   "private": true,
   "type": "module",
   "scripts": {
@@ -24,8 +24,8 @@
     "build:dev:watch": "vite build --mode development --watch",
     "build:firefox": "npm run zip:source && rm -rf dist && tsc && VITE_BROWSER=firefox vite build && npm run zip:firefox",
     "validate": "node scripts/validate-manifest-v3.js",
-    "dev": "MODE=tribe node dev-watch.js",
-    "dev:fast": "MODE=tribe vite build --mode development --watch",
+    "dev": "MODE=vex node dev-watch.js",
+    "dev:fast": "MODE=vex vite build --mode development --watch",
     "dev:watch": "concurrently \"npm run build:dev:watch\" \"npm run reload:watch\"",
     "lint": "biome check .",
     "type-check": "tsc --noEmit",

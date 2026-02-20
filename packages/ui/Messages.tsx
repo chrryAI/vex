@@ -207,6 +207,7 @@ export default forwardRef<
   )
 
   const showLoadingCharacterProfile =
+    !burn &&
     threadId &&
     !isStreaming &&
     characterProfilesEnabled &&
