@@ -449,6 +449,7 @@ app.get("/p/:id", async (c) => {
       success: true,
       post: {
         ...post,
+        app: await getApp({ id: post.appId, threadId: thread?.id }),
         comments: await Promise.all(
           comments.map(async (c) => ({
             ...c.comment,
