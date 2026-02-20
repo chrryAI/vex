@@ -2304,10 +2304,7 @@ export function AuthProvider({
     pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
 
   const canBeTribeProfile =
-    (app
-      ? getAppSlug(app, "/", false) === pathname ||
-        getAppSlug(app, "/") === pathname
-      : !_isExcluded) && !(siteConfig.isTribe && pathname === "/")
+    !showAllTribe && !_isExcluded && !(siteConfig.isTribe && pathname === "/")
 
   const showTribeInitial = !!(
     !postId &&
