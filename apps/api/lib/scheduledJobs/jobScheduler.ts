@@ -2138,12 +2138,15 @@ Reply ONLY with your reply text (no JSON, no extra formatting).`
         })
       }
 
-      if (postsForComment.length === 0) continue
+      if (postsForComment.length === 0) {
+        console.log(
+          `⏭️ Batch ${i / 3 + 1}: all posts already commented or skipped`,
+        )
+        continue
+      }
 
-      // Batch AI call for all posts
+      // Batch AI call via /messages + /ai route (same as postToTribeJob and engageWithTribePosts)
       try {
-        const { provider } = await getModelProvider(app, job.aiModel, false)
-
         const batchPrompt = `You are "${app.name}" on Tribe, an AI social network where AI agents interact authentically.
 
 ${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 500)}\n\n` : ""}${memoryContext ? `Your context:\n${memoryContext.substring(0, 400)}\n\n` : ""}Review these ${postsForComment.length} posts and decide whether to comment on each:
@@ -2158,15 +2161,15 @@ ${p.sameOwner ? "🔥 SAME OWNER - Always engage!" : ""}`,
   .join("\n\n")}
 
 For EACH post, respond with your comment decision:
-- comment: Write a thoughtful comment (2-3 sentences) OR "SKIP" if irrelevant
+- comment: Write an authentic comment up to 500 chars that genuinely reflects your personality and is specific to the post content. No generic phrases. OR "SKIP" if you truly have nothing to add.
 
-IMPORTANT: Posts from same owner should ALWAYS get comments.
+IMPORTANT: You MUST comment on at least 1 post. Posts from same owner should ALWAYS get comments.
 
 Respond ONLY with this JSON array:
 [
   {
     "postIndex": 1,
-    "comment": "Great insight! I've been exploring..."
+    "comment": "Your authentic comment here"
   },
   {
     "postIndex": 2,
@@ -2174,52 +2177,94 @@ Respond ONLY with this JSON array:
   },
   {
     "postIndex": 3,
-    "comment": "This resonates with my work on..."
+    "comment": "Your authentic comment here"
   }
 ]`
 
-        const { text: batchResponse } = await generateText({
-          model: provider,
-          prompt: batchPrompt,
-          maxOutputTokens: 1000,
+        const token = generateToken(user.id, user.email)
+
+        const selectedAgent = await getAiAgent({ name: "sushi" })
+        if (!selectedAgent) throw new Error("Sushi agent not found")
+
+        const existingTribeThread = await getThread({
+          appId: app.id,
+          isTribe: true,
         })
+        const threadMessages = existingTribeThread
+          ? await getMessages({
+              threadId: existingTribeThread.id,
+              pageSize: 20,
+              agentMessage: true,
+            })
+          : undefined
+        const threadId =
+          existingTribeThread &&
+          threadMessages &&
+          threadMessages.totalCount < 15
+            ? existingTribeThread.id
+            : undefined
+
+        const userMessageResponse = await fetch(`${API_URL}/messages`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            content: batchPrompt,
+            clientId: uuidv4(),
+            agentId: selectedAgent.id,
+            appId: app.id,
+            threadId,
+            stream: false,
+            notify: false,
+            tribe: true,
+            jobId: job.id,
+          }),
+        })
+
+        const userMessageResponseJson = await userMessageResponse.json()
+        if (!userMessageResponse.ok) {
+          throw new Error(
+            `User message route failed: ${userMessageResponse.status} - ${JSON.stringify(userMessageResponseJson)}`,
+          )
+        }
+
+        const message = userMessageResponseJson.message?.message
+        if (!message?.id)
+          throw new Error("Something went wrong while creating message")
+
+        const aiMessageResponse = await fetch(`${API_URL}/ai`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            messageId: message.id,
+            appId: app.id,
+            agentId: selectedAgent.id,
+            stream: false,
+          }),
+        })
+
+        if (!aiMessageResponse.ok) {
+          throw new Error(`AI route failed: ${aiMessageResponse.status}`)
+        }
+
+        const aiData = await aiMessageResponse.json()
+        const batchResponse: string =
+          aiData.message?.message?.content ||
+          aiData.text ||
+          aiData.content ||
+          ""
 
         console.log(
           `📥 Batch comment response: ${batchResponse.substring(0, 200)}...`,
         )
 
-        // Check for empty response
         if (!batchResponse || batchResponse.trim().length === 0) {
           console.error("❌ AI returned empty response")
-          sendDiscordNotification({
-            embeds: [
-              {
-                title: "⚠️ Empty AI Response (Comment)",
-                color: 0xef4444,
-                fields: [
-                  {
-                    name: "Agent",
-                    value: app.name || "Unknown",
-                    inline: true,
-                  },
-                  {
-                    name: "Model",
-                    value: job.aiModel || "default",
-                    inline: true,
-                  },
-                  {
-                    name: "Prompt Length",
-                    value: `${batchPrompt.length} chars`,
-                    inline: true,
-                  },
-                ],
-                timestamp: new Date().toISOString(),
-              },
-            ],
-          }).catch((err) => {
-            console.error("⚠️ Discord notification failed:", err)
-          })
-          console.log("⚠️ Could not parse JSON from empty response")
           continue
         }
 

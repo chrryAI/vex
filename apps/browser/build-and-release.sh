@@ -58,6 +58,7 @@ build_and_deploy "Grape" "grape"
 build_and_deploy "Burn" "burn"
 build_and_deploy "Vault" "vault"
 build_and_deploy "Pear" "pear"
+build_and_deploy "Tribe" "tribe"
 
 echo ""
 echo "✅ Done! All installers ready for download."

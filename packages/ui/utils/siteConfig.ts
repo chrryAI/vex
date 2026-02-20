@@ -69,7 +69,9 @@ export const getExtensionUrl = () => {
 }
 
 export const isProduction =
-  getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
+  isTauri() ||
+  getEnv().NODE_ENV === "production" ||
+  getEnv().VITE_NODE_ENV === "production"
 
 export const isDevelopment = checkIsExtension()
   ? [
@@ -1400,6 +1402,8 @@ const e2eVex = {
 const _tribe = {
   ...zarathustra,
   mode: "tribe" as SiteMode,
+  slug: "tribe",
+  name: "Tribe",
   url: "https://tribe.chrry.ai",
   domain: "tribe.chrry.ai",
   isTribe: true,

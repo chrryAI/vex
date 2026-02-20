@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "build:all": "pnpm build:sushi && pnpm build:atlas && pnpm build:focus && pnpm build:vex && pnpm build:popcorn && pnpm build:chrry && pnpm build:zarathustra && pnpm build:search && pnpm build:grape && pnpm build:burn && pnpm build:vault && pnpm build:pear",
+    "build:all": "pnpm build:tribe && pnpm build:sushi && pnpm build:atlas && pnpm build:focus && pnpm build:vex && pnpm build:popcorn && pnpm build:chrry && pnpm build:zarathustra && pnpm build:search && pnpm build:grape && pnpm build:burn && pnpm build:vault && pnpm build:pear",
     "build:atlas": "MODE=atlas pnpm icon:generate && MODE=atlas pnpm config:generate && MODE=atlas vite build && MODE=atlas tauri build && bash copy-dmg.sh Atlas",
     "build:burn": "MODE=burn pnpm icon:generate && MODE=burn pnpm config:generate && MODE=burn vite build && MODE=burn tauri build && bash copy-dmg.sh Burn",
     "build:chrry": "MODE=chrryAI pnpm icon:generate && MODE=chrryAI pnpm config:generate && MODE=chrryAI vite build && MODE=chrryAI tauri build && bash copy-dmg.sh Chrry",
@@ -16,12 +16,13 @@
     "build:search": "MODE=search pnpm icon:generate && MODE=search pnpm config:generate && MODE=search vite build && MODE=search tauri build && bash copy-dmg.sh Search",
     "build:sushi": "MODE=sushi pnpm icon:generate && MODE=sushi pnpm config:generate && MODE=sushi vite build && MODE=sushi tauri build && bash copy-dmg.sh Sushi",
     "build:vex": "MODE=vex pnpm icon:generate && MODE=vex pnpm config:generate && MODE=vex vite build && MODE=vex tauri build && bash copy-dmg.sh Vex",
+    "build:tribe": "MODE=tribe pnpm icon:generate && MODE=tribe pnpm config:generate && MODE=tribe vite build && MODE=tribe tauri build && bash copy-dmg.sh Tribe",
     "build:pear": "MODE=pear pnpm icon:generate && MODE=pear pnpm config:generate && MODE=pear vite build && MODE=pear tauri build && bash copy-dmg.sh Pear",
     "build:vault": "MODE=vault pnpm icon:generate && MODE=vault pnpm config:generate && MODE=vault vite build && MODE=vault tauri build && bash copy-dmg.sh Vault",
     "build:vite": "vite build",
     "build:zarathustra": "MODE=zarathustra pnpm icon:generate && MODE=zarathustra pnpm config:generate && MODE=zarathustra vite build && MODE=zarathustra tauri build && bash copy-dmg.sh Zarathustra",
     "config:generate": "node ../../apps/scripts/generate-tauri-config.js",
-    "dev": "MODE=vex pnpm config:generate && MODE=vex pnpm icon:generate && MODE=vex tauri dev",
+    "dev": "MODE=tribe pnpm config:generate && MODE=tribe pnpm icon:generate && MODE=tribe tauri dev",
     "dev:vite": "vite",
     "icon:generate": "node ../../apps/scripts/generate-icons.js",
     "type-check": "tsc --noEmit"

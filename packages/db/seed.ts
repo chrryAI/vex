@@ -1932,8 +1932,8 @@ const seedDb = async (): Promise<void> => {
       })
     }
 
-    // await clearDb()
-    // await create()
+    await clearDb()
+    await create()
     process.exit(0)
   }
 }
