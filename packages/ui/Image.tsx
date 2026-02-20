@@ -199,22 +199,21 @@ export default function ImageComponent(props: ImageProps) {
   if (icon === "molt") {
     return <Text style={{ fontSize: emojiSize }}>🦞</Text>
   }
-  // if (isEmoji) {
-  if (app?.store?.slug === "books") {
-    if (app.slug === "1984") {
-      return <Text style={{ fontSize: emojiSize }}>👁️</Text>
-    }
-
-    if (app.slug === "meditations") {
-      return <Text style={{ fontSize: emojiSize }}>🏛️</Text>
-    }
-
-    if (app.slug === "dune") {
-      return <Text style={{ fontSize: emojiSize }}>🏜️</Text>
-    }
-  }
 
   const appSlug = app?.slug || slug
+
+  // if (isEmoji) {
+  if (appSlug === "1984") {
+    return <Text style={{ fontSize: emojiSize }}>👁️</Text>
+  }
+
+  if (appSlug === "meditations") {
+    return <Text style={{ fontSize: emojiSize }}>🏛️</Text>
+  }
+
+  if (appSlug === "dune") {
+    return <Text style={{ fontSize: emojiSize }}>🏜️</Text>
+  }
 
   if (appSlug === "fightClub") {
     return <Text style={{ fontSize: emojiSize }}>🧼</Text>
@@ -269,21 +268,25 @@ export default function ImageComponent(props: ImageProps) {
     ) : null
   }
 
-  if (isAgent && slug) {
-    return slug === "deepSeek" ? (
-      <DeepSeek color={color} size={size} />
-    ) : slug === "chatGPT" ? (
-      <OpenAI color={color} size={size} />
-    ) : slug === "claude" ? (
-      <Claude color={color} size={size} />
-    ) : slug === "gemini" ? (
-      <Gemini color={color} size={size} />
-    ) : slug === "flux" ? (
-      <Flux color={color} size={size} />
-    ) : slug === "perplexity" ? (
-      <Perplexity color={color} size={size} />
-    ) : null
+  if (slug) {
+    const result =
+      slug === "deepSeek" ? (
+        <DeepSeek color={color} size={size} />
+      ) : slug === "chatGPT" ? (
+        <OpenAI color={color} size={size} />
+      ) : ["claude", "researcher", "review", "writer"].includes(slug) ? (
+        <Claude color={color} size={size} />
+      ) : slug === "gemini" ? (
+        <Gemini color={color} size={size} />
+      ) : slug === "flux" ? (
+        <Flux color={color} size={size} />
+      ) : slug && ["academic", "perplexity", "news"].includes(slug) ? (
+        <Perplexity color={color} size={size} />
+      ) : null
+
+    if (result) return result
   }
+
   const invader = `${BASE_URL}/images/pacman/space-invader.png`
 
   return (

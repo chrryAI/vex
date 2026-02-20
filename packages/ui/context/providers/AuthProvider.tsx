@@ -2277,7 +2277,7 @@ export function AuthProvider({
 
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
-  const canShowTribe = isE2E ? !!siteConfig.isTribe : true
+  const canShowTribe = isE2E && !isDevelopment ? !!siteConfig.isTribe : true
 
   const showTribeFromPath = pathname === "/tribe"
 

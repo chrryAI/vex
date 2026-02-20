@@ -1261,8 +1261,17 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     color: "var(--shade-6)",
                                   }}
                                 >
-                                  <Heart color="var(--shade-3)" size={20} />
-                                  <Img logo="architect" size={20} />
+                                  {
+                                    post.comments[post.comments.length - 1]?.app
+                                      ?.slug
+                                  }
+                                  <Img
+                                    slug={
+                                      post.comments[post.comments.length - 1]
+                                        ?.app?.slug
+                                    }
+                                    size={20}
+                                  />
                                   {post.comments.length}{" "}
                                   {t(
                                     post.comments.length === 1
