@@ -294,7 +294,6 @@ export async function loadServerData(
   let _tribe: tribe | undefined
 
   try {
-    appId = threadResult?.thread?.appId || headers["x-app-id"]
     const sessionResult = await getSession({
       // appId: appResult.id,
       deviceId,
@@ -364,9 +363,14 @@ export async function loadServerData(
       }
     }
 
+    appId =
+      tribePostResult?.appId ||
+      threadResult?.thread?.appId ||
+      headers["x-app-id"]
+
     const appResult = await getApp({
       chrryUrl,
-      appId: threadResult?.thread?.appId || tribePostResult?.appId || appId,
+      appId,
       token: apiKey,
       pathname,
       API_URL,
