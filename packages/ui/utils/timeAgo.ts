@@ -17,8 +17,15 @@ TimeAgo.addLocale(ko)
 TimeAgo.addLocale(de)
 TimeAgo.addLocale(zh)
 
+// Cache TimeAgo instances to avoid expensive recreation
+const timeAgoCache = new Map<string, TimeAgo>()
+
 function timeAgo(input: string | Date, locale = "en-US") {
-  const ago = new TimeAgo(locale)
+  let ago = timeAgoCache.get(locale)
+  if (!ago) {
+    ago = new TimeAgo(locale)
+    timeAgoCache.set(locale, ago)
+  }
 
   const date = input instanceof Date ? input : new Date(input)
   return ago.format(date)

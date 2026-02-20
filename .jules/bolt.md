@@ -7,3 +7,8 @@
 
 **Learning:** `ReactMarkdown` creates new references for `remarkPlugins` and `components` if defined inline, causing unnecessary re-renders. Also, default `img` tags lack lazy loading.
 **Action:** Move configuration objects and utility functions (like `timeAgo`) to module scope. Use `loading="lazy"` and `decoding="async"` for markdown images. Be careful with TS type imports (`import type { Components }`) to avoid runtime crashes in some bundlers.
+
+## 2026-02-14 - TimeAgo Instantiation Bottleneck
+
+**Learning:** `javascript-time-ago` instantiation (`new TimeAgo(locale)`) is relatively expensive and was happening on every render for every message timestamp.
+**Action:** Use a module-level `Map` cache to reuse `TimeAgo` instances per locale. This avoids repeated constructor overhead (~33μs/call becomes negligible). Always look for object instantiations in render loops or frequently called utilities.

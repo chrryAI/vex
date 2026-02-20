@@ -105,6 +105,7 @@ function FocusButton({
             logo={app?.store?.slug === "blossom" ? "blossom" : "lifeOS"}
             store={app?.store}
             size={18}
+            priority
           />
           {app?.store?.name}
         </A>
@@ -376,6 +377,7 @@ export default function Skeleton({
                             app={showTribeProfile ? undefined : app}
                             size={28}
                             icon={showTribeProfile ? "zarathustra" : undefined}
+                            priority
                           />
                           <H1
                             key={`title-${app?.id || "vex"}`}
