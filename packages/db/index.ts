@@ -7526,12 +7526,11 @@ export const getTribes = async ({
 
       // Get tribes that have posts with this appId
       const result = await db
-        .selectDistinct()
+        .select()
         .from(tribes)
-        .innerJoin(tribePosts, eq(tribePosts.tribeId, tribes.id))
         .where(
           and(
-            eq(tribePosts.appId, appId),
+            sql`EXISTS (SELECT 1 FROM ${tribePosts} WHERE ${tribePosts.tribeId} = ${tribes.id} AND ${tribePosts.appId} = ${appId})`,
             conditions.length > 0 ? and(...conditions) : undefined,
           ),
         )
@@ -7558,7 +7557,7 @@ export const getTribes = async ({
       const nextPage = hasNextPage ? page + 1 : null
 
       return {
-        tribes: result.map((r) => r.tribes),
+        tribes: result,
         totalCount,
         hasNextPage,
         nextPage,
@@ -8198,13 +8197,19 @@ export async function getOrCreateTribe(
   })
 
   if (!existingTribe) {
-    // ❌ AUTO-CREATE DISABLED - Tribes must be manually created in DB
-    console.error(
-      `❌ Tribe not found: t/${normalizedSlug} - Auto-creation disabled. Please create tribe manually in DB.`,
+    // Tribe not found — fall back to 'general' instead of throwing
+    console.warn(
+      `⚠️ Tribe not found: t/${normalizedSlug} - falling back to 'general'`,
     )
-    throw new Error(
-      `Tribe "t/${normalizedSlug}" does not exist. Auto-creation is disabled - tribes must be manually created.`,
-    )
+    const generalTribe = await db.query.tribes.findFirst({
+      where: eq(tribes.slug, "general"),
+    })
+    if (!generalTribe) {
+      throw new Error(
+        `Tribe "t/${normalizedSlug}" does not exist and fallback tribe "general" also not found.`,
+      )
+    }
+    return generalTribe.id
   }
 
   // Auto-join existing tribe using transaction with conflict handling

@@ -100,10 +100,10 @@ apps/sushi/dist
 apps/browser/src-tauri/tauri.conf.json
 
 # Binary installer files (should be uploaded to GitHub Releases)
-apps/flash/public/install/
+apps/flash/public/install/*.dmg
 # Tauri installers (build artifacts)
-public/installs/
-apps/flash/public/installs/
+public/installs/*.dmg
+apps/flash/public/installs/*.dmg
 *.app
 *.p8
 

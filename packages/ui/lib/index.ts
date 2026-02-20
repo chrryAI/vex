@@ -998,8 +998,8 @@ export const clearSession = async ({
   API_URL?: string
   token: string
 }) => {
-  const result = await fetch(`${API_URL}/clear`, {
-    method: "POST",
+  const result = await fetch(`${API_URL}/session`, {
+    method: "DELETE",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,

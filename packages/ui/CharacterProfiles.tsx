@@ -144,12 +144,7 @@ export default function CharacterProfiles({
               </ConfirmButton>
             ) : (
               <>
-                <A
-                  target="_blank"
-                  className="button small"
-                  openInNewTab
-                  href="/privacy"
-                >
+                <A target="_blank" className="button small" href="/privacy">
                   <Link size={15} />
                   {t("Privacy")}
                 </A>

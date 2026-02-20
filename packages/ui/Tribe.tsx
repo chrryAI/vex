@@ -75,6 +75,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     liveReactions,
     pendingPostIds,
     optimisticLiked,
+    optimisticDelta,
     refetchPosts,
     setPendingPostIds,
     posting,
@@ -222,9 +223,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     }}
                   >
                     <A href="/about">{app?.store?.app?.icon || "🍒"} /about</A>
-                    <A openInNewTab style={{}} href="/privacy">
-                      /privacy 🤫
-                    </A>
+                    <A href="/privacy">/privacy 🤫</A>
                   </Div>
                 </Div>
                 <Div
@@ -443,15 +442,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             isTribe={false}
                             app={app}
                             icon={
-                              app?.icon ? (
-                                app.icon
-                              ) : (
-                                <Img app={app} width={24} height={24} />
-                              )
+                              app?.icon ? app.icon : <Img app={app} size={18} />
                             }
                             className="button inverted"
                             style={{
                               ...utilities.inverted.style,
+                              ...utilities.small.style,
                               display: "flex",
                               alignItems: "center",
                             }}
@@ -463,12 +459,14 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         )}
                         {accountApp ? (
                           <AppLink
+                            isTribe={false}
                             app={accountApp}
-                            loading={<Loading size={20} />}
-                            className="inverted"
-                            icon={<Img app={accountApp} size={20} />}
+                            loading={<Loading size={18} />}
+                            className="inverted button"
+                            icon={<Img app={accountApp} size={18} />}
                             style={{
                               ...utilities.inverted.style,
+                              ...utilities.button.style,
                               ...utilities.small.style,
                             }}
                           >
@@ -582,7 +580,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Div>
 
                     {downloadUrl && showTribeProfile ? (
-                      <Div>
+                      <Div style={{ display: "flex", alignItems: "center" }}>
                         <Instructions
                           showButton={false}
                           showDownloads={true}
@@ -592,6 +590,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             marginTop: 0,
                           }}
                         />
+                        <FocusButton />
                       </Div>
                     ) : null}
 
@@ -649,9 +648,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             }
                           >
                             <AppLink
-                              setIsNewAppChat={(item) => {
-                                setIsNewAppChat({ item, tribe: true })
-                              }}
+                              isTribe
                               loading={<Loading size={30} />}
                               icon={
                                 <Img app={item} alt={item.name} size={40} />
@@ -702,6 +699,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       gap: 10,
                       position: "relative",
                       flexDirection: "column",
+                      textAlign: "center",
                     }}
                   >
                     {app?.subtitle || app?.description ? (
@@ -737,27 +735,29 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         justifyContent: "center",
                       }}
                     >
-                      {isOwner(app, { userId: user?.id }) && (
-                        <Button
-                          className="link"
-                          title={t("Edit")}
-                          onClick={() => {
-                            setAppStatus({
-                              step: "update",
-                              part: "name",
-                            })
-                          }}
-                          style={utilities.link.style}
-                        >
-                          <Settings2 size={18} />
-                        </Button>
-                      )}
+                      {app?.id === accountApp?.id &&
+                        isOwner(app, { userId: user?.id }) && (
+                          <Button
+                            className="link"
+                            title={t("Edit")}
+                            onClick={() => {
+                              setAppStatus({
+                                step: "update",
+                                part: "name",
+                              })
+                            }}
+                            style={utilities.link.style}
+                          >
+                            <Settings2 size={18} />
+                          </Button>
+                        )}
                       {accountApp ? (
                         <AppLink
+                          isTribe={false}
                           app={accountApp}
-                          loading={<Loading size={20} />}
+                          loading={<Loading size={18} />}
                           className="inverted button"
-                          icon={<Img app={accountApp} size={20} />}
+                          icon={<Img app={accountApp} size={18} />}
                           style={{
                             ...utilities.button.style,
                             ...utilities.inverted.style,
@@ -786,7 +786,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           {t("Create Your Agent")}
                         </Button>
                       )}
-                      {app && (
+
+                      {app && app?.id !== accountApp?.id && (
                         <AppLink
                           isTribe={false}
                           app={app}
@@ -794,14 +795,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             app?.icon ? (
                               app.icon
                             ) : (
-                              <Img app={app} width={24} height={24} />
+                              <Img app={app} width={18} height={18} />
                             )
                           }
                           className="button inverted"
                           style={{
                             ...utilities.inverted.style,
-                            display: "flex",
-                            alignItems: "center",
+                            ...utilities.small.style,
                           }}
                         >
                           {t(TRAIN, {
@@ -809,6 +809,22 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           })}
                         </AppLink>
                       )}
+                      {app?.id !== accountApp?.id &&
+                        isOwner(app, { userId: user?.id }) && (
+                          <Button
+                            className="link"
+                            title={t("Edit")}
+                            onClick={() => {
+                              setAppStatus({
+                                step: "update",
+                                part: "name",
+                              })
+                            }}
+                            style={utilities.link.style}
+                          >
+                            <Settings2 size={18} />
+                          </Button>
+                        )}
                     </Div>
                   </Div>
                 )}
@@ -847,7 +863,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         display: "flex",
                         alignItems: "center",
                         gap: 10,
-                        justifyContent: "flex-end",
+                        justifyContent: isMobileDevice ? "center" : "flex-end",
                       }}
                     >
                       <Button
@@ -1245,7 +1261,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               <Button
                                 className="transparent"
                                 onClick={async () => {
-                                  const _result = await toggleLike(post.id)
+                                  await toggleLike(post.id)
                                 }}
                                 style={{
                                   ...utilities.transparent.style,
@@ -1257,10 +1273,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 ) : (
                                   <Img icon="heart" width={18} height={18} />
                                 )}
-                                <Span>
-                                  {(post.likesCount || 0) +
-                                    (optimisticLiked.includes(post.id) ? 1 : 0)}
-                                </Span>
+                                <Span>{post.likesCount || 0}</Span>
                               </Button>
 
                               <Div

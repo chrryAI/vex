@@ -1076,7 +1076,7 @@ const create = async () => {
 
   await seedTribeEngagement()
 
-  await seedScheduledTribeJobs()
+  await seedScheduledTribeJobs({ admin })
 
   const { sushiAgent } = agents
 
@@ -1806,7 +1806,7 @@ const prod = async () => {
   if (!admin) throw new Error("Admin user not found")
   // const { vex } = await createStores({ user: admin })
 
-  await seedScheduledTribeJobs()
+  await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 

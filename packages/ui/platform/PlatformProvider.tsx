@@ -473,7 +473,8 @@ export function PlatformProvider({
     const checkStorageReady = async () => {
       try {
         if (BrowserInstance?.storage?.local) {
-          // Try to read from storage to verify it's ready
+          // Write and read to verify storage is truly ready
+          await BrowserInstance.storage.local.set({ _storage_check: true })
           await BrowserInstance.storage.local.get("_storage_check")
           setIsStorageReady(true)
         }

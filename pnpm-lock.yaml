@@ -575,9 +575,6 @@ importers:
       '@chrryai/chrry':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@eslint/js':
-        specifier: ^9.30.1
-        version: 9.39.2
       '@sentry/react':
         specifier: ^10.10.0
         version: 10.39.0(react@19.2.4)

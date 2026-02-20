@@ -90,11 +90,7 @@ export default function About() {
       CREDITS_PRICE,
     })
 
-  const [selectedApp, setSelectedApp] = React.useState<
-    appWithStore | undefined
-  >(auth.app)
-
-  const apps = selectedApp?.store?.apps || baseApp?.store?.apps
+  const apps = baseApp?.store?.apps
 
   return (
     <Skeleton>
@@ -208,18 +204,16 @@ export default function About() {
               {config.logo} {t("Available Apps")}
             </H2>
             <P>{t("Discover AI-powered apps from our store")}</P>
-            <Div key={selectedApp?.id} style={styles.apps.style}>
+            <Div style={styles.apps.style}>
               {apps.map((a: appWithStore) => (
                 <AppLink
                   key={a.id}
+                  isTribe
                   style={{
                     ...styles.app.style,
                     position: "relative",
                     fontSize: 13,
                     paddingBottom: 40,
-                  }}
-                  setIsNewAppChat={(app) => {
-                    app && setSelectedApp(app)
                   }}
                   app={a}
                 >

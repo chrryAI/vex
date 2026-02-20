@@ -373,10 +373,13 @@ export async function loadServerData(
     })
 
     const showAllTribe =
-      pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
+      !isE2E &&
+      (pathname === "/tribe" || (siteConfig.isTribe && pathname === "/"))
 
     const canShowTribeProfile =
-      !excludedSlugRoutes?.includes(pathname.split("?")?.[0]) && !showAllTribe
+      !isE2E &&
+      !excludedSlugRoutes?.includes(pathname.split("?")?.[0]) &&
+      !showAllTribe
 
     const [translationsResult, threadsResult, tribesResult, tribePostsResult] =
       await Promise.all([

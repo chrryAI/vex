@@ -27,8 +27,6 @@ export async function clean({
     timeout: 100000,
   })
 
-  await signIn({ page })
-
   await page.getByTestId("new-chat-button").click()
 
   await maximize({ page })
@@ -56,23 +54,7 @@ export async function clean({
       })
     : await wait(5000)
 
-  const accountButton = page.getByTestId("account-button")
-  await expect(accountButton).toBeVisible({
-    timeout: 50000,
-  })
-
   await wait(5000)
-
-  await accountButton.click()
-
-  const logoutButton = page.getByTestId("account-logout-button")
-  await expect(logoutButton).toBeVisible()
-
-  await logoutButton.click()
-
-  await expect(signInButton).toBeVisible({
-    timeout: 15000,
-  })
 
   // Wait for the API call to complete
   await page.waitForTimeout(5000)

@@ -440,7 +440,7 @@ export default function Subscribe({
         setPurchaseType(data.gift ? "gift" : "subscription")
         toast.success(
           data.gift
-            ? t(`🥰 ${t("Thank you for your type")}`)
+            ? t(`🥰 ${t("Thank you for your gift")}`)
             : ["tribe", "molt", "credits"].includes(data.type)
               ? t(
                   `${t(data.type === "tribe" ? "Tribe credits updated 🪢" : data.type === "molt" ? "Molt credits updated 🦞" : "Credits updated")}`,
@@ -1847,6 +1847,7 @@ export default function Subscribe({
 
             return (
               <Button
+                className="transparent"
                 onClick={() => {
                   if (isExtension) {
                     BrowserInstance?.runtime?.sendMessage({
@@ -1860,7 +1861,11 @@ export default function Subscribe({
                   setIsModalOpen(true)
                 }}
                 data-testid={`${subs.plan}-button`}
-                style={{ ...styles.plusButton.style, ...style }}
+                style={{
+                  ...utilities.transparent.style,
+                  ...utilities.small.style,
+                  ...style,
+                }}
               >
                 <Img
                   icon={subs.plan === "pro" ? "raspberry" : "strawberry"}

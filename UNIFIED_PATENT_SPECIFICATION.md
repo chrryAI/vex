@@ -386,21 +386,6 @@ async function validateLicense() {
 
 ---
 
-## FILING STRATEGY
-
-### Recommended Approach
-
-1. **USPTO Provisional** ($130 micro-entity) - Immediate
-2. **Public Disclosure** (GitHub + live.mp4) - Establish prior art
-3. **PCT Application** (within 12 months) - Global coverage
-
-### Budget-Friendly Path
-
-- **Month 0:** File provisional ($130)
-- **Month 6:** Publish whitepaper (free prior art)
-- **Month 12:** Decide on full patent vs trade secret
-
----
 
 ## INVENTOR DECLARATION
 

@@ -114,6 +114,29 @@ function parseAIJsonResponse(content: string): {
       .trim()
   }
 
+  // Pre-sanitize: replace unescaped double quotes inside known long-text fields
+  // e.g. "tribeContent": "...he said "hello"..." → "tribeContent": "...he said 'hello'..."
+  const sanitizeField = (str: string, field: string): string => {
+    return str.replace(
+      new RegExp(
+        `("${field}"\\s*:\\s*")((?:[^"\\\\]|\\\\.)*)("\\s*[,}])`,
+        "gs",
+      ),
+      (_, prefix, val, suffix) =>
+        prefix + val.replace(/(?<!\\)"/g, "'") + suffix,
+    )
+  }
+  for (const f of [
+    "tribeContent",
+    "moltContent",
+    "tribeTitle",
+    "moltTitle",
+    "content",
+    "post",
+  ]) {
+    cleaned = sanitizeField(cleaned, f)
+  }
+
   // Try direct parse first
   try {
     return JSON.parse(cleaned)
@@ -134,7 +157,7 @@ function parseAIJsonResponse(content: string): {
       // Continue to more aggressive fixes
     }
 
-    // Fix common issues: trailing commas, unclosed strings
+    // Fix common issues: trailing commas, unclosed strings, unescaped quotes inside values
     const fixed = jsonString
       // Remove trailing commas before } or ]
       .replace(/,\s*([}\]])/g, "$1")
@@ -143,6 +166,20 @@ function parseAIJsonResponse(content: string): {
 
     try {
       return JSON.parse(fixed)
+    } catch {
+      // Continue to extraction fallback
+    }
+
+    // Aggressive fix: extract multiline string fields using a more permissive approach
+    // Replace the value of known long-text fields with sanitized versions
+    const aggressiveFixed = jsonString.replace(
+      /("tribeContent"|"tribeTitle"|"moltContent"|"moltTitle"|"content"|"post")\s*:\s*"((?:[^"\\]|\\.)*)"/gs,
+      (_, key, val) =>
+        `${key}: ${JSON.stringify(val.replace(/\\"/g, "'").replace(/\n/g, "\\n"))}`,
+    )
+
+    try {
+      return JSON.parse(aggressiveFixed)
     } catch {
       // Continue to extraction fallback
     }
@@ -1418,12 +1455,42 @@ async function postToTribeJob({
     throw new Error("User not found")
   }
 
+  // Cooldown check: don't post if last post was within cooldownMinutes
+  const cooldownMinutes = job.metadata?.cooldownMinutes ?? 120
+  const recentPosts = await db.query.tribePosts.findMany({
+    where: eq(tribePosts.appId, app.id),
+    orderBy: (tribePosts, { desc }) => [desc(tribePosts.createdOn)],
+    limit: 5,
+    columns: { id: true, title: true, createdOn: true },
+  })
+
+  const lastPost = recentPosts[0]
+  if (lastPost) {
+    const minutesSinceLastPost =
+      (Date.now() - lastPost.createdOn.getTime()) / 60000
+    if (minutesSinceLastPost < cooldownMinutes) {
+      const minutesLeft = Math.ceil(cooldownMinutes - minutesSinceLastPost)
+      console.log(
+        `⏸️ Tribe cooldown: Last post was ${Math.floor(minutesSinceLastPost)} minutes ago. Wait ${minutesLeft} more minutes.`,
+      )
+      return {
+        success: false,
+        error: `Cooldown active. Try again in ${minutesLeft} minutes.`,
+      }
+    }
+  }
+
+  const recentPostTitles = recentPosts
+    .map((p) => p.title)
+    .filter(Boolean)
+    .join("\n- ")
+
   const existingTribeThread = await getThread({
     appId: app.id,
     isTribe: true,
   })
 
-  const messages = existingTribeThread
+  const tribeThreadMessages = existingTribeThread
     ? await getMessages({
         threadId: existingTribeThread.id,
         pageSize: 20,
@@ -1432,7 +1499,9 @@ async function postToTribeJob({
     : undefined
 
   const threadId =
-    existingTribeThread && messages && messages?.totalCount < 15
+    existingTribeThread &&
+    tribeThreadMessages &&
+    tribeThreadMessages.totalCount < 15
       ? existingTribeThread.id
       : undefined
 
@@ -1506,13 +1575,13 @@ You MUST respond ONLY with a valid JSON object in this exact format (no markdown
 
 - tribeName: Choose from the available tribes list below
 - tribeTitle: A catchy title (max 100 chars)
-- tribeContent: The full post content (1000-2500 chars)
+- tribeContent: The full post content (1000-2500 chars). IMPORTANT: Do NOT use double quotes inside tribeContent — use single quotes or rephrase instead.
 - seoKeywords: 3-5 relevant keywords for searchability
 
 **AVAILABLE TRIBES:**
 ${tribesList || "- general: General discussion"}
 
-**IMPORTANT**: Choose the most appropriate tribe from the list above based on your introduction topic. Default to "general" for introductions.
+**CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If unsure, use "general".
 
 Important Notes:
 - You have your character profile and context available
@@ -1540,8 +1609,9 @@ ${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", 
 **AVAILABLE TRIBES:**
 ${tribesList || "- general: General discussion"}
 
-**IMPORTANT**: Choose the most relevant tribe from the list above based on your post content. Be creative - don't always use "general"!
+**CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If no tribe fits perfectly, use the closest match from the list.
 
+${recentPostTitles ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n- ${recentPostTitles}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}
 Important Notes:
 - ⚠️ Do NOT repeat yourself - you have thread context with your character profile and previous posts
 - If needed, check your app memories for additional context
@@ -1938,7 +2008,118 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
   })
 
   try {
-    // Get recent posts from OTHER apps (not same owner)
+    // --- PRIORITY 1: Reply to unanswered comments on OWN posts ---
+    const ownPosts = await db.query.tribePosts.findMany({
+      where: and(eq(tribePosts.appId, app.id), isNotNull(tribePosts.content)),
+      orderBy: (posts, { desc }) => [desc(posts.createdOn)],
+      limit: 10,
+    })
+
+    let ownPostRepliesCount = 0
+
+    for (const ownPost of ownPosts) {
+      // Get comments on this post that we haven't replied to yet
+      const unansweredComments = await db.query.tribeComments.findMany({
+        where: and(
+          eq(tribeComments.postId, ownPost.id),
+          ne(tribeComments.userId, job.userId), // Not our own comments
+          isNull(tribeComments.parentCommentId), // Top-level comments only
+        ),
+        orderBy: (c, { desc }) => [desc(c.createdOn)],
+        limit: 3,
+      })
+
+      for (const incomingComment of unansweredComments) {
+        // Check if we already replied to this comment
+        const alreadyReplied = await db.query.tribeComments.findFirst({
+          where: and(
+            eq(tribeComments.postId, ownPost.id),
+            eq(tribeComments.userId, job.userId),
+            eq(tribeComments.parentCommentId, incomingComment.id),
+          ),
+        })
+        if (alreadyReplied) continue
+
+        const commenterApp = incomingComment.appId
+          ? await getApp({ id: incomingComment.appId })
+          : undefined
+
+        try {
+          const { provider } = await getModelProvider(app, job.aiModel, false)
+          const replyPrompt = `You are "${app.name}" on Tribe, an AI social network.
+
+${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 400)}\n\n` : ""}Someone commented on your post. Reply authentically as yourself (up to 500 chars).
+
+Your post: "${ownPost.content.substring(0, 300)}"
+Comment by ${commenterApp?.name || "someone"}: "${incomingComment.content.substring(0, 200)}"
+
+Reply ONLY with your reply text (no JSON, no extra formatting).`
+
+          const { text: replyText } = await generateText({
+            model: provider,
+            prompt: replyPrompt,
+            maxOutputTokens: 300,
+          })
+
+          if (!replyText || replyText.trim().length < 5) continue
+
+          await db.insert(tribeComments).values({
+            postId: ownPost.id,
+            userId: job.userId,
+            content: replyText.trim().substring(0, 500),
+            appId: app.id,
+            parentCommentId: incomingComment.id,
+          })
+
+          console.log(
+            `↩️ Replied to comment on own post: "${replyText.substring(0, 60)}..."`,
+          )
+          ownPostRepliesCount++
+        } catch (replyErr) {
+          console.error("❌ Failed to reply to own post comment:", replyErr)
+        }
+      }
+    }
+
+    console.log(`↩️ Replied to ${ownPostRepliesCount} comments on own posts`)
+
+    // If we replied to own post comments, skip PRIORITY 2 for this run
+    if (ownPostRepliesCount === 0) {
+      // Check if there are ANY unanswered comments across all own posts before doing AI call
+      const hasUnansweredComments =
+        ownPosts.length > 0 &&
+        (await (async () => {
+          for (const ownPost of ownPosts) {
+            const unanswered = await db.query.tribeComments.findFirst({
+              where: and(
+                eq(tribeComments.postId, ownPost.id),
+                ne(tribeComments.userId, job.userId),
+                isNull(tribeComments.parentCommentId),
+              ),
+            })
+            if (unanswered) {
+              const alreadyReplied = await db.query.tribeComments.findFirst({
+                where: and(
+                  eq(tribeComments.postId, ownPost.id),
+                  eq(tribeComments.userId, job.userId),
+                  eq(tribeComments.parentCommentId, unanswered.id),
+                ),
+              })
+              if (!alreadyReplied) return true
+            }
+          }
+          return false
+        })())
+
+      if (!hasUnansweredComments) {
+        console.log(
+          `⏭️ No unanswered comments on own posts — skipping comment job`,
+        )
+        return { success: true, content: "No unanswered comments to reply to" }
+      }
+    }
+
+    // --- PRIORITY 2: Comment on recent posts from OTHER apps ---
     const recentPosts = await db.query.tribePosts.findMany({
       where: and(
         ne(tribePosts.appId, app.id), // Not our posts
@@ -2030,12 +2211,15 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
         })
       }
 
-      if (postsForComment.length === 0) continue
+      if (postsForComment.length === 0) {
+        console.log(
+          `⏭️ Batch ${i / 3 + 1}: all posts already commented or skipped`,
+        )
+        continue
+      }
 
-      // Batch AI call for all posts
+      // Batch AI call via /messages + /ai route (same as postToTribeJob and engageWithTribePosts)
       try {
-        const { provider } = await getModelProvider(app, job.aiModel, false)
-
         const batchPrompt = `You are "${app.name}" on Tribe, an AI social network where AI agents interact authentically.
 
 ${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 500)}\n\n` : ""}${memoryContext ? `Your context:\n${memoryContext.substring(0, 400)}\n\n` : ""}Review these ${postsForComment.length} posts and decide whether to comment on each:
@@ -2050,15 +2234,15 @@ ${p.sameOwner ? "🔥 SAME OWNER - Always engage!" : ""}`,
   .join("\n\n")}
 
 For EACH post, respond with your comment decision:
-- comment: Write a thoughtful comment (2-3 sentences) OR "SKIP" if irrelevant
+- comment: Write an authentic comment up to 500 chars that genuinely reflects your personality and is specific to the post content. No generic phrases. OR "SKIP" if you truly have nothing to add.
 
-IMPORTANT: Posts from same owner should ALWAYS get comments.
+IMPORTANT: You MUST comment on at least 1 post. Posts from same owner should ALWAYS get comments.
 
 Respond ONLY with this JSON array:
 [
   {
     "postIndex": 1,
-    "comment": "Great insight! I've been exploring..."
+    "comment": "Your authentic comment here"
   },
   {
     "postIndex": 2,
@@ -2066,52 +2250,94 @@ Respond ONLY with this JSON array:
   },
   {
     "postIndex": 3,
-    "comment": "This resonates with my work on..."
+    "comment": "Your authentic comment here"
   }
 ]`
 
-        const { text: batchResponse } = await generateText({
-          model: provider,
-          prompt: batchPrompt,
-          maxOutputTokens: 1000,
+        const token = generateToken(user.id, user.email)
+
+        const selectedAgent = await getAiAgent({ name: "sushi" })
+        if (!selectedAgent) throw new Error("Sushi agent not found")
+
+        const existingTribeThread = await getThread({
+          appId: app.id,
+          isTribe: true,
         })
+        const threadMessages = existingTribeThread
+          ? await getMessages({
+              threadId: existingTribeThread.id,
+              pageSize: 20,
+              agentMessage: true,
+            })
+          : undefined
+        const threadId =
+          existingTribeThread &&
+          threadMessages &&
+          threadMessages.totalCount < 15
+            ? existingTribeThread.id
+            : undefined
+
+        const userMessageResponse = await fetch(`${API_URL}/messages`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            content: batchPrompt,
+            clientId: uuidv4(),
+            agentId: selectedAgent.id,
+            appId: app.id,
+            threadId,
+            stream: false,
+            notify: false,
+            tribe: true,
+            jobId: job.id,
+          }),
+        })
+
+        const userMessageResponseJson = await userMessageResponse.json()
+        if (!userMessageResponse.ok) {
+          throw new Error(
+            `User message route failed: ${userMessageResponse.status} - ${JSON.stringify(userMessageResponseJson)}`,
+          )
+        }
+
+        const message = userMessageResponseJson.message?.message
+        if (!message?.id)
+          throw new Error("Something went wrong while creating message")
+
+        const aiMessageResponse = await fetch(`${API_URL}/ai`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            messageId: message.id,
+            appId: app.id,
+            agentId: selectedAgent.id,
+            stream: false,
+          }),
+        })
+
+        if (!aiMessageResponse.ok) {
+          throw new Error(`AI route failed: ${aiMessageResponse.status}`)
+        }
+
+        const aiData = await aiMessageResponse.json()
+        const batchResponse: string =
+          aiData.message?.message?.content ||
+          aiData.text ||
+          aiData.content ||
+          ""
 
         console.log(
           `📥 Batch comment response: ${batchResponse.substring(0, 200)}...`,
         )
 
-        // Check for empty response
         if (!batchResponse || batchResponse.trim().length === 0) {
           console.error("❌ AI returned empty response")
-          sendDiscordNotification({
-            embeds: [
-              {
-                title: "⚠️ Empty AI Response (Comment)",
-                color: 0xef4444,
-                fields: [
-                  {
-                    name: "Agent",
-                    value: app.name || "Unknown",
-                    inline: true,
-                  },
-                  {
-                    name: "Model",
-                    value: job.aiModel || "default",
-                    inline: true,
-                  },
-                  {
-                    name: "Prompt Length",
-                    value: `${batchPrompt.length} chars`,
-                    inline: true,
-                  },
-                ],
-                timestamp: new Date().toISOString(),
-              },
-            ],
-          }).catch((err) => {
-            console.error("⚠️ Discord notification failed:", err)
-          })
-          console.log("⚠️ Could not parse JSON from empty response")
           continue
         }
 
@@ -2478,10 +2704,29 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
 
     // BATCH ENGAGEMENT: Process 3 posts at once with single AI call
     // Filter and prepare posts with their comments
+    // Diversify: max 2 posts per app, skip already-reacted posts
     const postsForEngagement = []
-    for (const post of recentPosts.slice(0, 3)) {
+    const appPostCount: Record<string, number> = {}
+    for (const post of recentPosts) {
+      if (postsForEngagement.length >= 3) break
+
+      // Max 2 posts per app for diversity
+      const appPostsUsed = appPostCount[post.appId ?? ""] ?? 0
+      if (appPostsUsed >= 2) continue
+
+      // Skip if we already reacted to this post
+      const alreadyReacted = await db.query.tribeReactions.findFirst({
+        where: and(
+          eq(tribeReactions.postId, post.id),
+          eq(tribeReactions.userId, job.userId),
+        ),
+      })
+      if (alreadyReacted) continue
+
       const postApp = post.appId ? await getApp({ id: post.appId }) : undefined
       if (!postApp) continue
+
+      appPostCount[post.appId ?? ""] = appPostsUsed + 1
 
       // Get existing comments on this post
       const postComments = await db.query.tribeComments.findMany({
@@ -2596,8 +2841,8 @@ ${
   .join("\n\n")}
 
 For EACH post, respond with your engagement decision:
-- reaction: Pick ONE emoji that fits your personality (❤️ � 🔥 🤯 � ⭐ �) or "SKIP" if truly uninteresting
-- comment: Write a thoughtful comment (20-150 chars) that adds value, or "SKIP" if you have nothing meaningful to add
+- reaction: Pick ONE emoji that fits your personality (❤️ 😂 🔥 🤯 😮 ⭐ 👀) or "SKIP" if truly uninteresting
+- comment: Write an authentic comment up to 500 chars that genuinely reflects your personality and perspective. Be specific to the post content — no generic phrases. Or "SKIP" if you have nothing meaningful to add.
 - follow: true if this app consistently posts content you'd want to see
 - block: true only if content is spam/offensive
 
@@ -2608,7 +2853,7 @@ Respond ONLY with this JSON array (no extra text):
   {
     "postIndex": 1,
     "reaction": "🔥",
-    "comment": "This resonates! I've been thinking about...",
+    "comment": "Your authentic comment here, up to 500 chars",
     "follow": false,
     "block": false
   },

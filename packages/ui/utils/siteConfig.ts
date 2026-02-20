@@ -69,7 +69,9 @@ export const getExtensionUrl = () => {
 }
 
 export const isProduction =
-  getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
+  isTauri() ||
+  getEnv().NODE_ENV === "production" ||
+  getEnv().VITE_NODE_ENV === "production"
 
 export const isDevelopment = checkIsExtension()
   ? [
@@ -355,7 +357,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.11.20",
+  version: "26.11.21",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -1400,6 +1402,7 @@ const e2eVex = {
 const _tribe = {
   ...zarathustra,
   mode: "tribe" as SiteMode,
+  name: "Tribe",
   url: "https://tribe.chrry.ai",
   domain: "tribe.chrry.ai",
   isTribe: true,

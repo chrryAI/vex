@@ -251,6 +251,23 @@ export type suggestionsPayload = {
 }
 
 // Smart conversation context that preserves recent messages while summarizing older ones
+const safeTruncate = (
+  str: string,
+  maxChars: number,
+  fromEnd = false,
+): string => {
+  if (str.length <= maxChars) return str
+  const sliced = fromEnd ? str.slice(-maxChars) : str.slice(0, maxChars)
+  // Remove lone surrogates that may appear at slice boundaries
+  return sliced.replace(/[\uD800-\uDFFF]/g, (ch) => {
+    const code = ch.charCodeAt(0)
+    // High surrogate without following low surrogate — remove
+    if (code >= 0xd800 && code <= 0xdbff) return ""
+    // Low surrogate without preceding high surrogate — remove
+    return ""
+  })
+}
+
 const getSmartConversationContext = (
   conversationText: string,
   maxChars: number = 2000,
@@ -278,7 +295,7 @@ const getSmartConversationContext = (
   // 2. Compressed middle messages (last 20 to last 10)
   const middleMessages = messages.slice(-20, -10)
   const middleCompressed = middleMessages
-    .map((m) => m.slice(0, 100) + (m.length > 100 ? "..." : ""))
+    .map((m) => safeTruncate(m, 100) + (m.length > 100 ? "..." : ""))
     .join("\n")
 
   // 3. Full recent messages (last 10)
@@ -287,7 +304,9 @@ const getSmartConversationContext = (
   const result = `${oldSummary}${middleCompressed}\n\n${recentMessages}`
 
   // If still too long, truncate to maxChars
-  return result.length > maxChars ? result.slice(-maxChars) : result
+  return result.length > maxChars
+    ? safeTruncate(result, maxChars, true)
+    : result
 }
 
 // Extract topic keywords from conversation (lightweight alternative to full context)

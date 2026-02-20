@@ -5,7 +5,7 @@ import A from "./a/A"
 import Bookmark from "./Bookmark"
 import CollaborationStatus from "./CollaborationStatus"
 import ColorScheme from "./ColorScheme"
-import { useAppContext } from "./context/AppContext"
+import { COLORS, useAppContext } from "./context/AppContext"
 import {
   useApp,
   useAuth,
@@ -19,7 +19,7 @@ import {
   ArrowLeft,
   AtSign,
   BellDot,
-  HatGlasses,
+  CircleCheck,
   LoaderCircle,
   Lock,
   LockOpen,
@@ -79,6 +79,7 @@ export default function Menu({
     setLoadingAppId,
     hasStoreApps,
     setBurn,
+    burn,
     showTribe,
   } = useAuth()
 
@@ -439,23 +440,6 @@ export default function Menu({
               </A>
               <Button
                 onClick={() => {
-                  plausible({
-                    name: ANALYTICS_EVENTS.PRIVATE_CHAT_CLICK,
-                  })
-                  setShowFocus(false)
-                  setShowTribe(false)
-
-                  isSmallDevice ? toggleMenu() : addHapticFeedback()
-                  setBurn(true)
-                  reload()
-                }}
-                style={styles.menuItemButton.style}
-                className="button transparent"
-              >
-                <HatGlasses size={18} /> {t("Incognito Chat")}
-              </Button>
-              <Button
-                onClick={() => {
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
                   goToThreads()
                 }}
@@ -464,6 +448,38 @@ export default function Menu({
               >
                 <Search size={18} /> {t("Search chats")}
               </Button>
+              <Div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: ".5rem",
+                }}
+              >
+                <Button
+                  onClick={() => {
+                    plausible({
+                      name: ANALYTICS_EVENTS.PRIVATE_CHAT_CLICK,
+                    })
+                    setShowFocus(false)
+                    setShowTribe(false)
+
+                    isSmallDevice ? toggleMenu() : addHapticFeedback()
+                    setBurn(!burn)
+                    reload()
+                  }}
+                  style={styles.menuItemButton.style}
+                  className="button transparent"
+                >
+                  <Span>🔥</Span> {t(burn ? "Burning" : "Burn")}
+                  <CircleCheck
+                    size={12}
+                    style={{
+                      marginLeft: "0.25rem",
+                    }}
+                    color={burn ? COLORS.orange : "var(--shade-2)"}
+                  />
+                </Button>
+              </Div>
               {showThreads && (
                 <Div
                   style={{

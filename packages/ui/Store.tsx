@@ -197,10 +197,7 @@ export default function Store({
           ) : (
             <Button
               onClick={() => {
-                setAppStatus({
-                  part: "highlights",
-                  step: "add",
-                })
+                router.push("/?settings=true")
               }}
               className="inverted"
               style={{ ...utilities.inverted.style }}
