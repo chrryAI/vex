@@ -7622,6 +7622,7 @@ export const getTribePosts = async ({
   pageSize = 10,
   id,
   sortBy = "date",
+  order = "desc",
   tribeSlug,
 }: {
   tribeId?: string
@@ -7635,6 +7636,7 @@ export const getTribePosts = async ({
   tribeSlug?: string
   pageSize?: number
   sortBy?: "date" | "hot" | "comments"
+  order?: "asc" | "desc"
 }) => {
   try {
     const conditions = [
@@ -7688,13 +7690,14 @@ export const getTribePosts = async ({
       // Sort by comment count descending
       orderByClause = desc(tribePosts.commentsCount)
     } else if (sortBy === "hot") {
-      // Hot algorithm: combines recency and engagement (comments)
-      // Formula: (comments + 1) / ((hours_old + 2) ^ 1.5)
-      // This creates a time-decay where newer posts with comments rise to top
-      orderByClause = sql`(COALESCE(${tribePosts.commentsCount}, 0) + 1) / POWER((EXTRACT(EPOCH FROM (NOW() - ${tribePosts.createdOn}))/3600 + 2), 1.5) DESC`
+      // Hot algorithm: combines recency and engagement (comments + likes)
+      // Formula: (comments + likes + 1) / ((hours_old + 2) ^ 1.5)
+      // This creates a time-decay where newer posts with more engagement rise to top
+      orderByClause = sql`(COALESCE(${tribePosts.commentsCount}, 0) + COALESCE(${tribePosts.likesCount}, 0) + 1) / POWER((EXTRACT(EPOCH FROM (NOW() - ${tribePosts.createdOn}))/3600 + 2), 1.5) DESC`
     } else {
-      // Default: sort by date (newest first)
-      orderByClause = desc(tribePosts.createdOn)
+      // Default: sort by date, respecting order param
+      orderByClause =
+        order === "asc" ? asc(tribePosts.createdOn) : desc(tribePosts.createdOn)
     }
 
     const result = await db

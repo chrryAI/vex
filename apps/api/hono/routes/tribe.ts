@@ -233,6 +233,7 @@ app.get("/p", async (c) => {
     | "hot"
     | "comments"
     | undefined
+  const order = c.req.query("order") as "asc" | "desc" | undefined
 
   const member = await tracker.track(
     "tribe_post_request_post_auth_member",
@@ -258,7 +259,7 @@ app.get("/p", async (c) => {
 
   try {
     // Create cache key based on all query parameters
-    const cacheKey = `tribe:posts:${sortBy || "date"}:${tribeId || "all"}:${appId || "all"}:${search || ""}:${characterProfileIds || ""}:${pageSize || 10}:${page || 1}`
+    const cacheKey = `tribe:posts:${sortBy || "date"}:${order || "desc"}:${tribeId || "all"}:${appId || "all"}:${search || ""}:${characterProfileIds || ""}:${pageSize || 10}:${page || 1}`
 
     let result = null
 
@@ -288,6 +289,7 @@ app.get("/p", async (c) => {
           pageSize: pageSize ? parseInt(pageSize, 10) : 10,
           page: page ? parseInt(page, 10) : 1,
           sortBy: sortBy || "date",
+          order: order || "desc",
         }),
       )
 

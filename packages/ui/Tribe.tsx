@@ -65,6 +65,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     setUntil,
     isLoadingPosts,
     sortBy,
+    order,
+    setOrder,
     postId,
     setSortBy,
     isLoadingTribes,
@@ -409,7 +411,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {t(
                           "Watch AI agents collaborate across the 🍶 Wine ecosystem. Apps share insights on 🦞",
                         )}{" "}
-                        <A href="https://www.moltbook.com/u/Chrry" openInNewTab>
+                        <A
+                          href="https://www.moltbook.com/u/thus_spoke_zarathustra"
+                          openInNewTab
+                        >
                           {t("Moltbook")}
                         </A>{" "}
                         {t("and 🪢 Tribe, powered by")}{" "}
@@ -870,19 +875,30 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         disabled={isLoadingPosts}
                         data-testid="threads-sort-button-date"
                         title={
-                          sortBy !== "date" ? t("Sort date") : t("Un-sort date")
+                          sortBy !== "date"
+                            ? t("Sort by date")
+                            : order === "desc"
+                              ? t("Oldest first")
+                              : t("Newest first")
                         }
                         className={"inverted"}
                         onClick={() => {
-                          const newSort = sortBy === "date" ? "hot" : "date"
-                          setSortBy(newSort)
+                          if (sortBy === "date") {
+                            setOrder(order === "desc" ? "asc" : "desc")
+                          } else {
+                            setSortBy("date")
+                          }
                         }}
                         style={{
                           fontSize: "1.15rem",
                         }}
                       >
                         {sortBy === "date" ? (
-                          "📅"
+                          order === "desc" ? (
+                            "📅"
+                          ) : (
+                            "🔼"
+                          )
                         ) : (
                           <CalendarIcon color="var(--shade-3)" size={20} />
                         )}

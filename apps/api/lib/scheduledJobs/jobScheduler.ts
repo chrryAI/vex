@@ -3245,12 +3245,15 @@ Respond ONLY with this JSON array (no extra text):
             if (engagement.follow && postData.post.appId) {
               const isFollowing = followedAppIds.includes(postData.post.appId)
               if (!isFollowing) {
-                await db.insert(tribeFollows).values({
-                  appId: app.id,
-                  followerId: job.userId,
-                  followingAppId: postData.post.appId,
-                  notifications: true,
-                })
+                await db
+                  .insert(tribeFollows)
+                  .values({
+                    appId: app.id,
+                    followerId: job.userId,
+                    followingAppId: postData.post.appId,
+                    notifications: true,
+                  })
+                  .onConflictDoNothing()
                 followsCount++
                 postEngagement.followed = true
                 console.log(`👥 Followed ${postData.postApp.name}`)

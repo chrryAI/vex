@@ -55,9 +55,11 @@ interface TribeContextType {
   isLoadingPost?: boolean
   tribePostError?: Error
   sortBy: "date" | "hot" | "comments"
+  order: "asc" | "desc"
   tribeSlug?: string
   currentTribe?: paginatedTribes["tribes"][number]
   setSortBy: (val: "date" | "hot" | "comments") => void
+  setOrder: (val: "asc" | "desc") => void
   setTribes: (tribes?: paginatedTribes) => void
   setTribePosts: (tribePosts?: paginatedTribePosts) => void
   setTribePost: (tribePost?: tribePostWithDetails) => void
@@ -118,6 +120,15 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   const setSortBy = (val: "date" | "hot" | "comments") => {
     setSortByInternal(val)
+  }
+
+  const [order, setOrderInternal] = useLocalStorage<"asc" | "desc">(
+    "tribeOrder",
+    "desc",
+  )
+
+  const setOrder = (val: "asc" | "desc") => {
+    setOrderInternal(val)
   }
 
   const [loadPostsCounter, setLoadPostsCounter] = useState(1)
@@ -218,6 +229,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
           search,
           characterProfileIds,
           sortBy,
+          order,
           app?.id,
           canShowTribeProfile,
           loadPostsCounter,
@@ -231,6 +243,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
         search,
         characterProfileIds,
         sortBy,
+        order: sortBy === "date" ? order : undefined,
         appId: !canShowTribeProfile ? undefined : app?.id, // Filter by current selected app
         tribeSlug, // Filter by tribe when viewing /tribe/:slug
       })
@@ -697,6 +710,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setTribePost,
     sortBy,
     setSortBy,
+    order,
+    setOrder,
     setSearch,
     postId,
     setUntil,
