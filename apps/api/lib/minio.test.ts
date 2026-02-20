@@ -80,7 +80,13 @@ vi.mock("@chrryai/chrry/utils", () => ({
   isDevelopment: false,
 }))
 
+// Mock safeFetch
+vi.mock("../utils/ssrf", () => ({
+  safeFetch: vi.fn(),
+}))
+
 // Import after mocks and env setup
+import { safeFetch } from "../utils/ssrf"
 import { upload } from "./minio"
 
 describe("upload", () => {
@@ -89,12 +95,12 @@ describe("upload", () => {
   })
 
   it("should fail when inferred type does not match strict type option", async () => {
-    // Mock fetch to return a text file
-    global.fetch = vi.fn(async () => {
-      return new Response("<html>script</html>", {
+    // Mock safeFetch to return a text file
+    vi.mocked(safeFetch).mockResolvedValue(
+      new Response("<html>script</html>", {
         headers: { "Content-Type": "text/html" },
       })
-    })
+    )
 
     await expect(
       upload({
@@ -108,12 +114,12 @@ describe("upload", () => {
   })
 
   it("should fail when inferred type is image but expected text", async () => {
-    // Mock fetch to return an image file
-    global.fetch = vi.fn(async () => {
-      return new Response("image", {
+    // Mock safeFetch to return an image file
+    vi.mocked(safeFetch).mockResolvedValue(
+      new Response("image", {
         headers: { "Content-Type": "image/png" },
       })
-    })
+    )
 
     await expect(
       upload({
@@ -127,14 +133,12 @@ describe("upload", () => {
   })
 
   it("should succeed when type matches", async () => {
-    // Mock fetch to return an image
-    global.fetch = vi.fn(async () => {
-      // Return valid image buffer
-      const buffer = Buffer.from("fake-image")
-      return new Response(buffer, {
+    // Mock safeFetch to return an image
+    vi.mocked(safeFetch).mockResolvedValue(
+      new Response(Buffer.from("fake-image"), {
         headers: { "Content-Type": "image/png" },
       })
-    })
+    )
 
     await expect(
       upload({

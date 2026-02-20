@@ -9,6 +9,7 @@ export const useInView = (options?: {
   triggerOnce?: boolean
   threshold?: number
   rootMargin?: string
+  skip?: boolean
 }) => {
   // On native, always return inView=true
   // Images load immediately without lazy loading

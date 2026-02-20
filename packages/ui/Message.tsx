@@ -67,6 +67,8 @@ function Message({
   onToggleLike,
   message,
   onPlayAudio,
+  isTyping,
+  isOnline,
 }: {
   message: {
     message: message & {
@@ -82,6 +84,8 @@ function Message({
   onDelete?: ({ id }: { id: string }) => Promise<void>
   onToggleLike?: (liked: boolean | undefined) => void
   onPlayAudio?: () => void
+  isTyping?: boolean
+  isOnline?: boolean
 }): React.ReactElement | null {
   const { t } = useAppContext()
   const { utilities } = useStyles()

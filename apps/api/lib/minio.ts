@@ -1,5 +1,3 @@
-import dns from "node:dns"
-import net from "node:net"
 import {
   CreateBucketCommand,
   DeleteObjectCommand,
@@ -12,6 +10,7 @@ import { isDevelopment } from "@chrryai/chrry/utils"
 import { FetchHttpHandler } from "@smithy/fetch-http-handler"
 import sharp from "sharp"
 import { parse as parseDomain } from "tldts"
+import { safeFetch } from "../utils/ssrf"
 import captureException from "./captureException"
 
 // Validate S3 configuration
@@ -270,59 +269,10 @@ export async function upload({
           `URL domain not allowed. Only ${ALLOWED_HOSTNAMES.join(", ")} are permitted`,
         )
       }
-
-      // Prevent access to private IP ranges
-      const hostname = parsedUrl.hostname
-      const privateIpPatterns = [
-        /^127\./, // localhost
-        /^10\./, // private class A
-        /^172\.(1[6-9]|2[0-9]|3[0-1])\./, // private class B
-        /^192\.168\./, // private class C
-        /^169\.254\./, // link-local
-        /^::1$/, // IPv6 localhost
-        /^fc00:/, // IPv6 private
-        /^fe80:/, // IPv6 link-local
-      ]
-
-      if (privateIpPatterns.some((pattern) => pattern.test(hostname))) {
-        throw new Error("Access to private IP addresses is not allowed")
-      }
-
-      // Resolve DNS for hostname to check resolved IPs against private ranges
-      let addresses = []
-      try {
-        addresses = await dns.promises.lookup(parsedUrl.hostname, { all: true })
-      } catch (_e) {
-        throw new Error("Failed to resolve file hosting domain")
-      }
-
-      const isIpPrivate = (ip: string) => {
-        if (net.isIPv4(ip)) {
-          return (
-            ip.startsWith("10.") ||
-            /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(ip) ||
-            ip.startsWith("192.168.") ||
-            ip.startsWith("127.") ||
-            ip.startsWith("169.254.")
-          )
-        } else if (net.isIPv6(ip)) {
-          return (
-            ip === "::1" ||
-            ip.startsWith("fc00:") ||
-            ip.startsWith("fd00:") ||
-            ip.startsWith("fe80:")
-          )
-        }
-        return false
-      }
-
-      if (addresses.some((addr) => isIpPrivate(addr.address))) {
-        throw new Error("Resolved address is private or local; access denied")
-      }
     }
 
-    // Download the file
-    const response = await fetch(parsedUrl)
+    // Download the file with SSRF protection (manual redirects + IP validation)
+    const response = await safeFetch(parsedUrl.toString())
     if (!response.ok)
       throw new Error(`Failed to download file: ${response.status}`)
 
