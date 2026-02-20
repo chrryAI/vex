@@ -233,7 +233,9 @@ export const Hey = memo(
               ) : isClientRoute ? (
                 // Client-side routes: SWAP content
                 // Check thread detail FIRST before RouteComponent
-                threadId || postId ? (
+                postId ? (
+                  <Home />
+                ) : threadId ? (
                   <Thread key={threadId} />
                 ) : RouteComponent ? (
                   <RouteComponent />
