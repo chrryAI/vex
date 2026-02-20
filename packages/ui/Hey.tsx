@@ -88,7 +88,7 @@ export const Hey = memo(
       isProgramme,
       isIDE,
       baseApp,
-      isLoadingPosts,
+      // isLoadingPosts,
       siteConfig,
     } = useAuth()
 
@@ -209,17 +209,9 @@ export const Hey = memo(
         isImageLoaded &&
         isHydrated &&
         minSplashTimeElapsed &&
-        !isLoadingPosts &&
         app?.store?.apps?.length &&
         setIsSplash(false)
-    }, [
-      isImageLoaded,
-      isHydrated,
-      isSplash,
-      minSplashTimeElapsed,
-      app,
-      isLoadingPosts,
-    ])
+    }, [isImageLoaded, isHydrated, isSplash, minSplashTimeElapsed, app])
 
     // useEffect(() => {
     //   app?.slug && useExtensionIcon?.(app?.slug)
