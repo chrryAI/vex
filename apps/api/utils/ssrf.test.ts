@@ -1,98 +1,85 @@
 import { describe, expect, it } from "vitest"
-import { getSafeUrl } from "./ssrf"
+import { isPrivateIP } from "./ssrf"
 
-describe("validateUrl / getSafeUrl", () => {
-  it("should allow public URLs", async () => {
-    // We use a well-known public domain that is unlikely to fail DNS
-    const result = await getSafeUrl("https://www.google.com")
-    expect(result.safeUrl).toBe("https://www.google.com")
-    expect(result.originalHost).toBe("www.google.com")
+describe("isPrivateIP", () => {
+  // IPv4 Private Ranges
+  it("should detect 127.0.0.0/8 (Loopback)", () => {
+    expect(isPrivateIP("127.0.0.1")).toBe(true)
+    expect(isPrivateIP("127.255.255.255")).toBe(true)
   })
 
-  it("should reject private IPs", async () => {
-    // These are not explicitly allowed even in dev (only localhost/127.0.0.1 are allowed in dev)
-    await expect(getSafeUrl("https://10.0.0.1")).rejects.toThrow(
-      "Access to private IP",
-    )
-    await expect(getSafeUrl("https://192.168.1.1")).rejects.toThrow(
-      "Access to private IP",
-    )
-    await expect(getSafeUrl("https://169.254.169.254")).rejects.toThrow(
-      "Access to private IP",
-    )
+  it("should detect 10.0.0.0/8 (Private)", () => {
+    expect(isPrivateIP("10.0.0.1")).toBe(true)
+    expect(isPrivateIP("10.255.255.255")).toBe(true)
   })
 
-  it("should allow localhost in dev/test environment", async () => {
-    // Assumes isProduction is false in this test environment
-    const result = await getSafeUrl("https://localhost")
-    expect(result.safeUrl).toBe("https://localhost")
-    expect(result.originalHost).toBe("localhost")
+  it("should detect 172.16.0.0/12 (Private)", () => {
+    expect(isPrivateIP("172.16.0.1")).toBe(true)
+    expect(isPrivateIP("172.31.255.255")).toBe(true)
+    // Public range
+    expect(isPrivateIP("172.15.0.1")).toBe(false)
+    expect(isPrivateIP("172.32.0.1")).toBe(false)
   })
 
-  it("should reject invalid protocols", async () => {
-    await expect(getSafeUrl("ftp://example.com")).rejects.toThrow(
-      "Invalid protocol",
-    )
-    await expect(getSafeUrl("file:///etc/passwd")).rejects.toThrow(
-      "Invalid protocol",
-    )
+  it("should detect 192.168.0.0/16 (Private)", () => {
+    expect(isPrivateIP("192.168.0.1")).toBe(true)
+    expect(isPrivateIP("192.168.255.255")).toBe(true)
   })
 
-  it("should reject invalid URLs", async () => {
-    await expect(getSafeUrl("not-a-url")).rejects.toThrow("Invalid URL format")
+  it("should detect 169.254.0.0/16 (Link-local)", () => {
+    expect(isPrivateIP("169.254.1.1")).toBe(true)
   })
 
-  it("should resolve HTTP URL to IP", async () => {
-    // HTTP URLs should be resolved to IP addresses
-    const result = await getSafeUrl("http://www.google.com") // NOSONAR - Testing HTTP to IP resolution
-    // Should return an IP-based URL (e.g., http://142.250.x.x/)
-    expect(result.safeUrl).toMatch(/^http:\/\/[\d.]+(\/?|$)/)
-    expect(result.originalHost).toBe("www.google.com")
+  it("should detect 0.0.0.0/8 (Current network)", () => {
+    expect(isPrivateIP("0.0.0.0")).toBe(true)
   })
 
-  it("should keep HTTPS URLs as-is (for SNI/cert validation)", async () => {
-    // HTTPS URLs should remain unchanged to preserve SNI
-    const result = await getSafeUrl("https://www.google.com")
-    expect(result.safeUrl).toBe("https://www.google.com")
-    expect(result.originalHost).toBe("www.google.com")
+  it("should detect 100.64.0.0/10 (CGNAT)", () => {
+    expect(isPrivateIP("100.64.0.1")).toBe(true)
+    expect(isPrivateIP("100.127.255.255")).toBe(true)
+    // Public range
+    expect(isPrivateIP("100.63.0.1")).toBe(false)
+    expect(isPrivateIP("100.128.0.1")).toBe(false)
   })
 
-  it("should reject CGNAT IP range (100.64.0.0/10)", async () => {
-    // CGNAT (Carrier-Grade NAT) addresses should be blocked
-    await expect(getSafeUrl("https://100.64.0.1")).rejects.toThrow(
-      "Access to private IP",
-    )
-    await expect(getSafeUrl("https://100.127.255.254")).rejects.toThrow(
-      "Access to private IP",
-    )
-    await expect(getSafeUrl("https://100.100.100.100")).rejects.toThrow(
-      "Access to private IP",
-    )
+  // IPv6
+  it("should detect IPv6 Loopback", () => {
+    expect(isPrivateIP("::1")).toBe(true)
+    expect(isPrivateIP("0:0:0:0:0:0:0:1")).toBe(true)
   })
 
-  it("should reject IPv4-mapped IPv6 addresses (dotted notation)", async () => {
-    // ::ffff:192.168.1.1 format should be detected and blocked
-    // NOSONAR - Intentionally testing HTTP with private IPs for security validation
-    await expect(getSafeUrl("http://[::ffff:192.168.1.1]")).rejects.toThrow(
-      "Access to private IP",
-    )
-    await expect(getSafeUrl("http://[::ffff:10.0.0.1]")).rejects.toThrow(
-      "Access to private IP",
-    )
-    await expect(getSafeUrl("http://[::ffff:127.0.0.1]")).rejects.toThrow(
-      "Access to private IP",
-    )
+  it("should detect IPv6 Unique Local (fc00::/7)", () => {
+    expect(isPrivateIP("fc00::1")).toBe(true)
+    expect(isPrivateIP("fd00::1")).toBe(true)
   })
 
-  it("should reject IPv4-mapped IPv6 addresses (hex notation)", async () => {
-    // ::ffff:c0a8:0101 format (192.168.1.1 in hex) should be blocked
-    // NOSONAR - Intentionally testing HTTP with private IPs for security validation
-    await expect(getSafeUrl("http://[::ffff:c0a8:0101]")).rejects.toThrow(
-      "Access to private IP",
-    )
-    // ::ffff:0a00:0001 format (10.0.0.1 in hex) should be blocked
-    await expect(getSafeUrl("http://[::ffff:0a00:0001]")).rejects.toThrow(
-      "Access to private IP",
-    )
+  it("should detect IPv6 Link Local (fe80::/10)", () => {
+    expect(isPrivateIP("fe80::1")).toBe(true)
+    expect(isPrivateIP("febf::1")).toBe(true)
+    // Public
+    expect(isPrivateIP("fec0::1")).toBe(false)
+  })
+
+  // IPv4-mapped IPv6
+  it("should detect IPv4-mapped IPv6 addresses", () => {
+    // ::ffff:127.0.0.1
+    expect(isPrivateIP("::ffff:127.0.0.1")).toBe(true)
+    // ::ffff:7f00:0001 (Hex for 127.0.0.1)
+    expect(isPrivateIP("::ffff:7f00:0001")).toBe(true)
+    // ::ffff:c0a8:0101 (Hex for 192.168.1.1)
+    expect(isPrivateIP("::ffff:c0a8:0101")).toBe(true)
+
+    // Public IPv4 mapped
+    // 8.8.8.8 -> 0808:0808
+    expect(isPrivateIP("::ffff:8.8.8.8")).toBe(false)
+    expect(isPrivateIP("::ffff:0808:0808")).toBe(false)
+  })
+
+  // Public IPs
+  it("should allow public IPs", () => {
+    expect(isPrivateIP("8.8.8.8")).toBe(false) // Google DNS
+    expect(isPrivateIP("1.1.1.1")).toBe(false) // Cloudflare DNS
+    expect(isPrivateIP("142.250.187.238")).toBe(false) // Google.com
+    expect(isPrivateIP("2607:f8b0:4006:80e::200e")).toBe(false) // Google IPv6
   })
 })

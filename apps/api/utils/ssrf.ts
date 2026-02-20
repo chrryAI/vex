@@ -20,7 +20,7 @@ const getEnv = () => {
 const isProduction =
   getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
 
-function isPrivateIP(ip: string): boolean {
+export function isPrivateIP(ip: string): boolean {
   // Helper function to check IPv4 address
   function checkIPv4Private(ipv4: string): boolean {
     const parts = ipv4.split(".").map(Number)

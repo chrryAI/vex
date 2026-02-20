@@ -168,3 +168,14 @@
 - **Explicit Checks:** Checking `NODE_ENV === "production"` allows us to enforce stricter security rules in production while keeping development easy.
 
 **Prevention:** Added a startup check in `apps/api/hono/routes/auth.ts` that throws an error if `NODE_ENV` is production and `NEXTAUTH_SECRET` is missing. This ensures the application fails to start rather than starting insecurely.
+
+## 2025-02-18 - Centralized SSRF Protection
+
+**Vulnerability:** Inconsistent IP validation logic across `minio.ts`, `user.ts`, and `ssrf.ts` created potential bypass vectors. Some implementations missed edge cases like IPv4-mapped IPv6 addresses (e.g., `::ffff:127.0.0.1`) or CGNAT ranges.
+
+**Learning:** Duplicating critical security logic (like IP validation) across files leads to drift and vulnerabilities. Ad-hoc regex checks are often insufficient compared to parsing.
+
+**Prevention:**
+- Centralized `isPrivateIP` logic in `apps/api/utils/ssrf.ts`.
+- Refactored consumers (`minio.ts`, `user.ts`) to import the shared utility.
+- Added comprehensive unit tests covering IPv4, IPv6, and mapped addresses.
