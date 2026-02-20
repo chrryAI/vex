@@ -8,6 +8,9 @@ global.React = React
 
 import FocusButton from "../FocusButton"
 
+// Mock platform state
+let mockPlatformState = { os: "web", isExtension: false }
+
 // Mock platform components
 vi.mock("../platform", async () => {
   return {
@@ -28,7 +31,7 @@ vi.mock("../platform", async () => {
     Main: ({ children, ...props }: any) => <main {...props}>{children}</main>,
     Input: ({ ...props }: any) => <input {...props} />,
     Video: ({ ...props }: any) => <video {...props} />,
-    usePlatform: () => ({ os: "web", isExtension: false }),
+    usePlatform: () => mockPlatformState,
     useTheme: () => ({ enableSound: true, setEnableSound: vi.fn(), setTheme: vi.fn() }),
     useKeepAwake: vi.fn(),
     DraggableList: () => null,
@@ -129,7 +132,7 @@ vi.mock("../context/StylesContext", () => ({
 }))
 
 // Mock context providers
-const mockTimerContext = {
+let mockTimerContext = {
   time: 1500, // 25 mins
   presetMin1: 25,
   presetMin2: 15,
@@ -227,25 +230,78 @@ vi.mock("../ThemeSwitcher", () => ({ default: () => null }))
 vi.mock("../a/A", () => ({ default: () => null }))
 
 describe("FocusButton", () => {
-  afterEach(() => {
+  beforeEach(() => {
+    mockPlatformState = { os: "web", isExtension: false }
+    mockTimerContext.playKitasaku = false
     vi.clearAllMocks()
   })
 
-  it("calls startAdjustment and stopAdjustment when Enter is pressed on Minutes Up button", () => {
+  // --- Time Adjustment Button Tests ---
+
+  it("adjusts Minutes Up when Enter is pressed", () => {
     vi.useFakeTimers()
     const { getByLabelText } = render(<FocusButton />)
-    const minutesUp = getByLabelText("Increase minutes")
+    const btn = getByLabelText("Increase minutes")
 
-    fireEvent.keyDown(minutesUp, { key: "Enter" })
+    fireEvent.keyDown(btn, { key: "Enter" })
 
     expect(mockTimerContext.startAdjustment).toHaveBeenCalledWith(1, true)
-
     vi.advanceTimersByTime(100)
     expect(mockTimerContext.stopAdjustment).toHaveBeenCalled()
     vi.useRealTimers()
   })
 
-  it("renders Let's focus as a button with correct aria-label", () => {
+  it("adjusts Minutes Down when Space is pressed", () => {
+    vi.useFakeTimers()
+    const { getByLabelText } = render(<FocusButton />)
+    const btn = getByLabelText("Decrease minutes")
+
+    fireEvent.keyDown(btn, { key: " " })
+
+    expect(mockTimerContext.startAdjustment).toHaveBeenCalledWith(-1, true)
+    vi.advanceTimersByTime(100)
+    expect(mockTimerContext.stopAdjustment).toHaveBeenCalled()
+    vi.useRealTimers()
+  })
+
+  it("adjusts Seconds Up when Enter is pressed", () => {
+    vi.useFakeTimers()
+    const { getByLabelText } = render(<FocusButton />)
+    const btn = getByLabelText("Increase seconds")
+
+    fireEvent.keyDown(btn, { key: "Enter" })
+
+    expect(mockTimerContext.startAdjustment).toHaveBeenCalledWith(1, false)
+    vi.advanceTimersByTime(100)
+    expect(mockTimerContext.stopAdjustment).toHaveBeenCalled()
+    vi.useRealTimers()
+  })
+
+  it("adjusts Seconds Down when Space is pressed", () => {
+    vi.useFakeTimers()
+    const { getByLabelText } = render(<FocusButton />)
+    const btn = getByLabelText("Decrease seconds")
+
+    fireEvent.keyDown(btn, { key: " " })
+
+    expect(mockTimerContext.startAdjustment).toHaveBeenCalledWith(-1, false)
+    vi.advanceTimersByTime(100)
+    expect(mockTimerContext.stopAdjustment).toHaveBeenCalled()
+    vi.useRealTimers()
+  })
+
+  it("ignores other keys on time adjustment buttons", () => {
+    const { getByLabelText } = render(<FocusButton />)
+    const btn = getByLabelText("Increase minutes")
+
+    fireEvent.keyDown(btn, { key: "a" })
+    expect(mockTimerContext.startAdjustment).not.toHaveBeenCalled()
+  })
+
+  // --- "Let's focus" Button Tests ---
+
+  it("renders Let's focus as a button with correct aria-label (Play state)", () => {
+    mockTimerContext.playKitasaku = false
     const { getByLabelText } = render(<FocusButton />)
     const letsFocusBtn = getByLabelText("Play Kitasaku video")
 
@@ -255,4 +311,29 @@ describe("FocusButton", () => {
     fireEvent.click(letsFocusBtn)
     expect(mockTimerContext.setPlayKitasaku).toHaveBeenCalledWith(true)
   })
+
+  it("renders Let's focus as a button with correct aria-label (Pause state)", () => {
+    mockTimerContext.playKitasaku = true
+    const { getByLabelText } = render(<FocusButton />)
+    const letsFocusBtn = getByLabelText("Pause Kitasaku video")
+
+    expect(letsFocusBtn.tagName).toBe("BUTTON")
+
+    fireEvent.click(letsFocusBtn)
+    expect(mockTimerContext.setPlayKitasaku).toHaveBeenCalledWith(false)
+  })
+
+  // it("handles iOS video playback on click", async () => {
+  //   mockPlatformState = { os: "ios", isExtension: false }
+  //   mockTimerContext.playKitasaku = false
+
+  //   const { getByLabelText } = render(<FocusButton />)
+  //   const letsFocusBtn = getByLabelText("Play Kitasaku video")
+
+  //   // We can't easily verify the video ref play() call here because the ref is internal
+  //   // and video element is mocked. But we can verify setPlayKitasaku is still called.
+
+  //   fireEvent.click(letsFocusBtn)
+  //   expect(mockTimerContext.setPlayKitasaku).toHaveBeenCalledWith(true)
+  // })
 })
