@@ -27,7 +27,13 @@ vi.mock("@repo/db", () => ({
     select: vi.fn(() => ({
       from: vi.fn(() => ({ where: vi.fn(() => ({ limit: vi.fn() })) })),
     })),
-    update: vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn() })) })),
+    update: vi.fn(() => ({
+      set: vi.fn(() => ({
+        where: vi.fn(() => ({
+          returning: vi.fn(() => [{ token: "mock-token" }]),
+        })),
+      })),
+    })),
   },
   authExchangeCodes: {},
 }))
@@ -78,7 +84,9 @@ describe("Auth Routes Rate Limiting", () => {
 
     expect(res.status).toBe(429)
     const body = await res.json()
-    expect(body).toEqual({ error: "Too many login attempts" })
+    expect(body).toEqual({
+      error: "Too many login attempts",
+    })
     expect(mockCheckAuthRateLimit).toHaveBeenCalled()
   })
 
@@ -100,7 +108,9 @@ describe("Auth Routes Rate Limiting", () => {
 
     expect(res.status).toBe(429)
     const body = await res.json()
-    expect(body).toEqual({ error: "Too many login attempts" })
+    expect(body).toEqual({
+      error: "Too many login attempts",
+    })
     expect(mockCheckAuthRateLimit).toHaveBeenCalled()
   })
 })

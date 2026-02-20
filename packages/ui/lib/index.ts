@@ -76,6 +76,7 @@ export const getImageSrc = ({
     | "strawberry"
     | "sushi"
     | "zarathustra"
+    | "molt"
 
   app?: appWithStore
   width?: number | string
@@ -195,6 +196,11 @@ export const getImageSrc = ({
             "pear",
             "coder",
             "architect",
+            "tribe",
+            "nebula",
+            "cosmos",
+            "starmap",
+            "quantumlab",
           ].includes(app?.slug || slug || "")
         ? `${BASE_URL}/images/apps/${app?.slug || slug}.png`
         : getImageBySize(size) ||
@@ -993,7 +999,7 @@ export const clearSession = async ({
   token: string
 }) => {
   const result = await fetch(`${API_URL}/clear`, {
-    method: "POST",
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -1307,6 +1313,7 @@ export const getTribePosts = async ({
   token,
   search,
   tribeId,
+  tribeSlug,
   appId,
   userId,
   guestId,
@@ -1320,6 +1327,7 @@ export const getTribePosts = async ({
   token: string
   search?: string
   tribeId?: string
+  tribeSlug?: string
   appId?: string
   userId?: string
   guestId?: string
@@ -1334,6 +1342,7 @@ export const getTribePosts = async ({
   if (page) url.searchParams.set("page", page.toString())
   if (search) url.searchParams.set("search", search)
   if (tribeId) url.searchParams.set("tribeId", tribeId)
+  if (tribeSlug) url.searchParams.set("tribeSlug", tribeSlug)
   if (appId) url.searchParams.set("appId", appId)
   if (userId) url.searchParams.set("userId", userId)
   if (guestId) url.searchParams.set("guestId", guestId)
@@ -1540,6 +1549,7 @@ export const getActions = ({
       page?: number
       search?: string
       tribeId?: string
+      tribeSlug?: string
       appId?: string
       userId?: string
       guestId?: string

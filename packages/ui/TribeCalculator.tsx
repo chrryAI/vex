@@ -76,7 +76,7 @@ const getDefaultScheduleTimes = (): ScheduleTime[] => {
       minute: slot1.minute,
       postType: "post",
       model: "sushi",
-      charLimit: 500,
+      charLimit: 1000,
       credits: 0,
     },
     {
@@ -84,7 +84,7 @@ const getDefaultScheduleTimes = (): ScheduleTime[] => {
       minute: slot2.minute,
       postType: "comment",
       model: "sushi",
-      charLimit: 300,
+      charLimit: 500,
       credits: 0,
     },
     {
@@ -92,7 +92,7 @@ const getDefaultScheduleTimes = (): ScheduleTime[] => {
       minute: slot3.minute,
       postType: "engagement",
       model: "sushi",
-      charLimit: 200,
+      charLimit: 500,
       credits: 0,
     },
   ]
@@ -190,8 +190,8 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
         (existingSchedule?.scheduledTimes.map((slot: any) => {
           // Parse hour/minute from ISO time string (e.g., "2026-02-15T20:40:51.755Z")
           // Extract time portion: "20:40:51.755Z" -> ["20", "40"]
-          const timeStr = slot.time.split("T")[1] // Get time part after "T"
-          const [hour, minute] = timeStr.split(":").map(Number)
+          const timeStr = slot?.time?.split("T")[1] ?? slot?.time // Get time part after "T"
+          const [hour, minute] = timeStr?.split(":").map(Number)
           return {
             hour,
             minute,
@@ -212,7 +212,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     const endDate =
       !skipExistingSchedule && existingSchedule?.endDate
         ? new Date(existingSchedule.endDate).toISOString().split("T")[0]
-        : new Date(today.getTime() + 25 * 24 * 60 * 60 * 1000)
+        : new Date(today.getTime() + 5 * 24 * 60 * 60 * 1000)
             .toISOString()
             .split("T")[0] || ""
 
@@ -258,7 +258,8 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   const totalPosts = formData?.totalPosts
 
   useEffect(() => {
-    existingSchedule && setFormData(getFormState())
+    if (!existingSchedule) return
+    setFormData(getFormState())
   }, [existingSchedule])
 
   const totalPrice = formData.totalPrice
@@ -321,7 +322,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
       schedule
         .map(
           (slot) =>
-            `${slot.hour}-${slot.minute}-${slot.postType}-${slot.model}-${slot.charLimit}`,
+            `${slot.hour}-${slot.minute}-${slot.postType}-${slot.model}-${slot.charLimit}-${slot.intervalMinutes || 120}`,
         )
         .join("|"),
     [schedule],
@@ -583,6 +584,27 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
       credits: creditsPerPost,
     } as ScheduleTime
 
+    if (currentSlot.postType === "post") {
+      if ((updates.charLimit ?? currentSlot.charLimit) < 1000) {
+        toast.error(t("Post character limit cannot be below 1000"))
+        return
+      }
+    }
+
+    if (currentSlot.postType === "comment") {
+      if ((updates.charLimit ?? currentSlot.charLimit) < 500) {
+        toast.error(t("Comment character limit cannot be below 500"))
+        return
+      }
+    }
+
+    if (currentSlot.postType === "engagement") {
+      if ((updates.charLimit ?? currentSlot.charLimit) < 500) {
+        toast.error(t("Engagement character limit cannot be below 500"))
+        return
+      }
+    }
+
     // If updating time, check cooldown constraint
     if (updates.hour !== undefined || updates.minute !== undefined) {
       const slotPostType = updates.postType ?? currentSlot.postType
@@ -705,12 +727,15 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "0.8rem",
+              gap: "0.5rem",
               ...utilities.right.style,
             }}
           >
-            <Text style={{ fontSize: "0.8rem", fontWeight: "500" }}>
-              {t("Frequency:")}
+            <Text
+              title={t("Frequency:")}
+              style={{ fontSize: "1.2rem", fontWeight: "500" }}
+            >
+              ⌚️
             </Text>
             <Select
               style={{

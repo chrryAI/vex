@@ -13,7 +13,6 @@ import {
   useNavigationContext,
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
-import { useThreadPresence } from "./hooks/useThreadPresence"
 import { useWebSocket } from "./hooks/useWebSocket"
 import Img from "./Image"
 import {
@@ -43,6 +42,7 @@ import { checkSpeechLimits } from "./lib/speechLimits"
 import { stripMarkdown } from "./lib/stripMarkdown"
 import MarkdownContent from "./MarkdownContent"
 import { useMessageStyles } from "./Message.styles"
+import MessageUserStatus from "./MessageUserStatus"
 import Modal from "./Modal"
 import { Button, Div, Span, useTheme, Video } from "./platform"
 import type {
@@ -148,17 +148,7 @@ function Message({
 
   const threadId = message.message.threadId
 
-  const { typingUsers, onlineUsers } = useThreadPresence({
-    threadId,
-  })
-
   const isStreamingStop = message.message.isStreamingStop
-
-  const isTyping = typingUsers.some(
-    (u) =>
-      (u.userId && u.userId === message.user?.id) ||
-      (u.guestId && u.guestId === message.guest?.id),
-  )
 
   const agentImageLoader = useCallback(() => {
     return (
@@ -877,41 +867,7 @@ function Message({
               ...(owner && styles.owner.style),
             }}
           >
-            <Span style={styles.name.style}>
-              <Div
-                style={{
-                  ...styles.presenceIndicator.style,
-                  ...(isTyping ||
-                  message.user?.id === ownerId ||
-                  message.guest?.id === ownerId ||
-                  onlineUsers.some(
-                    (u) =>
-                      u.userId === message.user?.id ||
-                      u.guestId === message.guest?.id,
-                  )
-                    ? styles.online.style
-                    : styles.offline.style),
-                }}
-              />
-              {
-                <Span style={{ ...styles.nameWithPresence.style }}>
-                  {owner
-                    ? t("You")
-                    : message.user?.name || message.user?.email || t("Guest")}
-                </Span>
-              }
-              {isTyping && (
-                <Div
-                  className="typing"
-                  data-testid="typing-indicator"
-                  style={styles.dots.style}
-                >
-                  <Span style={styles.dotsSpan.style}></Span>
-                  <Span style={styles.dotsSpan.style}></Span>
-                  <Span style={styles.dotsSpan.style}></Span>
-                </Div>
-              )}
-            </Span>
+            <MessageUserStatus message={message} />
             {remoteDeleted ? (
               <Div style={{ ...styles.userMessageContent.style, marginTop: 5 }}>
                 <Span>
@@ -1385,6 +1341,21 @@ function Message({
             )}
             <Div style={styles.footer.style}>
               <Div style={styles.left.style}>
+                {message.message.tribeId && (
+                  <A href={`/p${message.message.tribeId}`}>
+                    <Img slug="zarathustra" />
+                    {t("Tribe")}
+                  </A>
+                )}
+                {message.message.moltId && (
+                  <A
+                    openInNewTab
+                    href={`https://www.moltbook.com/post/${message.message.moltId}`}
+                  >
+                    <Img icon="molt" />
+                    {t("Moltbook")}
+                  </A>
+                )}
                 <Button
                   className="link"
                   onClick={() => copyToClipboard(message.message.content)}
@@ -1423,7 +1394,6 @@ function Message({
               </Div>
 
               {getLikeButtons()}
-
               <Button
                 disabled={isSpeechLoading}
                 className="link"

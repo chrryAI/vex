@@ -43,23 +43,14 @@ export default function EnableNotifications({
   const { isExtension } = usePlatform()
 
   // Auth context
-  const {
-    user,
-    token,
-    guest,
-    API_URL,
-    userBaseApp,
-    guestBaseApp,
-    getAppSlug,
-    app,
-  } = useAuth()
+  const { user, token, guest, API_URL, accountApp, getAppSlug, app } = useAuth()
 
   // Platform context
   const { os, isStandalone, device } = usePlatform()
 
   const { setIsNewAppChat } = useChat()
 
-  const { setShowAddToHomeScreen } = useNavigationContext()
+  const { setShowAddToHomeScreen, pathname } = useNavigationContext()
 
   useEffect(() => {
     setIsMounted(true)
@@ -100,7 +91,7 @@ export default function EnableNotifications({
     return result
   }
 
-  const storeApp = userBaseApp || guestBaseApp
+  const storeApp = accountApp
 
   const { utilities } = useStyles()
 
@@ -295,7 +286,7 @@ export default function EnableNotifications({
   return (
     <Div style={styles.enableNotificationsContainer.style}>
       <Weather onLocationClick={onLocationClick} showLocation={!shouldShow} />
-      {storeApp && storeApp?.id !== app?.id ? (
+      {storeApp && getAppSlug(storeApp) !== pathname ? (
         <StoreApp />
       ) : (
         isMounted &&

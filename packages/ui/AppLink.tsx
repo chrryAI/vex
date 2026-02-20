@@ -1,7 +1,6 @@
 import React, { type CSSProperties, useEffect } from "react"
 import A from "./a/A"
 import { useAuth, useChat } from "./context/providers"
-import { useStyles } from "./context/StylesContext"
 import Loading from "./Loading"
 import { Button, Span } from "./platform"
 import type { appWithStore } from "./types"
@@ -16,7 +15,7 @@ export default function AppLink({
   title,
   as = "a",
   loadingStyle,
-  isTribe,
+  isTribe = true,
   icon,
   ...props
 }: {
@@ -33,42 +32,47 @@ export default function AppLink({
   icon?: React.ReactNode
   setIsNewAppChat?: (item: appWithStore) => void
 }) {
-  const { setIsWebSearchEnabled, setIsNewAppChat } = useChat()
-  const {
-    loadingApp,
-    getAppSlug,
-    hasStoreApps,
-    setLoadingApp,
-    storeApps,
-    mergeApps,
-  } = useAuth()
+  const { setIsNewAppChat } = useChat()
+  const { loadingApp, getAppSlug, setLoadingAppId, storeApps, mergeApps } =
+    useAuth()
 
-  const [isLoading, setIsLoading] = React.useState(
+  const [isLoadingInternal, setIsLoading] = React.useState(
     loadingApp && loadingApp?.id === app?.id,
   )
 
   React.useEffect(() => {
-    setIsLoading(loadingApp && loadingApp?.id === app?.id)
+    const l = loadingApp && loadingApp?.id === app?.id
+
+    l && setIsLoading(l)
   }, [loadingApp])
 
-  useEffect(() => {
-    const a = storeApps.find((app) => app.id === loadingApp?.id)
-    if (hasStoreApps(a) && a) {
-      setLoadingApp(undefined)
-      props.setIsNewAppChat?.(a)
+  const currentApp = storeApps.find(
+    (a) => a.id === app?.id && a.store?.apps?.length,
+  )
+
+  React.useEffect(() => {
+    if (!isLoadingInternal || loadingApp) return
+    if (currentApp?.id !== app.id) return
+
+    setIsLoading(false)
+
+    if (props.setIsNewAppChat) {
+      props.setIsNewAppChat(currentApp)
+      return
     }
-  }, [loadingApp, storeApps])
+    setIsNewAppChat({ item: currentApp, tribe: isTribe })
+  }, [currentApp, loadingApp])
+
+  const isLoading = isLoadingInternal
 
   useEffect(() => {
     if (!app) return
 
-    const isExist = storeApps.find((a) => a.id === app?.id)
-    if (!isExist) {
+    if (!currentApp) {
       mergeApps([app])
     }
-  }, [storeApps, app])
+  }, [currentApp, app])
 
-  const { utilities } = useStyles()
   if (as === "a") {
     return (
       <A
@@ -85,8 +89,8 @@ export default function AppLink({
           }
           e.preventDefault()
 
-          if (!hasStoreApps(app)) {
-            setLoadingApp(app)
+          if (!currentApp) {
+            setLoadingAppId(app.id)
             onLoading?.()
             return
           }

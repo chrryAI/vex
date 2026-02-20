@@ -16,13 +16,13 @@ export const clear = new Hono()
 clear.use("*", corsMiddleware)
 
 // POST /clear - Clear test data (E2E only)
-clear.post("/", async (c) => {
+clear.patch("/", async (c) => {
   if (!isE2E) {
     return c.json({ error: "Unauthorized" }, 401)
   }
 
   // Add anti-cache headers to prevent caching and reduce CSRF surface
-  c.header("Cache-Control", "no-store")
+  // c.header("Cache-Control", "no-store")
 
   const allFingerprints = TEST_GUEST_FINGERPRINTS.concat(
     TEST_MEMBER_FINGERPRINTS,

@@ -25,6 +25,11 @@ const GOOGLE_WEB_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID
 const GOOGLE_WEB_CLIENT_SECRET = process.env.GOOGLE_WEB_CLIENT_SECRET
 const _GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
 const _GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET
+
+if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_SECRET) {
+  throw new Error("❌ NEXTAUTH_SECRET is not set in production environment")
+}
+
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || "development-secret"
 const JWT_EXPIRY = "30d"
 const ALLOWED_DOMAINS = [".chrry.ai", ".chrry.dev", ".chrry.store", "localhost"]
@@ -82,9 +87,10 @@ async function generateExchangeCode(token: string): Promise<string> {
 async function exchangeCodeForToken(code: string): Promise<string | null> {
   const now = new Date()
 
+  // Use a single atomic UPDATE ... RETURNING query to prevent race conditions (TOCTOU)
   const [result] = await db
-    .select()
-    .from(authExchangeCodes)
+    .update(authExchangeCodes)
+    .set({ used: true })
     .where(
       and(
         eq(authExchangeCodes.code, code),
@@ -92,14 +98,9 @@ async function exchangeCodeForToken(code: string): Promise<string | null> {
         gt(authExchangeCodes.expiresOn, now),
       ),
     )
-    .limit(1)
+    .returning()
 
   if (!result) return null
-
-  await db
-    .update(authExchangeCodes)
-    .set({ used: true })
-    .where(eq(authExchangeCodes.id, result.id))
 
   return result.token
 }
@@ -326,7 +327,12 @@ function extractTokenFromRequest(c: Context): string | null {
 
 // ==================== RESPONSE BUILDERS ====================
 
-function buildAuthResponse(user: any, authCode: string, callbackUrl?: string) {
+function buildAuthResponse(
+  user: any,
+  authCode: string,
+  callbackUrl?: string,
+  token?: string,
+) {
   return {
     user: {
       id: user.id,
@@ -334,7 +340,8 @@ function buildAuthResponse(user: any, authCode: string, callbackUrl?: string) {
       name: user.name,
       image: user.image,
     },
-    token: authCode,
+    token: token ?? authCode,
+    authCode,
     ...(callbackUrl && {
       callbackUrl: `${callbackUrl}${callbackUrl.includes("?") ? "&" : "?"}auth_token=${authCode}`,
     }),
@@ -439,7 +446,7 @@ authRoutes.post("/signin/password", async (c) => {
     setCookieFromHost(c, token, "None")
 
     const authCode = await generateExchangeCode(token)
-    return c.json(buildAuthResponse(user, authCode, callbackUrl))
+    return c.json(buildAuthResponse(user, authCode, callbackUrl, token))
   } catch (error) {
     console.error("Signin error:", error)
     return c.json({ error: "Signin failed" }, 500)
@@ -564,7 +571,7 @@ authRoutes.post("/native/google", async (c) => {
     const authCode = await generateExchangeCode(token)
 
     return c.json({
-      ...buildAuthResponse(user, authCode),
+      ...buildAuthResponse(user, authCode, undefined, token),
       jwt: token,
     })
   } catch (error) {
@@ -582,7 +589,7 @@ authRoutes.get("/signin/google", async (c) => {
     const { callbackUrl, errorUrl } = getCallbackUrls(c)
     const state = createOAuthState(callbackUrl, errorUrl)
 
-    setCookie(c, "oauth_state", state, {
+    setCookie(c, "token", state, {
       httpOnly: true,
       secure: true,
       sameSite: "Lax",
@@ -619,7 +626,7 @@ authRoutes.get("/callback/google", async (c) => {
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
     }
 
-    const storedState = getCookie(c, "oauth_state")
+    const storedState = getCookie(c, "token")
 
     if (state !== storedState) {
       // Redirect to static URL to prevent Open Redirect
@@ -674,7 +681,7 @@ authRoutes.get("/callback/google", async (c) => {
 
     const token = generateToken(user.id, user.email)
 
-    deleteCookie(c, "oauth_state", {
+    deleteCookie(c, "token", {
       path: "/",
       secure: true,
       sameSite: "Lax",
@@ -751,7 +758,7 @@ authRoutes.post("/native/apple", async (c) => {
     const authCode = await generateExchangeCode(token)
 
     return c.json({
-      ...buildAuthResponse(user, authCode),
+      ...buildAuthResponse(user, authCode, undefined, token),
       jwt: token,
     })
   } catch (error) {
@@ -771,7 +778,7 @@ authRoutes.get("/signin/apple", async (c) => {
     const { callbackUrl, errorUrl } = getCallbackUrls(c)
     const state = createOAuthState(callbackUrl, errorUrl)
 
-    setCookie(c, "oauth_state", state, {
+    setCookie(c, "token", state, {
       httpOnly: true,
       secure: true,
       sameSite: "None", // Required for form_post callback from Apple
@@ -810,7 +817,7 @@ authRoutes.post("/callback/apple", async (c) => {
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
     }
 
-    const storedState = getCookie(c, "oauth_state")
+    const storedState = getCookie(c, "token")
 
     if (state !== storedState) {
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
@@ -874,7 +881,7 @@ authRoutes.post("/callback/apple", async (c) => {
 
     const token = generateToken(user.id, user.email)
 
-    deleteCookie(c, "oauth_state", {
+    deleteCookie(c, "token", {
       path: "/",
       secure: true,
       sameSite: "None",

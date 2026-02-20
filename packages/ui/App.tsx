@@ -206,6 +206,7 @@ export default function App({
   const vex = apps.find((app) => app.slug === "vex")
   const atlas = apps.find((app) => app.slug === "atlas")
   const grape = apps.find((app) => app.slug === "grape")
+  const nebula = apps.find((app) => app.slug === "nebula")
   const zarathustra = apps.find((app) => app.slug === "zarathustra")
 
   const isBlossom = app?.store?.id === chrry?.store?.id
@@ -217,13 +218,13 @@ export default function App({
           item.id !== burnApp?.id &&
           item.id !== store?.appId &&
           item.id !== chrry?.id &&
-          (item.id !== grape?.id || !isBlossom) &&
-          (item.id !== zarathustra?.id || !isBlossom) &&
+          (item.id !== nebula?.id || !isBlossom) &&
+          (item.id !== grape?.id || (!isBlossom && !accountApp)) &&
+          (item.id !== zarathustra?.id || (!isBlossom && !accountApp)) &&
           (item.id === atlas?.id
-            ? app?.store?.app?.id === vex?.id || baseApp?.id === vex?.id
+            ? !isBlossom && accountApp?.id !== app?.id
             : true) &&
-          item.id !== popcorn?.id &&
-          (isBlossom ? item.id !== atlas?.id : true),
+          item.id !== popcorn?.id,
       )
       .filter((item) => item.id !== focus?.id)
       .sort((a, b) => {
@@ -1024,7 +1025,7 @@ export default function App({
             }}
           >
             <Div style={{ ...styles.section.style }}>
-              {appStatus?.part || app?.id === accountApp?.id ? null : (
+              {appStatus?.part ? null : (
                 <Button
                   data-testid="add-agent-button"
                   className="link"
@@ -1036,6 +1037,12 @@ export default function App({
                   }}
                   key={suggestSaveApp ? "highlights" : "settings"}
                   onClick={() => {
+                    if (accountApp?.id === app?.id) {
+                      setAppStatus({
+                        step: canEditApp ? "update" : "add",
+                        part: "name",
+                      })
+                    }
                     if (accountApp) {
                       setIsNewAppChat({ item: accountApp })
                       return
@@ -1070,7 +1077,9 @@ export default function App({
                       ? "Cancel"
                       : !accountApp
                         ? "Add agent"
-                        : "Go to agent",
+                        : app?.id === accountApp?.id
+                          ? "Edit your agent"
+                          : "Go to agent",
                   )}
                 >
                   <Span
@@ -1087,7 +1096,9 @@ export default function App({
                       ? "Cancel"
                       : !accountApp
                         ? "Add agent"
-                        : "Go to agent",
+                        : app?.id === accountApp?.id
+                          ? "Edit your agent"
+                          : "Go to agent",
                   )}
                   <Img
                     showLoading={false}
@@ -1241,10 +1252,11 @@ export default function App({
                       onClick={() => {
                         setAppStatus(undefined)
                       }}
-                      style={utilities.link.style}
+                      style={{ ...utilities.link.style, color: COLORS.red }}
                       title={t(isManagingApp ? "Cancel" : "Add agent")}
                     >
-                      <CircleMinus color="var(--accent-1)" size={24} />
+                      <CircleMinus color={COLORS.red} size={24} />
+                      <Span> {t("Cancel")}</Span>
                     </Button>
                   )}
                 </Div>
@@ -1349,22 +1361,25 @@ export default function App({
               >
                 <Div style={{ ...styles.apps.style, overflowWrap: "anywhere" }}>
                   {appsState.slice(0, 5)?.map((item, index) => {
-                    const showAtlasHere = index === 1 && isBlossom
+                    const showAtlasHere =
+                      index === 1 && (isBlossom || accountApp?.id === app?.id)
 
                     const showFocusHere = focus && !showAtlasHere && index === 1
-
-                    const showPacmanHere =
-                      // !showAtlasThere &&
-                      app?.store?.id !== popcorn?.store?.id && index === 2
 
                     const showSpaceInvaderHere = index === 3
 
                     const showChrryHere =
                       index === 0 && chrry && app?.id !== chrry.id
+
                     const showZarathustraHere =
+                      store?.slug !== "books" &&
                       !showChrryHere &&
-                      index === 0 &&
-                      store?.appId !== zarathustra?.id
+                      index === (accountApp?.id === app?.id ? 2 : 0)
+
+                    const showPacmanHere =
+                      !showZarathustraHere &&
+                      app?.store?.id !== popcorn?.store?.id &&
+                      index === 2
 
                     return (
                       <Div
@@ -1412,7 +1427,6 @@ export default function App({
                               )}
                             </A>
                           )}
-
                           {showZarathustraHere &&
                             zarathustra &&
                             store &&
@@ -1454,14 +1468,12 @@ export default function App({
                               </A>
                             )}
                           {showPacmanHere ? (
-                            isSettingVisible ? (
-                              <BurnButton style={{ ...styles.popcorn.style }} />
-                            ) : popcorn &&
-                              store &&
-                              store?.appId !== popcorn?.id &&
-                              store?.apps?.some(
-                                (app) => app.id === popcorn.id,
-                              ) ? (
+                            popcorn &&
+                            store &&
+                            store?.appId !== popcorn?.id &&
+                            store?.apps?.some(
+                              (app) => app.id === popcorn.id,
+                            ) ? (
                               <A
                                 preventDefault
                                 href={getAppSlug(popcorn)}
@@ -1514,7 +1526,6 @@ export default function App({
                               )
                             )
                           ) : null}
-
                           {item.id === app?.id ? (
                             <>
                               <StoreApp key={"vex"} />

@@ -73,6 +73,14 @@ vi.mock("../Messages.styles", () => ({
   }),
 }))
 
+vi.mock("../utils/siteConfig", async (importOriginal) => {
+  const actual = (await importOriginal()) as any
+  return {
+    ...actual,
+    isE2E: false,
+  }
+})
+
 // Mock hooks
 let mockWebSocketCallback: any = null
 vi.mock("../hooks/useWebSocket", () => ({

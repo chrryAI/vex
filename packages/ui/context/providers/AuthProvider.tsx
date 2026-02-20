@@ -27,6 +27,7 @@ import { defaultLocale, type locale, locales } from "../../locales"
 import {
   isBrowserExtension,
   storage,
+  useCookie,
   useCookieOrLocalStorage,
   useLocalStorage,
   useNavigation,
@@ -120,6 +121,7 @@ const AuthContext = createContext<
       timer?: timer
       tribeSlug?: string
       currentTribe?: tribe
+      getTribeUrl: () => string
       mergeApps: (apps: appWithStore[]) => void
       postId?: string
       tribes?: paginatedTribes
@@ -512,7 +514,12 @@ export function AuthProvider({
         if (response.ok) {
           const data = await response.json()
           setState({ user: data.user, loading: false })
-          return { success: true, user: data.user, token: data.token }
+          return {
+            success: true,
+            user: data.user,
+            token: data.token,
+            authCode: data.authCode,
+          }
         } else {
           const error = await response.json()
           return { success: false, error: error.error || "Sign in failed" }
@@ -825,10 +832,23 @@ export function AuthProvider({
 
   const [showGrapes, setShowGrapes] = useState(false)
 
-  const [deviceId, setDeviceId] = useCookieOrLocalStorage(
+  const [deviceIdExtension, setDeviceIdExtension] = useCookieOrLocalStorage(
     "deviceId",
     props.session?.deviceId,
   )
+
+  const [deviceIdWeb, setDeviceIdWeb] = useCookie(
+    "deviceId",
+    props.session?.deviceId,
+  )
+
+  const deviceId =
+    isExtension || isTauri || isCapacitor ? deviceIdExtension : deviceIdWeb
+
+  const setDeviceId =
+    isExtension || isTauri || isCapacitor
+      ? setDeviceIdExtension
+      : setDeviceIdWeb
 
   const [enableNotifications, setEnableNotifications] = useLocalStorage<
     boolean | undefined
@@ -855,7 +875,7 @@ export function AuthProvider({
     isExtension,
   )
 
-  const [tokenWeb, setTokenWeb] = useState(ssrToken)
+  const [tokenWeb, setTokenWeb, removeTokenWeb] = useCookie("token", ssrToken)
 
   const token =
     isExtension || isTauri || isCapacitor ? tokenExtension : tokenWeb
@@ -864,8 +884,7 @@ export function AuthProvider({
     isExtension || isTauri || isCapacitor
       ? setTokenExtension
       : (token: string | undefined) => {
-          setTokenWeb(token)
-          setTokenExtension(token)
+          token ? setTokenWeb(token) : removeTokenWeb()
         }
 
   useEffect(() => {
@@ -998,10 +1017,12 @@ export function AuthProvider({
       return
     }
     if (!fingerprint) {
-      const fp = uuidv4()
-      setFingerprint(fp)
+      setFingerprint(uuidv4())
     }
-  }, [fingerprint, isStorageReady])
+    if (!deviceId) {
+      setDeviceId(uuidv4())
+    }
+  }, [fingerprint, isStorageReady, deviceId])
 
   useEffect(() => {
     if (isTauri && !isStorageReady) {
@@ -1112,12 +1133,18 @@ export function AuthProvider({
       (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
       session?.app?.store?.apps || props.app?.store?.apps || [],
     ),
-    accountApp ? [accountApp] : [],
+
+    merge(
+      (tribePost?.comments.map((p) => p.app) as appWithStore[]) || [],
+      accountApp ? [accountApp] : [],
+    ),
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
   useEffect(() => {
-    const diff = allApps.filter((app) => !storeApps?.includes(app))
+    const diff = allApps.filter(
+      (app) => !storeApps?.some((a) => a.id === app.id),
+    )
     if (diff && diff.length > 0) {
       mergeApps(diff)
     }
@@ -1726,7 +1753,7 @@ export function AuthProvider({
     apps: appWithStore[],
   ): appWithStore | undefined => {
     // if (focus && showFocus) return focus
-    if (path === "/" && !showFocus && !showTribe) return undefined
+    if (path === "/" && !showFocus) return undefined
 
     const { appSlug } = getAppAndStoreSlugs(path, {
       defaultAppSlug: baseApp?.slug || siteConfig.slug,
@@ -1937,7 +1964,7 @@ export function AuthProvider({
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
-  const storeAppIternal = storeApps?.find(
+  const storeAppInternal = storeApps?.find(
     (item) =>
       app?.store?.appId &&
       item.id === app?.store?.appId &&
@@ -1946,7 +1973,7 @@ export function AuthProvider({
   )
 
   const [storeApp, setStoreAppInternal] = useState<appWithStore | undefined>(
-    storeAppIternal,
+    storeAppInternal,
   )
 
   const installs = [
@@ -2038,14 +2065,17 @@ export function AuthProvider({
     }
   }
 
+  const getTribeUrl = () => {
+    return siteConfig?.isTribe ? "/" : `/tribe`
+  }
+
   const canBurn = true
+
+  const isZ = searchParams?.get("programme") === "true"
 
   const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage<
     boolean | undefined
-  >(
-    "prog",
-    baseApp ? isBaseAppZarathustra && app?.slug === "zarathustra" : undefined,
-  )
+  >("prog", baseApp ? isBaseAppZarathustra && app?.slug === "zarathustra" : isZ)
 
   useEffect(() => {
     if (!baseApp || !app) return
@@ -2073,15 +2103,11 @@ export function AuthProvider({
     removeParams("programme")
   }
 
-  const grapes =
-    app?.id === zarathustra?.id
-      ? []
-      : storeApps.filter(
-          (app) =>
-            whiteLabels.some((w) => w.slug === app.slug) &&
-            app.store?.appId === app.id &&
-            app.id !== zarathustra?.id,
-        )
+  const grapes = storeApps.filter(
+    (app) =>
+      whiteLabels.some((w) => w.slug === app.slug) &&
+      app.store?.appId === app.id,
+  )
 
   const grape = storeApps.find((app) => app.slug === "grape")
 
@@ -2146,17 +2172,17 @@ export function AuthProvider({
     if (isPearInternal) setShowFocus(false)
   }, [isPearInternal])
 
-  const isProgramme = !!(
-    isProgrammeInternal || searchParams.get("programme") === "true"
-  )
+  const isProgramme =
+    (!!isProgrammeInternal && !siteConfig.isTribe) ||
+    searchParams.get("programme") === "true"
 
   const setStoreApp = (appWithStore?: appWithStore) => {
     appWithStore?.id !== storeApp?.id && setStoreAppInternal(appWithStore)
   }
 
   useEffect(() => {
-    hasStoreApps(app) && setStoreApp(storeAppIternal)
-  }, [storeAppIternal])
+    hasStoreApps(app) && setStoreApp(storeAppInternal)
+  }, [storeAppInternal])
 
   const [slugState, setSlugState] = useState<string | undefined>(
     (app && getAppSlug(app)) || undefined,
@@ -2278,10 +2304,7 @@ export function AuthProvider({
     pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
 
   const canBeTribeProfile =
-    (app
-      ? getAppSlug(app, "/", false) === pathname ||
-        getAppSlug(app, "/") === pathname
-      : false) && !(siteConfig.isTribe && pathname === "/")
+    !showAllTribe && !_isExcluded && !(siteConfig.isTribe && pathname === "/")
 
   const showTribeInitial = !!(
     !postId &&
@@ -2608,7 +2631,7 @@ export function AuthProvider({
       matchedApp = threadApp
     }
 
-    if (!matchedApp && tribePost?.appId) {
+    if (!matchedApp && postId && tribePost) {
       const postApp = storeApps.find((app) => app.id === tribePost.appId)
       matchedApp = postApp
     }
@@ -2636,6 +2659,7 @@ export function AuthProvider({
     thread,
     threadId,
     lastAppId,
+    postId,
     isExtension,
     loadingAppId,
     updatedApp,
@@ -3201,6 +3225,7 @@ export function AuthProvider({
         showTribeProfile,
         postId,
         mergeApps,
+        getTribeUrl,
       }}
     >
       {children}

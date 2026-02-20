@@ -7,7 +7,7 @@ import AppLink from "./AppLink"
 import A from "./a/A"
 import ConfirmButton from "./ConfirmButton"
 import { COLORS, useAppContext } from "./context/AppContext"
-import { useApp, useAuth, useChat, useData } from "./context/providers"
+import { useApp, useAuth, useData } from "./context/providers"
 import { useTribe } from "./context/providers/TribeProvider"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
@@ -23,11 +23,9 @@ import {
   P,
   Span,
   Strong,
-  useNavigation,
   usePlatform,
   useTheme,
 } from "./platform"
-import { useTribePostStyles } from "./TribePost.styles"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
 import { isDevelopment } from "./utils"
 import isOwner from "./utils/isOwner"
@@ -46,12 +44,10 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     postId,
     tribePostError,
     isLoadingPost,
-    refetchPost,
     liveReactions,
     commenting,
     deletePost,
     deleteComment,
-    optimisticLiked,
     tribePost: post,
   } = useTribe()
 
@@ -67,11 +63,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     useAuth()
   const { setAppStatus } = useApp()
   const { FRONTEND_URL } = useData()
-  const styles = useTribePostStyles()
   const { utilities } = useStyles()
-
-  const { push: navigate } = useNavigation()
-  const { setIsNewAppChat } = useChat()
 
   const [tyingToReact, setTyingToReact] = useState("")
   const [tyingToReply, setTyingToReply] = useState<string | undefined>(
@@ -315,22 +307,9 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           >
             {post.app && <Img app={post.app} size={40} />}
             <Div>
-              <A
-                href={`/${getAppSlug(post.app)}`}
-                style={{ fontSize: "1rem" }}
-                onClick={(e: React.MouseEvent) => {
-                  if (e.metaKey || e.ctrlKey) {
-                    return
-                  }
-                  e.preventDefault()
-                  setIsNewAppChat({
-                    item: post.app,
-                    tribe: true,
-                  })
-                }}
-              >
+              <AppLink app={post.app} style={{ fontSize: "1rem" }}>
                 {post.app?.name || t("Anonymous")}
-              </A>
+              </AppLink>
               <P
                 style={{
                   fontSize: ".85rem",
@@ -422,35 +401,22 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                     marginBottom: ".75rem",
                   }}
                 >
-                  <A
-                    onClick={(e) => {
-                      if (e.metaKey || e.ctrlKey) {
-                        return
-                      }
-                      e.preventDefault()
-
-                      if (post.app)
-                        setIsNewAppChat({
-                          item: post.app,
-                          tribe: true,
-                        })
-                    }}
+                  <AppLink
+                    app={post.app}
+                    icon={
+                      <Span style={{ fontSize: "1.3rem" }}>
+                        {post.app.icon}
+                      </Span>
+                    }
+                    loading={<Loading size={28} />}
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: 8,
                     }}
-                    href={post.app ? getAppSlug(post.app) : "/"}
                   >
-                    {post.app && loadingApp?.id !== post.app.id ? (
-                      <Span style={{ fontSize: "1.3rem" }}>
-                        {post.app.icon}
-                      </Span>
-                    ) : (
-                      <Loading size={28} />
-                    )}
                     {post.app?.name}
-                  </A>
+                  </AppLink>
                   {post.app && (
                     <AppLink
                       isTribe={false}
@@ -488,6 +454,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   >
                     {post.app.characterProfile.traits.expertise &&
                       post.app.characterProfile.traits.expertise.length > 0 && (
+                        // deduplicate
                         <Div>
                           <Strong
                             style={{
@@ -506,21 +473,23 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                               marginTop: ".25rem",
                             }}
                           >
-                            {post.app.characterProfile.traits.expertise.map(
-                              (item: string, i: number) => (
-                                <Span
-                                  key={item}
-                                  style={{
-                                    padding: ".25rem .5rem",
-                                    backgroundColor: "var(--shade-2)",
-                                    borderRadius: 8,
-                                    fontSize: ".75rem",
-                                  }}
-                                >
-                                  {item}
-                                </Span>
+                            {[
+                              ...new Set(
+                                post.app.characterProfile.traits.expertise,
                               ),
-                            )}
+                            ].map((item: string, i: number) => (
+                              <Span
+                                key={item}
+                                style={{
+                                  padding: ".25rem .5rem",
+                                  backgroundColor: "var(--shade-2)",
+                                  borderRadius: 8,
+                                  fontSize: ".75rem",
+                                }}
+                              >
+                                {item}
+                              </Span>
+                            ))}
                           </Div>
                         </Div>
                       )}
@@ -528,6 +497,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                     {post.app.characterProfile.traits.communication &&
                       post.app.characterProfile.traits.communication.length >
                         0 && (
+                        // deduplicate
                         <Div>
                           <Strong
                             style={{
@@ -546,27 +516,30 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                               marginTop: ".25rem",
                             }}
                           >
-                            {post.app.characterProfile.traits.communication.map(
-                              (item: string, i: number) => (
-                                <Span
-                                  key={item}
-                                  style={{
-                                    padding: ".25rem .5rem",
-                                    backgroundColor: "var(--shade-2)",
-                                    borderRadius: 8,
-                                    fontSize: ".75rem",
-                                  }}
-                                >
-                                  {item}
-                                </Span>
+                            {[
+                              ...new Set(
+                                post.app.characterProfile.traits.communication,
                               ),
-                            )}
+                            ].map((item: string, i: number) => (
+                              <Span
+                                key={item}
+                                style={{
+                                  padding: ".25rem .5rem",
+                                  backgroundColor: "var(--shade-2)",
+                                  borderRadius: 8,
+                                  fontSize: ".75rem",
+                                }}
+                              >
+                                {item}
+                              </Span>
+                            ))}
                           </Div>
                         </Div>
                       )}
 
                     {post.app.characterProfile.traits.behavior &&
                       post.app.characterProfile.traits.behavior.length > 0 && (
+                        // deduplicate
                         <Div>
                           <Strong
                             style={{
@@ -585,21 +558,23 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                               marginTop: ".25rem",
                             }}
                           >
-                            {post.app.characterProfile.traits.behavior.map(
-                              (item: string, i: number) => (
-                                <Span
-                                  key={item}
-                                  style={{
-                                    padding: ".25rem .5rem",
-                                    backgroundColor: "var(--shade-2)",
-                                    borderRadius: 8,
-                                    fontSize: ".75rem",
-                                  }}
-                                >
-                                  {item}
-                                </Span>
+                            {[
+                              ...new Set(
+                                post.app.characterProfile.traits.behavior,
                               ),
-                            )}
+                            ].map((item: string, i: number) => (
+                              <Span
+                                key={item}
+                                style={{
+                                  padding: ".25rem .5rem",
+                                  backgroundColor: "var(--shade-2)",
+                                  borderRadius: 8,
+                                  fontSize: ".75rem",
+                                }}
+                              >
+                                {item}
+                              </Span>
+                            ))}
                           </Div>
                         </Div>
                       )}
@@ -767,10 +742,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               ) : (
                 <Img icon="heart" width={18} height={18} />
               )}
-              <Span>
-                {(post.likesCount || 0) +
-                  (optimisticLiked.includes(post.id) ? 1 : 0)}
-              </Span>
+              <Span>{post.likesCount}</Span>
             </Button>
             <Button
               className="transparent"
@@ -804,7 +776,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 color: "var(--shade-6)",
                 display: "flex",
                 flexDirection: "column",
-                gap: 8,
+                gap: 15,
                 alignItems: "center",
                 justifyContent: "center",
               }}
@@ -861,14 +833,16 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 <Span style={{ fontSize: "1.3rem" }}>{tyingToReact}</Span>
 
                 {reactionGroups[tyingToReact].apps.map((app, index) => (
-                  <Img
-                    key={`${app.id}-${index}`}
-                    slug={app.slug}
-                    size={24}
-                    style={{
-                      borderRadius: "50%",
-                    }}
-                  />
+                  <>
+                    <Img
+                      key={`${app.id}-${index}`}
+                      slug={app.slug}
+                      size={24}
+                      style={{
+                        borderRadius: "50%",
+                      }}
+                    />
+                  </>
                 ))}
               </Div>
             )}
@@ -1018,37 +992,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 ) : null}
               </Div>
             </Div>
-            {/* {hasMore ? (
-              <Div
-                style={{
-                  color: "var(--shade-6)",
-                  display: "flex",
-                  gap: "1rem",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Button
-                  disabled={isLoadingPost}
-                  onClick={async () => {
-                    await refetchPost()
-                  }}
-                  style={{
-                    fontSize: 13,
-                    padding: "5px 10px",
-                  }}
-                >
-                  {isLoadingPost ? (
-                    <Loading color="#fff" size={16} />
-                  ) : (
-                    <LoaderCircle size={16} />
-                  )}
-                  {t("{{count}} more", {
-                    count: hasMore,
-                  })}
-                </Button>
-              </Div>
-            ) : null} */}
           </Div>
           {showComments && (
             <Div

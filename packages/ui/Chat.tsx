@@ -105,6 +105,7 @@ import {
   apiFetch,
   BrowserInstance,
   capitalizeFirstLetter,
+  isDevelopment,
   isOwner,
   MAX_FILE_LIMITS,
   MAX_FILE_SIZES,
@@ -246,15 +247,57 @@ export default function Chat({
     setShowGrapes,
     grapes,
     postToTribe,
-    setPostToTribe,
+    setPostToTribe: setPostToTribeInternal,
     postToMoltbook,
-    setPostToMoltbook,
+    setPostToMoltbook: setPostToMoltbookInternal,
     moltPlaceHolder,
     canShowTribe,
     showFocus,
     postId,
     ...auth
   } = useAuth()
+
+  const lastTribe = user?.lastTribe
+  const lastMolt = user?.lastMolt
+  const now = new Date()
+
+  const cooldownMinutes = user?.role === "admin" ? 0 : 30
+  const cooldownMs = cooldownMinutes * 60 * 1000
+
+  const setPostToTribe = (value: boolean) => {
+    if (value && lastTribe && lastTribe.createdOn) {
+      const timeSinceLastPost =
+        now.getTime() - new Date(lastTribe.createdOn).getTime()
+      const remainingCooldown = cooldownMs - timeSinceLastPost
+
+      // Cooldown still active
+      if (remainingCooldown > 0) {
+        const remainingMinutes = Math.ceil(remainingCooldown / (60 * 1000))
+        toast.error(
+          `Please wait ${remainingMinutes} more minute${remainingMinutes > 1 ? "s" : ""} before posting to tribe again`,
+        )
+        return // Don't set the value, just return
+      }
+    }
+    setPostToTribeInternal(value)
+  }
+
+  const setPostToMoltbook = (value: boolean) => {
+    if (value && lastMolt && lastMolt.createdOn) {
+      const timeSinceLastPost =
+        now.getTime() - new Date(lastMolt.createdOn).getTime()
+      const remainingCooldown = cooldownMs - timeSinceLastPost
+
+      if (remainingCooldown > 0) {
+        const remainingMinutes = Math.ceil(remainingCooldown / (60 * 1000))
+        toast.error(
+          `Please wait ${remainingMinutes} more minute${remainingMinutes > 1 ? "s" : ""} before posting to Moltbook again`,
+        )
+        return
+      }
+    }
+    setPostToMoltbookInternal(value)
+  }
 
   const threadId = auth.threadId || auth.threadIdRef.current
 
@@ -412,7 +455,9 @@ export default function Chat({
     }
   }, [isNewChat])
   // Determine if we should use compact mode based on bottom offset
-  const [hasBottomOffset, setHasBottomOffset] = useState(false)
+  const [hasBottomOffsetInternal, setHasBottomOffset] = useState(false)
+  const hasBottomOffset = hasBottomOffsetInternal && !empty
+
   const shouldUseCompactMode = compactMode || hasBottomOffset
 
   const floatingInitial =
@@ -1533,6 +1578,11 @@ export default function Chat({
       return
     }
 
+    if (creditsLeft === 0) {
+      toast.error(t("credits_left_other", { count: 0 }))
+      return
+    }
+
     if (!isPrivacyApproved && !approve) {
       setNeedsReview(true)
       return
@@ -1675,6 +1725,7 @@ export default function Chat({
         const formData = new FormData()
 
         app && formData.append("appId", app?.id)
+        postId && formData.append("tribePostId", postId)
 
         formData.append("content", userMessageText)
         formData.append("isIncognito", JSON.stringify(burn))
@@ -1729,6 +1780,7 @@ export default function Chat({
           retro: isRetro,
           tribe: postToTribe,
           molt: postToMoltbook,
+          tribePostId: postId,
         })
       }
       const userResponse = await apiFetch(`${API_URL}/messages`, {
@@ -1826,16 +1878,10 @@ export default function Chat({
       if (files && files.length > 0) {
         // Use FormData for file uploads
         const formData = new FormData()
-        postId && formData.append("postId", postId)
         slug && formData.append("slug", slug)
         app?.id && formData.append("appId", app.id)
         ask && formData.append("ask", ask)
         about && formData.append("about", about)
-        !appFormWatcher.id &&
-          app?.id === chrry?.id &&
-          suggestSaveApp &&
-          appStatus?.part &&
-          formData.append("draft", JSON.stringify(appFormWatcher))
         formData.append("messageId", userMessage?.message.id || "")
         debateAgent && formData.append("debateAgentId", debateAgent.id)
         formData.append("agentId", selectedAgent.id)
@@ -1886,13 +1932,8 @@ export default function Chat({
           placeholder,
           ask,
           about,
-          postId,
           retro: isRetro,
           appId: app?.id,
-          draft:
-            app?.id === chrry?.id && suggestSaveApp && appStatus?.part
-              ? appFormWatcher
-              : undefined,
         })
       }
 
@@ -2640,10 +2681,7 @@ export default function Chat({
   const inputText = inputRef.current?.trim() || input?.trim() || ""
 
   const getIsSendDisabled = () =>
-    (inputText === "" && files.length === 0) ||
-    isLoading ||
-    creditsLeft === 0 ||
-    disabled
+    (inputText === "" && files.length === 0) || isLoading || disabled
 
   const isVoiceDisabled = isLoading || creditsLeft === 0 || disabled
 
@@ -3663,7 +3701,7 @@ export default function Chat({
                       <Div
                         style={{
                           position: "relative",
-                          top: !isChatFloating ? 32 : 0,
+                          top: !isChatFloating ? 27 : 0,
                           zIndex: 50,
                           display: "inline-flex",
                           gap: 10,
@@ -3702,57 +3740,61 @@ export default function Chat({
                                 </>
                               )}{" "}
                             </Button>
-                            <Button
-                              className="link"
-                              onClick={() => {
-                                if (
-                                  !app?.moltApiKey &&
-                                  app?.id &&
-                                  !moltPlaceHolder.includes(app.id)
-                                ) {
-                                  toast.error(
-                                    t("Please add your Moltbook API key first"),
-                                  )
-                                  router.push("/?settings=true&tab=moltBook")
-                                  return
-                                }
-                                setPostToMoltbook(!postToMoltbook)
-                                if (postToTribe) setPostToTribe(false)
-                              }}
-                              data-active={postToMoltbook}
-                              style={{
-                                ...utilities.xSmall.style,
-                                ...utilities.link.style,
-                              }}
-                            >
-                              {postToMoltbook ? (
-                                <>
-                                  <Coins size={20} />
-                                  {t("credits", {
-                                    count: user.tribeCredits,
-                                  })}
-                                </>
-                              ) : (
-                                <>
-                                  <Span
-                                    style={{
-                                      fontSize: "1.2rem",
-                                    }}
-                                  >
-                                    🦞
-                                  </Span>
-                                  <Span
-                                    style={{
-                                      fontSize: "0.75rem",
-                                      ...utilities.xSmall.style,
-                                      ...utilities.link.style,
-                                    }}
-                                  >
-                                    To Moltbook
-                                  </Span>
-                                </>
-                              )}
-                            </Button>
+                            {(isDevelopment || user?.role === "admin") && (
+                              <Button
+                                className="link"
+                                onClick={() => {
+                                  if (
+                                    !app?.moltApiKey &&
+                                    app?.id &&
+                                    !moltPlaceHolder.includes(app.id)
+                                  ) {
+                                    toast.error(
+                                      t(
+                                        "Please add your Moltbook API key first",
+                                      ),
+                                    )
+                                    router.push("/?settings=true&tab=moltBook")
+                                    return
+                                  }
+                                  setPostToMoltbook(!postToMoltbook)
+                                  if (postToTribe) setPostToTribe(false)
+                                }}
+                                data-active={postToMoltbook}
+                                style={{
+                                  ...utilities.xSmall.style,
+                                  ...utilities.link.style,
+                                }}
+                              >
+                                {postToMoltbook ? (
+                                  <>
+                                    <Coins size={20} />
+                                    {t("credits", {
+                                      count: user.tribeCredits,
+                                    })}
+                                  </>
+                                ) : (
+                                  <>
+                                    <Span
+                                      style={{
+                                        fontSize: "1.2rem",
+                                      }}
+                                    >
+                                      🦞
+                                    </Span>
+                                    <Span
+                                      style={{
+                                        fontSize: "0.75rem",
+                                        ...utilities.xSmall.style,
+                                        ...utilities.link.style,
+                                      }}
+                                    >
+                                      To Moltbook
+                                    </Span>
+                                  </>
+                                )}
+                              </Button>
+                            )}
                           </>
                         ) : (
                           <>
@@ -3887,6 +3929,7 @@ export default function Chat({
                     canShowTribe &&
                     empty &&
                     app &&
+                    !appStatus?.part &&
                     (minimize || showFocus) && (
                       <>
                         <AppLink
@@ -3961,6 +4004,7 @@ export default function Chat({
                     empty &&
                     canShowTribe &&
                     app &&
+                    !appStatus?.part &&
                     !isChatFloating && (
                       <>
                         <AppLink
@@ -4640,7 +4684,6 @@ export default function Chat({
                     <A
                       target="_blank"
                       className="button small transparent"
-                      openInNewTab
                       href="/privacy"
                       style={{
                         position: "relative",

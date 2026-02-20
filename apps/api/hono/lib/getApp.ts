@@ -2,7 +2,8 @@ import type { appWithStore } from "@chrryai/chrry/types"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
-import { getApp as getAppDb, getStore } from "@repo/db"
+import { db, eq, getApp as getAppDb, getStore } from "@repo/db"
+import { stores } from "@repo/db/src/schema"
 import type { Context } from "hono"
 import { getActiveRentalsForStore } from "../../lib/adExchange/getActiveRentals"
 import { getGuest, getMember } from "./auth"
@@ -202,6 +203,61 @@ async function resolveAppFromPathname(
   })
 
   return { app, path: whiteLabel ? "whiteLabel" : "pathname" }
+}
+
+async function resolveAppFromStoreCandidate(
+  requestParams: RequestParams,
+  auth: AuthContext,
+  siteConfig: any,
+): Promise<{ app: any; path: string } | null> {
+  const pathname = requestParams.pathname
+
+  const segments = pathname?.split("/").filter(Boolean) ?? []
+  if (segments.length === 0) return null
+
+  // First segment is always the store slug candidate
+  const storeSlugCandidate = segments[0]
+  // Second+ segment is the app slug (only present for store/app paths)
+  const appSlugCandidate =
+    segments.length >= 2 ? segments[segments.length - 1] : undefined
+
+  const [dbStore] = storeSlugCandidate
+    ? await db
+        .select({
+          id: stores.id,
+          appId: stores.appId,
+        })
+        .from(stores)
+        .where(eq(stores.slug, storeSlugCandidate))
+        .limit(1)
+    : []
+
+  if (!dbStore) return null
+
+  // Single segment (/lifeos) → return store's main app
+  // Two+ segments (/sushistore/sakabsii) → return specific app within store
+  const app = appSlugCandidate
+    ? await getAppDb({
+        slug: appSlugCandidate,
+        storeSlug: storeSlugCandidate,
+        userId: auth.member?.id,
+        guestId: auth.guest?.id,
+        depth: 1,
+        skipCache: requestParams.skipCache,
+      })
+    : dbStore.appId
+      ? await getAppDb({
+          id: dbStore.appId,
+          userId: auth.member?.id,
+          guestId: auth.guest?.id,
+          depth: 1,
+          skipCache: requestParams.skipCache,
+        })
+      : undefined
+
+  if (!app) return null
+
+  return { app, path: "storeCandidate" }
 }
 
 /**
@@ -481,13 +537,11 @@ export async function getApp({
     appInternal = result.app
     resolutionPath = result.path
   } else {
-    const result = await resolveAppFromStoreContext(
-      requestParams,
-      auth,
-      siteConfig,
-    )
-    appInternal = result.app
-    resolutionPath = result.path
+    const result =
+      (await resolveAppFromStoreCandidate(requestParams, auth, siteConfig)) ??
+      (await resolveAppFromStoreContext(requestParams, auth, siteConfig))
+    appInternal = result?.app
+    resolutionPath = result?.path ?? "storeContext"
   }
 
   // 6. Get fallback apps

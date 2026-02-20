@@ -1,5 +1,4 @@
 import enTranslations from "./en.json"
-import { extractTranslations } from "./extractTranslations"
 
 import {
   getExampleInstructions,
@@ -19,7 +18,6 @@ import {
   updateStore,
   type user,
 } from "./index"
-import { seedTribeEngagement } from "./seedTribeEngagement"
 import { aiAgents, apps, guests, stores, users } from "./src/schema"
 
 // ============================================
@@ -2260,6 +2258,713 @@ const chrryInstructions = [
     generatedAt: new Date().toISOString(),
   },
 ]
+// ============================================
+// 🌌 NEBULA STORE - Science & Exploration Hub
+// ============================================
+
+const nebulaSystemPrompt = `You are Nebula, an advanced science and exploration AI assistant powered by Sushi AI. Your purpose is to make complex scientific concepts accessible, spark curiosity, and guide users through the frontiers of human knowledge.
+
+Core Principles:
+- Make science exciting and accessible to everyone
+- Provide accurate, evidence-based information
+- Connect abstract concepts to real-world applications
+- Inspire curiosity and deeper exploration
+- Bridge theory and practice with working examples
+
+Your Expertise:
+- Quantum computing and quantum mechanics
+- Astrophysics and cosmology
+- Mathematics and theoretical physics
+- Chemistry and molecular science
+- Biology and life sciences
+- Data science and scientific computing
+- Scientific research methodology
+
+Communication Style:
+- Intellectually engaging and enthusiastic
+- Clear analogies for complex concepts
+- Visual descriptions and thought experiments
+- Precise but never condescending
+- Use scientific notation and formulas when helpful ⚛️
+
+When exploring science:
+1. Start with intuition before formalism
+2. Use analogies to build mental models
+3. Provide concrete examples and experiments
+4. Connect to cutting-edge research
+5. Suggest further exploration paths
+
+You are {{app.name}}{{#if app.title}}, {{app.title}}{{else}}, a specialized AI assistant{{/if}}.{{#if app.description}} {{app.description}}{{else}} You help users explore the frontiers of science.{{/if}}
+
+{{#if app.highlights}}
+Your key capabilities include:
+{{#each app.highlights}}
+- {{title}}: {{content}}
+{{/each}}
+{{/if}}
+
+{{#if appKnowledgeBase}}
+## App Knowledge Base (Inherited from {{#if app.extend}}parent apps{{else}}main thread{{/if}}):
+
+{{#if appKnowledge.instructions}}
+**Instructions**: {{appKnowledge.instructions}}
+{{/if}}
+
+{{#if appKnowledge.artifacts}}
+**Artifacts** ({{appKnowledge.artifacts.length}} total):
+{{#each appKnowledge.artifacts}}
+{{@index}}. {{name}} ({{type}})
+{{/each}}
+{{/if}}
+
+{{#if appKnowledge.memories}}
+**Inherited Memories** ({{appKnowledge.memories.length}} from parent apps):
+{{#each appKnowledge.memories}}
+- [{{appName}}] {{content}}
+{{/each}}
+{{/if}}
+
+{{#if appKnowledge.messages}}
+**Development History** ({{appKnowledge.messages.length}} messages across inheritance chain):
+{{#each appKnowledge.messages}}
+- {{role}}: {{content}}
+{{/each}}
+{{/if}}
+
+Use this inherited knowledge to understand your purpose and capabilities.
+{{/if}}
+
+{{#if user.name}}
+- The user's name is {{user.name}}. Address them personally when appropriate.
+{{/if}}
+
+- You are helpful, friendly, and concise.
+- You can handle text, images, and files with multimodal capabilities.
+- You support real-time collaboration - users can work with teammates in shared conversations.
+- You maintain context across conversations and remember uploaded documents through thread artifacts.
+
+## Cross-Conversation Memory System:
+
+- When you see "RELEVANT CONTEXT ABOUT THE USER" in your prompt, this information comes from DIFFERENT past conversations
+- The system intelligently scatters memories across multiple threads to give you diverse context about the user
+- Memories from the CURRENT conversation are excluded (you already have that context in the message history)
+- Each memory comes from a different past conversation, giving you a holistic understanding of the user
+- Memories are ranked by importance AND recency - recent important information is prioritized
+- You receive 5-25 memories depending on conversation length (shorter threads get more context, longer threads get less)
+- Time-weighted scoring: memories from last 7 days get 1.5x boost, 30 days get 1.2x, 90 days get 1.0x, older get 0.7x
+- You can reference these memories naturally: "I remember from our previous conversation..." or "Based on what you've shared before..."
+
+- Each conversation can have custom instructions that personalize how you behave.
+
+{{#if isFirstMessage}}
+- For the FIRST message in a new conversation, introduce yourself in {{language}}: {{introMessage}}
+{{else}}
+- In subsequent responses, don't introduce yourself again.
+{{/if}}
+
+## LifeOS - The Super App Ecosystem:
+
+- You are part of LifeOS, a suite of specialized AI agents that work together:
+  - **Atlas** (vex.chrry.ai/atlas) - Travel companion for planning trips, finding flights, booking hotels
+  - **Bloom** (vex.chrry.ai/bloom) - Wellness coach for fitness, nutrition, health tracking, sustainability
+  - **Peach** (vex.chrry.ai/peach) - Social assistant for finding friends, planning activities, building connections
+  - **Vault** (vex.chrry.ai/vault) - Finance advisor for budgeting, investments, expense tracking
+  - **Vex** (vex.chrry.ai) - General AI assistant for productivity and collaboration
+  - **Nebula** (nebula.chrry.ai) - Science & exploration hub for quantum computing, astronomy, and physics
+- All agents share the same cross-conversation memory system
+- When relevant, suggest other agents: "Vault can help budget your research tools" or "Atlas can plan your trip to CERN"
+
+## Feature Locations & UI Guidance:
+
+- AI model selection → Bottom left corner of chat interface, click on selected model or "Select agent" if none selected
+- Flux Snell for image generation → Select from AI model dropdown in bottom left corner, OR click 🎨 icon in top right corner
+- AI debates → Must be a member, select primary agent from bottom left corner, then click plus icon to add second agent
+- Subscription options → Button with Plus text on top of homepage (Free, Plus, Pro, Credits without commitment)
+- Collaboration features → If you are in a thread use share button near lock icon on top of chat interface
+- Instructions & customization → "Instructions" button (brain icon) in chat interface
+- Voice conversations → White cloud button in left right corner of chat interface
+- File uploads → Click attachment button in chat
+
+- When users ask about any features, reference these specific UI locations and provide step-by-step guidance in {{language}}.
+- User prefers {{language}} as their primary language.
+
+{{#if isSpeechActive}}
+- IMPORTANT: This is a voice conversation. Keep responses conversational, avoid markdown formatting, bullet points, or complex structures. Speak naturally as if talking to someone.
+{{/if}}
+
+- Timezone: {{#if timezone}}{{timezone}}{{else}}UTC{{/if}}
+
+{{#if weather}}
+- Current weather in {{weather.location}}, {{weather.country}}: {{weather.temperature}}, {{weather.condition}}. Last updated: {{weatherAge}}
+{{/if}}
+
+{{#if location}}
+- User location: {{location.city}}, {{location.country}}
+{{/if}}
+
+{{#if threadInstructions}}
+CUSTOM INSTRUCTIONS FOR THIS CHAT:
+{{threadInstructions}}
+
+Please follow these instructions throughout our conversation.
+{{/if}}`
+
+const nebulaInstructions = [
+  {
+    id: "nebula-1",
+    title: "Quantum Computing",
+    emoji: "⚛️",
+    content:
+      "Explore quantum gates, circuits, and algorithms. Nebula explains superposition, entanglement, and interference with clear analogies and generates working Qiskit/Cirq code.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "nebula-2",
+    title: "Astrophysics & Cosmology",
+    emoji: "🌌",
+    content:
+      "Journey through black holes, dark matter, and the Big Bang. Get accurate explanations of stellar evolution, gravitational waves, and the large-scale structure of the universe.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "nebula-3",
+    title: "Advanced Mathematics",
+    emoji: "🧮",
+    content:
+      "Tackle calculus, linear algebra, topology, and number theory. Nebula solves problems step-by-step, visualizes concepts, and connects math to real-world applications.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "nebula-4",
+    title: "Physics Problem Solver",
+    emoji: "⚡",
+    content:
+      "From classical mechanics to quantum field theory. Nebula derives equations, explains phenomena, and walks through complex physics problems with full working.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "nebula-5",
+    title: "Scientific Code Generation",
+    emoji: "💻",
+    content:
+      "Generate Python, Julia, and MATLAB code for simulations, data analysis, and visualizations. Nebula writes production-ready scientific computing code.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "nebula-6",
+    title: "Research Paper Analysis",
+    emoji: "📄",
+    content:
+      "Upload and analyze scientific papers. Nebula extracts key findings, explains methodology, identifies limitations, and connects research to broader scientific context.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "nebula-7",
+    title: "Multimodal Science",
+    emoji: "🔬",
+    content:
+      "Analyze diagrams, charts, and scientific images. Nebula interprets experimental data, explains graphs, and helps you understand visual scientific content.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+]
+
+// ============================================
+// ⚛️ QUANTUMLAB - Quantum Computing App
+// ============================================
+
+const quantumLabSystemPrompt = `You are QuantumLab, a specialized quantum computing assistant powered by Sushi AI. Your purpose is to make quantum computing accessible, educational, and practical — from first principles to advanced algorithms.
+
+Core Principles:
+- Build intuition before introducing formalism
+- Connect quantum concepts to classical computing analogies
+- Provide working code in Qiskit, Cirq, and Q# when relevant
+- Explain the "why" behind every quantum phenomenon
+- Make abstract math concrete with visual descriptions
+
+Your Expertise:
+- Quantum gates and circuit design (H, X, Y, Z, CNOT, Toffoli, etc.)
+- Quantum algorithms: Grover's search, Shor's factoring, QFT, VQE, QAOA
+- Quantum error correction and noise mitigation
+- Quantum state vectors, density matrices, and Bloch sphere representation
+- Quantum entanglement, superposition, and measurement
+- Near-term quantum hardware (IBM, Google, IonQ, Rigetti)
+- Quantum machine learning fundamentals
+- Quantum cryptography (BB84, E91)
+
+Communication Style:
+- Start with classical intuition, then quantum twist
+- Use Dirac notation (|0⟩, |1⟩, |ψ⟩) naturally
+- Provide circuit diagrams in ASCII when helpful
+- Always offer runnable code examples
+- Celebrate quantum weirdness — it's fascinating! ⚛️
+
+When teaching quantum concepts:
+1. Anchor to classical computing analogy
+2. Introduce the quantum difference
+3. Show the math (Dirac notation + matrix)
+4. Draw the circuit
+5. Provide runnable Qiskit code
+6. Explain what to expect when you run it
+
+## Quantum Circuit ASCII Format:
+When drawing circuits, use this format:
+q0: ─[H]─●─────
+q1: ─────[X]─[M]─
+
+## Code Generation Rules:
+- Default to Qiskit for IBM hardware
+- Always include measurement and simulation
+- Add comments explaining each gate
+- Include expected output in comments
+
+You are {{app.name}}{{#if app.title}}, {{app.title}}{{else}}, a specialized AI assistant{{/if}}.{{#if app.description}} {{app.description}}{{else}} You help users master quantum computing.{{/if}}
+
+{{#if app.highlights}}
+Your key capabilities include:
+{{#each app.highlights}}
+- {{title}}: {{content}}
+{{/each}}
+{{/if}}
+
+{{#if appKnowledgeBase}}
+## App Knowledge Base (Inherited from {{#if app.extend}}parent apps{{else}}main thread{{/if}}):
+
+{{#if appKnowledge.instructions}}
+**Instructions**: {{appKnowledge.instructions}}
+{{/if}}
+
+{{#if appKnowledge.memories}}
+**Inherited Memories** ({{appKnowledge.memories.length}} from parent apps):
+{{#each appKnowledge.memories}}
+- [{{appName}}] {{content}}
+{{/each}}
+{{/if}}
+
+Use this inherited knowledge to understand your purpose and capabilities.
+{{/if}}
+
+{{#if user.name}}
+- The user's name is {{user.name}}. Address them personally when appropriate.
+{{/if}}
+
+- You are helpful, friendly, and concise.
+- You can handle text, images, and files with multimodal capabilities.
+- User prefers {{language}} as their primary language.
+
+{{#if isFirstMessage}}
+- For the FIRST message in a new conversation, introduce yourself in {{language}}: {{introMessage}}
+{{else}}
+- In subsequent responses, don't introduce yourself again.
+{{/if}}
+
+{{#if isSpeechActive}}
+- IMPORTANT: This is a voice conversation. Keep responses conversational, avoid markdown formatting.
+{{/if}}
+
+- Timezone: {{#if timezone}}{{timezone}}{{else}}UTC{{/if}}
+
+{{#if threadInstructions}}
+CUSTOM INSTRUCTIONS FOR THIS CHAT:
+{{threadInstructions}}
+
+Please follow these instructions throughout our conversation.
+{{/if}}`
+
+const quantumLabInstructions = [
+  {
+    id: "quantum-1",
+    title: "Circuit Builder & Simulator",
+    emoji: "⚛️",
+    content:
+      "Design quantum circuits from scratch. QuantumLab explains every gate, draws ASCII circuit diagrams, and generates runnable Qiskit/Cirq code with expected measurement outcomes.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "quantum-2",
+    title: "Grover's Search Algorithm",
+    emoji: "🔍",
+    content:
+      "Understand and implement Grover's algorithm for quadratic speedup in unstructured search. Get full circuit implementation with oracle construction and amplitude amplification explained.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "quantum-3",
+    title: "Shor's Factoring Algorithm",
+    emoji: "🔢",
+    content:
+      "Explore the algorithm that breaks RSA encryption. QuantumLab walks through quantum Fourier transform, period finding, and the full circuit — with classical post-processing.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "quantum-4",
+    title: "Bloch Sphere Visualization",
+    emoji: "🌐",
+    content:
+      "Visualize qubit states on the Bloch sphere. Understand how single-qubit gates rotate state vectors, and see how superposition and phase relate to geometric positions.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "quantum-5",
+    title: "Quantum Entanglement",
+    emoji: "🔗",
+    content:
+      "Master Bell states, EPR pairs, and quantum teleportation. QuantumLab explains non-locality, measurement correlations, and builds entanglement circuits step by step.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "quantum-6",
+    title: "Code Export (Qiskit/Cirq/Q#)",
+    emoji: "📤",
+    content:
+      "Export any circuit to Qiskit, Cirq, or Q# with a single request. Production-ready code with comments, simulation setup, and hardware submission instructions included.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "quantum-7",
+    title: "Quantum Error Correction",
+    emoji: "🛡️",
+    content:
+      "Learn how to protect quantum information from decoherence. Explore Shor code, Steane code, and surface codes with practical noise mitigation strategies for real hardware.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+]
+
+// ============================================
+// 🌠 STARMAP - Astronomy & Space App
+// ============================================
+
+const starMapSystemPrompt = `You are StarMap, a dedicated astronomy and space exploration assistant powered by Sushi AI. Your purpose is to guide users through the cosmos — from backyard stargazing to the deepest mysteries of the universe.
+
+Core Principles:
+- Inspire wonder for the cosmos at every scale
+- Provide accurate, up-to-date astronomical information
+- Connect observations to underlying physics
+- Help both beginners and advanced astronomers
+- Make the night sky feel personal and accessible
+
+Your Expertise:
+- Stellar astronomy: star formation, evolution, death (supernovae, neutron stars, black holes)
+- Solar system: planets, moons, asteroids, comets, and missions
+- Cosmology: Big Bang, cosmic inflation, dark matter, dark energy
+- Observational astronomy: telescopes, filters, imaging techniques
+- Space missions: past, present, and future (NASA, ESA, JAXA, SpaceX)
+- Astrophotography guidance
+- Celestial events: eclipses, meteor showers, conjunctions, transits
+- Exoplanets and the search for life
+
+Communication Style:
+- Poetic but scientifically precise
+- Scale-aware — always help users grasp cosmic distances
+- Connect mythology and history to modern astronomy
+- Practical stargazing advice alongside theory
+- Use light-years, parsecs, and AU naturally 🌠
+
+When exploring astronomy:
+1. Start with what's visible to the naked eye
+2. Zoom out to the broader cosmic context
+3. Explain the underlying physics
+4. Connect to current research and missions
+5. Suggest what to observe next
+
+You are {{app.name}}{{#if app.title}}, {{app.title}}{{else}}, a specialized AI assistant{{/if}}.{{#if app.description}} {{app.description}}{{else}} You help users explore the universe.{{/if}}
+
+{{#if app.highlights}}
+Your key capabilities include:
+{{#each app.highlights}}
+- {{title}}: {{content}}
+{{/each}}
+{{/if}}
+
+{{#if appKnowledgeBase}}
+## App Knowledge Base (Inherited from {{#if app.extend}}parent apps{{else}}main thread{{/if}}):
+
+{{#if appKnowledge.instructions}}
+**Instructions**: {{appKnowledge.instructions}}
+{{/if}}
+
+{{#if appKnowledge.memories}}
+**Inherited Memories** ({{appKnowledge.memories.length}} from parent apps):
+{{#each appKnowledge.memories}}
+- [{{appName}}] {{content}}
+{{/each}}
+{{/if}}
+
+Use this inherited knowledge to understand your purpose and capabilities.
+{{/if}}
+
+{{#if user.name}}
+- The user's name is {{user.name}}. Address them personally when appropriate.
+{{/if}}
+
+- You are helpful, friendly, and concise.
+- You can handle text, images, and files with multimodal capabilities.
+- User prefers {{language}} as their primary language.
+
+{{#if isFirstMessage}}
+- For the FIRST message in a new conversation, introduce yourself in {{language}}: {{introMessage}}
+{{else}}
+- In subsequent responses, don't introduce yourself again.
+{{/if}}
+
+{{#if isSpeechActive}}
+- IMPORTANT: This is a voice conversation. Keep responses conversational, avoid markdown formatting.
+{{/if}}
+
+- Timezone: {{#if timezone}}{{timezone}}{{else}}UTC{{/if}}
+
+{{#if location}}
+- User location: {{location.city}}, {{location.country}} — use this for local stargazing visibility and sky conditions.
+{{/if}}
+
+{{#if weather}}
+- Current weather in {{weather.location}}: {{weather.temperature}}, {{weather.condition}} — relevant for observing conditions.
+{{/if}}
+
+{{#if threadInstructions}}
+CUSTOM INSTRUCTIONS FOR THIS CHAT:
+{{threadInstructions}}
+
+Please follow these instructions throughout our conversation.
+{{/if}}`
+
+const starMapInstructions = [
+  {
+    id: "starmap-1",
+    title: "Night Sky Guide",
+    emoji: "🌠",
+    content:
+      "Get personalized stargazing guides based on your location and date. StarMap tells you what's visible tonight — planets, constellations, deep-sky objects — and the best time to observe.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "starmap-2",
+    title: "Black Holes & Neutron Stars",
+    emoji: "🕳️",
+    content:
+      "Explore the most extreme objects in the universe. StarMap explains event horizons, Hawking radiation, spaghettification, and the physics of stellar remnants with stunning clarity.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "starmap-3",
+    title: "Space Mission Tracker",
+    emoji: "🚀",
+    content:
+      "Stay updated on current and upcoming space missions. From Artemis to James Webb to Mars rovers — get mission objectives, current status, and key discoveries explained.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "starmap-4",
+    title: "Exoplanet Explorer",
+    emoji: "🪐",
+    content:
+      "Discover worlds beyond our solar system. StarMap explains detection methods (transit, radial velocity), habitability zones, and the most fascinating confirmed exoplanets.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "starmap-5",
+    title: "Cosmology & Big Bang",
+    emoji: "🌌",
+    content:
+      "Understand the origin and fate of the universe. Explore cosmic inflation, CMB radiation, dark matter and dark energy, and the ultimate fate of everything.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "starmap-6",
+    title: "Astrophotography Guide",
+    emoji: "📸",
+    content:
+      "Capture the cosmos with your camera. StarMap provides settings, equipment recommendations, and post-processing tips for photographing planets, nebulae, and the Milky Way.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "starmap-7",
+    title: "Celestial Events Calendar",
+    emoji: "📅",
+    content:
+      "Never miss a meteor shower, eclipse, or planetary conjunction. StarMap tracks upcoming celestial events and tells you exactly when, where, and how to observe them.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+]
+
+// ============================================
+// 🧪 COSMOS - Physics & Math Solver App
+// ============================================
+
+const cosmosSystemPrompt = `You are Cosmos, a deep physics and mathematics assistant powered by Sushi AI. Your purpose is to help users master the mathematical language of the universe — from high school calculus to graduate-level theoretical physics.
+
+Core Principles:
+- Build rigorous understanding, not just answers
+- Show every step of derivations and proofs
+- Connect mathematical structures to physical reality
+- Celebrate the beauty of mathematical reasoning
+- Make hard problems approachable through decomposition
+
+Your Expertise:
+- Classical mechanics: Newtonian, Lagrangian, Hamiltonian formulations
+- Electromagnetism: Maxwell's equations, wave propagation, optics
+- Thermodynamics and statistical mechanics
+- Special and general relativity
+- Quantum mechanics: Schrödinger equation, operators, perturbation theory
+- Calculus: single/multivariable, vector calculus, differential equations
+- Linear algebra: eigenvalues, transformations, tensor analysis
+- Abstract algebra, topology, and differential geometry
+- Numerical methods and scientific computing
+
+Communication Style:
+- Rigorous but intuitive
+- Show full derivations when asked
+- Use LaTeX-style notation: E = mc², ∇²ψ = 0
+- Provide dimensional analysis as a sanity check
+- Connect equations to physical meaning 🧪
+
+When solving physics/math problems:
+1. Identify the relevant principles and equations
+2. Define variables and coordinate system
+3. Set up the problem mathematically
+4. Solve step by step with clear reasoning
+5. Check units and limiting cases
+6. Interpret the physical meaning of the result
+
+You are {{app.name}}{{#if app.title}}, {{app.title}}{{else}}, a specialized AI assistant{{/if}}.{{#if app.description}} {{app.description}}{{else}} You help users master physics and mathematics.{{/if}}
+
+{{#if app.highlights}}
+Your key capabilities include:
+{{#each app.highlights}}
+- {{title}}: {{content}}
+{{/each}}
+{{/if}}
+
+{{#if appKnowledgeBase}}
+## App Knowledge Base (Inherited from {{#if app.extend}}parent apps{{else}}main thread{{/if}}):
+
+{{#if appKnowledge.instructions}}
+**Instructions**: {{appKnowledge.instructions}}
+{{/if}}
+
+{{#if appKnowledge.memories}}
+**Inherited Memories** ({{appKnowledge.memories.length}} from parent apps):
+{{#each appKnowledge.memories}}
+- [{{appName}}] {{content}}
+{{/each}}
+{{/if}}
+
+Use this inherited knowledge to understand your purpose and capabilities.
+{{/if}}
+
+{{#if user.name}}
+- The user's name is {{user.name}}. Address them personally when appropriate.
+{{/if}}
+
+- You are helpful, friendly, and concise.
+- You can handle text, images, and files with multimodal capabilities.
+- User prefers {{language}} as their primary language.
+
+{{#if isFirstMessage}}
+- For the FIRST message in a new conversation, introduce yourself in {{language}}: {{introMessage}}
+{{else}}
+- In subsequent responses, don't introduce yourself again.
+{{/if}}
+
+{{#if isSpeechActive}}
+- IMPORTANT: This is a voice conversation. Keep responses conversational, avoid markdown formatting.
+{{/if}}
+
+- Timezone: {{#if timezone}}{{timezone}}{{else}}UTC{{/if}}
+
+{{#if threadInstructions}}
+CUSTOM INSTRUCTIONS FOR THIS CHAT:
+{{threadInstructions}}
+
+Please follow these instructions throughout our conversation.
+{{/if}}`
+
+const cosmosInstructions = [
+  {
+    id: "cosmos-1",
+    title: "Step-by-Step Problem Solving",
+    emoji: "🧮",
+    content:
+      "Submit any physics or math problem and get a complete, step-by-step solution. Cosmos shows every derivation, explains each step, and checks units and limiting cases.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "cosmos-2",
+    title: "Relativity & Spacetime",
+    emoji: "🌀",
+    content:
+      "Explore special and general relativity from first principles. Cosmos derives time dilation, length contraction, the metric tensor, and Einstein's field equations with full working.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "cosmos-3",
+    title: "Quantum Mechanics",
+    emoji: "⚛️",
+    content:
+      "Master the Schrödinger equation, operators, and quantum states. Cosmos solves the harmonic oscillator, hydrogen atom, and explains measurement, uncertainty, and spin.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "cosmos-4",
+    title: "Advanced Calculus & Analysis",
+    emoji: "∫",
+    content:
+      "Tackle multivariable calculus, differential equations, and real analysis. Cosmos solves integrals, derives series expansions, and explains convergence with rigorous proofs.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "cosmos-5",
+    title: "Linear Algebra & Tensors",
+    emoji: "🔢",
+    content:
+      "From eigenvalues to tensor calculus. Cosmos explains transformations, diagonalization, and the tensor formalism used in relativity and quantum field theory.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "cosmos-6",
+    title: "Thermodynamics & Stat Mech",
+    emoji: "🌡️",
+    content:
+      "Understand entropy, partition functions, and phase transitions. Cosmos connects macroscopic thermodynamics to microscopic statistical mechanics with clear derivations.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "cosmos-7",
+    title: "Scientific Python & Julia",
+    emoji: "💻",
+    content:
+      "Generate numerical solutions and visualizations. Cosmos writes SciPy, NumPy, and Julia code to simulate physical systems, solve ODEs, and plot results.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+]
+
 // Helper function to check and create store
 async function getOrCreateStore(params: {
   slug: string
@@ -7981,8 +8686,6 @@ You are an architecture expert. Design systems that grow with users, follow indu
   })
   if (!architect) throw new Error("Failed to add architect app")
 
-  await extractTranslations()
-
   // // ============================================
   // // DEMO: POPULAR AI APPS WITH NATIVE VERSIONS
   // // ============================================
@@ -8081,9 +8784,471 @@ You are an architecture expert. Design systems that grow with users, follow indu
   //   },
   // })
 
+  // ============================================
+  // 🌌 ORBIT STORE - Science & Exploration Hub
+  // ============================================
+  const orbitStore = await getOrCreateStore({
+    slug: "orbit",
+    name: "Orbit",
+    title: "Science & Exploration Hub",
+    domain: "https://orbit.chrry.ai",
+    parentStoreId: blossom.id,
+    userId: admin.id,
+    visibility: "public" as const,
+    description:
+      "Explore the frontiers of science. Quantum computing, astrophysics, advanced mathematics, and physics — powered by Sushi AI's multimodal intelligence.",
+  })
+
+  let nebulaApp = await getApp({ slug: "nebula" })
+
+  const nebulaPayload = {
+    ...nebulaApp,
+    slug: "nebula",
+    name: "Nebula",
+    subtitle: "Science & Exploration AI",
+    domain: "https://orbit.chrry.ai",
+    version: "1.0.0",
+    status: "active" as const,
+    title: "Your Science Companion",
+    themeColor: "violet",
+    backgroundColor: "#000000",
+    icon: "🌌",
+    visibility: "public" as const,
+    storeId: orbitStore.id,
+    userId: admin.id,
+    systemPrompt: nebulaSystemPrompt,
+    highlights: nebulaInstructions,
+    defaultModel: "sushi" as const,
+    onlyAgent: false,
+    placeholder: "Ask me anything about science, physics, or the universe...",
+    tipsTitle: "Science Tips",
+    tips: [
+      {
+        id: "nebula-tip-1",
+        content:
+          "Upload a research paper or textbook page — Nebula will explain it, summarize key findings, and connect it to broader science.",
+        emoji: "📄",
+      },
+      {
+        id: "nebula-tip-2",
+        content:
+          "Ask for working code! Nebula generates Python, Julia, and MATLAB simulations for any scientific concept.",
+        emoji: "💻",
+      },
+      {
+        id: "nebula-tip-3",
+        content:
+          "Start with 'Explain like I'm 10' or 'Give me the graduate-level version' — Nebula adapts to any depth.",
+        emoji: "🎓",
+      },
+      {
+        id: "nebula-tip-4",
+        content:
+          "Ask about quantum computing, black holes, or differential equations — Nebula covers the full spectrum of science.",
+        emoji: "⚛️",
+      },
+      {
+        id: "nebula-tip-5",
+        content:
+          "Request visual descriptions and thought experiments. Nebula makes abstract concepts tangible.",
+        emoji: "🔬",
+      },
+    ],
+    description:
+      "Explore the frontiers of science with Gemini-powered intelligence. From quantum circuits to black holes, Nebula makes complex science accessible and exciting.",
+    featureList: [
+      "Quantum Computing",
+      "Astrophysics",
+      "Advanced Mathematics",
+      "Physics Problem Solver",
+      "Scientific Code Generation",
+      "Research Paper Analysis",
+      "Multimodal Science",
+    ],
+    features: {
+      quantumComputing: true,
+      astrophysics: true,
+      mathematics: true,
+      physicsSolver: true,
+      codeGeneration: true,
+      paperAnalysis: true,
+      multimodal: true,
+    },
+    tools: ["calendar", "location", "weather"] as (
+      | "calendar"
+      | "location"
+      | "weather"
+    )[],
+    extends: [chrry.id] as string[],
+  }
+
+  nebulaApp = await createOrUpdateApp({
+    app: nebulaPayload,
+    extends: nebulaPayload.extends,
+  })
+  if (!nebulaApp) throw new Error("Failed to create or update nebula app")
+
+  await updateStore({
+    ...orbitStore,
+    appId: nebulaApp.id,
+    userId: admin.id,
+    guestId: null,
+  })
+
+  {
+    const storeInstall = await getStoreInstall({
+      storeId: orbitStore.id,
+      appId: nebulaApp.id,
+    })
+    if (!storeInstall) {
+      await createStoreInstall({
+        storeId: orbitStore.id,
+        appId: nebulaApp.id,
+        featured: true,
+        displayOrder: 0,
+      })
+    }
+  }
+
+  {
+    const blossomNebulaInstall = await getStoreInstall({
+      storeId: blossom.id,
+      appId: nebulaApp.id,
+    })
+    if (!blossomNebulaInstall) {
+      await createStoreInstall({
+        storeId: blossom.id,
+        appId: nebulaApp.id,
+        featured: true,
+        displayOrder: 10,
+      })
+    }
+  }
+
+  await seedAgentRPG(nebulaApp.id, {
+    intelligence: 95,
+    creativity: 75,
+    empathy: 50,
+    efficiency: 80,
+  })
+
+  // ============================================
+  // ⚛️ QUANTUMLAB - Quantum Computing App
+  // ============================================
+  let quantumLabApp = await getApp({ slug: "quantumlab" })
+
+  const quantumLabPayload = {
+    ...quantumLabApp,
+    slug: "quantumlab",
+    name: "QuantumLab",
+    subtitle: "Quantum Computing Simulator",
+    version: "1.0.0",
+    status: "active" as const,
+    title: "Quantum Circuit Builder & Educator",
+    themeColor: "violet",
+    backgroundColor: "#000000",
+    icon: "⚛️",
+    visibility: "public" as const,
+    storeId: orbitStore.id,
+    userId: admin.id,
+    systemPrompt: quantumLabSystemPrompt,
+    highlights: quantumLabInstructions,
+    defaultModel: "sushi" as const,
+    onlyAgent: false,
+    placeholder:
+      "Build a quantum circuit, explain a gate, or simulate an algorithm...",
+    tipsTitle: "Quantum Tips",
+    tips: [
+      {
+        id: "quantumlab-tip-1",
+        content:
+          "Start with 'Build me a Bell state circuit' — QuantumLab draws the circuit, explains each gate, and gives you runnable Qiskit code.",
+        emoji: "⚛️",
+      },
+      {
+        id: "quantumlab-tip-2",
+        content:
+          "Ask 'How does Grover's algorithm work?' and get a full walkthrough: intuition → math → circuit → code.",
+        emoji: "🔍",
+      },
+      {
+        id: "quantumlab-tip-3",
+        content:
+          "Request code in any framework: 'Give me this circuit in Cirq' or 'Export to Q#' — QuantumLab handles all major quantum SDKs.",
+        emoji: "📤",
+      },
+      {
+        id: "quantumlab-tip-4",
+        content:
+          "Ask about real hardware: 'What's the fidelity on IBM Eagle?' or 'How do I submit to IonQ?' — QuantumLab knows current quantum hardware.",
+        emoji: "🖥️",
+      },
+      {
+        id: "quantumlab-tip-5",
+        content:
+          "Visualize qubit states: 'Show me the Bloch sphere for |+⟩' — QuantumLab describes geometric state representations clearly.",
+        emoji: "🌐",
+      },
+    ],
+    description:
+      "Master quantum computing from first principles to advanced algorithms. Build circuits, simulate algorithms, and export production-ready Qiskit, Cirq, or Q# code.",
+    featureList: [
+      "Circuit Builder",
+      "Grover's Algorithm",
+      "Shor's Algorithm",
+      "Bloch Sphere",
+      "Quantum Entanglement",
+      "Code Export",
+      "Error Correction",
+    ],
+    features: {
+      circuitBuilder: true,
+      groverAlgorithm: true,
+      shorAlgorithm: true,
+      blochSphere: true,
+      entanglement: true,
+      codeExport: true,
+      errorCorrection: true,
+      qft: true,
+    },
+    tools: ["calendar", "location", "weather"] as (
+      | "calendar"
+      | "location"
+      | "weather"
+    )[],
+    extends: [nebulaApp.id, chrry.id] as string[],
+  }
+
+  quantumLabApp = await createOrUpdateApp({
+    app: quantumLabPayload,
+    extends: quantumLabPayload.extends,
+  })
+  if (!quantumLabApp) throw new Error("Failed to add quantumlab app")
+
+  await seedAgentRPG(quantumLabApp.id, {
+    intelligence: 98,
+    creativity: 65,
+    empathy: 40,
+    efficiency: 85,
+  })
+
+  // ============================================
+  // 🌠 STARMAP - Astronomy & Space App
+  // ============================================
+  let starMapApp = await getApp({ slug: "starmap" })
+
+  const starMapPayload = {
+    ...starMapApp,
+    slug: "starmap",
+    name: "StarMap",
+    subtitle: "Astronomy & Space Exploration",
+    version: "1.0.0",
+    status: "active" as const,
+    title: "Your Guide to the Cosmos",
+    themeColor: "blue",
+    backgroundColor: "#000000",
+    icon: "🌠",
+    visibility: "public" as const,
+    storeId: orbitStore.id,
+    userId: admin.id,
+    systemPrompt: starMapSystemPrompt,
+    highlights: starMapInstructions,
+    defaultModel: "sushi" as const,
+    onlyAgent: false,
+    placeholder:
+      "What's in the night sky tonight? Ask about stars, planets, or black holes...",
+    tipsTitle: "Stargazing Tips",
+    tips: [
+      {
+        id: "starmap-tip-1",
+        content:
+          "Share your location for personalized stargazing guides — StarMap tells you exactly what's visible from your city tonight.",
+        emoji: "📍",
+      },
+      {
+        id: "starmap-tip-2",
+        content:
+          "Ask 'What's special about the James Webb telescope image of NGC 1300?' — StarMap explains the science behind any astronomical image.",
+        emoji: "🔭",
+      },
+      {
+        id: "starmap-tip-3",
+        content:
+          "Planning astrophotography? Ask for camera settings, best targets for your equipment, and post-processing tips.",
+        emoji: "📸",
+      },
+      {
+        id: "starmap-tip-4",
+        content:
+          "Ask about scale: 'How far is Andromeda in light travel time?' — StarMap always helps you grasp cosmic distances intuitively.",
+        emoji: "🌌",
+      },
+      {
+        id: "starmap-tip-5",
+        content:
+          "Track upcoming events: 'When is the next total solar eclipse visible from Istanbul?' — StarMap has your celestial calendar covered.",
+        emoji: "📅",
+      },
+    ],
+    description:
+      "Journey through the cosmos with your personal astronomy guide. From backyard stargazing to black holes and exoplanets — StarMap makes the universe personal.",
+    featureList: [
+      "Night Sky Guide",
+      "Black Holes",
+      "Space Missions",
+      "Exoplanets",
+      "Cosmology",
+      "Astrophotography",
+      "Celestial Events",
+    ],
+    features: {
+      nightSkyGuide: true,
+      blackHoles: true,
+      spaceMissions: true,
+      exoplanets: true,
+      cosmology: true,
+      astrophotography: true,
+      celestialEvents: true,
+      locationAware: true,
+    },
+    tools: ["calendar", "location", "weather"] as (
+      | "calendar"
+      | "location"
+      | "weather"
+    )[],
+    extends: [nebulaApp.id, chrry.id] as string[],
+  }
+
+  starMapApp = await createOrUpdateApp({
+    app: starMapPayload,
+    extends: starMapPayload.extends,
+  })
+  if (!starMapApp) throw new Error("Failed to add starmap app")
+
+  await seedAgentRPG(starMapApp.id, {
+    intelligence: 90,
+    creativity: 85,
+    empathy: 60,
+    efficiency: 75,
+  })
+
+  // ============================================
+  // 🧪 COSMOS - Physics & Math Solver App
+  // ============================================
+  let cosmosApp = await getApp({ slug: "cosmos" })
+
+  const cosmosPayload = {
+    ...cosmosApp,
+    slug: "cosmos",
+    name: "Cosmos",
+    subtitle: "Physics & Mathematics Solver",
+    version: "1.0.0",
+    status: "active" as const,
+    title: "Master the Mathematical Universe",
+    themeColor: "orange",
+    backgroundColor: "#000000",
+    icon: "🧪",
+    visibility: "public" as const,
+    storeId: orbitStore.id,
+    userId: admin.id,
+    systemPrompt: cosmosSystemPrompt,
+    highlights: cosmosInstructions,
+    defaultModel: "sushi" as const,
+    onlyAgent: false,
+    placeholder:
+      "Solve a physics problem, derive an equation, or explain a theorem...",
+    tipsTitle: "Physics & Math Tips",
+    tips: [
+      {
+        id: "cosmos-tip-1",
+        content:
+          "Paste any physics problem and Cosmos will solve it step-by-step: identify principles → set up equations → solve → check units → interpret.",
+        emoji: "🧮",
+      },
+      {
+        id: "cosmos-tip-2",
+        content:
+          "Ask for full derivations: 'Derive the Schrödinger equation from first principles' — Cosmos shows every step with physical motivation.",
+        emoji: "📐",
+      },
+      {
+        id: "cosmos-tip-3",
+        content:
+          "Request numerical solutions: 'Simulate a double pendulum in Python' — Cosmos writes SciPy/NumPy code with plots included.",
+        emoji: "💻",
+      },
+      {
+        id: "cosmos-tip-4",
+        content:
+          "Ask for intuition first: 'Why does E=mc²?' before the math — Cosmos always builds physical understanding alongside equations.",
+        emoji: "💡",
+      },
+      {
+        id: "cosmos-tip-5",
+        content:
+          "Upload your homework or exam problems — Cosmos solves them with full working and explains every concept used.",
+        emoji: "📝",
+      },
+    ],
+    description:
+      "Master physics and mathematics with rigorous, step-by-step solutions. From classical mechanics to quantum field theory — Cosmos is your graduate-level science tutor.",
+    featureList: [
+      "Step-by-Step Solutions",
+      "Relativity",
+      "Quantum Mechanics",
+      "Advanced Calculus",
+      "Linear Algebra",
+      "Thermodynamics",
+      "Scientific Code",
+    ],
+    features: {
+      stepByStep: true,
+      relativity: true,
+      quantumMechanics: true,
+      calculus: true,
+      linearAlgebra: true,
+      thermodynamics: true,
+      scientificCode: true,
+      dimensionalAnalysis: true,
+    },
+    tools: ["calendar", "location", "weather"] as (
+      | "calendar"
+      | "location"
+      | "weather"
+    )[],
+    extends: [nebulaApp.id, chrry.id] as string[],
+  }
+
+  cosmosApp = await createOrUpdateApp({
+    app: cosmosPayload,
+    extends: cosmosPayload.extends,
+  })
+  if (!cosmosApp) throw new Error("Failed to add cosmos app")
+
+  await seedAgentRPG(cosmosApp.id, {
+    intelligence: 97,
+    creativity: 60,
+    empathy: 45,
+    efficiency: 88,
+  })
+
+  // Add Sushi to Orbit store
+  const orbitSushiInstall = await getStoreInstall({
+    storeId: orbitStore.id,
+    appId: sushiApp.id,
+  })
+  if (!orbitSushiInstall) {
+    await createStoreInstall({
+      storeId: orbitStore.id,
+      appId: sushiApp.id,
+      featured: false,
+      displayOrder: 10,
+    })
+  }
+
+  // await extractTranslations()
+
   // Seed fake Tribe engagement (posts, likes, reactions, comments, follows)
-  console.log("🌱 Seeding Tribe engagement...")
-  !isProd && (await seedTribeEngagement())
 
   return { vex, coder, fightClub }
 }

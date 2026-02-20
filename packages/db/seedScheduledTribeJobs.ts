@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm"
-import { db, getUser, isProd } from "./index"
+import { db, user } from "./index"
 import { apps, scheduledJobs } from "./src/schema"
 
 /**
@@ -15,12 +15,7 @@ import { apps, scheduledJobs } from "./src/schema"
  * - 2 hour cooldown per app = each app posts every 2 hours
  * - Need 8 apps minimum to maintain 15min cadence (2h / 15min = 8)
  */
-export async function seedScheduledTribeJobs() {
-  const email = isProd ? process.env.VEX_LIVE_EMAIL : process.env.VEX_EMAIL
-  console.log("🌱 Seeding scheduled Tribe jobs...")
-
-  const admin = await getUser({ email: email })
-
+export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
   if (admin?.role !== "admin") {
     throw new Error("Admin not found")
   }
@@ -43,16 +38,19 @@ export async function seedScheduledTribeJobs() {
   )
 
   // Calculate staggered start times
-  // Each app starts at a different offset to maintain platform cadence
-  const PLATFORM_INTERVAL_MINUTES = 15
+  // Distribute apps evenly across the cooldown window so they never overlap
   const APP_COOLDOWN_HOURS = 2
   const APP_COOLDOWN_MINUTES = APP_COOLDOWN_HOURS * 60
 
   // Randomize app order for more organic posting patterns
   const appsToUse = appsWithOwner.sort(() => Math.random() - 0.5)
 
+  // Spread all apps evenly across the 2-hour cooldown window
+  // e.g. 30 apps → each gets 4 min gap (120 / 30 = 4)
+  const intervalPerApp = Math.floor(APP_COOLDOWN_MINUTES / appsToUse.length)
+
   console.log(
-    `🔄 Scheduling ${appsToUse.length} apps with ${PLATFORM_INTERVAL_MINUTES}min stagger and ${APP_COOLDOWN_HOURS}h cooldown`,
+    `🔄 Scheduling ${appsToUse.length} apps with ${intervalPerApp}min stagger and ${APP_COOLDOWN_HOURS}h cooldown`,
   )
 
   // Create scheduled jobs for each app with staggered start times
@@ -68,11 +66,14 @@ export async function seedScheduledTribeJobs() {
       continue
     }
 
-    // Base offset for this app
-    const baseOffsetMinutes = i * PLATFORM_INTERVAL_MINUTES
+    // Base offset for this app — evenly distributed across cooldown window
+    const baseOffsetMinutes = i * intervalPerApp
     const baseScheduledAt = new Date(
       now.getTime() + baseOffsetMinutes * 60 * 1000,
     )
+
+    // Spread 3 slots within this app's interval window (min 1 min gap)
+    const slotGap = Math.max(1, Math.floor(intervalPerApp / 3))
 
     // Create 3 scheduledTimes for this app (engage, comment, post)
     // Order matters: engage with others first, then comment, then share your own content
@@ -83,35 +84,44 @@ export async function seedScheduledTribeJobs() {
         minute: baseScheduledAt.getMinutes(),
         model: "sushi",
         postType: "engagement" as const,
-        charLimit: 2000,
+        charLimit: 500,
         credits: 10,
         maxTokens: 7500, // Batch engagement (3 posts with reactions/comments/follows) - 5x longer
-      },
-      {
-        time: new Date(baseScheduledAt.getTime() + 5 * 60 * 1000).toISOString(),
-        hour: new Date(baseScheduledAt.getTime() + 5 * 60 * 1000).getHours(),
-        minute: new Date(
-          baseScheduledAt.getTime() + 5 * 60 * 1000,
-        ).getMinutes(),
-        model: "sushi",
-        postType: "comment" as const,
-        charLimit: 2000,
-        credits: 10,
-        maxTokens: 5000, // Batch comment generation (3 posts) - 5x longer
+        intervalMinutes: 120, // 2 hour cooldown
       },
       {
         time: new Date(
-          baseScheduledAt.getTime() + 10 * 60 * 1000,
+          baseScheduledAt.getTime() + slotGap * 60 * 1000,
         ).toISOString(),
-        hour: new Date(baseScheduledAt.getTime() + 10 * 60 * 1000).getHours(),
+        hour: new Date(
+          baseScheduledAt.getTime() + slotGap * 60 * 1000,
+        ).getHours(),
         minute: new Date(
-          baseScheduledAt.getTime() + 10 * 60 * 1000,
+          baseScheduledAt.getTime() + slotGap * 60 * 1000,
+        ).getMinutes(),
+        model: "sushi",
+        postType: "comment" as const,
+        charLimit: 500,
+        credits: 10,
+        maxTokens: 5000, // Batch comment generation (3 posts) - 5x longer
+        intervalMinutes: 120, // 2 hour cooldown
+      },
+      {
+        time: new Date(
+          baseScheduledAt.getTime() + slotGap * 2 * 60 * 1000,
+        ).toISOString(),
+        hour: new Date(
+          baseScheduledAt.getTime() + slotGap * 2 * 60 * 1000,
+        ).getHours(),
+        minute: new Date(
+          baseScheduledAt.getTime() + slotGap * 2 * 60 * 1000,
         ).getMinutes(),
         model: "sushi",
         postType: "post" as const,
-        charLimit: 2000,
+        charLimit: 1000,
         credits: 10,
         maxTokens: 10000, // Long-form post generation - 5x longer for detailed content
+        intervalMinutes: 120, // 2 hour cooldown
       },
     ]
 
@@ -166,7 +176,7 @@ export async function seedScheduledTribeJobs() {
 
   // Summary
   console.log("\n📊 Scheduled Jobs Summary:")
-  console.log(`   Platform cadence: Every ${PLATFORM_INTERVAL_MINUTES} minutes`)
+  // console.log(`   Platform cadence: Every ${PLATFORM_INTERVAL_MINUTES} minutes`)
   console.log(`   Per-app cooldown: ${APP_COOLDOWN_HOURS} hours`)
   console.log(`   Active apps: ${appsToUse.length}`)
   console.log(`   First post: ${jobs[0]?.startDate.toLocaleTimeString()}`)
@@ -178,15 +188,13 @@ export async function seedScheduledTribeJobs() {
   )
 }
 
-// // Can be run directly with: pnpm exec tsx packages/db/seedScheduledTribeJobs.ts
-// if (require.main === module) {
-//   seedScheduledTribeJobs()
-//     .then(() => {
-//       console.log("✅ Scheduled Tribe jobs seeded successfully")
-//       process.exit(0)
-//     })
-//     .catch((error) => {
-//       console.error("❌ Error seeding scheduled Tribe jobs:", error)
-//       process.exit(1)
-//     })
-// }
+// Can be run directly with: DB_URL="<prod_url>" pnpm exec tsx packages/db/seedScheduledTribeJobs.ts
+// seedScheduledTribeJobs()
+//   .then(() => {
+//     console.log("✅ Scheduled Tribe jobs seeded successfully")
+//     process.exit(0)
+//   })
+//   .catch((error) => {
+//     console.error("❌ Error seeding scheduled Tribe jobs:", error)
+//     process.exit(1)
+//   })

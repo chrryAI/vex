@@ -1,6 +1,8 @@
 export const getFeatures = ({
   t,
+  //500
   ADDITIONAL_CREDITS,
+  //5.0EU
   CREDITS_PRICE,
 }: {
   t: (key: string, options?: any) => string

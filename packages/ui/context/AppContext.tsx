@@ -66,7 +66,7 @@ export const AppContextProvider = ({
   children: React.ReactNode
 }) => {
   const { t: i18nT } = useTranslation()
-  const { user, storeApps, atlas, siteConfig: config } = useAuth()
+  const { user, storeApps, showTribe, atlas, siteConfig: config } = useAuth()
 
   // Auto-append missing translation keys in dev mode
   const t = (key: string, values?: Record<string, any>, autoAdd = true) => {
@@ -108,6 +108,8 @@ export const AppContextProvider = ({
       app && atlas && app.store?.appId === atlas.id ? "Atlas" : config.name
     // 🎯 MAGIC: Replace "Vex" with dynamic app name from site config
     // This makes ALL translations white-label ready automatically!
+
+    if (showTribe) return result
     return result.replace(/Vex/g, name).replace(/vex/g, name.toLowerCase())
   }
 

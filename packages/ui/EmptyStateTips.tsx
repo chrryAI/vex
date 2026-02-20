@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { useAppContext } from "./context/AppContext"
-import { useApp, useChat } from "./context/providers"
+import { useApp, useChat, useNavigationContext } from "./context/providers"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useEmptyStateTipsStyles } from "./EmptyStateTips.styles"
 import { useResponsiveCount } from "./hooks/useResponsiveCount"
@@ -23,6 +23,7 @@ export default function EmptyStateTips({
   style?: React.CSSProperties
 }) {
   const { isManagingApp, canEditApp, app } = useApp()
+  const { pathname } = useNavigationContext()
   const { isPear, pear } = useAuth()
   const { reduceMotion: reduceMotionContext, reduceMotion } = useTheme()
   const { showTribe } = useChat()
@@ -62,7 +63,7 @@ export default function EmptyStateTips({
   }
 
   // Show Tribe tips when in Tribe view
-  if (showTribe) {
+  if (showTribe && pathname && ["/", "/tribe"].includes(pathname)) {
     const tribeTips = [
       {
         tip: t(

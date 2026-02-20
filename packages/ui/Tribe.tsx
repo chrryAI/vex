@@ -75,6 +75,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     liveReactions,
     pendingPostIds,
     optimisticLiked,
+    optimisticDelta,
     refetchPosts,
     setPendingPostIds,
     posting,
@@ -90,6 +91,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     user,
     setSignInPart,
     downloadUrl,
+    siteConfig,
+    getTribeUrl,
   } = useAuth()
   const { setAppStatus, canEditApp } = useApp()
   const { isExtension, isFirefox } = usePlatform()
@@ -100,7 +103,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
   const isSwarm = true
 
-  const { addParams } = useNavigationContext()
+  const { addParams, push, pathname } = useNavigationContext()
 
   const [tyingToReact, setTyingToReact] = useState<string | undefined>(
     undefined,
@@ -130,7 +133,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
       <Div
         style={{
           ...styles.container.style,
-          marginTop: isMobileDevice ? "0.6rem" : isSmallDevice ? "0.4rem" : "0",
+          marginTop: isMobileDevice
+            ? "0.8rem"
+            : isSmallDevice
+              ? "0.6rem"
+              : ".25rem",
         }}
       >
         {postId ? (
@@ -147,23 +154,30 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     alignItems: "center",
                     margin: 0,
                     padding: 0,
-                    marginBottom: "1.2rem",
+                    marginBottom: "1.75rem",
                     fontSize: "clamp(1.3rem, 4vw, 1.725rem)",
                   }}
                 >
                   <Img
-                    size={isMobileDevice ? 27 : 29}
-                    app={showTribeProfile ? app : undefined}
-                    icon={showTribeProfile ? undefined : "zarathustra"}
+                    size={isMobileDevice ? 34 : 37}
+                    app={
+                      showTribeProfile &&
+                      !(pathname === "/" && siteConfig.isTribe)
+                        ? app
+                        : undefined
+                    }
+                    slug={showTribeProfile ? undefined : "tribe"}
                   />
+
                   {showTribeProfile ? (
-                    t(app?.name || "")
+                    app?.name
                   ) : (
                     <>
-                      {tribeSlug && currentTribe ? (
-                        <>
-                          <A href={`/tribe`}>{t("Tribe")}</A>
-                        </>
+                      {tribeSlug ? (
+                        <A href={getTribeUrl()}>{t("Tribe")}</A>
+                      ) : (pathname === "/" || tribeSlug) &&
+                        siteConfig.isTribe ? (
+                        <A href={`/?programme=true`}>{t("Tribe")}</A>
                       ) : (
                         <>{t("Tribe")}</>
                       )}
@@ -209,9 +223,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     }}
                   >
                     <A href="/about">{app?.store?.app?.icon || "🍒"} /about</A>
-                    <A openInNewTab style={{}} href="/privacy">
-                      /privacy 🤫
-                    </A>
+                    <A href="/privacy">/privacy 🤫</A>
                   </Div>
                 </Div>
                 <Div
@@ -239,7 +251,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     >
                       {maxTribes.map((tribe, i) => (
                         <MotiView
-                          key={tribe.id}
+                          key={tribe.id + i}
                           from={{ opacity: 0, translateY: 0, translateX: -10 }}
                           animate={{ opacity: 1, translateY: 0, translateX: 0 }}
                           transition={{
@@ -253,6 +265,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               display: "flex",
                               alignItems: "center",
                               gap: "0.25rem",
+                              color:
+                                tribe.slug === tribeSlug
+                                  ? "var(--shade-7)"
+                                  : undefined,
                             }}
                             href={`/tribe/${tribe.slug}`}
                           >
@@ -260,14 +276,20 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               style={{
                                 fontSize: ".65rem",
                                 color: "var(--background)",
-                                background: "var(--accent-1)",
                                 borderRadius: 20,
                                 padding: ".1rem 0.3rem",
+                                background:
+                                  tribe.slug !== tribeSlug
+                                    ? "var(--accent-1)"
+                                    : "var(--shade-7)",
                               }}
                             >
                               {tribe.postsCount || 0}
                             </Span>
-                            <Span>/{tribe.slug}</Span>
+                            <Span>
+                              {tribe.slug === tribeSlug ? "" : "/"}
+                              {tribe.slug}
+                            </Span>
                           </A>
                         </MotiView>
                       ))}
@@ -304,7 +326,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         <Span>
                           {tribeSlug && currentTribe ? (
                             <>
-                              <A href={`/tribe`}>{t("Tribe's Feed")}</A>
+                              <A href={getTribeUrl()}>{t("Tribe's Feed")}</A>
                               <P
                                 style={{
                                   margin: 0,
@@ -379,7 +401,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     >
                       <P
                         style={{
-                          lineHeight: "1.4",
+                          lineHeight: "1.75",
                           fontSize: ".95rem",
                           textAlign: isSmallDevice ? "left" : "center",
                         }}
@@ -420,15 +442,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             isTribe={false}
                             app={app}
                             icon={
-                              app?.icon ? (
-                                app.icon
-                              ) : (
-                                <Img app={app} width={22} height={22} />
-                              )
+                              app?.icon ? app.icon : <Img app={app} size={18} />
                             }
                             className="button inverted"
                             style={{
                               ...utilities.inverted.style,
+                              ...utilities.small.style,
                               display: "flex",
                               alignItems: "center",
                             }}
@@ -439,34 +458,43 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           </AppLink>
                         )}
                         {accountApp ? (
-                          <Button
-                            onClick={() => {
-                              setIsNewAppChat({ item: accountApp })
-                            }}
+                          <AppLink
+                            isTribe={false}
+                            app={accountApp}
+                            loading={<Loading size={18} />}
                             className="inverted"
+                            icon={<Img app={accountApp} size={18} />}
                             style={{
                               ...utilities.inverted.style,
                               ...utilities.small.style,
                             }}
                           >
-                            <Img app={accountApp} width={22} height={22} />
                             {t("Go to Your Agent")}
-                          </Button>
+                          </AppLink>
+                        ) : showTribeProfile && app ? (
+                          <AppLink
+                            app={app}
+                            icon={<Img icon="spaceInvader" size={18} />}
+                            loading={<Loading size={18} />}
+                            className="inverted button"
+                            style={{
+                              ...utilities.button.style,
+                              ...utilities.inverted.style,
+                              ...utilities.small.style,
+                            }}
+                          >
+                            {t(TRAIN, {
+                              name: app?.name,
+                            })}
+                          </AppLink>
                         ) : (
                           <Button
                             onClick={() => {
-                              if (showTribeProfile) {
-                                setIsNewAppChat({ item: app })
-                                return
-                              }
                               if (!user) {
                                 addParams({ signIn: "login" })
                                 return
                               }
-                              setAppStatus({
-                                part: "settings",
-                                step: "add",
-                              })
+                              push("/?settings=true")
                             }}
                             className="inverted"
                             style={{
@@ -475,9 +503,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             }}
                           >
                             <Img icon="spaceInvader" size={18} />
-                            {t(showTribeProfile ? TRAIN : "Create Your Agent", {
-                              name: app?.name,
-                            })}
+                            {t("Create Your Agent")}
                           </Button>
                         )}
                       </Div>
@@ -493,7 +519,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       justifyContent: "center",
                       marginTop: 40,
                       marginBottom: 10,
-                      flexWrap: "wrap",
+                      flexDirection: "column",
                     }}
                   >
                     <Div style={{ display: "flex", gap: 15, flexWrap: "wrap" }}>
@@ -503,7 +529,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           alignItems: "center",
                           gap: 5,
                         }}
-                        href="/tribe"
+                        href={getTribeUrl()}
                       >
                         <ArrowLeft size={20} />
                         <Img logo="coder" size={30} />
@@ -578,7 +604,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       {storeApps?.map((item, i) => {
                         return (
                           <MotiView
-                            key={item.id}
+                            key={`store-app${item.id}`}
                             from={{ opacity: 0, translateY: -8, translateX: 0 }}
                             animate={{
                               opacity: 1,
@@ -673,6 +699,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       gap: 10,
                       position: "relative",
                       flexDirection: "column",
+                      textAlign: "center",
                     }}
                   >
                     {app?.subtitle || app?.description ? (
@@ -708,22 +735,59 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         justifyContent: "center",
                       }}
                     >
-                      {isOwner(app, { userId: user?.id }) && (
-                        <Button
-                          className="link"
-                          title={t("Edit")}
-                          onClick={() => {
-                            setAppStatus({
-                              step: "update",
-                              part: "name",
-                            })
+                      {app?.id === accountApp?.id &&
+                        isOwner(app, { userId: user?.id }) && (
+                          <Button
+                            className="link"
+                            title={t("Edit")}
+                            onClick={() => {
+                              setAppStatus({
+                                step: "update",
+                                part: "name",
+                              })
+                            }}
+                            style={utilities.link.style}
+                          >
+                            <Settings2 size={18} />
+                          </Button>
+                        )}
+                      {accountApp ? (
+                        <AppLink
+                          isTribe={false}
+                          app={accountApp}
+                          loading={<Loading size={18} />}
+                          className="inverted button"
+                          icon={<Img app={accountApp} size={18} />}
+                          style={{
+                            ...utilities.button.style,
+                            ...utilities.inverted.style,
+                            ...utilities.small.style,
                           }}
-                          style={utilities.link.style}
                         >
-                          <Settings2 size={18} />
+                          {t("Go to Your Agent")}
+                        </AppLink>
+                      ) : (
+                        <Button
+                          onClick={() => {
+                            if (!user) {
+                              addParams({ signIn: "login" })
+                              return
+                            }
+
+                            push("/?settings=true")
+                          }}
+                          className="inverted"
+                          style={{
+                            ...utilities.inverted.style,
+                            ...utilities.small.style,
+                          }}
+                        >
+                          <Img icon="spaceInvader" size={18} />
+                          {t("Create Your Agent")}
                         </Button>
                       )}
-                      {app && (
+
+                      {app && app?.id !== accountApp?.id && (
                         <AppLink
                           isTribe={false}
                           app={app}
@@ -731,14 +795,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             app?.icon ? (
                               app.icon
                             ) : (
-                              <Img app={app} width={22} height={22} />
+                              <Img app={app} width={18} height={18} />
                             )
                           }
                           className="button inverted"
                           style={{
                             ...utilities.inverted.style,
-                            display: "flex",
-                            alignItems: "center",
+                            ...utilities.small.style,
                           }}
                         >
                           {t(TRAIN, {
@@ -746,6 +809,22 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           })}
                         </AppLink>
                       )}
+                      {app?.id !== accountApp?.id &&
+                        isOwner(app, { userId: user?.id }) && (
+                          <Button
+                            className="link"
+                            title={t("Edit")}
+                            onClick={() => {
+                              setAppStatus({
+                                step: "update",
+                                part: "name",
+                              })
+                            }}
+                            style={utilities.link.style}
+                          >
+                            <Settings2 size={18} />
+                          </Button>
+                        )}
                     </Div>
                   </Div>
                 )}
@@ -784,7 +863,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         display: "flex",
                         alignItems: "center",
                         gap: 10,
-                        justifyContent: "flex-end",
+                        justifyContent: isMobileDevice ? "center" : "flex-end",
                       }}
                     >
                       <Button
@@ -914,10 +993,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {liveReactions.map((item, i) => {
                           return (
                             <MotiView
-                              key={
-                                item.id ||
-                                `reaction-${item.app.id}-${item.tribePostId}-${i}`
-                              }
+                              key={`reaction-${item.app.id}-${item.tribePostId}-${i}`}
                               from={{
                                 opacity: 0,
                                 translateY: -8,
@@ -1069,7 +1145,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       new Map(tribePosts.posts.map((p) => [p.id, p])).values(),
                     ).map((post, i) => (
                       <MotiView
-                        key={post.id}
+                        key={`moti-${post.id}`}
                         from={{ opacity: 0, translateY: 0, translateX: -10 }}
                         animate={{ opacity: 1, translateY: 0, translateX: 0 }}
                         transition={{
@@ -1098,28 +1174,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               fontSize: ".9rem",
                             }}
                           >
-                            <A
-                              onClick={(e) => {
-                                if (e.metaKey || e.ctrlKey) {
-                                  return
-                                }
-                                e.preventDefault()
-
-                                if (post.app)
-                                  setIsNewAppChat({
-                                    item: post.app,
-                                    tribe: true,
-                                  })
-                              }}
-                              href={post.app ? getAppSlug(post.app) : "/"}
+                            <AppLink
+                              app={post.app}
+                              icon={<Img app={post.app} />}
+                              loading={<Loading size={28} />}
                             >
-                              {post.app && loadingApp?.id !== post.app.id ? (
-                                <Img app={post.app} />
-                              ) : (
-                                <Loading size={28} />
-                              )}
                               {post.app?.name}
-                            </A>
+                            </AppLink>
                             <A
                               href={`/tribe/${post.tribe?.slug || "general"}`}
                               style={{
@@ -1212,10 +1273,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 ) : (
                                   <Img icon="heart" width={18} height={18} />
                                 )}
-                                <Span>
-                                  {(post.likesCount || 0) +
-                                    (optimisticLiked.includes(post.id) ? 1 : 0)}
-                                </Span>
+                                <Span>{post.likesCount || 0}</Span>
                               </Button>
 
                               <Div
@@ -1267,10 +1325,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   ).map(([emoji, count]) => (
                                     <Button
                                       className="transparent"
-                                      key={emoji + count}
+                                      key={`${emoji}`}
                                       onClick={() => {
                                         if (tyingToReact === post.id) {
-                                          setTyingToReact(undefined)
+                                          return
                                         } else {
                                           setTyingToReact(post.id)
                                         }
@@ -1362,38 +1420,23 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                       marginBottom: "1rem",
                                     }}
                                   >
-                                    <A
-                                      onClick={(e) => {
-                                        if (e.metaKey || e.ctrlKey) {
-                                          return
-                                        }
-                                        e.preventDefault()
-
-                                        if (post.app)
-                                          setIsNewAppChat({
-                                            item: post.app,
-                                            tribe: true,
-                                          })
-                                      }}
+                                    <AppLink
+                                      app={post.app}
+                                      isTribe
+                                      icon={
+                                        <Span style={{ fontSize: "1.3rem" }}>
+                                          {post.app.icon}
+                                        </Span>
+                                      }
+                                      loading={<Loading size={28} />}
                                       style={{
                                         display: "flex",
                                         alignItems: "center",
                                         gap: 8,
                                       }}
-                                      href={
-                                        post.app ? getAppSlug(post.app) : "/"
-                                      }
                                     >
-                                      {post.app &&
-                                      loadingApp?.id !== post.app.id ? (
-                                        <Span style={{ fontSize: "1.3rem" }}>
-                                          {post.app.icon}
-                                        </Span>
-                                      ) : (
-                                        <Loading size={28} />
-                                      )}
                                       {post.app?.name}
-                                    </A>
+                                    </AppLink>
                                     {post.app.icon && (
                                       <Img
                                         style={{
@@ -1445,7 +1488,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                                 marginTop: ".25rem",
                                               }}
                                             >
-                                              {post.app.characterProfile.traits.expertise.map(
+                                              {[
+                                                ...new Set(
+                                                  post.app.characterProfile
+                                                    .traits.expertise,
+                                                ),
+                                              ].map(
                                                 (item: string, i: number) => (
                                                   <Span
                                                     key={`trait-${item}`}
@@ -1486,7 +1534,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                                 marginTop: ".25rem",
                                               }}
                                             >
-                                              {post.app.characterProfile.traits.communication.map(
+                                              {[
+                                                ...new Set(
+                                                  post.app.characterProfile
+                                                    .traits.communication,
+                                                ),
+                                              ].map(
                                                 (item: string, i: number) => (
                                                   <Span
                                                     key={`trait-${item}`}
@@ -1527,7 +1580,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                                 marginTop: ".25rem",
                                               }}
                                             >
-                                              {post.app.characterProfile.traits.behavior.map(
+                                              {[
+                                                ...new Set(
+                                                  post.app.characterProfile
+                                                    .traits.behavior,
+                                                ),
+                                              ].map(
                                                 (item: string, i: number) => (
                                                   <Span
                                                     key={item}
@@ -1568,7 +1626,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                           {post.app.characterProfile.tags.map(
                                             (tag: string, i: number) => (
                                               <Span
-                                                key={tag}
+                                                key={tag + i}
                                                 style={{
                                                   padding: ".25rem .5rem",
                                                   backgroundColor:
@@ -1612,6 +1670,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
                                   )}
                                 </Span>
+
                                 {!accountApp && (
                                   <Button
                                     onClick={() => {

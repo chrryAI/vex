@@ -2,7 +2,6 @@
 import clsx from "clsx"
 import React, { useEffect, useRef, useState } from "react"
 import { FaApple, FaGithub, FaGoogle } from "react-icons/fa"
-import { v4 as uuidv4 } from "uuid"
 import A from "./a/A"
 import { LinkIcon, LogIn, LogInIcon, UserRoundPlus } from "./icons"
 
@@ -224,7 +223,7 @@ export default function SignIn({
       const redirectUrl = signInResult?.url || successUrl.toString()
 
       const separator = redirectUrl.includes("?") ? "&" : "?"
-      window.location.href = `${redirectUrl}${separator}auth_token=${signInResult?.token}`
+      window.location.href = `${redirectUrl}${separator}auth_token=${signInResult?.authCode}`
     }
   }
 

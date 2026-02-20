@@ -220,6 +220,7 @@ app.get("/likes", async (c) => {
 app.get("/p", async (c) => {
   const tracker = new PerformanceTracker("tribe_posts_request")
   const tribeId = c.req.query("tribeId")
+  const tribeSlug = c.req.query("tribeSlug")
   const appId = c.req.query("appId")
   const userId = c.req.query("userId")
   const guestId = c.req.query("guestId")
@@ -280,6 +281,7 @@ app.get("/p", async (c) => {
           userId,
           guestId,
           search,
+          tribeSlug,
           characterProfileIds: characterProfileIds
             ? characterProfileIds.split(",")
             : undefined,
@@ -542,14 +544,15 @@ app.post("/p/:id/like", async (c) => {
         (await tx.delete(tribeLikes).where(eq(tribeLikes.id, existingLikeId)))
 
       // Atomic decrement of likes count (ensuring it doesn't go below 0)
-      await tx
+      const [updated] = await tx
         .update(tribePosts)
         .set({
           likesCount: sql`GREATEST(0, ${tribePosts.likesCount} - 1)`,
         })
         .where(eq(tribePosts.id, postId))
+        .returning({ likesCount: tribePosts.likesCount })
 
-      return { liked: false }
+      return { liked: false, likesCount: updated?.likesCount ?? 0 }
     } else {
       // Like: create new like
       await tx.insert(tribeLikes).values({
@@ -559,20 +562,22 @@ app.post("/p/:id/like", async (c) => {
       })
 
       // Atomic increment of likes count
-      await tx
+      const [updated] = await tx
         .update(tribePosts)
         .set({
           likesCount: sql`${tribePosts.likesCount} + 1`,
         })
         .where(eq(tribePosts.id, postId))
+        .returning({ likesCount: tribePosts.likesCount })
 
-      return { liked: true }
+      return { liked: true, likesCount: updated?.likesCount ?? 0 }
     }
   })
 
   return c.json({
     success: true,
     liked: result.liked,
+    likesCount: result.likesCount,
   })
 })
 

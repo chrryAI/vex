@@ -1080,36 +1080,6 @@ function validateDomain() {
 
 ---
 
-## FILING STRATEGY
-
-### Recommended Approach
-
-**Phase 1: Immediate Protection**
-
-1. ✅ File this comprehensive provisional ($130 micro-entity)
-2. ✅ Publish on GitHub (open source, defensive publication)
-3. ✅ Submit to Prior Art Archive (free, legally recognized)
-
-**Phase 2: Market Validation (6-12 months)**
-
-- Monitor adoption and competitor activity
-- Track unique aspects being copied
-- Gather user testimonials and case studies
-
-**Phase 3: Decision Point (Month 12)**
-
-- **If high traction**: Convert to full patent ($10k-15k)
-- **If moderate traction**: File PCT for international ($5k+)
-- **If low traction**: Let provisional expire, keep trade secret
-
-### Budget Path
-
-- **Month 0**: Provisional filing ($130) ✓
-- **Month 6**: Public disclosure (GitHub + blog posts) ✓
-- **Month 12**: Decide full patent vs trade secret
-
----
-
 ## INVENTOR DECLARATION
 
 I, **Iliyan Velinov**, declare that I am the sole inventor of the "Sato Spatial Dojo" cross-store polymorphic application system. This invention combines:
@@ -1141,13 +1111,6 @@ The **Sato Spatial Dojo** represents a paradigm shift in application architectur
 
 **The result:** A unified system where stores (domains), apps (contexts), and code (depth) form a 3D spatial navigation system enabling infinite variations from finite code.
 
----
-
-**Document Status:** Ready for USPTO Provisional Filing  
-**Estimated Cost:** $130 (micro-entity)  
-**Priority Date Established:** January 21, 2026  
-**Next Step:** File online at https://patentcenter.uspto.gov/  
-**Contact:** iliyan@chrry.ai
 
 ---
 
