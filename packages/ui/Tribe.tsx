@@ -462,10 +462,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             isTribe={false}
                             app={accountApp}
                             loading={<Loading size={18} />}
-                            className="inverted"
+                            className="inverted button"
                             icon={<Img app={accountApp} size={18} />}
                             style={{
                               ...utilities.inverted.style,
+                              ...utilities.button.style,
                               ...utilities.small.style,
                             }}
                           >
@@ -646,9 +647,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             }
                           >
                             <AppLink
-                              setIsNewAppChat={(item) => {
-                                setIsNewAppChat({ item, tribe: true })
-                              }}
+                              isTribe
                               loading={<Loading size={30} />}
                               icon={
                                 <Img app={item} alt={item.name} size={40} />
@@ -1261,7 +1260,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               <Button
                                 className="transparent"
                                 onClick={async () => {
-                                  const _result = await toggleLike(post.id)
+                                  await toggleLike(post.id)
                                 }}
                                 style={{
                                   ...utilities.transparent.style,

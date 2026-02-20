@@ -1,5 +1,6 @@
 import { isE2E } from "@chrryai/chrry/utils"
 import {
+  isProd,
   TEST_GUEST_FINGERPRINTS,
   TEST_MEMBER_EMAILS,
   TEST_MEMBER_FINGERPRINTS,
@@ -17,6 +18,10 @@ clear.use("*", corsMiddleware)
 
 // POST /clear - Clear test data (E2E only)
 clear.patch("/", async (c) => {
+  if (isProd) {
+    return c.json({ error: "Oops, this is PROD" }, 401)
+  }
+
   if (!isE2E) {
     return c.json({ error: "Unauthorized" }, 401)
   }

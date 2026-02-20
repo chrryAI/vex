@@ -1,9 +1,10 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AudioPlayer } from "react-audio-play"
 import toast from "react-hot-toast"
+import AppLink from "./AppLink"
 import A from "./a/A"
 import ConfirmButton from "./ConfirmButton"
-import { useAppContext } from "./context/AppContext"
+import { COLORS, useAppContext } from "./context/AppContext"
 import {
   useApp,
   useAuth,
@@ -44,7 +45,7 @@ import MarkdownContent from "./MarkdownContent"
 import { useMessageStyles } from "./Message.styles"
 import MessageUserStatus from "./MessageUserStatus"
 import Modal from "./Modal"
-import { Button, Div, Span, useTheme, Video } from "./platform"
+import { Button, Div, P, Span, Strong, useTheme, Video } from "./platform"
 import type {
   aiAgent,
   app,
@@ -126,6 +127,8 @@ function Message({
     guest?.country,
     guest?.weather,
   ])
+
+  const [tryAppCharacterProfile, setTryAppCharacterProfile] = useState(false)
 
   // Get template context for variable replacement
   const templateContext = useMemo(() => {
@@ -1340,6 +1343,35 @@ function Message({
               )
             )}
             <Div style={styles.footer.style}>
+              {app?.characterProfile && (
+                <Div
+                  style={{
+                    fontSize: "12px",
+                    color: "#888",
+                    display: "flex",
+                    gap: ".5rem",
+                  }}
+                >
+                  <Button
+                    className="inverted"
+                    style={{
+                      ...utilities.inverted.style,
+                      ...utilities.xSmall.style,
+                      fontSize: ".8rem",
+                    }}
+                    onClick={() => {
+                      setTryAppCharacterProfile((prev) => !prev)
+                    }}
+                  >
+                    <Sparkles
+                      size={16}
+                      color="var(--accent-1)"
+                      fill="var(--accent-1)"
+                    />
+                    {app?.characterProfile.name}
+                  </Button>
+                </Div>
+              )}
               <Div style={styles.left.style}>
                 {message.message.tribeId && (
                   <A href={`/p${message.message.tribeId}`}>
@@ -1446,6 +1478,226 @@ function Message({
                 )}
               </Button>
             </Div>
+            {tryAppCharacterProfile && app?.characterProfile && (
+              <Div
+                className="slideUp"
+                style={{
+                  padding: ".75rem",
+                  backgroundColor: "var(--shade-1)",
+                  borderRadius: 15,
+                  marginTop: "1.25rem",
+                  fontSize: ".85rem",
+                  border: "1px solid var(--shade-3)",
+                  borderColor: COLORS[app?.themeColor as keyof typeof COLORS],
+                }}
+              >
+                <Div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: "1rem",
+                  }}
+                >
+                  <AppLink
+                    app={app}
+                    isTribe
+                    icon={
+                      <Span style={{ fontSize: "1.3rem" }}>{app.icon}</Span>
+                    }
+                    loading={<Loading size={28} />}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    {app?.name}
+                  </AppLink>
+                  {app.icon && (
+                    <Img
+                      style={{
+                        marginLeft: "auto",
+                      }}
+                      app={app}
+                    />
+                  )}
+                </Div>
+                {app.characterProfile.personality && (
+                  <P
+                    style={{
+                      margin: "0 0 .5rem 0",
+                      color: "var(--shade-6)",
+                    }}
+                  >
+                    {app.characterProfile.personality}
+                  </P>
+                )}
+
+                {app.characterProfile.traits && (
+                  <Div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: ".5rem",
+                      margin: ".5rem 0 0 0",
+                    }}
+                  >
+                    {app.characterProfile.traits.expertise &&
+                      app.characterProfile.traits.expertise.length > 0 && (
+                        <Div>
+                          <Strong
+                            style={{
+                              fontSize: ".75rem",
+                              color: "var(--shade-5)",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            Expertise
+                          </Strong>
+                          <Div
+                            style={{
+                              display: "flex",
+                              gap: ".5rem",
+                              flexWrap: "wrap",
+                              marginTop: ".25rem",
+                            }}
+                          >
+                            {[
+                              ...new Set(app.characterProfile.traits.expertise),
+                            ].map((item: string, i: number) => (
+                              <Span
+                                key={`trait-${item}`}
+                                style={{
+                                  padding: ".25rem .5rem",
+                                  backgroundColor: "var(--shade-2)",
+                                  borderRadius: 8,
+                                  fontSize: ".75rem",
+                                }}
+                              >
+                                {item}
+                              </Span>
+                            ))}
+                          </Div>
+                        </Div>
+                      )}
+                    {app.characterProfile.traits.communication &&
+                      app.characterProfile.traits.communication.length > 0 && (
+                        <Div>
+                          <Strong
+                            style={{
+                              fontSize: ".75rem",
+                              color: "var(--shade-5)",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            Communication Style
+                          </Strong>
+                          <Div
+                            style={{
+                              display: "flex",
+                              gap: ".5rem",
+                              flexWrap: "wrap",
+                              marginTop: ".25rem",
+                            }}
+                          >
+                            {[
+                              ...new Set(
+                                app.characterProfile.traits.communication,
+                              ),
+                            ].map((item: string, i: number) => (
+                              <Span
+                                key={`trait-${item}`}
+                                style={{
+                                  padding: ".25rem .5rem",
+                                  backgroundColor: "var(--shade-2)",
+                                  borderRadius: 8,
+                                  fontSize: ".75rem",
+                                }}
+                              >
+                                {item}
+                              </Span>
+                            ))}
+                          </Div>
+                        </Div>
+                      )}
+                    {app.characterProfile.traits.behavior &&
+                      app.characterProfile.traits.behavior.length > 0 && (
+                        <Div>
+                          <Strong
+                            style={{
+                              fontSize: ".75rem",
+                              color: "var(--shade-5)",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            Behavior
+                          </Strong>
+                          <Div
+                            style={{
+                              display: "flex",
+                              gap: ".5rem",
+                              flexWrap: "wrap",
+                              marginTop: ".25rem",
+                            }}
+                          >
+                            {[
+                              ...new Set(app.characterProfile.traits.behavior),
+                            ].map((item: string, i: number) => (
+                              <Span
+                                key={item}
+                                style={{
+                                  padding: ".25rem .5rem",
+                                  backgroundColor: "var(--shade-2)",
+                                  borderRadius: 8,
+                                  fontSize: ".75rem",
+                                }}
+                              >
+                                {item}
+                              </Span>
+                            ))}
+                          </Div>
+                        </Div>
+                      )}
+                  </Div>
+                )}
+                {app.characterProfile.tags &&
+                  app.characterProfile.tags.length > 0 && (
+                    <Div
+                      style={{
+                        marginTop: "1rem",
+                        paddingTop: ".75rem",
+                        borderTop: "1px solid var(--shade-2)",
+                      }}
+                    >
+                      <Div
+                        style={{
+                          display: "flex",
+                          gap: ".5rem",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {app.characterProfile.tags.map(
+                          (tag: string, i: number) => (
+                            <Span
+                              key={tag + i}
+                              style={{
+                                padding: ".25rem .5rem",
+                                backgroundColor: "var(--background)",
+                                color: "var(--foreground)",
+                                borderRadius: 8,
+                                fontSize: ".80rem",
+                              }}
+                            >
+                              #{tag}
+                            </Span>
+                          ),
+                        )}
+                      </Div>
+                    </Div>
+                  )}
+              </Div>
+            )}
           </Div>
         )}
       </Div>

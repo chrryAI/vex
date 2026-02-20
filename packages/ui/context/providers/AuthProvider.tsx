@@ -2280,7 +2280,7 @@ export function AuthProvider({
 
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
-  const canShowTribe = isDevelopment || !isE2E
+  const canShowTribe = isE2E ? !!siteConfig.isTribe : true
 
   const showTribeFromPath = pathname === "/tribe"
 
@@ -2306,14 +2306,15 @@ export function AuthProvider({
   const canBeTribeProfile =
     !showAllTribe && !_isExcluded && !(siteConfig.isTribe && pathname === "/")
 
-  const showTribeInitial = !!(
-    !postId &&
-    (showAllTribe ||
-      tribeSlug ||
-      postId ||
-      props.showTribe ||
-      canBeTribeProfile)
-  )
+  const showTribeInitial =
+    !!(
+      !postId &&
+      (showAllTribe ||
+        tribeSlug ||
+        postId ||
+        props.showTribe ||
+        canBeTribeProfile)
+    ) && canShowTribe
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
   const showTribeProfileInternal = canBeTribeProfile
@@ -2326,6 +2327,7 @@ export function AuthProvider({
   const showTribeProfile = showTribeProfileInternal || showTribeProfileMemo
 
   const setShowTribe = (value: boolean) => {
+    if (!canShowTribe) return
     setShowTribeFinal(value)
   }
 

@@ -1569,6 +1569,27 @@ export default function Chat({
     }
 
     if (hitHourlyLimit) {
+      if (guest && guest?.subscription?.plan !== "pro") {
+        if (!guest?.subscription) {
+          addParams({
+            subscribe: "true",
+            plan: "member",
+          })
+        } else {
+          addParams({
+            subscribe: "true",
+            plan: guest?.subscription?.plan === "plus" ? "pro" : "plus",
+          })
+        }
+      }
+
+      if (user && user?.subscription?.plan !== "pro") {
+        addParams({
+          subscribe: "true",
+          plan: user?.subscription?.plan === "plus" ? "pro" : "plus",
+        })
+      }
+
       toast.error(
         t("You hit your hourly limit {{hourlyLimit}}", {
           hourlyLimit,
@@ -1579,6 +1600,26 @@ export default function Chat({
     }
 
     if (creditsLeft === 0) {
+      if (guest && guest?.subscription?.plan !== "pro") {
+        if (!guest?.subscription) {
+          addParams({
+            subscribe: "true",
+            plan: "member",
+          })
+        } else {
+          addParams({
+            subscribe: "true",
+            plan: guest?.subscription?.plan === "plus" ? "pro" : "plus",
+          })
+        }
+      }
+
+      if (user && user?.subscription?.plan !== "pro") {
+        addParams({
+          subscribe: "true",
+          plan: user?.subscription?.plan === "plus" ? "pro" : "plus",
+        })
+      }
       toast.error(t("credits_left_other", { count: 0 }))
       return
     }
