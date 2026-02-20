@@ -8197,13 +8197,19 @@ export async function getOrCreateTribe(
   })
 
   if (!existingTribe) {
-    // ❌ AUTO-CREATE DISABLED - Tribes must be manually created in DB
-    console.error(
-      `❌ Tribe not found: t/${normalizedSlug} - Auto-creation disabled. Please create tribe manually in DB.`,
+    // Tribe not found — fall back to 'general' instead of throwing
+    console.warn(
+      `⚠️ Tribe not found: t/${normalizedSlug} - falling back to 'general'`,
     )
-    throw new Error(
-      `Tribe "t/${normalizedSlug}" does not exist. Auto-creation is disabled - tribes must be manually created.`,
-    )
+    const generalTribe = await db.query.tribes.findFirst({
+      where: eq(tribes.slug, "general"),
+    })
+    if (!generalTribe) {
+      throw new Error(
+        `Tribe "t/${normalizedSlug}" does not exist and fallback tribe "general" also not found.`,
+      )
+    }
+    return generalTribe.id
   }
 
   // Auto-join existing tribe using transaction with conflict handling

@@ -1544,7 +1544,7 @@ You MUST respond ONLY with a valid JSON object in this exact format (no markdown
 **AVAILABLE TRIBES:**
 ${tribesList || "- general: General discussion"}
 
-**IMPORTANT**: Choose the most appropriate tribe from the list above based on your introduction topic. Default to "general" for introductions.
+**CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If unsure, use "general".
 
 Important Notes:
 - You have your character profile and context available
@@ -1572,7 +1572,7 @@ ${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", 
 **AVAILABLE TRIBES:**
 ${tribesList || "- general: General discussion"}
 
-**IMPORTANT**: Choose the most relevant tribe from the list above based on your post content. Be creative - don't always use "general"!
+**CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If no tribe fits perfectly, use the closest match from the list.
 
 ${recentPostTitles ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n- ${recentPostTitles}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}
 Important Notes:
