@@ -168,3 +168,22 @@
 - **Explicit Checks:** Checking `NODE_ENV === "production"` allows us to enforce stricter security rules in production while keeping development easy.
 
 **Prevention:** Added a startup check in `apps/api/hono/routes/auth.ts` that throws an error if `NODE_ENV` is production and `NEXTAUTH_SECRET` is missing. This ensures the application fails to start rather than starting insecurely.
+
+## 2026-06-20 - TOCTOU and Open Redirect in File Uploads
+
+**Vulnerability:** The `minio.ts` upload utility validated URLs against private IPs *before* fetching them. However, it used standard `fetch`, which follows redirects automatically. This created two vulnerabilities:
+1.  **Open Redirect SSRF:** An attacker could provide a URL that passes validation (e.g., `http://evil.com/image`) but redirects to a private IP (e.g., `http://169.254.169.254/metadata`), which `fetch` would follow without re-validation.
+2.  **DNS Rebinding (TOCTOU):** For the initial request, the time between the DNS check and the actual `fetch` allowed an attacker to change the DNS record to a private IP.
+
+**Learning:**
+- **Fetch follows redirects:** Standard `fetch` behavior is dangerous for SSRF protection because it blindly trusts redirects.
+- **Validation Persistence:** Validation must happen at *every step* of the HTTP chain (initial URL + every redirect).
+- **DNS Pinning:** To prevent DNS rebinding, you must resolve the IP once and use that IP for the connection (setting the `Host` header manually).
+
+**Prevention:**
+- Implemented `safeFetch` utility that:
+    1.  Handles redirects manually (`redirect: "manual"`).
+    2.  Resolves and validates the IP for *every* URL in the chain.
+    3.  Uses the resolved IP for the actual request (for HTTP) to pin the DNS.
+    4.  Limits redirect depth to prevent loops.
+- Replaced direct `fetch` usage in `minio.ts` with `safeFetch`.

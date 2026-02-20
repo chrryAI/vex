@@ -190,3 +190,52 @@ export async function getSafeUrl(
     return { safeUrl: url, originalHost }
   }
 }
+
+export async function safeFetch(
+  url: string,
+  options: RequestInit = {},
+): Promise<Response> {
+  const maxRedirects = 5
+  let currentUrl = url
+  let redirects = 0
+  let response: Response
+
+  while (true) {
+    if (redirects > maxRedirects) {
+      throw new Error("Too many redirects")
+    }
+
+    const { safeUrl, originalHost } = await getSafeUrl(currentUrl)
+
+    // Construct headers
+    const headers = new Headers(options.headers)
+    headers.set("Host", originalHost)
+    if (!headers.has("User-Agent")) {
+      headers.set("User-Agent", "Chrry/1.0")
+    }
+
+    response = await fetch(safeUrl, {
+      ...options,
+      headers,
+      redirect: "manual",
+    })
+
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get("Location")
+      if (!location) {
+        throw new Error("Redirect without Location header")
+      }
+
+      try {
+        currentUrl = new URL(location, currentUrl).toString()
+      } catch {
+        throw new Error("Invalid redirect URL")
+      }
+
+      redirects++
+      continue
+    }
+
+    return response
+  }
+}
