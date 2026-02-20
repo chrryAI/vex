@@ -516,7 +516,11 @@ export default function FocusButton({
             {t("min")}
           </Button>
         </Div>
-        <Span
+        <Button
+          className="link"
+          aria-label={
+            playKitasaku ? t("Pause Kitasaku video") : t("Play Kitasaku video")
+          }
           onClick={() => {
             if (videoRef.current && os === "ios") {
               !playKitasaku
@@ -527,7 +531,7 @@ export default function FocusButton({
             }
             setPlayKitasaku(!playKitasaku)
           }}
-          style={styles.greeting.style}
+          style={{ ...utilities.link.style, ...styles.greeting.style }}
         >
           <>
             <Span
@@ -578,7 +582,7 @@ export default function FocusButton({
               </Div>
             </Div>
           </>
-        </Span>
+        </Button>
         <Div
           className="slideUp"
           data-testid="focusbutton"
@@ -638,6 +642,14 @@ export default function FocusButton({
                     ref={minutesUpButtonRef}
                     style={{ ...styles.timeAdjust.style }}
                     aria-label={t("Increase minutes")}
+                    onKeyDown={(e: React.KeyboardEvent) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        startAdjustment(1, true)
+                        setTimeout(stopAdjustment, 100)
+                      }
+                    }}
                     onPointerDown={(e) => {
                       e.stopPropagation()
                       if (e.pointerType === "mouse" && e.buttons !== 1) return
@@ -661,6 +673,14 @@ export default function FocusButton({
                     ref={minutesDownButtonRef}
                     style={{ ...styles.timeAdjust.style }}
                     aria-label={t("Decrease minutes")}
+                    onKeyDown={(e: React.KeyboardEvent) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        startAdjustment(-1, true)
+                        setTimeout(stopAdjustment, 100)
+                      }
+                    }}
                     onPointerDown={(e) => {
                       e.stopPropagation()
                       if (e.pointerType === "mouse" && e.buttons !== 1) return
@@ -688,6 +708,14 @@ export default function FocusButton({
                     ref={secondsUpButtonRef}
                     style={styles.timeAdjust.style}
                     aria-label={t("Increase seconds")}
+                    onKeyDown={(e: React.KeyboardEvent) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        startAdjustment(1, false)
+                        setTimeout(stopAdjustment, 100)
+                      }
+                    }}
                     onPointerDown={(e) => {
                       e.stopPropagation()
                       if (e.pointerType === "mouse" && e.buttons !== 1) return
@@ -712,6 +740,14 @@ export default function FocusButton({
                     ref={secondsDownButtonRef}
                     style={styles.timeAdjust.style}
                     aria-label={t("Decrease seconds")}
+                    onKeyDown={(e: React.KeyboardEvent) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        startAdjustment(-1, false)
+                        setTimeout(stopAdjustment, 100)
+                      }
+                    }}
                     onPointerDown={(e) => {
                       e.stopPropagation()
                       if (e.pointerType === "mouse" && e.buttons !== 1) return
