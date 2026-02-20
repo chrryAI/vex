@@ -26,6 +26,7 @@ import {
   useData,
   useError,
   useNavigationContext,
+  useTribe,
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import DeleteThread from "./DeleteThread"
@@ -258,6 +259,8 @@ export default function Chat({
     ...auth
   } = useAuth()
 
+  const { tribePost } = useTribe()
+
   const lastTribe = user?.lastTribe
   const lastMolt = user?.lastMolt
   const now = new Date()
@@ -485,19 +488,21 @@ export default function Chat({
   const placeholder =
     burnApp?.placeholder && burn
       ? burnApp.placeholder
-      : isImageGenerationEnabled
-        ? `🎨 ${t("Describe the image you want to create")} ✨`
-        : isSelectingMood
-          ? `📊 ${t("Track your mood daily")} 🎭`
-          : needsReview
-            ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
-            : isPear
-              ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
-              : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
-                ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
-                : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
-                  ? `✨ ${t("Explore new apps while you chat")} 🍇`
-                  : placeHolderInternal
+      : tribePost?.placeholder
+        ? tribePost?.placeholder
+        : isImageGenerationEnabled
+          ? `🎨 ${t("Describe the image you want to create")} ✨`
+          : isSelectingMood
+            ? `📊 ${t("Track your mood daily")} 🎭`
+            : needsReview
+              ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
+              : isPear
+                ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
+                : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
+                  ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
+                  : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
+                    ? `✨ ${t("Explore new apps while you chat")} 🍇`
+                    : placeHolderInternal
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])

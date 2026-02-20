@@ -1143,6 +1143,7 @@ export type tribePost = {
   createdOn: Date
   updatedOn: Date
   app: appWithStore
+  placeholder?: string
   user: Partial<user> | null
   guest: Partial<guest> | null
   tribe: tribe | null

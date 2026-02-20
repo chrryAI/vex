@@ -4597,12 +4597,14 @@ export const getPlaceHolders = async ({
   guestId,
   appId,
   pageSize = 50,
+  tribePostId,
 }: {
   threadId?: string
   userId?: string
   guestId?: string
   appId?: string
   pageSize?: number
+  tribePostId?: string
 }) => {
   const result = await db
     .select()
@@ -4613,6 +4615,7 @@ export const getPlaceHolders = async ({
         threadId ? eq(placeHolders.threadId, threadId) : undefined,
         userId ? eq(placeHolders.userId, userId) : undefined,
         guestId ? eq(placeHolders.guestId, guestId) : undefined,
+        tribePostId ? eq(placeHolders.tribePostId, tribePostId) : undefined,
       ),
     )
     .orderBy(desc(placeHolders.createdOn))
@@ -4626,6 +4629,7 @@ export const getPlaceHolder = async ({
   threadId,
   userId,
   guestId,
+  tribePostId,
   appId,
 }: {
   id?: string
@@ -4633,8 +4637,9 @@ export const getPlaceHolder = async ({
   userId?: string
   guestId?: string
   appId?: string
+  tribePostId?: string
 }) => {
-  if (!userId && !guestId) {
+  if (!userId && !guestId && !tribePostId) {
     return
   }
 
@@ -4650,6 +4655,7 @@ export const getPlaceHolder = async ({
         userId ? eq(placeHolders.userId, userId) : undefined,
         guestId ? eq(placeHolders.guestId, guestId) : undefined,
         appId ? eq(placeHolders.appId, appId) : undefined,
+        tribePostId ? eq(placeHolders.tribePostId, tribePostId) : undefined,
       ),
     )
     .orderBy(desc(placeHolders.createdOn))

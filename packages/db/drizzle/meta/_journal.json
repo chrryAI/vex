@@ -1457,6 +1457,13 @@
       "when": 1771292931007,
       "tag": "0207_freezing_pixie",
       "breakpoints": true
+    },
+    {
+      "idx": 208,
+      "version": "7",
+      "when": 1771622980805,
+      "tag": "0208_powerful_black_tarantula",
+      "breakpoints": true
     }
   ]
 }

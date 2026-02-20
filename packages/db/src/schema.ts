@@ -1844,6 +1844,9 @@ export const placeHolders = pgTable("placeHolders", {
   appId: uuid("appId").references(() => apps.id, {
     onDelete: "cascade",
   }),
+  tribePostId: uuid("tribePostId").references(() => tribePosts.id, {
+    onDelete: "cascade",
+  }),
   id: uuid("id").defaultRandom().primaryKey(),
   text: text("text").notNull(),
   userId: uuid("userId").references((): AnyPgColumn => users.id, {

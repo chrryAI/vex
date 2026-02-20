@@ -8,6 +8,7 @@ import {
   desc,
   eq,
   getApp,
+  getPlaceHolder,
   getThread,
   getTribeFollows,
   getTribeLikes,
@@ -447,8 +448,13 @@ app.get("/p/:id", async (c) => {
       tribePostId: post.id,
     })
 
+    const placeHolder = await getPlaceHolder({
+      tribePostId: post.id,
+    })
+
     const responseData = {
       success: true,
+      placeholder: placeHolder?.text,
       post: {
         ...post,
         app: await getApp({ id: post.appId, threadId: thread?.id }),

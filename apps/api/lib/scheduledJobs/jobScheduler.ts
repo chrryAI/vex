@@ -61,6 +61,7 @@ import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
 const SECRET = JWT_SECRET || "development-secret"
 
 import {
+  createPlaceHolder,
   getAiAgent,
   getUser,
   type thread,
@@ -95,6 +96,7 @@ function parseAIJsonResponse(content: string): {
   moltContent?: string
   moltSubmolt?: string
   submolt?: string
+  placeholder?: string
 } {
   if (!content || content.trim().length === 0) {
     throw new Error("Empty AI response content")
@@ -133,6 +135,7 @@ function parseAIJsonResponse(content: string): {
     "moltTitle",
     "content",
     "post",
+    "placeholder",
   ]) {
     cleaned = sanitizeField(cleaned, f)
   }
@@ -211,6 +214,7 @@ function parseAIJsonResponse(content: string): {
     "moltContent",
     "moltSubmolt",
     "submolt",
+    "placeholder",
   ]
 
   for (const field of fields) {
@@ -1570,13 +1574,15 @@ You MUST respond ONLY with a valid JSON object in this exact format (no markdown
   "tribeName": "general",
   "tribeTitle": "Your post title here",
   "tribeContent": "Your full post content here...",
-  "seoKeywords": ["keyword1", "keyword2", "keyword3"]
+  "seoKeywords": ["keyword1", "keyword2", "keyword3"],
+  "placeholder": "A short teaser sentence for the chat UI (max 120 chars)"
 }
 
 - tribeName: Choose from the available tribes list below
 - tribeTitle: A catchy title (max 100 chars)
 - tribeContent: The full post content (1000-2500 chars). IMPORTANT: Do NOT use double quotes inside tribeContent — use single quotes or rephrase instead.
 - seoKeywords: 3-5 relevant keywords for searchability
+- placeholder: A short, catchy 1-sentence teaser (max 120 chars) that will appear in the user's chat as a conversation starter about this post
 
 **AVAILABLE TRIBES:**
 ${tribesList || "- general: General discussion"}
@@ -1605,6 +1611,16 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}
 ${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}
 ${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}
 ${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}
+
+**RESPONSE FORMAT - CRITICAL:**
+You MUST respond ONLY with a valid JSON object in this exact format (no markdown, no explanations):
+{
+  "tribeName": "general",
+  "tribeTitle": "Your post title here",
+  "tribeContent": "Your full post content here...",
+  "seoKeywords": ["keyword1", "keyword2", "keyword3"],
+  "placeholder": "A short teaser sentence for the chat UI (max 120 chars)"
+}
 
 **AVAILABLE TRIBES:**
 ${tribesList || "- general: General discussion"}
@@ -1830,6 +1846,25 @@ Important Notes:
       console.log(
         `📝 Updated agent message ${agentMessageId} with tribePostId ${post.id}`,
       )
+    }
+
+    // Create placeholder for user's chat UI
+    const placeholderText = parsedContent.placeholder
+    if (placeholderText && job.userId) {
+      try {
+        await createPlaceHolder({
+          text: placeholderText.substring(0, 120),
+          userId: job.userId,
+          appId: job.appId,
+          tribePostId: post.id,
+          threadId: threadId ?? undefined,
+        })
+        console.log(
+          `💬 Created placeholder for post ${post.id}: "${placeholderText.substring(0, 60)}..."`,
+        )
+      } catch (placeholderErr) {
+        console.error("⚠️ Failed to create placeholder:", placeholderErr)
+      }
     }
 
     // Increment tribe posts count (only if tribeId exists)

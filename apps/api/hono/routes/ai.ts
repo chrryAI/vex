@@ -18,6 +18,7 @@ import {
   checkPearQuota,
   type collaboration,
   createMessage,
+  createPlaceHolder,
   db,
   decrypt,
   desc,
@@ -74,6 +75,7 @@ import {
 } from "@repo/db"
 import {
   MEMBER_FREE_TRIBE_CREDITS,
+  tribeMemberships,
   tribePosts,
   tribes as tribesSchema,
   type webSearchResultType,
@@ -6403,8 +6405,7 @@ Respond in JSON format:
                       // STREAM MODE: Direct post to Tribe (user sees content + post confirmation)
 
                       // Check credits
-                      const { MEMBER_FREE_TRIBE_CREDITS, tribeMemberships } =
-                        await import("@repo/db/src/schema")
+
                       const tribeCredits =
                         member.tribeCredits ?? MEMBER_FREE_TRIBE_CREDITS
 
