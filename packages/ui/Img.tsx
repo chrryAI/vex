@@ -42,6 +42,7 @@ export default function Img({
   handleDimensionsChange,
   showLoading = true,
   onLoad,
+  priority,
   ...props
 }: ImgProps) {
   const imgStyles = useImgStyles()
@@ -53,6 +54,7 @@ export default function Img({
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0,
+    skip: priority,
   })
 
   const loadImage = async (url: string) => {
@@ -120,10 +122,10 @@ export default function Img({
   // }, [src])
 
   useEffect(() => {
-    if (inView && !imageSrc && !error) {
+    if ((priority || inView) && !imageSrc && !error) {
       loadImage(src)
     }
-  }, [inView, imageSrc, error, src])
+  }, [inView, priority, imageSrc, error, src])
 
   useEffect(() => {
     return () => {
@@ -145,16 +147,16 @@ export default function Img({
       >
         <MotiView
           from={{
-            opacity: 0,
-            translateY: reduceMotion ? 0 : 10,
+            opacity: priority ? 1 : 0,
+            translateY: priority || reduceMotion ? 0 : 10,
           }}
           animate={{
-            opacity: isLoaded ? 1 : 0,
+            opacity: isLoaded || priority ? 1 : 0,
             translateY: 0,
           }}
           transition={{
             type: reduceMotion ? "timing" : "spring",
-            duration: reduceMotion ? 0 : 150,
+            duration: priority || reduceMotion ? 0 : 150,
           }}
           style={{ width: "100%", height: "100%" }}
         >

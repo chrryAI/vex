@@ -77,6 +77,7 @@ type ImageProps = {
   BASE_URL?: string
   canEditApp?: boolean
   image?: string
+  priority?: boolean
 }
 
 export default function ImageComponent(props: ImageProps) {
@@ -93,6 +94,7 @@ export default function ImageComponent(props: ImageProps) {
     dataTestId,
     onLoad,
     icon,
+    priority,
   } = props
 
   const BASE_URL = FRONTEND_URL
@@ -297,6 +299,7 @@ export default function ImageComponent(props: ImageProps) {
         width={width}
         height={height}
         title={title}
+        priority={priority}
         src={resize({
           url: slug && !src ? invader : src || invader,
           width,
