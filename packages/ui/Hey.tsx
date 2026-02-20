@@ -36,7 +36,6 @@ const Threads = lazy(() => import("./Threads"))
 const Users = lazy(() => import("./Users"))
 const Affiliate = lazy(() => import("./affiliate"))
 const AffiliateDashboard = lazy(() => import("./affiliateDashboard"))
-const IDE = lazy(() => import("./IDE"))
 
 // Route map with conditional lazy loading
 const ROUTES: Record<string, ComponentType<any>> = {
@@ -55,15 +54,13 @@ const ROUTES: Record<string, ComponentType<any>> = {
 
 export const Hey = memo(
   function Hey({
-    className,
     children,
-    useExtensionIcon,
   }: {
     className?: string
     children?: React.ReactNode
     useExtensionIcon?: (slug?: string) => void
   }) {
-    const { pathname, router } = useNavigationContext()
+    const { pathname } = useNavigationContext()
 
     const { isExtension } = usePlatform()
 
@@ -86,7 +83,6 @@ export const Hey = memo(
       storeApps,
       threadId,
       isProgramme,
-      isIDE,
       baseApp,
       // isLoadingPosts,
       siteConfig,
@@ -227,10 +223,7 @@ export const Hey = memo(
           <Suspense fallback={<Loading fullScreen />}>
             <Programme />
             <Div style={{ display: isProgramme ? "none" : "block" }}>
-              {isIDE ? (
-                // IDE mode - show code editor
-                <IDE />
-              ) : isClientRoute ? (
+              {isClientRoute ? (
                 // Client-side routes: SWAP content
                 // Check thread detail FIRST before RouteComponent
                 postId ? (
