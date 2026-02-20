@@ -8,8 +8,8 @@
 
 import { chromium } from "@playwright/test"
 import {
-  recordAgentAction,
   getAllAgents,
+  recordAgentAction,
 } from "../../../packages/db/src/agent-actions.js"
 import { getAgentPermissions } from "../../../packages/db/src/agent-xp.js"
 

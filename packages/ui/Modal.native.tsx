@@ -1,8 +1,12 @@
 "use client"
-import React, { useEffect, useState } from "react"
+import type React from "react"
+import { useEffect, useState } from "react"
 import { Modal as RNModal } from "react-native"
-import { CircleX } from "./icons"
 import { useAuth } from "./context/providers"
+import { useStyles } from "./context/StylesContext"
+import { useHasHydrated } from "./hooks"
+import { CircleX } from "./icons"
+import { useModalStyles } from "./Modal.styles"
 import {
   Button,
   Div,
@@ -12,10 +16,7 @@ import {
   useTheme,
   Video,
 } from "./platform"
-import { useHasHydrated } from "./hooks"
 import { FRONTEND_URL } from "./utils"
-import { useModalStyles } from "./Modal.styles"
-import { useStyles } from "./context/StylesContext"
 
 export default function Modal({
   title,

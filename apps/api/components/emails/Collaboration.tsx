@@ -1,3 +1,5 @@
+import type { locale } from "@chrryai/chrry/locales"
+import { getSiteConfig, type SiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import {
   Body,
   Container,
@@ -10,9 +12,6 @@ import {
   Text,
 } from "@react-email/components"
 import type { thread, user } from "@repo/db"
-import { locale } from "@chrryai/chrry/locales"
-import * as React from "react"
-import { SiteConfig, getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 type CollaborationEmailProps = {
   origin?: string

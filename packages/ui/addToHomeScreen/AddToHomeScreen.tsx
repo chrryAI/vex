@@ -1,17 +1,17 @@
 "use client"
 
-import React from "react"
+import type React from "react"
 import { useRef } from "react"
-import Img from "../Image"
-import { CircleX, EllipsisVertical, SquarePlus, Share } from "../icons"
 import { MdAddToHomeScreen } from "react-icons/md"
 import { useAppContext } from "../context/AppContext"
 import { useApp, useNavigationContext } from "../context/providers"
-import { Button, Div, P, Span, usePlatform } from "../platform"
-import { useHasHydrated } from "../hooks"
-import { useAddToHomeScreenStyles } from "./AddToHomeScreen.styles"
 import { useStyles } from "../context/StylesContext"
+import { useHasHydrated } from "../hooks"
+import Img from "../Image"
+import { CircleX, EllipsisVertical, Share, SquarePlus } from "../icons"
 import Modal from "../Modal"
+import { Button, Div, P, Span, usePlatform } from "../platform"
+import { useAddToHomeScreenStyles } from "./AddToHomeScreen.styles"
 
 export default function AddToHomeScreen(): React.ReactElement | null {
   const { t } = useAppContext()

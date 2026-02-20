@@ -57,3 +57,114 @@
 3.  **Verify State:** In the callback, use `getCookie` to retrieve and compare the stored state. Reject mismatch.
 4.  **Clear State:** Delete the cookie after verification.
 5.  **Safe Failure Redirect:** Redirect to a known safe URL upon verification failure.
+
+## 2026-02-14 - Missing Rate Limiting on Authentication Endpoints
+
+**Vulnerability:** The `/signup` and `/signin` endpoints were completely unprotected against brute force and credential stuffing attacks, despite having `@arcjet/node` installed.
+
+**Learning:**
+
+- Always verify that security libraries (like Arcjet) are actually _applied_ to critical routes, not just installed.
+- Arcjet can use `ip.src` characteristic for anonymous rate limiting without user context.
+
+**Prevention:**
+
+- Added strict IP-based rate limiting (10 req/min) to all password-based authentication routes using `checkAuthRateLimit`.
+
+## 2026-05-24 - File Type Validation Bypass in MinIO Upload
+
+**Vulnerability:** The `upload` function in `minio.ts` relied on inferred file types from `fetch` (via MIME type or extension) and blindly accepted them if they were in the supported list (which includes `text/html`). This allowed attackers to upload HTML files as "app images", creating a Stored XSS vector on the public S3 bucket.
+
+**Learning:**
+
+- **Implicit Trust:** Trusting detected MIME types without validating against the _expected_ type is dangerous.
+- **Polyglot Risk:** Even if detection is accurate, a valid text file shouldn't be accepted when an image is required.
+- **Default Behavior:** The `upload` function defaulted to accepting any supported type if strict validation wasn't enforced.
+
+**Prevention:**
+
+- **Strict Enforcement:** Enforce `options.type` in the upload function. If the caller expects an "image", reject everything else, even if it's a valid "text" file.
+- **Explicit Intent:** Callers must explicitly specify the expected type (e.g., `type: "image"`) for sensitive uploads.
+
+## 2026-05-25 - Request Object Spread in Arcjet
+
+**Vulnerability:** When creating an Arcjet-compatible request object, spreading a standard `Request` object (`...request`) results in missing properties (like `method`, `url`) because they are getters on the prototype, not enumerable own properties.
+
+**Learning:** Standard `Request` objects behave differently than plain JS objects. Always extract properties explicitly (e.g., `method: request.method`) when converting or cloning them for libraries.
+
+**Prevention:** Manually construct the compatible request object or use a utility that handles `Request` cloning properly.
+
+## 2026-05-25 - Testing Rate Limits in CI
+
+**Vulnerability:** New security code (like rate limiting) often requires "mocking the world" to verify in tests because real enforcement might be bypassed in test environments or depend on external services (like Arcjet).
+
+**Learning:** "0.0% Coverage on New Code" errors in CI usually mean your tests are either not running (wrong runner, e.g., `bun:test` vs `vitest`) or bypassing the logic you added. Integration tests that mock the service boundary (e.g., mocking `checkAuthRateLimit` itself) are crucial for verifying that the _application_ correctly handles the security rejection (429), even if the _library_ logic is tested separately.
+
+**Prevention:**
+
+1. Use the project's standard test runner (Vitest here).
+2. Write integration tests that mock the security check to return "fail/deny" to verify the app's response (429).
+3. Write unit tests for the security library logic using mocks for external dependencies.
+
+## 2026-05-25 - SonarCloud Monorepo Coverage
+
+**Vulnerability:** CI checks for code coverage were failing (0%) even with tests passing locally.
+
+**Learning:** In a monorepo setup with workspaces (like Turbo/pnpm), coverage reports are generated in each package directory (e.g., `apps/api/coverage/lcov.info`). However, the SonarCloud action was configured to look only for `coverage/lcov.info` in the root.
+
+**Prevention:** Updated `.github/workflows/sonarcloud.yml` to use the glob pattern `**/coverage/lcov.info` for `sonar.javascript.lcov.reportPaths`. This ensures SonarCloud picks up reports from all sub-projects.
+
+## 2026-05-26 - Stored XSS via User Profile Image Upload
+
+**Vulnerability:** The `PATCH /user/image` endpoint accepted a file upload without validating that the file type was actually an image. It passed the user-provided content type to the `upload` function. If a user provided a file with `type: text/html`, it bypassed the image processing logic in `minio.ts` and was uploaded as an HTML file. If this file is then accessed, it executes as HTML/JS (Stored XSS).
+
+**Learning:**
+
+- **Double Validation:** Relying solely on a utility function (like `upload`) to handle type validation is risky if the utility allows optional types.
+- **Fail Fast:** Always validate input type (e.g., `startsWith("image/")`) as early as possible in the route handler.
+- **Explicit Options:** When calling shared utilities, be explicit about expectations (e.g., `type: "image"`).
+
+**Prevention:**
+
+- Added `if (!image.type.startsWith("image/"))` validation in `apps/api/hono/routes/user.ts`.
+- Added `type: "image"` to the `upload` function options in both `user.ts` and `image.ts` to enforce strict type checking in `minio.ts`.
+
+## 2026-06-15 - Insecure JWT Handling in WebSocket Auth
+
+**Vulnerability:** The WebSocket authentication logic contained a fallback to `jwt.decode` (unsigned) if `NEXTAUTH_SECRET` was missing from the environment or if signature verification failed in non-production. This "fail-open" mechanism allowed attackers to forge tokens signed with any key and impersonate any user.
+
+**Learning:**
+
+- **Fail Securely:** Security mechanisms must fail closed (reject access) when configuration is missing, not open (allow access).
+- **Silent Defaults:** Using dangerous fallbacks (like unsigned decoding) even with a warning is unsafe because logs are often ignored until an incident occurs.
+- **Consistency:** If `NEXTAUTH_SECRET` is missing, ensure all parts of the app use the _same_ fallback (e.g., a dev secret) or crash, rather than one part using a dev secret and another falling back to no security.
+
+**Prevention:**
+
+- **Enforce Verification:** Always use `jwt.verify()`. Never fall back to `jwt.decode()` for authentication purposes.
+- **Unified Configuration:** Ensure secrets are handled consistently across HTTP and WebSocket handlers.
+- **Reject Invalid:** If the secret is missing or the token signature is invalid, reject the connection immediately.
+
+## 2026-06-15 - Race Condition in One-Time Code Exchange
+
+**Vulnerability:** The `exchangeCodeForToken` function used a `SELECT` followed by an `UPDATE` to check and consume one-time auth codes. This introduced a race condition (TOCTOU) where two concurrent requests with the same code could both pass the check before either update completed, allowing the code to be used twice.
+
+**Learning:**
+
+- **Atomicity:** Critical state transitions (like marking a code as used) must be atomic. Separating read and write operations creates a window for race conditions.
+- **Database Features:** Modern databases (like Postgres) support `UPDATE ... RETURNING`, allowing you to update and retrieve the result in a single atomic query.
+
+**Prevention:**
+
+- **Atomic Update:** Replaced the `SELECT`-then-`UPDATE` pattern with a single `db.update(...).where(...).returning()` query. This ensures that only one request can successfully "claim" and use the code.
+
+## 2026-06-16 - Weak JWT Secret Default in Production
+
+**Vulnerability:** The application was configured to fallback to `"development-secret"` if `NEXTAUTH_SECRET` was missing, even in production. This meant a misconfigured production deployment would be silently insecure, allowing attackers to forge tokens using the known default secret.
+
+**Learning:**
+
+- **Fail Securely:** Security-critical configuration (like secrets) must be enforced. Falling back to a weak default in production is a "fail-open" vulnerability.
+- **Explicit Checks:** Checking `NODE_ENV === "production"` allows us to enforce stricter security rules in production while keeping development easy.
+
+**Prevention:** Added a startup check in `apps/api/hono/routes/auth.ts` that throws an error if `NODE_ENV` is production and `NEXTAUTH_SECRET` is missing. This ensures the application fails to start rather than starting insecurely.

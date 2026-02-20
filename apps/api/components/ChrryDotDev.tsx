@@ -1,8 +1,7 @@
 "use client"
 
-import React from "react"
+import { chrryDev } from "@chrryai/chrry/utils/siteConfig"
 import { ExternalLink, Github, Package } from "lucide-react"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 const css = `
 
@@ -83,7 +82,7 @@ const css = `
 `
 
 export default function Chrry() {
-  const config = getSiteConfig("chrryDev")
+  const config = chrryDev
 
   return (
     <>
@@ -96,7 +95,7 @@ export default function Chrry() {
               <a href={"https://vex.chrry.ai"}>
                 <img
                   alt="Vex"
-                  src="https://vex.chrry.ai/icons/icon-128-v.png"
+                  src="/icons/vex-icon.png"
                   width={24}
                   height={24}
                 />
@@ -109,16 +108,33 @@ export default function Chrry() {
           <div className="logo">
             <img
               alt="Chrry"
-              src="https://vex.chrry.ai/logo/cherry-500.png"
+              src="/logo/cherry-500.png"
               width={250}
               height={250}
             />
-            <h1>Chrry</h1>
+            <h1>
+              <Github />{" "}
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://github.com/chrryai"
+              >
+                Chrry
+              </a>
+            </h1>
           </div>
 
           <p className="description">{config.description}</p>
 
           <div className="links">
+            <a
+              href={"https://chrry.ai"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link"
+            >
+              🍒 Chrry.ai
+            </a>
             {config.links.github && (
               <a
                 href={config.links.github}
@@ -147,9 +163,9 @@ export default function Chrry() {
         </div>
 
         <div className="features">
-          {config.features.map((feature, index) => (
+          {config.features.map((feature) => (
             <a
-              key={index}
+              key={feature.icon}
               href={feature.link}
               target={feature.isOpenSource ? "_blank" : undefined}
               rel={feature.isOpenSource ? "noopener noreferrer" : undefined}

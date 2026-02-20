@@ -1,63 +1,91 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, vi } from "vitest"
-import React, { act } from "react"
+
+import { act } from "@testing-library/react"
+import React from "react"
 import { createRoot } from "react-dom/client"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+
+// Make React globally available
+global.React = React
+
 import Checkbox from "../Checkbox"
-import { PlatformProvider } from "../platform/PlatformProvider"
+
+// Mock platform components
+vi.mock("../platform", async () => {
+  return {
+    Div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    Input: ({ children, ...props }: any) => <input {...props} />,
+    Label: ({ children, ...props }: any) => (
+      <label {...props}>{children}</label>
+    ),
+    Span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+  }
+})
+
+// Mock styles
+vi.mock("../Checkbox.styles", () => ({
+  useCheckboxStyles: () => ({
+    formSwitch: { style: {} },
+    formSwitchTrack: { style: {} },
+    formSwitchTrackChecked: { style: {} },
+    formSwitchThumb: { style: {} },
+    formSwitchThumbChecked: { style: {} },
+    formSwitchLabel: { style: {} },
+  }),
+}))
 
 describe("Checkbox", () => {
-  it("renders accessible native input inside a label", async () => {
-    const div = document.createElement("div")
-    document.body.appendChild(div)
-    const root = createRoot(div)
+  let container: HTMLDivElement
+  let root: any
 
-    const handleChange = vi.fn()
+  beforeEach(() => {
+    container = document.createElement("div")
+    document.body.appendChild(container)
+    root = createRoot(container)
+  })
 
-    await act(async () => {
-      root.render(
-        <PlatformProvider>
-          <Checkbox
-            checked={false}
-            onChange={handleChange}
-            dataTestId="test-checkbox"
-          >
-            Test Label
-          </Checkbox>
-        </PlatformProvider>,
-      )
-    })
-
-    // Find the input
-    const input = div.querySelector("input")
-    expect(input).toBeTruthy()
-    expect(input?.getAttribute("type")).toBe("checkbox")
-
-    // Verify it is NOT display: none
-    expect(input?.style.display).not.toBe("none")
-
-    // Verify visually hidden styles (approximate check)
-    expect(input?.style.position).toBe("absolute")
-    expect(input?.style.opacity).toBe("0")
-
-    // Find the label
-    const label = div.querySelector("label")
-    expect(label).toBeTruthy()
-
-    // Verify label association
-    expect(input?.id).toBeTruthy()
-    expect(label?.getAttribute("for")).toBe(input?.id)
-
-    // Verify click on input triggers change
-    if (input) {
-      // Dispatch click event (ensures keyboard/screen reader interaction works)
-      input.click()
-    }
-    expect(handleChange).toHaveBeenCalledWith(true)
-
-    // Clean up
+  afterEach(async () => {
     await act(async () => {
       root.unmount()
     })
-    div.remove()
+    container.remove()
+  })
+
+  it("applies focus styles to track when input is focused", async () => {
+    await act(async () => {
+      root.render(<Checkbox>Test Checkbox</Checkbox>)
+    })
+
+    const input = container.querySelector("input")
+    const track = container.querySelector(".formSwitchTrack") as HTMLElement
+
+    expect(input).toBeTruthy()
+    expect(track).toBeTruthy()
+
+    // Initial state: no outline
+    // Note: styles are applied as inline styles.
+    // In the mock, formSwitchTrack.style is empty.
+    // So track.style.outline should be empty string.
+    expect(track.style.outline).toBe("")
+
+    // Focus input
+    await act(async () => {
+      input?.focus()
+      // We dispatch the event manually because React's onFocus doesn't always fire with just .focus() in JSDOM depending on version
+      input?.dispatchEvent(new Event("focus", { bubbles: true }))
+    })
+
+    // Expect outline to be present
+    expect(track.style.outlineStyle).toBe("solid")
+    expect(track.style.outlineWidth).toBe("2px")
+
+    // Blur input
+    await act(async () => {
+      input?.blur()
+      input?.dispatchEvent(new Event("blur", { bubbles: true }))
+    })
+
+    // Expect outline to be gone
+    expect(track.style.outlineStyle).toBe("")
   })
 })

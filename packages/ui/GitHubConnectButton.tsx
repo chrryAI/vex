@@ -1,8 +1,8 @@
+import clsx from "clsx"
 import React, { useState } from "react"
+import toast from "react-hot-toast"
 import { FaGithub } from "react-icons/fa"
 import { useAuth } from "./context/providers"
-import toast from "react-hot-toast"
-import clsx from "clsx"
 
 interface GitHubConnectButtonProps {
   onSuccess?: (data: any) => void
@@ -94,6 +94,7 @@ export default function GitHubConnectButton({
 
   return (
     <button
+      type="button"
       onClick={handleConnect}
       disabled={isLoading}
       className={buttonClasses}

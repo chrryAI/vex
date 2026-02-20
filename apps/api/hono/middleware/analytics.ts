@@ -1,4 +1,4 @@
-import { Context, Next } from "hono"
+import type { Context, Next } from "hono"
 import { serverPlausibleEvent } from "../../lib/analytics"
 
 export const apiAnalyticsMiddleware = async (c: Context, next: Next) => {

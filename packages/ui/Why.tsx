@@ -1,10 +1,9 @@
 "use client"
 
-import React from "react"
-import Skeleton from "./Skeleton"
 import { useAppContext } from "./context/AppContext"
-import { CircleArrowLeft } from "./icons"
 import { useAuth, useNavigationContext } from "./context/providers"
+import { useStyles } from "./context/StylesContext"
+import { CircleArrowLeft } from "./icons"
 import {
   Button,
   Div,
@@ -17,8 +16,8 @@ import {
   Strong,
   useTheme,
 } from "./platform"
+import Skeleton from "./Skeleton"
 import { useWhyStyles } from "./Why.styles"
-import { useStyles } from "./context/StylesContext"
 
 export default function About() {
   const { router } = useNavigationContext()
@@ -54,7 +53,9 @@ export default function About() {
 
         {/* Hero Section */}
         <Section>
-          <H2>🥰 {t("hero_title")}</H2>
+          <H2>
+            {siteConfig.logo || "🍒"} {t("hero_title")}
+          </H2>
           <P>{t("hero_description")}</P>
         </Section>
 

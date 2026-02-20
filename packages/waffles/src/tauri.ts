@@ -1,5 +1,5 @@
-import { test, expect, _electron as electron } from "@playwright/test"
-import path from "path"
+import path from "node:path"
+import { _electron as electron, expect, test } from "@playwright/test"
 
 /**
  * Tauri Desktop App E2E Tests
@@ -110,7 +110,7 @@ test.describe("Tauri Desktop App", () => {
     // Test window maximize
     await window.evaluate(() => {
       // Access Tauri API
-      // @ts-ignore
+
       window.__TAURI__.window.appWindow.maximize()
     })
 

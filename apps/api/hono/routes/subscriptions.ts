@@ -1,19 +1,19 @@
-import { Hono } from "hono"
-import Stripe from "stripe"
 import {
+  createSystemLog,
   deleteSubscription,
   getSubscription,
+  updateGuest,
   updateSubscription,
   updateUser,
-  updateGuest,
-  createSystemLog,
 } from "@repo/db"
 import {
   PLUS_CREDITS_PER_MONTH,
   PRO_CREDITS_PER_MONTH,
 } from "@repo/db/src/schema"
-import { getMember, getGuest } from "../lib/auth"
+import { Hono } from "hono"
+import Stripe from "stripe"
 import captureException from "../../lib/captureException"
+import { getGuest, getMember } from "../lib/auth"
 
 export const subscriptions = new Hono()
 
@@ -21,8 +21,11 @@ export const subscriptions = new Hono()
 subscriptions.delete("/", async (c) => {
   const member = await getMember(c)
   const guest = await getGuest(c)
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-
+  const stripe = new Stripe(
+    member?.role === "admin"
+      ? process.env.STRIPE_SECRET_KEY_TEST!
+      : process.env.STRIPE_SECRET_KEY!,
+  )
   if (!member && !guest) {
     return c.json({ error: "Unauthorized" }, 401)
   }

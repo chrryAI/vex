@@ -1,9 +1,10 @@
-import React, { useRef, useEffect, useState } from "react"
-import { useTheme } from "./context/ThemeContext"
+import type React from "react"
+import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Dataset } from "./utils/chartTypes"
-import { createSmoothPathPoints } from "./utils/chartUtils"
+import { useTheme } from "./context/ThemeContext"
 import { Div, Text } from "./platform"
+import type { Dataset } from "./utils/chartTypes"
+import { createSmoothPathPoints } from "./utils/chartUtils"
 
 export interface SkiaLineChartProps {
   datasets: Dataset[]

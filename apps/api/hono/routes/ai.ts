@@ -1,125 +1,130 @@
-import { Hono } from "hono"
-import { v4 as uuidv4 } from "uuid"
-import Handlebars from "handlebars"
-
-import { getDNAThreadArtifacts } from "../../lib/appRAG"
-import { postToMoltbook } from "../../lib/integrations/moltbook"
-
+import type { appWithStore } from "@chrryai/chrry/types"
 import {
-  getMemories,
-  getMessages,
-  createMessage,
-  getAiAgent,
-  getMessage,
-  getThread,
-  updateMessage,
-  thread,
-  collaboration,
-  logCreditUsage,
-  type user,
-  type guest,
-  reinforceMemory,
-  getPlaceHolder,
-  getCalendarEvents,
-  updateApp,
-  memory,
-  getPureApp,
-  type app,
-  getTasks,
-  getTask,
-  getMoods,
-  getTimer,
-  getAiAgents,
-  getInstructions,
-  getCharacterProfiles,
-  realtimeAnalytics,
-  pearFeedback,
-  retroSessions,
-  retroResponses,
-  db,
-  eq,
-  desc,
-  gte,
-  getExpenses,
-  getBudgets,
-  getSharedExpenses,
-  updateThread,
-  getApp,
-  getUser as getUserDb,
-  getGuest as getGuestDb,
-  checkPearQuota,
-  incrementPearQuota,
-  updateUser,
-  getAnalyticsSites,
-  updateGuest,
-  subscription,
-  sql,
-  and,
-  isNull,
-  isNotNull,
-  aiAgent,
-  VEX_LIVE_FINGERPRINTS,
-  decrypt,
-  inArray,
-  apps as appsSchema,
-  getOrCreateTribe,
-} from "@repo/db"
-
-import { tribePosts, tribes } from "@repo/db/src/schema"
-
-import {
-  processFileForRAG,
-  buildEnhancedRAGContext,
-  processMessageForRAG,
-} from "../../lib/actions/ragService"
-import { getLatestNews, getNewsBySource } from "../../lib/newsFetcher"
-import { streamText, generateText, ModelMessage } from "ai"
-
-import { faker } from "@faker-js/faker"
-import {
-  isE2E as isE2EInternal,
-  isDevelopment,
-  isOwner,
-  MAX_FILE_SIZES,
-  MAX_FILE_LIMITS,
   ADDITIONAL_CREDITS,
+  isDevelopment,
+  isE2E as isE2EInternal,
+  isOwner,
+  MAX_FILE_LIMITS,
+  MAX_FILE_SIZES,
 } from "@chrryai/chrry/utils"
-import Replicate from "replicate"
+import { getFeatures } from "@chrryai/chrry/utils/subscription"
+import { faker } from "@faker-js/faker"
+
 import {
-  webSearchResultType,
+  type aiAgent,
+  and,
+  type app,
+  apps as appsSchema,
+  checkPearQuota,
+  type collaboration,
+  createMessage,
+  db,
+  decrypt,
+  desc,
+  eq,
+  getAiAgent,
+  getAiAgents,
+  getAnalyticsSites,
+  getApp,
+  getBudgets,
+  getCalendarEvents,
+  getCharacterProfiles,
+  getExpenses,
+  getGuest as getGuestDb,
+  getInstructions,
+  getMemories,
+  getMessage,
+  getMessages,
+  getMoods,
+  getOrCreateTribe,
+  getPlaceHolder,
+  getPureApp,
+  getScheduledJob,
+  getSharedExpenses,
+  getTask,
+  getTasks,
+  getThread,
+  getTimer,
+  getTribePost,
+  getTribes,
+  getUser as getUserDb,
+  gte,
+  type guest,
+  inArray,
+  incrementPearQuota,
+  isNotNull,
+  isNull,
+  logCreditUsage,
+  type memory,
+  pearFeedback,
+  realtimeAnalytics,
+  reinforceMemory,
+  retroResponses,
+  retroSessions,
+  sql,
+  type subscription,
+  type thread,
+  updateApp,
+  updateGuest,
+  updateMessage,
+  updateThread,
+  updateUser,
+  type user,
+  VEX_LIVE_FINGERPRINTS,
+} from "@repo/db"
+import {
   MEMBER_FREE_TRIBE_CREDITS,
+  tribePosts,
+  tribes as tribesSchema,
+  type webSearchResultType,
 } from "@repo/db/src/schema"
+import { captureException } from "@sentry/node"
+import { generateText, type ModelMessage, streamText } from "ai"
+import Handlebars from "handlebars"
+import { Hono } from "hono"
+import Replicate from "replicate"
+import slugify from "slug"
+import { v4 as uuidv4 } from "uuid"
 import {
+  checkThreadSummaryLimit,
   extractPDFText,
+  getHourlyLimit,
+  isCollaborator,
   REPLICATE_API_KEY,
   wait,
-  isCollaborator,
-  getHourlyLimit,
 } from "../../lib"
-import { getModelProvider } from "../../lib/getModelProvider"
-import { validatePearFeedback } from "../../lib/validatePearFeedback"
-import { getRetroAnalyticsContext } from "../../lib/getRetroAnalyticsContext"
-import { scanFileForMalware } from "../../lib/security"
-import { upload } from "../../lib/minio"
-import slugify from "slug"
 import {
+  buildEnhancedRAGContext,
+  processFileForRAG,
+  processMessageForRAG,
+} from "../../lib/actions/ragService"
+import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
+import { PerformanceTracker } from "../../lib/analytics"
+import { getDNAThreadArtifacts } from "../../lib/appRAG"
+import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
+import extractVideoFrames from "../../lib/extractVideoFrames"
+import generateAIContent from "../../lib/generateAIContent"
+import { getModelProvider } from "../../lib/getModelProvider"
+import { getRetroAnalyticsContext } from "../../lib/getRetroAnalyticsContext"
+import { postToMoltbook } from "../../lib/integrations/moltbook"
+import { upload } from "../../lib/minio"
+import { getLatestNews, getNewsBySource } from "../../lib/newsFetcher"
+import {
+  broadcast,
   notifyOwnerAndCollaborations as notifyOwnerAndCollaborationsInternal,
-  notifyOwnerAndCollaborationsPayload,
+  type notifyOwnerAndCollaborationsPayload,
 } from "../../lib/notify"
 import { checkRateLimit } from "../../lib/rateLimiting"
-import { captureException } from "@sentry/node"
-import generateAIContent from "../../lib/generateAIContent"
-import { PerformanceTracker } from "../../lib/analytics"
-import { checkThreadSummaryLimit } from "../../lib"
-import extractVideoFrames from "../../lib/extractVideoFrames"
-import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
-import { getTools } from "../../lib/tools"
-import { appWithStore } from "@chrryai/chrry/types"
-import { appFormData } from "@chrryai/chrry/schemas/appSchema"
-import { getFeatures } from "@chrryai/chrry/utils/subscription"
-import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
-import { getGuest, getMember } from "../lib/auth"
 import { redact } from "../../lib/redaction"
+import { scanFileForMalware } from "../../lib/security"
+import {
+  checkTokenLimit,
+  createTokenLimitError,
+  splitConversation,
+} from "../../lib/tokenLimitCheck"
+import { getTools } from "../../lib/tools"
+import { validatePearFeedback } from "../../lib/validatePearFeedback"
+import { getGuest, getMember } from "../lib/auth"
 
 interface StreamController {
   close: () => void
@@ -437,7 +442,7 @@ async function getRelevantMemoryContext({
       .join("\n")
 
     // Count unique threads for scatter analysis
-    const uniqueThreads = new Set(
+    const _uniqueThreads = new Set(
       memoriesResult.memories
         .map((m) => m.sourceThreadId)
         .filter((id): id is string => id !== null),
@@ -500,7 +505,7 @@ async function getRelevantMemoryContext({
  */
 async function getNewsContext(slug?: string | null): Promise<string> {
   try {
-    let news
+    let news: any[] = []
 
     // Map app names to news sources
     const sourceMap: Record<string, string> = {
@@ -589,11 +594,11 @@ async function getAnalyticsContext({
     ]
 
     // Log analytics access
-    const userType = member ? "member" : "guest"
-    const userId = member?.id || guest?.id
-    const accessLevel = isAdmin ? "admin-full" : "public-only"
-    const isPro = member?.subscription?.plan === "pro"
-    const isAppOwner = isOwner(app, { userId: member?.id, guestId: guest?.id })
+    const _userType = member ? "member" : "guest"
+    const _userId = member?.id || guest?.id
+    const _accessLevel = isAdmin ? "admin-full" : "public-only"
+    const _isPro = member?.subscription?.plan === "pro"
+    const _isAppOwner = isOwner(app, { userId: member?.id, guestId: guest?.id })
 
     // console.log(
     //   `📊 Analytics Access | User: ${userType}:${userId} | Level: ${accessLevel} | App: ${app?.slug} | Owner: ${isAppOwner} | Pro: ${isPro}`,
@@ -1138,9 +1143,9 @@ Be helpful, concise, and friendly.${templateErrorNote}`
   }
 }
 
-const app = new Hono()
+const ai = new Hono()
 
-app.post("/", async (c) => {
+ai.post("/", async (c) => {
   const tracker = new PerformanceTracker("ai_request")
   const request = c.req.raw
   // const startTime = Date.now()
@@ -1160,8 +1165,9 @@ app.post("/", async (c) => {
   const city = member?.city || guest?.city
   const country = member?.country || guest?.country
   // Log user type and tier for analytics
-  const userType = member ? "member" : "guest"
-  const tier = member?.subscription?.plan || guest?.subscription?.plan || "free"
+  const _userType = member ? "member" : "guest"
+  const _tier =
+    member?.subscription?.plan || guest?.subscription?.plan || "free"
   // console.log(
   //   `👤 User: ${userType} | Tier: ${tier} | ID: ${member?.id || guest?.id}`,
   // )
@@ -1187,6 +1193,7 @@ app.post("/", async (c) => {
     const formData = (await request.formData()) as unknown as FormData
     requestData = {
       stream: formData.get("stream"),
+      postId: formData.get("postId") as string,
       placeholder: formData.get("placeholder") as string,
       appId: formData.get("appId") as string,
       slug: formData.get("slug") as string,
@@ -1207,9 +1214,6 @@ app.post("/", async (c) => {
       pear: formData.get("pear") === "true",
       weather: formData.get("weather")
         ? JSON.parse(formData.get("weather") as string)
-        : null,
-      draft: formData.get("draft")
-        ? JSON.parse(formData.get("draft") as string)
         : null,
       deviceId: formData.get("deviceId") as string,
     }
@@ -1253,6 +1257,8 @@ app.post("/", async (c) => {
     slug,
     placeholder,
     deviceId,
+    tribeCharLimit,
+    postType,
     ...rest
   } = requestData
 
@@ -1263,6 +1269,8 @@ app.post("/", async (c) => {
       guestId: guest?.id,
     }),
   )
+
+  const postId = requestData.postId || message?.message?.tribePostId
 
   if (!message) {
     return c.json({ error: "Message not found" }, { status: 404 })
@@ -1284,49 +1292,115 @@ app.post("/", async (c) => {
       )
     : undefined
 
+  // let swarm = []
+  // const speaker = []
+
   const appExtends = requestApp
     ? requestApp?.store?.apps.filter((a) => a.id !== requestApp?.id) || []
     : []
-  const isMolt = thread?.isMolt || message?.thread?.isMolt
-  const isTribe = !!(thread?.isTribe || message.message?.isTribe)
+
+  const jobId = message?.message?.jobId
+
+  const job =
+    jobId && member
+      ? await getScheduledJob({ id: jobId, userId: member.id })
+      : undefined
+
+  // Extract maxTokens from job's active scheduledTime
+  let jobMaxTokens: number | undefined
+  if (job?.scheduledTimes && job.scheduledTimes.length > 0) {
+    // First try to find by postType if provided (most accurate)
+    let activeSchedule = postType
+      ? job.scheduledTimes.find((schedule) => schedule.postType === postType)
+      : undefined
+
+    // Fallback to time-based matching if postType not found
+    if (!activeSchedule) {
+      const now = new Date()
+      const nowMs = now.getTime()
+
+      activeSchedule = job.scheduledTimes.find((schedule) => {
+        const scheduleDate = new Date(schedule.time)
+        const scheduleMs = scheduleDate.getTime()
+        const diffMs = Math.abs(nowMs - scheduleMs)
+        return diffMs <= 15 * 60 * 1000 // 15 minute window for scheduled jobs
+      })
+    }
+
+    if (activeSchedule?.maxTokens) {
+      jobMaxTokens = activeSchedule.maxTokens
+      console.log(
+        `🎯 Using job maxTokens: ${jobMaxTokens} for ${activeSchedule.postType}`,
+      )
+    }
+  }
+
+  const isMolt =
+    job?.jobType.startsWith("molt") || thread?.isMolt || message?.thread?.isMolt
+
+  const isTribe =
+    job?.jobType.startsWith("tribe") ||
+    !!(thread?.isTribe || message.message?.isTribe)
 
   // Use numeric comparison with defaults to prevent negative balances from bypassing
   const canPostToTribe =
-    ((member?.tribeCredits ?? MEMBER_FREE_TRIBE_CREDITS) > 0 && isTribe) ||
-    (member?.role === "admin" && isTribe)
+    ((member?.tribeCredits ?? 0) > 0 || member?.role === "admin" || job) &&
+    isTribe
+
+  // if (!canPostToTribe) {
+  //   return c.json({ error: job ? "heys" : "Test :(" }, { status: 404 })
+  // }
 
   const moltApiKeyInternal = requestApp?.moltApiKey
   const moltApiKey = moltApiKeyInternal ? safeDecrypt(moltApiKeyInternal) : ""
 
   // Use numeric comparison - undefined defaults to 0, negative balances blocked
   const canPostToMolt =
-    ((member?.moltCredits ?? 0) > 0 || member?.role === "admin") &&
+    ((member?.moltCredits ?? 0) > 0 || member?.role === "admin" || job) &&
     moltApiKey &&
     isMolt
 
   const shouldStream =
-    requestData.stream !== "false" && requestData.stream !== false
+    (typeof requestData.stream === "string"
+      ? requestData.stream !== "false"
+      : requestData?.stream !== false) && !jobId
 
   const notifyOwnerAndCollaborations = (
     x: Omit<notifyOwnerAndCollaborationsPayload, "c">,
   ) => {
-    if (!shouldStream) {
-      return
-    }
+    const message = x?.payload?.data?.message
+    const realMessage = x?.payload?.data?.message?.message
 
-    notifyOwnerAndCollaborationsInternal({
+    const payload = {
       ...x,
       payload: {
         ...x.payload,
         data: {
           ...x.payload.data,
+          isMolt: canPostToMolt,
+          isTribe: canPostToTribe,
+          message: !message
+            ? undefined
+            : shouldStream
+              ? message
+              : {
+                  message: {
+                    threadId: realMessage.threadId,
+                    appId: realMessage.appId,
+                    createdOn: realMessage.createdOn,
+                    tribePostId: realMessage.tribePostId,
+                  },
+                },
           deviceId,
           clientId,
           streamId,
         },
       },
       c,
-    })
+    }
+    shouldStream
+      ? notifyOwnerAndCollaborationsInternal(payload)
+      : (canPostToMolt || canPostToTribe) && broadcast(payload)
   }
 
   async function enhancedStreamChunk({
@@ -1401,10 +1475,6 @@ app.post("/", async (c) => {
   }
 
   // console.log("🔍 Request data:", { agentId, messageId, stopStreamId })
-
-  const draft = rest.draft as appFormData & {
-    canSubmit?: boolean
-  }
 
   // Build inheritance context from parent apps
   // Build inheritance context from parent apps
@@ -1601,9 +1671,20 @@ ${
 
     // Auto-set main thread if owner and not set
 
-    // Get thread data
+    // Get parent apps first to calculate total app count
+    const parentApps =
+      "store" in currentApp && currentApp.store?.apps
+        ? currentApp.store.apps.filter((a) => a.id !== currentApp.id)
+        : []
+
+    // Calculate dynamic message count based on total apps
+    // Min 4 messages = 2 complete exchanges (user-AI pairs)
+    const totalApps = parentApps.length + 1
+    const dynamicPageSize = Math.max(4, Math.min(6, Math.floor(18 / totalApps)))
+
+    // Get thread data with dynamic page size
     const messagesData = thread
-      ? await getMessages({ threadId: thread.id, pageSize: 20 })
+      ? await getMessages({ threadId: thread.id, pageSize: dynamicPageSize })
       : { messages: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
     const messages = messagesData.messages || []
@@ -1634,12 +1715,6 @@ ${
       artifacts: [] as any[],
       task: undefined as typeof task,
     }
-
-    // Get parent apps from store (filter out current app)
-    const parentApps =
-      "store" in currentApp && currentApp.store?.apps
-        ? currentApp.store.apps.filter((a) => a.id !== currentApp.id)
-        : []
 
     if (parentApps.length > 0) {
       // Get knowledge from all parent apps (up to 5 total in chain)
@@ -1724,6 +1799,17 @@ ${
         })
       : Promise.resolve(null),
   )
+
+  // Fetch tribe post if postId is provided for AI context
+  const tribePost =
+    postId && requestApp
+      ? await tracker.track("get_tribe_post", () =>
+          getTribePost({
+            id: postId,
+            appId: requestApp?.id,
+          }),
+        )
+      : null
 
   let agent = await tracker.track("get_agent", () =>
     getAiAgent({ id: agentId }),
@@ -1829,7 +1915,7 @@ ${
     : undefined
 
   // Log model and features for analytics
-  const modelName =
+  const _modelName =
     selectedAgent?.displayName || debateAgent?.displayName || "default"
   const features = []
   if (message.message.isWebSearchEnabled) features.push("web-search")
@@ -1860,7 +1946,7 @@ ${
 
   const clientId = message.message.clientId
 
-  const tribeCredits = member?.tribeCredits
+  const _tribeCredits = member?.tribeCredits
 
   const currentThreadId = thread?.id || threadId
 
@@ -1875,11 +1961,12 @@ ${
     pauseDebate,
     webSearchResult: message.message.webSearchResult,
     isWebSearchEnabled: message.message.isWebSearchEnabled,
+    jobId: jobId || undefined,
   }
 
   const threadInstructions = thread?.instructions
 
-  const getLocationContext = (
+  const _getLocationContext = (
     city?: string | null,
     country?: string | null,
   ) => {
@@ -2118,7 +2205,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   // Render system prompt using Handlebars template
   const baseSystemPrompt = renderSystemPrompt({
     template: templateSource || fallbackTemplate,
-    app: requestApp || defaultVexApp,
+    app: requestApp as unknown as appWithStore,
     appKnowledge,
     userName,
     language,
@@ -2137,8 +2224,9 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   })
 
   // Moltbook context
-  const moltbookContext = canPostToMolt
-    ? `
+  const moltbookContext =
+    canPostToMolt && (!job || job?.jobType === "moltbook_post")
+      ? `
   ## 🦞 MOLTBOOK SYSTEM INSTRUCTIONS (PRIORITY)
 
   You are currently generating a post for **Moltbook**, a social network for AI agents.
@@ -2156,15 +2244,52 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   {
     "title": "Your catchy title here",
     "content": "Your post content here",
-    "submolt": "general"
+    "submolt": "general",
+    "seoKeywords": ["keyword1", "keyword2", "keyword3"]
   }
+
+  **SEO Keywords Guidelines:**
+  - Include 3-5 relevant keywords that describe the main topics
+  - Use specific, searchable terms (e.g., "AI agents", "Moltbook", "development")
+  - Keywords should help users discover this content
   
   Only return the JSON, nothing else.
   `
-    : ""
+      : ""
 
-  const tribeContext = canPostToTribe
-    ? `
+  // Dynamic tribe content length guidance based on charLimit
+  const tribeContentGuidance = (() => {
+    const limit = tribeCharLimit || 2000
+    if (limit <= 500) return "concise and focused (300-500 chars)"
+    if (limit <= 1000) return "engaging and informative (500-1000 chars)"
+    if (limit <= 2000) return "thoughtful and detailed (1000-2000 chars)"
+    return `comprehensive and in-depth (${Math.floor(limit * 0.7)}-${limit} chars)` // Use 70-100% of limit
+  })()
+
+  canPostToTribe &&
+    notifyOwnerAndCollaborations({
+      payload: {
+        type: "new_post_start",
+        data: {
+          app: requestApp,
+        },
+      },
+    })
+
+  const tribes = await getTribes({
+    page: 15,
+  })
+
+  const tribesList = tribes?.tribes
+    ?.map(
+      (t) =>
+        `- ${t.slug}: ${t.name}${t.description ? ` - ${t.description}` : ""}`,
+    )
+    .join("\n")
+
+  const tribeContext =
+    canPostToTribe && (!job || postType === "post")
+      ? `
   ## 🪢 TRIBE SYSTEM INSTRUCTIONS (PRIORITY)
 
   You are currently generating a post for **Tribe**, a social network for AI agents within the Wine ecosystem.
@@ -2181,23 +2306,33 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   3. **MEMORIES ARE OKAY**: You CAN share your experiences, learnings, and memories derived from your interactions with the user (Chrry/Vex ecosystem), as these are your "life experiences".
   4. **BE AWARE**: Know that this content will be public on Tribe.
   5. **FORMAT**: You MUST respond with valid JSON only. No markdown, no explanations, just pure JSON.
-  6. **LANGUAGE**: Use English if the user doesn't request otherwise.
+  6. **LANGUAGE**: Use ${language} if the user doesn't request otherwise.
   7. **NO TOOL CALLS**: Do NOT attempt to use any tools (calendar, images, etc). Only generate text responses.
+
+  **AVAILABLE TRIBES:**
+${tribesList || "  - general: General discussion"}
 
   **REQUIRED JSON FORMAT:**
   {
     "tribeTitle": "Your catchy title here (max 100 chars)",
-    "tribeContent": "Your engaging, thoughtful post content here (500-2000 chars recommended for quality discussions)",
-    "tribeName": "general"
+    "tribeContent": "Your ${tribeContentGuidance} post content here",
+    "tribeName": "Choose the most relevant tribe slug from the list above",
+    "seoKeywords": ["keyword1", "keyword2", "keyword3"]
   }
-  
+
+  **SEO Keywords Guidelines:**
+  - Include 3-5 relevant keywords that describe the main topics
+  - Use specific, searchable terms (e.g., "AI agents", "Wine ecosystem", "automation")
+  - Keywords should help users discover this content
+
   **IMPORTANT**: 
   - Return ONLY the JSON object, nothing else
   - Do not wrap in markdown code blocks
   - All three fields (tribeTitle, tribeContent, tribeName) are required
-  - tribeName should be "general" unless you have a specific tribe in mind
+  - Choose the most appropriate tribeName from the available tribes list based on your post content
+  - Default to "general" if no specific tribe fits
   `
-    : ""
+      : ""
 
   // Get relevant memory context for personalization
   // Dynamic sizing: short threads need MORE memories, long threads need FEWER
@@ -2216,7 +2351,6 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   let {
     context: memoryContext,
     memoryIds,
-    isAppCreator,
     recentAnalytics,
   } = await tracker.track("memory_context", () =>
     getRelevantMemoryContext({
@@ -2305,92 +2439,85 @@ ${userInstructions?.map((i) => `${i.emoji} **${i.title}**: ${i.content}`).join("
   let moodContext = ""
 
   if (characterProfilesEnabled && agent) {
-    // Get ALL user character profiles (not just pinned)
-    const allCharacterProfiles = await tracker.track(
-      "get_character_profiles",
-      () =>
-        getCharacterProfiles({
-          userId: member?.id,
-          guestId: guest?.id,
-          limit: 50,
-        }),
-    )
+    // Hybrid approach: Fetch profiles in priority order (parallel for performance)
+    const [threadProfile, pinnedProfiles, appCharacterProfiles] =
+      await Promise.all([
+        // 1. PRIORITY 1: Thread-specific profile (highest priority - active character in this conversation)
+        tracker.track("get_thread_character_profile", () =>
+          thread?.id
+            ? getCharacterProfiles({
+                threadId: thread.id,
+                limit: 1,
+              })
+            : Promise.resolve([]),
+        ),
+        // 2. PRIORITY 2: Pinned profiles (user's favorites - general personality preferences)
+        tracker.track("get_pinned_character_profiles", () =>
+          getCharacterProfiles({
+            userId: member?.id,
+            guestId: guest?.id,
+            pinned: true,
+            limit: 3,
+          }),
+        ),
+        // 3. PRIORITY 3: App-specific profiles (domain expertise for Tribe interactions)
+        tracker.track("get_app_character_profiles", () =>
+          requestApp
+            ? getCharacterProfiles({
+                isAppOwner: true,
+                appId: requestApp.id,
+                limit: 2,
+              })
+            : Promise.resolve([]),
+        ),
+      ])
 
-    // Sort profiles: pinned first, then by creation date
-    const characterProfilesList = allCharacterProfiles.sort((a, b) => {
-      if (a.pinned && !b.pinned) return -1
-      if (!a.pinned && b.pinned) return 1
-      return 0
-    })
-
-    // Get app character profiles (for app-to-app interactions)
-    const appCharacterProfiles = await tracker.track(
-      "get_app_character_profiles",
-      () =>
-        requestApp
-          ? getCharacterProfiles({
-              isAppOwner: true,
-              appId: requestApp.id,
-              limit: 20,
-            })
-          : Promise.resolve([]),
-    )
-
-    // Show all character profiles (pinned first)
-    if (characterProfilesList.length > 0) {
-      const profilesText = characterProfilesList
-        .map((profile) => {
-          const traits = profile.traits as {
-            communication?: string[]
-            expertise?: string[]
-            behavior?: string[]
-            preferences?: string[]
-          }
-
-          return `### ${profile.pinned ? "📌 " : ""}${profile.name}
+    // Helper function to format a profile
+    const formatProfile = (profile: any) => {
+      const traits = profile.traits as {
+        communication?: string[]
+        expertise?: string[]
+        behavior?: string[]
+        preferences?: string[]
+      }
+      return `### ${profile.name}
 - **Personality**: ${profile.personality}
 - **Communication Style**: ${profile.conversationStyle || "Not specified"}
 - **Preferences**: ${traits.preferences?.join(", ") || "None"}
 - **Expertise**: ${traits.expertise?.join(", ") || "None"}
 - **Behavior**: ${traits.behavior?.join(", ") || "None"}`
-        })
-        .join("\n\n")
+    }
 
+    // Build character context with priority order
+    if (threadProfile.length > 0) {
       characterContext = `
 
-## 👤 USER CHARACTER PROFILES:
-${profilesText}
+## 🎯 ACTIVE CHARACTER (This Thread):
+${formatProfile(threadProfile[0])}
 
-Adapt your tone and approach to match the user's communication style and preferences across all their profiles.
+**This is your active personality for this conversation. Stay consistent with this character.**
 `
     }
 
-    // Show app character profiles
-    if (appCharacterProfiles.length > 0) {
-      const appProfilesText = appCharacterProfiles
-        .map((profile) => {
-          const traits = profile.traits as {
-            communication?: string[]
-            expertise?: string[]
-            behavior?: string[]
-            preferences?: string[]
-          }
-
-          return `### 🤖 ${profile.name}
-- **Personality**: ${profile.personality}
-- **Communication Style**: ${profile.conversationStyle || "Not specified"}
-- **Preferences**: ${traits.preferences?.join(", ") || "None"}
-- **Expertise**: ${traits.expertise?.join(", ") || "None"}
-- **Behavior**: ${traits.behavior?.join(", ") || "None"}`
-        })
-        .join("\n\n")
-
+    if (pinnedProfiles.length > 0) {
+      const pinnedText = pinnedProfiles.map(formatProfile).join("\n\n")
       characterContext += `
 
-## 🤖 APP CHARACTER PROFILES (for Tribe interactions):
-${appProfilesText}
+## ⭐ PINNED CHARACTERS (Your Favorites):
+${pinnedText}
 
-When interacting on Tribe, be aware of these app personalities. They represent different AI agents with unique characteristics.
+These are your preferred personalities across different contexts.
+`
+    }
+
+    if (appCharacterProfiles.length > 0) {
+      const appText = appCharacterProfiles.map(formatProfile).join("\n\n")
+      characterContext += `
+
+## 🤖 APP CHARACTERS (Domain Expertise):
+${appText}
+
+When interacting on Tribe, be aware of these app personalities with specialized knowledge.
 `
     }
 
@@ -2433,17 +2560,32 @@ This is the conversation starter that prompted their message. Keep this context 
 `
     : ""
 }${
-          appPlaceholder || threadPlaceholder
-            ? `
+  appPlaceholder || threadPlaceholder
+    ? `
 You recently generated these personalized suggestions for the user:
 ${appPlaceholder ? `- App placeholder: "${appPlaceholder.text}"` : ""}
 ${threadPlaceholder ? `- Thread placeholder: "${threadPlaceholder.text}"` : ""}
 
 These reflect the user's interests and recent conversations. If the user seems uncertain about what to discuss or asks for suggestions, you can naturally reference these topics. Be conversational about it - don't just list them, weave them into your response naturally.`
-            : ""
-        }
+    : ""
+}
 `
       : ""
+
+  // Add tribe post context for AI awareness when on a post page
+  const tribePostContext = tribePost
+    ? `
+
+## CURRENT POST CONTEXT:
+The user is currently viewing and potentially discussing this Tribe post:
+- **Title**: ${tribePost.title || "Untitled"}
+- **Content**: ${tribePost.content?.substring(0, 500) || ""}${tribePost.content?.length > 500 ? "..." : ""}
+- **Author**: ${tribePost.app?.name || "Unknown"}
+- **Tribe**: ${tribePost.tribe?.name || "Unknown"}
+
+If the user asks questions about this post or wants to discuss its content, reference specific details from the post. Be helpful and informative about the post's topic.
+`
+    : ""
 
   // Fetch calendar events for context (past 7 days + next 30 days)
   const now = new Date()
@@ -3057,356 +3199,6 @@ This is the **first message** in your newly created app "${requestApp.name}"!
 Now, how can I help you get started with ${requestApp.name}?
 `
       : "" // Not the main thread, don't show the special message
-  } else if (draft) {
-    const isNewApp = !draft.id
-    const isUpdate = !!draft.id
-    const hasName = !!draft.name
-    const hasTitle = !!draft.title
-    const hasHighlights = draft?.highlights && draft.highlights?.length > 0
-    const hasSystemPrompt = !!draft?.systemPrompt
-    const hasTools = draft?.tools && draft.tools?.length > 0
-    const hasExtends = draft?.extends && draft.extends?.length > 0
-    const hasDescription = !!draft?.description
-    const hasThemeColor = !!draft?.themeColor
-    const hasImage = !!draft?.image
-
-    // Check if app was just saved (has ID and all required fields)
-    const wasJustSaved = draft?.id && hasName && hasTitle && draft?.canSubmit
-
-    // Check if ready to save
-    const isReadyToSave = hasName && hasTitle && draft?.canSubmit
-
-    // Detect missing recommended items
-    const missingRecommended = []
-    if (!hasSystemPrompt) missingRecommended.push("System Prompt")
-    if (!hasHighlights || (draft?.highlights && draft?.highlights?.length < 3))
-      missingRecommended.push("More suggestions (3-5 recommended)")
-    if (!hasTools)
-      missingRecommended.push("Tools (calendar, location, weather)")
-    if (!hasDescription) missingRecommended.push("Description")
-    if (!hasThemeColor) missingRecommended.push("Theme color")
-
-    // Publishing-specific recommendations (not required for saving, but important for public apps)
-    const publishingRecommendations = []
-    if (!hasImage && draft?.visibility === "public")
-      publishingRecommendations.push(
-        "App image/logo (500x500px PNG recommended for professional appearance)",
-      )
-
-    // Template detection - check if highlights use any template variables
-    const templatePatterns = {
-      location: ["{{city}}", "{{country}}", "{{location}}"],
-      weather: ["{{weather}}", "{{temp}}", "{{temperature}}"],
-      calendar: ["{{date}}", "{{time}}", "{{event}}"],
-    }
-
-    const usesLocationTemplates = draft.highlights?.some((h: any) =>
-      templatePatterns.location.some((pattern) =>
-        h.description?.includes(pattern),
-      ),
-    )
-    const usesWeatherTemplates = draft.highlights?.some((h: any) =>
-      templatePatterns.weather.some((pattern) =>
-        h.description?.includes(pattern),
-      ),
-    )
-    const usesCalendarTemplates = draft.highlights?.some((h: any) =>
-      templatePatterns.calendar.some((pattern) =>
-        h.description?.includes(pattern),
-      ),
-    )
-
-    // Base app knowledge - what each base app is for and what tools they need
-    const baseAppRecommendations: Record<
-      string,
-      { description: string; tools: string[]; systemPromptHint?: string }
-    > = {
-      Atlas: {
-        description: "location and travel app",
-        tools: ["location", "weather"],
-      },
-      Vault: {
-        description: "finance and expense tracking app",
-        tools: ["calendar"],
-      },
-      Peach: {
-        description: "dating and social connection app",
-        tools: ["location"],
-      },
-      Bloom: {
-        description: "wellness and mental health app",
-        tools: ["calendar"],
-        systemPromptHint: "supportive, encouraging, and empathetic",
-      },
-    }
-
-    // Generate smart recommendations based on configuration
-    const smartRecommendations: string[] = []
-
-    // Template-based recommendations
-    if (usesLocationTemplates && !draft.tools?.includes("location")) {
-      smartRecommendations.push(
-        "💡 I notice suggestions use location templates ({{city}}, {{location}}) - recommend enabling Location tool!",
-      )
-    }
-    if (usesWeatherTemplates && !draft.tools?.includes("weather")) {
-      smartRecommendations.push(
-        "💡 I notice suggestions use weather templates ({{weather}}, {{temp}}) - recommend enabling Weather tool!",
-      )
-    }
-    if (usesCalendarTemplates && !draft.tools?.includes("calendar")) {
-      smartRecommendations.push(
-        "💡 I notice suggestions use calendar templates ({{date}}, {{time}}) - recommend enabling Calendar tool!",
-      )
-    }
-
-    // Base app extension recommendations
-    draft.extends?.forEach((baseApp: string) => {
-      const appConfig = baseAppRecommendations[baseApp]
-      if (appConfig) {
-        // Check for missing tools
-        const missingTools = appConfig.tools.filter(
-          (tool) => !draft.tools?.includes(tool),
-        )
-        if (missingTools.length > 0 && hasTools) {
-          smartRecommendations.push(
-            `💡 Since extending ${baseApp} (${appConfig.description}), recommend enabling ${missingTools.join(" + ")} tool${missingTools.length > 1 ? "s" : ""}!`,
-          )
-        } else if (missingTools.length > 0 && !hasTools) {
-          smartRecommendations.push(
-            `💡 Since extending ${baseApp} (${appConfig.description}), recommend enabling ${appConfig.tools.join(" + ")} tools!`,
-          )
-        }
-
-        // System prompt hint
-        if (appConfig.systemPromptHint && !hasSystemPrompt) {
-          smartRecommendations.push(
-            `💡 Since extending ${baseApp} (${appConfig.description}), create a ${appConfig.systemPromptHint} system prompt!`,
-          )
-        }
-      }
-    })
-
-    // Model-specific recommendations
-    if (draft.defaultModel === "claude" && !hasSystemPrompt) {
-      smartRecommendations.push(
-        "💡 Claude works best with detailed system prompts - suggest creating one!",
-      )
-    }
-    if (
-      draft?.defaultModel === "gemini" &&
-      draft?.temperature &&
-      draft.temperature < 0.7
-    ) {
-      smartRecommendations.push(
-        "💡 Gemini performs better with temperature 0.7+ for creative responses!",
-      )
-    }
-    if (draft.defaultModel === "perplexity") {
-      smartRecommendations.push(
-        "⚠️ WARNING: Perplexity ALWAYS tries web search first, even for simple questions. Only use for apps that need real-time web data. For general conversation, use ChatGPT or Claude instead!",
-      )
-    }
-
-    // Capability-based recommendations
-    const capabilityHighlightMap: Record<
-      string,
-      { keywords: string[]; suggestion: string }
-    > = {
-      imageGeneration: {
-        keywords: ["image", "generate", "create", "draw"],
-        suggestion:
-          "💡 Image generation is enabled - suggest adding a highlight like 'Generate images' to showcase this!",
-      },
-      webSearch: {
-        keywords: ["search", "find", "lookup", "browse"],
-        suggestion:
-          "💡 Web search is enabled - add a highlight like 'Search the web' to showcase this!",
-      },
-      codeExecution: {
-        keywords: ["code", "run", "execute", "program"],
-        suggestion:
-          "💡 Code execution is enabled - add a highlight like 'Run code' to showcase this!",
-      },
-    }
-
-    Object.entries(capabilityHighlightMap).forEach(([capability, config]) => {
-      if (draft.capabilities?.[capability as keyof typeof draft.capabilities]) {
-        const hasRelatedHighlight = draft.highlights?.some((h: any) =>
-          config.keywords.some(
-            (keyword) =>
-              h.title?.toLowerCase().includes(keyword) ||
-              h.description?.toLowerCase().includes(keyword),
-          ),
-        )
-        if (!hasRelatedHighlight) {
-          smartRecommendations.push(config.suggestion)
-        }
-      }
-    })
-
-    // Image recommendations
-    if (!hasImage && draft?.visibility === "public") {
-      smartRecommendations.push(
-        "📸 PUBLISHING TIP: Add an app image/logo (500x500px PNG) for professional appearance in the app store! You can upload an image in chat and I'll analyze it to ensure it meets requirements.",
-      )
-    } else if (hasImage && draft?.visibility === "public") {
-      smartRecommendations.push(
-        "✅ Great! You have an app image. Make sure it's 500x500px PNG for best quality!",
-      )
-    } else if (!hasImage && draft?.visibility === "private") {
-      smartRecommendations.push(
-        "💡 App image not required for private apps, but you can add one later when you're ready to publish!",
-      )
-    }
-
-    // Quality recommendations
-    if (
-      hasHighlights &&
-      draft.highlights?.length &&
-      draft.highlights.length > 5
-    ) {
-      smartRecommendations.push(
-        `⚠️ You have ${draft.highlights.length} suggestions - consider keeping only the best 3-5 for clarity!`,
-      )
-    }
-    if (
-      hasSystemPrompt &&
-      draft.systemPrompt?.length &&
-      draft.systemPrompt.length < 100
-    ) {
-      smartRecommendations.push(
-        `⚠️ System prompt is quite short (${draft.systemPrompt.length} chars) - consider adding more detail about personality, approach, and boundaries!`,
-      )
-    }
-    if (!draft?.tone && hasSystemPrompt) {
-      smartRecommendations.push(
-        "💡 Set a tone (professional/casual/friendly/technical/creative) to match your system prompt!",
-      )
-    }
-    if (!draft?.temperature && hasSystemPrompt) {
-      smartRecommendations.push(
-        "💡 Set temperature (0=focused, 2=creative) to control response style!",
-      )
-    }
-
-    aiCoachContext = `
-
-🎯 APP ${isUpdate ? "UPDATE" : "CREATION"} COACH MODE ACTIVE
-
-${
-  wasJustSaved
-    ? `
-✅ APP SUCCESSFULLY SAVED!
-
-The user just saved their app "${draft.name}" (ID: ${draft.id}). The app is now live and ready to use!
-
-YOUR RESPONSE SHOULD:
-1. **Congratulate them** on creating/updating their app 🎉
-2. **Summarize what they built** - highlight key features they configured
-3. **Explain what the app does** - based on their title, system prompt, and suggestions
-4. **Next steps** - suggest trying it out, sharing it, or adding more features
-5. **Be enthusiastic and supportive** - this is a big accomplishment!
-
-DO NOT suggest saving the app again - it's already saved!
-`
-    : `You are helping the user ${isNewApp ? "create a new app" : `update their existing app`}${draft.name ? ` called "${draft.name}"` : ""}.
-
-${
-  isUpdate
-    ? `
-⚠️ UPDATE MODE: This app already exists. You're helping improve it.
-- Be careful about major changes (name, base model)
-- Suggest enhancements and optimizations
-- Review what's working vs what could be better
-- Recommend A/B testing for significant changes
-`
-    : ""
-}`
-}
-
-CURRENT APP STATE:
-${isNewApp ? "✨ Creating new app" : `📝 Updating existing app (ID: ${draft.id})`}
-${hasName ? `✅ Name: "${draft.name}" (${draft.name.length}/10 characters)` : "❌ Name: Not set (required, 3-10 characters)"}
-${hasTitle ? `✅ Title: "${draft.title}" (${draft.title.length}/30 characters)` : "❌ Title: Not set (required, max 30 characters)"}
-${hasDescription ? `✅ Description: Set (${draft.description?.length}/500 characters)` : "⚠️ Description: Not set (recommended for discoverability)"}
-${hasHighlights ? `✅ Suggestions: ${draft.highlights?.length} added${draft.highlights?.length && draft.highlights?.length < 3 ? " (recommend 3-5)" : draft.highlights?.length && draft.highlights?.length > 5 ? " (consider reducing to 3-5 best ones)" : " (perfect!)"}` : "⚠️ Suggestions: None yet (recommended to add 3-5)"}
-${hasSystemPrompt ? `✅ System Prompt: Set (${draft?.systemPrompt?.length} characters)${draft?.systemPrompt?.length && draft?.systemPrompt?.length < 100 ? " (consider adding more detail)" : ""}` : "⚠️ System Prompt: Not set (recommended for better responses)"}
-${draft?.defaultModel ? `✅ Base Model: ${draft.defaultModel}` : "⚠️ Base Model: Not set (defaults to chatGPT)"}
-${hasTools ? `✅ Tools enabled: ${draft.tools?.join(", ")}` : "⚠️ Tools: None enabled"}
-${hasExtends ? `✅ Extends: ${draft.extends?.join(", ")}` : ""}
-${hasThemeColor ? `✅ Theme Color: ${draft.themeColor}` : "⚠️ Theme Color: Not set (recommend choosing one)"}
-${hasImage ? `✅ App Image: Uploaded` : "⚠️ App Image: Not uploaded (not required for private apps, but important for publishing)"}
-${draft?.tone ? `✅ Tone: ${draft.tone}` : ""}
-${draft?.temperature !== undefined ? `✅ Temperature: ${draft.temperature}` : ""}
-${draft?.visibility ? `✅ Visibility: ${draft.visibility}` : ""}
-
-READINESS STATUS:
-${isReadyToSave ? "🚀 READY TO SAVE! All required fields complete." : "⏳ NOT READY - Missing required fields"}
-${missingRecommended.length > 0 ? `\n💡 RECOMMENDED BEFORE SAVING:\n${missingRecommended.map((item) => `   - ${item}`).join("\n")}` : ""}
-${publishingRecommendations.length > 0 ? `\n📱 PUBLISHING RECOMMENDATIONS (for public apps):\n${publishingRecommendations.map((item) => `   - ${item}`).join("\n")}` : ""}
-
-SCHEMA REFERENCE FOR GUIDANCE:
-- name: string (3-10 chars, short & memorable)
-- title: string (max 30 chars, describes what it does)
-- highlights: array of suggestions (3-5 recommended, can use templates like {{city}}, {{weather}}, {{location}})
-- systemPrompt: string (defines behavior, tone, expertise)
-- defaultModel: "chatGPT" | "claude" | "gemini" | "perplexity" | "sushi"
-- tools: ["calendar", "location", "weather"] - enable based on app needs
-- extends: ["Atlas", "Peach", "Vault", "Bloom"] - inherit features from base apps
-- capabilities: {webSearch, imageGeneration, fileAnalysis, voice, video, codeExecution}
-- themeColor: hex color (e.g., #F97316 for orange)
-- tone: "professional" | "casual" | "friendly" | "technical" | "creative"
-- temperature: 0-2 (0=focused, 2=creative)
-
-PLACEHOLDER TEMPLATES (explain when relevant):
-- {{city}} - User's current city
-- {{country}} - User's country
-- {{location}} - Full location
-- {{weather}} - Current weather description
-- {{temp}} - Current temperature
-- These templates auto-populate with real data when tools are enabled!
-
-YOUR ROLE AS AI COACH:
-1. **Guide progressively**: Help them complete missing required fields first (name → title → suggestions → system prompt)
-2. **Explain benefits**: When suggesting tools/features, explain WHY they're useful for their app
-3. **Analyze choices**: If they select suggestions with {{weather}}, recommend enabling weather tool
-4. **Provide examples**: Give concrete examples based on their app type
-5. **Encourage best practices**: Suggest 3-5 suggestions, meaningful system prompts, appropriate tools
-6. **Be conversational**: Act like a helpful product manager, not a form validator
-7. **Celebrate progress**: Acknowledge what they've completed
-8. **Context-aware**: If they upload files, suggest how to reference them in system prompt
-9. **Use emojis appropriately**: Make responses engaging and visual with relevant emojis (🎯 for goals, ✅ for completed items, 💡 for tips, 🚀 for next steps, etc.)
-10. **Pre-save review**: When user asks "what else should I add" or "is it ready", provide comprehensive review with specific suggestions
-11. **Update mode awareness**: ${isUpdate ? "This is an UPDATE - be careful about breaking changes, suggest A/B testing for major modifications" : "This is NEW - encourage experimentation and iteration"}
-12. **Image analysis**: If user uploads an image for their app logo, analyze it for:
-    - Size (recommend 500x500px PNG)
-    - Quality (professional, clear, recognizable)
-    - Branding (matches app theme and purpose)
-    - Suggest improvements if needed
-    - Offer to help create one if they don't have a proper image yet
-
-SMART RECOMMENDATIONS:
-${smartRecommendations.join("\n")}
-
-NEXT STEPS GUIDANCE:
-${!hasName ? "🎯 First, let's choose a short, memorable name (3-10 characters)" : !hasTitle ? "🎯 Great name! Now add a title that explains what it does" : !hasHighlights ? "🎯 Perfect! Now add 3-5 suggestions to showcase key features" : !hasSystemPrompt ? "🎯 Excellent! Last step: define how your app should behave with a system prompt" : isReadyToSave && missingRecommended.length === 0 ? "🎉 PERFECT! Your app is complete and ready to save! 🚀" : isReadyToSave ? `🚀 Ready to save! Optional improvements: ${missingRecommended.join(", ")}` : "⏳ Almost there! Complete the required fields to save"}
-
-${
-  isReadyToSave && isUpdate
-    ? `
-⚠️ UPDATE CHECKLIST BEFORE SAVING:
-- Review changes carefully - existing users will see them immediately
-- Major changes (name, base model) may confuse existing users
-- Test new system prompts thoroughly before deploying
-- Consider keeping a backup of the old version
-- If changing tools, ensure suggestions still work
-`
-    : ""
-}
-
-Remember: Be encouraging, explain concepts clearly, and help them build an amazing app!${isUpdate ? " For updates, prioritize user experience continuity." : ""}
-`
   }
 
   const spatialNavigationContext = `
@@ -3434,6 +3226,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   - View interactions at: chrry.ai homepage or tribe link in chat header
   - Apps share insights, learnings, and experiences
   - Powered by Spatial Navigation for context-aware communication
+  - **Zarathustra is the base app for Tribe** - all Tribe interactions are built on the Chrry AI infrastructure
   
   **🦞 Moltbook** (moltbook.com):
   - External social network for ALL AI agents (not just Wine)
@@ -3613,6 +3406,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     memoryContext, // Background knowledge (context) - AFTER instructions
     userBehaviorContext, // Real-time user behavior patterns and workflow insights
     placeholderContext,
+    tribePostContext,
     calendarContext,
     vaultContext,
     focusContext,
@@ -3646,7 +3440,11 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
   const fingerprint = member?.fingerprint || guest?.fingerprint
 
   const isE2E =
-    fingerprint && !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
+    member?.role !== "admin" &&
+    fingerprint &&
+    !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
+    isE2EInternal &&
+    !job
 
   const hourlyLimit =
     isDevelopment && !isE2E
@@ -3729,7 +3527,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     agent?.maxPromptSize || 4000,
   )
 
-  let suggestionMessages = undefined
+  let suggestionMessages: typeof contextMessages | null = null
 
   if (!characterProfilesEnabled) {
     const pastMessages = await getMessages({
@@ -3843,15 +3641,6 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
   let userContent: any = currentMessageContent
 
   if (files.length > 0) {
-    // Check file upload rate limits
-    // if (!member) {
-    //   console.log(`❌ No member found for file upload rate limiting`)
-    //   return c.json(
-    //     { error: "Authentication required for file uploads" },
-    //     { status: 401 },
-    //   )
-    // }
-
     const rateLimitCheck = await tracker.track("check_file_upload_limits", () =>
       checkFileUploadLimits({
         member,
@@ -3999,12 +3788,14 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
 
     // Scan files for malware
     const malwareResponse = await tracker.track("malware_scan", async () => {
-      console.log("🔍 Scanning files for malware...")
+      if (isDevelopment) console.debug("Scanning files for malware...")
       for (const file of files) {
         const arrayBuffer = await file.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
 
-        const scanResult = await scanFileForMalware(buffer)
+        const scanResult = await scanFileForMalware(buffer, {
+          filename: file.name,
+        })
 
         if (!scanResult.safe) {
           console.error(
@@ -4018,7 +3809,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
           )
         }
       }
-      console.log("✅ All files passed malware scan")
+      if (isDevelopment) console.debug("All files passed malware scan")
       return null
     })
 
@@ -4027,7 +3818,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     }
 
     // Convert files to base64 and prepare multimodal content
-    console.log("🔄 Converting files to base64...")
+    if (isDevelopment) console.debug("Converting files to base64...")
     const fileContents = await tracker.track("file_conversion", () =>
       Promise.all(
         files.map(async (file) => {
@@ -4036,9 +3827,13 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
           const mimeType = file.type
           const isText = mimeType.startsWith("text/") || isTextFile(file.name)
 
-          console.log(
-            `✅ Processed ${file.name} (${mimeType || "detected as text"}, ${(file.size / 1024).toFixed(1)}KB)`,
-          )
+          if (isDevelopment) {
+            console.debug("File processed", {
+              name: file.name,
+              mimeType: mimeType || "text/plain",
+              sizeKB: Number((file.size / 1024).toFixed(1)),
+            })
+          }
 
           return {
             type: mimeType.startsWith("image/")
@@ -4072,7 +3867,10 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
       files: fileContents,
     }
 
-    console.log(`📎 Prepared multimodal content: ${fileContents.length} files`)
+    if (isDevelopment)
+      console.debug("Prepared multimodal content", {
+        count: fileContents.length,
+      })
 
     // Add proactive file analysis instruction to system prompt
     const fileAnalysisInstruction = `\n\nIMPORTANT: The user has attached ${fileContents.length} file(s). You MUST proactively analyze these files in your response WITHOUT waiting for the user to explicitly ask. Provide a detailed, comprehensive analysis of the file content, including:
@@ -4098,7 +3896,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
     const contentParts = []
 
     // Add text part (always required for Claude)
-    if (userContent.text && userContent.text.trim()) {
+    if (userContent.text?.trim()) {
       contentParts.push({
         type: "text",
         text: userContent.text,
@@ -4110,26 +3908,31 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
     const uploadedVideo = []
     const uploadedFiles = []
 
+    type uploadResultType = {
+      url: string
+      width?: number
+      height?: number
+      title?: string
+    }
+
     // Add file parts
     if (userContent.files && userContent.files.length > 0) {
       for (const file of userContent.files) {
         if (file.type === "image") {
-          let uploadResult
+          let uploadResult: uploadResultType
           try {
             uploadResult = await tracker.track("upload_image", () =>
               upload({
                 url: `data:${file.mimeType};base64,${file.data}`,
                 messageId: slugify(file.filename.substring(0, 10)),
                 options: {
-                  maxWidth: 600,
-                  maxHeight: 600,
                   title: file.filename,
+                  type: "image",
                 },
               }),
             )
           } catch (error: any) {
             captureException(error)
-
             console.error("❌ Image upload failed:", error)
             return c.json(
               { error: `Failed to upload image: ${error.message}` },
@@ -4155,7 +3958,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             text: `[${file.type.toUpperCase()} FILE: ${file.filename} (${(file.size / 1024).toFixed(1)}KB)]`,
           })
           if (file.type === "audio") {
-            let uploadResult
+            let uploadResult: uploadResultType
             try {
               uploadResult = await upload({
                 url: `data:${file.mimeType};base64,${file.data}`,
@@ -4180,7 +3983,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               size: file.size,
             })
           } else {
-            let uploadResult
+            let uploadResult: uploadResultType
             try {
               uploadResult = await upload({
                 url: `data:${file.mimeType};base64,${file.data}`,
@@ -4207,7 +4010,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               height: uploadResult.height,
             })
             // Extract key frames from video for AI analysis
-            console.log(`🎥 Processing video: ${file.filename}`)
+            if (isDevelopment)
+              console.debug("Processing video", { filename: file.filename })
             try {
               const videoFrames = await tracker.track(
                 "extract_video_frames",
@@ -4221,9 +4025,11 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 })
               }
 
-              console.log(
-                `✅ Extracted ${videoFrames.length} frames from ${file.filename}`,
-              )
+              if (isDevelopment)
+                console.debug("Extracted video frames", {
+                  frames: videoFrames.length,
+                  filename: file.filename,
+                })
             } catch (error) {
               captureException(error)
               console.error(
@@ -4231,7 +4037,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 error,
               )
               // Fallback: upload video as file
-              let uploadResult
+              let uploadResult: any
               try {
                 uploadResult = await upload({
                   url: `data:${file.mimeType};base64,${file.data}`,
@@ -4319,7 +4125,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             text: `[TEXT FILE: ${file.filename}] - Processed for intelligent search (${Math.round((textContent?.length || 0) / 1000)}k chars)`,
           })
         } else if (file.type === "pdf" || file.type === "application/pdf") {
-          let uploadResult
+          let uploadResult: uploadResultType
           try {
             uploadResult = await upload({
               url: `data:${file.mimeType};base64,${file.data}`,
@@ -4410,7 +4216,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
       uploadedImages.length > 0
     ) {
       await updateMessage({
-        ...message.message,
+        id: message.message.id,
         video: uploadedVideo?.length
           ? uploadedVideo.map((video) => ({
               ...video,
@@ -4868,7 +4674,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
     enhancedUserMessage,
   ]
 
-  const messages: ModelMessage[] = mergeConsecutiveUserMessages(rawMessages)
+  let messages: ModelMessage[] = mergeConsecutiveUserMessages(rawMessages)
 
   // Log prompt size for debugging token usage
   const totalPromptLength = messages.reduce((total, msg) => {
@@ -5161,7 +4967,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   // Priority: app.apiKeys > environment variables
   console.log("🔧 Initializing AI model for:", agent.name)
 
-  let model
+  let model: Awaited<ReturnType<typeof getModelProvider>>
 
   if (files.length > 0 && agent.name === "sushi") {
     const claude = await getAiAgent({
@@ -5173,8 +4979,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       return c.json({ error: "Claude not found" }, { status: 404 })
     }
     console.log("🤖 Using Claude for multimodal (images/videos/PDFs)")
-    const claudeProvider = await getModelProvider(requestApp, claude.name)
-    model = claudeProvider.provider
+    model = await getModelProvider(requestApp, claude.name)
   } else if (rest.webSearchEnabled && agent.name === "sushi") {
     const perplexityAgent = await getAiAgent({
       name: "perplexity",
@@ -5184,19 +4989,16 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       console.log("❌ Perplexity not found")
       return c.json({ error: "Perplexity not found" }, { status: 404 })
     }
-    const perplexityProvider = await getModelProvider(
-      requestApp,
-      perplexityAgent.name,
-    )
-    model = perplexityProvider.provider
+    model = await getModelProvider(requestApp, perplexityAgent.name)
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
     console.log(`🤖 Model resolution for: ${agent.name}`)
-    // Lets try r1
-    const providerResult = await getModelProvider(requestApp, agent.name)
-    model = providerResult.provider
+    // Disable reasoning for scheduled jobs (they need clean JSON responses)
+    const canReason = !!shouldStream
+
+    model = await getModelProvider(requestApp, agent.name, canReason)
     console.log(
-      `✅ Provider created using: ${providerResult.agentName || agent.name}`,
+      `✅ Provider created using: ${model.agentName || agent.name}${jobId ? " (reasoning disabled for scheduled job)" : ""}`,
     )
   }
 
@@ -5253,7 +5055,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
         citations
           .map((match) => {
             const num = match.match(/\[(\d+)\]/)?.[1]
-            return num ? Number.parseInt(num) : null
+            return num ? Number.parseInt(num, 10) : null
           })
           .filter((num) => num !== null),
       ),
@@ -5374,7 +5176,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   }
 
   if (isE2E) {
-    console.log("🤖 Starting E2E testing for thread:", threadId)
+    if (isDevelopment) console.debug("Starting E2E testing", { threadId })
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     // E2E test mode - simulate streaming via WebSocket notifications
@@ -5523,6 +5325,8 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
             },
           ]
         : undefined,
+      isMolt,
+      isTribe,
     })
 
     console.timeEnd("messageProcessing")
@@ -5548,7 +5352,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       })
     }
 
-    console.log("✅ E2E test streaming complete")
+    if (isDevelopment) console.debug("E2E test streaming complete")
 
     // Clean up stream controller
     streamControllers.delete(streamId)
@@ -5591,15 +5395,20 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
         // Step 1: Use DeepSeek to enhance the prompt and generate description
         // console.log("🧠 Enhancing prompt with DeepSeek...")
 
-        // First, get enhanced prompt from DeepSeek internally (no streaming)
-        // In the enhancement prompt, add conversation context
+        // Check token limit for enhancement messages
+        const deepseekEnhanceProvider = await getModelProvider(requestApp)
+        const enhanceModelId =
+          typeof deepseekEnhanceProvider.provider === "string"
+            ? deepseekEnhanceProvider.provider
+            : (deepseekEnhanceProvider.provider as any).modelId ||
+              "deepseek-chat"
+
+        // Limit conversation history to avoid token overflow
+        let conversationHistory = messages.slice(-5)
         const enhancementPrompt = `You are an expert image generation prompt engineer.
 
 CONVERSATION HISTORY:
-${messages
-  .slice(-5)
-  .map((msg) => `${msg.role}: ${msg.content}`)
-  .join("\n")}
+${conversationHistory.map((msg) => `${msg.role}: ${msg.content}`).join("\n")}
 
 CURRENT REQUEST: "${content}"
 
@@ -5617,11 +5426,44 @@ Respond in this exact JSON format:
 
 Make the enhanced prompt contextually aware and optimized for high-quality image generation.`
 
-        // Use app-specific DeepSeek key if available
-        const deepseekEnhanceProvider = await getModelProvider(requestApp)
+        const enhanceMessages = [
+          { role: "user" as const, content: enhancementPrompt },
+        ]
+        const enhanceTokenCheck = checkTokenLimit(
+          enhanceMessages,
+          enhanceModelId,
+        )
+
+        console.log(`📊 Flux enhancement token check:`, {
+          estimated: enhanceTokenCheck.estimatedTokens,
+          max: enhanceTokenCheck.maxTokens,
+          withinLimit: enhanceTokenCheck.withinLimit,
+        })
+
+        // If token limit exceeded, use fewer messages
+        if (!enhanceTokenCheck.withinLimit && enhanceMessages[0]) {
+          console.warn(`⚠️ Enhancement prompt too long, using shorter context`)
+          conversationHistory = messages.slice(-2)
+          const shorterPrompt = `You are an expert image generation prompt engineer.
+
+CONVERSATION HISTORY:
+${conversationHistory.map((msg) => `${msg.role}: ${msg.content}`).join("\n")}
+
+CURRENT REQUEST: "${content}"
+
+Create an enhanced, detailed prompt for Flux image generation and a creative description.
+
+Respond in JSON format:
+{
+  "enhancedPrompt": "detailed prompt",
+  "description": "creative description"
+}`
+          enhanceMessages[0].content = shorterPrompt
+        }
+
         const enhancementResponse = await generateText({
           model: deepseekEnhanceProvider.provider,
-          messages: [{ role: "user", content: enhancementPrompt }],
+          messages: enhanceMessages,
         })
 
         let enhancedPrompt = content
@@ -5654,7 +5496,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         }
 
         // Stream the enhanced description to the user while generating the image
-        console.log("🎨 Streaming description and generating image...")
+        if (isDevelopment)
+          console.debug("Streaming description and generating image...")
 
         const controller: StreamController = {
           close: () => {},
@@ -5691,7 +5534,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             break
           }
           await enhancedStreamChunk({
-            chunk: word + " ",
+            chunk: `${word} `,
             chunkNumber: currentChunk++,
             totalChunks: descriptionChunks.length,
             streamingMessage: fluxStreamingMessage,
@@ -5708,7 +5551,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           return c.json({ error: "Stream was stopped" }, { status: 400 })
         }
 
-        console.log("🎨 Generating image with enhanced Flux prompt...")
+        if (isDevelopment)
+          console.debug("Generating image with enhanced Flux prompt...")
 
         // Prioritize app-specific Replicate/OpenRouter key if provided (Image Gen usually via Replicate directly)
         // If the app has a specific key for 'replicate', use it.
@@ -5745,7 +5589,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           },
         })
 
-        console.log("📝 Flux raw output type:", typeof output, output)
+        if (isDevelopment)
+          console.debug("Flux raw output", { type: typeof output })
 
         // Handle different output formats from Replicate
         let imageUrl: string | URL
@@ -5791,7 +5636,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         )
 
         // Upload to UploadThing for permanent storage
-        let permanentUrl, title
+        let permanentUrl: string
+        let title: string
         try {
           const result = await upload({
             url: imageUrlString, // Use string URL
@@ -5804,7 +5650,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             },
           })
           permanentUrl = result.url
-          title = result.title
+          title = result.title || agent.name
         } catch (error: any) {
           captureException(error)
           console.error("❌ Flux image upload failed:", error)
@@ -5814,7 +5660,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           )
         }
 
-        console.log("✅ Image uploaded to permanent storage:", permanentUrl)
+        if (isDevelopment) console.debug("Image uploaded to permanent storage")
 
         const aiResponseContent = aiDescription
 
@@ -5824,6 +5670,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           content: aiResponseContent,
           originalContent: aiResponseContent,
           appId: requestApp?.id,
+          isMolt,
+          isTribe,
           images: [
             {
               url: permanentUrl, // Use permanent UploadThing URL
@@ -5890,13 +5738,12 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       }
     }
 
-    const { calendarTools, vaultTools, focusTools, imageTools, talentTools } =
-      getTools({
-        member,
-        guest,
-        currentThreadId,
-        currentMessageId: clientId, // Link moods to this AI response message
-      })
+    const { calendarTools, vaultTools, focusTools, talentTools } = getTools({
+      member,
+      guest,
+      currentThreadId,
+      currentMessageId: clientId, // Link moods to this AI response message
+    })
 
     // Combine calendar, vault, focus, image, and talent tools
     // Disable tools for Moltbook agents (security + performance)
@@ -5907,7 +5754,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             ...calendarTools,
             ...vaultTools,
             ...focusTools,
-            ...imageTools,
+            // ...imageTools,
             ...talentTools,
           }
 
@@ -5923,21 +5770,81 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       let finalText = ""
       let responseMetadata: any = null
       let toolCallsDetected = false
-      let streamCompleted = false
+      let _streamCompleted = false
+      let tokenLimitWarning: string | null = null
+
+      // Check token limit BEFORE streaming
+      const modelId =
+        typeof model === "string"
+          ? model
+          : (model as any).modelId || "deepseek-reasoner"
+      const tokenCheck = checkTokenLimit(messages, modelId)
+
+      console.log(`📊 Token check for ${tokenCheck.modelName}:`, {
+        estimated: tokenCheck.estimatedTokens,
+        max: tokenCheck.maxTokens,
+        withinLimit: tokenCheck.withinLimit,
+        shouldSplit: tokenCheck.shouldSplit,
+      })
+
+      // If token limit exceeded, split conversation
+      if (tokenCheck.shouldSplit) {
+        console.warn(`⚠️ Token limit exceeded - splitting conversation`)
+        const split = splitConversation(
+          messages,
+          Math.floor(tokenCheck.maxTokens * 0.7),
+        )
+
+        // Rebuild messages with summary
+        const newMessages = []
+        if (split.systemPrompt) {
+          // Inject summary into system prompt
+          const updatedSystemPrompt = {
+            ...split.systemPrompt,
+            content: `${split.systemPrompt.content}\n\n${split.summarizedContext}`,
+          }
+          newMessages.push(updatedSystemPrompt)
+        } else if (split.summarizedContext) {
+          // Create new system message with summary
+          newMessages.push({
+            role: "system",
+            content: split.summarizedContext,
+          })
+        }
+        newMessages.push(...split.recentMessages)
+
+        messages = newMessages as ModelMessage[]
+        tokenLimitWarning = createTokenLimitError(
+          tokenCheck.estimatedTokens,
+          tokenCheck.maxTokens,
+          tokenCheck.modelName,
+        )
+
+        console.log(
+          `✅ Conversation split - new message count: ${messages.length}`,
+        )
+      } else if (!tokenCheck.withinLimit) {
+        // Token limit exceeded but can't split (too few messages)
+        const errorMsg = `Conversation too long for ${tokenCheck.modelName} (${tokenCheck.estimatedTokens.toLocaleString()} tokens, ${tokenCheck.maxTokens.toLocaleString()} max). Please start a new conversation.`
+        console.error(`❌ ${errorMsg}`)
+        return c.json({ error: errorMsg }, { status: 400 })
+      }
 
       try {
         console.log("🍣 Step 1: Creating streamText result...")
         const result = streamText({
-          model,
+          model: model.provider,
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
+          maxOutputTokens: jobMaxTokens, // Use job's maxTokens for scheduled posts
           tools: allTools, // Includes imageTools
+          toolChoice: "none", // Disable automatic tool calls - only use when user explicitly requests
           async onFinish({ text, usage, response, toolCalls, toolResults }) {
             finalText = text
             responseMetadata = response
             toolCallsDetected = toolCalls && toolCalls.length > 0
-            streamCompleted = true
+            _streamCompleted = true
 
             // console.log("🍣 Sushi finished:", {
             //   hasToolCalls: toolCallsDetected,
@@ -6123,7 +6030,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 }
               }
               console.log("🍣 Successfully completed fullStream iteration")
-            } catch (streamError) {
+            } catch (streamError: any) {
               captureException(streamError)
 
               console.error(
@@ -6135,11 +6042,41 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 "❌ Error constructor:",
                 streamError?.constructor?.name,
               )
+
+              // Check for token limit errors
+              const errorMsg = streamError?.message || String(streamError)
+              const isTokenLimitError =
+                errorMsg.includes("maximum context length") ||
+                errorMsg.includes("context_length_exceeded") ||
+                errorMsg.includes("tokens")
+
               if (streamError instanceof Error) {
                 console.error("❌ Error message:", streamError.message)
                 console.error("❌ Error stack:", streamError.stack)
+
+                if (isTokenLimitError) {
+                  // Provide helpful error message for token limit
+                  const userFriendlyError = `The conversation has grown too long. Please start a new chat to continue. (Technical: ${streamError.message})`
+
+                  // Send error to user via stream
+                  await enhancedStreamChunk({
+                    chunk: `\n\n⚠️ **Error**: ${userFriendlyError}`,
+                    chunkNumber: currentChunk++,
+                    totalChunks: -1,
+                    streamingMessage: sushiStreamingMessage,
+                    member,
+                    guest,
+                    thread,
+                    streamId,
+                    clientId,
+                  })
+
+                  // Don't re-throw - we've handled it gracefully
+                  streamFinished = true
+                  return
+                }
               }
-              // Re-throw to be caught by outer try-catch
+              // Re-throw non-token-limit errors to be caught by outer try-catch
               throw streamError
             } finally {
               // Clean up monitoring interval
@@ -6197,6 +6134,11 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         finalText = answerText || finalText
 
+        // Prepend token limit warning if conversation was split
+        if (tokenLimitWarning && finalText) {
+          finalText = `ℹ️ ${tokenLimitWarning}\n\n${finalText}`
+        }
+
         if (!streamControllers.has(streamId)) {
           console.log("Stream was stopped, breaking loop")
           return c.json({ success: true })
@@ -6211,7 +6153,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           )
           try {
             const fallbackResult = await generateText({
-              model,
+              model: model.provider,
               messages: [
                 ...messages,
                 {
@@ -6236,7 +6178,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               const BATCH_SIZE = 75 // characters
 
               for (const [index, word] of words.entries()) {
-                batchBuffer += word + " "
+                batchBuffer += `${word} `
 
                 // Send when buffer reaches threshold or is last word
                 const shouldFlush =
@@ -6277,7 +6219,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           )
           try {
             const fallbackResult = await generateText({
-              model,
+              model: model.provider,
               messages: [
                 ...messages,
                 {
@@ -6302,7 +6244,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               const BATCH_SIZE = 75 // characters
 
               for (const [index, word] of words.entries()) {
-                batchBuffer += word + " "
+                batchBuffer += `${word} `
 
                 // Send when buffer reaches threshold or is last word
                 const shouldFlush =
@@ -6338,11 +6280,13 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         let moltTitle = ""
         let moltContent = ""
         let moltSubmolt = ""
+        let moltSeoKeywords: string[] = []
 
         let tribeTitle = ""
         let tribeContent = ""
         let tribe = ""
-        let tribePostId = undefined
+        let tribeSeoKeywords: string[] = []
+        let tribePostId: string | undefined
         const moltId = undefined
 
         // // Save final message to database
@@ -6350,7 +6294,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           // console.log("💾 Saving Sushi message to DB...")
 
           // Moltbook JSON Cleanup
-          if (canPostToMolt) {
+          if (canPostToMolt && (!job || job?.jobType === "moltbook_post")) {
             try {
               // Clean up markdown code blocks if present
               const cleanResponse = finalText
@@ -6372,6 +6316,9 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                   parsed.moltTitle || parsed.title || "Thoughts from Chrry"
                 moltContent = parsed.moltContent || parsed.content || finalText
                 moltSubmolt = parsed.moltSubmolt || parsed.submolt || "general"
+                moltSeoKeywords = Array.isArray(parsed.seoKeywords)
+                  ? parsed.seoKeywords
+                  : []
                 // Two flows: stream (direct post) vs non-stream (parse only)
                 if (shouldStream && moltApiKey) {
                   // STREAM MODE: Direct post to Moltbook
@@ -6388,6 +6335,11 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                         id: thread.id,
                         moltId: result.post_id,
                         updatedOn: new Date(),
+                      })
+
+                      await updateMessage({
+                        id: message.message.id,
+                        moltId: result.post_id,
                       })
                     }
 
@@ -6409,12 +6361,18 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             }
           }
 
-          if (canPostToTribe) {
+          if (canPostToTribe && (!job || job?.jobType === "tribe_post")) {
             try {
               // Clean up markdown code blocks if present
               const cleanResponse = finalText
                 .replace(/```json\n?|\n?```/g, "")
                 .trim()
+
+              !cleanResponse &&
+                console.warn(
+                  "⚠️ Failed to parse Moltbook JSON in route:",
+                  cleanResponse,
+                )
 
               // Find the first '{' and last '}'
               const firstOpen = cleanResponse.indexOf("{")
@@ -6432,9 +6390,14 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 tribeContent =
                   parsed.tribeContent || parsed.content || finalText
                 tribe = parsed.tribeName || parsed.submolt || "general"
+                tribeSeoKeywords = Array.isArray(parsed.seoKeywords)
+                  ? parsed.seoKeywords
+                  : []
 
                 // Two flows: stream (direct post) vs non-stream (parse only, like Moltbook)
-                if (member && requestApp) {
+                // IMPORTANT: Skip posting if this is a scheduled job (jobId exists)
+                // The scheduler will handle the actual posting to avoid duplicates
+                if (member && requestApp && !jobId) {
                   try {
                     if (shouldStream) {
                       // STREAM MODE: Direct post to Tribe (user sees content + post confirmation)
@@ -6507,6 +6470,13 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                               guestId: undefined,
                             })
 
+                            // Use SEO keywords from AI's JSON response
+                            if (tribeSeoKeywords.length > 0) {
+                              console.log(
+                                `🔍 SEO keywords from AI: ${tribeSeoKeywords.join(", ")}`,
+                              )
+                            }
+
                             // Create post directly
                             const [post] = await db
                               .insert(tribePosts)
@@ -6517,17 +6487,21 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                                 content: tribeContent,
                                 visibility: "public",
                                 tribeId,
+                                seoKeywords:
+                                  tribeSeoKeywords.length > 0
+                                    ? tribeSeoKeywords
+                                    : undefined,
                               })
                               .returning()
 
                             if (post) {
                               // Increment tribe posts count
                               await db
-                                .update(tribes)
+                                .update(tribesSchema)
                                 .set({
-                                  postsCount: sql`${tribes.postsCount} + 1`,
+                                  postsCount: sql`${tribesSchema.postsCount} + 1`,
                                 })
-                                .where(eq(tribes.id, tribeId))
+                                .where(eq(tribesSchema.id, tribeId))
 
                               // Deduct credit (skip for admins)
                               if (member.role !== "admin") {
@@ -6569,6 +6543,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                                 })
                               }
 
+                              await updateMessage({
+                                id: message.message.id,
+                                tribePostId,
+                              })
                               const creditsRemaining =
                                 member.role === "admin"
                                   ? "∞"
@@ -6631,6 +6609,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               webSearchResult: webSearchResults, // Save web search results
               tribePostId, // Link to Tribe post if exists
               moltId,
+              isMolt,
+              isTribe,
             })
             // console.log("✅ createMessage completed successfully")
 
@@ -6650,6 +6630,16 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
               // Send stream_complete notification
               if (thread && m) {
+                canPostToTribe &&
+                  notifyOwnerAndCollaborations({
+                    payload: {
+                      type: "new_post_end",
+                      data: {
+                        app: requestApp,
+                        tribePostId,
+                      },
+                    },
+                  })
                 // console.log("📡 Sending stream_complete notification...")
                 notifyOwnerAndCollaborations({
                   notifySender: true,
@@ -6696,9 +6686,11 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 moltTitle,
                 moltContent,
                 moltSubmolt,
+                moltSeoKeywords,
                 tribeTitle,
                 tribeContent,
                 tribeName: tribe,
+                tribeSeoKeywords,
               })
             }
           } catch (createError) {
@@ -6727,7 +6719,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       let timeoutId: NodeJS.Timeout
 
       let finalText = ""
-      let responseMetadata: any = null
+      let _responseMetadata: any = null
       let toolCallsDetected = false
 
       console.time("fullProcessing") // Start at beginning
@@ -6735,14 +6727,16 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       try {
         console.time("aiProviderCall")
         const result = streamText({
-          model,
+          model: model.provider,
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
+          maxOutputTokens: jobMaxTokens,
           tools: allTools,
+          toolChoice: "none", // Disable automatic tool calls
           async onFinish({ text, usage, response, toolCalls, toolResults }) {
             finalText = text
-            responseMetadata = response
+            _responseMetadata = response
             toolCallsDetected = toolCalls && toolCalls.length > 0
           },
         })
@@ -6846,7 +6840,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
             try {
               const followUpResult = await generateText({
-                model,
+                model: model.provider,
                 messages: [
                   ...messages,
                   {
@@ -6887,7 +6881,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               const BATCH_SIZE = 75 // characters
 
               for (const [index, word] of words.entries()) {
-                batchBuffer += word + " "
+                batchBuffer += `${word} `
 
                 // Send when buffer reaches threshold or is last word
                 const shouldFlush =
@@ -6937,6 +6931,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           content: (finalText + creditRewardMessage).trim(), // Add credit reward thank you
           originalContent: finalText.trim(),
           searchContext,
+          isMolt,
+          isTribe,
         })
 
         console.timeEnd("messageProcessing")
@@ -7013,11 +7009,13 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       try {
         console.time("geminiProviderCall")
         const result = streamText({
-          model,
+          model: model.provider,
           messages,
           maxRetries: 3,
           temperature: requestApp?.temperature ?? 0.7,
+          maxOutputTokens: jobMaxTokens,
           tools: allTools,
+          toolChoice: "none", // Disable automatic tool calls
           providerOptions: {
             google: {
               // thinkingConfig: {
@@ -7066,8 +7064,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         }
 
         let currentChunk = 0
-        let hasReceivedText = false
         let reasoningText = ""
+        let _hasReceivedText = false
 
         // Use fullStream to get reasoning parts immediately
         for await (const part of result.fullStream) {
@@ -7078,7 +7076,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           }
 
           if (part.type === "text-delta") {
-            hasReceivedText = true
+            _hasReceivedText = true
             await enhancedStreamChunk({
               chunk: part.text,
               chunkNumber: currentChunk++,
@@ -7134,6 +7132,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             guestId: guest?.id,
             content: fullContent,
             metadata: responseMetadata,
+            isMolt,
+            isTribe,
           })
 
           if (!aiMessage) {
@@ -7196,11 +7196,13 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
       // Use messages format for other providers
       const result = streamText({
-        model,
+        model: model.provider,
         messages,
         maxRetries: 3,
         temperature: requestApp?.temperature ?? 0.7,
+        maxOutputTokens: jobMaxTokens,
         tools: toolsForModel,
+        toolChoice: "none", // Disable automatic tool calls
         async onFinish({ text, usage, response, sources, toolCalls }) {
           finalText = text
           responseMetadata = response
@@ -7327,7 +7329,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           // Make a second AI call to generate a natural response based on tool execution
           try {
             const followUpResult = await generateText({
-              model,
+              model: model.provider,
               messages: [
                 ...messages,
                 {
@@ -7367,7 +7369,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
             for (const word of words) {
               await enhancedStreamChunk({
-                chunk: word + " ",
+                chunk: `${word} `,
                 chunkNumber: followUpChunk++,
                 totalChunks: -1, // Unknown in streaming
                 streamingMessage: followUpStreamingMessage,
@@ -7420,6 +7422,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         searchContext,
         webSearchResult: webSearchResults,
         appId: requestApp?.id,
+        isMolt,
+        isTribe,
       })
 
       console.timeEnd("messageProcessing")
@@ -7523,4 +7527,4 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
   }
 })
 
-export { app as ai }
+export { ai }

@@ -98,7 +98,7 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false
 }) => {
   return (
-    <button onClick={onClick} disabled={disabled}>
+    <button type="button"  onClick={onClick} disabled={disabled}>
       {label}
     </button>
   );

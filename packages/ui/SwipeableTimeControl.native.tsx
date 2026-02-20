@@ -1,5 +1,6 @@
-import React, { useState } from "react"
-import { View, Text, PanResponder } from "react-native"
+import type React from "react"
+import { useState } from "react"
+import { PanResponder, Text, View } from "react-native"
 import { usePlatform } from "./platform"
 
 interface SwipeableTimeControlProps {
@@ -23,7 +24,7 @@ const SwipeableTimeControl = ({
   Down,
 }: SwipeableTimeControlProps) => {
   const { os } = usePlatform()
-  const [startY, setStartY] = useState(0)
+  const [_startY, setStartY] = useState(0)
 
   const maxValue = isMinute ? 59 : Infinity
   const minValue = 0

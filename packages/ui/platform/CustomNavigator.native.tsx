@@ -3,12 +3,13 @@
  * Works like React Router's history-based routing without Stack.Navigator
  */
 
-import React, {
+import type React from "react"
+import {
   createContext,
-  useContext,
-  useState,
   useCallback,
+  useContext,
   useMemo,
+  useState,
 } from "react"
 
 interface Route {

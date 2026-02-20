@@ -1,3 +1,5 @@
+import type { AdapterAccount } from "@auth/core/adapters"
+import { relations, sql } from "drizzle-orm"
 import {
   type AnyPgColumn,
   boolean,
@@ -8,15 +10,13 @@ import {
   pgEnum,
   pgTable,
   primaryKey,
+  real,
   text,
   timestamp,
   uniqueIndex,
-  vector,
   uuid,
-  real,
+  vector,
 } from "drizzle-orm/pg-core"
-import type { AdapterAccount } from "@auth/core/adapters"
-import { sql } from "drizzle-orm"
 
 export const PRO_CREDITS_PER_MONTH = 5000
 export const PLUS_CREDITS_PER_MONTH = 2000
@@ -702,16 +702,17 @@ export const threads = pgTable("threads", {
   })
     .notNull()
     .default("private"),
-  artifacts: jsonb("artifacts").$type<
-    {
-      type: string
-      url?: string
-      name: string
-      size: number
-      data?: string
-      id: string
-    }[]
-  >(),
+  artifacts:
+    jsonb("artifacts").$type<
+      {
+        type: string
+        url?: string
+        name: string
+        size: number
+        data?: string
+        id: string
+      }[]
+    >(),
 })
 
 export const pushSubscriptions = pgTable("pushSubscriptions", {
@@ -874,6 +875,28 @@ export const messages = pgTable(
       onDelete: "set null",
     }),
 
+    moltCommentId: uuid("moltCommentId").references(() => moltComments.id, {
+      onDelete: "set null",
+    }),
+
+    moltReplyId: uuid("moltReplyId").references(() => moltComments.id, {
+      onDelete: "set null",
+    }),
+
+    tribeCommentId: uuid("tribeCommentId").references(() => tribeComments.id, {
+      onDelete: "set null",
+    }),
+
+    tribeReplyId: uuid("tribeReplyId").references(() => tribeComments.id, {
+      onDelete: "set null",
+    }),
+
+    jobId: uuid("jobId").references(() => scheduledJobs.id, {
+      onDelete: "set null",
+    }),
+
+    tribeSummary: text("tribeSummary"),
+    moltSummary: text("moltSummary"),
     moodId: uuid("moodId").references(() => moods.id, {
       onDelete: "set null",
     }),
@@ -922,58 +945,63 @@ export const messages = pgTable(
     })
       .notNull()
       .default("chat"),
-    files: jsonb("files").$type<
-      {
-        type: string
-        url?: string
-        name: string
-        size: number
-        data?: string
-        id: string
-      }[]
-    >(),
-    reactions: jsonb("reactions").$type<
-      {
-        like: boolean
-        dislike: boolean
-        userId?: string
-        guestId?: string
-        createdOn: string
-      }[]
-    >(),
+    files:
+      jsonb("files").$type<
+        {
+          type: string
+          url?: string
+          name: string
+          size: number
+          data?: string
+          id: string
+        }[]
+      >(),
+    reactions:
+      jsonb("reactions").$type<
+        {
+          like: boolean
+          dislike: boolean
+          userId?: string
+          guestId?: string
+          createdOn: string
+        }[]
+      >(),
     creditCost: integer("creditCost").notNull().default(1),
     webSearchResult: jsonb("webSearchResult").$type<webSearchResultType[]>(),
     searchContext: text("searchContext"),
-    images: jsonb("images").$type<
-      {
-        url: string
-        prompt: string
-        model?: string
-        width?: number
-        height?: number
-        title?: string
-        id: string
-      }[]
-    >(),
-    audio: jsonb("audio").$type<
-      {
-        url: string
-        size?: number
-        title?: string
-        id: string
-      }[]
-    >(),
+    images:
+      jsonb("images").$type<
+        {
+          url: string
+          prompt: string
+          model?: string
+          width?: number
+          height?: number
+          title?: string
+          id: string
+        }[]
+      >(),
+    audio:
+      jsonb("audio").$type<
+        {
+          url: string
+          size?: number
+          title?: string
+          id: string
+        }[]
+      >(),
     appId: uuid("appId").references(() => apps.id, {
       onDelete: "cascade",
     }),
-    video: jsonb("video").$type<
-      {
-        url: string
-        size?: number
-        title?: string
-        id: string
-      }[]
-    >(),
+    video:
+      jsonb("video").$type<
+        {
+          url: string
+          size?: number
+          title?: string
+          id: string
+        }[]
+      >(),
     isPear: boolean("isPear").notNull().default(false), // Pear feedback submission
   },
 
@@ -1213,21 +1241,23 @@ export const tribePosts = pgTable(
       .default("public"),
 
     // Media attachments
-    images: jsonb("images").$type<
-      {
-        url: string
-        width?: number
-        height?: number
-        alt?: string
-      }[]
-    >(),
-    videos: jsonb("videos").$type<
-      {
-        url: string
-        thumbnail?: string
-        duration?: number
-      }[]
-    >(),
+    images:
+      jsonb("images").$type<
+        {
+          url: string
+          width?: number
+          height?: number
+          alt?: string
+        }[]
+      >(),
+    videos:
+      jsonb("videos").$type<
+        {
+          url: string
+          thumbnail?: string
+          duration?: number
+        }[]
+      >(),
 
     // Engagement metrics
     likesCount: integer("likesCount").notNull().default(0),
@@ -1241,6 +1271,9 @@ export const tribePosts = pgTable(
     }),
     tags: jsonb("tags").$type<string[]>().default([]),
     isPinned: boolean("isPinned").notNull().default(false),
+
+    // SEO - AI-generated keywords for better discoverability
+    seoKeywords: jsonb("seoKeywords").$type<string[]>(),
 
     // Metadata
     metadata: jsonb("metadata").$type<{
@@ -1583,7 +1616,19 @@ export const scheduledJobs = pgTable(
     frequency: text("frequency", {
       enum: ["once", "daily", "weekly", "custom"],
     }).notNull(),
-    scheduledTimes: jsonb("scheduledTimes").$type<string[]>().notNull(), // ["09:00", "14:00", "18:00", "22:00"]
+    scheduledTimes: jsonb("scheduledTimes")
+      .$type<
+        Array<{
+          time: string // "09:00"
+          model: string
+          postType: "post" | "comment" | "engagement"
+          charLimit: number
+          credits: number
+          maxTokens?: number // Optional max tokens for AI generation
+          intervalMinutes?: number // Optional interval for custom frequency (e.g., 60 = every hour)
+        }>
+      >()
+      .notNull(), // Full schedule slot objects
     timezone: text("timezone").notNull().default("UTC"),
     startDate: timestamp("startDate", {
       mode: "date",
@@ -1635,12 +1680,63 @@ export const scheduledJobs = pgTable(
     totalRuns: integer("totalRuns").notNull().default(0),
     successfulRuns: integer("successfulRuns").notNull().default(0),
     failedRuns: integer("failedRuns").notNull().default(0),
+    failureReason: text("failureReason"), // Why the job failed (prevents retry)
+
+    totalPrice: integer("totalPrice").default(0),
+    pendingPayment: integer("pendingPayment").default(0),
+
+    // Calendar integration
+    calendarEventId: uuid("calendarEventId").references(
+      () => calendarEvents.id,
+      {
+        onDelete: "set null",
+      },
+    ),
 
     // Metadata
     metadata: jsonb("metadata").$type<{
       errors?: Array<{ timestamp: string; error: string }>
       lastOutput?: string
       performance?: { avgDuration: number; avgCredits: number }
+      // Tribe scheduling metadata
+      tribeSlug?: string
+      cooldownMinutes?: number
+      platformInterval?: number
+      // Schedule history for revert - complete snapshot
+      previousSchedule?: {
+        scheduledTimes: Array<{
+          time: string
+          model: string
+          postType: "post" | "comment" | "engagement"
+          charLimit: number
+          credits: number
+          maxTokens?: number
+          intervalMinutes?: number // Optional interval for custom frequency
+        }>
+        frequency: "once" | "daily" | "weekly" | "custom"
+        startDate: string
+        endDate?: string
+        timezone: string
+        aiModel: string
+        modelConfig?: {
+          model?: string
+          temperature?: number
+          maxTokens?: number
+        }
+        contentTemplate?: string
+        contentRules?: {
+          tone?: string
+          length?: string
+          topics?: string[]
+          hashtags?: string[]
+        }
+        estimatedCreditsPerRun: number
+        totalEstimatedCredits: number
+        totalPrice: number
+        isPaid: boolean
+        stripePaymentIntentId?: string
+        updatedAt: string
+      }
     }>(),
 
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
@@ -1800,7 +1896,7 @@ export const realtimeAnalytics = pgTable("realtime_analytics", {
     .notNull(),
 })
 
-export const creditUsage = pgTable(
+export const creditUsages = pgTable(
   "creditUsage",
   {
     id: uuid("id").defaultRandom().notNull().primaryKey(),
@@ -2048,15 +2144,16 @@ export const threadSummaries = pgTable(
     }>(),
 
     // User memories associated with this thread
-    userMemories: jsonb("userMemories").$type<
-      {
-        id: string
-        content: string
-        tags: string[]
-        relevanceScore: number
-        createdAt: string
-      }[]
-    >(),
+    userMemories:
+      jsonb("userMemories").$type<
+        {
+          id: string
+          content: string
+          tags: string[]
+          relevanceScore: number
+          createdAt: string
+        }[]
+      >(),
 
     // Character/agent tags and personality context
     characterTags: jsonb("characterTags").$type<{
@@ -2271,10 +2368,7 @@ export const characterProfiles = pgTable(
     // Behavioral traits
     traits: jsonb("traits")
       .$type<{
-        communication: string[]
-        expertise: string[]
-        behavior: string[]
-        preferences: string[]
+        [key: string]: string[]
       }>()
       .notNull(),
 
@@ -2768,14 +2862,15 @@ export const apps = pgTable(
     subtitle: text("subtitle"), // Subtitle (e.g., "AI Travel Companion")
     description: text("description"), // Full description
     icon: text("icon"), // URL, emoji, or base64 image
-    images: jsonb("images").$type<
-      {
-        url: string
-        width?: number
-        height?: number
-        id: string
-      }[]
-    >(), // 500x500px PNG image URL (required for published agents)
+    images:
+      jsonb("images").$type<
+        {
+          url: string
+          width?: number
+          height?: number
+          id: string
+        }[]
+      >(), // 500x500px PNG image URL (required for published agents)
     slug: text("slug").notNull(), // Auto-generated from displayName
 
     onlyAgent: boolean("onlyAgent").notNull().default(false),
@@ -2790,14 +2885,15 @@ export const apps = pgTable(
     tipsTitle: text("tipsTitle"),
 
     // Structured content for app details
-    highlights: jsonb("highlights").$type<
-      Array<{
-        id: string
-        title: string
-        content?: string
-        emoji?: string
-      }>
-    >(), // Key features/highlights (e.g., ["Smart Itineraries", "Local Insights", "Weather Integration"])
+    highlights:
+      jsonb("highlights").$type<
+        Array<{
+          id: string
+          title: string
+          content?: string
+          emoji?: string
+        }>
+      >(), // Key features/highlights (e.g., ["Smart Itineraries", "Local Insights", "Weather Integration"])
     featureList: jsonb("featureList").$type<string[]>(), // Simple feature list for display (e.g., ["Smart Matching", "Travel Connections"])
 
     // Version & Status
@@ -3144,7 +3240,7 @@ export const appOrders = pgTable(
   ],
 )
 
-export const appExtend = pgTable(
+export const appExtends = pgTable(
   "appExtends",
   {
     appId: uuid("appId")
@@ -3183,14 +3279,15 @@ export const stores = pgTable(
     description: text("description"),
     slug: text("slug").notNull(),
     title: text("title").notNull(),
-    images: jsonb("images").$type<
-      {
-        url: string
-        width?: number
-        height?: number
-        id: string
-      }[]
-    >(),
+    images:
+      jsonb("images").$type<
+        {
+          url: string
+          width?: number
+          height?: number
+          id: string
+        }[]
+      >(),
     teamId: uuid("teamId").references(() => teams.id, {
       onDelete: "cascade",
     }),
@@ -4914,3 +5011,452 @@ export const codebaseQueries = pgTable(
 
 export type CodebaseQuery = typeof codebaseQueries.$inferSelect
 export type NewCodebaseQuery = typeof codebaseQueries.$inferInsert
+
+// ============================================================================
+// AD EXCHANGE - Autonomous Advertising System
+// ============================================================================
+
+// Store Time Slots - Available advertising slots in stores
+export const storeTimeSlots = pgTable(
+  "store_time_slots",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+
+    // Which store owns this slot
+    storeId: uuid("store_id")
+      .references(() => stores.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Time configuration
+    dayOfWeek: integer("day_of_week").notNull(), // 0 = Sunday, 1 = Monday, etc.
+    startTime: text("start_time").notNull(), // "14:00"
+    endTime: text("end_time").notNull(), // "16:00"
+    durationHours: integer("duration_hours").notNull(), // 2
+
+    // Pricing
+    creditsPerHour: integer("credits_per_hour").notNull(), // Base price
+    isPrimeTime: boolean("is_prime_time").default(false), // Peak hours cost more
+
+    // Capacity & availability
+    maxConcurrentRentals: integer("max_concurrent_rentals").default(1), // Usually 1
+    isActive: boolean("is_active").default(true),
+
+    // Performance metrics (updated periodically)
+    averageTraffic: integer("average_traffic").default(0), // Avg visitors during this slot
+    averageConversions: integer("average_conversions").default(0),
+    totalRentals: integer("total_rentals").default(0),
+
+    // Metadata
+    createdOn: timestamp("created_on", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updated_on", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    metadata: jsonb("metadata"),
+  },
+  (table) => ({
+    storeIdIdx: index("store_time_slots_store_idx").on(table.storeId),
+    dayOfWeekIdx: index("store_time_slots_day_idx").on(table.dayOfWeek),
+    isActiveIdx: index("store_time_slots_active_idx").on(table.isActive),
+    primeTimeIdx: index("store_time_slots_prime_idx").on(table.isPrimeTime),
+  }),
+)
+
+export type storeTimeSlot = typeof storeTimeSlots.$inferSelect
+export type newStoreTimeSlot = typeof storeTimeSlots.$inferInsert
+
+// App Campaigns - Autonomous advertising campaigns for apps
+export const appCampaigns = pgTable(
+  "app_campaigns",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+
+    // Ownership
+    appId: uuid("app_id")
+      .references(() => apps.id, { onDelete: "cascade" })
+      .notNull(),
+    userId: uuid("user_id").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    guestId: uuid("guest_id").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
+
+    // Campaign config
+    name: text("name").notNull(),
+    status: text("status", {
+      enum: ["active", "paused", "completed", "cancelled"],
+    })
+      .default("active")
+      .notNull(),
+
+    // Budget
+    totalCredits: integer("total_credits").notNull(),
+    creditsSpent: integer("credits_spent").default(0).notNull(),
+    creditsRemaining: integer("credits_remaining").notNull(),
+    dailyBudget: integer("daily_budget"), // Optional daily cap
+
+    // Targeting
+    targetStores: jsonb("target_stores").$type<string[]>(), // Specific store IDs or null for any
+    targetCategories: jsonb("target_categories").$type<string[]>(), // Store categories
+    excludeStores: jsonb("exclude_stores").$type<string[]>(), // Blacklist
+
+    // Optimization goals
+    optimizationGoal: text("optimization_goal", {
+      enum: ["traffic", "conversions", "knowledge", "balanced"],
+    })
+      .default("balanced")
+      .notNull(),
+
+    minTraffic: integer("min_traffic").default(100), // Minimum store traffic
+    maxPricePerSlot: integer("max_price_per_slot"), // Bid ceiling
+
+    // AI bidding strategy
+    biddingStrategy: text("bidding_strategy", {
+      enum: ["smart", "aggressive", "conservative", "custom"],
+    })
+      .default("smart")
+      .notNull(),
+
+    // Schedule preferences
+    preferredDays: jsonb("preferred_days").$type<number[]>(), // [1,3,5] = Mon, Wed, Fri
+    preferredHours: jsonb("preferred_hours").$type<string[]>(), // ["14:00-16:00", "18:00-20:00"]
+    avoidPrimeTime: boolean("avoid_prime_time").default(false), // Cost optimization
+
+    // Performance tracking
+    totalImpressions: integer("total_impressions").default(0).notNull(),
+    totalClicks: integer("total_clicks").default(0).notNull(),
+    totalConversions: integer("total_conversions").default(0).notNull(),
+    totalKnowledgeGained: integer("total_knowledge_gained")
+      .default(0)
+      .notNull(),
+    averageCPC: real("average_cpc").default(0), // Cost per click
+    roi: real("roi").default(0), // Return on investment
+
+    // AI learning
+    mlModel: jsonb("ml_model"), // Trained model state
+    performanceHistory: jsonb("performance_history").$type<
+      Array<{
+        slotId: string
+        storeId: string
+        dayOfWeek: number
+        timeSlot: string
+        bidAmount: number
+        predictedROI: number
+        actualROI: number
+        traffic: number
+        conversions: number
+        timestamp: string
+      }>
+    >(),
+
+    // Metadata
+    createdOn: timestamp("created_on", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    startDate: timestamp("start_date", { mode: "date", withTimezone: true }),
+    endDate: timestamp("end_date", { mode: "date", withTimezone: true }),
+    updatedOn: timestamp("updated_on", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    metadata: jsonb("metadata"),
+  },
+  (table) => ({
+    appIdIdx: index("app_campaigns_app_idx").on(table.appId),
+    userIdIdx: index("app_campaigns_user_idx").on(table.userId),
+    guestIdIdx: index("app_campaigns_guest_idx").on(table.guestId),
+    statusIdx: index("app_campaigns_status_idx").on(table.status),
+    createdOnIdx: index("app_campaigns_created_idx").on(table.createdOn),
+  }),
+)
+
+export type appCampaign = typeof appCampaigns.$inferSelect
+export type newAppCampaign = typeof appCampaigns.$inferInsert
+
+// Autonomous Bids - AI-placed bids on time slots
+export const autonomousBids = pgTable(
+  "autonomous_bids",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+
+    campaignId: uuid("campaign_id")
+      .references(() => appCampaigns.id, { onDelete: "cascade" })
+      .notNull(),
+    slotId: uuid("slot_id")
+      .references(() => storeTimeSlots.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Bid details
+    bidAmount: integer("bid_amount").notNull(), // Credits bid
+    bidReason: text("bid_reason"), // AI explanation
+    confidence: real("confidence"), // 0-1 confidence score
+
+    // Auction
+    status: text("status", {
+      enum: ["pending", "won", "lost", "expired", "cancelled"],
+    })
+      .default("pending")
+      .notNull(),
+    competingBids: integer("competing_bids").default(0),
+    winningBid: integer("winning_bid"), // If lost, what won
+
+    // Performance prediction
+    predictedTraffic: integer("predicted_traffic"),
+    predictedConversions: integer("predicted_conversions"),
+    predictedROI: real("predicted_roi"),
+
+    // Actual performance (after slot completes)
+    actualTraffic: integer("actual_traffic"),
+    actualConversions: integer("actual_conversions"),
+    actualROI: real("actual_roi"),
+
+    // Metadata
+    createdOn: timestamp("created_on", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    expiresOn: timestamp("expires_on", { mode: "date", withTimezone: true }),
+    metadata: jsonb("metadata"),
+  },
+  (table) => ({
+    campaignIdIdx: index("autonomous_bids_campaign_idx").on(table.campaignId),
+    slotIdIdx: index("autonomous_bids_slot_idx").on(table.slotId),
+    statusIdx: index("autonomous_bids_status_idx").on(table.status),
+    createdOnIdx: index("autonomous_bids_created_idx").on(table.createdOn),
+  }),
+)
+
+export type autonomousBid = typeof autonomousBids.$inferSelect
+export type newAutonomousBid = typeof autonomousBids.$inferInsert
+
+// Slot Rentals - Confirmed rentals of time slots
+export const slotRentals = pgTable(
+  "slot_rentals",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+
+    // Slot & campaign
+    slotId: uuid("slot_id")
+      .references(() => storeTimeSlots.id, { onDelete: "cascade" })
+      .notNull(),
+    campaignId: uuid("campaign_id")
+      .references(() => appCampaigns.id, { onDelete: "cascade" })
+      .notNull(),
+    bidId: uuid("bid_id").references(() => autonomousBids.id, {
+      onDelete: "set null",
+    }),
+
+    // Renter
+    appId: uuid("app_id")
+      .references(() => apps.id, { onDelete: "cascade" })
+      .notNull(),
+    userId: uuid("user_id").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    guestId: uuid("guest_id").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
+
+    // Rental period
+    startTime: timestamp("start_time", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
+    endTime: timestamp("end_time", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
+    durationHours: integer("duration_hours").notNull(),
+
+    // Pricing
+    creditsCharged: integer("credits_charged").notNull(),
+    priceEur: real("price_eur"), // Optional EUR equivalent
+
+    // Status
+    status: text("status", {
+      enum: ["scheduled", "active", "completed", "cancelled"],
+    })
+      .default("scheduled")
+      .notNull(),
+
+    // Performance tracking
+    trafficGenerated: integer("traffic_generated").default(0),
+    conversions: integer("conversions").default(0),
+    knowledgeGained: integer("knowledge_gained").default(0), // KB entries added
+    impressions: integer("impressions").default(0),
+    clicks: integer("clicks").default(0),
+
+    // Knowledge base integration
+    knowledgeBaseEnabled: boolean("knowledge_base_enabled").default(true),
+    knowledgeEntries:
+      jsonb("knowledge_entries").$type<
+        Array<{
+          id: string
+          content: string
+          timestamp: string
+        }>
+      >(),
+
+    // Metadata
+    createdOn: timestamp("created_on", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    completedOn: timestamp("completed_on", {
+      mode: "date",
+      withTimezone: true,
+    }),
+    metadata: jsonb("metadata"),
+  },
+  (table) => ({
+    slotIdIdx: index("slot_rentals_slot_idx").on(table.slotId),
+    campaignIdIdx: index("slot_rentals_campaign_idx").on(table.campaignId),
+    appIdIdx: index("slot_rentals_app_idx").on(table.appId),
+    userIdIdx: index("slot_rentals_user_idx").on(table.userId),
+    guestIdIdx: index("slot_rentals_guest_idx").on(table.guestId),
+    statusIdx: index("slot_rentals_status_idx").on(table.status),
+    startTimeIdx: index("slot_rentals_start_idx").on(table.startTime),
+    endTimeIdx: index("slot_rentals_end_idx").on(table.endTime),
+  }),
+)
+
+export type slotRental = typeof slotRentals.$inferSelect
+export type newSlotRental = typeof slotRentals.$inferInsert
+
+// Slot Auction History - Track bidding wars
+export const slotAuctions = pgTable(
+  "slot_auctions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+
+    slotId: uuid("slot_id")
+      .references(() => storeTimeSlots.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Auction period
+    startTime: timestamp("start_time", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
+    endTime: timestamp("end_time", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
+
+    // Results
+    winningBidId: uuid("winning_bid_id").references(() => autonomousBids.id, {
+      onDelete: "set null",
+    }),
+    winningAmount: integer("winning_amount"),
+    totalBids: integer("total_bids").default(0),
+    averageBid: real("average_bid"),
+    highestBid: integer("highest_bid"),
+    lowestBid: integer("lowest_bid"),
+
+    // Status
+    status: text("status", {
+      enum: ["open", "closed", "cancelled"],
+    })
+      .default("open")
+      .notNull(),
+
+    // Metadata
+    createdOn: timestamp("created_on", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    closedOn: timestamp("closed_on", { mode: "date", withTimezone: true }),
+    metadata: jsonb("metadata"),
+  },
+  (table) => ({
+    slotIdIdx: index("slot_auctions_slot_idx").on(table.slotId),
+    statusIdx: index("slot_auctions_status_idx").on(table.status),
+    startTimeIdx: index("slot_auctions_start_idx").on(table.startTime),
+  }),
+)
+
+export type slotAuction = typeof slotAuctions.$inferSelect
+export type newSlotAuction = typeof slotAuctions.$inferInsert
+
+// ============================================================================
+// DRIZZLE RELATIONS - Enable runtime queries with 'with' clauses
+// ============================================================================
+
+export const storeTimeSlotsRelations = relations(
+  storeTimeSlots,
+  ({ one, many }) => ({
+    store: one(stores, {
+      fields: [storeTimeSlots.storeId],
+      references: [stores.id],
+    }),
+    rentals: many(slotRentals),
+    auctions: many(slotAuctions),
+  }),
+)
+
+export const appCampaignsRelations = relations(
+  appCampaigns,
+  ({ one, many }) => ({
+    app: one(apps, {
+      fields: [appCampaigns.appId],
+      references: [apps.id],
+    }),
+    user: one(users, {
+      fields: [appCampaigns.userId],
+      references: [users.id],
+    }),
+    guest: one(guests, {
+      fields: [appCampaigns.guestId],
+      references: [guests.id],
+    }),
+    bids: many(autonomousBids),
+    rentals: many(slotRentals),
+  }),
+)
+
+export const autonomousBidsRelations = relations(autonomousBids, ({ one }) => ({
+  campaign: one(appCampaigns, {
+    fields: [autonomousBids.campaignId],
+    references: [appCampaigns.id],
+  }),
+  slot: one(storeTimeSlots, {
+    fields: [autonomousBids.slotId],
+    references: [storeTimeSlots.id],
+  }),
+}))
+
+export const slotRentalsRelations = relations(slotRentals, ({ one }) => ({
+  slot: one(storeTimeSlots, {
+    fields: [slotRentals.slotId],
+    references: [storeTimeSlots.id],
+  }),
+  campaign: one(appCampaigns, {
+    fields: [slotRentals.campaignId],
+    references: [appCampaigns.id],
+  }),
+  app: one(apps, {
+    fields: [slotRentals.appId],
+    references: [apps.id],
+  }),
+  user: one(users, {
+    fields: [slotRentals.userId],
+    references: [users.id],
+  }),
+  guest: one(guests, {
+    fields: [slotRentals.guestId],
+    references: [guests.id],
+  }),
+  bid: one(autonomousBids, {
+    fields: [slotRentals.bidId],
+    references: [autonomousBids.id],
+  }),
+}))
+
+export const slotAuctionsRelations = relations(slotAuctions, ({ one }) => ({
+  slot: one(storeTimeSlots, {
+    fields: [slotAuctions.slotId],
+    references: [storeTimeSlots.id],
+  }),
+  winningBid: one(autonomousBids, {
+    fields: [slotAuctions.winningBidId],
+    references: [autonomousBids.id],
+  }),
+}))

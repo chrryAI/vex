@@ -1,37 +1,34 @@
 "use client"
 import React, { useEffect, useState } from "react"
-import { UserRound, LogOut, AtSign, Trash2, Pencil } from "../icons"
-import { CircleX } from "../icons"
-import { v4 as uuidv4 } from "uuid"
+import toast from "react-hot-toast"
+import { FaApple, FaGoogle } from "react-icons/fa"
+import { validate } from "uuid"
+import CharacterProfiles from "../CharacterProfiles"
+import Checkbox from "../Checkbox"
+import ConfirmButton from "../ConfirmButton"
+import { useAppContext } from "../context/AppContext"
+import {
+  useAuth,
+  useData,
+  useError,
+  useNavigationContext,
+} from "../context/providers"
+import { useStyles } from "../context/StylesContext"
 
-import { FaGoogle, FaApple } from "react-icons/fa"
+import { useRouter, useSearchParams } from "../hooks/useWindowHistory"
+import Img from "../Image"
+import { AtSign, CircleX, LogOut, Pencil, Trash2, UserRound } from "../icons"
+import Loading from "../Loading"
+import { uploadUserImage } from "../lib"
+import Modal from "../Modal"
+import { Button, Div, FilePicker, Input, useTheme } from "../platform"
 import {
   apiFetch,
   BrowserInstance,
   checkIsExtension,
   isValidUsername,
 } from "../utils"
-import { validate } from "uuid"
-import ConfirmButton from "../ConfirmButton"
-import toast from "react-hot-toast"
-import Loading from "../Loading"
-import Modal from "../Modal"
-
-import { useRouter, useSearchParams } from "../hooks/useWindowHistory"
-import { useAppContext } from "../context/AppContext"
-import {
-  useAuth,
-  useNavigationContext,
-  useError,
-  useData,
-} from "../context/providers"
-import { Button, Div, FilePicker, Input, useTheme } from "../platform"
-import { uploadUserImage } from "../lib"
-import Img from "../Image"
-import CharacterProfiles from "../CharacterProfiles"
-import Checkbox from "../Checkbox"
 import { useAccountStyles } from "./Account.styles"
-import { useStyles } from "../context/StylesContext"
 
 export default function Account({ style }: { style?: React.CSSProperties }) {
   const { push } = useRouter()
@@ -68,7 +65,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
   const { setEnv, env, actions } = useData()
 
   const searchParams = useSearchParams()
-  const innerRef = React.useRef<HTMLDivElement>(null)
+  const _innerRef = React.useRef<HTMLDivElement>(null)
   const isExtension = checkIsExtension()
   const isAppleAvailable = false
   const isOAuthAccountNotLinkedError =
@@ -79,7 +76,8 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
   const [userName, setUserName] = React.useState<string>("")
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const [isUserNameNotSet, setIsUserNameNotSet] = React.useState<boolean>(false)
+  const [_isUserNameNotSet, setIsUserNameNotSet] =
+    React.useState<boolean>(false)
 
   useEffect(() => {
     if (user?.userName) {
@@ -111,9 +109,9 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
 
     if (!value || !isValidUsername(value)) {
       if (value.length > 10) {
-        toast.error(t("Oops, 20 characters max please") + " 😅")
+        toast.error(`${t("Oops, 20 characters max please")} 😅`)
       } else {
-        toast.error(t("Need 3-20 letters and numbers only") + " 😅")
+        toast.error(`${t("Need 3-20 letters and numbers only")} 😅`)
       }
 
       setIsSaving(false)
@@ -177,7 +175,6 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
       signOutContext?.({
         callbackUrl: `${FRONTEND_URL}/?loggedOut=true${isExtensionRedirect ? "&extension=true" : ""}`,
       })
-      setDeviceId(uuidv4())
     }
 
     const searchParams = new URLSearchParams(window.location.search)
@@ -236,7 +233,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
         const updatedUser = await actions.getUser()
         setUser(updatedUser)
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Error uploading image")
     } finally {
       setIsUploading(false)
@@ -357,7 +354,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
                               const updatedUser = await actions.getUser()
                               setUser(updatedUser)
                             }
-                          } catch (error) {
+                          } catch (_error) {
                             toast.error("Error removing image")
                           } finally {
                             setIsUploading(false)

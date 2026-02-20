@@ -1,12 +1,13 @@
-import { Hono } from "hono"
-import {
-  getAffiliateLink,
-  createAffiliateLink,
-  getAffiliateReferrals,
-  getAffiliatePayouts,
-} from "@repo/db"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import {
+  createAffiliateLink,
+  getAffiliateLink,
+  getAffiliatePayouts,
+  getAffiliateReferrals,
+} from "@repo/db"
+import { Hono } from "hono"
+import { generateSecureCode } from "../../lib/secureRandom"
 import { getMember } from "../lib/auth"
 
 const app = new Hono()
@@ -166,13 +167,13 @@ app.post("/", async (c) => {
 
 // Helper function to generate unique affiliate code
 function generateAffiliateCode(name: string): string {
-  // Create readable code from name + random string
+  // Create readable code from name + cryptographically secure random string
   const cleanName = name
     .toLowerCase()
     .replaceAll(/[^a-z0-9]/g, "")
     .substring(0, 8)
 
-  const random = Math.random().toString(36).substring(2, 8)
+  const random = generateSecureCode(6)
 
   return `${cleanName}${random}`
 }

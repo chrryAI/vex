@@ -1,9 +1,10 @@
-import fs from "fs"
-import path from "path"
-import { fileURLToPath } from "url"
-import { dirname } from "path"
+import fs from "node:fs"
+import path, { dirname } from "node:path"
+import { fileURLToPath } from "node:url"
 import dotenv from "dotenv"
+
 dotenv.config()
+
 import OpenAI from "openai"
 
 const __filename = fileURLToPath(import.meta.url)

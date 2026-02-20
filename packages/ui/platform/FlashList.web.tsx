@@ -41,7 +41,6 @@ export const FlashList = forwardRef(
     const {
       data,
       renderItem,
-      estimatedItemSize = 50,
       keyExtractor,
       horizontal = false,
       numColumns = 1,
@@ -61,7 +60,7 @@ export const FlashList = forwardRef(
     } = props
 
     const containerRef = React.useRef<HTMLDivElement>(null)
-    const [scrollTop, setScrollTop] = React.useState(0)
+    const [_scrollTop, setScrollTop] = React.useState(0)
 
     // Handle scroll for onEndReached
     const handleScroll = useCallback(

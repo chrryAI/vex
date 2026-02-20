@@ -1,10 +1,9 @@
-import React from "react"
+import Home from "./Home"
 import {
   CustomNavigator,
-  Screens,
   Screen,
+  Screens,
 } from "./platform/CustomNavigator.native"
-import Home from "./Home"
 import Thread from "./Thread"
 
 // Native version uses custom navigator - no React Navigation Stack needed

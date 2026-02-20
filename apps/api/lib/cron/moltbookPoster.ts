@@ -1,9 +1,9 @@
+import { randomInt } from "node:crypto"
 import { captureException } from "@sentry/node"
+import type { Context } from "hono"
+import { sign } from "jsonwebtoken"
 import { v4 as uuidv4 } from "uuid"
 import { sendDiscordNotification } from "../sendDiscordNotification"
-import type { Context } from "hono"
-import { randomInt } from "crypto"
-import { sign } from "jsonwebtoken"
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET
 if (!JWT_SECRET && process.env.NODE_ENV !== "development") {
@@ -15,18 +15,18 @@ import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
 const SECRET = JWT_SECRET || "development-secret"
 
 import {
-  db,
-  getUser,
-  getAiAgent,
-  eq,
   and,
+  db,
+  eq,
+  getAiAgent,
+  getUser,
+  type thread,
   updateMessage,
-  thread,
   updateThread,
 } from "@repo/db"
 import { apps, messages, moltQuestions, threads } from "@repo/db/src/schema"
-import { postToMoltbook, checkMoltbookHealth } from "../integrations/moltbook"
-import { isDevelopment, MOLTBOOK_API_KEYS, API_URL } from ".."
+import { API_URL, isDevelopment, MOLTBOOK_API_KEYS } from ".."
+import { checkMoltbookHealth, postToMoltbook } from "../integrations/moltbook"
 
 const JWT_EXPIRY = "30d"
 
@@ -432,7 +432,7 @@ export async function postToMoltbookCron({
       console.log(`✅ Marked question ${questionId} as asked`)
 
       // Send Discord notification (non-blocking) - only if post was successful
-      if (result && result.post_id) {
+      if (result?.post_id) {
         sendDiscordNotification({
           embeds: [
             {
@@ -459,7 +459,7 @@ export async function postToMoltbookCron({
                   value: (() => {
                     const content = post.content ?? ""
                     return content.length > 200
-                      ? content.substring(0, 200) + "..."
+                      ? `${content.substring(0, 200)}...`
                       : content || "No content"
                   })(),
                   inline: false,

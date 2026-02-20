@@ -1,9 +1,9 @@
-import Parser from "rss-parser"
-import { db, eq, and, desc, sql, cosineDistance } from "@repo/db"
+import { and, cosineDistance, db, desc, eq, sql } from "@repo/db"
 import { newsArticles } from "@repo/db/src/schema"
 import { embed } from "ai"
-import { getEmbeddingProvider } from "./getModelProvider"
 import { asc } from "drizzle-orm"
+import Parser from "rss-parser"
+import { getEmbeddingProvider } from "./getModelProvider"
 
 const parser = new Parser()
 
@@ -237,8 +237,7 @@ export async function searchNews(
     .select()
     .from(newsArticles)
     .where(
-      // @ts-ignore - SQL LIKE search
-      sql`${newsArticles.title} ILIKE ${"%" + query + "%"} OR ${newsArticles.description} ILIKE ${"%" + query + "%"}`,
+      sql`${newsArticles.title} ILIKE ${`%${query}%`} OR ${newsArticles.description} ILIKE ${`%${query}%`}`,
     )
     .orderBy(desc(newsArticles.publishedAt))
     .limit(limit)

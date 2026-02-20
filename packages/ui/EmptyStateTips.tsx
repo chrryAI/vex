@@ -1,9 +1,12 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import type React from "react"
+import { useEffect, useState } from "react"
 import { useAppContext } from "./context/AppContext"
-import { useApp, useChat } from "./context/providers"
+import { useApp, useChat, useNavigationContext } from "./context/providers"
+import { useAuth } from "./context/providers/AuthProvider"
 import { useEmptyStateTipsStyles } from "./EmptyStateTips.styles"
+import { useResponsiveCount } from "./hooks/useResponsiveCount"
 import {
   Div,
   H3,
@@ -13,8 +16,6 @@ import {
   usePlatform,
   useTheme,
 } from "./platform"
-import { useResponsiveCount } from "./hooks/useResponsiveCount"
-import { useAuth } from "./context/providers/AuthProvider"
 
 export default function EmptyStateTips({
   style,
@@ -22,6 +23,7 @@ export default function EmptyStateTips({
   style?: React.CSSProperties
 }) {
   const { isManagingApp, canEditApp, app } = useApp()
+  const { pathname } = useNavigationContext()
   const { isPear, pear } = useAuth()
   const { reduceMotion: reduceMotionContext, reduceMotion } = useTheme()
   const { showTribe } = useChat()
@@ -61,7 +63,7 @@ export default function EmptyStateTips({
   }
 
   // Show Tribe tips when in Tribe view
-  if (showTribe) {
+  if (showTribe && pathname && ["/", "/tribe"].includes(pathname)) {
     const tribeTips = [
       {
         tip: t(
@@ -231,12 +233,12 @@ export default function EmptyStateTips({
   const getAppTitle = () => {
     if (isPear) return getTitle()
     if (app?.tips?.length)
-      return `${app?.icon} ` + t(app?.tipsTitle || "Pro Tips")
-    if (app?.slug === "atlas") return "✈️ " + t("Travel Tips")
-    if (app?.slug === "bloom") return "🌸 " + t("Wellness Tips")
-    if (app?.slug === "peach") return "🍑 " + t("Social Tips")
-    if (app?.slug === "vault") return "💰 " + t("Finance Tips")
-    return "🎯 " + t("Pro Tips")
+      return `${app?.icon} ${t(app?.tipsTitle || "Pro Tips")}`
+    if (app?.slug === "atlas") return `✈️ ${t("Travel Tips")}`
+    if (app?.slug === "bloom") return `🌸 ${t("Wellness Tips")}`
+    if (app?.slug === "peach") return `🍑 ${t("Social Tips")}`
+    if (app?.slug === "vault") return `💰 ${t("Finance Tips")}`
+    return `🎯 ${t("Pro Tips")}`
   }
 
   return (

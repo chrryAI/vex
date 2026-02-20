@@ -9,7 +9,7 @@ export const __Porffor_bigint_fromDigits = (
   if (len > 16383) throw new RangeError("Maximum BigInt size exceeded") // (65536 - 4) / 4
 
   // use digits pointer as bigint pointer, as only used here
-  let ptr: i32 = Porffor.wasm`local.get ${digits}`
+  const ptr: i32 = Porffor.wasm`local.get ${digits}`
 
   Porffor.wasm.i32.store8(ptr, negative ? 1 : 0, 0, 0) // sign
   Porffor.wasm.i32.store16(ptr, len, 0, 2) // digit count
@@ -17,7 +17,7 @@ export const __Porffor_bigint_fromDigits = (
   let allZero: boolean = true
   for (let i: i32 = 0; i < len; i++) {
     const d: i32 = digits[i]
-    if (d != 0) allZero = false
+    if (d !== 0) allZero = false
 
     Porffor.wasm.i32.store(ptr + i * 4, d, 0, 4)
   }
@@ -62,7 +62,7 @@ export const __Porffor_bigint_toNumber = (x: number): number => {
   if (Math.abs(x) < 0x8000000000000) return x as number
   x -= 0x8000000000000
 
-  const negative: boolean = Porffor.wasm.i32.load8_u(x, 0, 0) != 0
+  const negative: boolean = Porffor.wasm.i32.load8_u(x, 0, 0) !== 0
   const len: i32 = Porffor.wasm.i32.load16_u(x, 0, 2)
 
   let out: number = 0
@@ -80,10 +80,10 @@ export const __Porffor_bigint_fromString = (n: string | bytestring): bigint => {
 
   let negative: boolean = false
   let offset: i32 = 0
-  if (n[0] == "-") {
+  if (n[0] === "-") {
     negative = true
     offset = 1
-  } else if (n[0] == "+") {
+  } else if (n[0] === "+") {
     offset = 1
   }
 
@@ -117,15 +117,15 @@ export const __Porffor_bigint_fromString = (n: string | bytestring): bigint => {
   while (digits.length > 0) {
     let carry: i32 = 0
     for (let j: i32 = 0; j < digits.length; j++) {
-      let value: i32 = carry * 10 + digits[j]
-      let quotient: i32 = Math.floor(value / BASE)
+      const value: i32 = carry * 10 + digits[j]
+      const quotient: i32 = Math.floor(value / BASE)
       carry = value % BASE
 
       digits[j] = quotient
     }
 
-    while (digits.length > 0 && digits[0] == 0) digits.shift()
-    if (carry != 0 || digits.length > 0) result.unshift(carry)
+    while (digits.length > 0 && digits[0] === 0) digits.shift()
+    if (carry !== 0 || digits.length > 0) result.unshift(carry)
   }
 
   return __Porffor_bigint_fromDigits(negative, result)
@@ -162,10 +162,10 @@ export const __Porffor_bigint_add = (
   a -= 0x8000000000000
   b -= 0x8000000000000
 
-  const aNegative: boolean = Porffor.wasm.i32.load8_u(a, 0, 0) != 0
+  const aNegative: boolean = Porffor.wasm.i32.load8_u(a, 0, 0) !== 0
   const aLen: i32 = Porffor.wasm.i32.load16_u(a, 0, 2)
 
-  let bNegative: boolean = Porffor.wasm.i32.load8_u(b, 0, 0) != 0
+  let bNegative: boolean = Porffor.wasm.i32.load8_u(b, 0, 0) !== 0
   if (sub) bNegative = !bNegative
   const bLen: i32 = Porffor.wasm.i32.load16_u(b, 0, 2)
 
@@ -175,7 +175,7 @@ export const __Porffor_bigint_add = (
   // fast path: same sign
   let negative: boolean = false
   let carry: i32 = 0
-  if (aNegative == bNegative) {
+  if (aNegative === bNegative) {
     negative = aNegative
 
     for (let i: i32 = 0; i < maxLen; i++) {
@@ -217,7 +217,7 @@ export const __Porffor_bigint_add = (
       if (bNegative) sum -= bDigit
       else sum += bDigit
 
-      if (aDigit != bDigit) aLarger = aDigit > bDigit ? 1 : -1
+      if (aDigit !== bDigit) aLarger = aDigit > bDigit ? 1 : -1
 
       if (sum >= 0x100000000) {
         sum -= 0x100000000
@@ -232,11 +232,11 @@ export const __Porffor_bigint_add = (
       digits.unshift(sum)
     }
 
-    if (aLarger == 1) negative = aNegative
-    else if (aLarger == -1) negative = bNegative
+    if (aLarger === 1) negative = aNegative
+    else if (aLarger === -1) negative = bNegative
   }
 
-  if (carry != 0) {
+  if (carry !== 0) {
     digits.unshift(Math.abs(carry))
     if (carry < 0) negative = !negative
   }
@@ -294,17 +294,17 @@ export const __ecma262_ToBigInt = (argument: any): bigint => {
   // Table 12: BigInt Conversions
   // Argument Type 	Result
   // BigInt 	Return prim.
-  if (Porffor.type(prim) == Porffor.TYPES.bigint) return prim
+  if (Porffor.type(prim) === Porffor.TYPES.bigint) return prim
 
   // String
   //     1. Let n be StringToBigInt(prim).
   //     2. If n is undefined, throw a SyntaxError exception.
   //     3. Return n.
-  if ((Porffor.type(prim) | 0b10000000) == Porffor.TYPES.bytestring)
+  if ((Porffor.type(prim) | 0b10000000) === Porffor.TYPES.bytestring)
     return __Porffor_bigint_fromString(prim)
 
   // Boolean 	Return 1n if prim is true and 0n if prim is false.
-  if (Porffor.type(prim) == Porffor.TYPES.boolean) return prim ? 1n : 0n
+  if (Porffor.type(prim) === Porffor.TYPES.boolean) return prim ? 1n : 0n
 
   // Number 	Throw a TypeError exception.
   // Symbol 	Throw a TypeError exception.
@@ -321,7 +321,7 @@ export const BigInt = (value: any): bigint => {
   const prim: any = ecma262.ToPrimitive.Number(value)
 
   // 3. If prim is a Number, return ? NumberToBigInt(prim).
-  if (Porffor.type(prim) == Porffor.TYPES.number)
+  if (Porffor.type(prim) === Porffor.TYPES.number)
     return __Porffor_bigint_fromNumber(prim)
 
   // 4. Otherwise, return ? ToBigInt(prim).

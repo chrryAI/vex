@@ -1,14 +1,14 @@
 "use client"
 
-import React, { useEffect, useState, CSSProperties } from "react"
+import { type CSSProperties, useEffect, useState } from "react"
+import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useChat, useData } from "./context/providers"
-import { Unlock, CircleX, Share, Lock, Sparkles, PinOff, Pin } from "./icons"
+import { CircleX, Lock, Pin, PinOff, Share, Sparkles, Unlock } from "./icons"
 import Loading from "./Loading"
-import { characterProfile } from "./types"
 import { updateThread } from "./lib"
-import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
-import { Button, Div } from "./platform"
+import { Button, Div, Input } from "./platform"
+import type { characterProfile } from "./types"
 
 export default function CharacterProfile({
   onCharacterProfileUpdate,
@@ -49,6 +49,7 @@ export default function CharacterProfile({
   const [isChangingVisibility, setIsChangingVisibility] = useState(false)
   const handlePin = async () => {
     if (!token) return
+    if (!characterProfile.threadId) return
     setIsPinning(true)
     try {
       const response = await updateThread({
@@ -82,6 +83,7 @@ export default function CharacterProfile({
 
   const handleShare = async () => {
     if (!token) return
+    if (!characterProfile.threadId) return
     setIsChangingVisibility(true)
     try {
       const response = await updateThread({
@@ -111,10 +113,14 @@ export default function CharacterProfile({
   return (
     <Div
       data-testid="character-profile"
-      data-cp={`${characterProfile.name}${characterProfile.tags?.length ? `-${characterProfile.tags.join(", ")}` : ""}`}
       key={characterProfile.id}
       style={{ ...styles.characterProfilesActions.style, ...style }}
     >
+      <Input
+        data-testid="character-profile-name"
+        type="hidden"
+        value={`${characterProfile.name}${characterProfile.tags?.length ? `-${characterProfile.tags.join(", ")}` : ""}`}
+      />
       {characterProfile.pinned && showActions && (
         <Button
           title={t("Share")}

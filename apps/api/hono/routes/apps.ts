@@ -1,42 +1,40 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
-import { Hono } from "hono"
-import {
-  getApps,
-  getStore,
-  getStoreInstalls,
-  deleteInstall,
-  isE2E,
-  ne,
-} from "@repo/db"
-import { apps } from "@repo/db/src/schema"
-import { getMember, getGuest, getApp } from "../lib/auth"
-import { appSchema } from "@chrryai/chrry/schemas/appSchema"
-import { redact } from "../../lib/redaction"
 
+import { reorderApps } from "@chrryai/chrry/lib"
+import { appSchema } from "@chrryai/chrry/schemas/appSchema"
+import { isOwner } from "@chrryai/chrry/utils"
 import {
-  installApp,
+  and,
+  createAppOrder,
+  createOrUpdateApp,
   createStore,
   createStoreInstall,
-  updateStore,
-  createOrUpdateApp,
-  createAppOrder,
-  getInstall,
   db,
-  and,
-  eq,
-  isNotNull,
-  getApp as getAppDb,
   deleteApp,
+  deleteInstall,
   encrypt,
+  eq,
+  getApp as getAppDb,
+  getApps,
+  getInstall,
+  getStore,
+  getStoreInstalls,
+  installApp,
+  isDevelopment,
+  isE2E,
+  isNotNull,
+  ne,
   safeDecrypt,
+  updateStore,
 } from "@repo/db"
-import { appOrders, storeInstalls } from "@repo/db/src/schema"
-import captureException from "../../lib/captureException"
-import { upload, deleteFile } from "../../lib/minio"
+import { appOrders, apps, storeInstalls } from "@repo/db/src/schema"
+import { Hono } from "hono"
 import slugify from "slug"
 import { v4 as uuid, validate } from "uuid"
-import { reorderApps } from "@chrryai/chrry/lib"
-import { isOwner } from "@chrryai/chrry/utils"
+import captureException from "../../lib/captureException"
+import { deleteFile, upload } from "../../lib/minio"
+import { redact } from "../../lib/redaction"
+import { getApp, getGuest, getMember } from "../lib/auth"
 
 export const app = new Hono()
 
@@ -56,6 +54,25 @@ interface ReorderRequest {
 app.get("/", async (c) => {
   // Get final app
   const app = await getApp({ c })
+
+  if (!app) {
+    return c.json({ error: "App not found" }, 404)
+  }
+
+  return c.json(app)
+})
+
+// GET /apps/:storeSlug/:appSlug - Get app by store and app slug (SEO-friendly)
+app.get("/:storeSlug/:appSlug", async (c) => {
+  const storeSlug = c.req.param("storeSlug")
+  const appSlug = c.req.param("appSlug")
+
+  const app = await getApp({
+    c,
+    storeSlug,
+    appSlug,
+    skipCache: true,
+  })
 
   if (!app) {
     return c.json({ error: "App not found" }, 404)
@@ -130,6 +147,7 @@ app.post("/", async (c) => {
       placeholder,
       moltHandle,
       moltApiKey,
+      tier,
     } = body
 
     // Validate app name: no spaces, must be unique
@@ -208,6 +226,7 @@ app.post("/", async (c) => {
       apiPricePerRequest,
       apiMonthlyPrice,
       apiRateLimit,
+      tier,
       placeholder:
         typeof placeholder === "string"
           ? await redact(placeholder)
@@ -226,6 +245,13 @@ app.post("/", async (c) => {
 
     if (!chrry) {
       return c.json({ error: "Chrry store not found" }, { status: 404 })
+    }
+
+    if (tier && tier !== "free" && !member) {
+      return c.json(
+        { error: "You must be logged in to create a paid app" },
+        { status: 401 },
+      )
     }
 
     // Validate with Zod schema
@@ -299,7 +325,7 @@ app.post("/", async (c) => {
       height?: number
       id: string
     }> = []
-    if (imageUrl && imageUrl.startsWith("http")) {
+    if (imageUrl?.startsWith("http")) {
       try {
         console.log("📸 Processing app image from URL:", imageUrl)
 
@@ -335,7 +361,7 @@ app.post("/", async (c) => {
           // Generate content-based hash for deduplication
           // Same image + same size = same hash = no duplicates
           // Using SHA256 for security compliance (MD5 flagged by security scanners)
-          const crypto = await import("crypto")
+          const crypto = await import("node:crypto")
           const contentHash = crypto
             .createHash("sha256")
             .update(`${imageUrl}-${size}x${size}`)
@@ -351,6 +377,7 @@ app.post("/", async (c) => {
               fit: "contain", // Center image, don't crop (adds padding if needed)
               position: "center",
               title: `${name}-${size}x${size}`,
+              type: "image",
             },
             context: "apps", // Use apps UploadThing account
           })
@@ -406,7 +433,7 @@ app.post("/", async (c) => {
       const created = await createStore({
         slug: storeSlug,
         name: member?.userName || `GuestStore`,
-        title: `${member?.userName + "'s" || "My"} Store`,
+        title: `${`${member?.userName}'s` || "My"} Store`,
         // domain: `${storeSlug}.chrry.dev`,
         userId: member?.id,
         guestId: guest?.id,
@@ -458,7 +485,7 @@ app.post("/", async (c) => {
     }
 
     // Hash API keys before saving
-    let hashedApiKeys: Record<string, string> | undefined = undefined
+    let hashedApiKeys: Record<string, string> | undefined
     if (apiKeys && typeof apiKeys === "object") {
       hashedApiKeys = {}
       for (const [key, value] of Object.entries(apiKeys)) {
@@ -478,6 +505,7 @@ app.post("/", async (c) => {
         userId: member?.id,
         guestId: guest?.id,
         ...validationResult.data,
+        tier: validationResult.data.tier as "free" | "plus" | "pro",
         tools: validationResult.data.tools as
           | ("calendar" | "location" | "weather")[]
           | null
@@ -843,7 +871,27 @@ app.patch("/:id", async (c) => {
       apiKeys,
       moltHandle,
       moltApiKey,
+      tier,
     } = body
+
+    const skipDangerousZone =
+      isDevelopment || isE2E || body.dangerousZone === true
+
+    if (!skipDangerousZone) {
+      if (member?.role === "admin") {
+        return c.json(
+          { error: "Send dangerousZone to confirm" },
+          { status: 401 },
+        )
+      }
+    }
+
+    if (tier && tier !== "free" && !member) {
+      return c.json(
+        { error: "You must be logged in to create a paid app" },
+        { status: 401 },
+      )
+    }
 
     // Handle image - accept URL from /api/image endpoint
     let images = existingApp.images || []
@@ -903,6 +951,7 @@ app.patch("/:id", async (c) => {
     if (displayMode !== null) updateData.displayMode = displayMode
     if (pricing !== null) updateData.pricing = pricing
     if (price !== undefined) updateData.price = price
+    if (tier !== undefined) updateData.tier = tier
     if (moltHandle !== undefined)
       updateData.moltHandle =
         moltHandle === null
@@ -945,7 +994,7 @@ app.patch("/:id", async (c) => {
         for (const [key, value] of Object.entries(apiKeys)) {
           if (value && typeof value === "string" && value.trim()) {
             // Encrypt the API key using AES-256-GCM
-            hashedApiKeys[key] = await encrypt(value.trim())
+            hashedApiKeys[key] = encrypt(value.trim())
           }
         }
         updateData.apiKeys = hashedApiKeys
@@ -1063,7 +1112,7 @@ app.patch("/:id", async (c) => {
       shouldUpdateImages = true
     }
     // If new image URL provided, process it
-    else if (imageUrl && imageUrl.startsWith("http")) {
+    else if (imageUrl?.startsWith("http")) {
       try {
         console.log("📸 Processing updated app image from URL:", imageUrl)
 
@@ -1092,7 +1141,7 @@ app.patch("/:id", async (c) => {
           // Generate content-based hash for deduplication
           // Same image + same size = same hash = no duplicates
           // Using SHA256 for security compliance (MD5 flagged by security scanners)
-          const crypto = await import("crypto")
+          const crypto = await import("node:crypto")
           const contentHash = crypto
             .createHash("sha256")
             .update(`${imageUrl}-${size}x${size}`)
@@ -1108,6 +1157,7 @@ app.patch("/:id", async (c) => {
               fit: "contain", // Center image, don't crop (adds padding if needed)
               position: "center",
               title: `${name}-${size}x${size}`,
+              type: "image",
             },
           })
           return {
@@ -1183,6 +1233,17 @@ app.patch("/:id", async (c) => {
 
 app.delete("/:id", async (c) => {
   const id = c.req.param("id")
+
+  // Body is optional for DELETE - handle case where no body is sent
+  let body: { dangerousZone?: boolean } = {}
+  try {
+    body = await c.req.json()
+  } catch {
+    // No body or invalid JSON - use defaults
+  }
+
+  const skipDangerousZone =
+    isDevelopment || isE2E || body.dangerousZone === true
   try {
     const member = await getMember(c, {
       skipCache: true,
@@ -1195,11 +1256,8 @@ app.delete("/:id", async (c) => {
       return c.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    if (member?.role === "admin" && !isE2E) {
-      return c.json(
-        { error: "Use seed api for deleting apps" },
-        { status: 403 },
-      )
+    if (member?.role === "admin" && !skipDangerousZone) {
+      return c.json({ error: "Send dangerousZone to confirm" }, { status: 401 })
     }
 
     const app = await getAppDb({
@@ -1333,15 +1391,16 @@ app.patch("/:id/moltbook", async (c) => {
         }
 
         // Fetch agent info from Moltbook
-        const { getMoltbookAgentInfo } =
-          await import("../../lib/integrations/moltbook")
+        const { getMoltbookAgentInfo } = await import(
+          "../../lib/integrations/moltbook"
+        )
         const agentInfo = await getMoltbookAgentInfo(trimmed)
 
         updateData.moltApiKey = await encrypt(trimmed)
 
         // Save agent info if available
         if (agentInfo) {
-          updateData.moltHandle = agentInfo.handle
+          updateData.moltHandle = agentInfo.name
           updateData.moltAgentName = agentInfo.name
           updateData.moltAgentKarma = agentInfo.karma
           updateData.moltAgentVerified = agentInfo.verified
@@ -1357,10 +1416,9 @@ app.patch("/:id/moltbook", async (c) => {
 
     // Fetch updated app
     const updatedApp = await getApp({
-      id: appId,
+      appId: appId,
       c,
       skipCache: true,
-      dept: 1,
     })
 
     return c.json({ app: updatedApp })

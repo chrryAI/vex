@@ -1,92 +1,91 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { type appFormData } from "../schemas/appSchema"
 import clsx from "clsx"
+import type React from "react"
+import { useEffect, useState } from "react"
+import { Controller, useForm } from "react-hook-form"
+import toast from "react-hot-toast"
+import Checkbox from "../Checkbox"
+import ColorScheme from "../ColorScheme"
 import { useAppContext } from "../context/AppContext"
-import Modal from "../Modal"
+import {
+  type TabType,
+  useApp,
+  useAuth,
+  useChat,
+  useNavigationContext,
+} from "../context/providers"
+import { useStyles } from "../context/StylesContext"
+import { useHasHydrated } from "../hooks"
+import Img from "../Image"
 import {
   Blocks,
   Boxes,
   Brain,
+  Claude,
   Coins,
-  GlobeLock,
+  DeepSeek,
+  Flux,
+  Gemini,
   Globe,
+  GlobeLock,
   MicVocal,
+  OpenAI,
+  OpenRouter,
+  Perplexity,
   Settings2,
   Sparkles,
   ThermometerSun,
   VectorSquare,
   Webhook,
 } from "../icons"
-import Img from "../Image"
-import {
-  capitalizeFirstLetter,
-  FRONTEND_URL,
-  PLUS_PRICE,
-  PRO_PRICE,
-  API_URL,
-  isE2E,
-} from "../utils"
-import Select from "../Select"
-import Checkbox from "../Checkbox"
-import ColorScheme from "../ColorScheme"
-import { useHasHydrated } from "../hooks"
-import { Controller, useForm } from "react-hook-form"
-import toast from "react-hot-toast"
-import { customZodResolver } from "../utils/customZodResolver"
-import {
-  createCustomAiAgentSchema,
-  type CreateCustomAiAgent,
-} from "../schemas/agentSchema"
-import {
-  DeepSeek,
-  OpenAI,
-  Claude,
-  Gemini,
-  Flux,
-  Perplexity,
-  OpenRouter,
-} from "../icons"
+import Modal from "../Modal"
 import {
   Button,
   Div,
   Input,
   Label,
-  usePlatform,
-  TextArea,
   P,
   Span,
+  TextArea,
+  usePlatform,
+  useTheme,
 } from "../platform"
+import Select from "../Select"
 import {
-  useChat,
-  useNavigationContext,
-  useApp,
-  useAuth,
-  type TabType,
-} from "../context/providers"
+  type CreateCustomAiAgent,
+  createCustomAiAgentSchema,
+} from "../schemas/agentSchema"
+import type { appFormData } from "../schemas/appSchema"
 import ThemeSwitcher from "../ThemeSwitcher"
-import { useTheme } from "../platform"
-import { useAgentStyles } from "./Agent.styles"
-import { useStyles } from "../context/StylesContext"
 import { TribeCalculator } from "../TribeCalculator"
+import {
+  API_URL,
+  capitalizeFirstLetter,
+  FRONTEND_URL,
+  isDevelopment,
+  isE2E,
+  PLUS_PRICE,
+  PRO_PRICE,
+} from "../utils"
+import { customZodResolver } from "../utils/customZodResolver"
+import { useAgentStyles } from "./Agent.styles"
 
 export default function Agent({
   style,
+  dataTestId,
 }: {
   initialData?: Partial<appFormData>
   isUpdate?: boolean
   style?: React.CSSProperties
+  dataTestId?: string
 }) {
   const { device } = usePlatform()
   const styles = useAgentStyles()
   const { utilities } = useStyles()
   const { t } = useAppContext()
-  const { chrry, baseApp, token, accountApp } = useAuth()
+  const { chrry, baseApp, token, accountApp, user } = useAuth()
 
-  const bordered = {
-    border: "1px dashed var(--shade-2)",
-  }
   const {
     defaultExtends,
     app,
@@ -221,6 +220,8 @@ export default function Agent({
       app.tools?.includes("weather"),
   )
 
+  const [revenueShareMode, setRevenueShareMode] = useState(false)
+
   const aiAgent = aiAgents?.find(
     (a) =>
       a.name.toLowerCase() === appForm?.watch("defaultModel")?.toLowerCase(),
@@ -319,7 +320,9 @@ export default function Agent({
   useEffect(() => {
     if (isModalOpen && device === "desktop" && !appFormWatcher.name) {
       setTimeout(() => {
-        document.getElementById("name")?.focus()
+        if (typeof document !== "undefined") {
+          document.getElementById("name")?.focus()
+        }
       }, 100)
     }
   }, [isModalOpen])
@@ -358,7 +361,7 @@ export default function Agent({
       const tier = appFormWatcher.tier || "free"
       const capabilities = appFormWatcher.capabilities
       const apiKeys = appFormWatcher.apiKeys || {}
-      const tools = appFormWatcher.tools || []
+      const _tools = appFormWatcher.tools || []
 
       // For paid tiers (plus/pro), OpenRouter is REQUIRED
       // If no OpenRouter API key, automatically set to free tier
@@ -469,7 +472,9 @@ export default function Agent({
             tab !== "systemPrompt" ? (
               <Div style={styles.titleContainer.style}>
                 <Input
-                  data-testid="name-input"
+                  data-testid={
+                    dataTestId ? `${dataTestId}-name-input` : "name-input"
+                  }
                   autoComplete="false"
                   {...register("name")}
                   title={t("Name your app......")}
@@ -932,8 +937,9 @@ export default function Agent({
                       control={control}
                       render={({ field }) => {
                         // Get store-based apps from Chrry store
-                        const storeApps = (baseApp?.store?.apps || []).filter(
-                          (item) => item.id !== app?.id,
+                        const storeApps = (chrry?.store?.apps || []).filter(
+                          (item) =>
+                            item.id !== app?.id || app?.id !== accountApp?.id,
                         )
 
                         return (
@@ -945,10 +951,7 @@ export default function Agent({
                               // Vex is optional (checked by default but can be unchecked)
                               const isBaseApp = item.id === baseApp?.id
 
-                              const checked =
-                                isChrry ||
-                                isBaseApp ||
-                                !!appFormWatcher?.extends?.includes(item.id)
+                              const checked = defaultExtends.includes(item.id)
                               return (
                                 <Label key={item.id || item.name}>
                                   <Checkbox
@@ -1300,47 +1303,85 @@ export default function Agent({
                           : t("paid_tier_requires_pro")}
                       </P>
                       <P>{t("paid_tier_subscription_required")}</P>
-                      <Div
-                        style={{
-                          marginTop: "1rem",
-                        }}
-                      >
-                        <P
+                      {revenueShareMode && (
+                        <Div
                           style={{
-                            margin: 0,
-                            fontSize: "0.85rem",
-                            fontWeight: 600,
+                            marginTop: "1rem",
+                            padding: ".75rem",
+                            backgroundColor: "var(--shade-05)",
+                            borderRadius: "12px",
+                            border: "1px solid var(--shade-2)",
                           }}
                         >
-                          🤝 {t("revenue_share_title")}
-                        </P>
-                        <P
-                          style={{
-                            margin: "0.5rem 0 0 0",
-                            fontSize: "0.8rem",
-                            opacity: 0.9,
-                          }}
-                        >
-                          {appFormWatcher.tier === "plus"
-                            ? t("revenue_share_calculation", {
-                                price: PLUS_PRICE,
-                                earn: (PLUS_PRICE * 0.7).toFixed(2),
-                              })
-                            : t("revenue_share_calculation", {
-                                price: PRO_PRICE,
-                                earn: (PRO_PRICE * 0.7).toFixed(2),
-                              })}
-                        </P>
-                        <P
-                          style={{
-                            margin: "0.25rem 0 0 0",
-                            fontSize: "0.75rem",
-                            opacity: 0.7,
-                          }}
-                        >
-                          {t("revenue_share_coming_soon")}
-                        </P>
-                      </Div>
+                          <P
+                            style={{
+                              margin: 0,
+                              fontSize: "0.9rem",
+                              marginBottom: "0.5rem",
+                            }}
+                          >
+                            🍒 REVENUE SHARE MODEL (70% to App Creators) - Q1
+                            2026
+                          </P>
+                          <Div
+                            style={{
+                              fontSize: "0.85rem",
+                              lineHeight: "1.6",
+                              color: "var(--shade-7)",
+                            }}
+                          >
+                            <P style={{ margin: "0.5rem 0" }}>
+                              <strong>Revenue Source:</strong> When users
+                              subscribe to Plus (€{PLUS_PRICE}/mo) or Pro (€
+                              {PRO_PRICE}/mo) plans AND bring their own API keys
+                              (OpenAI, Anthropic, Replicate, etc.), 70% of their
+                              subscription fee is distributed to app creators
+                              based on usage.
+                            </P>
+                            <P style={{ margin: "0.5rem 0" }}>
+                              <strong>How It Works:</strong> Platform tracks
+                              which apps each user interacts with (message
+                              count, session duration, feature usage). At
+                              month-end, the user's subscription fee is split:
+                              30% to platform, 70% distributed proportionally to
+                              app creators based on that user's app usage.
+                            </P>
+                            <P style={{ margin: "0.5rem 0" }}>
+                              <strong>Example:</strong> User pays €{PLUS_PRICE}
+                              /month Plus plan + uses own OpenAI key. They spend
+                              60% of time in App A, 40% in App B. Distribution:
+                              €{(PLUS_PRICE * 0.3).toFixed(2)} to platform, €
+                              {(PLUS_PRICE * 0.7 * 0.6).toFixed(2)} to App A
+                              creator (60% of €{(PLUS_PRICE * 0.7).toFixed(2)}
+                              ), €{(PLUS_PRICE * 0.7 * 0.4).toFixed(2)} to App B
+                              creator (40% of €{(PLUS_PRICE * 0.7).toFixed(2)}).
+                            </P>
+                            <P style={{ margin: "0.5rem 0" }}>
+                              <strong>Key Point:</strong> Revenue share only
+                              applies when users bring their own API keys. If
+                              users rely on platform-provided API credits,
+                              standard platform pricing applies (no revenue
+                              share).
+                            </P>
+                            <P style={{ margin: "0.5rem 0" }}>
+                              <strong>Status:</strong> Implementation planned
+                              for Q1 2026. Tracking infrastructure and payout
+                              system in development.
+                            </P>
+                            <P
+                              style={{
+                                margin: "0.5rem 0 0 0",
+                                fontStyle: "italic",
+                                opacity: 0.8,
+                              }}
+                            >
+                              This creates an economic incentive for building
+                              high-quality, useful apps that people want to use
+                              regularly.
+                            </P>
+                          </Div>{" "}
+                        </Div>
+                      )}
                       {appFormWatcher.tier === "pro" && (
                         <Div>
                           <P>✨ {t("pro_unlimited_title")}</P>
@@ -1348,6 +1389,64 @@ export default function Agent({
                         </Div>
                       )}
                     </Div>
+                  )}
+                  {!user && appFormWatcher.tier && (
+                    <Div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: ".75rem",
+                      }}
+                    >
+                      <Button
+                        className="inverted"
+                        onClick={() => {
+                          addParams({
+                            signIn: "login",
+                            callbackUrl: `${FRONTEND_URL}/?settings=true&tab=tribe`,
+                          })
+                        }}
+                        style={{
+                          marginTop: ".3rem",
+                          ...utilities.inverted.style,
+                          ...utilities.small.style,
+                        }}
+                      >
+                        <>
+                          <Img logo="chrry" size={20} />
+                          {t("Join to use {{tier}}", {
+                            tier: capitalizeFirstLetter(
+                              appFormWatcher.tier || "",
+                            ),
+                          })}
+                        </>
+                      </Button>
+                      <Button
+                        className="link"
+                        onClick={() => {
+                          setRevenueShareMode(!revenueShareMode)
+                        }}
+                        style={{
+                          ...utilities.link.style,
+                        }}
+                      >
+                        {t(revenueShareMode ? "Show less" : "Learn more 🍒")}
+                      </Button>
+                    </Div>
+                  )}
+                  {!accountApp && appFormWatcher.tier === "free" ? (
+                    <P
+                      style={{
+                        color: "var(--shade-6)",
+                        position: "relative",
+                        bottom: "4px",
+                      }}
+                    >
+                      *Start as guest. Your data will be preserved when you sign
+                      up.
+                    </P>
+                  ) : (
+                    ""
                   )}
                 </Div>
                 {appFormWatcher.tier !== "free" && (
@@ -1845,32 +1944,32 @@ export default function Agent({
                   >
                     <Webhook size={16} /> {t("API")}
                   </Button>
-                  {isE2E && (
+                  <Button
+                    data-testid="tribe-tab"
+                    className="inverted"
+                    style={{
+                      ...utilities.inverted.style,
+                      ...utilities.xSmall.style,
+                      ...(tab === "tribe"
+                        ? styles.currentTab.style
+                        : undefined),
+                    }}
+                    onClick={() => {
+                      setTab("tribe")
+                    }}
+                    type="button"
+                  >
+                    <Img icon="zarathustra" size={24} />
+                    {t("Tribe")}
+                  </Button>
+                  {(user?.role === "admin" || isDevelopment || isE2E) && (
                     <>
-                      <Button
-                        data-testid="tribe-tab"
-                        className="inverted"
-                        style={{
-                          ...utilities.inverted.style,
-                          ...utilities.small.style,
-                          ...(tab === "tribe"
-                            ? styles.currentTab.style
-                            : undefined),
-                        }}
-                        onClick={() => {
-                          setTab("tribe")
-                        }}
-                        type="button"
-                      >
-                        <Img icon="zarathustra" size={16} />
-                        {t("Tribe")}
-                      </Button>
                       <Button
                         data-testid="moltbook-tab"
                         className="inverted"
                         style={{
                           ...utilities.inverted.style,
-                          ...utilities.small.style,
+                          ...utilities.xSmall.style,
                           ...(tab === "moltBook"
                             ? styles.currentTab.style
                             : undefined),
@@ -1880,7 +1979,13 @@ export default function Agent({
                         }}
                         type="button"
                       >
-                        <Span>🦞</Span>
+                        <Span
+                          style={{
+                            fontSize: "1.25rem",
+                          }}
+                        >
+                          🦞
+                        </Span>
                         {t("Moltbook")}
                       </Button>
                     </>

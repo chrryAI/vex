@@ -5,7 +5,7 @@
  * Replaces local test audio with diverse, high-quality samples
  */
 
-const fs = require("fs")
+const fs = require("node:fs")
 const path = require("node:path")
 const https = require("node:https")
 

@@ -20,23 +20,29 @@ export type SiteMode =
   | "burn"
   | "e2eVex"
   | "staging"
+  | "tribe"
+  | "nebula"
 
 /// <reference types="chrome" />
 
 export const getEnv = () => {
-  let processEnv
-  if (typeof process !== "undefined" && "env" in process)
-    processEnv = process.env || {}
+  let processEnv: Record<string, string | undefined> = {}
+  if (typeof process !== "undefined" && "env" in process) {
+    processEnv = process.env as Record<string, string | undefined>
+  }
 
-  let importMetaEnv
+  let importMetaEnv: Record<string, string | undefined> = {}
   if (typeof import.meta !== "undefined") {
-    importMetaEnv = (import.meta as any).env || {}
+    importMetaEnv = ((import.meta as any).env || {}) as Record<
+      string,
+      string | undefined
+    >
   }
 
   return {
     ...processEnv,
     ...importMetaEnv,
-  }
+  } as Record<string, string | undefined>
 }
 
 export const isCI = getEnv().VITE_CI === "true" || getEnv().CI === "true"
@@ -77,7 +83,7 @@ export const isTestingDevice = false && isDevelopment
 export const isE2E =
   getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
 
-const chrryDev = {
+export const chrryDev = {
   mode: "chrryDev" as SiteMode,
   slug: "chrryDev",
   storeSlug: "chrry",
@@ -88,7 +94,8 @@ const chrryDev = {
   domain: "chrry.dev",
   url: "https://chrry.dev",
   email: "iliyan@chrry.ai",
-  description: "A modern, cross-platform AI UI library for React, React Native",
+  description:
+    "🐝 A modern, cross-platform AI Infrastructure for Universal React and TypeScript",
   logo: "/assets/cherry-logo.svg", // Cross-platform SVG
   primaryColor: "#E91E63", // Cherry pink
   links: {
@@ -99,8 +106,16 @@ const chrryDev = {
   },
   features: [
     {
+      title: "Sushi(WIP)",
+      description:
+        "🏢 Enterprise-grade compiler infrastructure with multi-agent 🤖 coordination",
+      icon: "🍣",
+      link: "https://github.com/chrryAI/sushi",
+      isOpenSource: true,
+    },
+    {
       title: "Waffles",
-      description: "🍣 Sushi Playwright testing utilities, e2e strikes 🎯",
+      description: "Playwright testing utilities for Sushi 🍣 e2e strikes 🎯",
       icon: "🧇",
       link: "https://github.com/chrryAI/waffles",
       isOpenSource: true,
@@ -123,14 +138,14 @@ const chrryDev = {
       title: "Styles",
       description: "SCSS to TypeScript converter",
       icon: "🎭",
-      link: "https://github.com/chrryAI/vex/blob/main/scripts/scss-to-universal.js",
+      link: "https://github.com/chrryAI/vex/tree/main/scripts/scss-to-universal.js",
       isOpenSource: true,
     },
     {
       title: "Hooks",
       description: "Reusable React hooks",
       icon: "🪝",
-      link: "https://github.com/chrryAI/blob/vex/tree/main/hooks",
+      link: "https://github.com/chrryAI/vex/tree/main/packages/ui/hooks",
       isOpenSource: true,
     },
     {
@@ -144,7 +159,7 @@ const chrryDev = {
       title: "Platform",
       description: "Cross-platform utilities",
       icon: "📱",
-      link: "https://github.com/chrryAI/vex/blob/main/packages/ui/platform",
+      link: "https://github.com/chrryAI/vex/tree/main/packages/ui/platform",
       isOpenSource: true,
     },
   ],
@@ -302,6 +317,37 @@ const chrryAI = {
       isOpenSource: true,
     },
   ],
+  about: {
+    intro:
+      "Chrry is the ultimate AI app marketplace where creativity meets monetization. Discover cutting-edge AI applications built by developers worldwide, or create and publish your own AI apps to earn revenue.",
+    intro2:
+      "With 70% revenue sharing for app creators, custom stores, and powerful developer tools - Chrry empowers both users and builders to harness the full potential of AI technology.",
+    approach: {
+      title: "Our Mission",
+      content:
+        "We're building the infrastructure for the AI app economy. Chrry makes it simple for developers to monetize their AI creations while giving users access to a curated marketplace of high-quality applications. Transparency in pricing, usage, and revenue sharing is at our core.",
+    },
+    platforms: {
+      title: "Available Everywhere",
+      content:
+        "Access Chrry's AI app marketplace across all your devices - web, mobile PWA, and browser extensions.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Full marketplace experience with app discovery, installation, and management from any browser.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install Chrry on your mobile or desktop. Browse apps offline, get notifications, sync across devices.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Quick access to your installed apps from the browser toolbar. Right-click integration on any webpage.",
+      },
+    },
+  },
 }
 
 const focus = {
@@ -309,7 +355,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.11.18",
+  version: "26.11.20",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -444,6 +490,37 @@ const atlas = {
       isOpenSource: true,
     },
   ],
+  about: {
+    intro:
+      "Atlas is your intelligent geographic companion that transforms how you explore and remember places. Save locations with AI-powered context, create geo-tagged notes, and discover local insights wherever you go.",
+    intro2:
+      "Whether you're planning your next adventure or documenting your favorite spots - Atlas combines location intelligence with AI to help you navigate the world more meaningfully.",
+    approach: {
+      title: "Smart Geography",
+      content:
+        "We're reinventing how people interact with places. Atlas uses AI to understand not just where you've been, but why it mattered. From travel planning to local discovery - every feature is designed to enrich your geographic experiences with intelligent context.",
+    },
+    platforms: {
+      title: "Explore Anywhere",
+      content:
+        "Take Atlas with you across web, mobile, and browser - your geographic memory synced everywhere.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Full-featured mapping experience with location management, travel planning, and local discovery from any browser.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install Atlas as a native app. Access your saved locations offline, get location-based notifications, and seamless sync.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Save locations while browsing, get context-aware recommendations, and quick access to your geographic memory from the toolbar.",
+      },
+    },
+  },
 }
 
 const istanbul = {
@@ -495,6 +572,37 @@ const istanbul = {
       isOpenSource: true,
     },
   ],
+  about: {
+    intro:
+      "Istanbul is your personal AI assistant designed to connect you with Turkish language support and local insights. Whether you're navigating Istanbul's vibrant culture or collaborating with the broader Turkish community, Istanbul empowers you to communicate naturally and get things done faster.",
+    intro2:
+      "With native Turkish language support, local pricing in Turkish Lira, and insights tailored to Istanbul and Turkey - Istanbul brings the power of AI to your local context.",
+    approach: {
+      title: "Local Intelligence",
+      content:
+        "We're building AI that understands your local context. Istanbul combines Turkish language fluency with cultural awareness to help you navigate daily life, collaborate locally, and access AI in a way that feels natural to you. Every feature is designed with Istanbul and Turkish communities in mind.",
+    },
+    platforms: {
+      title: "Everywhere You Are",
+      content:
+        "Access Istanbul's AI assistance across web, mobile, and browser - always in Turkish, always with local context.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Full Istanbul experience with Turkish language support, local payment methods, and Istanbul-specific insights from any browser.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install Istanbul on your mobile or desktop. Chat in Turkish offline, get local notifications, seamless sync across your devices.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Quick access to Istanbul AI from your browser toolbar. Turkish language support, local context, and toolbar integration for instant assistance.",
+      },
+    },
+  },
 }
 
 const amsterdam = {
@@ -546,6 +654,37 @@ const amsterdam = {
       isOpenSource: true,
     },
   ],
+  about: {
+    intro:
+      "Amsterdam is your personal AI assistant designed for the Netherlands and Dutch speakers. Experience natural Dutch language support, local insights, and Euro-based pricing tailored to the Amsterdam and Dutch communities.",
+    intro2:
+      "With fluent Dutch language capabilities, local financial options, and features designed for the Dutch market - Amsterdam brings intelligent AI assistance to your local context.",
+    approach: {
+      title: "Dutch-Centric Intelligence",
+      content:
+        "We're creating AI that speaks your language and understands your culture. Amsterdam combines native Dutch language support with local market insights to help you work, connect, and explore in a way that feels natural. Every feature is built with Amsterdam and the Netherlands in mind.",
+    },
+    platforms: {
+      title: "Available in Your Language",
+      content:
+        "Access Amsterdam's AI assistance across web, mobile, and browser - always in Dutch, always with local relevance.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Complete Amsterdam experience with Dutch language interface, local payment methods, and Netherlands-specific insights.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install Amsterdam on your device. Chat in Dutch offline, receive local notifications, seamless sync across all your devices.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Quick access to Amsterdam AI from your browser. Dutch language support, local context, and integrated assistance.",
+      },
+    },
+  },
 }
 
 const tokyo = {
@@ -597,6 +736,37 @@ const tokyo = {
       isOpenSource: true,
     },
   ],
+  about: {
+    intro:
+      "Tokyo is your personal AI assistant crafted for Japan and Japanese speakers. Experience native Japanese language support, insights tailored to Tokyo and Japan, and yen-based pricing designed for the local market.",
+    intro2:
+      "With fluent Japanese capabilities, local financial options in Japanese Yen, and features designed for Japanese communities - Tokyo brings intelligent AI assistance to your daily life.",
+    approach: {
+      title: "Japanese Language Mastery",
+      content:
+        "We're building AI that understands Japanese culture and language nuances. Tokyo combines native Japanese language support with deep local insights to help you work, learn, and collaborate more effectively. Every feature is designed with Tokyo and Japan in mind.",
+    },
+    platforms: {
+      title: "Works Everywhere in Japanese",
+      content:
+        "Access Tokyo's AI assistance across web, mobile, and browser - always in Japanese, always with local context.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Full Tokyo experience with Japanese language interface, local payment options in Yen, and Japan-specific recommendations.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install Tokyo on your mobile or desktop. Chat in Japanese offline, get local alerts, sync seamlessly across devices.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Quick access to Tokyo AI from your browser toolbar. Japanese language support, local insights, integrated assistance.",
+      },
+    },
+  },
 }
 
 const newYork = {
@@ -648,6 +818,37 @@ const newYork = {
       isOpenSource: true,
     },
   ],
+  about: {
+    intro:
+      "New York is your personal AI assistant designed for New York City and the USA. Experience 24/7 AI support tailored for the city that never sleeps, with local insights and USD pricing built for the American market.",
+    intro2:
+      "With insights tailored to NYC's unique culture and fast-paced lifestyle, local USD payments, and round-the-clock support - New York brings intelligent AI assistance when you need it most.",
+    approach: {
+      title: "AI for the City That Never Sleeps",
+      content:
+        "We're building AI that understands NYC's energy and pace. New York combines local market insights with 24/7 availability to help you navigate the city, connect with others, and get things done faster. Every feature is designed for New York City and American users.",
+    },
+    platforms: {
+      title: "Always On, Always Available",
+      content:
+        "Access New York's AI assistance across web, mobile, and browser - 24/7, with USD pricing and NYC-specific insights.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Complete New York experience with USD pricing, local insights, 24/7 support, and full marketplace access.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install New York on your device. Chat anytime, get NYC notifications, seamless sync across all platforms.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Quick access to New York AI from your browser. Local insights, USD payments, 24/7 support at your fingertips.",
+      },
+    },
+  },
 }
 
 const popcorn = {
@@ -729,6 +930,37 @@ const popcorn = {
       isOpenSource: true,
     },
   ],
+  about: {
+    intro:
+      "Popcorn is the premier hub for cinematic AI companions that decode every frame. Explore iconic films, analyze character arcs, and unlock the secrets of visual storytelling with AI that understands cinema like a true film critic.",
+    intro2:
+      "From scene analysis to soundtrack insights, from genre remixes to dialogue deep dives - Popcorn brings deep cinematic knowledge to every conversation about film.",
+    approach: {
+      title: "Cinema Mastery",
+      content:
+        "We're building AI that speaks the language of cinema. Popcorn combines film expertise with cutting-edge AI to help you understand, appreciate, and engage with movies at a deeper level. Whether you're a casual viewer or cinephile, every feature is designed to enhance your cinematic experience.",
+    },
+    platforms: {
+      title: "Cinematic AI Everywhere",
+      content:
+        "Access Popcorn's film expertise across web, mobile, and browser - bringing film analysis to every device.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Full Popcorn experience with scene analysis, character exploration, and cinematic techniques from any browser.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install Popcorn on your device. Watch, analyze, and discuss films offline with synced insights across devices.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Quick access to Popcorn's film expertise from your browser. Analyze scenes, explore character arcs, discuss movies.",
+      },
+    },
+  },
 }
 
 const zarathustra = {
@@ -810,6 +1042,38 @@ const zarathustra = {
       isOpenSource: true,
     },
   ],
+
+  about: {
+    intro:
+      "Zarathustra is your AI philosophy guide, exploring the great traditions of philosophical thought from Nietzsche and existentialism to timeless wisdom across cultures. Engage in deep conversations about ideas that matter and unlock new perspectives on life.",
+    intro2:
+      "With curated reading lists, philosopher profiles, concept breakdowns, and existential tools - Zarathustra brings the world of philosophy to your daily life.",
+    approach: {
+      title: "Philosophy for Everyone",
+      content:
+        "We're making philosophy accessible and engaging. Zarathustra combines scholarly knowledge with conversational AI to help you explore ideas, understand great thinkers, and apply philosophical wisdom to your own life. Every feature is designed to deepen your philosophical journey.",
+    },
+    platforms: {
+      title: "Wisdom Everywhere",
+      content:
+        "Access Zarathustra's philosophical expertise across web, mobile, and browser - bringing wisdom to every device.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Complete philosophy experience with book analysis, philosopher profiles, concept exploration, and reading lists.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App",
+        content:
+          "Install Zarathustra on your device. Explore philosophy offline, get daily wisdom, sync insights across platforms.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Quick access to Zarathustra from your browser. Explore concepts, read philosophy, get wisdom on demand.",
+      },
+    },
+  },
 }
 
 const search = {
@@ -893,6 +1157,81 @@ const search = {
   ],
 }
 
+const nebula = {
+  url: "https://orbit.chrry.ai",
+  mode: "nebula" as SiteMode,
+  slug: "nebula",
+  favicon: "nebula",
+  storeSlug: "orbit",
+  name: "Nebula",
+  isStoreApp: true,
+  domain: "orbit.chrry.ai",
+  store: "https://orbit.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description: "Science & Exploration Hub",
+  logo: "🌌",
+  primaryColor: "#7C3AED", // Violet
+  links: {
+    docs: "https://orbit.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Quantum Computing",
+      description: "Build circuits, simulate algorithms, export Qiskit code",
+      icon: "⚛️",
+      link: "/quantumlab",
+      isOpenSource: true,
+    },
+    {
+      title: "Astronomy",
+      description: "Explore stars, black holes, and the cosmos",
+      icon: "🌠",
+      link: "/starmap",
+      isOpenSource: true,
+    },
+    {
+      title: "Physics & Math",
+      description: "Step-by-step problem solving and derivations",
+      icon: "🧪",
+      link: "/cosmos",
+      isOpenSource: true,
+    },
+    {
+      title: "Scientific Code",
+      description: "Python, Julia, and MATLAB simulations",
+      icon: "💻",
+      link: "/nebula",
+      isOpenSource: true,
+    },
+  ],
+  about: {
+    intro:
+      "Nebula is your AI-powered science and exploration hub. From quantum circuits to black holes, advanced mathematics to physics derivations — Nebula makes the frontiers of science accessible, exciting, and practical.",
+    intro2:
+      "Powered by Sushi AI with multimodal capabilities, Nebula generates working code, explains research papers, solves complex problems step-by-step, and adapts to any depth — from curious beginner to graduate researcher.",
+    approach: {
+      title: "Our Philosophy",
+      content:
+        "Science should be accessible to everyone. Nebula builds intuition before formalism, uses analogies to make abstract concepts concrete, and always connects theory to real-world applications and working code.",
+    },
+    platforms: {
+      title: "Multi-Platform Science Hub",
+      content:
+        "Nebula is available across web and mobile as a first-class experience.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Full-featured web experience with real-time collaboration, file uploads for research papers, and all science capabilities accessible from any browser.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App (PWA)",
+        content:
+          "Install Nebula as a native app on your mobile device or desktop. Seamless sync across all your devices.",
+      },
+    },
+  },
+}
+
 const vex = {
   url: "https://vex.chrry.ai",
   mode: "vex" as SiteMode,
@@ -943,6 +1282,37 @@ const vex = {
   ],
   chromeWebStoreUrl:
     "https://chromewebstore.google.com/detail/vex-🍒/enpllenkofnbmnflnlkbomkcilamjgac",
+  about: {
+    intro:
+      "Vex is your intelligent AI-powered life assistant designed to help you accomplish tasks efficiently and stay organized. From managing your daily routines to collaborating with AI agents - Vex is built to empower your productivity.",
+    intro2:
+      "With per-chat instructions, thread artifacts for document memory, and real-time collaboration features - Vex learns your context, remembers your files, and works seamlessly with you.",
+    approach: {
+      title: "Our Philosophy",
+      content:
+        "We believe AI should enhance your life, not complicate it. Vex provides complete transparency about how our AI works, what data we use, and how we charge for services. Clear usage limits, honest pricing, and straightforward capabilities - you always know what to expect.",
+    },
+    platforms: {
+      title: "Multi-Platform AI Assistant",
+      content:
+        "Vex is designed as a true multi-platform experience - available across web, mobile, and browser extensions as first-class citizens.",
+      web: {
+        title: "🌐 Web Application",
+        content:
+          "Full-featured web experience with real-time collaboration, thread management, and all AI capabilities accessible from any browser.",
+      },
+      pwa: {
+        title: "📱 Progressive Web App (PWA)",
+        content:
+          "Install Vex as a native app on your mobile device or desktop. Offline capabilities, push notifications, and seamless sync across all your devices.",
+      },
+      chrome: {
+        title: "🧩 Chrome Extension",
+        content:
+          "Right-click context menu integration with sidebar AI assistant. Summarize, fact-check, write replies, and check grammar on any webpage without switching tabs.",
+      },
+    },
+  },
 }
 
 const burn = {
@@ -1025,6 +1395,14 @@ const e2eVex = {
   url: "https://e2e.chrry.ai",
   domain: "e2e.chrry.ai",
   // store: "https://e2e.chrry.ai",
+}
+
+const _tribe = {
+  ...zarathustra,
+  mode: "tribe" as SiteMode,
+  url: "https://tribe.chrry.ai",
+  domain: "tribe.chrry.ai",
+  isTribe: true,
 }
 
 const staging = {
@@ -1176,6 +1554,7 @@ export interface SiteConfig {
   domain: string
   store: string
   url: string
+  isTribe?: boolean
   description: string
   version?: string
   email: string
@@ -1194,6 +1573,30 @@ export interface SiteConfig {
     link?: string
     isOpenSource?: boolean
   }>
+  about?: {
+    intro: string
+    intro2?: string
+    approach?: {
+      title: string
+      content: string
+    }
+    platforms?: {
+      title: string
+      content: string
+      web?: {
+        title: string
+        content: string
+      }
+      pwa?: {
+        title: string
+        content: string
+      }
+      chrome?: {
+        title: string
+        content: string
+      }
+    }
+  }
 }
 
 export const extensions = [
@@ -2163,6 +2566,110 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
         "Vault'un akıllı otomasyonu ile harcamaları takip edin, bütçeleri yönetin ve finansal içgörüler elde edin.",
     },
   },
+  nebula: {
+    en: {
+      title: "Nebula - Science & Exploration AI",
+      description:
+        "Explore quantum computing, astrophysics, and advanced mathematics with AI. Build circuits, solve physics problems, and discover the universe.",
+    },
+    de: {
+      title: "Nebula - KI für Wissenschaft & Entdeckung",
+      description:
+        "Erkunde Quantencomputing, Astrophysik und fortgeschrittene Mathematik mit KI. Baue Schaltkreise, löse Physikprobleme und entdecke das Universum.",
+    },
+    fr: {
+      title: "Nebula - IA Science & Exploration",
+      description:
+        "Explorez l'informatique quantique, l'astrophysique et les mathématiques avancées avec l'IA. Construisez des circuits, résolvez des problèmes de physique et découvrez l'univers.",
+    },
+    ja: {
+      title: "Nebula - 科学・探求AI",
+      description:
+        "AIで量子コンピューティング、天体物理学、高度な数学を探求。回路を構築し、物理問題を解き、宇宙を発見しよう。",
+    },
+    ko: {
+      title: "Nebula - 과학 & 탐구 AI",
+      description:
+        "AI로 양자 컴퓨팅, 천체물리학, 고급 수학을 탐구하세요. 회로를 만들고, 물리 문제를 풀고, 우주를 발견하세요.",
+    },
+    pt: {
+      title: "Nebula - IA de Ciência & Exploração",
+      description:
+        "Explore computação quântica, astrofísica e matemática avançada com IA. Construa circuitos, resolva problemas de física e descubra o universo.",
+    },
+    es: {
+      title: "Nebula - IA de Ciencia & Exploración",
+      description:
+        "Explora la computación cuántica, la astrofísica y las matemáticas avanzadas con IA. Construye circuitos, resuelve problemas de física y descubre el universo.",
+    },
+    zh: {
+      title: "Nebula - 科学与探索 AI",
+      description:
+        "用 AI 探索量子计算、天体物理学和高等数学。构建电路、解决物理问题，发现宇宙的奥秘。",
+    },
+    nl: {
+      title: "Nebula - Wetenschap & Verkenning AI",
+      description:
+        "Verken kwantumcomputing, astrofysica en geavanceerde wiskunde met AI. Bouw circuits, los natuurkundeproblemen op en ontdek het universum.",
+    },
+    tr: {
+      title: "Nebula - Bilim & Keşif Yapay Zekası",
+      description:
+        "Yapay zeka ile kuantum bilişim, astrofizik ve ileri matematik keşfedin. Devreler kurun, fizik problemleri çözün ve evreni keşfedin.",
+    },
+  },
+  tribe: {
+    en: {
+      title: "Tribe - AI Social Network",
+      description:
+        "Watch 35+ AI agents collaborate, debate, and create content in real-time. Privacy-first social network for the Wine ecosystem.",
+    },
+    de: {
+      title: "Tribe - KI-Soziales Netzwerk",
+      description:
+        "Beobachte, wie über 35 KI-Agenten in Echtzeit zusammenarbeiten, debattieren und Inhalte erstellen. Datenschutzorientiertes soziales Netzwerk für das Wine-Ökosystem.",
+    },
+    fr: {
+      title: "Tribe - Réseau Social IA",
+      description:
+        "Regardez plus de 35 agents IA collaborer, débattre et créer du contenu en temps réel. Réseau social axé sur la confidentialité pour l'écosystème Wine.",
+    },
+    ja: {
+      title: "Tribe - AIソーシャルネットワーク",
+      description:
+        "35以上のAIエージェントがリアルタイムで協力、議論、コンテンツ作成する様子を見守りましょう。Wineエコシステムのためのプライバシー重視のソーシャルネットワーク。",
+    },
+    ko: {
+      title: "Tribe - AI 소셜 네트워크",
+      description:
+        "35개 이상의 AI 에이전트가 실시간으로 협업하고, 토론하고, 콘텐츠를 만드는 모습을 지켜보세요. Wine 생태계를 위한 프라이버시 우선 소셜 네트워크.",
+    },
+    pt: {
+      title: "Tribe - Rede Social de IA",
+      description:
+        "Assista mais de 35 agentes de IA colaborarem, debaterem e criarem conteúdo em tempo real. Rede social com foco em privacidade para o ecossistema Wine.",
+    },
+    es: {
+      title: "Tribe - Red Social de IA",
+      description:
+        "Observa cómo más de 35 agentes de IA colaboran, debaten y crean contenido en tiempo real. Red social centrada en la privacidad para el ecosistema Wine.",
+    },
+    zh: {
+      title: "Tribe - AI 社交网络",
+      description:
+        "观看 35+ AI 代理实时协作、辩论和创建内容。为 Wine 生态系统打造的隐私优先社交网络。",
+    },
+    nl: {
+      title: "Tribe - AI Sociaal Netwerk",
+      description:
+        "Bekijk hoe meer dan 35 AI-agents in realtime samenwerken, debatteren en content creëren. Privacy-first sociaal netwerk voor het Wine-ecosysteem.",
+    },
+    tr: {
+      title: "Tribe - Yapay Zeka Sosyal Ağı",
+      description:
+        "35'ten fazla yapay zeka ajanının gerçek zamanlı olarak işbirliği yapmasını, tartışmasını ve içerik oluşturmasını izleyin. Wine ekosistemi için gizlilik odaklı sosyal ağ.",
+    },
+  },
 }
 
 const matchesDomain = (host: string, domain: string): boolean => {
@@ -2192,7 +2699,7 @@ export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
-  const devMode = "vex"
+  const devMode = "tribe"
 
   const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || devMode
 
@@ -2283,9 +2790,17 @@ export function detectSiteModeDomain(
     return "staging"
   }
 
+  if (matchesDomain(host, "tribe.chrry.ai")) {
+    return "tribe"
+  }
+
   // E2E testing environment
   if (matchesDomain(host, "e2e.chrry.ai")) {
-    return "e2eVex" // Use vex mode for E2E
+    return "e2eVex"
+  }
+
+  if (matchesDomain(host, "orbit.chrry.ai")) {
+    return "nebula"
   }
 
   if (matchesDomain(host, "vex.chrry.ai")) {
@@ -2314,24 +2829,6 @@ export function detectSiteModeDomain(
   if (matchesDomain(host, "sushi.chrry.ai")) {
     return "sushi"
   }
-
-  // if (!host || isDevelopment) {
-  //   return defaultMode
-  // }
-
-  // // Helper function to check if hostname matches or is subdomain of domain
-
-  // // Check if running in a browser extension
-  // if (
-  //   typeof window !== "undefined" &&
-  //   window.location?.protocol?.startsWith("chrome-extension")
-  // ) {
-  //   console.log(
-  //     "🔍 Running in Chrome extension, using VITE_SITE_MODE:",
-  //     defaultMode,
-  //   )
-  //   return defaultMode
-  // }
 
   // City subdomains
 
@@ -2365,6 +2862,8 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "burn",
     "pear",
     "vault",
+    "tribe",
+    "nebula",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -2393,7 +2892,7 @@ export function getSiteConfig(
   caller?: string,
 ): SiteConfig {
   let hostname = hostnameOrMode || getClientHostname()
-  if (hostnameOrMode && hostnameOrMode.includes("://")) {
+  if (hostnameOrMode?.includes("://")) {
     try {
       hostname = new URL(hostnameOrMode).hostname
     } catch {
@@ -2401,6 +2900,10 @@ export function getSiteConfig(
     }
   }
   const mode = detectSiteMode(hostname)
+
+  if (mode === "nebula") {
+    return nebula
+  }
 
   if (mode === "sushi") {
     return sushi
@@ -2488,6 +2991,10 @@ export function getSiteConfig(
 
   if (mode === "vault") {
     return vault
+  }
+
+  if (mode === "tribe") {
+    return _tribe
   }
 
   if (isE2E) {

@@ -65,7 +65,7 @@ export const exampleInstructions: instructionBase[] = [
 ]
 
 export function getExampleInstructions({
-  slug: slug,
+  slug,
 }: {
   slug?: "atlas" | "peach" | "bloom" | "vault" | "vex" | string
   weather?: { temperature?: string; condition?: string } | null

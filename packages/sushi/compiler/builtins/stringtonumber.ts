@@ -5,7 +5,7 @@ export const __Porffor_stn_int = (str: unknown, radix: i32, i: i32): f64 => {
   let n: f64 = 0
 
   const len: i32 = str.length
-  if (len - i == 0) return NaN
+  if (len - i === 0) return NaN
 
   while (i < len) {
     const chr: i32 = str.charCodeAt(i++)
@@ -33,7 +33,7 @@ export const __Porffor_stn_float = (str: unknown, i: i32): f64 => {
   let dec: i32 = 0
 
   const len: i32 = str.length
-  if (len - i == 0) return NaN
+  if (len - i === 0) return NaN
 
   while (i < len) {
     const chr: i32 = str.charCodeAt(i++)
@@ -44,7 +44,7 @@ export const __Porffor_stn_float = (str: unknown, i: i32): f64 => {
         dec *= 10
         n += (chr - 48) / dec
       } else n = n * 10 + chr - 48
-    } else if (chr == 46) {
+    } else if (chr === 46) {
       // .
       if (dec) return NaN
       dec = 1
@@ -62,26 +62,26 @@ export const __ecma262_StringToNumber = (str: unknown): number => {
   // trim whitespace
   str = str.trim()
 
-  if (str.length == 0) return 0
+  if (str.length === 0) return 0
 
   // check 0x, 0o, 0b prefixes
   const first: i32 = str.charCodeAt(0)
   const second: i32 = str.charCodeAt(1)
 
-  if (first == 48) {
+  if (first === 48) {
     // starts with 0, check for prefixes
 
-    if (second == 120 || second == 88) {
+    if (second === 120 || second === 88) {
       // 0x (hex)
       return __Porffor_stn_int(str, 16, 2)
     }
 
-    if (second == 111 || second == 79) {
+    if (second === 111 || second === 79) {
       // 0o (octal)
       return __Porffor_stn_int(str, 8, 2)
     }
 
-    if (second == 98 || second == 66) {
+    if (second === 98 || second === 66) {
       // 0b (binary)
       return __Porffor_stn_int(str, 2, 2)
     }
@@ -91,30 +91,30 @@ export const __ecma262_StringToNumber = (str: unknown): number => {
   let negative: boolean = false
 
   // +, skip char
-  if (first == 43) {
+  if (first === 43) {
     i = 1
   }
 
   // -, set negative and skip char
-  if (first == 45) {
+  if (first === 45) {
     negative = true
     i = 1
   }
 
-  if (i + 8 == str.length && str.charCodeAt(i) == 73) {
+  if (i + 8 === str.length && str.charCodeAt(i) === 73) {
     // I
     // likely 'Infinity' so check each char lol
     if (
-      str.charCodeAt(i + 1) == 110 && // n
-      str.charCodeAt(i + 2) == 102 && // f
-      str.charCodeAt(i + 3) == 105 && // i
-      str.charCodeAt(i + 4) == 110 && // n
-      str.charCodeAt(i + 5) == 105 && // i
-      str.charCodeAt(i + 6) == 116 && // t
-      str.charCodeAt(i + 7) == 121 // y
+      str.charCodeAt(i + 1) === 110 && // n
+      str.charCodeAt(i + 2) === 102 && // f
+      str.charCodeAt(i + 3) === 105 && // i
+      str.charCodeAt(i + 4) === 110 && // n
+      str.charCodeAt(i + 5) === 105 && // i
+      str.charCodeAt(i + 6) === 116 && // t
+      str.charCodeAt(i + 7) === 121 // y
     ) {
       // no way, it matched
-      let n: f64 = Infinity
+      const n: f64 = Infinity
       return negative ? -n : n
     }
 

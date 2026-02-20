@@ -1,10 +1,12 @@
-import { getStore, getApp as getAppDb } from "@repo/db"
-import { getGuest, getMember } from "./auth"
-import { Context } from "hono"
+import type { appWithStore } from "@chrryai/chrry/types"
+import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
-import { appWithStore } from "@chrryai/chrry/types"
-import { FRONTEND_URL } from "@chrryai/chrry/utils"
+import { db, eq, getApp as getAppDb, getStore } from "@repo/db"
+import { stores } from "@repo/db/src/schema"
+import type { Context } from "hono"
+import { getActiveRentalsForStore } from "../../lib/adExchange/getActiveRentals"
+import { getGuest, getMember } from "./auth"
 
 // ==================== HELPER TYPES ====================
 interface RequestParams {
@@ -48,7 +50,7 @@ function extractRequestParams(c: Context, params: any): RequestParams {
     ).split("?")[0] || "/"
 
   return {
-    appSlug: appSlugParam,
+    appSlug: params.appSlug || appSlugParam || undefined,
     storeSlug,
     pathname,
     skipCache,
@@ -118,6 +120,24 @@ async function resolveAppById(
   return { app, path: "appId" }
 }
 
+async function resolveAppBySlug(
+  appSlug: string,
+  storeSlug: string,
+  auth: AuthContext,
+  skipCache: boolean,
+): Promise<{ app: any; path: string }> {
+  const app = await getAppDb({
+    slug: appSlug,
+    storeSlug,
+    userId: auth.member?.id,
+    guestId: auth.guest?.id,
+    depth: 1,
+    skipCache,
+  })
+
+  return { app, path: "appSlug" }
+}
+
 /**
  * Resolve app from store slug
  */
@@ -183,6 +203,61 @@ async function resolveAppFromPathname(
   })
 
   return { app, path: whiteLabel ? "whiteLabel" : "pathname" }
+}
+
+async function resolveAppFromStoreCandidate(
+  requestParams: RequestParams,
+  auth: AuthContext,
+  siteConfig: any,
+): Promise<{ app: any; path: string } | null> {
+  const pathname = requestParams.pathname
+
+  const segments = pathname?.split("/").filter(Boolean) ?? []
+  if (segments.length === 0) return null
+
+  // First segment is always the store slug candidate
+  const storeSlugCandidate = segments[0]
+  // Second+ segment is the app slug (only present for store/app paths)
+  const appSlugCandidate =
+    segments.length >= 2 ? segments[segments.length - 1] : undefined
+
+  const [dbStore] = storeSlugCandidate
+    ? await db
+        .select({
+          id: stores.id,
+          appId: stores.appId,
+        })
+        .from(stores)
+        .where(eq(stores.slug, storeSlugCandidate))
+        .limit(1)
+    : []
+
+  if (!dbStore) return null
+
+  // Single segment (/lifeos) → return store's main app
+  // Two+ segments (/sushistore/sakabsii) → return specific app within store
+  const app = appSlugCandidate
+    ? await getAppDb({
+        slug: appSlugCandidate,
+        storeSlug: storeSlugCandidate,
+        userId: auth.member?.id,
+        guestId: auth.guest?.id,
+        depth: 1,
+        skipCache: requestParams.skipCache,
+      })
+    : dbStore.appId
+      ? await getAppDb({
+          id: dbStore.appId,
+          userId: auth.member?.id,
+          guestId: auth.guest?.id,
+          depth: 1,
+          skipCache: requestParams.skipCache,
+        })
+      : undefined
+
+  if (!app) return null
+
+  return { app, path: "storeCandidate" }
 }
 
 /**
@@ -316,6 +391,60 @@ async function enrichStoreApps(
   )
 
   app.store.apps = enrichedApps.filter(Boolean) as appWithStore[]
+
+  // Add active slot rentals to store.apps
+  if (app?.store?.id) {
+    try {
+      const rentedAppsWithMetadata = await getActiveRentalsForStore({
+        storeId: app.store.id,
+        userId: auth.member?.id,
+        guestId: auth.guest?.id,
+      })
+
+      // Filter out apps that already exist in store.apps
+      const newRentedApps = rentedAppsWithMetadata.filter(
+        (a) => !app.store.apps.find((b: appWithStore) => b.id === a?.id),
+      )
+
+      // Add rented apps to the beginning of the list (priority placement)
+      if (newRentedApps.length > 0) {
+        // Check if current user is the store owner
+        const isStoreOwner =
+          (auth.member && app.store.userId === auth.member.id) ||
+          (auth.guest && app.store.guestId === auth.guest.id)
+
+        // Re-fetch apps with depth 1 for full details
+        const extendedApps = await Promise.all(
+          newRentedApps
+            .filter((a) => !!a)
+            .map(async (rentedApp) => {
+              const fullApp = await getAppDb({
+                id: rentedApp.id,
+                userId: auth.member?.id,
+                guestId: auth.guest?.id,
+                depth: 1,
+                skipCache,
+              })
+
+              // Only attach rental metadata if user is the store owner
+              if (fullApp && isStoreOwner && rentedApp._rental) {
+                return {
+                  ...fullApp,
+                  _rental: rentedApp._rental,
+                }
+              }
+
+              return fullApp
+            }),
+        )
+
+        app.store.apps = [...extendedApps.filter(Boolean), ...app.store.apps]
+      }
+    } catch (error) {
+      console.error("Failed to fetch active rentals:", error)
+      // Don't fail the whole request if rentals fail
+    }
+  }
 }
 
 /**
@@ -347,9 +476,10 @@ export async function getApp({
   c: Context
   appId?: string
   storeSlug?: string
+  appSlug?: string
   accountApp?: boolean
   skipCache?: boolean
-  chrryUrl
+  chrryUrl?: string
 }) {
   const startTime = Date.now()
   let resolutionPath = ""
@@ -378,6 +508,9 @@ export async function getApp({
   const chrryUrl = params.chrryUrl || chrryUrlParam || getChrryUrl(request)
   const siteConfig = getSiteConfig(chrryUrl)
 
+  const appSlug = requestParams.appSlug
+  const storeSlug = requestParams.storeSlug
+
   // 5. Resolve app based on request type
   let appInternal = null
 
@@ -393,14 +526,22 @@ export async function getApp({
     if (!result.app) return null
     appInternal = result.app
     resolutionPath = result.path
-  } else {
-    const result = await resolveAppFromStoreContext(
-      requestParams,
+  } else if (appSlug && storeSlug) {
+    const result = await resolveAppBySlug(
+      appSlug,
+      storeSlug,
       auth,
-      siteConfig,
+      requestParams.skipCache,
     )
+    if (!result.app) return null
     appInternal = result.app
     resolutionPath = result.path
+  } else {
+    const result =
+      (await resolveAppFromStoreCandidate(requestParams, auth, siteConfig)) ??
+      (await resolveAppFromStoreContext(requestParams, auth, siteConfig))
+    appInternal = result?.app
+    resolutionPath = result?.path ?? "storeContext"
   }
 
   // 6. Get fallback apps

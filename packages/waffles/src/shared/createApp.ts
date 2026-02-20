@@ -1,8 +1,5 @@
-import { Page, expect } from "@playwright/test"
-import { getURL, modelName, wait, storeApps, getModelCredits } from ".."
-import { chat } from "./chat"
-import { clean } from "./clean"
-import { grape } from "./grape"
+import { expect, type Page } from "@playwright/test"
+import { getURL, type modelName, wait } from ".."
 import app from "./app"
 import { signIn } from "./signIn"
 
@@ -93,6 +90,8 @@ const createApp = async ({
     await page.waitForSelector("body", { state: "attached" })
     await wait(2000) // Give hydration a moment
   }
+
+  await signIn({ page })
 
   const capabilities = {
     chatGPT: {
@@ -382,9 +381,13 @@ const createApp = async ({
   await expect(continueButton).toBeVisible()
   await continueButton.click()
 
+  await wait(1000)
+
   const saveAppButton = page.getByTestId("save-app")
   await expect(saveAppButton).toBeVisible()
   await saveAppButton.click()
+
+  await wait(1000)
 
   const editAppButton = page.getByTestId("edit-app")
   await expect(editAppButton).toBeVisible({
@@ -397,8 +400,6 @@ const createApp = async ({
       await expect(app).toBeVisible()
     }
   }
-
-  await signIn({ page })
 
   await wait(7000)
 

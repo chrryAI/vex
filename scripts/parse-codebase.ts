@@ -1,15 +1,15 @@
 #!/usr/bin/env tsx
 
-import { parseDirectory } from "../apps/api/lib/ast/parseCodebase"
-import { storeASTInGraph } from "../apps/api/lib/ast/storeFalkorGraph"
+import { execSync } from "node:child_process"
+import path from "node:path"
 import {
+  calculateEmbeddingCost,
+  estimateTokens,
   generateCodeEmbeddings,
   storeEmbeddings,
-  estimateTokens,
-  calculateEmbeddingCost,
 } from "../apps/api/lib/ast/generateEmbeddings"
-import { execSync } from "child_process"
-import path from "path"
+import { parseDirectory } from "../apps/api/lib/ast/parseCodebase"
+import { storeASTInGraph } from "../apps/api/lib/ast/storeFalkorGraph"
 
 const REPO_NAME = "chrryAI/vex"
 const REPO_PATH = path.resolve(__dirname, "..")
@@ -31,7 +31,7 @@ async function main() {
       },
     }).trim()
     console.log(`📌 Commit: ${commitHash.slice(0, 8)}`)
-  } catch (error) {
+  } catch (_error) {
     console.error("❌ Failed to get git commit hash")
     process.exit(1)
   }
@@ -130,7 +130,7 @@ async function main() {
 
   // Summary
   const totalDuration = Date.now() - startParse
-  console.log("\n" + "=".repeat(50))
+  console.log(`\n${"=".repeat(50)}`)
   console.log("✅ CODEBASE PARSING COMPLETE!")
   console.log("=".repeat(50))
   console.log(`📊 Total nodes: ${nodes.length}`)

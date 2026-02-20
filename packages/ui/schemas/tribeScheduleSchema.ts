@@ -1,5 +1,5 @@
-import { z } from "zod"
 import sanitizeHtml from "sanitize-html"
+import { z } from "zod"
 import { simpleRedact } from "../lib/redaction"
 import { models } from "../types"
 
@@ -45,13 +45,14 @@ export const scheduleTimeSlotSchema = z.object({
   postType: z.enum(["post", "comment", "engagement"]).default("post"),
   charLimit: z.number().int().min(100).max(5000).default(500),
   credits: z.number().int().min(1, "Credits must be at least 1"),
+  intervalMinutes: z.number().int().min(30).max(1440).optional(), // 30min to 24h
 })
 
 // Tribe/Molt schedule creation schema
 export const tribeScheduleSchema = z
   .object({
     // Payment verification (required for new schedules or price increases)
-    sessionId: z.string().min(1, "Session ID is required"),
+    sessionId: z.string().optional(),
 
     // User identification
     appId: z.uuid().optional(),

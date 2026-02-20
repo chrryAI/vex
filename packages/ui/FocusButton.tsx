@@ -1,29 +1,41 @@
 "use client"
 
+import type React from "react"
+import { useEffect, useRef, useState } from "react"
+import { toast } from "react-hot-toast"
 import { useTranslation } from "react-i18next"
-import React, { useState, useRef, useEffect } from "react"
+import { FaDiscord } from "react-icons/fa"
+import { FaXTwitter } from "react-icons/fa6"
+import sanitizeHtml from "sanitize-html"
+import A from "./a/A"
+import AddTask from "./addTask/AddTask"
+import Checkbox from "./Checkbox"
+import ConfirmButton from "./ConfirmButton"
+import { useAuth, useChat, useNavigationContext } from "./context/providers"
+import { useStyles } from "./context/StylesContext"
+import { COLORS, type themeType } from "./context/ThemeContext"
+import { useTimerContext } from "./context/TimerContext"
+import { useFocusButtonStyles } from "./FocusButton.styles"
+import GitHubConnectButton from "./GitHubConnectButton"
 import { useHasHydrated } from "./hooks"
+import Img from "./Image"
 import {
   AlarmClockCheck,
+  Bird,
   ChevronDown,
   ChevronUp,
+  Circle,
+  CircleCheck,
   CirclePause,
   CirclePlay,
   CircleX,
-  GripVertical,
-  SettingsIcon,
-  CircleCheck,
-  Circle,
-  Bird,
-  Repeat,
   CloudDownload,
+  GripVertical,
+  Repeat,
+  SettingsIcon,
   Trash2,
 } from "./icons"
-
-import { FaDiscord } from "react-icons/fa"
-import { FaXTwitter } from "react-icons/fa6"
-
-import { toast } from "react-hot-toast"
+import Loading from "./Loading"
 import {
   Button,
   Div,
@@ -31,35 +43,22 @@ import {
   Input,
   Main,
   Span,
-  Video,
   useKeepAwake,
+  usePlatform,
+  useTheme,
+  Video,
 } from "./platform"
+import SwipeableTimeControl from "./SwipeableTimeControl"
+import Testimonials from "./Testimonials"
+import ThemeSwitcher from "./ThemeSwitcher"
 import {
-  GUEST_TASKS_COUNT,
-  PLUS_TASKS_COUNT,
-  FRONTEND_URL,
   API_URL,
   apiFetch,
+  FRONTEND_URL,
+  GUEST_TASKS_COUNT,
+  PLUS_TASKS_COUNT,
 } from "./utils"
-
-import sanitizeHtml from "sanitize-html"
-import Loading from "./Loading"
-import Checkbox from "./Checkbox"
-import AddTask from "./addTask/AddTask"
-import { useTimerContext } from "./context/TimerContext"
-import SwipeableTimeControl from "./SwipeableTimeControl"
-import { useAuth, useChat, useNavigationContext } from "./context/providers"
-import { usePlatform, useTheme } from "./platform"
-import { COLORS, themeType } from "./context/ThemeContext"
-import Img from "./Image"
-import A from "./a/A"
-import { useStyles } from "./context/StylesContext"
-import Testimonials from "./Testimonials"
 import { getSiteConfig } from "./utils/siteConfig"
-import { useFocusButtonStyles } from "./FocusButton.styles"
-import ThemeSwitcher from "./ThemeSwitcher"
-import ConfirmButton from "./ConfirmButton"
-import GitHubConnectButton from "./GitHubConnectButton"
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60)
@@ -215,7 +214,7 @@ export default function FocusButton({
     }
   }, [showSettings])
 
-  const setTheme = (theme: themeType) => {
+  const _setTheme = (theme: themeType) => {
     setThemeInContext(theme)
     theme === "dark"
       ? plausibleEvent({ name: "dark_mode" })
@@ -354,7 +353,7 @@ export default function FocusButton({
 
   if (showSettings) {
     return (
-      <Div style={styles.settingsContainer.style}>
+      <Div data-testid="focus-mode" style={styles.settingsContainer.style}>
         <Div>
           <Button
             data-testid="close-settings-button"
@@ -904,7 +903,7 @@ export default function FocusButton({
                               setShowFocus(false)
                               app?.id === focus?.id
                                 ? setShowFocus(false)
-                                : setIsNewAppChat(app)
+                                : setIsNewAppChat({ item: app })
                             }}
                             // href={getAppSlug(refApp)}
                           >
@@ -985,7 +984,8 @@ export default function FocusButton({
                             }}
                           >
                             <Div style={styles.taskContent.style}>
-                              <Div
+                              <Button
+                                className="link"
                                 onClick={() => {
                                   if (
                                     selectedTasks?.some((t) => t.id === task.id)
@@ -1018,6 +1018,13 @@ export default function FocusButton({
                                 style={{
                                   ...styles.taskTitle.style,
                                   cursor: "pointer",
+                                  background: "transparent",
+                                  border: "none",
+                                  textAlign: "left",
+                                  width: "100%",
+                                  fontFamily: "inherit",
+                                  fontSize: "inherit",
+                                  color: "inherit",
                                 }}
                               >
                                 {selectedTasks?.some(
@@ -1066,8 +1073,7 @@ export default function FocusButton({
                                         <Span style={styles.taskTime.style}>
                                           {Math.floor(totalTime / 3600) > 0 && (
                                             <>
-                                              {Math.floor(totalTime / 3600)}
-                                              h{" "}
+                                              {Math.floor(totalTime / 3600)}h{" "}
                                             </>
                                           )}
                                           {Math.floor((totalTime % 3600) / 60) >
@@ -1085,7 +1091,7 @@ export default function FocusButton({
                                     </>
                                   )
                                 })()}
-                              </Div>
+                              </Button>
 
                               <Div
                                 onPointerDown={(e) => {
@@ -1112,6 +1118,8 @@ export default function FocusButton({
                                   position: "relative",
                                   bottom: 1.5,
                                 }}
+                                aria-label={`${t("Delete")} ${task.title}`}
+                                title={t("Delete task")}
                                 data-testid="edit-task-button"
                                 className={"link"}
                                 onClick={() => {
@@ -1145,7 +1153,7 @@ export default function FocusButton({
                                     }
                                     await fetchTasks()
                                     toast.success(t("Deleted"))
-                                  } catch (error) {
+                                  } catch (_error) {
                                     toast.error(t("Something went wrong"))
                                   } finally {
                                     setIsDeletingTask(false)

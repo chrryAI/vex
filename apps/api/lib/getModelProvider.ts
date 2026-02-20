@@ -1,12 +1,12 @@
-import { createDeepSeek } from "@ai-sdk/deepseek"
-import { createOpenAI } from "@ai-sdk/openai"
 import { createAnthropic } from "@ai-sdk/anthropic"
+import { createDeepSeek } from "@ai-sdk/deepseek"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
-import { app, getAiAgents, decrypt, aiAgent } from "@repo/db"
-import type { LanguageModel } from "ai"
-import { appWithStore } from "@chrryai/chrry/types"
+import { createOpenAI } from "@ai-sdk/openai"
 import { createPerplexity } from "@ai-sdk/perplexity"
+import type { appWithStore } from "@chrryai/chrry/types"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
+import { type aiAgent, type app, decrypt, getAiAgents } from "@repo/db"
+import type { LanguageModel } from "ai"
 
 const plusTiers = ["plus", "pro"]
 
@@ -40,7 +40,7 @@ function safeDecrypt(encryptedKey: string | undefined): string | undefined {
  */
 export async function getModelProvider(
   app?: app | appWithStore,
-  name:
+  agentName:
     | "deepSeek"
     | "chatGPT"
     | "claude"
@@ -50,7 +50,10 @@ export async function getModelProvider(
     | "flux"
     | "openrouter"
     | string = "deepSeek",
+  canReason = true,
 ): Promise<{ provider: LanguageModel; agentName: string }> {
+  const name = agentName === "sushi" && !canReason ? "deepSeek" : agentName
+
   const appApiKeys = app?.apiKeys || {}
 
   const agents = await getAiAgents({ include: app?.id })
@@ -128,7 +131,7 @@ export async function getModelProvider(
     case "sushi": {
       const sushiKey =
         (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
-        (!plusTiers.includes(app?.tier || "") && !process.env.OPENROUTER_API_KEY
+        (!plusTiers.includes(app?.tier || "")
           ? process.env.DEEPSEEK_API_KEY
           : "")
 
@@ -207,21 +210,6 @@ export async function getModelProvider(
     }
 
     case "claude": {
-      const claudeKey = app?.apiKeys?.anthropic
-        ? safeDecrypt(app?.apiKeys?.anthropic)
-        : !plusTiers.includes(app?.tier || "") &&
-            !process.env.OPENROUTER_API_KEY
-          ? process.env.CLAUDE_API_KEY
-          : ""
-
-      if (claudeKey) {
-        const claudeProvider = createAnthropic({ apiKey: claudeKey })
-        return {
-          provider: claudeProvider(agent.modelId),
-          agentName: agent.name,
-        }
-      }
-
       // Fallback to OpenRouter
       const openRouterKeyForClaude =
         (appApiKeys.openrouter ? safeDecrypt(appApiKeys.openrouter) : "") ||
@@ -243,6 +231,21 @@ export async function getModelProvider(
         }
       }
 
+      const claudeKey = app?.apiKeys?.anthropic
+        ? safeDecrypt(app?.apiKeys?.anthropic)
+        : !plusTiers.includes(app?.tier || "") &&
+            !process.env.OPENROUTER_API_KEY
+          ? process.env.CLAUDE_API_KEY
+          : ""
+
+      if (claudeKey) {
+        const claudeProvider = createAnthropic({ apiKey: claudeKey })
+        return {
+          provider: claudeProvider(agent.modelId),
+          agentName: agent.name,
+        }
+      }
+
       return {
         provider: createAnthropic({ apiKey: "" })(agent.modelId),
         agentName: agent.name,
@@ -252,9 +255,7 @@ export async function getModelProvider(
     case "gemini": {
       const geminiKey =
         (appApiKeys.google ? safeDecrypt(appApiKeys.google) : "") ||
-        (!plusTiers.includes(app?.tier || "") && !process.env.OPENROUTER_API_KEY
-          ? process.env.GEMINI_API_KEY
-          : "")
+        (!plusTiers.includes(app?.tier || "") ? process.env.GEMINI_API_KEY : "")
 
       if (geminiKey) {
         const geminiProvider = createGoogleGenerativeAI({ apiKey: geminiKey })
@@ -354,7 +355,7 @@ export async function getModelProvider(
       }
     }
 
-    default:
+    default: {
       // Custom OpenAI-compatible model
       if (agent.apiURL) {
         console.log("🤖 Using custom agent:", agent.name)
@@ -403,6 +404,7 @@ export async function getModelProvider(
         provider: fallbackProvider("deepseek-chat"),
         agentName: "deepSeek",
       }
+    }
   }
 }
 

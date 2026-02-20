@@ -1,0 +1,38 @@
+{
+  "formatter": "prettier",
+  "format_on_save": "on",
+  "prettier": {
+    "allowed": true
+  },
+  "languages": {
+    "TypeScript": {
+      "format_on_save": "on",
+      "formatter": "prettier"
+    },
+    "TSX": {
+      "format_on_save": "on",
+      "formatter": "prettier"
+    },
+    "JavaScript": {
+      "format_on_save": "on",
+      "formatter": "prettier"
+    },
+    "JSON": {
+      "format_on_save": "on",
+      "formatter": "prettier"
+    },
+    "Markdown": {
+      "format_on_save": "on",
+      "formatter": "prettier"
+    }
+  },
+  "lsp": {
+    "typescript-language-server": {
+      "initialization_options": {
+        "preferences": {
+          "importModuleSpecifierPreference": "relative"
+        }
+      }
+    }
+  }
+}

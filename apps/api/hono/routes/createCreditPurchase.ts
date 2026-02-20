@@ -1,12 +1,18 @@
 import { Hono } from "hono"
 import Stripe from "stripe"
 import captureException from "../../lib/captureException"
+import { getMember } from "../lib/auth"
 
 export const createCreditPurchase = new Hono()
 
 // POST /createCreditPurchase - Create Stripe checkout session for credit purchase
 createCreditPurchase.post("/", async (c) => {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+  const user = await getMember(c)
+  const stripe = new Stripe(
+    user?.role === "admin"
+      ? process.env.STRIPE_SECRET_KEY_TEST!
+      : process.env.STRIPE_SECRET_KEY!,
+  )
 
   try {
     const {

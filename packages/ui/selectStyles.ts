@@ -1,4 +1,4 @@
-import { StylesConfig } from "react-select"
+import type { StylesConfig } from "react-select"
 
 export const selectStyles: StylesConfig = {
   control: (base, state) => ({

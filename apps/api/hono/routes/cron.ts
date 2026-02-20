@@ -1,25 +1,33 @@
-import { Hono } from "hono"
 import {
-  decayMemories,
+  and,
   cleanupIncognitoThreads,
   db,
-  and,
+  decayMemories,
   eq,
-  isNull,
   inArray,
+  isNull,
   lt,
   sql,
 } from "@repo/db"
+import { apps, guests, messages, subscriptions } from "@repo/db/src/schema"
+import { captureException } from "@sentry/node"
+import { Hono } from "hono"
 import { syncPlausibleAnalytics } from "../../cron/sync-plausible"
-import { guests, subscriptions, messages, apps } from "@repo/db/src/schema"
-import { clearGraphDataForUser } from "../../lib/graph/graphService"
-import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
-import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
+import { isDevelopment } from "../../lib"
+import {
+  runAutonomousAgentsCron,
+  updateSlotAnalytics,
+} from "../../lib/cron/autonomousAgentsCron"
 import { checkMoltbookComments } from "../../lib/cron/moltbookComments"
 import { engageWithMoltbookPosts } from "../../lib/cron/moltbookEngagement"
+import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
+import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
 import { syncSonarCloud } from "../../lib/cron/sonarSync"
-import { isDevelopment } from "../../lib"
-import { captureException } from "@sentry/node"
+import { clearGraphDataForUser } from "../../lib/graph/graphService"
+import {
+  executeScheduledJob,
+  findJobsToRun,
+} from "../../lib/scheduledJobs/jobScheduler"
 
 export const cron = new Hono()
 
@@ -212,36 +220,6 @@ async function handleFetchNews(c: any) {
     message: "Maybe later",
     timestamp: new Date().toISOString(),
   })
-  // try {
-  //   // Verify cron secret (optional but recommended)
-  //   const authHeader = c.req.header("authorization")
-  //   const cronSecret = process.env.CRON_SECRET
-
-  //   // Only check auth if CRON_SECRET is set
-  //   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-  //     console.log("❌ Unauthorized: Invalid or missing authorization header")
-  //     return c.json({ error: "Unauthorized" }, 401)
-  //   }
-
-  //   console.log("🗞️ Cron: Starting news fetch...")
-
-  //   await fetchAllNews()
-
-  //   return c.json({
-  //     success: true,
-  //     message: "News fetched successfully",
-  //     timestamp: new Date().toISOString(),
-  //   })
-  // } catch (error) {
-  //   console.error("❌ Cron error:", error)
-  //   return c.json(
-  //     {
-  //       success: false,
-  //       error: error instanceof Error ? error.message : "Unknown error",
-  //     },
-  //     500,
-  //   )
-  // }
 }
 
 // GET /cron/fetchNews - Fetch news (for testing)
@@ -444,8 +422,6 @@ cron.get("/runScheduledJobs", async (c) => {
 
   try {
     // Import scheduler module (inside try block to catch import errors)
-    const { findJobsToRun, executeScheduledJob } =
-      await import("../../lib/scheduledJobs/jobScheduler")
 
     // Find all jobs that need to run now
     const jobsToRun = await findJobsToRun()
@@ -462,78 +438,51 @@ cron.get("/runScheduledJobs", async (c) => {
 
     console.log(`🚀 Found ${jobsToRun.length} jobs to execute`)
 
-    // Execute all jobs in parallel with tracked promises
-    const trackers: Array<{
-      jobId: string
-      name: string
-      status: "pending" | "fulfilled" | "rejected"
-      value?: any
-      error?: any
-    }> = []
+    // Limit: Only execute 1 tribe job per cron cycle to avoid overwhelming system
+    const tribeJobs = jobsToRun.filter((j) => j.scheduleType === "tribe")
+    const otherJobs = jobsToRun.filter((j) => j.scheduleType !== "tribe")
 
-    const executionPromises = jobsToRun.map((job, index) => {
-      const tracker = {
-        jobId: job.id,
-        name: job.name,
-        status: "pending" as "pending" | "fulfilled" | "rejected",
-        value: undefined as any,
-        error: undefined as any,
-      }
-      trackers[index] = tracker
+    const jobsToExecute = [
+      ...otherJobs, // Execute all non-tribe jobs
+      ...(tribeJobs.length > 0 ? [tribeJobs[0]] : []), // Only 1 tribe job
+    ]
 
-      return executeScheduledJob({ jobId: job.id })
-        .then(() => {
-          console.log(`✅ Job executed: ${job.name}`)
-          tracker.status = "fulfilled"
-          tracker.value = { jobId: job.id, name: job.name, status: "success" }
-          return tracker.value
-        })
-        .catch((error) => {
-          captureException(error)
-          console.error(`❌ Job failed: ${job.name}`, error)
-          tracker.status = "rejected"
-          tracker.error = error
-          tracker.value = {
-            jobId: job.id,
-            name: job.name,
-            status: "failed",
-            error: error.message,
-          }
-          return tracker.value
-        })
-    })
-
-    // Wait for all jobs to complete (with timeout)
-    const TIMEOUT_MS = 25000 // Vercel limit is 30s
-    const timeoutPromise = new Promise<"timeout">((resolve) =>
-      setTimeout(() => resolve("timeout"), TIMEOUT_MS),
+    console.log(
+      `📊 Executing ${jobsToExecute.length} jobs (${tribeJobs.length} tribe jobs found, executing 1)`,
     )
 
-    const raceResult = await Promise.race([
-      Promise.allSettled(executionPromises),
-      timeoutPromise,
-    ])
+    // Execute selected jobs in background (fire-and-forget)
+    jobsToExecute.forEach((job) => {
+      job &&
+        executeScheduledJob({ jobId: job.id })
+          .then(() => {
+            console.log(`✅ Job executed: ${job.name}`)
+          })
+          .catch((error) => {
+            captureException(error)
+            console.error(`❌ Job failed: ${job.name}`, error)
+          })
+    })
 
-    const timedOut = raceResult === "timeout"
-    const startedJobs = executionPromises.length
-
-    // Collect results from trackers (no re-awaiting needed)
-    const completedJobs = trackers.filter(
-      (t) => t.status === "fulfilled",
-    ).length
-    const results = trackers
-      .filter((t) => t.status === "fulfilled")
-      .map((t) => t.value)
-
+    // Return immediately
     return c.json({
       success: true,
-      message: timedOut
-        ? "Scheduled jobs execution timed out, jobs continue in background"
-        : "Scheduled jobs execution completed",
-      startedJobs,
-      completedJobs,
-      results,
-      timedOut,
+      message: "Scheduled jobs started in background",
+      jobsStarted: jobsToRun.length,
+      jobs: jobsToRun.map((j) => ({
+        id: j.id,
+        name: j.name,
+        jobType: j.jobType,
+        scheduleType: j.scheduleType,
+        nextRunAt: j.nextRunAt?.toISOString(),
+        frequency: j.frequency,
+        scheduledTimes: j.scheduledTimes?.map((st) => ({
+          postType: st.postType,
+          time: st.time,
+          model: st.model,
+        })),
+        status: j.status,
+      })),
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
@@ -577,6 +526,64 @@ cron.get("/syncSonarCloud", async (c) => {
   return c.json({
     success: true,
     message: "SonarCloud sync job started in background",
+    timestamp: new Date().toISOString(),
+  })
+})
+
+// GET /cron/autonomousAgents - Run autonomous AI agents to analyze stores and place bids
+cron.get("/autonomousAgents", async (c) => {
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
+
+  console.log("🤖 Starting autonomous AI agents cron job...")
+
+  runAutonomousAgentsCron()
+    .then((result) => {
+      console.log("✅ Autonomous agents job completed:", result)
+    })
+    .catch((error) => {
+      captureException(error)
+      console.error("❌ Autonomous agents job failed:", error)
+    })
+
+  return c.json({
+    success: true,
+    message: "Autonomous AI agents job started in background",
+    timestamp: new Date().toISOString(),
+  })
+})
+
+// GET /cron/updateSlotAnalytics - Update slot traffic analytics
+cron.get("/updateSlotAnalytics", async (c) => {
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
+
+  console.log("📊 Starting slot analytics update job...")
+
+  updateSlotAnalytics()
+    .then((result) => {
+      console.log("✅ Slot analytics update completed:", result)
+    })
+    .catch((error) => {
+      captureException(error)
+      console.error("❌ Slot analytics update failed:", error)
+    })
+
+  return c.json({
+    success: true,
+    message: "Slot analytics update job started in background",
     timestamp: new Date().toISOString(),
   })
 })

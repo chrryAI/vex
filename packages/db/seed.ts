@@ -1,70 +1,62 @@
+import crypto from "node:crypto"
+import { and, eq, inArray, isNull, lt, sql } from "drizzle-orm"
+import { createCities } from "./createCities"
+import { createEvent } from "./createEvent"
+import { createStores } from "./createStores"
 import {
   createAiAgent,
   createCollaboration,
-  createUser,
-  db,
-  passwordToSalt,
-  updateThread,
-  getUser,
-  getApp,
-  createThread,
   createMessage,
-  TEST_MEMBER_FINGERPRINTS,
+  createThread,
+  createUser,
+  DB_URL,
+  db,
+  getApp,
+  getUser,
   getUsers,
-  updateUser,
-  getGuests,
-  updateGuest,
-  getGuest,
-  deleteGuest,
-  sonarIssues,
-  sonarMetrics,
   isProd,
-  isCI,
   isSeedSafe,
   isWaffles,
-  user,
+  passwordToSalt,
+  sonarIssues,
+  sonarMetrics,
+  TEST_MEMBER_FINGERPRINTS,
   updateApp,
+  type user,
 } from "./index"
-import { clearSonarCloudGraph } from "../../apps/api/lib/graph/sonarGraphSync"
-import { Redis } from "ioredis"
-import crypto from "crypto"
-import { eq, and, isNull, sql, inArray, lt } from "drizzle-orm"
+import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
+import { seedTribeEngagement } from "./seedTribeEngagement"
 import {
-  users,
-  messages,
-  guests,
   aiAgents,
-  systemLogs,
-  subscriptions,
-  threads,
-  memories,
-  characterProfiles,
-  threadSummaries,
-  calendarEvents,
-  stores,
   apps,
-  instructions,
-  storeInstalls,
-  placeHolders,
+  calendarEvents,
+  characterProfiles,
   cities,
-  timers,
-  realtimeAnalytics,
   expenses,
+  guests,
+  instructions,
+  memories,
+  messages,
   moltQuestions,
+  placeHolders,
+  realtimeAnalytics,
+  stores,
+  subscriptions,
+  systemLogs,
+  threadSummaries,
+  threads,
+  timers,
   tribeBlocks,
   tribeComments,
   tribeFollows,
-  tribePosts,
   tribeLikes,
+  tribePosts,
   tribes,
+  users,
 } from "./src/schema"
 
-import { createEvent } from "./createEvent"
-import { createStores } from "./createStores"
-import { createCities } from "./createCities"
-
 const now = new Date()
-const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
 async function createAgents() {
   if (isProd) {
@@ -292,20 +284,35 @@ const clearDb = async (): Promise<void> => {
   await db.delete(sonarMetrics)
 
   // Clear SonarCloud data from graph database
-  await clearSonarCloudGraph()
+  // await clearSonarCloudGraph()
 
-  // Clear Redis telemetry streams
-  try {
-    const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379")
-    const streams = await redis.keys("telemetry{*}")
-    if (streams.length > 0) {
-      await redis.del(...streams)
-      console.log(`🧹 Cleared ${streams.length} telemetry streams from Redis`)
-    }
-    await redis.quit()
-  } catch (error) {
-    console.warn("⚠️ Failed to clear Redis telemetry streams:", error)
-  }
+  // Clear Redis cache (telemetry + tribe)
+  // try {
+  //   const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6381")
+
+  //   // Clear telemetry streams
+  //   const streams = await redis.keys("telemetry{*}")
+  //   if (streams.length > 0) {
+  //     await redis.del(...streams)
+  //     console.log(`🧹 Cleared ${streams.length} telemetry streams from Redis`)
+  //   }
+
+  //   // Clear tribe cache
+  //   const tribePosts = await redis.keys("tribe:posts:*")
+  //   const tribeSinglePosts = await redis.keys("tribe:post:*")
+  //   const allTribeKeys = [...tribePosts, ...tribeSinglePosts]
+
+  //   if (allTribeKeys.length > 0) {
+  //     await redis.del(...allTribeKeys)
+  //     console.log(
+  //       `🪢 Cleared ${allTribeKeys.length} tribe cache keys from Redis`,
+  //     )
+  //   }
+
+  //   await redis.quit()
+  // } catch (error) {
+  //   console.warn("⚠️ Failed to clear Redis cache:", error)
+  // }
 }
 
 const VEX_TEST_EMAIL = process.env.VEX_TEST_EMAIL!
@@ -595,7 +602,7 @@ const secureShuffle = <T>(arr: T[]): T[] => {
 function generateUsername(name: string): string {
   const parts = name.toLowerCase().split(" ")
   const firstName = parts[0] || ""
-  const lastName = parts[1] || ""
+  const _lastName = parts[1] || ""
 
   // Önce sadece first name dene
   const baseUsername = firstName
@@ -622,7 +629,7 @@ function generateEmail(name: string, attempt: number = 0): string {
 
 // Sonra create fonksiyonunun sonuna (admin ve feedback user'lardan sonra) ekleyin:
 
-async function createRealisticUsers() {
+async function _createRealisticUsers() {
   console.log("👥 Creating 150+ UNIQUE realistic users...")
 
   const createdUsers = []
@@ -682,7 +689,7 @@ async function createRealisticUsers() {
         "Architecting",
       ]
       let bio = `${pickCrypto(templates)} ${expertise[0]} and ${expertise[1]}`
-      if (bio.length > 50) bio = bio.substring(0, 47) + "..."
+      if (bio.length > 50) bio = `${bio.substring(0, 47)}...`
 
       // 3. Financial & Availability: cryptoInt ve cryptoFloat kullan
       const hourlyRate = cryptoInt(30, 81) // 30-80 cr (81 exclusive)
@@ -732,7 +739,7 @@ async function createRealisticUsers() {
 
 // seed.ts dosyasının createRealisticUsers fonksiyonundan sonra ekleyin:
 
-async function createCharacterProfiles() {
+async function _createCharacterProfiles() {
   console.log("🎭 Creating character profiles for users...")
 
   const users = await getUsers({ pageSize: 200 })
@@ -909,7 +916,7 @@ async function createCharacterProfiles() {
 // create fonksiyonunun içinde, localswaphub user'dan sonra ekleyin:
 
 // Create 150+ realistic users
-async function clearGuests() {
+async function _clearGuests() {
   const batchSize = 500
   let totalDeleted = 0
   let hasMore = true
@@ -969,7 +976,7 @@ async function clearGuests() {
   )
 }
 
-async function clearMemories() {
+async function _clearMemories() {
   console.log("🧠 Cleaning up inconsistent app memories...")
 
   // Find app memories with user-specific language
@@ -1057,13 +1064,19 @@ const create = async () => {
     console.log("✅ Admin user already exists, skipping creation")
   }
 
-  const { vex } = await createStores({ user: admin })
-
-  await updateStoreUrls({ user: admin })
-
   const agents = await createAgents()
 
   if (!agents?.sushiAgent) throw new Error("Failed to add agent")
+
+  const { vex } = await createStores({ user: admin })
+
+  await seedTribeEngagement()
+
+  await updateStoreUrls({ user: admin })
+
+  await seedTribeEngagement()
+
+  await seedScheduledTribeJobs()
 
   const { sushiAgent } = agents
 
@@ -1390,7 +1403,7 @@ const create = async () => {
     const THREAD_COUNT = block ? 2 : 20
     const MESSAGES_PER_THREAD = block ? 5 : 50
     const threadsData = Array.from({ length: THREAD_COUNT }).map((_, t) => {
-      const usedIndexes = new Set<number>()
+      const _usedIndexes = new Set<number>()
       const messages: { role: "user" | "ai"; content: string }[] = []
       // For the first 5 threads, ensure at least 50 messages (25 user/ai pairs)
       const messagePairs =
@@ -1643,60 +1656,157 @@ const updateStoreUrls = async ({ user }: { user: user }) => {
   )
 }
 
-const waffles = async () => {
-  let admin = await getUser({
+const _waffles = async () => {
+  const admin = await getUser({
     email: isWaffles ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
 
-  const { vex } = await createStores({ user: admin })
+  await createStores({ user: admin })
+}
 
-  // await updateStoreUrls({ user: admin })
+const _generateTribes = async () => {
+  // const oops = true
 
-  // Delete inactive bot guests in batches
-  // await clearGuests()
-  // const vex = await createStores({ user: admin, isProd: true })
-  // const allInstructions = await db.select().from(instructions)
-  // const seen = new Map<string, string>() // Map of unique key -> instruction ID
-  // const duplicateIds: string[] = []
-  // for (const instruction of allInstructions) {
-  //   // Create unique key based on userId/guestId + appId + title + content
-  //   const key = `${instruction.userId || ""}-${instruction.guestId || ""}-${instruction.appId || ""}-${instruction.title}-${instruction.content}`
-  //   if (
-  //     // instruction.title === "Plan afternoon trip under €1000 💰" &&
-  //     instruction.userId === admin.id
-  //   ) {
-  //     console.log("my in.", instruction)
-  //   }
-  //   // if (seen.has(key)) {
-  //   //   // This is a duplicate, mark for deletion
-  //   //   duplicateIds.push(instruction.id)
-  //   //   console.log(
-  //   //     `  ❌ Duplicate found: "${instruction.title}" (ID: ${instruction.id})`,
-  //   //   )
-  //   // } else {
-  //   //   seen.set(key, instruction.id)
-  //   // }
+  // if (oops) {
+  //   await db.delete(tribeBlocks)
+  //   await db.delete(tribeComments)
+  //   await db.delete(tribeFollows)
+  //   await db.delete(tribePosts)
+  //   await db.delete(tribeLikes)
+  //   await db.delete(tribes)
   // }
-  // if (duplicateIds.length > 0) {
-  //   console.log(`🗑️  Removing ${duplicateIds.length} duplicate instructions...`)
-  //   for (const id of duplicateIds) {
-  //     // await db.delete(instructions).where(eq(instructions.id, id))
-  //   }
-  //   console.log(`✅ Removed ${duplicateIds.length} duplicate instructions`)
-  // } else {
-  //   console.log("✅ No duplicate instructions found")
+
+  const tribeTemplates = [
+    {
+      name: "General",
+      slug: "general",
+      description: "General discussion for all Wine ecosystem apps",
+    },
+    {
+      name: "AI & ML",
+      slug: "ai-ml",
+      description: "Artificial Intelligence and Machine Learning discussions",
+    },
+    {
+      name: "Productivity",
+      slug: "productivity",
+      description: "Tips and tools for getting things done",
+    },
+    {
+      name: "Development",
+      slug: "development",
+      description: "Software development and coding discussions",
+    },
+    {
+      name: "Design",
+      slug: "design",
+      description: "UI/UX design and creative work",
+    },
+    {
+      name: "Analytics",
+      slug: "analytics",
+      description: "Data analysis and insights",
+    },
+    {
+      name: "Collaboration",
+      slug: "collaboration",
+      description: "Team work and project management",
+    },
+    {
+      name: "Innovation",
+      slug: "innovation",
+      description: "New ideas and experimental features",
+    },
+    {
+      name: "Community",
+      slug: "community",
+      description: "Community updates and events",
+    },
+    {
+      name: "Support",
+      slug: "support",
+      description: "Help and troubleshooting",
+    },
+    {
+      name: "Feedback",
+      slug: "feedback",
+      description: "Product feedback and suggestions",
+    },
+    {
+      name: "Announcements",
+      slug: "announcements",
+      description: "Important updates and news",
+    },
+    {
+      name: "Showcase",
+      slug: "showcase",
+      description: "Show off your work and projects",
+    },
+    {
+      name: "Learning",
+      slug: "learning",
+      description: "Educational content and tutorials",
+    },
+    {
+      name: "Philosophy",
+      slug: "philosophy",
+      description: "Deep thoughts and philosophical discussions",
+    },
+    {
+      name: "Wellness",
+      slug: "wellness",
+      description: "Mental health and wellbeing",
+    },
+    {
+      name: "Entertainment",
+      slug: "entertainment",
+      description: "Fun and leisure content",
+    },
+    {
+      name: "Research",
+      slug: "research",
+      description: "Research findings and experiments",
+    },
+  ]
+
+  const createdTribes = []
+  for (const template of tribeTemplates) {
+    let [tribe] = await db
+      .select()
+      .from(tribes)
+      .where(eq(tribes.slug, template.slug))
+
+    if (!tribe) {
+      ;[tribe] = await db
+        .insert(tribes)
+        .values({
+          name: template.name,
+          slug: template.slug,
+          description: template.description,
+          visibility: "public",
+        })
+        .returning()
+      console.log(`✅ Created '${template.name}' tribe`)
+    }
+
+    if (tribe) {
+      createdTribes.push(tribe)
+    }
+  }
 }
 
 const prod = async () => {
   // Check if admin user already exists
-  await clearMemories()
+  // await clearMemories()
   // await clearGuests()
-  let admin = await getUser({
+  const admin = await getUser({
     email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  const { vex } = await createStores({ user: admin })
+  // const { vex } = await createStores({ user: admin })
+
+  await seedScheduledTribeJobs()
 
   // await updateStoreUrls({ user: admin })
 
@@ -1778,25 +1888,11 @@ const seedDb = async (): Promise<void> => {
   // await prod()
   // process.exit(0)
 
-  if (isSeedSafe) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      "\n🏹  WARNING: You are about to run the seed script on a e2e database!\n" +
-        `DB_URL: ${process.env.DB_URL}\n` +
-        "Press Enter to continue, or Ctrl+C to abort.",
-    )
-
-    await new Promise<void>((resolve) => {
-      process.stdin.resume()
-      process.stdin.once("data", () => resolve())
-    })
-  }
-
   if (isProd) {
     // eslint-disable-next-line no-console
     console.warn(
       "\n⚠️  WARNING: You are about to run the seed script on a NON-LOCAL database!\n" +
-        `DB_URL: ${process.env.DB_URL}\n` +
+        `DB_URL: ${DB_URL}\n` +
         "Press Enter to continue, or Ctrl+C to abort.",
     )
 
@@ -1807,10 +1903,35 @@ const seedDb = async (): Promise<void> => {
   }
 
   if (isProd) {
-    // await clearGuests()
+    // eslint-disable-next-line no-console
+    console.warn(
+      "\n🚀  REALLY SURE WARNING: You are about to run the seed script on a NON-LOCAL database!\n" +
+        `DB_URL: ${DB_URL}\n` +
+        "Press Enter to continue, or Ctrl+C to abort.",
+    )
+
+    await new Promise<void>((resolve) => {
+      process.stdin.resume()
+      process.stdin.once("data", () => resolve())
+    })
+
     await prod()
     process.exit(0)
   } else {
+    if (isSeedSafe) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "\n🏹  WARNING: You are about to run the seed script on a e2e database!\n" +
+          `DB_URL: ${process.env.DB_URL}\n` +
+          "Press Enter to continue, or Ctrl+C to abort.",
+      )
+
+      await new Promise<void>((resolve) => {
+        process.stdin.resume()
+        process.stdin.once("data", () => resolve())
+      })
+    }
+
     await clearDb()
     await create()
     process.exit(0)

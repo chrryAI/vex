@@ -1,9 +1,9 @@
+import { execSync } from "node:child_process"
 import cluster from "node:cluster"
-import { execSync, execFileSync } from "node:child_process"
 import fs from "node:fs"
 import os from "node:os"
-import process from "node:process"
 import { join } from "node:path"
+import process from "node:process"
 import { log } from "../compiler/log.js"
 import readTest262 from "./read.js"
 
@@ -13,7 +13,7 @@ let resultOnly = process.env.RESULT_ONLY
 
 const workerDataPath = "/tmp/workerData.json"
 if (cluster.isPrimary) {
-  const veryStart = performance.now()
+  const _veryStart = performance.now()
 
   const test262Path = join(__dirname, "test262")
   let whatTests = process.argv.slice(2).find((x) => x[0] !== "-") ?? ""
@@ -26,10 +26,14 @@ if (cluster.isPrimary) {
 
   let threads = parseInt(
     process.argv.find((x) => x.startsWith("--threads="))?.split("=")?.[1],
+    10,
   )
   if (Number.isNaN(threads))
     try {
-      threads = parseInt(fs.readFileSync(join(__dirname, ".threads"), "utf8"))
+      threads = parseInt(
+        fs.readFileSync(join(__dirname, ".threads"), "utf8"),
+        10,
+      )
     } catch {
       threads = Math.min(12, os.cpus().length) - 4
       log.warning(
@@ -51,13 +55,13 @@ if (cluster.isPrimary) {
     )
   }
 
-  let minimal = process.argv.includes("--minimal")
+  const minimal = process.argv.includes("--minimal")
   if (minimal) resultOnly = true
   const lastResults = fs.existsSync(join(__dirname, "results.json"))
     ? JSON.parse(fs.readFileSync(join(__dirname, "results.json"), "utf8"))
     : {}
 
-  let lastCommitResults = minimal
+  const lastCommitResults = minimal
     ? []
     : execSync(`git log -200 --pretty=%B`)
         .toString()
@@ -85,7 +89,7 @@ if (cluster.isPrimary) {
     .split("///")
     .reduce((acc, x) => {
       const [k, ...content] = x.split("\n")
-      acc[k.trim()] = content.join("\n").trim() + "\n"
+      acc[k.trim()] = `${content.join("\n").trim()}\n`
       return acc
     }, {})
 
@@ -113,7 +117,7 @@ if (cluster.isPrimary) {
   const profileStats = new Array(7).fill(0)
 
   const trackErrors = process.argv.includes("--errors")
-  const onlyTrackCompilerErrors = process.argv.includes(
+  const _onlyTrackCompilerErrors = process.argv.includes(
     "--compiler-errors-only",
   )
   const logErrors = process.argv.includes("--log-errors")
@@ -134,8 +138,8 @@ if (cluster.isPrimary) {
   const table = (overall, ...arr) => {
     let out = ""
     for (let i = 0; i < arr.length; i++) {
-      let icon = ["🧪", "🤠", "❌", "💀", "🏗️", "💥", "⏰", "📝"][i]
-      let iconDesc = [
+      const icon = ["🧪", "🤠", "❌", "💀", "🏗️", "💥", "⏰", "📝"][i]
+      const iconDesc = [
         "total",
         "pass",
         "fail",
@@ -148,7 +152,7 @@ if (cluster.isPrimary) {
       // let color = resultOnly ? '' : ['', '\u001b[42m', '\u001b[43m', '\u001b[101m', '\u001b[41m', '\u001b[41m', '\u001b[101m', todoTime === 'runtime' ? '\u001b[101m' : '\u001b[41m'][i];
       // let color = resultOnly ? '' : ('\u001b[1m' + ['', '\u001b[32m', '\u001b[33m', '\u001b[91m', '\u001b[31m', '\u001b[31m', '\u001b[91m', todoTime === 'runtime' ? '\u001b[91m' : '\u001b[31m'][i]);
 
-      let change = arr[i] - lastCommitResults[i + 1]
+      const change = arr[i] - lastCommitResults[i + 1]
       // let str = `${color}${icon} ${arr[i]}${resultOnly ? '' : '\u001b[0m'}${overall && change !== 0 ? ` (${change > 0 ? '+' : ''}${change})` : ''}`;
       let str = `${resultOnly ? "" : "\u001b[1m"}${plainResults ? iconDesc : icon} ${arr[i]}${resultOnly ? "" : "\u001b[0m"}${overall && change !== 0 ? ` (${change > 0 ? "+" : ""}${change})` : ""}`
 
@@ -178,7 +182,7 @@ if (cluster.isPrimary) {
       const label = arr[i].toString()
       const showLabel = width > label.length + 2
 
-      out += `${color}\u001b[97m${showLabel ? " " + label : ""}${" ".repeat(width - (showLabel ? label.length + 1 : 0))}\u001b[0m`
+      out += `${color}\u001b[97m${showLabel ? ` ${label}` : ""}${" ".repeat(width - (showLabel ? label.length + 1 : 0))}\u001b[0m`
     }
 
     return out
@@ -193,10 +197,10 @@ if (cluster.isPrimary) {
     wasmErrorFiles = [],
     compileErrorFiles = [],
     timeoutFiles = []
-  let dirs = new Map(),
-    features = new Map(),
+  const dirs = new Map(),
+    _features = new Map(),
     errors = new Map(),
-    pagesUsed = new Map()
+    _pagesUsed = new Map()
   let total = 0,
     passes = 0,
     fails = 0,
@@ -221,7 +225,7 @@ if (cluster.isPrimary) {
 
   // Remove ANSI escape sequences - construct regex from string to avoid control character in literal
   const noAnsi = (s) =>
-    s.replace(new RegExp(String.fromCharCode(27) + "\\[[0-9]+m", "g"), "")
+    s.replace(new RegExp(`${String.fromCharCode(27)}\\[[0-9]+m`, "g"), "")
 
   let queue = 0
   const spawn = () => {
@@ -336,7 +340,7 @@ if (cluster.isPrimary) {
               )
 
             process.stdout.write(
-              (lastPercent != 0
+              (lastPercent !== 0
                 ? `\u001b[2F\u001b[0J`
                 : `\r${" ".repeat(100)}\r`) +
                 bar(
@@ -712,7 +716,7 @@ if (cluster.isPrimary) {
       } catch (e) {
         if (e?.name === "Test262Error" && debugAsserts && log) {
           const [msg, expected, actual] = log.split("\n")
-          let spl = e.stack.split("\n")
+          const spl = e.stack.split("\n")
           spl[0] += `: ${msg} | expected: ${expected} | actual: ${actual}`
           e.stack = spl.join("\n")
         }
@@ -736,7 +740,7 @@ if (cluster.isPrimary) {
 
     let out = 0
     if (!pass) {
-      const errorName = error && error.name
+      const errorName = error?.name
       if (stage === 0) {
         out = errorName === "CompileError" ? 2 : 3
       } else if (stage === 1) {
@@ -755,7 +759,7 @@ if (cluster.isPrimary) {
             errorName !== "CompileError" &&
             errorName !== "SyntaxError"))
       ) {
-        let errorStr = `${error.constructor.name}: ${error.message}`
+        const errorStr = `${error.constructor.name}: ${error.message}`
         errors[errorStr] = (errors[errorStr] ?? 0) + 1
       }
     }

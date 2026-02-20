@@ -1,7 +1,7 @@
 // React Native implementation - placeholder for now
 // You can integrate react-native-track-player or react-native-sound later
 import { forwardRef } from "react"
-import { View } from "react-native"
+import type { View } from "react-native"
 
 export interface AudioProps {
   src?: string

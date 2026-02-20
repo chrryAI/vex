@@ -1,4 +1,4 @@
-import { describe, it, expect } from "bun:test"
+import { describe, expect, it } from "vitest"
 import { getSafeUrl } from "./ssrf"
 
 describe("validateUrl / getSafeUrl", () => {

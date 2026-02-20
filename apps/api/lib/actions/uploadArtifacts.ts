@@ -1,21 +1,21 @@
 "use server"
 
-import slugify from "slug"
-import { upload } from "../../lib/minio"
-import { processFileForRAG } from "./ragService"
+import { isE2E as isE2EInternal } from "@chrryai/chrry/utils"
 // Note: getMember/getGuest are passed as parameters, not imported
 import {
-  getMessages,
-  thread,
-  updateThread,
   createMessage,
+  getMessages,
+  type thread,
+  updateThread,
   VEX_LIVE_FINGERPRINTS,
 } from "@repo/db"
-import { extractPDFText } from "../../lib"
-import { redact } from "../redaction"
+import slugify from "slug"
 import { v4 as uuidv4 } from "uuid"
-import { isE2E as isE2EInternal } from "@chrryai/chrry/utils"
+import { extractPDFText } from "../../lib"
 import captureException from "../../lib/captureException"
+import { upload } from "../../lib/minio"
+import { redact } from "../redaction"
+import { processFileForRAG } from "./ragService"
 
 export const uploadArtifacts = async ({
   files,
@@ -34,8 +34,10 @@ export const uploadArtifacts = async ({
   const fingerprint = member?.fingerprint || guest?.fingerprint
 
   const isE2E =
-    isE2EInternal &&
-    (!fingerprint || !VEX_LIVE_FINGERPRINTS.includes(fingerprint))
+    member?.role !== "admin" &&
+    fingerprint &&
+    !VEX_LIVE_FINGERPRINTS.includes(member?.fingerprint) &&
+    isE2EInternal
   const memoriesEnabled = (member || guest)?.memoriesEnabled
 
   let firstMessage = (await getMessages({ threadId: thread.id, isAsc: true }))
@@ -274,7 +276,7 @@ export const uploadArtifacts = async ({
   }
 
   // Update thread artifacts - append new files to existing ones
-  const t = await updateThread({
+  const _t = await updateThread({
     id: thread.id,
     artifacts: uploadedFiles,
   })

@@ -1,8 +1,7 @@
+import AppProviders from "@chrryai/chrry/context/providers"
 import React, { useEffect, useState } from "react"
 import ReactDOM from "react-dom/client"
 import { TabBar } from "./components/TabBar"
-import { BrowserHeader } from "./components/BrowserHeader"
-import AppProviders from "@chrryai/chrry/context/providers"
 import "@chrryai/chrry/globals.scss"
 import "./styles/browser-chrome.css"
 
@@ -18,8 +17,8 @@ function App() {
     { id: "1", url: "https://www.google.com", title: "Google" },
   ])
   const [activeTabId, setActiveTabId] = useState("1")
-  const [canGoBack, setCanGoBack] = useState(false)
-  const [canGoForward, setCanGoForward] = useState(false)
+  const [_canGoBack, _setCanGoBack] = useState(false)
+  const [_canGoForward, _setCanGoForward] = useState(false)
 
   const activeTab = tabs.find((t) => t.id === activeTabId)
 

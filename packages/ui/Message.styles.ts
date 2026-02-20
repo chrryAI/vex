@@ -174,7 +174,6 @@ export const MessageStyleDefs = {
     borderRadius: 6,
     color: "white",
     padding: 6,
-    opacity: 1,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -333,8 +332,8 @@ export const MessageStyleDefs = {
   },
 } as const
 
-import { createUnifiedStyles } from "./styles/createUnifiedStyles"
 import { createStyleHook } from "./styles/createStyleHook"
+import { createUnifiedStyles } from "./styles/createUnifiedStyles"
 
 export const MessageStyles = createUnifiedStyles(MessageStyleDefs)
 

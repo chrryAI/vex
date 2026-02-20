@@ -1,45 +1,43 @@
-import { Hono } from "hono"
-import { v4 as uuidv4, validate } from "uuid"
-import sanitizeHtml from "sanitize-html"
-import { redact } from "../../lib/redaction"
+import { MAX_FILE_LIMITS } from "@chrryai/chrry/utils"
 import {
-  getMessages,
   createMessage,
-  getAiAgent,
   createThread,
+  deleteMessage,
+  getAiAgent,
   getMessage,
-  subscription,
-  updateThread,
-  getThread,
+  getMessages,
   getMood,
   getPureApp,
+  getScheduledJob,
   getTask,
-  guest,
-  updateTask,
-  user,
-  deleteMessage,
-  updateMessage,
-} from "@repo/db"
-import { PROMPT_LIMITS, webSearchResultType } from "@repo/db/src/schema"
-import {
+  getThread,
+  type guest,
+  isDevelopment,
   isE2E as isE2EInternal,
   isOwner,
+  type subscription,
+  updateMessage,
+  updateTask,
+  updateThread,
+  type user,
   VEX_LIVE_FINGERPRINTS,
 } from "@repo/db"
-
-import { MAX_FILE_LIMITS } from "@chrryai/chrry/utils"
-
-import { generateThreadTitle, trimTitle } from "../../utils/titleGenerator"
-import { notifyOwnerAndCollaborations } from "../../lib/notify"
+import { PROMPT_LIMITS, type webSearchResultType } from "@repo/db/src/schema"
+import { Hono } from "hono"
+import sanitizeHtml from "sanitize-html"
+import { v4 as uuidv4, validate } from "uuid"
+import { getDailyImageLimit, isCollaborator } from "../../lib"
 import { processMessageForRAG } from "../../lib/actions/ragService"
-import { isCollaborator, getDailyImageLimit } from "../../lib"
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
-import { checkRateLimit } from "../../lib/rateLimiting"
 import captureException from "../../lib/captureException"
-import { scanFileForMalware } from "../../lib/security"
-import { getGuest, getMember } from "../lib/auth"
 import { deleteFile } from "../../lib/minio"
+import { notifyOwnerAndCollaborations } from "../../lib/notify"
+import { checkRateLimit } from "../../lib/rateLimiting"
+import { redact } from "../../lib/redaction"
+import { scanFileForMalware } from "../../lib/security"
 import { streamControllers } from "../../lib/streamControllers"
+import { generateThreadTitle, trimTitle } from "../../utils/titleGenerator"
+import { getGuest, getMember } from "../lib/auth"
 
 export const messages = new Hono()
 
@@ -92,10 +90,6 @@ const getFileUploadQuota = async ({
   if (!user && !guest) {
     return null
   }
-
-  const fingerprint = user?.fingerprint || guest?.fingerprint
-  const isE2E =
-    fingerprint && !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
 
   const limits = getUploadLimitsForUser({ user, guest })
 
@@ -191,7 +185,6 @@ messages.get("/", async (c) => {
   const quota = c.req.query("quota")
 
   if (quota === "true") {
-    const fingerprint = member?.fingerprint || guest?.fingerprint
     const quotaInfo = await getFileUploadQuota({
       user: member,
       guest,
@@ -200,7 +193,7 @@ messages.get("/", async (c) => {
   }
 
   const messages = await getMessages({
-    pageSize: Number.parseInt(pageSize || "24"),
+    pageSize: Number.parseInt(pageSize || "24", 10),
     userId: member?.id,
     guestId: guest?.id,
     threadId: threadId || undefined,
@@ -234,28 +227,31 @@ messages.post("/", async (c) => {
   if (contentType.includes("multipart/form-data")) {
     const body = await c.req.parseBody({ all: true })
     requestData = {
-      moodId: body["moodId"] as string,
-      notify: body["notify"],
-      appId: body["appId"] as string,
-      molt: body["isMolt"] === "true",
-      isTribe: body["isTribe"] === "true",
-      content: body["content"] as string,
-      retro: body["retro"] === "true",
-      pear: body["pear"] === "true",
-      agentId: body["agentId"] as string,
-      debateAgentId: body["debateAgentId"] as string,
-      threadId: body["threadId"] as string,
-      isIncognito: body["isIncognito"] === "true",
-      actionEnabled: body["actionEnabled"] === "true",
-      instructions: body["instructions"] as string,
-      language: (body["language"] as string) || "en",
-      isTasksEnabled: body["isTasksEnabled"] === "true",
-      isAgent: body["isAgent"] === "true",
-      imageGenerationEnabled: body["imageGenerationEnabled"] === "true",
-      attachmentType: body["attachmentType"] as string,
-      clientId: body["clientId"] as string,
-      deviceId: body["deviceId"] as string,
-      taskId: body["taskId"] as string,
+      moodId: body.moodId as string,
+      notify: body.notify,
+      appId: body.appId as string,
+      molt: body.isMolt === "true",
+      tribe: body.tribe === "true",
+      content: body.content as string,
+      retro: body.retro === "true",
+      pear: body.pear === "true",
+      agentId: body.agentId as string,
+      debateAgentId: body.debateAgentId as string,
+      threadId: body.threadId as string,
+      isIncognito: body.isIncognito === "true",
+      actionEnabled: body.actionEnabled === "true",
+      instructions: body.instructions as string,
+      language: (body.language as string) || "en",
+      isTasksEnabled: body.isTasksEnabled === "true",
+      isAgent: body.isAgent === "true",
+      imageGenerationEnabled: body.imageGenerationEnabled === "true",
+      attachmentType: body.attachmentType as string,
+      clientId: body.clientId as string,
+      deviceId: body.deviceId as string,
+      taskId: body.taskId as string,
+      jobId: body.jobId as string,
+      tribePostId: body.tribePostId as string,
+      moltId: body.moltId as string,
     }
 
     // Extract files - parseBody returns files as File objects in the body map
@@ -280,8 +276,8 @@ messages.post("/", async (c) => {
     requestData = {
       ...jsonBody,
       // Parse boolean fields for JSON requests (same as multipart)
-      molt: jsonBody.isMolt === "true" || jsonBody.isMolt === true,
-      isTribe: jsonBody.isTribe === "true" || jsonBody.isTribe === true,
+      molt: jsonBody.molt === "true" || jsonBody.molt === true,
+      tribe: jsonBody.tribe === "true" || jsonBody.tribe === true,
     }
   }
 
@@ -325,6 +321,7 @@ messages.post("/", async (c) => {
     isIncognito,
     instructions,
     language,
+    moltId,
     isAgent,
     appId,
     imageGenerationEnabled,
@@ -334,8 +331,10 @@ messages.post("/", async (c) => {
     moodId,
     pear,
     molt,
-    isTribe,
+    tribe,
     retro,
+    jobId,
+    tribePostId,
     ...rest
   } = requestData
 
@@ -343,6 +342,7 @@ messages.post("/", async (c) => {
     molt,
     retro,
     contentPreview: content?.substring(0, 20),
+    jobId,
   })
 
   const notify = requestData.notify !== false && requestData.notify !== "false"
@@ -350,6 +350,42 @@ messages.post("/", async (c) => {
   const task = taskId ? await getTask({ id: taskId }) : undefined
   const mood = moodId ? await getMood({ id: moodId }) : undefined
   const app = appId ? await getPureApp({ id: appId }) : undefined
+  const job = jobId ? await getScheduledJob({ id: jobId }) : undefined
+
+  // Handle scheduled job requests
+  if (jobId && !job) {
+    return c.json({ error: "Job not found" }, 404)
+  }
+
+  const isMolt = job?.jobType ? job.jobType?.startsWith("molt") : molt
+  const isTribe = job?.jobType ? job.jobType?.startsWith("tribe") : tribe
+
+  if (member && app && (isTribe || isMolt) && !isAgent && !jobId) {
+    const COOLDOWN_MS = isDevelopment ? 0 : 30 * 60 * 1000 // 30 minutes
+    const cooldownType = isTribe ? "tribe" : "molt"
+    const recentMessages = await getMessages({
+      userId: member.id,
+      appId: app.id,
+      isTribe: isTribe || undefined,
+      isMolt: isMolt || undefined,
+      pageSize: 1,
+      isAsc: false,
+    })
+    const lastMessage = recentMessages.messages[0]?.message
+    if (lastMessage?.createdOn) {
+      const elapsed = Date.now() - new Date(lastMessage.createdOn).getTime()
+      if (elapsed < COOLDOWN_MS) {
+        const remainingSeconds = Math.ceil((COOLDOWN_MS - elapsed) / 1000)
+        return c.json(
+          {
+            error: `${cooldownType === "tribe" ? "Tribe" : "Molt"} cooldown active. Please wait ${Math.ceil(remainingSeconds / 60)} more minute(s).`,
+            cooldown: { remaining: remainingSeconds, type: cooldownType },
+          },
+          429,
+        )
+      }
+    }
+  }
 
   if (stopStreamId) {
     const controller = streamControllers.get(stopStreamId)
@@ -410,8 +446,8 @@ messages.post("/", async (c) => {
       isIncognito,
       instructions,
       appId: app?.id,
-      isMolt: !!molt,
-      isTribe: !!isTribe,
+      isMolt,
+      isTribe,
     })
 
     if (!newThread) {
@@ -484,7 +520,11 @@ messages.post("/", async (c) => {
       agentId: selectedAgent.id,
       agentVersion: selectedAgent.version,
       appId: app?.id,
-      isMolt: !!molt,
+      isMolt,
+      isTribe,
+      jobId,
+      moltId,
+      tribePostId,
     })
 
     if (!agentMessage) {
@@ -511,7 +551,11 @@ messages.post("/", async (c) => {
     isPear: pear || false, // Track Pear feedback submissions
     debateAgentId: selectedDebateAgent?.id,
     appId: app?.id,
-    isMolt: !!molt,
+    isMolt,
+    isTribe,
+    jobId: job?.id,
+    moltId,
+    tribePostId,
   })
 
   if (userMessage) {
@@ -724,19 +768,19 @@ messages.delete("/:id", async (c) => {
   // Delete associated files from MinIO
   const filesToDelete: string[] = []
   if (existingMessage.message.images) {
-    existingMessage.message.images.forEach(
-      (img) => img.url && filesToDelete.push(img.url),
-    )
+    existingMessage.message.images.forEach((img) => {
+      img.url && filesToDelete.push(img.url)
+    })
   }
   if (existingMessage.message.files) {
-    existingMessage.message.files.forEach(
-      (f) => f.url && filesToDelete.push(f.url),
-    )
+    existingMessage.message.files.forEach((f) => {
+      f.url && filesToDelete.push(f.url)
+    })
   }
   if (existingMessage.message.video) {
-    existingMessage.message.video.forEach(
-      (v) => v.url && filesToDelete.push(v.url),
-    )
+    existingMessage.message.video.forEach((v) => {
+      v.url && filesToDelete.push(v.url)
+    })
   }
 
   const deletePromises = filesToDelete.map((url) =>

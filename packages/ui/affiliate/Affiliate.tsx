@@ -1,25 +1,23 @@
 "use client"
 
-import React, { useState } from "react"
-import { COLORS, useAppContext } from "../context/AppContext"
+import { useState } from "react"
 import toast from "react-hot-toast"
-import {
-  TrendingUp,
-  MousePointerClick,
-  Coins,
-  UserRoundPlus,
-  SmilePlus,
-} from "../icons"
-import Img from "../Image"
-import { useAuth, useData } from "../context/providers"
-import { Button, Div, H1, H2, H3, P, Strong, useTheme } from "../platform"
+import { COLORS, useAppContext } from "../context/AppContext"
+import { useAuth, useData, useNavigationContext } from "../context/providers"
+import { useStyles } from "../context/StylesContext"
 import { useHasHydrated } from "../hooks"
+import Img from "../Image"
+import {
+  Coins,
+  MousePointerClick,
+  SmilePlus,
+  TrendingUp,
+  UserRoundPlus,
+} from "../icons"
+import { Button, Div, H1, H2, H3, P, Strong, useTheme } from "../platform"
 import Skeleton from "../Skeleton"
 import { apiFetch } from "../utils"
 import { useAffiliateStyles } from "./Affiliate.styles"
-import { useStyles } from "../context/StylesContext"
-
-import { useNavigationContext } from "../context/providers"
 
 export default function Affiliate() {
   const { user, token, API_URL, FRONTEND_URL, siteConfig: config } = useAuth()
@@ -64,7 +62,7 @@ export default function Affiliate() {
     }
   }
 
-  const isChrryAI = config.mode === "chrryAI"
+  const _isChrryAI = config.mode === "chrryAI"
 
   if (!is) return null
 

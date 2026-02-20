@@ -3,7 +3,6 @@
  * Uses react-native-svg for native platforms
  */
 
-import React from "react"
 import Svg, { Path } from "react-native-svg"
 
 interface WannathisIconProps {

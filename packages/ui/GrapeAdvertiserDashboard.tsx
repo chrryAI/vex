@@ -117,7 +117,7 @@
 //         <div className={styles.dashboard}>
 //           <div className={styles.header}>
 //             <h1>
-//               <button
+//               <button type="button"
 //                 className="link"
 //                 onClick={() => {
 //                   router.push("/grape")
@@ -146,7 +146,7 @@
 //           <div className={styles.linkSection}>
 //             <h2>🚀 {t("Create New Campaign")}</h2>
 //             <div className={styles.linkBox}>
-//               <button
+//               <button type="button"
 //                 className={clsx("inverted", styles.copyButton)}
 //                 onClick={() => {
 //                   addHapticFeedback()
@@ -290,7 +290,9 @@
 //                   return
 //                 }
 //                 e.preventDefault()
-//                 setIsNewChat(true)
+//                 setIsNewChat({
+//                        value: true,
+//                      })
 //               }}
 //             >
 //               <Logo isVivid size={32} /> {"Vex"}

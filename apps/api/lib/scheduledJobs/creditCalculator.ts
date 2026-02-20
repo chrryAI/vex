@@ -1,11 +1,11 @@
 import {
   estimateJobCredits,
+  type estimateJobCreditsParams,
   formatCredits,
-  type EstimateJobCreditsParams,
 } from "@chrryai/chrry/utils"
 
 // Simple wrapper - new calculator doesn't need DB pricing, uses multipliers
-export async function calculateCreditsFromDB(params: EstimateJobCreditsParams) {
+export async function calculateCreditsFromDB(params: estimateJobCreditsParams) {
   return estimateJobCredits(params)
 }
 

@@ -1,7 +1,6 @@
 import { openai } from "@ai-sdk/openai"
+import { codeEmbeddings, db } from "@repo/db"
 import { embed } from "ai"
-import { db } from "@repo/db"
-import { codeEmbeddings } from "@repo/db/schema"
 import { eq, sql } from "drizzle-orm"
 import { queryCodeGraph } from "./storeFalkorGraph"
 
@@ -62,7 +61,7 @@ export async function queryCodebase(
     LIMIT ${limit}
   `)
 
-  const codeChunks = (results.rows as any[]).map((row) => ({
+  const codeChunks = ((results as any).rows as any[]).map((row) => ({
     id: row.id,
     filepath: row.filepath,
     type: row.type,
@@ -183,6 +182,10 @@ export async function findSimilarFunctions(
     return []
   }
 
+  if (!targetFunction[0]) {
+    throw new Error(`Function ${functionName} not found in ${repoName}`)
+  }
+
   const targetEmbedding = targetFunction[0].embedding
 
   // Find similar functions using vector similarity
@@ -199,10 +202,10 @@ export async function findSimilarFunctions(
     WHERE 
       "repoName" = ${repoName}
       AND type = 'function'
-      AND id != ${targetFunction[0].id}
+      AND id != ${targetFunction[0]!.id}
     ORDER BY similarity DESC
     LIMIT ${limit}
   `)
 
-  return results.rows
+  return (results as any).rows
 }

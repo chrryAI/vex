@@ -1,42 +1,16 @@
 "use client"
 
 import React, {
+  type CSSProperties,
   useCallback,
   useEffect,
-  useState,
-  CSSProperties,
   useMemo,
+  useState,
 } from "react"
-
-import { clsx, FilePicker, usePlatform, useTheme } from "./platform"
-import EnableNotifications from "./EnableNotifications"
-import Logo from "./Image"
-import Img from "./Image"
-import Instructions from "./Instructions"
-import {
-  ArrowRight,
-  CircleCheck,
-  CircleMinus,
-  Grip,
-  Info,
-  Pencil,
-  RefreshCw,
-  Settings2,
-  Trash2,
-  CirclePlay,
-  CirclePause,
-} from "./icons"
 import toast from "react-hot-toast"
-import Loading from "./Loading"
-import ConfirmButton from "./ConfirmButton"
-import { useHasHydrated } from "./hooks"
-import { Div, H1, Button, Label, Span, Input, Video } from "./platform"
 import A from "./a/A"
-import { apiFetch, BrowserInstance } from "./utils"
-import { useStyles } from "./context/StylesContext"
-
-import { useFocusButtonStyles } from "./FocusButton.styles"
-
+import ConfirmButton from "./ConfirmButton"
+import { COLORS, useAppContext } from "./context/AppContext"
 import {
   useApp,
   useAuth,
@@ -44,10 +18,44 @@ import {
   useData,
   useNavigationContext,
 } from "./context/providers"
-import { COLORS, useAppContext } from "./context/AppContext"
+import { useStyles } from "./context/StylesContext"
 import { useTimerContext } from "./context/TimerContext"
-import { appWithStore } from "./types"
+import EnableNotifications from "./EnableNotifications"
+import { useFocusButtonStyles } from "./FocusButton.styles"
 import Grapes from "./Grapes"
+import { useHasHydrated } from "./hooks"
+import Logo from "./Image"
+import Img from "./Image"
+import Instructions from "./Instructions"
+import {
+  ArrowRight,
+  CircleCheck,
+  CircleMinus,
+  CirclePause,
+  CirclePlay,
+  Grip,
+  Info,
+  Pencil,
+  RefreshCw,
+  Settings2,
+  Trash2,
+} from "./icons"
+import Loading from "./Loading"
+import {
+  Button,
+  clsx,
+  Div,
+  FilePicker,
+  H1,
+  Input,
+  Label,
+  Span,
+  usePlatform,
+  useTheme,
+  Video,
+} from "./platform"
+import type { appWithStore } from "./types"
+import { apiFetch, BrowserInstance } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 function FocusButton({
@@ -60,7 +68,7 @@ function FocusButton({
   const { time, presetMin1 } = useTimerContext()
 
   const { appStyles } = useStyles()
-  const { isExtension, isFirefox, isWeb } = usePlatform()
+  const { isExtension, isFirefox, isWeb: _isWeb } = usePlatform()
   const { focus, getAppSlug, setShowFocus, app } = useAuth()
 
   const hasHydrated = useHasHydrated()
@@ -127,7 +135,7 @@ export default function App({
   }) => void
 }) {
   const { t } = useAppContext()
-  const { time, playKitasaku, setPlayKitasaku } = useTimerContext()
+  const { time: _time, playKitasaku, setPlayKitasaku } = useTimerContext()
 
   const {
     slug,
@@ -166,7 +174,7 @@ export default function App({
     accountApp,
     token,
     loadingApp,
-    userBaseStore,
+    userBaseStore: _userBaseStore,
     canBurn,
     setBurn,
     isPear,
@@ -174,7 +182,7 @@ export default function App({
     displayedApps,
     setDisplayedApps,
     plausible,
-    lastApp,
+    lastApp: _lastApp,
     ...auth
   } = useAuth()
 
@@ -198,6 +206,7 @@ export default function App({
   const vex = apps.find((app) => app.slug === "vex")
   const atlas = apps.find((app) => app.slug === "atlas")
   const grape = apps.find((app) => app.slug === "grape")
+  const nebula = apps.find((app) => app.slug === "nebula")
   const zarathustra = apps.find((app) => app.slug === "zarathustra")
 
   const isBlossom = app?.store?.id === chrry?.store?.id
@@ -209,13 +218,14 @@ export default function App({
           item.id !== burnApp?.id &&
           item.id !== store?.appId &&
           item.id !== chrry?.id &&
-          (item.id !== grape?.id || !isBlossom) &&
-          (item.id !== zarathustra?.id || !isBlossom) &&
-          (item.id === atlas?.id
-            ? app?.store?.app?.id === vex?.id || baseApp?.id === vex?.id
-            : true) &&
+          (item.id !== nebula?.id || !isBlossom) &&
+          (item.id !== grape?.id || (!isBlossom && !accountApp)) &&
+          (item.id !== zarathustra?.id || (!isBlossom && !accountApp)) &&
+          (item.id === atlas?.id ? !isBlossom : true) &&
           item.id !== popcorn?.id &&
-          (isBlossom ? item.id !== atlas?.id : true),
+          (isBlossom && accountApp?.id !== app?.id
+            ? item.id !== atlas?.id
+            : true),
       )
       .filter((item) => item.id !== focus?.id)
       .sort((a, b) => {
@@ -506,7 +516,7 @@ export default function App({
           onClick={(e) => {
             e.preventDefault()
 
-            setIsNewAppChat(storeApp)
+            setIsNewAppChat({ item: storeApp })
             addHapticFeedback()
             setAppStatus(undefined)
             if (e.metaKey || e.ctrlKey) {
@@ -527,7 +537,7 @@ export default function App({
 
   const { appStyles: styles, utilities } = useStyles()
 
-  const [selectedGrapeApp, setSelectedGrapeApp] = useState<
+  const [_selectedGrapeApp, _setSelectedGrapeApp] = useState<
     appWithStore | undefined
   >()
 
@@ -781,7 +791,7 @@ export default function App({
                     </Button>
                   )}
               </Div>
-            ) : appFormWatcher && appFormWatcher.canSubmit && hasHydrated ? (
+            ) : appFormWatcher?.canSubmit && hasHydrated ? (
               <Div style={styles.titleFormTitle.style}>
                 {app?.id === focus?.id ? (
                   <FocusButton width={38} style={{ marginRight: 5 }} />
@@ -931,7 +941,6 @@ export default function App({
                     <Img icon="raspberry" size={22} /> {t("Subscribe")}
                   </Button>
                 ) : (
-                  user &&
                   user?.subscription && (
                     <Button
                       data-testid="subscription-from-minimize-button"
@@ -1017,7 +1026,7 @@ export default function App({
             }}
           >
             <Div style={{ ...styles.section.style }}>
-              {appStatus?.part || app?.id === accountApp?.id ? null : (
+              {appStatus?.part ? null : (
                 <Button
                   data-testid="add-agent-button"
                   className="link"
@@ -1029,8 +1038,14 @@ export default function App({
                   }}
                   key={suggestSaveApp ? "highlights" : "settings"}
                   onClick={() => {
+                    if (accountApp?.id === app?.id) {
+                      setAppStatus({
+                        step: canEditApp ? "update" : "add",
+                        part: "name",
+                      })
+                    }
                     if (accountApp) {
-                      setIsNewAppChat(accountApp)
+                      setIsNewAppChat({ item: accountApp })
                       return
                     }
                     if (user?.role !== "admin") {
@@ -1048,6 +1063,11 @@ export default function App({
                       }
                     }
 
+                    if (!user) {
+                      addParams({ signIn: "login" })
+                      return
+                    }
+
                     setAppStatus({
                       part: "settings",
                       step: canEditApp ? "update" : "add",
@@ -1058,7 +1078,9 @@ export default function App({
                       ? "Cancel"
                       : !accountApp
                         ? "Add agent"
-                        : "Go to agent",
+                        : app?.id === accountApp?.id
+                          ? "Edit your agent"
+                          : "Go to agent",
                   )}
                 >
                   <Span
@@ -1075,7 +1097,9 @@ export default function App({
                       ? "Cancel"
                       : !accountApp
                         ? "Add agent"
-                        : "Go to agent",
+                        : app?.id === accountApp?.id
+                          ? "Edit your agent"
+                          : "Go to agent",
                   )}
                   <Img
                     showLoading={false}
@@ -1229,10 +1253,11 @@ export default function App({
                       onClick={() => {
                         setAppStatus(undefined)
                       }}
-                      style={utilities.link.style}
+                      style={{ ...utilities.link.style, color: COLORS.red }}
                       title={t(isManagingApp ? "Cancel" : "Add agent")}
                     >
-                      <CircleMinus color="var(--accent-1)" size={24} />
+                      <CircleMinus color={COLORS.red} size={24} />
+                      <Span> {t("Cancel")}</Span>
                     </Button>
                   )}
                 </Div>
@@ -1337,22 +1362,25 @@ export default function App({
               >
                 <Div style={{ ...styles.apps.style, overflowWrap: "anywhere" }}>
                   {appsState.slice(0, 5)?.map((item, index) => {
-                    const showAtlasHere = index === 1 && isBlossom
+                    const showAtlasHere =
+                      index === 1 && (isBlossom || accountApp?.id === app?.id)
 
                     const showFocusHere = focus && !showAtlasHere && index === 1
-
-                    const showPacmanHere =
-                      // !showAtlasThere &&
-                      app?.store?.id !== popcorn?.store?.id && index === 2
 
                     const showSpaceInvaderHere = index === 3
 
                     const showChrryHere =
                       index === 0 && chrry && app?.id !== chrry.id
+
                     const showZarathustraHere =
+                      store?.slug !== "books" &&
                       !showChrryHere &&
-                      index === 0 &&
-                      store?.appId !== zarathustra?.id
+                      index === (accountApp?.id === app?.id ? 2 : 0)
+
+                    const showPacmanHere =
+                      !showZarathustraHere &&
+                      app?.store?.id !== popcorn?.store?.id &&
+                      index === 2
 
                     return (
                       <Div
@@ -1381,7 +1409,7 @@ export default function App({
                                 }
                                 e.preventDefault()
 
-                                setIsNewAppChat(chrry)
+                                setIsNewAppChat({ item: chrry })
                               }}
                               style={{
                                 ...styles.chrry.style,
@@ -1400,7 +1428,6 @@ export default function App({
                               )}
                             </A>
                           )}
-
                           {showZarathustraHere &&
                             zarathustra &&
                             store &&
@@ -1422,7 +1449,7 @@ export default function App({
                                   }
                                   e.preventDefault()
 
-                                  setIsNewAppChat(zarathustra)
+                                  setIsNewAppChat({ item: zarathustra })
                                 }}
                                 style={{
                                   ...styles.zarathustra.style,
@@ -1442,14 +1469,12 @@ export default function App({
                               </A>
                             )}
                           {showPacmanHere ? (
-                            isSettingVisible ? (
-                              <BurnButton style={{ ...styles.popcorn.style }} />
-                            ) : popcorn &&
-                              store &&
-                              store?.appId !== popcorn?.id &&
-                              store?.apps?.some(
-                                (app) => app.id === popcorn.id,
-                              ) ? (
+                            popcorn &&
+                            store &&
+                            store?.appId !== popcorn?.id &&
+                            store?.apps?.some(
+                              (app) => app.id === popcorn.id,
+                            ) ? (
                               <A
                                 preventDefault
                                 href={getAppSlug(popcorn)}
@@ -1465,7 +1490,7 @@ export default function App({
                                   }
                                   e.preventDefault()
 
-                                  setIsNewAppChat(popcorn)
+                                  setIsNewAppChat({ item: popcorn })
                                 }}
                                 style={{
                                   ...styles.popcorn.style,
@@ -1502,8 +1527,7 @@ export default function App({
                               )
                             )
                           ) : null}
-
-                          {slug && getAppSlug(item) === slug ? (
+                          {item.id === app?.id ? (
                             <>
                               <StoreApp key={"vex"} />
                             </>
@@ -1524,8 +1548,8 @@ export default function App({
                                   key={item.slug}
                                   title={t(item.title)}
                                   className={clsx(`button`, {
-                                    ["transparent"]: isManagingApp,
-                                    ["inverted"]: !isManagingApp,
+                                    transparent: isManagingApp,
+                                    inverted: !isManagingApp,
                                     glow: loadingApp?.id === item.id,
                                   })}
                                   style={{
@@ -1548,7 +1572,7 @@ export default function App({
                                       return
                                     }
 
-                                    setIsNewAppChat(item)
+                                    setIsNewAppChat({ item })
 
                                     e.preventDefault()
                                   }}
@@ -1600,7 +1624,7 @@ export default function App({
                                 }
                                 e.preventDefault()
 
-                                setIsNewAppChat(atlas)
+                                setIsNewAppChat({ item: atlas })
                               }}
                               style={{
                                 ...styles.atlas.style,
@@ -1696,11 +1720,13 @@ export default function App({
             isAgentBuilder={true}
             opacity={0}
             onSave={({ content, artifacts }) => {
-              !isManagingApp &&
-                onSave?.({
-                  content,
-                  artifacts,
-                })
+              if (isManagingApp) {
+                return
+              }
+              onSave?.({
+                content,
+                artifacts,
+              })
             }}
           />
         </Div>

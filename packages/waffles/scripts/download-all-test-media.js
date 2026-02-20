@@ -5,7 +5,7 @@
  * Master script to download videos, images, and PDFs for E2E testing
  */
 
-const { spawnSync } = require("child_process")
+const { spawnSync } = require("node:child_process")
 const path = require("node:path")
 
 const scripts = [
@@ -42,7 +42,7 @@ async function main() {
       console.error(`\n❌ ${script.name} failed:`, error.message)
     }
 
-    console.log("\n" + "=".repeat(50))
+    console.log(`\n${"=".repeat(50)}`)
   }
 
   console.log("\n🎉 All downloads complete!")

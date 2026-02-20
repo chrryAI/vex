@@ -1,9 +1,14 @@
-import { getUser, getGuest as getGuestDb } from "@repo/db"
-import jwt from "jsonwebtoken"
-import captureException from "../../lib/captureException"
-import { Context } from "hono"
-import { validate } from "uuid"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
+import {
+  getGuest as getGuestDb,
+  getUser,
+  type userWithRelations,
+} from "@repo/db"
+import type { Context } from "hono"
+import jwt from "jsonwebtoken"
+import { validate } from "uuid"
+import captureException from "../../lib/captureException"
+
 export { getApp } from "./getApp"
 
 // ==================== MAIN FUNCTION ====================
@@ -65,7 +70,7 @@ export async function getMember(
             ...result,
             token,
             password: full ? result.password : null,
-          }
+          } as userWithRelations
         }
 
         return
@@ -85,7 +90,7 @@ export async function getMember(
             ...user,
             token,
             password: full ? user.password : null,
-          }
+          } as userWithRelations
         }
         return
       }
@@ -102,7 +107,6 @@ export async function getMember(
 export async function getGuest(
   c?: Context,
   { skipCache }: { skipCache?: boolean } = {},
-  debug = false,
 ) {
   const request = c?.req.raw
   const appIdHeader = request?.headers.get("x-app-id")

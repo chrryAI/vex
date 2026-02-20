@@ -1,14 +1,28 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
+import A from "./a/A"
+import Bookmark from "./Bookmark"
+import CollaborationStatus from "./CollaborationStatus"
+import ColorScheme from "./ColorScheme"
+import { useAppContext } from "./context/AppContext"
+import {
+  useApp,
+  useAuth,
+  useChat,
+  useNavigationContext,
+} from "./context/providers"
+import EmptyStateTips from "./EmptyStateTips"
+import { useHasHydrated } from "./hooks"
+import Img from "./Image"
 import {
   ArrowLeft,
   AtSign,
   BellDot,
   HatGlasses,
   LoaderCircle,
-  LockOpen,
   Lock,
+  LockOpen,
   MessageCirclePlus,
   PanelRight,
   Search,
@@ -18,23 +32,8 @@ import {
   UserRoundPlus,
   UsersRound,
 } from "./icons"
-import {
-  BrowserInstance,
-  checkIsExtension,
-  FRONTEND_URL,
-  VERSION,
-} from "./utils"
-import { toast } from "./platform/toast"
-import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
-import { hasThreadNotification } from "./utils/hasThreadNotification"
 import Loading from "./Loading"
-import { useAppContext } from "./context/AppContext"
-import {
-  useAuth,
-  useNavigationContext,
-  useApp,
-  useChat,
-} from "./context/providers"
+import { useMenuStyles } from "./Menu.styles"
 import {
   Button,
   Div,
@@ -45,15 +44,16 @@ import {
   useTheme,
 } from "./platform"
 import { MotiView } from "./platform/MotiView"
-import { useHasHydrated } from "./hooks"
-import Bookmark from "./Bookmark"
-import CollaborationStatus from "./CollaborationStatus"
-import ColorScheme from "./ColorScheme"
-import Img from "./Image"
-import EmptyStateTips from "./EmptyStateTips"
+import { toast } from "./platform/toast"
 import ThemeSwitcher from "./ThemeSwitcher"
-import { useMenuStyles } from "./Menu.styles"
-import A from "./a/A"
+import {
+  BrowserInstance,
+  checkIsExtension,
+  FRONTEND_URL,
+  VERSION,
+} from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+import { hasThreadNotification } from "./utils/hasThreadNotification"
 
 export default function Menu({
   className,
@@ -79,6 +79,7 @@ export default function Menu({
     setLoadingAppId,
     hasStoreApps,
     setBurn,
+    showTribe,
   } = useAuth()
 
   const { setShowTribe } = useChat()
@@ -124,7 +125,7 @@ export default function Menu({
             const fullscreen = await appWindow.isFullscreen()
             setIsFullscreen(fullscreen)
           }
-        } catch (e) {
+        } catch (_e) {
           // Silent fail - not critical
         }
       }
@@ -316,8 +317,9 @@ export default function Menu({
                 onDoubleClick={async () => {
                   if (!isTauri) return
                   try {
-                    const { getCurrentWindow } =
-                      await import("@tauri-apps/api/window")
+                    const { getCurrentWindow } = await import(
+                      "@tauri-apps/api/window"
+                    )
                     const appWindow = getCurrentWindow()
                     const isMaximized = await appWindow.isMaximized()
                     if (isMaximized) {
@@ -325,7 +327,7 @@ export default function Menu({
                     } else {
                       await appWindow.maximize()
                     }
-                  } catch (e) {
+                  } catch (_e) {
                     // Tauri API not available
                   }
                 }}
@@ -361,7 +363,10 @@ export default function Menu({
                       setShowTribe(false)
 
                       toggleMenuIfSmallDevice()
-                      setIsNewChat(true)
+                      setIsNewChat({
+                        value: true,
+                        tribe: true,
+                      })
                       reload()
                     }}
                   >
@@ -422,7 +427,9 @@ export default function Menu({
                   setShowTribe(false)
 
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
-                  setIsNewChat(true)
+                  setIsNewChat({
+                    value: true,
+                  })
                   reload()
                 }}
                 style={styles.menuItemButton.style}
@@ -534,7 +541,9 @@ export default function Menu({
                         <Button
                           className="link"
                           onClick={() => {
-                            setIsNewChat(true)
+                            setIsNewChat({
+                              value: true,
+                            })
                           }}
                         >
                           <ArrowLeft color={colors.accent6} size={17} />
@@ -547,7 +556,9 @@ export default function Menu({
                                 <Button
                                   className="link"
                                   onClick={() => {
-                                    setIsNewChat(true)
+                                    setIsNewChat({
+                                      value: true,
+                                    })
                                   }}
                                 >
                                   <ArrowLeft color={colors.accent6} size={17} />
@@ -893,6 +904,7 @@ export default function Menu({
               {!hasHydrated ? null : isThemeLocked ? (
                 <Button
                   title={t("Unlock theme")}
+                  aria-label={t("Unlock theme")}
                   onClick={() => {
                     setIsThemeLocked(false)
                     toast.success(t("Theme unlocked"))
@@ -909,6 +921,7 @@ export default function Menu({
               ) : (
                 <Button
                   title={t("Lock theme")}
+                  aria-label={t("Lock theme")}
                   onClick={() => {
                     setIsThemeLocked(true)
                     toast.success(t("Theme locked"))
@@ -927,6 +940,11 @@ export default function Menu({
               {hasHydrated && (
                 <Button
                   title={t("Motion")}
+                  aria-label={
+                    reduceMotionContext
+                      ? t("Enable motion")
+                      : t("Reduce motion")
+                  }
                   onClick={() => {
                     setReduceMotion(!reduceMotionContext)
                   }}

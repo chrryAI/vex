@@ -1,117 +1,119 @@
 "use client"
+import clsx from "clsx"
+import nProgress from "nprogress"
 import {
-  Dispatch,
-  SetStateAction,
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
-  useMemo,
-  useCallback,
 } from "react"
-import clsx from "clsx"
-import {
-  Paperclip,
-  AudioLines,
-  ChevronDown,
-  TextIcon,
-  ImageIcon,
-  VideoIcon,
-  CircleX,
-  FileIcon,
-  Music,
-  Info,
-  CircleCheck,
-  Coins,
-  Timer,
-  LogIn,
-  Clock,
-  HardDrive,
-  Sparkles,
-  CircleStop,
-  Globe,
-  GlobeLock,
-  Palette,
-  CircleArrowDown,
-  Plus,
-  CircleArrowUp,
-  FileText,
-  Megaphone,
-  ClockPlus,
-  Star,
-  Link,
-} from "./icons"
+import toast from "react-hot-toast"
+import sanitizeHtml from "sanitize-html"
+import useSWR from "swr"
+import { v4 as uuidv4, validate } from "uuid"
+import App from "./App"
+import AppLink from "./AppLink"
+import A from "./a/A"
+import { useChatStyles } from "./Chat.styles"
 import { COLORS, useAppContext } from "./context/AppContext"
-import { validateFile, formatFileSize } from "./utils/fileValidation"
 import {
+  useApp,
   useAuth,
   useChat,
-  useNavigationContext,
-  useApp,
-  useError,
   useData,
+  useError,
+  useNavigationContext,
 } from "./context/providers"
-import {
-  useTheme,
-  usePlatform,
-  Div,
-  Button,
-  Span,
-  Video,
-  Strong,
-  H2,
-  TextArea,
-} from "./platform"
-import {
-  type message,
-  type aiAgent,
-  type user,
-  type guest,
-  type thread,
-  type collaboration,
-  emojiMap,
-} from "./types"
+import { useStyles } from "./context/StylesContext"
+import DeleteThread from "./DeleteThread"
 import Grapes from "./Grapes"
-import { DeepSeek, OpenAI, Claude, Gemini, Flux, Perplexity } from "./icons"
-import Modal from "./Modal"
-import Loading from "./Loading"
-import sanitizeHtml from "sanitize-html"
-import { validate, v4 as uuidv4 } from "uuid"
 import {
   useCountdown,
   useHasHydrated,
   useLocalStorage,
   useSyncedState,
 } from "./hooks"
-import toast from "react-hot-toast"
-import useSWR from "swr"
-
-import DeleteThread from "./DeleteThread"
-
+import { useWebSocket } from "./hooks/useWebSocket"
+import Img from "./Image"
 import {
+  AudioLines,
+  ChevronDown,
+  CircleArrowDown,
+  CircleArrowUp,
+  CircleCheck,
+  CircleStop,
+  CircleX,
+  Claude,
+  Clock,
+  ClockPlus,
+  Coins,
+  DeepSeek,
+  FileIcon,
+  FileText,
+  Flux,
+  Gemini,
+  Globe,
+  GlobeLock,
+  HardDrive,
+  ImageIcon,
+  Info,
+  Link,
+  LogIn,
+  Megaphone,
+  Music,
+  OpenAI,
+  Palette,
+  Paperclip,
+  Perplexity,
+  Plus,
+  Sparkles,
+  Star,
+  TextIcon,
+  Timer,
+  VideoIcon,
+} from "./icons"
+import Loading from "./Loading"
+import Logo from "./Logo"
+import { checkSpeechLimits, SPEECH_LIMITS } from "./lib/speechLimits"
+import { stripMarkdown } from "./lib/stripMarkdown"
+import Modal from "./Modal"
+import MoodSelector from "./MoodSelector"
+import {
+  Button,
+  Div,
+  H2,
+  Span,
+  Strong,
+  TextArea,
+  usePlatform,
+  useTheme,
+  Video,
+} from "./platform"
+import {
+  type aiAgent,
+  type collaboration,
+  emojiMap,
+  type guest,
+  type message,
+  type thread,
+  type user,
+} from "./types"
+import {
+  apiFetch,
   BrowserInstance,
   capitalizeFirstLetter,
+  isDevelopment,
   isOwner,
+  MAX_FILE_LIMITS,
   MAX_FILE_SIZES,
   OWNER_CREDITS,
   PROMPT_LIMITS,
-  apiFetch,
-  MAX_FILE_LIMITS,
 } from "./utils"
-import needsWebSearch from "./utils/needsWebSearch"
-import { useWebSocket } from "./hooks/useWebSocket"
-import { checkSpeechLimits, SPEECH_LIMITS } from "./lib/speechLimits"
-import { stripMarkdown } from "./lib/stripMarkdown"
-import nProgress from "nprogress"
-import Logo from "./Logo"
-import App from "./App"
-import Img from "./Image"
-import MoodSelector from "./MoodSelector"
-
-import { useChatStyles } from "./Chat.styles"
-import { useStyles } from "./context/StylesContext"
-
-import A from "./a/A"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+import { formatFileSize, validateFile } from "./utils/fileValidation"
 
 const MAX_FILES = MAX_FILE_LIMITS.chat
 
@@ -245,13 +247,57 @@ export default function Chat({
     setShowGrapes,
     grapes,
     postToTribe,
-    setPostToTribe,
+    setPostToTribe: setPostToTribeInternal,
     postToMoltbook,
-    setPostToMoltbook,
+    setPostToMoltbook: setPostToMoltbookInternal,
     moltPlaceHolder,
     canShowTribe,
+    showFocus,
+    postId,
     ...auth
   } = useAuth()
+
+  const lastTribe = user?.lastTribe
+  const lastMolt = user?.lastMolt
+  const now = new Date()
+
+  const cooldownMinutes = user?.role === "admin" ? 0 : 30
+  const cooldownMs = cooldownMinutes * 60 * 1000
+
+  const setPostToTribe = (value: boolean) => {
+    if (value && lastTribe && lastTribe.createdOn) {
+      const timeSinceLastPost =
+        now.getTime() - new Date(lastTribe.createdOn).getTime()
+      const remainingCooldown = cooldownMs - timeSinceLastPost
+
+      // Cooldown still active
+      if (remainingCooldown > 0) {
+        const remainingMinutes = Math.ceil(remainingCooldown / (60 * 1000))
+        toast.error(
+          `Please wait ${remainingMinutes} more minute${remainingMinutes > 1 ? "s" : ""} before posting to tribe again`,
+        )
+        return // Don't set the value, just return
+      }
+    }
+    setPostToTribeInternal(value)
+  }
+
+  const setPostToMoltbook = (value: boolean) => {
+    if (value && lastMolt && lastMolt.createdOn) {
+      const timeSinceLastPost =
+        now.getTime() - new Date(lastMolt.createdOn).getTime()
+      const remainingCooldown = cooldownMs - timeSinceLastPost
+
+      if (remainingCooldown > 0) {
+        const remainingMinutes = Math.ceil(remainingCooldown / (60 * 1000))
+        toast.error(
+          `Please wait ${remainingMinutes} more minute${remainingMinutes > 1 ? "s" : ""} before posting to Moltbook again`,
+        )
+        return
+      }
+    }
+    setPostToMoltbookInternal(value)
+  }
 
   const threadId = auth.threadId || auth.threadIdRef.current
 
@@ -316,7 +362,7 @@ export default function Chat({
   const threadIdRef = useRef(threadId)
 
   useEffect(() => {
-    threadId && (threadIdRef.current = threadId)
+    if (threadId) threadIdRef.current = threadId
   }, [threadId])
 
   const setThreadId = (id?: string) => {
@@ -506,7 +552,7 @@ export default function Chat({
 
   const [isLoading, setIsLoading] = useState(false)
   const [isStreaming, setIsStreaming] = useState(false)
-  const [retroAppIndex, setRetroAppIndex] = useState(0)
+  const [_retroAppIndex, _setRetroAppIndex] = useState(0)
   const controller = new AbortController()
 
   const [files, setFilesInternal] = useState<File[]>([])
@@ -658,7 +704,7 @@ export default function Chat({
   const filteredLogRef = useRef<string>("")
 
   // Filter out technical messages and only show meaningful updates
-  const filterStreamingMessage = (input: string | any): string | null => {
+  const _filterStreamingMessage = (input: string | any): string | null => {
     // Handle workflow messages directly in the filter
     if (typeof input === "object" && input !== null) {
       const msg = input as any
@@ -741,11 +787,11 @@ export default function Chat({
           return null
         }
 
-        return filterStreamingMessage(msg.text)
+        return _filterStreamingMessage(msg.text)
       }
       // If it's a log message object, extract the log string
       if (msg.type === "log" && msg.log) {
-        return filterStreamingMessage(msg.log)
+        return _filterStreamingMessage(msg.log)
       }
 
       return null
@@ -821,7 +867,7 @@ export default function Chat({
             return filteredLogRef.current
           }
           return null
-        } catch (e) {
+        } catch (_e) {
           // Fallback to safe text extraction using DOM
           const tempDiv = document.createElement("div")
           tempDiv.textContent = log // Use textContent to safely extract text without HTML
@@ -834,7 +880,7 @@ export default function Chat({
           }
           return null
         }
-      } catch (e) {
+      } catch (_e) {
         return null
       }
     }
@@ -897,7 +943,7 @@ export default function Chat({
         setNeedsReview(true)
         return
       }
-      if (selectedAgent?.name == "flux") {
+      if (selectedAgent?.name === "flux") {
         setSelectedAgent(undefined)
       }
     }
@@ -943,29 +989,8 @@ export default function Chat({
         continue
       }
 
-      // Compress images to reduce token usage
-      if (validation.fileCategory === "image") {
-        console.log(`🖼️ Processing image: ${file.name} (${file.size} bytes)`)
-        try {
-          const compressedFile = await compressImage(file, 400, 0.6) // More aggressive compression
-          const reduction = (
-            ((file.size - compressedFile.size) / file.size) *
-            100
-          ).toFixed(1)
-          console.log(
-            `🗜️ Compressed ${file.name}: ${file.size} → ${compressedFile.size} bytes (${reduction}% reduction)`,
-          )
-          validFiles.push(compressedFile)
-        } catch (error) {
-          console.warn(
-            `❌ Failed to compress ${file.name}, using original:`,
-            error,
-          )
-          validFiles.push(file)
-        }
-      } else {
-        validFiles.push(file)
-      }
+      // Send original file - server will handle optimization if needed
+      validFiles.push(file)
     }
 
     setFiles((prev) => [...prev, ...validFiles].slice(0, MAX_FILES))
@@ -1133,9 +1158,9 @@ export default function Chat({
       setIsLoading(false)
     }
   }
-  const [isVideoLoading, setIsVideoLoading] = useState(true)
+  const [_isVideoLoading, _setIsVideoLoading] = useState(true)
 
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const _videoRef = useRef<HTMLVideoElement>(null)
   const [voiceMessages, setVoiceMessages] = useState<
     { messageId?: string; text: string }[]
   >([])
@@ -1384,13 +1409,13 @@ export default function Chat({
     }
   }, [recognition])
 
-  const showHourlyLimitInfo = hourlyUsageLeft <= 5
+  const _showHourlyLimitInfo = hourlyUsageLeft <= 5
 
   // Compress images to reduce token usage
-  const compressImage = (
+  const _compressImage = (
     file: File,
-    maxWidth = 400,
-    quality = 0.6,
+    maxWidth = 1920,
+    quality = 0.92,
   ): Promise<File> => {
     return new Promise((resolve, reject) => {
       console.log(`🔧 Starting compression for ${file.name}...`)
@@ -1476,7 +1501,9 @@ export default function Chat({
       const dataTransfer = new DataTransfer()
       Array.from(target.files)
         .slice(0, MAX_FILES - files.length)
-        .forEach((file) => dataTransfer.items.add(file))
+        .forEach((file) => {
+          dataTransfer.items.add(file)
+        })
 
       handleFileSelect(dataTransfer.files)
     }
@@ -1691,6 +1718,7 @@ export default function Chat({
         const formData = new FormData()
 
         app && formData.append("appId", app?.id)
+        postId && formData.append("tribePostId", postId)
 
         formData.append("content", userMessageText)
         formData.append("isIncognito", JSON.stringify(burn))
@@ -1712,9 +1740,9 @@ export default function Chat({
         isPear && formData.append("pear", JSON.stringify(isPear))
 
         isRetro && formData.append("retro", JSON.stringify(isRetro))
-        postToTribe && formData.append("isTribe", JSON.stringify(postToTribe))
+        postToTribe && formData.append("tribe", JSON.stringify(postToTribe))
         postToMoltbook &&
-          formData.append("isMolt", JSON.stringify(postToMoltbook))
+          formData.append("molt", JSON.stringify(postToMoltbook))
 
         artifacts.forEach((artifact, index) => {
           formData.append(`artifact_${index}`, artifact)
@@ -1743,8 +1771,9 @@ export default function Chat({
           taskId,
           pear: isPear,
           retro: isRetro,
-          isTribe: postToTribe,
-          isMolt: postToMoltbook,
+          tribe: postToTribe,
+          molt: postToMoltbook,
+          tribePostId: postId,
         })
       }
       const userResponse = await apiFetch(`${API_URL}/messages`, {
@@ -1758,7 +1787,7 @@ export default function Chat({
         toast.success(t("Let's debate!"))
       }
 
-      let result = undefined
+      let result
       if (
         userResponse.headers.get("content-type")?.includes("application/json")
       ) {
@@ -1846,11 +1875,6 @@ export default function Chat({
         app?.id && formData.append("appId", app.id)
         ask && formData.append("ask", ask)
         about && formData.append("about", about)
-        !appFormWatcher.id &&
-          app?.id === chrry?.id &&
-          suggestSaveApp &&
-          appStatus?.part &&
-          formData.append("draft", JSON.stringify(appFormWatcher))
         formData.append("messageId", userMessage?.message.id || "")
         debateAgent && formData.append("debateAgentId", debateAgent.id)
         formData.append("agentId", selectedAgent.id)
@@ -1903,10 +1927,6 @@ export default function Chat({
           about,
           retro: isRetro,
           appId: app?.id,
-          draft:
-            app?.id === chrry?.id && suggestSaveApp && appStatus?.part
-              ? appFormWatcher
-              : undefined,
         })
       }
 
@@ -2220,7 +2240,7 @@ export default function Chat({
   // }
 
   const [isGame, setIsGameInternal] = useState(false)
-  const setIsGame = (value: boolean) => {
+  const _setIsGame = (value: boolean) => {
     setIsGameInternal(value)
     plausible({
       name: ANALYTICS_EVENTS.GAME_TOGGLE,
@@ -2334,10 +2354,10 @@ export default function Chat({
             setIsSpeaking(false)
             setIsSpeechActive(false)
           } else {
-            data?.message?.message?.content !== undefined &&
+            data?.message?.message?.content &&
               setVoiceMessages((prev) => [
                 ...prev,
-                { text: stripMarkdown(data?.message?.message?.content!) },
+                { text: stripMarkdown(data?.message?.message?.content || "") },
               ])
           }
         }
@@ -2616,13 +2636,13 @@ export default function Chat({
       else if (placeholder && !input) {
         // Get computed styles
         const styles = window.getComputedStyle(el)
-        const lineHeight = Number.parseInt(styles.lineHeight) || 20
-        const paddingTop = Number.parseInt(styles.paddingTop) || 0
-        const paddingBottom = Number.parseInt(styles.paddingBottom) || 0
+        const lineHeight = Number.parseInt(styles.lineHeight, 10) || 20
+        const paddingTop = Number.parseInt(styles.paddingTop, 10) || 0
+        const paddingBottom = Number.parseInt(styles.paddingBottom, 10) || 0
         const width =
           el.clientWidth -
-          Number.parseInt(styles.paddingLeft || "0") -
-          Number.parseInt(styles.paddingRight || "0")
+          Number.parseInt(styles.paddingLeft || "0", 10) -
+          Number.parseInt(styles.paddingRight || "0", 10)
 
         // Only calculate if we have a valid width
         if (width > 0) {
@@ -2638,10 +2658,10 @@ export default function Chat({
 
       // Apply calculated height
       if (isWeb && (input || placeholder)) {
-        el.style.height = newHeight + "px"
+        el.style.height = `${newHeight}px`
       } else if (!input && !placeholder && initialHeight.current) {
         // Reset to initial height when both are empty
-        el.style.height = initialHeight.current + "px"
+        el.style.height = `${initialHeight.current}px`
       }
 
       // Check if exceeded
@@ -2661,7 +2681,7 @@ export default function Chat({
 
   const isVoiceDisabled = isLoading || creditsLeft === 0 || disabled
 
-  const [speechSupported, setSpeechSupported] = useState(false)
+  const [_speechSupported, setSpeechSupported] = useState(false)
 
   useEffect(() => {
     const hasRecognition =
@@ -2672,7 +2692,7 @@ export default function Chat({
 
   useEffect(() => {
     device === "desktop" && setShouldFocus(true)
-  }, [device])
+  }, [device, setShouldFocus])
 
   useEffect(() => {
     if (!hitHourlyLimit) return
@@ -2684,7 +2704,7 @@ export default function Chat({
     })
 
     setMinimize(false)
-  }, [hitHourlyLimit])
+  }, [hitHourlyLimit, hourlyUsageLeft, setMinimize])
 
   useEffect(() => {
     files.length > 0 &&
@@ -2694,15 +2714,7 @@ export default function Chat({
           filesLength: files.length,
         },
       })
-  }, [files])
-
-  const [creditEstimate, setCreditEstimate] = useState<{
-    multiplier: number
-    taskType: string
-    warning?: string
-  } | null>(null)
-
-  const needSearch = needsWebSearch(inputText)
+  }, [files.length])
 
   // Scroll detection for auto-hide chat input
   useEffect(() => {
@@ -3024,10 +3036,11 @@ export default function Chat({
                         data-testid={`agent-modal-button-${agent.name}`}
                         className={clsx(
                           `medium ${
-                            (agent.authorization === "user" &&
-                              !user &&
-                              !guest?.subscription) ||
-                            agent.id === sushiAgent?.id
+                            (
+                              agent.authorization === "user" &&
+                                !user &&
+                                !guest?.subscription
+                            ) || agent.id === sushiAgent?.id
                               ? "inverted"
                               : ""
                           }`,
@@ -3138,7 +3151,7 @@ export default function Chat({
                                   data.error || t("Error updating username"),
                                 )
                               }
-                            } catch (error) {
+                            } catch (_error) {
                               toast.error(t("Error updating favorite agent"))
                             } finally {
                             }
@@ -3457,8 +3470,7 @@ export default function Chat({
                           )
                         }
                         return "5"
-                      })()}{" "}
-                      {t("requests")}
+                      })()} {t("requests")}
                     </Span>
                   </Div>
                   <Div style={styles.statItem.style}>
@@ -3556,10 +3568,8 @@ export default function Chat({
                     className="transparent"
                     style={{ ...utilities.transparent.style }}
                     onClick={() => {
-                      {
-                        setIsSpeechActive(false)
-                        addParams({ subscribe: "true" })
-                      }
+                      setIsSpeechActive(false)
+                      addParams({ subscribe: "true" })
                     }}
                   >
                     <Logo isVivid size={19} /> {t("Need more, subscribe!")}
@@ -3687,7 +3697,7 @@ export default function Chat({
                       <Div
                         style={{
                           position: "relative",
-                          top: !isChatFloating ? 32 : 0,
+                          top: !isChatFloating ? 27 : 0,
                           zIndex: 50,
                           display: "inline-flex",
                           gap: 10,
@@ -3726,57 +3736,61 @@ export default function Chat({
                                 </>
                               )}{" "}
                             </Button>
-                            <Button
-                              className="link"
-                              onClick={() => {
-                                if (
-                                  !app?.moltApiKey &&
-                                  app?.id &&
-                                  !moltPlaceHolder.includes(app.id)
-                                ) {
-                                  toast.error(
-                                    t("Please add your Moltbook API key first"),
-                                  )
-                                  router.push("/?settings=true&tab=moltBook")
-                                  return
-                                }
-                                setPostToMoltbook(!postToMoltbook)
-                                if (postToTribe) setPostToTribe(false)
-                              }}
-                              data-active={postToMoltbook}
-                              style={{
-                                ...utilities.xSmall.style,
-                                ...utilities.link.style,
-                              }}
-                            >
-                              {postToMoltbook ? (
-                                <>
-                                  <Coins size={20} />
-                                  {t("credits", {
-                                    count: user.tribeCredits,
-                                  })}
-                                </>
-                              ) : (
-                                <>
-                                  <Span
-                                    style={{
-                                      fontSize: "1.2rem",
-                                    }}
-                                  >
-                                    🦞
-                                  </Span>
-                                  <Span
-                                    style={{
-                                      fontSize: "0.75rem",
-                                      ...utilities.xSmall.style,
-                                      ...utilities.link.style,
-                                    }}
-                                  >
-                                    To Moltbook
-                                  </Span>
-                                </>
-                              )}
-                            </Button>
+                            {(isDevelopment || user?.role === "admin") && (
+                              <Button
+                                className="link"
+                                onClick={() => {
+                                  if (
+                                    !app?.moltApiKey &&
+                                    app?.id &&
+                                    !moltPlaceHolder.includes(app.id)
+                                  ) {
+                                    toast.error(
+                                      t(
+                                        "Please add your Moltbook API key first",
+                                      ),
+                                    )
+                                    router.push("/?settings=true&tab=moltBook")
+                                    return
+                                  }
+                                  setPostToMoltbook(!postToMoltbook)
+                                  if (postToTribe) setPostToTribe(false)
+                                }}
+                                data-active={postToMoltbook}
+                                style={{
+                                  ...utilities.xSmall.style,
+                                  ...utilities.link.style,
+                                }}
+                              >
+                                {postToMoltbook ? (
+                                  <>
+                                    <Coins size={20} />
+                                    {t("credits", {
+                                      count: user.tribeCredits,
+                                    })}
+                                  </>
+                                ) : (
+                                  <>
+                                    <Span
+                                      style={{
+                                        fontSize: "1.2rem",
+                                      }}
+                                    >
+                                      🦞
+                                    </Span>
+                                    <Span
+                                      style={{
+                                        fontSize: "0.75rem",
+                                        ...utilities.xSmall.style,
+                                        ...utilities.link.style,
+                                      }}
+                                    >
+                                      To Moltbook
+                                    </Span>
+                                  </>
+                                )}
+                              </Button>
+                            )}
                           </>
                         ) : (
                           <>
@@ -3807,156 +3821,160 @@ export default function Chat({
                 </Div>
               </Div>
             )}
-            <>
-              {collaborationStep === 2 ? (
-                <Div style={styles.collaborationTooltip.style}>
-                  <Div style={styles.tooltip.style}>
-                    <Div
-                      style={{
-                        maxWidth: "300px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 7.5,
-                      }}
-                    >
-                      <Div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Strong>
-                          {collaborationSteps[0]?.title ||
-                            t("Start Your Conversation")}
-                        </Strong>
-                        <Button
-                          style={{
-                            cursor: "pointer",
-                            position: "absolute",
-                            right: 7.5,
-                            top: 7.5,
-                            zIndex: 10000,
-                            ...utilities.link.style,
-                          }}
-                          className="link"
-                          onClick={closeCollaborationTooltip}
-                        >
-                          <CircleX size={22} />
-                        </Button>
-                      </Div>
-                      <Div style={{ fontSize: "13px", lineHeight: "1.4" }}>
-                        {collaborationSteps[0]?.description ||
-                          t(
-                            "Type your message or question in the chat input below to begin collaborating with AI.",
-                          )}
-                      </Div>
-                    </Div>
-                  </Div>
-                </Div>
-              ) : collaborationStep === 3 ? (
-                <Div style={styles.shareTooltip.style}>
-                  <Div style={styles.tooltip.style}>
-                    <Div
-                      style={{
-                        maxWidth: "300px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 7.5,
-                      }}
-                    >
-                      <Div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Strong>
-                          {collaborationSteps[1]?.title ||
-                            t("Share Your Thread")}
-                        </Strong>
-                        <Button
-                          style={{
-                            cursor: "pointer",
-                            position: "absolute",
-                            right: 7.5,
-                            top: 7.5,
-                            zIndex: 10000,
-                            ...utilities.link.style,
-                          }}
-                          className="link"
-                          onClick={closeCollaborationTooltip}
-                        >
-                          <CircleX size={22} />
-                        </Button>
-                      </Div>
-                      <Div style={{ fontSize: "13px", lineHeight: "1.4" }}>
-                        {collaborationSteps[1]?.description ||
-                          t(
-                            "Once you have a conversation going, click the share button to invite others to collaborate.",
-                          )}
-                      </Div>
-                    </Div>
-                  </Div>
-                </Div>
-              ) : (
-                !showQuotaInfo && (
+            {collaborationStep === 2 ? (
+              <Div style={styles.collaborationTooltip.style}>
+                <Div style={styles.tooltip.style}>
                   <Div
                     style={{
-                      ...styles.content.style,
+                      maxWidth: "300px",
                       display: "flex",
-                      flexDirection: "row",
+                      flexDirection: "column",
+                      gap: 7.5,
                     }}
                   >
-                    {!showTribe && canShowTribe && empty && minimize && (
+                    <Div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Strong>
+                        {collaborationSteps[0]?.title ||
+                          t("Start Your Conversation")}
+                      </Strong>
+                      <Button
+                        style={{
+                          cursor: "pointer",
+                          position: "absolute",
+                          right: 7.5,
+                          top: 7.5,
+                          zIndex: 10000,
+                          ...utilities.link.style,
+                        }}
+                        className="link"
+                        onClick={closeCollaborationTooltip}
+                      >
+                        <CircleX size={22} />
+                      </Button>
+                    </Div>
+                    <Div style={{ fontSize: "13px", lineHeight: "1.4" }}>
+                      {collaborationSteps[0]?.description ||
+                        t(
+                          "Type your message or question in the chat input below to begin collaborating with AI.",
+                        )}
+                    </Div>
+                  </Div>
+                </Div>
+              </Div>
+            ) : collaborationStep === 3 ? (
+              <Div style={styles.shareTooltip.style}>
+                <Div style={styles.tooltip.style}>
+                  <Div
+                    style={{
+                      maxWidth: "300px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 7.5,
+                    }}
+                  >
+                    <Div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Strong>
+                        {collaborationSteps[1]?.title || t("Share Your Thread")}
+                      </Strong>
+                      <Button
+                        style={{
+                          cursor: "pointer",
+                          position: "absolute",
+                          right: 7.5,
+                          top: 7.5,
+                          zIndex: 10000,
+                          ...utilities.link.style,
+                        }}
+                        className="link"
+                        onClick={closeCollaborationTooltip}
+                      >
+                        <CircleX size={22} />
+                      </Button>
+                    </Div>
+                    <Div style={{ fontSize: "13px", lineHeight: "1.4" }}>
+                      {collaborationSteps[1]?.description ||
+                        t(
+                          "Once you have a conversation going, click the share button to invite others to collaborate.",
+                        )}
+                    </Div>
+                  </Div>
+                </Div>
+              </Div>
+            ) : (
+              !showQuotaInfo && (
+                <Div
+                  style={{
+                    ...styles.content.style,
+                    display: "flex",
+                    flexDirection: "row",
+                  }}
+                >
+                  {!showTribe &&
+                    canShowTribe &&
+                    empty &&
+                    app &&
+                    !appStatus?.part &&
+                    (minimize || showFocus) && (
                       <>
-                        <A
+                        <AppLink
                           style={{
                             marginRight: "auto",
                             left: 5,
-                            top: -15,
+                            top: -20,
                             gap: 5,
                             position: "relative",
                             zIndex: 300,
                             fontSize: ".85rem",
                           }}
-                          href={"/tribe"}
+                          isTribe
+                          app={app}
+                          icon={<Img logo="coder" size={18} />}
                         >
-                          <Img logo="coder" size={18} />
-                          {t("Tribe Feed")}
-                        </A>
+                          {t("Tribe's Feed")}
+                        </AppLink>
                       </>
                     )}
-                    {isChatFloating ||
-                    exceededInitial ||
-                    threadId ? null : showGreeting && files.length === 0 ? (
-                      <H2
+                  {isChatFloating ||
+                  exceededInitial ||
+                  threadId ? null : showGreeting && files.length === 0 ? (
+                    <H2
+                      style={{
+                        ...styles.brandHelp.style,
+                        alignSelf: "center",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flex: 1,
+                        marginBottom: 35,
+                      }}
+                    >
+                      <Span
                         style={{
-                          ...styles.brandHelp.style,
-                          alignSelf: "center",
+                          display: "flex",
                           alignItems: "center",
-                          justifyContent: "center",
-                          flex: 1,
-                          marginBottom: 35,
+                          gap: 7.5,
                         }}
+                        data-testid={`brand-help-${isPear ? "pear" : "chat"}`}
                       >
-                        <Span
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 7.5,
-                          }}
-                          data-testid={`brand-help-${isPear ? "pear" : "chat"}`}
-                        >
-                          {/* {isPear ? (
+                        {/* {isPear ? (
                             "🍐"
                           ) : isRetro && dailyQuestionData ? (
                             <Span style={{}}>⌨️</Span>
                           ) : (
                             "👋"
                           )} */}
-                          {/* <Span style={{ flex: 1 }}>
+                        {/* <Span style={{ flex: 1 }}>
                             {t(
                               isPear
                                 ? "Share your feedback and earn bonus credits!"
@@ -3975,292 +3993,345 @@ export default function Chat({
                                       "What's on your mind?",
                             )}
                           </Span> */}
-                        </Span>
-                      </H2>
-                    ) : null}
-                    {!showTribe && !isChatFloating && empty && canShowTribe && (
+                      </Span>
+                    </H2>
+                  ) : null}
+                  {!showTribe &&
+                    empty &&
+                    canShowTribe &&
+                    app &&
+                    !appStatus?.part &&
+                    !isChatFloating && (
                       <>
-                        <A
+                        <AppLink
+                          isTribe
+                          app={app}
+                          icon={<Img logo="coder" size={22} />}
                           style={{
                             marginRight: "auto",
                             left: -5,
-                            top: -5,
+                            top: -15,
                             gap: 5,
                             position: "relative",
                             zIndex: 300,
                             fontSize: ".85rem",
                           }}
-                          href={"/tribe"}
                         >
-                          <Img logo="coder" size={22} />
-                          {t("Tribe Feed")}
-                        </A>
+                          {t("Tribe's Feed")}
+                        </AppLink>
                       </>
                     )}
-                  </Div>
-                )
-              )}
-              <Div
-                className={showGlow ? "chat glow blur" : "chat blur"}
-                style={{
-                  ...styles.chat.style,
-                  ...(isStandalone ? styles.standalone : {}),
-                  ...(isChatFloating
-                    ? { ...styles.chatFloating.style, paddingBottom: 45 }
-                    : {}),
-                  "--glow-color":
-                    COLORS[app?.themeColor as keyof typeof COLORS],
-                  margin: "0 -4px 1.5px -4px",
-                }}
-              >
-                {selectedAgent?.capabilities.imageGeneration && (
-                  <Button
-                    className="link"
-                    data-testid="image-generation-button"
-                    data-enabled={isImageGenerationEnabled}
-                    style={{
-                      ...utilities.link.style,
-                      ...styles.imageGenerationButton.style,
-                    }}
-                    title={
-                      isImageGenerationEnabled
-                        ? t("Disable Image Generation")
-                        : t("Enable Image Generation")
+                </Div>
+              )
+            )}
+            <Div
+              className={showGlow ? "chat glow blur" : "chat blur"}
+              style={{
+                ...styles.chat.style,
+                ...(isStandalone ? styles.standalone : {}),
+                ...(isChatFloating
+                  ? {
+                      ...styles.chatFloating.style,
+                      ...(app?.themeColor && showTribe
+                        ? {
+                            border: `1px solid ${COLORS[app?.themeColor as keyof typeof COLORS]}`,
+                          }
+                        : {}),
+                      paddingBottom: 45,
                     }
-                    onClick={() => {
-                      setIsImageGenerationEnabled(!isImageGenerationEnabled)
+                  : {}),
+                "--glow-color": COLORS[app?.themeColor as keyof typeof COLORS],
+                margin: "0 -4px 1.5px -4px",
+              }}
+            >
+              {selectedAgent?.capabilities.imageGeneration && (
+                <Button
+                  className="link"
+                  data-testid="image-generation-button"
+                  data-enabled={isImageGenerationEnabled}
+                  style={{
+                    ...utilities.link.style,
+                    ...styles.imageGenerationButton.style,
+                  }}
+                  title={
+                    isImageGenerationEnabled
+                      ? t("Disable Image Generation")
+                      : t("Enable Image Generation")
+                  }
+                  onClick={() => {
+                    setIsImageGenerationEnabled(!isImageGenerationEnabled)
 
-                      setSelectedAgent(sushiAgent)
+                    setSelectedAgent(sushiAgent)
+                  }}
+                >
+                  <Span
+                    style={{
+                      fontSize: 18,
+                      marginRight: 3,
+                      marginTop: 0.5,
+                    }}
+                  >
+                    {isImageGenerationEnabled ? "🔥" : "🎨"}
+                  </Span>
+                </Button>
+              )}
+              {/* File Preview Area */}
+              {files.length > 0 && (
+                <Div style={styles.filePreviewArea.style}>
+                  {files.map((file, index) => {
+                    const fileType = getFileType(file)
+                    const isImage = fileType === "image"
+
+                    return (
+                      <Div key={file.name} style={styles.filePreview.style}>
+                        {isImage ? (
+                          <Img
+                            src={createImagePreview(file)}
+                            alt={file.name}
+                            style={styles.filePreviewImage.style}
+                          />
+                        ) : (
+                          <Div style={styles.filePreviewIcon.style}>
+                            {fileType === "audio" ? (
+                              <Music size={16} />
+                            ) : fileType === "video" ? (
+                              <VideoIcon size={16} />
+                            ) : (
+                              <FileIcon size={16} />
+                            )}
+                          </Div>
+                        )}
+
+                        <Div style={styles.filePreviewInfo.style}>
+                          <Div style={styles.filePreviewName.style}>
+                            {file.name}
+                          </Div>
+                          <Div style={styles.filePreviewSize.style}>
+                            {(file.size / 1024).toFixed(1)}KB
+                          </Div>
+                        </Div>
+
+                        <Button
+                          data-testid="file-preview-clear"
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="link"
+                          style={{
+                            ...utilities.link.style,
+                            ...styles.filePreviewClear.style,
+                          }}
+                          title="Remove file"
+                        >
+                          <CircleX size={18} />
+                        </Button>
+                      </Div>
+                    )
+                  })}
+                </Div>
+              )}
+              <TextArea
+                className="chatTextArea"
+                rows={isHydrated && isChatFloating ? 1 : 2}
+                data-testid="chat-textarea"
+                style={{
+                  ...styles.chatTextArea.style,
+                  ...(isChatFloating ? { minHeight: 40 } : undefined),
+                }}
+                value={input}
+                onChange={handleInputChange}
+                name="chat"
+                id="chat"
+                placeholder={
+                  !isHydrated
+                    ? ""
+                    : postToTribe
+                      ? `${t("What should I share to Tribe?")} 🪢`
+                      : postToMoltbook
+                        ? `${t("What should I share to Moltbook?")} 🦞`
+                        : placeholder ||
+                          `${t("Ask anything")}${placeholderStages[placeholderIndex]}`
+                }
+                ref={chatInputRef}
+                disabled={disabled}
+                // Native-only: submit on Enter (no shift key detection available)
+                onSubmitEditing={() => {
+                  handleSubmit()
+                }}
+                // Web-specific: handle Enter with shift key detection
+                onKeyPress={(e: {
+                  key: string
+                  shiftKey: boolean
+                  preventDefault: () => void
+                }) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSubmit()
+                  }
+                }}
+                // Handle paste
+                onPaste={handlePaste}
+                // React Native specific
+                blurOnSubmit={false}
+                multiline={true}
+                returnKeyType="send"
+              />
+              {/* Quota Info Display */}
+              {showQuotaInfo && quotaInfo && (
+                <Div style={styles.quotaDisplay.style}>
+                  <Div style={styles.quotaHeader.style}>
+                    <HardDrive size={16} color="var(--accent-6)" />
+                    <Span>{t("File Upload Limits")}</Span>
+                    <Button
+                      title={t("Close")}
+                      onClick={() => setShowQuotaInfo(false)}
+                      className="link"
+                      style={{ marginLeft: "auto" }}
+                    >
+                      <CircleX size={18} color="var(--accent-1)" />
+                    </Button>
+                  </Div>
+                  <Div style={styles.quotaItems.style}>
+                    <Div style={styles.quotaItem.style}>
+                      <Clock size={14} color="var(--shade-6)" />
+                      <Span>
+                        {t("Hourly: {{used}}/{{limit}} files", {
+                          used: quotaInfo.hourly.used,
+                          limit: quotaInfo.hourly.limit,
+                        })}
+                      </Span>
+                      <Span style={styles.quotaReset.style}>
+                        {t("Resets in {{time}}", {
+                          time: formatTimeUntilReset(
+                            quotaInfo?.hourly?.resetTime,
+                          ),
+                        })}
+                      </Span>
+                    </Div>
+                    <Div style={styles.quotaItem.style}>
+                      <Timer size={14} color="var(--shade-6)" />
+                      <Span>
+                        {t("Daily: {{used}}/{{limit}} files", {
+                          used: quotaInfo.daily.used,
+                          limit: quotaInfo.daily.limit,
+                        })}
+                      </Span>
+                      <Span style={styles.quotaReset.style}>
+                        {t("Resets in {{time}}", {
+                          time: formatTimeUntilReset(quotaInfo.daily.resetTime),
+                        })}
+                      </Span>
+                    </Div>
+                    <Div style={styles.quotaItem.style}>
+                      <HardDrive size={14} color="var(--shade-6)" />
+                      <Span>
+                        {t("Size: {{used}}/{{limit}} MB", {
+                          used: quotaInfo.dailySize.used,
+                          limit: quotaInfo.dailySize.limit,
+                        })}
+                      </Span>
+                      <Span style={styles.quotaReset.style}>
+                        {t("Resets in {{time}}", {
+                          time: formatTimeUntilReset(
+                            quotaInfo.dailySize.resetTime,
+                          ),
+                        })}
+                      </Span>
+                    </Div>
+                    {quotaInfo.images && (
+                      <Div style={styles.quotaItem.style}>
+                        <Palette size={14} color="var(--shade-6)" />
+                        <Span>
+                          {t("Images: {{used}}/{{limit}} daily", {
+                            used: quotaInfo.images.used,
+                            limit: quotaInfo.images.limit,
+                          })}
+                        </Span>
+                        <Span style={styles.quotaReset.style}>
+                          {t("Resets in {{time}}", {
+                            time: formatTimeUntilReset(
+                              quotaInfo.images.resetTime,
+                            ),
+                          })}
+                        </Span>
+                      </Div>
+                    )}
+                  </Div>
+                </Div>
+              )}
+              {/* Credit Estimate Display */}
+              <Div style={styles.chatFooter.style}>
+                {!isAttaching && selectedAgent ? (
+                  <Div
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-end",
+                      gap: debateAgent ? 10 : 5,
                     }}
                   >
                     <Span
                       style={{
-                        fontSize: 18,
-                        marginRight: 3,
-                        marginTop: 0.5,
-                      }}
-                    >
-                      {isImageGenerationEnabled ? "🔥" : "🎨"}
-                    </Span>
-                  </Button>
-                )}
-                {/* File Preview Area */}
-                {files.length > 0 && (
-                  <Div style={styles.filePreviewArea.style}>
-                    {files.map((file, index) => {
-                      const fileType = getFileType(file)
-                      const isImage = fileType === "image"
-                      const isText = fileType === "text" // Add text type detection
-
-                      return (
-                        <Div key={index} style={styles.filePreview.style}>
-                          {isImage ? (
-                            <Img
-                              src={createImagePreview(file)}
-                              alt={file.name}
-                              style={styles.filePreviewImage.style}
-                            />
-                          ) : (
-                            <Div style={styles.filePreviewIcon.style}>
-                              {fileType === "audio" ? (
-                                <Music size={16} />
-                              ) : fileType === "video" ? (
-                                <VideoIcon size={16} />
-                              ) : (
-                                <FileIcon size={16} />
-                              )}
-                            </Div>
-                          )}
-
-                          <Div style={styles.filePreviewInfo.style}>
-                            <Div style={styles.filePreviewName.style}>
-                              {file.name}
-                            </Div>
-                            <Div style={styles.filePreviewSize.style}>
-                              {(file.size / 1024).toFixed(1)}KB
-                            </Div>
-                          </Div>
-
-                          <Button
-                            data-testid="file-preview-clear"
-                            type="button"
-                            onClick={() => removeFile(index)}
-                            className="link"
-                            style={{
-                              ...utilities.link.style,
-                              ...styles.filePreviewClear.style,
-                            }}
-                            title="Remove file"
-                          >
-                            <CircleX size={18} />
-                          </Button>
-                        </Div>
-                      )
-                    })}
-                  </Div>
-                )}
-                <TextArea
-                  className="chatTextArea"
-                  rows={isHydrated && isChatFloating ? 1 : 2}
-                  data-testid="chat-textarea"
-                  style={{
-                    ...styles.chatTextArea.style,
-                    ...(isChatFloating ? { minHeight: 40 } : undefined),
-                  }}
-                  value={input}
-                  onChange={handleInputChange}
-                  name="chat"
-                  id="chat"
-                  placeholder={
-                    !isHydrated
-                      ? ""
-                      : postToTribe
-                        ? `${t("What should I share to Tribe?")} 🪢`
-                        : postToMoltbook
-                          ? `${t("What should I share to Moltbook?")} 🦞`
-                          : placeholder ||
-                            `${t("Ask anything")}${placeholderStages[placeholderIndex]}`
-                  }
-                  ref={chatInputRef}
-                  disabled={disabled}
-                  // Native-only: submit on Enter (no shift key detection available)
-                  onSubmitEditing={() => {
-                    handleSubmit()
-                  }}
-                  // Web-specific: handle Enter with shift key detection
-                  onKeyPress={(e: {
-                    key: string
-                    shiftKey: boolean
-                    preventDefault: () => void
-                  }) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault()
-                      handleSubmit()
-                    }
-                  }}
-                  // Handle paste
-                  onPaste={handlePaste}
-                  // React Native specific
-                  blurOnSubmit={false}
-                  multiline={true}
-                  returnKeyType="send"
-                />
-                {/* Quota Info Display */}
-                {showQuotaInfo && quotaInfo && (
-                  <Div style={styles.quotaDisplay.style}>
-                    <Div style={styles.quotaHeader.style}>
-                      <HardDrive size={16} color="var(--accent-6)" />
-                      <Span>{t("File Upload Limits")}</Span>
-                      <Button
-                        title={t("Close")}
-                        onClick={() => setShowQuotaInfo(false)}
-                        className="link"
-                        style={{ marginLeft: "auto" }}
-                      >
-                        <CircleX size={18} color="var(--accent-1)" />
-                      </Button>
-                    </Div>
-                    <Div style={styles.quotaItems.style}>
-                      <Div style={styles.quotaItem.style}>
-                        <Clock size={14} color="var(--shade-6)" />
-                        <Span>
-                          {t("Hourly: {{used}}/{{limit}} files", {
-                            used: quotaInfo.hourly.used,
-                            limit: quotaInfo.hourly.limit,
-                          })}
-                        </Span>
-                        <Span style={styles.quotaReset.style}>
-                          {t("Resets in {{time}}", {
-                            time: formatTimeUntilReset(
-                              quotaInfo?.hourly?.resetTime,
-                            ),
-                          })}
-                        </Span>
-                      </Div>
-                      <Div style={styles.quotaItem.style}>
-                        <Timer size={14} color="var(--shade-6)" />
-                        <Span>
-                          {t("Daily: {{used}}/{{limit}} files", {
-                            used: quotaInfo.daily.used,
-                            limit: quotaInfo.daily.limit,
-                          })}
-                        </Span>
-                        <Span style={styles.quotaReset.style}>
-                          {t("Resets in {{time}}", {
-                            time: formatTimeUntilReset(
-                              quotaInfo.daily.resetTime,
-                            ),
-                          })}
-                        </Span>
-                      </Div>
-                      <Div style={styles.quotaItem.style}>
-                        <HardDrive size={14} color="var(--shade-6)" />
-                        <Span>
-                          {t("Size: {{used}}/{{limit}} MB", {
-                            used: quotaInfo.dailySize.used,
-                            limit: quotaInfo.dailySize.limit,
-                          })}
-                        </Span>
-                        <Span style={styles.quotaReset.style}>
-                          {t("Resets in {{time}}", {
-                            time: formatTimeUntilReset(
-                              quotaInfo.dailySize.resetTime,
-                            ),
-                          })}
-                        </Span>
-                      </Div>
-                      {quotaInfo.images && (
-                        <Div style={styles.quotaItem.style}>
-                          <Palette size={14} color="var(--shade-6)" />
-                          <Span>
-                            {t("Images: {{used}}/{{limit}} daily", {
-                              used: quotaInfo.images.used,
-                              limit: quotaInfo.images.limit,
-                            })}
-                          </Span>
-                          <Span style={styles.quotaReset.style}>
-                            {t("Resets in {{time}}", {
-                              time: formatTimeUntilReset(
-                                quotaInfo.images.resetTime,
-                              ),
-                            })}
-                          </Span>
-                        </Div>
-                      )}
-                    </Div>
-                  </Div>
-                )}
-                {/* Credit Estimate Display */}
-                <Div style={styles.chatFooter.style}>
-                  {!isAttaching && selectedAgent ? (
-                    <Div
-                      style={{
                         display: "flex",
                         alignItems: "flex-end",
-                        gap: debateAgent ? 10 : 5,
+                        gap: 9,
                       }}
                     >
-                      <Span
+                      <Button
+                        disabled={onlyAgent}
+                        data-testid={
+                          !debateAgent
+                            ? "add-debate-agent-button"
+                            : "agent-select-button"
+                        }
+                        data-agent-name={selectedAgent.name}
+                        title={t("Add debate agent")}
+                        onClick={() => {
+                          addHapticFeedback()
+                          if (debateAgent || selectedAgent?.name === "flux") {
+                            setIsAgentModalOpen(true)
+                          } else setIsDebateAgentModalOpen(true)
+                        }}
+                        className="link"
                         style={{
-                          display: "flex",
-                          alignItems: "flex-end",
-                          gap: 9,
+                          ...utilities.link.style,
+                          ...styles.debateAgentButton.style,
+                          ...(onlyAgent
+                            ? styles.debateAgentButtonDisabled
+                            : {}),
                         }}
                       >
+                        {selectedAgent.name === "deepSeek" ? (
+                          <DeepSeek color="var(--accent-6)" size={24} />
+                        ) : selectedAgent.name === "chatGPT" ? (
+                          <OpenAI color="var(--accent-6)" size={22} />
+                        ) : selectedAgent.name === "claude" ? (
+                          <Claude color="var(--accent-6)" size={22} />
+                        ) : selectedAgent.name === "gemini" ? (
+                          <Gemini color="var(--accent-6)" size={22} />
+                        ) : selectedAgent.name === "flux" ? (
+                          <Flux color="var(--accent-6)" size={22} />
+                        ) : selectedAgent.name === "perplexity" ? (
+                          <Perplexity color="var(--accent-6)" size={22} />
+                        ) : selectedAgent.name === "sushi" ? (
+                          <Img icon="sushi" size={22} />
+                        ) : null}
+                        {onlyAgent ||
+                        selectedAgent?.name === "flux" ||
+                        debateAgent ? null : (
+                          <Plus
+                            strokeWidth={3}
+                            style={styles.plusIcon.style}
+                            size={10}
+                            color="var(--accent-6)"
+                          />
+                        )}
+                      </Button>
+                      {debateAgent && !onlyAgent ? (
                         <Button
-                          disabled={onlyAgent}
-                          data-testid={
-                            !debateAgent
-                              ? "add-debate-agent-button"
-                              : "agent-select-button"
-                          }
-                          data-agent-name={selectedAgent.name}
-                          title={t("Add debate agent")}
+                          data-testid="add-debate-agent-button"
+                          data-agent-name={debateAgent.name}
                           onClick={() => {
                             addHapticFeedback()
-                            if (debateAgent || selectedAgent?.name === "flux") {
-                              setIsAgentModalOpen(true)
-                            } else setIsDebateAgentModalOpen(true)
+                            setIsDebateAgentModalOpen(true)
                           }}
                           className="link"
                           style={{
@@ -4271,658 +4342,585 @@ export default function Chat({
                               : {}),
                           }}
                         >
-                          {selectedAgent.name === "deepSeek" ? (
+                          <Span style={{ position: "relative", left: "-2px" }}>
+                            |
+                          </Span>
+                          {debateAgent.name === "deepSeek" ? (
                             <DeepSeek color="var(--accent-6)" size={24} />
-                          ) : selectedAgent.name === "chatGPT" ? (
+                          ) : debateAgent.name === "chatGPT" ? (
                             <OpenAI color="var(--accent-6)" size={22} />
-                          ) : selectedAgent.name === "claude" ? (
+                          ) : debateAgent.name === "claude" ? (
                             <Claude color="var(--accent-6)" size={22} />
-                          ) : selectedAgent.name === "gemini" ? (
+                          ) : debateAgent.name === "gemini" ? (
                             <Gemini color="var(--accent-6)" size={22} />
-                          ) : selectedAgent.name === "flux" ? (
+                          ) : debateAgent.name === "flux" ? (
                             <Flux color="var(--accent-6)" size={22} />
-                          ) : selectedAgent.name === "perplexity" ? (
+                          ) : debateAgent.name === "perplexity" ? (
                             <Perplexity color="var(--accent-6)" size={22} />
-                          ) : selectedAgent.name === "sushi" ? (
+                          ) : debateAgent.name === "sushi" ? (
                             <Img icon="sushi" size={22} />
                           ) : null}
-                          {onlyAgent ||
-                          selectedAgent?.name === "flux" ||
-                          debateAgent ? null : (
-                            <Plus
-                              strokeWidth={3}
-                              style={styles.plusIcon.style}
-                              size={10}
-                              color="var(--accent-6)"
-                            />
-                          )}
                         </Button>
-                        {debateAgent && !onlyAgent ? (
-                          <Button
-                            data-testid="add-debate-agent-button"
-                            data-agent-name={debateAgent.name}
-                            onClick={() => {
-                              addHapticFeedback()
-                              setIsDebateAgentModalOpen(true)
-                            }}
-                            className="link"
-                            style={{
-                              ...utilities.link.style,
-                              ...styles.debateAgentButton.style,
-                              ...(onlyAgent
-                                ? styles.debateAgentButtonDisabled
-                                : {}),
-                            }}
-                          >
-                            <Span
-                              style={{ position: "relative", left: "-2px" }}
-                            >
-                              |
-                            </Span>
-                            {debateAgent.name === "deepSeek" ? (
-                              <DeepSeek color="var(--accent-6)" size={24} />
-                            ) : debateAgent.name === "chatGPT" ? (
-                              <OpenAI color="var(--accent-6)" size={22} />
-                            ) : debateAgent.name === "claude" ? (
-                              <Claude color="var(--accent-6)" size={22} />
-                            ) : debateAgent.name === "gemini" ? (
-                              <Gemini color="var(--accent-6)" size={22} />
-                            ) : debateAgent.name === "flux" ? (
-                              <Flux color="var(--accent-6)" size={22} />
-                            ) : debateAgent.name === "perplexity" ? (
-                              <Perplexity color="var(--accent-6)" size={22} />
-                            ) : debateAgent.name === "sushi" ? (
-                              <Img icon="sushi" size={22} />
-                            ) : null}
-                          </Button>
-                        ) : (
-                          <Button
-                            disabled={!!onlyAgent}
-                            data-agent-name={selectedAgent.name}
-                            data-testid="agent-select-button"
-                            onClick={() => {
-                              addHapticFeedback()
-                              setIsAgentModalOpen(true)
-                            }}
-                            className="link"
-                            style={{
-                              ...utilities.link.style,
-                              ...styles.agentButton.style,
-                              color: onlyAgent ? "var(--shade-6)" : undefined,
-                            }}
-                            type="submit"
-                          >
-                            <Span
-                              style={{
-                                ...styles.agentName.style,
-                                maxWidth: viewPortWidth < 400 ? 90 : 150,
-                              }}
-                            >
-                              {selectedAgent?.displayName}
-                            </Span>
-                            {!onlyAgent && (
-                              <ChevronDown color="var(--accent-6)" size={20} />
-                            )}
-                          </Button>
-                        )}
-                      </Span>
-                      {!appStatus?.part && !onlyAgent && (
+                      ) : (
                         <Button
-                          data-testid={
-                            debateAgent
-                              ? "debate-agent-delete-button"
-                              : "agent-delete-button"
-                          }
-                          style={{
-                            position: "relative",
-                            top: "-2px",
-                            ...utilities.link.style,
+                          disabled={!!onlyAgent}
+                          data-agent-name={selectedAgent.name}
+                          data-testid="agent-select-button"
+                          onClick={() => {
+                            if (onlyAgent) {
+                              toast.error(
+                                t(
+                                  `{{name}} is only agent on this app. You can try sushi 🍣`,
+                                  {
+                                    name: capitalizeFirstLetter(
+                                      selectedAgent.name,
+                                    ),
+                                  },
+                                ),
+                              )
+
+                              return
+                            }
+                            addHapticFeedback()
+                            setIsAgentModalOpen(true)
                           }}
                           className="link"
-                          onClick={() => {
-                            addHapticFeedback()
-                            debateAgent
-                              ? setDebateAgent(null)
-                              : setSelectedAgent(null)
+                          style={{
+                            ...utilities.link.style,
+                            ...styles.agentButton.style,
+                            background: "transparent",
                           }}
+                          type="submit"
                         >
-                          <CircleX color="var(--accent-1)" size={18} />
+                          <Span
+                            style={{
+                              ...styles.agentName.style,
+                              maxWidth: viewPortWidth < 400 ? 90 : 150,
+                            }}
+                          >
+                            {selectedAgent?.displayName}
+                          </Span>
+                          {!onlyAgent && (
+                            <ChevronDown color="var(--accent-6)" size={20} />
+                          )}
                         </Button>
                       )}
-                    </Div>
-                  ) : (
-                    !isAttaching && (
+                    </Span>
+                    {!appStatus?.part && !onlyAgent && (
                       <Button
+                        data-testid={
+                          debateAgent
+                            ? "debate-agent-delete-button"
+                            : "agent-delete-button"
+                        }
+                        style={{
+                          position: "relative",
+                          top: "-2px",
+                          ...utilities.link.style,
+                        }}
+                        className="link"
+                        onClick={() => {
+                          addHapticFeedback()
+                          debateAgent
+                            ? setDebateAgent(null)
+                            : setSelectedAgent(null)
+                        }}
+                      >
+                        <CircleX color="var(--accent-1)" size={18} />
+                      </Button>
+                    )}
+                  </Div>
+                ) : (
+                  !isAttaching && (
+                    <Button
+                      className="link"
+                      style={{
+                        color: "var(--accent-1)",
+                        ...utilities.link.style,
+                      }}
+                      onClick={() => {
+                        addHapticFeedback()
+                        setIsAgentModalOpen(true)
+                      }}
+                    >
+                      <Sparkles
+                        color="var(--accent-1)"
+                        fill="var(--accent-1)"
+                        size={22}
+                      />{" "}
+                      {t("Select agent")}
+                    </Button>
+                  )
+                )}
+
+                <Div
+                  style={{
+                    ...styles.chatFooterButtons.style,
+                  }}
+                >
+                  {isHydrated && viewPortWidth > 410 && !needsReview && (
+                    <Div
+                      style={{
+                        top: "0.15rem",
+                        position: "relative",
+                      }}
+                    >
+                      <MoodSelector
+                        showEdit={false}
+                        style={{
+                          fontSize: "1.40rem",
+                        }}
+                        key={mood?.type}
+                        mood={mood?.type}
+                        onSelectingMood={(v) => {
+                          setIsSelectingMood(v)
+                        }}
+                        onMoodChange={async (newMood) => {
+                          if (mood?.type !== newMood) {
+                            await updateMood({ type: newMood })
+                            toast.success(emojiMap[newMood])
+                          }
+                        }}
+                      />
+                    </Div>
+                  )}
+                  {!isSelectingMood && !needsReview && isHydrated && (
+                    <>
+                      <Button
+                        data-testid={
+                          isWebSearchEnabled
+                            ? "web-search-button-enabled"
+                            : "web-search-button-disabled"
+                        }
                         className="link"
                         style={{
-                          color: "var(--accent-1)",
+                          ...utilities.link.style,
+                        }}
+                        title={
+                          isWebSearchEnabled
+                            ? t("Web Search Enabled")
+                            : t("Enable Web Search")
+                        }
+                        onClick={() => {
+                          setIsWebSearchEnabled(!isWebSearchEnabled)
+                        }}
+                      >
+                        {selectedAgent?.capabilities?.webSearch ? (
+                          <Globe
+                            color={
+                              isWebSearchEnabled
+                                ? "var(--accent-6)"
+                                : "var(--shade-3)"
+                            }
+                            size={22}
+                          />
+                        ) : (
+                          <GlobeLock color="var(--shade-3)" size={22} />
+                        )}
+                      </Button>
+                    </>
+                  )}
+                  {/* 🔥 BURN BUTTON - Phoenix Mode */}
+                  {burn && threadId && (
+                    <DeleteThread
+                      style={{
+                        margin: "0",
+                        padding: "0",
+                        background: "transparent",
+                        border: "none",
+                      }}
+                      onDelete={() => {
+                        setIsNewChat({
+                          value: true,
+                        })
+                      }}
+                      id={threadId}
+                    />
+                  )}
+
+                  {isAttaching ? (
+                    <Span style={styles.attachButtons.style}>
+                      <Button
+                        data-testid="attach-button-close"
+                        className="link"
+                        style={{
                           ...utilities.link.style,
                         }}
                         onClick={() => {
                           addHapticFeedback()
-                          setIsAgentModalOpen(true)
+                          setIsAttaching(false)
                         }}
                       >
-                        <Sparkles
-                          color="var(--accent-1)"
-                          fill="var(--accent-1)"
-                          size={22}
-                        />{" "}
-                        {t("Select agent")}
+                        <CircleX color="var(--accent-1)" size={22} />
                       </Button>
-                    )
-                  )}
-
-                  <Div
-                    style={{
-                      ...styles.chatFooterButtons.style,
-                    }}
-                  >
-                    {isHydrated && viewPortWidth > 410 && !needsReview && (
-                      <Div
-                        style={{
-                          top: "0.15rem",
-                          position: "relative",
-                        }}
-                      >
-                        <MoodSelector
-                          showEdit={false}
-                          style={{
-                            fontSize: "1.40rem",
-                          }}
-                          key={mood?.type}
-                          mood={mood?.type}
-                          onSelectingMood={(v) => {
-                            setIsSelectingMood(v)
-                          }}
-                          onMoodChange={async (newMood) => {
-                            if (mood?.type !== newMood) {
-                              await updateMood({ type: newMood })
-                              toast.success(emojiMap[newMood])
-                            }
-                          }}
-                        />
-                      </Div>
-                    )}
-                    {!isSelectingMood && !needsReview && isHydrated && (
-                      <>
-                        <Button
-                          data-testid={
-                            isWebSearchEnabled
-                              ? "web-search-button-enabled"
-                              : "web-search-button-disabled"
-                          }
-                          className="link"
-                          style={{
-                            ...utilities.link.style,
-                          }}
-                          title={
-                            isWebSearchEnabled
-                              ? t("Web Search Enabled")
-                              : t("Enable Web Search")
-                          }
-                          onClick={() => {
-                            setIsWebSearchEnabled(!isWebSearchEnabled)
-                          }}
-                        >
-                          {selectedAgent?.capabilities?.webSearch ? (
-                            <Globe
-                              color={
-                                isWebSearchEnabled
-                                  ? "var(--accent-6)"
-                                  : "var(--shade-3)"
-                              }
-                              size={22}
-                            />
-                          ) : (
-                            <GlobeLock color="var(--shade-3)" size={22} />
-                          )}
-                        </Button>
-                      </>
-                    )}
-                    {/* 🔥 BURN BUTTON - Phoenix Mode */}
-                    {burn && threadId && (
-                      <DeleteThread
-                        style={{
-                          margin: "0",
-                          padding: "0",
-                          background: "transparent",
-                          border: "none",
-                        }}
-                        onDelete={() => {
-                          setIsNewChat(true)
-                        }}
-                        id={threadId}
-                      />
-                    )}
-
-                    {isAttaching ? (
-                      <Span style={styles.attachButtons.style}>
-                        <Button
-                          data-testid="attach-button-close"
-                          className="link"
-                          style={{
-                            ...utilities.link.style,
-                          }}
-                          onClick={() => {
-                            addHapticFeedback()
-                            setIsAttaching(false)
-                          }}
-                        >
-                          <CircleX color="var(--accent-1)" size={22} />
-                        </Button>
-                        <Button
-                          data-testid="attach-button-video"
-                          title={t("Video")}
-                          onClick={() => {
-                            if (
-                              !selectedAgent ||
-                              !selectedAgent.capabilities.video
-                            ) {
-                              setIsAgentModalOpen(true)
-                              return
-                            }
-                            if (
-                              debateAgent &&
-                              !debateAgent.capabilities.video
-                            ) {
-                              setIsDebateAgentModalOpen(true)
-                              return
-                            }
-                            triggerFileInput("video/*")
-                          }}
-                          disabled={isAttachmentDisabled("video")}
-                          style={{
-                            ...utilities.link.style,
-                            ...(hasFileType("video")
-                              ? styles.attachButtonSelected.style
-                              : isAttachmentDisabled("video")
-                                ? styles.attachButtonDisabled.style
-                                : undefined),
-                          }}
-                          className="link"
-                        >
-                          <VideoIcon
-                            size={22}
-                            color={getButtonColor("video")}
-                          />
-                        </Button>
-                        <Button
-                          data-testid="attach-button-pdf"
-                          title={"PDF"}
-                          onClick={() => {
-                            if (
-                              !selectedAgent ||
-                              !selectedAgent.capabilities.pdf
-                            ) {
-                              setIsAgentModalOpen(true)
-                              return
-                            }
-                            if (debateAgent && !debateAgent.capabilities.pdf) {
-                              setIsDebateAgentModalOpen(true)
-                              return
-                            }
-
-                            triggerFileInput("application/pdf")
-                          }}
-                          style={{
-                            ...utilities.link.style,
-                            ...(hasFileType("pdf")
-                              ? styles.attachButtonSelected.style
-                              : isAttachmentDisabled("pdf")
-                                ? styles.attachButtonDisabled.style
-                                : undefined),
-                          }}
-                          disabled={isAttachmentDisabled("audio")}
-                          className="link"
-                        >
-                          <FileText size={22} color={getButtonColor("pdf")} />
-                        </Button>
-                        <Button
-                          data-testid="attach-button-audio"
-                          title={t("Audio")}
-                          onClick={() => {
-                            if (
-                              !selectedAgent ||
-                              !selectedAgent.capabilities.audio
-                            ) {
-                              setIsAgentModalOpen(true)
-                              return
-                            }
-                            if (
-                              debateAgent &&
-                              !debateAgent.capabilities.audio
-                            ) {
-                              setIsDebateAgentModalOpen(true)
-                              return
-                            }
-                            triggerFileInput("audio/*")
-                          }}
-                          disabled={isAttachmentDisabled("audio")}
-                          style={{
-                            ...utilities.link.style,
-                            ...(hasFileType("audio")
-                              ? styles.attachButtonSelected.style
-                              : isAttachmentDisabled("audio")
-                                ? styles.attachButtonDisabled.style
-                                : undefined),
-                          }}
-                          className="link"
-                        >
-                          <AudioLines
-                            size={22}
-                            color={getButtonColor("audio")}
-                          />
-                        </Button>
-                        <Button
-                          data-testid="attach-button-image"
-                          title={t("Image")}
-                          onClick={() => {
-                            if (
-                              !selectedAgent ||
-                              !selectedAgent.capabilities.image
-                            ) {
-                              setIsAgentModalOpen(true)
-                              return
-                            }
-                            if (
-                              debateAgent &&
-                              !debateAgent.capabilities.image
-                            ) {
-                              setIsDebateAgentModalOpen(true)
-                              return
-                            }
-
-                            triggerFileInput("image/*")
-                          }}
-                          disabled={isAttachmentDisabled("image")}
-                          style={{
-                            ...utilities.link.style,
-                            ...(hasFileType("image")
-                              ? styles.attachButtonSelected.style
-                              : isAttachmentDisabled("image")
-                                ? styles.attachButtonDisabled.style
-                                : undefined),
-                          }}
-                          className="link"
-                        >
-                          <ImageIcon
-                            size={22}
-                            color={getButtonColor("image")}
-                          />
-                        </Button>
-                      </Span>
-                    ) : needsReview ? (
-                      <A
-                        target="_blank"
-                        className="button small transparent"
-                        openInNewTab
-                        href="/privacy"
-                        style={{
-                          position: "relative",
-                          right: "-5px",
-                          top: "-1px",
-                        }}
-                      >
-                        <Link size={15} />
-                        {t("Privacy")}
-                      </A>
-                    ) : (
-                      !isSelectingMood && (
-                        <Button
-                          data-testid="attach-button"
-                          title={t("Attach")}
-                          onClick={() => {
-                            addHapticFeedback()
-
-                            // Auto-switch to Sushi for file attachments
-                            const sushiAgent = aiAgents.find(
-                              (agent) => agent.name === "sushi",
-                            )
-                            if (
-                              sushiAgent &&
-                              !selectedAgent?.capabilities?.pdf
-                            ) {
-                              setSelectedAgent(sushiAgent)
-                            }
-
-                            // Open system file picker directly with all supported types
-                            triggerFileInput(
-                              "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
-                            )
-                          }}
-                          className="link"
-                          style={{
-                            ...utilities.link.style,
-                            ...styles.attachButton.style,
-                          }}
-                          type="submit"
-                        >
-                          <Paperclip color={"var(--accent-6)"} size={22} />
-                        </Button>
-                      )
-                    )}
-                    {/* Quota info button */}
-                    {!isSelectingMood && !needsReview && (
                       <Button
-                        className="link"
-                        onClick={async () => {
-                          addHapticFeedback()
-                          if (!quotaInfo && !isFetchingQuotaInfo) {
-                            await fetchQuotaInfo()
+                        data-testid="attach-button-video"
+                        title={t("Video")}
+                        onClick={() => {
+                          if (
+                            !selectedAgent ||
+                            !selectedAgent.capabilities.video
+                          ) {
+                            setIsAgentModalOpen(true)
+                            return
                           }
-                          setShowQuotaInfo(!showQuotaInfo)
+                          if (debateAgent && !debateAgent.capabilities.video) {
+                            setIsDebateAgentModalOpen(true)
+                            return
+                          }
+                          triggerFileInput("video/*")
                         }}
+                        disabled={isAttachmentDisabled("video")}
+                        style={{
+                          ...utilities.link.style,
+                          ...(hasFileType("video")
+                            ? styles.attachButtonSelected.style
+                            : isAttachmentDisabled("video")
+                              ? styles.attachButtonDisabled.style
+                              : undefined),
+                        }}
+                        className="link"
+                      >
+                        <VideoIcon size={22} color={getButtonColor("video")} />
+                      </Button>
+                      <Button
+                        data-testid="attach-button-pdf"
+                        title={"PDF"}
+                        onClick={() => {
+                          if (
+                            !selectedAgent ||
+                            !selectedAgent.capabilities.pdf
+                          ) {
+                            setIsAgentModalOpen(true)
+                            return
+                          }
+                          if (debateAgent && !debateAgent.capabilities.pdf) {
+                            setIsDebateAgentModalOpen(true)
+                            return
+                          }
+
+                          triggerFileInput("application/pdf")
+                        }}
+                        style={{
+                          ...utilities.link.style,
+                          ...(hasFileType("pdf")
+                            ? styles.attachButtonSelected.style
+                            : isAttachmentDisabled("pdf")
+                              ? styles.attachButtonDisabled.style
+                              : undefined),
+                        }}
+                        disabled={isAttachmentDisabled("audio")}
+                        className="link"
+                      >
+                        <FileText size={22} color={getButtonColor("pdf")} />
+                      </Button>
+                      <Button
+                        data-testid="attach-button-audio"
+                        title={t("Audio")}
+                        onClick={() => {
+                          if (
+                            !selectedAgent ||
+                            !selectedAgent.capabilities.audio
+                          ) {
+                            setIsAgentModalOpen(true)
+                            return
+                          }
+                          if (debateAgent && !debateAgent.capabilities.audio) {
+                            setIsDebateAgentModalOpen(true)
+                            return
+                          }
+                          triggerFileInput("audio/*")
+                        }}
+                        disabled={isAttachmentDisabled("audio")}
+                        style={{
+                          ...utilities.link.style,
+                          ...(hasFileType("audio")
+                            ? styles.attachButtonSelected.style
+                            : isAttachmentDisabled("audio")
+                              ? styles.attachButtonDisabled.style
+                              : undefined),
+                        }}
+                        className="link"
+                      >
+                        <AudioLines size={22} color={getButtonColor("audio")} />
+                      </Button>
+                      <Button
+                        data-testid="attach-button-image"
+                        title={t("Image")}
+                        onClick={() => {
+                          if (
+                            !selectedAgent ||
+                            !selectedAgent.capabilities.image
+                          ) {
+                            setIsAgentModalOpen(true)
+                            return
+                          }
+                          if (debateAgent && !debateAgent.capabilities.image) {
+                            setIsDebateAgentModalOpen(true)
+                            return
+                          }
+
+                          triggerFileInput("image/*")
+                        }}
+                        disabled={isAttachmentDisabled("image")}
+                        style={{
+                          ...utilities.link.style,
+                          ...(hasFileType("image")
+                            ? styles.attachButtonSelected.style
+                            : isAttachmentDisabled("image")
+                              ? styles.attachButtonDisabled.style
+                              : undefined),
+                        }}
+                        className="link"
+                      >
+                        <ImageIcon size={22} color={getButtonColor("image")} />
+                      </Button>
+                    </Span>
+                  ) : needsReview ? (
+                    <A
+                      target="_blank"
+                      className="button small transparent"
+                      openInNewTab
+                      href="/privacy"
+                      style={{
+                        position: "relative",
+                        right: "-5px",
+                        top: "-1px",
+                      }}
+                    >
+                      <Link size={15} />
+                      {t("Privacy")}
+                    </A>
+                  ) : (
+                    !isSelectingMood && (
+                      <Button
+                        data-testid="attach-button"
+                        title={t("Attach")}
+                        onClick={() => {
+                          addHapticFeedback()
+
+                          // Auto-switch to Sushi for file attachments
+                          const sushiAgent = aiAgents.find(
+                            (agent) => agent.name === "sushi",
+                          )
+                          if (sushiAgent && !selectedAgent?.capabilities?.pdf) {
+                            setSelectedAgent(sushiAgent)
+                          }
+
+                          // Open system file picker directly with all supported types
+                          triggerFileInput(
+                            "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
+                          )
+                        }}
+                        className="link"
                         style={{
                           ...utilities.link.style,
                           ...styles.attachButton.style,
                         }}
-                        type="button"
-                        title={t("View file upload limits")}
+                        type="submit"
                       >
-                        <HardDrive color={"var(--shade-6)"} size={22} />
+                        <Paperclip color={"var(--accent-6)"} size={22} />
                       </Button>
-                    )}
-                    {renderSubmit()}
-                  </Div>
+                    )
+                  )}
+                  {/* Quota info button */}
+                  {!isSelectingMood && !needsReview && (
+                    <Button
+                      className="link"
+                      onClick={async () => {
+                        addHapticFeedback()
+                        if (!quotaInfo && !isFetchingQuotaInfo) {
+                          await fetchQuotaInfo()
+                        }
+                        setShowQuotaInfo(!showQuotaInfo)
+                      }}
+                      style={{
+                        ...utilities.link.style,
+                        ...styles.attachButton.style,
+                      }}
+                      type="button"
+                      title={t("View file upload limits")}
+                    >
+                      <HardDrive color={"var(--shade-6)"} size={22} />
+                    </Button>
+                  )}
+                  {renderSubmit()}
                 </Div>
               </Div>
-              {(!isChatFloating || isIDE) && (
-                <Div
+            </Div>
+            {(!isChatFloating || isIDE) && (
+              <Div
+                style={{
+                  ...styles.creditInfo.style,
+                  ...(isStandalone ? styles.standalone.style : undefined),
+                  marginTop: 2,
+                  marginBottom: 2,
+                }}
+              >
+                <Span
                   style={{
-                    ...styles.creditInfo.style,
-                    ...(isStandalone ? styles.standalone.style : undefined),
-                    marginTop: 2,
-                    marginBottom: 2,
+                    ...styles.creditCost.style,
+                    display: viewPortWidth > 300 ? "flex" : "none",
                   }}
                 >
-                  <Span
+                  {!hitHourlyLimit && (
+                    <Coins color="var(--accent-1)" size={16} />
+                  )}
+                  {hitHourlyLimit && !threadId ? (
+                    <Span
+                      data-testid="hit-hourly-limit-info"
+                      data-hourly-left={hourlyUsageLeft}
+                      style={styles.hourlyLimit.style}
+                    >
+                      {!user?.subscription || !guest?.subscription ? (
+                        <Button
+                          onClick={() => {
+                            addHapticFeedback()
+                            addParams({ subscribe: "true" })
+                          }}
+                          className="link"
+                          style={utilities.link.style}
+                        >
+                          <ClockPlus size={16} />
+                        </Button>
+                      ) : (
+                        <Clock color="var(--accent-1)" size={16} />
+                      )}
+                      <Span style={{ fontSize: "1rem" }}>😅</Span>
+                      {user?.messagesLastHour || guest?.messagesLastHour || 0}/
+                      {hourlyLimit}
+                    </Span>
+                  ) : selectedAgent ? (
+                    <Button
+                      className="link"
+                      onClick={() => {
+                        addHapticFeedback()
+                        setIsAgentModalOpen(true)
+                      }}
+                      style={{
+                        ...utilities.link.style,
+                        color: "var(--shade-7)",
+                        fontSize: "0.8rem",
+                      }}
+                      title={t("credits", {
+                        count:
+                          (selectedAgent?.creditCost || 1) +
+                          (debateAgent?.creditCost || 0),
+                      })}
+                    >
+                      {t("credits", {
+                        count:
+                          (selectedAgent?.creditCost || 1) +
+                          (debateAgent?.creditCost || 0),
+                      })}
+                    </Button>
+                  ) : (
+                    t("Doesn't cost credits")
+                  )}
+                </Span>
+
+                {selectedAgent && (
+                  <>
+                    {creditsLeft !== undefined ? (
+                      <>
+                        {remainingMs ? (
+                          <Span
+                            data-hourly-left={hourlyUsageLeft}
+                            style={styles.hourlyLimit.style}
+                          >
+                            <Timer size={16} />{" "}
+                            {formatTime(Math.floor(remainingMs / 1000))}
+                          </Span>
+                        ) : (
+                          <Span
+                            data-credits-left={creditsLeft}
+                            data-testid="credits-info"
+                            style={styles.creditInfoText.style}
+                          >
+                            🍒
+                            <A
+                              className="link"
+                              href={`${FRONTEND_URL}?subscribe=true&plan=credits`}
+                              style={{
+                                color:
+                                  creditsLeft === 0
+                                    ? "var(--accent-0)"
+                                    : "var(--shade-7)",
+                              }}
+                            >
+                              {creditsLeft > OWNER_CREDITS / 10
+                                ? t("Unlimited credits")
+                                : t("credit_left", {
+                                    count: creditsLeft,
+                                  })}
+                            </A>
+                          </Span>
+                        )}
+                      </>
+                    ) : null}
+                  </>
+                )}
+                {user && !user?.subscription && (
+                  <Button
+                    data-testid="subscribe-from-chat-button"
+                    onClick={() => {
+                      plausible({
+                        name: ANALYTICS_EVENTS.SUBSCRIBE_FROM_CHAT_CLICK,
+                        props: {
+                          threadId: threadId,
+                        },
+                      })
+                      if (isExtension) {
+                        BrowserInstance?.runtime?.sendMessage({
+                          action: "openInSameTab",
+                          url: `${FRONTEND_URL}?subscribe=true&extension=true`,
+                        })
+
+                        return
+                      }
+                      addParams({ subscribe: "true" })
+                    }}
+                    className="link"
                     style={{
-                      ...styles.creditCost.style,
-                      display: viewPortWidth > 300 ? "flex" : "none",
+                      ...utilities.link.style,
+                      ...styles.subscribeButton.style,
                     }}
                   >
-                    {!hitHourlyLimit && (
-                      <Coins color="var(--accent-1)" size={16} />
-                    )}
-                    {creditEstimate && creditEstimate.multiplier > 1 ? (
-                      <Button
-                        className="link"
-                        onClick={() => {
-                          addHapticFeedback()
-                          setIsAgentModalOpen(true)
-                        }}
-                        title={t("task_detected_tooltip", {
-                          taskType: t(`task_type_${creditEstimate.taskType}`),
-                          multiplier: creditEstimate.multiplier,
-                          warning: creditEstimate.warning || "",
-                        })}
-                        style={{ fontSize: "0.9em", opacity: 0.8 }}
-                      >
-                        ~
-                        {t("credits", {
-                          count: Math.ceil(
-                            creditEstimate.multiplier *
-                              (selectedAgent?.creditCost || 1),
-                          ),
-                        })}
-                      </Button>
-                    ) : hitHourlyLimit && !threadId ? (
-                      <Span
-                        data-testid="hit-hourly-limit-info"
-                        data-hourly-left={hourlyUsageLeft}
-                        style={styles.hourlyLimit.style}
-                      >
-                        {!user?.subscription || !guest?.subscription ? (
-                          <Button
-                            onClick={() => {
-                              addHapticFeedback()
-                              addParams({ subscribe: "true" })
-                            }}
-                            className="link"
-                            style={utilities.link.style}
-                          >
-                            <ClockPlus size={16} />
-                          </Button>
-                        ) : (
-                          <Clock color="var(--accent-1)" size={16} />
-                        )}
-                        <Span style={{ fontSize: "1rem" }}>😅</Span>
-                        {user?.messagesLastHour || guest?.messagesLastHour || 0}
-                        /{hourlyLimit}
-                      </Span>
-                    ) : selectedAgent ? (
-                      <Button
-                        className="link"
-                        onClick={() => {
-                          addHapticFeedback()
-                          setIsAgentModalOpen(true)
-                        }}
-                        style={{
-                          ...utilities.link.style,
-                          color: "var(--shade-7)",
-                          fontSize: "0.8rem",
-                        }}
-                        title={t("credits", {
-                          count:
-                            (selectedAgent?.creditCost || 1) +
-                            (debateAgent?.creditCost || 0),
-                        })}
-                      >
-                        {t("credits", {
-                          count:
-                            (selectedAgent?.creditCost || 1) +
-                            (debateAgent?.creditCost || 0),
-                        })}
-                      </Button>
-                    ) : (
-                      t("Doesn't cost credits")
-                    )}
-                  </Span>
-
-                  {selectedAgent && (
-                    <>
-                      {creditsLeft !== undefined ? (
-                        <>
-                          {remainingMs ? (
-                            <Span
-                              data-hourly-left={hourlyUsageLeft}
-                              style={styles.hourlyLimit.style}
-                            >
-                              <Timer size={16} />{" "}
-                              {formatTime(Math.floor(remainingMs / 1000))}
-                            </Span>
-                          ) : (
-                            <Span
-                              data-credits-left={creditsLeft}
-                              data-testid="credits-info"
-                              style={styles.creditInfoText.style}
-                            >
-                              🍒
-                              <A
-                                className="link"
-                                href={`${FRONTEND_URL}?subscribe=true&plan=credits`}
-                                style={{
-                                  color:
-                                    creditsLeft === 0
-                                      ? "var(--accent-0)"
-                                      : "var(--shade-7)",
-                                }}
-                              >
-                                {creditsLeft > OWNER_CREDITS / 10
-                                  ? t("Unlimited credits")
-                                  : t("credit_left", {
-                                      count: creditsLeft,
-                                    })}
-                              </A>
-                            </Span>
-                          )}
-                        </>
-                      ) : null}
-                    </>
-                  )}
-                  {user && !user?.subscription && (
-                    <Button
-                      data-testid="subscribe-from-chat-button"
-                      onClick={() => {
-                        plausible({
-                          name: ANALYTICS_EVENTS.SUBSCRIBE_FROM_CHAT_CLICK,
-                          props: {
-                            threadId: threadId,
-                          },
+                    <Img logo="coder" size={14} /> {t("Subscribe")}
+                  </Button>
+                )}
+                {guest && (
+                  <Button
+                    data-testid="login-from-chat-button"
+                    onClick={() => {
+                      plausible({
+                        name: ANALYTICS_EVENTS.LOGIN,
+                        props: {
+                          form: "chat",
+                          threadId: threadId,
+                        },
+                      })
+                      if (isExtension) {
+                        BrowserInstance?.runtime?.sendMessage({
+                          action: "openInSameTab",
+                          url: `${FRONTEND_URL}?subscribe=true&extension=true&plan=member`,
                         })
-                        if (isExtension) {
-                          BrowserInstance?.runtime?.sendMessage({
-                            action: "openInSameTab",
-                            url: `${FRONTEND_URL}?subscribe=true&extension=true`,
-                          })
 
-                          return
-                        }
-                        addParams({ subscribe: "true" })
-                      }}
-                      className="link"
-                      style={{
-                        ...utilities.link.style,
-                        ...styles.subscribeButton.style,
-                      }}
-                    >
-                      <Img logo="coder" size={14} /> {t("Subscribe")}
-                    </Button>
-                  )}
-                  {guest && (
-                    <Button
-                      data-testid="login-from-chat-button"
-                      onClick={() => {
-                        plausible({
-                          name: ANALYTICS_EVENTS.LOGIN,
-                          props: {
-                            form: "chat",
-                            threadId: threadId,
-                          },
-                        })
-                        if (isExtension) {
-                          BrowserInstance?.runtime?.sendMessage({
-                            action: "openInSameTab",
-                            url: `${FRONTEND_URL}?subscribe=true&extension=true&plan=member`,
-                          })
-
-                          return
-                        }
-                        addParams({ signIn: "login", callbackUrl: pathname })
-                      }}
-                      className="link"
-                      style={{
-                        ...utilities.link.style,
-                        ...styles.loginButton.style,
-                      }}
-                    >
-                      <LogIn size={16} /> {t("Login")}
-                    </Button>
-                  )}
-                </Div>
-              )}
-            </>
+                        return
+                      }
+                      addParams({ signIn: "login", callbackUrl: pathname })
+                    }}
+                    className="link"
+                    style={{
+                      ...utilities.link.style,
+                      ...styles.loginButton.style,
+                    }}
+                  >
+                    <LogIn size={16} /> {t("Login")}
+                  </Button>
+                )}
+              </Div>
+            )}
           </Div>
         )}
       </Div>

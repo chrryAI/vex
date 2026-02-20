@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react"
-import { WS_URL } from "../utils"
-import { useOnlineStatus } from "./useOnlineStatus"
-import console from "../utils/log"
 import { useAuth } from "../context/providers/AuthProvider"
+import { WS_URL } from "../utils"
+import console from "../utils/log"
+import { useOnlineStatus } from "./useOnlineStatus"
 
 // websocketManager.ts
 type Handler<T> = (data: T) => void
@@ -26,7 +26,6 @@ class WebSocketManager {
   private reconnectInterval = 1000 // Start with 1 second
   private heartbeatInterval: NodeJS.Timeout | null = null
   private reconnectTimeout: NodeJS.Timeout | null = null
-  private lastPingTime: number = 0
   private connectionLostCallbacks: (() => void)[] = []
   private connectionRestoredCallbacks: (() => void)[] = []
 
@@ -155,7 +154,7 @@ class WebSocketManager {
         let data
         try {
           data = JSON.parse(event.data)
-        } catch (e) {
+        } catch (_e) {
           return
         }
 
@@ -164,15 +163,6 @@ class WebSocketManager {
           console.log("📡 Received pong, connection alive")
           return
         }
-
-        // // Send acknowledgment if message has messageId (for E2E testing)
-        // if (data.messageId) {
-        //   console.log(`📨 Sending ACK for message ${data.messageId}`)
-        //   this.send({
-        //     type: "ack",
-        //     messageId: data.messageId,
-        //   })
-        // }
 
         this.handlers.forEach((handler) => handler(data))
       }
@@ -241,7 +231,6 @@ class WebSocketManager {
     this.stopHeartbeat()
     this.heartbeatInterval = setInterval(() => {
       if (this.isConnected()) {
-        this.lastPingTime = Date.now()
         this.send({ type: "ping" })
 
         if (this.pongTimeout) clearTimeout(this.pongTimeout)
@@ -461,7 +450,7 @@ export const useWebSocket = <T extends { type: string }>({
     if (!token || !wsManager || !deviceId) {
       return
     }
-    if (deps && deps?.some((dep) => dep === undefined)) {
+    if (deps?.some((dep) => dep === undefined)) {
       return
     }
 

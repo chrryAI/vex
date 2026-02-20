@@ -1,10 +1,10 @@
-import { Hono } from "hono"
 import {
+  createPushSubscription,
   deletePushSubscription,
   getPushSubscription,
-  createPushSubscription,
-  NewCustomPushSubscription,
+  type NewCustomPushSubscription,
 } from "@repo/db"
+import { Hono } from "hono"
 import { getGuest, getMember } from "../lib/auth"
 
 export const pushSubscription = new Hono()

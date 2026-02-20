@@ -5,8 +5,8 @@
  * knowledge base that gets injected into the AI context.
  */
 
-import { app, getThread } from "@repo/db"
-import { appWithStore } from "@chrryai/chrry/types"
+import type { appWithStore } from "@chrryai/chrry/types"
+import { type app, getThread } from "@repo/db"
 
 /**
  * Predefined knowledge bases for branded agents

@@ -7,7 +7,7 @@
     "moduleResolution": "Bundler",
     "moduleDetection": "force",
     "allowJs": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "noEmit": true,
     "declaration": true,
     "declarationMap": true,
@@ -32,10 +32,12 @@
     "next.config.mjs",
     "next-auth.d.ts",
     "**/*.ts",
+    "**/*.scss",
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".eslintrc.js",
-    "globals.d.ts"
+    "globals.d.ts",
+    "style.d.ts"
   ],
   "exclude": ["node_modules", "public", "**/*.native.tsx", "**/*.native.ts"]
 }

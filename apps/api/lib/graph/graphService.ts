@@ -1,9 +1,9 @@
-import { graph, app, isDevelopment, isE2E, db, eq } from "@repo/db"
+import type { appWithStore } from "@chrryai/chrry/types"
+import { type app, db, eq, graph, isDevelopment, isE2E } from "@repo/db"
 import { threads } from "@repo/db/src/schema"
-import { generateText, embed } from "ai"
+import { embed, generateText } from "ai"
 import captureException from "../../lib/captureException"
-import { getModelProvider, getEmbeddingProvider } from "../getModelProvider"
-import { appWithStore } from "@chrryai/chrry/types"
+import { getEmbeddingProvider, getModelProvider } from "../getModelProvider"
 
 /**
  * FUTURE: App-level provider configuration
@@ -207,7 +207,7 @@ async function generateDynamicCypher(
     // Also exclude variable-length path markers: [*], [*1..3]
     const varsWithoutTypes = relPatterns
       .filter((pattern) => !pattern.includes(":") && !pattern.includes("*"))
-      .map((v) => v.replace(/[\[\]\s]/g, "")) // Remove brackets and spaces
+      .map((v) => v.replace(/[[\]\s]/g, "")) // Remove brackets and spaces
 
     if (varsWithoutTypes.length > 0) {
       // Check if each variable is used anywhere in the query after its definition
@@ -264,7 +264,7 @@ function sanitize(label: string): string {
 
   // Eğer ilk karakter rakamsa başına _ ekle (BAM!)
   if (/^[0-9]/.test(sanitized)) {
-    sanitized = "_" + sanitized
+    sanitized = `_${sanitized}`
   }
 
   return sanitized || "Generic"
@@ -399,10 +399,37 @@ export async function extractAndStoreKnowledge(
       temperature: 0,
     })
 
-    const jsonStr = text.replace(/```json|```/g, "").trim()
-    const data = JSON.parse(jsonStr)
+    // Robust JSON extraction - handle text before/after JSON
+    let jsonStr = text.trim()
 
-    if (!data.triplets || !Array.isArray(data.triplets)) return
+    // Remove markdown code blocks
+    jsonStr = jsonStr.replace(/```json\s*/g, "").replace(/```\s*/g, "")
+
+    // Try to extract JSON object if wrapped in text
+    const jsonMatch = jsonStr.match(/\{[\s\S]*\}/)
+    if (jsonMatch) {
+      jsonStr = jsonMatch[0]
+    }
+
+    let data
+    try {
+      data = JSON.parse(jsonStr)
+    } catch (parseError) {
+      console.error("❌ Failed to parse graph extraction JSON:", {
+        error: parseError,
+        rawText: text.substring(0, 200),
+        extractedJson: jsonStr.substring(0, 200),
+      })
+      return
+    }
+
+    if (!data.triplets || !Array.isArray(data.triplets)) {
+      console.warn("⚠️ Graph extraction returned invalid structure:", {
+        hasTriplets: !!data.triplets,
+        isArray: Array.isArray(data.triplets),
+      })
+      return
+    }
 
     // 2. Store in FalkorDB
     // Ensure indices exist before writing
@@ -606,7 +633,7 @@ export async function getGraphContext(
         .replace(/\\/g, "\\\\") // Escape backslashes first
         .replace(/'/g, "\\'") // Escape apostrophes
         .replace(/"/g, '\\"') // Escape quotes
-        .replace(/[\-:@|()[\]{}$%^&*+=!~<>?,.;]/g, "\\$&") // Escape other special chars
+        .replace(/[-:@|()[\]{}$%^&*+=!~<>?,.;]/g, "\\$&") // Escape other special chars
         .replace(/\s+/g, " ") // Normalize whitespace to single spaces
         .trim()
 

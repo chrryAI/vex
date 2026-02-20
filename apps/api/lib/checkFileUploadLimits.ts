@@ -1,6 +1,6 @@
 import { isDevelopment, isE2E } from "@chrryai/chrry/utils"
-import { updateUser, updateGuest } from "@repo/db"
-import type { user, subscription, guest } from "@repo/db"
+import type { guest, subscription, user } from "@repo/db"
+import { updateGuest, updateUser } from "@repo/db"
 import { captureException } from "@sentry/node"
 
 const ONE_HOUR_MS = 60 * 60 * 1000
@@ -78,7 +78,7 @@ const checkFileUploadLimits = async ({
   if (tooLarge) {
     return {
       allowed: false,
-      error: `File \"${tooLarge.name}\" exceeds the ${limits.maxFileSizeMB}MB limit.`,
+      error: `File "${tooLarge.name}" exceeds the ${limits.maxFileSizeMB}MB limit.`,
     }
   }
 
@@ -105,13 +105,13 @@ const checkFileUploadLimits = async ({
   let currentHourlyUploads = currentUser.fileUploadsThisHour || 0
   let currentDailyUploads = currentUser.fileUploadsToday || 0
   let currentDailySize = currentUser.totalFileSizeToday || 0
-  let currentDailyImages = currentUser.imagesGeneratedToday || 0
+  let _currentDailyImages = currentUser.imagesGeneratedToday || 0
 
   // Reset counters if needed
   if (needsDailyReset) {
     currentDailyUploads = 0
     currentDailySize = 0
-    currentDailyImages = 0
+    _currentDailyImages = 0
     currentHourlyUploads = 0
   } else if (needsHourlyReset) {
     currentHourlyUploads = 0

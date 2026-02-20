@@ -1,9 +1,9 @@
-import { storeWithApps } from "../types"
-import { t as tFunc } from "./t"
-import { locale } from "../locales"
-import getWhiteLabel from "./getWhiteLabel"
 import { getImageSrc } from "../lib"
-import { MetadataResult } from "./generateThreadMetadata"
+import type { locale } from "../locales"
+import type { storeWithApps } from "../types"
+import type { MetadataResult } from "./generateThreadMetadata"
+import getWhiteLabel from "./getWhiteLabel"
+import { t as tFunc } from "./t"
 
 /**
  * Generate dynamic metadata for a store page

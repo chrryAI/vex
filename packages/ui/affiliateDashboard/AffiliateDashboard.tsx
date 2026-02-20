@@ -1,26 +1,26 @@
 "use client"
 
-import React, { useEffect } from "react"
-import { COLORS, useAppContext } from "../context/AppContext"
-import toast from "react-hot-toast"
-import {
-  Copy,
-  TrendingUp,
-  MousePointerClick,
-  Coins,
-  UserRoundPlus,
-  CircleArrowLeft,
-  Link,
-  Clock,
-  Share,
-} from "../icons"
-import Logo from "../Logo"
-import Loading from "../Loading"
 import clsx from "clsx"
-import { apiFetch } from "../utils"
-import { Button, Div, H1, H2, H3, P, Span, useTheme } from "../platform"
+import { useEffect } from "react"
+import toast from "react-hot-toast"
+import { COLORS, useAppContext } from "../context/AppContext"
 import { useAuth, useData, useNavigationContext } from "../context/providers"
+import {
+  CircleArrowLeft,
+  Clock,
+  Coins,
+  Copy,
+  Link,
+  MousePointerClick,
+  Share,
+  TrendingUp,
+  UserRoundPlus,
+} from "../icons"
+import Loading from "../Loading"
+import Logo from "../Logo"
+import { Button, Div, H1, H2, H3, P, Span, useTheme } from "../platform"
 import Skeleton from "../Skeleton"
+import { apiFetch } from "../utils"
 import { useAffiliateDashboardStyles } from "./AffiliateDashboard.styles"
 
 export default function AffiliateDashboard() {
@@ -323,7 +323,9 @@ export default function AffiliateDashboard() {
                   return
                 }
                 e.preventDefault()
-                setIsNewChat(true)
+                setIsNewChat({
+                  value: true,
+                })
               }}
             >
               <Logo isVivid size={32} /> {"Vex"}

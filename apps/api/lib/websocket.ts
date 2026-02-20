@@ -1,26 +1,27 @@
 // lib/websocket.ts - WebSocket handler for Bun
+
+import {
+  createTimer,
+  getCollaboration,
+  getGuest,
+  getThread,
+  getUser,
+  type task,
+  updateCollaboration,
+  updateGuest,
+  updateTask,
+  updateTimer,
+  updateUser,
+} from "@repo/db"
 import type { ServerWebSocket } from "bun"
 import jwt from "jsonwebtoken"
 import { validate } from "uuid"
 import {
-  getUser,
-  getGuest,
-  getThread,
-  getCollaboration,
-  updateCollaboration,
-  updateGuest,
-  updateUser,
-  updateTask,
-  createTimer,
-  updateTimer,
-  type task,
-} from "@repo/db"
-import {
   addClient,
-  removeClient,
+  handleAcknowledgment,
   notify,
   notifyClients,
-  handleAcknowledgment,
+  removeClient,
 } from "./wsClients"
 
 // Batched task updates
@@ -88,26 +89,15 @@ async function getMemberWithToken(token: string) {
     return null
   }
 
-  const secret = process.env.NEXTAUTH_SECRET
+  // Use default secret if not set (matches auth.ts behavior)
+  const secret = process.env.NEXTAUTH_SECRET || "development-secret"
   let decoded: { email?: string } | null = null
 
-  if (secret) {
-    try {
-      decoded = jwt.verify(token, secret) as { email?: string }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error"
-      console.warn("JWT verification failed:", message)
-
-      if (process.env.NODE_ENV !== "production") {
-        decoded = jwt.decode(token) as { email?: string } | null
-        if (decoded) {
-          console.warn("Falling back to unsigned decode in non-production")
-        }
-      }
-    }
-  } else {
-    console.warn("NEXTAUTH_SECRET is not set; falling back to unsigned decode")
-    decoded = jwt.decode(token) as { email?: string } | null
+  try {
+    decoded = jwt.verify(token, secret) as { email?: string }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error"
+    console.warn("JWT verification failed:", message)
   }
 
   if (decoded?.email) {
@@ -136,7 +126,13 @@ async function getGuestWithToken(token: string) {
 
 export const websocketHandler = {
   async open(ws: ServerWebSocket) {
-    const { token, deviceId, member, guest, clientId } = ws.data as any
+    const {
+      token: _token,
+      deviceId,
+      member: _member,
+      guest: _guest,
+      clientId,
+    } = ws.data as any
 
     addClient({
       client: ws,
@@ -223,12 +219,13 @@ export const websocketHandler = {
         // Queue task updates
         if (Array.isArray(selectedTasks) && selectedTasks.length > 0) {
           for (const item of selectedTasks) {
-            const { total, id, title, order } = item
+            const { total, id, title, order: _order } = item
 
             const sanitizedTotal = Array.isArray(total)
               ? total.filter(
                   (t) =>
-                    typeof t.date === "string" && !isNaN(Date.parse(t.date)),
+                    typeof t.date === "string" &&
+                    !Number.isNaN(Date.parse(t.date)),
                 )
               : []
 
@@ -466,7 +463,7 @@ export async function upgradeWebSocket(
   const deviceId = url.searchParams.get("deviceId")
 
   console.log("🔌 WebSocket upgrade attempt:", {
-    token: token?.substring(0, 10) + "...",
+    token: `${token?.substring(0, 10)}...`,
     deviceId,
     timestamp: new Date().toISOString(),
   })

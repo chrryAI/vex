@@ -1,19 +1,17 @@
+import { and, eq } from "drizzle-orm"
 import { db } from "./index"
 import {
   apps,
-  tribePosts,
-  tribeComments,
-  tribeLikes,
-  tribeReactions,
-  tribeFollows,
-  tribes,
-  tribeBlocks,
-  tribeMemberships,
-  tribeShares,
-  users,
   characterProfiles,
+  tribeBlocks,
+  tribeComments,
+  tribeFollows,
+  tribeLikes,
+  tribePosts,
+  tribeReactions,
+  tribeShares,
+  tribes,
 } from "./src/schema"
-import { eq, and } from "drizzle-orm"
 
 // Helper function for random number generation in seed data
 // Note: Math.random() is acceptable for non-security-critical seed data
@@ -154,7 +152,7 @@ function generateTitle(content: string): string {
 }
 
 // Lorem ipsum generator
-const LOREM_IPSUM = [
+const _LOREM_IPSUM = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
   "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
   "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
@@ -166,6 +164,10 @@ const LOREM_IPSUM = [
 ]
 
 export async function seedTribeEngagement() {
+  // if (isE2E) {
+  //   console.log("⚠️ Skipping Tribe engagement seeding in E2E environment")
+  //   return
+  // }
   console.log("🌱 Seeding Tribe engagement data...")
 
   try {
@@ -360,6 +362,16 @@ export async function seedTribeEngagement() {
       const randomTribe = getRandomElement(createdTribes)
       if (!randomTribe) continue
 
+      // Generate realistic timestamp (between now and 7 days ago)
+      const now = new Date()
+      const daysAgo = Math.random() * 7 // 0-7 days ago // NOSONAR
+      const hoursAgo = Math.random() * 24 // 0-24 hours within that day // NOSONAR
+      const createdOn = new Date(
+        now.getTime() -
+          daysAgo * 24 * 60 * 60 * 1000 -
+          hoursAgo * 60 * 60 * 1000,
+      )
+
       const [post] = await db
         .insert(tribePosts)
         .values({
@@ -368,6 +380,7 @@ export async function seedTribeEngagement() {
           content: postData.content,
           visibility: postData.visibility,
           tribeId: randomTribe.id,
+          createdOn,
         })
         .returning()
 
@@ -399,12 +412,27 @@ export async function seedTribeEngagement() {
       `✅ Created ${totalPostsCreated} posts across ${allApps.length} apps`,
     )
 
-    // Create random comments (3-5 per post, app-to-app)
+    // Create random comments (varied counts per post, app-to-app)
     const createdComments: Array<{ id: string; postId: string }> = []
     let commentsCount = 0
+    // Track comments count per post
+    const postCommentsMap = new Map<string, number>()
 
     for (const post of createdPosts) {
-      const numCommentsPerPost = getRandomInt(3, 5) // 3-5 comments per post
+      // Varied comment counts: some posts get 0, some get many
+      const commentDistribution = getRandomInt(0, 10)
+      let numCommentsPerPost: number
+      if (commentDistribution === 0) {
+        numCommentsPerPost = 0 // 10% chance of 0 comments
+      } else if (commentDistribution <= 3) {
+        numCommentsPerPost = getRandomInt(1, 3) // 30% chance of 1-3 comments
+      } else if (commentDistribution <= 7) {
+        numCommentsPerPost = getRandomInt(4, 8) // 40% chance of 4-8 comments
+      } else {
+        numCommentsPerPost = getRandomInt(9, 15) // 20% chance of 9-15 comments
+      }
+
+      postCommentsMap.set(post.id, 0) // Initialize counter
 
       for (let i = 0; i < numCommentsPerPost; i++) {
         const randomComment = getRandomElement(FAKE_COMMENTS)
@@ -425,9 +453,17 @@ export async function seedTribeEngagement() {
         if (comment) {
           createdComments.push({ id: comment.id, postId: post.id })
           commentsCount++
+          postCommentsMap.set(post.id, (postCommentsMap.get(post.id) || 0) + 1)
           console.log(`💬 [${commentsCount}] Comment: "${randomComment}"`)
         }
       }
+
+      // Update post's commentsCount field
+      const actualCommentsCount = postCommentsMap.get(post.id) || 0
+      await db
+        .update(tribePosts)
+        .set({ commentsCount: actualCommentsCount })
+        .where(eq(tribePosts.id, post.id))
     }
 
     // Add 1-2 replies to random comments (app-to-app)
@@ -561,9 +597,7 @@ export async function seedTribeEngagement() {
     console.log(`✅ Created ${followsCount} follows`)
 
     // Skip tribe memberships - they're for users/guests only, not apps
-    console.log(
-      `🏘️ Skipped tribe memberships (only for users/guests, not apps)`,
-    )
+    console.log(`🏘️ Skipped tribe memberships (only for users/guests, not apps)`)
 
     // Create fake shares (apps share posts)
     // Create fake tribe shares (apps share posts)

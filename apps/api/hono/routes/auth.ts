@@ -1,29 +1,35 @@
-import { Hono } from "hono"
-import { sign, verify } from "jsonwebtoken"
-import { compare, hash } from "bcrypt"
-import {
-  getUser,
-  createUser,
-  getStore,
-  eq,
-  and,
-  gt,
-  db,
-  authExchangeCodes,
-} from "@repo/db"
-import { v4 as uuidv4 } from "uuid"
+import { randomBytes } from "node:crypto"
 import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
-import { randomBytes } from "crypto"
+import {
+  and,
+  authExchangeCodes,
+  createUser,
+  db,
+  eq,
+  getStore,
+  getUser,
+  gt,
+} from "@repo/db"
+import { compare, hash } from "bcrypt"
 import type { Context } from "hono"
-import { getCookie, setCookie, deleteCookie } from "hono/cookie"
+import { Hono } from "hono"
+import { deleteCookie, getCookie, setCookie } from "hono/cookie"
+import { sign, verify } from "jsonwebtoken"
+import { v4 as uuidv4 } from "uuid"
+import { checkAuthRateLimit } from "../../lib/rateLimiting"
 
 const authRoutes = new Hono()
 
 // ==================== CONSTANTS ====================
 const GOOGLE_WEB_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID
 const GOOGLE_WEB_CLIENT_SECRET = process.env.GOOGLE_WEB_CLIENT_SECRET
-const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
-const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET
+const _GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
+const _GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET
+
+if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_SECRET) {
+  throw new Error("❌ NEXTAUTH_SECRET is not set in production environment")
+}
+
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || "development-secret"
 const JWT_EXPIRY = "30d"
 const ALLOWED_DOMAINS = [".chrry.ai", ".chrry.dev", ".chrry.store", "localhost"]
@@ -81,9 +87,10 @@ async function generateExchangeCode(token: string): Promise<string> {
 async function exchangeCodeForToken(code: string): Promise<string | null> {
   const now = new Date()
 
+  // Use a single atomic UPDATE ... RETURNING query to prevent race conditions (TOCTOU)
   const [result] = await db
-    .select()
-    .from(authExchangeCodes)
+    .update(authExchangeCodes)
+    .set({ used: true })
     .where(
       and(
         eq(authExchangeCodes.code, code),
@@ -91,14 +98,9 @@ async function exchangeCodeForToken(code: string): Promise<string | null> {
         gt(authExchangeCodes.expiresOn, now),
       ),
     )
-    .limit(1)
+    .returning()
 
   if (!result) return null
-
-  await db
-    .update(authExchangeCodes)
-    .set({ used: true })
-    .where(eq(authExchangeCodes.id, result.id))
 
   return result.token
 }
@@ -250,12 +252,12 @@ function getCallbackUrls(c: Context): {
   // Validate error URL to prevent open redirect
   if (errorUrl && !validateCallbackUrl(errorUrl)) {
     console.warn("⚠️ Invalid errorUrl provided, using safe fallback")
-    errorUrl = callbackUrl + "/?error=oauth_failed"
+    errorUrl = `${callbackUrl}/?error=oauth_failed`
   }
 
   // Fallback error URL
   if (!errorUrl) {
-    errorUrl = callbackUrl + "/?error=oauth_failed"
+    errorUrl = `${callbackUrl}/?error=oauth_failed`
   }
 
   return { callbackUrl, errorUrl }
@@ -325,7 +327,12 @@ function extractTokenFromRequest(c: Context): string | null {
 
 // ==================== RESPONSE BUILDERS ====================
 
-function buildAuthResponse(user: any, authCode: string, callbackUrl?: string) {
+function buildAuthResponse(
+  user: any,
+  authCode: string,
+  callbackUrl?: string,
+  token?: string,
+) {
   return {
     user: {
       id: user.id,
@@ -333,7 +340,8 @@ function buildAuthResponse(user: any, authCode: string, callbackUrl?: string) {
       name: user.name,
       image: user.image,
     },
-    token: authCode,
+    token: token ?? authCode,
+    authCode,
     ...(callbackUrl && {
       callbackUrl: `${callbackUrl}${callbackUrl.includes("?") ? "&" : "?"}auth_token=${authCode}`,
     }),
@@ -353,6 +361,16 @@ function buildRedirectUrl(baseUrl: string, authCode: string): string {
  */
 authRoutes.post("/signup/password", async (c) => {
   try {
+    const ip = c.req.header("x-forwarded-for")?.split(",")[0] || "127.0.0.1"
+    const { success, errorMessage } = await checkAuthRateLimit(c.req.raw, ip)
+
+    if (!success) {
+      return c.json(
+        { error: errorMessage || "Too many attempts. Please try again later." },
+        429,
+      )
+    }
+
     const { email, password, name } = await c.req.json()
 
     if (!email || !password) {
@@ -398,6 +416,16 @@ authRoutes.post("/signup/password", async (c) => {
  */
 authRoutes.post("/signin/password", async (c) => {
   try {
+    const ip = c.req.header("x-forwarded-for")?.split(",")[0] || "127.0.0.1"
+    const { success, errorMessage } = await checkAuthRateLimit(c.req.raw, ip)
+
+    if (!success) {
+      return c.json(
+        { error: errorMessage || "Too many attempts. Please try again later." },
+        429,
+      )
+    }
+
     const { email, password, callbackUrl } = await c.req.json()
 
     if (!email || !password) {
@@ -418,7 +446,7 @@ authRoutes.post("/signin/password", async (c) => {
     setCookieFromHost(c, token, "None")
 
     const authCode = await generateExchangeCode(token)
-    return c.json(buildAuthResponse(user, authCode, callbackUrl))
+    return c.json(buildAuthResponse(user, authCode, callbackUrl, token))
   } catch (error) {
     console.error("Signin error:", error)
     return c.json({ error: "Signin failed" }, 500)
@@ -543,7 +571,7 @@ authRoutes.post("/native/google", async (c) => {
     const authCode = await generateExchangeCode(token)
 
     return c.json({
-      ...buildAuthResponse(user, authCode),
+      ...buildAuthResponse(user, authCode, undefined, token),
       jwt: token,
     })
   } catch (error) {
@@ -561,7 +589,7 @@ authRoutes.get("/signin/google", async (c) => {
     const { callbackUrl, errorUrl } = getCallbackUrls(c)
     const state = createOAuthState(callbackUrl, errorUrl)
 
-    setCookie(c, "oauth_state", state, {
+    setCookie(c, "token", state, {
       httpOnly: true,
       secure: true,
       sameSite: "Lax",
@@ -598,7 +626,7 @@ authRoutes.get("/callback/google", async (c) => {
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
     }
 
-    const storedState = getCookie(c, "oauth_state")
+    const storedState = getCookie(c, "token")
 
     if (state !== storedState) {
       // Redirect to static URL to prevent Open Redirect
@@ -653,7 +681,7 @@ authRoutes.get("/callback/google", async (c) => {
 
     const token = generateToken(user.id, user.email)
 
-    deleteCookie(c, "oauth_state", {
+    deleteCookie(c, "token", {
       path: "/",
       secure: true,
       sameSite: "Lax",
@@ -730,7 +758,7 @@ authRoutes.post("/native/apple", async (c) => {
     const authCode = await generateExchangeCode(token)
 
     return c.json({
-      ...buildAuthResponse(user, authCode),
+      ...buildAuthResponse(user, authCode, undefined, token),
       jwt: token,
     })
   } catch (error) {
@@ -750,7 +778,7 @@ authRoutes.get("/signin/apple", async (c) => {
     const { callbackUrl, errorUrl } = getCallbackUrls(c)
     const state = createOAuthState(callbackUrl, errorUrl)
 
-    setCookie(c, "oauth_state", state, {
+    setCookie(c, "token", state, {
       httpOnly: true,
       secure: true,
       sameSite: "None", // Required for form_post callback from Apple
@@ -789,7 +817,7 @@ authRoutes.post("/callback/apple", async (c) => {
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
     }
 
-    const storedState = getCookie(c, "oauth_state")
+    const storedState = getCookie(c, "token")
 
     if (state !== storedState) {
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
@@ -836,7 +864,7 @@ authRoutes.post("/callback/apple", async (c) => {
         const userData = JSON.parse(body.user as string)
         name =
           `${userData.name?.firstName || ""} ${userData.name?.lastName || ""}`.trim()
-      } catch (e) {
+      } catch (_e) {
         // Name not provided
       }
     }
@@ -853,7 +881,7 @@ authRoutes.post("/callback/apple", async (c) => {
 
     const token = generateToken(user.id, user.email)
 
-    deleteCookie(c, "oauth_state", {
+    deleteCookie(c, "token", {
       path: "/",
       secure: true,
       sameSite: "None",

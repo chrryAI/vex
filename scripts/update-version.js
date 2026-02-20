@@ -1,7 +1,6 @@
-import fs from "fs"
-import path from "path"
-import { fileURLToPath } from "url"
-import { dirname } from "path"
+import fs from "node:fs"
+import path, { dirname } from "node:path"
+import { fileURLToPath } from "node:url"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -29,7 +28,7 @@ function incrementPatch(version) {
 
 const versionArg = process.argv[2]
 const versionFilePath = path.resolve(__dirname, "..", "VERSION")
-let oldVersion = fs.readFileSync(versionFilePath, "utf8").trim()
+const oldVersion = fs.readFileSync(versionFilePath, "utf8").trim()
 let newVersion
 if (versionArg) {
   newVersion = versionArg
@@ -39,7 +38,7 @@ if (versionArg) {
 
 // Android versionCode = patch number
 const versionCode = Number(newVersion.split(".")[2])
-if (isNaN(versionCode))
+if (Number.isNaN(versionCode))
   throw new Error("Patch version for versionCode must be a number")
 console.log("Using version:", newVersion, "versionCode:", versionCode)
 
@@ -61,7 +60,7 @@ const files = [
 function updatePackageJson(file, version) {
   const json = JSON.parse(fs.readFileSync(file, "utf8"))
   json.version = version
-  fs.writeFileSync(file, JSON.stringify(json, null, 2) + "\n", "utf8")
+  fs.writeFileSync(file, `${JSON.stringify(json, null, 2)}\n`, "utf8")
   console.log(`Updated version in ${file}`)
 }
 
@@ -90,7 +89,7 @@ function replaceVersionInFile(file, oldVersion, newVersion) {
 const versionFile = files[0]
 
 // 6. Update VERSION file
-fs.writeFileSync(versionFile, newVersion + "\n", "utf8")
+fs.writeFileSync(versionFile, `${newVersion}\n`, "utf8")
 console.log(`Set VERSION file to ${newVersion}`)
 
 // 7. Update each file

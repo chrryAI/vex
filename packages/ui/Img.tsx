@@ -1,12 +1,14 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import type React from "react"
+import { useEffect, useState } from "react"
 
 import { useImgStyles } from "./Img.styles"
-import Loading from "./Loading"
 import { ImageIcon } from "./icons"
-import { Div, Image as PlatformImage, MotiView, useTheme } from "./platform"
+import Loading from "./Loading"
+import { Div, MotiView, Image as PlatformImage, useTheme } from "./platform"
 import { useInView } from "./platform/useInView" // Auto-resolves to .web or .native
+
 // Simple in-memory cache
 const imageCache = new Map<string, string>()
 
@@ -70,7 +72,7 @@ export default function Img({
         try {
           await img.decode()
           handleDimensionsChange({ width: img.width, height: img.height })
-        } catch (e) {}
+        } catch (_e) {}
       }
       return
     }
@@ -100,10 +102,10 @@ export default function Img({
         // Cache the URL
         imageCache.set(url, url)
         setImageSrc(url)
-      } catch (e) {
+      } catch (_e) {
         // Silently fail if decode/load fails (e.g. 404)
       }
-    } catch (e) {
+    } catch (_e) {
       // Don't show error for network/CORS issues - just fail silently
       setError(null)
     } finally {

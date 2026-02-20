@@ -62,11 +62,11 @@ process.on("unhandledRejection", (reason, promise) => {
 })
 
 import app from "./hono/index"
-import { websocketHandler, upgradeWebSocket } from "./lib/websocket"
+import { upgradeWebSocket, websocketHandler } from "./lib/websocket"
 
 const port = Number(process.env.PORT) || 3001
 
-const server = Bun.serve({
+const _server = Bun.serve({
   port,
   fetch: async (req, server) => {
     // Handle WebSocket upgrade requests

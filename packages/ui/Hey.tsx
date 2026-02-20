@@ -9,18 +9,19 @@ import {
   useEffect,
   useState,
 } from "react"
-import Img from "./Image"
+import AgentProfile from "./AgentProfile"
+import { useApp } from "./context/providers"
 // Import hooks directly from their source files to avoid circular dependency with context/providers/index.tsx
 import { useAuth } from "./context/providers/AuthProvider"
 import { useNavigationContext } from "./context/providers/NavigationProvider"
-import { usePlatform, useLocalStorage, Div } from "./platform"
-import { useSidebarStyles } from "./Sidebar.styles"
-import { useHasHydrated } from "./hooks"
 import { ErrorBoundary } from "./ErrorBoundary"
-import Loading from "./Loading"
-import Thread from "./Thread"
 import Home from "./Home"
-import { useApp } from "./context/providers"
+import { useHasHydrated } from "./hooks"
+import Img from "./Image"
+import Loading from "./Loading"
+import { Div, useLocalStorage, usePlatform } from "./platform"
+import { useSidebarStyles } from "./Sidebar.styles"
+import Thread from "./Thread"
 import Programme from "./z/Programme"
 
 // Lazy load less frequently used components to reduce initial bundle
@@ -48,6 +49,7 @@ const ROUTES: Record<string, ComponentType<any>> = {
   affiliate: Affiliate,
   "affiliate/dashboard": AffiliateDashboard,
   u: Users,
+  agent: AgentProfile,
 }
 
 export const Hey = memo(
@@ -66,7 +68,7 @@ export const Hey = memo(
 
     const styles = useSidebarStyles()
 
-    const [pathnameLocal, setPathnameLocal] = useLocalStorage<
+    const [_pathnameLocal, setPathnameLocal] = useLocalStorage<
       string | undefined
     >("pathname", isExtension ? pathname : undefined)
 
@@ -85,6 +87,7 @@ export const Hey = memo(
       isProgramme,
       isIDE,
       baseApp,
+      isLoadingPosts,
     } = useAuth()
 
     const { currentStore } = useApp()
@@ -122,15 +125,20 @@ export const Hey = memo(
       (app) => app.store?.slug === pathWithoutLocale,
     )
 
+    // Check if this is an agent profile route
+    const isAgentRoute = pathname.startsWith("/agent/")
+
     // Auto-detect route component
-    // Priority: Store pages > Full path match (nested routes) > Last segment > App slugs > Thread IDs
+    // Priority: Store pages > Agent routes > Full path match (nested routes) > Last segment > App slugs > Thread IDs
     const RouteComponent = isStorePage
       ? Store // Store slugs render Store component
-      : pathWithoutLocale && ROUTES[pathWithoutLocale]
-        ? ROUTES[pathWithoutLocale]
-        : lastPathSegment && ROUTES[lastPathSegment]
-          ? ROUTES[lastPathSegment]
-          : null
+      : isAgentRoute
+        ? AgentProfile // Agent profile pages
+        : pathWithoutLocale && ROUTES[pathWithoutLocale]
+          ? ROUTES[pathWithoutLocale]
+          : lastPathSegment && ROUTES[lastPathSegment]
+            ? ROUTES[lastPathSegment]
+            : null
 
     // Check if this is a client-side route
     // Skip SSR routes completely - let Next.js handle them
@@ -194,8 +202,16 @@ export const Hey = memo(
         isImageLoaded &&
         isHydrated &&
         minSplashTimeElapsed &&
+        !isLoadingPosts &&
         setIsSplash(!app?.store?.apps?.length)
-    }, [isImageLoaded, isHydrated, isSplash, minSplashTimeElapsed, app])
+    }, [
+      isImageLoaded,
+      isHydrated,
+      isSplash,
+      minSplashTimeElapsed,
+      app,
+      isLoadingPosts,
+    ])
 
     // useEffect(() => {
     //   app?.slug && useExtensionIcon?.(app?.slug)

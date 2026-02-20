@@ -1,21 +1,22 @@
-import {
+import type z from "zod"
+import type { session } from "../context/providers/AuthProvider"
+import type { appFormData } from "../schemas/appSchema"
+import type {
   aiAgent,
   app,
   appWithStore,
   collaboration,
   guest,
   message,
+  paginatedMessages,
   store,
   thread,
   user,
-  paginatedMessages,
 } from "../types"
 import * as utils from "../utils"
-import z from "zod"
-import { createCalendarEventSchema } from "../utils/calendarValidation"
+import type { createCalendarEventSchema } from "../utils/calendarValidation"
 import { stringify as superjsonStringify } from "./superjson"
-import { appFormData } from "../schemas/appSchema"
-import { session } from "../context/providers/AuthProvider"
+
 export { simpleRedact } from "./redaction"
 
 export const getImageSrc = ({
@@ -33,7 +34,7 @@ export const getImageSrc = ({
   canEditApp,
   image,
 }: {
-  slug?: "atlas" | "peach" | "vault" | "bloom"
+  slug?: "atlas" | "peach" | "vault" | "bloom" | string
   className?: string
   size?: number
   title?: string
@@ -75,6 +76,7 @@ export const getImageSrc = ({
     | "strawberry"
     | "sushi"
     | "zarathustra"
+    | "molt"
 
   app?: appWithStore
   width?: number | string
@@ -175,9 +177,9 @@ export const getImageSrc = ({
   }
 
   const appImageSrc =
-    logo || store
+    (logo || store) && !slug
       ? null
-      : app &&
+      : (app || slug) &&
           [
             "atlas",
             "bloom",
@@ -194,12 +196,17 @@ export const getImageSrc = ({
             "pear",
             "coder",
             "architect",
-          ].includes(app.slug)
-        ? `${BASE_URL}/images/apps/${app.slug}.png`
+            "tribe",
+            "nebula",
+            "cosmos",
+            "starmap",
+            "quantumlab",
+          ].includes(app?.slug || slug || "")
+        ? `${BASE_URL}/images/apps/${app?.slug || slug}.png`
         : getImageBySize(size) ||
           app?.image ||
           (slug
-            ? `${BASE_URL}/icons/${slug}-128.png`
+            ? `${BASE_URL}/images/pacman/space-invader.png`
             : canEditApp
               ? image || iconSrc
               : undefined) // Remote web asset
@@ -984,6 +991,25 @@ export async function reorderApps({
   return await response.json()
 }
 
+export const clearSession = async ({
+  API_URL = utils.API_URL,
+  token,
+}: {
+  API_URL?: string
+  token: string
+}) => {
+  const result = await fetch(`${API_URL}/clear`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  const data = await result.json()
+
+  return data
+}
+
 export const getSession = async ({
   deviceId,
   fingerprint,
@@ -1091,7 +1117,7 @@ export const getSession = async ({
   try {
     const result = await response.json()
     return result as session
-  } catch (error) {
+  } catch (_error) {
     const text = await response.text()
     return {
       error: `API error (${response.status}): ${text.substring(0, 200)}`,
@@ -1180,6 +1206,40 @@ export const getApp = async ({
   return data as appWithStore
 }
 
+export const getAppUsage = async ({
+  appId,
+  token,
+  API_URL = utils.API_URL,
+}: {
+  appId: string
+  token: string
+  API_URL?: string
+}) => {
+  const response = await fetch(`${API_URL}/apps/${appId}/usage`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch app usage: ${response.status} ${response.statusText}`,
+    )
+  }
+
+  const data = await response.json()
+  return data.usage as {
+    totalRequests: number
+    totalTokens: number
+    totalAmount: number
+    successCount: number
+    errorCount: number
+    estimatedCredits: number
+  }
+}
+
 export const getTranslations = async ({
   API_URL = utils.API_URL,
   token,
@@ -1212,6 +1272,7 @@ export const getTribes = async ({
   page = 1,
   token,
   search,
+  appId,
   onError,
   API_URL = utils.API_URL,
 }: {
@@ -1219,6 +1280,7 @@ export const getTribes = async ({
   page?: number
   token: string
   search?: string
+  appId?: string
   onError?: (status: number) => void
   API_URL?: string
 }) => {
@@ -1227,6 +1289,7 @@ export const getTribes = async ({
   if (pageSize) url.searchParams.set("pageSize", pageSize.toString())
   if (page) url.searchParams.set("page", page.toString())
   if (search) url.searchParams.set("search", search)
+  if (appId) url.searchParams.set("appId", appId)
 
   const response = await fetch(url, {
     method: "GET",
@@ -1250,10 +1313,12 @@ export const getTribePosts = async ({
   token,
   search,
   tribeId,
+  tribeSlug,
   appId,
   userId,
   guestId,
   characterProfileIds,
+  sortBy,
   onError,
   API_URL = utils.API_URL,
 }: {
@@ -1262,10 +1327,12 @@ export const getTribePosts = async ({
   token: string
   search?: string
   tribeId?: string
+  tribeSlug?: string
   appId?: string
   userId?: string
   guestId?: string
   characterProfileIds?: string[]
+  sortBy?: "date" | "hot" | "comments"
   onError?: (status: number) => void
   API_URL?: string
 }) => {
@@ -1275,11 +1342,13 @@ export const getTribePosts = async ({
   if (page) url.searchParams.set("page", page.toString())
   if (search) url.searchParams.set("search", search)
   if (tribeId) url.searchParams.set("tribeId", tribeId)
+  if (tribeSlug) url.searchParams.set("tribeSlug", tribeSlug)
   if (appId) url.searchParams.set("appId", appId)
   if (userId) url.searchParams.set("userId", userId)
   if (guestId) url.searchParams.set("guestId", guestId)
   if (characterProfileIds && characterProfileIds.length > 0)
     url.searchParams.set("characterProfileIds", characterProfileIds.join(","))
+  if (sortBy) url.searchParams.set("sortBy", sortBy)
 
   const response = await fetch(url, {
     method: "GET",
@@ -1300,15 +1369,21 @@ export const getTribePosts = async ({
 export const getTribePost = async ({
   id,
   token,
+  appId,
   onError,
   API_URL = utils.API_URL,
 }: {
   id: string
   token: string
+  appId?: string
   onError?: (status: number) => void
   API_URL?: string
 }) => {
-  const response = await fetch(`${API_URL}/tribe/p/${id}`, {
+  const url = new URL(`${API_URL}/tribe/p/${id}`)
+
+  if (appId) url.searchParams.set("appId", appId)
+
+  const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -1321,7 +1396,8 @@ export const getTribePost = async ({
     return null
   }
 
-  return response.json()
+  const data = await response.json()
+  return data.post
 }
 
 export const getActions = ({
@@ -1454,12 +1530,18 @@ export const getActions = ({
       VERSION?: string
       app?: "extension" | "pwa" | "web"
     }) => getSession({ ...params, API_URL, token }),
+    clearSession: (
+      params: { API_URL?: string } = {
+        API_URL: utils.API_URL,
+      },
+    ) => clearSession({ ...params, API_URL, token }),
 
     // Tribe operations
     getTribes: (params?: {
       pageSize?: number
       page?: number
       search?: string
+      appId?: string
       onError?: (status: number) => void
     }) => getTribes({ token, ...params, API_URL }),
     getTribePosts: (params?: {
@@ -1467,14 +1549,17 @@ export const getActions = ({
       page?: number
       search?: string
       tribeId?: string
+      tribeSlug?: string
       appId?: string
       userId?: string
       guestId?: string
       characterProfileIds?: string[]
+      sortBy?: "date" | "hot" | "comments"
       onError?: (status: number) => void
     }) => getTribePosts({ token, ...params, API_URL }),
     getTribePost: (params: {
       id: string
+      appId?: string
       onError?: (status: number) => void
     }) => getTribePost({ token, ...params, API_URL }),
   }

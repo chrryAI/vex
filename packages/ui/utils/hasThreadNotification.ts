@@ -1,4 +1,4 @@
-import type { thread, user, guest } from "../types"
+import type { guest, thread, user } from "../types"
 
 export const hasThreadNotification = ({
   thread,

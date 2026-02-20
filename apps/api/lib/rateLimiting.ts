@@ -1,9 +1,9 @@
 import arcjet, { slidingWindow } from "@arcjet/node"
-import { type user, type guest, type subscription, type app } from "@repo/db"
 import { isDevelopment, isE2E, isOwner } from "@chrryai/chrry/utils"
+import type { app, guest, subscription, user } from "@repo/db"
 
 // Type-safe Arcjet request interface
-interface ArcjetCompatibleRequest extends Omit<Request, "headers"> {
+export interface ArcjetCompatibleRequest extends Omit<Request, "headers"> {
   headers: Record<string, string | string[] | undefined>
 }
 
@@ -68,7 +68,7 @@ const ajPro = arcjet({
   ],
 })
 
-const ajAppOwner = arcjet({
+const _ajAppOwner = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
     slidingWindow({
@@ -133,10 +133,12 @@ export async function checkRateLimit(
   })
 
   // Create Arcjet-compatible request object
-  const arcjetRequest: ArcjetCompatibleRequest = {
-    ...request,
+  // construct object manually because Request properties are not enumerable
+  const arcjetRequest = {
+    method: request.method,
+    url: request.url,
     headers,
-  }
+  } as unknown as ArcjetCompatibleRequest
 
   // Protect with custom characteristic
   const decision = await arcjetInstance.protect(arcjetRequest, {
@@ -383,10 +385,11 @@ export async function checkGenerationRateLimit(
   })
 
   // Create Arcjet-compatible request object
-  const arcjetRequest: ArcjetCompatibleRequest = {
-    ...request,
+  const arcjetRequest = {
+    method: request.method,
+    url: request.url,
     headers,
-  }
+  } as unknown as ArcjetCompatibleRequest
 
   // Check both limits
   const [hourlyDecision, threadDecision] = await Promise.all([
@@ -437,5 +440,56 @@ export async function checkGenerationRateLimit(
     success,
     remaining,
     errorMessage,
+  }
+}
+
+// Authentication rate limiter (stricter)
+const ajAuth = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["userId"],
+      interval: 60,
+      max: 5, // 5 attempts per minute
+    }),
+  ],
+})
+
+export async function checkAuthRateLimit(request: Request, ip: string) {
+  if (isDevelopment || isE2E) {
+    return {
+      success: true,
+      remaining: 999,
+      errorMessage: "",
+    }
+  }
+
+  // Convert Headers to plain object for Arcjet compatibility
+  const headers: Record<string, string | string[] | undefined> = {}
+  request.headers.forEach((value, key) => {
+    headers[key] = value
+  })
+
+  // Create Arcjet-compatible request object
+  const arcjetRequest = {
+    method: request.method,
+    url: request.url,
+    headers,
+  } as unknown as ArcjetCompatibleRequest
+
+  const decision = await ajAuth.protect(arcjetRequest, { userId: ip })
+
+  let remaining = 0
+  for (const result of decision.results) {
+    if (result.reason.isRateLimit()) {
+      remaining = result.reason.remaining
+    }
+  }
+
+  return {
+    success: !decision.isDenied(),
+    remaining,
+    errorMessage: "Too many login attempts. Please try again later.",
   }
 }

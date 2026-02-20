@@ -1,50 +1,45 @@
 "use client"
+import clsx from "clsx"
 import React, { useEffect, useState } from "react"
-
-import { user, subscription } from "./types"
-import { MotiView } from "./platform/MotiView"
+import toast from "react-hot-toast"
+import A from "./a/A"
+import ConfirmButton from "./ConfirmButton"
+import { useAppContext } from "./context/AppContext"
 import {
+  useApp,
   useAuth,
-  useNavigationContext,
   useData,
   useError,
-  useApp,
+  useNavigationContext,
 } from "./context/providers"
-import { capitalizeFirstLetter } from "@chrryai/chrry/utils"
-
-import { Button, Div, Input, P, Span, usePlatform, useTheme } from "./platform"
-
-import clsx from "clsx"
+import { useStyles } from "./context/StylesContext"
+import { useHasHydrated } from "./hooks"
+import Img from "./Image"
 import {
   ArrowLeft,
+  AtSign,
+  CircleArrowDown,
+  CircleArrowUp,
   CircleX,
   Coins,
-  SmilePlus,
   LogIn,
   Plus,
   Search,
-  UserRound,
-  UsersRound,
-  UserRoundPlus,
-  CircleArrowDown,
-  CircleArrowUp,
-  AtSign,
+  SmilePlus,
   Sparkles,
+  UserRound,
+  UserRoundPlus,
+  UsersRound,
 } from "./icons"
-import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
-import toast from "react-hot-toast"
 import Loading from "./Loading"
-import { useAppContext } from "./context/AppContext"
-import { apiFetch } from "./utils"
 import Modal from "./Modal"
-import ConfirmButton from "./ConfirmButton"
-
-import Img from "./Image"
-import { getFeatures } from "./utils/subscription"
-import A from "./a/A"
+import { Button, Div, Input, P, Span, usePlatform, useTheme } from "./platform"
+import { MotiView } from "./platform/MotiView"
 import { useSubscribeStyles } from "./Subscribe.styles"
-import { useStyles } from "./context/StylesContext"
-import { useHasHydrated } from "./hooks"
+import type { subscription, user } from "./types"
+import { apiFetch, capitalizeFirstLetter } from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+import { getFeatures } from "./utils/subscription"
 
 export type selectedPlanType =
   | "plus"
@@ -72,13 +67,15 @@ export default function Subscribe({
   cta,
   customPrice,
   onPaymentVerified,
+  disabled,
   appId,
   ...props
 }: {
   customerEmail?: string // Optional for existing customers
   onSuccess?: () => void
+  disabled?: boolean
   onCancel?: () => void
-  onPaymentVerified?: (sessionId: string) => void | Promise<void> // Called after payment verification
+  onPaymentVerified?: (data: { sessionId: string; totalPrice: number }) => void // Called after payment verification
   className?: string
   style?: React.CSSProperties
   selectedPlan?: selectedPlanType
@@ -87,7 +84,10 @@ export default function Subscribe({
   cta?: string
   customPrice?: number // For Tribe/Molt dynamic pricing in EUR
   appId?: string // App ID for Tribe/Molt payments
+  scheduledTaskId?: string // Schedule data for Tribe/Molt that will be sent to backend
 }) {
+  // Use tribeScheduleData directly from props - no localStorage to avoid stale data
+
   const styles = useSubscribeStyles()
   const { utilities } = useStyles()
 
@@ -109,10 +109,25 @@ export default function Subscribe({
     setSignInPart,
     setAsk,
     setAbout,
-    baseApp,
+    fetchScheduledJobs,
+    setTribeStripeSession,
+    getAppSlug,
   } = useAuth()
 
+  // Note: onPaymentVerified is now called directly in verifyPayment after completion
+  // to avoid race conditions with creditTransaction creation
+
   // Chat context
+
+  const [scheduledTaskId, setScheduledTaskId] = useState<string | null>(
+    props.scheduledTaskId || null,
+  )
+
+  useEffect(() => {
+    if (props.scheduledTaskId) {
+      setScheduledTaskId(props.scheduledTaskId)
+    }
+  }, [props.scheduledTaskId])
 
   // Navigation context
   const { searchParams, removeParams } = useNavigationContext()
@@ -224,20 +239,32 @@ export default function Subscribe({
       userToGift && params.set("email", userToGift.email)
       isInviting && params.set("email", search)
       guest?.id && params.set("guestId", guest.id)
+      selectedPlan === "tribe" && params.set("tab", "tribe")
+      selectedPlan === "molt" && params.set("tab", "molt")
+      if (["tribe", "molt"].includes(selectedPlan)) {
+        params.set("settings", "true")
+        if (scheduledTaskId) {
+          params.set("scheduledTaskId", scheduledTaskId)
+        }
+      }
 
       const checkoutSuccessUrl = (() => {
         params.set("checkout", "success")
         params.set("purchaseType", part)
         // fingerprint && params.set("fp", fingerprint)
-        user && token && params.set("auth_token", token)
+        // user && token && params.set("auth_token", token)
         // guest && fingerprint && params.set("fp", fingerprint)
 
-        return `${FRONTEND_URL}/${baseApp?.slug === "chrry" ? "" : baseApp?.slug}/?${params.toString()}&session_id={CHECKOUT_SESSION_ID}`
+        return app
+          ? `${FRONTEND_URL}${getAppSlug(app)}/?${params.toString()}&session_id={CHECKOUT_SESSION_ID}`
+          : `${FRONTEND_URL}/?${params.toString()}&session_id={CHECKOUT_SESSION_ID}`
       })()
 
       const checkoutCancelUrl = (() => {
         params.set("checkout", "cancel")
-        return `${FRONTEND_URL}/${baseApp?.slug === "chrry" ? "" : baseApp?.slug}/?${params.toString()}`
+        return app
+          ? `${FRONTEND_URL}${getAppSlug(app)}/?${params.toString()}`
+          : `${FRONTEND_URL}/?${params.toString()}`
       })()
 
       // return
@@ -255,6 +282,7 @@ export default function Subscribe({
           cancelUrl: checkoutCancelUrl,
           userId: user?.id,
           guestId: guest?.id,
+          scheduledTaskId,
           plan: selectedPlan,
           customPrice, // For Tribe/Molt dynamic pricing (in EUR)
           appId, // App ID for Tribe/Molt payments
@@ -286,14 +314,6 @@ export default function Subscribe({
       setLoading(false)
     }
   }
-
-  useEffect(() => {
-    if (isModalOpen) return
-    ;(user || guest) &&
-      setSelectedPlan((user || guest)?.subscription?.plan || "plus")
-
-    removeParams(["subscribe", "plan", "purchaseType"])
-  }, [isModalOpen, user, guest])
 
   const cleanSessionId = (sessionId: string | null): string => {
     if (!sessionId) return ""
@@ -339,7 +359,7 @@ export default function Subscribe({
       } else {
         toast.error(data.error)
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to change plan")
     } finally {
       setLoading(false)
@@ -362,7 +382,13 @@ export default function Subscribe({
     }
   }, [user, loggedIn])
 
-  const verifyPayment = async (sessionId: string) => {
+  const verifyPayment = async ({
+    sessionId,
+    scheduledTaskId,
+  }: {
+    sessionId: string
+    scheduledTaskId?: string
+  }) => {
     plausible({ name: ANALYTICS_EVENTS.SUBSCRIBE_VERIFY_PAYMENT })
     const params = new URLSearchParams(window.location.search)
     const isExtensionRedirect = params.get("extension") === "true"
@@ -385,6 +411,7 @@ export default function Subscribe({
         plan: selectedPlan,
         isTribe,
         isMolt,
+        scheduledTaskId,
         tier:
           selectedPlan === "grape"
             ? grapeTier
@@ -403,17 +430,21 @@ export default function Subscribe({
     })
 
     const data = await response.json()
+
     if (data.success) {
       plausible({ name: ANALYTICS_EVENTS.SUBSCRIBE_VERIFY_PAYMENT })
+
       if (isExtensionRedirect) {
         toast.success(t(`${t("Subscribed")}. ${t("Reload your extension")} 🧩`))
       } else {
         setPurchaseType(data.gift ? "gift" : "subscription")
         toast.success(
           data.gift
-            ? t(`🥰 ${t("Thank you for your gift")}`)
-            : data.credits
-              ? t(`${t("Credits updated")}`)
+            ? t(`🥰 ${t("Thank you for your type")}`)
+            : ["tribe", "molt", "credits"].includes(data.type)
+              ? t(
+                  `${t(data.type === "tribe" ? "Tribe credits updated 🪢" : data.type === "molt" ? "Molt credits updated 🦞" : "Credits updated")}`,
+                )
               : t(`${t("Subscribed")}`),
         )
 
@@ -421,14 +452,24 @@ export default function Subscribe({
       }
 
       // Call onPaymentVerified callback if provided (e.g., for Tribe schedule creation)
-      if (onPaymentVerified) {
-        try {
-          // Use the existing cleanSessionId helper to normalize the session ID
-          const normalizedSessionId = cleanSessionId(sessionId)
-          await onPaymentVerified(normalizedSessionId)
-        } catch (error) {
-          console.error("onPaymentVerified callback failed:", error)
-          // Continue anyway - don't block fetchSession or modal close
+      if (["tribe", "molt"].includes(data.type)) {
+        // Use the existing cleanSessionId helper to normalize the session ID
+        const normalizedSessionId = cleanSessionId(sessionId)
+
+        // Set tribe session for persistence
+        setTribeStripeSession({
+          sessionId: normalizedSessionId,
+          totalPrice: data.totalPrice,
+        })
+
+        await fetchScheduledJobs()
+
+        // Call callback directly (after verifyPayment completes) to avoid race condition
+        if (onPaymentVerified) {
+          onPaymentVerified({
+            sessionId: normalizedSessionId,
+            totalPrice: data.totalPrice,
+          })
         }
       }
 
@@ -503,7 +544,7 @@ export default function Subscribe({
 
         return
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error(t("Failed to fetch users"))
     } finally {
       setIsAdding(false)
@@ -516,14 +557,17 @@ export default function Subscribe({
     if (!is) return
     if (typeof window === "undefined" || !window.location) return
     const params = new URLSearchParams(window.location.search)
+
     if (params.get("checkout") === "success") {
       const sessionId = params.get("session_id")
+      const scheduledTaskId = params.get("scheduledTaskId") || undefined
+
       if (!sessionId) {
         return
       }
 
       setTimeout(() => {
-        verifyPayment(sessionId)
+        verifyPayment({ sessionId, scheduledTaskId })
       }, 100)
     }
   }, [is])
@@ -625,7 +669,9 @@ export default function Subscribe({
   const normalizedPlan = normalizePlanAlias(selectedPlanInitial)
   const selectedPlanInternal = selectedPlans.includes(normalizedPlan)
     ? normalizedPlan
-    : (user || guest)?.subscription?.plan || "plus"
+    : searchParams.get("tab") === "tribe"
+      ? "tribe"
+      : (user || guest)?.subscription?.plan || "plus"
 
   // ... (keeping other lines unchanged conceptually, but replace block needs contiguous)
 
@@ -707,6 +753,7 @@ export default function Subscribe({
             )}
             {canBuyCredits() || canSubscribe() ? (
               <Button
+                disabled={loading || disabled}
                 className="small"
                 data-testid="subscribe-checkout"
                 onClick={() => {
@@ -726,6 +773,7 @@ export default function Subscribe({
                 style={{
                   ...styles.checkoutButton.style,
                   marginTop: ".5rem",
+                  backgroundColor: "var(--accent-6)",
                 }}
               >
                 {loading && part === "subscription" ? (
@@ -737,7 +785,7 @@ export default function Subscribe({
                     ) : showContact ? (
                       <AtSign />
                     ) : (
-                      <SmilePlus />
+                      <Img logo="coder" />
                     )}
                     {["credits", "molt", "tribe"].includes(selectedPlan) ? (
                       <Span>
@@ -998,10 +1046,13 @@ export default function Subscribe({
     setIsAdding(false)
     setIsInviting(false)
     setUserToGift(null)
-    setSelectedPlan("plus")
+
+    !selectedPlan &&
+      (user || guest) &&
+      setSelectedPlan((user || guest)?.subscription?.plan || "plus")
     setIsGifting(false)
     setSearch("")
-  }, [isModalOpen])
+  }, [isModalOpen, selectedPlan])
 
   const features =
     selectedPlan === "plus"
@@ -1849,7 +1900,6 @@ export default function Subscribe({
           style={{
             ...utilities.transparent.style,
             ...utilities.small.style,
-            ...styles.subscribeButton.style,
           }}
         >
           <Img icon="strawberry" showLoading={false} size={18} />

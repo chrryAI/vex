@@ -101,7 +101,7 @@
 //         <div className={styles.dashboard}>
 //           <div className={styles.header}>
 //             <h1>
-//               <button
+//               <button type="button"
 //                 className="link"
 //                 onClick={() => {
 //                   // Go back to Grape onboarding
@@ -247,7 +247,9 @@
 //                   return
 //                 }
 //                 e.preventDefault()
-//                 setIsNewChat(true)
+//                 setIsNewChat({
+//                        value: true,
+//                      })
 //               }}
 //             >
 //               <Logo isVivid size={32} /> {"Vex"}

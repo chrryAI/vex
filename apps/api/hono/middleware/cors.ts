@@ -1,4 +1,4 @@
-import { Context, Next } from "hono"
+import type { Context, Next } from "hono"
 import { validate } from "uuid"
 
 // Static allowed origins (always allowed)
@@ -120,7 +120,7 @@ function setCorsHeaders(c: Context) {
   setCommonHeaders(c)
 }
 
-const RESERVED_PATHS = [
+const _RESERVED_PATHS = [
   "threads",
   "about",
   "settings",

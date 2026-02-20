@@ -7,13 +7,14 @@
  * On native: render as React Native components with className auto-converted to styles
  */
 
-import React, { forwardRef, CSSProperties, ChangeEvent } from "react"
+import type React from "react"
+import { type ChangeEvent, type CSSProperties, forwardRef } from "react"
+import { extractUtilityClassNames } from "../utils/extractUtilityClassNames"
+import console from "../utils/log"
+import { parseClassName } from "../utils/parseClassName"
+import { sanitizeStyleForDOM } from "../utils/sanitizeStyleForDOM"
 import { usePlatform } from "./PlatformProvider"
 import { mergeStyles } from "./styleMapper"
-import { parseClassName } from "../utils/parseClassName"
-import { extractUtilityClassNames } from "../utils/extractUtilityClassNames"
-import { sanitizeStyleForDOM } from "../utils/sanitizeStyleForDOM"
-import console from "../utils/log"
 
 // ============================================
 // TYPE DEFINITIONS
@@ -26,8 +27,7 @@ interface BaseProps {
 }
 
 export interface BoxProps
-  extends
-    BaseProps,
+  extends BaseProps,
     Omit<React.HTMLAttributes<HTMLDivElement>, keyof BaseProps | "onClick"> {
   as?:
     | "div"
@@ -54,7 +54,7 @@ export interface TextProps extends BaseProps {
 
 export interface ButtonProps extends BaseProps {
   type?: "button" | "submit" | "reset"
-  onClick?: () => void
+  onClick?: (e?: any) => void
   disabled?: boolean
   title?: string
   id?: string
@@ -99,6 +99,7 @@ export interface InputProps extends BaseProps {
   name?: string
   id?: string
   title?: string
+  "aria-label"?: string
   required?: boolean
   disabled?: boolean
   min?: string | number
@@ -107,6 +108,8 @@ export interface InputProps extends BaseProps {
   maxLength?: number
   autoComplete?: string
   autoFocus?: boolean
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
 }
 
 export interface TextAreaProps extends BaseProps {
@@ -204,8 +207,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
 
     return (
       <Component
-        // @ts-ignore - ref type varies based on 'as' prop
-        ref={ref}
+        ref={ref as any}
         className={hasStyleMappings ? undefined : className}
         style={sanitizedStyle}
         onClick={onClick}
@@ -257,8 +259,7 @@ export const Text = forwardRef<HTMLElement, TextProps>(
 
     return (
       <Component
-        // @ts-ignore - ref type varies based on 'as' prop
-        ref={ref}
+        ref={ref as any}
         className={hasStyleMappings ? undefined : finalClassName}
         style={sanitizedStyle}
         onClick={onClick}
@@ -456,7 +457,6 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         disabled={disabled}
         rows={rows}
         maxLength={maxLength}
-        autoFocus={autoFocus}
         onKeyPress={onKeyPress}
         onPaste={onPaste}
         {...props}
@@ -766,7 +766,7 @@ export const Label = forwardRef<
     htmlFor={htmlFor}
     className={className}
     style={style as CSSProperties}
-    onClick={onClick}
+    onKeyDown={onClick as any}
     {...props}
   >
     {children}

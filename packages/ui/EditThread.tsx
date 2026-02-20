@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from "react"
+import type React from "react"
+import { useEffect, useState } from "react"
+import toast from "react-hot-toast"
 import { useAppContext } from "./context/AppContext"
-import { thread, MAX_THREAD_TITLE_CHAR_COUNT } from "./types"
+import { useAuth, useError, useNavigationContext } from "./context/providers"
+import { useStyles } from "./context/StylesContext"
+import DeleteThread from "./DeleteThread"
+import { useEditThreadStyles } from "./EditThread.styles"
 import { Pencil, Sparkles } from "./icons"
-import Modal from "./Modal"
 import Loading from "./Loading"
 import { updateThread } from "./lib"
-import toast from "react-hot-toast"
-import DeleteThread from "./DeleteThread"
-import { useAuth, useError, useNavigationContext } from "./context/providers"
-import { useEditThreadStyles } from "./EditThread.styles"
+import Modal from "./Modal"
 import { Button, Div, Span, TextArea } from "./platform"
-import { useStyles } from "./context/StylesContext"
+import { MAX_THREAD_TITLE_CHAR_COUNT, type thread } from "./types"
 
 export default function EditThread({
   onSave,
@@ -54,7 +55,10 @@ export default function EditThread({
 
   const handleSave = async ({
     regenerateTitle,
-  }: { regenerateTitle?: boolean; cancel?: boolean } = {}) => {
+  }: {
+    regenerateTitle?: boolean
+    cancel?: boolean
+  } = {}) => {
     if (!isAllowed) return
     if (!token) return
     regenerateTitle ? setIsGeneratingTitle(true) : setIsSaving(true)

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { BrowserInstance, checkIsExtension } from "../utils"
 import console from "../utils/log"
 
@@ -69,7 +69,7 @@ export default function useLocalStorage<T>(
                     : initialValue
                 setStoredValue(defaultValue)
               }
-            } catch (parseError) {
+            } catch (_parseError) {
               // If JSON parsing fails, use the value as-is (plain string)
               // This handles values stored without JSON.stringify (like next-themes)
               setStoredValue(item as T)

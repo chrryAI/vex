@@ -43,7 +43,7 @@ export const extractPDFText = async (buffer: Buffer): Promise<string> => {
                   if (text.R) {
                     for (const run of text.R) {
                       if (run.T) {
-                        extractedText += decodeURIComponent(run.T) + " "
+                        extractedText += `${decodeURIComponent(run.T)} `
                       }
                     }
                   }

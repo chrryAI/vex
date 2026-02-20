@@ -1,44 +1,43 @@
-import { v4 as uuidv4, validate } from "uuid"
-import { captureException } from "@sentry/node"
-import {
-  VERSION,
-  getThreadId,
-  pageSizes,
-  isE2E,
-  getEnv,
-  API_INTERNAL_URL,
-} from "@chrryai/chrry/utils"
 import {
   getApp,
   getSession,
   getThread,
   getThreads,
   getTranslations,
-  getTribes,
-  getTribePosts,
   getTribePost,
+  getTribePosts,
+  getTribes,
 } from "@chrryai/chrry/lib"
-import { locale, locales } from "@chrryai/chrry/locales"
-import {
+import { type locale, locales } from "@chrryai/chrry/locales"
+import type {
+  appWithStore,
+  paginatedMessages,
+  paginatedTribePosts,
+  paginatedTribes,
   session,
   thread,
-  paginatedMessages,
-  appWithStore,
-  paginatedTribes,
-  paginatedTribePosts,
-  tribePostWithDetails,
   tribe,
-  tribePost,
+  tribePostWithDetails,
 } from "@chrryai/chrry/types"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import {
-  getBlogPosts,
-  getBlogPost,
+  API_INTERNAL_URL,
+  getPostId,
+  getThreadId,
+  isE2E,
+  pageSizes,
+} from "@chrryai/chrry/utils"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
+import { captureException } from "@sentry/node"
+import type { themeType } from "chrry/context/ThemeContext"
+import { v4 as uuidv4, validate } from "uuid"
+import {
   type BlogPost,
   type BlogPostWithContent,
+  getBlogPost,
+  getBlogPosts,
 } from "./blog-loader"
 import { generateServerMetadata } from "./server-metadata"
-import { themeType } from "chrry/context/ThemeContext"
 
 export interface ServerRequest {
   url: string
@@ -56,6 +55,7 @@ export interface ServerData {
     threads: thread[]
     totalCount: number
   }
+  showTribe: boolean
   translations?: Record<string, any>
   app?: appWithStore
   siteConfig: ReturnType<typeof getSiteConfig>
@@ -86,12 +86,13 @@ export interface ServerData {
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
-  isTribeRoute?: boolean
+  tribe?: tribe
   searchParams?: Record<string, string> & {
     get: (key: string) => string | null
     has: (key: string) => boolean
     toString: () => string
   } // URL search params with URLSearchParams-compatible API
+  // Agent profile data
 }
 
 /**
@@ -103,7 +104,7 @@ export async function loadServerData(
 ): Promise<ServerData> {
   const { hostname, headers, cookies, url } = request
 
-  const isDev = process.env.MODE === "development"
+  const isDev = process.env.NODE_ENV !== "production"
 
   const API_URL = API_INTERNAL_URL
 
@@ -116,10 +117,24 @@ export async function loadServerData(
       : `/${request.pathname}`) || "/"
   ).split("?")?.[0]
 
+  // OPTIMIZATION: Start fetching blog data early to parallelize with session/app data fetching
+  // This allows file system reads to happen concurrently with API calls
+  const isBlogList = pathname === "/blog"
+  const isBlogPost = pathname.startsWith("/blog/") && pathname !== "/blog"
+
+  const blogDataPromise = isBlogList
+    ? getBlogPosts()
+    : isBlogPost
+      ? getBlogPost(pathname.replace("/blog/", ""))
+      : Promise.resolve(null)
+
   const isLocalePathname =
     pathname && locales.includes(pathname.split("/")?.[1] as locale)
 
   const localeCookie = cookies.locale as locale
+
+  const showTribe = cookies.showTribe === "true"
+  const themeCookie = cookies.theme as themeType
 
   // Parse Accept-Language header to get browser's preferred language
   const acceptLanguage = headers["accept-language"]
@@ -152,7 +167,7 @@ export async function loadServerData(
   const urlObj = new URL(url, `http://${hostname}`)
 
   // Parse query string for fp parameter (only if URL contains query params)
-  let fpFromQuery: string | undefined = undefined
+  let fpFromQuery: string | undefined
   if (url.includes("?")) {
     fpFromQuery = urlObj.searchParams.get("fp") || undefined
   }
@@ -176,7 +191,10 @@ export async function loadServerData(
 
   // Handle OAuth callback - exchange auth_code for token (more secure than token in URL)
   const authCode = urlObj.searchParams.get("auth_token")
-  let authToken: string | null = null
+
+  const cookieToken = cookies.token
+
+  let authToken: string | null = cookieToken || null
 
   if (authCode) {
     try {
@@ -202,11 +220,11 @@ export async function loadServerData(
 
   const apiKeyCandidate = authToken
     ? authToken
-    : cookies.token && !validate(cookies.token) // member token
-      ? cookies.token
+    : cookieToken && !validate(cookieToken) // member token
+      ? cookieToken
       : isTestFP
         ? fpFromQuery
-        : cookies.token ||
+        : cookieToken ||
           headers["x-token"] ||
           cookies.fingerprint ||
           headers["x-fp"]
@@ -225,7 +243,7 @@ export async function loadServerData(
     (isTestFP && fpFromQuery ? fpFromQuery : fingerprintCandidate) ||
     uuidv4()
 
-  let fingerprint = fingerprintCandidate || uuidv4()
+  const fingerprint = fingerprintCandidate || uuidv4()
 
   const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName
@@ -263,17 +281,19 @@ export async function loadServerData(
   // Fetch thread if threadId exists
   let threadResult: { thread: thread; messages: paginatedMessages } | undefined
   let appId: string | undefined
+  let isBlogRoute = false
+
+  // Blog data
+  let blogPosts: BlogPost[] | undefined
+  let blogPost: BlogPostWithContent | undefined
+
+  // Tribe data
+  let tribes: paginatedTribes | undefined
+  let tribePosts: paginatedTribePosts | undefined
+  let tribePost: tribePostWithDetails | undefined
+  let _tribe: tribe | undefined
 
   try {
-    threadResult = threadId
-      ? await getThread({
-          id: threadId,
-          pageSize: pageSizes.threads,
-          token: apiKey,
-          API_URL: API_INTERNAL_URL,
-        })
-      : undefined
-
     appId = threadResult?.thread?.appId || headers["x-app-id"]
     const sessionResult = await getSession({
       // appId: appResult.id,
@@ -293,31 +313,105 @@ export async function loadServerData(
       ip: clientIp, // Pass client IP for Arcjet
     })
 
+    // Check if this is a blog route
+    if (pathname === "/blog" || pathname.startsWith("/blog/")) {
+      isBlogRoute = true
+
+      // Reuse the early-fetched blog data promise
+      try {
+        const blogData = await blogDataPromise
+
+        if (isBlogList) {
+          // Blog list page
+          blogPosts = blogData as BlogPost[] | undefined
+        } else if (isBlogPost) {
+          // Individual blog post page
+          blogPost = (blogData as BlogPostWithContent | null) || undefined
+        }
+      } catch (error) {
+        console.error("❌ Blog data fetch failed:", error)
+        // Fallback to null on error
+        blogPosts = undefined
+        blogPost = undefined
+      }
+    }
+
     apiKey =
       sessionResult?.user?.token || sessionResult?.guest?.fingerprint || apiKey
 
-    const [translationsResult, appResult, threadsResult] = await Promise.all([
-      getTranslations({
-        token: apiKey,
-        locale,
-        API_URL,
-      }),
-      getApp({
-        chrryUrl,
-        appId,
-        token: apiKey,
-        pathname,
-        API_URL,
-      }),
+    threadResult = threadId
+      ? await getThread({
+          id: threadId,
+          pageSize: pageSizes.threads,
+          token: apiKey,
+          API_URL,
+        })
+      : undefined
 
-      getThreads({
-        appId,
-        pageSize: pageSizes.menuThreads,
-        sort: "bookmark",
-        token: apiKey,
-        API_URL,
-      }),
-    ])
+    const postId = getPostId(pathname)
+
+    let tribePostResult: tribePostWithDetails | undefined
+    if (postId) {
+      try {
+        tribePostResult = await getTribePost({
+          id: postId,
+          token: apiKey,
+          API_URL,
+        })
+      } catch (error) {
+        console.error("❌ Tribe post fetch failed:", error)
+        tribePostResult = undefined
+      }
+    }
+
+    const appResult = await getApp({
+      chrryUrl,
+      appId: threadResult?.thread?.appId || tribePostResult?.appId || appId,
+      token: apiKey,
+      pathname,
+      API_URL,
+    })
+
+    const showAllTribe =
+      pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
+
+    const canShowTribeProfile =
+      !excludedSlugRoutes?.includes(pathname.split("?")?.[0]) && !showAllTribe
+
+    const [translationsResult, threadsResult, tribesResult, tribePostsResult] =
+      await Promise.all([
+        getTranslations({
+          token: apiKey,
+          locale,
+          API_URL,
+        }),
+
+        getThreads({
+          appId: appResult.id,
+          pageSize: pageSizes.menuThreads,
+          sort: "bookmark",
+          token: apiKey,
+          API_URL,
+        }),
+        !isBlogRoute
+          ? getTribes({
+              pageSize: 15,
+              page: 1,
+              token: apiKey,
+              appId: canShowTribeProfile ? appResult.id : undefined,
+              API_URL,
+            })
+          : Promise.resolve(undefined),
+        !isBlogRoute
+          ? getTribePosts({
+              pageSize: 10,
+              page: 1,
+              token: apiKey,
+              appId: canShowTribeProfile ? appResult.id : undefined,
+              API_URL,
+            })
+          : Promise.resolve(undefined),
+      ])
 
     threads = threadsResult
 
@@ -327,12 +421,12 @@ export async function loadServerData(
 
     session = sessionResult
 
+    tribes = tribesResult
+    tribePost = tribePostResult
+    tribePosts = tribePostsResult
+
     const accountApp = session?.userBaseApp || session?.guestBaseApp
     app = appResult.id === accountApp?.id ? accountApp : appResult
-
-    if (session && app) {
-      session.app = app
-    }
   } catch (error) {
     captureException(error)
     console.error("❌ API Error:", error)
@@ -341,95 +435,15 @@ export async function loadServerData(
 
   // Fetch threads
 
-  const theme = app?.backgroundColor === "#ffffff" ? "light" : "dark"
+  const theme =
+    themeCookie || (app?.backgroundColor === "#ffffff" ? "light" : "dark")
 
-  // Detect blog routes and load blog data
-  let blogPosts: BlogPost[] | undefined
-  let blogPost: BlogPostWithContent | undefined
-  let isBlogRoute = false
-
-  // Check if this is a blog route
-  if (pathname === "/blog" || pathname.startsWith("/blog/")) {
-    isBlogRoute = true
-
-    if (pathname === "/blog") {
-      // Blog list page
-      blogPosts = await getBlogPosts()
-    } else {
-      // Individual blog post page
-      const slug = pathname.replace("/blog/", "")
-      blogPost = (await getBlogPost(slug)) || undefined
-    }
-  }
-
-  // Detect tribe routes and load tribe data
-  let tribes: paginatedTribes | undefined
-  let tribePosts: paginatedTribePosts | undefined
-  let tribePost: tribePostWithDetails | undefined
-  let isTribeRoute = false
+  // Agent profile route
 
   // Check if this is a tribe route OR if app slug is 'chrry'
-  const isChrryApp = app?.slug === "chrry"
-  if (
-    pathname === "/tribe" ||
-    pathname.startsWith("/tribe/") ||
-    (isChrryApp && pathname === "/")
-  ) {
-    isTribeRoute = true
-  }
 
-  try {
-    if (pathname.startsWith("/tribe/p/")) {
-      // Single tribe post page: /tribe/p/:id
-      const postId = pathname.replace("/tribe/p/", "")
-      tribePost = await getTribePost({
-        id: postId,
-        token: apiKey,
-        API_URL,
-      })
-    } else if (pathname.startsWith("/tribe/")) {
-      // Tribe detail page: /tribe/:slug
-      const tribeSlug = pathname.replace("/tribe/", "")
-
-      // Load tribe by slug (find in tribes list)
-      const tribesResult = await getTribes({
-        search: tribeSlug,
-        pageSize: 1,
-        page: 1,
-        token: apiKey,
-        API_URL,
-      })
-
-      // Load posts for this tribe
-      if (tribesResult?.tribes?.[0]) {
-        tribePosts = await getTribePosts({
-          tribeId: tribesResult.tribes[0].id,
-          pageSize: 10,
-          page: 1,
-          token: apiKey,
-          API_URL,
-        })
-      }
-    } else {
-      // Single tribe post page: /tribe/p/:id
-      tribes = await getTribes({
-        pageSize: 15,
-        page: 1,
-        token: apiKey,
-        API_URL,
-      })
-
-      // Load recent posts from all tribes
-      tribePosts = await getTribePosts({
-        pageSize: 10,
-        page: 1,
-        token: apiKey,
-        API_URL,
-      })
-    }
-  } catch (error) {
-    console.error("❌ Tribe data loading error:", error)
-  }
+  // Try to extract store and app slugs from URL (works for /:storeSlug/:appSlug pattern)
+  // This handles clean URLs like /blossom/chrry without /agent prefix
 
   const result = {
     session,
@@ -453,7 +467,7 @@ export async function loadServerData(
     tribes,
     tribePosts,
     tribePost,
-    isTribeRoute,
+    showTribe,
     pathname, // Add pathname so client knows the SSR route
   }
 

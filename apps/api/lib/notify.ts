@@ -1,33 +1,33 @@
+import { FRONTEND_URL } from "@chrryai/chrry/utils"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import {
-  aiAgent,
-  collaboration,
+  type aiAgent,
+  type collaboration,
   deletePushSubscription,
   getPushSubscription,
-  message,
-  user,
-  guest,
-  thread,
+  type guest,
+  type message,
+  type thread,
+  type user,
 } from "@repo/db"
-import { FRONTEND_URL } from "@chrryai/chrry/utils"
+import type { Context } from "hono"
 import webpush from "web-push"
 import captureException from "./captureException"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { sendWebPush } from "./sendWebPush"
-import { Context } from "hono"
 
-const siteConfig = getSiteConfig()
+const _siteConfig = getSiteConfig()
 
 interface CustomWebSocket {
   new (url: string): WebSocket
   OPEN: number
 }
 
-const WebSocket: CustomWebSocket = (global as any).WebSocket || require("ws")
-const socket: WebSocket | null = null
+const _WebSocket: CustomWebSocket = (global as any).WebSocket || require("ws")
+const _socket: WebSocket | null = null
 
-const connectionPromise: Promise<void> | null = null
+const _connectionPromise: Promise<void> | null = null
 
-import { notifyClients } from "./wsClients"
+import { broadcast, notifyClients } from "./wsClients"
 
 export async function notify(
   recipientId: string,
@@ -49,6 +49,10 @@ export async function notify(
       | "timer-ai"
       | "tasks"
       | "mood"
+      | "new_post_end"
+      | "new_post_start"
+      | "new_comment_start"
+      | "new_comment_end"
 
     data:
       | any
@@ -101,7 +105,7 @@ export type notifyOwnerAndCollaborationsPayload = {
   notifySender?: boolean
   member?: user | null
   guest?: guest | null
-  thread: thread & {
+  thread?: thread & {
     user?: user | null
     guest?: guest | null
     collaborations?: {
@@ -126,6 +130,10 @@ export type notifyOwnerAndCollaborationsPayload = {
       | "mood"
       | "timer-ai"
       | "timer"
+      | "new_post_end"
+      | "new_post_start"
+      | "new_comment_start"
+      | "new_comment_end"
 
     data:
       | any
@@ -142,6 +150,8 @@ export type notifyOwnerAndCollaborationsPayload = {
         }
   }
 }
+
+export { broadcast }
 
 export const notifyOwnerAndCollaborations = async ({
   c,

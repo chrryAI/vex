@@ -1,30 +1,37 @@
 "use client"
 
 import React from "react"
-import Skeleton from "../Skeleton"
-import { COLORS, useAppContext } from "../context/AppContext"
-import { BrowserInstance, checkIsExtension } from "../utils"
-import { BadgeCheck, CircleArrowLeft, Shell, UserRoundPlus } from "../icons"
 import { BiLogoPostgresql } from "react-icons/bi"
-
+import { FaChrome } from "react-icons/fa"
 import {
+  SiBun,
   SiCssmodules,
+  SiHono,
   SiJest,
   SiTypescript,
-  SiBun,
-  SiHono,
   SiVite,
 } from "react-icons/si"
-import { FaChrome } from "react-icons/fa"
-import Logo from "../Logo"
-import Img from "../Image"
-import { getFeatures } from "../utils/subscription"
+import AppLink from "../AppLink"
+import A from "../a/A"
+import { COLORS, useAppContext } from "../context/AppContext"
 import {
   useAuth,
   useData,
   useError,
   useNavigationContext,
 } from "../context/providers"
+import { useStyles } from "../context/StylesContext"
+import Img from "../Image"
+import {
+  BadgeCheck,
+  CircleArrowLeft,
+  Claude,
+  DeepSeek,
+  Gemini,
+  Shell,
+  UserRoundPlus,
+} from "../icons"
+import Logo from "../Logo"
 import {
   Button,
   Div,
@@ -39,26 +46,25 @@ import {
   useTheme,
   Video,
 } from "../platform"
-import { Claude, DeepSeek } from "../icons"
-import A from "../a/A"
+import Skeleton from "../Skeleton"
+import type { appWithStore } from "../types"
+import { BrowserInstance, checkIsExtension } from "../utils"
+import { getFeatures } from "../utils/subscription"
 import { useAboutStyles } from "./About.styles"
-import { useStyles } from "../context/StylesContext"
 export default function About() {
   const {
     chrry,
     plausible,
     baseApp,
-    setApp,
     user,
     siteConfig: config,
+    ...auth
   } = useAuth()
 
   const styles = useAboutStyles()
   const { utilities } = useStyles()
 
-  const isChrryAI = config.mode === "chrryAI"
-
-  const apps = isChrryAI ? chrry?.store?.apps : baseApp?.store?.apps
+  const _isChrryAI = config.mode === "chrryAI"
 
   const { t } = useAppContext()
 
@@ -84,6 +90,12 @@ export default function About() {
       CREDITS_PRICE,
     })
 
+  const [selectedApp, setSelectedApp] = React.useState<
+    appWithStore | undefined
+  >(auth.app)
+
+  const apps = selectedApp?.store?.apps || baseApp?.store?.apps
+
   return (
     <Skeleton>
       <Div
@@ -108,7 +120,7 @@ export default function About() {
               }
             }}
           >
-            {t("About Vex")}
+            {t("About")} {config.name}
           </Span>
         </H1>
         <Section style={{ marginBottom: 15 }}>
@@ -178,8 +190,15 @@ export default function About() {
         </Section>
 
         <Section>
-          <P>🥰 {t("about.intro")}</P>
-          <P style={{ marginTop: "1rem" }}>{t("about.intro2")}</P>
+          <P>
+            {config.logo || "🍒"}{" "}
+            {config.about?.intro ||
+              "Vex is an intelligent AI assistant designed to help you accomplish tasks efficiently and effectively. Our mission is to create a transparent, user-friendly AI experience that empowers you while respecting your privacy."}
+          </P>
+          <P style={{ marginTop: "1rem" }}>
+            {config.about?.intro2 ||
+              "With per-chat instructions, thread artifacts for document memory, and real-time collaboration features. Vex learns your context, remembers your files, and works with your team."}
+          </P>
         </Section>
 
         {/* Dynamic Apps Section */}
@@ -189,12 +208,20 @@ export default function About() {
               {config.logo} {t("Available Apps")}
             </H2>
             <P>{t("Discover AI-powered apps from our store")}</P>
-            <Div style={styles.apps.style}>
-              {apps.map((app) => (
-                <Div
-                  key={app.id}
-                  style={styles.app.style}
-                  onClick={() => setApp(app)}
+            <Div key={selectedApp?.id} style={styles.apps.style}>
+              {apps.map((a: appWithStore) => (
+                <AppLink
+                  key={a.id}
+                  style={{
+                    ...styles.app.style,
+                    position: "relative",
+                    fontSize: 13,
+                    paddingBottom: 40,
+                  }}
+                  setIsNewAppChat={(app) => {
+                    app && setSelectedApp(app)
+                  }}
+                  app={a}
                 >
                   <H4
                     style={{
@@ -206,22 +233,38 @@ export default function About() {
                     }}
                   >
                     <Span style={{ fontSize: 30 }}>
-                      {<Img app={app} size={30} />}
+                      {<Img app={a} size={30} />}
                     </Span>
-                    {app.name}
+                    {a.name}
                   </H4>
                   <P style={styles.appDescription.style}>
-                    {t(app.description || "") || t("No description available")}
+                    {t(a.description || "") || t("No description available")}
                   </P>
-                </Div>
+                  <Div
+                    style={{
+                      cursor: "pointer",
+                      color: "var(--accent-5)",
+                      marginTop: "auto",
+                      position: "absolute",
+                      bottom: 10,
+                      right: 10,
+                    }}
+                  >
+                    🌀 Try Spatial
+                    {a.store?.slug === "sushiStore" && ` - 🍣 ${t("Try Dojo")}`}
+                  </Div>
+                </AppLink>
               ))}
             </Div>
           </Section>
         )}
 
         <Section>
-          <H2>{t("about.approach.title")}</H2>
-          <P>{t("about.approach.content")}</P>
+          <H2>{config.about?.approach?.title || "Our Approach"}</H2>
+          <P>
+            {config.about?.approach?.content ||
+              "We believe in complete transparency about how our AI works, what data we use, and how we charge for our services. Vex provides clear information about usage limits, pricing, and capabilities so you always know what to expect."}
+          </P>
         </Section>
 
         <Section>
@@ -391,13 +434,21 @@ export default function About() {
         </Section>
 
         <Section>
-          <H2>{t("about.platforms.title")}</H2>
-          <P>{t("about.platforms.content")}</P>
+          <H2>{config.about?.platforms?.title || "Available Platforms"}</H2>
+          <P>
+            {config.about?.platforms?.content ||
+              "Vex is designed as a multi-platform AI assistant, available across web, mobile, and browser extensions as first-class citizens."}
+          </P>
 
           <Div>
             <Div>
-              <H3>{t("about.platforms.web.title")}</H3>
-              <P>{t("about.platforms.web.content")}</P>
+              <H3>
+                {config.about?.platforms?.web?.title || "🌐 Web Application"}
+              </H3>
+              <P>
+                {config.about?.platforms?.web?.content ||
+                  "Full-featured web experience with real-time collaboration, thread management, and all AI capabilities accessible from any browser."}
+              </P>
               <Video
                 style={styles.video.style}
                 controls
@@ -406,8 +457,14 @@ export default function About() {
             </Div>
 
             <Div>
-              <H3>{t("about.platforms.pwa.title")}</H3>
-              <P>{t("about.platforms.pwa.content")}</P>
+              <H3>
+                {config.about?.platforms?.pwa?.title ||
+                  "📱 Progressive Web App (PWA)"}
+              </H3>
+              <P>
+                {config.about?.platforms?.pwa?.content ||
+                  "Install Vex as a native app on your mobile device or desktop. Offline capabilities, push notifications, and seamless sync across all your devices."}
+              </P>
 
               <Video
                 style={styles.video.style}
@@ -418,7 +475,8 @@ export default function About() {
 
             <Div>
               <H3 style={{ display: "flex" }}>
-                {t("about.platforms.chrome.title")}{" "}
+                {config.about?.platforms?.chrome?.title ||
+                  "🧩 Chrome Extension"}{" "}
                 <A
                   target="_blank"
                   style={{
@@ -432,7 +490,10 @@ export default function About() {
                   {t("Install")}
                 </A>
               </H3>
-              <P>{t("about.platforms.chrome.content")} </P>
+              <P>
+                {config.about?.platforms?.chrome?.content ||
+                  "Right-click context menu integration with sidebar AI assistant. Summarize, fact-check, write replies, and check grammar on any webpage without switching tabs."}
+              </P>
               <Video
                 style={styles.video.style}
                 controls
@@ -590,6 +651,24 @@ export default function About() {
             }}
           >
             <Div style={styles.oss.style}>
+              <Span
+                style={{
+                  fontSize: "0.7rem",
+                  color: COLORS.purple,
+                  marginRight: 2,
+                }}
+              >
+                DNA
+              </Span>
+              <A
+                title={t("Creator")}
+                style={{ fontSize: "1rem", marginRight: 3 }}
+                openInNewTab
+                href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
+              >
+                🧬
+              </A>
+
               <Img icon="spaceInvader" size={40} />
               <A
                 href="https://i.chrry.dev"
@@ -600,6 +679,27 @@ export default function About() {
               </A>
             </Div>
             <Div style={styles.oss.style}>
+              <Img slug="sushi" size={40} />
+              <A
+                href="https://github.com/chrryAI/sushi"
+                style={{ ...styles.ossLink.style, color: COLORS.red }}
+                target="_blank"
+                rel="nofollow"
+              >
+                Compiler
+              </A>
+            </Div>
+          </Div>
+          <Div
+            style={{
+              ...styles.ossContainer.style,
+              marginBottom: "2rem",
+              ...(isMobileDevice
+                ? undefined
+                : styles.ossContainerDesktop.style),
+            }}
+          >
+            <Div style={styles.oss.style}>
               <Claude color={COLORS.orange} size={40} />
               <A
                 href="https://claude.com/product/claude-code"
@@ -607,7 +707,29 @@ export default function About() {
                 rel="nofollow"
                 style={{ ...styles.ossLink.style, color: COLORS.orange }}
               >
-                Claude Code
+                Architect
+              </A>
+            </Div>
+            <Div style={styles.oss.style}>
+              <Gemini color={COLORS.blue} size={40} />
+              <A
+                href="https://jules.google.com"
+                target="_blank"
+                rel="nofollow"
+                style={{ ...styles.ossLink.style, color: COLORS.blue }}
+              >
+                Vision
+              </A>
+            </Div>
+            <Div style={styles.oss.style}>
+              <DeepSeek color={COLORS.purple} size={40} />
+              <A
+                href="https://www.deepseek.com"
+                target="_blank"
+                rel="nofollow"
+                style={{ ...styles.ossLink.style, color: COLORS.purple }}
+              >
+                Content
               </A>
             </Div>
           </Div>

@@ -1,8 +1,8 @@
-import { Hono } from "hono"
-import { getApp } from "@repo/db"
-import { getMember, getGuest } from "../lib/auth"
-import { validate } from "uuid"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { getApp } from "@repo/db"
+import { Hono } from "hono"
+import { validate } from "uuid"
+import { getGuest, getMember } from "../lib/auth"
 
 // Inline COLORS to avoid React Native dependencies
 const COLORS = {
@@ -26,9 +26,6 @@ manifest.get("/", async (c) => {
   // Get site config based on hostname
   const siteConfig = getSiteConfig(chrryUrl || undefined)
   const appSlug = siteConfig.slug
-
-  const member = await getMember(c)
-  const guest = await getGuest(c)
 
   // Get app by slug
   let app = await getApp({ slug: appSlug })

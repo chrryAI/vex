@@ -1,51 +1,51 @@
-import { Hono } from "hono"
+import { defaultLocale } from "@chrryai/chrry/locales"
+import { FRONTEND_URL, getMaxFiles, isE2E } from "@chrryai/chrry/utils"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { render } from "@react-email/render"
 import {
   canCollaborate,
-  collaboration,
+  type collaboration,
+  createCollaboration,
+  deleteThread as deleteThreadDb,
   getApp,
+  getCharacterProfile,
+  getInvitation,
+  getMessages,
+  getTask,
   getThread,
   getThreads,
   getUser,
   isOwner,
-  thread,
-  user,
-  getMessages,
-  deleteThread as deleteThreadDb,
-  updateThread as updateThreadDb,
-  getTask,
-  updateTask,
-  getInvitation,
-  createCollaboration,
-  updateInvitation,
-  getCharacterProfile,
+  type thread,
   updateCharacterProfile,
+  updateInvitation,
+  updateTask,
+  updateThread as updateThreadDb,
+  type user,
 } from "@repo/db"
-import {
-  getMember as getMemberAction,
-  getGuest as getGuestAction,
-} from "../lib/auth"
-import { redact } from "../../lib/redaction"
-import sanitizeHtml from "sanitize-html"
-import {
-  checkRateLimit,
-  checkGenerationRateLimit,
-} from "../../lib/rateLimiting"
-import { validate } from "uuid"
 import { PROMPT_LIMITS } from "@repo/db/src/schema"
+import { Hono } from "hono"
+import sanitizeHtml from "sanitize-html"
+import { validate } from "uuid"
+import Collaboration from "../../components/emails/Collaboration"
+import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
+import captureException from "../../lib/captureException"
+import { deleteFile } from "../../lib/minio"
+import {
+  checkGenerationRateLimit,
+  checkRateLimit,
+} from "../../lib/rateLimiting"
+import { redact } from "../../lib/redaction"
+import { scanFileForMalware } from "../../lib/security"
+import { sendEmail } from "../../lib/sendEmail"
 import {
   generateThreadInstructions,
   generateThreadTitle,
 } from "../../utils/titleGenerator"
-import { FRONTEND_URL, isE2E, getMaxFiles } from "@chrryai/chrry/utils"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
-import { render } from "@react-email/render"
-import Collaboration from "../../components/emails/Collaboration"
-import { defaultLocale } from "@chrryai/chrry/locales"
-import captureException from "../../lib/captureException"
-import { scanFileForMalware } from "../../lib/security"
-import { deleteFile } from "../../lib/minio"
-import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
-import { sendEmail } from "../../lib/sendEmail"
+import {
+  getGuest as getGuestAction,
+  getMember as getMemberAction,
+} from "../lib/auth"
 
 export const threads = new Hono()
 
@@ -70,7 +70,7 @@ threads.get("/", async (c) => {
   }
 
   const threadId = c.req.query("threadId")
-  const slug = c.req.query("slug")
+  const _slug = c.req.query("slug")
   const appId = c.req.query("appId")
   const starred = request.url.includes("starred")
   const sort = c.req.query("sort") as "bookmark" | "date" | undefined
@@ -132,7 +132,7 @@ threads.get("/", async (c) => {
     }
   }
 
-  const app = await getApp({
+  const _app = await getApp({
     id: appId,
     userId: member?.id,
     guestId: guest?.id,
@@ -148,27 +148,26 @@ threads.get("/", async (c) => {
     return c.json({ error: "Authentication required", status: 401 }, 401)
   }
 
-  const getVisibilityFilter: () =>
-    | ("public" | "private")[]
-    | undefined = () => {
-    // Viewing own profile - show all
-    if (isSameUser) return undefined
+  const getVisibilityFilter: () => ("public" | "private")[] | undefined =
+    () => {
+      // Viewing own profile - show all
+      if (isSameUser) return undefined
 
-    // Thread context - check collaboration access
-    if (thread) {
-      const hasAccess = isOwner(thread, {
-        userId: member?.id,
-        guestId: guest?.id,
-      })
-      return hasAccess ? undefined : ["public"]
+      // Thread context - check collaboration access
+      if (thread) {
+        const hasAccess = isOwner(thread, {
+          userId: member?.id,
+          guestId: guest?.id,
+        })
+        return hasAccess ? undefined : ["public"]
+      }
+
+      // Viewing pending collaborations - show all
+      if (myPendingCollaborations) return undefined
+
+      // Viewing another user's profile - public only
+      return userFromUserName ? ["public"] : undefined
     }
-
-    // Viewing pending collaborations - show all
-    if (myPendingCollaborations) return undefined
-
-    // Viewing another user's profile - public only
-    return userFromUserName ? ["public"] : undefined
-  }
 
   const isSameUser = sanitizedUserName && sanitizedUserName === member?.userName
 
@@ -200,7 +199,7 @@ threads.get("/", async (c) => {
         })
       : undefined
 
-  if (pendingCollaborations && pendingCollaborations.totalCount) {
+  if (pendingCollaborations?.totalCount) {
     return c.json({
       ...pendingCollaborations,
       user: member,
@@ -229,8 +228,7 @@ threads.get("/", async (c) => {
   return c.json({
     ...threadsResult,
     user:
-      userFromUserName &&
-      userFromUserName.characterProfilesEnabled &&
+      userFromUserName?.characterProfilesEnabled &&
       userFromUserName.characterProfiles.some(
         (profile) => profile.visibility === "public",
       )
@@ -299,7 +297,7 @@ threads.get("/:id", async (c) => {
 // DELETE /threads/:id - Delete thread
 threads.delete("/:id", async (c) => {
   const id = c.req.param("id")
-  const request = c.req.raw
+  const _request = c.req.raw
 
   if (!id || !validate(id)) {
     return c.json({ error: "Thread not found", status: 404 }, 404)
@@ -398,7 +396,7 @@ threads.patch("/:id", async (c) => {
     }
 
     // Extract files from form data
-    for (const [key, value] of formData.entries()) {
+    for (const [_key, value] of formData.entries()) {
       if (
         typeof value === "object" &&
         value !== null &&
@@ -437,7 +435,9 @@ threads.patch("/:id", async (c) => {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    const scanResult = await scanFileForMalware(buffer)
+    const scanResult = await scanFileForMalware(buffer, {
+      filename: file.name,
+    })
 
     if (!scanResult.safe) {
       console.error(`🚨 Malware detected in ${file.name}: ${scanResult.threat}`)
@@ -513,7 +513,7 @@ threads.patch("/:id", async (c) => {
 
       const apiKey = process.env.ZEPTOMAIL_API_KEY
 
-      if (inviter && inviter.email && !isE2E && apiKey) {
+      if (inviter?.email && !isE2E && apiKey) {
         const emailHtml = await render(
           Collaboration({
             origin: FRONTEND_URL,
@@ -554,6 +554,8 @@ threads.patch("/:id", async (c) => {
   ) {
     const characterProfile = await getCharacterProfile({
       threadId: id,
+      userId: member?.id,
+      guestId: guest?.id,
     })
 
     if (characterProfile) {

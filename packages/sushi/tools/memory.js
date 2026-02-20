@@ -4,48 +4,48 @@
  * Generates prevention rules and auto-fix suggestions
  */
 
-import { FalkorDB } from "falkordb";
+import { FalkorDB } from "falkordb"
 
-let db = null;
-let graph = null;
+let db = null
+let graph = null
 
 async function initMemory() {
-  if (graph) return;
+  if (graph) return
 
   db = await FalkorDB.connect({
     socket: { host: "localhost", port: 6380 },
-  });
-  graph = db.selectGraph("porffor_memory");
-  console.log("🧠 MEMORY initialized");
+  })
+  graph = db.selectGraph("porffor_memory")
+  console.log("🧠 MEMORY initialized")
 }
 
 /**
  * Learn from bug patterns - create prevention rules
  */
 async function learnFromBugs() {
-  if (!graph) await initMemory();
+  if (!graph) await initMemory()
 
   // Connect to bugs graph
-  const bugsGraph = db.selectGraph("porffor_bugs");
+  const bugsGraph = db.selectGraph("porffor_bugs")
 
   const bugPatterns = await bugsGraph.query(`
     MATCH (b:Bug)
     RETURN b.type as type, b.severity as severity, b.suggestion as suggestion, COUNT(b) as count
     ORDER BY count DESC
-  `);
+  `)
 
-  console.log("\n🧠 Learning from bug patterns...");
+  console.log("\n🧠 Learning from bug patterns...")
 
   if (!bugPatterns || !bugPatterns.data) {
-    console.log("   No bug data to learn from");
-    return [];
+    console.log("   No bug data to learn from")
+    return []
   }
 
-  const rules = [];
+  const rules = []
 
   // FalkorDB returns array of objects
   for (const row of bugPatterns.data) {
-    const { type, severity, suggestion, count } = row;
+    const { type, severity, suggestion, count } = row
 
     // Create prevention rule
     const rule = {
@@ -56,7 +56,7 @@ async function learnFromBugs() {
       suggestion,
       confidence: calculateConfidence(count, severity),
       preventionPattern: generatePreventionPattern(type, suggestion),
-    };
+    }
 
     // Store in memory graph
     await graph.query(
@@ -84,44 +84,44 @@ async function learnFromBugs() {
           timestamp: Date.now(),
         },
       },
-    );
+    )
 
-    rules.push(rule);
+    rules.push(rule)
     console.log(
       `   ✅ Learned: ${type} (${count}x, confidence: ${rule.confidence}%)`,
-    );
+    )
   }
 
-  return rules;
+  return rules
 }
 
 /**
  * Learn from survived mutations - identify weak spots
  */
 async function learnFromMutations() {
-  if (!graph) await initMemory();
+  if (!graph) await initMemory()
 
   // Connect to mutations graph
-  const mutationsGraph = db.selectGraph("porffor_mutations");
+  const mutationsGraph = db.selectGraph("porffor_mutations")
 
   const survivedMutations = await mutationsGraph.query(`
     MATCH (m:Mutation {survived: true})
     RETURN m.file as file, m.line as line, m.operator as operator, m.category as category, COUNT(m) as count
     ORDER BY count DESC
     LIMIT 20
-  `);
+  `)
 
-  console.log("\n🧠 Learning from survived mutations...");
+  console.log("\n🧠 Learning from survived mutations...")
 
   if (!survivedMutations || !survivedMutations.data) {
-    console.log("   No mutation data to learn from");
-    return [];
+    console.log("   No mutation data to learn from")
+    return []
   }
 
-  const weakSpots = [];
+  const weakSpots = []
 
   for (const row of survivedMutations.data) {
-    const { file, line, operator, category, count } = row;
+    const { file, line, operator, category, count } = row
 
     // Create weak spot record
     const weakSpot = {
@@ -133,7 +133,7 @@ async function learnFromMutations() {
       count,
       severity: calculateWeakSpotSeverity(count, category),
       testSuggestion: generateTestSuggestion(operator, category),
-    };
+    }
 
     // Store in memory graph
     await graph.query(
@@ -163,38 +163,38 @@ async function learnFromMutations() {
           timestamp: Date.now(),
         },
       },
-    );
+    )
 
-    weakSpots.push(weakSpot);
+    weakSpots.push(weakSpot)
     console.log(
       `   ⚠️  Weak spot: ${file}:${line} - ${operator} (${count}x survived)`,
-    );
+    )
   }
 
-  return weakSpots;
+  return weakSpots
 }
 
 /**
  * Generate auto-fix suggestions based on learned patterns
  */
 async function generateAutoFixes(filePath, code) {
-  if (!graph) await initMemory();
+  if (!graph) await initMemory()
 
   // Get all learned rules
   const rules = await graph.query(`
     MATCH (r:Rule)
     RETURN r.type as type, r.pattern as pattern, r.suggestion as suggestion, r.confidence as confidence
     ORDER BY r.confidence DESC
-  `);
+  `)
 
   if (!rules || !rules.data) {
-    return [];
+    return []
   }
 
-  const fixes = [];
+  const fixes = []
 
   for (const row of rules.data) {
-    const [type, pattern, suggestion, confidence] = row;
+    const [type, pattern, suggestion, confidence] = row
 
     // Check if this file has issues matching this rule
     if (pattern && code.includes(pattern)) {
@@ -204,11 +204,11 @@ async function generateAutoFixes(filePath, code) {
         suggestion,
         confidence,
         file: filePath,
-      });
+      })
     }
   }
 
-  return fixes;
+  return fixes
 }
 
 /**
@@ -219,23 +219,23 @@ function calculateConfidence(count, severity) {
     HIGH: 1.0,
     MEDIUM: 0.7,
     LOW: 0.4,
-  };
+  }
 
-  const weight = severityWeight[severity] || 0.5;
-  const baseConfidence = Math.min(count * 10, 70); // Max 70 from count
-  const severityBonus = weight * 30; // Max 30 from severity
+  const weight = severityWeight[severity] || 0.5
+  const baseConfidence = Math.min(count * 10, 70) // Max 70 from count
+  const severityBonus = weight * 30 // Max 30 from severity
 
-  return Math.round(baseConfidence + severityBonus);
+  return Math.round(baseConfidence + severityBonus)
 }
 
 /**
  * Calculate weak spot severity
  */
 function calculateWeakSpotSeverity(count, category) {
-  if (count >= 5) return "CRITICAL";
-  if (count >= 3) return "HIGH";
-  if (count >= 2) return "MEDIUM";
-  return "LOW";
+  if (count >= 5) return "CRITICAL"
+  if (count >= 3) return "HIGH"
+  if (count >= 2) return "MEDIUM"
+  return "LOW"
 }
 
 /**
@@ -248,9 +248,9 @@ function generatePreventionPattern(type, suggestion) {
     HARDCODED_PATH: "/Users/",
     TYPE_MISMATCH: "local\\.(set|get)",
     LOGIC_ERROR: "currentlyFailing",
-  };
+  }
 
-  return patterns[type] || "";
+  return patterns[type] || ""
 }
 
 /**
@@ -268,16 +268,16 @@ function generateTestSuggestion(operator, category) {
     NEQ_TO_EQ: "Add test that verifies inequality checks",
     RETURN_TO_NULL: "Add test that checks return value is not null",
     RETURN_TO_UNDEFINED: "Add test that checks return value is defined",
-  };
+  }
 
-  return suggestions[operator] || `Add test for ${category} mutation`;
+  return suggestions[operator] || `Add test for ${category} mutation`
 }
 
 /**
  * Get prevention recommendations for a file
  */
 async function getRecommendations(filePath) {
-  if (!graph) await initMemory();
+  if (!graph) await initMemory()
 
   // Get rules that apply to this file
   const rules = await graph.query(`
@@ -286,7 +286,7 @@ async function getRecommendations(filePath) {
     RETURN r.type as type, r.suggestion as suggestion, r.confidence as confidence
     ORDER BY r.confidence DESC
     LIMIT 5
-  `);
+  `)
 
   // Get weak spots in this file
   const weakSpots = await graph.query(
@@ -299,51 +299,51 @@ async function getRecommendations(filePath) {
     {
       params: { file: filePath },
     },
-  );
+  )
 
-  console.log(`\n Recommendations for ${filePath}:`);
+  console.log(`\n Recommendations for ${filePath}:`)
 
-  if (rules && rules.data && rules.data.length > 0) {
-    console.log("\n Prevention Rules:");
+  if (rules?.data && rules.data.length > 0) {
+    console.log("\n Prevention Rules:")
     for (const row of rules.data) {
-      const { type, suggestion, confidence } = row;
-      console.log(`   ${confidence}% - ${type}: ${suggestion}`);
+      const { type, suggestion, confidence } = row
+      console.log(`   ${confidence}% - ${type}: ${suggestion}`)
     }
   }
 
-  if (weakSpots && weakSpots.data && weakSpots.data.length > 0) {
-    console.log("\n  Weak Spots to Fix:");
+  if (weakSpots?.data && weakSpots.data.length > 0) {
+    console.log("\n  Weak Spots to Fix:")
     for (const row of weakSpots.data) {
-      const { line, operator, suggestion } = row;
-      console.log(`   Line ${line} (${operator}): ${suggestion}`);
+      const { line, operator, suggestion } = row
+      console.log(`   Line ${line} (${operator}): ${suggestion}`)
     }
   }
 
-  return { rules: rules?.data || [], weakSpots: weakSpots?.data || [] };
+  return { rules: rules?.data || [], weakSpots: weakSpots?.data || [] }
 }
 
 /**
  * Generate comprehensive report
  */
 async function generateReport() {
-  if (!graph) await initMemory();
+  if (!graph) await initMemory()
 
   const stats = await graph.query(`
     MATCH (r:Rule)
     WITH COUNT(r) as ruleCount, AVG(r.confidence) as avgConfidence
     MATCH (w:WeakSpot)
     RETURN ruleCount, avgConfidence, COUNT(w) as weakSpotCount
-  `);
+  `)
 
-  console.log("\n Memory System Report:");
+  console.log("\n Memory System Report:")
 
-  if (stats && stats.data && stats.data.length > 0) {
-    const { ruleCount, avgConfidence, weakSpotCount } = stats.data[0];
-    console.log(`   Rules Learned: ${ruleCount}`);
-    console.log(`   Average Confidence: ${avgConfidence?.toFixed(2)}%`);
-    console.log(`   Weak Spots Identified: ${weakSpotCount}`);
+  if (stats?.data && stats.data.length > 0) {
+    const { ruleCount, avgConfidence, weakSpotCount } = stats.data[0]
+    console.log(`   Rules Learned: ${ruleCount}`)
+    console.log(`   Average Confidence: ${avgConfidence?.toFixed(2)}%`)
+    console.log(`   Weak Spots Identified: ${weakSpotCount}`)
   } else {
-    console.log("   No data yet - run BAM+STRIKE first");
+    console.log("   No data yet - run BAM+STRIKE first")
   }
 
   // Get top rules
@@ -352,23 +352,23 @@ async function generateReport() {
     RETURN r.type as type, r.confidence as confidence
     ORDER BY r.confidence DESC
     LIMIT 3
-  `);
+  `)
 
-  if (topRules && topRules.data && topRules.data.length > 0) {
-    console.log("\n Top Prevention Rules:");
+  if (topRules?.data && topRules.data.length > 0) {
+    console.log("\n Top Prevention Rules:")
     for (const row of topRules.data) {
-      const { type, confidence } = row;
-      console.log(`   ${confidence}% - ${type}`);
+      const { type, confidence } = row
+      console.log(`   ${confidence}% - ${type}`)
     }
   }
 }
 
 async function closeMemory() {
   if (db) {
-    await db.close();
-    db = null;
-    graph = null;
-    console.log("👋 MEMORY closed");
+    await db.close()
+    db = null
+    graph = null
+    console.log("👋 MEMORY closed")
   }
 }
 
@@ -380,4 +380,4 @@ export {
   getRecommendations,
   generateReport,
   closeMemory,
-};
+}

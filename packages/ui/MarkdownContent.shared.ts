@@ -1,4 +1,4 @@
-import React from "react"
+import type React from "react"
 
 export interface MarkdownContentProps {
   content: string
@@ -38,10 +38,10 @@ export const processTextWithCitations = ({
   processedContent = processedContent.replace(
     citationPattern,
     (match, citationNumber) => {
-      const sourceIndex = Number.parseInt(citationNumber) - 1 // Convert to 0-based index
+      const sourceIndex = Number.parseInt(citationNumber, 10) - 1 // Convert to 0-based index
       const source = webSearchResults[sourceIndex]
 
-      if (source && source.url && source.url !== "#") {
+      if (source?.url && source.url !== "#") {
         // Create markdown link with title attribute
         return `[${match}](${source.url} "${source.title} - ${source.snippet}")`
       } else {

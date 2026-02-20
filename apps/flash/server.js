@@ -1,9 +1,8 @@
 import "dotenv/config"
 import fs from "node:fs/promises"
-import express from "express"
+import arcjet, { fixedWindow, shield } from "@arcjet/node"
 import cookieParser from "cookie-parser"
-import { Transform } from "node:stream"
-import arcjet, { shield, fixedWindow } from "@arcjet/node"
+import express from "express"
 
 // const getEnv = () => {
 //   if (typeof import.meta !== "undefined") {
@@ -18,12 +17,12 @@ import arcjet, { shield, fixedWindow } from "@arcjet/node"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.13.77"
+const VERSION = "2.0.4"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
 const base = process.env.BASE || "/"
-const ABORT_DELAY = 10000
+const _ABORT_DELAY = 10000
 
 const isDev = process.env.NODE_ENV === "development"
 
@@ -71,7 +70,7 @@ app.use((req, res, next) => {
           "Content-Type, Authorization",
         )
       }
-    } catch (e) {
+    } catch (_e) {
       // Invalid origin URL, skip CORS headers
     }
   }
@@ -307,8 +306,9 @@ function metadataToHtml(metadata, serverData) {
 
   // Favicon and Apple Touch Icons - use hostname for white-label detection
   // Use serverData.siteConfig which is already available from server-loader
-  const iconSlug =
-    serverData?.siteConfig?.storeSlug === "compass"
+  const iconSlug = serverData?.siteConfig?.isTribe
+    ? "tribe"
+    : serverData?.siteConfig?.storeSlug === "compass"
       ? "atlas"
       : serverData?.siteConfig?.slug || serverData?.app?.slug || "chrry"
   const baseIcon = `/images/apps/${iconSlug}.png`
@@ -357,10 +357,11 @@ app.get("/api/health", (req, res) => {
 // Sitemap.xml route - proxy to API
 app.get("/sitemap.xml", async (req, res) => {
   try {
-    const apiUrl =
-      process.env.INTERNAL_API_URL ||
-      process.env.API_URL ||
-      "https://chrry.dev/api"
+    const apiUrl = isDev
+      ? "http://localhost:3001/api"
+      : process.env.INTERNAL_API_URL ||
+        process.env.API_URL ||
+        "https://chrry.dev/api"
 
     // Add timeout to prevent hanging
     const controller = new AbortController()
@@ -542,7 +543,7 @@ app.use(async (req, res) => {
     /** @type {string} */
     let template
     /** @type {import('./src/entry-server.ts').render} */
-    let render
+    let _render
     /** @type {import('./src/entry-server.ts').loadData} */
     let loadData
     if (!isProduction) {
@@ -550,18 +551,19 @@ app.use(async (req, res) => {
       template = await fs.readFile("./index.html", "utf-8")
       template = await vite.transformIndexHtml(url, template)
       const entryServer = await vite.ssrLoadModule("/src/entry-server.tsx")
-      render = entryServer.render
+      _render = entryServer.render
       loadData = entryServer.loadData
     } else {
       template = templateHtml
       const entryServer = await import("./dist/server/entry-server.js")
-      render = entryServer.render
+      _render = entryServer.render
       loadData = entryServer.loadData
     }
 
     // Load server data first (optional - can be undefined for client-only rendering)
     let serverData
     if (loadData) {
+      console.log("🔍 Loading server data for:", url)
       // You can build the context from req here
       const context = {
         url,
@@ -576,6 +578,7 @@ app.use(async (req, res) => {
           "0.0.0.0", // Extract client IP
       }
       serverData = await loadData(context)
+      console.log("✅ Server data loaded. Theme:", serverData?.theme)
 
       // Handle OAuth redirect
       if (serverData?.redirect) {
@@ -637,19 +640,28 @@ app.use(async (req, res) => {
       ),
       hash: url.split("#")[1] || "",
     }
-    console.log("🔧 SSR: Injecting router state:", routerState)
+
     const routerStateScript = serverData
       ? `<script>window.__ROUTER_STATE__ = ${JSON.stringify(routerState).replace(/</g, "\\u003c")}</script>`
       : ""
 
-    // Replace placeholders - inject metadata, CSS, server data, router state, and lang attribute
+    // Sanitize theme value to prevent HTML injection
+    const ALLOWED_THEMES = ["dark", "light"]
+    const rawTheme = serverData?.theme
+    const sanitizedTheme = ALLOWED_THEMES.includes(rawTheme) ? rawTheme : "dark"
+
+    // Replace placeholders - inject metadata, CSS, server data, router state, lang attribute, and theme class
+    console.log("🎨 Applying theme class:", sanitizedTheme)
     const html = template
       .replace(`<html lang="en"`, `<html lang="${serverData?.locale || "en"}"`)
+      .replace(`class="dark"`, `class="${sanitizedTheme}"`)
       .replace(
         `<!--app-head-->`,
         `${metaTags}\n  ${cssLinks}\n  ${serverDataScript}\n  ${routerStateScript}`,
       )
       .replace(`<!--app-html-->`, appHtml)
+
+    console.log(`✅ HTML generated with theme: ${sanitizedTheme}`)
 
     res.status(200).set({ "Content-Type": "text/html" }).end(html)
   } catch (e) {

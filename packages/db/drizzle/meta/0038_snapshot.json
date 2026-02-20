@@ -80,13 +80,9 @@
         "account_userId_user_id_fk": {
           "name": "account_userId_user_id_fk",
           "tableFrom": "account",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "user",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -94,10 +90,7 @@
       "compositePrimaryKeys": {
         "account_provider_providerAccountId_pk": {
           "name": "account_provider_providerAccountId_pk",
-          "columns": [
-            "provider",
-            "providerAccountId"
-          ]
+          "columns": ["provider", "providerAccountId"]
         }
       },
       "uniqueConstraints": {},
@@ -293,26 +286,18 @@
         "collaborations_threadId_threads_id_fk": {
           "name": "collaborations_threadId_threads_id_fk",
           "tableFrom": "collaborations",
-          "columnsFrom": [
-            "threadId"
-          ],
+          "columnsFrom": ["threadId"],
           "tableTo": "threads",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "collaborations_userId_user_id_fk": {
           "name": "collaborations_userId_user_id_fk",
           "tableFrom": "collaborations",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "user",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -447,52 +432,36 @@
         "creditUsage_userId_user_id_fk": {
           "name": "creditUsage_userId_user_id_fk",
           "tableFrom": "creditUsage",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "user",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "creditUsage_guestId_guest_id_fk": {
           "name": "creditUsage_guestId_guest_id_fk",
           "tableFrom": "creditUsage",
-          "columnsFrom": [
-            "guestId"
-          ],
+          "columnsFrom": ["guestId"],
           "tableTo": "guest",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "creditUsage_agentId_aiAgents_id_fk": {
           "name": "creditUsage_agentId_aiAgents_id_fk",
           "tableFrom": "creditUsage",
-          "columnsFrom": [
-            "agentId"
-          ],
+          "columnsFrom": ["agentId"],
           "tableTo": "aiAgents",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "creditUsage_threadId_threads_id_fk": {
           "name": "creditUsage_threadId_threads_id_fk",
           "tableFrom": "creditUsage",
-          "columnsFrom": [
-            "threadId"
-          ],
+          "columnsFrom": ["threadId"],
           "tableTo": "threads",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -634,26 +603,18 @@
         "device_userId_user_id_fk": {
           "name": "device_userId_user_id_fk",
           "tableFrom": "device",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "user",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "device_guestId_guest_id_fk": {
           "name": "device_guestId_guest_id_fk",
           "tableFrom": "device",
-          "columnsFrom": [
-            "guestId"
-          ],
+          "columnsFrom": ["guestId"],
           "tableTo": "guest",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -662,9 +623,7 @@
       "uniqueConstraints": {
         "device_fingerprint_unique": {
           "name": "device_fingerprint_unique",
-          "columns": [
-            "fingerprint"
-          ],
+          "columns": ["fingerprint"],
           "nullsNotDistinct": false
         }
       },
@@ -827,39 +786,27 @@
         "invitations_threadId_threads_id_fk": {
           "name": "invitations_threadId_threads_id_fk",
           "tableFrom": "invitations",
-          "columnsFrom": [
-            "threadId"
-          ],
+          "columnsFrom": ["threadId"],
           "tableTo": "threads",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "invitations_userId_user_id_fk": {
           "name": "invitations_userId_user_id_fk",
           "tableFrom": "invitations",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "user",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "invitations_guestId_guest_id_fk": {
           "name": "invitations_guestId_guest_id_fk",
           "tableFrom": "invitations",
-          "columnsFrom": [
-            "guestId"
-          ],
+          "columnsFrom": ["guestId"],
           "tableTo": "guest",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -1080,78 +1027,54 @@
         "messages_agentId_aiAgents_id_fk": {
           "name": "messages_agentId_aiAgents_id_fk",
           "tableFrom": "messages",
-          "columnsFrom": [
-            "agentId"
-          ],
+          "columnsFrom": ["agentId"],
           "tableTo": "aiAgents",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "messages_debateAgentId_aiAgents_id_fk": {
           "name": "messages_debateAgentId_aiAgents_id_fk",
           "tableFrom": "messages",
-          "columnsFrom": [
-            "debateAgentId"
-          ],
+          "columnsFrom": ["debateAgentId"],
           "tableTo": "aiAgents",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "messages_selectedAgentId_aiAgents_id_fk": {
           "name": "messages_selectedAgentId_aiAgents_id_fk",
           "tableFrom": "messages",
-          "columnsFrom": [
-            "selectedAgentId"
-          ],
+          "columnsFrom": ["selectedAgentId"],
           "tableTo": "aiAgents",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "messages_userId_user_id_fk": {
           "name": "messages_userId_user_id_fk",
           "tableFrom": "messages",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "user",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "messages_guestId_guest_id_fk": {
           "name": "messages_guestId_guest_id_fk",
           "tableFrom": "messages",
-          "columnsFrom": [
-            "guestId"
-          ],
+          "columnsFrom": ["guestId"],
           "tableTo": "guest",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "messages_threadId_threads_id_fk": {
           "name": "messages_threadId_threads_id_fk",
           "tableFrom": "messages",
-          "columnsFrom": [
-            "threadId"
-          ],
+          "columnsFrom": ["threadId"],
           "tableTo": "threads",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -1223,26 +1146,18 @@
         "pushSubscriptions_userId_user_id_fk": {
           "name": "pushSubscriptions_userId_user_id_fk",
           "tableFrom": "pushSubscriptions",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "user",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "pushSubscriptions_guestId_guest_id_fk": {
           "name": "pushSubscriptions_guestId_guest_id_fk",
           "tableFrom": "pushSubscriptions",
-          "columnsFrom": [
-            "guestId"
-          ],
+          "columnsFrom": ["guestId"],
           "tableTo": "guest",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -1281,13 +1196,9 @@
         "session_userId_user_id_fk": {
           "name": "session_userId_user_id_fk",
           "tableFrom": "session",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "user",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -1387,26 +1298,18 @@
         "subscription_userId_user_id_fk": {
           "name": "subscription_userId_user_id_fk",
           "tableFrom": "subscription",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "user",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "subscription_guestId_guest_id_fk": {
           "name": "subscription_guestId_guest_id_fk",
           "tableFrom": "subscription",
-          "columnsFrom": [
-            "guestId"
-          ],
+          "columnsFrom": ["guestId"],
           "tableTo": "guest",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -1478,26 +1381,18 @@
         "systemLogs_userId_user_id_fk": {
           "name": "systemLogs_userId_user_id_fk",
           "tableFrom": "systemLogs",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "user",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "systemLogs_guestId_guest_id_fk": {
           "name": "systemLogs_guestId_guest_id_fk",
           "tableFrom": "systemLogs",
-          "columnsFrom": [
-            "guestId"
-          ],
+          "columnsFrom": ["guestId"],
           "tableTo": "guest",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -1603,26 +1498,18 @@
         "threads_userId_user_id_fk": {
           "name": "threads_userId_user_id_fk",
           "tableFrom": "threads",
-          "columnsFrom": [
-            "userId"
-          ],
+          "columnsFrom": ["userId"],
           "tableTo": "user",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "threads_guestId_guest_id_fk": {
           "name": "threads_guestId_guest_id_fk",
           "tableFrom": "threads",
-          "columnsFrom": [
-            "guestId"
-          ],
+          "columnsFrom": ["guestId"],
           "tableTo": "guest",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -1889,10 +1776,7 @@
       "compositePrimaryKeys": {
         "verificationToken_identifier_token_pk": {
           "name": "verificationToken_identifier_token_pk",
-          "columns": [
-            "identifier",
-            "token"
-          ]
+          "columns": ["identifier", "token"]
         }
       },
       "uniqueConstraints": {},

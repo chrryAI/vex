@@ -1,19 +1,19 @@
-import { Hono } from "hono"
-import { getThread, getStore, getApp as getAppDb } from "@repo/db"
-import { locale } from "@chrryai/chrry/locales"
+import { getTranslations } from "@chrryai/chrry/lib"
+import type { locale } from "@chrryai/chrry/locales"
 import {
   generateStoreMetadata,
   generateThreadMetadata,
   getThreadId,
 } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
-import { getTranslations } from "@chrryai/chrry/lib"
 import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
+import { getApp as getAppDb, getStore, getThread } from "@repo/db"
+import { Hono } from "hono"
 
 const app = new Hono()
 
 // Helper function to generate default metadata
-const generateMeta = ({ locale }: { locale: locale }) => {
+const generateMeta = () => {
   return {
     title: "Chrry - Your personal AI assistant",
     description:
@@ -48,7 +48,7 @@ app.get("/", async (c) => {
 
     // Check if it's an excluded route (like /settings, /about, etc.)
     if (segment && excludedSlugRoutes.includes(segment)) {
-      return c.json(generateMeta({ locale: localeParam }))
+      return c.json(generateMeta())
     }
 
     // Check for store
@@ -90,7 +90,7 @@ app.get("/", async (c) => {
     }
 
     // Default: return basic metadata
-    return c.json(generateMeta({ locale: localeParam }))
+    return c.json(generateMeta())
   } catch (error) {
     console.error("Error generating metadata:", error)
     return c.json(

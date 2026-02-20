@@ -5,26 +5,30 @@
  * Provides theme colors that work on web (CSS vars) and native (JS values)
  */
 
-import React, {
+import {
   createContext,
+  type ReactNode,
   useContext,
-  ReactNode,
-  useMemo,
   useEffect,
   useState,
 } from "react"
-import { usePlatform, toast, useLocalStorage } from "../platform"
+import { useTranslation } from "react-i18next"
 import {
-  lightTheme,
+  toast,
+  useCookieOrLocalStorage,
+  useLocalStorage,
+  usePlatform,
+} from "../platform"
+import {
   darkTheme,
-  type Theme,
+  lightTheme,
   resolveCssVar,
   resolveStyleVars,
+  type Theme,
 } from "../styles/theme"
-import { session } from "./providers/AuthProvider"
-import { useTranslation } from "react-i18next"
 import { FRONTEND_URL } from "../utils"
 import console from "../utils/log"
+import type { session } from "./providers/AuthProvider"
 
 export const COLORS = {
   red: "#ef4444", // red-500
@@ -72,9 +76,11 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 export function ThemeProvider({
   children,
   session,
+  ...props
 }: {
   children: ReactNode
   session?: session
+  theme?: themeType
 }) {
   const { isWeb, isExtension, isAndroid, viewPortWidth, device, os } =
     usePlatform()
@@ -104,7 +110,7 @@ export function ThemeProvider({
         ? "dark"
         : "light"
     }
-    return "dark" // Default to dark for SSR and Native
+    return props.theme || "dark" // Default to theme for SSR and Native
   }
 
   useEffect(() => {
@@ -115,13 +121,13 @@ export function ThemeProvider({
     }
   }, [viewPortWidth, os, device])
 
-  const [themeMode, setThemeMode] = useLocalStorage<themeType>(
+  const [themeMode, setThemeMode] = useCookieOrLocalStorage(
     "theme",
     getInitialTheme(),
   )
 
   const [isSmallDevice, setIsSmallDeviceInternal] = useState(
-    viewPortWidth != undefined ? viewPortWidth < 960 : device !== "desktop",
+    viewPortWidth !== undefined ? viewPortWidth < 960 : device !== "desktop",
   )
 
   const setIsSmallDevice = (isSmallDevice: boolean) => {
@@ -157,10 +163,10 @@ export function ThemeProvider({
   }, [viewPortWidth])
 
   const [isMobileDevice, setIsMobileDevice] = useState(
-    (viewPortWidth && viewPortWidth < 600) ||
+    !!(
+      (viewPortWidth && viewPortWidth < 600) ||
       (os && ["ios", "android"].includes(os) && device !== "desktop")
-      ? true
-      : false,
+    ),
   )
 
   // Apply color scheme to HTML element (web only)
@@ -229,9 +235,7 @@ export function ThemeProvider({
   )
 
   // Detect initial dark mode preference
-  const isDark = useMemo(() => {
-    return themeMode === "dark"
-  }, [themeMode])
+  const isDark = themeMode === "dark"
 
   const theme = isDark ? darkTheme : lightTheme
 

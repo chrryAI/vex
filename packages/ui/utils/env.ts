@@ -1,13 +1,13 @@
 /// <reference types="chrome" />
 
 import {
-  isDevelopment,
-  isProduction,
-  getEnv,
-  isCI,
   checkIsExtension,
+  getEnv,
   getExtensionUrl,
+  isCI,
+  isDevelopment,
   isE2E,
+  isProduction,
   isTestingDevice,
 } from "./siteConfig"
 

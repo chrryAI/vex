@@ -2,41 +2,41 @@
 
 import React, {
   createContext,
+  type ReactNode,
   useContext,
-  ReactNode,
-  useState,
   useEffect,
   useRef,
+  useState,
 } from "react"
-import { useAuth } from "./AuthProvider"
-import { useData } from "./DataProvider"
-import {
-  aiAgent,
-  thread,
-  app,
-  collaboration,
-  user,
-  guest,
-  message,
-  messages,
-  paginatedMessages,
-  appWithStore,
-} from "../../types"
-
-import { pageSizes, isOwner } from "../../utils"
-import { hasThreadNotification } from "../../utils/hasThreadNotification"
+import useSWR from "swr"
+import { useUserScroll } from "../../hooks/useUserScroll"
+import { useWebSocket } from "../../hooks/useWebSocket"
 import {
   useLocalStorage,
   useNavigation,
   usePlatform,
   useTheme,
 } from "../../platform"
+import type {
+  aiAgent,
+  app,
+  appWithStore,
+  collaboration,
+  guest,
+  message,
+  messages,
+  paginatedMessages,
+  thread,
+  user,
+} from "../../types"
+import { isOwner, pageSizes } from "../../utils"
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
+import { hasThreadNotification } from "../../utils/hasThreadNotification"
 import { useApp } from "./AppProvider"
-import useSWR from "swr"
-import { useWebSocket } from "../../hooks/useWebSocket"
-import { useUserScroll } from "../../hooks/useUserScroll"
+import { useAuth } from "./AuthProvider"
+import { useData } from "./DataProvider"
 import { useError } from "./ErrorProvider"
+
 interface placeHolder {
   // TODO: Define placeHolder type
   [key: string]: any
@@ -52,7 +52,13 @@ const ChatContext = createContext<
       setShouldGetCredits: (shouldGetCredits: boolean) => void
       fetchActiveCollaborationThreadsCount: () => Promise<void>
       fetchPendingCollaborationThreadsCount: () => Promise<void>
-      setIsNewAppChat: (item: appWithStore | undefined) => void
+      setIsNewAppChat: ({
+        item,
+        tribe,
+      }: {
+        item: appWithStore | undefined
+        tribe?: boolean
+      }) => void
       shouldFocus: boolean
       setShouldFocus: (shouldFocus: boolean) => void
       placeHolderText: string | undefined
@@ -137,7 +143,15 @@ const ChatContext = createContext<
         status: "pending" | "active" | undefined | null,
       ) => void
       collaborationStatus: "pending" | "active" | undefined | null
-      setIsNewChat: (value: boolean, to?: string) => void
+      setIsNewChat: ({
+        value,
+        to,
+        tribe,
+      }: {
+        value: boolean
+        to?: string
+        tribe?: boolean
+      }) => void
     }
   | undefined
 >(undefined)
@@ -233,11 +247,11 @@ export function ChatProvider({
 
   const setShowTribe = auth.setShowTribe
 
-  const { isExtension, isMobile, isTauri, isCapacitor } = usePlatform()
+  const { isExtension, isMobile, isTauri } = usePlatform()
 
   const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
 
-  let userNameByUrl: string | undefined = undefined
+  let userNameByUrl: string | undefined
 
   const pathSegments = pathname.split("/").filter(Boolean)
 
@@ -346,8 +360,7 @@ export function ChatProvider({
       collaborationStatus: "active",
       appId: app?.id,
     })
-    threads &&
-      threads.totalCount &&
+    threads?.totalCount &&
       setActiveCollaborationThreadsCount(threads.totalCount)
   }
 
@@ -366,8 +379,7 @@ export function ChatProvider({
       myPendingCollaborations: true,
       appId: app?.id,
     })
-    threads &&
-      threads.totalCount &&
+    threads?.totalCount &&
       setPendingCollaborationThreadsCount(threads.totalCount)
   }
 
@@ -409,17 +421,24 @@ export function ChatProvider({
     }
   }, [loadingApp, storeApps])
 
-  const setIsNewAppChat = (item: appWithStore | undefined) => {
+  const setIsNewAppChat = ({
+    item,
+    tribe,
+  }: {
+    item: appWithStore | undefined
+    tribe?: boolean
+  }) => {
     if (!item) {
       return
     }
+
     if (!hasStoreApps(item)) {
       loadingAppRef.current = item
       setLoadingApp(item)
       return
     }
 
-    setIsNewChat(true, getAppSlug(item))
+    setIsNewChat({ value: true, to: getAppSlug(item), tribe })
   }
 
   useEffect(() => {
@@ -428,14 +447,19 @@ export function ChatProvider({
     }
   }, [threadIdRef.current])
 
-  const setIsNewChat = (
-    value: boolean,
+  const setIsNewChat = ({
+    value,
     to = app?.slug ? getAppSlug(app) : "/",
-  ) => {
+    tribe,
+  }: {
+    value: boolean
+    to?: string
+    tribe?: boolean
+  }) => {
     if (value) {
       setLiked(undefined)
       setShowFocus(false)
-      setShowTribe(false)
+      setShowTribe(tribe === true)
 
       setCollaborationStep(0)
       setThread(undefined)
@@ -449,6 +473,9 @@ export function ChatProvider({
       threadIdRef.current = undefined
       router.push(to)
       refetchThreads()
+    } else {
+      // Ensure tribe view resets when closing a new chat
+      setShowTribe(false)
     }
 
     setIsNewChatInternal(value)
@@ -611,15 +638,15 @@ export function ChatProvider({
   const [isVisitor, setIsVisitor] = useState(false)
 
   useEffect(() => {
-    toFetch && setIsNewChat(false)
+    toFetch && setIsNewChat({ value: false })
   }, [toFetch])
 
   useEffect(() => {
     if (profile) {
-      setIsVisitor(user?.id == profile.id)
+      setIsVisitor(user?.id === profile.id)
       return
     } else if (userNameByUrl) {
-      setIsVisitor(user?.userName == userNameByUrl)
+      setIsVisitor(user?.userName === userNameByUrl)
       return
     }
 
@@ -653,7 +680,7 @@ export function ChatProvider({
   useEffect(() => {
     if (!token || !fingerprint || !connected) return
     // Listen for navigation messages from service worker
-    const handleServiceWorkerMessage = (event: MessageEvent) => {
+    const _handleServiceWorkerMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === "NAVIGATE_TO_URL") {
         window.location.href = event.data.url
       }
@@ -788,7 +815,7 @@ export function ChatProvider({
     }
   }, [placeHolder, app])
 
-  const { appStatus, setIsSavingApp, setIsManagingApp } = useApp()
+  const { appStatus } = useApp()
 
   const { captureException } = useError()
 
@@ -876,10 +903,7 @@ export function ChatProvider({
   const [isUserSelectedAgent, setIsUserSelectedAgent] = useState<boolean>(false)
 
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
-    setIsWebSearchEnabledInternal(
-      agent?.name === "perplexity" ||
-        (isWebSearchEnabled ? !!agent?.capabilities?.webSearch : false),
-    )
+    setIsWebSearchEnabledInternal(agent?.name === "perplexity")
     if (selectedAgent?.name === agent?.name) return
     if (agent === null) {
       setAgentName("")
@@ -1006,7 +1030,7 @@ export function ChatProvider({
     setDebateAgent(null)
   }, [app, aiAgents])
 
-  const { isDevelopment, isE2E, actions } = useData()
+  const { actions } = useData()
 
   const isDebating = !!debateAgent
 

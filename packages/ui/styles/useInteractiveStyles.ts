@@ -3,7 +3,7 @@
  * Works on both web and native!
  */
 
-import { useState, CSSProperties } from "react"
+import { type CSSProperties, useState } from "react"
 import { useTheme } from "./theme"
 
 type StyleObject = CSSProperties | Record<string, any>

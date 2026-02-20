@@ -1,21 +1,25 @@
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import ParticleWaveCanvas from "./ParticleWave"
-import { useNavigation, Button } from "../platform"
-import styles from "./Programme.module.scss"
-import Img from "../Image"
 import clsx from "clsx"
+import { AnimatePresence, motion } from "framer-motion"
+import { useCallback, useEffect, useState } from "react"
 import { useAuth } from "../context/providers/AuthProvider"
+import { useHasHydrated } from "../hooks"
+import Img from "../Image"
+import { Button, useNavigation } from "../platform"
+import ParticleWaveCanvas from "./ParticleWave"
+
+import styles from "./Programme.module.scss"
 
 export default function Programme() {
-  const { searchParams, addParams, back, removeParams } = useNavigation()
+  const { back, removeParams } = useNavigation()
 
   const { setIsProgramme, isProgramme } = useAuth()
   const [entered, setEnteredInternal] = useState(false)
 
-  const setEntered = (value: boolean) => {
+  const setEntered = useCallback((value: boolean) => {
     setEnteredInternal(value)
-  }
+  }, [])
+
+  const hasHydrated = useHasHydrated()
 
   useEffect(() => {
     const handlePopState = () => {
@@ -24,7 +28,7 @@ export default function Programme() {
     }
     window.addEventListener("popstate", handlePopState)
     return () => window.removeEventListener("popstate", handlePopState)
-  }, [])
+  }, [setEntered])
 
   const handleEnter = () => {
     setEntered(true)
@@ -35,7 +39,7 @@ export default function Programme() {
     back()
   }
 
-  if (!isProgramme) {
+  if (!isProgramme || !hasHydrated) {
     return null
   }
 

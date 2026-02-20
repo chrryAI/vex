@@ -1,12 +1,13 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import type React from "react"
+import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { emojiMap, moodType } from "./types"
-import { useMoodSelectorStyles } from "./MoodSelector.styles"
-import { Button, Div, Span } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import { MousePointerClick } from "./icons"
+import { useMoodSelectorStyles } from "./MoodSelector.styles"
+import { Button, Div, Span } from "./platform"
+import { emojiMap, type moodType } from "./types"
 
 export default function MoodSelector({
   onMoodChange,
@@ -81,6 +82,8 @@ export default function MoodSelector({
         {mood ? (
           <Button
             data-testid="moodify-reset-button"
+            aria-label={t("Change mood")}
+            title={t("Change mood")}
             style={{
               ...btnStyles,
             }}
@@ -105,10 +108,12 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-happy-button"
+              aria-label={t("Happy")}
+              title={t("Happy")}
               className="link"
               onClick={() => setMood("happy")}
             >
-              {emojiMap["happy"]}
+              {emojiMap.happy}
             </Button>
             <Button
               style={{
@@ -116,10 +121,12 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-sad-button"
+              aria-label={t("Sad")}
+              title={t("Sad")}
               className="link"
               onClick={() => setMood("sad")}
             >
-              {emojiMap["sad"]}
+              {emojiMap.sad}
             </Button>
             <Button
               style={{
@@ -129,10 +136,12 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-angry-button"
+              aria-label={t("Angry")}
+              title={t("Angry")}
               className="link"
               onClick={() => setMood("angry")}
             >
-              {emojiMap["angry"]}
+              {emojiMap.angry}
             </Button>
             <Button
               style={{
@@ -140,10 +149,12 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-astonished-button"
+              aria-label={t("Astonished")}
+              title={t("Astonished")}
               className="link"
               onClick={() => setMood("astonished")}
             >
-              {emojiMap["astonished"]}
+              {emojiMap.astonished}
             </Button>
             <Button
               style={{
@@ -151,10 +162,12 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-inlove-button"
+              aria-label={t("In love")}
+              title={t("In love")}
               className="link"
               onClick={() => setMood("inlove")}
             >
-              {emojiMap["inlove"]}
+              {emojiMap.inlove}
             </Button>
 
             <Button
@@ -163,6 +176,8 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-thinking-button"
+              aria-label={t("Thinking")}
+              title={t("Thinking")}
               className="link"
               onClick={() => setMood("thinking")}
             >

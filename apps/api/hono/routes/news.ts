@@ -1,12 +1,12 @@
 import { Hono } from "hono"
 import {
-  searchNews,
-  getNewsBySource,
-  getNewsByCategory,
   getLatestNews,
+  getNewsByCategory,
+  getNewsBySource,
+  searchNews,
 } from "../../lib/newsFetcher"
-import { getMember, getGuest } from "../lib/auth"
 import { checkRateLimit } from "../../lib/rateLimiting"
+import { getGuest, getMember } from "../lib/auth"
 
 export const news = new Hono()
 
@@ -48,7 +48,7 @@ news.get("/", async (c) => {
     const source = c.req.query("source")
     const category = c.req.query("category")
     const query = c.req.query("query")
-    const limit = Number.parseInt(c.req.query("limit") || "20")
+    const limit = Number.parseInt(c.req.query("limit") || "20", 10)
 
     let newsData
 

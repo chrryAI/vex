@@ -1,7 +1,6 @@
-import { Page, expect } from "@playwright/test"
-import { getURL, modelName, wait, storeApps, getModelCredits } from ".."
+import { expect, type Page } from "@playwright/test"
+import { getModelCredits, getURL, type modelName, storeApps, wait } from ".."
 import { chat } from "./chat"
-import { clean } from "./clean"
 import { grape } from "./grape"
 
 const app = async ({

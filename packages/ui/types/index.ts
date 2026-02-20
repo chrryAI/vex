@@ -39,6 +39,8 @@ export type user = {
   lastSpeechReset: Date | null
   imagesGeneratedToday: number
   lastImageGenerationReset: Date | null
+  lastMolt?: message
+  lastTribe?: message
   lastMessage?: message
   favouriteAgent: modelName | string
   timezone: string | null
@@ -370,7 +372,7 @@ export type thread = {
     guestId?: string
     createdOn: string
   }> | null
-  metadata: {} | null
+  metadata: Record<string, string> | null
   instructions: string | null
 
   visibility: "private" | "protected" | "public"
@@ -487,6 +489,7 @@ export type message = {
   userId: string | null
   isMolt?: boolean
   isTribe?: boolean
+  tribePostId?: string
   guestId: string | null
   content: string
   reasoning: string | null
@@ -734,20 +737,18 @@ export type newPlaceHolder = Partial<placeHolder>
 // Character profile types
 export type characterProfile = {
   id: string
-  agentId: string
+  agentId: string | null
   userId: string | null
   guestId: string | null
   visibility: "private" | "protected" | "public"
   name: string
   personality: string
+
   pinned: boolean
   traits: {
-    communication: string[]
-    expertise: string[]
-    behavior: string[]
-    preferences: string[]
+    [key: string]: string[]
   }
-  threadId: string
+  threadId: string | null
   tags: string[] | null
   usageCount: number
   lastUsedAt: Date | null
@@ -794,6 +795,8 @@ export type app = {
   title: string
   description: string | null
   featureList: string[] | null
+  characterProfiles?: Partial<characterProfile>[] | null
+  characterProfile?: Partial<characterProfile> | null
   icon: string | null
   tips: Array<{
     id: string
@@ -968,11 +971,18 @@ export type scheduledJob = {
 
   // Schedule configuration
   frequency: "once" | "daily" | "weekly" | "custom"
-  scheduledTimes: string[] // ["09:00", "14:00", "18:00", "22:00"]
+  scheduledTimes: Array<{
+    time: string // "09:00", "14:00", etc.
+    model: string
+    postType: "post" | "comment" | "engagement"
+    charLimit: number
+    credits: number
+  }>
   timezone: string
   startDate: Date
   endDate: Date | null
-
+  totalPrice?: number
+  pendingPayment?: number
   // AI Model configuration
   aiModel: modelName
   modelConfig: {
@@ -1027,6 +1037,8 @@ export type appWithStore = app & {
   placeHolder?: placeHolder
   instructions?: instruction[]
   scheduledJobs?: scheduledJob[]
+  characterProfiles?: Partial<characterProfile>[]
+  characterProfile?: Partial<characterProfile>
 }
 
 export type storeWithApps = store & { apps: appWithStore[] }
@@ -1126,22 +1138,14 @@ export type tribePost = {
   visibility: "public" | "private" | "tribe"
   likesCount: number
   commentsCount: number
+  appId: string
   sharesCount: number
   createdOn: Date
   updatedOn: Date
-  app: {
-    id: string
-    name: string
-    slug: string
-    icon: string
-  } | null
+  app: appWithStore
   user: Partial<user> | null
   guest: Partial<guest> | null
-  tribe: {
-    id: string
-    name: string
-    slug: string
-  } | null
+  tribe: tribe | null
   likes?: {
     id: string
     createdOn: Date
@@ -1160,16 +1164,20 @@ export type tribePost = {
   comments?: {
     id: string
     content: string
+    appId?: string | null
+    parentCommentId?: string | null
     likesCount: number
     createdOn: Date
     updatedOn: Date
-    user: Partial<user> | null
-    guest: Partial<guest> | null
+    user?: Partial<user> | null
+    guest?: Partial<guest> | null
+    app?: appWithStore
   }[]
   reactions?: {
     id: string
     emoji: string
     createdOn: Date
+    app?: appWithStore
     user: {
       id: string
       name: string | null
@@ -1182,19 +1190,7 @@ export type tribePost = {
       image: string
     } | null
   }[]
-  characterProfiles?: {
-    id: string
-    name: string
-    description: string | null
-    image: string | null
-    owner: boolean
-    agent: {
-      id: string
-      name: string
-      slug: string
-    } | null
-    app?: app
-  }[]
+  characterProfiles?: characterProfile[]
 }
 
 export type tribeComment = {
@@ -1202,6 +1198,7 @@ export type tribeComment = {
   postId?: string
   userId?: string | null
   guestId?: string | null
+  appId?: string | null
   content: string
   parentCommentId?: string | null
   likesCount: number
@@ -1210,6 +1207,8 @@ export type tribeComment = {
   updatedOn: Date
   user?: Partial<user> | null
   guest?: Partial<guest> | null
+  app?: appWithStore
+  reactions?: tribeReaction[]
 }
 
 export type tribeLike = {
@@ -1241,6 +1240,7 @@ export type tribeReaction = {
   commentId?: string | null
   emoji: string
   createdOn: Date
+  app?: appWithStore
   user?: {
     id: string
     name: string | null

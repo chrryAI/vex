@@ -277,7 +277,7 @@ export function resolveCssVar(
 
   // For native, resolve to actual values
   const varMatch = value.match(/var\((--[a-z0-9-]+)\)/)
-  if (varMatch && varMatch[1]) {
+  if (varMatch?.[1]) {
     const themeKey = cssVarToThemeKey[varMatch[1]]
     if (themeKey && theme[themeKey]) {
       return String(theme[themeKey])

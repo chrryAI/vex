@@ -1,12 +1,12 @@
+import { createMood, getLastMood, getMoods, updateMood } from "@repo/db"
 import { Hono } from "hono"
-import { createMood, getLastMood, updateMood, getMoods } from "@repo/db"
 import { getGuest, getMember } from "../lib/auth"
 
 export const mood = new Hono()
 
 // POST /mood - Create or update today's mood
 mood.post("/", async (c) => {
-  const { type, ...rest } = await c.req.json()
+  const { type, ..._ } = await c.req.json()
 
   const guest = await getGuest(c)
   const member = await getMember(c)

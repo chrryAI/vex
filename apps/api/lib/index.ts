@@ -1,14 +1,14 @@
 import { isE2E } from "@chrryai/chrry/utils/siteConfig"
 import {
-  user,
-  threadSummary,
-  thread,
-  guest,
-  subscription,
-  message,
-  collaboration,
-  app,
+  type app,
+  type collaboration,
+  type guest,
   isOwner,
+  type message,
+  type subscription,
+  type thread,
+  type threadSummary,
+  type user,
 } from "@repo/db"
 // import { headers } from "next/headers" // Not needed for Hono standalone
 export const DEV_IP = "192.168.2.27"
@@ -231,6 +231,7 @@ export function checkThreadSummaryLimit({
 
   try {
     // Check if summary was created today
+
     if (summary?.createdOn) {
       const today = new Date()
       today.setHours(0, 0, 0, 0)

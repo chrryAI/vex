@@ -3,10 +3,10 @@
  * Reusable across all generated style hooks
  */
 
-import React from "react"
-import type { Theme } from "./theme"
-import { resolveThemeValue } from "./resolveThemeValue"
+import type React from "react"
 import { getResponsiveValue, isResponsiveValue } from "./breakpoints"
+import { resolveThemeValue } from "./resolveThemeValue"
+import type { Theme } from "./theme"
 
 interface StyleProxyOptions {
   styles: Record<string, Record<string, any>>

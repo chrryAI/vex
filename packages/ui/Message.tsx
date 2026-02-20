@@ -1,62 +1,65 @@
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { AudioPlayer } from "react-audio-play"
+import toast from "react-hot-toast"
+import A from "./a/A"
+import ConfirmButton from "./ConfirmButton"
+import { useAppContext } from "./context/AppContext"
 import {
+  useApp,
+  useAuth,
+  useChat,
+  useData,
+  useError,
+  useNavigationContext,
+} from "./context/providers"
+import { useStyles } from "./context/StylesContext"
+import { useThreadPresence } from "./hooks/useThreadPresence"
+import { useWebSocket } from "./hooks/useWebSocket"
+import Img from "./Image"
+import {
+  Check,
+  Claude,
+  Coins,
+  Copy,
+  DeepSeek,
   Download,
+  FileText,
+  Flux,
+  Gemini,
   Globe as GlobeIcon,
+  LogIn,
+  OpenAI,
+  Perplexity,
+  Play,
+  Sparkles,
   ThumbsDown,
   ThumbsUp,
   Trash2,
   VolumeX,
-  Play,
-  FileText,
-  LogIn,
-  Coins,
-  Sparkles,
 } from "./icons"
+import Loading from "./Loading"
+import { updateMessage, updateThread } from "./lib"
+import { checkSpeechLimits } from "./lib/speechLimits"
+import { stripMarkdown } from "./lib/stripMarkdown"
+import MarkdownContent from "./MarkdownContent"
+import { useMessageStyles } from "./Message.styles"
 import Modal from "./Modal"
-import { useAppContext } from "./context/AppContext"
-import {
-  useAuth,
-  useNavigationContext,
-  useApp,
-  useError,
-  useData,
-  useChat,
-} from "./context/providers"
-import { useTheme, Div, Button, Span, Video } from "./platform"
+import { Button, Div, Span, useTheme, Video } from "./platform"
 import type {
-  message,
   aiAgent,
-  user,
-  guest,
-  thread,
   app,
+  guest,
+  message,
+  thread,
+  user,
   webSearchResult,
 } from "./types"
-import MarkdownContent from "./MarkdownContent"
+import { apiFetch, getInstructionConfig, isOwner } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
-
-import { isOwner, apiFetch, getInstructionConfig } from "./utils"
 import {
   formatMessageTemplates,
   getCurrentTemplateContext,
 } from "./utils/formatTemplates"
-import Loading from "./Loading"
-import ConfirmButton from "./ConfirmButton"
-
-import { Check, Copy } from "./icons"
-
-import { useCallback, useEffect, useMemo, useState, useRef, memo } from "react"
-import { updateMessage, updateThread } from "./lib"
-import toast from "react-hot-toast"
-import Img from "./Image"
-import { useThreadPresence } from "./hooks/useThreadPresence"
-import { useWebSocket } from "./hooks/useWebSocket"
-import { Claude, DeepSeek, Flux, Gemini, OpenAI, Perplexity } from "./icons"
-import { AudioPlayer } from "react-audio-play"
-import { checkSpeechLimits } from "./lib/speechLimits"
-import { stripMarkdown } from "./lib/stripMarkdown"
-import { useMessageStyles } from "./Message.styles"
-import { useStyles } from "./context/StylesContext"
-import A from "./a/A"
 
 function Message({
   onDelete,
@@ -235,7 +238,7 @@ function Message({
             }
           }
         }
-      } catch (e) {
+      } catch (_e) {
         // If parsing fails, return original content
       }
     }
@@ -440,7 +443,7 @@ function Message({
       setCopied(true)
       toast.success(t("Copied"))
       setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to copy code")
     }
   }
@@ -704,7 +707,7 @@ function Message({
         data-testid="delete-message"
         className="link"
         style={utilities.link.style}
-        onConfirm={async function () {
+        onConfirm={async () => {
           setIsDeleting(true)
 
           if (isStreamingStop) {
@@ -924,18 +927,33 @@ function Message({
                 {images?.length ? (
                   <Div
                     data-testid="user-message-images"
-                    style={styles.userMessageImages.style}
+                    style={{
+                      ...styles.userMessageImages.style,
+                    }}
                   >
                     {images.map((image) => (
-                      <Img
-                        style={styles.userMessageImage.style}
-                        dataTestId="user-message-image"
-                        key={image.id}
-                        src={image.url}
-                        alt={image.title}
-                        width={200}
-                        height={"auto"}
-                      />
+                      <Div key={image.id} style={{ position: "relative" }}>
+                        <Img
+                          style={styles.userMessageImage.style}
+                          dataTestId="user-message-image"
+                          src={image.url}
+                          alt={image.title}
+                          width={200}
+                          height={"auto"}
+                        />
+                        <Button
+                          style={styles.downloadButton.style}
+                          onClick={() =>
+                            downloadImage(
+                              image.url,
+                              `${image.prompt?.slice(0, 30) || "image"}.webp`,
+                            )
+                          }
+                          title={t("Download image")}
+                        >
+                          <Download size={16} />
+                        </Button>
+                      </Div>
                     ))}
                   </Div>
                 ) : null}
@@ -1367,6 +1385,21 @@ function Message({
             )}
             <Div style={styles.footer.style}>
               <Div style={styles.left.style}>
+                {message.message.tribeId && (
+                  <A href={`/p${message.message.tribeId}`}>
+                    <Img slug="zarathustra" />
+                    {t("Tribe")}
+                  </A>
+                )}
+                {message.message.moltId && (
+                  <A
+                    openInNewTab
+                    href={`https://www.moltbook.com/post/${message.message.moltId}`}
+                  >
+                    <Img icon="molt" />
+                    {t("Moltbook")}
+                  </A>
+                )}
                 <Button
                   className="link"
                   onClick={() => copyToClipboard(message.message.content)}
@@ -1405,7 +1438,6 @@ function Message({
               </Div>
 
               {getLikeButtons()}
-
               <Button
                 disabled={isSpeechLoading}
                 className="link"

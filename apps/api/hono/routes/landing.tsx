@@ -1,11 +1,13 @@
+import { chrryDev } from "@chrryai/chrry/utils/siteConfig"
 import { Hono } from "hono"
+import React from "react"
 import { renderToString } from "react-dom/server"
 import ChrryDotDev from "../../components/ChrryDotDev"
-import React from "react"
 
 export const landing = new Hono()
 
 landing.get("/", (c) => {
+  const isDev = process.env.NODE_ENV !== "production"
   const html = renderToString(React.createElement(ChrryDotDev))
 
   return c.html(`<!DOCTYPE html>
@@ -197,9 +199,6 @@ landing.get("/", (c) => {
         --portal-opacity: 0.25;
         --border-transition: border-color 0.4s ease-in-out;
         --radius: 1.25rem;
-        --breakpoint-mobile: $breakpoint-mobile;
-        --breakpoint-tablet: $breakpoint-table;
-        --breakpoint-desktop: $breakpoint-desktop;
         --font-sans:
           -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
           "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
@@ -632,7 +631,7 @@ landing.get("/", (c) => {
       }
       
       @media (max-width: 48rem) {
-        .widget-visible iframe[title="chat\ widget"] {
+        .widget-visible iframe[title="chat widget"] {
           margin-bottom: 3.75rem !important;
         }
       }
@@ -1172,6 +1171,7 @@ landing.get("/", (c) => {
         }
       }
     </style>
+    ${!isDev ? `<script defer data-domain="${chrryDev.domain}" src="https://a.chrry.dev/js/app.js"></script>` : ""}
   </head>
   <body>
     <div id="root">${html}</div>

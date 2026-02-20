@@ -17,7 +17,7 @@ const getUserRole = (user?: { role?: string }): string | undefined => {
       if (storedRole) {
         return storedRole
       }
-    } catch (e) {
+    } catch (_e) {
       // localStorage might be blocked or unavailable
     }
   }

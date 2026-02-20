@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/waffles",
-  "version": "1.13.77",
+  "version": "2.0.4",
   "description": "Production-ready Playwright testing utilities and helpers for modern web apps",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -12,18 +12,14 @@
       "require": "./dist/index.js"
     }
   },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
     "e2e": "TEST_URL=http://e2e.chrry.ai playwright test --project chromium",
     "e": "TEST_URL=http://localhost:5173 playwright test --project chromium",
     "test:tauri": "TEST_URL=http://localhost:5173 playwright test --project tauri-macos",
     "build": "pnpm exec tsup",
     "dev": "pnpm exec tsup --watch",
-    "lint": "eslint src"
+    "lint": "biome check ."
   },
   "keywords": [
     "playwright",
@@ -57,7 +53,7 @@
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.18.12",
     "@types/react": "^19.1.12",
-    "dotenv": "^16.0.0",
+    "dotenv": "^17.3.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

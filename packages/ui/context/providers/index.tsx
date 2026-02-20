@@ -4,43 +4,43 @@
  * Centralized exports for all context providers and hooks
  */
 
-// Providers
-export { ErrorProvider, useError } from "./ErrorProvider"
-export { NavigationProvider, useNavigationContext } from "./NavigationProvider"
+export { PlatformProvider } from "../../platform"
+export { AppProvider, type TabType, useApp } from "./AppProvider"
 export { AuthProvider, useAuth } from "./AuthProvider"
 export { ChatProvider, useChat } from "./ChatProvider"
 export { DataProvider, useData } from "./DataProvider"
-export { AppProvider, useApp, type TabType } from "./AppProvider"
+// Providers
+export { ErrorProvider, useError } from "./ErrorProvider"
+export { NavigationProvider, useNavigationContext } from "./NavigationProvider"
 export { TribeProvider, useTribe } from "./TribeProvider"
-export { PlatformProvider } from "../../platform"
 
 // Composition root - combines all providers
-import React, { ReactNode, useState } from "react"
-import { PlatformProvider } from "../../platform"
-import { ThemeProvider } from "../ThemeContext"
-import { StylesProvider } from "../StylesContext"
-import { ErrorProvider } from "./ErrorProvider"
-import { NavigationProvider } from "./NavigationProvider"
-import { AuthProvider, session } from "./AuthProvider"
-import { DataProvider } from "./DataProvider"
-import { ChatProvider } from "./ChatProvider"
-import { AppProvider } from "./AppProvider"
-import { TribeProvider } from "./TribeProvider"
-import { AppContextProvider } from "../AppContext"
-import { locale } from "../../locales"
+import { type ReactNode, useMemo, useState } from "react"
 import { SWRConfig } from "swr"
-import {
-  thread,
-  paginatedMessages,
-  appWithStore,
-  paginatedTribes,
-  paginatedTribePosts,
-  tribePostWithDetails,
-} from "../../types"
-import { TimerContextProvider } from "../TimerContext"
 import { Hey } from "../../Hey"
 import getCacheProvider from "../../lib/swrCacheProvider"
-import { getSiteConfig } from "../../utils/siteConfig"
+import type { locale } from "../../locales"
+import { PlatformProvider } from "../../platform"
+import type {
+  appWithStore,
+  paginatedMessages,
+  paginatedTribePosts,
+  paginatedTribes,
+  thread,
+  tribePostWithDetails,
+} from "../../types"
+import type { getSiteConfig } from "../../utils/siteConfig"
+import { AppContextProvider } from "../AppContext"
+import { StylesProvider } from "../StylesContext"
+import { ThemeProvider } from "../ThemeContext"
+import { TimerContextProvider } from "../TimerContext"
+import { AppProvider } from "./AppProvider"
+import { AuthProvider, type session } from "./AuthProvider"
+import { ChatProvider } from "./ChatProvider"
+import { DataProvider } from "./DataProvider"
+import { ErrorProvider } from "./ErrorProvider"
+import { NavigationProvider } from "./NavigationProvider"
+import { TribeProvider } from "./TribeProvider"
 
 export interface AppProvidersProps {
   translations?: Record<string, any>
@@ -54,6 +54,7 @@ export interface AppProvidersProps {
   children: ReactNode
   session?: session
   app?: appWithStore
+  showTribe?: boolean
   pathname?: string // SSR pathname for thread ID extraction
   onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
   signInContext?: (
@@ -68,7 +69,7 @@ export interface AppProvidersProps {
     },
   ) => Promise<any>
   siteConfig?: ReturnType<typeof getSiteConfig>
-
+  theme?: "light" | "dark"
   signOutContext?: (options: {
     callbackUrl: string
     errorUrl?: string
@@ -84,7 +85,6 @@ export interface AppProvidersProps {
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
-  isTribeRoute?: boolean
 }
 
 /**
@@ -110,51 +110,55 @@ export default function AppProviders({
   threads,
   tribes,
   tribePosts,
+  theme,
+  showTribe,
   tribePost,
-  isTribeRoute,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
 
   // Global SWR configuration with 429 error handling and persistent cache
-  const swrConfig = {
-    // Use persistent cache provider (IndexedDB on web, MMKV on native)
-    provider: getCacheProvider,
-    // Pre-populate cache with SSR data
-    // fallback: {
-    //   ...(session ? { session: { data: session } } : {}),
-    //   ...(thread?.thread ? { [`threadId-${thread.thread.id}`]: thread } : {}),
-    // },
-    onError: (error: any) => {
-      if (error?.status === 429) {
-        // const errorKey = `rate_limit_${Date.now()}`
-        const lastShown = localStorage.getItem("last_rate_limit_toast")
-        const now = Date.now()
+  const swrConfig = useMemo(
+    () => ({
+      // Use persistent cache provider (IndexedDB on web, MMKV on native)
+      provider: getCacheProvider,
+      // Pre-populate cache with SSR data
+      // fallback: {
+      //   ...(session ? { session: { data: session } } : {}),
+      //   ...(thread?.thread ? { [`threadId-${thread.thread.id}`]: thread } : {}),
+      // },
+      onError: (error: any) => {
+        if (error?.status === 429) {
+          // const errorKey = `rate_limit_${Date.now()}`
+          const lastShown = localStorage.getItem("last_rate_limit_toast")
+          const now = Date.now()
 
-        // Only show toast if it's been more than 30 seconds since last one
-        if (!lastShown || now - Number.parseInt(lastShown) > 30000) {
-          setError(
-            "Rate limit exceeded. Please wait a moment before trying again.",
-          )
-          localStorage.setItem("last_rate_limit_toast", now.toString())
+          // Only show toast if it's been more than 30 seconds since last one
+          if (!lastShown || now - Number.parseInt(lastShown, 10) > 30000) {
+            setError(
+              "Rate limit exceeded. Please wait a moment before trying again.",
+            )
+            localStorage.setItem("last_rate_limit_toast", now.toString())
+          }
         }
-      }
-    },
+      },
 
-    onErrorRetry: (
-      error: any,
-      key: string,
-      config: any,
-      revalidate: any,
-      { retryCount }: any,
-    ) => {
-      // Don't retry on 429 errors
-      if (error?.status === 429) return
+      onErrorRetry: (
+        error: any,
+        key: string,
+        config: any,
+        revalidate: any,
+        { retryCount }: any,
+      ) => {
+        // Don't retry on 429 errors
+        if (error?.status === 429) return
 
-      // Default retry logic for other errors
-      if (retryCount >= 3) return
-      setTimeout(() => revalidate({ retryCount }), 5000)
-    },
-  }
+        // Default retry logic for other errors
+        if (retryCount >= 3) return
+        setTimeout(() => revalidate({ retryCount }), 5000)
+      },
+    }),
+    [],
+  )
 
   return (
     <SWRConfig value={swrConfig}>
@@ -164,7 +168,7 @@ export default function AppProviders({
         session={session}
       >
         <ErrorProvider>
-          <ThemeProvider session={session}>
+          <ThemeProvider theme={theme} session={session}>
             <AuthProvider
               translations={translations}
               thread={thread}
@@ -174,6 +178,7 @@ export default function AppProviders({
               app={app}
               pathname={pathname}
               threads={threads}
+              showTribe={showTribe}
               onSetLanguage={onSetLanguage}
               session={session}
               siteConfig={siteConfig}
@@ -192,7 +197,7 @@ export default function AppProviders({
                       >
                         <AppContextProvider>
                           <StylesProvider>
-                            <TribeProvider isTribeRoute={isTribeRoute}>
+                            <TribeProvider>
                               <Hey useExtensionIcon={useExtensionIcon}>
                                 {children}
                               </Hey>

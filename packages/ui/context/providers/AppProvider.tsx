@@ -1,30 +1,34 @@
 "use client"
 
-import React, {
+import type React from "react"
+import {
   createContext,
+  type ReactNode,
   useContext,
-  ReactNode,
-  useState,
   useEffect,
   useMemo,
+  useState,
 } from "react"
-import { useLocalStorage, useNavigation, toast } from "../../platform"
-import useCache from "../../hooks/useCache"
-import console from "../../utils/log"
-import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
-
-import { appFormData, appSchema } from "../../schemas/appSchema"
 import { useForm } from "react-hook-form"
-import { customZodResolver } from "../../utils/customZodResolver"
-import isOwner from "../../utils/isOwner"
-import { useAuth } from "./AuthProvider"
-import type { appWithStore, instruction } from "../../types"
-import { getExampleInstructions } from "../../utils"
 import { useTranslation } from "react-i18next"
+import useCache from "../../hooks/useCache"
+import { toast, useLocalStorage, useNavigation } from "../../platform"
+
+import { type appFormData, appSchema } from "../../schemas/appSchema"
+import type {
+  appWithStore,
+  instruction,
+  Paginated,
+  storeWithApps,
+} from "../../types"
+import { getExampleInstructions } from "../../utils"
+import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
+import { customZodResolver } from "../../utils/customZodResolver"
+import type { instructionBase } from "../../utils/getExampleInstructions"
+import isOwner from "../../utils/isOwner"
+import console from "../../utils/log"
+import { useAuth } from "./AuthProvider"
 import { useData } from "./DataProvider"
-import { instructionBase } from "../../utils/getExampleInstructions"
-import { Paginated, storeWithApps } from "../../types"
-import { getSiteConfig } from "../../utils/siteConfig"
 import { useError } from "./ErrorProvider"
 
 export { COLORS } from "../ThemeContext"
@@ -309,15 +313,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setIsAgentModalOpen = (value: boolean) => {
     setIsAgentModalOpenInternal(value)
-    if (!value) {
-      removeParams(["settings", "tab", "trial"])
-    }
+    // if (!value) {
+    //   removeParams(["settings", "tab", "trial"])
+    // }
   }
 
   useEffect(() => {
     setIsAgentModalOpen(appStatus?.part === "settings")
     appStatus?.part && auth.setShowTribe(false)
-  }, [appStatus])
+  }, [appStatus, auth, setIsAgentModalOpen])
 
   useEffect(() => {
     if (searchParams.get("settings")) {
@@ -447,16 +451,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return true
   }
 
-  const defaultExtends = baseApp?.store?.apps
-    ?.slice(0, 5)
-    .map((app) => app.id) as string[]
+  const defaultExtends =
+    chrry?.store?.apps
+      ?.filter((a) =>
+        [
+          "sushi",
+          "vex",
+          "chrry",
+          "grape",
+          "zarathustra",
+          "claude",
+          "atlas",
+          "perplexity",
+        ].includes(a.slug),
+      )
+      .map((app) => app.id) || []
 
   const defaultFormValues = {
     name: t("MyAgent"),
     title: t("Your personal AI agent"),
     tone: "professional" as const,
     language: "en",
-    defaultModel: "claude",
+    defaultModel: "sushi",
     isDefaultValues: true,
     temperature: 0.7,
     pricing: "free" as const,
@@ -496,12 +512,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setFormDraftInternal(draft)
   }
 
+  const blossom = chrry?.store?.apps
+
   useEffect(() => {
+    if (!blossom) return
     // Guard: Only run if formDraft has extends
     if (!formDraft?.extends || formDraft.extends.length === 0) return
 
     // Filter out stale app IDs that no longer exist in storeApps
-    const validAppIds = new Set(storeApps.map((app) => app.id))
+    const validAppIds = new Set(blossom.map((app) => app.id))
     const validExtends = formDraft.extends.filter((id) => validAppIds.has(id))
 
     // Guard: Only update if something actually changed
@@ -527,7 +546,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...formDraft,
       extends: validExtends,
     })
-  }, [storeApps, defaultExtends]) // Removed formDraft from deps
+  }, [blossom, defaultExtends]) // Removed formDraft from deps
 
   const getInitialFormValues = (): Partial<appFormData> => {
     if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
@@ -621,7 +640,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     burning,
   ])
 
-  const [storeSlug, setStoreSlug] = useState(pathname.replace("/", ""))
+  const [_storeSlug, setStoreSlug] = useState(pathname.replace("/", ""))
 
   useEffect(() => {
     setStoreSlug(pathname.replace("/", ""))
@@ -632,7 +651,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const lastSegment = pathSegments[pathSegments.length - 1] || ""
 
     const matchedApp = storeApps?.find(
-      (app) => app?.store?.slug === lastSegment,
+      (app) => app?.store?.slug === lastSegment && app?.store?.apps?.length,
     )
 
     return matchedApp
@@ -728,7 +747,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setShowingCustom(true)
     }
   }
-  const siteConfig = getSiteConfig()
 
   const suggestSaveApp = !!(
     !!appStatus?.part &&
@@ -755,8 +773,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       | undefined,
   ) => {
     setMinimize(false)
-    auth.setShowTribe(false)
-    auth.setShowFocus(false)
     setAppStatusInternal(payload)
 
     plausible({
@@ -764,13 +780,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       props: payload,
     })
 
+    if (payload) {
+      addParams({ settings: "true" })
+
+      auth.setShowTribe(false)
+      auth.setShowFocus(false)
+    }
+
     const { step, part } = payload || {}
 
     if (step || part) {
       if (part === "settings") {
         addParams({ settings: "true" })
       }
-      ;(appStatus?.step !== step || appStatus?.part !== part) &&
+
+      if (appStatus?.step !== step || appStatus?.part !== part)
         setAppStatusInternal({
           step: step,
           part: part,

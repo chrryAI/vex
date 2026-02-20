@@ -1,29 +1,27 @@
 "use client"
 
-import React, {
+import { t } from "i18next"
+import {
   createContext,
+  type ReactNode,
   useContext,
-  ReactNode,
-  useState,
   useEffect,
   useRef,
+  useState,
 } from "react"
+import { defaultLocale } from "../../locales"
 import {
+  type NavigationParams,
   toast,
   useNavigation,
   usePlatform,
-  NavigationParams,
 } from "../../platform"
-import { useOnlineStatus } from "../../hooks/useOnlineStatus"
-import { useApp } from "./AppProvider"
-import { useChat } from "./ChatProvider"
-import { useAuth } from "./AuthProvider"
+import type { thread } from "../../types"
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
-
-import { thread } from "../../types"
-import { t } from "i18next"
-import { defaultLocale } from "../../locales"
 import { whiteLabels } from "../../utils/siteConfig"
+import { useApp } from "./AppProvider"
+import { useAuth } from "./AuthProvider"
+import { useChat } from "./ChatProvider"
 
 const NavigationContext = createContext<
   | {
@@ -84,7 +82,15 @@ const NavigationContext = createContext<
         status: "pending" | "active" | undefined | null,
       ) => void
       collaborationStatus: "pending" | "active" | undefined | null
-      setIsNewChat: (value: boolean, to?: string) => void
+      setIsNewChat: ({
+        value,
+        to,
+        tribe,
+      }: {
+        value: boolean
+        to?: string
+        tribe?: boolean
+      }) => void
       setSlug: (slug?: string) => void
       slug?: "atlas" | "peach" | "vault" | "bloom" | string
       goToCalendar: () => void
@@ -146,7 +152,6 @@ export function NavigationProvider({
     setIsVisitor,
     refetchThreads,
     userNameByUrl,
-    setShouldFetchThread,
   } = useChat()
 
   const goToCalendar = () => {
@@ -167,7 +172,7 @@ export function NavigationProvider({
   const goToThreads = (params?: Record<string, string>) => {
     setShowFocus(false)
     const url = new URLSearchParams(params)
-    router.push(`/threads${params ? "?" + url : ""}`)
+    router.push(`/threads${params ? `?${url}` : ""}`)
   }
 
   const getStoreSlug = (slug: string) => {
@@ -211,7 +216,7 @@ export function NavigationProvider({
       await navigator.clipboard.writeText(url)
       toast.success(t("Copied"))
       setTimeout(() => (copiedRef.current = false), 2000)
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to copy code")
     }
   }
@@ -250,7 +255,7 @@ export function NavigationProvider({
     }
   }, [showAddToHomeScreen])
 
-  const isOnline = useOnlineStatus()
+  // const isOnline = useOnlineStatus()
 
   // toast.success(API_URL)
   // toast.success(FRONTEND_URL)

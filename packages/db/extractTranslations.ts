@@ -4,17 +4,15 @@
  * Extract translatable content from database and generate translation file
  */
 
-import fs from "fs"
-import path from "path"
-import { fileURLToPath } from "url"
-import { getStores, isSeedSafe } from "./index"
-import { isProd } from "./index"
-import { db } from "./index"
+import fs from "node:fs"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
+import { db, getStores, isProd, isSeedSafe } from "./index"
 import { apps } from "./src/schema"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const isCI = process.env.CI
+const _isCI = process.env.CI
 
 export async function extractTranslations() {
   if (isProd || isSeedSafe) {

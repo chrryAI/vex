@@ -1,41 +1,41 @@
 "use client"
 
 import clsx from "clsx"
-import Menu from "./Menu"
+import { lazy, Suspense, useEffect, useState } from "react"
+import Img from "./Image"
 import { CircleEllipsis } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
-import { useEffect, lazy, Suspense } from "react"
-import Img from "./Image"
-import { useState } from "react"
+import Menu from "./Menu"
 
 // Lazy load heavy components to reduce initial bundle
 const Subscribe = lazy(() => import("./Subscribe"))
 const SignIn = lazy(() => import("./SignIn"))
 const CharacterProfiles = lazy(() => import("./CharacterProfiles"))
+
+import A from "./a/A"
+import AddToHomeScreen from "./addToHomeScreen"
+import {
+  useApp,
+  useAuth,
+  useChat,
+  useData,
+  useNavigationContext,
+} from "./context/providers"
+import { useStyles } from "./context/StylesContext"
+import { useTimerContext } from "./context/TimerContext"
+import { useHasHydrated } from "./hooks"
 import {
   Button,
   Div,
   H1,
   Main,
-  usePreviousPathname,
-  usePlatform,
-  VexToast,
   Span,
+  usePlatform,
+  usePreviousPathname,
+  useTheme,
+  VexToast,
 } from "./platform"
-import { useStyles } from "./context/StylesContext"
-import {
-  useChat,
-  useNavigationContext,
-  useData,
-  useApp,
-  useAuth,
-} from "./context/providers"
-import { useTheme } from "./platform"
-import A from "./a/A"
 import Version from "./Version"
-import AddToHomeScreen from "./addToHomeScreen"
-import { useHasHydrated } from "./hooks"
-import { useTimerContext } from "./context/TimerContext"
 
 function FocusButton({
   time,
@@ -185,7 +185,7 @@ export default function Skeleton({
   // Data context
   const { FRONTEND_URL } = useData()
 
-  const { threadIdRef, isIDE, ...auth } = useAuth()
+  const { threadIdRef, isIDE, showTribeProfile, ...auth } = useAuth()
 
   const threadId = threadIdRef.current
 
@@ -200,8 +200,8 @@ export default function Skeleton({
     setIsDrawerOpen(!isDrawerOpen)
   }
 
-  const previous = usePreviousPathname()
-  const isHome = pathname === "/" || pathname === ""
+  const _previous = usePreviousPathname()
+  const _isHome = pathname === "/" || pathname === ""
 
   useEffect(() => {
     // Preload toast icons
@@ -250,7 +250,14 @@ export default function Skeleton({
         <Menu showThreads={showThreads} />
         <Main
           style={{
-            ...skeletonStyles.main.style,
+            ...{
+              padding: 10,
+              paddingTop: 50,
+              display: "flex",
+              flexDirection: "column",
+              flex: 1,
+              height: "100dvh",
+            },
             ...{
               display: "flex",
             },
@@ -262,8 +269,9 @@ export default function Skeleton({
             onDoubleClick={async () => {
               if (!isTauri) return
               try {
-                const { getCurrentWindow } =
-                  await import("@tauri-apps/api/window")
+                const { getCurrentWindow } = await import(
+                  "@tauri-apps/api/window"
+                )
                 const appWindow = getCurrentWindow()
                 const isMaximized = await appWindow.isMaximized()
                 if (isMaximized) {
@@ -271,7 +279,7 @@ export default function Skeleton({
                 } else {
                   await appWindow.maximize()
                 }
-              } catch (e) {
+              } catch (_e) {
                 // Tauri API not available
               }
             }}
@@ -358,15 +366,22 @@ export default function Skeleton({
                           }}
                           onClick={(e) => {
                             e.preventDefault()
-                            setIsNewChat(true)
+                            setIsNewChat({
+                              value: true,
+                            })
                           }}
                         >
-                          <Img key={app?.id || "vex"} app={app} size={28} />
+                          <Img
+                            key={app?.id || "vex"}
+                            app={showTribeProfile ? undefined : app}
+                            size={28}
+                            icon={showTribeProfile ? "zarathustra" : undefined}
+                          />
                           <H1
                             key={`title-${app?.id || "vex"}`}
                             style={{ ...skeletonStyles.brand.style }}
                           >
-                            {app?.name || "Vex"}
+                            {showTribeProfile ? "Tribe" : app?.name || "Vex"}
                           </H1>
                         </A>
                       </Div>

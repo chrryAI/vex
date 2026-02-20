@@ -1,5 +1,5 @@
-import pino from "pino"
 import { send } from "@axiomhq/pino"
+import pino from "pino"
 
 const isDevelopment = process.env.NODE_ENV === "development"
 

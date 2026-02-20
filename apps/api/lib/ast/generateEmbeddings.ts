@@ -1,8 +1,7 @@
 import { openai } from "@ai-sdk/openai"
+import { codeEmbeddings, db } from "@repo/db"
 import { embedMany } from "ai"
-import { db } from "@repo/db"
-import { codeEmbeddings } from "@repo/db/schema"
-import { eq, and } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 import type { ASTNode } from "./parseCodebase"
 
 interface CodeChunk {
@@ -113,13 +112,13 @@ export async function storeEmbeddings(chunks: CodeChunk[]) {
           content: chunk.content,
           startLine: chunk.startLine,
           endLine: chunk.endLine,
-          embedding: JSON.stringify(chunk.embedding),
+          embedding: sql`${JSON.stringify(chunk.embedding)}::vector`,
           metadata: chunk.metadata,
         })
         .onConflictDoUpdate({
           target: codeEmbeddings.id,
           set: {
-            embedding: JSON.stringify(chunk.embedding),
+            embedding: sql`${JSON.stringify(chunk.embedding)}::vector`,
             commitHash: chunk.commitHash,
             content: chunk.content,
             updatedAt: new Date(),
@@ -148,7 +147,7 @@ export async function clearOldEmbeddings(
   )
 
   try {
-    const result = await db.delete(codeEmbeddings).where(
+    const _result = await db.delete(codeEmbeddings).where(
       and(
         eq(codeEmbeddings.repoName, repoName),
         // Delete embeddings from different commit hashes

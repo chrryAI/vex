@@ -5,9 +5,9 @@
  * Checks for common rejection patterns before publishing
  */
 
-import fs from "fs"
-import path from "path"
-import { fileURLToPath } from "url"
+import fs from "node:fs"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -56,7 +56,7 @@ const VIOLATION_PATTERNS = [
 ]
 
 // Files to check
-const FILE_PATTERNS = ["**/*.js", "**/*.html"]
+const _FILE_PATTERNS = ["**/*.js", "**/*.html"]
 
 function findFiles(dir, patterns) {
   const files = []
@@ -91,7 +91,7 @@ function checkFile(filePath) {
 
     if (matches) {
       // Get line numbers for each match
-      const lines = content.split("\n")
+      const _lines = content.split("\n")
       const matchPositions = []
 
       for (const match of matches) {
@@ -110,7 +110,7 @@ function checkFile(filePath) {
           index + match.length + 100,
         )
         const isInsideRegex =
-          /\/[^\/]*$/.test(beforeMatch) && /^[^\/]*\//.test(afterMatch)
+          /\/[^/]*$/.test(beforeMatch) && /^[^/]*\//.test(afterMatch)
         const isInsideString = /(["'`])[^"'`]*$/.test(beforeMatch)
         const isPrismPattern =
           context.includes("pattern:") || context.includes("function:")

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { SignJWT } from "jose"
 import { createPrivateKey } from "node:crypto"
 import * as dotenv from "dotenv"
+import { SignJWT } from "jose"
 
 // Load environment variables
 dotenv.config()

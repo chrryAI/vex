@@ -1,6 +1,6 @@
-import { thread } from "../types"
+import type { locale } from "../locales"
+import type { thread } from "../types"
 import { t as tFunc } from "./t"
-import { locale } from "../locales"
 
 export interface MetadataResult {
   title?: string
@@ -95,7 +95,7 @@ export function generateThreadMetadata({
   const baseUrl = currentDomain
   const canonicalUrl = `${baseUrl}/threads/${thread.id}`
 
-  const t = (key: string) => {
+  const _t = (key: string) => {
     return tFunc(translations)(key)
   }
 

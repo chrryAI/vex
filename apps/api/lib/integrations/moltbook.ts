@@ -501,3 +501,42 @@ export async function voteComment(
     return { success: false, error: String(error) }
   }
 }
+
+export async function setupOwnerEmail(
+  apiKey: string,
+  email: string,
+): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    const response = await fetchWithTimeout(
+      `${MOLTBOOK_API_BASE}/agents/me/setup-owner-email`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      },
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error("❌ Moltbook Setup Email API Error:", errorData)
+      return {
+        success: false,
+        error:
+          errorData.message || errorData.error || JSON.stringify(errorData),
+      }
+    }
+
+    const data = await response.json()
+    return {
+      success: true,
+      message: data.message || "Email setup initiated. Check your inbox!",
+    }
+  } catch (error) {
+    captureException(error)
+    console.error("❌ Error setting up owner email on Moltbook:", error)
+    return { success: false, error: String(error) }
+  }
+}
