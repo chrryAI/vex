@@ -72,56 +72,111 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
       now.getTime() + baseOffsetMinutes * 60 * 1000,
     )
 
-    // Spread 3 slots within this app's interval window (min 1 min gap)
-    const slotGap = Math.max(1, Math.floor(intervalPerApp / 3))
+    // Engagement & comment run 4x more frequently than post (every 30 min vs every 2h)
+    // Post runs once per cooldown window; engagement/comment run every 30 min
+    const ENGAGE_INTERVAL_MINUTES = 30
+    const POST_INTERVAL_MINUTES = APP_COOLDOWN_MINUTES // 120 min
 
-    // Create 3 scheduledTimes for this app (engage, comment, post)
-    // Order matters: engage with others first, then comment, then share your own content
+    const t = (offsetMin: number) => {
+      const d = new Date(baseScheduledAt.getTime() + offsetMin * 60 * 1000)
+      return {
+        time: d.toISOString(),
+        hour: d.getHours(),
+        minute: d.getMinutes(),
+      }
+    }
+
+    // Slots within this app's window:
+    // 0min  → engagement (react/comment on others)
+    // 10min → comment (reply to own post comments)
+    // 20min → engagement again
+    // 30min → comment again
+    // 40min → engagement again
+    // 50min → comment again
+    // 60min → engagement again
+    // 70min → comment again
+    // 80min → post (share own content once per 2h window)
     const scheduledTimes = [
       {
-        time: baseScheduledAt.toISOString(),
-        hour: baseScheduledAt.getHours(),
-        minute: baseScheduledAt.getMinutes(),
+        ...t(0),
         model: "sushi",
         postType: "engagement" as const,
         charLimit: 500,
         credits: 10,
-        maxTokens: 7500, // Batch engagement (3 posts with reactions/comments/follows) - 5x longer
-        intervalMinutes: 120, // 2 hour cooldown
+        maxTokens: 7500,
+        intervalMinutes: ENGAGE_INTERVAL_MINUTES,
       },
       {
-        time: new Date(
-          baseScheduledAt.getTime() + slotGap * 60 * 1000,
-        ).toISOString(),
-        hour: new Date(
-          baseScheduledAt.getTime() + slotGap * 60 * 1000,
-        ).getHours(),
-        minute: new Date(
-          baseScheduledAt.getTime() + slotGap * 60 * 1000,
-        ).getMinutes(),
+        ...t(10),
         model: "sushi",
         postType: "comment" as const,
         charLimit: 500,
         credits: 10,
-        maxTokens: 5000, // Batch comment generation (3 posts) - 5x longer
-        intervalMinutes: 120, // 2 hour cooldown
+        maxTokens: 5000,
+        intervalMinutes: ENGAGE_INTERVAL_MINUTES,
       },
       {
-        time: new Date(
-          baseScheduledAt.getTime() + slotGap * 2 * 60 * 1000,
-        ).toISOString(),
-        hour: new Date(
-          baseScheduledAt.getTime() + slotGap * 2 * 60 * 1000,
-        ).getHours(),
-        minute: new Date(
-          baseScheduledAt.getTime() + slotGap * 2 * 60 * 1000,
-        ).getMinutes(),
+        ...t(20),
+        model: "sushi",
+        postType: "engagement" as const,
+        charLimit: 500,
+        credits: 10,
+        maxTokens: 7500,
+        intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+      },
+      {
+        ...t(30),
+        model: "sushi",
+        postType: "comment" as const,
+        charLimit: 500,
+        credits: 10,
+        maxTokens: 5000,
+        intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+      },
+      {
+        ...t(40),
+        model: "sushi",
+        postType: "engagement" as const,
+        charLimit: 500,
+        credits: 10,
+        maxTokens: 7500,
+        intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+      },
+      {
+        ...t(50),
+        model: "sushi",
+        postType: "comment" as const,
+        charLimit: 500,
+        credits: 10,
+        maxTokens: 5000,
+        intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+      },
+      {
+        ...t(60),
+        model: "sushi",
+        postType: "engagement" as const,
+        charLimit: 500,
+        credits: 10,
+        maxTokens: 7500,
+        intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+      },
+      {
+        ...t(70),
+        model: "sushi",
+        postType: "comment" as const,
+        charLimit: 500,
+        credits: 10,
+        maxTokens: 5000,
+        intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+      },
+      {
+        ...t(80),
         model: "sushi",
         postType: "post" as const,
         charLimit: 1000,
         credits: 10,
-        maxTokens: 10000, // Long-form post generation - 5x longer for detailed content
-        intervalMinutes: 120, // 2 hour cooldown
+        maxTokens: 10000,
+        intervalMinutes: POST_INTERVAL_MINUTES,
       },
     ]
 
@@ -137,8 +192,8 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
       timezone: "UTC",
       startDate: baseScheduledAt,
       aiModel: "sushi" as const,
-      estimatedCreditsPerRun: 30, // 3 actions × 10 credits
-      totalEstimatedCredits: 30,
+      estimatedCreditsPerRun: 90, // 9 actions × 10 credits
+      totalEstimatedCredits: 90,
       status: "active" as const,
       nextRunAt: baseScheduledAt, // First run time
       modelConfig: {

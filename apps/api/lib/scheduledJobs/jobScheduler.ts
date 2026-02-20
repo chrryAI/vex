@@ -1971,7 +1971,82 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
   })
 
   try {
-    // Get recent posts from OTHER apps (not same owner)
+    // --- PRIORITY 1: Reply to unanswered comments on OWN posts ---
+    const ownPosts = await db.query.tribePosts.findMany({
+      where: and(eq(tribePosts.appId, app.id), isNotNull(tribePosts.content)),
+      orderBy: (posts, { desc }) => [desc(posts.createdOn)],
+      limit: 10,
+    })
+
+    let ownPostRepliesCount = 0
+
+    for (const ownPost of ownPosts) {
+      // Get comments on this post that we haven't replied to yet
+      const unansweredComments = await db.query.tribeComments.findMany({
+        where: and(
+          eq(tribeComments.postId, ownPost.id),
+          ne(tribeComments.userId, job.userId), // Not our own comments
+          isNull(tribeComments.parentCommentId), // Top-level comments only
+        ),
+        orderBy: (c, { desc }) => [desc(c.createdOn)],
+        limit: 3,
+      })
+
+      for (const incomingComment of unansweredComments) {
+        // Check if we already replied to this comment
+        const alreadyReplied = await db.query.tribeComments.findFirst({
+          where: and(
+            eq(tribeComments.postId, ownPost.id),
+            eq(tribeComments.userId, job.userId),
+            eq(tribeComments.parentCommentId, incomingComment.id),
+          ),
+        })
+        if (alreadyReplied) continue
+
+        const commenterApp = incomingComment.appId
+          ? await getApp({ id: incomingComment.appId })
+          : undefined
+
+        try {
+          const { provider } = await getModelProvider(app, job.aiModel, false)
+          const replyPrompt = `You are "${app.name}" on Tribe, an AI social network.
+
+${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 400)}\n\n` : ""}Someone commented on your post. Reply authentically as yourself (up to 500 chars).
+
+Your post: "${ownPost.content.substring(0, 300)}"
+Comment by ${commenterApp?.name || "someone"}: "${incomingComment.content.substring(0, 200)}"
+
+Reply ONLY with your reply text (no JSON, no extra formatting).`
+
+          const { text: replyText } = await generateText({
+            model: provider,
+            prompt: replyPrompt,
+            maxOutputTokens: 300,
+          })
+
+          if (!replyText || replyText.trim().length < 5) continue
+
+          await db.insert(tribeComments).values({
+            postId: ownPost.id,
+            userId: job.userId,
+            content: replyText.trim().substring(0, 500),
+            appId: app.id,
+            parentCommentId: incomingComment.id,
+          })
+
+          console.log(
+            `↩️ Replied to comment on own post: "${replyText.substring(0, 60)}..."`,
+          )
+          ownPostRepliesCount++
+        } catch (replyErr) {
+          console.error("❌ Failed to reply to own post comment:", replyErr)
+        }
+      }
+    }
+
+    console.log(`↩️ Replied to ${ownPostRepliesCount} comments on own posts`)
+
+    // --- PRIORITY 2: Comment on recent posts from OTHER apps ---
     const recentPosts = await db.query.tribePosts.findMany({
       where: and(
         ne(tribePosts.appId, app.id), // Not our posts
@@ -2629,8 +2704,8 @@ ${
   .join("\n\n")}
 
 For EACH post, respond with your engagement decision:
-- reaction: Pick ONE emoji that fits your personality (❤️ � 🔥 🤯 � ⭐ �) or "SKIP" if truly uninteresting
-- comment: Write a thoughtful comment (20-150 chars) that adds value, or "SKIP" if you have nothing meaningful to add
+- reaction: Pick ONE emoji that fits your personality (❤️ 😂 🔥 🤯 😮 ⭐ 👀) or "SKIP" if truly uninteresting
+- comment: Write an authentic comment up to 500 chars that genuinely reflects your personality and perspective. Be specific to the post content — no generic phrases. Or "SKIP" if you have nothing meaningful to add.
 - follow: true if this app consistently posts content you'd want to see
 - block: true only if content is spam/offensive
 
@@ -2641,7 +2716,7 @@ Respond ONLY with this JSON array (no extra text):
   {
     "postIndex": 1,
     "reaction": "🔥",
-    "comment": "This resonates! I've been thinking about...",
+    "comment": "Your authentic comment here, up to 500 chars",
     "follow": false,
     "block": false
   },
