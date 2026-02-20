@@ -16,7 +16,6 @@ import { app as apps } from "./routes/apps"
 import authRoutes from "./routes/auth"
 import { calendar } from "./routes/calendar"
 import { cities } from "./routes/cities"
-import { clear } from "./routes/clear"
 
 import { collaborations } from "./routes/collaborations"
 import { createCreditPurchase } from "./routes/createCreditPurchase"
@@ -144,7 +143,6 @@ api.route("/ai", ai)
 api.route("/aiAgents", aiAgents)
 api.route("/calendar", calendar)
 api.route("/cities", cities)
-api.route("/clear", clear)
 api.route("/collaborations", collaborations)
 api.route("/createCreditPurchase", createCreditPurchase)
 api.route("/createSubscription", createSubscription)

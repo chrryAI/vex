@@ -11,6 +11,7 @@ import {
   getGuest,
   type guest,
   hasThreadNotifications,
+  isProd,
   migrateUser,
   TEST_GUEST_FINGERPRINTS,
   TEST_MEMBER_EMAILS,
@@ -34,6 +35,7 @@ import { v4 as uuidv4, validate as validateUuid } from "uuid"
 import * as lib from "../../lib"
 
 import captureException from "../../lib/captureException"
+import cleanupTest from "../../lib/cleanupTest"
 import { checkRateLimit } from "../../lib/rateLimiting"
 import {
   getApp as getAppAction,
@@ -797,4 +799,41 @@ session.get("/", async (c) => {
     console.error("Error handling guest:", error)
     return c.json({ error: "Internal server error" })
   }
+})
+
+session.delete("/", async (c) => {
+  if (isProd) {
+    return c.json({ error: "Oops, this is PROD" }, 401)
+  }
+
+  if (!isE2E) {
+    return c.json({ error: "Unauthorized" }, 401)
+  }
+
+  // Add anti-cache headers to prevent caching and reduce CSRF surface
+  // c.header("Cache-Control", "no-store")
+
+  const allFingerprints = TEST_GUEST_FINGERPRINTS.concat(
+    TEST_MEMBER_FINGERPRINTS,
+  ).concat(VEX_LIVE_FINGERPRINTS)
+
+  const member = await getMemberAction(c)
+  const guest = await getGuestAction(c)
+
+  const fingerprint = guest?.fingerprint || member?.fingerprint
+
+  if (!member && !guest) {
+    return c.json({ error: "Unauthorized" }, 401)
+  }
+
+  const CAN_CLEAR =
+    (member?.email && TEST_MEMBER_EMAILS.includes(member.email)) ||
+    (fingerprint && allFingerprints.includes(fingerprint))
+
+  if (CAN_CLEAR) {
+    await cleanupTest()
+    return c.json({ success: true })
+  }
+
+  return c.json({ error: "Unauthorized" }, 401)
 })

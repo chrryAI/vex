@@ -2055,14 +2055,14 @@ export function AuthProvider({
       })
     }
 
-    if (burnApp && value) {
-      router.push(getAppSlug(burnApp))
-      return
-    }
+    // if (burnApp && value) {
+    //   router.push(getAppSlug(burnApp))
+    //   return
+    // }
 
-    if (zarathustra && baseApp?.id === zarathustra.id) {
-      value && router.push(getAppSlug(zarathustra))
-    }
+    // if (zarathustra && baseApp?.id === zarathustra.id) {
+    //   value && router.push(getAppSlug(zarathustra))
+    // }
   }
 
   const getTribeUrl = () => {
