@@ -1402,7 +1402,6 @@ const e2eVex = {
 const _tribe = {
   ...zarathustra,
   mode: "tribe" as SiteMode,
-  slug: "tribe",
   name: "Tribe",
   url: "https://tribe.chrry.ai",
   domain: "tribe.chrry.ai",

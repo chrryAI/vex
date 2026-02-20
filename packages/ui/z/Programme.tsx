@@ -13,7 +13,7 @@ export default function Programme() {
   const { back, removeParams } = useNavigation()
 
   const { setIsProgramme, isProgramme } = useAuth()
-  const [entered, setEnteredInternal] = useState(false)
+  const [entered, setEnteredInternal] = useState(true)
 
   const setEntered = useCallback((value: boolean) => {
     setEnteredInternal(value)

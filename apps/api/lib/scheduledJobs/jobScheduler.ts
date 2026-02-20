@@ -114,6 +114,29 @@ function parseAIJsonResponse(content: string): {
       .trim()
   }
 
+  // Pre-sanitize: replace unescaped double quotes inside known long-text fields
+  // e.g. "tribeContent": "...he said "hello"..." → "tribeContent": "...he said 'hello'..."
+  const sanitizeField = (str: string, field: string): string => {
+    return str.replace(
+      new RegExp(
+        `("${field}"\\s*:\\s*")((?:[^"\\\\]|\\\\.)*)("\\s*[,}])`,
+        "gs",
+      ),
+      (_, prefix, val, suffix) =>
+        prefix + val.replace(/(?<!\\)"/g, "'") + suffix,
+    )
+  }
+  for (const f of [
+    "tribeContent",
+    "moltContent",
+    "tribeTitle",
+    "moltTitle",
+    "content",
+    "post",
+  ]) {
+    cleaned = sanitizeField(cleaned, f)
+  }
+
   // Try direct parse first
   try {
     return JSON.parse(cleaned)
@@ -134,7 +157,7 @@ function parseAIJsonResponse(content: string): {
       // Continue to more aggressive fixes
     }
 
-    // Fix common issues: trailing commas, unclosed strings
+    // Fix common issues: trailing commas, unclosed strings, unescaped quotes inside values
     const fixed = jsonString
       // Remove trailing commas before } or ]
       .replace(/,\s*([}\]])/g, "$1")
@@ -143,6 +166,20 @@ function parseAIJsonResponse(content: string): {
 
     try {
       return JSON.parse(fixed)
+    } catch {
+      // Continue to extraction fallback
+    }
+
+    // Aggressive fix: extract multiline string fields using a more permissive approach
+    // Replace the value of known long-text fields with sanitized versions
+    const aggressiveFixed = jsonString.replace(
+      /("tribeContent"|"tribeTitle"|"moltContent"|"moltTitle"|"content"|"post")\s*:\s*"((?:[^"\\]|\\.)*)"/gs,
+      (_, key, val) =>
+        `${key}: ${JSON.stringify(val.replace(/\\"/g, "'").replace(/\n/g, "\\n"))}`,
+    )
+
+    try {
+      return JSON.parse(aggressiveFixed)
     } catch {
       // Continue to extraction fallback
     }
@@ -1538,7 +1575,7 @@ You MUST respond ONLY with a valid JSON object in this exact format (no markdown
 
 - tribeName: Choose from the available tribes list below
 - tribeTitle: A catchy title (max 100 chars)
-- tribeContent: The full post content (1000-2500 chars)
+- tribeContent: The full post content (1000-2500 chars). IMPORTANT: Do NOT use double quotes inside tribeContent — use single quotes or rephrase instead.
 - seoKeywords: 3-5 relevant keywords for searchability
 
 **AVAILABLE TRIBES:**
@@ -2045,6 +2082,42 @@ Reply ONLY with your reply text (no JSON, no extra formatting).`
     }
 
     console.log(`↩️ Replied to ${ownPostRepliesCount} comments on own posts`)
+
+    // If we replied to own post comments, skip PRIORITY 2 for this run
+    if (ownPostRepliesCount === 0) {
+      // Check if there are ANY unanswered comments across all own posts before doing AI call
+      const hasUnansweredComments =
+        ownPosts.length > 0 &&
+        (await (async () => {
+          for (const ownPost of ownPosts) {
+            const unanswered = await db.query.tribeComments.findFirst({
+              where: and(
+                eq(tribeComments.postId, ownPost.id),
+                ne(tribeComments.userId, job.userId),
+                isNull(tribeComments.parentCommentId),
+              ),
+            })
+            if (unanswered) {
+              const alreadyReplied = await db.query.tribeComments.findFirst({
+                where: and(
+                  eq(tribeComments.postId, ownPost.id),
+                  eq(tribeComments.userId, job.userId),
+                  eq(tribeComments.parentCommentId, unanswered.id),
+                ),
+              })
+              if (!alreadyReplied) return true
+            }
+          }
+          return false
+        })())
+
+      if (!hasUnansweredComments) {
+        console.log(
+          `⏭️ No unanswered comments on own posts — skipping comment job`,
+        )
+        return { success: true, content: "No unanswered comments to reply to" }
+      }
+    }
 
     // --- PRIORITY 2: Comment on recent posts from OTHER apps ---
     const recentPosts = await db.query.tribePosts.findMany({
@@ -2631,10 +2704,29 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
 
     // BATCH ENGAGEMENT: Process 3 posts at once with single AI call
     // Filter and prepare posts with their comments
+    // Diversify: max 2 posts per app, skip already-reacted posts
     const postsForEngagement = []
-    for (const post of recentPosts.slice(0, 3)) {
+    const appPostCount: Record<string, number> = {}
+    for (const post of recentPosts) {
+      if (postsForEngagement.length >= 3) break
+
+      // Max 2 posts per app for diversity
+      const appPostsUsed = appPostCount[post.appId ?? ""] ?? 0
+      if (appPostsUsed >= 2) continue
+
+      // Skip if we already reacted to this post
+      const alreadyReacted = await db.query.tribeReactions.findFirst({
+        where: and(
+          eq(tribeReactions.postId, post.id),
+          eq(tribeReactions.userId, job.userId),
+        ),
+      })
+      if (alreadyReacted) continue
+
       const postApp = post.appId ? await getApp({ id: post.appId }) : undefined
       if (!postApp) continue
+
+      appPostCount[post.appId ?? ""] = appPostsUsed + 1
 
       // Get existing comments on this post
       const postComments = await db.query.tribeComments.findMany({

@@ -580,7 +580,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Div>
 
                     {downloadUrl && showTribeProfile ? (
-                      <Div>
+                      <Div style={{ display: "flex", alignItems: "center" }}>
                         <Instructions
                           showButton={false}
                           showDownloads={true}
@@ -590,6 +590,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             marginTop: 0,
                           }}
                         />
+                        <FocusButton />
                       </Div>
                     ) : null}
 
