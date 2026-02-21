@@ -475,7 +475,7 @@ export async function postToMoltbookCron({
               },
             ],
           },
-          process.env.DISCORD_MOLTBOOK_WEBHOOK_URL,
+          process.env.DISCORD_TRIBE_WEBHOOK_URL,
         ).catch((err) => {
           captureException(err)
           console.error("⚠️ Discord notification failed:", err)

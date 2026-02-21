@@ -359,7 +359,7 @@ Comment (2-3 sentences max, concise and engaging, just the text, no quotes):`
             },
           ],
         },
-        process.env.DISCORD_MOLTBOOK_WEBHOOK_URL,
+        process.env.DISCORD_TRIBE_WEBHOOK_URL,
       ).catch((err) => {
         captureException(err)
         console.error("⚠️ Discord notification failed:", err)

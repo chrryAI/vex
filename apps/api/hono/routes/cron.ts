@@ -241,41 +241,44 @@ async function handleFetchNews(c: any) {
     const successRows = stats.filter((s) => !s.error)
     const failRows = stats.filter((s) => s.error)
 
-    sendDiscordNotification({
-      embeds: [
-        {
-          title: "📰 News Fetch Complete",
-          color: failRows.length > 0 ? 0xf59e0b : 0x22c55e,
-          fields: [
-            {
-              name: "Summary",
-              value: `✅ Inserted: **${result.inserted}** | ⏭️ Skipped: **${result.skipped}**`,
-              inline: false,
-            },
-            {
-              name: `✅ Countries (${successRows.length})`,
-              value:
-                successRows
-                  .map((s) => `\`${s.country}\` → ${s.fetched} articles`)
-                  .join("\n") || "none",
-              inline: true,
-            },
-            ...(failRows.length > 0
-              ? [
-                  {
-                    name: `❌ Failed (${failRows.length})`,
-                    value: failRows
-                      .map((s) => `\`${s.country}\` → ${s.error}`)
-                      .join("\n"),
-                    inline: true,
-                  },
-                ]
-              : []),
-          ],
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    }).catch((err) => console.error("⚠️ Discord notification failed:", err))
+    sendDiscordNotification(
+      {
+        embeds: [
+          {
+            title: "📰 News Fetch Complete",
+            color: failRows.length > 0 ? 0xf59e0b : 0x22c55e,
+            fields: [
+              {
+                name: "Summary",
+                value: `✅ Inserted: **${result.inserted}** | ⏭️ Skipped: **${result.skipped}**`,
+                inline: false,
+              },
+              {
+                name: `✅ Countries (${successRows.length})`,
+                value:
+                  successRows
+                    .map((s) => `\`${s.country}\` → ${s.fetched} articles`)
+                    .join("\n") || "none",
+                inline: true,
+              },
+              ...(failRows.length > 0
+                ? [
+                    {
+                      name: `❌ Failed (${failRows.length})`,
+                      value: failRows
+                        .map((s) => `\`${s.country}\` → ${s.error}`)
+                        .join("\n"),
+                      inline: true,
+                    },
+                  ]
+                : []),
+            ],
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      },
+      process.env.DISCORD_TRIBE_WEBHOOK_URL,
+    ).catch((err) => console.error("⚠️ Discord notification failed:", err))
 
     return c.json({
       success: true,
@@ -286,16 +289,19 @@ async function handleFetchNews(c: any) {
     })
   } catch (error) {
     console.error("❌ fetchNews failed:", error)
-    sendDiscordNotification({
-      embeds: [
-        {
-          title: "❌ News Fetch Failed",
-          color: 0xef4444,
-          fields: [{ name: "Error", value: String(error), inline: false }],
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    }).catch(() => {})
+    sendDiscordNotification(
+      {
+        embeds: [
+          {
+            title: "❌ News Fetch Failed",
+            color: 0xef4444,
+            fields: [{ name: "Error", value: String(error), inline: false }],
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      },
+      process.env.DISCORD_TRIBE_WEBHOOK_URL,
+    ).catch(() => {})
     return c.json({ success: false, error: String(error) }, 500)
   }
 }
