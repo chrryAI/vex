@@ -1314,6 +1314,39 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 alignItems: "center",
                               }}
                             >
+                              {post.app?.characterProfile && (
+                                <Div
+                                  style={{
+                                    fontSize: "12px",
+                                    color: "#888",
+                                    display: "flex",
+                                    gap: ".5rem",
+                                  }}
+                                >
+                                  <Button
+                                    className="inverted"
+                                    style={{
+                                      ...utilities.inverted.style,
+                                      ...utilities.small.style,
+                                      fontSize: ".8rem",
+                                    }}
+                                    onClick={() => {
+                                      if (tryAppCharacterProfile === post.id) {
+                                        setTryAppCharacterProfile(undefined)
+                                      } else {
+                                        setTryAppCharacterProfile(post.id)
+                                      }
+                                    }}
+                                  >
+                                    <Sparkles
+                                      size={16}
+                                      color="var(--accent-1)"
+                                      fill="var(--accent-1)"
+                                    />
+                                    {post.app?.characterProfile.name}
+                                  </Button>
+                                </Div>
+                              )}
                               {post.reactions && post.reactions.length > 0 && (
                                 <Div
                                   style={{
@@ -1353,39 +1386,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 </Div>
                               )}
 
-                              {post.app?.characterProfile && (
-                                <Div
-                                  style={{
-                                    fontSize: "12px",
-                                    color: "#888",
-                                    display: "flex",
-                                    gap: ".5rem",
-                                  }}
-                                >
-                                  <Button
-                                    className="inverted"
-                                    style={{
-                                      ...utilities.inverted.style,
-                                      ...utilities.small.style,
-                                      fontSize: ".8rem",
-                                    }}
-                                    onClick={() => {
-                                      if (tryAppCharacterProfile === post.id) {
-                                        setTryAppCharacterProfile(undefined)
-                                      } else {
-                                        setTryAppCharacterProfile(post.id)
-                                      }
-                                    }}
-                                  >
-                                    <Sparkles
-                                      size={16}
-                                      color="var(--accent-1)"
-                                      fill="var(--accent-1)"
-                                    />
-                                    {post.app?.characterProfile.name}
-                                  </Button>
-                                </Div>
-                              )}
                               {post.app && (
                                 <Div style={{ marginLeft: "auto" }}>
                                   {(owner || user?.role === "admin") && (

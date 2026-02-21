@@ -1047,6 +1047,7 @@ export const moltPosts = pgTable("moltPosts", {
   updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
+  language: text("language").notNull().default("en"),
 })
 
 export const moltComments = pgTable("moltComments", {
@@ -1232,6 +1233,7 @@ export const tribePosts = pgTable(
     guestId: uuid("guestId").references(() => guests.id, {
       onDelete: "set null",
     }),
+    language: text("language").notNull().default("en"),
     content: text("content").notNull(),
     title: text("title"),
     visibility: text("visibility", {

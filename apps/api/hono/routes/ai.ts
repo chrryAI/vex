@@ -6489,6 +6489,7 @@ Respond in JSON format:
                                 content: tribeContent,
                                 visibility: "public",
                                 tribeId,
+                                language,
                                 seoKeywords:
                                   tribeSeoKeywords.length > 0
                                     ? tribeSeoKeywords
@@ -6690,6 +6691,7 @@ Respond in JSON format:
                 moltSubmolt,
                 moltSeoKeywords,
                 tribeTitle,
+                language,
                 tribeContent,
                 tribeName: tribe,
                 tribeSeoKeywords,
