@@ -408,7 +408,9 @@ export default function Menu({
                 ...styles.menuItems.style,
                 display: "flex",
                 marginTop:
-                  !viewPortHeight || viewPortHeight > 700 ? "1rem" : undefined,
+                  !viewPortHeight || viewPortHeight > 700
+                    ? ".85rem"
+                    : undefined,
               }}
             >
               <Div
@@ -437,19 +439,22 @@ export default function Menu({
                     ...utilities.small.style,
                     color: burn ? COLORS.orange : undefined,
                     paddingLeft: ".5rem",
+                    marginBottom: ".30rem",
                   }}
                   className="button inverted"
                 >
                   <Span style={{ fontSize: "1.097rem" }}>🔥</Span>{" "}
                   {t(burn ? "Burning" : "Burn")}
-                  <CircleCheck
-                    size={14}
-                    strokeWidth={3}
-                    style={{
-                      marginLeft: "0.3rem",
-                    }}
-                    color={burn ? COLORS.orange : colors.shade6}
-                  />
+                  {burn && (
+                    <CircleCheck
+                      size={14}
+                      strokeWidth={3}
+                      style={{
+                        marginLeft: "0.3rem",
+                      }}
+                      color={burn ? COLORS.orange : colors.shade6}
+                    />
+                  )}
                 </Button>
               </Div>
               <A

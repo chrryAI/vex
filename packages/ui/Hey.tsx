@@ -151,7 +151,6 @@ export const Hey = memo(
     const isHydrated = useHasHydrated()
 
     const [isImageLoaded, setIsImageLoaded] = useState(false)
-    console.log(`🚀 ~ isImageLoaded:`, isImageLoaded)
     const [minSplashTimeElapsed, setMinSplashTimeElapsed] = useState(false)
 
     // Minimum splash screen duration (300ms) - starts when image loads
@@ -171,16 +170,15 @@ export const Hey = memo(
 
         return (
           <Div
-            key={app?.id}
             style={{
               ...splashStyle.style,
               ...(!isSplash ? hiddenStyle.style : {}),
             }}
           >
             <Img
+              key={app?.slug || appSlug}
               onLoad={(src) => {
-                console.log(`🚀 ~ src:`, src)
-                app && setIsImageLoaded(true)
+                setIsImageLoaded(true)
               }}
               slug={showTribeLogo ? "tribe" : app ? undefined : appSlug}
               app={showTribeLogo ? undefined : app}

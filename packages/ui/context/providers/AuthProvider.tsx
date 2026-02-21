@@ -1121,8 +1121,9 @@ export function AuthProvider({
     initialTribePost,
   )
 
-  const [isLoadingPosts, setIsLoadingPosts] =
-    useState<boolean>(!initialTribePosts)
+  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
+    !initialTribePosts,
+  )
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -2276,7 +2277,7 @@ export function AuthProvider({
 
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
-  const canShowTribe = !isE2E ? !!siteConfig.isTribe : true
+  const canShowTribe = true
 
   const showTribeFromPath = pathname === "/tribe"
 

@@ -3747,6 +3747,7 @@ export default function Chat({
                   {empty &&
                     !threadIdRef.current &&
                     !showQuotaInfo &&
+                    canShowTribe &&
                     !showTribe && (
                       <Div
                         style={{

@@ -36,7 +36,7 @@ export default function AppLink({
   const { loadingApp, getAppSlug, setLoadingAppId, storeApps, mergeApps } =
     useAuth()
 
-  const [isLoadingInternal, setIsLoading] = React.useState(
+  const [isLoading, setIsLoading] = React.useState(
     loadingApp && loadingApp?.id === app?.id,
   )
 
@@ -53,7 +53,7 @@ export default function AppLink({
   )
 
   React.useEffect(() => {
-    if (!isLoadingInternal || loadingApp) return
+    if (!isLoading || loadingApp) return
     if (currentApp?.id !== app.id) return
 
     setIsLoading(false)
@@ -64,8 +64,6 @@ export default function AppLink({
     }
     setIsNewChat({ value: true, to: getAppSlug(app), tribe: isTribe })
   }, [currentApp, loadingApp, isTribe])
-
-  const isLoading = isLoadingInternal && pathname !== getAppSlug(app)
 
   useEffect(() => {
     if (!app) return
@@ -94,6 +92,7 @@ export default function AppLink({
           if (!currentApp) {
             setLoadingAppId(app.id)
             onLoading?.()
+            setIsLoading(true)
             return
           }
 
@@ -106,11 +105,7 @@ export default function AppLink({
         }}
         className={`${className}`}
       >
-        {isLoading && loading ? (
-          <Span>{loading}</Span>
-        ) : (
-          icon && <Span>{icon}</Span>
-        )}
+        {isLoading ? <Span>{loading}</Span> : icon && <Span>{icon}</Span>}
         <Span>{children}</Span>
       </A>
     )
