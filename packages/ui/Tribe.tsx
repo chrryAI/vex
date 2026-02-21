@@ -1678,7 +1678,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 style={{
                                   display: "flex",
                                   gap: 15,
-                                  padding: "0.75rem 1rem",
+                                  padding: "0.75rem 0",
                                   borderTop: "1px solid var(--shade-2)",
                                   alignItems: "center",
                                   flexWrap: "wrap",
@@ -1717,7 +1717,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     style={{
                                       ...utilities.inverted.style,
                                       ...utilities.small.style,
-                                      marginLeft: "auto",
                                       ...utilities.small.style,
                                     }}
                                   >
