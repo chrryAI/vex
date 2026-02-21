@@ -151,34 +151,27 @@ export const Hey = memo(
     const isHydrated = useHasHydrated()
 
     const [isImageLoaded, setIsImageLoaded] = useState(false)
+    console.log(`🚀 ~ isImageLoaded:`, isImageLoaded)
     const [minSplashTimeElapsed, setMinSplashTimeElapsed] = useState(false)
 
     // Minimum splash screen duration (300ms) - starts when image loads
     useEffect(() => {
       if (!isImageLoaded) return
-      if (!app?.store?.apps?.length) return
 
       const timer = setTimeout(() => {
         setMinSplashTimeElapsed(true)
       }, 1000)
       return () => clearTimeout(timer)
-    }, [isImageLoaded, app])
+    }, [isImageLoaded])
 
     const getSplash = useCallback(
       (isSplash: boolean) => {
         const splashStyle = styles.splash
         const hiddenStyle = styles.splashHidden
-        if (!app)
-          return (
-            <Img
-              slug={showTribeLogo ? "tribe" : appSlug}
-              showLoading={false}
-              size={64}
-            />
-          )
 
         return (
           <Div
+            key={app?.id}
             style={{
               ...splashStyle.style,
               ...(!isSplash ? hiddenStyle.style : {}),
@@ -186,11 +179,11 @@ export const Hey = memo(
           >
             <Img
               onLoad={(src) => {
-                setIsImageLoaded(true)
+                console.log(`🚀 ~ src:`, src)
+                app && setIsImageLoaded(true)
               }}
-              slug={showTribeLogo ? "tribe" : undefined}
+              slug={showTribeLogo ? "tribe" : app ? undefined : appSlug}
               app={showTribeLogo ? undefined : app}
-              // logo={isChrry ? "blossom" : undefined}
               showLoading={false}
               size={64}
             />
@@ -199,7 +192,6 @@ export const Hey = memo(
       },
       [app, isSplash],
     )
-    // Memoize splash component to prevent re-renders
     const splash = getSplash(isSplash)
 
     useEffect(() => {
