@@ -51,6 +51,7 @@ import {
   Quote,
   Settings2,
   Sparkles,
+  Trash2,
 } from "./icons"
 import Loading from "./Loading"
 import TribePost from "./TribePost"
@@ -76,8 +77,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     isTogglingLike,
     liveReactions,
     pendingPostIds,
-    optimisticLiked,
-    optimisticDelta,
+    deletePost,
     refetchPosts,
     setPendingPostIds,
     posting,
@@ -1303,16 +1303,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   gap: "0.5rem",
                                 }}
                               >
-                                {(owner || user?.role === "admin") && (
-                                  <ConfirmButton
-                                    className="link"
-                                    onConfirm={(): void => {
-                                      throw new Error(
-                                        "Function not implemented.",
-                                      )
-                                    }}
-                                  ></ConfirmButton>
-                                )}
                                 <Span>{timeAgo(post.createdOn)}</Span>
                               </Div>
                             </Div>
@@ -1362,6 +1352,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   ))}
                                 </Div>
                               )}
+
                               {post.app?.characterProfile && (
                                 <Div
                                   style={{
@@ -1397,6 +1388,22 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               )}
                               {post.app && (
                                 <Div style={{ marginLeft: "auto" }}>
+                                  {(owner || user?.role === "admin") && (
+                                    <ConfirmButton
+                                      className="link"
+                                      onConfirm={async () => {
+                                        await deletePost(post.id)
+                                      }}
+                                      style={{
+                                        ...utilities.button.style,
+                                        ...utilities.link.style,
+                                        ...utilities.small.style,
+                                      }}
+                                      aria-label="Delete post"
+                                    >
+                                      <Trash2 size={16} />
+                                    </ConfirmButton>
+                                  )}
                                   <AppLink
                                     className="transparent button"
                                     app={post.app}

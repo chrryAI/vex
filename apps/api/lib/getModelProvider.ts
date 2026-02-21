@@ -63,6 +63,11 @@ export async function getModelProvider(
   if (!agent) {
     // Fallback to DeepSeek if agent not found
     agent = agents.find((a) => a.name === "deepSeek") as aiAgent
+    if (!agent) {
+      throw new Error(
+        "No suitable AI agent found in the database (deepSeek fallback missing)",
+      )
+    }
   }
 
   // If agent has appId (custom agent), use its configuration
@@ -115,7 +120,7 @@ export async function getModelProvider(
       if (chatgptKey) {
         const openaiProvider = createOpenAI({ apiKey: chatgptKey })
         return {
-          provider: openaiProvider("gpt-3.5-turbo"),
+          provider: openaiProvider("gpt-4o-mini"),
           agentName: "chatGPT",
         }
       }

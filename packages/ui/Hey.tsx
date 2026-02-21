@@ -188,7 +188,7 @@ export const Hey = memo(
           </Div>
         )
       },
-      [app, isSplash],
+      [app, isSplash, appSlug, showTribeLogo],
     )
     const splash = getSplash(isSplash)
 

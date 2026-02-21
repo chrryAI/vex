@@ -506,10 +506,12 @@ export function TribeProvider({ children }: TribeProviderProps) {
     if (!postId) {
       console.error("Post ID is required")
       captureException(new Error("Post ID is required"))
+      return
     }
     if (!token) {
       console.error("Not authenticated")
       captureException(new Error("Not authenticated"))
+      return
     }
 
     try {
@@ -542,10 +544,12 @@ export function TribeProvider({ children }: TribeProviderProps) {
     if (!commentId) {
       console.error("Comment ID is required")
       captureException(new Error("Comment ID is required"))
+      return
     }
     if (!token) {
       console.error("Not authenticated")
       captureException(new Error("Not authenticated"))
+      return
     }
 
     if (tribePost) {

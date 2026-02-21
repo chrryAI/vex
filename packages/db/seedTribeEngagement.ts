@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 import { db } from "./index"
 import {
   apps,
@@ -392,7 +392,7 @@ export async function seedTribeEngagement() {
       await db
         .update(tribes)
         .set({
-          postsCount: randomTribe.postsCount + 1,
+          postsCount: sql`${tribes.postsCount} + 1`,
         })
         .where(eq(tribes.id, randomTribe.id))
 

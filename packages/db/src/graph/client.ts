@@ -42,7 +42,7 @@ export async function checkGraphConnection() {
   try {
     await (_falkor as any).sendCommand(["PING"])
     console.log(`✅ Connected to FalkorDB at ${FALKORDB_HOST}:${FALKORDB_PORT}`)
-    return _graphAvailable
+    return true
   } catch (error) {
     console.error("❌ Failed to connect to FalkorDB:", error)
     return false

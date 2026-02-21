@@ -994,7 +994,7 @@ app.patch("/:id", async (c) => {
         for (const [key, value] of Object.entries(apiKeys)) {
           if (value && typeof value === "string" && value.trim()) {
             // Encrypt the API key using AES-256-GCM
-            hashedApiKeys[key] = encrypt(value.trim())
+            hashedApiKeys[key] = await encrypt(value.trim())
           }
         }
         updateData.apiKeys = hashedApiKeys

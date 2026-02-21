@@ -2017,12 +2017,6 @@ export function AuthProvider({
 
   const burning = !!(burn || burnApp)
 
-  useEffect(() => {
-    if (!app) return
-
-    burn === null && setBurnInternal(isZarathustra)
-  }, [isZarathustra, app])
-
   const zarathustra = storeApps.find((app) => app.slug === "zarathustra")
 
   const hasInformedRef = useRef(false)

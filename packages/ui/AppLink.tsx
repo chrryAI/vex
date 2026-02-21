@@ -1,7 +1,6 @@
 import React, { type CSSProperties, useEffect } from "react"
 import A from "./a/A"
 import { useAuth, useChat, useNavigationContext } from "./context/providers"
-import Loading from "./Loading"
 import { Button, Span } from "./platform"
 import type { appWithStore } from "./types"
 

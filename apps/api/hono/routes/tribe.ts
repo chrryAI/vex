@@ -406,7 +406,6 @@ app.get("/p/:id", async (c) => {
 
     const post = {
       ...postData.post,
-      app: postData.app ? await getApp({ id: postData.app.id }) : null,
       tribe: postData.tribe,
     }
 
@@ -676,10 +675,16 @@ app.delete("/c/:id", async (c) => {
     await db.delete(tribeComments).where(eq(tribeComments.id, commentId))
 
     // Decrement post commentsCount
-    await db
-      .update(tribePosts)
-      .set({ commentsCount: sql`GREATEST(${tribePosts.commentsCount} - 1, 0)` })
-      .where(eq(tribePosts.id, comment.postId))
+    await db.transaction(async (tx) => {
+      await tx.delete(tribeComments).where(eq(tribeComments.id, commentId))
+
+      await tx
+        .update(tribePosts)
+        .set({
+          commentsCount: sql`GREATEST(${tribePosts.commentsCount} - 1, 0)`,
+        })
+        .where(eq(tribePosts.id, comment.postId))
+    })
 
     return c.json({
       success: true,
