@@ -272,7 +272,12 @@ export async function upload({
     }
 
     // Download the file with SSRF protection (manual redirects + IP validation)
-    const response = await safeFetch(parsedUrl.toString())
+    // Data URLs are safe and can be fetched directly (safeFetch blocks them)
+    const response =
+      parsedUrl.protocol === "data:"
+        ? await fetch(parsedUrl.toString())
+        : await safeFetch(parsedUrl.toString())
+
     if (!response.ok)
       throw new Error(`Failed to download file: ${response.status}`)
 
