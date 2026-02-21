@@ -72,8 +72,7 @@ export async function getModelProvider(
     case "deepSeek": {
       const deepseekKey = app?.apiKeys?.deepseek
         ? safeDecrypt(app?.apiKeys?.deepseek)
-        : !plusTiers.includes(app?.tier || "") &&
-            !process.env.OPENROUTER_API_KEY
+        : !plusTiers.includes(app?.tier || "")
           ? process.env.DEEPSEEK_API_KEY
           : ""
 
@@ -172,8 +171,7 @@ export async function getModelProvider(
       // Check for OpenAI key first
       const openaiKey = app?.apiKeys?.openai
         ? safeDecrypt(app?.apiKeys?.openai)
-        : !plusTiers.includes(app?.tier || "") &&
-            !process.env.OPENROUTER_API_KEY
+        : !plusTiers.includes(app?.tier || "")
           ? process.env.CHATGPT_API_KEY
           : ""
 
@@ -212,8 +210,7 @@ export async function getModelProvider(
     case "claude": {
       const claudeKey = app?.apiKeys?.anthropic
         ? safeDecrypt(app?.apiKeys?.anthropic)
-        : !plusTiers.includes(app?.tier || "") &&
-            !process.env.OPENROUTER_API_KEY
+        : !plusTiers.includes(app?.tier || "")
           ? process.env.CLAUDE_API_KEY
           : ""
 
@@ -292,8 +289,7 @@ export async function getModelProvider(
     case "perplexity": {
       const perplexityKey = app?.apiKeys?.perplexity
         ? safeDecrypt(app?.apiKeys?.perplexity)
-        : !plusTiers.includes(app?.tier || "") &&
-            !process.env.OPENROUTER_API_KEY
+        : !plusTiers.includes(app?.tier || "")
           ? process.env.PERPLEXITY_API_KEY
           : ""
 
