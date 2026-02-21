@@ -100,6 +100,9 @@ export interface InputProps extends BaseProps {
   id?: string
   title?: string
   "aria-label"?: string
+  "aria-describedby"?: string
+  "aria-invalid"?: boolean | "false" | "true" | "grammar" | "spelling"
+  error?: boolean
   required?: boolean
   disabled?: boolean
   min?: string | number
@@ -126,6 +129,10 @@ export interface TextAreaProps extends BaseProps {
   maxLength?: number
   autoFocus?: boolean
   "data-testid"?: string
+  "aria-label"?: string
+  "aria-describedby"?: string
+  "aria-invalid"?: boolean | "false" | "true" | "grammar" | "spelling"
+  error?: boolean
   // React Native-specific props (ignored on web, but accepted for cross-platform compatibility)
   onSubmitEditing?: (e: any) => void
   onKeyPress?: (e: any) => void
@@ -144,6 +151,10 @@ export interface SelectProps extends BaseProps {
   id?: string
   disabled?: boolean
   required?: boolean
+  "aria-label"?: string
+  "aria-describedby"?: string
+  "aria-invalid"?: boolean | "false" | "true" | "grammar" | "spelling"
+  error?: boolean
   options?: { value: string; label: string }[]
   children?: React.ReactNode
 }
@@ -379,6 +390,9 @@ export const Input = forwardRef<
       required,
       disabled,
       dataTestId,
+      error,
+      "aria-invalid": ariaInvalid,
+      "aria-describedby": ariaDescribedBy,
       ...props
     },
     ref,
@@ -402,6 +416,9 @@ export const Input = forwardRef<
         required={required}
         disabled={disabled}
         data-testid={props["data-testid"] || dataTestId}
+        aria-invalid={error ? true : ariaInvalid}
+        aria-describedby={ariaDescribedBy}
+        data-error={error ? "true" : undefined}
         {...props}
       />
     )
@@ -426,6 +443,9 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       rows = 4,
       maxLength,
       autoFocus,
+      error,
+      "aria-invalid": ariaInvalid,
+      "aria-describedby": ariaDescribedBy,
       // React Native-specific props - extract but don't pass to textarea
       onSubmitEditing,
       onKeyPress,
@@ -459,6 +479,9 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         maxLength={maxLength}
         onKeyPress={onKeyPress}
         onPaste={onPaste}
+        aria-invalid={error ? true : ariaInvalid}
+        aria-describedby={ariaDescribedBy}
+        data-error={error ? "true" : undefined}
         {...props}
       />
     )
@@ -485,6 +508,9 @@ export const Select = forwardRef<
       options,
       children,
       dataTestId,
+      error,
+      "aria-invalid": ariaInvalid,
+      "aria-describedby": ariaDescribedBy,
       ...props
     },
     ref,
@@ -511,6 +537,9 @@ export const Select = forwardRef<
         id={id}
         disabled={disabled}
         required={required}
+        aria-invalid={error ? true : ariaInvalid}
+        aria-describedby={ariaDescribedBy}
+        data-error={error ? "true" : undefined}
         {...webProps}
       >
         {options
