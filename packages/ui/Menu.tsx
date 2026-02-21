@@ -78,8 +78,8 @@ export default function Menu({
     storeApps,
     setLoadingAppId,
     hasStoreApps,
-    setBurn,
     burn,
+    ...auth
   } = useAuth()
 
   const { setShowTribe } = useChat()
@@ -106,6 +106,21 @@ export default function Menu({
   } = useNavigationContext()
 
   const { app } = useApp()
+
+  const [isPrivate, setIsPrivate] = useState(burn)
+
+  const setBurn = (value: boolean) => {
+    setIsPrivate(!value)
+    auth.setBurn(value)
+  }
+
+  useEffect(() => {
+    if (!isPrivate) return
+
+    setTimeout(() => {
+      setIsPrivate(false)
+    }, 2000)
+  }, [isPrivate])
 
   // Platform context
   const { isTauri: tauri, os, viewPortHeight, isCapacitor } = usePlatform()
@@ -428,7 +443,6 @@ export default function Menu({
                     })
                     setShowFocus(false)
                     setShowTribe(false)
-
                     isSmallDevice ? toggleMenu() : addHapticFeedback()
                     setBurn(!burn)
                     reload()
@@ -444,7 +458,9 @@ export default function Menu({
                   className="button inverted"
                 >
                   <Span style={{ fontSize: "1.097rem" }}>🔥</Span>{" "}
-                  {t(burn ? "Burning" : "Burn")}
+                  {t(
+                    burn ? (isPrivate ? "Incognito Chat" : "Burning") : "Burn",
+                  )}
                   {burn && (
                     <CircleCheck
                       size={14}
