@@ -32,9 +32,6 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   const [copied, setCopied] = useState(false)
   const { t } = useAppContext()
 
-  // Debug: Check if vscDarkPlus is loaded
-  console.log("🎨 Prism theme loaded:", !!vscDarkPlus, "Language:", language)
-
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(children)
@@ -101,6 +98,167 @@ const MarkdownContent = memo(
       setIsMounted(true)
     }, [])
 
+    const markdownOptions = useMemo(
+      () => ({
+        overrides: {
+          code({ node, inline, className, children, ...props }: any) {
+            // Match both 'language-*' and 'lang-*' formats
+            const match = /(?:language|lang)-(\w+)/.exec(className || "")
+            let lang = match ? match[1] : ""
+
+            // Handle 'json' as a special case
+            if (
+              lang === "json" ||
+              (!lang && /^[\s]*[{[]/.test(String(children)))
+            ) {
+              try {
+                // Check if it's valid JSON
+                JSON.parse(String(children))
+                lang = "json"
+              } catch (_e) {
+                // Not valid JSON, use detected language or default
+              }
+            }
+
+            return !inline && (match || lang === "json") ? (
+              <CodeBlock language={lang || "text"} className={className}>
+                {String(children).replace(/\n$/, "")}
+              </CodeBlock>
+            ) : (
+              <code
+                className={`${styles.inlineCode} ${className || ""}`}
+                {...props}
+              >
+                {children}
+              </code>
+            )
+          },
+          // Customize other markdown elements as needed
+          p: ({ _node, children }) => {
+            return (
+              <Div
+                data-testid="markdown-paragraph"
+                className={`${styles.paragraph} ${styles.paragraphDiv}`}
+              >
+                {children}
+              </Div>
+            )
+          },
+
+          div: ({ _node, children }) => {
+            return (
+              <Div
+                data-testid="markdown-paragraph"
+                className={`${styles.paragraph} ${styles.paragraphDiv}`}
+              >
+                {children}
+              </Div>
+            )
+          },
+
+          a: ({ href, children }) =>
+            href ? (
+              <TextWithLinks
+                onClick={(e) => {
+                  addHapticFeedback()
+                  if (checkIsExtension()) {
+                    e.preventDefault()
+                    BrowserInstance?.runtime?.sendMessage({
+                      action: "openInSameTab",
+                      url: href,
+                    })
+                  }
+                }}
+                text={String(children)}
+                className={styles.link}
+                href={href}
+              />
+            ) : (
+              <a href={href}>{children}</a>
+            ),
+          img: ({ src, alt, width, height }) =>
+            typeof src === "string" ? (
+              <Img
+                showLoading={false}
+                src={src}
+                alt={alt}
+                className={styles.image}
+                width={width || "100%"}
+                height={height}
+              />
+            ) : (
+              <img
+                src={src}
+                alt={alt}
+                width={width || "100%"}
+                height={height}
+              />
+            ),
+          ul: ({ children }) => <ul className={styles.list}>{children}</ul>,
+          ol: ({ children }) => (
+            <ol className={styles.orderedList}>{children}</ol>
+          ),
+          li: ({ children }) => {
+            return <li className={styles.listItem}>{children}</li>
+          },
+          h1: ({ children }) => <h1 className={styles.heading1}>{children}</h1>,
+          h2: ({ children }) => <h2 className={styles.heading2}>{children}</h2>,
+          h3: ({ children }) => <h3 className={styles.heading3}>{children}</h3>,
+          h4: ({ children }) => <h4 className={styles.heading4}>{children}</h4>,
+          blockquote: ({ children }) => (
+            <blockquote className={styles.blockquote}>{children}</blockquote>
+          ),
+          table: ({ children }) => (
+            <table className={styles.table}>{children}</table>
+          ),
+          thead: ({ children }) => (
+            <thead className={styles.tableHead}>{children}</thead>
+          ),
+          tbody: ({ children }) => (
+            <tbody className={styles.tableBody}>{children}</tbody>
+          ),
+          tr: ({ children }) => <tr className={styles.tableRow}>{children}</tr>,
+          th: ({ children }) => (
+            <th className={styles.tableHeader}>{children}</th>
+          ),
+          td: ({ children }) => (
+            <td className={styles.tableCell}>{children}</td>
+          ),
+          // Custom React components
+          StoreCompact: {
+            component: () => <Store compact slug="lifeOS" />,
+          },
+          PWAGallery: {
+            component: () => {
+              const images = [
+                { src: "/images/pwa/homePWA.png", alt: "Home screen" },
+                { src: "/images/pwa/atlasPWA.png", alt: "Atlas PWA" },
+                { src: "/images/pwa/bloomPWA.png", alt: "Bloom PWA" },
+                { src: "/images/pwa/peachPWA.png", alt: "Peach PWA" },
+                { src: "/images/pwa/vaultPWA.png", alt: "Vault PWA" },
+              ]
+
+              return (
+                <Div style={galleryContainerStyles}>
+                  {images.map((image) => (
+                    <Img
+                      key={image.src}
+                      showLoading={false}
+                      src={image.src}
+                      alt={image.alt}
+                      width={150}
+                      style={imageStyles}
+                    />
+                  ))}
+                </Div>
+              )
+            },
+          },
+        },
+      }),
+      [addHapticFeedback, galleryContainerStyles, imageStyles],
+    )
+
     if (!isMounted) return null
 
     return (
@@ -109,178 +267,7 @@ const MarkdownContent = memo(
         data-testid={dataTestId}
         className={`${styles.markdownContent} ${className || ""}`}
       >
-        <Markdown
-          options={{
-            overrides: {
-              code({ node, inline, className, children, ...props }: any) {
-                console.log("🔍 Code detected:", { inline, className })
-                // Match both 'language-*' and 'lang-*' formats
-                const match = /(?:language|lang)-(\w+)/.exec(className || "")
-                let lang = match ? match[1] : ""
-
-                // Handle 'json' as a special case
-                if (
-                  lang === "json" ||
-                  (!lang && /^[\s]*[{[]/.test(String(children)))
-                ) {
-                  try {
-                    // Check if it's valid JSON
-                    JSON.parse(String(children))
-                    lang = "json"
-                  } catch (_e) {
-                    // Not valid JSON, use detected language or default
-                  }
-                }
-
-                return !inline && (match || lang === "json") ? (
-                  <CodeBlock language={lang || "text"} className={className}>
-                    {String(children).replace(/\n$/, "")}
-                  </CodeBlock>
-                ) : (
-                  <code
-                    className={`${styles.inlineCode} ${className || ""}`}
-                    {...props}
-                  >
-                    {children}
-                  </code>
-                )
-              },
-              // Customize other markdown elements as needed
-              p: ({ _node, children }) => {
-                return (
-                  <Div
-                    data-testid="markdown-paragraph"
-                    className={`${styles.paragraph} ${styles.paragraphDiv}`}
-                  >
-                    {children}
-                  </Div>
-                )
-              },
-
-              div: ({ _node, children }) => {
-                return (
-                  <Div
-                    data-testid="markdown-paragraph"
-                    className={`${styles.paragraph} ${styles.paragraphDiv}`}
-                  >
-                    {children}
-                  </Div>
-                )
-              },
-
-              a: ({ href, children }) =>
-                href ? (
-                  <TextWithLinks
-                    onClick={(e) => {
-                      addHapticFeedback()
-                      if (checkIsExtension()) {
-                        e.preventDefault()
-                        BrowserInstance?.runtime?.sendMessage({
-                          action: "openInSameTab",
-                          url: href,
-                        })
-                      }
-                    }}
-                    text={String(children)}
-                    className={styles.link}
-                    href={href}
-                  />
-                ) : (
-                  <a href={href}>{children}</a>
-                ),
-              img: ({ src, alt, width, height }) =>
-                typeof src === "string" ? (
-                  <Img
-                    showLoading={false}
-                    src={src}
-                    alt={alt}
-                    className={styles.image}
-                    width={width || "100%"}
-                    height={height}
-                  />
-                ) : (
-                  <img
-                    src={src}
-                    alt={alt}
-                    width={width || "100%"}
-                    height={height}
-                  />
-                ),
-              ul: ({ children }) => <ul className={styles.list}>{children}</ul>,
-              ol: ({ children }) => (
-                <ol className={styles.orderedList}>{children}</ol>
-              ),
-              li: ({ children }) => {
-                return <li className={styles.listItem}>{children}</li>
-              },
-              h1: ({ children }) => (
-                <h1 className={styles.heading1}>{children}</h1>
-              ),
-              h2: ({ children }) => (
-                <h2 className={styles.heading2}>{children}</h2>
-              ),
-              h3: ({ children }) => (
-                <h3 className={styles.heading3}>{children}</h3>
-              ),
-              h4: ({ children }) => (
-                <h4 className={styles.heading4}>{children}</h4>
-              ),
-              blockquote: ({ children }) => (
-                <blockquote className={styles.blockquote}>
-                  {children}
-                </blockquote>
-              ),
-              table: ({ children }) => (
-                <table className={styles.table}>{children}</table>
-              ),
-              thead: ({ children }) => (
-                <thead className={styles.tableHead}>{children}</thead>
-              ),
-              tbody: ({ children }) => (
-                <tbody className={styles.tableBody}>{children}</tbody>
-              ),
-              tr: ({ children }) => (
-                <tr className={styles.tableRow}>{children}</tr>
-              ),
-              th: ({ children }) => (
-                <th className={styles.tableHeader}>{children}</th>
-              ),
-              td: ({ children }) => (
-                <td className={styles.tableCell}>{children}</td>
-              ),
-              // Custom React components
-              StoreCompact: {
-                component: () => <Store compact slug="lifeOS" />,
-              },
-              PWAGallery: {
-                component: () => {
-                  const images = [
-                    { src: "/images/pwa/homePWA.png", alt: "Home screen" },
-                    { src: "/images/pwa/atlasPWA.png", alt: "Atlas PWA" },
-                    { src: "/images/pwa/bloomPWA.png", alt: "Bloom PWA" },
-                    { src: "/images/pwa/peachPWA.png", alt: "Peach PWA" },
-                    { src: "/images/pwa/vaultPWA.png", alt: "Vault PWA" },
-                  ]
-
-                  return (
-                    <Div style={galleryContainerStyles}>
-                      {images.map((image) => (
-                        <Img
-                          key={image.src}
-                          showLoading={false}
-                          src={image.src}
-                          alt={image.alt}
-                          width={150}
-                          style={imageStyles}
-                        />
-                      ))}
-                    </Div>
-                  )
-                },
-              },
-            },
-          }}
-        >
+        <Markdown options={markdownOptions}>
           {processTextWithCitations({
             content,
             webSearchResults,
