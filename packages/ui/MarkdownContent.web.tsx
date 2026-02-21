@@ -7,7 +7,6 @@ import toast from "react-hot-toast"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism"
 import { useAppContext } from "./context/AppContext"
-import Img from "./Img"
 import { Check, Copy } from "./icons"
 import styles from "./MarkdownContent.module.scss"
 import {
@@ -15,13 +14,13 @@ import {
   type MarkdownContentProps,
   processTextWithCitations,
 } from "./MarkdownContent.shared"
+// @ts-ignore - Importing from .tsx extension might need explicit extension or tsconfig adjustment, but bundler should handle it.
+// Actually, in the same package, it should resolve. Let's rely on standard resolution.
+import { createOverrides } from "./MarkdownOverrides"
 import { Button, Div, useTheme } from "./platform"
 import { usePlatformStyles } from "./platform/usePlatformStyles"
-import Store from "./Store"
-import TextWithLinks from "./TextWithLinks"
-import { BrowserInstance, checkIsExtension } from "./utils"
 
-export { processTextWithCitations }
+export { processTextWithCitations, createOverrides }
 export type { MarkdownContentProps }
 
 const CodeBlock: React.FC<CodeBlockProps> = ({
@@ -67,159 +66,6 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   )
 }
 
-export const createOverrides = ({
-  addHapticFeedback,
-  galleryContainerStyles,
-  imageStyles,
-}: {
-  addHapticFeedback: () => void
-  galleryContainerStyles: any
-  imageStyles: any
-}) => {
-  return {
-    code({ node, inline, className, children, ...props }: any) {
-      // Match both 'language-*' and 'lang-*' formats
-      const match = /(?:language|lang)-(\w+)/.exec(className || "")
-      let lang = match ? match[1] : ""
-
-      // Handle 'json' as a special case
-      if (lang === "json" || (!lang && /^[\s]*[{[]/.test(String(children)))) {
-        try {
-          // Check if it's valid JSON
-          JSON.parse(String(children))
-          lang = "json"
-        } catch (_e) {
-          // Not valid JSON, use detected language or default
-        }
-      }
-
-      return !inline && (match || lang === "json") ? (
-        <CodeBlock language={lang || "text"} className={className}>
-          {String(children).replace(/\n$/, "")}
-        </CodeBlock>
-      ) : (
-        <code className={`${styles.inlineCode} ${className || ""}`} {...props}>
-          {children}
-        </code>
-      )
-    },
-    // Customize other markdown elements as needed
-    p: ({ _node, children }: any) => {
-      return (
-        <Div
-          data-testid="markdown-paragraph"
-          className={`${styles.paragraph} ${styles.paragraphDiv}`}
-        >
-          {children}
-        </Div>
-      )
-    },
-
-    div: ({ _node, children }: any) => {
-      return (
-        <Div
-          data-testid="markdown-paragraph"
-          className={`${styles.paragraph} ${styles.paragraphDiv}`}
-        >
-          {children}
-        </Div>
-      )
-    },
-
-    a: ({ href, children }: any) =>
-      href ? (
-        <TextWithLinks
-          onClick={(e) => {
-            addHapticFeedback()
-            if (checkIsExtension()) {
-              e.preventDefault()
-              BrowserInstance?.runtime?.sendMessage({
-                action: "openInSameTab",
-                url: href,
-              })
-            }
-          }}
-          text={String(children)}
-          className={styles.link}
-          href={href}
-        />
-      ) : (
-        <a href={href}>{children}</a>
-      ),
-    img: ({ src, alt, width, height }: any) =>
-      typeof src === "string" ? (
-        <Img
-          showLoading={false}
-          src={src}
-          alt={alt}
-          className={styles.image}
-          width={width || "100%"}
-          height={height}
-        />
-      ) : (
-        <img src={src} alt={alt} width={width || "100%"} height={height} />
-      ),
-    ul: ({ children }: any) => <ul className={styles.list}>{children}</ul>,
-    ol: ({ children }: any) => (
-      <ol className={styles.orderedList}>{children}</ol>
-    ),
-    li: ({ children }: any) => {
-      return <li className={styles.listItem}>{children}</li>
-    },
-    h1: ({ children }: any) => <h1 className={styles.heading1}>{children}</h1>,
-    h2: ({ children }: any) => <h2 className={styles.heading2}>{children}</h2>,
-    h3: ({ children }: any) => <h3 className={styles.heading3}>{children}</h3>,
-    h4: ({ children }: any) => <h4 className={styles.heading4}>{children}</h4>,
-    blockquote: ({ children }: any) => (
-      <blockquote className={styles.blockquote}>{children}</blockquote>
-    ),
-    table: ({ children }: any) => (
-      <table className={styles.table}>{children}</table>
-    ),
-    thead: ({ children }: any) => (
-      <thead className={styles.tableHead}>{children}</thead>
-    ),
-    tbody: ({ children }: any) => (
-      <tbody className={styles.tableBody}>{children}</tbody>
-    ),
-    tr: ({ children }: any) => <tr className={styles.tableRow}>{children}</tr>,
-    th: ({ children }: any) => (
-      <th className={styles.tableHeader}>{children}</th>
-    ),
-    td: ({ children }: any) => <td className={styles.tableCell}>{children}</td>,
-    // Custom React components
-    StoreCompact: {
-      component: () => <Store compact slug="lifeOS" />,
-    },
-    PWAGallery: {
-      component: () => {
-        const images = [
-          { src: "/images/pwa/homePWA.png", alt: "Home screen" },
-          { src: "/images/pwa/atlasPWA.png", alt: "Atlas PWA" },
-          { src: "/images/pwa/bloomPWA.png", alt: "Bloom PWA" },
-          { src: "/images/pwa/peachPWA.png", alt: "Peach PWA" },
-          { src: "/images/pwa/vaultPWA.png", alt: "Vault PWA" },
-        ]
-
-        return (
-          <Div style={galleryContainerStyles}>
-            {images.map((image) => (
-              <Img
-                key={image.src}
-                showLoading={false}
-                src={image.src}
-                alt={image.alt}
-                width={150}
-                style={imageStyles}
-              />
-            ))}
-          </Div>
-        )
-      },
-    },
-  }
-}
-
 const MarkdownContentComponent = ({
   content,
   className,
@@ -229,6 +75,7 @@ const MarkdownContentComponent = ({
 }: MarkdownContentProps) => {
   const [isMounted, setIsMounted] = useState(false)
   const { addHapticFeedback } = useTheme()
+  const { t } = useAppContext()
 
   const galleryContainerStyles = usePlatformStyles({
     display: "flex",
@@ -254,9 +101,11 @@ const MarkdownContentComponent = ({
         addHapticFeedback,
         galleryContainerStyles,
         imageStyles,
+        t,
+        CodeBlockComponent: CodeBlock,
       }),
     }
-  }, [addHapticFeedback, galleryContainerStyles, imageStyles])
+  }, [addHapticFeedback, galleryContainerStyles, imageStyles, t])
 
   if (!isMounted) return null
 
