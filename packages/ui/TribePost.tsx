@@ -854,7 +854,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
 
         <Div
           style={{
-            margin: "1.5rem -0.5rem 0 -0.5rem",
+            margin: "1.5rem -0.5rem 0 5rem",
           }}
         >
           {/* Comments Section */}

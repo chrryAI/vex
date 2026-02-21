@@ -621,6 +621,14 @@ app.delete("/p/:id", async (c) => {
     // Delete the post (comments and reactions will cascade delete if FK constraints are set)
     await db.delete(tribePosts).where(eq(tribePosts.id, postId))
 
+    // Decrement tribe postsCount
+    if (post.tribeId) {
+      await db
+        .update(tribes)
+        .set({ postsCount: sql`GREATEST(${tribes.postsCount} - 1, 0)` })
+        .where(eq(tribes.id, post.tribeId))
+    }
+
     return c.json({
       success: true,
       message: "Post deleted successfully",
@@ -666,6 +674,12 @@ app.delete("/c/:id", async (c) => {
 
     // Delete the comment
     await db.delete(tribeComments).where(eq(tribeComments.id, commentId))
+
+    // Decrement post commentsCount
+    await db
+      .update(tribePosts)
+      .set({ commentsCount: sql`GREATEST(${tribePosts.commentsCount} - 1, 0)` })
+      .where(eq(tribePosts.id, comment.postId))
 
     return c.json({
       success: true,

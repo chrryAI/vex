@@ -696,6 +696,119 @@ export async function getGraphContext(
 }
 
 /**
+ * Store a news article in the graph with embedding + entity extraction
+ * Creates a NewsArticle node linked to Topic entities extracted from title+description
+ */
+export async function storeNewsInGraph(article: {
+  title: string
+  description: string | null
+  content?: string | null
+  source: string | null
+  country?: string | null
+  category: string | null
+  publishedAt: Date | null
+}): Promise<void> {
+  try {
+    await ensureIndices()
+    const now = Date.now()
+    // Use richest available text for embedding
+    const content = [article.title, article.description, article.content]
+      .filter(Boolean)
+      .join(". ")
+      .substring(0, 3000)
+    const embedding = await getEmbedding(content)
+    const articleName = article.title.substring(0, 200).replace(/['"]/g, "")
+    const category = article.category || "general"
+    const source = article.source || "unknown"
+    const country = article.country || "us"
+
+    if (embedding) {
+      await graph.query(
+        `
+        MERGE (n:NewsArticle {name: $name})
+        ON CREATE SET n.category = $category, n.source = $source, n.country = $country, n.createdAt = $now, n.embedding = $embedding
+        ON MATCH SET n.updatedAt = $now, n.embedding = $embedding
+        `,
+        {
+          params: {
+            name: articleName,
+            category,
+            source,
+            country,
+            now,
+            embedding,
+          },
+        },
+      )
+    } else {
+      await graph.query(
+        `
+        MERGE (n:NewsArticle {name: $name})
+        ON CREATE SET n.category = $category, n.source = $source, n.country = $country, n.createdAt = $now
+        ON MATCH SET n.updatedAt = $now
+        `,
+        { params: { name: articleName, category, source, country, now } },
+      )
+    }
+
+    // Link to category topic
+    await graph.query(
+      `
+      MERGE (t:Topic {name: $category})
+      ON CREATE SET t.createdAt = $now
+      MATCH (n:NewsArticle {name: $name})
+      MERGE (n)-[r:BELONGS_TO]->(t)
+      ON CREATE SET r.createdAt = $now
+      `,
+      { params: { name: articleName, category, now } },
+    )
+
+    console.log(`📰 Graph News Synced: ${articleName.substring(0, 60)}...`)
+  } catch (error) {
+    captureException(error)
+    console.error("❌ Failed to store news in graph:", error)
+  }
+}
+
+/**
+ * Query recent news from graph by semantic similarity
+ */
+export async function getNewsContext(
+  queryText: string,
+  limit = 5,
+): Promise<string> {
+  try {
+    await ensureIndices()
+    const embedding = await getEmbedding(queryText)
+    if (!embedding) return ""
+
+    const vectorQuery = `
+      CALL db.idx.vector.queryNodes('Entity', 'embedding', ${limit}, vecf32(${JSON.stringify(embedding)}))
+      YIELD node, score
+      WHERE node:NewsArticle
+      RETURN node.name, node.source, node.country, node.category, score
+    `
+    const result = await graph.query(vectorQuery)
+    const rows = (result as any)?.resultSet || []
+    if (rows.length === 0) return ""
+
+    // row: [name, source, country, category, score]
+    const lines = rows.map((row: any) => {
+      const name = row[0] || ""
+      const source = row[1] || "unknown"
+      const country = row[2] || ""
+      const category = row[3] || ""
+      const tag = [source, country, category].filter(Boolean).join(" / ")
+      return `- [${tag}] ${name}`
+    })
+    return lines.join("\n")
+  } catch (err) {
+    console.warn("⚠️ News graph query failed:", err)
+    return ""
+  }
+}
+
+/**
  * Clear all graph data for a specific user or guest
  * Used when deleting user/guest accounts or memories
  */

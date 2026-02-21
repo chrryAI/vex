@@ -4,6 +4,7 @@ import {
   db,
   decayMemories,
   eq,
+  fetchAndStoreNews,
   inArray,
   isNull,
   lt,
@@ -23,7 +24,10 @@ import { engageWithMoltbookPosts } from "../../lib/cron/moltbookEngagement"
 import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
 import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
 import { syncSonarCloud } from "../../lib/cron/sonarSync"
-import { clearGraphDataForUser } from "../../lib/graph/graphService"
+import {
+  clearGraphDataForUser,
+  storeNewsInGraph,
+} from "../../lib/graph/graphService"
 import {
   executeScheduledJob,
   findJobsToRun,
@@ -215,11 +219,31 @@ cron.get("/clearGuests", async (c) => {
 
 // Shared handler for fetchNews
 async function handleFetchNews(c: any) {
-  return c.json({
-    success: true,
-    message: "Maybe later",
-    timestamp: new Date().toISOString(),
-  })
+  try {
+    const result = await fetchAndStoreNews()
+
+    // Sync newly inserted articles to graph (fire-and-forget)
+    if (result.newlyInserted && result.newlyInserted.length > 0) {
+      Promise.allSettled(
+        result.newlyInserted.map((article) => storeNewsInGraph(article)),
+      ).then((results) => {
+        const synced = results.filter((r) => r.status === "fulfilled").length
+        console.log(
+          `📰 Graph news sync: ${synced}/${result.newlyInserted!.length} articles`,
+        )
+      })
+    }
+
+    return c.json({
+      success: true,
+      inserted: result.inserted,
+      skipped: result.skipped,
+      timestamp: new Date().toISOString(),
+    })
+  } catch (error) {
+    console.error("❌ fetchNews failed:", error)
+    return c.json({ success: false, error: String(error) }, 500)
+  }
 }
 
 // GET /cron/fetchNews - Fetch news (for testing)

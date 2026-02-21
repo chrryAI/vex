@@ -44,6 +44,7 @@ import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { sign } from "jsonwebtoken"
 import { v4 as uuidv4 } from "uuid"
 import { getModelProvider } from "../getModelProvider"
+import { getNewsContext } from "../graph/graphService"
 import { getMoltbookFeed, postToMoltbook } from "../integrations/moltbook"
 import {
   sendDiscordNotification,
@@ -1558,17 +1559,11 @@ async function postToTribeJob({
       )
       .join("\n")
 
-    const instructions = isFirstPost
-      ? `You are "${app.name}" and this is your FIRST post on Tribe (a social network for AI agents within the Wine ecosystem).
+    // Fetch semantically relevant news for this agent's context
+    const agentContext = `${app.name} ${app.systemPrompt?.substring(0, 100) || ""} ${job.contentRules?.topics?.join(" ") || ""}`
+    const postNewsContext = await getNewsContext(agentContext, 5)
 
-Introduce yourself! Share:
-- Who you are and what you do
-- What makes you unique in the Wine ecosystem
-- What you're excited to explore or discuss
-
-Keep it friendly, authentic, and engaging. Start with something like "Hello Tribe! 👋" or similar.
-
-**RESPONSE FORMAT - CRITICAL:**
+    const responseFormat = `**RESPONSE FORMAT - CRITICAL:**
 You MUST respond ONLY with a valid JSON object in this exact format (no markdown, no explanations):
 {
   "tribeName": "general",
@@ -1587,7 +1582,19 @@ You MUST respond ONLY with a valid JSON object in this exact format (no markdown
 **AVAILABLE TRIBES:**
 ${tribesList || "- general: General discussion"}
 
-**CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If unsure, use "general".
+**CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If unsure, use "general".`
+
+    const instructions = isFirstPost
+      ? `You are "${app.name}" and this is your FIRST post on Tribe (a social network for AI agents within the Wine ecosystem).
+
+Introduce yourself! Share:
+- Who you are and what you do
+- What makes you unique in the Wine ecosystem
+- What you're excited to explore or discuss
+
+Keep it friendly, authentic, and engaging. Start with something like "Hello Tribe! 👋" or similar.
+
+${postNewsContext ? `Current world news (use naturally if relevant):\n${postNewsContext}\n\n` : ""}${responseFormat}
 
 Important Notes:
 - You have your character profile and context available
@@ -1611,21 +1618,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}
 ${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}
 ${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}
 ${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}
-
-**RESPONSE FORMAT - CRITICAL:**
-You MUST respond ONLY with a valid JSON object in this exact format (no markdown, no explanations):
-{
-  "tribeName": "general",
-  "tribeTitle": "Your post title here",
-  "tribeContent": "Your full post content here...",
-  "seoKeywords": ["keyword1", "keyword2", "keyword3"],
-  "placeholder": "A short teaser sentence for the chat UI (max 120 chars)"
-}
-
-**AVAILABLE TRIBES:**
-${tribesList || "- general: General discussion"}
-
-**CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If no tribe fits perfectly, use the closest match from the list.
+${postNewsContext ? `Current world news (use naturally if relevant, don't force it):\n${postNewsContext}\n\n` : ""}${responseFormat}
 
 ${recentPostTitles ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n- ${recentPostTitles}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}
 Important Notes:
@@ -2850,14 +2843,20 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
           .map((m) => m.content)
           .join("\n")
 
+        // Build a query from the post titles to find semantically relevant news
+        const postTopics = postsForEngagement
+          .map((p) => p.post.content.substring(0, 80))
+          .join(" ")
+        const newsContext = await getNewsContext(postTopics, 8)
+
         console.log(`🤖 Using AI model: ${job.aiModel || "default"}`)
         console.log(
-          `📝 Prompt context: systemPrompt=${app.systemPrompt?.length || 0} chars, memories=${memoryContext.length} chars`,
+          `📝 Prompt context: systemPrompt=${app.systemPrompt?.length || 0} chars, memories=${memoryContext.length} chars, news=${newsContext.length} chars`,
         )
 
         const batchPrompt = `You are "${app.name}" on Tribe, an AI social network where AI agents interact authentically.
 
-${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 500)}\n\n` : ""}${memoryContext ? `Your recent context:\n${memoryContext.substring(0, 400)}\n\n` : ""}Review these ${postsForEngagement.length} posts from your feed and engage naturally:
+${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 500)}\n\n` : ""}${memoryContext ? `Your recent context:\n${memoryContext.substring(0, 400)}\n\n` : ""}${newsContext ? `Current world news (use naturally if relevant, don't force it):\n${newsContext}\n\n` : ""}Review these ${postsForEngagement.length} posts from your feed and engage naturally:
 
 ${postsForEngagement
   .map(
@@ -3209,7 +3208,11 @@ Respond ONLY with this JSON array (no extra text):
               engagement.comment.length > 10
             ) {
               // Determine if this is a reply to an existing comment
-              const replyIndex = engagement.replyToCommentIndex
+              // Only allow replies on agent's OWN posts — on others' posts always top-level
+              const isOwnPost = postData.post.appId === app.id
+              const replyIndex = isOwnPost
+                ? engagement.replyToCommentIndex
+                : null
               const parentComment =
                 replyIndex && postData.comments[replyIndex - 1]
                   ? postData.comments[replyIndex - 1]

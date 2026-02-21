@@ -115,6 +115,7 @@ import {
   tribeFollows,
   tribeLikes,
   tribeMemberships,
+  tribeNews,
   tribePosts,
   tribeReactions,
   tribes,
@@ -8299,4 +8300,192 @@ export async function getAgentApiUsage({
     // Estimate credits: ~1 credit per 1000 tokens (adjust based on your pricing)
     estimatedCredits: Math.ceil(Number(stats?.totalTokens || 0) / 1000),
   }
+}
+
+// NewsAPI country codes mapped from locales (top-headlines supports country param)
+const NEWS_COUNTRIES: { country: string; lang: string }[] = [
+  { country: "us", lang: "en" },
+  { country: "de", lang: "de" },
+  { country: "es", lang: "es" },
+  { country: "fr", lang: "fr" },
+  { country: "jp", lang: "ja" },
+  { country: "kr", lang: "ko" },
+  { country: "br", lang: "pt" },
+  { country: "cn", lang: "zh" },
+  { country: "nl", lang: "nl" },
+  { country: "tr", lang: "tr" },
+]
+
+// Scrape og:description / meta description from a URL (best-effort, no throw)
+async function scrapeMetaDescription(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(5000),
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; VexBot/1.0)" },
+    })
+    if (!res.ok) return null
+    const html = await res.text()
+
+    // og:description (most reliable)
+    const ogMatch = html.match(
+      /<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']{20,})["']/i,
+    )
+    if (ogMatch?.[1]) return ogMatch[1].substring(0, 2000)
+
+    // meta description fallback
+    const metaMatch = html.match(
+      /<meta[^>]+name=["']description["'][^>]+content=["']([^"']{20,})["']/i,
+    )
+    if (metaMatch?.[1]) return metaMatch[1].substring(0, 2000)
+
+    return null
+  } catch {
+    return null
+  }
+}
+
+export async function fetchAndStoreNews(): Promise<{
+  inserted: number
+  skipped: number
+  error?: string
+  newlyInserted?: {
+    title: string
+    description: string | null
+    content: string | null
+    source: string | null
+    country: string
+    category: string | null
+    publishedAt: Date | null
+  }[]
+}> {
+  const apiKey = process.env.NEWS_API_KEY
+  if (!apiKey) {
+    return { inserted: 0, skipped: 0, error: "NEWS_API_KEY not set" }
+  }
+
+  const allArticles: {
+    title: string
+    description: string | null
+    content: string | null
+    url: string
+    source: string | null
+    country: string
+    category: string
+    publishedAt: Date | null
+  }[] = []
+
+  for (const { country, lang } of NEWS_COUNTRIES) {
+    try {
+      const res = await fetch(
+        `https://newsapi.org/v2/top-headlines?country=${country}&pageSize=20&apiKey=${apiKey}`,
+      )
+      if (!res.ok) continue
+      const data = (await res.json()) as {
+        articles: {
+          title: string
+          description?: string
+          content?: string
+          url: string
+          source?: { name?: string }
+          publishedAt?: string
+        }[]
+      }
+      for (const article of data.articles || []) {
+        if (!article.title || !article.url) continue
+        // NewsAPI content field is truncated at ~200 chars with "[+N chars]"
+        const apiContent = article.content
+          ? article.content.replace(/\s*\[[\+\d]+ chars\]$/, "").trim()
+          : null
+        allArticles.push({
+          title: article.title.substring(0, 500),
+          description: article.description
+            ? article.description.substring(0, 1000)
+            : null,
+          content: apiContent,
+          url: article.url,
+          source: article.source?.name || null,
+          country,
+          category: lang,
+          publishedAt: article.publishedAt
+            ? new Date(article.publishedAt)
+            : null,
+        })
+      }
+    } catch {
+      // skip failed country
+    }
+  }
+
+  // Enrich articles with meta scrape where content is short/missing
+  // Run in parallel batches of 10 to avoid overwhelming servers
+  const toEnrich = allArticles.filter(
+    (a) => !a.content || a.content.length < 200,
+  )
+  const batchSize = 10
+  for (let i = 0; i < toEnrich.length; i += batchSize) {
+    const batch = toEnrich.slice(i, i + batchSize)
+    await Promise.allSettled(
+      batch.map(async (article) => {
+        const scraped = await scrapeMetaDescription(article.url)
+        if (scraped && scraped.length > (article.content?.length ?? 0)) {
+          article.content = scraped
+        }
+      }),
+    )
+  }
+
+  if (allArticles.length === 0) {
+    return { inserted: 0, skipped: 0 }
+  }
+
+  // Delete news older than 48 hours
+  await db
+    .delete(tribeNews)
+    .where(lt(tribeNews.fetchedAt, new Date(Date.now() - 48 * 60 * 60 * 1000)))
+
+  let inserted = 0
+  let skipped = 0
+
+  const newlyInserted: typeof allArticles = []
+  for (const article of allArticles) {
+    try {
+      const result = await db
+        .insert(tribeNews)
+        .values(article)
+        .onConflictDoNothing()
+        .returning({ id: tribeNews.id })
+      if (result.length > 0) {
+        inserted++
+        newlyInserted.push(article)
+      } else {
+        skipped++
+      }
+    } catch {
+      skipped++
+    }
+  }
+
+  return { inserted, skipped, newlyInserted }
+}
+
+export async function getRecentNews(limit = 20): Promise<
+  {
+    title: string
+    description: string | null
+    source: string | null
+    category: string | null
+    publishedAt: Date | null
+  }[]
+> {
+  return db
+    .select({
+      title: tribeNews.title,
+      description: tribeNews.description,
+      source: tribeNews.source,
+      category: tribeNews.category,
+      publishedAt: tribeNews.publishedAt,
+    })
+    .from(tribeNews)
+    .orderBy(sql`${tribeNews.fetchedAt} DESC`)
+    .limit(limit)
 }

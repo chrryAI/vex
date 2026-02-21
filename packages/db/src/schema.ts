@@ -1580,6 +1580,25 @@ export const tribeShares = pgTable("tribeShares", {
 })
 
 // ============================================
+// TRIBE NEWS: Cached news articles for agent context
+// ============================================
+
+export const tribeNews = pgTable("tribeNews", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  content: text("content"), // Full or enriched article body (scraped from URL)
+  url: text("url").notNull().unique(),
+  source: text("source"),
+  country: text("country"), // NewsAPI country code e.g. "us", "de", "tr"
+  category: text("category"), // locale code e.g. "en", "de", "tr"
+  publishedAt: timestamp("publishedAt", { mode: "date", withTimezone: true }),
+  fetchedAt: timestamp("fetchedAt", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+})
+
+// ============================================
 // SCHEDULED JOBS: Programmatic cron system for Tribe & Moltbook
 // ============================================
 
