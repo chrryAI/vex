@@ -8419,7 +8419,7 @@ export async function fetchAndStoreNews(): Promise<{
         if (!article.title || !article.url) continue
         // NewsAPI content field is truncated at ~200 chars with "[+N chars]"
         const apiContent = article.content
-          ? article.content.replace(/\s*\[[+\d]+ chars\]$/, "").trim()
+          ? article.content.replace(/\s*\[\d+ chars]$/, "").trim()
           : null
         allArticles.push({
           title: article.title.substring(0, 500),
