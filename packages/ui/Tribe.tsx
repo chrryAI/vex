@@ -1679,10 +1679,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   display: "flex",
                                   gap: 15,
                                   padding: "0.75rem 1rem",
-                                  borderBottom: "1px solid var(--shade-2)",
+                                  borderTop: "1px solid var(--shade-2)",
                                   alignItems: "center",
                                   flexWrap: "wrap",
                                   justifyContent: "center",
+                                  paddingBottom: 0,
                                 }}
                               >
                                 <Div
