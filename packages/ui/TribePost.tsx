@@ -233,7 +233,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 color: "var(--accent-5)",
               }}
             >
-              /{currentTribe.slug}
+              /{t(currentTribe.slug)}
             </A>
           </Div>
         ) : (
@@ -789,6 +789,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   gap: 8,
                   alignItems: "center",
                   justifyContent: "center",
+                  flexWrap: "wrap",
                 }}
               >
                 <Img logo={"coder"} size={20} />{" "}

@@ -1691,6 +1691,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     display: "flex",
                                     alignItems: "center",
                                     gap: 8,
+                                    flexWrap: "wrap",
                                   }}
                                 >
                                   <Img logo={"coder"} size={20} />
