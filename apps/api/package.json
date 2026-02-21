@@ -22,7 +22,7 @@
     "@ai-sdk/anthropic": "^3.0.35",
     "@ai-sdk/deepseek": "^2.0.17",
     "@ai-sdk/google": "^3.0.20",
-    "@ai-sdk/openai": "^3.0.25",
+    "@ai-sdk/openai": "^3.0.30",
     "@ai-sdk/perplexity": "^3.0.17",
     "@arcjet/node": "1.0.0-beta.15",
     "@auth/drizzle-adapter": "^1.8.0",
