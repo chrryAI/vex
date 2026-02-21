@@ -224,8 +224,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       fontSize: ".85rem",
                     }}
                   >
-                    <A href="/about">{app?.store?.app?.icon || "🍒"} /about</A>
-                    <A href="/privacy">/privacy 🤫</A>
+                    <A href="/about">
+                      {app?.store?.app?.icon || "🍒"} /{t("about")}
+                    </A>
+                    <A href="/privacy">/{t("privacy")} 🤫</A>
                   </Div>
                 </Div>
                 <Div
@@ -290,7 +292,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             </Span>
                             <Span>
                               {tribe.slug === tribeSlug ? "" : "/"}
-                              {tribe.slug}
+                              {t(tribe.slug)}
                             </Span>
                           </A>
                         </MotiView>
@@ -336,7 +338,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   fontWeight: "normal",
                                 }}
                               >
-                                /{currentTribe.slug}
+                                /{t(currentTribe.slug)}
                               </P>
                             </>
                           ) : (
