@@ -233,7 +233,7 @@ export default function ImageComponent(props: ImageProps) {
 
   if (appSlug === "amsterdam") {
     return (
-      <Span {...style}>
+      <Span style={style}>
         <CircleFlag height={emojiSize} countryCode="nl" />
       </Span>
     )
@@ -241,7 +241,7 @@ export default function ImageComponent(props: ImageProps) {
 
   if (appSlug === "tokyo") {
     return (
-      <Span {...style}>
+      <Span style={style}>
         <CircleFlag height={emojiSize} countryCode="jp" />
       </Span>
     )
@@ -249,7 +249,7 @@ export default function ImageComponent(props: ImageProps) {
 
   if (appSlug === "paris") {
     return (
-      <Span {...style}>
+      <Span style={style}>
         <CircleFlag height={emojiSize} countryCode="fr" />
       </Span>
     )
@@ -257,7 +257,7 @@ export default function ImageComponent(props: ImageProps) {
 
   if (appSlug === "istanbul") {
     return (
-      <Span {...style}>
+      <Span style={style}>
         <CircleFlag height={emojiSize} countryCode="tr" />
       </Span>
     )
@@ -265,7 +265,7 @@ export default function ImageComponent(props: ImageProps) {
 
   if (appSlug === "newYork") {
     return (
-      <Span {...style}>
+      <Span style={style}>
         <CircleFlag height={emojiSize} countryCode="us" />
       </Span>
     )
@@ -274,27 +274,27 @@ export default function ImageComponent(props: ImageProps) {
 
   if (isAgent && app) {
     return app.defaultModel === "deepSeek" ? (
-      <Span {...style}>
+      <Span style={style}>
         <DeepSeek color={color} size={size} />
       </Span>
     ) : app.defaultModel === "chatGPT" ? (
-      <Span {...style}>
+      <Span style={style}>
         <OpenAI color={color} size={size} />
       </Span>
     ) : app.defaultModel === "claude" ? (
-      <Span {...style}>
+      <Span style={style}>
         <Claude color={color} size={size} />
       </Span>
     ) : app.defaultModel === "gemini" ? (
-      <Span {...style}>
+      <Span style={style}>
         <Gemini color={color} size={size} />
       </Span>
     ) : app.defaultModel === "flux" ? (
-      <Span {...style}>
+      <Span style={style}>
         <Flux color={color} size={size} />
       </Span>
     ) : app.defaultModel === "perplexity" ? (
-      <Span {...style}>
+      <Span style={style}>
         <Perplexity color={color} size={size} />
       </Span>
     ) : null
@@ -303,27 +303,27 @@ export default function ImageComponent(props: ImageProps) {
   if (slug) {
     const result =
       slug === "deepSeek" ? (
-        <Span {...style}>
+        <Span style={style}>
           <DeepSeek color={color} size={size} />
         </Span>
       ) : slug === "chatGPT" ? (
-        <Span {...style}>
+        <Span style={style}>
           <OpenAI color={color} size={size} />
         </Span>
       ) : ["claude", "researcher", "review", "writer"].includes(slug) ? (
-        <Span {...style}>
+        <Span style={style}>
           <Claude color={color} size={size} />
         </Span>
       ) : slug === "gemini" ? (
-        <Span {...style}>
+        <Span style={style}>
           <Gemini color={color} size={size} />
         </Span>
       ) : slug === "flux" ? (
-        <Span {...style}>
+        <Span style={style}>
           <Flux color={color} size={size} />
         </Span>
       ) : slug && ["academic", "perplexity", "news"].includes(slug) ? (
-        <Span {...style}>
+        <Span style={style}>
           <Perplexity color={color} size={size} />
         </Span>
       ) : null

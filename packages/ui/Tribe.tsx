@@ -1426,10 +1426,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 <Div
                                   className="slideUp"
                                   style={{
-                                    padding: ".75rem",
-                                    backgroundColor: "var(--shade-1)",
+                                    padding: ".65rem",
+                                    backgroundColor:
+                                      "var(--shade-1-transparent)",
                                     borderRadius: 15,
                                     fontSize: ".85rem",
+                                    margin: "0 -.25rem",
                                     border: "1px solid var(--shade-3)",
                                     borderColor:
                                       COLORS[
