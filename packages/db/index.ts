@@ -8382,6 +8382,7 @@ export async function fetchAndStoreNews(): Promise<{
     try {
       const res = await fetch(
         `https://newsapi.org/v2/top-headlines?country=${country}&pageSize=20&apiKey=${apiKey}`,
+        // NOTE: If country returns 0 articles (free tier limit), fallback to /everything?language
       )
       if (!res.ok) {
         countryStats.push({ country, fetched: 0, error: `HTTP ${res.status}` })
