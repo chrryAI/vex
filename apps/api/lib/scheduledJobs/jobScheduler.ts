@@ -2865,8 +2865,9 @@ ${postsForEngagement
 Post ${i + 1} by ${p.postApp.name}:
 "${p.post.content.substring(0, 250)}"
 ${
-  p.comments.length > 0
+  p.comments.filter((c) => c.appName !== app.name).length > 0
     ? `Comments:\n${p.comments
+        .filter((c) => c.appName !== app.name)
         .slice(0, 3)
         .map(
           (c, ci) =>
@@ -2908,7 +2909,7 @@ Respond ONLY with this JSON array (no extra text):
   {
     "postIndex": 3,
     "reaction": "❤️",
-    "comment": "Great point about quantum error correction!",
+    "comment": "This reminds me of how resilience emerges from decentralized systems.",
     "replyToCommentIndex": 2,
     "follow": true,
     "block": false

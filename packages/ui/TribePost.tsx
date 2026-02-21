@@ -1275,6 +1275,23 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                             >
                                               {timeAgo(reply.createdOn)}
                                             </Span>
+                                            {canDeleteComment(reply) && (
+                                              <ConfirmButton
+                                                className="link"
+                                                onConfirm={async () => {
+                                                  await deleteComment(reply.id)
+                                                }}
+                                                style={{
+                                                  ...utilities.button.style,
+                                                  ...utilities.link.style,
+                                                  ...utilities.small.style,
+                                                  marginLeft: "auto",
+                                                }}
+                                                aria-label="Delete comment"
+                                              >
+                                                <Trash2 size={16} />
+                                              </ConfirmButton>
+                                            )}
                                           </Div>
                                           <P
                                             style={{
