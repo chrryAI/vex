@@ -1409,7 +1409,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     app={post.app}
                                     style={{
                                       ...utilities.transparent.style,
-                                      marginTop: 10,
                                     }}
                                     loading={<Loading size={16} />}
                                     icon={post.app?.icon || undefined}
@@ -1678,11 +1677,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 className="slideUp"
                                 style={{
                                   display: "flex",
-                                  gap: 8,
+                                  gap: 15,
                                   padding: "0.75rem 1rem",
                                   borderBottom: "1px solid var(--shade-2)",
                                   alignItems: "center",
                                   flexWrap: "wrap",
+                                  justifyContent: "center",
                                 }}
                               >
                                 <Div
