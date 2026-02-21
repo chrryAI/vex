@@ -1309,7 +1309,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             <Div
                               style={{
                                 display: "flex",
-                                gap: "1rem",
+                                gap: ".5rem",
                                 flexWrap: "wrap",
                                 alignItems: "center",
                               }}
