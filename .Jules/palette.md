@@ -40,3 +40,8 @@
 
 **Learning:** Components relying solely on `onPointerDown`/`onPointerUp` for "press and hold" interactions (like `SwipeableTimeControl`) are completely inaccessible to keyboard users who activate buttons with Enter/Space.
 **Action:** Add an `onClick` handler that checks `e.detail === 0` (keyboard activation) to trigger a single step of the action, providing basic operability for keyboard users without conflicting with mouse/touch events.
+
+## 2026-07-16 - Accessible Form Validation
+
+**Learning:** The `Input`, `TextArea`, and `Select` primitives relied solely on external error messages or toasts for validation feedback, lacking semantic attributes (`aria-invalid`) to communicate error state to screen readers.
+**Action:** Added `error`, `aria-invalid`, and `aria-describedby` props to base primitives. This ensures all form fields can easily expose their validation status and link to error messages, improving accessibility by default.
