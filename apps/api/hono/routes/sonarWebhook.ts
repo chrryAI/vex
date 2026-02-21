@@ -2,7 +2,7 @@ import { createHmac } from "node:crypto"
 import type { newSonarMetric } from "@repo/db"
 import { db, sonarIssues, sonarMetrics } from "@repo/db"
 import { Hono } from "hono"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 
 const SONAR_WEBHOOK_SECRET = process.env.SONAR_WEBHOOK_SECRET
 const SONAR_CLOUD_URL = "https://sonarcloud.io/api"

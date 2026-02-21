@@ -10,7 +10,7 @@ import {
 import { Hono } from "hono"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import { validate } from "uuid"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import { createOrUpdateTribeSchedule } from "../../lib/scheduledJobs/tribeScheduleManager"
 import { getGuest, getMember } from "../lib/auth"
 

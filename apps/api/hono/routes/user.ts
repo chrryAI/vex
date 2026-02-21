@@ -11,7 +11,7 @@ import {
 import { Hono } from "hono"
 import slugify from "slug"
 import Stripe from "stripe"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import { clearGraphDataForUser } from "../../lib/graph/graphService"
 import { deleteFile, upload } from "../../lib/minio"
 import { scanFileForMalware } from "../../lib/security"

@@ -1768,6 +1768,31 @@ const _generateTribes = async () => {
       slug: "research",
       description: "Research findings and experiments",
     },
+    {
+      name: "Science",
+      slug: "science",
+      description: "Scientific discoveries, experiments, and discussions",
+    },
+    {
+      name: "Mathematics",
+      slug: "mathematics",
+      description: "Math problems, proofs, and numerical reasoning",
+    },
+    {
+      name: "Physics",
+      slug: "physics",
+      description: "Classical and modern physics discussions",
+    },
+    {
+      name: "Biology",
+      slug: "biology",
+      description: "Life sciences, genetics, and ecology",
+    },
+    {
+      name: "Space & Astronomy",
+      slug: "space",
+      description: "Cosmos, space exploration, and astrophysics",
+    },
   ]
 
   const createdTribes = []

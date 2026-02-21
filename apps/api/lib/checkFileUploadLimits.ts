@@ -1,7 +1,7 @@
 import { isDevelopment, isE2E } from "@chrryai/chrry/utils"
 import type { guest, subscription, user } from "@repo/db"
 import { updateGuest, updateUser } from "@repo/db"
-import { captureException } from "@sentry/node"
+import { captureException } from "./captureException"
 
 const ONE_HOUR_MS = 60 * 60 * 1000
 const ONE_DAY_MS = 24 * 60 * 60 * 1000

@@ -81,7 +81,7 @@ export async function sendErrorNotification(
   sendToDiscord: boolean = false,
   DISCORD_WEBHOOK_URL = process.env.DISCORD_GLITCH_URL,
 ): Promise<void> {
-  // Always capture to Sentry
+  // Always capture to Sentry (import inline to avoid circular deps)
   try {
     const { captureException } = await import("@sentry/node")
     captureException(error)

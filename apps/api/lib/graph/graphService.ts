@@ -2,7 +2,7 @@ import type { appWithStore } from "@chrryai/chrry/types"
 import { type app, db, eq, graph, isDevelopment, isE2E } from "@repo/db"
 import { threads } from "@repo/db/src/schema"
 import { embed, generateText } from "ai"
-import captureException from "../../lib/captureException"
+import { captureException } from "../captureException"
 import { getEmbeddingProvider, getModelProvider } from "../getModelProvider"
 
 /**
@@ -415,6 +415,7 @@ export async function extractAndStoreKnowledge(
     try {
       data = JSON.parse(jsonStr)
     } catch (parseError) {
+      captureException(parseError, "extractGraphEntities:parseJSON")
       console.error("❌ Failed to parse graph extraction JSON:", {
         error: parseError,
         rawText: text.substring(0, 200),
@@ -689,7 +690,7 @@ export async function getGraphContext(
 
     return `🕸️ GRAPH KNOWLEDGE (Lvl 5 Reasoning):\n${Array.from(contextItems).join("\n")}`
   } catch (error) {
-    captureException(error)
+    captureException(error, "getGraphContext")
     console.error("❌ Graph Retrieval Failed:", error)
     return ""
   }
@@ -765,7 +766,7 @@ export async function storeNewsInGraph(article: {
 
     console.log(`📰 Graph News Synced: ${articleName.substring(0, 60)}...`)
   } catch (error) {
-    captureException(error)
+    captureException(error, "storeNewsInGraph")
     console.error("❌ Failed to store news in graph:", error)
   }
 }
@@ -803,6 +804,7 @@ export async function getNewsContext(
     })
     return lines.join("\n")
   } catch (err) {
+    captureException(err, "getNewsContext")
     console.warn("⚠️ News graph query failed:", err)
     return ""
   }
@@ -866,7 +868,7 @@ export async function clearGraphDataForUser({
       `🧹 Cleared graph data for ${userId ? "user" : "guest"}: ${identifier} (${threadIds.length} threads)`,
     )
   } catch (error) {
-    captureException(error)
+    captureException(error, "clearGraphDataForUser")
     console.error("❌ Failed to clear graph data:", error)
     // Don't throw - cleanup should be best-effort
   }

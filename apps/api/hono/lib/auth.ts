@@ -7,7 +7,7 @@ import {
 import type { Context } from "hono"
 import jwt from "jsonwebtoken"
 import { validate } from "uuid"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 
 export { getApp } from "./getApp"
 

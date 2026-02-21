@@ -79,7 +79,6 @@ import {
   tribes as tribesSchema,
   type webSearchResultType,
 } from "@repo/db/src/schema"
-import { captureException } from "@sentry/node"
 import { generateText, type ModelMessage, streamText } from "ai"
 import Handlebars from "handlebars"
 import { Hono } from "hono"
@@ -102,6 +101,7 @@ import {
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
 import { PerformanceTracker } from "../../lib/analytics"
 import { getDNAThreadArtifacts } from "../../lib/appRAG"
+import { captureException } from "../../lib/captureException"
 import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
 import extractVideoFrames from "../../lib/extractVideoFrames"
 import generateAIContent from "../../lib/generateAIContent"

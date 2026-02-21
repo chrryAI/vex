@@ -74,3 +74,5 @@ export function captureException(error: unknown, context?: any): void {
     flushErrorBuffer().catch(() => {})
   }
 }
+
+export default captureException

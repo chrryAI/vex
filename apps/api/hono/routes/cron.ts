@@ -11,10 +11,10 @@ import {
   sql,
 } from "@repo/db"
 import { apps, guests, messages, subscriptions } from "@repo/db/src/schema"
-import { captureException } from "@sentry/node"
 import { Hono } from "hono"
 import { syncPlausibleAnalytics } from "../../cron/sync-plausible"
 import { isDevelopment } from "../../lib"
+import { captureException } from "../../lib/captureException"
 import {
   runAutonomousAgentsCron,
   updateSlotAnalytics,

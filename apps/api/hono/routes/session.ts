@@ -34,7 +34,7 @@ import { UAParser } from "ua-parser-js"
 import { v4 as uuidv4, validate as validateUuid } from "uuid"
 import * as lib from "../../lib"
 
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import cleanupTest from "../../lib/cleanupTest"
 import { checkRateLimit } from "../../lib/rateLimiting"
 import {

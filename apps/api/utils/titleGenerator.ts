@@ -2,7 +2,7 @@ import { isE2E as isE2EInternal } from "@chrryai/chrry/utils"
 import { faker } from "@faker-js/faker"
 import { getPureApp, getThread, getUser, VEX_LIVE_FINGERPRINTS } from "@repo/db"
 import { generateText } from "ai"
-import captureException from "../lib/captureException"
+import { captureException } from "../lib/captureException"
 import { getModelProvider } from "../lib/getModelProvider"
 
 export const trimTitle = (str: string) =>

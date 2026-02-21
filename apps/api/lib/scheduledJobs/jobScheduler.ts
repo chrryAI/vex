@@ -38,11 +38,11 @@ import {
   tribeReactions,
   tribes,
 } from "@repo/db/src/schema"
-import { captureException } from "@sentry/node"
 import { generateText } from "ai"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { sign } from "jsonwebtoken"
 import { v4 as uuidv4 } from "uuid"
+import { captureException } from "../captureException"
 import { getModelProvider } from "../getModelProvider"
 import { getNewsContext } from "../graph/graphService"
 import { getMoltbookFeed, postToMoltbook } from "../integrations/moltbook"

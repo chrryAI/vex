@@ -11,7 +11,7 @@ import { FetchHttpHandler } from "@smithy/fetch-http-handler"
 import sharp from "sharp"
 import { parse as parseDomain } from "tldts"
 import { safeFetch } from "../utils/ssrf"
-import captureException from "./captureException"
+import { captureException } from "./captureException"
 
 // Validate S3 configuration
 if (

@@ -82,10 +82,6 @@ export async function sendErrorNotification(
   DISCORD_WEBHOOK_URL = process.env.DISCORD_GLITCH_URL,
 ): Promise<void> {
   // Always capture to Sentry
-  try {
-    const { captureException } = await import("@sentry/node")
-    captureException(error)
-  } catch {}
 
   const errorMessage = error instanceof Error ? error.message : String(error)
   const errorStack = error instanceof Error ? error.stack : undefined
