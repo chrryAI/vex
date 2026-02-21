@@ -233,7 +233,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 color: "var(--accent-5)",
               }}
             >
-              /{currentTribe.slug}
+              /{t(currentTribe.slug)}
             </A>
           </Div>
         ) : (
@@ -789,6 +789,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   gap: 8,
                   alignItems: "center",
                   justifyContent: "center",
+                  flexWrap: "wrap",
                 }}
               >
                 <Img logo={"coder"} size={20} />{" "}
@@ -833,16 +834,19 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 <Span style={{ fontSize: "1.3rem" }}>{tyingToReact}</Span>
 
                 {reactionGroups[tyingToReact].apps.map((app, index) => (
-                  <>
+                  <AppLink
+                    loading={<Loading size={24} />}
+                    key={`${app.id}-${index}`}
+                    app={app}
+                  >
                     <Img
-                      key={`${app.id}-${index}`}
-                      slug={app.slug}
+                      app={app}
                       size={24}
                       style={{
                         borderRadius: "50%",
                       }}
                     />
-                  </>
+                  </AppLink>
                 ))}
               </Div>
             )}
@@ -851,7 +855,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
 
         <Div
           style={{
-            marginTop: "1.5rem",
+            margin: "1.5rem -0.5rem -0.5rem -0.5rem",
           }}
         >
           {/* Comments Section */}
@@ -1052,7 +1056,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
 
                   return (
                     <MotiView
-                      key={comment.id}
+                      key={comment.id + comment?.app?.id || ""}
                       from={{ opacity: 0, translateY: 0, translateX: -10 }}
                       animate={{ opacity: 1, translateY: 0, translateX: 0 }}
                       transition={{
@@ -1066,17 +1070,27 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                           style={{
                             display: "flex",
                             gap: 12,
-                            padding: "0.75rem",
-                            borderRadius: 12,
+                            padding: "0.65rem 0.5rem",
+                            borderRadius: 15,
                             backgroundColor: "var(--shade-1)",
                             border: "1px solid var(--shade-2)",
                             alignItems: "flex-start",
                           }}
                         >
                           {comment.app && (
-                            <AppLink isTribe app={comment.app}>
-                              <Img app={comment.app as any} size={32} />
-                            </AppLink>
+                            <Img
+                              app={
+                                comment.app.store?.apps.length
+                                  ? comment.app
+                                  : undefined
+                              }
+                              slug={
+                                comment.app.store?.apps.length
+                                  ? undefined
+                                  : comment.app.slug
+                              }
+                              size={32}
+                            />
                           )}
                           <Div style={{ flex: 1 }}>
                             <Div style={{}}>
@@ -1262,6 +1276,23 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                             >
                                               {timeAgo(reply.createdOn)}
                                             </Span>
+                                            {canDeleteComment(reply) && (
+                                              <ConfirmButton
+                                                className="link"
+                                                onConfirm={async () => {
+                                                  await deleteComment(reply.id)
+                                                }}
+                                                style={{
+                                                  ...utilities.button.style,
+                                                  ...utilities.link.style,
+                                                  ...utilities.small.style,
+                                                  marginLeft: "auto",
+                                                }}
+                                                aria-label="Delete comment"
+                                              >
+                                                <Trash2 size={16} />
+                                              </ConfirmButton>
+                                            )}
                                           </Div>
                                           <P
                                             style={{

@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import Stripe from "stripe"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import { getMember } from "../lib/auth"
 
 export const createCreditPurchase = new Hono()

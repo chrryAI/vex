@@ -11,7 +11,7 @@ import { FetchHttpHandler } from "@smithy/fetch-http-handler"
 import sharp from "sharp"
 import { parse as parseDomain } from "tldts"
 import { safeFetch } from "../utils/ssrf"
-import captureException from "./captureException"
+import { captureException } from "./captureException"
 
 // Validate S3 configuration
 if (
@@ -271,8 +271,12 @@ export async function upload({
       }
     }
 
-    // Download the file with SSRF protection (manual redirects + IP validation)
-    const response = await safeFetch(parsedUrl.toString())
+    // Download the file - data: URLs are safe (no network request), use native fetch
+    // For http/https URLs, use safeFetch for SSRF protection
+    const response =
+      parsedUrl.protocol === "data:"
+        ? await fetch(parsedUrl.toString())
+        : await safeFetch(parsedUrl.toString())
     if (!response.ok)
       throw new Error(`Failed to download file: ${response.status}`)
 

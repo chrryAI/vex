@@ -1,6 +1,5 @@
 import { expect, type Page } from "@playwright/test"
 import { getURL, wait } from "../index"
-import { signIn } from "../shared/signIn"
 
 export async function maximize({ page }: { page: Page }) {
   await wait(2000)

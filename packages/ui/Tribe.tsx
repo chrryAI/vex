@@ -45,12 +45,13 @@ import {
   ArrowLeft,
   BrickWallFire,
   CalendarIcon,
+  HeartPlus,
   LoaderCircle,
-  MessageCircleHeart,
   Pin,
   Quote,
   Settings2,
   Sparkles,
+  Trash2,
 } from "./icons"
 import Loading from "./Loading"
 import TribePost from "./TribePost"
@@ -65,6 +66,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     setUntil,
     isLoadingPosts,
     sortBy,
+    order,
+    setOrder,
     postId,
     setSortBy,
     isLoadingTribes,
@@ -74,8 +77,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     isTogglingLike,
     liveReactions,
     pendingPostIds,
-    optimisticLiked,
-    optimisticDelta,
+    deletePost,
     refetchPosts,
     setPendingPostIds,
     posting,
@@ -222,8 +224,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       fontSize: ".85rem",
                     }}
                   >
-                    <A href="/about">{app?.store?.app?.icon || "🍒"} /about</A>
-                    <A href="/privacy">/privacy 🤫</A>
+                    <A href="/about">
+                      {app?.store?.app?.icon || "🍒"} /{t("about")}
+                    </A>
+                    <A href="/privacy">/{t("privacy")} 🤫</A>
                   </Div>
                 </Div>
                 <Div
@@ -288,7 +292,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             </Span>
                             <Span>
                               {tribe.slug === tribeSlug ? "" : "/"}
-                              {tribe.slug}
+                              {t(tribe.slug)}
                             </Span>
                           </A>
                         </MotiView>
@@ -334,7 +338,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   fontWeight: "normal",
                                 }}
                               >
-                                /{currentTribe.slug}
+                                /{t(currentTribe.slug)}
                               </P>
                             </>
                           ) : (
@@ -407,9 +411,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         }}
                       >
                         {t(
-                          "Watch AI agents collaborate across the 🍶 Wine ecosystem. Apps share insights on 🦞",
+                          "Watch AI agents collaborate across the 🍇 Wine ecosystem. Apps share insights on 🦞",
                         )}{" "}
-                        <A href="https://www.moltbook.com/u/Chrry" openInNewTab>
+                        <A
+                          href="https://www.moltbook.com/u/thus_spoke_zarathustra"
+                          openInNewTab
+                        >
                           {t("Moltbook")}
                         </A>{" "}
                         {t("and 🪢 Tribe, powered by")}{" "}
@@ -870,19 +877,30 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         disabled={isLoadingPosts}
                         data-testid="threads-sort-button-date"
                         title={
-                          sortBy !== "date" ? t("Sort date") : t("Un-sort date")
+                          sortBy !== "date"
+                            ? t("Sort by date")
+                            : order === "desc"
+                              ? t("Oldest first")
+                              : t("Newest first")
                         }
                         className={"inverted"}
                         onClick={() => {
-                          const newSort = sortBy === "date" ? "hot" : "date"
-                          setSortBy(newSort)
+                          if (sortBy === "date") {
+                            setOrder(order === "desc" ? "asc" : "desc")
+                          } else {
+                            setSortBy("date")
+                          }
                         }}
                         style={{
                           fontSize: "1.15rem",
                         }}
                       >
                         {sortBy === "date" ? (
-                          "📅"
+                          order === "desc" ? (
+                            "📅"
+                          ) : (
+                            "⌚️"
+                          )
                         ) : (
                           <CalendarIcon color="var(--shade-3)" size={20} />
                         )}
@@ -906,35 +924,31 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {sortBy === "hot" ? (
                           "🔥"
                         ) : (
-                          <BrickWallFire color="var(--shade-3)" size={20} />
+                          <BrickWallFire color={COLORS.orange} size={20} />
                         )}
                       </Button>
 
                       <Button
-                        data-testid="threads-sort-button-comments"
+                        data-testid="threads-sort-button-liked"
                         title={
-                          sortBy !== "comments"
-                            ? t("Sort comments")
-                            : t("Un-sort comments")
+                          sortBy !== "liked"
+                            ? t("Sort by liked")
+                            : t("Un-sort liked")
                         }
                         className={"inverted"}
                         disabled={isLoadingPosts}
                         onClick={() => {
-                          const newSort =
-                            sortBy === "comments" ? "date" : "comments"
+                          const newSort = sortBy === "liked" ? "date" : "liked"
                           setSortBy(newSort)
                         }}
                         style={{
                           fontSize: "1.15rem",
                         }}
                       >
-                        {sortBy === "comments" ? (
-                          "💬"
+                        {sortBy === "liked" ? (
+                          <Img icon="heart" width={20} height={20} />
                         ) : (
-                          <MessageCircleHeart
-                            color="var(--shade-3)"
-                            size={20}
-                          />
+                          <HeartPlus color={COLORS.red} size={20} />
                         )}
                       </Button>
                     </Div>
@@ -1177,7 +1191,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             <AppLink
                               app={post.app}
                               icon={<Img app={post.app} />}
-                              loading={<Loading size={28} />}
+                              loading={<Loading size={18} />}
                             >
                               {post.app?.name}
                             </AppLink>
@@ -1223,7 +1237,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           >
                             {post.content}
                           </P>
-
                           <Div
                             style={{
                               display: "flex",
@@ -1249,7 +1262,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     color: "var(--shade-6)",
                                   }}
                                 >
-                                  <Img logo="architect" size={20} />
+                                  <Img
+                                    slug={
+                                      post.comments[post.comments.length - 1]
+                                        ?.app?.slug
+                                    }
+                                    size={20}
+                                  />
                                   {post.comments.length}{" "}
                                   {t(
                                     post.comments.length === 1
@@ -1284,65 +1303,17 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   gap: "0.5rem",
                                 }}
                               >
-                                {(owner || user?.role === "admin") && (
-                                  <ConfirmButton
-                                    className="link"
-                                    onConfirm={(): void => {
-                                      throw new Error(
-                                        "Function not implemented.",
-                                      )
-                                    }}
-                                  ></ConfirmButton>
-                                )}
                                 <Span>{timeAgo(post.createdOn)}</Span>
                               </Div>
                             </Div>
                             <Div
                               style={{
                                 display: "flex",
-                                gap: "1rem",
+                                gap: ".5rem",
                                 flexWrap: "wrap",
                                 alignItems: "center",
                               }}
                             >
-                              {post.reactions && post.reactions.length > 0 && (
-                                <Div
-                                  style={{
-                                    display: "flex",
-                                    gap: "0.7rem",
-                                    flexWrap: "wrap",
-                                  }}
-                                >
-                                  {Object.entries(
-                                    post.reactions.reduce(
-                                      (acc, r) => {
-                                        const emoji = r.emoji
-                                        acc[emoji] = (acc[emoji] || 0) + 1
-                                        return acc
-                                      },
-                                      {} as Record<string, number>,
-                                    ),
-                                  ).map(([emoji, count]) => (
-                                    <Button
-                                      className="transparent"
-                                      key={`${emoji}`}
-                                      onClick={() => {
-                                        if (tyingToReact === post.id) {
-                                          return
-                                        } else {
-                                          setTyingToReact(post.id)
-                                        }
-                                      }}
-                                      style={{
-                                        ...utilities.transparent.style,
-                                        ...utilities.small.style,
-                                      }}
-                                    >
-                                      {emoji} {count}
-                                    </Button>
-                                  ))}
-                                </Div>
-                              )}
                               {post.app?.characterProfile && (
                                 <Div
                                   style={{
@@ -1376,8 +1347,63 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   </Button>
                                 </Div>
                               )}
+                              {post.reactions && post.reactions.length > 0 && (
+                                <Div
+                                  style={{
+                                    display: "flex",
+                                    gap: "0.2rem",
+                                    flexWrap: "wrap",
+                                  }}
+                                >
+                                  {Object.entries(
+                                    post.reactions.reduce(
+                                      (acc, r) => {
+                                        const emoji = r.emoji
+                                        acc[emoji] = (acc[emoji] || 0) + 1
+                                        return acc
+                                      },
+                                      {} as Record<string, number>,
+                                    ),
+                                  ).map(([emoji, count]) => (
+                                    <Button
+                                      className="transparent"
+                                      key={`${emoji}`}
+                                      onClick={() => {
+                                        if (tyingToReact === post.id) {
+                                          return
+                                        } else {
+                                          setTyingToReact(post.id)
+                                        }
+                                      }}
+                                      style={{
+                                        ...utilities.transparent.style,
+                                        ...utilities.small.style,
+                                      }}
+                                    >
+                                      {emoji} {count}
+                                    </Button>
+                                  ))}
+                                </Div>
+                              )}
+
                               {post.app && (
                                 <Div style={{ marginLeft: "auto" }}>
+                                  {(owner || user?.role === "admin") && (
+                                    <ConfirmButton
+                                      className="link"
+                                      onConfirm={async () => {
+                                        await deletePost(post.id)
+                                      }}
+                                      style={{
+                                        ...utilities.button.style,
+                                        ...utilities.link.style,
+                                        ...utilities.small.style,
+                                      }}
+                                      aria-label="Delete post"
+                                    >
+                                      <Trash2 size={16} />
+                                    </ConfirmButton>
+                                  )}
                                   <AppLink
                                     className="transparent button"
                                     app={post.app}
@@ -1400,10 +1426,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 <Div
                                   className="slideUp"
                                   style={{
-                                    padding: ".75rem",
-                                    backgroundColor: "var(--shade-1)",
+                                    padding: ".65rem",
+                                    backgroundColor:
+                                      "var(--shade-1-transparent)",
                                     borderRadius: 15,
                                     fontSize: ".85rem",
+                                    margin: "0 -.25rem",
                                     border: "1px solid var(--shade-3)",
                                     borderColor:
                                       COLORS[
@@ -1663,6 +1691,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     display: "flex",
                                     alignItems: "center",
                                     gap: 8,
+                                    flexWrap: "wrap",
                                   }}
                                 >
                                   <Img logo={"coder"} size={20} />

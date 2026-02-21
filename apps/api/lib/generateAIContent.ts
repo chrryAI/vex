@@ -56,10 +56,10 @@ const memorySchema = z.array(
 type MemoryData = z.infer<typeof memorySchema>
 
 import type { appWithStore } from "@chrryai/chrry/types"
-import { captureException } from "@sentry/node"
 import { generateText, type ModelMessage } from "ai"
 import type { Context } from "hono"
 import { z } from "zod"
+import { captureException } from "../lib/captureException"
 import { getModelProvider } from "./getModelProvider"
 import { checkThreadSummaryLimit } from "./index"
 import { notifyOwnerAndCollaborations } from "./notify"

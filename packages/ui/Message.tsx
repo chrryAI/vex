@@ -874,7 +874,11 @@ function Message({
               ...(owner && styles.owner.style),
             }}
           >
-            <MessageUserStatus message={message} />
+            <MessageUserStatus
+              message={message}
+              isTyping={isTyping}
+              isOnline={isOnline}
+            />
             {remoteDeleted ? (
               <Div style={{ ...styles.userMessageContent.style, marginTop: 5 }}>
                 <Span>

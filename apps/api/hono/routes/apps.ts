@@ -31,7 +31,7 @@ import { appOrders, apps, storeInstalls } from "@repo/db/src/schema"
 import { Hono } from "hono"
 import slugify from "slug"
 import { v4 as uuid, validate } from "uuid"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import { deleteFile, upload } from "../../lib/minio"
 import { redact } from "../../lib/redaction"
 import { getApp, getGuest, getMember } from "../lib/auth"
@@ -994,7 +994,7 @@ app.patch("/:id", async (c) => {
         for (const [key, value] of Object.entries(apiKeys)) {
           if (value && typeof value === "string" && value.trim()) {
             // Encrypt the API key using AES-256-GCM
-            hashedApiKeys[key] = encrypt(value.trim())
+            hashedApiKeys[key] = await encrypt(value.trim())
           }
         }
         updateData.apiKeys = hashedApiKeys

@@ -74,11 +74,11 @@ import {
 } from "@repo/db"
 import {
   MEMBER_FREE_TRIBE_CREDITS,
+  tribeMemberships,
   tribePosts,
   tribes as tribesSchema,
   type webSearchResultType,
 } from "@repo/db/src/schema"
-import { captureException } from "@sentry/node"
 import { generateText, type ModelMessage, streamText } from "ai"
 import Handlebars from "handlebars"
 import { Hono } from "hono"
@@ -101,6 +101,7 @@ import {
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
 import { PerformanceTracker } from "../../lib/analytics"
 import { getDNAThreadArtifacts } from "../../lib/appRAG"
+import { captureException } from "../../lib/captureException"
 import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
 import extractVideoFrames from "../../lib/extractVideoFrames"
 import generateAIContent from "../../lib/generateAIContent"
@@ -584,8 +585,10 @@ async function getAnalyticsContext({
     const officialDomains = [
       "chrry.ai",
       "vex.chrry.ai",
+      "tribe.chrry.ai",
       "atlas.chrry.ai",
       "e2e.chrry.ai",
+      "sushi.chrry.ai",
       "focus.chrry.ai",
       "grape.chrry.ai",
       "vault.chrry.ai",
@@ -1328,7 +1331,7 @@ ai.post("/", async (c) => {
     }
 
     if (activeSchedule?.maxTokens) {
-      jobMaxTokens = activeSchedule.maxTokens
+      jobMaxTokens = Math.min(activeSchedule.maxTokens, 8192)
       console.log(
         `🎯 Using job maxTokens: ${jobMaxTokens} for ${activeSchedule.postType}`,
       )
@@ -6403,8 +6406,7 @@ Respond in JSON format:
                       // STREAM MODE: Direct post to Tribe (user sees content + post confirmation)
 
                       // Check credits
-                      const { MEMBER_FREE_TRIBE_CREDITS, tribeMemberships } =
-                        await import("@repo/db/src/schema")
+
                       const tribeCredits =
                         member.tribeCredits ?? MEMBER_FREE_TRIBE_CREDITS
 
@@ -6487,6 +6489,7 @@ Respond in JSON format:
                                 content: tribeContent,
                                 visibility: "public",
                                 tribeId,
+                                language,
                                 seoKeywords:
                                   tribeSeoKeywords.length > 0
                                     ? tribeSeoKeywords
@@ -6688,6 +6691,7 @@ Respond in JSON format:
                 moltSubmolt,
                 moltSeoKeywords,
                 tribeTitle,
+                language,
                 tribeContent,
                 tribeName: tribe,
                 tribeSeoKeywords,

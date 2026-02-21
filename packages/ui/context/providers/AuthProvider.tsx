@@ -2009,22 +2009,13 @@ export function AuthProvider({
 
   const isBaseAppZarathustra = baseApp?.slug === "zarathustra"
 
-  const [burnInternal, setBurnInternal] = useLocalStorage<boolean | null>(
-    "burn",
-    null,
-  )
+  const [burnInternal, setBurnInternal] = useState<boolean | null>(null)
 
   // MinIO download URLs (production bucket)
 
   const burn = burnInternal === null ? false : burnInternal
 
   const burning = !!(burn || burnApp)
-
-  useEffect(() => {
-    if (!app) return
-
-    burn === null && setBurnInternal(isZarathustra)
-  }, [isZarathustra, app])
 
   const zarathustra = storeApps.find((app) => app.slug === "zarathustra")
 
@@ -2042,7 +2033,7 @@ export function AuthProvider({
     if (value) {
       if (!hasInformedRef.current) {
         hasInformedRef.current = true
-        toast.error(t("When you burn there is nothing to remember"))
+        toast.error(`${t("When you burn there is nothing to remember")} 🔥`)
       }
       plausible({
         name: ANALYTICS_EVENTS.BURN,
@@ -2280,7 +2271,7 @@ export function AuthProvider({
 
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
-  const canShowTribe = isE2E ? !!siteConfig.isTribe : true
+  const canShowTribe = true
 
   const showTribeFromPath = pathname === "/tribe"
 

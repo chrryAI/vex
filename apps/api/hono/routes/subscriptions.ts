@@ -12,7 +12,7 @@ import {
 } from "@repo/db/src/schema"
 import { Hono } from "hono"
 import Stripe from "stripe"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import { getGuest, getMember } from "../lib/auth"
 
 export const subscriptions = new Hono()

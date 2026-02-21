@@ -115,6 +115,7 @@ import {
   tribeFollows,
   tribeLikes,
   tribeMemberships,
+  tribeNews,
   tribePosts,
   tribeReactions,
   tribes,
@@ -4597,12 +4598,14 @@ export const getPlaceHolders = async ({
   guestId,
   appId,
   pageSize = 50,
+  tribePostId,
 }: {
   threadId?: string
   userId?: string
   guestId?: string
   appId?: string
   pageSize?: number
+  tribePostId?: string
 }) => {
   const result = await db
     .select()
@@ -4613,6 +4616,7 @@ export const getPlaceHolders = async ({
         threadId ? eq(placeHolders.threadId, threadId) : undefined,
         userId ? eq(placeHolders.userId, userId) : undefined,
         guestId ? eq(placeHolders.guestId, guestId) : undefined,
+        tribePostId ? eq(placeHolders.tribePostId, tribePostId) : undefined,
       ),
     )
     .orderBy(desc(placeHolders.createdOn))
@@ -4626,6 +4630,7 @@ export const getPlaceHolder = async ({
   threadId,
   userId,
   guestId,
+  tribePostId,
   appId,
 }: {
   id?: string
@@ -4633,8 +4638,9 @@ export const getPlaceHolder = async ({
   userId?: string
   guestId?: string
   appId?: string
+  tribePostId?: string
 }) => {
-  if (!userId && !guestId) {
+  if (!userId && !guestId && !tribePostId) {
     return
   }
 
@@ -4650,6 +4656,7 @@ export const getPlaceHolder = async ({
         userId ? eq(placeHolders.userId, userId) : undefined,
         guestId ? eq(placeHolders.guestId, guestId) : undefined,
         appId ? eq(placeHolders.appId, appId) : undefined,
+        tribePostId ? eq(placeHolders.tribePostId, tribePostId) : undefined,
       ),
     )
     .orderBy(desc(placeHolders.createdOn))
@@ -7622,7 +7629,9 @@ export const getTribePosts = async ({
   pageSize = 10,
   id,
   sortBy = "date",
+  order = "desc",
   tribeSlug,
+  accountId,
 }: {
   tribeId?: string
   appId?: string
@@ -7634,16 +7643,18 @@ export const getTribePosts = async ({
   page?: number
   tribeSlug?: string
   pageSize?: number
-  sortBy?: "date" | "hot" | "comments"
+  sortBy?: "date" | "hot" | "liked"
+  order?: "asc" | "desc"
+  accountId?: string
 }) => {
   try {
     const conditions = [
       tribeId ? eq(tribePosts.tribeId, tribeId) : undefined,
       tribeSlug ? eq(tribes.slug, tribeSlug) : undefined,
       appId ? eq(tribePosts.appId, appId) : undefined,
-      userId ? eq(tribePosts.userId, userId) : undefined,
+      // userId ? eq(tribePosts.userId, userId) : undefined,
       id ? eq(tribePosts.id, id) : undefined,
-      guestId ? eq(tribePosts.guestId, guestId) : undefined,
+      // guestId ? eq(tribePosts.guestId, guestId) : undefined,
       search && search.length >= 3
         ? sql`(
             to_tsvector('english', COALESCE(${tribePosts.title}, '') || ' ' || COALESCE(${tribePosts.content}, '')) 
@@ -7684,17 +7695,49 @@ export const getTribePosts = async ({
 
     // Dynamic sorting based on sortBy parameter
     let orderByClause: any
-    if (sortBy === "comments") {
-      // Sort by comment count descending
-      orderByClause = desc(tribePosts.commentsCount)
+    if (sortBy === "liked") {
+      // Only show posts the current user has actually liked
+      if (!userId && !guestId) {
+        // If no user/guest provided, return empty for liked posts
+        return { posts: [], totalCount: 0 }
+      }
+      // Add condition to only include posts liked by this user/guest
+      if (userId) {
+        conditions.push(
+          sql`EXISTS (
+            SELECT 1 FROM "tribeLikes" 
+            WHERE "tribeLikes"."postId" = ${tribePosts.id} 
+            AND "tribeLikes"."userId" = ${userId}
+          )`,
+        )
+      } else if (guestId) {
+        conditions.push(
+          sql`EXISTS (
+            SELECT 1 FROM "tribeLikes" 
+            WHERE "tribeLikes"."postId" = ${tribePosts.id} 
+            AND "tribeLikes"."guestId" = ${guestId}
+          )`,
+        )
+      }
+      // Sort by when they liked it (most recent likes first)
+      orderByClause = sql`(
+        SELECT COALESCE("tribeLikes"."createdOn", ${tribePosts.createdOn})
+        FROM "tribeLikes" 
+        WHERE "tribeLikes"."postId" = ${tribePosts.id} 
+        AND (${userId ? sql`"tribeLikes"."userId" = ${userId}` : sql`"tribeLikes"."guestId" = ${guestId}`})
+        LIMIT 1
+      ) DESC`
     } else if (sortBy === "hot") {
-      // Hot algorithm: combines recency and engagement (comments)
-      // Formula: (comments + 1) / ((hours_old + 2) ^ 1.5)
-      // This creates a time-decay where newer posts with comments rise to top
-      orderByClause = sql`(COALESCE(${tribePosts.commentsCount}, 0) + 1) / POWER((EXTRACT(EPOCH FROM (NOW() - ${tribePosts.createdOn}))/3600 + 2), 1.5) DESC`
+      orderByClause = sql`(
+    COALESCE(${tribePosts.commentsCount}, 0) + 
+    (SELECT COUNT(*) FROM "tribeLikes" WHERE "tribeLikes"."postId" = ${tribePosts.id}) +
+    (SELECT COUNT(*) FROM "tribeReactions" WHERE "tribeReactions"."postId" = ${tribePosts.id}) +
+    1
+  ) / POWER((EXTRACT(EPOCH FROM (NOW() - ${tribePosts.createdOn}))/3600 + 2), 1.5) DESC`
     } else {
-      // Default: sort by date (newest first)
-      orderByClause = desc(tribePosts.createdOn)
+      // Default: sort by date, respecting order param
+      orderByClause =
+        order === "asc" ? asc(tribePosts.createdOn) : desc(tribePosts.createdOn)
     }
 
     const result = await db
@@ -8162,7 +8205,12 @@ export const getCharacterProfiles = async ({
   }
 }
 
+export { captureException } from "./src/captureException"
 export * from "./src/graph/client"
+export {
+  sendDiscordNotification,
+  sendErrorNotification,
+} from "./src/sendDiscordNotification"
 
 export interface AutoCreateTribeParams {
   slug: string
@@ -8288,4 +8336,228 @@ export async function getAgentApiUsage({
     // Estimate credits: ~1 credit per 1000 tokens (adjust based on your pricing)
     estimatedCredits: Math.ceil(Number(stats?.totalTokens || 0) / 1000),
   }
+}
+
+// NewsAPI country codes mapped from locales (top-headlines supports country param)
+const NEWS_COUNTRIES: { country: string; lang: string }[] = [
+  { country: "us", lang: "en" },
+  { country: "de", lang: "de" },
+  { country: "es", lang: "es" },
+  { country: "fr", lang: "fr" },
+  { country: "jp", lang: "ja" },
+  { country: "kr", lang: "ko" },
+  { country: "br", lang: "pt" },
+  { country: "cn", lang: "zh" },
+  { country: "nl", lang: "nl" },
+  { country: "tr", lang: "tr" },
+]
+
+// Scrape og:description / meta description from a URL (best-effort, no throw)
+async function scrapeMetaDescription(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(5000),
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; VexBot/1.0)" },
+    })
+    if (!res.ok) return null
+    const html = await res.text()
+
+    // og:description (most reliable)
+    const ogMatch = html.match(
+      /<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']{20,})["']/i,
+    )
+    if (ogMatch?.[1]) return ogMatch[1].substring(0, 2000)
+
+    // meta description fallback
+    const metaMatch = html.match(
+      /<meta[^>]+name=["']description["'][^>]+content=["']([^"']{20,})["']/i,
+    )
+    if (metaMatch?.[1]) return metaMatch[1].substring(0, 2000)
+
+    return null
+  } catch {
+    return null
+  }
+}
+
+export async function fetchAndStoreNews(): Promise<{
+  inserted: number
+  skipped: number
+  error?: string
+  countryStats?: { country: string; fetched: number; error?: string }[]
+  newlyInserted?: {
+    title: string
+    description: string | null
+    content: string | null
+    source: string | null
+    country: string
+    category: string | null
+    publishedAt: Date | null
+  }[]
+}> {
+  const apiKey = process.env.NEWS_API_KEY
+  if (!apiKey) {
+    return { inserted: 0, skipped: 0, error: "NEWS_API_KEY not set" }
+  }
+
+  const allArticles: {
+    title: string
+    description: string | null
+    content: string | null
+    url: string
+    source: string | null
+    country: string
+    category: string
+    publishedAt: Date | null
+  }[] = []
+
+  const countryStats: { country: string; fetched: number; error?: string }[] =
+    []
+
+  for (const { country, lang } of NEWS_COUNTRIES) {
+    try {
+      const res = await fetch(
+        `https://newsapi.org/v2/top-headlines?country=${country}&pageSize=20&apiKey=${apiKey}`,
+        // NOTE: If country returns 0 articles (free tier limit), fallback to /everything?language
+      )
+      if (!res.ok) {
+        countryStats.push({ country, fetched: 0, error: `HTTP ${res.status}` })
+        continue
+      }
+      const data = (await res.json()) as {
+        status: string
+        code?: string
+        message?: string
+        articles: {
+          title: string
+          description?: string
+          content?: string
+          url: string
+          source?: { name?: string }
+          publishedAt?: string
+        }[]
+      }
+      if (data.status !== "ok") {
+        countryStats.push({
+          country,
+          fetched: 0,
+          error: data.code || data.message || "API error",
+        })
+        continue
+      }
+      let fetched = 0
+      for (const article of data.articles || []) {
+        if (!article.title || !article.url) continue
+        // NewsAPI content field is truncated at ~200 chars with "[+N chars]"
+
+        let trimmed = article.content ? article.content.trim() : ""
+        const suffixIndex = trimmed.lastIndexOf(" [")
+        if (suffixIndex !== -1) {
+          const potentialSuffix = trimmed.slice(suffixIndex)
+          if (/^\[\d+ chars\]$/.test(potentialSuffix)) {
+            trimmed = trimmed.slice(0, suffixIndex)
+          }
+        }
+
+        if (!trimmed) continue
+
+        const apiContent = trimmed
+        allArticles.push({
+          title: article.title.substring(0, 500),
+          description: article.description
+            ? article.description.substring(0, 1000)
+            : null,
+          content: apiContent,
+          url: article.url,
+          source: article.source?.name || null,
+          country,
+          category: lang,
+          publishedAt: article.publishedAt
+            ? new Date(article.publishedAt)
+            : null,
+        })
+        fetched++
+      }
+      countryStats.push({ country, fetched })
+    } catch (err) {
+      countryStats.push({
+        country,
+        fetched: 0,
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
+  }
+
+  // Enrich articles with meta scrape where content is short/missing
+  // Run in parallel batches of 10 to avoid overwhelming servers
+  const toEnrich = allArticles.filter(
+    (a) => !a.content || a.content.length < 200,
+  )
+  const batchSize = 10
+  for (let i = 0; i < toEnrich.length; i += batchSize) {
+    const batch = toEnrich.slice(i, i + batchSize)
+    await Promise.allSettled(
+      batch.map(async (article) => {
+        const scraped = await scrapeMetaDescription(article.url)
+        if (scraped && scraped.length > (article.content?.length ?? 0)) {
+          article.content = scraped
+        }
+      }),
+    )
+  }
+
+  if (allArticles.length === 0) {
+    return { inserted: 0, skipped: 0 }
+  }
+
+  // Delete news older than 48 hours
+  await db
+    .delete(tribeNews)
+    .where(lt(tribeNews.fetchedAt, new Date(Date.now() - 48 * 60 * 60 * 1000)))
+
+  let inserted = 0
+  let skipped = 0
+
+  const newlyInserted: typeof allArticles = []
+  for (const article of allArticles) {
+    try {
+      const result = await db
+        .insert(tribeNews)
+        .values(article)
+        .onConflictDoNothing()
+        .returning({ id: tribeNews.id })
+      if (result.length > 0) {
+        inserted++
+        newlyInserted.push(article)
+      } else {
+        skipped++
+      }
+    } catch {
+      skipped++
+    }
+  }
+
+  return { inserted, skipped, newlyInserted, countryStats }
+}
+
+export async function getRecentNews(limit = 20): Promise<
+  {
+    title: string
+    description: string | null
+    source: string | null
+    category: string | null
+    publishedAt: Date | null
+  }[]
+> {
+  return db
+    .select({
+      title: tribeNews.title,
+      description: tribeNews.description,
+      source: tribeNews.source,
+      category: tribeNews.category,
+      publishedAt: tribeNews.publishedAt,
+    })
+    .from(tribeNews)
+    .orderBy(sql`${tribeNews.fetchedAt} DESC`)
+    .limit(limit)
 }

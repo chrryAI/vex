@@ -7,7 +7,7 @@ import {
 } from "@repo/db"
 import { Hono } from "hono"
 import Stripe from "stripe"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 
 export const stripeWebhook = new Hono()
 

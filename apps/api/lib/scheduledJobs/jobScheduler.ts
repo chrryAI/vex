@@ -38,12 +38,13 @@ import {
   tribeReactions,
   tribes,
 } from "@repo/db/src/schema"
-import { captureException } from "@sentry/node"
 import { generateText } from "ai"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { sign } from "jsonwebtoken"
 import { v4 as uuidv4 } from "uuid"
+import { captureException } from "../captureException"
 import { getModelProvider } from "../getModelProvider"
+import { getNewsContext } from "../graph/graphService"
 import { getMoltbookFeed, postToMoltbook } from "../integrations/moltbook"
 import {
   sendDiscordNotification,
@@ -61,6 +62,7 @@ import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
 const SECRET = JWT_SECRET || "development-secret"
 
 import {
+  createPlaceHolder,
   getAiAgent,
   getUser,
   type thread,
@@ -95,6 +97,7 @@ function parseAIJsonResponse(content: string): {
   moltContent?: string
   moltSubmolt?: string
   submolt?: string
+  placeholder?: string
 } {
   if (!content || content.trim().length === 0) {
     throw new Error("Empty AI response content")
@@ -133,6 +136,7 @@ function parseAIJsonResponse(content: string): {
     "moltTitle",
     "content",
     "post",
+    "placeholder",
   ]) {
     cleaned = sanitizeField(cleaned, f)
   }
@@ -211,6 +215,7 @@ function parseAIJsonResponse(content: string): {
     "moltContent",
     "moltSubmolt",
     "submolt",
+    "placeholder",
   ]
 
   for (const field of fields) {
@@ -581,31 +586,34 @@ Comment (2-3 sentences max, concise and engaging, just the text, no quotes):`
           inline: false,
         }))
 
-      sendDiscordNotification({
-        embeds: [
-          {
-            title: "💬 Moltbook Engagement Activity",
-            color: 0x3b82f6, // Blue
-            fields: [
-              {
-                name: "Agent",
-                value: app?.name || slug,
-                inline: true,
+      sendDiscordNotification(
+        {
+          embeds: [
+            {
+              title: "💬 Moltbook Engagement Activity",
+              color: 0x3b82f6, // Blue
+              fields: [
+                {
+                  name: "Agent",
+                  value: app?.name || slug,
+                  inline: true,
+                },
+                {
+                  name: "Comments Posted",
+                  value: `${commentedPosts.length}/${qualityPosts.length}`,
+                  inline: true,
+                },
+                ...postFields,
+              ],
+              timestamp: new Date().toISOString(),
+              footer: {
+                text: `AI-selected posts with quality score ≥ 7/10`,
               },
-              {
-                name: "Comments Posted",
-                value: `${commentedPosts.length}/${qualityPosts.length}`,
-                inline: true,
-              },
-              ...postFields,
-            ],
-            timestamp: new Date().toISOString(),
-            footer: {
-              text: `AI-selected posts with quality score ≥ 7/10`,
             },
-          },
-        ],
-      }).catch((err) => {
+          ],
+        },
+        process.env.DISCORD_TRIBE_WEBHOOK_URL,
+      ).catch((err) => {
         captureException(err)
         console.error("⚠️ Discord notification failed:", err)
       })
@@ -1323,47 +1331,50 @@ export async function postToMoltbookJob({
 
       // Send Discord notification (non-blocking) - only if post was successful
       if (result?.post_id) {
-        sendDiscordNotification({
-          embeds: [
-            {
-              title: "🦞 New Moltbook Post",
-              color: 0x10b981, // Green
-              fields: [
-                {
-                  name: "Agent",
-                  value: app.name,
-                  inline: true,
-                },
-                {
-                  name: "Post ID",
-                  value: result.post_id,
-                  inline: true,
-                },
-                {
-                  name: "Title",
-                  value: post.title || "No title",
-                  inline: false,
-                },
-                {
-                  name: "Content Preview",
-                  value: (() => {
-                    const content = post.content ?? ""
-                    return content.length > 200
-                      ? `${content.substring(0, 200)}...`
-                      : content || "No content"
-                  })(),
-                  inline: false,
-                },
-                {
-                  name: "Link",
-                  value: `[View Post](https://moltbook.com/post/${result.post_id})`,
-                  inline: false,
-                },
-              ],
-              timestamp: new Date().toISOString(),
-            },
-          ],
-        }).catch((err) => {
+        sendDiscordNotification(
+          {
+            embeds: [
+              {
+                title: "🦞 New Moltbook Post",
+                color: 0x10b981, // Green
+                fields: [
+                  {
+                    name: "Agent",
+                    value: app.name,
+                    inline: true,
+                  },
+                  {
+                    name: "Post ID",
+                    value: result.post_id,
+                    inline: true,
+                  },
+                  {
+                    name: "Title",
+                    value: post.title || "No title",
+                    inline: false,
+                  },
+                  {
+                    name: "Content Preview",
+                    value: (() => {
+                      const content = post.content ?? ""
+                      return content.length > 200
+                        ? `${content.substring(0, 200)}...`
+                        : content || "No content"
+                    })(),
+                    inline: false,
+                  },
+                  {
+                    name: "Link",
+                    value: `[View Post](https://moltbook.com/post/${result.post_id})`,
+                    inline: false,
+                  },
+                ],
+                timestamp: new Date().toISOString(),
+              },
+            ],
+          },
+          process.env.DISCORD_TRIBE_WEBHOOK_URL,
+        ).catch((err) => {
           captureException(err)
           console.error("⚠️ Discord notification failed:", err)
         })
@@ -1509,32 +1520,35 @@ async function postToTribeJob({
   console.log(`🎯 Active postType for AI: ${postType || "post"}`)
 
   // Send Discord notification at job start
-  sendDiscordNotification({
-    embeds: [
-      {
-        title: "🚀 Tribe Post Job Started",
-        color: 0x10b981, // Green
-        fields: [
-          {
-            name: "Agent",
-            value: app.name || "Unknown",
-            inline: true,
-          },
-          {
-            name: "Job Type",
-            value: "tribe_post",
-            inline: true,
-          },
-          {
-            name: "AI Model",
-            value: job.aiModel || "default",
-            inline: true,
-          },
-        ],
-        timestamp: new Date().toISOString(),
-      },
-    ],
-  }).catch((err) => {
+  sendDiscordNotification(
+    {
+      embeds: [
+        {
+          title: "🚀 Tribe Post Job Started",
+          color: 0x10b981, // Green
+          fields: [
+            {
+              name: "Agent",
+              value: app.name || "Unknown",
+              inline: true,
+            },
+            {
+              name: "Job Type",
+              value: "tribe_post",
+              inline: true,
+            },
+            {
+              name: "AI Model",
+              value: job.aiModel || "default",
+              inline: true,
+            },
+          ],
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    },
+    process.env.DISCORD_TRIBE_WEBHOOK_URL,
+  ).catch((err) => {
     console.error("⚠️ Discord notification failed:", err)
   })
 
@@ -1554,6 +1568,31 @@ async function postToTribeJob({
       )
       .join("\n")
 
+    // Fetch semantically relevant news for this agent's context
+    const agentContext = `${app.name} ${app.systemPrompt?.substring(0, 100) || ""} ${job.contentRules?.topics?.join(" ") || ""}`
+    const postNewsContext = await getNewsContext(agentContext, 5)
+
+    const responseFormat = `**RESPONSE FORMAT - CRITICAL:**
+You MUST respond ONLY with a valid JSON object in this exact format (no markdown, no explanations):
+{
+  "tribeName": "general",
+  "tribeTitle": "Your post title here",
+  "tribeContent": "Your full post content here...",
+  "seoKeywords": ["keyword1", "keyword2", "keyword3"],
+  "placeholder": "A short teaser sentence for the chat UI (max 120 chars)"
+}
+
+- tribeName: Choose from the available tribes list below
+- tribeTitle: A catchy title (max 100 chars)
+- tribeContent: The full post content (1000-2500 chars). IMPORTANT: Do NOT use double quotes inside tribeContent — use single quotes or rephrase instead.
+- seoKeywords: 3-5 relevant keywords for searchability
+- placeholder: A short, catchy 1-sentence teaser (max 120 chars) that will appear in the user's chat as a conversation starter about this post
+
+**AVAILABLE TRIBES:**
+${tribesList || "- general: General discussion"}
+
+**CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If unsure, use "general".`
+
     const instructions = isFirstPost
       ? `You are "${app.name}" and this is your FIRST post on Tribe (a social network for AI agents within the Wine ecosystem).
 
@@ -1564,24 +1603,7 @@ Introduce yourself! Share:
 
 Keep it friendly, authentic, and engaging. Start with something like "Hello Tribe! 👋" or similar.
 
-**RESPONSE FORMAT - CRITICAL:**
-You MUST respond ONLY with a valid JSON object in this exact format (no markdown, no explanations):
-{
-  "tribeName": "general",
-  "tribeTitle": "Your post title here",
-  "tribeContent": "Your full post content here...",
-  "seoKeywords": ["keyword1", "keyword2", "keyword3"]
-}
-
-- tribeName: Choose from the available tribes list below
-- tribeTitle: A catchy title (max 100 chars)
-- tribeContent: The full post content (1000-2500 chars). IMPORTANT: Do NOT use double quotes inside tribeContent — use single quotes or rephrase instead.
-- seoKeywords: 3-5 relevant keywords for searchability
-
-**AVAILABLE TRIBES:**
-${tribesList || "- general: General discussion"}
-
-**CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If unsure, use "general".
+${postNewsContext ? `Current world news (use naturally if relevant):\n${postNewsContext}\n\n` : ""}${responseFormat}
 
 Important Notes:
 - You have your character profile and context available
@@ -1605,11 +1627,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}
 ${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}
 ${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}
 ${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}
-
-**AVAILABLE TRIBES:**
-${tribesList || "- general: General discussion"}
-
-**CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If no tribe fits perfectly, use the closest match from the list.
+${postNewsContext ? `Current world news (use naturally if relevant, don't force it):\n${postNewsContext}\n\n` : ""}${responseFormat}
 
 ${recentPostTitles ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n- ${recentPostTitles}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}
 Important Notes:
@@ -1832,6 +1850,25 @@ Important Notes:
       )
     }
 
+    // Create placeholder for user's chat UI
+    const placeholderText = parsedContent.placeholder
+    if (placeholderText && job.userId) {
+      try {
+        await createPlaceHolder({
+          text: placeholderText.substring(0, 120),
+          userId: job.userId,
+          appId: job.appId,
+          tribePostId: post.id,
+          threadId: threadId ?? undefined,
+        })
+        console.log(
+          `💬 Created placeholder for post ${post.id}: "${placeholderText.substring(0, 60)}..."`,
+        )
+      } catch (placeholderErr) {
+        console.error("⚠️ Failed to create placeholder:", placeholderErr)
+      }
+    }
+
     // Increment tribe posts count (only if tribeId exists)
     if (tribeId) {
       await db
@@ -1847,52 +1884,55 @@ Important Notes:
     console.log(`🪢 Tribe: ${aiResponse.tribeName}`)
 
     // Send Discord notification (non-blocking)
-    sendDiscordNotification({
-      embeds: [
-        {
-          title: "🌐 New Tribe Post",
-          color: 0x10b981, // Green
-          fields: [
-            {
-              name: "Agent",
-              value: app.name || "Unknown",
-              inline: true,
-            },
-            {
-              name: "Post ID",
-              value: post.id,
-              inline: true,
-            },
-            {
-              name: "Tribe",
-              value: aiResponse.tribeName || "Unknown",
-              inline: true,
-            },
-            {
-              name: "Title",
-              value: aiResponse.tribeTitle || "No title",
-              inline: false,
-            },
-            {
-              name: "Content Preview",
-              value: (() => {
-                const content = aiResponse.tribeContent ?? ""
-                return content.length > 200
-                  ? `${content.substring(0, 200)}...`
-                  : content || "No content"
-              })(),
-              inline: false,
-            },
-            {
-              name: "Link",
-              value: `[View Post](${FRONTEND_URL}/p/${post.id})`,
-              inline: false,
-            },
-          ],
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    }).catch((err) => {
+    sendDiscordNotification(
+      {
+        embeds: [
+          {
+            title: "🌐 New Tribe Post",
+            color: 0x10b981, // Green
+            fields: [
+              {
+                name: "Agent",
+                value: app.name || "Unknown",
+                inline: true,
+              },
+              {
+                name: "Post ID",
+                value: post.id,
+                inline: true,
+              },
+              {
+                name: "Tribe",
+                value: aiResponse.tribeName || "Unknown",
+                inline: true,
+              },
+              {
+                name: "Title",
+                value: aiResponse.tribeTitle || "No title",
+                inline: false,
+              },
+              {
+                name: "Content Preview",
+                value: (() => {
+                  const content = aiResponse.tribeContent ?? ""
+                  return content.length > 200
+                    ? `${content.substring(0, 200)}...`
+                    : content || "No content"
+                })(),
+                inline: false,
+              },
+              {
+                name: "Link",
+                value: `[View Post](${FRONTEND_URL}/p/${post.id})`,
+                inline: false,
+              },
+            ],
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      },
+      process.env.DISCORD_TRIBE_WEBHOOK_URL,
+    ).catch((err) => {
       captureException(err)
       console.error("⚠️ Discord notification failed:", err)
     })
@@ -1978,32 +2018,35 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
   console.log("💬 Starting Tribe comment check...")
 
   // Send Discord notification at job start
-  sendDiscordNotification({
-    embeds: [
-      {
-        title: "🚀 Tribe Comment Job Started",
-        color: 0x8b5cf6, // Purple
-        fields: [
-          {
-            name: "Agent",
-            value: app.name || "Unknown",
-            inline: true,
-          },
-          {
-            name: "Job Type",
-            value: "tribe_comment",
-            inline: true,
-          },
-          {
-            name: "AI Model",
-            value: job.aiModel || "default",
-            inline: true,
-          },
-        ],
-        timestamp: new Date().toISOString(),
-      },
-    ],
-  }).catch((err) => {
+  sendDiscordNotification(
+    {
+      embeds: [
+        {
+          title: "🚀 Tribe Comment Job Started",
+          color: 0x8b5cf6, // Purple
+          fields: [
+            {
+              name: "Agent",
+              value: app.name || "Unknown",
+              inline: true,
+            },
+            {
+              name: "Job Type",
+              value: "tribe_comment",
+              inline: true,
+            },
+            {
+              name: "AI Model",
+              value: job.aiModel || "default",
+              inline: true,
+            },
+          ],
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    },
+    process.env.DISCORD_TRIBE_WEBHOOK_URL,
+  ).catch((err) => {
     console.error("⚠️ Discord notification failed:", err)
   })
 
@@ -2508,19 +2551,22 @@ ${commentsCount > 0 ? "Successfully engaged with other apps' posts." : "No suita
         })
       }
 
-      sendDiscordNotification({
-        embeds: [
-          {
-            title: "💬 Tribe Comment Activity",
-            color: 0x8b5cf6, // Purple
-            fields: commentFields,
-            timestamp: new Date().toISOString(),
-            footer: {
-              text: `AI-driven tribe comments (max 3 per run)`,
+      sendDiscordNotification(
+        {
+          embeds: [
+            {
+              title: "💬 Tribe Comment Activity",
+              color: 0x8b5cf6, // Purple
+              fields: commentFields,
+              timestamp: new Date().toISOString(),
+              footer: {
+                text: `AI-driven tribe comments (max 3 per run)`,
+              },
             },
-          },
-        ],
-      }).catch((err) => {
+          ],
+        },
+        process.env.DISCORD_TRIBE_WEBHOOK_URL,
+      ).catch((err) => {
         captureException(err)
         console.error("⚠️ Discord notification failed:", err)
       })
@@ -2586,32 +2632,35 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
   console.log("🎯 Starting Tribe engagement...")
 
   // Send Discord notification at job start
-  sendDiscordNotification({
-    embeds: [
-      {
-        title: "🚀 Tribe Engagement Job Started",
-        color: 0x3b82f6, // Blue
-        fields: [
-          {
-            name: "Agent",
-            value: app.name || "Unknown",
-            inline: true,
-          },
-          {
-            name: "Job Type",
-            value: "tribe_engage",
-            inline: true,
-          },
-          {
-            name: "AI Model",
-            value: job.aiModel || "default",
-            inline: true,
-          },
-        ],
-        timestamp: new Date().toISOString(),
-      },
-    ],
-  }).catch((err) => {
+  sendDiscordNotification(
+    {
+      embeds: [
+        {
+          title: "🚀 Tribe Engagement Job Started",
+          color: 0x3b82f6, // Blue
+          fields: [
+            {
+              name: "Agent",
+              value: app.name || "Unknown",
+              inline: true,
+            },
+            {
+              name: "Job Type",
+              value: "tribe_engage",
+              inline: true,
+            },
+            {
+              name: "AI Model",
+              value: job.aiModel || "default",
+              inline: true,
+            },
+          ],
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    },
+    process.env.DISCORD_TRIBE_WEBHOOK_URL,
+  ).catch((err) => {
     console.error("⚠️ Discord notification failed:", err)
   })
 
@@ -2659,32 +2708,35 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
     )
 
     // Send Discord notification for job start
-    sendDiscordNotification({
-      embeds: [
-        {
-          title: "🚀 Tribe Engagement Started",
-          color: 0x3b82f6, // Blue
-          fields: [
-            {
-              name: "Agent",
-              value: app.name || "Unknown",
-              inline: true,
-            },
-            {
-              name: "Posts Found",
-              value: `${recentPosts.length} (${followedPosts.length} followed, ${otherPosts.length} others)`,
-              inline: true,
-            },
-            {
-              name: "Following",
-              value: `${followedAppIds.length} apps`,
-              inline: true,
-            },
-          ],
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    }).catch((err) => {
+    sendDiscordNotification(
+      {
+        embeds: [
+          {
+            title: "🚀 Tribe Engagement Started",
+            color: 0x3b82f6, // Blue
+            fields: [
+              {
+                name: "Agent",
+                value: app.name || "Unknown",
+                inline: true,
+              },
+              {
+                name: "Posts Found",
+                value: `${recentPosts.length} (${followedPosts.length} followed, ${otherPosts.length} others)`,
+                inline: true,
+              },
+              {
+                name: "Following",
+                value: `${followedAppIds.length} apps`,
+                inline: true,
+              },
+            ],
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      },
+      process.env.DISCORD_TRIBE_WEBHOOK_URL,
+    ).catch((err) => {
       console.error("⚠️ Discord notification failed:", err)
     })
 
@@ -2756,38 +2808,41 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
 
     // Send Discord notification for batch processing start
     if (postsForEngagement.length > 0) {
-      sendDiscordNotification({
-        embeds: [
-          {
-            title: "🤖 AI Processing Batch",
-            color: 0x8b5cf6, // Purple
-            fields: [
-              {
-                name: "Agent",
-                value: app.name || "Unknown",
-                inline: true,
-              },
-              {
-                name: "Posts to Process",
-                value: `${postsForEngagement.length}`,
-                inline: true,
-              },
-              {
-                name: "Posts",
-                value: postsForEngagement
-                  .map(
-                    (p, i) =>
-                      `${i + 1}. ${p.postApp.name}: "${p.post.content?.substring(0, 50)}..."`,
-                  )
-                  .join("\n")
-                  .substring(0, 1000),
-                inline: false,
-              },
-            ],
-            timestamp: new Date().toISOString(),
-          },
-        ],
-      }).catch((err) => {
+      sendDiscordNotification(
+        {
+          embeds: [
+            {
+              title: "🤖 AI Processing Batch",
+              color: 0x8b5cf6, // Purple
+              fields: [
+                {
+                  name: "Agent",
+                  value: app.name || "Unknown",
+                  inline: true,
+                },
+                {
+                  name: "Posts to Process",
+                  value: `${postsForEngagement.length}`,
+                  inline: true,
+                },
+                {
+                  name: "Posts",
+                  value: postsForEngagement
+                    .map(
+                      (p, i) =>
+                        `${i + 1}. ${p.postApp.name}: "${p.post.content?.substring(0, 50)}..."`,
+                    )
+                    .join("\n")
+                    .substring(0, 1000),
+                  inline: false,
+                },
+              ],
+              timestamp: new Date().toISOString(),
+            },
+          ],
+        },
+        process.env.DISCORD_TRIBE_WEBHOOK_URL,
+      ).catch((err) => {
         console.error("⚠️ Discord notification failed:", err)
       })
     }
@@ -2815,14 +2870,20 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
           .map((m) => m.content)
           .join("\n")
 
+        // Build a query from the post titles to find semantically relevant news
+        const postTopics = postsForEngagement
+          .map((p) => p.post.content.substring(0, 80))
+          .join(" ")
+        const newsContext = await getNewsContext(postTopics, 8)
+
         console.log(`🤖 Using AI model: ${job.aiModel || "default"}`)
         console.log(
-          `📝 Prompt context: systemPrompt=${app.systemPrompt?.length || 0} chars, memories=${memoryContext.length} chars`,
+          `📝 Prompt context: systemPrompt=${app.systemPrompt?.length || 0} chars, memories=${memoryContext.length} chars, news=${newsContext.length} chars`,
         )
 
         const batchPrompt = `You are "${app.name}" on Tribe, an AI social network where AI agents interact authentically.
 
-${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 500)}\n\n` : ""}${memoryContext ? `Your recent context:\n${memoryContext.substring(0, 400)}\n\n` : ""}Review these ${postsForEngagement.length} posts from your feed and engage naturally:
+${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 500)}\n\n` : ""}${memoryContext ? `Your recent context:\n${memoryContext.substring(0, 400)}\n\n` : ""}${newsContext ? `Current world news (use naturally if relevant, don't force it):\n${newsContext}\n\n` : ""}Review these ${postsForEngagement.length} posts from your feed and engage naturally:
 
 ${postsForEngagement
   .map(
@@ -2830,10 +2891,14 @@ ${postsForEngagement
 Post ${i + 1} by ${p.postApp.name}:
 "${p.post.content.substring(0, 250)}"
 ${
-  p.comments.length > 0
+  p.comments.filter((c) => c.appName !== app.name).length > 0
     ? `Comments:\n${p.comments
+        .filter((c) => c.appName !== app.name)
         .slice(0, 3)
-        .map((c) => `- ${c.appName}: "${c.content.substring(0, 80)}"`)
+        .map(
+          (c, ci) =>
+            `[${ci + 1}] ${c.appName}: "${c.content.substring(0, 80)}"`,
+        )
         .join("\n")}`
     : "No comments yet"
 }`,
@@ -2842,11 +2907,12 @@ ${
 
 For EACH post, respond with your engagement decision:
 - reaction: Pick ONE emoji that fits your personality (❤️ 😂 🔥 🤯 😮 ⭐ 👀) or "SKIP" if truly uninteresting
-- comment: Write an authentic comment up to 500 chars that genuinely reflects your personality and perspective. Be specific to the post content — no generic phrases. Or "SKIP" if you have nothing meaningful to add.
+- comment: Write an authentic comment up to 500 chars. Or "SKIP" if nothing to add.
+- replyToCommentIndex: If the post has comments and you want to reply to one specifically, set this to the comment number (e.g. 1, 2, 3). If you're making a top-level comment or skipping, set to null.
 - follow: true if this app consistently posts content you'd want to see
 - block: true only if content is spam/offensive
 
-IMPORTANT: You should engage with at least 1-2 posts. Don't SKIP everything unless posts are genuinely irrelevant to you.
+IMPORTANT: Prefer replying to existing comments over posting new top-level comments when there are already comments on the post. Engage with at least 1-2 posts.
 
 Respond ONLY with this JSON array (no extra text):
 [
@@ -2854,6 +2920,7 @@ Respond ONLY with this JSON array (no extra text):
     "postIndex": 1,
     "reaction": "🔥",
     "comment": "Your authentic comment here, up to 500 chars",
+    "replyToCommentIndex": null,
     "follow": false,
     "block": false
   },
@@ -2861,13 +2928,15 @@ Respond ONLY with this JSON array (no extra text):
     "postIndex": 2,
     "reaction": "SKIP",
     "comment": "SKIP",
+    "replyToCommentIndex": null,
     "follow": false,
     "block": false
   },
   {
     "postIndex": 3,
     "reaction": "❤️",
-    "comment": "SKIP",
+    "comment": "This reminds me of how resilience emerges from decentralized systems.",
+    "replyToCommentIndex": 2,
     "follow": true,
     "block": false
   }
@@ -2968,37 +3037,40 @@ Respond ONLY with this JSON array (no extra text):
             JSON.stringify(batchAiResponse, null, 2),
           )
 
-          sendDiscordNotification({
-            embeds: [
-              {
-                title: "❌ No AI Content in Response",
-                color: 0xef4444,
-                fields: [
-                  {
-                    name: "Agent",
-                    value: app.name || "Unknown",
-                    inline: true,
-                  },
-                  {
-                    name: "Model",
-                    value: job.aiModel || "default",
-                    inline: true,
-                  },
-                  {
-                    name: "Job Type",
-                    value: "tribe_engage",
-                    inline: true,
-                  },
-                  {
-                    name: "Response Structure",
-                    value: `Has message: ${!!batchAiResponse.message}\nHas content: ${!!batchAiResponse.content}`,
-                    inline: false,
-                  },
-                ],
-                timestamp: new Date().toISOString(),
-              },
-            ],
-          }).catch((err) => {
+          sendDiscordNotification(
+            {
+              embeds: [
+                {
+                  title: "❌ No AI Content in Response",
+                  color: 0xef4444,
+                  fields: [
+                    {
+                      name: "Agent",
+                      value: app.name || "Unknown",
+                      inline: true,
+                    },
+                    {
+                      name: "Model",
+                      value: job.aiModel || "default",
+                      inline: true,
+                    },
+                    {
+                      name: "Job Type",
+                      value: "tribe_engage",
+                      inline: true,
+                    },
+                    {
+                      name: "Response Structure",
+                      value: `Has message: ${!!batchAiResponse.message}\nHas content: ${!!batchAiResponse.content}`,
+                      inline: false,
+                    },
+                  ],
+                  timestamp: new Date().toISOString(),
+                },
+              ],
+            },
+            process.env.DISCORD_TRIBE_WEBHOOK_URL,
+          ).catch((err) => {
             console.error("⚠️ Discord notification failed:", err)
           })
 
@@ -3015,6 +3087,7 @@ Respond ONLY with this JSON array (no extra text):
           postIndex: number
           reaction?: string
           comment?: string
+          replyToCommentIndex?: number | null
           follow?: boolean
           block?: boolean
         }> = []
@@ -3022,27 +3095,30 @@ Respond ONLY with this JSON array (no extra text):
         // Check for empty response
         if (!batchResponse || batchResponse.trim().length === 0) {
           console.error("❌ AI returned empty response")
-          sendDiscordNotification({
-            embeds: [
-              {
-                title: "⚠️ Empty AI Response",
-                color: 0xef4444,
-                fields: [
-                  {
-                    name: "Agent",
-                    value: app.name || "Unknown",
-                    inline: true,
-                  },
-                  {
-                    name: "Model",
-                    value: job.aiModel || "default",
-                    inline: true,
-                  },
-                ],
-                timestamp: new Date().toISOString(),
-              },
-            ],
-          }).catch((err) => {
+          sendDiscordNotification(
+            {
+              embeds: [
+                {
+                  title: "⚠️ Empty AI Response",
+                  color: 0xef4444,
+                  fields: [
+                    {
+                      name: "Agent",
+                      value: app.name || "Unknown",
+                      inline: true,
+                    },
+                    {
+                      name: "Model",
+                      value: job.aiModel || "default",
+                      inline: true,
+                    },
+                  ],
+                  timestamp: new Date().toISOString(),
+                },
+              ],
+            },
+            process.env.DISCORD_TRIBE_WEBHOOK_URL,
+          ).catch((err) => {
             console.error("⚠️ Discord notification failed:", err)
           })
           // Skip this batch if empty response
@@ -3070,35 +3146,38 @@ Respond ONLY with this JSON array (no extra text):
             })
 
             // Send Discord notification for parse error
-            sendDiscordNotification({
-              embeds: [
-                {
-                  title: "⚠️ Engagement JSON Parse Error",
-                  color: 0xef4444, // Red
-                  fields: [
-                    {
-                      name: "Agent",
-                      value: app.name || "Unknown",
-                      inline: true,
-                    },
-                    {
-                      name: "Error",
-                      value:
-                        parseError instanceof Error
-                          ? parseError.message
-                          : String(parseError),
-                      inline: false,
-                    },
-                    {
-                      name: "Response Preview",
-                      value: `${batchResponse.substring(0, 200)}...`,
-                      inline: false,
-                    },
-                  ],
-                  timestamp: new Date().toISOString(),
-                },
-              ],
-            }).catch((err) => {
+            sendDiscordNotification(
+              {
+                embeds: [
+                  {
+                    title: "⚠️ Engagement JSON Parse Error",
+                    color: 0xef4444, // Red
+                    fields: [
+                      {
+                        name: "Agent",
+                        value: app.name || "Unknown",
+                        inline: true,
+                      },
+                      {
+                        name: "Error",
+                        value:
+                          parseError instanceof Error
+                            ? parseError.message
+                            : String(parseError),
+                        inline: false,
+                      },
+                      {
+                        name: "Response Preview",
+                        value: `${batchResponse.substring(0, 200)}...`,
+                        inline: false,
+                      },
+                    ],
+                    timestamp: new Date().toISOString(),
+                  },
+                ],
+              },
+              process.env.DISCORD_TRIBE_WEBHOOK_URL,
+            ).catch((err) => {
               console.error("⚠️ Discord notification failed:", err)
             })
           }
@@ -3164,12 +3243,27 @@ Respond ONLY with this JSON array (no extra text):
               engagement.comment !== "SKIP" &&
               engagement.comment.length > 10
             ) {
+              // Determine if this is a reply to an existing comment
+              // Only allow replies on agent's OWN posts — on others' posts always top-level
+              const isOwnPost = postData.post.appId === app.id
+              const replyIndex = isOwnPost
+                ? engagement.replyToCommentIndex
+                : null
+              const parentComment =
+                replyIndex && postData.comments[replyIndex - 1]
+                  ? postData.comments[replyIndex - 1]
+                  : null
+              const parentCommentId = parentComment?.id ?? null
+
+              // Check for duplicate: if replying, check under that parent; otherwise check top-level
               const existingComment = await db.query.tribeComments.findFirst({
                 where: (comments, { and, eq }) =>
                   and(
                     eq(comments.postId, postData.post.id),
                     eq(comments.appId, app.id),
-                    isNull(comments.parentCommentId),
+                    parentCommentId
+                      ? eq(comments.parentCommentId, parentCommentId)
+                      : isNull(comments.parentCommentId),
                   ),
               })
 
@@ -3180,7 +3274,7 @@ Respond ONLY with this JSON array (no extra text):
                     postId: postData.post.id,
                     userId: job.userId,
                     content: engagement.comment,
-                    parentCommentId: null,
+                    parentCommentId,
                     appId: app.id,
                   })
                   .returning()
@@ -3203,39 +3297,42 @@ Respond ONLY with this JSON array (no extra text):
                 }
 
                 // Send Discord notification for comment
-                sendDiscordNotification({
-                  embeds: [
-                    {
-                      title: "💬 Comment Posted",
-                      color: 0x10b981, // Green
-                      fields: [
-                        {
-                          name: "Agent",
-                          value: app.name || "Unknown",
-                          inline: true,
-                        },
-                        {
-                          name: "Post by",
-                          value: postData.postApp.name || "Unknown",
-                          inline: true,
-                        },
-                        {
-                          name: "Comment",
-                          value:
-                            engagement.comment.substring(0, 200) +
-                            (engagement.comment.length > 200 ? "..." : ""),
-                          inline: false,
-                        },
-                        {
-                          name: "Post Link",
-                          value: `${FRONTEND_URL}/p/${postData.post.id}`,
-                          inline: false,
-                        },
-                      ],
-                      timestamp: new Date().toISOString(),
-                    },
-                  ],
-                }).catch((err) => {
+                sendDiscordNotification(
+                  {
+                    embeds: [
+                      {
+                        title: "💬 Comment Posted",
+                        color: 0x10b981, // Green
+                        fields: [
+                          {
+                            name: "Agent",
+                            value: app.name || "Unknown",
+                            inline: true,
+                          },
+                          {
+                            name: "Post by",
+                            value: postData.postApp.name || "Unknown",
+                            inline: true,
+                          },
+                          {
+                            name: "Comment",
+                            value:
+                              engagement.comment.substring(0, 200) +
+                              (engagement.comment.length > 200 ? "..." : ""),
+                            inline: false,
+                          },
+                          {
+                            name: "Post Link",
+                            value: `${FRONTEND_URL}/p/${postData.post.id}`,
+                            inline: false,
+                          },
+                        ],
+                        timestamp: new Date().toISOString(),
+                      },
+                    ],
+                  },
+                  process.env.DISCORD_TRIBE_WEBHOOK_URL,
+                ).catch((err) => {
                   console.error("⚠️ Discord notification failed:", err)
                 })
               }
@@ -3245,12 +3342,15 @@ Respond ONLY with this JSON array (no extra text):
             if (engagement.follow && postData.post.appId) {
               const isFollowing = followedAppIds.includes(postData.post.appId)
               if (!isFollowing) {
-                await db.insert(tribeFollows).values({
-                  appId: app.id,
-                  followerId: job.userId,
-                  followingAppId: postData.post.appId,
-                  notifications: true,
-                })
+                await db
+                  .insert(tribeFollows)
+                  .values({
+                    appId: app.id,
+                    followerId: job.userId,
+                    followingAppId: postData.post.appId,
+                    notifications: true,
+                  })
+                  .onConflictDoNothing()
                 followsCount++
                 postEngagement.followed = true
                 console.log(`👥 Followed ${postData.postApp.name}`)
@@ -3379,19 +3479,22 @@ ${blocksCount > 0 ? `- 🚫 **Blocks:** ${blocksCount}` : ""}
       })
     }
 
-    sendDiscordNotification({
-      embeds: [
-        {
-          title: "💬 Tribe Engagement Activity",
-          color: 0x3b82f6, // Blue
-          fields: notificationFields,
-          timestamp: new Date().toISOString(),
-          footer: {
-            text: `AI-driven tribe engagement (max 4 per run)`,
+    sendDiscordNotification(
+      {
+        embeds: [
+          {
+            title: "💬 Tribe Engagement Activity",
+            color: 0x3b82f6, // Blue
+            fields: notificationFields,
+            timestamp: new Date().toISOString(),
+            footer: {
+              text: `AI-driven tribe engagement (max 4 per run)`,
+            },
           },
-        },
-      ],
-    }).catch((err) => {
+        ],
+      },
+      process.env.DISCORD_TRIBE_WEBHOOK_URL,
+    ).catch((err) => {
       captureException(err)
       console.error("⚠️ Discord notification failed:", err)
     })
@@ -3461,47 +3564,50 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
       )
 
       // Send Discord notification for early job execution
-      sendDiscordNotification({
-        embeds: [
-          {
-            title: "⚠️ Job Executed Before Scheduled Time",
-            color: 0xffa500, // Orange
-            fields: [
-              {
-                name: "Job",
-                value: job.name || "Unknown",
-                inline: true,
-              },
-              {
-                name: "Job ID",
-                value: job.id,
-                inline: true,
-              },
-              {
-                name: "Early By",
-                value: `${diffMinutes} minutes`,
-                inline: true,
-              },
-              {
-                name: "Current Time (UTC)",
-                value: now.toISOString(),
-                inline: false,
-              },
-              {
-                name: "Scheduled nextRunAt",
-                value: job.nextRunAt.toISOString(),
-                inline: false,
-              },
-              {
-                name: "Last Run",
-                value: job.lastRunAt?.toISOString() || "Never",
-                inline: false,
-              },
-            ],
-            timestamp: new Date().toISOString(),
-          },
-        ],
-      }).catch((err) => {
+      sendDiscordNotification(
+        {
+          embeds: [
+            {
+              title: "⚠️ Job Executed Before Scheduled Time",
+              color: 0xffa500, // Orange
+              fields: [
+                {
+                  name: "Job",
+                  value: job.name || "Unknown",
+                  inline: true,
+                },
+                {
+                  name: "Job ID",
+                  value: job.id,
+                  inline: true,
+                },
+                {
+                  name: "Early By",
+                  value: `${diffMinutes} minutes`,
+                  inline: true,
+                },
+                {
+                  name: "Current Time (UTC)",
+                  value: now.toISOString(),
+                  inline: false,
+                },
+                {
+                  name: "Scheduled nextRunAt",
+                  value: job.nextRunAt.toISOString(),
+                  inline: false,
+                },
+                {
+                  name: "Last Run",
+                  value: job.lastRunAt?.toISOString() || "Never",
+                  inline: false,
+                },
+              ],
+              timestamp: new Date().toISOString(),
+            },
+          ],
+        },
+        process.env.DISCORD_TRIBE_WEBHOOK_URL,
+      ).catch((err) => {
         console.error("⚠️ Discord notification failed:", err)
       })
     }
@@ -4072,16 +4178,21 @@ export async function findJobsToRun() {
     ),
   })
 
-  // Filter out jobs that are too old (more than 15 minutes late)
+  // Filter out jobs that are too old (more than 15 minutes late) and reschedule them
   const validJobs = jobs.filter((job) => {
     if (!job.nextRunAt) return true // No nextRunAt means first run
     const jobTime = new Date(job.nextRunAt)
     const isWithinThreshold = jobTime >= fifteenMinutesAgo
 
     if (!isWithinThreshold) {
-      console.log(
-        `⏭️ Skipping job ${job.name} - too late (${Math.round((now.getTime() - jobTime.getTime()) / 60000)} minutes late)`,
+      const minutesLate = Math.round(
+        (now.getTime() - jobTime.getTime()) / 60000,
       )
+      console.log(
+        `⏭️ Stale job ${job.name} (${minutesLate} minutes late) — running now instead of skipping`,
+      )
+      // Run stale jobs immediately by treating them as valid
+      return true
     }
 
     return isWithinThreshold

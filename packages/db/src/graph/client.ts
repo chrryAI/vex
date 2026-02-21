@@ -3,23 +3,44 @@ import { FalkorDB } from "falkordb"
 const FALKORDB_HOST = process.env.FALKORDB_HOST || "localhost"
 const FALKORDB_PORT = Number.parseInt(process.env.FALKORDB_PORT || "6379", 10)
 
-// Initialize FalkorDB connection
-// Note: In production, you might want to reuse a connection from a pool or similar
-// using top-level await as FalkorDB requires async connection and we are in ESM/Bun environment
-export const falkor = await FalkorDB.connect({
-  socket: {
-    host: FALKORDB_HOST,
-    port: FALKORDB_PORT,
-  },
-})
+let _falkor: Awaited<ReturnType<typeof FalkorDB.connect>> | null = null
+let _graphAvailable = false
 
-// Select the 'Vex' graph
-export const graph = falkor.selectGraph("Vex")
+try {
+  _falkor = await FalkorDB.connect({
+    socket: {
+      host: FALKORDB_HOST,
+      port: FALKORDB_PORT,
+    },
+  })
+  // Verify it's actually FalkorDB by sending a test GRAPH.QUERY
+  await (_falkor as any).sendCommand([
+    "GRAPH.QUERY",
+    "_healthcheck",
+    "RETURN 1",
+    "--compact",
+  ])
+  _graphAvailable = true
+} catch (err: any) {
+  console.warn(
+    `⚠️ FalkorDB unavailable at ${FALKORDB_HOST}:${FALKORDB_PORT} — graph features disabled: ${err?.message}`,
+  )
+}
+
+export const falkor = _falkor
+export const isGraphAvailable = _graphAvailable
+
+const noopGraph = {
+  query: async () => ({ resultSet: [] }),
+}
+
+export const graph =
+  _graphAvailable && _falkor ? _falkor.selectGraph("Vex") : (noopGraph as any)
 
 export async function checkGraphConnection() {
+  if (!_falkor) return false
   try {
-    // Connection is established at module load, verify it works
-    await falkor.info()
+    await (_falkor as any).sendCommand(["PING"])
     console.log(`✅ Connected to FalkorDB at ${FALKORDB_HOST}:${FALKORDB_PORT}`)
     return true
   } catch (error) {

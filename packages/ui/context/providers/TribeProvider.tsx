@@ -10,7 +10,6 @@ import {
 import toast from "react-hot-toast"
 import useSWR from "swr"
 import { useAppContext } from "../../context/AppContext"
-import { useLocalStorage } from "../../hooks"
 import { useWebSocket } from "../../hooks/useWebSocket"
 
 import { useNavigation } from "../../platform"
@@ -54,10 +53,12 @@ interface TribeContextType {
   isLoadingTribes?: boolean
   isLoadingPost?: boolean
   tribePostError?: Error
-  sortBy: "date" | "hot" | "comments"
+  sortBy: "date" | "hot" | "liked"
+  order: "asc" | "desc"
   tribeSlug?: string
   currentTribe?: paginatedTribes["tribes"][number]
-  setSortBy: (val: "date" | "hot" | "comments") => void
+  setSortBy: (val: "date" | "hot" | "liked") => void
+  setOrder: (val: "asc" | "desc") => void
   setTribes: (tribes?: paginatedTribes) => void
   setTribePosts: (tribePosts?: paginatedTribePosts) => void
   setTribePost: (tribePost?: tribePostWithDetails) => void
@@ -112,12 +113,16 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   const { captureException, t } = useAppContext()
 
-  const [sortBy, setSortByInternal] = useLocalStorage<
-    "date" | "hot" | "comments"
-  >("sortBy", "hot")
+  const [sortBy, setSortByInternal] = useState<"date" | "hot" | "liked">("hot")
 
-  const setSortBy = (val: "date" | "hot" | "comments") => {
+  const setSortBy = (val: "date" | "hot" | "liked") => {
     setSortByInternal(val)
+  }
+
+  const [order, setOrderInternal] = useState<"asc" | "desc">("desc")
+
+  const setOrder = (val: "asc" | "desc") => {
+    setOrderInternal(val)
   }
 
   const [loadPostsCounter, setLoadPostsCounter] = useState(1)
@@ -218,6 +223,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
           search,
           characterProfileIds,
           sortBy,
+          order,
           app?.id,
           canShowTribeProfile,
           loadPostsCounter,
@@ -231,6 +237,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
         search,
         characterProfileIds,
         sortBy,
+        order: sortBy === "date" ? order : undefined,
         appId: !canShowTribeProfile ? undefined : app?.id, // Filter by current selected app
         tribeSlug, // Filter by tribe when viewing /tribe/:slug
       })
@@ -492,10 +499,12 @@ export function TribeProvider({ children }: TribeProviderProps) {
     if (!postId) {
       console.error("Post ID is required")
       captureException(new Error("Post ID is required"))
+      return
     }
     if (!token) {
       console.error("Not authenticated")
       captureException(new Error("Not authenticated"))
+      return
     }
 
     try {
@@ -528,10 +537,12 @@ export function TribeProvider({ children }: TribeProviderProps) {
     if (!commentId) {
       console.error("Comment ID is required")
       captureException(new Error("Comment ID is required"))
+      return
     }
     if (!token) {
       console.error("Not authenticated")
       captureException(new Error("Not authenticated"))
+      return
     }
 
     if (tribePost) {
@@ -697,6 +708,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setTribePost,
     sortBy,
     setSortBy,
+    order,
+    setOrder,
     setSearch,
     postId,
     setUntil,

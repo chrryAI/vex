@@ -28,7 +28,6 @@ import {
 } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
-import { captureException } from "@sentry/node"
 import type { themeType } from "chrry/context/ThemeContext"
 import { v4 as uuidv4, validate } from "uuid"
 import {
@@ -37,6 +36,7 @@ import {
   getBlogPost,
   getBlogPosts,
 } from "./blog-loader"
+import { captureException } from "./captureException"
 import { generateServerMetadata } from "./server-metadata"
 
 export interface ServerRequest {
@@ -294,7 +294,6 @@ export async function loadServerData(
   let _tribe: tribe | undefined
 
   try {
-    appId = threadResult?.thread?.appId || headers["x-app-id"]
     const sessionResult = await getSession({
       // appId: appResult.id,
       deviceId,
@@ -364,9 +363,14 @@ export async function loadServerData(
       }
     }
 
+    appId =
+      tribePostResult?.appId ||
+      threadResult?.thread?.appId ||
+      headers["x-app-id"]
+
     const appResult = await getApp({
       chrryUrl,
-      appId: threadResult?.thread?.appId || tribePostResult?.appId || appId,
+      appId,
       token: apiKey,
       pathname,
       API_URL,

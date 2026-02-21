@@ -8,7 +8,7 @@ import { useApp } from "./context/providers"
 import Img from "./Img"
 import { Claude, DeepSeek, Flux, Gemini, OpenAI, Perplexity } from "./icons"
 import { getImageSrc } from "./lib"
-import { Text } from "./platform"
+import { Span, Text } from "./platform"
 import type { appWithStore, store } from "./types"
 import {
   API_URL,
@@ -197,116 +197,161 @@ export default function ImageComponent(props: ImageProps) {
   const emojiSize = intSize <= 50 ? intSize * 0.85 : intSize
 
   if (icon === "molt") {
-    return <Text style={{ fontSize: emojiSize }}>🦞</Text>
-  }
-  // if (isEmoji) {
-  if (app?.store?.slug === "books") {
-    if (app.slug === "1984") {
-      return <Text style={{ fontSize: emojiSize }}>👁️</Text>
-    }
-
-    if (app.slug === "meditations") {
-      return <Text style={{ fontSize: emojiSize }}>🏛️</Text>
-    }
-
-    if (app.slug === "dune") {
-      return <Text style={{ fontSize: emojiSize }}>🏜️</Text>
-    }
+    return <Text style={{ fontSize: emojiSize, ...style }}>🦞</Text>
   }
 
   const appSlug = app?.slug || slug
 
+  // if (isEmoji) {
+  if (appSlug === "1984") {
+    return <Text style={{ fontSize: emojiSize, ...style }}>👁️</Text>
+  }
+
+  if (appSlug === "meditations") {
+    return <Text style={{ fontSize: emojiSize, ...style }}>🏛️</Text>
+  }
+
+  if (appSlug === "dune") {
+    return <Text style={{ fontSize: emojiSize, ...style }}>🏜️</Text>
+  }
+
   if (appSlug === "fightClub") {
-    return <Text style={{ fontSize: emojiSize }}>🧼</Text>
+    return <Text style={{ fontSize: emojiSize, ...style }}>🧼</Text>
   }
 
   if (appSlug === "inception") {
-    return <Text style={{ fontSize: emojiSize }}>🌀</Text>
+    return <Text style={{ fontSize: emojiSize, ...style }}>🌀</Text>
   }
 
   if (appSlug === "pulpFiction") {
-    return <Text style={{ fontSize: emojiSize }}>🍔</Text>
+    return <Text style={{ fontSize: emojiSize, ...style }}>🍔</Text>
   }
 
   if (appSlug === "hungerGames") {
-    return <Text style={{ fontSize: emojiSize }}>🏹</Text>
+    return <Text style={{ fontSize: emojiSize, ...style }}>🏹</Text>
   }
 
   if (appSlug === "amsterdam") {
-    return <CircleFlag height={emojiSize} countryCode="nl" />
+    return (
+      <Span style={style}>
+        <CircleFlag height={emojiSize} countryCode="nl" />
+      </Span>
+    )
   }
 
   if (appSlug === "tokyo") {
-    return <CircleFlag height={emojiSize} countryCode="jp" />
+    return (
+      <Span style={style}>
+        <CircleFlag height={emojiSize} countryCode="jp" />
+      </Span>
+    )
   }
 
   if (appSlug === "paris") {
-    return <CircleFlag height={emojiSize} countryCode="fr" />
+    return (
+      <Span style={style}>
+        <CircleFlag height={emojiSize} countryCode="fr" />
+      </Span>
+    )
   }
 
   if (appSlug === "istanbul") {
-    return <CircleFlag height={emojiSize} countryCode="tr" />
+    return (
+      <Span style={style}>
+        <CircleFlag height={emojiSize} countryCode="tr" />
+      </Span>
+    )
   }
 
   if (appSlug === "newYork") {
-    return <CircleFlag height={emojiSize} countryCode="us" />
+    return (
+      <Span style={style}>
+        <CircleFlag height={emojiSize} countryCode="us" />
+      </Span>
+    )
   }
   // }
 
   if (isAgent && app) {
     return app.defaultModel === "deepSeek" ? (
-      <DeepSeek color={color} size={size} />
+      <Span style={style}>
+        <DeepSeek color={color} size={size} />
+      </Span>
     ) : app.defaultModel === "chatGPT" ? (
-      <OpenAI color={color} size={size} />
+      <Span style={style}>
+        <OpenAI color={color} size={size} />
+      </Span>
     ) : app.defaultModel === "claude" ? (
-      <Claude color={color} size={size} />
+      <Span style={style}>
+        <Claude color={color} size={size} />
+      </Span>
     ) : app.defaultModel === "gemini" ? (
-      <Gemini color={color} size={size} />
+      <Span style={style}>
+        <Gemini color={color} size={size} />
+      </Span>
     ) : app.defaultModel === "flux" ? (
-      <Flux color={color} size={size} />
+      <Span style={style}>
+        <Flux color={color} size={size} />
+      </Span>
     ) : app.defaultModel === "perplexity" ? (
-      <Perplexity color={color} size={size} />
+      <Span style={style}>
+        <Perplexity color={color} size={size} />
+      </Span>
     ) : null
   }
 
-  if (isAgent && slug) {
-    return slug === "deepSeek" ? (
-      <DeepSeek color={color} size={size} />
-    ) : slug === "chatGPT" ? (
-      <OpenAI color={color} size={size} />
-    ) : slug === "claude" ? (
-      <Claude color={color} size={size} />
-    ) : slug === "gemini" ? (
-      <Gemini color={color} size={size} />
-    ) : slug === "flux" ? (
-      <Flux color={color} size={size} />
-    ) : slug === "perplexity" ? (
-      <Perplexity color={color} size={size} />
-    ) : null
+  if (slug) {
+    const result =
+      slug === "deepSeek" ? (
+        <Span style={style}>
+          <DeepSeek color={color} size={size} />
+        </Span>
+      ) : slug === "chatGPT" ? (
+        <Span style={style}>
+          <OpenAI color={color} size={size} />
+        </Span>
+      ) : ["claude", "researcher", "review", "writer"].includes(slug) ? (
+        <Span style={style}>
+          <Claude color={color} size={size} />
+        </Span>
+      ) : slug === "gemini" ? (
+        <Span style={style}>
+          <Gemini color={color} size={size} />
+        </Span>
+      ) : slug === "flux" ? (
+        <Span style={style}>
+          <Flux color={color} size={size} />
+        </Span>
+      ) : slug && ["academic", "perplexity", "news"].includes(slug) ? (
+        <Span style={style}>
+          <Perplexity color={color} size={size} />
+        </Span>
+      ) : null
+
+    if (result) return result
   }
+
   const invader = `${BASE_URL}/images/pacman/space-invader.png`
 
   return (
-    <>
-      <Img
-        key={src}
-        onLoad={onLoad}
-        dataTestId={dataTestId}
-        containerClass={containerClass}
-        style={style}
-        className={className}
-        showLoading={showLoading}
-        width={width}
-        height={height}
-        title={title}
-        priority={priority}
-        src={resize({
-          url: slug && !src ? invader : src || invader,
-          width,
-          height,
-        })}
-        alt={alt || app?.title || logo ? "Vex" : ""}
-      />
-    </>
+    <Img
+      key={src}
+      onLoad={onLoad}
+      dataTestId={dataTestId}
+      containerClass={containerClass}
+      style={style}
+      className={className}
+      showLoading={showLoading}
+      width={width}
+      height={height}
+      title={title}
+      priority={priority}
+      src={resize({
+        url: slug && !src ? invader : src || invader,
+        width,
+        height,
+      })}
+      alt={alt || app?.title || logo ? "Vex" : ""}
+    />
   )
 }

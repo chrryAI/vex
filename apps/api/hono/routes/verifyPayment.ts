@@ -37,7 +37,7 @@ import { jsx } from "react/jsx-runtime"
 import Stripe from "stripe"
 import { v4 as uuidv4 } from "uuid"
 import Gift from "../../components/emails/Gift"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import { getMember } from "../lib/auth"
 
 export const verifyPayment = new Hono()

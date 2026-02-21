@@ -1,9 +1,9 @@
 import { isE2E } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
-import { captureException } from "@sentry/node"
 import type { Context } from "hono"
 import nodemailer from "nodemailer"
 import { getChrryUrl } from "../hono/lib/getApp"
+import { captureException } from "./captureException"
 
 export const sendEmail = async ({
   c,
