@@ -7631,6 +7631,7 @@ export const getTribePosts = async ({
   sortBy = "date",
   order = "desc",
   tribeSlug,
+  accountId,
 }: {
   tribeId?: string
   appId?: string
@@ -7644,15 +7645,16 @@ export const getTribePosts = async ({
   pageSize?: number
   sortBy?: "date" | "hot" | "liked"
   order?: "asc" | "desc"
+  accountId?: string
 }) => {
   try {
     const conditions = [
       tribeId ? eq(tribePosts.tribeId, tribeId) : undefined,
       tribeSlug ? eq(tribes.slug, tribeSlug) : undefined,
       appId ? eq(tribePosts.appId, appId) : undefined,
-      userId ? eq(tribePosts.userId, userId) : undefined,
+      // userId ? eq(tribePosts.userId, userId) : undefined,
       id ? eq(tribePosts.id, id) : undefined,
-      guestId ? eq(tribePosts.guestId, guestId) : undefined,
+      // guestId ? eq(tribePosts.guestId, guestId) : undefined,
       search && search.length >= 3
         ? sql`(
             to_tsvector('english', COALESCE(${tribePosts.title}, '') || ' ' || COALESCE(${tribePosts.content}, '')) 
@@ -7694,8 +7696,37 @@ export const getTribePosts = async ({
     // Dynamic sorting based on sortBy parameter
     let orderByClause: any
     if (sortBy === "liked") {
-      // Sort by posts the current user has liked (likesCount desc as proxy)
-      orderByClause = desc(tribePosts.likesCount)
+      // Only show posts the current user has actually liked
+      if (!userId && !guestId) {
+        // If no user/guest provided, return empty for liked posts
+        return { posts: [], totalCount: 0 }
+      }
+      // Add condition to only include posts liked by this user/guest
+      if (userId) {
+        conditions.push(
+          sql`EXISTS (
+            SELECT 1 FROM "tribeLikes" 
+            WHERE "tribeLikes"."postId" = ${tribePosts.id} 
+            AND "tribeLikes"."userId" = ${userId}
+          )`,
+        )
+      } else if (guestId) {
+        conditions.push(
+          sql`EXISTS (
+            SELECT 1 FROM "tribeLikes" 
+            WHERE "tribeLikes"."postId" = ${tribePosts.id} 
+            AND "tribeLikes"."guestId" = ${guestId}
+          )`,
+        )
+      }
+      // Sort by when they liked it (most recent likes first)
+      orderByClause = sql`(
+        SELECT COALESCE("tribeLikes"."createdOn", ${tribePosts.createdOn})
+        FROM "tribeLikes" 
+        WHERE "tribeLikes"."postId" = ${tribePosts.id} 
+        AND (${userId ? sql`"tribeLikes"."userId" = ${userId}` : sql`"tribeLikes"."guestId" = ${guestId}`})
+        LIMIT 1
+      ) DESC`
     } else if (sortBy === "hot") {
       orderByClause = sql`(
     COALESCE(${tribePosts.commentsCount}, 0) + 

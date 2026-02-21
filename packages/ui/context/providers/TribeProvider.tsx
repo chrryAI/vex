@@ -10,7 +10,6 @@ import {
 import toast from "react-hot-toast"
 import useSWR from "swr"
 import { useAppContext } from "../../context/AppContext"
-import { useLocalStorage } from "../../hooks"
 import { useWebSocket } from "../../hooks/useWebSocket"
 
 import { useNavigation } from "../../platform"
@@ -114,19 +113,13 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   const { captureException, t } = useAppContext()
 
-  const [sortBy, setSortByInternal] = useLocalStorage<"date" | "hot" | "liked">(
-    "sortBy",
-    "hot",
-  )
+  const [sortBy, setSortByInternal] = useState<"date" | "hot" | "liked">("hot")
 
   const setSortBy = (val: "date" | "hot" | "liked") => {
     setSortByInternal(val)
   }
 
-  const [order, setOrderInternal] = useLocalStorage<"asc" | "desc">(
-    "tribeOrder",
-    "desc",
-  )
+  const [order, setOrderInternal] = useState<"asc" | "desc">("desc")
 
   const setOrder = (val: "asc" | "desc") => {
     setOrderInternal(val)

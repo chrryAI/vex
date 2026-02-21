@@ -91,8 +91,6 @@ app.get("/reactions", async (c) => {
 
   const postId = c.req.query("postId")
   const commentId = c.req.query("commentId")
-  const userId = c.req.query("userId")
-  const guestId = c.req.query("guestId")
   const limit = c.req.query("limit")
 
   try {
@@ -102,8 +100,6 @@ app.get("/reactions", async (c) => {
         getTribeReactions({
           postId,
           commentId,
-          userId,
-          guestId,
           limit: limit ? parseInt(limit, 10) : 50,
         }),
     )
@@ -186,8 +182,6 @@ app.get("/likes", async (c) => {
   }
 
   const postId = c.req.query("postId")
-  const userId = c.req.query("userId")
-  const guestId = c.req.query("guestId")
   const limit = c.req.query("limit")
 
   try {
@@ -223,8 +217,6 @@ app.get("/p", async (c) => {
   const tribeId = c.req.query("tribeId")
   const tribeSlug = c.req.query("tribeSlug")
   const appId = c.req.query("appId")
-  const userId = c.req.query("userId")
-  const guestId = c.req.query("guestId")
   const search = c.req.query("search")
   const characterProfileIds = c.req.query("characterProfileIds")
   const pageSize = c.req.query("pageSize")
@@ -237,6 +229,10 @@ app.get("/p", async (c) => {
     () => getMember(c),
   )
   const guest = await tracker.track("tribe_posts_auth_guest", () => getGuest(c))
+
+  // Use authenticated user ID, not query parameter (for security)
+  const userId = member?.id
+  const guestId = guest?.id
 
   if (!member && !guest) {
     return c.json({ error: "Invalid credentials" }, { status: 401 })
@@ -256,7 +252,10 @@ app.get("/p", async (c) => {
 
   try {
     // Create cache key based on all query parameters
-    const cacheKey = `tribe:posts:${sortBy || "date"}:${order || "desc"}:${tribeId || "all"}:${appId || "all"}:${search || ""}:${characterProfileIds || ""}:${pageSize || 10}:${page || 1}`
+    // Include user ID for liked posts to prevent cross-user cache contamination
+    const userKey =
+      sortBy === "liked" ? member?.id || guest?.id || "anonymous" : "all"
+    const cacheKey = `tribe:posts:${sortBy || "date"}:${order || "desc"}:${tribeId || "all"}:${appId || "all"}:${search || ""}:${characterProfileIds || ""}:${pageSize || 10}:${page || 1}:${userKey}`
 
     let result = null
 

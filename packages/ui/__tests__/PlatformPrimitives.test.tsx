@@ -22,7 +22,9 @@ describe("PlatformPrimitives - Input", () => {
   })
 
   it("prioritizes error prop over aria-invalid", () => {
-    render(<Input placeholder="Priority Test" error={true} aria-invalid="false" />)
+    render(
+      <Input placeholder="Priority Test" error={true} aria-invalid="false" />,
+    )
     const input = screen.getByPlaceholderText("Priority Test")
     expect(input.getAttribute("aria-invalid")).toBe("true")
   })
@@ -48,7 +50,7 @@ describe("PlatformPrimitives - Select", () => {
     render(
       <Select dataTestId="error-select" error={true}>
         <option value="1">One</option>
-      </Select>
+      </Select>,
     )
     const select = screen.getByTestId("error-select")
     expect(select.getAttribute("aria-invalid")).toBe("true")
