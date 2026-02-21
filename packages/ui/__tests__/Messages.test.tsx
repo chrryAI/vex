@@ -1,17 +1,17 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import React from "react"
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import Messages from "../Messages"
 import {
+  mockApp,
+  mockAppContext,
   mockAuth,
   mockChat,
-  mockApp,
+  mockData,
   mockNavigation,
   mockPlatform,
-  mockTheme,
-  mockData,
-  mockAppContext,
   mockStyles,
+  mockTheme,
 } from "./mocks/mockContexts"
 
 // Mock dependencies
@@ -24,7 +24,7 @@ vi.mock("../context/providers", () => ({
   useAuth: () => ({
     ...mockAuth,
     // Add logic that might be in the real hook
-    threadId: mockAuth.threadId || mockAuth.threadIdRef?.current
+    threadId: mockAuth.threadId || mockAuth.threadIdRef?.current,
   }),
   useChat: () => mockChat,
   useApp: () => mockApp,
@@ -110,9 +110,7 @@ const mockTypingUsers = [
   { userId: "user-2", isTyping: true },
   { guestId: "guest-1", isTyping: true },
 ]
-const mockOnlineUsers = [
-  { userId: "user-3", isOnline: true },
-]
+const mockOnlineUsers = [{ userId: "user-3", isOnline: true }]
 
 vi.mock("../hooks/useThreadPresence", () => ({
   useThreadPresence: () => ({
@@ -180,7 +178,13 @@ describe("Messages", () => {
   })
 
   it("renders empty state when no messages", () => {
-    render(<Messages messages={[]} showEmptyState={true} emptyMessage="Nothing here" />)
+    render(
+      <Messages
+        messages={[]}
+        showEmptyState={true}
+        emptyMessage="Nothing here"
+      />,
+    )
     expect(screen.getByText("Nothing here")).toBeDefined()
   })
 
@@ -194,7 +198,7 @@ describe("Messages", () => {
         setIsLoadingMore={setIsLoadingMore}
         setUntil={setUntil}
         until={1}
-      />
+      />,
     )
 
     const button = screen.getByText("Load Older")
@@ -216,16 +220,16 @@ describe("Messages", () => {
         showEmptyState={true}
         onCharacterProfileUpdate={onUpdate}
         thread={{ id: "thread-1" } as any}
-      />
+      />,
     )
 
     // Simulate generating event
     await act(async () => {
       if (socketCallback) {
-          await socketCallback({
-              type: "character_tag_creating",
-              data: { threadId: "thread-1" }
-          })
+        await socketCallback({
+          type: "character_tag_creating",
+          data: { threadId: "thread-1" },
+        })
       }
     })
 
@@ -235,10 +239,14 @@ describe("Messages", () => {
     // Simulate created event
     await act(async () => {
       if (socketCallback) {
-          await socketCallback({
-              type: "character_tag_created",
-              data: { threadId: "thread-1", tags: ["Hero", "Brave"], visibility: "public" }
-          })
+        await socketCallback({
+          type: "character_tag_created",
+          data: {
+            threadId: "thread-1",
+            tags: ["Hero", "Brave"],
+            visibility: "public",
+          },
+        })
       }
     })
 
@@ -256,9 +264,16 @@ describe("Messages", () => {
     mockApp.appStatus = null
     mockApp.suggestSaveApp = false // Ensure this doesn't trigger the "Back to Agent Builder" view
 
-    const messages = [{
-        message: { id: "1", content: "hi", agentId: "agent-1", createdOn: new Date().toISOString() }
-    }]
+    const messages = [
+      {
+        message: {
+          id: "1",
+          content: "hi",
+          agentId: "agent-1",
+          createdOn: new Date().toISOString(),
+        },
+      },
+    ]
 
     render(<Messages messages={messages as any} />)
 
@@ -267,8 +282,8 @@ describe("Messages", () => {
 
     fireEvent.click(button)
     expect(mockApp.setAppStatus).toHaveBeenCalledWith({
-        part: "highlights",
-        step: "add"
+      part: "highlights",
+      step: "add",
     })
   })
 })

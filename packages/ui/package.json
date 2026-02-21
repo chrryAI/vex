@@ -32,13 +32,7 @@
     "./package.json": "./package.json",
     "./*": "./*"
   },
-  "files": [
-    "dist",
-    "locales",
-    "**/*.css",
-    "**/*.scss",
-    "README.md"
-  ],
+  "files": ["dist", "locales", "**/*.css", "**/*.scss", "README.md"],
   "private": false,
   "publishConfig": {
     "access": "public"

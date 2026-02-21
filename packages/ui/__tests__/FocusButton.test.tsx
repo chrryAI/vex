@@ -3,7 +3,12 @@
 import { act, fireEvent, render, screen } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { mockAuth, mockChat, mockNavigation, mockStyles } from "./mocks/mockContexts"
+import {
+  mockAuth,
+  mockChat,
+  mockNavigation,
+  mockStyles,
+} from "./mocks/mockContexts"
 
 // Make React globally available
 global.React = React
@@ -145,7 +150,9 @@ vi.mock("../platform", async () => {
   const React = await import("react")
   return {
     Button: React.forwardRef(({ children, ...props }: any, ref: any) => (
-      <button ref={ref} {...props}>{children}</button>
+      <button ref={ref} {...props}>
+        {children}
+      </button>
     )),
     Div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
     Span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
@@ -159,15 +166,15 @@ vi.mock("../platform", async () => {
       isDark: false,
       setTheme: vi.fn(),
       colorScheme: "light",
-      setIsThemeLocked: vi.fn()
+      setIsThemeLocked: vi.fn(),
     }),
     Video: ({ ...props }: any) => <video {...props} />,
     DraggableList: ({ renderItem, data, ...props }: any) => (
-       <div>
+      <div>
         {data.map((item: any, index: number) =>
-           renderItem({ item, drag: vi.fn(), isActive: false })
+          renderItem({ item, drag: vi.fn(), isActive: false }),
         )}
-       </div>
+      </div>
     ),
   }
 })
@@ -178,7 +185,7 @@ vi.mock("react-i18next", () => ({
     t: (key: string) => key,
   }),
   initReactI18next: {
-    type: '3rdParty',
+    type: "3rdParty",
     init: vi.fn(),
   },
 }))

@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { fireEvent, render, screen } from "@testing-library/react"
 import React from "react"
-import { render, screen, fireEvent } from "@testing-library/react"
-import MarkdownContent from "../MarkdownContent.web"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+import MarkdownContent, { createOverrides } from "../MarkdownContent.web"
 import { mockAppContext, mockTheme } from "./mocks/mockContexts"
 
 // Mock dependencies
@@ -27,7 +27,9 @@ vi.mock("../platform/usePlatformStyles", () => ({
 
 // Mock components used in overrides
 vi.mock("../Img", () => ({
-  default: ({ src, alt }: any) => <img src={src} alt={alt} data-testid="custom-img" />,
+  default: ({ src, alt }: any) => (
+    <img src={src} alt={alt} data-testid="custom-img" />
+  ),
 }))
 
 vi.mock("../TextWithLinks", () => ({
@@ -101,10 +103,12 @@ describe("MarkdownContent", () => {
   it("handles citations correctly", () => {
     const content = "This is a fact [1]."
     const webSearchResults = [
-      { title: "Source 1", url: "https://source1.com", snippet: "Snippet 1" }
+      { title: "Source 1", url: "https://source1.com", snippet: "Snippet 1" },
     ]
 
-    render(<MarkdownContent content={content} webSearchResults={webSearchResults} />)
+    render(
+      <MarkdownContent content={content} webSearchResults={webSearchResults} />,
+    )
 
     const citation = screen.getByTestId("custom-link")
     expect(citation).toBeDefined()
@@ -127,5 +131,61 @@ describe("MarkdownContent", () => {
     // If memoization was broken in a way that caused crashes or weird behavior,
     // it would likely fail here or in more complex scenarios.
     // Since we're just testing the component logic, ensuring it updates is good.
+  })
+
+  it("creates overrides object with correct structure", () => {
+    const overrides = createOverrides({
+      addHapticFeedback: vi.fn(),
+      galleryContainerStyles: {},
+      imageStyles: {},
+    })
+
+    expect(overrides.code).toBeDefined()
+    expect(overrides.a).toBeDefined()
+    expect(overrides.img).toBeDefined()
+    expect(overrides.p).toBeDefined()
+    expect(overrides.div).toBeDefined()
+    expect(overrides.ul).toBeDefined()
+    expect(overrides.ol).toBeDefined()
+    expect(overrides.li).toBeDefined()
+    expect(overrides.h1).toBeDefined()
+    expect(overrides.h2).toBeDefined()
+    expect(overrides.h3).toBeDefined()
+    expect(overrides.h4).toBeDefined()
+    expect(overrides.blockquote).toBeDefined()
+    expect(overrides.table).toBeDefined()
+    expect(overrides.thead).toBeDefined()
+    expect(overrides.tbody).toBeDefined()
+    expect(overrides.tr).toBeDefined()
+    expect(overrides.th).toBeDefined()
+    expect(overrides.td).toBeDefined()
+    expect(overrides.StoreCompact).toBeDefined()
+    expect(overrides.PWAGallery).toBeDefined()
+  })
+
+  it("executes overrides methods", () => {
+    const overrides = createOverrides({
+      addHapticFeedback: vi.fn(),
+      galleryContainerStyles: {},
+      imageStyles: {},
+    })
+
+    // Test code override
+    const codeResult = overrides.code({
+      children: "console.log",
+      className: "lang-js",
+    })
+    expect(codeResult).toBeDefined()
+
+    // Test link override
+    const linkResult = overrides.a({
+      href: "https://example.com",
+      children: "link",
+    })
+    expect(linkResult).toBeDefined()
+
+    // Test img override
+    const imgResult = overrides.img({ src: "test.jpg", alt: "test" })
+    expect(imgResult).toBeDefined()
   })
 })

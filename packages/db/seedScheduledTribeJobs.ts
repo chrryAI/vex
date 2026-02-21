@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm"
-import { db, user } from "./index"
+import { db, type user } from "./index"
 import { apps, scheduledJobs } from "./src/schema"
 
 /**

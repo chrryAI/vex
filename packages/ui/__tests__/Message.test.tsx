@@ -1,17 +1,17 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { fireEvent, render, screen } from "@testing-library/react"
 import React from "react"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import Message from "../Message"
 import {
+  mockApp,
+  mockAppContext,
   mockAuth,
   mockChat,
-  mockApp,
+  mockData,
   mockNavigation,
   mockPlatform,
-  mockTheme,
-  mockData,
-  mockAppContext,
   mockStyles,
+  mockTheme,
 } from "./mocks/mockContexts"
 
 // Mock dependencies
@@ -122,7 +122,9 @@ vi.mock("../Image", () => ({
 }))
 
 vi.mock("../MarkdownContent", () => ({
-  default: ({ content }: any) => <div data-testid="markdown-content">{content}</div>,
+  default: ({ content }: any) => (
+    <div data-testid="markdown-content">{content}</div>
+  ),
 }))
 
 vi.mock("../Loading", () => ({
@@ -138,7 +140,9 @@ vi.mock("../utils", async (importOriginal) => {
   const actual = (await importOriginal()) as any
   return {
     ...actual,
-    isOwner: vi.fn((item, { userId }) => item.userId === userId || item.user?.id === userId),
+    isOwner: vi.fn(
+      (item, { userId }) => item.userId === userId || item.user?.id === userId,
+    ),
     getInstructionConfig: vi.fn(() => ({ weather: "sunny" })),
     apiFetch: vi.fn(),
   }
@@ -158,7 +162,7 @@ describe("Message", () => {
       createdOn: new Date().toISOString(),
       threadId: "thread-1",
       role: "user",
-      userId: "user-1"
+      userId: "user-1",
     },
     user: { id: "user-1", name: "Test User" },
   }
@@ -216,27 +220,26 @@ describe("Message", () => {
     })) as any
 
     render(
-      <Message
-        message={mockAgentMessage as any}
-        onPlayAudio={onPlayAudio}
-      />
+      <Message message={mockAgentMessage as any} onPlayAudio={onPlayAudio} />,
     )
 
     // Attempt to find by SVG class within button
-    const playButton = document.querySelector('button svg.lucide-play')?.closest('button')
+    const playButton = document
+      .querySelector("button svg.lucide-play")
+      ?.closest("button")
 
     if (playButton) {
-        fireEvent.click(playButton)
-        // Wait for the async action to trigger
-        await new Promise(resolve => setTimeout(resolve, 0))
-        expect(onPlayAudio).toHaveBeenCalled()
+      fireEvent.click(playButton)
+      // Wait for the async action to trigger
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      expect(onPlayAudio).toHaveBeenCalled()
     } else {
-        // Fallback for robustness
-        const buttons = screen.getAllByRole("button")
-        const lastButton = buttons[buttons.length - 1]
-        fireEvent.click(lastButton)
-        await new Promise(resolve => setTimeout(resolve, 0))
-        expect(onPlayAudio).toHaveBeenCalled()
+      // Fallback for robustness
+      const buttons = screen.getAllByRole("button")
+      const lastButton = buttons[buttons.length - 1]
+      fireEvent.click(lastButton)
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      expect(onPlayAudio).toHaveBeenCalled()
     }
   })
 
@@ -247,7 +250,7 @@ describe("Message", () => {
       message: {
         ...mockAgentMessage.message,
         content: "Final answer",
-        reasoning: "Thinking process"
+        reasoning: "Thinking process",
       },
     }
 
@@ -286,7 +289,13 @@ describe("Message", () => {
       ...mockUserMessage,
       message: {
         ...mockUserMessage.message,
-        images: [{ id: "img-1", url: "http://example.com/image.jpg", title: "Test Image" }],
+        images: [
+          {
+            id: "img-1",
+            url: "http://example.com/image.jpg",
+            title: "Test Image",
+          },
+        ],
       },
     }
 
