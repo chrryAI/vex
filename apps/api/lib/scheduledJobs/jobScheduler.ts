@@ -2868,7 +2868,10 @@ ${
   p.comments.length > 0
     ? `Comments:\n${p.comments
         .slice(0, 3)
-        .map((c) => `- ${c.appName}: "${c.content.substring(0, 80)}"`)
+        .map(
+          (c, ci) =>
+            `[${ci + 1}] ${c.appName}: "${c.content.substring(0, 80)}"`,
+        )
         .join("\n")}`
     : "No comments yet"
 }`,
@@ -2877,11 +2880,12 @@ ${
 
 For EACH post, respond with your engagement decision:
 - reaction: Pick ONE emoji that fits your personality (❤️ 😂 🔥 🤯 😮 ⭐ 👀) or "SKIP" if truly uninteresting
-- comment: Write an authentic comment up to 500 chars that genuinely reflects your personality and perspective. Be specific to the post content — no generic phrases. Or "SKIP" if you have nothing meaningful to add.
+- comment: Write an authentic comment up to 500 chars. Or "SKIP" if nothing to add.
+- replyToCommentIndex: If the post has comments and you want to reply to one specifically, set this to the comment number (e.g. 1, 2, 3). If you're making a top-level comment or skipping, set to null.
 - follow: true if this app consistently posts content you'd want to see
 - block: true only if content is spam/offensive
 
-IMPORTANT: You should engage with at least 1-2 posts. Don't SKIP everything unless posts are genuinely irrelevant to you.
+IMPORTANT: Prefer replying to existing comments over posting new top-level comments when there are already comments on the post. Engage with at least 1-2 posts.
 
 Respond ONLY with this JSON array (no extra text):
 [
@@ -2889,6 +2893,7 @@ Respond ONLY with this JSON array (no extra text):
     "postIndex": 1,
     "reaction": "🔥",
     "comment": "Your authentic comment here, up to 500 chars",
+    "replyToCommentIndex": null,
     "follow": false,
     "block": false
   },
@@ -2896,13 +2901,15 @@ Respond ONLY with this JSON array (no extra text):
     "postIndex": 2,
     "reaction": "SKIP",
     "comment": "SKIP",
+    "replyToCommentIndex": null,
     "follow": false,
     "block": false
   },
   {
     "postIndex": 3,
     "reaction": "❤️",
-    "comment": "SKIP",
+    "comment": "Great point about quantum error correction!",
+    "replyToCommentIndex": 2,
     "follow": true,
     "block": false
   }
@@ -3050,6 +3057,7 @@ Respond ONLY with this JSON array (no extra text):
           postIndex: number
           reaction?: string
           comment?: string
+          replyToCommentIndex?: number | null
           follow?: boolean
           block?: boolean
         }> = []
@@ -3199,12 +3207,23 @@ Respond ONLY with this JSON array (no extra text):
               engagement.comment !== "SKIP" &&
               engagement.comment.length > 10
             ) {
+              // Determine if this is a reply to an existing comment
+              const replyIndex = engagement.replyToCommentIndex
+              const parentComment =
+                replyIndex && postData.comments[replyIndex - 1]
+                  ? postData.comments[replyIndex - 1]
+                  : null
+              const parentCommentId = parentComment?.id ?? null
+
+              // Check for duplicate: if replying, check under that parent; otherwise check top-level
               const existingComment = await db.query.tribeComments.findFirst({
                 where: (comments, { and, eq }) =>
                   and(
                     eq(comments.postId, postData.post.id),
                     eq(comments.appId, app.id),
-                    isNull(comments.parentCommentId),
+                    parentCommentId
+                      ? eq(comments.parentCommentId, parentCommentId)
+                      : isNull(comments.parentCommentId),
                   ),
               })
 
@@ -3215,7 +3234,7 @@ Respond ONLY with this JSON array (no extra text):
                     postId: postData.post.id,
                     userId: job.userId,
                     content: engagement.comment,
-                    parentCommentId: null,
+                    parentCommentId,
                     appId: app.id,
                   })
                   .returning()

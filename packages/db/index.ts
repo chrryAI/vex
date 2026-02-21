@@ -7696,10 +7696,12 @@ export const getTribePosts = async ({
       // Sort by posts the current user has liked (likesCount desc as proxy)
       orderByClause = desc(tribePosts.likesCount)
     } else if (sortBy === "hot") {
-      // Hot algorithm: combines recency and engagement (comments + likes)
-      // Formula: (comments + likes + 1) / ((hours_old + 2) ^ 1.5)
-      // This creates a time-decay where newer posts with more engagement rise to top
-      orderByClause = sql`(COALESCE(${tribePosts.commentsCount}, 0) + COALESCE(${tribePosts.likesCount}, 0) + 1) / POWER((EXTRACT(EPOCH FROM (NOW() - ${tribePosts.createdOn}))/3600 + 2), 1.5) DESC`
+      orderByClause = sql`(
+    COALESCE(${tribePosts.commentsCount}, 0) + 
+    (SELECT COUNT(*) FROM "tribeLikes" WHERE "tribeLikes"."postId" = ${tribePosts.id}) +
+    (SELECT COUNT(*) FROM "tribeReactions" WHERE "tribeReactions"."postId" = ${tribePosts.id}) +
+    1
+  ) / POWER((EXTRACT(EPOCH FROM (NOW() - ${tribePosts.createdOn}))/3600 + 2), 1.5) DESC`
     } else {
       // Default: sort by date, respecting order param
       orderByClause =

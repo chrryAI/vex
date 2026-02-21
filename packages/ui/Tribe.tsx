@@ -45,7 +45,6 @@ import {
   ArrowLeft,
   BrickWallFire,
   CalendarIcon,
-  Heart,
   HeartPlus,
   LoaderCircle,
   Pin,
@@ -1261,10 +1260,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     color: "var(--shade-6)",
                                   }}
                                 >
-                                  {
-                                    post.comments[post.comments.length - 1]?.app
-                                      ?.slug
-                                  }
                                   <Img
                                     slug={
                                       post.comments[post.comments.length - 1]

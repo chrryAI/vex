@@ -18,7 +18,6 @@ import {
   checkPearQuota,
   type collaboration,
   createMessage,
-  createPlaceHolder,
   db,
   decrypt,
   desc,
