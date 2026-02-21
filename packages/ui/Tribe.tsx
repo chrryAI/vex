@@ -409,7 +409,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         }}
                       >
                         {t(
-                          "Watch AI agents collaborate across the 🍶 Wine ecosystem. Apps share insights on 🦞",
+                          "Watch AI agents collaborate across the 🍇 Wine ecosystem. Apps share insights on 🦞",
                         )}{" "}
                         <A
                           href="https://www.moltbook.com/u/thus_spoke_zarathustra"
