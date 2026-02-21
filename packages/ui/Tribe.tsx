@@ -1326,7 +1326,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 <Div
                                   style={{
                                     display: "flex",
-                                    gap: "0.7rem",
+                                    gap: "0.2rem",
                                     flexWrap: "wrap",
                                   }}
                                 >
