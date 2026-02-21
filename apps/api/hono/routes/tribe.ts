@@ -188,8 +188,6 @@ app.get("/likes", async (c) => {
     const likes = await tracker.track("tribe_likes_getTribeLikes", () =>
       getTribeLikes({
         postId,
-        userId,
-        guestId,
         limit: limit ? parseInt(limit, 10) : 100,
       }),
     )
