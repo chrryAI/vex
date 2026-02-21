@@ -8348,6 +8348,7 @@ export async function fetchAndStoreNews(): Promise<{
   inserted: number
   skipped: number
   error?: string
+  countryStats?: { country: string; fetched: number; error?: string }[]
   newlyInserted?: {
     title: string
     description: string | null
@@ -8374,13 +8375,22 @@ export async function fetchAndStoreNews(): Promise<{
     publishedAt: Date | null
   }[] = []
 
+  const countryStats: { country: string; fetched: number; error?: string }[] =
+    []
+
   for (const { country, lang } of NEWS_COUNTRIES) {
     try {
       const res = await fetch(
         `https://newsapi.org/v2/top-headlines?country=${country}&pageSize=20&apiKey=${apiKey}`,
       )
-      if (!res.ok) continue
+      if (!res.ok) {
+        countryStats.push({ country, fetched: 0, error: `HTTP ${res.status}` })
+        continue
+      }
       const data = (await res.json()) as {
+        status: string
+        code?: string
+        message?: string
         articles: {
           title: string
           description?: string
@@ -8390,6 +8400,15 @@ export async function fetchAndStoreNews(): Promise<{
           publishedAt?: string
         }[]
       }
+      if (data.status !== "ok") {
+        countryStats.push({
+          country,
+          fetched: 0,
+          error: data.code || data.message || "API error",
+        })
+        continue
+      }
+      let fetched = 0
       for (const article of data.articles || []) {
         if (!article.title || !article.url) continue
         // NewsAPI content field is truncated at ~200 chars with "[+N chars]"
@@ -8410,9 +8429,15 @@ export async function fetchAndStoreNews(): Promise<{
             ? new Date(article.publishedAt)
             : null,
         })
+        fetched++
       }
-    } catch {
-      // skip failed country
+      countryStats.push({ country, fetched })
+    } catch (err) {
+      countryStats.push({
+        country,
+        fetched: 0,
+        error: err instanceof Error ? err.message : String(err),
+      })
     }
   }
 
@@ -8465,7 +8490,7 @@ export async function fetchAndStoreNews(): Promise<{
     }
   }
 
-  return { inserted, skipped, newlyInserted }
+  return { inserted, skipped, newlyInserted, countryStats }
 }
 
 export async function getRecentNews(limit = 20): Promise<

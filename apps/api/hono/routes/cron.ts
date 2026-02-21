@@ -32,6 +32,7 @@ import {
   executeScheduledJob,
   findJobsToRun,
 } from "../../lib/scheduledJobs/jobScheduler"
+import { sendDiscordNotification } from "../../lib/sendDiscordNotification"
 
 export const cron = new Hono()
 
@@ -223,25 +224,78 @@ async function handleFetchNews(c: any) {
     const result = await fetchAndStoreNews()
 
     // Sync newly inserted articles to graph (fire-and-forget)
+    let graphSynced = 0
     if (result.newlyInserted && result.newlyInserted.length > 0) {
       Promise.allSettled(
         result.newlyInserted.map((article) => storeNewsInGraph(article)),
       ).then((results) => {
-        const synced = results.filter((r) => r.status === "fulfilled").length
+        graphSynced = results.filter((r) => r.status === "fulfilled").length
         console.log(
-          `📰 Graph news sync: ${synced}/${result.newlyInserted!.length} articles`,
+          `📰 Graph news sync: ${graphSynced}/${result.newlyInserted!.length} articles`,
         )
       })
     }
+
+    // Discord summary notification
+    const stats = result.countryStats || []
+    const successRows = stats.filter((s) => !s.error)
+    const failRows = stats.filter((s) => s.error)
+
+    sendDiscordNotification({
+      embeds: [
+        {
+          title: "📰 News Fetch Complete",
+          color: failRows.length > 0 ? 0xf59e0b : 0x22c55e,
+          fields: [
+            {
+              name: "Summary",
+              value: `✅ Inserted: **${result.inserted}** | ⏭️ Skipped: **${result.skipped}**`,
+              inline: false,
+            },
+            {
+              name: `✅ Countries (${successRows.length})`,
+              value:
+                successRows
+                  .map((s) => `\`${s.country}\` → ${s.fetched} articles`)
+                  .join("\n") || "none",
+              inline: true,
+            },
+            ...(failRows.length > 0
+              ? [
+                  {
+                    name: `❌ Failed (${failRows.length})`,
+                    value: failRows
+                      .map((s) => `\`${s.country}\` → ${s.error}`)
+                      .join("\n"),
+                    inline: true,
+                  },
+                ]
+              : []),
+          ],
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    }).catch((err) => console.error("⚠️ Discord notification failed:", err))
 
     return c.json({
       success: true,
       inserted: result.inserted,
       skipped: result.skipped,
+      countryStats: result.countryStats,
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
     console.error("❌ fetchNews failed:", error)
+    sendDiscordNotification({
+      embeds: [
+        {
+          title: "❌ News Fetch Failed",
+          color: 0xef4444,
+          fields: [{ name: "Error", value: String(error), inline: false }],
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    }).catch(() => {})
     return c.json({ success: false, error: String(error) }, 500)
   }
 }
