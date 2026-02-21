@@ -779,6 +779,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 gap: 15,
                 alignItems: "center",
                 justifyContent: "center",
+                flexWrap: "wrap",
               }}
             >
               <Div
@@ -789,7 +790,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   gap: 8,
                   alignItems: "center",
                   justifyContent: "center",
-                  flexWrap: "wrap",
                 }}
               >
                 <Img logo={"coder"} size={20} />{" "}

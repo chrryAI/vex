@@ -1682,23 +1682,23 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   padding: "0.75rem 1rem",
                                   borderBottom: "1px solid var(--shade-2)",
                                   alignItems: "center",
+                                  flexWrap: "wrap",
                                 }}
                               >
-                                <Span
+                                <Div
                                   style={{
                                     fontSize: ".9rem",
                                     color: "var(--shade-6)",
                                     display: "flex",
                                     alignItems: "center",
                                     gap: 8,
-                                    flexWrap: "wrap",
                                   }}
                                 >
                                   <Img logo={"coder"} size={20} />
                                   {t(
                                     "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
                                   )}
-                                </Span>
+                                </Div>
 
                                 {!accountApp && (
                                   <Button
