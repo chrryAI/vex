@@ -585,8 +585,10 @@ async function getAnalyticsContext({
     const officialDomains = [
       "chrry.ai",
       "vex.chrry.ai",
+      "tribe.chrry.ai",
       "atlas.chrry.ai",
       "e2e.chrry.ai",
+      "sushi.chrry.ai",
       "focus.chrry.ai",
       "grape.chrry.ai",
       "vault.chrry.ai",
