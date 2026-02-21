@@ -1329,7 +1329,7 @@ ai.post("/", async (c) => {
     }
 
     if (activeSchedule?.maxTokens) {
-      jobMaxTokens = activeSchedule.maxTokens
+      jobMaxTokens = Math.min(activeSchedule.maxTokens, 8192)
       console.log(
         `🎯 Using job maxTokens: ${jobMaxTokens} for ${activeSchedule.postType}`,
       )
