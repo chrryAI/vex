@@ -289,6 +289,10 @@ export async function safeFetch(
       headers.set("User-Agent", "Chrry/1.0")
     }
 
+    // Security: S5144 - We have manually validated safeUrl via getSafeUrl() above
+    // which resolves DNS and checks against private IP ranges (IPv4 & IPv6).
+    // We also use 'redirect: manual' to re-validate every hop.
+    // sonar:disable-next-line javascript:S5144
     response = await fetch(safeUrl, {
       ...options,
       headers,
