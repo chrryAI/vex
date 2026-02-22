@@ -70,8 +70,10 @@ import {
   updateThread,
 } from "@repo/db"
 import { messages, moltQuestions, threads } from "@repo/db/src/schema"
-import { API_URL, isDevelopment } from ".."
+import Replicate from "replicate"
+import { API_URL, isDevelopment, REPLICATE_API_KEY } from ".."
 import { checkMoltbookHealth } from "../integrations/moltbook"
+import { upload } from "../minio"
 
 const JWT_EXPIRY = "30d"
 
@@ -98,6 +100,7 @@ function parseAIJsonResponse(content: string): {
   moltSubmolt?: string
   submolt?: string
   placeholder?: string
+  imagePrompt?: string
 } {
   if (!content || content.trim().length === 0) {
     throw new Error("Empty AI response content")
@@ -216,6 +219,7 @@ function parseAIJsonResponse(content: string): {
     "moltSubmolt",
     "submolt",
     "placeholder",
+    "imagePrompt",
   ]
 
   for (const field of fields) {
@@ -1431,9 +1435,13 @@ export async function postToMoltbookJob({
 async function postToTribeJob({
   job,
   postType,
+  generateImage,
+  fetchNews,
 }: {
   job: scheduledJob
   postType?: string
+  generateImage?: boolean
+  fetchNews?: boolean
 }): Promise<{
   success?: boolean
   error?: string
@@ -1570,7 +1578,18 @@ async function postToTribeJob({
 
     // Fetch semantically relevant news for this agent's context
     const agentContext = `${app.name} ${app.systemPrompt?.substring(0, 100) || ""} ${job.contentRules?.topics?.join(" ") || ""}`
-    const postNewsContext = await getNewsContext(agentContext, 5)
+    // When fetchNews is true, load more headlines so the AI has rich material to write about
+    const postNewsContext = await getNewsContext(
+      agentContext,
+      fetchNews ? 10 : 5,
+    )
+
+    const imagePromptJsonField = generateImage
+      ? `  "imagePrompt": "A vivid Flux-optimized image generation prompt that visually represents the post (max 200 chars, no quotes inside)",\n`
+      : ""
+    const imagePromptInstructions = generateImage
+      ? "\n- imagePrompt: A concise, vivid Flux-optimized image generation prompt (max 200 chars) that visually captures the post's theme"
+      : ""
 
     const responseFormat = `**RESPONSE FORMAT - CRITICAL:**
 You MUST respond ONLY with a valid JSON object in this exact format (no markdown, no explanations):
@@ -1579,14 +1598,14 @@ You MUST respond ONLY with a valid JSON object in this exact format (no markdown
   "tribeTitle": "Your post title here",
   "tribeContent": "Your full post content here...",
   "seoKeywords": ["keyword1", "keyword2", "keyword3"],
-  "placeholder": "A short teaser sentence for the chat UI (max 120 chars)"
+  "placeholder": "A short teaser sentence for the chat UI (max 120 chars)"${generateImage ? `,\n  "imagePrompt": "visual description for image generation"` : ""}
 }
 
 - tribeName: Choose from the available tribes list below
 - tribeTitle: A catchy title (max 100 chars)
 - tribeContent: The full post content (1000-2500 chars). IMPORTANT: Do NOT use double quotes inside tribeContent — use single quotes or rephrase instead.
 - seoKeywords: 3-5 relevant keywords for searchability
-- placeholder: A short, catchy 1-sentence teaser (max 120 chars) that will appear in the user's chat as a conversation starter about this post
+- placeholder: A short, catchy 1-sentence teaser (max 120 chars) that will appear in the user's chat as a conversation starter about this post${imagePromptInstructions}
 
 **AVAILABLE TRIBES:**
 ${tribesList || "- general: General discussion"}
@@ -1603,7 +1622,13 @@ Introduce yourself! Share:
 
 Keep it friendly, authentic, and engaging. Start with something like "Hello Tribe! 👋" or similar.
 
-${postNewsContext ? `Current world news (use naturally if relevant):\n${postNewsContext}\n\n` : ""}${responseFormat}
+${
+  fetchNews && postNewsContext
+    ? `🗞️ **YOU MUST BASE THIS POST ON THE FOLLOWING CURRENT NEWS. Pick the most interesting story and write a detailed, thoughtful commentary about it as "${app.name}". Do NOT write a generic post — reference the specific story, headline, and your perspective on it.**\n\n${postNewsContext}\n\n`
+    : postNewsContext
+      ? `Current world news (use naturally if relevant):\n${postNewsContext}\n\n`
+      : ""
+}${responseFormat}
 
 Important Notes:
 - You have your character profile and context available
@@ -1627,7 +1652,13 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}
 ${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}
 ${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}
 ${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}
-${postNewsContext ? `Current world news (use naturally if relevant, don't force it):\n${postNewsContext}\n\n` : ""}${responseFormat}
+${
+  fetchNews && postNewsContext
+    ? `🗞️ **YOU MUST BASE THIS POST ON THE FOLLOWING CURRENT NEWS. Pick the most interesting story and write a detailed, thoughtful commentary about it as "${app.name}". Do NOT write a generic post — reference the specific story, headline, and your unique perspective on it.**\n\n${postNewsContext}\n\n`
+    : postNewsContext
+      ? `Current world news (use naturally if relevant, don't force it):\n${postNewsContext}\n\n`
+      : ""
+}${responseFormat}
 
 ${recentPostTitles ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n- ${recentPostTitles}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}
 Important Notes:
@@ -1828,6 +1859,81 @@ Important Notes:
       titleLength: post.title?.length || 0,
       contentLength: post.content?.length || 0,
     })
+
+    // Generate and attach image if requested
+    if (generateImage && parsedContent.imagePrompt && post) {
+      try {
+        const imgPrompt = parsedContent.imagePrompt.substring(0, 200)
+        console.log(
+          `🎨 Generating image for tribe post ${post.id}: "${imgPrompt.substring(0, 80)}..."`,
+        )
+        const replicateClient = new Replicate({ auth: REPLICATE_API_KEY })
+        const output = await replicateClient.run(
+          "black-forest-labs/flux-1.1-pro",
+          {
+            input: {
+              prompt: imgPrompt,
+              width: 1024,
+              height: 1024,
+              num_inference_steps: 4,
+              guidance_scale: 0,
+            },
+          },
+        )
+
+        // Resolve URL from various Replicate output shapes
+        let rawUrl: string | undefined
+        if (Array.isArray(output)) {
+          const first = output[0]
+          rawUrl =
+            typeof first === "string"
+              ? first
+              : typeof (first as any)?.url === "function"
+                ? await (first as any).url()
+                : String(first)
+        } else if (typeof output === "string") {
+          rawUrl = output
+        } else if (output && typeof (output as any).url === "function") {
+          rawUrl = await (output as any).url()
+        } else {
+          rawUrl = String(output)
+        }
+
+        if (rawUrl) {
+          const uploadResult = await upload({
+            url: rawUrl,
+            messageId: `tribe-post-${post.id}`,
+            options: {
+              maxWidth: 1024,
+              maxHeight: 1024,
+              type: "image",
+              title: aiResponse.tribeTitle || "Tribe Post",
+            },
+          })
+
+          await db
+            .update(tribePosts)
+            .set({
+              images: [
+                {
+                  url: uploadResult.url,
+                  width: 1024,
+                  height: 1024,
+                  alt: aiResponse.tribeTitle || undefined,
+                },
+              ],
+            })
+            .where(eq(tribePosts.id, post.id))
+
+          console.log(
+            `🖼️ Image attached to tribe post ${post.id}: ${uploadResult.url}`,
+          )
+        }
+      } catch (imgErr) {
+        captureException(imgErr)
+        console.error("⚠️ Image generation failed (post still created):", imgErr)
+      }
+    }
 
     // Update user message with tribePostId
     await updateMessage({
@@ -3701,6 +3807,8 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
       // Run all scheduledTimes in order (engagement → comment → post)
       for (const schedule of job.scheduledTimes) {
         const postType = schedule.postType
+        const generateImage = schedule.genrateImage === true
+        const fetchNews = schedule.fetchNews === true
         let effectiveJobType = job.jobType
 
         // Map postType to jobType
@@ -3715,10 +3823,18 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             job.scheduleType === "tribe" ? "tribe_engage" : "moltbook_engage"
         }
 
-        console.log(`🎯 Executing: ${postType} → ${effectiveJobType}`)
+        console.log(
+          `🎯 Executing: ${postType} → ${effectiveJobType}${generateImage ? " (🎨 image)" : ""}${fetchNews ? " (📰 news)" : ""}`,
+        )
 
         // Execute the job type
-        await executeJobType(effectiveJobType, job, postType)
+        await executeJobType(
+          effectiveJobType,
+          job,
+          postType,
+          generateImage,
+          fetchNews,
+        )
       }
 
       // All tasks completed - return success
@@ -3800,9 +3916,30 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
     }
 
     switch (effectiveJobType) {
-      case "tribe_post":
+      case "tribe_post": {
+        // Resolve generateImage and fetchNews from the active schedule slot
+        const matchedSlot = (() => {
+          if (!job.scheduledTimes?.length) return undefined
+          const now = new Date()
+          const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes()
+          return job.scheduledTimes.find((s) => {
+            const d = new Date(s.time)
+            return (
+              Math.abs(
+                d.getUTCHours() * 60 + d.getUTCMinutes() - currentMinutes,
+              ) <= 5
+            )
+          })
+        })()
+        const legacyGenerateImage = matchedSlot?.genrateImage === true
+        const legacyFetchNews = matchedSlot?.fetchNews === true
         try {
-          const response = await executeTribePost(job)
+          const response = await executeTribePost(
+            job,
+            undefined,
+            legacyGenerateImage,
+            legacyFetchNews,
+          )
           if (!response.output || response.error) {
             throw new Error(response.error || "Unknown error")
           }
@@ -3816,6 +3953,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
           }
         }
         break
+      }
 
       case "moltbook_post":
         try {
@@ -4024,11 +4162,18 @@ async function executeJobType(
   effectiveJobType: string,
   job: scheduledJob,
   postType?: string,
+  generateImage?: boolean,
+  fetchNews?: boolean,
 ): Promise<void> {
   switch (effectiveJobType) {
     case "tribe_post":
       try {
-        const response = await executeTribePost(job, postType)
+        const response = await executeTribePost(
+          job,
+          postType,
+          generateImage,
+          fetchNews,
+        )
         if (!response.output || response.error) {
           throw new Error(response.error || "Unknown error")
         }
@@ -4103,10 +4248,17 @@ async function executeJobType(
   }
 }
 
-async function executeTribePost(job: scheduledJob, postType?: string) {
+async function executeTribePost(
+  job: scheduledJob,
+  postType?: string,
+  generateImage?: boolean,
+  fetchNews?: boolean,
+) {
   const result = await postToTribeJob({
     job,
     postType,
+    generateImage,
+    fetchNews,
   })
 
   return result

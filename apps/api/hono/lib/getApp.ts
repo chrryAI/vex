@@ -470,7 +470,6 @@ function ensureRequiredApps(app: any, siteApp: any, burnApp: any): void {
  */
 export async function getApp({
   c,
-  accountApp = false,
   ...params
 }: {
   c: Context
@@ -507,6 +506,9 @@ export async function getApp({
   const chrryUrlParam = c.req.query("chrryUrl")
   const chrryUrl = params.chrryUrl || chrryUrlParam || getChrryUrl(request)
   const siteConfig = getSiteConfig(chrryUrl)
+
+  const accountApp = params.accountApp || c.req.query("accountApp") === "true"
+  console.log(`🚀 ~ accountApp:`, accountApp)
 
   const appSlug = requestParams.appSlug
   const storeSlug = requestParams.storeSlug

@@ -90,6 +90,7 @@ import ago from "../../utils/timeAgo"
 import { excludedSlugRoutes, getAppAndStoreSlugs } from "../../utils/url"
 import { useTheme } from "../ThemeContext"
 import type { Task } from "../TimerContext"
+import type { AppStatus } from "./AppProvider"
 import { useError } from "./ErrorProvider"
 
 // Constants (shared with DataProvider)
@@ -189,8 +190,10 @@ const AuthContext = createContext<
         threads?: thread[]
         totalCount: number
       }
+      appStatus: AppStatus | undefined
+      setAppStatus: (appStatus: AppStatus | undefined, path?: string) => void
       lastApp: appWithStore | undefined
-      setBaseAccountApp: (value: appWithStore | undefined) => void
+      setAccountApp: (value: appWithStore | undefined) => void
       setThreadId: (value: string | undefined) => void
       threadIdRef: React.RefObject<string | undefined>
       setHasNotification: (value: boolean) => void
@@ -411,7 +414,7 @@ export function AuthProvider({
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
   showTribe?: boolean
-
+  accountApp?: appWithStore
   searchParams?: Record<string, string> & {
     get: (key: string) => string | null
     has: (key: string) => boolean
@@ -967,11 +970,51 @@ export function AuthProvider({
     props.session?.guestBaseApp,
   )
 
-  const accountApp = userBaseApp || guestBaseApp
+  const [accountApp, setAccountAppInternal] = useState<
+    appWithStore | undefined
+  >(props.accountApp)
 
-  const setBaseAccountApp = (app: appWithStore | undefined) => {
+  const step = searchParams.get("step") as
+    | "add"
+    | "success"
+    | "warning"
+    | "cancel"
+    | "update"
+    | "restore"
+    | undefined
+
+  const part = searchParams.get("part") as
+    | "name"
+    | "description"
+    | "highlights"
+    | "settings"
+    | "image"
+    | "title"
+    | undefined
+
+  const [appStatus, setAppStatus] = useState<
+    | {
+        step?: "add" | "success" | "warning" | "cancel" | "update" | "restore"
+        part?:
+          | "name"
+          | "description"
+          | "highlights"
+          | "settings"
+          | "image"
+          | "title"
+        text?: Record<string, string>
+      }
+    | undefined
+  >({
+    step: step,
+    part: part,
+  })
+
+  const setAccountApp = (app: appWithStore | undefined) => {
+    if (appStatus?.part) return
     user && setUserBaseApp(app)
     guest && setGuestBaseApp(app)
+    setAccountAppInternal(app)
   }
 
   const guestBaseStore = guestBaseApp?.store
@@ -986,6 +1029,7 @@ export function AuthProvider({
       // Update user/guest state
       if (sessionData.user) {
         setUser(sessionData.user)
+        sessionData.accountApp && setAccountApp(sessionData.accountApp)
         setToken(sessionData.user.token)
         setFingerprint(sessionData.user.fingerprint || undefined)
         setGuest(undefined)
@@ -1873,6 +1917,41 @@ export function AuthProvider({
     }
   })
 
+  const {
+    data: accountAppsSwr,
+    mutate: refetchAccountApps,
+    isLoading: isLoadingAccountApps,
+  } = useSWR(
+    token && ["accountApp", accountAppId, skipAppCacheTemp],
+    async () => {
+      try {
+        if (!token) return
+        const result = await getApp({
+          token,
+          chrryUrl,
+          pathname,
+          accountApp: true,
+          skipCache: true,
+        })
+        return result
+      } catch (error) {
+        captureException(error)
+      }
+    },
+  )
+
+  console.log(`🚀 ~ useEffect ~ accountAppsSwr:`, accountAppsSwr)
+
+  useEffect(() => {
+    if (accountAppsSwr) {
+      setAccountApp(accountAppsSwr)
+
+      if (app?.id === accountAppsSwr.id) {
+        setApp(accountAppsSwr)
+      }
+    }
+  }, [accountAppsSwr, app?.id])
+
   useEffect(() => {
     if (storeAppsSwr) {
       skipAppCacheTemp && setSkipAppCacheTemp(false)
@@ -1891,7 +1970,7 @@ export function AuthProvider({
         // }
         setNewApp(undefined)
 
-        setBaseAccountApp(n)
+        setAccountApp(n)
 
         setIsSavingApp(false)
         setIsManagingApp(false)
@@ -1912,7 +1991,7 @@ export function AuthProvider({
         //   return
         // }
         setUpdatedApp(undefined)
-        setBaseAccountApp(u)
+        setAccountApp(u)
 
         setIsManagingApp(false)
         setIsSavingApp(false)
@@ -3097,6 +3176,8 @@ export function AuthProvider({
         setMoltPlaceHolder,
         accountApp,
         memoriesEnabled,
+        appStatus,
+        setAppStatus,
         setMemoriesEnabled,
         gift,
         wasGifted,
@@ -3198,7 +3279,7 @@ export function AuthProvider({
         findAppByPathname,
         chromeWebStoreUrl,
         siteConfig,
-        setBaseAccountApp,
+        setAccountApp: setAccountApp,
         setDeviceId,
         setApp,
         aiAgents,

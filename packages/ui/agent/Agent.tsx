@@ -951,14 +951,15 @@ export default function Agent({
                               // Vex is optional (checked by default but can be unchecked)
                               const isBaseApp = item.id === baseApp?.id
 
-                              const checked = defaultExtends.includes(item.id)
+                              const checked =
+                                field.value?.includes(item.id) ?? false
                               return (
                                 <Label key={item.id || item.name}>
                                   <Checkbox
                                     data-testid={`extends-checkbox-${item.name.toLowerCase()}`}
                                     checked={checked}
                                     // disabled={isDisabled || isChrry}
-                                    onChange={(isChecked) => {
+                                    onChange={() => {
                                       if (checked) {
                                         if (isChrry) {
                                           toast.error(
@@ -976,11 +977,12 @@ export default function Agent({
                                           return
                                         }
                                       }
-                                      const newValue = isChecked
-                                        ? [...(field.value || []), item.id]
-                                        : field.value?.filter(
+                                      const newValue = checked
+                                        ? field.value?.filter(
                                             (v) => v !== item.id,
                                           )
+                                        : [...(field.value || []), item.id]
+
                                       field.onChange(newValue)
                                     }}
                                   >

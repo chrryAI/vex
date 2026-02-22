@@ -267,6 +267,7 @@ export type session = {
   fingerprint?: string
   token?: string
   aiAgents?: aiAgent[]
+  accountApp?: appWithStore
   migratedFromGuest?: boolean
   hasNotification?: boolean
   createdOn?: string
@@ -977,6 +978,9 @@ export type scheduledJob = {
     postType: "post" | "comment" | "engagement"
     charLimit: number
     credits: number
+    genrateImage?: boolean
+    genrateVideo?: boolean
+    fetchNews?: boolean
   }>
   timezone: string
   startDate: Date

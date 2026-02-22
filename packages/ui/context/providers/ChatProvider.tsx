@@ -205,7 +205,7 @@ export function ChatProvider({
     updatedApp,
     setNewApp,
     setUpdatedApp,
-    setBaseAccountApp,
+    setAccountApp,
     burn,
     setBurn,
     isPear,

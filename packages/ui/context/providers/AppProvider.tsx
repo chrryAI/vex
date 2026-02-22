@@ -67,7 +67,7 @@ export type TabType =
   | "tribe"
   | "moltBook"
 
-interface AppStatus {
+export interface AppStatus {
   step?: "add" | "success" | "warning" | "cancel" | "update" | "restore"
   part?: "name" | "description" | "highlights" | "settings" | "image" | "title"
   text?: Record<string, string>
@@ -196,7 +196,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLoadingApp,
     setNewApp,
     setUpdatedApp,
-    setBaseAccountApp,
+    setAccountApp,
     setIsManagingApp,
     isManagingApp,
     isRemovingApp,
@@ -206,8 +206,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     burning,
     setBurn,
     plausible,
+    appStatus,
+    setAppStatus: setAppStatusInternal,
     minimize,
     setMinimize: setMinimizeInternal,
+    accountApp,
     ...auth
   } = useAuth()
   const threadId = auth.threadId || auth?.threadIdRef.current
@@ -249,24 +252,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       })
     }
   }, [step, part])
-
-  const [appStatus, setAppStatusInternal] = useState<
-    | {
-        step?: "add" | "success" | "warning" | "cancel" | "update" | "restore"
-        part?:
-          | "name"
-          | "description"
-          | "highlights"
-          | "settings"
-          | "image"
-          | "title"
-        text?: Record<string, string>
-      }
-    | undefined
-  >({
-    step: step,
-    part: part,
-  })
 
   const isAppOwner = !!(
     app &&
@@ -415,8 +400,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         // setApps(apps.filter((app) => app.id !== app?.id))
 
         // setApp(undefined)
-        setBaseAccountApp(undefined)
-        // setBaseAccountApp(undefined)
+        setAccountApp(undefined)
+        // setAccountApp(undefined)
 
         // setApps(storeApps.filter((app) => app.id !== app?.id))
 
@@ -461,7 +446,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
           "grape",
           "zarathustra",
           "claude",
-          "atlas",
           "perplexity",
         ].includes(a.slug),
       )
@@ -497,9 +481,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     displayMode: "standalone" as const,
   }
   // Cross-platform localStorage hook (works on web, native, extension)
-  const [formDraft, setFormDraftInternal] = useLocalStorage<
+  const [formDraft, setFormDraftInternal] = useState<
     Partial<appFormData> | undefined
-  >("draft", defaultFormValues)
+  >(defaultFormValues)
 
   const setFormDraft = (
     draft:
@@ -514,67 +498,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const blossom = chrry?.store?.apps
 
-  useEffect(() => {
-    if (!blossom) return
-    // Guard: Only run if formDraft has extends
-    if (!formDraft?.extends || formDraft.extends.length === 0) return
-
-    // Filter out stale app IDs that no longer exist in storeApps
-    const validAppIds = new Set(blossom.map((app) => app.id))
-    const validExtends = formDraft.extends.filter((id) => validAppIds.has(id))
-
-    // Guard: Only update if something actually changed
-    const hasStaleExtends = validExtends.length !== formDraft.extends.length
-    if (!hasStaleExtends) return
-
-    // If all extends were stale, reset to defaults
-    if (validExtends.length === 0) {
-      console.log("✅ All extends stale, setting defaults")
-      setFormDraft({
-        ...formDraft,
-        extends: defaultExtends,
-      })
-      return
-    }
-
-    // If some were stale, keep only valid ones
-    console.log("✅ Filtering out stale extends:", {
-      before: formDraft.extends.length,
-      after: validExtends.length,
-    })
-    setFormDraft({
-      ...formDraft,
-      extends: validExtends,
-    })
-  }, [blossom, defaultExtends]) // Removed formDraft from deps
-
-  const getInitialFormValues = (): Partial<appFormData> => {
-    if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
+  const getInitialFormValues = (appToUse = app): Partial<appFormData> => {
+    if (
+      appToUse &&
+      isOwner(appToUse, { userId: user?.id, guestId: guest?.id })
+    ) {
       return {
-        id: app.id,
-        name: app.name || "",
-        title: app.title || "",
-        description: app.description || "",
-        tone: app.tone || "professional",
-        language: app.language || "en",
-        defaultModel: app.defaultModel || "sushi",
-        temperature: app.temperature || 0.7,
-        pricing: app.pricing || "free",
-        backgroundColor: app.backgroundColor || "#000000",
-        tier: app.tier || "free",
-        visibility: app.visibility || "private",
-        capabilities: app.capabilities || defaultFormValues.capabilities,
-        themeColor: app.themeColor || "orange",
-        extends: app.extends?.map((e) => e.id) || defaultExtends,
-        tools: app.tools || [],
-        apiEnabled: app.apiEnabled || false,
-        apiPricing: app.apiPricing || "per-request",
-        displayMode: app.displayMode || "standalone",
-        image: app.image || app.images?.[0]?.url,
-        placeholder: app.placeholder || "",
-        systemPrompt: app.systemPrompt || "",
-        highlights: app.highlights || defaultInstructions,
-        apiKeys: app.apiKeys || {},
+        id: appToUse.id,
+        name: appToUse.name || "",
+        title: appToUse.title || "",
+        description: appToUse.description || "",
+        tone: appToUse.tone || "professional",
+        language: appToUse.language || "en",
+        defaultModel: appToUse.defaultModel || "sushi",
+        temperature: appToUse.temperature || 0.7,
+        pricing: appToUse.pricing || "free",
+        backgroundColor: appToUse.backgroundColor || "#000000",
+        tier: appToUse.tier || "free",
+        visibility: appToUse.visibility || "private",
+        capabilities: appToUse.capabilities || defaultFormValues.capabilities,
+        themeColor: appToUse.themeColor || "orange",
+        extends: appToUse.extends?.map((e) => e.id) || defaultExtends,
+        tools: appToUse.tools || [],
+        apiEnabled: appToUse.apiEnabled || false,
+        apiPricing: appToUse.apiPricing || "per-request",
+        displayMode: appToUse.displayMode || "standalone",
+        image: appToUse.image || appToUse.images?.[0]?.url,
+        placeholder: appToUse.placeholder || "",
+        systemPrompt: appToUse.systemPrompt || "",
+        highlights: appToUse.highlights || defaultInstructions,
+        apiKeys: appToUse.apiKeys || {},
       }
     }
     return defaultFormValues
@@ -838,12 +791,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     return () => subscription.unsubscribe()
   }, [appForm])
+
   useEffect(() => {
-    if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
+    if (accountApp && accountApp?.id !== app?.id) {
+      const appValues = getInitialFormValues(accountApp)
+      appForm.reset(appValues)
+    } else if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
       const appValues = getInitialFormValues()
       appForm.reset(appValues)
     }
-  }, [app, user, guest])
+  }, [app, user, guest, accountApp])
 
   // Restore form draft only on mount (but not when step is "add")
   const [hasRestoredDraft, setHasRestoredDraft] = useState(false)
