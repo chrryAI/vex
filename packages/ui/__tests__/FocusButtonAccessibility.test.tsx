@@ -2,7 +2,7 @@
 
 import { render, screen } from "@testing-library/react"
 import React from "react"
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import {
   mockAuth,
   mockChat,
@@ -13,6 +13,7 @@ import {
 // Make React globally available
 global.React = React
 
+import { useTimerContext } from "../context/TimerContext"
 import FocusButton from "../FocusButton"
 
 // Mock TimerContext values with TASKS
@@ -98,7 +99,7 @@ vi.mock("../context/ThemeContext", () => ({
 }))
 
 vi.mock("../context/TimerContext", () => ({
-  useTimerContext: () => mockTimerContext,
+  useTimerContext: vi.fn(),
 }))
 
 vi.mock("../hooks", () => ({
@@ -208,6 +209,10 @@ vi.mock("react-i18next", () => ({
 }))
 
 describe("FocusButton Accessibility Improvements", () => {
+  beforeEach(() => {
+    vi.mocked(useTimerContext).mockReturnValue(mockTimerContext)
+  })
+
   it("task selection button should have aria-pressed attribute", () => {
     render(<FocusButton />)
 
@@ -224,5 +229,18 @@ describe("FocusButton Accessibility Improvements", () => {
     render(<FocusButton />)
     const replayButton = screen.getByTitle("Replay")
     expect(replayButton.getAttribute("aria-pressed")).toBe("false")
+  })
+
+  it("should handle undefined selectedTasks gracefully", () => {
+    vi.mocked(useTimerContext).mockReturnValue({
+      ...mockTimerContext,
+      selectedTasks: undefined,
+    })
+
+    render(<FocusButton />)
+
+    // Ensure buttons still have aria-pressed="false"
+    const task1Button = screen.getByText("Task 1").closest("button")
+    expect(task1Button?.getAttribute("aria-pressed")).toBe("false")
   })
 })
