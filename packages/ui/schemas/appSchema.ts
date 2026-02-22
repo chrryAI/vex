@@ -42,7 +42,7 @@ export const appSchema = z.object({
   // Basic Info (Tab 1)
   name: sanitizedString({
     min: 3,
-    max: 8,
+    max: 12,
     regex: /^\S+$/,
     regexMessage: "Name cannot contain spaces",
   }),

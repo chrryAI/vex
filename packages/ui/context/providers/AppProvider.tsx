@@ -436,20 +436,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return true
   }
 
-  const defaultExtends =
-    chrry?.store?.apps
-      ?.filter((a) =>
+  const defaultExtendedApps = isAppOwner
+    ? app?.store?.apps.filter((a) => a.id !== app?.id)
+    : storeApps.filter((a) =>
         [
           "sushi",
           "vex",
           "chrry",
           "grape",
           "zarathustra",
-          "claude",
-          "perplexity",
+          "nebula",
+          "vault",
         ].includes(a.slug),
       )
-      .map((app) => app.id) || []
+
+  const defaultExtends = defaultExtendedApps?.map((a) => a.id) || []
 
   const defaultFormValues = {
     name: t("MyAgent"),
@@ -480,10 +481,44 @@ export function AppProvider({ children }: { children: ReactNode }) {
     apiPricing: "per-request" as const,
     displayMode: "standalone" as const,
   }
+
+  const getInitialFormValues = (): Partial<appFormData> => {
+    if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
+      return {
+        id: app.id,
+        name: app.name || "",
+        title: app.title || "",
+        description: app.description || "",
+        tone: app.tone || "professional",
+        language: app.language || "en",
+        defaultModel: app.defaultModel || "sushi",
+        temperature: app.temperature || 0.7,
+        pricing: app.pricing || "free",
+        backgroundColor: app.backgroundColor || "#000000",
+        tier: app.tier || "free",
+        visibility: app.visibility || "private",
+        capabilities: app.capabilities || defaultFormValues.capabilities,
+        themeColor: app.themeColor || "orange",
+        extends: app.extends?.map((e) => e.id) ?? defaultExtends,
+        tools: app.tools || [],
+        apiEnabled: app.apiEnabled || false,
+        apiPricing: app.apiPricing || "per-request",
+        displayMode: app.displayMode || "standalone",
+        image: app.image || app.images?.[0]?.url,
+        placeholder: app.placeholder || "",
+        systemPrompt: app.systemPrompt || "",
+        highlights: app.highlights || defaultInstructions,
+        apiKeys: app.apiKeys || {},
+      }
+    }
+
+    return defaultFormValues
+  }
+
   // Cross-platform localStorage hook (works on web, native, extension)
   const [formDraft, setFormDraftInternal] = useState<
     Partial<appFormData> | undefined
-  >(defaultFormValues)
+  >(getInitialFormValues())
 
   const setFormDraft = (
     draft:
@@ -494,43 +529,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ) => Partial<appFormData> | undefined),
   ) => {
     setFormDraftInternal(draft)
-  }
-
-  const blossom = chrry?.store?.apps
-
-  const getInitialFormValues = (appToUse = app): Partial<appFormData> => {
-    if (
-      appToUse &&
-      isOwner(appToUse, { userId: user?.id, guestId: guest?.id })
-    ) {
-      return {
-        id: appToUse.id,
-        name: appToUse.name || "",
-        title: appToUse.title || "",
-        description: appToUse.description || "",
-        tone: appToUse.tone || "professional",
-        language: appToUse.language || "en",
-        defaultModel: appToUse.defaultModel || "sushi",
-        temperature: appToUse.temperature || 0.7,
-        pricing: appToUse.pricing || "free",
-        backgroundColor: appToUse.backgroundColor || "#000000",
-        tier: appToUse.tier || "free",
-        visibility: appToUse.visibility || "private",
-        capabilities: appToUse.capabilities || defaultFormValues.capabilities,
-        themeColor: appToUse.themeColor || "orange",
-        extends: appToUse.extends?.map((e) => e.id) || defaultExtends,
-        tools: appToUse.tools || [],
-        apiEnabled: appToUse.apiEnabled || false,
-        apiPricing: appToUse.apiPricing || "per-request",
-        displayMode: appToUse.displayMode || "standalone",
-        image: appToUse.image || appToUse.images?.[0]?.url,
-        placeholder: appToUse.placeholder || "",
-        systemPrompt: appToUse.systemPrompt || "",
-        highlights: appToUse.highlights || defaultInstructions,
-        apiKeys: appToUse.apiKeys || {},
-      }
-    }
-    return defaultFormValues
   }
 
   const appForm = useForm<appFormData>({
@@ -641,6 +639,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       !!(watcher.name && watcher.title) &&
       Object.keys(appForm?.formState.errors).length === 0,
   }
+  console.log(`🚀 ~ AppProvider ~ appFormWatcher:`, appFormWatcher)
 
   const instructionsInternal = useMemo(
     () =>
@@ -733,6 +732,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       props: payload,
     })
 
+    console.log(`🚀 ~ AppProvider ~ payload:`, payload, isAppOwner)
+
     if (payload) {
       addParams({ settings: "true" })
 
@@ -771,6 +772,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         // Restore app data from current app into form for editing
         if (app && isAppOwner) {
           const appValues = getInitialFormValues()
+          console.log(`🚀 ~ AppProvider ~ appValues:`, appValues)
           appForm.reset(appValues)
           setFormDraft(appValues)
         }
@@ -793,10 +795,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [appForm])
 
   useEffect(() => {
-    if (accountApp && accountApp?.id !== app?.id) {
-      const appValues = getInitialFormValues(accountApp)
-      appForm.reset(appValues)
-    } else if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
+    if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
       const appValues = getInitialFormValues()
       appForm.reset(appValues)
     }

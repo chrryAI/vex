@@ -84,7 +84,14 @@ export default function Agent({
   const styles = useAgentStyles()
   const { utilities } = useStyles()
   const { t } = useAppContext()
-  const { chrry, baseApp, token, accountApp, user } = useAuth()
+  const {
+    chrry,
+    baseApp,
+    token,
+    accountApp,
+    user,
+    storeApps: storeAppsInternal,
+  } = useAuth()
 
   const {
     defaultExtends,
@@ -340,8 +347,8 @@ export default function Agent({
         return
       }
 
-      if (appFormWatcher.name.length > 8) {
-        toast.error(t("Name: maximum 8 characters"))
+      if (appFormWatcher.name.length > 12) {
+        toast.error(t("Name: maximum 12 characters"))
         return
       }
       // Check for validation errors
@@ -937,9 +944,8 @@ export default function Agent({
                       control={control}
                       render={({ field }) => {
                         // Get store-based apps from Chrry store
-                        const storeApps = (chrry?.store?.apps || []).filter(
-                          (item) =>
-                            item.id !== app?.id || app?.id !== accountApp?.id,
+                        const storeApps = (storeAppsInternal || []).filter(
+                          (item) => item.id !== app?.id,
                         )
 
                         return (
@@ -952,7 +958,8 @@ export default function Agent({
                               const isBaseApp = item.id === baseApp?.id
 
                               const checked =
-                                field.value?.includes(item.id) ?? false
+                                appFormWatcher.extends?.includes(item.id) ??
+                                false
                               return (
                                 <Label key={item.id || item.name}>
                                   <Checkbox
