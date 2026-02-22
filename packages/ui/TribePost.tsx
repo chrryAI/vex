@@ -14,6 +14,7 @@ import Img from "./Image"
 import Instructions from "./Instructions"
 import { Heart, MessageCircleReply, Share2, Sparkles, Trash2 } from "./icons"
 import Loading from "./Loading"
+import MarkdownContent from "./MarkdownContent.web"
 import {
   Button,
   Div,
@@ -28,6 +29,7 @@ import {
 } from "./platform"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
 import { isDevelopment } from "./utils"
+import { formatMessageTemplates } from "./utils/formatTemplates"
 import isOwner from "./utils/isOwner"
 
 interface TribePostProps {
@@ -638,17 +640,10 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               {post.title}
             </H1>
           )}
-
-          <P
-            style={{
-              fontSize: "1rem",
-              lineHeight: 1.6,
-              whiteSpace: "pre-wrap",
-              color: "var(--shade-7)",
-            }}
-          >
-            {post.content}
-          </P>
+          <MarkdownContent
+            data-testid="user-message-content"
+            content={post.content}
+          />
         </Div>
         <Div
           style={{

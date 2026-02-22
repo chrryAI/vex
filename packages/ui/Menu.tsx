@@ -457,11 +457,11 @@ export default function Menu({
                   }}
                   className="button inverted"
                 >
-                  <Span style={{ fontSize: "1.097rem" }}>🔥</Span>{" "}
+                  <Img icon="spaceInvader" size={20} />
                   {t(
                     burn ? (isPrivate ? "Incognito Chat" : "Burning") : "Burn",
                   )}
-                  {burn && (
+                  {burn && !isPrivate && (
                     <CircleCheck
                       size={14}
                       strokeWidth={3}
