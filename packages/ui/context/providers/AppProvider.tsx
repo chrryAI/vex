@@ -86,6 +86,7 @@ interface AppFormContextType {
   showingCustom: boolean
   hasCustomInstructions: boolean
   isAppInstructions: boolean
+  defaultExtendedApps: appWithStore[]
   toggleInstructions: (item?: appWithStore) => void
   setInstructions: React.Dispatch<React.SetStateAction<instruction[]>>
   baseApp?: appWithStore
@@ -183,9 +184,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     chrry,
     vex,
     baseApp,
-    userBaseApp,
     store,
-    guestBaseApp,
     stores,
     storeApps,
     isSavingApp,
@@ -211,6 +210,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     minimize,
     setMinimize: setMinimizeInternal,
     accountApp,
+    getAppSlug,
+    refetchAccountApps,
     ...auth
   } = useAuth()
   const threadId = auth.threadId || auth?.threadIdRef.current
@@ -313,6 +314,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAppStatus({ part: "settings" })
     }
   }, [searchParams.get("settings")])
+  const canEditApp = isAppOwner
+
+  const createNewApp = pathname === "/"
 
   const saveApp = async () => {
     try {
@@ -322,9 +326,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const formValues = appForm.getValues()
 
       // Schema already sanitizes via sanitizedString helper
-      const result = canEditApp
-        ? await actions.updateApp(app.id, formValues)
-        : await actions.createApp(formValues)
+      const result =
+        canEditApp && !createNewApp
+          ? await actions.updateApp(app.id, formValues)
+          : await actions.createApp(formValues)
 
       if (result?.error) {
         toast.error(result.error)
@@ -340,7 +345,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
 
       if (result) {
-        if (canEditApp) {
+        if (canEditApp && !createNewApp) {
           setUpdatedApp(result)
           await fetchApps()
         } else {
@@ -369,7 +374,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       })
       return false
     } finally {
-      canEditApp && setIsSavingApp(false)
+      canEditApp && !createNewApp && setIsSavingApp(false)
     }
 
     toast.error(t("Something went wrong"))
@@ -399,6 +404,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         // setApps(apps.filter((app) => app.id !== app?.id))
 
+        await refetchAccountApps()
         // setApp(undefined)
         setAccountApp(undefined)
         // setAccountApp(undefined)
@@ -436,19 +442,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return true
   }
 
-  const defaultExtendedApps = isAppOwner
-    ? app?.store?.apps.filter((a) => a.id !== app?.id)
-    : storeApps.filter((a) =>
-        [
-          "sushi",
-          "vex",
-          "chrry",
-          "grape",
-          "zarathustra",
-          "nebula",
-          "vault",
-        ].includes(a.slug),
-      )
+  const defaultExtendedApps =
+    (isAppOwner && !createNewApp
+      ? app?.store?.apps.filter((a) => a.id !== app?.id)
+      : storeApps.filter((a) =>
+          [
+            "sushi",
+            "vex",
+            "chrry",
+            "grape",
+            "zarathustra",
+            "nebula",
+            "vault",
+          ].includes(a.slug),
+        )) || []
 
   const defaultExtends = defaultExtendedApps?.map((a) => a.id) || []
 
@@ -483,7 +490,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   const getInitialFormValues = (): Partial<appFormData> => {
-    if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
+    if (
+      app &&
+      pathname !== "/" &&
+      isOwner(app, { userId: user?.id, guestId: guest?.id })
+    ) {
       return {
         id: app.id,
         name: app.name || "",
@@ -499,7 +510,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         visibility: app.visibility || "private",
         capabilities: app.capabilities || defaultFormValues.capabilities,
         themeColor: app.themeColor || "orange",
-        extends: app.extends?.map((e) => e.id) ?? defaultExtends,
+        extends: defaultExtends,
         tools: app.tools || [],
         apiEnabled: app.apiEnabled || false,
         apiPricing: app.apiPricing || "per-request",
@@ -639,7 +650,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       !!(watcher.name && watcher.title) &&
       Object.keys(appForm?.formState.errors).length === 0,
   }
-  console.log(`🚀 ~ AppProvider ~ appFormWatcher:`, appFormWatcher)
 
   const instructionsInternal = useMemo(
     () =>
@@ -707,8 +717,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     appFormWatcher.canSubmit
   )
 
-  const canEditApp = isAppOwner
-
   const setAppStatus = (
     payload:
       | {
@@ -732,50 +740,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
       props: payload,
     })
 
-    console.log(`🚀 ~ AppProvider ~ payload:`, payload, isAppOwner)
+    const step = payload?.step
 
     if (payload) {
-      addParams({ settings: "true" })
-
       auth.setShowTribe(false)
       auth.setShowFocus(false)
-    }
-
-    const { step, part } = payload || {}
-
-    if (step || part) {
-      if (part === "settings") {
-        addParams({ settings: "true" })
+      if (step === "add") {
+        if (accountApp) {
+          return
+        }
+        push(`/?settings=true`)
+        return
       }
 
-      if (appStatus?.step !== step || appStatus?.part !== part)
-        setAppStatusInternal({
-          step: step,
-          part: part,
-        })
-
-      if (step === "add") {
-        // Clear localStorage draft first
-        setFormDraft(undefined)
-
-        // Then reset form to default values (clears id and all fields)
-        // Recalculate default extends to include chrry and base app
-        const freshDefaults = {
-          ...defaultFormValues,
-          id: undefined, // Explicitly clear id to prevent conflicts
-        }
-        appForm.reset(freshDefaults)
-        if ((threadId || currentStore || pathname === "/tribe") && chrry) {
-          push(auth.getAppSlug(chrry))
-        }
-      } else if (step === "restore") {
-        // Restore app data from current app into form for editing
-        if (app && isAppOwner) {
-          const appValues = getInitialFormValues()
-          console.log(`🚀 ~ AppProvider ~ appValues:`, appValues)
-          appForm.reset(appValues)
-          setFormDraft(appValues)
-        }
+      if ((step === "update" || step === "restore") && app) {
+        const to = getAppSlug(app)
+        push(`${to}?settings=true`)
       }
     }
   }
@@ -799,7 +779,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const appValues = getInitialFormValues()
       appForm.reset(appValues)
     }
-  }, [app, user, guest, accountApp])
+  }, [app, user, guest, accountApp, pathname])
 
   // Restore form draft only on mount (but not when step is "add")
   const [hasRestoredDraft, setHasRestoredDraft] = useState(false)
@@ -864,6 +844,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         hasCustomInstructions,
         setStoreSlug,
         setIsManagingApp,
+        defaultExtendedApps,
         tab,
         setTab,
         minimize,

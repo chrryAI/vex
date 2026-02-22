@@ -169,12 +169,9 @@ export default function App({
     store,
     burnApp,
     apps,
-    guestBaseApp,
-    userBaseApp,
     accountApp,
     token,
     loadingApp,
-    userBaseStore: _userBaseStore,
     canBurn,
     setBurn,
     isPear,
@@ -269,8 +266,6 @@ export default function App({
       currentStoreId,
       app,
       baseApp,
-      userBaseApp,
-      guestBaseApp,
       isBlossom,
       focus,
       isPear,
@@ -1068,7 +1063,7 @@ export default function App({
 
                     setAppStatus({
                       part: "settings",
-                      step: canEditApp ? "update" : "add",
+                      step: !accountApp ? "add" : canEditApp ? "update" : "add",
                     })
                   }}
                   title={t(

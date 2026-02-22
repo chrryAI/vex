@@ -1381,8 +1381,8 @@ function Message({
                 </Div>
               )}
               <Div style={styles.left.style}>
-                {message.message.tribeId && (
-                  <A href={`/p${message.message.tribeId}`}>
+                {message.message.tribePostId && (
+                  <A href={`/p/${message.message.tribePostId}`}>
                     <Img slug="zarathustra" />
                     {t("Tribe")}
                   </A>

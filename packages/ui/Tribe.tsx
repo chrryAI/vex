@@ -490,12 +490,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             isTribe={false}
                             app={accountApp}
                             loading={<Loading size={18} />}
-                            className="inverted button"
+                            className="inverted"
                             icon={<Img app={accountApp} size={18} />}
                             style={{
-                              ...utilities.inverted.style,
                               ...utilities.button.style,
-                              ...utilities.small.style,
+                              ...utilities.inverted.style,
+                              ...utilities.xSmall.style,
                             }}
                           >
                             {t("Go to Your Agent")}
@@ -505,7 +505,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             app={app}
                             icon={<Img icon="spaceInvader" size={18} />}
                             loading={<Loading size={18} />}
-                            className="inverted button"
+                            className="inverted"
                             style={{
                               ...utilities.button.style,
                               ...utilities.inverted.style,
@@ -784,7 +784,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           isTribe={false}
                           app={accountApp}
                           loading={<Loading size={18} />}
-                          className="inverted button"
+                          className="inverted"
                           icon={<Img app={accountApp} size={18} />}
                           style={{
                             ...utilities.button.style,

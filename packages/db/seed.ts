@@ -40,6 +40,7 @@ import {
   moltQuestions,
   placeHolders,
   realtimeAnalytics,
+  storeInstalls,
   stores,
   subscriptions,
   systemLogs,
@@ -270,7 +271,8 @@ const clearDb = async (): Promise<void> => {
   await db.delete(systemLogs)
   await db.delete(subscriptions)
   await db.delete(threads)
-  await db.delete(memories)
+  await db.delete(threads)
+  await db.delete(storeInstalls)
   await db.delete(placeHolders)
   await db.delete(instructions)
   await db.delete(calendarEvents)

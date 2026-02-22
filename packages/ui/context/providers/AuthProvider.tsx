@@ -274,10 +274,6 @@ const AuthContext = createContext<
       setIsSavingApp: (isSavingApp: boolean) => void
       setNewApp: (newApp: appWithStore | undefined) => void
       newApp?: appWithStore
-      userBaseStore: storeWithApps | undefined
-      guestBaseStore: storeWithApps | undefined
-      userBaseApp: appWithStore | undefined
-      guestBaseApp: appWithStore | undefined
       scheduledJobs?: scheduledJob[]
       setScheduledJobs: (scheduledJobs: scheduledJob[]) => void
       fetchScheduledJobs: () => Promise<void>
@@ -359,6 +355,7 @@ const AuthContext = createContext<
       shouldFetchSession: boolean
       setShouldFetchSession: (shouldFetchSession: boolean) => void
       refetchSession: (app?: appWithStore) => Promise<void>
+      refetchAccountApps: () => Promise<void>
       setFingerprint: (fingerprint?: string) => void
       deviceId?: string
       fingerprint?: string
@@ -961,19 +958,6 @@ export function AuthProvider({
     return result
   }
 
-  const [userBaseApp, setUserBaseApp] = useState<appWithStore | undefined>(
-    props.session?.userBaseApp,
-  )
-
-  const userBaseStore = userBaseApp?.store
-  const [guestBaseApp, setGuestBaseApp] = useState<appWithStore | undefined>(
-    props.session?.guestBaseApp,
-  )
-
-  const [accountApp, setAccountAppInternal] = useState<
-    appWithStore | undefined
-  >(props.accountApp)
-
   const step = searchParams.get("step") as
     | "add"
     | "success"
@@ -1011,13 +995,8 @@ export function AuthProvider({
   })
 
   const setAccountApp = (app: appWithStore | undefined) => {
-    if (appStatus?.part) return
-    user && setUserBaseApp(app)
-    guest && setGuestBaseApp(app)
     setAccountAppInternal(app)
   }
-
-  const guestBaseStore = guestBaseApp?.store
 
   function processSession(sessionData?: session) {
     if (sessionData) {
@@ -1029,18 +1008,17 @@ export function AuthProvider({
       // Update user/guest state
       if (sessionData.user) {
         setUser(sessionData.user)
-        sessionData.accountApp && setAccountApp(sessionData.accountApp)
         setToken(sessionData.user.token)
         setFingerprint(sessionData.user.fingerprint || undefined)
         setGuest(undefined)
-        sessionData.userBaseApp && setUserBaseApp(sessionData.userBaseApp)
       } else if (sessionData.guest) {
         setGuest(sessionData.guest)
         setFingerprint(sessionData.guest.fingerprint)
         setToken(sessionData.guest.fingerprint)
         setUser(undefined)
-        sessionData.guestBaseApp && setGuestBaseApp(sessionData.guestBaseApp)
       }
+
+      sessionData.accountApp && setAccountApp(sessionData.accountApp)
 
       setHasNotification(!!session?.hasNotification)
 
@@ -1165,13 +1143,13 @@ export function AuthProvider({
     initialTribePost,
   )
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
+  const [accountApp, setAccountAppInternal] = useState<
+    appWithStore | undefined
+  >(
+    props.accountApp ||
+      props?.session?.userBaseApp ||
+      props?.session?.guestBaseApp,
   )
-
-  const [postToTribe, setPostToTribe] = useState(false)
-  const [postToMoltbook, setPostToMoltbook] = useState(false)
-
   const allApps = merge(
     merge(
       (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
@@ -1185,14 +1163,12 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  useEffect(() => {
-    const diff = allApps.filter(
-      (app) => !storeApps?.some((a) => a.id === app.id),
-    )
-    if (diff && diff.length > 0) {
-      mergeApps(diff)
-    }
-  }, [allApps.length, storeApps?.length])
+  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
+    !initialTribePosts,
+  )
+
+  const [postToTribe, setPostToTribe] = useState(false)
+  const [postToMoltbook, setPostToMoltbook] = useState(false)
 
   const baseAppInternal = storeApps.find((item) => {
     if (!item) return false
@@ -1437,6 +1413,15 @@ export function AuthProvider({
     },
   )
   const sessionData = sessionSwr || session
+
+  useEffect(() => {
+    const diff = allApps.filter(
+      (app) => !storeApps?.some((a) => a.id === app.id),
+    )
+    if (diff && diff.length > 0) {
+      mergeApps(diff)
+    }
+  }, [allApps.length, storeApps?.length])
 
   const _getAlterNativeDomains = (store: storeWithApps) => {
     // Map askvex.com and vex.chrry.ai as equivalent domains
@@ -1879,7 +1864,7 @@ export function AuthProvider({
 
   const burnApp = storeApps?.find((app) => app.slug === "burn")
 
-  const accountAppId = userBaseApp?.id || guestBaseApp?.id
+  const accountAppId = accountApp?.id
 
   const [skipAppCacheTemp, setSkipAppCacheTempInternal] = useState(false)
 
@@ -1940,10 +1925,8 @@ export function AuthProvider({
     },
   )
 
-  console.log(`🚀 ~ useEffect ~ accountAppsSwr:`, accountAppsSwr)
-
   useEffect(() => {
-    if (accountAppsSwr) {
+    if (accountAppsSwr?.id) {
       setAccountApp(accountAppsSwr)
 
       if (app?.id === accountAppsSwr.id) {
@@ -2275,14 +2258,6 @@ export function AuthProvider({
   const [stores, setStores] = useState<Paginated<storeWithApps> | undefined>(
     session?.stores,
   )
-
-  useEffect(() => {
-    if (userBaseApp) {
-      setStoreApp(userBaseApp)
-    } else if (guestBaseApp) {
-      setStoreApp(guestBaseApp)
-    }
-  }, [guestBaseApp, userBaseApp])
 
   // Handle pathname changes: extract slug and switch app
 
@@ -3129,12 +3104,8 @@ export function AuthProvider({
         isSavingApp,
         setIsSavingApp,
         newApp,
-        userBaseStore,
-        guestBaseStore,
-        userBaseApp,
         scheduledJobs,
         isLoadingScheduledJobs,
-        guestBaseApp,
         hasStoreApps,
         storeAppsSwr,
         accountApps,
@@ -3260,6 +3231,9 @@ export function AuthProvider({
         storeApps, // All apps from all stores
         refetchSession: async () => {
           await fetchSession()
+        },
+        refetchAccountApps: async () => {
+          await refetchAccountApps()
         },
         pear,
         setIsManagingApp,

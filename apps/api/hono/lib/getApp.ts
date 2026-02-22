@@ -508,7 +508,6 @@ export async function getApp({
   const siteConfig = getSiteConfig(chrryUrl)
 
   const accountApp = params.accountApp || c.req.query("accountApp") === "true"
-  console.log(`🚀 ~ accountApp:`, accountApp)
 
   const appSlug = requestParams.appSlug
   const storeSlug = requestParams.storeSlug

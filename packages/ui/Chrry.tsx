@@ -80,6 +80,7 @@ export default function Chrry({
     <AppProviders
       useExtensionIcon={useExtensionIcon}
       locale={locale}
+      accountApp={accountApp}
       siteConfig={siteConfig}
       session={session}
       app={app}
