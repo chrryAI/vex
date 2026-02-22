@@ -75,16 +75,8 @@ function isPrivateIP(ip: string): boolean {
 
     // 240.0.0.0/4 (Reserved)
     // 240.0.0.0 - 255.255.255.254
+    // This also covers 255.255.255.255 (Limited Broadcast)
     if (parts[0] && parts[0] >= 240) return true
-
-    // 255.255.255.255 (Limited Broadcast) - covered by >= 240 logic above but good to be explicit or if logic changes
-    if (
-      parts[0] === 255 &&
-      parts[1] === 255 &&
-      parts[2] === 255 &&
-      parts[3] === 255
-    )
-      return true
 
     return false
   }
