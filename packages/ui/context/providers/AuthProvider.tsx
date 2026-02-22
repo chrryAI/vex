@@ -2394,7 +2394,8 @@ export function AuthProvider({
     [showTribeProfileInternal],
   )
 
-  const showTribeProfile = showTribeProfileInternal || showTribeProfileMemo
+  const showTribeProfile =
+    !tribeSlug && (showTribeProfileInternal || showTribeProfileMemo)
 
   const setShowTribe = (value: boolean) => {
     if (!canShowTribe) return
