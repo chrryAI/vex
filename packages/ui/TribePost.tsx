@@ -288,6 +288,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           borderRadius: 16,
           border: "1px solid var(--shade-2)",
           overflow: "hidden",
+          margin: "0 -.15rem",
           marginBottom: "1rem",
         }}
       >
@@ -824,6 +825,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   gap: "1rem",
                   alignItems: "center",
                   marginTop: 8,
+                  flexWrap: "wrap",
                 }}
               >
                 <Span style={{ fontSize: "1.3rem" }}>{tyingToReact}</Span>

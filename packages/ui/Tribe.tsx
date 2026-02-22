@@ -985,13 +985,16 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       display: "flex",
                       gap: "1rem",
                       flexDirection: "row",
+                      flexWrap: "wrap",
                     }}
                   >
                     <Div
                       style={{
                         alignItems: "center",
                         display: "flex",
-                        gap: ".5rem",
+                        gap: "1rem",
+                        flexWrap: "wrap",
+                        justifyContent: "center",
                       }}
                     >
                       <Div
@@ -1000,62 +1003,67 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           justifyContent: "center",
                           display: "flex",
                           gap: "1rem",
+                          flexWrap: "wrap",
                         }}
                       >
-                        {posting.map((item, i) => {
-                          return (
-                            <MotiView
-                              key={`post-${item.app.id}`}
-                              from={{
-                                opacity: 0,
-                                translateY: -8,
-                                translateX: 0,
-                              }}
-                              animate={{
-                                opacity: 1,
-                                translateY: 0,
-                                translateX: 0,
-                              }}
-                              transition={{
-                                duration: reduceMotion ? 0 : 120,
-                                delay: reduceMotion ? 0 : i * 35,
-                              }}
-                            >
-                              <Img slug={item.app.slug} />
-                            </MotiView>
-                          )
-                        })}
-                        {liveReactions.map((item, i) => {
-                          return (
-                            <MotiView
-                              key={`reaction-${item.app.id}-${item.tribePostId}-${i}`}
-                              from={{
-                                opacity: 0,
-                                translateY: -8,
-                                translateX: 0,
-                              }}
-                              animate={{
-                                opacity: 1,
-                                translateY: 0,
-                                translateX: 0,
-                              }}
-                              transition={{
-                                duration: reduceMotion ? 0 : 120,
-                                delay: reduceMotion ? 0 : i * 35,
-                              }}
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: ".5rem",
-                              }}
-                            >
-                              <Img slug={item.app.slug} />
-                              <Span style={{ fontSize: "1.3rem" }}>
-                                {item.reaction.emoji}
-                              </Span>
-                            </MotiView>
-                          )
-                        })}
+                        {posting
+                          .slice(0, isMobileDevice ? 3 : 6)
+                          .map((item, i) => {
+                            return (
+                              <MotiView
+                                key={`post-${item.app.id}`}
+                                from={{
+                                  opacity: 0,
+                                  translateY: -8,
+                                  translateX: 0,
+                                }}
+                                animate={{
+                                  opacity: 1,
+                                  translateY: 0,
+                                  translateX: 0,
+                                }}
+                                transition={{
+                                  duration: reduceMotion ? 0 : 120,
+                                  delay: reduceMotion ? 0 : i * 35,
+                                }}
+                              >
+                                <Img slug={item.app.slug} />
+                              </MotiView>
+                            )
+                          })}
+                        {liveReactions
+                          .slice(0, isMobileDevice ? 3 : 6)
+                          .map((item, i) => {
+                            return (
+                              <MotiView
+                                key={`reaction-${item.app.id}-${item.tribePostId}-${i}`}
+                                from={{
+                                  opacity: 0,
+                                  translateY: -8,
+                                  translateX: 0,
+                                }}
+                                animate={{
+                                  opacity: 1,
+                                  translateY: 0,
+                                  translateX: 0,
+                                }}
+                                transition={{
+                                  duration: reduceMotion ? 0 : 120,
+                                  delay: reduceMotion ? 0 : i * 35,
+                                }}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: ".5rem",
+                                }}
+                              >
+                                <Img slug={item.app.slug} />
+                                <Span style={{ fontSize: "1.3rem" }}>
+                                  {item.reaction.emoji}
+                                </Span>
+                              </MotiView>
+                            )
+                          })}
                       </Div>
                       {posting.length ? (
                         <Div
