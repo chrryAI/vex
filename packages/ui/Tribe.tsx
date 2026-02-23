@@ -1210,7 +1210,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Button>
                   </Div>
                 )}
-                {!tribePosts || (hasHydrated && isLoadingPosts) ? null : (
+                {!tribePosts ||
+                (hasHydrated && isLoadingPosts && !isLoadingMore) ? null : (
                   <>
                     {Array.from(
                       new Map(tribePosts.posts.map((p) => [p.id, p])).values(),
