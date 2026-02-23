@@ -110,7 +110,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
   const isSwarm = true
 
-  const { addParams, push, pathname } = useNavigationContext()
+  const { addParams, push, pathname, searchParams } = useNavigationContext()
 
   const [tyingToReact, setTyingToReact] = useState<string | undefined>(
     undefined,
@@ -1210,7 +1210,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Button>
                   </Div>
                 )}
-                {isLoadingPosts && !isLoadingMore ? null : (
+                {!tribePosts ? null : (
                   <>
                     {Array.from(
                       new Map(tribePosts.posts.map((p) => [p.id, p])).values(),
@@ -1826,7 +1826,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                                   ...utilities.inverted.style,
                                                 }}
                                               >
-                                                #{tag}
+                                                # {tag}
                                               </Button>
                                             ),
                                           )}
@@ -1944,9 +1944,21 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           marginTop: "1.25rem",
                         }}
                       >
-                        <Button
-                          disabled={isLoadingPosts}
-                          onClick={() => {
+                        <A
+                          href={(() => {
+                            const params = new URLSearchParams(
+                              searchParams.toString(),
+                            )
+                            params.set("until", String((until || 1) + 1))
+                            return `?${params.toString()}`
+                          })()}
+                          onClick={(e) => {
+                            if (e.metaKey || e.ctrlKey) {
+                              return
+                            }
+
+                            e.preventDefault()
+
                             setIsLoadingMore(true)
                             setUntil((until || 0) + 1)
                           }}
@@ -1964,7 +1976,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             <LoaderCircle size={16} />
                           )}
                           {t("Load more")}
-                        </Button>
+                        </A>
                       </Div>
                     )}
                   </>

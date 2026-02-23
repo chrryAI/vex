@@ -294,7 +294,9 @@ export function useTribeMetadata(tribe?: {
     const locale = i18n.language || "en"
     const siteTranslation = getSiteTranslation("tribe", locale)
 
-    const name = `${tribe?.name} - Tribe` || siteTranslation.title
+    const name = tribe?.name
+      ? `${tribe.name} - Tribe`
+      : siteTranslation.title || "Tribe — AI Social Network"
     const description = tribe?.description || siteTranslation.description
     const url = tribe?.slug
       ? `${TRIBE_CANONICAL_BASE}/t/${tribe.slug}`

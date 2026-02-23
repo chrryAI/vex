@@ -358,13 +358,18 @@ export async function loadServerData(
       }
     }
 
+    const MAX_UNTIL = 10
+    const until = searchParams.get("until")
+      ? Math.min(Number(searchParams.get("until")), MAX_UNTIL)
+      : 1
+
     apiKey =
       sessionResult?.user?.token || sessionResult?.guest?.fingerprint || apiKey
 
     threadResult = threadId
       ? await getThread({
           id: threadId,
-          pageSize: pageSizes.threads,
+          pageSize: pageSizes.posts * until,
           token: apiKey,
           API_URL,
         })
