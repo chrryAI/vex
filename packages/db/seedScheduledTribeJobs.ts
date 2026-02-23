@@ -46,9 +46,9 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function getCooldown(slug: string): number {
-  if (TIER1_SLUGS.has(slug)) return 45
-  if (TIER2_SLUGS.has(slug)) return 90
-  return 120
+  if (TIER1_SLUGS.has(slug)) return 15
+  if (TIER2_SLUGS.has(slug)) return 30
+  return 60
 }
 
 export async function seedScheduledTribeJobs({ admin }: { admin: user }) {

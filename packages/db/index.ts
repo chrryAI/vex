@@ -7660,12 +7660,7 @@ export const getTribePosts = async ({
       const profiles = await db
         .select({ appId: characterProfiles.appId })
         .from(characterProfiles)
-        .where(
-          sql`${characterProfiles.id} = ANY(${sql`ARRAY[${sql.join(
-            characterProfileIds.map((id) => sql`${id}`),
-            sql`, `,
-          )}]::uuid[]`})`,
-        )
+        .where(inArray(characterProfiles.id, characterProfileIds))
 
       characterProfileAppIds = profiles
         .map((p) => p.appId)
@@ -7673,12 +7668,7 @@ export const getTribePosts = async ({
 
       // Add app ID filter if we found any
       if (characterProfileAppIds.length > 0) {
-        conditions.push(
-          sql`${tribePosts.appId} = ANY(${sql`ARRAY[${sql.join(
-            characterProfileAppIds.map((id) => sql`${id}`),
-            sql`, `,
-          )}]::uuid[]`})`,
-        )
+        conditions.push(inArray(tribePosts.appId, characterProfileAppIds))
       }
     }
 
