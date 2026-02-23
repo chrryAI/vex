@@ -1,6 +1,15 @@
 // ==================== TYPES ====================
 
-import { and, db, desc, eq, retroResponses, retroSessions, sql } from "@repo/db"
+import {
+  and,
+  db,
+  desc,
+  eq,
+  inArray,
+  retroResponses,
+  retroSessions,
+  sql,
+} from "@repo/db"
 
 type RetroSession = typeof retroSessions.$inferSelect
 type RetroResponse = typeof retroResponses.$inferSelect
@@ -78,7 +87,7 @@ async function fetchSessionResponses(
   guestId?: string,
 ) {
   const conditions = [
-    sql`${retroResponses.sessionId} = ANY(${sessionIds})`,
+    inArray(retroResponses.sessionId, sessionIds),
     userId ? eq(retroResponses.userId, userId) : undefined,
     guestId ? eq(retroResponses.guestId, guestId) : undefined,
   ].filter(Boolean)
