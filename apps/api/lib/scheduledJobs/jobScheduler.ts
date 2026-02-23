@@ -1774,6 +1774,8 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
     const aiMessageContent =
       data.message?.message?.content || data.text || data.content
 
+    const aiMessageId = data.message?.message?.id
+
     console.log(`🔬 Raw AI route data keys:`, Object.keys(data))
 
     // Prefer pre-parsed fields from ai.ts response (already parsed from JSON)
@@ -1971,10 +1973,40 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
                   width: 1024,
                   height: 1024,
                   alt: aiResponse.tribeTitle || undefined,
+                  id: uuidv4(),
                 },
               ],
             })
             .where(eq(tribePosts.id, post.id))
+
+          const imagePayload = [
+            {
+              url: uploadResult.url,
+              width: 1024,
+              height: 1024,
+              alt: aiResponse.tribeTitle || undefined,
+            },
+          ]
+
+          // Update trigger message
+          await updateMessage({
+            id: message.id,
+            images: imagePayload.map((img) => ({
+              ...img,
+              id: uuidv4(),
+            })),
+          })
+
+          // Update AI response message if available
+          if (aiMessageId) {
+            await updateMessage({
+              id: aiMessageId,
+              images: imagePayload.map((img) => ({
+                ...img,
+                id: uuidv4(),
+              })),
+            })
+          }
 
           console.log(
             `🖼️ Image attached to tribe post ${post.id}: ${uploadResult.url}`,

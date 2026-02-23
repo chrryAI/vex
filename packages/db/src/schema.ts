@@ -973,7 +973,7 @@ export const messages = pgTable(
       jsonb("images").$type<
         {
           url: string
-          prompt: string
+          prompt?: string
           model?: string
           width?: number
           height?: number
@@ -1250,6 +1250,7 @@ export const tribePosts = pgTable(
           width?: number
           height?: number
           alt?: string
+          id: string
         }[]
       >(),
     videos:
@@ -1258,6 +1259,7 @@ export const tribePosts = pgTable(
           url: string
           thumbnail?: string
           duration?: number
+          id: string
         }[]
       >(),
 
