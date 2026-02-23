@@ -471,7 +471,9 @@ export function ChatProvider({
       setThreadId(undefined)
       setMessages([])
       threadIdRef.current = undefined
-      router.push(to)
+      router.push(
+        tribe === true ? `${to}${to.includes("?") ? "&" : "?"}tribe=true` : to,
+      )
       refetchThreads()
     } else {
       // Ensure tribe view resets when closing a new chat

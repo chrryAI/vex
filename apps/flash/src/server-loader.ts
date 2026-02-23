@@ -392,10 +392,6 @@ export async function loadServerData(
       API_URL,
     })
 
-    // Create URLSearchParams-compatible object for server-client consistency
-
-    // Wrap in object with .get() method to match URLSearchParams API
-
     const sortBy =
       (searchParams.get("sort") as "date" | "hot" | "liked") || "hot"
 
@@ -407,9 +403,7 @@ export async function loadServerData(
       (pathname === "/tribe" || (siteConfig.isTribe && pathname === "/"))
 
     const canShowTribeProfile =
-      !excludedSlugRoutes?.includes(pathname.split("?")?.[0]) && !showAllTribe
-
-    console.log(`🚀 ~ canShowTribeProfile:`, canShowTribeProfile)
+      !excludedSlugRoutes?.includes(pathname) && !showAllTribe
 
     const [translationsResult, threadsResult, tribesResult, tribePostsResult] =
       await Promise.all([

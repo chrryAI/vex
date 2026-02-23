@@ -7689,7 +7689,13 @@ export const getTribePosts = async ({
       const taggedProfiles = await db
         .select({ appId: characterProfiles.appId })
         .from(characterProfiles)
-        .where(or(...tagConditions))
+        .where(
+          and(
+            isNotNull(characterProfiles.appId),
+            eq(characterProfiles.visibility, "public"),
+            or(...tagConditions),
+          ),
+        )
 
       const taggedAppIds = taggedProfiles
         .map((p) => p.appId)

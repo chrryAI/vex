@@ -2348,6 +2348,8 @@ export function AuthProvider({
   const showAllTribe =
     pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
 
+  const tribeQuery = searchParams.get("tribe") === "true"
+
   const canBeTribeProfile =
     !showAllTribe && !_isExcluded && !(siteConfig.isTribe && pathname === "/")
 
@@ -2366,7 +2368,7 @@ export function AuthProvider({
 
   const showTribeProfileMemo = useMemo(
     () => showTribeProfileInternal,
-    [showTribeProfileInternal],
+    [showTribeProfileInternal, tribeQuery],
   )
 
   const showTribeProfile =
@@ -2375,12 +2377,13 @@ export function AuthProvider({
   const setShowTribe = (value: boolean) => {
     if (!canShowTribe) return
     setShowTribeFinal(value)
+
+    // value ? addParams({ tribe: true }) : removeParams(["tribe"])
   }
 
   useEffect(() => {
-    showTribeFromPath && setShowTribe(true)
-    postId && setShowTribe(true)
-  }, [showTribeFromPath, postId])
+    ;(showTribeFromPath || postId || tribeQuery) && setShowTribe(true)
+  }, [showTribeFromPath, postId, tribeQuery])
   const { data: moodData, mutate: refetchMood } = useSWR(
     (user || guest) && shouldFetchMood && token ? ["mood", token] : null, // Disabled by default, fetch manually with refetchMood()
     async () => {

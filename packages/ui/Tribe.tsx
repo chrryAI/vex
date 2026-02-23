@@ -1162,7 +1162,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           ...utilities.small.style,
                         }}
                         onClick={() => {
-                          setTags(tags.filter((t) => t !== tag))
+                          setTags(tags.filter((tagItem) => tagItem !== tag))
                         }}
                         key={`tag-${tag}`}
                       >
