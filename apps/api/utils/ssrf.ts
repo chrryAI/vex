@@ -292,12 +292,11 @@ export async function safeFetch(
     // Security: S5144 - We have manually validated safeUrl via getSafeUrl() above
     // which resolves DNS and checks against private IP ranges (IPv4 & IPv6).
     // We also use 'redirect: manual' to re-validate every hop.
-    // // NOSONAR
     response = await fetch(safeUrl, {
       ...options,
       headers,
       redirect: "manual",
-    })
+    }) // NOSONAR
 
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get("Location")
