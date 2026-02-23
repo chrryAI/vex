@@ -137,7 +137,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
   const tribeSlug = post?.tribe?.slug
   const currentTribe = post?.tribe
 
-  const { isExtension, isFirefox } = usePlatform()
+  const { isExtension, isFirefox, viewPortWidth } = usePlatform()
 
   const copyToClipboard = async () => {
     if (!post) {
@@ -686,8 +686,8 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 style={{
                   ...{
                     position: "absolute",
-                    top: 8,
-                    right: 8,
+                    top: isMobileDevice ? 12 : 0,
+                    right: isMobileDevice ? 12 : 8,
                     border: "none",
                     borderRadius: 6,
                     color: "white",
@@ -707,14 +707,17 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 <Download size={16} />
               </Button>
               <Img
-                width={isMobileDevice ? "100%" : 400}
-                height={isMobileDevice ? "auto" : 400}
+                width={
+                  viewPortWidth < 500 ? "100%" : isMobileDevice ? 325 : 375
+                }
+                height={
+                  viewPortWidth < 500 ? "auto" : isMobileDevice ? 325 : 375
+                }
                 style={{
                   borderRadius: "20px",
-                  maxWidth: "100%",
                 }}
                 src={post.images[0].url}
-              />{" "}
+              />
             </Div>
           )}
         </Div>
