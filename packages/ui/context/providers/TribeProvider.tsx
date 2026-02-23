@@ -172,10 +172,16 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const setSearch = (val?: string) => {
     setSearchInitial(val)
   }
-  const [until, setUntilInitial] = useState<number>(1)
+  const [until, setUntilInitial] = useState<number>(
+    searchParams.get("until") ? Number(searchParams.get("until")) : 1,
+  )
 
   const setUntil = (val: number) => {
     setUntilInitial(val)
+
+    if (val) {
+      addParams({ until: val })
+    } else removeParams("until")
   }
   const [characterProfileIds, setCharacterProfileIdsInternal] = useState<
     string[] | undefined

@@ -253,7 +253,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           <Div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
             <A href={`/tribe`}>{t("Tribe's Feed")}</A>
             <A
-              href={`/tribe/${currentTribe.slug}`}
+              href={`/t/${currentTribe.slug}`}
               style={{
                 margin: 0,
                 fontSize: ".9rem",
@@ -731,7 +731,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
             >
               <Video
                 playsInline
-                autoPlay
+                autoPlay={!reduceMotion}
                 muted
                 loop
                 controls

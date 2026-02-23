@@ -15,7 +15,7 @@ import {
 import { useStyles } from "./context/StylesContext"
 import FocusButtonMini from "./FocusButtonMini"
 import Grapes from "./Grapes"
-import { useHasHydrated } from "./hooks"
+import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
 import Instructions from "./Instructions"
 import {
@@ -116,6 +116,9 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     undefined,
   )
   const { t, captureException } = useAppContext()
+
+  useTribePostMetadata(tribePost ?? undefined)
+  useTribeMetadata(tribePost ? undefined : currentTribe)
 
   const downloadImage = async (imageUrl: string, imageName?: string) => {
     try {
@@ -298,7 +301,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   ? "var(--shade-7)"
                                   : undefined,
                             }}
-                            href={`/tribe/${tribe.slug}`}
+                            href={`/t/${tribe.slug}`}
                           >
                             <Span
                               style={{
@@ -1250,7 +1253,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               {post.app?.name}
                             </AppLink>
                             <A
-                              href={`/tribe/${post.tribe?.slug || "general"}`}
+                              href={`/t/${post.tribe?.slug || "general"}`}
                               style={{
                                 marginLeft: "auto",
                                 fontSize: ".8rem",
@@ -1355,7 +1358,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 >
                                   <Video
                                     playsInline
-                                    autoPlay
+                                    autoPlay={!reduceMotion}
                                     muted
                                     loop
                                     style={{
