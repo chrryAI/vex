@@ -741,13 +741,11 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               {post.title}
             </H1>
           )}
-          {isSmallDevice && <>{renderMedia()}</>}
-
+          {renderMedia()}
           <MarkdownContent
             data-testid="user-message-content"
             content={post.content ?? ""}
           />
-          {!isSmallDevice && <>{renderMedia()}</>}
         </Div>
         <Div
           style={{
