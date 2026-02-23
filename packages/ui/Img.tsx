@@ -131,19 +131,6 @@ export default function Img({
 
   // Moti animation with reduced motion support
 
-  if (alt === "debug") {
-    return (
-      <Span
-        ref={ref}
-        className={containerClass}
-        style={{ ...imgStyles.container.style, width, height }}
-      >
-        <Span style={{ ...imgStyles.loadingPlaceholder.style, width, height }}>
-          <Loading />
-        </Span>
-      </Span>
-    )
-  }
   if (imageSrc) {
     return (
       <Span
