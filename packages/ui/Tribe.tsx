@@ -98,8 +98,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     siteConfig,
     getTribeUrl,
   } = useAuth()
-  const { setAppStatus, canEditApp } = useApp()
-  const { isExtension, isFirefox } = usePlatform()
+  const { setAppStatus } = useApp()
+  const { isExtension, isFirefox, viewPortWidth } = usePlatform()
 
   const [tryAppCharacterProfile, setTryAppCharacterProfile] = useState<
     string | undefined
@@ -1271,6 +1271,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 <Div
                                   style={{
                                     position: "relative",
+                                    alignSelf: "center",
                                   }}
                                 >
                                   <Button
@@ -1299,8 +1300,20 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     <Download size={16} />
                                   </Button>
                                   <Img
-                                    width={200}
-                                    height={200}
+                                    width={
+                                      viewPortWidth < 500
+                                        ? "100%"
+                                        : isMobileDevice
+                                          ? 300
+                                          : 200
+                                    }
+                                    height={
+                                      viewPortWidth < 500
+                                        ? "auto"
+                                        : isMobileDevice
+                                          ? 300
+                                          : 200
+                                    }
                                     style={{
                                       borderRadius: "20px",
                                     }}
@@ -1316,7 +1329,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 marginTop: 0,
                               }}
                             >
-                              {post.content}
+                              {post.content.length > 300 && isSmallDevice
+                                ? post.content.slice(
+                                    0,
+                                    isMobileDevice ? 300 : 400,
+                                  ) + "..."
+                                : post.content}
                             </P>
                           </Div>
                           <Div

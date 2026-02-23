@@ -1078,8 +1078,6 @@ const create = async () => {
 
   await updateStoreUrls({ user: admin })
 
-  await seedTribeEngagement()
-
   // await seedScheduledTribeJobs({ admin })
 
   const { sushiAgent } = agents
