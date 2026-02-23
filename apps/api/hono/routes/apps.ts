@@ -59,10 +59,10 @@ app.get("/", async (c) => {
   const app = await getApp({ c })
 
   if (!app) {
-    return c.json(
-      { error: "App not found" },
-      { status: !accountApp ? 404 : 200 },
-    )
+    if (accountApp) {
+      return c.json(null)
+    }
+    return c.json({ error: "App not found" })
   }
 
   return c.json(app)
@@ -106,10 +106,10 @@ app.get("/:storeSlug/:appSlug", async (c) => {
   const accountApp = c.req.param("accountApp") === "true"
 
   if (!app) {
-    return c.json(
-      { error: "App not found" },
-      { status: !accountApp ? 404 : 200 },
-    )
+    if (accountApp) {
+      return c.json(null)
+    }
+    return c.json({ error: "App not found" })
   }
 
   return c.json(app)
@@ -123,10 +123,10 @@ app.get("/:id", async (c) => {
   const app = await getApp({ c, appId: id })
 
   if (!app) {
-    return c.json(
-      { error: "App not found" },
-      { status: !accountApp ? 404 : 200 },
-    )
+    if (accountApp) {
+      return c.json(null)
+    }
+    return c.json({ error: "App not found" })
   }
 
   return c.json(app)

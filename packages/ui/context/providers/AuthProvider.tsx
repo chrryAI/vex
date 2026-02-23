@@ -2382,7 +2382,7 @@ export function AuthProvider({
     postId && setShowTribe(true)
   }, [showTribeFromPath, postId])
   const { data: moodData, mutate: refetchMood } = useSWR(
-    shouldFetchMood && token ? ["mood", token] : null, // Disabled by default, fetch manually with refetchMood()
+    (user || guest) && shouldFetchMood && token ? ["mood", token] : null, // Disabled by default, fetch manually with refetchMood()
     async () => {
       const response = await apiFetch(`${API_URL}/mood`, {
         headers: {
@@ -3180,7 +3180,7 @@ export function AuthProvider({
         guest,
         threadData: props.thread,
         session,
-        token,
+        token: user?.token || guest?.fingerprint,
         signInPart,
         setSignInPart,
         setSlug,
