@@ -350,18 +350,13 @@ export const FocusButtonStyleDefs = {
     marginBottom: 20,
   },
   task: {
-    base: {
-      borderRadius: "var(--radius)",
-      border: "1px solid var(--shade-2)",
-      padding: "0 15px",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-    },
-    hover: {
-      border: "1px dashed var(--accent-1)",
-    },
+    borderRadius: "var(--radius)",
+    border: "1px solid var(--shade-2)",
+    padding: "0 15px",
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
   },
   link: {
     color: "var(--foreground)",

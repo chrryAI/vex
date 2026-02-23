@@ -28,7 +28,6 @@ import {
 } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
-import { captureException } from "@sentry/node"
 import type { themeType } from "chrry/context/ThemeContext"
 import { v4 as uuidv4, validate } from "uuid"
 import {
@@ -37,6 +36,7 @@ import {
   getBlogPost,
   getBlogPosts,
 } from "./blog-loader"
+import { captureException } from "./captureException"
 import { generateServerMetadata } from "./server-metadata"
 
 export interface ServerRequest {
@@ -55,6 +55,7 @@ export interface ServerData {
     threads: thread[]
     totalCount: number
   }
+  accountApp?: appWithStore
   showTribe: boolean
   translations?: Record<string, any>
   app?: appWithStore
@@ -276,6 +277,7 @@ export async function loadServerData(
   let session: session | undefined
   let translations: Record<string, any> | undefined
   let app: appWithStore | undefined
+  let accountApp: appWithStore | undefined
   let apiError: Error | undefined
 
   // Fetch thread if threadId exists
@@ -294,7 +296,6 @@ export async function loadServerData(
   let _tribe: tribe | undefined
 
   try {
-    appId = threadResult?.thread?.appId || headers["x-app-id"]
     const sessionResult = await getSession({
       // appId: appResult.id,
       deviceId,
@@ -364,9 +365,14 @@ export async function loadServerData(
       }
     }
 
+    appId =
+      tribePostResult?.appId ||
+      threadResult?.thread?.appId ||
+      headers["x-app-id"]
+
     const appResult = await getApp({
       chrryUrl,
-      appId: threadResult?.thread?.appId || tribePostResult?.appId || appId,
+      appId,
       token: apiKey,
       pathname,
       API_URL,
@@ -428,7 +434,7 @@ export async function loadServerData(
     tribePost = tribePostResult
     tribePosts = tribePostsResult
 
-    const accountApp = session?.userBaseApp || session?.guestBaseApp
+    accountApp = session?.userBaseApp || session?.guestBaseApp
     app = appResult.id === accountApp?.id ? accountApp : appResult
   } catch (error) {
     captureException(error)
@@ -471,6 +477,7 @@ export async function loadServerData(
     tribePosts,
     tribePost,
     showTribe,
+    accountApp,
     pathname, // Add pathname so client knows the SSR route
   }
 

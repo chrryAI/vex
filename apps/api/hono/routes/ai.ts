@@ -74,11 +74,11 @@ import {
 } from "@repo/db"
 import {
   MEMBER_FREE_TRIBE_CREDITS,
+  tribeMemberships,
   tribePosts,
   tribes as tribesSchema,
   type webSearchResultType,
 } from "@repo/db/src/schema"
-import { captureException } from "@sentry/node"
 import { generateText, type ModelMessage, streamText } from "ai"
 import Handlebars from "handlebars"
 import { Hono } from "hono"
@@ -101,6 +101,7 @@ import {
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
 import { PerformanceTracker } from "../../lib/analytics"
 import { getDNAThreadArtifacts } from "../../lib/appRAG"
+import { captureException } from "../../lib/captureException"
 import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
 import extractVideoFrames from "../../lib/extractVideoFrames"
 import generateAIContent from "../../lib/generateAIContent"
@@ -584,8 +585,10 @@ async function getAnalyticsContext({
     const officialDomains = [
       "chrry.ai",
       "vex.chrry.ai",
+      "tribe.chrry.ai",
       "atlas.chrry.ai",
       "e2e.chrry.ai",
+      "sushi.chrry.ai",
       "focus.chrry.ai",
       "grape.chrry.ai",
       "vault.chrry.ai",
@@ -1328,7 +1331,7 @@ ai.post("/", async (c) => {
     }
 
     if (activeSchedule?.maxTokens) {
-      jobMaxTokens = activeSchedule.maxTokens
+      jobMaxTokens = Math.min(activeSchedule.maxTokens, 8192)
       console.log(
         `🎯 Using job maxTokens: ${jobMaxTokens} for ${activeSchedule.postType}`,
       )
@@ -1346,10 +1349,6 @@ ai.post("/", async (c) => {
   const canPostToTribe =
     ((member?.tribeCredits ?? 0) > 0 || member?.role === "admin" || job) &&
     isTribe
-
-  // if (!canPostToTribe) {
-  //   return c.json({ error: job ? "heys" : "Test :(" }, { status: 404 })
-  // }
 
   const moltApiKeyInternal = requestApp?.moltApiKey
   const moltApiKey = moltApiKeyInternal ? safeDecrypt(moltApiKeyInternal) : ""
@@ -6286,6 +6285,7 @@ Respond in JSON format:
         let tribeContent = ""
         let tribe = ""
         let tribeSeoKeywords: string[] = []
+        let tribeImagePrompt: string | undefined
         let tribePostId: string | undefined
         const moltId = undefined
 
@@ -6361,12 +6361,19 @@ Respond in JSON format:
             }
           }
 
-          if (canPostToTribe && (!job || job?.jobType === "tribe_post")) {
+          if (
+            canPostToTribe &&
+            (!job || job?.jobType === "tribe_post") &&
+            postType !== "engagement" &&
+            postType !== "comment"
+          ) {
             try {
               // Clean up markdown code blocks if present
               const cleanResponse = finalText
                 .replace(/```json\n?|\n?```/g, "")
                 .trim()
+
+              console.log(`🚀 ~ ai.post ~ finalText:`, finalText)
 
               !cleanResponse &&
                 console.warn(
@@ -6384,6 +6391,11 @@ Respond in JSON format:
                   lastClose + 1,
                 )
                 const parsed = JSON.parse(jsonString)
+                console.log(
+                  `🚀 ~ ai.post ~ jsonString:`,
+                  jsonString,
+                  job?.jobType,
+                )
 
                 tribeTitle =
                   parsed.tribeTitle || parsed.title || "Thoughts from Chrry"
@@ -6393,6 +6405,8 @@ Respond in JSON format:
                 tribeSeoKeywords = Array.isArray(parsed.seoKeywords)
                   ? parsed.seoKeywords
                   : []
+                // Hoist imagePrompt into outer scope so it's accessible in the return payload
+                tribeImagePrompt = parsed.imagePrompt || undefined
 
                 // Two flows: stream (direct post) vs non-stream (parse only, like Moltbook)
                 // IMPORTANT: Skip posting if this is a scheduled job (jobId exists)
@@ -6403,8 +6417,7 @@ Respond in JSON format:
                       // STREAM MODE: Direct post to Tribe (user sees content + post confirmation)
 
                       // Check credits
-                      const { MEMBER_FREE_TRIBE_CREDITS, tribeMemberships } =
-                        await import("@repo/db/src/schema")
+
                       const tribeCredits =
                         member.tribeCredits ?? MEMBER_FREE_TRIBE_CREDITS
 
@@ -6487,6 +6500,7 @@ Respond in JSON format:
                                 content: tribeContent,
                                 visibility: "public",
                                 tribeId,
+                                language,
                                 seoKeywords:
                                   tribeSeoKeywords.length > 0
                                     ? tribeSeoKeywords
@@ -6688,9 +6702,11 @@ Respond in JSON format:
                 moltSubmolt,
                 moltSeoKeywords,
                 tribeTitle,
+                language,
                 tribeContent,
                 tribeName: tribe,
                 tribeSeoKeywords,
+                imagePrompt: tribeImagePrompt,
               })
             }
           } catch (createError) {

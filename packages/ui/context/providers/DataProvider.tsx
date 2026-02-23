@@ -21,7 +21,13 @@ import {
   usePlatform,
 } from "../../platform/PlatformProvider"
 import type { aiAgent, instruction } from "../../types"
-import { ADDITIONAL_CREDITS, apiFetch, isDevelopment, isE2E } from "../../utils"
+import {
+  ADDITIONAL_CREDITS,
+  apiFetch,
+  isDevelopment,
+  isE2E,
+  VERSION,
+} from "../../utils"
 import { getWeatherCacheTime } from "../../utils/getWeatherCacheTime"
 import console from "../../utils/log"
 import { useAuth } from "./AuthProvider"
@@ -199,8 +205,6 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   >(null)
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
-
-  const VERSION = "2.0.11"
 
   const [weather, setWeather] = useLocalStorage<
     | {

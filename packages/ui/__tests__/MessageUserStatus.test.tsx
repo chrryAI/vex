@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
 
 import { render } from "@testing-library/react"
-import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import MessageUserStatus from "../MessageUserStatus"
 

@@ -63,6 +63,11 @@ export async function getModelProvider(
   if (!agent) {
     // Fallback to DeepSeek if agent not found
     agent = agents.find((a) => a.name === "deepSeek") as aiAgent
+    if (!agent) {
+      throw new Error(
+        "No suitable AI agent found in the database (deepSeek fallback missing)",
+      )
+    }
   }
 
   // If agent has appId (custom agent), use its configuration
@@ -72,8 +77,7 @@ export async function getModelProvider(
     case "deepSeek": {
       const deepseekKey = app?.apiKeys?.deepseek
         ? safeDecrypt(app?.apiKeys?.deepseek)
-        : !plusTiers.includes(app?.tier || "") &&
-            !process.env.OPENROUTER_API_KEY
+        : !plusTiers.includes(app?.tier || "")
           ? process.env.DEEPSEEK_API_KEY
           : ""
 
@@ -116,7 +120,7 @@ export async function getModelProvider(
       if (chatgptKey) {
         const openaiProvider = createOpenAI({ apiKey: chatgptKey })
         return {
-          provider: openaiProvider("gpt-3.5-turbo"),
+          provider: openaiProvider("gpt-4o-mini"),
           agentName: "chatGPT",
         }
       }
@@ -172,8 +176,7 @@ export async function getModelProvider(
       // Check for OpenAI key first
       const openaiKey = app?.apiKeys?.openai
         ? safeDecrypt(app?.apiKeys?.openai)
-        : !plusTiers.includes(app?.tier || "") &&
-            !process.env.OPENROUTER_API_KEY
+        : !plusTiers.includes(app?.tier || "")
           ? process.env.CHATGPT_API_KEY
           : ""
 
@@ -212,8 +215,7 @@ export async function getModelProvider(
     case "claude": {
       const claudeKey = app?.apiKeys?.anthropic
         ? safeDecrypt(app?.apiKeys?.anthropic)
-        : !plusTiers.includes(app?.tier || "") &&
-            !process.env.OPENROUTER_API_KEY
+        : !plusTiers.includes(app?.tier || "")
           ? process.env.CLAUDE_API_KEY
           : ""
 
@@ -292,8 +294,7 @@ export async function getModelProvider(
     case "perplexity": {
       const perplexityKey = app?.apiKeys?.perplexity
         ? safeDecrypt(app?.apiKeys?.perplexity)
-        : !plusTiers.includes(app?.tier || "") &&
-            !process.env.OPENROUTER_API_KEY
+        : !plusTiers.includes(app?.tier || "")
           ? process.env.PERPLEXITY_API_KEY
           : ""
 

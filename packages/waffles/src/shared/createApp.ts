@@ -169,7 +169,7 @@ const createApp = async ({
   await wait(1000)
 
   await nameInput.clear()
-  await nameInput.fill("123456789")
+  await nameInput.fill("123456789101112")
 
   const errorMessage2 = page.getByTestId("name-error-message")
   await expect(errorMessage2).toBeVisible()
@@ -178,7 +178,7 @@ const createApp = async ({
 
   await wait(1000)
 
-  expect(page.getByText("Name: maximum 8 characters")).toBeVisible()
+  await expect(page.getByText("Name: maximum 12 characters")).toBeVisible()
 
   await wait(1000)
 

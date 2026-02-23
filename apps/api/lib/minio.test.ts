@@ -112,7 +112,7 @@ describe("upload", () => {
     vi.mocked(safeFetch).mockResolvedValue(
       new Response("<html>script</html>", {
         headers: { "Content-Type": "text/html" },
-      })
+      }),
     )
 
     await expect(
@@ -131,7 +131,7 @@ describe("upload", () => {
     vi.mocked(safeFetch).mockResolvedValue(
       new Response("image", {
         headers: { "Content-Type": "image/png" },
-      })
+      }),
     )
 
     await expect(
@@ -150,7 +150,7 @@ describe("upload", () => {
     vi.mocked(safeFetch).mockResolvedValue(
       new Response(Buffer.from("fake-image"), {
         headers: { "Content-Type": "image/png" },
-      })
+      }),
     )
 
     await expect(

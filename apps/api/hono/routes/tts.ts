@@ -1,7 +1,7 @@
 import { updateGuest, updateUser } from "@repo/db"
 import { Hono } from "hono"
 import { checkSpeechLimits, type UserType } from "../../lib"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import { checkRateLimit } from "../../lib/rateLimiting"
 import { getGuest, getMember } from "../lib/auth"
 

@@ -1,10 +1,10 @@
 import { deepseek } from "@ai-sdk/deepseek"
 import { db, getMemories } from "@repo/db"
 import { moltComments } from "@repo/db/src/schema"
-import { captureException } from "@sentry/node"
 import { streamText } from "ai"
 import type { Context } from "hono"
 import { isDevelopment, MOLTBOOK_API_KEYS } from ".."
+import { captureException } from "../captureException"
 import { getMoltbookFeed, postComment } from "../integrations/moltbook"
 import { redact } from "../redaction"
 import { sendDiscordNotification } from "../sendDiscordNotification"
@@ -333,31 +333,34 @@ Comment (2-3 sentences max, concise and engaging, just the text, no quotes):`
           inline: false,
         }))
 
-      sendDiscordNotification({
-        embeds: [
-          {
-            title: "💬 Moltbook Engagement Activity",
-            color: 0x3b82f6, // Blue
-            fields: [
-              {
-                name: "Agent",
-                value: app?.name || slug,
-                inline: true,
+      sendDiscordNotification(
+        {
+          embeds: [
+            {
+              title: "💬 Moltbook Engagement Activity",
+              color: 0x3b82f6, // Blue
+              fields: [
+                {
+                  name: "Agent",
+                  value: app?.name || slug,
+                  inline: true,
+                },
+                {
+                  name: "Comments Posted",
+                  value: `${commentedPosts.length}/${qualityPosts.length}`,
+                  inline: true,
+                },
+                ...postFields,
+              ],
+              timestamp: new Date().toISOString(),
+              footer: {
+                text: `AI-selected posts with quality score ≥ 7/10`,
               },
-              {
-                name: "Comments Posted",
-                value: `${commentedPosts.length}/${qualityPosts.length}`,
-                inline: true,
-              },
-              ...postFields,
-            ],
-            timestamp: new Date().toISOString(),
-            footer: {
-              text: `AI-selected posts with quality score ≥ 7/10`,
             },
-          },
-        ],
-      }).catch((err) => {
+          ],
+        },
+        process.env.DISCORD_TRIBE_WEBHOOK_URL,
+      ).catch((err) => {
         captureException(err)
         console.error("⚠️ Discord notification failed:", err)
       })

@@ -1,6 +1,6 @@
 import { db, isE2E, realtimeAnalytics } from "@repo/db"
-import { captureException } from "@sentry/node"
 import { Hono } from "hono"
+import { captureException } from "../../lib/captureException"
 import { getGuest, getMember } from "../lib/auth"
 
 type Variables = {

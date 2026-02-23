@@ -13,7 +13,7 @@ export const ImgStyleDefs = {
     flexShrink: 0,
   },
   container: {
-    display: "flex",
+    display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
   },

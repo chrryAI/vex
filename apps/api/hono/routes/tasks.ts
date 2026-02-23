@@ -1,7 +1,7 @@
 import { createTask, deleteTask, getTask, getTasks, updateTask } from "@repo/db"
 import { Hono } from "hono"
 import sanitizeHtml from "sanitize-html"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import { redact } from "../../lib/redaction"
 import { getGuest, getMember } from "../lib/auth"
 

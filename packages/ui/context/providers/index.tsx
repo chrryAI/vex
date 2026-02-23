@@ -83,6 +83,7 @@ export interface AppProvidersProps {
     totalCount: number
   }
   tribes?: paginatedTribes
+  accountApp?: appWithStore
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
 }
@@ -113,6 +114,7 @@ export default function AppProviders({
   theme,
   showTribe,
   tribePost,
+  accountApp,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
 
@@ -186,6 +188,7 @@ export default function AppProviders({
               tribes={tribes}
               tribePosts={tribePosts}
               tribePost={tribePost}
+              accountApp={accountApp}
             >
               <DataProvider>
                 <AppProvider>

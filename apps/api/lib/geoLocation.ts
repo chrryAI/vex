@@ -1,6 +1,6 @@
 // lib/geoLocation.ts
 import { WebServiceClient } from "@maxmind/geoip2-node"
-import { captureException } from "@sentry/node"
+import { captureException } from "./captureException"
 
 export type GeoLocation = {
   ip: string

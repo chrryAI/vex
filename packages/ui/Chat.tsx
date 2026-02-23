@@ -26,6 +26,7 @@ import {
   useData,
   useError,
   useNavigationContext,
+  useTribe,
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import DeleteThread from "./DeleteThread"
@@ -254,8 +255,11 @@ export default function Chat({
     canShowTribe,
     showFocus,
     postId,
+    burnApp,
     ...auth
   } = useAuth()
+
+  const { tribePost } = useTribe()
 
   const lastTribe = user?.lastTribe
   const lastMolt = user?.lastMolt
@@ -481,19 +485,24 @@ export default function Chat({
 
   const [needsReview, setNeedsReviewInternal] = useState(false)
   const needsReviewRef = useRef(needsReview)
-  const placeholder = isImageGenerationEnabled
-    ? `🎨 ${t("Describe the image you want to create")} ✨`
-    : isSelectingMood
-      ? `📊 ${t("Track your mood daily")} 🎭`
-      : needsReview
-        ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
-        : isPear
-          ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
-          : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
-            ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
-            : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
-              ? `✨ ${t("Explore new apps while you chat")} 🍇`
-              : placeHolderInternal
+  const placeholder =
+    burnApp?.placeholder && burn
+      ? burnApp.placeholder
+      : tribePost?.placeholder
+        ? tribePost?.placeholder
+        : isImageGenerationEnabled
+          ? `🎨 ${t("Describe the image you want to create")} ✨`
+          : isSelectingMood
+            ? `📊 ${t("Track your mood daily")} 🎭`
+            : needsReview
+              ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
+              : isPear
+                ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
+                : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
+                  ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
+                  : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
+                    ? `✨ ${t("Explore new apps while you chat")} 🍇`
+                    : placeHolderInternal
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])
@@ -3738,6 +3747,7 @@ export default function Chat({
                   {empty &&
                     !threadIdRef.current &&
                     !showQuotaInfo &&
+                    canShowTribe &&
                     !showTribe && (
                       <Div
                         style={{
