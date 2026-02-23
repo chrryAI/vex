@@ -366,24 +366,26 @@ export default function ImageComponent(props: ImageProps) {
   const invader = `${BASE_URL}/images/pacman/space-invader.png`
 
   return (
-    <Img
-      key={src}
-      onLoad={onLoad}
-      dataTestId={dataTestId}
-      containerClass={containerClass}
-      style={style}
-      className={className}
-      showLoading={showLoading}
-      width={width}
-      height={height}
-      title={title}
-      priority={priority}
-      src={resize({
-        url: slug && !src ? invader : src || invader,
-        width,
-        height,
-      })}
-      alt={alt || app?.title || logo ? "Vex" : ""}
-    />
+    <>
+      <Img
+        key={src}
+        onLoad={onLoad}
+        dataTestId={dataTestId}
+        containerClass={containerClass}
+        style={style}
+        className={className}
+        showLoading={showLoading}
+        width={width}
+        height={height}
+        title={title}
+        priority={priority}
+        src={resize({
+          url: slug && !src ? invader : src || invader,
+          width,
+          height,
+        })}
+        alt={alt || (app?.name ? app?.name : slug || logo || icon)}
+      />
+    </>
   )
 }

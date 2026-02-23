@@ -1210,7 +1210,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Button>
                   </Div>
                 )}
-                {!tribePosts ? null : (
+                {!tribePosts || (hasHydrated && isLoadingPosts) ? null : (
                   <>
                     {Array.from(
                       new Map(tribePosts.posts.map((p) => [p.id, p])).values(),
@@ -1299,6 +1299,18 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 <Div
                                   style={{
                                     position: "relative",
+                                    width:
+                                      viewPortWidth < 500
+                                        ? "100%"
+                                        : isMobileDevice
+                                          ? 300
+                                          : 200,
+                                    height:
+                                      viewPortWidth < 500
+                                        ? "auto"
+                                        : isMobileDevice
+                                          ? 300
+                                          : 200,
                                   }}
                                 >
                                   <Button
@@ -1327,6 +1339,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     <Download size={16} />
                                   </Button>
                                   <Img
+                                    alt={post.images[0].title}
                                     width={
                                       viewPortWidth < 500
                                         ? "100%"
@@ -1343,6 +1356,18 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     }
                                     style={{
                                       borderRadius: "15px",
+                                      width:
+                                        viewPortWidth < 500
+                                          ? "100%"
+                                          : isMobileDevice
+                                            ? 300
+                                            : 200,
+                                      height:
+                                        viewPortWidth < 500
+                                          ? "auto"
+                                          : isMobileDevice
+                                            ? 300
+                                            : 200,
                                     }}
                                     src={post.images[0].url}
                                   />{" "}
