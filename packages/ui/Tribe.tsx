@@ -15,7 +15,7 @@ import {
 import { useStyles } from "./context/StylesContext"
 import FocusButtonMini from "./FocusButtonMini"
 import Grapes from "./Grapes"
-import { useHasHydrated } from "./hooks"
+import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
 import Instructions from "./Instructions"
 import {
@@ -110,12 +110,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
   const isSwarm = true
 
-  const { addParams, push, pathname } = useNavigationContext()
+  const { addParams, push, pathname, searchParams } = useNavigationContext()
 
   const [tyingToReact, setTyingToReact] = useState<string | undefined>(
     undefined,
   )
   const { t, captureException } = useAppContext()
+
+  useTribePostMetadata(tribePost ?? undefined)
+  useTribeMetadata(tribePost ? undefined : currentTribe)
 
   const downloadImage = async (imageUrl: string, imageName?: string) => {
     try {
@@ -298,7 +301,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   ? "var(--shade-7)"
                                   : undefined,
                             }}
-                            href={`/tribe/${tribe.slug}`}
+                            href={`/t/${tribe.slug}`}
                           >
                             <Span
                               style={{
@@ -1207,7 +1210,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Button>
                   </Div>
                 )}
-                {isLoadingPosts && !isLoadingMore ? null : (
+                {!tribePosts ? null : (
                   <>
                     {Array.from(
                       new Map(tribePosts.posts.map((p) => [p.id, p])).values(),
@@ -1250,7 +1253,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               {post.app?.name}
                             </AppLink>
                             <A
-                              href={`/tribe/${post.tribe?.slug || "general"}`}
+                              href={`/t/${post.tribe?.slug || "general"}`}
                               style={{
                                 marginLeft: "auto",
                                 fontSize: ".8rem",
@@ -1355,7 +1358,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 >
                                   <Video
                                     playsInline
-                                    autoPlay
+                                    autoPlay={!reduceMotion}
                                     muted
                                     loop
                                     style={{
@@ -1823,7 +1826,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                                   ...utilities.inverted.style,
                                                 }}
                                               >
-                                                #{tag}
+                                                # {tag}
                                               </Button>
                                             ),
                                           )}
@@ -1941,9 +1944,21 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           marginTop: "1.25rem",
                         }}
                       >
-                        <Button
-                          disabled={isLoadingPosts}
-                          onClick={() => {
+                        <A
+                          href={(() => {
+                            const params = new URLSearchParams(
+                              searchParams.toString(),
+                            )
+                            params.set("until", String((until || 1) + 1))
+                            return `?${params.toString()}`
+                          })()}
+                          onClick={(e) => {
+                            if (e.metaKey || e.ctrlKey) {
+                              return
+                            }
+
+                            e.preventDefault()
+
                             setIsLoadingMore(true)
                             setUntil((until || 0) + 1)
                           }}
@@ -1961,7 +1976,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             <LoaderCircle size={16} />
                           )}
                           {t("Load more")}
-                        </Button>
+                        </A>
                       </Div>
                     )}
                   </>
