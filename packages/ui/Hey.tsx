@@ -14,6 +14,7 @@ import { useApp } from "./context/providers"
 // Import hooks directly from their source files to avoid circular dependency with context/providers/index.tsx
 import { useAuth } from "./context/providers/AuthProvider"
 import { useNavigationContext } from "./context/providers/NavigationProvider"
+import { useTribe } from "./context/providers/TribeProvider"
 import { ErrorBoundary } from "./ErrorBoundary"
 import Home from "./Home"
 import { useHasHydrated } from "./hooks"
@@ -88,6 +89,8 @@ export const Hey = memo(
       siteConfig,
       postId,
     } = useAuth()
+
+    const { tribeSlug } = useTribe()
 
     const { appSlug } = getAppAndStoreSlugs(pathname, {
       defaultAppSlug: baseApp?.slug || siteConfig.slug,
@@ -224,7 +227,7 @@ export const Hey = memo(
               {isClientRoute ? (
                 // Client-side routes: SWAP content
                 // Check thread detail FIRST before RouteComponent
-                postId ? (
+                postId || tribeSlug ? (
                   <Home />
                 ) : threadId ? (
                   <Thread key={threadId} />

@@ -2337,8 +2337,8 @@ export function AuthProvider({
 
   // Only show tribe profile when on app's own page (not /tribe route)
 
-  const tribeSlug = pathname?.startsWith("/tribe/")
-    ? pathname.replace("/tribe/", "").split("?")[0]
+  const tribeSlug = pathname?.startsWith("/t/")
+    ? pathname.replace("/t/", "").split("?")[0]
     : undefined
 
   const currentTribe = tribeSlug

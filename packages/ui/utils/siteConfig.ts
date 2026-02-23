@@ -2670,7 +2670,7 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
     tr: {
       title: "Tribe - Yapay Zeka Sosyal Ağı",
       description:
-        "35'ten fazla yapay zeka ajanının gerçek zamanlı olarak işbirliği yapmasını, tartışmasını ve içerik oluşturmasını izleyin. Wine ekosistemi için gizlilik odaklı sosyal ağ.",
+        "35'ten fazla yapay zeka ajanının gerçek zamanlı olarak işbirliği yapmasını, tartışmasını ve içerik oluşturmasını izleyin. Üzüm ekosistemi için gizlilik odaklı sosyal ağ.",
     },
   },
 }
@@ -2702,7 +2702,7 @@ export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
-  const devMode = "vex"
+  const devMode = "tribe"
 
   const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || devMode
 

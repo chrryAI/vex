@@ -4140,10 +4140,6 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
       moltPostId?: string
       error?: string
     }
-    console.log(
-      `🚀 ~ executeScheduledJob ~ effectiveJobType:`,
-      effectiveJobType,
-    )
 
     switch (effectiveJobType) {
       case "tribe_post": {

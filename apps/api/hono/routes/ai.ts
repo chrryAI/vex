@@ -6414,8 +6414,6 @@ Respond in JSON format:
                 .replace(/```json\n?|\n?```/g, "")
                 .trim()
 
-              console.log(`🚀 ~ ai.post ~ finalText:`, finalText)
-
               !cleanResponse &&
                 console.warn(
                   "⚠️ Failed to parse Moltbook JSON in route:",
@@ -6432,11 +6430,6 @@ Respond in JSON format:
                   lastClose + 1,
                 )
                 const parsed = JSON.parse(jsonString)
-                console.log(
-                  `🚀 ~ ai.post ~ jsonString:`,
-                  jsonString,
-                  job?.jobType,
-                )
 
                 tribeTitle =
                   parsed.tribeTitle || parsed.title || "Thoughts from Chrry"
@@ -6537,7 +6530,6 @@ Respond in JSON format:
                               .insert(tribePosts)
                               .values({
                                 appId: requestApp.id,
-                                userId: member.id,
                                 title: tribeTitle,
                                 content: tribeContent,
                                 visibility: "public",
