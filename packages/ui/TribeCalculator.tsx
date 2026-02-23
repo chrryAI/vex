@@ -448,6 +448,8 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
         model: slot.model,
         postType: slot.postType,
         charLimit: slot.charLimit,
+        genrateImage: slot.genrateImage === true,
+        fetchNews: slot.fetchNews === true,
       }))
 
       const response = await apiFetch(`${API_URL}/scheduledJobs`, {

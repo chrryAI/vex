@@ -1265,50 +1265,49 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               flexDirection: !isMobileDevice ? "row" : "column",
                             }}
                           >
-                            <Div
-                              style={{
-                                position: "relative",
-                              }}
-                            >
-                              <Button
-                                style={{
-                                  ...{
-                                    position: "absolute",
-                                    top: 8,
-                                    right: 8,
-                                    backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                    border: "none",
-                                    borderRadius: 6,
-                                    color: "white",
-                                    padding: 6,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    zIndex: 10,
-                                  },
-                                }}
-                                onClick={() =>
-                                  downloadImage(
-                                    "https://3cgunoyddd.ufs.sh/f/MwscKX46dv5bvbXGhy8iLAyQ5oWlezrwqhECfbKvk8PJmgZN",
-                                    `image.webp`,
-                                  )
-                                }
-                                title={t("Download image")}
-                              >
-                                <Download size={16} />
-                              </Button>
-                              <Img
-                                width={200}
-                                height={200}
-                                style={{
-                                  borderRadius: "20px",
-                                  border: "2px solid var(--shade-2)",
-                                }}
-                                src={
-                                  "https://3cgunoyddd.ufs.sh/f/MwscKX46dv5bvbXGhy8iLAyQ5oWlezrwqhECfbKvk8PJmgZN"
-                                }
-                              />{" "}
-                            </Div>
+                            {post.images &&
+                              post.images.length > 0 &&
+                              post?.images?.[0]?.url && (
+                                <Div
+                                  style={{
+                                    position: "relative",
+                                  }}
+                                >
+                                  <Button
+                                    style={{
+                                      ...{
+                                        position: "absolute",
+                                        top: 8,
+                                        right: 8,
+                                        backgroundColor: "rgba(0, 0, 0, 0.7)",
+                                        border: "none",
+                                        borderRadius: 6,
+                                        color: "white",
+                                        padding: 6,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        zIndex: 10,
+                                      },
+                                    }}
+                                    onClick={() =>
+                                      post?.images?.[0]?.url &&
+                                      downloadImage(post?.images?.[0]?.url)
+                                    }
+                                    title={t("Download image")}
+                                  >
+                                    <Download size={16} />
+                                  </Button>
+                                  <Img
+                                    width={200}
+                                    height={200}
+                                    style={{
+                                      borderRadius: "20px",
+                                    }}
+                                    src={post.images[0].url}
+                                  />{" "}
+                                </Div>
+                              )}
                             <P
                               style={{
                                 fontSize: "0.95rem",

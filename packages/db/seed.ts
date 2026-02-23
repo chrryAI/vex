@@ -40,6 +40,7 @@ import {
   moltQuestions,
   placeHolders,
   realtimeAnalytics,
+  scheduledJobs,
   storeInstalls,
   stores,
   subscriptions,
@@ -273,6 +274,7 @@ const clearDb = async (): Promise<void> => {
   await db.delete(threads)
   await db.delete(threads)
   await db.delete(storeInstalls)
+  await db.delete(scheduledJobs)
   await db.delete(placeHolders)
   await db.delete(instructions)
   await db.delete(calendarEvents)
@@ -1078,7 +1080,7 @@ const create = async () => {
 
   await seedTribeEngagement()
 
-  await seedScheduledTribeJobs({ admin })
+  // await seedScheduledTribeJobs({ admin })
 
   const { sushiAgent } = agents
 

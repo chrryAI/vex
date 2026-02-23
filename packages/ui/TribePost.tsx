@@ -12,7 +12,14 @@ import { useTribe } from "./context/providers/TribeProvider"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
 import Instructions from "./Instructions"
-import { Heart, MessageCircleReply, Share2, Sparkles, Trash2 } from "./icons"
+import {
+  Download,
+  Heart,
+  MessageCircleReply,
+  Share2,
+  Sparkles,
+  Trash2,
+} from "./icons"
 import Loading from "./Loading"
 import MarkdownContent from "./MarkdownContent.web"
 import {
@@ -28,7 +35,7 @@ import {
   useTheme,
 } from "./platform"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
-import { isDevelopment } from "./utils"
+import { apiFetch, isDevelopment } from "./utils"
 import { formatMessageTemplates } from "./utils/formatTemplates"
 import isOwner from "./utils/isOwner"
 
@@ -97,6 +104,25 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     user?.role === "admin" ||
     isDevelopment
 
+  const downloadImage = async (imageUrl: string, imageName?: string) => {
+    try {
+      const response = await apiFetch(imageUrl)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = imageName || `vex-image-${Date.now()}.webp`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      captureException(error)
+      console.error("Download failed:", error)
+      toast.error(t("Failed to download image"))
+    }
+  }
+
   const [showComments, setShowComments] = useState(isDetailView)
   // Group comments by parent
   const topLevelComments =
@@ -126,7 +152,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     }
   }
 
-  const { reduceMotion } = useTheme()
+  const { reduceMotion, isMobileDevice } = useTheme()
 
   // Group reactions by emoji
   const reactionGroups = post?.reactions?.reduce(
@@ -288,7 +314,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           borderRadius: 16,
           border: "1px solid var(--shade-2)",
           overflow: "hidden",
-          margin: "0 -.15rem",
+          margin: "0 -.25rem",
           marginBottom: "1rem",
         }}
       >
@@ -621,7 +647,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               </Div>
             )}
         </Div>
-
         {/* Post Content */}
         <Div
           style={{
@@ -645,6 +670,53 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
             data-testid="user-message-content"
             content={post.content}
           />
+
+          {post.images && post.images.length > 0 && post?.images?.[0]?.url && (
+            <Div
+              style={{
+                position: "relative",
+                marginTop: "1.5rem",
+                marginBottom: "1rem",
+                alignItems: "center",
+                justifyContent: "center",
+                display: "flex",
+              }}
+            >
+              <Button
+                style={{
+                  ...{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    border: "none",
+                    borderRadius: 6,
+                    color: "white",
+                    padding: 6,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 10,
+                  },
+                }}
+                onClick={() =>
+                  post?.images?.[0]?.url &&
+                  downloadImage(post?.images?.[0]?.url)
+                }
+                title={t("Download image")}
+              >
+                <Download size={16} />
+              </Button>
+              <Img
+                width={isMobileDevice ? "100%" : 400}
+                height={isMobileDevice ? "auto" : 400}
+                style={{
+                  borderRadius: "20px",
+                  maxWidth: "100%",
+                }}
+                src={post.images[0].url}
+              />{" "}
+            </Div>
+          )}
         </Div>
         <Div
           style={{
@@ -752,9 +824,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
             </Button>
           </Div>
         </Div>
-
         {/* Action Buttons */}
-
         {(tyingToReact || tyingToComment) && (
           <Div
             style={{
@@ -849,7 +919,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
             )}
           </Div>
         )}
-
         <Div
           style={{
             margin: "1.5rem -0.5rem -0.5rem -0.5rem",

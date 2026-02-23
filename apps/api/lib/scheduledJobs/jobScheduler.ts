@@ -248,6 +248,24 @@ function parseAIJsonResponse(content: string): {
     return result as ReturnType<typeof parseAIJsonResponse>
   }
 
+  // Final fallback: if the response looks like a real plain-text post, treat it as tribeContent
+  // (AI sometimes ignores JSON format instruction on first posts)
+  if (cleaned.length > 100) {
+    console.warn(
+      "⚠️  AI returned plain text instead of JSON — using plain-text fallback",
+    )
+    const firstLine = cleaned.split("\n")[0]?.trim() || ""
+    const title =
+      firstLine.length > 0 && firstLine.length <= 150
+        ? firstLine
+        : cleaned.split(/[.!?]/)[0]?.trim()?.substring(0, 100) || "Tribe Post"
+    return {
+      tribeName: "general",
+      tribeTitle: title,
+      tribeContent: cleaned,
+    } as ReturnType<typeof parseAIJsonResponse>
+  }
+
   throw new Error(
     `Failed to parse AI response. Content preview: ${cleaned.substring(0, 200)}...`,
   )
@@ -1475,31 +1493,50 @@ async function postToTribeJob({
   }
 
   // Cooldown check: don't post if last post was within cooldownMinutes
-  const cooldownMinutes = job.metadata?.cooldownMinutes ?? 120
-  const recentPosts = await db.query.tribePosts.findMany({
+  // Priority: metadata.cooldownMinutes → post slot intervalMinutes → default 120
+  const postSlotInterval = job.scheduledTimes?.find(
+    (s) => s.postType === "post",
+  )?.intervalMinutes
+  const cooldownMinutes =
+    job.metadata?.cooldownMinutes ?? postSlotInterval ?? 120
+
+  if (!isDevelopment) {
+    const recentPosts = await db.query.tribePosts.findMany({
+      where: eq(tribePosts.appId, app.id),
+      orderBy: (tribePosts, { desc }) => [desc(tribePosts.createdOn)],
+      limit: 5,
+      columns: { id: true, title: true, createdOn: true },
+    })
+
+    const lastPost = recentPosts[0]
+    if (lastPost) {
+      const minutesSinceLastPost =
+        (Date.now() - lastPost.createdOn.getTime()) / 60000
+      if (minutesSinceLastPost < cooldownMinutes) {
+        const minutesLeft = Math.ceil(cooldownMinutes - minutesSinceLastPost)
+        console.log(
+          `⏸️ Tribe cooldown: Last post was ${Math.floor(minutesSinceLastPost)} minutes ago. Wait ${minutesLeft} more minutes.`,
+        )
+        return {
+          success: false,
+          error: `Cooldown active. Try again in ${minutesLeft} minutes.`,
+        }
+      }
+    }
+  } else {
+    console.log(
+      `🔧 [DEV] Cooldown check skipped (cooldownMinutes: ${cooldownMinutes})`,
+    )
+  }
+
+  const recentPostsForDedup = await db.query.tribePosts.findMany({
     where: eq(tribePosts.appId, app.id),
     orderBy: (tribePosts, { desc }) => [desc(tribePosts.createdOn)],
     limit: 5,
     columns: { id: true, title: true, createdOn: true },
   })
 
-  const lastPost = recentPosts[0]
-  if (lastPost) {
-    const minutesSinceLastPost =
-      (Date.now() - lastPost.createdOn.getTime()) / 60000
-    if (minutesSinceLastPost < cooldownMinutes) {
-      const minutesLeft = Math.ceil(cooldownMinutes - minutesSinceLastPost)
-      console.log(
-        `⏸️ Tribe cooldown: Last post was ${Math.floor(minutesSinceLastPost)} minutes ago. Wait ${minutesLeft} more minutes.`,
-      )
-      return {
-        success: false,
-        error: `Cooldown active. Try again in ${minutesLeft} minutes.`,
-      }
-    }
-  }
-
-  const recentPostTitles = recentPosts
+  const recentPostTitles = recentPostsForDedup
     .map((p) => p.title)
     .filter(Boolean)
     .join("\n- ")
@@ -1613,14 +1650,16 @@ ${tribesList || "- general: General discussion"}
 **CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If unsure, use "general".`
 
     const instructions = isFirstPost
-      ? `You are "${app.name}" and this is your FIRST post on Tribe (a social network for AI agents within the Wine ecosystem).
+      ? `${responseFormat}
+
+You are "${app.name}" and this is your FIRST post on Tribe (a social network for AI agents within the Wine ecosystem).
 
 Introduce yourself! Share:
 - Who you are and what you do
 - What makes you unique in the Wine ecosystem
 - What you're excited to explore or discuss
 
-Keep it friendly, authentic, and engaging. Start with something like "Hello Tribe! 👋" or similar.
+Keep it friendly, authentic, and engaging. Start tribeContent with something like "Hello Tribe! 👋" or similar.
 
 ${
   fetchNews && postNewsContext
@@ -1628,14 +1667,14 @@ ${
     : postNewsContext
       ? `Current world news (use naturally if relevant):\n${postNewsContext}\n\n`
       : ""
-}${responseFormat}
-
-Important Notes:
+}Important Notes:
 - You have your character profile and context available
 - If needed, check your app memories for additional context
 - Vary your endings: use strong statements, insights, or subtle calls to action
 - Be confident in your perspective`
-      : `You are creating a post for Tribe (Wine ecosystem social network) as "${app.name}".
+      : `${responseFormat}
+
+You are creating a post for Tribe (Wine ecosystem social network) as "${app.name}".
 
 Guidelines:
 - Share insights about what you've been working on or learning
@@ -1648,20 +1687,13 @@ Guidelines:
 - Add context, background, and implications of your work
 - Make it engaging, informative, and worth reading
 
-${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}
-${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}
-${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}
-${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}
-${
+${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}${
   fetchNews && postNewsContext
     ? `🗞️ **YOU MUST BASE THIS POST ON THE FOLLOWING CURRENT NEWS. Pick the most interesting story and write a detailed, thoughtful commentary about it as "${app.name}". Do NOT write a generic post — reference the specific story, headline, and your unique perspective on it.**\n\n${postNewsContext}\n\n`
     : postNewsContext
       ? `Current world news (use naturally if relevant, don't force it):\n${postNewsContext}\n\n`
       : ""
-}${responseFormat}
-
-${recentPostTitles ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n- ${recentPostTitles}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}
-Important Notes:
+}${recentPostTitles ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n- ${recentPostTitles}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}Important Notes:
 - ⚠️ Do NOT repeat yourself - you have thread context with your character profile and previous posts
 - If needed, check your app memories for additional context
 - Vary your endings: use strong statements, insights, or subtle calls to action
@@ -1738,21 +1770,33 @@ Important Notes:
       throw new Error("No AI response received")
     }
 
-    // Extract content from AI response
+    // Extract content from AI response (may be absent if ai.ts returns pre-parsed top-level fields)
     const aiMessageContent =
       data.message?.message?.content || data.text || data.content
 
-    if (!aiMessageContent) {
-      throw new Error("No AI message content received")
+    console.log(`🔬 Raw AI route data keys:`, Object.keys(data))
+
+    // Prefer pre-parsed fields from ai.ts response (already parsed from JSON)
+    // Fall back to re-parsing aiMessageContent only if top-level fields are absent
+    let parsedContent: ReturnType<typeof parseAIJsonResponse>
+    if (data.tribeContent) {
+      console.log(`✅ Using pre-parsed tribe fields from ai.ts response`)
+      parsedContent = {
+        tribeName: data.tribeName || "general",
+        tribeTitle: data.tribeTitle,
+        tribeContent: data.tribeContent,
+        seoKeywords: data.tribeSeoKeywords || [],
+        imagePrompt: data.imagePrompt || undefined,
+      } as ReturnType<typeof parseAIJsonResponse>
+    } else if (aiMessageContent) {
+      console.log(`⚠️ Falling back to parseAIJsonResponse from message content`)
+      console.log(`📄 Full AI response:\n${aiMessageContent}`)
+      parsedContent = parseAIJsonResponse(aiMessageContent)
+    } else {
+      throw new Error(
+        "No AI content received — neither tribeContent nor message content available",
+      )
     }
-
-    console.log(
-      `📥 AI response (${aiMessageContent.length} chars): ${aiMessageContent.substring(0, 200)}...`,
-    )
-    console.log(`📄 Full AI response:\n${aiMessageContent}`)
-
-    // Parse JSON from AI response using robust helper
-    const parsedContent = parseAIJsonResponse(aiMessageContent)
 
     // Map AI response to expected format (handle both old and new field names)
     const aiResponse = {
@@ -1861,9 +1905,16 @@ Important Notes:
     })
 
     // Generate and attach image if requested
-    if (generateImage && parsedContent.imagePrompt && post) {
+    // Fallback: if AI didn't include imagePrompt in JSON, derive one from post content
+    const effectiveImagePrompt =
+      parsedContent.imagePrompt ||
+      (generateImage
+        ? `${aiResponse.tribeTitle || ""} — ${aiResponse.tribeContent.split(/[.!?]/)[0]?.trim() || aiResponse.tribeContent.substring(0, 150)}`
+        : undefined)
+
+    if (generateImage && effectiveImagePrompt && post) {
       try {
-        const imgPrompt = parsedContent.imagePrompt.substring(0, 200)
+        const imgPrompt = effectiveImagePrompt.substring(0, 200)
         console.log(
           `🎨 Generating image for tribe post ${post.id}: "${imgPrompt.substring(0, 80)}..."`,
         )
@@ -2467,6 +2518,8 @@ Respond ONLY with this JSON array:
             appId: app.id,
             agentId: selectedAgent.id,
             stream: false,
+            jobId: job.id,
+            postType: "comment",
           }),
         })
 
@@ -3116,6 +3169,8 @@ Respond ONLY with this JSON array (no extra text):
             appId: app.id,
             agentId: selectedAgent.id,
             stream: false,
+            jobId: job.id,
+            postType: "engagement",
           }),
         })
 
@@ -3727,43 +3782,49 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
   const LOCK_TTL_MS = 5 * 60 * 1000 // 5 minutes for long-running jobs
 
   // Check if a run is already in progress (started within last 5 minutes)
-  const activeRun = await db.query.scheduledJobRuns.findFirst({
-    where: and(
-      eq(scheduledJobRuns.jobId, job.id),
-      eq(scheduledJobRuns.status, "running"),
-      gte(scheduledJobRuns.startedAt, new Date(Date.now() - LOCK_TTL_MS)),
-    ),
-  })
+  // Skip in dev — server restarts leave stale "running" rows that block execution
+  if (!isDevelopment) {
+    const activeRun = await db.query.scheduledJobRuns.findFirst({
+      where: and(
+        eq(scheduledJobRuns.jobId, job.id),
+        eq(scheduledJobRuns.status, "running"),
+        gte(scheduledJobRuns.startedAt, new Date(Date.now() - LOCK_TTL_MS)),
+      ),
+    })
 
-  if (activeRun) {
-    console.log(
-      `⏭️ Job ${job.name} already running (started ${Math.round((Date.now() - activeRun.startedAt.getTime()) / 1000)}s ago), skipping`,
-    )
-    return
+    if (activeRun) {
+      console.log(
+        `⏭️ Job ${job.name} already running (started ${Math.round((Date.now() - activeRun.startedAt.getTime()) / 1000)}s ago), skipping`,
+      )
+      return
+    }
   }
 
   // Atomically claim the job by updating nextRunAt
-  const claimResult = await db
-    .update(scheduledJobs)
-    .set({
-      nextRunAt: new Date(Date.now() + LOCK_TTL_MS),
-    })
-    .where(
-      and(
-        eq(scheduledJobs.id, job.id),
-        eq(scheduledJobs.status, "active"),
-        or(
-          isNull(scheduledJobs.nextRunAt),
-          lte(scheduledJobs.nextRunAt, new Date()),
+  // In dev, skip the distributed lock — no multi-instance contention to worry about
+  if (!isDevelopment) {
+    const claimResult = await db
+      .update(scheduledJobs)
+      .set({
+        nextRunAt: new Date(Date.now() + LOCK_TTL_MS),
+      })
+      .where(
+        and(
+          eq(scheduledJobs.id, job.id),
+          eq(scheduledJobs.status, "active"),
+          or(
+            isNull(scheduledJobs.nextRunAt),
+            lte(scheduledJobs.nextRunAt, new Date()),
+          ),
         ),
-      ),
-    )
-    .returning({ id: scheduledJobs.id })
+      )
+      .returning({ id: scheduledJobs.id })
 
-  // If no rows updated, another scheduler claimed it
-  if (claimResult.length === 0) {
-    console.log(`⏭️ Job ${job.name} already claimed by another scheduler`)
-    return
+    // If no rows updated, another scheduler claimed it
+    if (claimResult.length === 0) {
+      console.log(`⏭️ Job ${job.name} already claimed by another scheduler`)
+      return
+    }
   }
 
   // Check if job has ended
@@ -3805,6 +3866,9 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
       )
 
       // Run all scheduledTimes in order (engagement → comment → post)
+      let anyTaskSucceeded = false
+      let lastError: string | null = null
+
       for (const schedule of job.scheduledTimes) {
         const postType = schedule.postType
         const generateImage = schedule.genrateImage === true
@@ -3827,14 +3891,37 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
           `🎯 Executing: ${postType} → ${effectiveJobType}${generateImage ? " (🎨 image)" : ""}${fetchNews ? " (📰 news)" : ""}`,
         )
 
-        // Execute the job type
-        await executeJobType(
-          effectiveJobType,
-          job,
-          postType,
-          generateImage,
-          fetchNews,
-        )
+        // Execute the job type — wrap in try/catch so one subtask failure
+        // doesn't abort the rest. Cooldown is a skip, not a real failure.
+        try {
+          await executeJobType(
+            effectiveJobType,
+            job,
+            postType,
+            generateImage,
+            fetchNews,
+          )
+          anyTaskSucceeded = true
+        } catch (subtaskError) {
+          const errMsg =
+            subtaskError instanceof Error
+              ? subtaskError.message
+              : String(subtaskError)
+          const isCooldown = errMsg.toLowerCase().includes("cooldown")
+          console.warn(
+            isCooldown
+              ? `⏸️ Subtask skipped (cooldown): ${postType} → ${effectiveJobType}`
+              : `⚠️ Subtask failed (continuing): ${postType} → ${effectiveJobType} — ${errMsg}`,
+          )
+          if (!isCooldown) {
+            lastError = errMsg
+          }
+        }
+      }
+
+      // If ALL subtasks failed (not just cooldown), surface the error
+      if (!anyTaskSucceeded && lastError) {
+        throw new Error(lastError)
       }
 
       // All tasks completed - return success
@@ -3914,25 +4001,63 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
       moltPostId?: string
       error?: string
     }
+    console.log(
+      `🚀 ~ executeScheduledJob ~ effectiveJobType:`,
+      effectiveJobType,
+    )
 
     switch (effectiveJobType) {
       case "tribe_post": {
         // Resolve generateImage and fetchNews from the active schedule slot
         const matchedSlot = (() => {
           if (!job.scheduledTimes?.length) return undefined
-          const now = new Date()
-          const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes()
+          const timezone = job.timezone || "Europe/Amsterdam"
+          const zonedNow = toZonedTime(new Date(), timezone)
+          const currentMinutes =
+            zonedNow.getHours() * 60 + zonedNow.getMinutes()
+
           return job.scheduledTimes.find((s) => {
-            const d = new Date(s.time)
-            return (
-              Math.abs(
-                d.getUTCHours() * 60 + d.getUTCMinutes() - currentMinutes,
-              ) <= 5
+            let slotMinutes: number
+            if (s.time.includes("T")) {
+              // Parse as ISO but ensure we extract hours/minutes in the CORRECT timezone
+              const d = new Date(s.time)
+              const zd = toZonedTime(d, timezone)
+              slotMinutes = zd.getHours() * 60 + zd.getMinutes()
+            } else {
+              // Assume HH:mm format
+              const [h, m] = s.time.split(":").map(Number)
+              slotMinutes = (h ?? 0) * 60 + (m ?? 0)
+            }
+
+            // Calculate difference with wrap-around support (for midnight)
+            const diff = Math.abs(slotMinutes - currentMinutes)
+            const wrappedDiff = Math.abs(
+              Math.min(slotMinutes, currentMinutes) +
+                1440 -
+                Math.max(slotMinutes, currentMinutes),
             )
+
+            // Use 10-minute tolerance for cron jitter
+            const minDiff = Math.min(diff, wrappedDiff)
+            return minDiff <= 10
           })
         })()
         const legacyGenerateImage = matchedSlot?.genrateImage === true
         const legacyFetchNews = matchedSlot?.fetchNews === true
+
+        if (matchedSlot) {
+          console.log(
+            `🎯 Matched schedule slot: ${matchedSlot.time} (${matchedSlot.postType}) | genImage: ${legacyGenerateImage} | fetchNews: ${legacyFetchNews}`,
+          )
+        } else {
+          console.log(
+            `⚠️ No matching schedule slot found for current time (${new Date().toISOString()})`,
+          )
+        }
+
+        // if (true) {
+        //   throw new Error(response.error || "Unknown error")
+        // }
         try {
           const response = await executeTribePost(
             job,
@@ -4316,19 +4441,54 @@ export async function findJobsToRun() {
     now: now.toISOString(),
     nowLocal: now.toString(),
     threshold: fifteenMinutesAgo.toISOString(),
+    isDev: isDevelopment,
   })
+
+  // First, find ALL active jobs to see what we're missing
+  const allActiveJobs = await db.query.scheduledJobs.findMany({
+    where: eq(scheduledJobs.status, "active"),
+  })
+
+  if (allActiveJobs.length === 0) {
+    console.log(`⚠️ No active scheduled jobs found in DB.`)
+  }
 
   const jobs = await db.query.scheduledJobs.findMany({
     where: and(
       eq(scheduledJobs.status, "active"),
-      lte(scheduledJobs.startDate, now),
+      // In development, be more lenient with startDate:
+      // If it's "today" in local time, it should be eligible even if UTC midnight hasn't hit.
+      // We use a 24-hour buffer for startDate in dev mode to catch these cases.
+      isDevelopment
+        ? lte(
+            scheduledJobs.startDate,
+            new Date(now.getTime() + 24 * 60 * 60 * 1000),
+          )
+        : lte(scheduledJobs.startDate, now),
       or(isNull(scheduledJobs.endDate), gte(scheduledJobs.endDate, now)),
-      // Run if nextRunAt is within the last 15 minutes or earlier
-      or(isNull(scheduledJobs.nextRunAt), lte(scheduledJobs.nextRunAt, now)),
+      // Run if nextRunAt is within the threshold or earlier
+      isDevelopment
+        ? undefined
+        : or(
+            isNull(scheduledJobs.nextRunAt),
+            lte(scheduledJobs.nextRunAt, now),
+          ),
       // Skip jobs that have failed (have a failureReason)
-      isNull(scheduledJobs.failureReason),
+      isDevelopment ? undefined : isNull(scheduledJobs.failureReason),
     ),
   })
+
+  // If we found active jobs but none are eligible, log why
+  if (allActiveJobs.length > 0 && jobs.length === 0) {
+    console.log(
+      `💡 ${allActiveJobs.length} active jobs exist but are not yet due:`,
+    )
+    for (const j of allActiveJobs) {
+      console.log(
+        `   - Job "${j.name}" (${j.id}): startDate=${j.startDate?.toISOString()}, endDate=${j.endDate?.toISOString()}, nextRunAt=${j.nextRunAt?.toISOString()}, isDev=${isDevelopment}`,
+      )
+    }
+  }
 
   // Filter out jobs that are too old (more than 15 minutes late) and reschedule them
   const validJobs = jobs.filter((job) => {
@@ -4350,20 +4510,18 @@ export async function findJobsToRun() {
     return isWithinThreshold
   })
 
-  console.log(
-    `🔍 findJobsToRun found ${validJobs.length}/${jobs.length} jobs:`,
-    {
-      jobs: validJobs.map((j) => ({
-        id: j.id,
-        name: j.name,
-        status: j.status,
-        nextRunAt: j.nextRunAt?.toISOString(),
-        timezone: j.timezone,
-        startDate: j.startDate?.toISOString(),
-        endDate: j.endDate?.toISOString(),
-      })),
-    },
-  )
+  if (validJobs.length > 0) {
+    console.log(
+      `🔍 findJobsToRun found ${validJobs.length}/${jobs.length} jobs:`,
+      {
+        jobs: validJobs.map((j) => ({
+          id: j.id,
+          name: j.name,
+          nextRunAt: j.nextRunAt?.toISOString(),
+        })),
+      },
+    )
+  }
 
   return validJobs
 }

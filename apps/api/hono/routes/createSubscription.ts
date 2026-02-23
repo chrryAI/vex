@@ -1,3 +1,4 @@
+import { isDevelopment, isE2E } from "@repo/db"
 import { Hono } from "hono"
 import Stripe from "stripe"
 import { captureException } from "../../lib/captureException"
@@ -10,7 +11,7 @@ createSubscription.post("/", async (c) => {
   const member = await getMember(c)
 
   const stripe = new Stripe(
-    member?.role === "admin"
+    member?.role === "admin" && !isE2E && !isDevelopment
       ? process.env.STRIPE_SECRET_KEY_TEST!
       : process.env.STRIPE_SECRET_KEY!,
   )
@@ -58,7 +59,7 @@ createSubscription.post("/", async (c) => {
     const isCredits = ["credits", "molt", "tribe"].includes(plan)
 
     // Minimum price validation for custom pricing (Stripe minimum is €0.50, but we set €5 for safety)
-    const MINIMUM_PRICE_EUR = 5
+    const MINIMUM_PRICE_EUR = 0
     if (customPrice !== undefined && customPrice < MINIMUM_PRICE_EUR) {
       const shortfall = MINIMUM_PRICE_EUR - customPrice
       return c.json(
@@ -75,15 +76,15 @@ createSubscription.post("/", async (c) => {
     // Determine Stripe price ID based on plan and tier
     const getPriceId = () => {
       if (plan === "molt")
-        return member?.role === "admin"
+        return !isE2E && !isDevelopment && member?.role === "admin"
           ? process.env.STRIPE_MOLT_TEST!
           : process.env.STRIPE_MOLT!
       if (plan === "tribe")
-        return member?.role === "admin"
+        return !isE2E && !isDevelopment && member?.role === "admin"
           ? process.env.STRIPE_TRIBE_TEST!
           : process.env.STRIPE_TRIBE!
       if (plan === "credits")
-        return member?.role === "admin"
+        return !isE2E && !isDevelopment && member?.role === "admin"
           ? process.env.STRIPE_PRICE_CREDITS_TEST!
           : process.env.STRIPE_PRICE_CREDITS_ID!
       if (plan === "plus") return process.env.STRIPE_PRICE_PLUS_ID!

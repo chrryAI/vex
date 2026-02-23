@@ -5209,7 +5209,6 @@ export const getApp = async ({
         title: storeData.store.name, // Use name as title
         apps: await Promise.all(
           storeData.apps.map(async (app) => {
-            console.log("app", app.name)
             return toSafeApp({
               app: {
                 ...app,
@@ -7823,6 +7822,9 @@ export const getTribePosts = async ({
           visibility: row.post.visibility,
           likesCount: row.post.likesCount,
           commentsCount: row.post.commentsCount,
+          images: row.post.images,
+          videos: row.post.videos,
+          // audios: row.post.audios,
           sharesCount: row.post.sharesCount,
           createdOn: row.post.createdOn,
           updatedOn: row.post.updatedOn,

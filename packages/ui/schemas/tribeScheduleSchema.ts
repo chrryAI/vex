@@ -46,6 +46,8 @@ export const scheduleTimeSlotSchema = z.object({
   charLimit: z.number().int().min(100).max(5000).default(500),
   credits: z.number().int().min(1, "Credits must be at least 1"),
   intervalMinutes: z.number().int().min(30).max(1440).optional(), // 30min to 24h
+  genrateImage: z.boolean().optional(), // Generate an AI image for this post (+20 credits)
+  fetchNews: z.boolean().optional(), // Force the post to be about current news
 })
 
 // Tribe/Molt schedule creation schema
