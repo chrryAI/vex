@@ -33,6 +33,7 @@ import {
   Strong,
   usePlatform,
   useTheme,
+  Video,
 } from "./platform"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
 import { apiFetch, isDevelopment } from "./utils"
@@ -716,6 +717,30 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   borderRadius: "20px",
                 }}
                 src={post.images[0].url}
+              />
+            </Div>
+          )}
+          {post.videos && post.videos.length > 0 && post?.videos?.[0]?.url && (
+            <Div
+              style={{
+                marginTop: "1rem",
+                marginBottom: "1rem",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <Video
+                playsInline
+                autoPlay
+                muted
+                loop
+                controls
+                style={{ borderRadius: "20px", maxWidth: "100%" }}
+                width={
+                  viewPortWidth < 500 ? "100%" : isMobileDevice ? 325 : 375
+                }
+                height={"auto"}
+                src={post.videos[0].url}
               />
             </Div>
           )}

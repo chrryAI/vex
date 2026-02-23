@@ -1454,11 +1454,13 @@ async function postToTribeJob({
   job,
   postType,
   generateImage,
+  generateVideo,
   fetchNews,
 }: {
   job: scheduledJob
   postType?: string
   generateImage?: boolean
+  generateVideo?: boolean
   fetchNews?: boolean
 }): Promise<{
   success?: boolean
@@ -1906,17 +1908,75 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
       contentLength: post.content?.length || 0,
     })
 
-    // Generate and attach image if requested
-    // Fallback: if AI didn't include imagePrompt in JSON, derive one from post content
-    const effectiveImagePrompt =
+    // Derive a prompt for image or video generation
+    const effectiveMediaPrompt =
       parsedContent.imagePrompt ||
-      (generateImage
-        ? `${aiResponse.tribeTitle || ""} — ${aiResponse.tribeContent.split(/[.!?]/)[0]?.trim() || aiResponse.tribeContent.substring(0, 150)}`
-        : undefined)
+      `${aiResponse.tribeTitle || ""} — ${aiResponse.tribeContent.split(/[.!?]/)[0]?.trim() || aiResponse.tribeContent.substring(0, 150)}`
 
-    if (generateImage && effectiveImagePrompt && post) {
+    // Generate video (text-to-video, independent of image)
+    if (generateVideo && effectiveMediaPrompt && post) {
       try {
-        const imgPrompt = effectiveImagePrompt.substring(0, 200)
+        const vidPrompt = effectiveMediaPrompt.substring(0, 200)
+        console.log(
+          `🎬 Generating video for tribe post ${post.id} via Luma Ray (text-to-video)...`,
+        )
+        const replicateClient = new Replicate({ auth: REPLICATE_API_KEY })
+        const videoOutput = await replicateClient.run(
+          "luma/ray" as `${string}/${string}`,
+          {
+            input: {
+              prompt: vidPrompt,
+              duration: "5s",
+              aspect_ratio: "16:9",
+            },
+          },
+        )
+
+        let videoUrl: string | undefined
+        if (typeof videoOutput === "string") {
+          videoUrl = videoOutput
+        } else if (
+          videoOutput &&
+          typeof (videoOutput as any).url === "function"
+        ) {
+          videoUrl = await (videoOutput as any).url()
+        } else if (Array.isArray(videoOutput) && videoOutput[0]) {
+          const first = videoOutput[0]
+          videoUrl =
+            typeof first === "string" ? first : await (first as any).url?.()
+        }
+
+        if (videoUrl) {
+          const videoUpload = await upload({
+            url: videoUrl,
+            messageId: `tribe-post-video-${post.id}`,
+            options: {
+              type: "video",
+              title: aiResponse.tribeTitle || "Tribe Post Video",
+            },
+          })
+
+          await db
+            .update(tribePosts)
+            .set({
+              videos: [{ url: videoUpload.url, id: uuidv4() }],
+            })
+            .where(eq(tribePosts.id, post.id))
+
+          console.log(
+            `🎬 Video attached to tribe post ${post.id}: ${videoUpload.url}`,
+          )
+        }
+      } catch (vidErr) {
+        captureException(vidErr)
+        console.error("⚠️ Video generation failed (post still created):", vidErr)
+      }
+    }
+
+    // Generate and attach image if requested (independent of video)
+    if (generateImage && effectiveMediaPrompt && post) {
+      try {
+        const imgPrompt = effectiveMediaPrompt.substring(0, 200)
         console.log(
           `🎨 Generating image for tribe post ${post.id}: "${imgPrompt.substring(0, 80)}..."`,
         )
@@ -3905,6 +3965,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         const postType = schedule.postType
         const generateImage = schedule.generateImage === true
         const fetchNews = schedule.fetchNews === true
+        const generateVideo = schedule.generateVideo === true
         let effectiveJobType = job.jobType
 
         // Map postType to jobType
@@ -3920,7 +3981,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         }
 
         console.log(
-          `🎯 Executing: ${postType} → ${effectiveJobType}${generateImage ? " (🎨 image)" : ""}${fetchNews ? " (📰 news)" : ""}`,
+          `🎯 Executing: ${postType} → ${effectiveJobType}${generateImage ? " (🎨 image)" : ""}${generateVideo ? " (🎬 video)" : ""}${fetchNews ? " (📰 news)" : ""}`,
         )
 
         // Execute the job type — wrap in try/catch so one subtask failure
@@ -3932,6 +3993,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             postType,
             generateImage,
             fetchNews,
+            generateVideo,
           )
           anyTaskSucceeded = true
         } catch (subtaskError) {
@@ -4096,6 +4158,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             undefined,
             legacyGenerateImage,
             legacyFetchNews,
+            false,
           )
           if (!response.output || response.error) {
             throw new Error(response.error || "Unknown error")
@@ -4321,6 +4384,7 @@ async function executeJobType(
   postType?: string,
   generateImage?: boolean,
   fetchNews?: boolean,
+  generateVideo?: boolean,
 ): Promise<void> {
   switch (effectiveJobType) {
     case "tribe_post":
@@ -4330,6 +4394,7 @@ async function executeJobType(
           postType,
           generateImage,
           fetchNews,
+          generateVideo,
         )
         if (!response.output || response.error) {
           throw new Error(response.error || "Unknown error")
@@ -4410,11 +4475,13 @@ async function executeTribePost(
   postType?: string,
   generateImage?: boolean,
   fetchNews?: boolean,
+  generateVideo?: boolean,
 ) {
   const result = await postToTribeJob({
     job,
     postType,
     generateImage,
+    generateVideo,
     fetchNews,
   })
 

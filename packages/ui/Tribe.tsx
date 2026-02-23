@@ -31,6 +31,7 @@ import {
   toast,
   usePlatform,
   useTheme,
+  Video,
 } from "./platform"
 import Search from "./Search"
 import Skeleton from "./Skeleton"
@@ -46,6 +47,7 @@ import {
   ArrowLeft,
   BrickWallFire,
   CalendarIcon,
+  CircleX,
   Download,
   HeartPlus,
   LoaderCircle,
@@ -80,13 +82,14 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     liveReactions,
     pendingPostIds,
     deletePost,
+    tags,
+    setTags,
     refetchPosts,
     setPendingPostIds,
     posting,
   } = useTribe()
 
   const {
-    getAppSlug,
     app,
     loadingApp,
     timeAgo,
@@ -134,7 +137,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   }
 
   const { isMobileDevice, isSmallDevice, isDark, reduceMotion } = useTheme()
-  const { setIsNewAppChat } = useChat()
+  const { scrollToTop } = useChat()
   const hasHydrated = useHasHydrated()
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [newPostsCount, _setNewPostsCount] = useState(0)
@@ -1147,6 +1150,28 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     ) : null}
                   </Div>
                 )}
+                {tags.length ? (
+                  <Div
+                    style={{
+                      ...utilities.row.style,
+                    }}
+                  >
+                    {tags?.map((tag: string) => (
+                      <Button
+                        style={{
+                          ...utilities.small.style,
+                        }}
+                        onClick={() => {
+                          setTags(tags.filter((t) => t !== tag))
+                        }}
+                        key={`tag-${tag}`}
+                      >
+                        # {tag}
+                        <CircleX size={12} />
+                      </Button>
+                    ))}
+                  </Div>
+                ) : null}
                 {newPostsCount > 0 && (
                   <Div
                     style={{
@@ -1261,8 +1286,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               display: "flex",
                               gap: "1rem",
                               alignItems: "flex-start",
-                              marginTop: 10,
-                              flexDirection: !isMobileDevice ? "row" : "column",
+                              marginTop: 12.5,
+                              flexDirection: !isSmallDevice ? "row" : "column",
                             }}
                           >
                             {post.images &&
@@ -1271,7 +1296,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 <Div
                                   style={{
                                     position: "relative",
-                                    alignSelf: "center",
                                   }}
                                 >
                                   <Button
@@ -1315,10 +1339,42 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                           : 200
                                     }
                                     style={{
-                                      borderRadius: "20px",
+                                      borderRadius: "15px",
                                     }}
                                     src={post.images[0].url}
                                   />{" "}
+                                </Div>
+                              )}
+                            {post.videos &&
+                              post.videos.length > 0 &&
+                              post?.videos?.[0]?.url && (
+                                <Div
+                                  style={{
+                                    position: "relative",
+                                  }}
+                                >
+                                  <Video
+                                    playsInline
+                                    autoPlay
+                                    muted
+                                    loop
+                                    style={{
+                                      borderRadius: "15px",
+                                      maxWidth: isMobileDevice
+                                        ? "100%"
+                                        : undefined,
+                                    }}
+                                    width={
+                                      viewPortWidth < 500
+                                        ? "100%"
+                                        : isMobileDevice
+                                          ? 375
+                                          : 275
+                                    }
+                                    height={"auto"}
+                                    controls
+                                    src={post?.videos?.[0]?.url}
+                                  />
                                 </Div>
                               )}
                             <P
@@ -1520,7 +1576,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 </Div>
                               )}
                             </Div>
-                            {tryAppCharacterProfile === post.id &&
+                            {tryAppCharacterProfile === post.id ? (
                               post.app?.characterProfile && (
                                 <Div
                                   className="slideUp"
@@ -1752,26 +1808,72 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                         >
                                           {post.app.characterProfile.tags.map(
                                             (tag: string, i: number) => (
-                                              <Span
+                                              <Button
+                                                onClick={() => {
+                                                  if (tags.includes(tag)) return
+                                                  setTags(tags.concat(tag))
+                                                  scrollToTop()
+                                                }}
                                                 key={tag + i}
                                                 style={{
                                                   padding: ".25rem .5rem",
-                                                  backgroundColor:
-                                                    "var(--background)",
+
                                                   color: "var(--foreground)",
-                                                  borderRadius: 8,
                                                   fontSize: ".80rem",
+                                                  ...utilities.inverted.style,
                                                 }}
                                               >
                                                 #{tag}
-                                              </Span>
+                                              </Button>
                                             ),
                                           )}
                                         </Div>
                                       </Div>
                                     )}
                                 </Div>
-                              )}
+                              )
+                            ) : (
+                              <>
+                                {post?.app?.characterProfile?.tags &&
+                                  post?.app?.characterProfile.tags.length >
+                                    0 && (
+                                    <Div
+                                      style={{
+                                        borderTop: "1px solid var(--shade-2)",
+                                      }}
+                                    >
+                                      <Div
+                                        style={{
+                                          display: "flex",
+                                          gap: ".5rem",
+                                          flexWrap: "wrap",
+                                        }}
+                                      >
+                                        {post?.app?.characterProfile?.tags.map(
+                                          (tag: string, i: number) => (
+                                            <Button
+                                              onClick={() => {
+                                                if (tags.includes(tag)) return
+                                                setTags(tags.concat(tag))
+                                                scrollToTop()
+                                              }}
+                                              key={tag + i}
+                                              style={{
+                                                padding: ".25rem .5rem",
+
+                                                color: "var(--foreground)",
+                                                fontSize: ".80rem",
+                                              }}
+                                            >
+                                              # {tag}
+                                            </Button>
+                                          ),
+                                        )}
+                                      </Div>
+                                    </Div>
+                                  )}
+                              </>
+                            )}
                             {tyingToReact === post.id && (
                               <Div
                                 className="slideUp"
