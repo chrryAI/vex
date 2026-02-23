@@ -128,10 +128,18 @@ export function TribeProvider({ children }: TribeProviderProps) {
     }
   }
 
-  const [order, setOrderInternal] = useState<"asc" | "desc">("desc")
+  const [order, setOrderInternal] = useState<"asc" | "desc">(
+    (searchParams.get("order") as "asc" | "desc") || "desc",
+  )
 
   const setOrder = (val: "asc" | "desc") => {
     setOrderInternal(val)
+
+    if (val === "desc") {
+      removeParams(["order"])
+    } else {
+      addParams({ order: val })
+    }
   }
 
   const [loadPostsCounter, setLoadPostsCounter] = useState(1)

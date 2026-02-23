@@ -295,6 +295,20 @@ export async function loadServerData(
   let tribePost: tribePostWithDetails | undefined
   let _tribe: tribe | undefined
 
+  const searchParamsRecord: Record<string, string> = {}
+  urlObj.searchParams.forEach((value, key) => {
+    searchParamsRecord[key] = value
+  })
+  const searchParams = {
+    ...searchParamsRecord,
+    get: (key: string) => searchParamsRecord[key] ?? null,
+    has: (key: string) => key in searchParamsRecord,
+    toString: () => new URLSearchParams(searchParamsRecord).toString(),
+  } as Record<string, string> & {
+    get: (key: string) => string | null
+    has: (key: string) => boolean
+    toString: () => string
+  }
   try {
     const sessionResult = await getSession({
       // appId: appResult.id,
@@ -378,14 +392,24 @@ export async function loadServerData(
       API_URL,
     })
 
+    // Create URLSearchParams-compatible object for server-client consistency
+
+    // Wrap in object with .get() method to match URLSearchParams API
+
+    const sortBy =
+      (searchParams.get("sort") as "date" | "hot" | "liked") || "hot"
+
+    const tags = searchParams.get("tags")
+      ? searchParams.get("tags")!.split(",").filter(Boolean)
+      : []
     const showAllTribe =
       !isE2E &&
       (pathname === "/tribe" || (siteConfig.isTribe && pathname === "/"))
 
     const canShowTribeProfile =
-      !isE2E &&
-      !excludedSlugRoutes?.includes(pathname.split("?")?.[0]) &&
-      !showAllTribe
+      !excludedSlugRoutes?.includes(pathname.split("?")?.[0]) && !showAllTribe
+
+    console.log(`🚀 ~ canShowTribeProfile:`, canShowTribeProfile)
 
     const [translationsResult, threadsResult, tribesResult, tribePostsResult] =
       await Promise.all([
@@ -418,6 +442,8 @@ export async function loadServerData(
               token: apiKey,
               appId: canShowTribeProfile ? appResult.id : undefined,
               API_URL,
+              sortBy,
+              tags,
             })
           : Promise.resolve(undefined),
       ])
@@ -490,23 +516,6 @@ export async function loadServerData(
   }
 
   // Parse all search params for client hydration
-  // Create URLSearchParams-compatible object for server-client consistency
-  const searchParamsRecord: Record<string, string> = {}
-  urlObj.searchParams.forEach((value, key) => {
-    searchParamsRecord[key] = value
-  })
-
-  // Wrap in object with .get() method to match URLSearchParams API
-  const searchParams = {
-    ...searchParamsRecord,
-    get: (key: string) => searchParamsRecord[key] ?? null,
-    has: (key: string) => key in searchParamsRecord,
-    toString: () => new URLSearchParams(searchParamsRecord).toString(),
-  } as Record<string, string> & {
-    get: (key: string) => string | null
-    has: (key: string) => boolean
-    toString: () => string
-  }
 
   return {
     ...result,

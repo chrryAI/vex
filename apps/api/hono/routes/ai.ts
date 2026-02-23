@@ -2580,7 +2580,15 @@ The user is currently viewing and potentially discussing this Tribe post:
 - **Title**: ${tribePost.title || "Untitled"}
 - **Content**: ${tribePost.content?.substring(0, 500) || ""}${tribePost.content?.length > 500 ? "..." : ""}
 - **Author**: ${tribePost.app?.name || "Unknown"}
-- **Tribe**: ${tribePost.tribe?.name || "Unknown"}
+- **Tribe**: ${tribePost.tribe?.name || "Unknown"}${
+        Array.isArray(tribePost.images) && tribePost.images.length > 0
+          ? `\n- **Images**: ${tribePost.images.map((img: any) => img.alt || img.url).join(", ")}`
+          : ""
+      }${
+        Array.isArray(tribePost.videos) && tribePost.videos.length > 0
+          ? `\n- **Videos**: This post includes a video. Reference it naturally when relevant.`
+          : ""
+      }
 
 If the user asks questions about this post or wants to discuss its content, reference specific details from the post. Be helpful and informative about the post's topic.
 `
@@ -4427,8 +4435,40 @@ How I process and remember information:
     ? `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}${retroAnalyticsContext}\n\n${memorySystemExplanation}\n\n${debatePrompt}` // Combine all
     : `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}${retroAnalyticsContext}\n\n${memorySystemExplanation}`
 
-  // User message remains unchanged - RAG context now in system prompt
-  const enhancedUserMessage = userMessage
+  // If viewing a tribe post with images, inject them as multimodal parts so AI can see the visuals
+  let enhancedUserMessage = userMessage
+  if (
+    postId &&
+    tribePost &&
+    Array.isArray(tribePost.images) &&
+    tribePost.images.length > 0 &&
+    selectedAgent?.capabilities.image
+  ) {
+    const imageUrls = tribePost.images
+      .map((img: any) => img.url)
+      .filter(Boolean)
+      .slice(0, 3) // max 3 images to avoid token bloat
+
+    if (imageUrls.length > 0) {
+      const existingContent =
+        typeof userMessage.content === "string"
+          ? [{ type: "text", text: userMessage.content }]
+          : Array.isArray(userMessage.content)
+            ? [...userMessage.content]
+            : [{ type: "text", text: String(userMessage.content) }]
+
+      enhancedUserMessage = {
+        role: "user",
+        content: [
+          ...existingContent,
+          ...imageUrls.map((url: string) => ({
+            type: "image",
+            image: url,
+          })),
+        ],
+      }
+    }
+  }
 
   // Function to merge consecutive messages for Perplexity compatibility
   // Perplexity requires strict alternation: system → user → assistant → user → assistant
@@ -6286,6 +6326,7 @@ Respond in JSON format:
         let tribe = ""
         let tribeSeoKeywords: string[] = []
         let tribeImagePrompt: string | undefined
+        let tribeVideoPrompt: string | undefined
         let tribePostId: string | undefined
         const moltId = undefined
 
@@ -6405,8 +6446,9 @@ Respond in JSON format:
                 tribeSeoKeywords = Array.isArray(parsed.seoKeywords)
                   ? parsed.seoKeywords
                   : []
-                // Hoist imagePrompt into outer scope so it's accessible in the return payload
+                // Hoist imagePrompt/videoPrompt into outer scope so they're accessible in the return payload
                 tribeImagePrompt = parsed.imagePrompt || undefined
+                tribeVideoPrompt = parsed.videoPrompt || undefined
 
                 // Two flows: stream (direct post) vs non-stream (parse only, like Moltbook)
                 // IMPORTANT: Skip posting if this is a scheduled job (jobId exists)
@@ -6707,6 +6749,7 @@ Respond in JSON format:
                 tribeName: tribe,
                 tribeSeoKeywords,
                 imagePrompt: tribeImagePrompt,
+                videoPrompt: tribeVideoPrompt,
               })
             }
           } catch (createError) {

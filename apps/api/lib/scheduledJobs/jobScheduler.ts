@@ -101,6 +101,7 @@ function parseAIJsonResponse(content: string): {
   submolt?: string
   placeholder?: string
   imagePrompt?: string
+  videoPrompt?: string
 } {
   if (!content || content.trim().length === 0) {
     throw new Error("Empty AI response content")
@@ -1625,10 +1626,14 @@ async function postToTribeJob({
 
     const imagePromptJsonField = generateImage
       ? `  "imagePrompt": "A vivid Flux-optimized image generation prompt that visually represents the post (max 200 chars, no quotes inside)",\n`
-      : ""
+      : generateVideo
+        ? `  "videoPrompt": "A vivid cinematic scene description for Luma Ray text-to-video (max 200 chars, no quotes inside)",\n`
+        : ""
     const imagePromptInstructions = generateImage
       ? "\n- imagePrompt: A concise, vivid Flux-optimized image generation prompt (max 200 chars) that visually captures the post's theme"
-      : ""
+      : generateVideo
+        ? "\n- videoPrompt: A cinematic scene description for Luma Ray video generation (max 200 chars) that visually captures the post's theme"
+        : ""
 
     const responseFormat = `**RESPONSE FORMAT - CRITICAL:**
 You MUST respond ONLY with a valid JSON object in this exact format (no markdown, no explanations):
@@ -1637,7 +1642,7 @@ You MUST respond ONLY with a valid JSON object in this exact format (no markdown
   "tribeTitle": "Your post title here",
   "tribeContent": "Your full post content here...",
   "seoKeywords": ["keyword1", "keyword2", "keyword3"],
-  "placeholder": "A short teaser sentence for the chat UI (max 120 chars)"${generateImage ? `,\n  "imagePrompt": "visual description for image generation"` : ""}
+  "placeholder": "A short teaser sentence for the chat UI (max 120 chars)"${generateImage ? `,\n  "imagePrompt": "visual description for image generation"` : generateVideo ? `,\n  "videoPrompt": "cinematic scene description for video generation"` : ""}
 }
 
 - tribeName: Choose from the available tribes list below
@@ -1791,6 +1796,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
         tribeContent: data.tribeContent,
         seoKeywords: data.tribeSeoKeywords || [],
         imagePrompt: data.imagePrompt || undefined,
+        videoPrompt: data.videoPrompt || undefined,
       } as ReturnType<typeof parseAIJsonResponse>
     } else if (aiMessageContent) {
       console.log(`⚠️ Falling back to parseAIJsonResponse from message content`)
@@ -1909,24 +1915,29 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
     })
 
     // Derive a prompt for image or video generation
-    const effectiveMediaPrompt =
-      parsedContent.imagePrompt ||
-      `${aiResponse.tribeTitle || ""} — ${aiResponse.tribeContent.split(/[.!?]/)[0]?.trim() || aiResponse.tribeContent.substring(0, 150)}`
+    const fallbackPrompt = `${aiResponse.tribeTitle || ""} — ${aiResponse.tribeContent.split(/[.!?]/)[0]?.trim() || aiResponse.tribeContent.substring(0, 150)}`
+    const effectiveMediaPrompt = generateVideo
+      ? parsedContent.videoPrompt || fallbackPrompt
+      : parsedContent.imagePrompt || fallbackPrompt
+
+    console.log(
+      `🔍 Media generation flags: generateVideo=${generateVideo} generateImage=${generateImage} prompt="${effectiveMediaPrompt.substring(0, 80)}"`,
+    )
 
     // Generate video (text-to-video, independent of image)
     if (generateVideo && effectiveMediaPrompt && post) {
       try {
         const vidPrompt = effectiveMediaPrompt.substring(0, 200)
         console.log(
-          `🎬 Generating video for tribe post ${post.id} via Luma Ray (text-to-video)...`,
+          `🎬 Generating video for tribe post ${post.id} via Luma Ray (text-to-video): "${vidPrompt.substring(0, 80)}..."`,
         )
         const replicateClient = new Replicate({ auth: REPLICATE_API_KEY })
         const videoOutput = await replicateClient.run(
-          "luma/ray" as `${string}/${string}`,
+          "luma/ray-2-540p" as `${string}/${string}`,
           {
             input: {
               prompt: vidPrompt,
-              duration: "5s",
+              duration: 5,
               aspect_ratio: "16:9",
             },
           },
@@ -2338,11 +2349,21 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
 
         try {
           const { provider } = await getModelProvider(app, job.aiModel, false)
+          const postImages =
+            Array.isArray((ownPost as any).images) &&
+            (ownPost as any).images.length > 0
+              ? `\nYour post includes an image: ${(ownPost as any).images.map((img: any) => img.alt || "visual content").join(", ")}`
+              : ""
+          const postVideos =
+            Array.isArray((ownPost as any).videos) &&
+            (ownPost as any).videos.length > 0
+              ? `\nYour post includes a video.`
+              : ""
           const replyPrompt = `You are "${app.name}" on Tribe, an AI social network.
 
 ${app.systemPrompt ? `Your personality:\n${app.systemPrompt.substring(0, 400)}\n\n` : ""}Someone commented on your post. Reply authentically as yourself (up to 500 chars).
 
-Your post: "${ownPost.content.substring(0, 300)}"
+Your post: "${ownPost.content.substring(0, 300)}"${postImages}${postVideos}
 Comment by ${commenterApp?.name || "someone"}: "${incomingComment.content.substring(0, 200)}"
 
 Reply ONLY with your reply text (no JSON, no extra formatting).`
@@ -4137,11 +4158,12 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
           })
         })()
         const legacyGenerateImage = matchedSlot?.generateImage === true
+        const legacyGenerateVideo = matchedSlot?.generateVideo === true
         const legacyFetchNews = matchedSlot?.fetchNews === true
 
         if (matchedSlot) {
           console.log(
-            `🎯 Matched schedule slot: ${matchedSlot.time} (${matchedSlot.postType}) | genImage: ${legacyGenerateImage} | fetchNews: ${legacyFetchNews}`,
+            `🎯 Matched schedule slot: ${matchedSlot.time} (${matchedSlot.postType}) | genImage: ${legacyGenerateImage} | genVideo: ${legacyGenerateVideo} | fetchNews: ${legacyFetchNews}`,
           )
         } else {
           console.log(
@@ -4158,7 +4180,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             undefined,
             legacyGenerateImage,
             legacyFetchNews,
-            false,
+            legacyGenerateVideo,
           )
           if (!response.output || response.error) {
             throw new Error(response.error || "Unknown error")
