@@ -103,8 +103,13 @@ app.get("/:storeSlug/:appSlug", async (c) => {
     skipCache: true,
   })
 
+  const accountApp = c.req.param("accountApp") === "true"
+
   if (!app) {
-    return c.json({ error: "App not found" }, 404)
+    return c.json(
+      { error: "App not found" },
+      { status: !accountApp ? 404 : 200 },
+    )
   }
 
   return c.json(app)
@@ -113,11 +118,15 @@ app.get("/:storeSlug/:appSlug", async (c) => {
 // GET /apps/:id - Get single app by ID
 app.get("/:id", async (c) => {
   const id = c.req.param("id")
+  const accountApp = c.req.param("accountApp") === "true"
 
   const app = await getApp({ c, appId: id })
 
   if (!app) {
-    return c.json({ error: "App not found" }, 404)
+    return c.json(
+      { error: "App not found" },
+      { status: !accountApp ? 404 : 200 },
+    )
   }
 
   return c.json(app)
