@@ -111,6 +111,7 @@ const MarkdownContent = memo(
       >
         <Markdown
           options={{
+            disableParsingRawHTML: true,
             overrides: {
               code({ node, inline, className, children, ...props }: any) {
                 console.log("🔍 Code detected:", { inline, className })
@@ -278,6 +279,10 @@ const MarkdownContent = memo(
                   )
                 },
               },
+              script: () => null,
+              iframe: () => null,
+              object: () => null,
+              style: () => null,
             },
           }}
         >

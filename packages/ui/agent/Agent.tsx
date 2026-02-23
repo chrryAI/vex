@@ -86,7 +86,6 @@ export default function Agent({
   const { t } = useAppContext()
   const {
     chrry,
-    baseApp,
     token,
     accountApp,
     user,
@@ -997,7 +996,7 @@ export default function Agent({
                                         }
                                       } else if (
                                         appFormWatcher.extends &&
-                                        appFormWatcher.extends.length > 8
+                                        appFormWatcher.extends.length >= 8
                                       ) {
                                         toast.error(
                                           `You can extend up to 8 apps.`,

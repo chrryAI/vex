@@ -36,7 +36,6 @@ import {
 } from "./platform"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
 import { apiFetch, isDevelopment } from "./utils"
-import { formatMessageTemplates } from "./utils/formatTemplates"
 import isOwner from "./utils/isOwner"
 
 interface TribePostProps {
@@ -668,7 +667,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           )}
           <MarkdownContent
             data-testid="user-message-content"
-            content={post.content}
+            content={post.content ?? ""}
           />
 
           {post.images && post.images.length > 0 && post?.images?.[0]?.url && (

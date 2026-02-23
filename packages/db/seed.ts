@@ -17,6 +17,7 @@ import {
   isProd,
   isSeedSafe,
   isWaffles,
+  MODE,
   passwordToSalt,
   sonarIssues,
   sonarMetrics,
@@ -271,7 +272,6 @@ const clearDb = async (): Promise<void> => {
   await db.delete(users)
   await db.delete(systemLogs)
   await db.delete(subscriptions)
-  await db.delete(threads)
   await db.delete(threads)
   await db.delete(storeInstalls)
   await db.delete(scheduledJobs)
@@ -1959,8 +1959,11 @@ const seedDb = async (): Promise<void> => {
       })
     }
 
-    await clearDb()
-    await create()
+    if (MODE === "dev") {
+      await clearDb()
+      await create()
+    }
+
     process.exit(0)
   }
 }

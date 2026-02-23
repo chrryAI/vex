@@ -162,7 +162,7 @@ export type {
 dotenv.config()
 
 const NODE_ENV = process.env.NODE_ENV
-const MODE = process.env.MODE
+export const MODE = process.env.MODE
 
 export const DB_URL =
   MODE === "prod"

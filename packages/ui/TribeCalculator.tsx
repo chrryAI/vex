@@ -292,12 +292,19 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
         endDate: new Date(ed),
         creditsPrice: parseFloat(String(CREDITS_PRICE || "10")),
       })
-      setFormData({
+      const nextState = {
         ...merged,
         totalPosts: estimate.totalPosts,
         creditsPerPost: estimate.creditsPerPost,
         totalCredits: estimate.totalCredits,
         totalPrice: estimate.totalPrice,
+      }
+      setFormData(nextState)
+      onCalculate?.({
+        totalPosts: estimate.totalPosts,
+        creditsPerPost: estimate.creditsPerPost,
+        totalCredits: estimate.totalCredits,
+        schedule: nextState.schedule,
       })
     } else {
       setFormData(merged)
