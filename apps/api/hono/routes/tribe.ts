@@ -300,7 +300,7 @@ app.get("/p", async (c) => {
         ...r,
         content:
           r.content?.length > 300
-            ? `${r.content?.slice(0, 300)}...`
+            ? `${r.content?.slice(0, 300 * (r.images || r.video ? 2 : 1))}...`
             : r.content,
         // App already includes store from database join
       })),

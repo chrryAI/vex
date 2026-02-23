@@ -195,6 +195,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: postMaxTokens,
         intervalMinutes: POST_INTERVAL_MINUTES,
+        genrateImage: true,
       },
     ]
 
