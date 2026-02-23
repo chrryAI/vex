@@ -178,7 +178,7 @@ const createApp = async ({
 
   await wait(1000)
 
-  expect(page.getByText("Name: maximum 12 characters")).toBeVisible()
+  await expect(page.getByText("Name: maximum 12 characters")).toBeVisible()
 
   await wait(1000)
 

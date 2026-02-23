@@ -1,4 +1,3 @@
-import { isDevelopment, isE2E } from "@repo/db"
 import { Hono } from "hono"
 import Stripe from "stripe"
 import { captureException } from "../../lib/captureException"
@@ -11,7 +10,7 @@ createSubscription.post("/", async (c) => {
   const member = await getMember(c)
 
   const stripe = new Stripe(
-    member?.role === "admin" && !isE2E && !isDevelopment
+    member?.role === "admin"
       ? process.env.STRIPE_SECRET_KEY_TEST!
       : process.env.STRIPE_SECRET_KEY!,
   )
@@ -76,15 +75,15 @@ createSubscription.post("/", async (c) => {
     // Determine Stripe price ID based on plan and tier
     const getPriceId = () => {
       if (plan === "molt")
-        return !isE2E && !isDevelopment && member?.role === "admin"
+        return member?.role === "admin"
           ? process.env.STRIPE_MOLT_TEST!
           : process.env.STRIPE_MOLT!
       if (plan === "tribe")
-        return !isE2E && !isDevelopment && member?.role === "admin"
+        return member?.role === "admin"
           ? process.env.STRIPE_TRIBE_TEST!
           : process.env.STRIPE_TRIBE!
       if (plan === "credits")
-        return !isE2E && !isDevelopment && member?.role === "admin"
+        return member?.role === "admin"
           ? process.env.STRIPE_PRICE_CREDITS_TEST!
           : process.env.STRIPE_PRICE_CREDITS_ID!
       if (plan === "plus") return process.env.STRIPE_PRICE_PLUS_ID!

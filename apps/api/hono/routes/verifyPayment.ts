@@ -70,7 +70,7 @@ verifyPayment.post("/", async (c) => {
   const member = await getMember(c)
 
   const stripe = new Stripe(
-    member?.role === "admin" && !isE2E && !isDevelopment
+    member?.role === "admin"
       ? process.env.STRIPE_SECRET_KEY_TEST!
       : process.env.STRIPE_SECRET_KEY!,
   )

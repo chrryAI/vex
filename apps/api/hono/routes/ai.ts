@@ -3245,7 +3245,7 @@ Now, how can I help you get started with ${requestApp.name}?
   // Subscription plans context - AI knows about plans but only explains when asked
   const PLUS_PRICE = 9.99
   const PRO_PRICE = 19.99
-  const CREDITS_PRICE = 0
+  const CREDITS_PRICE = 5.0
   const FREE_DAYS = 5
 
   // Simple translation function for features

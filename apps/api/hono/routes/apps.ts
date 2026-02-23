@@ -77,16 +77,16 @@ const getApps = async ({
   storeId?: string
   guestId?: string
 }) => {
+  const conditions = []
+  if (userId) conditions.push(eq(apps.userId, userId))
+  if (guestId) conditions.push(eq(apps.guestId, guestId))
+  if (!userId && !guestId) conditions.push(eq(apps.visibility, "public"))
+  if (storeId) conditions.push(eq(apps.storeId, storeId))
+
   const res = await db
     .select()
     .from(apps)
-    .where(
-      and(
-        userId ? eq(apps.userId, userId) : eq(apps.visibility, "public"),
-        guestId ? eq(apps.guestId, guestId) : eq(apps.visibility, "public"),
-        storeId ? eq(apps.storeId, storeId) : undefined,
-      ),
-    )
+    .where(and(...conditions))
 
   return res
 }
@@ -1100,7 +1100,7 @@ app.patch("/:id", async (c) => {
       existingApps?.some(
         (app) =>
           app?.id !== existingApp.id &&
-          extendedApps.some((e) => e?.id !== app.id),
+          !extendedApps.some((e) => e?.id === app.id),
       )
     ) {
       return c.json(
@@ -1114,7 +1114,7 @@ app.patch("/:id", async (c) => {
     if (storeInstalls?.length) {
       await Promise.all(
         storeInstalls.map(async (install) => {
-          if (extendedApps.some((app) => app?.id !== install.appId)) {
+          if (!extendedApps.some((app) => app?.id === install.appId)) {
             await deleteInstall({
               storeId: install.storeId,
               appId: install.appId,
@@ -1131,7 +1131,7 @@ app.patch("/:id", async (c) => {
         // &&
         // !storeInstalls?.find((install) => install.appId === extendedApp.id)
       ) {
-        const f = await createStoreInstall({
+        await createStoreInstall({
           storeId: existingApp.storeId,
           appId: extendedApp.id,
           featured: true,

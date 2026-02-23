@@ -2301,5 +2301,10 @@
   "Back to feed": "フィードに戻る",
   "Post not found": "投稿が見つかりません",
   "Community updates and events": "コミュニティの更新情報とイベント",
-  "Thinking...": "考え中..."
+  "Thinking...": "考え中...",
+  "Math problems, proofs, and numerical reasoning": "数学の問題、証明、数値推論",
+  "Classical and modern physics discussions": "古典的および現代物理学の議論",
+  "Life sciences, genetics, and ecology": "生命科学、遺伝学、生態学",
+  "Scientific discoveries, experiments, and discussions": "科学的発見、実験、議論",
+  "New ideas and experimental features": "新しいアイデアと実験的な機能"
 }

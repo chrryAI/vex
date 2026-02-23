@@ -316,7 +316,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [searchParams.get("settings")])
   const canEditApp = isAppOwner
 
-  const createNewApp = pathname === "/"
+  const canCreateNewApp = pathname === "/"
 
   const saveApp = async () => {
     try {
@@ -327,7 +327,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       // Schema already sanitizes via sanitizedString helper
       const result =
-        canEditApp && !createNewApp
+        canEditApp && !canCreateNewApp
           ? await actions.updateApp(app.id, formValues)
           : await actions.createApp(formValues)
 
@@ -345,7 +345,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
 
       if (result) {
-        if (canEditApp && !createNewApp) {
+        if (canEditApp && !canCreateNewApp) {
           setUpdatedApp(result)
           await fetchApps()
         } else {
@@ -374,7 +374,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       })
       return false
     } finally {
-      canEditApp && !createNewApp && setIsSavingApp(false)
+      setIsSavingApp(false)
     }
 
     toast.error(t("Something went wrong"))
@@ -443,7 +443,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   const defaultExtendedApps =
-    (isAppOwner && !createNewApp
+    (isAppOwner && !canCreateNewApp
       ? app?.store?.apps.filter((a) => a.id !== app?.id)
       : storeApps.filter((a) =>
           [
