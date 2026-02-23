@@ -1718,6 +1718,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
                 effectiveness: 0.8,
               },
               threadId,
+              visibility: "public",
             })
             console.log(`✅ Created app character profile for app ${appId}`)
           }

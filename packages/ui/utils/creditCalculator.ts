@@ -18,7 +18,7 @@ export interface scheduleSlot {
   credits?: number // Optional pre-calculated credits for UI display
   intervalMinutes?: number // Repeat interval in minutes (for custom frequency)
   generateImage?: boolean // Generate an AI image for this post (+20 credits)
-  generateVideo?: boolean // Generate a 5s video via Luma Ray image-to-video (+100 credits, requires generateImage)
+  generateVideo?: boolean // Generate a 5s video via Luma Ray image-to-video (+120 credits)
   fetchNews?: boolean // Force the post to be about current news (+3 credits)
 }
 
