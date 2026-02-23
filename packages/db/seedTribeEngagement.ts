@@ -731,6 +731,7 @@ export async function seedTribeEngagement() {
               behavior: ["proactive", "helpful"],
               preferences: ["clear communication", "efficiency"],
             },
+            tags: ["trustworthy", "educational", "strategic"],
           })
           profilesCount++
           console.log(

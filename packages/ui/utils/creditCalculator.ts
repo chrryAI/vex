@@ -17,7 +17,8 @@ export interface scheduleSlot {
   charLimit: number
   credits?: number // Optional pre-calculated credits for UI display
   intervalMinutes?: number // Repeat interval in minutes (for custom frequency)
-  generateImage?: boolean // Generate an AI image for this post (+5 credits)
+  generateImage?: boolean // Generate an AI image for this post (+20 credits)
+  generateVideo?: boolean // Generate a 5s video via Luma Ray image-to-video (+100 credits, requires generateImage)
   fetchNews?: boolean // Force the post to be about current news (+3 credits)
 }
 
@@ -67,7 +68,9 @@ export function calculateSlotCredits(slot: scheduleSlot): number {
   let total = Math.ceil(baseCredits * modelMultiplier * postTypeMultiplier)
 
   // Add-ons
-  if (slot.generateImage) total += 20 // Flux 1.1 Pro image generation (~$0.04/image)
+  if (slot.generateVideo)
+    total += 120 // Luma Ray 5s video (~$0.25 video + ~$0.04 image = ~$0.29 total)
+  else if (slot.generateImage) total += 20 // Flux 1.1 Pro image only (~$0.04/image)
   // fetchNews has no credit surcharge (free RSS/headlines API)
 
   return total

@@ -75,6 +75,8 @@ interface TribeContextType {
   deletePost: (postId: string) => Promise<void>
   deleteComment: (commentId: string) => Promise<void>
   setPendingPostIds: (id: string[]) => void
+  tags: string[]
+  setTags: (id: string[]) => void
   isTogglingLike: string | undefined
 }
 
@@ -109,26 +111,56 @@ export function TribeProvider({ children }: TribeProviderProps) {
     initialTribes,
   )
 
-  const { push } = useNavigation()
+  const { push, addParams, removeParams, searchParams } = useNavigation()
 
   const { captureException, t } = useAppContext()
 
-  const [sortBy, setSortByInternal] = useState<"date" | "hot" | "liked">("hot")
+  const [sortBy, setSortByInternal] = useState<"date" | "hot" | "liked">(
+    (searchParams.get("sort") as "date" | "hot" | "liked") || "hot",
+  )
 
   const setSortBy = (val: "date" | "hot" | "liked") => {
     setSortByInternal(val)
+    if (val === "hot") {
+      removeParams(["sort"])
+    } else {
+      addParams({ sort: val })
+    }
   }
 
-  const [order, setOrderInternal] = useState<"asc" | "desc">("desc")
+  const [order, setOrderInternal] = useState<"asc" | "desc">(
+    (searchParams.get("order") as "asc" | "desc") || "desc",
+  )
 
   const setOrder = (val: "asc" | "desc") => {
     setOrderInternal(val)
+
+    if (val === "desc") {
+      removeParams(["order"])
+    } else {
+      addParams({ order: val })
+    }
   }
 
   const [loadPostsCounter, setLoadPostsCounter] = useState(1)
   const [loadPostCounter, setLoadPostCounter] = useState(
     initialTribePost ? 0 : 1,
   )
+
+  const [tags, setTagsInternal] = useState<string[]>(
+    searchParams.get("tags")
+      ? searchParams.get("tags")!.split(",").filter(Boolean)
+      : [],
+  )
+
+  const setTags = (val: string[]) => {
+    setTagsInternal(val)
+    if (val.length === 0) {
+      removeParams(["tags"])
+    } else {
+      addParams({ tags: val.join(",") })
+    }
+  }
 
   const setShouldLoadPosts = (val: boolean) => {
     if (!val) return
@@ -222,6 +254,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
           until,
           search,
           characterProfileIds,
+          tags,
           sortBy,
           order,
           app?.id,
@@ -236,6 +269,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
         pageSize: 10 * until,
         search,
         characterProfileIds,
+        tags: tags.length > 0 ? tags : undefined,
         sortBy,
         order: sortBy === "date" ? order : undefined,
         appId: !canShowTribeProfile ? undefined : app?.id, // Filter by current selected app
@@ -722,6 +756,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     deleteComment,
     isSwarm,
     isTogglingLike,
+    tags,
+    setTags,
     posting:
       app && posting?.some((a) => a.app.slug === app.slug)
         ? posting

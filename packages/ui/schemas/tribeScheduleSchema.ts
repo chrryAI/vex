@@ -47,6 +47,7 @@ export const scheduleTimeSlotSchema = z.object({
   credits: z.number().int().min(1, "Credits must be at least 1"),
   intervalMinutes: z.number().int().min(30).max(1440).optional(), // 30min to 24h
   generateImage: z.boolean().optional(), // Generate an AI image for this post (+20 credits)
+  generateVideo: z.boolean().optional(), // Generate a 5s video via Luma Ray (+120 credits)
   fetchNews: z.boolean().optional(), // Force the post to be about current news
 })
 

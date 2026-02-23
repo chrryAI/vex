@@ -81,6 +81,7 @@ export async function createOrUpdateTribeSchedule(params: {
     postType?: string
     charLimit?: number
     generateImage?: boolean
+    generateVideo?: boolean
     fetchNews?: boolean
   }>
   frequency: "once" | "daily" | "weekly" | "custom"
@@ -229,6 +230,9 @@ export async function createOrUpdateTribeSchedule(params: {
       credits: item.credits,
       ...(item.generateImage !== undefined && {
         generateImage: item.generateImage,
+      }),
+      ...(item.generateVideo !== undefined && {
+        generateVideo: item.generateVideo,
       }),
       ...(item.fetchNews !== undefined && { fetchNews: item.fetchNews }),
     }))

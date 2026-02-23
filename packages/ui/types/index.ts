@@ -1165,8 +1165,9 @@ export type tribePost = {
     title?: string
     id: string
   }> | null
-  video: Array<{
+  videos: Array<{
     url: string
+    thumbnail?: string
     size?: number
     title?: string
     id: string
