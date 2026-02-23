@@ -2066,7 +2066,7 @@
   "Raspberry included (25 team seats, €19.99/seat after)": "Raspberryが含まれています（25チームシート、その後は€19.99/シート）",
   "Unlimited team seats (you manage)": "無制限のチームシート（あなたが管理）",
   "By using this, you accept our privacy policy": "これを使用することで、あなたは私たちのプライバシーポリシーに同意する",
-  "Name: maximum 8 characters": "名前：最大8文字",
+  "Name: maximum 12 characters": "名前：最大12文字",
   "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "OpenRouterが必要です。ChrryはあなたのAPIキーを使用し、APIのコストを支払い、サブスクリプション収入の70%を獲得します（Chrryはインフラストラクチャのために30%を保持します）。",
   "Image Analysis required by {{model}}": "{{model}}によって必要とされる画像解析",
   "OpenRouter API key is required for paid tiers to enable revenue sharing.": "収益分配を有効にするためには、有料プランでOpenRouter APIキーが必要です。",
@@ -2300,5 +2300,11 @@
   "Team work and project management": "チームワークとプロジェクト管理",
   "Back to feed": "フィードに戻る",
   "Post not found": "投稿が見つかりません",
-  "Community updates and events": "コミュニティの更新情報とイベント"
+  "Community updates and events": "コミュニティの更新情報とイベント",
+  "Thinking...": "考え中...",
+  "Math problems, proofs, and numerical reasoning": "数学の問題、証明、数値推論",
+  "Classical and modern physics discussions": "古典的および現代物理学の議論",
+  "Life sciences, genetics, and ecology": "生命科学、遺伝学、生態学",
+  "Scientific discoveries, experiments, and discussions": "科学的発見、実験、議論",
+  "New ideas and experimental features": "新しいアイデアと実験的な機能"
 }

@@ -169,12 +169,9 @@ export default function App({
     store,
     burnApp,
     apps,
-    guestBaseApp,
-    userBaseApp,
     accountApp,
     token,
     loadingApp,
-    userBaseStore: _userBaseStore,
     canBurn,
     setBurn,
     isPear,
@@ -210,6 +207,7 @@ export default function App({
   const zarathustra = apps.find((app) => app.slug === "zarathustra")
 
   const isBlossom = app?.store?.id === chrry?.store?.id
+  const isLifeOS = app?.store?.id === vex?.store?.id
 
   const getApps = () => {
     return apps
@@ -221,9 +219,7 @@ export default function App({
           (item.id !== nebula?.id || !isBlossom) &&
           (item.id !== grape?.id || (!isBlossom && !accountApp)) &&
           (item.id !== zarathustra?.id || (!isBlossom && !accountApp)) &&
-          (item.id === atlas?.id
-            ? !isBlossom && accountApp?.id !== app?.id
-            : true) &&
+          (item.id === atlas?.id ? !isBlossom && isLifeOS : true) &&
           item.id !== popcorn?.id,
       )
       .filter((item) => item.id !== focus?.id)
@@ -270,8 +266,6 @@ export default function App({
       currentStoreId,
       app,
       baseApp,
-      userBaseApp,
-      guestBaseApp,
       isBlossom,
       focus,
       isPear,
@@ -1069,7 +1063,7 @@ export default function App({
 
                     setAppStatus({
                       part: "settings",
-                      step: canEditApp ? "update" : "add",
+                      step: !accountApp ? "add" : canEditApp ? "update" : "add",
                     })
                   }}
                   title={t(

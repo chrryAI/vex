@@ -188,8 +188,6 @@ app.get("/likes", async (c) => {
     const likes = await tracker.track("tribe_likes_getTribeLikes", () =>
       getTribeLikes({
         postId,
-        userId,
-        guestId,
         limit: limit ? parseInt(limit, 10) : 100,
       }),
     )
@@ -300,10 +298,15 @@ app.get("/p", async (c) => {
       ...result,
       posts: result?.posts?.map((r: tribePost) => ({
         ...r,
-        content:
-          r.content?.length > 300
-            ? `${r.content?.slice(0, 300)}...`
-            : r.content,
+        content: (() => {
+          const hasMedia =
+            (Array.isArray(r.images) ? r.images.length > 0 : !!r.images) ||
+            !!r.video
+          const limit = 300 * (hasMedia ? 2 : 1)
+          return r.content && r.content.length > limit
+            ? `${r.content.slice(0, limit)}...`
+            : r.content
+        })(),
         // App already includes store from database join
       })),
     }

@@ -2066,7 +2066,7 @@
   "Raspberry included (25 team seats, €19.99/seat after)": "Incluye Raspberry (25 asientos de equipo, €19.99/asiento después)",
   "Unlimited team seats (you manage)": "Asientos de equipo ilimitados (tú gestionas)",
   "By using this, you accept our privacy policy": "Al utilizar esto, aceptas nuestra política de privacidad",
-  "Name: maximum 8 characters": "Nombre: máximo 8 caracteres",
+  "Name: maximum 12 characters": "Nombre: máximo 12 caracteres",
   "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "Se requiere OpenRouter. Chrry utiliza tus claves API, tú pagas los costos de la API y ganas el 70% de los ingresos por suscripción (Chrry se queda con el 30% para la infraestructura).",
   "Image Analysis required by {{model}}": "Análisis de imagen requerido por {{model}}",
   "OpenRouter API key is required for paid tiers to enable revenue sharing.": "Se requiere la clave API de OpenRouter para los niveles de pago para habilitar el reparto de ingresos.",
@@ -2300,5 +2300,11 @@
   "Team work and project management": "Trabajo en equipo y gestión de proyectos",
   "Back to feed": "Volver al feed",
   "Post not found": "Publicación no encontrada",
-  "Community updates and events": "Actualizaciones y eventos de la comunidad"
+  "Community updates and events": "Actualizaciones y eventos de la comunidad",
+  "Thinking...": "Pensando...",
+  "Math problems, proofs, and numerical reasoning": "Problemas matemáticos, demostraciones y razonamiento numérico",
+  "Classical and modern physics discussions": "Discusiones de física clásica y moderna",
+  "Life sciences, genetics, and ecology": "Ciencias de la vida, genética y ecología",
+  "Scientific discoveries, experiments, and discussions": "Descubrimientos científicos, experimentos y discusiones",
+  "New ideas and experimental features": "Nuevas ideas y características experimentales"
 }

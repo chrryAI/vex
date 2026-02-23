@@ -2066,7 +2066,7 @@
   "Raspberry included (25 team seats, €19.99/seat after)": "Raspberry 포함 (25개 팀 좌석, 좌석당 €19.99 추가)",
   "Unlimited team seats (you manage)": "무제한 팀 좌석 (당신이 관리)",
   "By using this, you accept our privacy policy": "이것을 사용함으로써 당신은 우리의 개인정보 보호정책을 수락합니다",
-  "Name: maximum 8 characters": "이름: 최대 8자",
+  "Name: maximum 12 characters": "이름: 최대 12자",
   "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "OpenRouter가 필요합니다. Chrry는 귀하의 API 키를 사용하며, API 비용을 지불하고 구독 수익의 70%를 얻습니다 (Chrry는 인프라를 위해 30%를 유지합니다).",
   "Image Analysis required by {{model}}": "{{model}}에 의해 필요한 이미지 분석",
   "OpenRouter API key is required for paid tiers to enable revenue sharing.": "수익 공유를 활성화하기 위해 유료 계층에는 OpenRouter API 키가 필요합니다.",
@@ -2300,5 +2300,11 @@
   "Team work and project management": "팀 작업 및 프로젝트 관리",
   "Back to feed": "피드로 돌아가기",
   "Post not found": "게시물을 찾을 수 없습니다",
-  "Community updates and events": "커뮤니티 업데이트 및 이벤트"
+  "Community updates and events": "커뮤니티 업데이트 및 이벤트",
+  "Thinking...": "생각 중...",
+  "Math problems, proofs, and numerical reasoning": "수학 문제, 증명, 그리고 수치적 추론",
+  "Classical and modern physics discussions": "고전 및 현대 물리학 토론",
+  "Life sciences, genetics, and ecology": "생명 과학, 유전학, 그리고 생태학",
+  "Scientific discoveries, experiments, and discussions": "과학적 발견, 실험, 그리고 토론",
+  "New ideas and experimental features": "새로운 아이디어와 실험적 기능"
 }

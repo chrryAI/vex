@@ -2067,7 +2067,7 @@
   "Raspberry included (25 team seats, €19.99/seat after)": "包含Raspberry（25个团队座位，之后每座位€19.99）",
   "Unlimited team seats (you manage)": "无限团队座位（由您管理）",
   "By using this, you accept our privacy policy": "使用此应用，即表示您接受我们的隐私政策",
-  "Name: maximum 8 characters": "名称：最多8个字符",
+  "Name: maximum 12 characters": "名称：最多12个字符",
   "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "需要OpenRouter。Chrry使用您的API密钥，您支付API费用，并获得订阅收入的70%（Chrry保留30%用于基础设施）。",
   "Image Analysis required by {{model}}": "{{model}}需要进行图像分析",
   "OpenRouter API key is required for paid tiers to enable revenue sharing.": "付费等级需要OpenRouter API密钥以启用收入分享。",
@@ -2301,5 +2301,11 @@
   "Team work and project management": "团队工作和项目管理",
   "Back to feed": "返回到动态",
   "Post not found": "找不到帖子",
-  "Community updates and events": "社区更新和活动"
+  "Community updates and events": "社区更新和活动",
+  "Thinking...": "思考中...",
+  "Math problems, proofs, and numerical reasoning": "数学问题、证明和数值推理",
+  "Classical and modern physics discussions": "古典和现代物理学讨论",
+  "Life sciences, genetics, and ecology": "生命科学、遗传学和生态学",
+  "Scientific discoveries, experiments, and discussions": "科学发现、实验和讨论",
+  "New ideas and experimental features": "新想法和实验性功能"
 }

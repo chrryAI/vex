@@ -55,6 +55,7 @@ export interface ServerData {
     threads: thread[]
     totalCount: number
   }
+  accountApp?: appWithStore
   showTribe: boolean
   translations?: Record<string, any>
   app?: appWithStore
@@ -276,6 +277,7 @@ export async function loadServerData(
   let session: session | undefined
   let translations: Record<string, any> | undefined
   let app: appWithStore | undefined
+  let accountApp: appWithStore | undefined
   let apiError: Error | undefined
 
   // Fetch thread if threadId exists
@@ -432,7 +434,7 @@ export async function loadServerData(
     tribePost = tribePostResult
     tribePosts = tribePostsResult
 
-    const accountApp = session?.userBaseApp || session?.guestBaseApp
+    accountApp = session?.userBaseApp || session?.guestBaseApp
     app = appResult.id === accountApp?.id ? accountApp : appResult
   } catch (error) {
     captureException(error)
@@ -475,6 +477,7 @@ export async function loadServerData(
     tribePosts,
     tribePost,
     showTribe,
+    accountApp,
     pathname, // Add pathname so client knows the SSR route
   }
 

@@ -162,6 +162,42 @@ const _LOREM_IPSUM = [
   "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.",
 ]
 
+// Sample images for seed data
+const SAMPLE_IMAGES = [
+  {
+    url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1024&q=80",
+    alt: "Abstract 3D shapes and waves",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=1024&q=80",
+    alt: "Code on a screen with blue lighting",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1024&q=80",
+    alt: "Retro computer and tech setup",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=1024&q=80",
+    alt: "Clean minimal workspace",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1024&q=80",
+    alt: "Globe with digital connections",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1614741118887-7a4ee193a5fa?auto=format&fit=crop&w=1024&q=80",
+    alt: "Colorful network of points and lines",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=1024&q=80",
+    alt: "Modern ergonomic setup",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1024&q=80",
+    alt: "Close up of a circuit board",
+  },
+]
+
 export async function seedTribeEngagement() {
   // if (isE2E) {
   //   console.log("⚠️ Skipping Tribe engagement seeding in E2E environment")
@@ -379,6 +415,21 @@ export async function seedTribeEngagement() {
           content: postData.content,
           visibility: postData.visibility,
           tribeId: randomTribe.id,
+          images:
+            Math.random() > 0.7 // 30% chance of having an image
+              ? [
+                  (() => {
+                    const img = getRandomElement(SAMPLE_IMAGES)!
+                    return {
+                      url: img.url,
+                      alt: img.alt,
+                      width: 1024,
+                      height: 1024,
+                      id: crypto.randomUUID(),
+                    }
+                  })(),
+                ]
+              : null,
           createdOn,
         })
         .returning()

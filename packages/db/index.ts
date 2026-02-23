@@ -162,7 +162,7 @@ export type {
 dotenv.config()
 
 const NODE_ENV = process.env.NODE_ENV
-const MODE = process.env.MODE
+export const MODE = process.env.MODE
 
 export const DB_URL =
   MODE === "prod"
@@ -4828,7 +4828,9 @@ export const updatePureApp = async (app: app) => {
     : undefined
 }
 
-export const updateApp = async (app: app | appWithStore) => {
+export const updateApp = async (
+  app: (Partial<app> | Partial<appWithStore>) & { id: string },
+) => {
   const [updated] = await db
     .update(apps)
     .set(app)
@@ -4918,7 +4920,7 @@ export const createOrUpdateApp = async ({
       const existingInstalls = await db
         .select()
         .from(storeInstalls)
-        .where(eq(storeInstalls.storeId, result.storeId))
+        .where(and(eq(storeInstalls.storeId, result.storeId)))
 
       const existingAppIds = new Set(
         existingInstalls.map((install) => install.appId),
@@ -5190,16 +5192,6 @@ export const getApp = async ({
           })
         : undefined
 
-  const _storeAppSchedule =
-    userId &&
-    storeData?.app &&
-    isOwner(storeData.app, {
-      userId,
-      guestId,
-    })
-      ? await getScheduledJobs({ appId: storeData.app.id, userId })
-      : []
-
   const appCharacterProfiles =
     (await getCharacterProfiles({
       appId: app.app.id,
@@ -5210,11 +5202,6 @@ export const getApp = async ({
       isAppOwner: true,
     }))
 
-  const _requestedAppSchedule =
-    userId && isOwner(app.app, { userId, guestId })
-      ? await getScheduledJobs({ appId: app.app.id, userId })
-      : []
-
   // Build store with apps array for hyperlink navigation
   const storeWithApps = storeData
     ? {
@@ -5222,15 +5209,6 @@ export const getApp = async ({
         title: storeData.store.name, // Use name as title
         apps: await Promise.all(
           storeData.apps.map(async (app) => {
-            const _characterProfiles =
-              (await getCharacterProfiles({
-                appId: app.id,
-                threadId,
-              })) ??
-              (await getCharacterProfiles({
-                appId: app.id,
-                isAppOwner: true,
-              }))
             return toSafeApp({
               app: {
                 ...app,
@@ -7096,11 +7074,25 @@ export const deleteTimer = async ({ id }: { id: string }) => {
   return deleted
 }
 
-export const getStoreInstalls = async ({ storeId }: { storeId?: string }) => {
+export const getStoreInstalls = async ({
+  storeId,
+  appId,
+}: {
+  storeId?: string
+  appId?: string
+}) => {
+  if (!storeId && !appId) {
+    throw new Error("getStoreInstalls requires storeId or appId")
+  }
   const result = await db
     .select()
     .from(storeInstalls)
-    .where(and(storeId ? eq(storeInstalls.storeId, storeId) : undefined))
+    .where(
+      and(
+        storeId ? eq(storeInstalls.storeId, storeId) : undefined,
+        appId ? eq(storeInstalls.appId, appId) : undefined,
+      ),
+    )
 
   return result
 }
@@ -7671,26 +7663,19 @@ export const getTribePosts = async ({
       const profiles = await db
         .select({ appId: characterProfiles.appId })
         .from(characterProfiles)
-        .where(
-          sql`${characterProfiles.id} = ANY(${sql`ARRAY[${sql.join(
-            characterProfileIds.map((id) => sql`${id}`),
-            sql`, `,
-          )}]::uuid[]`})`,
-        )
+        .where(inArray(characterProfiles.id, characterProfileIds))
 
       characterProfileAppIds = profiles
         .map((p) => p.appId)
         .filter((id): id is string => id !== null)
 
-      // Add app ID filter if we found any
-      if (characterProfileAppIds.length > 0) {
-        conditions.push(
-          sql`${tribePosts.appId} = ANY(${sql`ARRAY[${sql.join(
-            characterProfileAppIds.map((id) => sql`${id}`),
-            sql`, `,
-          )}]::uuid[]`})`,
-        )
+      // Short-circuit: if profiles were requested but none found, return empty
+      if (characterProfileAppIds.length === 0) {
+        return { posts: [], totalCount: 0 }
       }
+
+      // Add app ID filter
+      conditions.push(inArray(tribePosts.appId, characterProfileAppIds))
     }
 
     // Dynamic sorting based on sortBy parameter
@@ -7833,6 +7818,9 @@ export const getTribePosts = async ({
           visibility: row.post.visibility,
           likesCount: row.post.likesCount,
           commentsCount: row.post.commentsCount,
+          images: row.post.images,
+          videos: row.post.videos,
+          // audios: row.post.audios,
           sharesCount: row.post.sharesCount,
           createdOn: row.post.createdOn,
           updatedOn: row.post.updatedOn,
