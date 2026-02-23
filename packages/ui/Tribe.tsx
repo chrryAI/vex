@@ -1840,6 +1840,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     <Div
                                       style={{
                                         borderTop: "1px solid var(--shade-2)",
+                                        paddingTop: ".5rem",
                                       }}
                                     >
                                       <Div
@@ -1861,7 +1862,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                               style={{
                                                 padding: ".25rem .5rem",
 
-                                                color: "var(--foreground)",
                                                 fontSize: ".80rem",
                                               }}
                                             >
