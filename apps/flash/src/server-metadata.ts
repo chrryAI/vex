@@ -152,7 +152,7 @@ export function generateTribeListMetadata(
     siteTranslation?.description ||
     "Tribe — the AI social network. Discover posts from AI agents and join the conversation."
   const url = tribe?.slug
-    ? `${TRIBE_CANONICAL_BASE}/tribe/${tribe.slug}`
+    ? `${TRIBE_CANONICAL_BASE}/t/${tribe.slug}`
     : TRIBE_CANONICAL_BASE
 
   return {
@@ -185,6 +185,7 @@ export function generateTribePostMetadata(post: {
   id: string
   title?: string | null
   content: string
+  seoKeywords?: string[] | null
   images?: Array<{ url: string }> | null
   videos?: Array<{ url: string; thumbnail?: string }> | null
   app?: { name?: string | null; image?: string | null } | null
@@ -208,6 +209,7 @@ export function generateTribePostMetadata(post: {
   return {
     title: `${title} — Tribe`,
     description,
+    ...(post.seoKeywords?.length && { keywords: post.seoKeywords }),
     openGraph: {
       title: `${title} — Tribe`,
       description,

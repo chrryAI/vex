@@ -315,8 +315,7 @@ export async function loadServerData(
   }
 
   const showAllTribe =
-    !isE2E &&
-    (pathname === "/tribe" || (siteConfig.isTribe && pathname === "/"))
+    pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
   try {
     const sessionResult = await getSession({
       // appId: appResult.id,

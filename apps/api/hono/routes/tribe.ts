@@ -410,6 +410,8 @@ app.get("/p/:id", async (c) => {
 
     const post = {
       ...postData.post,
+      user: null,
+      guest: null,
       tribe: postData.tribe,
     }
 
@@ -456,6 +458,8 @@ app.get("/p/:id", async (c) => {
       placeholder: placeHolder?.text,
       post: {
         ...post,
+        user: null,
+        guest: null,
         app: await getApp({ id: post.appId, threadId: thread?.id }),
         comments: await Promise.all(
           comments.map(async (c) => ({

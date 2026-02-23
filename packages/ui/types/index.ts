@@ -1172,6 +1172,7 @@ export type tribePost = {
     title?: string
     id: string
   }> | null
+  seoKeywords?: string[] | null
   tribe: tribe | null
   likes?: {
     id: string

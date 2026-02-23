@@ -323,6 +323,7 @@ export function useTribePostMetadata(post?: {
   id: string
   title?: string | null
   content: string
+  seoKeywords?: string[] | null
   images?: Array<{ url: string }> | null
   videos?: Array<{ url: string; thumbnail?: string }> | null
   app?: { name?: string | null; image?: string | null } | null
@@ -361,7 +362,10 @@ export function useTribePostMetadata(post?: {
       updateOrCreateMeta("name", "twitter:image", imageUrl)
     }
     updateOrCreateLink("canonical", canonical)
-  }, [post?.id, post?.title, post?.content])
+    if (post.seoKeywords?.length) {
+      updateOrCreateMeta("name", "keywords", post.seoKeywords.join(", "))
+    }
+  }, [post?.id, post?.title, post?.content, post?.seoKeywords])
 }
 
 /**

@@ -6530,7 +6530,6 @@ Respond in JSON format:
                               .insert(tribePosts)
                               .values({
                                 appId: requestApp.id,
-                                userId: member.id,
                                 title: tribeTitle,
                                 content: tribeContent,
                                 visibility: "public",
