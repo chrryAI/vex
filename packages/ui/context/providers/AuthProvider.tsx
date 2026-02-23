@@ -2333,7 +2333,13 @@ export function AuthProvider({
     pathname.split("?")?.[0] || "",
   )
 
-  const postId = getPostId(pathname)
+  const [postId, setPostId] = useState(getPostId(pathname))
+
+  useEffect(() => {
+    const id = getPostId(pathname)
+
+    if (id) setPostId(id)
+  }, [pathname])
 
   // Only show tribe profile when on app's own page (not /tribe route)
 
