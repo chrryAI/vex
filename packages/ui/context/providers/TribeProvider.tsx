@@ -172,10 +172,22 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const setSearch = (val?: string) => {
     setSearchInitial(val)
   }
-  const [until, setUntilInitial] = useState<number>(1)
+  const [until, setUntilInitial] = useState<number>(
+    searchParams?.get("until") ? Number(searchParams.get("until")) : 1,
+  )
 
   const setUntil = (val: number) => {
     setUntilInitial(val)
+
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href)
+      if (val > 1) {
+        url.searchParams.set("until", String(val))
+      } else {
+        url.searchParams.delete("until")
+      }
+      window.history.replaceState(null, "", url.toString())
+    }
   }
   const [characterProfileIds, setCharacterProfileIdsInternal] = useState<
     string[] | undefined
