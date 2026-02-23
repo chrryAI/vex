@@ -978,8 +978,8 @@ export type scheduledJob = {
     postType: "post" | "comment" | "engagement"
     charLimit: number
     credits: number
-    genrateImage?: boolean
-    genrateVideo?: boolean
+    generateImage?: boolean
+    generateVideo?: boolean
     fetchNews?: boolean
   }>
   timezone: string

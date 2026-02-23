@@ -204,7 +204,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
             model: slot.model || "sushi",
             charLimit: slot.charLimit || 500,
             credits: slot.credits || 0,
-            genrateImage: slot.genrateImage === true,
+            generateImage: slot.generateImage === true,
             fetchNews: slot.fetchNews === true,
           }
         }) as ScheduleTime[])) ||
@@ -448,7 +448,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
         model: slot.model,
         postType: slot.postType,
         charLimit: slot.charLimit,
-        genrateImage: slot.genrateImage === true,
+        generateImage: slot.generateImage === true,
         fetchNews: slot.fetchNews === true,
       }))
 
@@ -613,7 +613,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
       ...currentSlot,
       ...updates,
     } as ScheduleTime
-    // Recalculate per-slot credits (includes genrateImage +15 / fetchNews +5 add-ons)
+    // Recalculate per-slot credits (includes generateImage +15 / fetchNews +5 add-ons)
     updatedSlot.credits = calculateSlotCredits(updatedSlot)
 
     if (currentSlot.postType === "post") {
@@ -1296,10 +1296,10 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                       {time.postType === "post" && tribeType === "Tribe" && (
                         <>
                           <Checkbox
-                            checked={time.genrateImage === true}
+                            checked={time.generateImage === true}
                             onChange={(checked) =>
                               updateScheduleTime(index, {
-                                genrateImage: checked,
+                                generateImage: checked,
                               })
                             }
                             title={t(

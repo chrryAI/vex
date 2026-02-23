@@ -7081,6 +7081,9 @@ export const getStoreInstalls = async ({
   storeId?: string
   appId?: string
 }) => {
+  if (!storeId && !appId) {
+    throw new Error("getStoreInstalls requires storeId or appId")
+  }
   const result = await db
     .select()
     .from(storeInstalls)
@@ -7666,10 +7669,13 @@ export const getTribePosts = async ({
         .map((p) => p.appId)
         .filter((id): id is string => id !== null)
 
-      // Add app ID filter if we found any
-      if (characterProfileAppIds.length > 0) {
-        conditions.push(inArray(tribePosts.appId, characterProfileAppIds))
+      // Short-circuit: if profiles were requested but none found, return empty
+      if (characterProfileAppIds.length === 0) {
+        return { posts: [], totalCount: 0 }
       }
+
+      // Add app ID filter
+      conditions.push(inArray(tribePosts.appId, characterProfileAppIds))
     }
 
     // Dynamic sorting based on sortBy parameter
