@@ -152,7 +152,82 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     }
   }
 
-  const { reduceMotion, isMobileDevice } = useTheme()
+  const renderMedia = () => {
+    if (!post) return null
+    return (
+      <>
+        {post.images && post.images.length > 0 && post?.images?.[0]?.url && (
+          <Div
+            style={{
+              position: "relative",
+              marginTop: "1.5rem",
+              marginBottom: "1rem",
+              alignItems: "center",
+              justifyContent: "center",
+              display: "flex",
+            }}
+          >
+            <Button
+              style={{
+                ...{
+                  position: "absolute",
+                  top: isMobileDevice ? 12 : 0,
+                  right: isMobileDevice ? 12 : 8,
+                  border: "none",
+                  borderRadius: 6,
+                  color: "white",
+                  padding: 6,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10,
+                },
+              }}
+              onClick={() =>
+                post?.images?.[0]?.url && downloadImage(post?.images?.[0]?.url)
+              }
+              title={t("Download image")}
+            >
+              <Download size={16} />
+            </Button>
+            <Img
+              alt={post.images[0].title}
+              width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 325 : 375}
+              height={viewPortWidth < 500 ? "auto" : isMobileDevice ? 325 : 375}
+              style={{
+                borderRadius: "20px",
+              }}
+              src={post.images[0].url}
+            />
+          </Div>
+        )}
+        {post.videos && post.videos.length > 0 && post?.videos?.[0]?.url && (
+          <Div
+            style={{
+              marginTop: "1rem",
+              marginBottom: "1rem",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <Video
+              playsInline
+              autoPlay={!reduceMotion}
+              muted
+              loop
+              controls
+              style={{ borderRadius: "20px", maxWidth: "100%" }}
+              width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 325 : 375}
+              height={"auto"}
+              src={post.videos[0].url}
+            />
+          </Div>
+        )}
+      </>
+    )
+  }
+
+  const { reduceMotion, isMobileDevice, isSmallDevice } = useTheme()
 
   // Group reactions by emoji
   const reactionGroups = post?.reactions?.reduce(
@@ -666,84 +741,11 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               {post.title}
             </H1>
           )}
+          {renderMedia()}
           <MarkdownContent
             data-testid="user-message-content"
             content={post.content ?? ""}
           />
-
-          {post.images && post.images.length > 0 && post?.images?.[0]?.url && (
-            <Div
-              style={{
-                position: "relative",
-                marginTop: "1.5rem",
-                marginBottom: "1rem",
-                alignItems: "center",
-                justifyContent: "center",
-                display: "flex",
-              }}
-            >
-              <Button
-                style={{
-                  ...{
-                    position: "absolute",
-                    top: isMobileDevice ? 12 : 0,
-                    right: isMobileDevice ? 12 : 8,
-                    border: "none",
-                    borderRadius: 6,
-                    color: "white",
-                    padding: 6,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 10,
-                  },
-                }}
-                onClick={() =>
-                  post?.images?.[0]?.url &&
-                  downloadImage(post?.images?.[0]?.url)
-                }
-                title={t("Download image")}
-              >
-                <Download size={16} />
-              </Button>
-              <Img
-                width={
-                  viewPortWidth < 500 ? "100%" : isMobileDevice ? 325 : 375
-                }
-                height={
-                  viewPortWidth < 500 ? "auto" : isMobileDevice ? 325 : 375
-                }
-                style={{
-                  borderRadius: "20px",
-                }}
-                src={post.images[0].url}
-              />
-            </Div>
-          )}
-          {post.videos && post.videos.length > 0 && post?.videos?.[0]?.url && (
-            <Div
-              style={{
-                marginTop: "1rem",
-                marginBottom: "1rem",
-                display: "flex",
-                justifyContent: "center",
-              }}
-            >
-              <Video
-                playsInline
-                autoPlay={!reduceMotion}
-                muted
-                loop
-                controls
-                style={{ borderRadius: "20px", maxWidth: "100%" }}
-                width={
-                  viewPortWidth < 500 ? "100%" : isMobileDevice ? 325 : 375
-                }
-                height={"auto"}
-                src={post.videos[0].url}
-              />
-            </Div>
-          )}
         </Div>
         <Div
           style={{
@@ -1231,6 +1233,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                 marginBottom: "0.5rem",
                                 fontSize: ".9rem",
                                 marginTop: "0.5rem",
+                                color: "var(--shade-7)",
                               }}
                             >
                               {comment.content}

@@ -21,7 +21,7 @@ import type {
   tribe,
   tribePostWithDetails,
 } from "../../types"
-import { apiFetch, pageSizes } from "../../utils"
+import { apiFetch } from "../../utils"
 import { useAuth, useData } from "."
 export type engagement = {
   tribePostId: string
@@ -173,7 +173,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setSearchInitial(val)
   }
   const [until, setUntilInitial] = useState<number>(
-    searchParams.get("until") ? Number(searchParams.get("until")) : 1,
+    searchParams?.get("until") ? Number(searchParams.get("until")) : 1,
   )
 
   const setUntil = (val: number) => {
@@ -277,9 +277,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
       : null,
     () => {
       if (!token) return
-      const MAX_UNTIL = 10
       return actions.getTribePosts({
-        pageSize: pageSizes.posts * Math.min(until, MAX_UNTIL),
+        pageSize: 10 * until,
         search,
         characterProfileIds,
         tags: tags.length > 0 ? tags : undefined,
