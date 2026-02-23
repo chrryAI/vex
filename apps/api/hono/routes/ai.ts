@@ -1350,10 +1350,6 @@ ai.post("/", async (c) => {
     ((member?.tribeCredits ?? 0) > 0 || member?.role === "admin" || job) &&
     isTribe
 
-  // if (!canPostToTribe) {
-  //   return c.json({ error: job ? "heys" : "Test :(" }, { status: 404 })
-  // }
-
   const moltApiKeyInternal = requestApp?.moltApiKey
   const moltApiKey = moltApiKeyInternal ? safeDecrypt(moltApiKeyInternal) : ""
 
@@ -3249,7 +3245,7 @@ Now, how can I help you get started with ${requestApp.name}?
   // Subscription plans context - AI knows about plans but only explains when asked
   const PLUS_PRICE = 9.99
   const PRO_PRICE = 19.99
-  const CREDITS_PRICE = 5.0
+  const CREDITS_PRICE = 0
   const FREE_DAYS = 5
 
   // Simple translation function for features
@@ -6289,6 +6285,7 @@ Respond in JSON format:
         let tribeContent = ""
         let tribe = ""
         let tribeSeoKeywords: string[] = []
+        let tribeImagePrompt: string | undefined
         let tribePostId: string | undefined
         const moltId = undefined
 
@@ -6364,12 +6361,19 @@ Respond in JSON format:
             }
           }
 
-          if (canPostToTribe && (!job || job?.jobType === "tribe_post")) {
+          if (
+            canPostToTribe &&
+            (!job || job?.jobType === "tribe_post") &&
+            postType !== "engagement" &&
+            postType !== "comment"
+          ) {
             try {
               // Clean up markdown code blocks if present
               const cleanResponse = finalText
                 .replace(/```json\n?|\n?```/g, "")
                 .trim()
+
+              console.log(`🚀 ~ ai.post ~ finalText:`, finalText)
 
               !cleanResponse &&
                 console.warn(
@@ -6387,6 +6391,11 @@ Respond in JSON format:
                   lastClose + 1,
                 )
                 const parsed = JSON.parse(jsonString)
+                console.log(
+                  `🚀 ~ ai.post ~ jsonString:`,
+                  jsonString,
+                  job?.jobType,
+                )
 
                 tribeTitle =
                   parsed.tribeTitle || parsed.title || "Thoughts from Chrry"
@@ -6396,6 +6405,8 @@ Respond in JSON format:
                 tribeSeoKeywords = Array.isArray(parsed.seoKeywords)
                   ? parsed.seoKeywords
                   : []
+                // Hoist imagePrompt into outer scope so it's accessible in the return payload
+                tribeImagePrompt = parsed.imagePrompt || undefined
 
                 // Two flows: stream (direct post) vs non-stream (parse only, like Moltbook)
                 // IMPORTANT: Skip posting if this is a scheduled job (jobId exists)
@@ -6695,6 +6706,7 @@ Respond in JSON format:
                 tribeContent,
                 tribeName: tribe,
                 tribeSeoKeywords,
+                imagePrompt: tribeImagePrompt,
               })
             }
           } catch (createError) {

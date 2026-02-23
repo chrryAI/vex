@@ -28,13 +28,14 @@ import {
   P,
   Span,
   Strong,
+  toast,
   usePlatform,
   useTheme,
 } from "./platform"
 import Search from "./Search"
 import Skeleton from "./Skeleton"
 import { useTribeStyles } from "./Tribe.styles"
-import { FRONTEND_URL } from "./utils"
+import { apiFetch, FRONTEND_URL } from "./utils"
 import isOwner from "./utils/isOwner"
 
 const FocusButton = FocusButtonMini
@@ -45,6 +46,7 @@ import {
   ArrowLeft,
   BrickWallFire,
   CalendarIcon,
+  Download,
   HeartPlus,
   LoaderCircle,
   Pin,
@@ -110,10 +112,29 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const [tyingToReact, setTyingToReact] = useState<string | undefined>(
     undefined,
   )
+  const { t, captureException } = useAppContext()
+
+  const downloadImage = async (imageUrl: string, imageName?: string) => {
+    try {
+      const response = await apiFetch(imageUrl)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = imageName || `vex-image-${Date.now()}.webp`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      captureException(error)
+      console.error("Download failed:", error)
+      toast.error(t("Failed to download image"))
+    }
+  }
 
   const { isMobileDevice, isSmallDevice, isDark, reduceMotion } = useTheme()
   const { setIsNewAppChat } = useChat()
-  const { t } = useAppContext()
   const hasHydrated = useHasHydrated()
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [newPostsCount, _setNewPostsCount] = useState(0)
@@ -469,12 +490,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             isTribe={false}
                             app={accountApp}
                             loading={<Loading size={18} />}
-                            className="inverted button"
+                            className="inverted"
                             icon={<Img app={accountApp} size={18} />}
                             style={{
-                              ...utilities.inverted.style,
                               ...utilities.button.style,
-                              ...utilities.small.style,
+                              ...utilities.inverted.style,
+                              ...utilities.xSmall.style,
                             }}
                           >
                             {t("Go to Your Agent")}
@@ -484,7 +505,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             app={app}
                             icon={<Img icon="spaceInvader" size={18} />}
                             loading={<Loading size={18} />}
-                            className="inverted button"
+                            className="inverted"
                             style={{
                               ...utilities.button.style,
                               ...utilities.inverted.style,
@@ -763,7 +784,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           isTribe={false}
                           app={accountApp}
                           loading={<Loading size={18} />}
-                          className="inverted button"
+                          className="inverted"
                           icon={<Img app={accountApp} size={18} />}
                           style={{
                             ...utilities.button.style,
@@ -1235,16 +1256,69 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               {post.title}
                             </A>
                           </H3>
-                          <P
+                          <Div
                             style={{
-                              marginTop: 5,
-                              fontSize: "0.95rem",
-                              color: "var(--shade-7)",
-                              lineHeight: "1.5",
+                              display: "flex",
+                              gap: "1rem",
+                              alignItems: "flex-start",
+                              marginTop: 10,
+                              flexDirection: !isMobileDevice ? "row" : "column",
                             }}
                           >
-                            {post.content}
-                          </P>
+                            {post.images &&
+                              post.images.length > 0 &&
+                              post?.images?.[0]?.url && (
+                                <Div
+                                  style={{
+                                    position: "relative",
+                                  }}
+                                >
+                                  <Button
+                                    style={{
+                                      ...{
+                                        position: "absolute",
+                                        top: 8,
+                                        right: 8,
+                                        backgroundColor: "rgba(0, 0, 0, 0.7)",
+                                        border: "none",
+                                        borderRadius: 6,
+                                        color: "white",
+                                        padding: 6,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        zIndex: 10,
+                                      },
+                                    }}
+                                    onClick={() =>
+                                      post?.images?.[0]?.url &&
+                                      downloadImage(post?.images?.[0]?.url)
+                                    }
+                                    title={t("Download image")}
+                                  >
+                                    <Download size={16} />
+                                  </Button>
+                                  <Img
+                                    width={200}
+                                    height={200}
+                                    style={{
+                                      borderRadius: "20px",
+                                    }}
+                                    src={post.images[0].url}
+                                  />{" "}
+                                </Div>
+                              )}
+                            <P
+                              style={{
+                                fontSize: "0.95rem",
+                                color: "var(--shade-7)",
+                                lineHeight: "1.5",
+                                marginTop: 0,
+                              }}
+                            >
+                              {post.content}
+                            </P>
+                          </Div>
                           <Div
                             style={{
                               display: "flex",

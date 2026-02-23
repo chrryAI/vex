@@ -136,7 +136,7 @@ export default function Img({
       <Span
         ref={ref}
         className={containerClass}
-        style={{ ...imgStyles.container.style, width, height, ...style }}
+        style={{ ...imgStyles.container.style, width, height }}
       >
         <MotiView
           from={{

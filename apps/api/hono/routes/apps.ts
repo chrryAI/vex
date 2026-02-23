@@ -15,9 +15,10 @@ import {
   encrypt,
   eq,
   getApp as getAppDb,
-  getApps,
+  getApps as getAppsDb,
   getInstall,
   getStore,
+  getStoreInstall,
   getStoreInstalls,
   installApp,
   isDevelopment,
@@ -25,6 +26,7 @@ import {
   isNotNull,
   ne,
   safeDecrypt,
+  updateApp,
   updateStore,
 } from "@repo/db"
 import { appOrders, apps, storeInstalls } from "@repo/db/src/schema"
@@ -52,15 +54,42 @@ interface ReorderRequest {
 
 // GET /apps - Intelligent app resolution (no ID)
 app.get("/", async (c) => {
+  const accountApp = c.req.param("accountApp") === "true"
   // Get final app
   const app = await getApp({ c })
 
   if (!app) {
-    return c.json({ error: "App not found" }, 404)
+    return c.json(
+      { error: "App not found" },
+      { status: !accountApp ? 404 : 200 },
+    )
   }
 
   return c.json(app)
 })
+
+const getApps = async ({
+  userId,
+  guestId,
+  storeId,
+}: {
+  userId?: string
+  storeId?: string
+  guestId?: string
+}) => {
+  const res = await db
+    .select()
+    .from(apps)
+    .where(
+      and(
+        userId ? eq(apps.userId, userId) : eq(apps.visibility, "public"),
+        guestId ? eq(apps.guestId, guestId) : eq(apps.visibility, "public"),
+        storeId ? eq(apps.storeId, storeId) : undefined,
+      ),
+    )
+
+  return res
+}
 
 // GET /apps/:storeSlug/:appSlug - Get app by store and app slug (SEO-friendly)
 app.get("/:storeSlug/:appSlug", async (c) => {
@@ -169,10 +198,9 @@ app.post("/", async (c) => {
     const existingApps = await getApps({
       userId: member?.id,
       guestId: guest?.id,
-      ownerId: member?.id || guest?.id,
     })
 
-    const nameExists = existingApps.items.some(
+    const nameExists = existingApps.some(
       (app) => app.name.toLowerCase() === name.toLowerCase(),
     )
 
@@ -576,9 +604,7 @@ app.post("/", async (c) => {
     // New app first, then up to 5 existing apps (total 6)
     const appsToReorder = [
       newApp,
-      ...storeAppsResult.items
-        .filter((app) => app.id !== newApp.id)
-        .slice(0, 5),
+      ...storeAppsResult.filter((app) => app.id !== newApp.id).slice(0, 5),
     ]
 
     await reorderApps({
@@ -1055,15 +1081,55 @@ app.patch("/:id", async (c) => {
         })
       : undefined
 
-    if (storeInstalls) {
+    const existingApps = existingApp.storeId
+      ? await getApps({
+          storeId: existingApp.storeId,
+        })
+      : null
+
+    if (
+      existingApps?.some(
+        (app) =>
+          app?.id !== existingApp.id &&
+          extendedApps.some((e) => e?.id !== app.id),
+      )
+    ) {
+      return c.json(
+        {
+          error: `Store apps should extends each other`,
+        },
+        { status: 400 },
+      )
+    }
+
+    if (storeInstalls?.length) {
       await Promise.all(
-        storeInstalls.map(async (storeInstall) => {
-          deleteInstall({
-            appId: storeInstall.appId,
-            storeId: storeInstall.storeId,
-          })
+        storeInstalls.map(async (install) => {
+          if (extendedApps.some((app) => app?.id !== install.appId)) {
+            await deleteInstall({
+              storeId: install.storeId,
+              appId: install.appId,
+            })
+          }
         }),
       )
+    }
+
+    for (const extendedApp of extendedApps) {
+      if (
+        existingApp.storeId &&
+        extendedApp?.id
+        // &&
+        // !storeInstalls?.find((install) => install.appId === extendedApp.id)
+      ) {
+        const f = await createStoreInstall({
+          storeId: existingApp.storeId,
+          appId: extendedApp.id,
+          featured: true,
+          displayOrder: 1,
+          customDescription: extendedApp.description,
+        })
+      }
     }
 
     console.log("✅ Validation passed")
@@ -1212,9 +1278,9 @@ app.patch("/:id", async (c) => {
           | "perplexity"
           | null,
       },
-      extends: extendedApps
-        .map((app) => (app ? app.id : undefined))
-        .filter(Boolean) as string[],
+      // extends: extendedApps
+      //   .map((app) => (app ? app.id : undefined))
+      //   .filter(Boolean) as string[],
     })
 
     if (!updatedApp) {

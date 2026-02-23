@@ -2066,7 +2066,7 @@
   "Raspberry included (25 team seats, €19.99/seat after)": "Incluye Raspberry (25 asientos de equipo, €19.99/asiento después)",
   "Unlimited team seats (you manage)": "Asientos de equipo ilimitados (tú gestionas)",
   "By using this, you accept our privacy policy": "Al utilizar esto, aceptas nuestra política de privacidad",
-  "Name: maximum 8 characters": "Nombre: máximo 8 caracteres",
+  "Name: maximum 12 characters": "Nombre: máximo 12 caracteres",
   "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "Se requiere OpenRouter. Chrry utiliza tus claves API, tú pagas los costos de la API y ganas el 70% de los ingresos por suscripción (Chrry se queda con el 30% para la infraestructura).",
   "Image Analysis required by {{model}}": "Análisis de imagen requerido por {{model}}",
   "OpenRouter API key is required for paid tiers to enable revenue sharing.": "Se requiere la clave API de OpenRouter para los niveles de pago para habilitar el reparto de ingresos.",

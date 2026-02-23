@@ -194,7 +194,7 @@ export default function ImageComponent(props: ImageProps) {
         ? Number.parseInt(size, 10)
         : 24 // Default size for emojis when size is CSS unit
 
-  const emojiSize = intSize <= 50 ? intSize * 0.85 : intSize
+  const emojiSize = intSize <= 50 ? intSize * 0.875 : intSize
 
   if (icon === "molt") {
     return (

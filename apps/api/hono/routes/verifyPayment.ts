@@ -19,6 +19,7 @@ import {
   getScheduledJob,
   getSubscription,
   getUser,
+  isDevelopment,
   updateAffiliateLink,
   updateGuest,
   updateScheduledJob,
@@ -69,7 +70,7 @@ verifyPayment.post("/", async (c) => {
   const member = await getMember(c)
 
   const stripe = new Stripe(
-    member?.role === "admin"
+    member?.role === "admin" && !isE2E && !isDevelopment
       ? process.env.STRIPE_SECRET_KEY_TEST!
       : process.env.STRIPE_SECRET_KEY!,
   )

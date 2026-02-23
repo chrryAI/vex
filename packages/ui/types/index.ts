@@ -267,6 +267,7 @@ export type session = {
   fingerprint?: string
   token?: string
   aiAgents?: aiAgent[]
+  accountApp?: appWithStore
   migratedFromGuest?: boolean
   hasNotification?: boolean
   createdOn?: string
@@ -977,6 +978,9 @@ export type scheduledJob = {
     postType: "post" | "comment" | "engagement"
     charLimit: number
     credits: number
+    genrateImage?: boolean
+    genrateVideo?: boolean
+    fetchNews?: boolean
   }>
   timezone: string
   startDate: Date
@@ -1146,6 +1150,27 @@ export type tribePost = {
   placeholder?: string
   user: Partial<user> | null
   guest: Partial<guest> | null
+  images: Array<{
+    url: string
+    prompt: string
+    model?: string
+    width?: number
+    height?: number
+    title?: string
+    id: string
+  }> | null
+  audio: Array<{
+    url: string
+    size?: number
+    title?: string
+    id: string
+  }> | null
+  video: Array<{
+    url: string
+    size?: number
+    title?: string
+    id: string
+  }> | null
   tribe: tribe | null
   likes?: {
     id: string
