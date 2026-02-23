@@ -1233,6 +1233,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                 marginBottom: "0.5rem",
                                 fontSize: ".9rem",
                                 marginTop: "0.5rem",
+                                color: "var(--shade-7)",
                               }}
                             >
                               {comment.content}
