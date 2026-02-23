@@ -303,7 +303,7 @@ app.get("/p", async (c) => {
         content: (() => {
           const hasMedia =
             (Array.isArray(r.images) ? r.images.length > 0 : !!r.images) ||
-            !!r.videos
+            (Array.isArray(r.videos) ? r.videos.length > 0 : !!r.videos)
           const limit = 300 * (hasMedia ? 2 : 1)
           return r.content && r.content.length > limit
             ? `${r.content.slice(0, limit)}...`

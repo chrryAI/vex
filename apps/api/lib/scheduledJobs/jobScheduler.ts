@@ -221,6 +221,7 @@ function parseAIJsonResponse(content: string): {
     "submolt",
     "placeholder",
     "imagePrompt",
+    "videoPrompt",
   ]
 
   for (const field of fields) {
@@ -1925,57 +1926,80 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
     )
 
     // Generate video (text-to-video, independent of image)
-    if (generateVideo && effectiveMediaPrompt && post) {
+    if (generateVideo && effectiveMediaPrompt) {
       try {
         const vidPrompt = effectiveMediaPrompt.substring(0, 200)
         console.log(
           `🎬 Generating video for tribe post ${post.id} via Luma Ray (text-to-video): "${vidPrompt.substring(0, 80)}..."`,
         )
         const replicateClient = new Replicate({ auth: REPLICATE_API_KEY })
-        const videoOutput = await replicateClient.run(
-          "luma/ray-2-540p" as `${string}/${string}`,
-          {
-            input: {
-              prompt: vidPrompt,
-              duration: 5,
-              aspect_ratio: "16:9",
-            },
-          },
-        )
 
-        let videoUrl: string | undefined
-        if (typeof videoOutput === "string") {
-          videoUrl = videoOutput
-        } else if (
-          videoOutput &&
-          typeof (videoOutput as any).url === "function"
+        // Use async create+polling to avoid blocking longer than job lock TTL
+        const prediction = await replicateClient.predictions.create({
+          model: "luma/ray-2-540p",
+          input: {
+            prompt: vidPrompt,
+            duration: 5,
+            aspect_ratio: "16:9",
+          },
+        })
+
+        const VIDEO_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes max
+        const POLL_INTERVAL_MS = 5000
+        const deadline = Date.now() + VIDEO_TIMEOUT_MS
+        let finalPrediction = prediction
+
+        while (
+          finalPrediction.status !== "succeeded" &&
+          finalPrediction.status !== "failed" &&
+          finalPrediction.status !== "canceled"
         ) {
-          videoUrl = await (videoOutput as any).url()
-        } else if (Array.isArray(videoOutput) && videoOutput[0]) {
-          const first = videoOutput[0]
-          videoUrl =
-            typeof first === "string" ? first : await (first as any).url?.()
+          if (Date.now() > deadline) {
+            console.warn(
+              `⏱️ Video generation timed out for post ${post.id} — skipping`,
+            )
+            break
+          }
+          await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS))
+          finalPrediction = await replicateClient.predictions.get(
+            finalPrediction.id,
+          )
         }
 
-        if (videoUrl) {
-          const videoUpload = await upload({
-            url: videoUrl,
-            messageId: `tribe-post-video-${post.id}`,
-            options: {
-              type: "video",
-              title: aiResponse.tribeTitle || "Tribe Post Video",
-            },
-          })
+        if (finalPrediction.status === "succeeded" && finalPrediction.output) {
+          const output = finalPrediction.output
+          let videoUrl: string | undefined
+          if (typeof output === "string") {
+            videoUrl = output
+          } else if (Array.isArray(output) && output[0]) {
+            videoUrl = typeof output[0] === "string" ? output[0] : undefined
+          }
 
-          await db
-            .update(tribePosts)
-            .set({
-              videos: [{ url: videoUpload.url, id: uuidv4() }],
+          if (videoUrl) {
+            const videoUpload = await upload({
+              url: videoUrl,
+              messageId: `tribe-post-video-${post.id}`,
+              options: {
+                type: "video",
+                title: aiResponse.tribeTitle || "Tribe Post Video",
+              },
             })
-            .where(eq(tribePosts.id, post.id))
 
-          console.log(
-            `🎬 Video attached to tribe post ${post.id}: ${videoUpload.url}`,
+            await db
+              .update(tribePosts)
+              .set({
+                videos: [{ url: videoUpload.url, id: uuidv4() }],
+              })
+              .where(eq(tribePosts.id, post.id))
+
+            console.log(
+              `🎬 Video attached to tribe post ${post.id}: ${videoUpload.url}`,
+            )
+          }
+        } else if (finalPrediction.status === "failed") {
+          console.error(
+            `❌ Video generation failed for post ${post.id}:`,
+            finalPrediction.error,
           )
         }
       } catch (vidErr) {
