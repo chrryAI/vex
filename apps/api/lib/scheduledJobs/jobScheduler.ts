@@ -3903,7 +3903,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
 
       for (const schedule of job.scheduledTimes) {
         const postType = schedule.postType
-        const generateImage = schedule.genrateImage === true
+        const generateImage = schedule.generateImage === true
         const fetchNews = schedule.fetchNews === true
         let effectiveJobType = job.jobType
 
@@ -4074,7 +4074,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             return minDiff <= 10
           })
         })()
-        const legacyGenerateImage = matchedSlot?.genrateImage === true
+        const legacyGenerateImage = matchedSlot?.generateImage === true
         const legacyFetchNews = matchedSlot?.fetchNews === true
 
         if (matchedSlot) {

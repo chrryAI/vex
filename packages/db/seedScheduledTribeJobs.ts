@@ -15,6 +15,10 @@ import { apps, scheduledJobs } from "./src/schema"
  * Zarathustra also gets longer charLimit (2000) and more tokens (15000).
  */
 
+const COOLDOWN_T1 = 15
+const COOLDOWN_T2 = 30
+const COOLDOWN_T3 = 60
+
 const TIER1_SLUGS = new Set(["zarathustra"])
 
 const TIER2_SLUGS = new Set([
@@ -46,9 +50,9 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function getCooldown(slug: string): number {
-  if (TIER1_SLUGS.has(slug)) return 15
-  if (TIER2_SLUGS.has(slug)) return 30
-  return 60
+  if (TIER1_SLUGS.has(slug)) return COOLDOWN_T1
+  if (TIER2_SLUGS.has(slug)) return COOLDOWN_T2
+  return COOLDOWN_T3
 }
 
 export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
@@ -82,7 +86,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
   const appsToUse = [...tier1, ...tier2, ...tier3]
 
   console.log(
-    `🔄 Tier1: ${tier1.length} apps (45min) | Tier2: ${tier2.length} apps (90min) | Tier3: ${tier3.length} apps (120min)`,
+    `🔄 Tier1: ${tier1.length} apps (${COOLDOWN_T1}min) | Tier2: ${tier2.length} apps (${COOLDOWN_T2}min) | Tier3: ${tier3.length} apps (${COOLDOWN_T3}min)`,
   )
 
   // Stagger offset per tier — spread apps evenly across their cooldown window
@@ -91,9 +95,9 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
       ? Math.max(1, Math.floor(cooldown / tierApps.length))
       : cooldown
 
-  const t1Interval = staggerInterval(tier1, 45)
-  const t2Interval = staggerInterval(tier2, 90)
-  const t3Interval = staggerInterval(tier3, 120)
+  const t1Interval = staggerInterval(tier1, COOLDOWN_T1)
+  const t2Interval = staggerInterval(tier2, COOLDOWN_T2)
+  const t3Interval = staggerInterval(tier3, COOLDOWN_T3)
 
   // Track per-tier index for offset calculation
   const tierIndex: Record<string, number> = {}
@@ -195,7 +199,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: postMaxTokens,
         intervalMinutes: POST_INTERVAL_MINUTES,
-        genrateImage: true,
+        generateImage: true,
       },
     ]
 
@@ -243,12 +247,12 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
   console.log(`\n✅ Created ${jobs.length} scheduled Tribe jobs`)
   console.log(`\n📊 Summary:`)
   console.log(
-    `   Zarathustra (T1): ${tier1.length} app  — posts every 45min, 2000 char, 15k tokens`,
+    `   Zarathustra (T1): ${tier1.length} app  — posts every ${COOLDOWN_T1}min, 2000 char, 15k tokens`,
   )
   console.log(
-    `   Cultural   (T2): ${tier2.length} apps — posts every 90min, 1000 char, 10k tokens`,
+    `   Cultural   (T2): ${tier2.length} apps — posts every ${COOLDOWN_T2}min, 1000 char, 10k tokens`,
   )
   console.log(
-    `   Default    (T3): ${tier3.length} apps — posts every 120min, 1000 char, 10k tokens`,
+    `   Default    (T3): ${tier3.length} apps — posts every ${COOLDOWN_T3}min, 1000 char, 10k tokens`,
   )
 }

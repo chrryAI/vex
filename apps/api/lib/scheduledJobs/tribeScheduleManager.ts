@@ -80,7 +80,7 @@ export async function createOrUpdateTribeSchedule(params: {
     model: string
     postType?: string
     charLimit?: number
-    genrateImage?: boolean
+    generateImage?: boolean
     fetchNews?: boolean
   }>
   frequency: "once" | "daily" | "weekly" | "custom"
@@ -227,8 +227,8 @@ export async function createOrUpdateTribeSchedule(params: {
       postType: (item.postType || "post") as "post" | "comment" | "engagement",
       charLimit: item.charLimit || 280,
       credits: item.credits,
-      ...(item.genrateImage !== undefined && {
-        genrateImage: item.genrateImage,
+      ...(item.generateImage !== undefined && {
+        generateImage: item.generateImage,
       }),
       ...(item.fetchNews !== undefined && { fetchNews: item.fetchNews }),
     }))

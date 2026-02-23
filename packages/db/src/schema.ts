@@ -1647,8 +1647,8 @@ export const scheduledJobs = pgTable(
           postType: "post" | "comment" | "engagement"
           charLimit: number
           credits: number
-          genrateImage?: boolean
-          genrateVideo?: boolean
+          generateImage?: boolean
+          generateVideo?: boolean
           fetchNews?: boolean
           maxTokens?: number // Optional max tokens for AI generation
           intervalMinutes?: number // Optional interval for custom frequency (e.g., 60 = every hour)
