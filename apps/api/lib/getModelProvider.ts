@@ -144,20 +144,6 @@ export async function getModelProvider(
           ? process.env.OPENROUTER_API_KEY
           : ""
 
-      if (openrouterKeyForDeepSeekReasoner && failedKey !== "openrouter") {
-        const openrouterProvider = createOpenRouter({
-          apiKey: openrouterKeyForDeepSeekReasoner,
-        })
-        const modelId = canReason
-          ? "qwen/qwen3-235b-a22b-thinking-2507"
-          : "qwen/qwen3-235b-a22b-instruct-2507"
-        return {
-          provider: openrouterProvider(modelId),
-          agentName: agent.name,
-          lastKey: "openrouter",
-        }
-      }
-
       const sushiKey =
         (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
         (!plusTiers.includes(app?.tier || "")
@@ -172,6 +158,25 @@ export async function getModelProvider(
           ),
           agentName: agent.name,
           lastKey: "deepSeek",
+        }
+      }
+
+      // !canReason temp
+      if (
+        openrouterKeyForDeepSeekReasoner &&
+        failedKey !== "openrouter" &&
+        !canReason
+      ) {
+        const openrouterProvider = createOpenRouter({
+          apiKey: openrouterKeyForDeepSeekReasoner,
+        })
+        const modelId = canReason
+          ? "qwen/qwen3-235b-a22b-thinking-2507"
+          : "qwen/qwen3-235b-a22b-instruct-2507"
+        return {
+          provider: openrouterProvider(modelId),
+          agentName: agent.name,
+          lastKey: "openrouter",
         }
       }
 
