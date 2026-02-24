@@ -1892,6 +1892,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
       content: aiResponse.tribeContent,
       visibility: "public" as const,
       tribeId,
+      threadId,
     }
 
     console.log("📝 Inserting to DB:", {

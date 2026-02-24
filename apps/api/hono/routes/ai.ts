@@ -6533,6 +6533,7 @@ Respond in JSON format:
                                 title: tribeTitle,
                                 content: tribeContent,
                                 visibility: "public",
+                                threadId: thread.id,
                                 tribeId,
                                 language,
                                 seoKeywords:

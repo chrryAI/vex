@@ -186,7 +186,7 @@ export const Hey = memo(
               slug={showTribeLogo ? "tribe" : app ? undefined : appSlug}
               app={showTribeLogo ? undefined : app}
               showLoading={false}
-              size={showTribeLogo ? 80 : 64}
+              size={showTribeLogo ? 70 : 64}
             />
           </Div>
         )

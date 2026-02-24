@@ -352,17 +352,7 @@ export default function Chat({
     pathname,
   } = useNavigationContext()
 
-  const {
-    slug,
-    suggestSaveApp,
-    saveApp,
-    apps,
-    appStatus,
-    appFormWatcher,
-    minimize,
-    setMinimize,
-    setAppStatus,
-  } = useApp()
+  const { slug, appStatus, minimize, setMinimize, isAppOwner } = useApp()
 
   const threadIdRef = useRef(threadId)
 
@@ -378,6 +368,8 @@ export default function Chat({
     if (isNewChat) {
       setThreadId(undefined)
       auth.setThreadId(undefined)
+      setPostToMoltbook(false)
+      setPostToTribe(false)
     }
   }, [isNewChat])
 
@@ -1759,9 +1751,11 @@ export default function Chat({
     setIsLoading(true)
 
     const sanitizedThreadId =
-      threadIdRef.current && validate(threadIdRef.current)
-        ? threadIdRef.current
-        : null
+      isAppOwner && tribePost?.threadId
+        ? tribePost?.threadId
+        : threadIdRef.current && validate(threadIdRef.current)
+          ? threadIdRef.current
+          : null
 
     try {
       let postRequestBody: FormData | string
@@ -4090,7 +4084,7 @@ export default function Chat({
                       ...styles.chatFloating.style,
                       ...(app?.themeColor && showTribe
                         ? {
-                            border: `1px solid ${COLORS[app?.themeColor as keyof typeof COLORS]}`,
+                            border: `1px solid ${COLORS[app?.themeColor as keyof typeof COLORS] ? COLORS[app?.themeColor as keyof typeof COLORS] : COLORS.orange}`,
                           }
                         : {}),
                       paddingBottom: 45,
