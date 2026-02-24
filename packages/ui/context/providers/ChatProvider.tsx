@@ -443,12 +443,10 @@ export function ChatProvider({
   }
 
   useEffect(() => {
-    if (postId) {
+    if (!threadIdRef.current) {
       setMessages([])
-      setThreadId(undefined)
-      threadIdRef.current = undefined
     }
-  }, [postId])
+  }, [threadIdRef.current])
 
   const setIsNewChat = ({
     value,
