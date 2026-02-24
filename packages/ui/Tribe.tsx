@@ -583,6 +583,9 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           alignItems: "center",
                           gap: 5,
                         }}
+                        onClick={() => {
+                          setTags([])
+                        }}
                         href={getTribeUrl()}
                       >
                         <ArrowLeft size={20} />
