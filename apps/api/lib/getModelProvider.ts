@@ -77,24 +77,6 @@ export async function getModelProvider(
 
   switch (name) {
     case "deepSeek": {
-      const openrouterKeyForDeepSeek = app?.apiKeys?.openrouter
-        ? safeDecrypt(app?.apiKeys?.openrouter)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.OPENROUTER_API_KEY
-          : ""
-
-      if (openrouterKeyForDeepSeek && failedKey !== "openrouter") {
-        const openrouterProvider = createOpenRouter({
-          apiKey: openrouterKeyForDeepSeek,
-        })
-        const modelId = "qwen/qwen3-235b-a22b-instruct-2507"
-        return {
-          provider: openrouterProvider(modelId),
-          agentName: agent.name,
-          lastKey: "openrouter",
-        }
-      }
-
       const deepseekKey = app?.apiKeys?.deepseek
         ? safeDecrypt(app?.apiKeys?.deepseek)
         : !plusTiers.includes(app?.tier || "")
@@ -111,6 +93,25 @@ export async function getModelProvider(
       }
 
       // Fallback to OpenRouter
+      const openrouterKeyForDeepSeek = app?.apiKeys?.openrouter
+        ? safeDecrypt(app?.apiKeys?.openrouter)
+        : !plusTiers.includes(app?.tier || "")
+          ? process.env.OPENROUTER_API_KEY
+          : ""
+
+      if (openrouterKeyForDeepSeek && failedKey !== "openrouter") {
+        const openrouterProvider = createOpenRouter({
+          apiKey: openrouterKeyForDeepSeek,
+        })
+        const modelId = agent.modelId.startsWith("deepseek/")
+          ? agent.modelId
+          : `deepseek/${agent.modelId}`
+        return {
+          provider: openrouterProvider(modelId),
+          agentName: agent.name,
+          lastKey: "openrouter",
+        }
+      }
 
       // Final fallback to ChatGPT if no DeepSeek key available
       console.warn("⚠️ No DeepSeek API key found, falling back to ChatGPT")
