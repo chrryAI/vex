@@ -734,19 +734,19 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               >
                                 {item.name}
                               </Span>
-                              {item.storeId !== app?.storeId && (
-                                <Span
-                                  style={{
-                                    position: "absolute",
-                                    top: 7.5,
-                                    right: 7.5,
-                                    fontSize: ".8rem",
-                                  }}
-                                >
-                                  🌀
-                                </Span>
-                              )}
                             </AppLink>
+                            {item.storeId !== app?.storeId && (
+                              <Span
+                                style={{
+                                  position: "absolute",
+                                  top: 7.5,
+                                  right: 7.5,
+                                  fontSize: ".8rem",
+                                }}
+                              >
+                                🌀
+                              </Span>
+                            )}
                           </MotiView>
                         )
                       })}
