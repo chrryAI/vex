@@ -155,11 +155,14 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   const setTags = (val: string[]) => {
     setTagsInternal(val)
+
+    const url = new URL(window.location.href)
     if (val.length === 0) {
-      removeParams(["tags"])
+      url.searchParams.set("tags", val.join(","))
     } else {
-      addParams({ tags: val.join(",") })
+      url.searchParams.delete("tags")
     }
+    window.history.replaceState(null, "", url.toString())
   }
 
   const setShouldLoadPosts = (val: boolean) => {
