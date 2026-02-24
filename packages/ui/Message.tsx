@@ -101,6 +101,7 @@ function Message({
     setGuest,
     deviceId,
     timeAgo,
+    setShowTribe,
     plausible,
   } = useAuth()
 
@@ -108,7 +109,7 @@ function Message({
 
   const isStreaming = message.message.isStreaming
 
-  const { setIsAccountVisible } = useNavigationContext()
+  const { setIsAccountVisible, push } = useNavigationContext()
   const { refetchThread, scrollToBottom } = useChat()
   const { addParams } = useNavigationContext()
 
@@ -1382,7 +1383,14 @@ function Message({
               )}
               <Div style={styles.left.style}>
                 {message.message.tribePostId && (
-                  <A href={`/p/${message.message.tribePostId}`}>
+                  <A
+                    href={`/p/${message.message.tribePostId}`}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setShowTribe(true)
+                      push(`/p/${message.message.tribePostId}`)
+                    }}
+                  >
                     <Img slug="zarathustra" />
                     {t("Tribe")}
                   </A>
