@@ -229,6 +229,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     postId && token ? ["tribePost", postId, app?.id, loadPostCounter] : null,
     () => {
       if (!token || !postId) return
+
       return actions.getTribePost({
         id: postId,
         appId: app?.id,
@@ -241,10 +242,10 @@ export function TribeProvider({ children }: TribeProviderProps) {
   )
 
   useEffect(() => {
-    if (tribePostData && tribePostData.id !== tribePost?.id) {
+    if (tribePostData) {
       setTribePost(tribePostData)
     }
-  }, [tribePostData, tribePost?.id, setTribePost])
+  }, [tribePostData, setTribePost])
 
   useEffect(() => {
     if (!tribesData) return

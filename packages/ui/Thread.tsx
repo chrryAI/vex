@@ -89,6 +89,7 @@ const Thread = ({
     dailyQuestionIndex,
     setDailyQuestionIndex,
     minimize,
+    postId,
     ...auth
   } = useAuth()
 
@@ -123,9 +124,13 @@ const Thread = ({
     setLiked,
     placeHolderText,
     isEmpty,
-    showTribe,
     setShowTribe,
   } = useChat()
+
+  const showTribe = !!(
+    (auth.showTribe && isEmpty) ||
+    (auth.showTribe && postId)
+  )
 
   const hasHydrated = useHasHydrated()
 
@@ -565,7 +570,7 @@ const Thread = ({
           </Div>
         ) : (
           <>
-            {isGame ? null : (
+            {isGame || postId ? null : (
               <Messages
                 onCharacterProfileUpdate={handleCharacterProfileUpdate}
                 isHome={isHome}
