@@ -64,6 +64,7 @@ import {
   sql,
   type subscription,
   type thread,
+  updateAiAgent,
   updateApp,
   updateGuest,
   updateMessage,
@@ -6089,6 +6090,20 @@ Respond in JSON format:
                 errorMsg.includes("context_length_exceeded") ||
                 errorMsg.includes("tokens")
 
+              // Check for API key errors
+              const isApiKeyError =
+                errorMsg.includes("401") ||
+                errorMsg.includes("403") ||
+                errorMsg.includes("unauthorized") ||
+                errorMsg.includes("forbidden") ||
+                errorMsg.includes("api key") ||
+                errorMsg.includes("authentication") ||
+                errorMsg.includes("invalid token") ||
+                errorMsg.includes("quota") ||
+                errorMsg.includes("rate limit") ||
+                errorMsg.includes("billing") ||
+                errorMsg.includes("credit")
+
               if (streamError instanceof Error) {
                 console.error("❌ Error message:", streamError.message)
                 console.error("❌ Error stack:", streamError.stack)
@@ -6113,6 +6128,27 @@ Respond in JSON format:
                   // Don't re-throw - we've handled it gracefully
                   streamFinished = true
                   return
+                }
+
+                if (isApiKeyError && model.lastKey) {
+                  // Update agent metadata with failed key
+                  console.log(
+                    `🔑 API key failed for ${model.lastKey}, updating agent metadata`,
+                  )
+                  try {
+                    await updateAiAgent({
+                      id: agent.id,
+                      metadata: {
+                        ...agent.metadata,
+                        lastFailedKey: model.lastKey,
+                      },
+                    })
+                  } catch (updateError) {
+                    console.error(
+                      "❌ Failed to update agent metadata:",
+                      updateError,
+                    )
+                  }
                 }
               }
               // Re-throw non-token-limit errors to be caught by outer try-catch

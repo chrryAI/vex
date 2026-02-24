@@ -3054,7 +3054,9 @@ export const deleteThread = async ({ id }: { id: string }) => {
   return deleted
 }
 
-export const updateAiAgent = async (data: aiAgent) => {
+export const updateAiAgent = async (
+  data: Partial<aiAgent> & { id: string },
+) => {
   const [updated] = await db
     .update(aiAgents)
     .set(data)

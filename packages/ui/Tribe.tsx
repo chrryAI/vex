@@ -583,6 +583,9 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           alignItems: "center",
                           gap: 5,
                         }}
+                        onClick={() => {
+                          setTags([])
+                        }}
                         href={getTribeUrl()}
                       >
                         <ArrowLeft size={20} />
@@ -718,6 +721,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 justifyContent: "center",
                                 padding: "1rem 1.3rem",
                                 flex: 1,
+                                position: "relative",
                                 maxWidth: 100,
                                 minWidth: "max-content",
                                 textAlign: "center",
@@ -734,6 +738,18 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 {item.name}
                               </Span>
                             </AppLink>
+                            {item.storeId !== app?.storeId && (
+                              <Span
+                                style={{
+                                  position: "absolute",
+                                  top: 7.5,
+                                  right: 7.5,
+                                  fontSize: ".8rem",
+                                }}
+                              >
+                                🌀
+                              </Span>
+                            )}
                           </MotiView>
                         )
                       })}
