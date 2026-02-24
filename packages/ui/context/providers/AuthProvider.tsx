@@ -1784,30 +1784,7 @@ export function AuthProvider({
     // if (focus && showFocus) return focus
     if (path === "/" && !showFocus) return undefined
 
-    const { appSlug } = getAppAndStoreSlugs(path, {
-      defaultAppSlug: baseApp?.slug || siteConfig.slug,
-      defaultStoreSlug: baseApp?.store?.slug || siteConfig.storeSlug,
-    })
-
-    // if (
-    //   userBaseApp &&
-    //   storeSlug === userBaseApp.store?.slug &&
-    //   appSlug === userBaseApp.slug
-    // ) {
-    //   return userBaseApp
-    // }
-
-    // if (
-    //   guestBaseApp &&
-    //   storeSlug === guestBaseApp.store?.slug &&
-    //   appSlug === guestBaseApp.slug
-    // ) {
-    //   return guestBaseApp
-    // }
-
-    const matchedApp = storeApps?.find(
-      (item) => item.slug === appSlug && (hasStoreApps(item) ? true : true),
-    )
+    const matchedApp = storeApps?.find((item) => getAppSlug(item) === pathname)
 
     return matchedApp
   }
