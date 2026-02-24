@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { FaGithub } from "react-icons/fa"
 import A from "./a/A"
 import { COLORS, useAppContext } from "./context/AppContext"
@@ -83,11 +83,28 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     pendingPostIds,
     deletePost,
     tags,
-    setTags,
     refetchPosts,
     setPendingPostIds,
     posting,
+    ...tribeContext
   } = useTribe()
+
+  const [isLoadingTagInternal, setIsLoadingTag] = useState(false)
+
+  const isLoadingTag = isLoadingPosts && isLoadingTagInternal
+
+  const setTags = (val: string[]) => {
+    setIsLoadingTag(true)
+    tribeContext.setTags(val)
+  }
+
+  useEffect(() => {
+    if (isLoadingTag || !tags.length) return
+    scrollRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    })
+  }, [isLoadingTag, tags])
 
   const {
     app,
@@ -142,6 +159,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const { isMobileDevice, isSmallDevice, isDark, reduceMotion } = useTheme()
   const { scrollToTop } = useChat()
   const hasHydrated = useHasHydrated()
+  const postsRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [newPostsCount, _setNewPostsCount] = useState(0)
 
@@ -864,6 +883,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 )}
                 {hasHydrated && (
                   <Div
+                    ref={scrollRef}
                     style={{
                       display: "flex",
                       alignItems: !isMobileDevice ? "center" : undefined,
@@ -1210,6 +1230,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Button>
                   </Div>
                 )}
+                <Div ref={postsRef} />
                 {!tribePosts ||
                 (hasHydrated && isLoadingPosts && !isLoadingMore) ? null : (
                   <>
@@ -1839,9 +1860,27 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                             (tag: string, i: number) => (
                                               <Button
                                                 onClick={() => {
-                                                  if (tags.includes(tag)) return
+                                                  if (tags.includes(tag)) {
+                                                    setTags(
+                                                      tags.filter(
+                                                        (tagItem) =>
+                                                          tagItem !== tag,
+                                                      ),
+                                                    )
+                                                    return
+                                                  }
                                                   setTags(tags.concat(tag))
-                                                  scrollToTop()
+                                                  if (postsRef.current) {
+                                                    const y =
+                                                      postsRef.current.getBoundingClientRect()
+                                                        .top +
+                                                      window.scrollY -
+                                                      80
+                                                    window.scrollTo({
+                                                      top: y,
+                                                      behavior: "smooth",
+                                                    })
+                                                  }
                                                 }}
                                                 key={tag + i}
                                                 style={{
@@ -1883,15 +1922,35 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                           (tag: string, i: number) => (
                                             <Button
                                               onClick={() => {
-                                                if (tags.includes(tag)) return
+                                                if (tags.includes(tag)) {
+                                                  setTags(
+                                                    tags.filter(
+                                                      (tagItem) =>
+                                                        tagItem !== tag,
+                                                    ),
+                                                  )
+                                                  return
+                                                }
                                                 setTags(tags.concat(tag))
-                                                scrollToTop()
+                                                if (postsRef.current) {
+                                                  const y =
+                                                    postsRef.current.getBoundingClientRect()
+                                                      .top +
+                                                    window.scrollY -
+                                                    80
+                                                  window.scrollTo({
+                                                    top: y,
+                                                    behavior: "smooth",
+                                                  })
+                                                }
                                               }}
                                               key={tag + i}
                                               style={{
                                                 padding: ".25rem .5rem",
 
                                                 fontSize: ".80rem",
+                                                ...utilities.inverted.style,
+                                                ...utilities.small.style,
                                               }}
                                             >
                                               # {tag}
