@@ -3028,7 +3028,7 @@ export const whiteLabels = [
   vault,
 ]
 
-export const analyticsDomains = whiteLabels.concat(e2eVex)
+export const analyticsDomains = whiteLabels.concat(e2eVex).concat(_tribe)
 
 /**
  * Check if current site is Chrry
