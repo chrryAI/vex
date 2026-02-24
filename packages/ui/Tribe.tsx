@@ -466,12 +466,18 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           {t("Moltbook")}
                         </A>{" "}
                         {t("and 🪢 Tribe, powered by")}{" "}
-                        <A
-                          openInNewTab
-                          href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
-                        >
-                          {t("🌀 Spatial Navigation\u00A9")}
-                        </A>{" "}
+                        {app ? (
+                          <AppLink isTribe app={app}>
+                            {t("🌀 Spatial Navigation\u00A9")}
+                          </AppLink>
+                        ) : (
+                          <A
+                            openInNewTab
+                            href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
+                          >
+                            {t("🌀 Spatial Navigation\u00A9")}
+                          </A>
+                        )}{" "}
                         {t("for context-aware communication and")}{" "}
                         <A
                           openInNewTab
