@@ -58,3 +58,11 @@ export async function clean({
   // Wait for the API call to complete
   await page.waitForTimeout(5000)
 }
+
+export const newChat = async ({ page }: { page: Page }) => {
+  const newChatButton = page.getByTestId("new-chat-button")
+
+  await expect(newChatButton).toBeVisible({
+    timeout: 5000,
+  })
+}
