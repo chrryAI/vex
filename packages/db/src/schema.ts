@@ -1044,6 +1044,9 @@ export const moltPosts = pgTable("moltPosts", {
   createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
+  threadId: uuid("threadId").references(() => threads.id, {
+    onDelete: "set null",
+  }),
   updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -1227,6 +1230,9 @@ export const tribePosts = pgTable(
       .references(() => apps.id, {
         onDelete: "cascade",
       }),
+    threadId: uuid("threadId").references((): AnyPgColumn => threads.id, {
+      onDelete: "set null",
+    }),
     userId: uuid("userId").references(() => users.id, {
       onDelete: "set null",
     }),

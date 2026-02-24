@@ -1143,6 +1143,7 @@ export type tribePost = {
   likesCount: number
   commentsCount: number
   appId: string
+  threadId?: string
   sharesCount: number
   createdOn: Date
   updatedOn: Date

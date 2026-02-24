@@ -2333,13 +2333,13 @@ export function AuthProvider({
     pathname.split("?")?.[0] || "",
   )
 
-  const [postId, setPostId] = useState(getPostId(pathname))
+  const postIdInitial = getPostId(pathname)
+
+  const [postId, setPostId] = useState(postIdInitial)
 
   useEffect(() => {
-    const id = getPostId(pathname)
-
-    if (id) setPostId(id)
-  }, [pathname])
+    setPostId(postIdInitial)
+  }, [postIdInitial])
 
   // Only show tribe profile when on app's own page (not /tribe route)
 
@@ -2361,12 +2361,11 @@ export function AuthProvider({
 
   const showTribeInitial =
     !!(
-      !postId &&
-      (showAllTribe ||
-        tribeSlug ||
-        postId ||
-        props.showTribe ||
-        canBeTribeProfile)
+      showAllTribe ||
+      tribeSlug ||
+      postId ||
+      props.showTribe ||
+      canBeTribeProfile
     ) && canShowTribe
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)

@@ -216,6 +216,7 @@ export function ChatProvider({
     hourlyLimit,
     hourlyUsageLeft,
     baseApp,
+    postId,
     ...auth
   } = useAuth()
 
@@ -442,10 +443,12 @@ export function ChatProvider({
   }
 
   useEffect(() => {
-    if (!threadIdRef.current) {
+    if (postId) {
       setMessages([])
+      setThreadId(undefined)
+      threadIdRef.current = undefined
     }
-  }, [threadIdRef.current])
+  }, [postId])
 
   const setIsNewChat = ({
     value,
