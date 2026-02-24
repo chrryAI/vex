@@ -124,13 +124,8 @@ const Thread = ({
     setLiked,
     placeHolderText,
     isEmpty,
-    setShowTribe,
+    showTribe,
   } = useChat()
-
-  const showTribe = !!(
-    (auth.showTribe && isEmpty) ||
-    (auth.showTribe && postId)
-  )
 
   const hasHydrated = useHasHydrated()
 
