@@ -8,6 +8,7 @@ import {
   generateThreadMetadata,
 } from "../utils"
 import getWhiteLabel from "../utils/getWhiteLabel"
+import { getSiteTranslation } from "../utils/siteConfig"
 
 /**
  * Hook to dynamically update page metadata for client-side navigation
@@ -108,7 +109,15 @@ export function useAppMetadata() {
 
   const enabled = !currentStore
 
-  const { baseApp, app, language: locale, showFocus } = useAuth()
+  const {
+    baseApp,
+    app,
+    language: locale,
+    showFocus,
+    showTribe,
+    showTribeProfile,
+    postId,
+  } = useAuth()
 
   const storeApp = getWhiteLabel({ app }).storeApp || baseApp
 
@@ -133,7 +142,7 @@ export function useAppMetadata() {
     : undefined
 
   useEffect(() => {
-    if (showFocus) return
+    if (showFocus || postId || showTribe || showTribeProfile) return
     if (!metadata || !enabled) return
 
     if (metadata.title) {
@@ -263,6 +272,102 @@ export function useThreadMetadata(thread?: thread) {
       })
     }
   }, [metadata])
+}
+
+const TRIBE_CANONICAL_BASE = "https://tribe.chrry.ai"
+
+/**
+ * Hook to dynamically update page metadata for Tribe list / specific tribe
+ * Uses siteTranslations for locale-aware title/description when no specific tribe is provided.
+ */
+export function useTribeMetadata(tribe?: {
+  name?: string | null
+  description?: string | null
+  slug?: string | null
+}) {
+  const { i18n } = useTranslation()
+
+  useEffect(() => {
+    if (!tribe) return
+    if (typeof document === "undefined") return
+
+    const locale = i18n.language || "en"
+    const siteTranslation = getSiteTranslation("tribe", locale)
+
+    const name = tribe?.name
+      ? `${tribe.name} - Tribe`
+      : siteTranslation.title || "Tribe — AI Social Network"
+    const description = tribe?.description || siteTranslation.description
+    const url = tribe?.slug
+      ? `${TRIBE_CANONICAL_BASE}/t/${tribe.slug}`
+      : TRIBE_CANONICAL_BASE
+
+    document.title = name
+    updateOrCreateMeta("name", "description", description)
+    updateOrCreateMeta("property", "og:title", name)
+    updateOrCreateMeta("property", "og:description", description)
+    updateOrCreateMeta("property", "og:url", url)
+    updateOrCreateMeta("property", "og:type", "website")
+    updateOrCreateMeta("property", "og:site_name", "Tribe")
+    updateOrCreateMeta("name", "twitter:card", "summary")
+    updateOrCreateMeta("name", "twitter:title", name)
+    updateOrCreateMeta("name", "twitter:description", description)
+    updateOrCreateMeta("name", "twitter:site", "@chrryai")
+    updateOrCreateLink("canonical", url)
+  }, [tribe?.slug, tribe?.name, tribe?.description, i18n.language])
+}
+
+/**
+ * Hook to dynamically update page metadata for a specific Tribe post
+ * Canonical is always tribe.chrry.ai/p/{id} — no locale path
+ */
+export function useTribePostMetadata(post?: {
+  id: string
+  title?: string | null
+  content: string
+  seoKeywords?: string[] | null
+  images?: Array<{ url: string }> | null
+  videos?: Array<{ url: string; thumbnail?: string }> | null
+  app?: { name?: string | null; image?: string | null } | null
+  tribe?: { name?: string | null } | null
+}) {
+  useEffect(() => {
+    if (typeof document === "undefined" || !post) return
+
+    const title = post.title || post.content.substring(0, 80)
+    const description = post.content.substring(0, 160).replace(/\n/g, " ")
+    const canonical = `${TRIBE_CANONICAL_BASE}/p/${post.id}`
+    const siteName = post.tribe?.name ? `${post.tribe.name} — Tribe` : "Tribe"
+    const imageUrl =
+      post.images?.[0]?.url ||
+      post.videos?.[0]?.thumbnail ||
+      post.app?.image ||
+      undefined
+
+    document.title = `${title} — Tribe`
+    updateOrCreateMeta("name", "description", description)
+    updateOrCreateMeta("property", "og:title", `${title} — Tribe`)
+    updateOrCreateMeta("property", "og:description", description)
+    updateOrCreateMeta("property", "og:url", canonical)
+    updateOrCreateMeta("property", "og:type", "article")
+    updateOrCreateMeta("property", "og:site_name", siteName)
+    updateOrCreateMeta(
+      "name",
+      "twitter:card",
+      imageUrl ? "summary_large_image" : "summary",
+    )
+    updateOrCreateMeta("name", "twitter:title", `${title} — Tribe`)
+    updateOrCreateMeta("name", "twitter:description", description)
+    updateOrCreateMeta("name", "twitter:site", "@chrryai")
+    if (imageUrl) {
+      updateOrCreateMeta("property", "og:image", imageUrl)
+      updateOrCreateMeta("name", "twitter:image", imageUrl)
+    }
+    updateOrCreateLink("canonical", canonical)
+    if (post.seoKeywords?.length) {
+      updateOrCreateMeta("name", "keywords", post.seoKeywords.join(", "))
+    }
+  }, [post?.id, post?.title, post?.content, post?.seoKeywords])
 }
 
 /**

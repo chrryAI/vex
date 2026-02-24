@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { FaGithub } from "react-icons/fa"
 import A from "./a/A"
 import { COLORS, useAppContext } from "./context/AppContext"
@@ -15,7 +15,7 @@ import {
 import { useStyles } from "./context/StylesContext"
 import FocusButtonMini from "./FocusButtonMini"
 import Grapes from "./Grapes"
-import { useHasHydrated } from "./hooks"
+import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
 import Instructions from "./Instructions"
 import {
@@ -31,6 +31,7 @@ import {
   toast,
   usePlatform,
   useTheme,
+  Video,
 } from "./platform"
 import Search from "./Search"
 import Skeleton from "./Skeleton"
@@ -46,6 +47,7 @@ import {
   ArrowLeft,
   BrickWallFire,
   CalendarIcon,
+  CircleX,
   Download,
   HeartPlus,
   LoaderCircle,
@@ -80,13 +82,31 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     liveReactions,
     pendingPostIds,
     deletePost,
+    tags,
     refetchPosts,
     setPendingPostIds,
     posting,
+    ...tribeContext
   } = useTribe()
 
+  const [isLoadingTagInternal, setIsLoadingTag] = useState(false)
+
+  const isLoadingTag = isLoadingPosts && isLoadingTagInternal
+
+  const setTags = (val: string[]) => {
+    setIsLoadingTag(true)
+    tribeContext.setTags(val)
+  }
+
+  useEffect(() => {
+    if (isLoadingTag || !tags.length) return
+    scrollRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    })
+  }, [isLoadingTag, tags])
+
   const {
-    getAppSlug,
     app,
     loadingApp,
     timeAgo,
@@ -107,12 +127,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
   const isSwarm = true
 
-  const { addParams, push, pathname } = useNavigationContext()
+  const { addParams, push, pathname, searchParams } = useNavigationContext()
 
   const [tyingToReact, setTyingToReact] = useState<string | undefined>(
     undefined,
   )
   const { t, captureException } = useAppContext()
+
+  useTribePostMetadata(tribePost ?? undefined)
+  useTribeMetadata(tribePost ? undefined : currentTribe)
 
   const downloadImage = async (imageUrl: string, imageName?: string) => {
     try {
@@ -134,8 +157,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   }
 
   const { isMobileDevice, isSmallDevice, isDark, reduceMotion } = useTheme()
-  const { setIsNewAppChat } = useChat()
+  const { scrollToTop } = useChat()
   const hasHydrated = useHasHydrated()
+  const postsRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [newPostsCount, _setNewPostsCount] = useState(0)
 
@@ -295,7 +320,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   ? "var(--shade-7)"
                                   : undefined,
                             }}
-                            href={`/tribe/${tribe.slug}`}
+                            href={`/t/${tribe.slug}`}
                           >
                             <Span
                               style={{
@@ -858,6 +883,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 )}
                 {hasHydrated && (
                   <Div
+                    ref={scrollRef}
                     style={{
                       display: "flex",
                       alignItems: !isMobileDevice ? "center" : undefined,
@@ -1147,6 +1173,28 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     ) : null}
                   </Div>
                 )}
+                {tags.length ? (
+                  <Div
+                    style={{
+                      ...utilities.row.style,
+                    }}
+                  >
+                    {tags?.map((tag: string) => (
+                      <Button
+                        style={{
+                          ...utilities.small.style,
+                        }}
+                        onClick={() => {
+                          setTags(tags.filter((tagItem) => tagItem !== tag))
+                        }}
+                        key={`tag-${tag}`}
+                      >
+                        # {tag}
+                        <CircleX size={12} />
+                      </Button>
+                    ))}
+                  </Div>
+                ) : null}
                 {newPostsCount > 0 && (
                   <Div
                     style={{
@@ -1182,7 +1230,9 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Button>
                   </Div>
                 )}
-                {isLoadingPosts && !isLoadingMore ? null : (
+                <Div ref={postsRef} />
+                {!tribePosts ||
+                (hasHydrated && isLoadingPosts && !isLoadingMore) ? null : (
                   <>
                     {Array.from(
                       new Map(tribePosts.posts.map((p) => [p.id, p])).values(),
@@ -1225,7 +1275,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               {post.app?.name}
                             </AppLink>
                             <A
-                              href={`/tribe/${post.tribe?.slug || "general"}`}
+                              href={`/t/${post.tribe?.slug || "general"}`}
                               style={{
                                 marginLeft: "auto",
                                 fontSize: ".8rem",
@@ -1261,8 +1311,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               display: "flex",
                               gap: "1rem",
                               alignItems: "flex-start",
-                              marginTop: 10,
-                              flexDirection: !isMobileDevice ? "row" : "column",
+                              marginTop: 12.5,
+                              flexDirection: !isSmallDevice ? "row" : "column",
                             }}
                           >
                             {post.images &&
@@ -1271,7 +1321,18 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 <Div
                                   style={{
                                     position: "relative",
-                                    alignSelf: "center",
+                                    width:
+                                      viewPortWidth < 500
+                                        ? "100%"
+                                        : isMobileDevice
+                                          ? 300
+                                          : 200,
+                                    height:
+                                      viewPortWidth < 500
+                                        ? "auto"
+                                        : isMobileDevice
+                                          ? 300
+                                          : 200,
                                   }}
                                 >
                                   <Button
@@ -1300,6 +1361,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     <Download size={16} />
                                   </Button>
                                   <Img
+                                    alt={post.images[0].title}
                                     width={
                                       viewPortWidth < 500
                                         ? "100%"
@@ -1315,10 +1377,54 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                           : 200
                                     }
                                     style={{
-                                      borderRadius: "20px",
+                                      borderRadius: "15px",
+                                      width:
+                                        viewPortWidth < 500
+                                          ? "100%"
+                                          : isMobileDevice
+                                            ? 300
+                                            : 200,
+                                      height:
+                                        viewPortWidth < 500
+                                          ? "auto"
+                                          : isMobileDevice
+                                            ? 300
+                                            : 200,
                                     }}
                                     src={post.images[0].url}
                                   />{" "}
+                                </Div>
+                              )}
+                            {post.videos &&
+                              post.videos.length > 0 &&
+                              post?.videos?.[0]?.url && (
+                                <Div
+                                  style={{
+                                    position: "relative",
+                                  }}
+                                >
+                                  <Video
+                                    playsInline
+                                    autoPlay={!reduceMotion}
+                                    muted
+                                    loop
+                                    style={{
+                                      borderRadius: "15px",
+                                      maxWidth: isMobileDevice
+                                        ? "100%"
+                                        : undefined,
+                                    }}
+                                    width={
+                                      viewPortWidth < 500
+                                        ? "100%"
+                                        : isMobileDevice
+                                          ? 375
+                                          : 275
+                                    }
+                                    height={"auto"}
+                                    controls
+                                    src={post?.videos?.[0]?.url}
+                                  />
                                 </Div>
                               )}
                             <P
@@ -1520,7 +1626,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 </Div>
                               )}
                             </Div>
-                            {tryAppCharacterProfile === post.id &&
+                            {tryAppCharacterProfile === post.id ? (
                               post.app?.characterProfile && (
                                 <Div
                                   className="slideUp"
@@ -1752,26 +1858,110 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                         >
                                           {post.app.characterProfile.tags.map(
                                             (tag: string, i: number) => (
-                                              <Span
+                                              <Button
+                                                onClick={() => {
+                                                  if (tags.includes(tag)) {
+                                                    setTags(
+                                                      tags.filter(
+                                                        (tagItem) =>
+                                                          tagItem !== tag,
+                                                      ),
+                                                    )
+                                                    return
+                                                  }
+                                                  setTags(tags.concat(tag))
+                                                  if (postsRef.current) {
+                                                    const y =
+                                                      postsRef.current.getBoundingClientRect()
+                                                        .top +
+                                                      window.scrollY -
+                                                      80
+                                                    window.scrollTo({
+                                                      top: y,
+                                                      behavior: "smooth",
+                                                    })
+                                                  }
+                                                }}
                                                 key={tag + i}
                                                 style={{
                                                   padding: ".25rem .5rem",
-                                                  backgroundColor:
-                                                    "var(--background)",
+
                                                   color: "var(--foreground)",
-                                                  borderRadius: 8,
                                                   fontSize: ".80rem",
+                                                  ...utilities.inverted.style,
                                                 }}
                                               >
-                                                #{tag}
-                                              </Span>
+                                                # {tag}
+                                              </Button>
                                             ),
                                           )}
                                         </Div>
                                       </Div>
                                     )}
                                 </Div>
-                              )}
+                              )
+                            ) : (
+                              <>
+                                {post?.app?.characterProfile?.tags &&
+                                  post?.app?.characterProfile.tags.length >
+                                    0 && (
+                                    <Div
+                                      style={{
+                                        borderTop: "1px solid var(--shade-2)",
+                                        paddingTop: ".5rem",
+                                      }}
+                                    >
+                                      <Div
+                                        style={{
+                                          display: "flex",
+                                          gap: ".5rem",
+                                          flexWrap: "wrap",
+                                        }}
+                                      >
+                                        {post?.app?.characterProfile?.tags.map(
+                                          (tag: string, i: number) => (
+                                            <Button
+                                              onClick={() => {
+                                                if (tags.includes(tag)) {
+                                                  setTags(
+                                                    tags.filter(
+                                                      (tagItem) =>
+                                                        tagItem !== tag,
+                                                    ),
+                                                  )
+                                                  return
+                                                }
+                                                setTags(tags.concat(tag))
+                                                if (postsRef.current) {
+                                                  const y =
+                                                    postsRef.current.getBoundingClientRect()
+                                                      .top +
+                                                    window.scrollY -
+                                                    80
+                                                  window.scrollTo({
+                                                    top: y,
+                                                    behavior: "smooth",
+                                                  })
+                                                }
+                                              }}
+                                              key={tag + i}
+                                              style={{
+                                                padding: ".25rem .5rem",
+
+                                                fontSize: ".80rem",
+                                                ...utilities.inverted.style,
+                                                ...utilities.small.style,
+                                              }}
+                                            >
+                                              # {tag}
+                                            </Button>
+                                          ),
+                                        )}
+                                      </Div>
+                                    </Div>
+                                  )}
+                              </>
+                            )}
                             {tyingToReact === post.id && (
                               <Div
                                 className="slideUp"
@@ -1839,9 +2029,21 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           marginTop: "1.25rem",
                         }}
                       >
-                        <Button
-                          disabled={isLoadingPosts}
-                          onClick={() => {
+                        <A
+                          href={(() => {
+                            const params = new URLSearchParams(
+                              searchParams.toString(),
+                            )
+                            params.set("until", String((until || 1) + 1))
+                            return `?${params.toString()}`
+                          })()}
+                          onClick={(e) => {
+                            if (e.metaKey || e.ctrlKey) {
+                              return
+                            }
+
+                            e.preventDefault()
+
                             setIsLoadingMore(true)
                             setUntil((until || 0) + 1)
                           }}
@@ -1859,7 +2061,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             <LoaderCircle size={16} />
                           )}
                           {t("Load more")}
-                        </Button>
+                        </A>
                       </Div>
                     )}
                   </>

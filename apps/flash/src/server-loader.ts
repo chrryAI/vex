@@ -55,6 +55,7 @@ export interface ServerData {
     threads: thread[]
     totalCount: number
   }
+  showAllTribe?: boolean
   accountApp?: appWithStore
   showTribe: boolean
   translations?: Record<string, any>
@@ -270,6 +271,9 @@ export async function loadServerData(
 
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
   const chrryUrl = getSiteConfig(hostname).url
+  const tribeSlug = pathname?.startsWith("/t/")
+    ? pathname.replace("/t/", "").split("?")[0]
+    : undefined
 
   const siteConfig = getSiteConfig(hostname)
 
@@ -293,8 +297,25 @@ export async function loadServerData(
   let tribes: paginatedTribes | undefined
   let tribePosts: paginatedTribePosts | undefined
   let tribePost: tribePostWithDetails | undefined
-  let _tribe: tribe | undefined
+  let tribe: tribe | undefined
 
+  const searchParamsRecord: Record<string, string> = {}
+  urlObj.searchParams.forEach((value, key) => {
+    searchParamsRecord[key] = value
+  })
+  const searchParams = {
+    ...searchParamsRecord,
+    get: (key: string) => searchParamsRecord[key] ?? null,
+    has: (key: string) => key in searchParamsRecord,
+    toString: () => new URLSearchParams(searchParamsRecord).toString(),
+  } as Record<string, string> & {
+    get: (key: string) => string | null
+    has: (key: string) => boolean
+    toString: () => string
+  }
+
+  const showAllTribe =
+    pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
   try {
     const sessionResult = await getSession({
       // appId: appResult.id,
@@ -337,13 +358,18 @@ export async function loadServerData(
       }
     }
 
+    const MAX_UNTIL = 10
+    const until = searchParams.get("until")
+      ? Math.min(Number(searchParams.get("until")), MAX_UNTIL)
+      : 1
+
     apiKey =
       sessionResult?.user?.token || sessionResult?.guest?.fingerprint || apiKey
 
     threadResult = threadId
       ? await getThread({
           id: threadId,
-          pageSize: pageSizes.threads,
+          pageSize: pageSizes.posts * until,
           token: apiKey,
           API_URL,
         })
@@ -378,14 +404,15 @@ export async function loadServerData(
       API_URL,
     })
 
-    const showAllTribe =
-      !isE2E &&
-      (pathname === "/tribe" || (siteConfig.isTribe && pathname === "/"))
+    const sortBy =
+      (searchParams.get("sort") as "date" | "hot" | "liked") || "hot"
+
+    const tags = searchParams.get("tags")
+      ? searchParams.get("tags")!.split(",").filter(Boolean)
+      : []
 
     const canShowTribeProfile =
-      !isE2E &&
-      !excludedSlugRoutes?.includes(pathname.split("?")?.[0]) &&
-      !showAllTribe
+      !tribeSlug && !excludedSlugRoutes?.includes(pathname) && !showAllTribe
 
     const [translationsResult, threadsResult, tribesResult, tribePostsResult] =
       await Promise.all([
@@ -418,6 +445,8 @@ export async function loadServerData(
               token: apiKey,
               appId: canShowTribeProfile ? appResult.id : undefined,
               API_URL,
+              sortBy,
+              tags,
             })
           : Promise.resolve(undefined),
       ])
@@ -433,6 +462,8 @@ export async function loadServerData(
     tribes = tribesResult
     tribePost = tribePostResult
     tribePosts = tribePostsResult
+
+    tribe = tribes?.tribes.find((t) => t.slug === tribeSlug)
 
     accountApp = session?.userBaseApp || session?.guestBaseApp
     app = appResult.id === accountApp?.id ? accountApp : appResult
@@ -478,9 +509,10 @@ export async function loadServerData(
     tribePost,
     showTribe,
     accountApp,
+    tribe,
+    showAllTribe,
     pathname, // Add pathname so client knows the SSR route
   }
-
   // Generate metadata for this route
   let metadata
   try {
@@ -490,23 +522,6 @@ export async function loadServerData(
   }
 
   // Parse all search params for client hydration
-  // Create URLSearchParams-compatible object for server-client consistency
-  const searchParamsRecord: Record<string, string> = {}
-  urlObj.searchParams.forEach((value, key) => {
-    searchParamsRecord[key] = value
-  })
-
-  // Wrap in object with .get() method to match URLSearchParams API
-  const searchParams = {
-    ...searchParamsRecord,
-    get: (key: string) => searchParamsRecord[key] ?? null,
-    has: (key: string) => key in searchParamsRecord,
-    toString: () => new URLSearchParams(searchParamsRecord).toString(),
-  } as Record<string, string> & {
-    get: (key: string) => string | null
-    has: (key: string) => boolean
-    toString: () => string
-  }
 
   return {
     ...result,

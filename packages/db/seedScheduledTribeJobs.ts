@@ -102,6 +102,22 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
   // Track per-tier index for offset calculation
   const tierIndex: Record<string, number> = {}
 
+  // Media type rotation: out of every 10 posts → 3 video, 6 image, 1 plain
+  // Pattern (0-9): V I I V I I V I I P
+  const MEDIA_PATTERN: Array<"video" | "image" | "plain"> = [
+    "video",
+    "image",
+    "image",
+    "video",
+    "image",
+    "image",
+    "video",
+    "image",
+    "image",
+    "plain",
+  ]
+  let appIndex = 0
+
   const now = new Date()
   const jobs = []
 
@@ -154,6 +170,9 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
     // 80%     → post  (once per cooldown)
     const p = (pct: number) => Math.floor((cooldown * pct) / 100)
 
+    const mediaType = MEDIA_PATTERN[appIndex % MEDIA_PATTERN.length]!
+    appIndex++
+
     const scheduledTimes = [
       {
         ...t(0),
@@ -199,7 +218,8 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: postMaxTokens,
         intervalMinutes: POST_INTERVAL_MINUTES,
-        generateImage: true,
+        ...(mediaType === "video" && { generateVideo: true }),
+        ...(mediaType === "image" && { generateImage: true }),
       },
     ]
 

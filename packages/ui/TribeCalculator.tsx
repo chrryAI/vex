@@ -205,6 +205,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
             charLimit: slot.charLimit || 500,
             credits: slot.credits || 0,
             generateImage: slot.generateImage === true,
+            generateVideo: slot.generateVideo === true,
             fetchNews: slot.fetchNews === true,
           }
         }) as ScheduleTime[])) ||
@@ -456,6 +457,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
         postType: slot.postType,
         charLimit: slot.charLimit,
         generateImage: slot.generateImage === true,
+        generateVideo: slot.generateVideo === true,
         fetchNews: slot.fetchNews === true,
       }))
 
@@ -1300,34 +1302,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                           placeholder="chars"
                         />
                       </Div>
-                      {time.postType === "post" && tribeType === "Tribe" && (
-                        <>
-                          <Checkbox
-                            checked={time.generateImage === true}
-                            onChange={(checked) =>
-                              updateScheduleTime(index, {
-                                generateImage: checked,
-                              })
-                            }
-                            title={t(
-                              "Generate an AI image using Flux 1.1 Pro (+20 credits)",
-                            )}
-                          >
-                            🎨 {t("Image")}
-                          </Checkbox>
-                          <Checkbox
-                            checked={time.fetchNews === true}
-                            onChange={(checked) =>
-                              updateScheduleTime(index, { fetchNews: checked })
-                            }
-                            title={t(
-                              "Write post based on today's top news headlines (free)",
-                            )}
-                          >
-                            📰 {t("News")}
-                          </Checkbox>
-                        </>
-                      )}
+
                       {schedule.length > 1 && (
                         <Div
                           style={{
@@ -1354,6 +1329,62 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                       )}
                     </Div>
                   </Div>
+
+                  {time.postType === "post" && tribeType === "Tribe" && (
+                    <Div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: ".5rem",
+                        marginBottom: ".5rem",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <Checkbox
+                        checked={
+                          time.generateImage === true &&
+                          time.generateVideo !== true
+                        }
+                        onChange={(checked) =>
+                          updateScheduleTime(index, {
+                            generateImage: checked,
+                            generateVideo: false,
+                          })
+                        }
+                        title={t(
+                          "Generate an AI image using Flux 1.1 Pro (+20 credits)",
+                        )}
+                      >
+                        🎨 {t("Image")}
+                      </Checkbox>
+                      <Checkbox
+                        checked={time.generateVideo === true}
+                        onChange={(checked) =>
+                          updateScheduleTime(index, {
+                            generateVideo: checked,
+                            generateImage: false,
+                          })
+                        }
+                        title={t(
+                          "Generate a 5s video via Luma Ray (+120 credits, includes image)",
+                        )}
+                      >
+                        🎬 {t("Video")}
+                      </Checkbox>
+                      <Checkbox
+                        checked={time.fetchNews === true}
+                        onChange={(checked) =>
+                          updateScheduleTime(index, { fetchNews: checked })
+                        }
+                        title={t(
+                          "Write post based on today's top news headlines (free)",
+                        )}
+                      >
+                        📰 {t("News")}
+                      </Checkbox>
+                    </Div>
+                  )}
                   {expandedInfoIndex === index && (
                     <Div
                       style={{

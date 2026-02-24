@@ -7617,6 +7617,7 @@ export const getTribePosts = async ({
   guestId,
   search,
   characterProfileIds,
+  tags,
   page = 1,
   pageSize = 10,
   id,
@@ -7632,6 +7633,7 @@ export const getTribePosts = async ({
   guestId?: string
   search?: string
   characterProfileIds?: string[]
+  tags?: string[]
   page?: number
   tribeSlug?: string
   pageSize?: number
@@ -7676,6 +7678,34 @@ export const getTribePosts = async ({
 
       // Add app ID filter
       conditions.push(inArray(tribePosts.appId, characterProfileAppIds))
+    }
+
+    // If tags are provided, filter by characterProfile.tags overlap
+    if (tags && tags.length > 0) {
+      const tagConditions = tags.map(
+        (tag) =>
+          sql`${characterProfiles.tags}::jsonb @> ${JSON.stringify([tag])}::jsonb`,
+      )
+      const taggedProfiles = await db
+        .select({ appId: characterProfiles.appId })
+        .from(characterProfiles)
+        .where(
+          and(
+            isNotNull(characterProfiles.appId),
+            eq(characterProfiles.visibility, "public"),
+            or(...tagConditions),
+          ),
+        )
+
+      const taggedAppIds = taggedProfiles
+        .map((p) => p.appId)
+        .filter((id): id is string => id !== null)
+
+      if (taggedAppIds.length === 0) {
+        return { posts: [], totalCount: 0 }
+      }
+
+      conditions.push(inArray(tribePosts.appId, taggedAppIds))
     }
 
     // Dynamic sorting based on sortBy parameter

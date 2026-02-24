@@ -1784,30 +1784,7 @@ export function AuthProvider({
     // if (focus && showFocus) return focus
     if (path === "/" && !showFocus) return undefined
 
-    const { appSlug } = getAppAndStoreSlugs(path, {
-      defaultAppSlug: baseApp?.slug || siteConfig.slug,
-      defaultStoreSlug: baseApp?.store?.slug || siteConfig.storeSlug,
-    })
-
-    // if (
-    //   userBaseApp &&
-    //   storeSlug === userBaseApp.store?.slug &&
-    //   appSlug === userBaseApp.slug
-    // ) {
-    //   return userBaseApp
-    // }
-
-    // if (
-    //   guestBaseApp &&
-    //   storeSlug === guestBaseApp.store?.slug &&
-    //   appSlug === guestBaseApp.slug
-    // ) {
-    //   return guestBaseApp
-    // }
-
-    const matchedApp = storeApps?.find(
-      (item) => item.slug === appSlug && (hasStoreApps(item) ? true : true),
-    )
+    const matchedApp = storeApps?.find((item) => getAppSlug(item) === pathname)
 
     return matchedApp
   }
@@ -2333,12 +2310,18 @@ export function AuthProvider({
     pathname.split("?")?.[0] || "",
   )
 
-  const postId = getPostId(pathname)
+  const postIdInitial = getPostId(pathname)
+
+  const [postId, setPostId] = useState(postIdInitial)
+
+  useEffect(() => {
+    setPostId(postIdInitial)
+  }, [postIdInitial])
 
   // Only show tribe profile when on app's own page (not /tribe route)
 
-  const tribeSlug = pathname?.startsWith("/tribe/")
-    ? pathname.replace("/tribe/", "").split("?")[0]
+  const tribeSlug = pathname?.startsWith("/t/")
+    ? pathname.replace("/t/", "").split("?")[0]
     : undefined
 
   const currentTribe = tribeSlug
@@ -2348,17 +2331,18 @@ export function AuthProvider({
   const showAllTribe =
     pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
 
+  const tribeQuery = searchParams.get("tribe") === "true"
+
   const canBeTribeProfile =
     !showAllTribe && !_isExcluded && !(siteConfig.isTribe && pathname === "/")
 
   const showTribeInitial =
     !!(
-      !postId &&
-      (showAllTribe ||
-        tribeSlug ||
-        postId ||
-        props.showTribe ||
-        canBeTribeProfile)
+      showAllTribe ||
+      tribeSlug ||
+      postId ||
+      props.showTribe ||
+      canBeTribeProfile
     ) && canShowTribe
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
@@ -2366,7 +2350,7 @@ export function AuthProvider({
 
   const showTribeProfileMemo = useMemo(
     () => showTribeProfileInternal,
-    [showTribeProfileInternal],
+    [showTribeProfileInternal, tribeQuery],
   )
 
   const showTribeProfile =
@@ -2375,12 +2359,13 @@ export function AuthProvider({
   const setShowTribe = (value: boolean) => {
     if (!canShowTribe) return
     setShowTribeFinal(value)
+
+    // value ? addParams({ tribe: true }) : removeParams(["tribe"])
   }
 
   useEffect(() => {
-    showTribeFromPath && setShowTribe(true)
-    postId && setShowTribe(true)
-  }, [showTribeFromPath, postId])
+    ;(showTribeFromPath || postId || tribeQuery) && setShowTribe(true)
+  }, [showTribeFromPath, postId, tribeQuery])
   const { data: moodData, mutate: refetchMood } = useSWR(
     (user || guest) && shouldFetchMood && token ? ["mood", token] : null, // Disabled by default, fetch manually with refetchMood()
     async () => {

@@ -1143,6 +1143,7 @@ export type tribePost = {
   likesCount: number
   commentsCount: number
   appId: string
+  threadId?: string
   sharesCount: number
   createdOn: Date
   updatedOn: Date
@@ -1165,12 +1166,14 @@ export type tribePost = {
     title?: string
     id: string
   }> | null
-  video: Array<{
+  videos: Array<{
     url: string
+    thumbnail?: string
     size?: number
     title?: string
     id: string
   }> | null
+  seoKeywords?: string[] | null
   tribe: tribe | null
   likes?: {
     id: string

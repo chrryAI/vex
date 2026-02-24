@@ -1324,6 +1324,7 @@ export const getTribePosts = async ({
   sortBy,
   order,
   onError,
+  tags,
   API_URL = utils.API_URL,
 }: {
   pageSize?: number
@@ -1336,6 +1337,7 @@ export const getTribePosts = async ({
   userId?: string
   guestId?: string
   characterProfileIds?: string[]
+  tags?: string[]
   sortBy?: "date" | "hot" | "liked"
   order?: "asc" | "desc"
   onError?: (status: number) => void
@@ -1353,6 +1355,7 @@ export const getTribePosts = async ({
   if (guestId) url.searchParams.set("guestId", guestId)
   if (characterProfileIds && characterProfileIds.length > 0)
     url.searchParams.set("characterProfileIds", characterProfileIds.join(","))
+  if (tags && tags.length > 0) url.searchParams.set("tags", tags.join(","))
   if (sortBy) url.searchParams.set("sortBy", sortBy)
   if (order) url.searchParams.set("order", order)
 
@@ -1561,6 +1564,7 @@ export const getActions = ({
       userId?: string
       guestId?: string
       characterProfileIds?: string[]
+      tags?: string[]
       sortBy?: "date" | "hot" | "liked"
       onError?: (status: number) => void
     }) => getTribePosts({ token, ...params, API_URL }),
