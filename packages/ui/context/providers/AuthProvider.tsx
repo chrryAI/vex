@@ -384,11 +384,11 @@ const AuthContext = createContext<
   | undefined
 >(undefined)
 
-const hasStoreApps = (app: appWithStore | undefined) => {
+export const hasStoreApps = (app: appWithStore | undefined) => {
   return Boolean(app?.store?.app && app?.store?.apps.length)
 }
 
-const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
+export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
   // Create a map of existing apps by ID
   const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
 
