@@ -130,7 +130,7 @@ export default function Subscribe({
   }, [props.scheduledTaskId])
 
   // Navigation context
-  const { searchParams, removeParams } = useNavigationContext()
+  const { searchParams } = useNavigationContext()
 
   // URL state persistence helper - only update when modal is open
   const updateURLParam = (key: string, value: string) => {
@@ -576,9 +576,8 @@ export default function Subscribe({
   }, [is])
 
   // Get initial plan from URL or props (needed for sushiTier initialization)
-  const selectedPlanInitial = ((searchParams.get("plan") ??
-    props.selectedPlan) ||
-    "member") as selectedPlanType
+  const selectedPlanInitial = (searchParams.get("plan") ??
+    props.selectedPlan) as selectedPlanType
 
   const [grapeTier, setGrapeTierInternal] = useState<"free" | "plus" | "pro">(
     (searchParams.get("grapeTier") as "free" | "plus" | "pro") ?? "free",
@@ -1049,25 +1048,26 @@ export default function Subscribe({
   }
 
   useEffect(() => {
-    if (!selectedPlan && selectedPlanInitial) {
-      setSelectedPlan(selectedPlanInitial)
+    if (!normalizedPlan && selectedPlanInitial) {
+      setSelectedPlan(normalizedPlan)
     }
-  }, [selectedPlanInitial])
+  }, [normalizedPlan])
 
   useEffect(() => {
-    if (isModalOpen) return
+    if (isModalOpen) {
+      if (!selectedPlan && normalizedPlan) {
+        setSelectedPlan(normalizedPlan)
+      }
+      return
+    }
     setIsAdding(false)
+    setSelectedPlan(undefined)
     setIsInviting(false)
     setUserToGift(null)
 
-    !selectedPlan &&
-      (user || guest) &&
-      setSelectedPlan(
-        (user || guest)?.subscription?.plan || selectedPlanInternal,
-      )
     setIsGifting(false)
     setSearch("")
-  }, [isModalOpen, selectedPlanInternal, selectedPlan])
+  }, [isModalOpen, normalizedPlan, selectedPlan])
 
   const features =
     selectedPlan === "plus"
