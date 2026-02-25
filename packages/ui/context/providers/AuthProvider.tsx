@@ -99,6 +99,43 @@ export type { session }
 
 const VERSION = "1.1.63"
 
+const hasStoreApps = (app: appWithStore | undefined) => {
+  return Boolean(app?.store?.app && app?.store?.apps.length)
+}
+
+const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
+  // Create a map of existing apps by ID
+  const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
+
+  // Add or update apps
+  newApps.forEach((newApp) => {
+    const existingApp = existingAppsMap.get(newApp.id)
+
+    if (existingApp) {
+      // Check if new app has meaningful store.apps (not empty or undefined)
+      const newHasStoreApps = hasStoreApps(newApp)
+      const existingHasStoreApps = hasStoreApps(existingApp)
+
+      // Merge: prefer new app but preserve existing store.apps if new one is empty/undefined
+      existingAppsMap.set(newApp.id, {
+        ...existingApp,
+        ...newApp,
+        store: newHasStoreApps
+          ? newApp.store
+          : existingHasStoreApps
+            ? existingApp.store
+            : newApp.store,
+      })
+    } else {
+      existingAppsMap.set(newApp.id, newApp)
+    }
+  })
+
+  const result = Array.from(existingAppsMap.values())
+
+  return result
+}
+
 const AuthContext = createContext<
   | {
       setTribes: (tribes?: paginatedTribes) => void
@@ -457,10 +494,6 @@ export function AuthProvider({
     get: (_key: string) => null,
     has: (_key: string) => false,
     toString: () => "",
-  }
-
-  const hasStoreApps = (app: appWithStore | undefined) => {
-    return Boolean(app?.store?.app && app?.store?.apps.length)
   }
 
   const _signUp = useCallback(
@@ -925,39 +958,6 @@ export function AuthProvider({
     }
   }, [isExtension, isCapacitor])
 
-  const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
-    // Create a map of existing apps by ID
-    const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
-
-    // Add or update apps
-    newApps.forEach((newApp) => {
-      const existingApp = existingAppsMap.get(newApp.id)
-
-      if (existingApp) {
-        // Check if new app has meaningful store.apps (not empty or undefined)
-        const newHasStoreApps = hasStoreApps(newApp)
-        const existingHasStoreApps = hasStoreApps(existingApp)
-
-        // Merge: prefer new app but preserve existing store.apps if new one is empty/undefined
-        existingAppsMap.set(newApp.id, {
-          ...existingApp,
-          ...newApp,
-          store: newHasStoreApps
-            ? newApp.store
-            : existingHasStoreApps
-              ? existingApp.store
-              : newApp.store,
-        })
-      } else {
-        existingAppsMap.set(newApp.id, newApp)
-      }
-    })
-
-    const result = Array.from(existingAppsMap.values())
-
-    return result
-  }
-
   const step = searchParams.get("step") as
     | "add"
     | "success"
@@ -1150,16 +1150,27 @@ export function AuthProvider({
       props?.session?.userBaseApp ||
       props?.session?.guestBaseApp,
   )
-  const allApps = merge(
-    merge(
-      (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
-      session?.app?.store?.apps || props.app?.store?.apps || [],
-    ),
+  // Memoize allApps to prevent expensive array operations on every render
+  const allApps = useMemo(
+    () =>
+      merge(
+        merge(
+          (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
+          session?.app?.store?.apps || props.app?.store?.apps || [],
+        ),
 
-    merge(
-      (tribePost?.comments.map((p) => p.app) as appWithStore[]) || [],
-      accountApp ? [accountApp] : [],
-    ),
+        merge(
+          (tribePost?.comments.map((p) => p.app) as appWithStore[]) || [],
+          accountApp ? [accountApp] : [],
+        ),
+      ),
+    [
+      tribePosts?.posts,
+      session?.app?.store?.apps,
+      props.app?.store?.apps,
+      tribePost?.comments,
+      accountApp,
+    ],
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
