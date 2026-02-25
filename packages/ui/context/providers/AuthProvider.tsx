@@ -1163,9 +1163,8 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -1265,13 +1264,15 @@ export function AuthProvider({
     }
   }, [isRetro, app, dailyQuestionSectionIndex, dailyQuestionIndex])
 
+  const c = whiteLabels.find((label) => label.slug === "chrry")
+
   const siteConfigApp = useMemo(
     () =>
       whiteLabels.find(
         (label) =>
           label.slug === app?.slug || app?.store?.app?.slug === label.slug,
-      ),
-    [app],
+      ) || c,
+    [app, c],
   )
 
   const setIsRetro = (value: boolean) => {
