@@ -8347,6 +8347,24 @@ Please follow these instructions throughout our conversation.
     }
   }
 
+  {
+    const storeInstall = await getStoreInstall({
+      storeId: blossom.id,
+      appId: vault.id,
+    })
+
+    if (!storeInstall) {
+      await createStoreInstall({
+        storeId: blossom.id,
+        appId: vault.id,
+        featured: true,
+        displayOrder: 1,
+        customDescription:
+          "Claude by Anthropic - Thoughtful AI assistant for writing, analysis, and creative work.",
+      })
+    }
+  }
+
   // Install Perplexity base app
   {
     const storeInstall = await getStoreInstall({
