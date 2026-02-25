@@ -1,5 +1,58 @@
 import { afterAll, describe, expect, it, vi } from "vitest"
-import { getSafeUrl, safeFetch } from "./ssrf"
+import { getSafeUrl, isPrivateIP, safeFetch } from "./ssrf"
+
+describe("isPrivateIP", () => {
+  it("should return true for private IPv4 addresses", () => {
+    expect(isPrivateIP("0.0.0.0")).toBe(true)
+    expect(isPrivateIP("10.0.0.1")).toBe(true)
+    expect(isPrivateIP("127.0.0.1")).toBe(true)
+    expect(isPrivateIP("169.254.1.1")).toBe(true)
+    expect(isPrivateIP("172.16.0.1")).toBe(true)
+    expect(isPrivateIP("172.31.255.255")).toBe(true)
+    expect(isPrivateIP("192.168.1.1")).toBe(true)
+    expect(isPrivateIP("100.64.0.1")).toBe(true) // CGNAT
+  })
+
+  it("should return true for reserved IPv4 addresses", () => {
+    expect(isPrivateIP("192.0.0.1")).toBe(true) // IETF Protocol Assignments
+    expect(isPrivateIP("192.0.2.1")).toBe(true) // TEST-NET-1
+    expect(isPrivateIP("198.51.100.1")).toBe(true) // TEST-NET-2
+    expect(isPrivateIP("203.0.113.1")).toBe(true) // TEST-NET-3
+    expect(isPrivateIP("224.0.0.1")).toBe(true) // Multicast
+    expect(isPrivateIP("240.0.0.1")).toBe(true) // Reserved
+  })
+
+  it("should return false for public IPv4 addresses", () => {
+    expect(isPrivateIP("8.8.8.8")).toBe(false)
+    expect(isPrivateIP("1.1.1.1")).toBe(false)
+    expect(isPrivateIP("172.15.0.1")).toBe(false) // Outside 172.16.0.0/12
+    expect(isPrivateIP("172.32.0.1")).toBe(false) // Outside 172.16.0.0/12
+  })
+
+  it("should return true for private IPv6 addresses", () => {
+    expect(isPrivateIP("::1")).toBe(true)
+    expect(isPrivateIP("fc00::1")).toBe(true)
+    expect(isPrivateIP("fe80::1")).toBe(true)
+    expect(isPrivateIP("::ffff:192.168.1.1")).toBe(true) // IPv4-mapped private
+    expect(isPrivateIP("::ffff:c0a8:0101")).toBe(true) // IPv4-mapped private hex
+  })
+
+  it("should return true for reserved IPv6 addresses", () => {
+    expect(isPrivateIP("::")).toBe(true)
+    expect(isPrivateIP("100::1")).toBe(true) // Discard-Only
+    expect(isPrivateIP("64:ff9b::1")).toBe(true) // IPv4/IPv6 translation
+    expect(isPrivateIP("2001::1")).toBe(true) // Teredo
+    expect(isPrivateIP("2001:20::1")).toBe(true) // ORCHIDv2
+    expect(isPrivateIP("2001:db8::1")).toBe(true) // Documentation
+    expect(isPrivateIP("2002::1")).toBe(true) // 6to4
+    expect(isPrivateIP("ff00::1")).toBe(true) // Multicast
+  })
+
+  it("should return false for public IPv6 addresses", () => {
+    expect(isPrivateIP("2607:f8b0:4005:805::200e")).toBe(false) // Google
+    expect(isPrivateIP("2001:4860:4860::8888")).toBe(false) // Google DNS
+  })
+})
 
 describe("validateUrl / getSafeUrl", () => {
   it("should allow public URLs", async () => {
