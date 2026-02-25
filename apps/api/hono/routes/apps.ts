@@ -224,10 +224,6 @@ app.post("/", async (c) => {
 
     let appSlug = slugify(name, { lower: true })
 
-    const chrry = await getStore({
-      parentStoreId: null,
-    })
-
     const existingBlossomApp = await getAppDb({
       slug: appSlug,
       role: "admin",
@@ -297,10 +293,6 @@ app.post("/", async (c) => {
         typeof moltApiKey === "string" && moltApiKey.trim()
           ? await encrypt(moltApiKey.trim())
           : undefined,
-    }
-
-    if (!chrry) {
-      return c.json({ error: "Chrry store not found" }, { status: 404 })
     }
 
     if (tier && tier !== "free" && !member) {
@@ -484,6 +476,14 @@ app.post("/", async (c) => {
       if (existingStore) {
         // Slug taken, append UUID to make it unique
         return c.json({ error: "Store slug taken" }, { status: 400 })
+      }
+
+      const chrry = await getStore({
+        parentStoreId: null,
+      })
+
+      if (!chrry) {
+        return c.json({ error: "Chrry store not found" }, { status: 404 })
       }
 
       const created = await createStore({
@@ -1161,45 +1161,50 @@ app.patch("/:id", async (c) => {
 
     console.log("✅ Validation passed")
 
-    const newSlug = slugify(name, { lower: true })
+    if (name) {
+      const newSlug = slugify(name, { lower: true })
 
-    const existingBlossomApp = await getAppDb({
-      slug: newSlug,
-      role: "admin",
-    })
-
-    if (
-      existingBlossomApp &&
-      !isOwner(existingBlossomApp, { userId: member?.id })
-    ) {
-      return c.json(
-        {
-          error: `An app with the name "${name}" already exists. Please choose a different name.`,
-        },
-        { status: 400 },
-      )
-    }
-
-    // If name changed, update slug and check uniqueness
-    if (name && name !== existingApp.name) {
-      // Check if new slug conflicts with another app in the same store
-      const conflictingApp = await getAppDb({ slug: newSlug, skipCache: true })
+      const existingBlossomApp = await getAppDb({
+        slug: newSlug,
+        role: "admin",
+      })
 
       if (
-        conflictingApp &&
-        conflictingApp.id !== existingApp.id &&
-        conflictingApp.store?.appId === existingApp.id
+        existingBlossomApp &&
+        !isOwner(existingBlossomApp, { userId: member?.id })
       ) {
         return c.json(
           {
-            error: `An app with the slug "${newSlug}" already exists in this store. Please choose a different name.`,
+            error: `An app with the name "${name}" already exists. Please choose a different name.`,
           },
           { status: 400 },
         )
       }
 
-      updateData.slug = newSlug
-      console.log(`📝 Updating app slug: ${existingApp.slug} → ${newSlug}`)
+      // If name changed, update slug and check uniqueness
+      if (name !== existingApp.name) {
+        // Check if new slug conflicts with another app in the same store
+        const conflictingApp = await getAppDb({
+          slug: newSlug,
+          skipCache: true,
+        })
+
+        if (
+          conflictingApp &&
+          conflictingApp.id !== existingApp.id &&
+          conflictingApp.store?.appId === existingApp.id
+        ) {
+          return c.json(
+            {
+              error: `An app with the slug "${newSlug}" already exists in this store. Please choose a different name.`,
+            },
+            { status: 400 },
+          )
+        }
+
+        updateData.slug = newSlug
+        console.log(`📝 Updating app slug: ${existingApp.slug} → ${newSlug}`)
+      }
     }
 
     // If image field is explicitly set to empty string or null, delete images

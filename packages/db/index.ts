@@ -5093,10 +5093,19 @@ export const getApp = async ({
         )
 
   // Check if user owns any apps to determine cache strategy
+  const isAppOwner =
+    (userId &&
+      (await db.select().from(apps).where(eq(apps.userId, userId)).limit(1))
+        .length > 0) ||
+    (guestId &&
+      (await db.select().from(apps).where(eq(apps.guestId, guestId)).limit(1))
+        .length > 0)
 
   // Use shared cache key for public apps if user doesn't own any apps
   // Otherwise use user-specific key (they might have user-specific data like placeholders)
-  const cacheKey = `app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}`
+  const cacheKey = isAppOwner
+    ? `app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
+    : `app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
 
   // Try cache first
 
@@ -6268,9 +6277,25 @@ export async function getStores({
   includePublic?: boolean
   ownerId?: string
 }) {
+  // Check if user owns any stores to determine cache strategy
+  const isStoreOwner =
+    (userId &&
+      (await db.select().from(stores).where(eq(stores.userId, userId)).limit(1))
+        .length > 0) ||
+    (guestId &&
+      (
+        await db
+          .select()
+          .from(stores)
+          .where(eq(stores.guestId, guestId))
+          .limit(1)
+      ).length > 0)
+
   // Use shared cache key for public stores if user doesn't own any stores
   // Otherwise use user-specific key
-  const cacheKey = `stores:user:${userId}:guest:${guestId}:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}`
+  const cacheKey = isStoreOwner
+    ? `stores:user:${userId}:guest:${guestId}:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
+    : `stores:public:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
 
   // Try cache first
   const cached = await getCache<storesListResult>(cacheKey)
