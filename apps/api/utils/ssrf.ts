@@ -21,6 +21,17 @@ const isProduction =
   getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
 
 export function isPrivateIP(ip: string): boolean {
+  // Strip brackets from IPv6 addresses (e.g., [::1] -> ::1)
+  let cleanIP = ip
+  if (ip.startsWith("[") && ip.endsWith("]")) {
+    cleanIP = ip.slice(1, -1)
+  }
+
+  // Ensure we are working with a valid IP address
+  if (!net.isIP(cleanIP)) {
+    return false
+  }
+
   // Helper function to check IPv4 address
   function checkIPv4Private(ipv4: string): boolean {
     const parts = ipv4.split(".").map(Number)
@@ -61,12 +72,6 @@ export function isPrivateIP(ip: string): boolean {
     if (parts[0] && parts[0] >= 240) return true
 
     return false
-  }
-
-  // Strip brackets from IPv6 addresses (e.g., [::1] -> ::1)
-  let cleanIP = ip
-  if (ip.startsWith("[") && ip.endsWith("]")) {
-    cleanIP = ip.slice(1, -1)
   }
 
   // IPv4 checks

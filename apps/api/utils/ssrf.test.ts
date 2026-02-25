@@ -52,6 +52,13 @@ describe("isPrivateIP", () => {
     expect(isPrivateIP("2607:f8b0:4005:805::200e")).toBe(false) // Google
     expect(isPrivateIP("2001:4860:4860::8888")).toBe(false) // Google DNS
   })
+
+  it("should return false for invalid IP addresses", () => {
+    expect(isPrivateIP("not-an-ip")).toBe(false)
+    expect(isPrivateIP("")).toBe(false)
+    expect(isPrivateIP("1.2.3")).toBe(false)
+    expect(isPrivateIP("1.2.3.4.5")).toBe(false)
+  })
 })
 
 describe("validateUrl / getSafeUrl", () => {
