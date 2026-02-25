@@ -965,8 +965,9 @@ export default function Subscribe({
                 marginTop: ".3rem",
               }}
             >
-              <UserRoundPlus size={20} />
-              {t("Register")}
+              {app ? <Img app={app} size={20} /> : <UserRoundPlus size={20} />}
+
+              {t("Create your agent")}
             </Button>
             <Button
               data-testid="login-button"
@@ -1028,7 +1029,7 @@ export default function Subscribe({
                             ? "chrry"
                             : "watermelon"
                   }
-                  size={26}
+                  size={20}
                 />
               ) : (
                 <UserRound size={20} />
