@@ -189,27 +189,36 @@ export async function getSafeUrl(
   // Resolve hostname
   let address: string
   try {
-    const result = await dns.lookup(hostname)
-    address = result.address
+    // Use dns.resolve instead of dns.lookup to bypass local hosts file and get all records
+    // This helps prevent local spoofing attacks
+    const addresses = await dns.resolve(hostname)
 
-    // Validate that the result is actually an IP address
-    if (!net.isIP(address)) {
-      throw new Error(`Invalid IP address resolved for ${hostname}`)
+    if (!addresses || addresses.length === 0) {
+      throw new Error(`No IP addresses resolved for ${hostname}`)
     }
 
-    if (isPrivateIP(address)) {
-      // Security: S5144 - This check explicitly blocks access to private IPs.
-      // We manually validate the resolved IP before allowing the connection.
-      throw new Error(
-        `Access to private IP ${address} (resolved from ${hostname}) denied`,
-      )
+    // Check ALL resolved IPs. If ANY is private, block the request.
+    // This prevents DNS rebinding attacks using round-robin DNS with mixed public/private IPs.
+    for (const addr of addresses) {
+      if (!net.isIP(addr)) {
+        continue
+      }
+
+      if (isPrivateIP(addr)) {
+        throw new Error(
+          `Access to private IP ${addr} (resolved from ${hostname}) denied`,
+        )
+      }
     }
+
+    // Use the first resolved address for the connection
+    address = addresses[0]
   } catch (error: any) {
     // If we threw the error above, rethrow it
     if (error.message.includes("Access to private IP")) {
       throw error
     }
-    throw new Error(`DNS lookup failed for ${hostname}: ${error.message}`)
+    throw new Error(`DNS resolution failed for ${hostname}: ${error.message}`)
   }
 
   // Construct safe URL using the resolved IP
