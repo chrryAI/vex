@@ -117,6 +117,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     downloadUrl,
     siteConfig,
     getTribeUrl,
+    isPear,
+    pear,
   } = useAuth()
   const { setAppStatus } = useApp()
   const { isExtension, isFirefox, viewPortWidth } = usePlatform()
@@ -632,8 +634,47 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         flexWrap: "wrap",
                       }}
                     >
-                      <Img app={app?.store?.app || undefined} size={30} />
-                      <P>
+                      <Div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
+                        {isPear && pear ? (
+                          <AppLink
+                            loading={<Loading size={24} />}
+                            app={pear}
+                            icon={<Img app={pear} size={30} />}
+                          />
+                        ) : (
+                          <Img
+                            slug={isPear ? "pear" : undefined}
+                            app={
+                              isPear ? undefined : app?.store?.app || undefined
+                            }
+                            size={30}
+                          />
+                        )}
+                        {isPear && (
+                          <P
+                            style={{
+                              color: "var(--shade-8)",
+                            }}
+                          >
+                            {t(
+                              "Share feedback about {{app}} {{emoji}} earn 10-50 credits!",
+                              { app: app?.name, emoji: app?.icon },
+                            )}{" "}
+                            🍇
+                          </P>
+                        )}
+                      </Div>
+                      <P
+                        style={{
+                          color: "var(--shade-7)",
+                        }}
+                      >
                         <A href={`/${app?.store?.slug}`} target="_blank">
                           {t(app?.store?.title ?? "")}
                         </A>{" "}
@@ -642,7 +683,21 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Div>
 
                     {downloadUrl && showTribeProfile ? (
-                      <Div style={{ display: "flex", alignItems: "center" }}>
+                      <Div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
+                        {app?.mainThreadId && owner && (
+                          <A
+                            style={{ fontSize: "1.1rem", marginRight: 10 }}
+                            href={`/threads/${app?.mainThreadId}`}
+                          >
+                            🧬
+                          </A>
+                        )}
                         <Instructions
                           showButton={false}
                           showDownloads={true}
@@ -767,7 +822,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     style={{
                       marginTop: "1.5rem",
                       marginBottom: "1.5rem",
-                      color: "var(--shade-7)",
+                      color: "var(--shade-6)",
                       lineHeight: "1.6",
                       fontSize: ".95rem",
                       display: "flex",
