@@ -20,36 +20,58 @@ const getEnv = () => {
 const isProduction =
   getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
 
-function isPrivateIP(ip: string): boolean {
+export function isPrivateIP(ip: string): boolean {
+  // Strip brackets from IPv6 addresses (e.g., [::1] -> ::1)
+  let cleanIP = ip
+  if (ip.startsWith("[") && ip.endsWith("]")) {
+    cleanIP = ip.slice(1, -1)
+  }
+
+  // Ensure we are working with a valid IP address
+  if (!net.isIP(cleanIP)) {
+    return false
+  }
+
   // Helper function to check IPv4 address
   function checkIPv4Private(ipv4: string): boolean {
     const parts = ipv4.split(".").map(Number)
     if (parts.length !== 4) return false
 
-    // 127.0.0.0/8 (Loopback)
-    if (parts[0] === 127) return true
-    // 10.0.0.0/8 (Private)
-    if (parts[0] === 10) return true
-    // 172.16.0.0/12 (Private)
-    if (parts[0] === 172 && parts[1] && parts[1] >= 16 && parts[1] <= 31)
-      return true
-    // 192.168.0.0/16 (Private)
-    if (parts[0] === 192 && parts[1] === 168) return true
-    // 169.254.0.0/16 (Link-local)
-    if (parts[0] === 169 && parts[1] === 254) return true
     // 0.0.0.0/8 (Current network)
     if (parts[0] === 0) return true
+    // 10.0.0.0/8 (Private)
+    if (parts[0] === 10) return true
     // 100.64.0.0/10 (CGNAT - Carrier-Grade NAT)
     if (parts[0] === 100 && parts[1] && parts[1] >= 64 && parts[1] <= 127)
       return true
+    // 127.0.0.0/8 (Loopback)
+    if (parts[0] === 127) return true
+    // 169.254.0.0/16 (Link-local)
+    if (parts[0] === 169 && parts[1] === 254) return true
+    // 172.16.0.0/12 (Private)
+    if (parts[0] === 172 && parts[1] && parts[1] >= 16 && parts[1] <= 31)
+      return true
+    // 192.0.0.0/24 (IETF Protocol Assignments)
+    if (parts[0] === 192 && parts[1] === 0 && parts[2] === 0) return true
+    // 192.0.2.0/24 (TEST-NET-1)
+    if (parts[0] === 192 && parts[1] === 0 && parts[2] === 2) return true
+    // 192.88.99.0/24 (6to4 Relay Anycast)
+    if (parts[0] === 192 && parts[1] === 88 && parts[2] === 99) return true
+    // 192.168.0.0/16 (Private)
+    if (parts[0] === 192 && parts[1] === 168) return true
+    // 198.18.0.0/15 (Network Benchmark)
+    if (parts[0] === 198 && parts[1] && parts[1] >= 18 && parts[1] <= 19)
+      return true
+    // 198.51.100.0/24 (TEST-NET-2)
+    if (parts[0] === 198 && parts[1] === 51 && parts[2] === 100) return true
+    // 203.0.113.0/24 (TEST-NET-3)
+    if (parts[0] === 203 && parts[1] === 0 && parts[2] === 113) return true
+    // 224.0.0.0/4 (Multicast)
+    if (parts[0] && parts[0] >= 224 && parts[0] <= 239) return true
+    // 240.0.0.0/4 (Reserved)
+    if (parts[0] && parts[0] >= 240) return true
 
     return false
-  }
-
-  // Strip brackets from IPv6 addresses (e.g., [::1] -> ::1)
-  let cleanIP = ip
-  if (ip.startsWith("[") && ip.endsWith("]")) {
-    cleanIP = ip.slice(1, -1)
   }
 
   // IPv4 checks
@@ -86,9 +108,33 @@ function isPrivateIP(ip: string): boolean {
       }
     }
 
+    // :: (Unspecified)
+    if (normalizedIP === "::" || normalizedIP === "0:0:0:0:0:0:0:0")
+      return true
     // ::1/128 (Loopback)
     if (normalizedIP === "::1" || normalizedIP === "0:0:0:0:0:0:0:1")
       return true
+    // 64:ff9b::/96 (IPv4/IPv6 translation)
+    if (normalizedIP.startsWith("64:ff9b:")) return true
+    // 100::/64 (Discard-Only)
+    if (normalizedIP.startsWith("100:")) return true
+    // 2001::/32 (Teredo)
+    if (
+      normalizedIP.startsWith("2001::") ||
+      normalizedIP.startsWith("2001:0:") ||
+      normalizedIP.startsWith("2001:0000:")
+    )
+      return true
+    // 2001:20::/28 (ORCHIDv2)
+    if (normalizedIP.startsWith("2001:20:")) return true
+    // 2001:db8::/32 (Documentation)
+    if (
+      normalizedIP.startsWith("2001:db8:") ||
+      normalizedIP.startsWith("2001:0db8:")
+    )
+      return true
+    // 2002::/16 (6to4)
+    if (normalizedIP.startsWith("2002:")) return true
     // fc00::/7 (Unique Local)
     if (normalizedIP.startsWith("fc") || normalizedIP.startsWith("fd"))
       return true
@@ -100,6 +146,8 @@ function isPrivateIP(ip: string): boolean {
       normalizedIP.startsWith("feb")
     )
       return true
+    // ff00::/8 (Multicast)
+    if (normalizedIP.startsWith("ff")) return true
 
     return false
   }
@@ -141,27 +189,36 @@ export async function getSafeUrl(
   // Resolve hostname
   let address: string
   try {
-    const result = await dns.lookup(hostname)
-    address = result.address
+    // Use dns.resolve instead of dns.lookup to bypass local hosts file and get all records
+    // This helps prevent local spoofing attacks
+    const addresses = await dns.resolve(hostname)
 
-    // Validate that the result is actually an IP address
-    if (!net.isIP(address)) {
-      throw new Error(`Invalid IP address resolved for ${hostname}`)
+    if (!addresses || addresses.length === 0) {
+      throw new Error(`No IP addresses resolved for ${hostname}`)
     }
 
-    if (isPrivateIP(address)) {
-      // Security: S5144 - This check explicitly blocks access to private IPs.
-      // We manually validate the resolved IP before allowing the connection.
-      throw new Error(
-        `Access to private IP ${address} (resolved from ${hostname}) denied`,
-      )
+    // Check ALL resolved IPs. If ANY is private, block the request.
+    // This prevents DNS rebinding attacks using round-robin DNS with mixed public/private IPs.
+    for (const addr of addresses) {
+      if (!net.isIP(addr)) {
+        continue
+      }
+
+      if (isPrivateIP(addr)) {
+        throw new Error(
+          `Access to private IP ${addr} (resolved from ${hostname}) denied`,
+        )
+      }
     }
+
+    // Use the first resolved address for the connection
+    address = addresses[0]
   } catch (error: any) {
     // If we threw the error above, rethrow it
     if (error.message.includes("Access to private IP")) {
       throw error
     }
-    throw new Error(`DNS lookup failed for ${hostname}: ${error.message}`)
+    throw new Error(`DNS resolution failed for ${hostname}: ${error.message}`)
   }
 
   // Construct safe URL using the resolved IP
