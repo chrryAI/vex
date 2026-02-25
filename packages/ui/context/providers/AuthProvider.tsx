@@ -1265,13 +1265,15 @@ export function AuthProvider({
     }
   }, [isRetro, app, dailyQuestionSectionIndex, dailyQuestionIndex])
 
+  const c = whiteLabels.find((label) => label.slug === "chrry")
+
   const siteConfigApp = useMemo(
     () =>
       whiteLabels.find(
         (label) =>
           label.slug === app?.slug || app?.store?.app?.slug === label.slug,
-      ),
-    [app],
+      ) || c,
+    [app, c],
   )
 
   const setIsRetro = (value: boolean) => {
@@ -2036,15 +2038,16 @@ export function AuthProvider({
     storeApp?.chromeWebStoreUrl ||
     "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
 
+  const withFallback = app?.slug || "chrry"
   const minioUrl = "https://minio.chrry.dev/chrry-installs/installs"
   const downloadUrl =
     app && installs.includes(app?.slug || "")
       ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
       : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
         ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
-        : ""
-
-  const isZarathustra = app?.slug === "zarathustra"
+        : installs.includes(withFallback)
+          ? `${minioUrl}/${capitalizeFirstLetter(withFallback)}.dmg`
+          : ""
 
   const isBaseAppZarathustra = baseApp?.slug === "zarathustra"
 
