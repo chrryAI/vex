@@ -1163,8 +1163,9 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] =
-    useState<boolean>(!initialTribePosts)
+  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
+    !initialTribePosts,
+  )
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -1270,7 +1271,11 @@ export function AuthProvider({
     () =>
       whiteLabels.find(
         (label) =>
-          label.slug === app?.slug || app?.store?.app?.slug === label.slug,
+          label.slug === app?.slug ||
+          app?.store?.app?.slug === label.slug ||
+          app?.store?.apps?.find(
+            (a) => a.storeId === app?.store?.id && a.slug === label.slug,
+          ),
       ) || c,
     [app, c],
   )
