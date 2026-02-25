@@ -59,6 +59,7 @@ import {
 } from "./icons"
 import Loading from "./Loading"
 import TribePost from "./TribePost"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function Tribe({ children }: { children?: React.ReactNode }) {
   const {
@@ -117,6 +118,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     downloadUrl,
     siteConfig,
     getTribeUrl,
+    isPear,
+    pear,
+    plausible,
+    setIsPear,
   } = useAuth()
   const { setAppStatus } = useApp()
   const { isExtension, isFirefox, viewPortWidth } = usePlatform()
@@ -466,12 +471,18 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           {t("Moltbook")}
                         </A>{" "}
                         {t("and 🪢 Tribe, powered by")}{" "}
-                        <A
-                          openInNewTab
-                          href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
-                        >
-                          {t("🌀 Spatial Navigation\u00A9")}
-                        </A>{" "}
+                        {app ? (
+                          <AppLink isTribe app={app}>
+                            {t("🌀 Spatial Navigation\u00A9")}
+                          </AppLink>
+                        ) : (
+                          <A
+                            openInNewTab
+                            href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
+                          >
+                            {t("🌀 Spatial Navigation\u00A9")}
+                          </A>
+                        )}{" "}
                         {t("for context-aware communication and")}{" "}
                         <A
                           openInNewTab
@@ -583,6 +594,9 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           alignItems: "center",
                           gap: 5,
                         }}
+                        onClick={() => {
+                          setTags([])
+                        }}
                         href={getTribeUrl()}
                       >
                         <ArrowLeft size={20} />
@@ -623,8 +637,100 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         flexWrap: "wrap",
                       }}
                     >
-                      <Img app={app?.store?.app || undefined} size={30} />
-                      <P>
+                      <Div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          flex: 1,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {isPear && pear ? (
+                          <AppLink
+                            loading={<Loading size={24} />}
+                            app={pear}
+                            icon={<Img app={pear} size={30} />}
+                          />
+                        ) : (
+                          <Img
+                            slug={isPear ? "pear" : undefined}
+                            app={
+                              isPear ? undefined : app?.store?.app || undefined
+                            }
+                            size={30}
+                          />
+                        )}
+                        {isPear ? (
+                          <Div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              flexWrap: "wrap",
+                              gap: 10,
+                            }}
+                          >
+                            <P
+                              style={{
+                                color: "var(--shade-8)",
+                                flex: 1,
+                              }}
+                            >
+                              {t(
+                                "Share feedback about {{app}} {{emoji}} earn 10-50 credits!",
+                                { app: app?.name, emoji: app?.icon },
+                              )}{" "}
+                              🍇
+                            </P>
+                            <Button
+                              className="inverted"
+                              onClick={() => {
+                                setIsPear(undefined)
+                              }}
+                              style={{
+                                ...utilities.inverted.style,
+                                ...utilities.xSmall.style,
+                                marginLeft: "auto",
+                                fontSize: ".8rem",
+                              }}
+                            >
+                              {t("Cancel")}
+                            </Button>
+                          </Div>
+                        ) : (
+                          app && (
+                            <Button
+                              data-testid="grapes-feedback-button"
+                              className="inverted"
+                              onClick={() => {
+                                plausible({
+                                  name: ANALYTICS_EVENTS.GRAPE_PEAR_FEEDBACK,
+                                  props: {
+                                    app: app.name,
+                                    slug: app.slug,
+                                    id: app.id,
+                                  },
+                                })
+                                setIsPear(app)
+                              }}
+                              style={{
+                                ...utilities.inverted.style,
+                                ...utilities.xSmall.style,
+                                marginLeft: "auto",
+                                fontSize: ".8rem",
+                              }}
+                            >
+                              <Img slug="pear" size={20} />{" "}
+                              {t("Give Feedback with Pear")}
+                            </Button>
+                          )
+                        )}
+                      </Div>
+                      <P
+                        style={{
+                          color: "var(--shade-7)",
+                        }}
+                      >
                         <A href={`/${app?.store?.slug}`} target="_blank">
                           {t(app?.store?.title ?? "")}
                         </A>{" "}
@@ -633,7 +739,21 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Div>
 
                     {downloadUrl && showTribeProfile ? (
-                      <Div style={{ display: "flex", alignItems: "center" }}>
+                      <Div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
+                        {app?.mainThreadId && owner && (
+                          <A
+                            style={{ fontSize: "1.1rem", marginRight: 10 }}
+                            href={`/threads/${app?.mainThreadId}`}
+                          >
+                            🧬
+                          </A>
+                        )}
                         <Instructions
                           showButton={false}
                           showDownloads={true}
@@ -718,6 +838,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 justifyContent: "center",
                                 padding: "1rem 1.3rem",
                                 flex: 1,
+                                position: "relative",
                                 maxWidth: 100,
                                 minWidth: "max-content",
                                 textAlign: "center",
@@ -726,7 +847,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             >
                               <Span
                                 style={{
-                                  fontSize: ".78rem",
+                                  fontSize: isMobileDevice ? ".65rem" : ".7rem",
                                   color: "var(--shade-7)",
                                   marginTop: ".25rem",
                                 }}
@@ -734,6 +855,18 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 {item.name}
                               </Span>
                             </AppLink>
+                            {item.storeId !== app?.storeId && (
+                              <Span
+                                style={{
+                                  position: "absolute",
+                                  top: 7.5,
+                                  right: 7.5,
+                                  fontSize: ".8rem",
+                                }}
+                              >
+                                🌀
+                              </Span>
+                            )}
                           </MotiView>
                         )
                       })}
@@ -745,7 +878,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     style={{
                       marginTop: "1.5rem",
                       marginBottom: "1.5rem",
-                      color: "var(--shade-7)",
+                      color: "var(--shade-6)",
                       lineHeight: "1.6",
                       fontSize: ".95rem",
                       display: "flex",

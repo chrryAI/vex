@@ -130,7 +130,7 @@ export default function Subscribe({
   }, [props.scheduledTaskId])
 
   // Navigation context
-  const { searchParams, removeParams } = useNavigationContext()
+  const { searchParams } = useNavigationContext()
 
   // URL state persistence helper - only update when modal is open
   const updateURLParam = (key: string, value: string) => {
@@ -197,7 +197,10 @@ export default function Subscribe({
     boolean | undefined
   >(searchParams.get("subscribe") === "true" || undefined)
 
-  const setIsModalOpen = (value: boolean) => {
+  const setIsModalOpen = (value: boolean, plan?: selectedPlanType) => {
+    if (plan) {
+      setSelectedPlan(plan)
+    }
     setIsModalOpenInternal(value)
   }
 
@@ -241,7 +244,7 @@ export default function Subscribe({
       guest?.id && params.set("guestId", guest.id)
       selectedPlan === "tribe" && params.set("tab", "tribe")
       selectedPlan === "molt" && params.set("tab", "molt")
-      if (["tribe", "molt"].includes(selectedPlan)) {
+      if (selectedPlan && ["tribe", "molt"].includes(selectedPlan)) {
         params.set("settings", "true")
         if (scheduledTaskId) {
           params.set("scheduledTaskId", scheduledTaskId)
@@ -671,16 +674,17 @@ export default function Subscribe({
     ? normalizedPlan
     : searchParams.get("tab") === "tribe"
       ? "tribe"
-      : (user || guest)?.subscription?.plan || "plus"
+      : undefined
 
   // ... (keeping other lines unchanged conceptually, but replace block needs contiguous)
 
-  const [selectedPlan, setSelectedPlanInternal] =
-    useState<selectedPlanType>(selectedPlanInternal)
+  const [selectedPlan, setSelectedPlanInternal] = useState<
+    selectedPlanType | undefined
+  >(selectedPlanInternal)
 
-  const setSelectedPlan = (plan: selectedPlanType) => {
+  const setSelectedPlan = (plan?: selectedPlanType) => {
     setSelectedPlanInternal(plan)
-    updateURLParam("plan", plan)
+    plan && updateURLParam("plan", plan)
     setAnimationKey((prev) => prev + 1)
   }
 
@@ -691,7 +695,8 @@ export default function Subscribe({
         (selectedPlan === "watermelon" ||
           selectedPlan === "pro" ||
           selectedPlan === "plus" ||
-          ["credits", "molt", "tribe"].includes(selectedPlan) ||
+          (selectedPlan &&
+            ["credits", "molt", "tribe"].includes(selectedPlan)) ||
           (selectedPlan === "grape" && grapeTier !== "free") ||
           (selectedPlan === "pear" && pearTier !== "free") ||
           (selectedPlan === "architect" && pearTier !== "free") ||
@@ -965,8 +970,9 @@ export default function Subscribe({
                 marginTop: ".3rem",
               }}
             >
-              <UserRoundPlus size={20} />
-              {t("Register")}
+              {app ? <Img app={app} size={20} /> : <UserRoundPlus size={20} />}
+
+              {t("Create your agent")}
             </Button>
             <Button
               data-testid="login-button"
@@ -995,13 +1001,11 @@ export default function Subscribe({
               sushiTier === "free") ||
             (selectedPlan === "pear" && pearTier === "free")) && (
             <Button
-              className={accountApp ? "transparent" : "inverted"}
+              className={"inverted"}
               data-testid="current-plan"
               style={{
                 ...styles.currentPlanButton.style,
-                marginTop: 7.5,
-                padding: "5px 10px",
-                fontSize: 15,
+                ...utilities.inverted.style,
               }}
               onClick={() => {
                 if (!accountApp) {
@@ -1028,7 +1032,7 @@ export default function Subscribe({
                             ? "chrry"
                             : "watermelon"
                   }
-                  size={26}
+                  size={20}
                 />
               ) : (
                 <UserRound size={20} />
@@ -1042,17 +1046,26 @@ export default function Subscribe({
   }
 
   useEffect(() => {
-    if (isModalOpen) return
+    if (!normalizedPlan && selectedPlanInitial) {
+      setSelectedPlan(normalizedPlan)
+    }
+  }, [normalizedPlan])
+
+  useEffect(() => {
+    if (isModalOpen) {
+      if (!selectedPlan && normalizedPlan) {
+        setSelectedPlan(normalizedPlan)
+      }
+      return
+    }
     setIsAdding(false)
+    setSelectedPlan(undefined)
     setIsInviting(false)
     setUserToGift(null)
 
-    !selectedPlan &&
-      (user || guest) &&
-      setSelectedPlan((user || guest)?.subscription?.plan || "plus")
     setIsGifting(false)
     setSearch("")
-  }, [isModalOpen, selectedPlan])
+  }, [isModalOpen, normalizedPlan, selectedPlan])
 
   const features =
     selectedPlan === "plus"
@@ -1113,12 +1126,13 @@ export default function Subscribe({
   const canUpgradeToPro = () =>
     selectedPlan === "pro" && currentPlan() === "plus"
   const canBuyCredits = () =>
+    selectedPlan &&
     ["credits", "molt", "tribe"].includes(selectedPlan) &&
     !isGifting &&
     !isInviting
 
   const isContact = !!(
-    ["coder", "architect"].includes(selectedPlan) ||
+    (selectedPlan && ["coder", "architect"].includes(selectedPlan)) ||
     selectedPlan === "watermelon" ||
     (selectedPlan === "grape" && grapeTier) ||
     (selectedPlan === "pear" && pearTier)
@@ -1247,7 +1261,7 @@ export default function Subscribe({
                       selectedPlan:
                         sushiTier === "architect"
                           ? "Architect"
-                          : capitalizeFirstLetter(selectedPlan),
+                          : selectedPlan && capitalizeFirstLetter(selectedPlan),
                       // tier: sushiTier || grapeTier || pearTier,
                     })}`,
                   )
@@ -1858,7 +1872,7 @@ export default function Subscribe({
                     return
                   }
                   addHapticFeedback()
-                  setIsModalOpen(true)
+                  setIsModalOpen(true, subs.plan)
                 }}
                 data-testid={`${subs.plan}-button`}
                 style={{
@@ -1899,7 +1913,7 @@ export default function Subscribe({
 
               return
             }
-            setIsModalOpen(true)
+            setIsModalOpen(true, "plus")
           }}
           disabled={loading}
           style={{

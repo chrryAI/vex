@@ -3054,7 +3054,9 @@ export const deleteThread = async ({ id }: { id: string }) => {
   return deleted
 }
 
-export const updateAiAgent = async (data: aiAgent) => {
+export const updateAiAgent = async (
+  data: Partial<aiAgent> & { id: string },
+) => {
   const [updated] = await db
     .update(aiAgents)
     .set(data)
@@ -5023,6 +5025,7 @@ export const getApp = async ({
   skipCache = false,
   ownerId,
   threadId,
+  role,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom"
   id?: string
@@ -5037,6 +5040,7 @@ export const getApp = async ({
   skipCache?: boolean
   ownerId?: string
   threadId?: string
+  role?: "admin" | "user"
 }): Promise<appWithStore | undefined> => {
   // Build app identification conditions
   const appConditions = []
@@ -5057,6 +5061,10 @@ export const getApp = async ({
 
   if (id) {
     appConditions.push(eq(apps.id, id))
+  }
+
+  if (role) {
+    appConditions.push(eq(users.role, role))
   }
 
   if (storeId) {

@@ -203,6 +203,8 @@ export default function App({
   const vex = apps.find((app) => app.slug === "vex")
   const atlas = apps.find((app) => app.slug === "atlas")
   const grape = apps.find((app) => app.slug === "grape")
+  const claude = apps.find((app) => app.slug === "claude")
+  const perplexity = apps.find((app) => app.slug === "perplexity")
   const nebula = apps.find((app) => app.slug === "nebula")
   const zarathustra = apps.find((app) => app.slug === "zarathustra")
 
@@ -216,7 +218,8 @@ export default function App({
           item.id !== burnApp?.id &&
           item.id !== store?.appId &&
           item.id !== chrry?.id &&
-          (item.id !== nebula?.id || !isBlossom) &&
+          (item.id !== perplexity?.id || !isBlossom) &&
+          (item.id !== claude?.id || !isBlossom) &&
           (item.id !== grape?.id || (!isBlossom && !accountApp)) &&
           (item.id !== zarathustra?.id || (!isBlossom && !accountApp)) &&
           (item.id === atlas?.id ? !isBlossom && isLifeOS : true) &&
@@ -545,8 +548,17 @@ export default function App({
             width: "100%",
             marginBottom: "0.5rem",
             position: "relative",
+            gap: "0.5rem",
           }}
         >
+          {app?.mainThreadId && isAppOwner && (
+            <A
+              style={{ fontSize: "1.1rem" }}
+              href={`/threads/${app?.mainThreadId}`}
+            >
+              🧬
+            </A>
+          )}
           <Button
             data-testid={`${minimize ? "maximize" : "minimize"}`}
             title={t(!minimize ? "Hide" : "Maximize")}

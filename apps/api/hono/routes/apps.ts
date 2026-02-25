@@ -222,6 +222,29 @@ app.post("/", async (c) => {
       )
     }
 
+    let appSlug = slugify(name, { lower: true })
+
+    const chrry = await getStore({
+      parentStoreId: null,
+    })
+
+    const existingBlossomApp = await getAppDb({
+      slug: appSlug,
+      role: "admin",
+    })
+
+    if (
+      existingBlossomApp &&
+      !isOwner(existingBlossomApp, { userId: member?.id })
+    ) {
+      return c.json(
+        {
+          error: `An app with the name "${name}" already exists. Please choose a different name.`,
+        },
+        { status: 400 },
+      )
+    }
+
     // Get or create user's store
 
     // Handle image - accept URL from /api/image endpoint
@@ -275,10 +298,6 @@ app.post("/", async (c) => {
           ? await encrypt(moltApiKey.trim())
           : undefined,
     }
-
-    const chrry = await getStore({
-      parentStoreId: null,
-    })
 
     if (!chrry) {
       return c.json({ error: "Chrry store not found" }, { status: 404 })
@@ -502,7 +521,6 @@ app.post("/", async (c) => {
     }
 
     const id = uuid()
-    let appSlug = slugify(name, { lower: true })
 
     // Check if slug is unique within the store
     const existingAppInStore = await getAppDb({
@@ -1143,10 +1161,27 @@ app.patch("/:id", async (c) => {
 
     console.log("✅ Validation passed")
 
+    const newSlug = slugify(name, { lower: true })
+
+    const existingBlossomApp = await getAppDb({
+      slug: newSlug,
+      role: "admin",
+    })
+
+    if (
+      existingBlossomApp &&
+      !isOwner(existingBlossomApp, { userId: member?.id })
+    ) {
+      return c.json(
+        {
+          error: `An app with the name "${name}" already exists. Please choose a different name.`,
+        },
+        { status: 400 },
+      )
+    }
+
     // If name changed, update slug and check uniqueness
     if (name && name !== existingApp.name) {
-      const newSlug = slugify(name, { lower: true })
-
       // Check if new slug conflicts with another app in the same store
       const conflictingApp = await getAppDb({ slug: newSlug, skipCache: true })
 

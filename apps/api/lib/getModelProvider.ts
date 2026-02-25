@@ -40,7 +40,7 @@ function safeDecrypt(encryptedKey: string | undefined): string | undefined {
  */
 export async function getModelProvider(
   app?: app | appWithStore,
-  agentName:
+  name:
     | "deepSeek"
     | "chatGPT"
     | "claude"
@@ -51,17 +51,19 @@ export async function getModelProvider(
     | "openrouter"
     | string = "deepSeek",
   canReason = true,
-): Promise<{ provider: LanguageModel; agentName: string }> {
-  const name = agentName === "sushi" && !canReason ? "deepSeek" : agentName
+): Promise<{ provider: LanguageModel; agentName: string; lastKey?: string }> {
+  // const name = agentName === "sushi" && !canReason ? "deepSeek" : agentName
 
   const appApiKeys = app?.apiKeys || {}
 
   const agents = await getAiAgents({ include: app?.id })
+  let agent = agents.find((a) => a.name === name) || agents[0]
 
-  let agent = agents.find((a) => a.name.toLowerCase() === name.toLowerCase())
+  // Check for failed key and avoid that provider
+  const failedKey = agent?.metadata?.lastFailedKey
 
   if (!agent) {
-    // Fallback to DeepSeek if agent not found
+    // Fallback to DeepSeek if agent not found or failed
     agent = agents.find((a) => a.name === "deepSeek") as aiAgent
     if (!agent) {
       throw new Error(
@@ -81,31 +83,33 @@ export async function getModelProvider(
           ? process.env.DEEPSEEK_API_KEY
           : ""
 
-      if (deepseekKey) {
+      if (deepseekKey && failedKey !== "deepSeek") {
         const deepseekProvider = createDeepSeek({ apiKey: deepseekKey })
         return {
           provider: deepseekProvider("deepseek-chat"),
           agentName: agent.name,
+          lastKey: "deepSeek",
         }
       }
 
       // Fallback to OpenRouter
-      const openRouterKeyForDeepSeek = app?.apiKeys?.openrouter
+      const openrouterKeyForDeepSeek = app?.apiKeys?.openrouter
         ? safeDecrypt(app?.apiKeys?.openrouter)
         : !plusTiers.includes(app?.tier || "")
           ? process.env.OPENROUTER_API_KEY
           : ""
 
-      if (openRouterKeyForDeepSeek) {
-        const openRouterProvider = createOpenRouter({
-          apiKey: openRouterKeyForDeepSeek,
+      if (openrouterKeyForDeepSeek && failedKey !== "openrouter") {
+        const openrouterProvider = createOpenRouter({
+          apiKey: openrouterKeyForDeepSeek,
         })
         const modelId = agent.modelId.startsWith("deepseek/")
           ? agent.modelId
           : `deepseek/${agent.modelId}`
         return {
-          provider: openRouterProvider(modelId),
+          provider: openrouterProvider(modelId),
           agentName: agent.name,
+          lastKey: "openrouter",
         }
       }
 
@@ -117,11 +121,12 @@ export async function getModelProvider(
           ? process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY
           : ""
 
-      if (chatgptKey) {
+      if (chatgptKey && failedKey !== "chatGPT") {
         const openaiProvider = createOpenAI({ apiKey: chatgptKey })
         return {
           provider: openaiProvider("gpt-4o-mini"),
           agentName: "chatGPT",
+          lastKey: "chatGPT",
         }
       }
 
@@ -133,38 +138,49 @@ export async function getModelProvider(
       }
     }
     case "sushi": {
+      const openrouterKeyForDeepSeekReasoner = app?.apiKeys?.openrouter
+        ? safeDecrypt(app?.apiKeys?.openrouter)
+        : !plusTiers.includes(app?.tier || "")
+          ? process.env.OPENROUTER_API_KEY
+          : ""
+
       const sushiKey =
         (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
         (!plusTiers.includes(app?.tier || "")
           ? process.env.DEEPSEEK_API_KEY
           : "")
 
-      if (sushiKey) {
+      if (sushiKey && failedKey !== "deepSeek") {
         const sushiProvider = createDeepSeek({ apiKey: sushiKey })
         return {
-          provider: sushiProvider("deepseek-reasoner"),
+          provider: sushiProvider(
+            canReason ? "deepseek-reasoner" : "deepseek-chat",
+          ),
           agentName: agent.name,
+          lastKey: "deepSeek",
+        }
+      }
+
+      // !canReason temp
+      if (
+        openrouterKeyForDeepSeekReasoner &&
+        failedKey !== "openrouter" &&
+        !canReason
+      ) {
+        const openrouterProvider = createOpenRouter({
+          apiKey: openrouterKeyForDeepSeekReasoner,
+        })
+        const modelId = canReason
+          ? "qwen/qwen3-235b-a22b-thinking-2507"
+          : "qwen/qwen3-235b-a22b-instruct-2507"
+        return {
+          provider: openrouterProvider(modelId),
+          agentName: agent.name,
+          lastKey: "openrouter",
         }
       }
 
       // Fallback to OpenRouter - use official SDK
-      const openRouterKeyForDeepSeekReasoner = app?.apiKeys?.openrouter
-        ? safeDecrypt(app?.apiKeys?.openrouter)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.OPENROUTER_API_KEY
-          : ""
-
-      if (openRouterKeyForDeepSeekReasoner) {
-        const openRouterProvider = createOpenRouter({
-          apiKey: openRouterKeyForDeepSeekReasoner,
-        })
-        // Use DeepSeek R1 with official OpenRouter SDK
-        const modelId = "deepseek/deepseek-r1"
-        return {
-          provider: openRouterProvider(modelId),
-          agentName: agent.name,
-        }
-      }
 
       return {
         provider: createDeepSeek({ apiKey: "" })("deepseek-reasoner"),
@@ -180,29 +196,31 @@ export async function getModelProvider(
           ? process.env.CHATGPT_API_KEY
           : ""
 
-      if (openaiKey) {
+      if (openaiKey && failedKey !== "chatGPT") {
         const openaiProvider = createOpenAI({ apiKey: openaiKey })
         return {
           provider: openaiProvider(agent.modelId),
           agentName: agent.name,
+          lastKey: "chatGPT",
         }
       }
 
       // Fallback to OpenRouter
-      const openRouterKeyForOpenAI =
+      const openrouterKeyForOpenAI =
         (appApiKeys.openrouter ? safeDecrypt(appApiKeys.openrouter) : "") ||
         (!plusTiers.includes(app?.tier || "")
           ? process.env.OPENROUTER_API_KEY
           : "")
 
-      if (openRouterKeyForOpenAI) {
-        const openRouterProvider = createOpenRouter({
-          apiKey: openRouterKeyForOpenAI,
+      if (openrouterKeyForOpenAI && failedKey !== "openrouter") {
+        const openrouterProvider = createOpenRouter({
+          apiKey: openrouterKeyForOpenAI,
         })
         const modelId = "openai/gpt-5.1-chat"
         return {
-          provider: openRouterProvider(modelId),
+          provider: openrouterProvider(modelId),
           agentName: agent.name,
+          lastKey: "openrouter",
         }
       }
 
@@ -219,32 +237,34 @@ export async function getModelProvider(
           ? process.env.CLAUDE_API_KEY
           : ""
 
-      if (claudeKey) {
+      if (claudeKey && failedKey !== "claude") {
         const claudeProvider = createAnthropic({ apiKey: claudeKey })
         return {
           provider: claudeProvider(agent.modelId),
           agentName: agent.name,
+          lastKey: "claude",
         }
       }
 
       // Fallback to OpenRouter
-      const openRouterKeyForClaude =
+      const openrouterKeyForClaude =
         (appApiKeys.openrouter ? safeDecrypt(appApiKeys.openrouter) : "") ||
         (!plusTiers.includes(app?.tier || "")
           ? process.env.OPENROUTER_API_KEY
           : "")
 
-      if (openRouterKeyForClaude) {
-        const openRouterProvider = createOpenRouter({
-          apiKey: openRouterKeyForClaude,
+      if (openrouterKeyForClaude && failedKey !== "openrouter") {
+        const openrouterProvider = createOpenRouter({
+          apiKey: openrouterKeyForClaude,
         })
 
         // Map old model IDs to correct OpenRouter format
         const modelId = "anthropic/claude-sonnet-4.5"
 
         return {
-          provider: openRouterProvider(modelId),
+          provider: openrouterProvider(modelId),
           agentName: agent.name,
+          lastKey: "openrouter",
         }
       }
 
@@ -259,29 +279,31 @@ export async function getModelProvider(
         (appApiKeys.google ? safeDecrypt(appApiKeys.google) : "") ||
         (!plusTiers.includes(app?.tier || "") ? process.env.GEMINI_API_KEY : "")
 
-      if (geminiKey) {
+      if (geminiKey && failedKey !== "gemini") {
         const geminiProvider = createGoogleGenerativeAI({ apiKey: geminiKey })
         return {
           provider: geminiProvider(agent.modelId),
+          lastKey: "gemini",
           agentName: agent.name,
         }
       }
 
       // Fallback to OpenRouter
-      const openRouterKeyForGemini = app?.apiKeys?.openrouter
+      const openrouterKeyForGemini = app?.apiKeys?.openrouter
         ? safeDecrypt(app?.apiKeys?.openrouter)
         : !plusTiers.includes(app?.tier || "")
           ? process.env.OPENROUTER_API_KEY
           : ""
 
-      if (openRouterKeyForGemini) {
-        const openRouterProvider = createOpenRouter({
-          apiKey: openRouterKeyForGemini,
+      if (openrouterKeyForGemini && failedKey !== "openrouter") {
+        const openrouterProvider = createOpenRouter({
+          apiKey: openrouterKeyForGemini,
         })
         const modelId = "google/gemini-3-pro-preview"
         return {
-          provider: openRouterProvider(modelId),
+          provider: openrouterProvider(modelId),
           agentName: agent.name,
+          lastKey: "openrouter",
         }
       }
 
@@ -298,32 +320,34 @@ export async function getModelProvider(
           ? process.env.PERPLEXITY_API_KEY
           : ""
 
-      if (perplexityKey) {
+      if (perplexityKey && failedKey !== "perplexity") {
         const perplexityProvider = createPerplexity({
           apiKey: perplexityKey,
         })
         return {
           provider: perplexityProvider(agent.modelId),
           agentName: agent.name,
+          lastKey: "perplexity",
         }
       }
 
       // Fallback to OpenRouter
-      const openRouterKeyForPerplexity = app?.apiKeys?.openrouter
+      const openrouterKeyForPerplexity = app?.apiKeys?.openrouter
         ? safeDecrypt(app?.apiKeys?.openrouter)
         : !plusTiers.includes(app?.tier || "")
           ? process.env.OPENROUTER_API_KEY
           : ""
 
-      if (openRouterKeyForPerplexity) {
-        const openRouterProvider = createOpenRouter({
-          apiKey: openRouterKeyForPerplexity,
+      if (openrouterKeyForPerplexity && failedKey !== "openrouter") {
+        const openrouterProvider = createOpenRouter({
+          apiKey: openrouterKeyForPerplexity,
         })
         // Use sonar-reasoning for tool calling support
         const modelId = "perplexity/sonar-pro"
         return {
-          provider: openRouterProvider(modelId),
+          provider: openrouterProvider(modelId),
           agentName: agent.name,
+          lastKey: "openrouter",
         }
       }
 
@@ -337,22 +361,23 @@ export async function getModelProvider(
     }
 
     case "openrouter": {
-      const openRouterKey = app?.apiKeys?.openrouter
+      const openrouterKey = app?.apiKeys?.openrouter
         ? safeDecrypt(app?.apiKeys?.openrouter)
         : !plusTiers.includes(app?.tier || "")
           ? process.env.OPENROUTER_API_KEY
           : ""
 
-      if (!openRouterKey) {
+      if (!openrouterKey) {
         throw new Error("OpenRouter API key required for openrouter agent")
       }
 
-      const openRouterProvider = createOpenRouter({
-        apiKey: openRouterKey,
+      const openrouterProvider = createOpenRouter({
+        apiKey: openrouterKey,
       })
       return {
-        provider: openRouterProvider(agent.modelId),
+        provider: openrouterProvider(agent.modelId),
         agentName: agent.name,
+        lastKey: "openrouter",
       }
     }
 

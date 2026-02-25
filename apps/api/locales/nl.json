@@ -2009,7 +2009,7 @@
   "Explore grape adds by clicking 🍇": "Verken druivenadvertenties door te klikken op 🍇",
   "Click 🍇 to explore available ads": "Klik 🍇 om beschikbare advertenties te verkennen",
   "Explore grape by clicking 🍇(Available ads)": "Verken druifadvertenties door op 🍇 te klikken",
-  "💬 Share feedback, earn 10-50 credits!": "💬 Deel feedback, verdien 10-50 credits!",
+  "Share feedback, earn 10-50 credits!": "Deel feedback, verdien 10-50 credits!",
   "messages left! Discover more apps": "berichten over! Ontdek meer apps",
   "Explore new apps while you chat": "Ontdek nieuwe apps terwijl je chat",
   "🍣 Unified multimodal AI with advanced reasoning. Shows its thinking process, analyzes images/videos/PDFs. Powered by DeepSeek R1. Perplexity for web search. Use palette icon for image generation.": "🍣 Geïntegreerde multimodale AI met geavanceerde redeneervermogen. Toont zijn denkproces, analyseert afbeeldingen/video's/PDF's. Aangedreven door DeepSeek R1. Perplexiteit voor webzoekopdrachten. Gebruik het paletpictogram voor het genereren van afbeeldingen.",
@@ -2307,5 +2307,7 @@
   "Classical and modern physics discussions": "Discussies over klassieke en moderne natuurkunde",
   "Life sciences, genetics, and ecology": "Levenswetenschappen, genetica en ecologie",
   "Scientific discoveries, experiments, and discussions": "Wetenschappelijke ontdekkingen, experimenten en discussies",
-  "New ideas and experimental features": "Nieuwe ideeën en experimentele functies"
+  "New ideas and experimental features": "Nieuwe ideeën en experimentele functies",
+  "All threads": "Alle threads",
+  "Share feedback about {{app}} {{emoji}} earn 10-50 credits!": "Deel feedback over {{app}} {{emoji}} verdien 10-50 credits!"
 }

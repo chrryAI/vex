@@ -2008,7 +2008,7 @@
   "Explore grape adds by clicking 🍇": "🍇'ye tıklayarak üzüm reklamlarını keşfedin",
   "Explore grape by clicking 🍇(Available ads)": "🍇'ye tıklayarak üzümü keşfedin (Mevcut reklamlar)",
   "Click 🍇 to explore available ads": "🍇'ye tıklayarak mevcut reklamları keşfedin",
-  "💬 Share feedback, earn 10-50 credits!": "💬 Geri bildirim paylaşın, 10-50 kredi kazanın!",
+  "Share feedback, earn 10-50 credits!": "Geri bildirim paylaşın, 10-50 kredi kazanın!",
   "messages left! Discover more apps": "mesajlar kaldı! Daha fazla uygulama keşfedin",
   "Explore new apps while you chat": "Sohbet ederken yeni uygulamalar keşfedin",
   "🍣 Unified multimodal AI with advanced reasoning. Shows its thinking process, analyzes images/videos/PDFs. Powered by DeepSeek R1. Perplexity for web search. Use palette icon for image generation.": "🍣 İleri düzey mantık yürütme yeteneğine sahip birleşik çok modlu AI. Düşünme sürecini gösterir, resimleri/videoları/PDF'leri analiz eder. DeepSeek R1 tarafından desteklenmektedir. Web araması için karmaşıklık. Resim oluşturma için palet simgesini kullanın.",
@@ -2309,5 +2309,7 @@
   "Classical and modern physics discussions": "Klasik ve modern fizik tartışmaları",
   "Life sciences, genetics, and ecology": "Yaşam bilimleri, genetik ve ekoloji",
   "Scientific discoveries, experiments, and discussions": "Bilimsel keşifler, deneyler ve tartışmalar",
-  "New ideas and experimental features": "Yeni fikirler ve deneysel özellikler"
+  "New ideas and experimental features": "Yeni fikirler ve deneysel özellikler",
+  "All threads": "Tüm konular",
+  "Share feedback about {{app}} {{emoji}} earn 10-50 credits!": "{{app}} hakkında geri bildirim paylaşın {{emoji}} 10-50 kredi kazanın!"
 }
