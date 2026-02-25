@@ -186,7 +186,7 @@ export default function Skeleton({
   // Data context
   const { FRONTEND_URL } = useData()
 
-  const { threadIdRef, isIDE, showTribeProfile, ...auth } = useAuth()
+  const { threadIdRef, isIDE, showTribeProfile, getTribeUrl } = useAuth()
 
   const threadId = threadIdRef.current
 
@@ -359,7 +359,7 @@ export default function Skeleton({
                         <A
                           className="link"
                           clientOnly
-                          href={`/`}
+                          href={showTribeProfile ? getTribeUrl() : `/`}
                           style={{
                             ...utilities.link.style,
                             ...skeletonStyles.hamburgerButton.style,
@@ -376,7 +376,7 @@ export default function Skeleton({
                             key={app?.id || "vex"}
                             app={showTribeProfile ? undefined : app}
                             size={28}
-                            icon={showTribeProfile ? "zarathustra" : undefined}
+                            slug={showTribeProfile ? "tribe" : undefined}
                             priority
                           />
                           <H1
