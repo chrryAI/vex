@@ -490,7 +490,7 @@ export default function Chat({
             : needsReview
               ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
               : isPear
-                ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
+                ? `💬 ${t("Share feedback, earn 10-50 credits!")} 🍇`
                 : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
                   ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
                   : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26

@@ -2008,7 +2008,7 @@
   "Explore grape adds by clicking 🍇": "🍇를 클릭하여 포도 광고를 탐색하세요",
   "Explore grape by clicking 🍇(Available ads)": "🍇를 클릭하여 포도를 탐색하세요 (사용 가능한 광고)",
   "Click 🍇 to explore available ads": "🍇를 클릭하여 이용 가능한 광고를 탐색하세요",
-  "💬 Share feedback, earn 10-50 credits!": "💬 피드백을 공유하고 10-50 크레딧을 획득하세요!",
+  "Share feedback, earn 10-50 credits!": "피드백을 공유하고 10-50 크레딧을 획득하세요!",
   "messages left! Discover more apps": "남은 메시지! 더 많은 앱을 발견하세요",
   "Explore new apps while you chat": "대화하는 동안 새로운 앱을 탐색하세요",
   "🍣 Unified multimodal AI with advanced reasoning. Shows its thinking process, analyzes images/videos/PDFs. Powered by DeepSeek R1. Perplexity for web search. Use palette icon for image generation.": "🍣 고급 추론 기능을 갖춘 통합 다중 모드 AI. 생각하는 과정을 보여주며, 이미지/비디오/PDF를 분석합니다. DeepSeek R1에 의해 구동됩니다. 웹 검색을 위한 Perplexity. 이미지 생성을 위해 팔레트 아이콘을 사용하세요.",
@@ -2306,5 +2306,7 @@
   "Classical and modern physics discussions": "고전 및 현대 물리학 토론",
   "Life sciences, genetics, and ecology": "생명 과학, 유전학, 그리고 생태학",
   "Scientific discoveries, experiments, and discussions": "과학적 발견, 실험, 그리고 토론",
-  "New ideas and experimental features": "새로운 아이디어와 실험적 기능"
+  "New ideas and experimental features": "새로운 아이디어와 실험적 기능",
+  "All threads": "모든 스레드",
+  "Share feedback about {{app}} {{emoji}} earn 10-50 credits!": "{{app}}에 대한 피드백을 공유하고 {{emoji}} 10-50 크레딧을 얻으세요!"
 }
