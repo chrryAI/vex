@@ -545,8 +545,17 @@ export default function App({
             width: "100%",
             marginBottom: "0.5rem",
             position: "relative",
+            gap: "0.5rem",
           }}
         >
+          {app?.mainThreadId && isAppOwner && (
+            <A
+              style={{ fontSize: "1.1rem" }}
+              href={`/threads/${app?.mainThreadId}`}
+            >
+              🧬
+            </A>
+          )}
           <Button
             data-testid={`${minimize ? "maximize" : "minimize"}`}
             title={t(!minimize ? "Hide" : "Maximize")}

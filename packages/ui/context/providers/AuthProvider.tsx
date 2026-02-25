@@ -2172,8 +2172,9 @@ export function AuthProvider({
   }
 
   useEffect(() => {
-    setIsPearInternal(isPearInternal)
-    if (isPearInternal)
+    isPearInternal && setIsPearInternal(isPearInternal)
+    if (isPearInternal) {
+      setShowFocus(false)
       plausible({
         name: ANALYTICS_EVENTS.PEAR,
         props: {
@@ -2183,6 +2184,7 @@ export function AuthProvider({
           id: app?.id,
         },
       })
+    }
   }, [isPearInternal])
 
   const setIsPear = (value: appWithStore | undefined) => {
@@ -2196,11 +2198,6 @@ export function AuthProvider({
       toast.success(`${t("Let's Pear")} 🍐`)
     }
   }
-
-  useEffect(() => {
-    setIsPearInternal(isPearInternal)
-    if (isPearInternal) setShowFocus(false)
-  }, [isPearInternal])
 
   const isProgramme =
     (!!isProgrammeInternal && !siteConfig.isTribe) ||
@@ -2330,6 +2327,10 @@ export function AuthProvider({
 
   const showAllTribe =
     pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
+
+  useEffect(() => {
+    ;(showAllTribe || _isExcluded) && setIsPear(undefined)
+  }, [showAllTribe])
 
   const tribeQuery = searchParams.get("tribe") === "true"
 
