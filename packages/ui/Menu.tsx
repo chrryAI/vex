@@ -380,7 +380,7 @@ export default function Menu({
                       toggleMenuIfSmallDevice()
                       setIsNewChat({
                         value: true,
-                        tribe: true,
+                        tribe: false,
                       })
                       reload()
                     }}
