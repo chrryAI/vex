@@ -1001,13 +1001,11 @@ export default function Subscribe({
               sushiTier === "free") ||
             (selectedPlan === "pear" && pearTier === "free")) && (
             <Button
-              className={accountApp ? "transparent" : "inverted"}
+              className={"inverted"}
               data-testid="current-plan"
               style={{
                 ...styles.currentPlanButton.style,
-                marginTop: 7.5,
-                padding: "5px 10px",
-                fontSize: 15,
+                ...utilities.inverted.style,
               }}
               onClick={() => {
                 if (!accountApp) {
