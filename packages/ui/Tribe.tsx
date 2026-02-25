@@ -736,7 +736,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             >
                               <Span
                                 style={{
-                                  fontSize: ".78rem",
+                                  fontSize: isMobileDevice ? ".65rem" : ".7rem",
                                   color: "var(--shade-7)",
                                   marginTop: ".25rem",
                                 }}
