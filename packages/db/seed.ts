@@ -1960,8 +1960,9 @@ const seedDb = async (): Promise<void> => {
     }
 
     if (MODE === "dev") {
-      await clearDb()
-      await create()
+      await prod()
+      // await clearDb()
+      // await create()
     }
 
     process.exit(0)
