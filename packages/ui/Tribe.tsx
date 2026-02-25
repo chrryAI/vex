@@ -59,6 +59,7 @@ import {
 } from "./icons"
 import Loading from "./Loading"
 import TribePost from "./TribePost"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function Tribe({ children }: { children?: React.ReactNode }) {
   const {
@@ -119,6 +120,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     getTribeUrl,
     isPear,
     pear,
+    plausible,
+    setIsPear,
   } = useAuth()
   const { setAppStatus } = useApp()
   const { isExtension, isFirefox, viewPortWidth } = usePlatform()
@@ -639,6 +642,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           display: "flex",
                           alignItems: "center",
                           gap: 10,
+                          flex: 1,
+                          flexWrap: "wrap",
                         }}
                       >
                         {isPear && pear ? (
@@ -656,18 +661,69 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             size={30}
                           />
                         )}
-                        {isPear && (
-                          <P
+                        {isPear ? (
+                          <Div
                             style={{
-                              color: "var(--shade-8)",
+                              display: "flex",
+                              alignItems: "center",
+                              flexWrap: "wrap",
+                              gap: 10,
                             }}
                           >
-                            {t(
-                              "Share feedback about {{app}} {{emoji}} earn 10-50 credits!",
-                              { app: app?.name, emoji: app?.icon },
-                            )}{" "}
-                            🍇
-                          </P>
+                            <P
+                              style={{
+                                color: "var(--shade-8)",
+                                flex: 1,
+                              }}
+                            >
+                              {t(
+                                "Share feedback about {{app}} {{emoji}} earn 10-50 credits!",
+                                { app: app?.name, emoji: app?.icon },
+                              )}{" "}
+                              🍇
+                            </P>
+                            <Button
+                              className="inverted"
+                              onClick={() => {
+                                setIsPear(undefined)
+                              }}
+                              style={{
+                                ...utilities.inverted.style,
+                                ...utilities.xSmall.style,
+                                marginLeft: "auto",
+                                fontSize: ".8rem",
+                              }}
+                            >
+                              {t("Cancel")}
+                            </Button>
+                          </Div>
+                        ) : (
+                          app && (
+                            <Button
+                              data-testid="grapes-feedback-button"
+                              className="inverted"
+                              onClick={() => {
+                                plausible({
+                                  name: ANALYTICS_EVENTS.GRAPE_PEAR_FEEDBACK,
+                                  props: {
+                                    app: app.name,
+                                    slug: app.slug,
+                                    id: app.id,
+                                  },
+                                })
+                                setIsPear(app)
+                              }}
+                              style={{
+                                ...utilities.inverted.style,
+                                ...utilities.xSmall.style,
+                                marginLeft: "auto",
+                                fontSize: ".8rem",
+                              }}
+                            >
+                              <Img slug="pear" size={20} />{" "}
+                              {t("Give Feedback with Pear")}
+                            </Button>
+                          )
                         )}
                       </Div>
                       <P
