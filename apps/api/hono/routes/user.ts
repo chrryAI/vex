@@ -1,4 +1,3 @@
-import { resolve4, resolve6 } from "node:dns/promises"
 import { isValidUsername } from "@chrryai/chrry/utils"
 import { protectedRoutes } from "@chrryai/chrry/utils/url"
 import {
@@ -15,45 +14,16 @@ import { captureException } from "../../lib/captureException"
 import { clearGraphDataForUser } from "../../lib/graph/graphService"
 import { deleteFile, upload } from "../../lib/minio"
 import { scanFileForMalware } from "../../lib/security"
-import { isPrivateIP } from "../../utils/ssrf"
+import { getSafeUrl } from "../../utils/ssrf"
 import { getMember } from "../lib/auth"
 
 async function isValidImageUrl(url: string): Promise<boolean> {
   try {
-    const parsed = new URL(url)
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      return false
-    }
-
-    // Prevent DNS rebinding attacks by resolving hostname and validating each IP
-    try {
-      // Resolve IPv4 addresses (returns string[] by default)
-      const v4Addresses = await resolve4(parsed.hostname)
-      for (const addr of v4Addresses) {
-        if (isPrivateIP(addr)) {
-          return false
-        }
-      }
-
-      // Also try IPv6 resolution
-      try {
-        const v6Addresses = await resolve6(parsed.hostname)
-        for (const addr of v6Addresses) {
-          if (isPrivateIP(addr)) {
-            return false
-          }
-        }
-      } catch {
-        // IPv6 resolution may not always succeed; that's okay
-      }
-
-      return true
-    } catch (dnsError) {
-      // DNS resolution failed - treat as invalid to prevent SSRF
-      console.warn(`DNS resolution failed for ${parsed.hostname}:`, dnsError)
-      return false
-    }
-  } catch {
+    // Validate URL using centralized SSRF protection
+    await getSafeUrl(url)
+    return true
+  } catch (error) {
+    console.warn("Invalid image URL:", error)
     return false
   }
 }
