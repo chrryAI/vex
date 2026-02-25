@@ -197,7 +197,10 @@ export default function Subscribe({
     boolean | undefined
   >(searchParams.get("subscribe") === "true" || undefined)
 
-  const setIsModalOpen = (value: boolean) => {
+  const setIsModalOpen = (value: boolean, plan?: selectedPlanType) => {
+    if (plan) {
+      setSelectedPlan(plan)
+    }
     setIsModalOpenInternal(value)
   }
 
@@ -241,7 +244,7 @@ export default function Subscribe({
       guest?.id && params.set("guestId", guest.id)
       selectedPlan === "tribe" && params.set("tab", "tribe")
       selectedPlan === "molt" && params.set("tab", "molt")
-      if (["tribe", "molt"].includes(selectedPlan)) {
+      if (selectedPlan && ["tribe", "molt"].includes(selectedPlan)) {
         params.set("settings", "true")
         if (scheduledTaskId) {
           params.set("scheduledTaskId", scheduledTaskId)
@@ -573,8 +576,9 @@ export default function Subscribe({
   }, [is])
 
   // Get initial plan from URL or props (needed for sushiTier initialization)
-  const selectedPlanInitial = (searchParams.get("plan") ??
-    props.selectedPlan) as selectedPlanType
+  const selectedPlanInitial = ((searchParams.get("plan") ??
+    props.selectedPlan) ||
+    "member") as selectedPlanType
 
   const [grapeTier, setGrapeTierInternal] = useState<"free" | "plus" | "pro">(
     (searchParams.get("grapeTier") as "free" | "plus" | "pro") ?? "free",
@@ -671,16 +675,17 @@ export default function Subscribe({
     ? normalizedPlan
     : searchParams.get("tab") === "tribe"
       ? "tribe"
-      : (user || guest)?.subscription?.plan || "plus"
+      : undefined
 
   // ... (keeping other lines unchanged conceptually, but replace block needs contiguous)
 
-  const [selectedPlan, setSelectedPlanInternal] =
-    useState<selectedPlanType>(selectedPlanInternal)
+  const [selectedPlan, setSelectedPlanInternal] = useState<
+    selectedPlanType | undefined
+  >(selectedPlanInternal)
 
-  const setSelectedPlan = (plan: selectedPlanType) => {
+  const setSelectedPlan = (plan?: selectedPlanType) => {
     setSelectedPlanInternal(plan)
-    updateURLParam("plan", plan)
+    plan && updateURLParam("plan", plan)
     setAnimationKey((prev) => prev + 1)
   }
 
@@ -691,7 +696,8 @@ export default function Subscribe({
         (selectedPlan === "watermelon" ||
           selectedPlan === "pro" ||
           selectedPlan === "plus" ||
-          ["credits", "molt", "tribe"].includes(selectedPlan) ||
+          (selectedPlan &&
+            ["credits", "molt", "tribe"].includes(selectedPlan)) ||
           (selectedPlan === "grape" && grapeTier !== "free") ||
           (selectedPlan === "pear" && pearTier !== "free") ||
           (selectedPlan === "architect" && pearTier !== "free") ||
@@ -1043,6 +1049,12 @@ export default function Subscribe({
   }
 
   useEffect(() => {
+    if (!selectedPlan && selectedPlanInitial) {
+      setSelectedPlan(selectedPlanInitial)
+    }
+  }, [selectedPlanInitial])
+
+  useEffect(() => {
     if (isModalOpen) return
     setIsAdding(false)
     setIsInviting(false)
@@ -1050,10 +1062,12 @@ export default function Subscribe({
 
     !selectedPlan &&
       (user || guest) &&
-      setSelectedPlan((user || guest)?.subscription?.plan || "plus")
+      setSelectedPlan(
+        (user || guest)?.subscription?.plan || selectedPlanInternal,
+      )
     setIsGifting(false)
     setSearch("")
-  }, [isModalOpen, selectedPlan])
+  }, [isModalOpen, selectedPlanInternal, selectedPlan])
 
   const features =
     selectedPlan === "plus"
@@ -1114,12 +1128,13 @@ export default function Subscribe({
   const canUpgradeToPro = () =>
     selectedPlan === "pro" && currentPlan() === "plus"
   const canBuyCredits = () =>
+    selectedPlan &&
     ["credits", "molt", "tribe"].includes(selectedPlan) &&
     !isGifting &&
     !isInviting
 
   const isContact = !!(
-    ["coder", "architect"].includes(selectedPlan) ||
+    (selectedPlan && ["coder", "architect"].includes(selectedPlan)) ||
     selectedPlan === "watermelon" ||
     (selectedPlan === "grape" && grapeTier) ||
     (selectedPlan === "pear" && pearTier)
@@ -1248,7 +1263,7 @@ export default function Subscribe({
                       selectedPlan:
                         sushiTier === "architect"
                           ? "Architect"
-                          : capitalizeFirstLetter(selectedPlan),
+                          : selectedPlan && capitalizeFirstLetter(selectedPlan),
                       // tier: sushiTier || grapeTier || pearTier,
                     })}`,
                   )
@@ -1859,7 +1874,7 @@ export default function Subscribe({
                     return
                   }
                   addHapticFeedback()
-                  setIsModalOpen(true)
+                  setIsModalOpen(true, subs.plan)
                 }}
                 data-testid={`${subs.plan}-button`}
                 style={{
@@ -1900,7 +1915,7 @@ export default function Subscribe({
 
               return
             }
-            setIsModalOpen(true)
+            setIsModalOpen(true, "plus")
           }}
           disabled={loading}
           style={{
