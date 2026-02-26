@@ -50,3 +50,7 @@
 
 **Learning:** The `FocusButton` task list used buttons that toggled selection state visually (check vs circle) but lacked `aria-pressed` or `role="checkbox"`. This made the selection state invisible to screen readers.
 **Action:** For custom multi-select lists implemented with buttons, always add `aria-pressed={isSelected}` to indicate the toggle state.
+## 2026-07-21 - Cross-Platform Keyboard Shortcuts
+
+**Learning:** Hardcoded keyboard shortcuts (like `⌘K`) exclude Windows/Linux users, causing confusion and potential accessibility issues. `PlatformProvider` offers robust OS detection.
+**Action:** Use `usePlatform().os` to conditionally render shortcuts (e.g., `⌘K` vs `Ctrl+K`) and dynamically adjust layout (padding) to accommodate varying text lengths. This improves clarity and inclusivity.
