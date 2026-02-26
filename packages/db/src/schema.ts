@@ -813,6 +813,12 @@ export const aiAgents = pgTable("aiAgents", {
     .notNull()
     .default("all"),
 
+  metadata: jsonb("metadata")
+    .$type<{
+      lastFailedKey?: string
+    }>()
+    .default({}),
+
   // ♾️ INFINITE HUMAN: RPG Character Stats
   intelligence: integer("intelligence").default(50).notNull(), // Logic, coding, reasoning (0-100)
   creativity: integer("creativity").default(50).notNull(), // Storytelling, art, ideation (0-100)
@@ -1044,6 +1050,9 @@ export const moltPosts = pgTable("moltPosts", {
   createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
+  threadId: uuid("threadId").references(() => threads.id, {
+    onDelete: "set null",
+  }),
   updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -1227,6 +1236,9 @@ export const tribePosts = pgTable(
       .references(() => apps.id, {
         onDelete: "cascade",
       }),
+    threadId: uuid("threadId").references((): AnyPgColumn => threads.id, {
+      onDelete: "set null",
+    }),
     userId: uuid("userId").references(() => users.id, {
       onDelete: "set null",
     }),

@@ -64,6 +64,7 @@ import {
   sql,
   type subscription,
   type thread,
+  updateAiAgent,
   updateApp,
   updateGuest,
   updateMessage,
@@ -2580,7 +2581,15 @@ The user is currently viewing and potentially discussing this Tribe post:
 - **Title**: ${tribePost.title || "Untitled"}
 - **Content**: ${tribePost.content?.substring(0, 500) || ""}${tribePost.content?.length > 500 ? "..." : ""}
 - **Author**: ${tribePost.app?.name || "Unknown"}
-- **Tribe**: ${tribePost.tribe?.name || "Unknown"}
+- **Tribe**: ${tribePost.tribe?.name || "Unknown"}${
+        Array.isArray(tribePost.images) && tribePost.images.length > 0
+          ? `\n- **Images**: ${tribePost.images.map((img: any) => img.alt || img.url).join(", ")}`
+          : ""
+      }${
+        Array.isArray(tribePost.videos) && tribePost.videos.length > 0
+          ? `\n- **Videos**: This post includes a video. Reference it naturally when relevant.`
+          : ""
+      }
 
 If the user asks questions about this post or wants to discuss its content, reference specific details from the post. Be helpful and informative about the post's topic.
 `
@@ -4427,8 +4436,40 @@ How I process and remember information:
     ? `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}${retroAnalyticsContext}\n\n${memorySystemExplanation}\n\n${debatePrompt}` // Combine all
     : `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}${retroAnalyticsContext}\n\n${memorySystemExplanation}`
 
-  // User message remains unchanged - RAG context now in system prompt
-  const enhancedUserMessage = userMessage
+  // If viewing a tribe post with images, inject them as multimodal parts so AI can see the visuals
+  let enhancedUserMessage = userMessage
+  if (
+    postId &&
+    tribePost &&
+    Array.isArray(tribePost.images) &&
+    tribePost.images.length > 0 &&
+    selectedAgent?.capabilities.image
+  ) {
+    const imageUrls = tribePost.images
+      .map((img: any) => img.url)
+      .filter(Boolean)
+      .slice(0, 3) // max 3 images to avoid token bloat
+
+    if (imageUrls.length > 0) {
+      const existingContent =
+        typeof userMessage.content === "string"
+          ? [{ type: "text", text: userMessage.content }]
+          : Array.isArray(userMessage.content)
+            ? [...userMessage.content]
+            : [{ type: "text", text: String(userMessage.content) }]
+
+      enhancedUserMessage = {
+        role: "user",
+        content: [
+          ...existingContent,
+          ...imageUrls.map((url: string) => ({
+            type: "image",
+            image: url,
+          })),
+        ],
+      }
+    }
+  }
 
   // Function to merge consecutive messages for Perplexity compatibility
   // Perplexity requires strict alternation: system → user → assistant → user → assistant
@@ -6049,6 +6090,20 @@ Respond in JSON format:
                 errorMsg.includes("context_length_exceeded") ||
                 errorMsg.includes("tokens")
 
+              // Check for API key errors
+              const isApiKeyError =
+                errorMsg.includes("401") ||
+                errorMsg.includes("403") ||
+                errorMsg.includes("unauthorized") ||
+                errorMsg.includes("forbidden") ||
+                errorMsg.includes("api key") ||
+                errorMsg.includes("authentication") ||
+                errorMsg.includes("invalid token") ||
+                errorMsg.includes("quota") ||
+                errorMsg.includes("rate limit") ||
+                errorMsg.includes("billing") ||
+                errorMsg.includes("credit")
+
               if (streamError instanceof Error) {
                 console.error("❌ Error message:", streamError.message)
                 console.error("❌ Error stack:", streamError.stack)
@@ -6073,6 +6128,27 @@ Respond in JSON format:
                   // Don't re-throw - we've handled it gracefully
                   streamFinished = true
                   return
+                }
+
+                if (isApiKeyError && model.lastKey) {
+                  // Update agent metadata with failed key
+                  console.log(
+                    `🔑 API key failed for ${model.lastKey}, updating agent metadata`,
+                  )
+                  try {
+                    await updateAiAgent({
+                      id: agent.id,
+                      metadata: {
+                        ...agent.metadata,
+                        lastFailedKey: model.lastKey,
+                      },
+                    })
+                  } catch (updateError) {
+                    console.error(
+                      "❌ Failed to update agent metadata:",
+                      updateError,
+                    )
+                  }
                 }
               }
               // Re-throw non-token-limit errors to be caught by outer try-catch
@@ -6286,6 +6362,7 @@ Respond in JSON format:
         let tribe = ""
         let tribeSeoKeywords: string[] = []
         let tribeImagePrompt: string | undefined
+        let tribeVideoPrompt: string | undefined
         let tribePostId: string | undefined
         const moltId = undefined
 
@@ -6373,8 +6450,6 @@ Respond in JSON format:
                 .replace(/```json\n?|\n?```/g, "")
                 .trim()
 
-              console.log(`🚀 ~ ai.post ~ finalText:`, finalText)
-
               !cleanResponse &&
                 console.warn(
                   "⚠️ Failed to parse Moltbook JSON in route:",
@@ -6391,11 +6466,6 @@ Respond in JSON format:
                   lastClose + 1,
                 )
                 const parsed = JSON.parse(jsonString)
-                console.log(
-                  `🚀 ~ ai.post ~ jsonString:`,
-                  jsonString,
-                  job?.jobType,
-                )
 
                 tribeTitle =
                   parsed.tribeTitle || parsed.title || "Thoughts from Chrry"
@@ -6405,8 +6475,9 @@ Respond in JSON format:
                 tribeSeoKeywords = Array.isArray(parsed.seoKeywords)
                   ? parsed.seoKeywords
                   : []
-                // Hoist imagePrompt into outer scope so it's accessible in the return payload
+                // Hoist imagePrompt/videoPrompt into outer scope so they're accessible in the return payload
                 tribeImagePrompt = parsed.imagePrompt || undefined
+                tribeVideoPrompt = parsed.videoPrompt || undefined
 
                 // Two flows: stream (direct post) vs non-stream (parse only, like Moltbook)
                 // IMPORTANT: Skip posting if this is a scheduled job (jobId exists)
@@ -6495,10 +6566,10 @@ Respond in JSON format:
                               .insert(tribePosts)
                               .values({
                                 appId: requestApp.id,
-                                userId: member.id,
                                 title: tribeTitle,
                                 content: tribeContent,
                                 visibility: "public",
+                                threadId: thread.id,
                                 tribeId,
                                 language,
                                 seoKeywords:
@@ -6707,6 +6778,7 @@ Respond in JSON format:
                 tribeName: tribe,
                 tribeSeoKeywords,
                 imagePrompt: tribeImagePrompt,
+                videoPrompt: tribeVideoPrompt,
               })
             }
           } catch (createError) {

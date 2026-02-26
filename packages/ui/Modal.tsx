@@ -11,7 +11,6 @@ import {
   Div,
   H4,
   toRem,
-  useNavigation,
   usePlatform,
   useTheme,
   Video,
@@ -57,7 +56,7 @@ export default function Modal({
   const { utilities } = useStyles()
   // Split contexts
   const { plausible } = useAuth()
-  const { addParams, removeParams, searchParams } = useNavigation()
+
   const { isDrawerOpen } = useTheme()
   const innerRef = React.useRef<HTMLDivElement>(null)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(
@@ -91,6 +90,7 @@ export default function Modal({
   }, [isModalOpen, hideOnClickOutside])
 
   useEffect(() => {
+    if (typeof window === "undefined") return
     if (isModalOpen) {
       if (params) {
         const urlParams = new URLSearchParams(params.split("?")[1] || "")
@@ -98,7 +98,9 @@ export default function Modal({
         const paramValue = Array.from(urlParams.entries())[0]?.[1]
 
         if (paramKey) {
-          addParams({ [paramKey]: paramValue || "true" })
+          const url = new URL(window.location.href)
+          url.searchParams.set(paramKey, paramValue || "true")
+          window.history.replaceState(null, "", url.toString())
         }
       }
       event && plausible({ ...event, name: `${event.name}_open` })
@@ -108,7 +110,9 @@ export default function Modal({
         const paramToRemove = Array.from(urlParams.entries())[0]?.[0]
 
         if (paramToRemove) {
-          removeParams([paramToRemove])
+          const url = new URL(window.location.href)
+          url.searchParams.delete(paramToRemove)
+          window.history.replaceState(null, "", url.toString())
         }
       }
     }

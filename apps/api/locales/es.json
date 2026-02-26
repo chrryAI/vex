@@ -2008,7 +2008,7 @@
   "Explore grape adds by clicking 🍇": "Explora los anuncios de uvas haciendo clic en 🍇",
   "Explore grape by clicking 🍇(Available ads)": "Explora los anuncios de uva haciendo clic en 🍇",
   "Click 🍇 to explore available ads": "Haz clic en 🍇 para explorar los anuncios disponibles",
-  "💬 Share feedback, earn 10-50 credits!": "💬 Comparte tus comentarios, ¡gana de 10 a 50 créditos!",
+  "Share feedback, earn 10-50 credits!": "Comparte tus comentarios, ¡gana de 10 a 50 créditos!",
   "messages left! Discover more apps": "¡mensajes restantes! Descubre más aplicaciones",
   "Explore new apps while you chat": "Explora nuevas aplicaciones mientras chateas",
   "🍣 Unified multimodal AI with advanced reasoning. Shows its thinking process, analyzes images/videos/PDFs. Powered by DeepSeek R1. Perplexity for web search. Use palette icon for image generation.": "🍣 IA multimodal unificada con razonamiento avanzado. Muestra su proceso de pensamiento, analiza imágenes/videos/PDFs. Potenciado por DeepSeek R1. Perplejidad para la búsqueda web. Use el icono de la paleta para la generación de imágenes.",
@@ -2306,5 +2306,7 @@
   "Classical and modern physics discussions": "Discusiones de física clásica y moderna",
   "Life sciences, genetics, and ecology": "Ciencias de la vida, genética y ecología",
   "Scientific discoveries, experiments, and discussions": "Descubrimientos científicos, experimentos y discusiones",
-  "New ideas and experimental features": "Nuevas ideas y características experimentales"
+  "New ideas and experimental features": "Nuevas ideas y características experimentales",
+  "All threads": "Todos los hilos",
+  "Share feedback about {{app}} {{emoji}} earn 10-50 credits!": "¡Comparte tus comentarios sobre {{app}} {{emoji}} y gana de 10 a 50 créditos!"
 }
