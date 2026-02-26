@@ -5267,8 +5267,8 @@ export const getApp = async ({
     }),
   } as unknown as appWithStore
 
-  // Cache the result (5 minutes TTL) - fire and forget
-  setCache(cacheKey, result, 60 * 5)
+  // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
+  setCache(cacheKey, result, isAppOwner ? 60 * 5 : 60 * 60)
 
   return result
 }
@@ -6416,8 +6416,8 @@ export async function getStores({
     nextPage,
   }
 
-  // Cache the result (5 minutes TTL for store lists) - fire and forget
-  setCache(cacheKey, storesResult, 60 * 5)
+  // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
+  setCache(cacheKey, storesResult, isStoreOwner ? 60 * 5 : 60 * 60)
 
   return storesResult
 }
@@ -6580,8 +6580,8 @@ export async function getStore({
     apps: appsWithNestedStores,
   }
 
-  // Cache the result (10 minutes TTL for stores) - fire and forget
-  setCache(cacheKey, storeResult, 60 * 10)
+  // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
+  setCache(cacheKey, storeResult, isStoreOwner ? 60 * 5 : 60 * 60)
 
   return storeResult
 }
