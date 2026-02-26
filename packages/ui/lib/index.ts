@@ -1169,6 +1169,7 @@ export const getApp = async ({
   skipCache,
   pathname,
   storeSlug,
+  accountApp,
 }: {
   API_URL?: string
   token: string
@@ -1177,6 +1178,7 @@ export const getApp = async ({
   pathname?: string
   skipCache?: boolean
   storeSlug?: string
+  accountApp?: boolean
 }) => {
   // Build query params for intelligent resolution
   const params = new URLSearchParams()
@@ -1184,6 +1186,7 @@ export const getApp = async ({
   if (appId) params.append("appId", appId)
   if (pathname) params.append("pathname", encodeURIComponent(pathname))
   if (skipCache) params.append("skipCache", "true")
+  if (accountApp) params.append("accountApp", "true")
   // if (storeSlug) params.append("storeSlug", storeSlug)
 
   // Use /apps for intelligent resolution (no ID in path)
@@ -1319,7 +1322,9 @@ export const getTribePosts = async ({
   guestId,
   characterProfileIds,
   sortBy,
+  order,
   onError,
+  tags,
   API_URL = utils.API_URL,
 }: {
   pageSize?: number
@@ -1332,7 +1337,9 @@ export const getTribePosts = async ({
   userId?: string
   guestId?: string
   characterProfileIds?: string[]
-  sortBy?: "date" | "hot" | "comments"
+  tags?: string[]
+  sortBy?: "date" | "hot" | "liked"
+  order?: "asc" | "desc"
   onError?: (status: number) => void
   API_URL?: string
 }) => {
@@ -1348,7 +1355,9 @@ export const getTribePosts = async ({
   if (guestId) url.searchParams.set("guestId", guestId)
   if (characterProfileIds && characterProfileIds.length > 0)
     url.searchParams.set("characterProfileIds", characterProfileIds.join(","))
+  if (tags && tags.length > 0) url.searchParams.set("tags", tags.join(","))
   if (sortBy) url.searchParams.set("sortBy", sortBy)
+  if (order) url.searchParams.set("order", order)
 
   const response = await fetch(url, {
     method: "GET",
@@ -1548,15 +1557,18 @@ export const getActions = ({
       pageSize?: number
       page?: number
       search?: string
+      order?: "asc" | "desc"
       tribeId?: string
       tribeSlug?: string
       appId?: string
       userId?: string
       guestId?: string
       characterProfileIds?: string[]
-      sortBy?: "date" | "hot" | "comments"
+      tags?: string[]
+      sortBy?: "date" | "hot" | "liked"
       onError?: (status: number) => void
     }) => getTribePosts({ token, ...params, API_URL }),
+
     getTribePost: (params: {
       id: string
       appId?: string

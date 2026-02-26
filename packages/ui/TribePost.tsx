@@ -12,8 +12,16 @@ import { useTribe } from "./context/providers/TribeProvider"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
 import Instructions from "./Instructions"
-import { Heart, MessageCircleReply, Share2, Sparkles, Trash2 } from "./icons"
+import {
+  Download,
+  Heart,
+  MessageCircleReply,
+  Share2,
+  Sparkles,
+  Trash2,
+} from "./icons"
 import Loading from "./Loading"
+import MarkdownContent from "./MarkdownContent.web"
 import {
   Button,
   Div,
@@ -25,9 +33,10 @@ import {
   Strong,
   usePlatform,
   useTheme,
+  Video,
 } from "./platform"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
-import { isDevelopment } from "./utils"
+import { apiFetch, isDevelopment } from "./utils"
 import isOwner from "./utils/isOwner"
 
 interface TribePostProps {
@@ -95,6 +104,25 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     user?.role === "admin" ||
     isDevelopment
 
+  const downloadImage = async (imageUrl: string, imageName?: string) => {
+    try {
+      const response = await apiFetch(imageUrl)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = imageName || `vex-image-${Date.now()}.webp`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      captureException(error)
+      console.error("Download failed:", error)
+      toast.error(t("Failed to download image"))
+    }
+  }
+
   const [showComments, setShowComments] = useState(isDetailView)
   // Group comments by parent
   const topLevelComments =
@@ -109,7 +137,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
   const tribeSlug = post?.tribe?.slug
   const currentTribe = post?.tribe
 
-  const { isExtension, isFirefox } = usePlatform()
+  const { isExtension, isFirefox, viewPortWidth } = usePlatform()
 
   const copyToClipboard = async () => {
     if (!post) {
@@ -124,7 +152,82 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     }
   }
 
-  const { reduceMotion } = useTheme()
+  const renderMedia = () => {
+    if (!post) return null
+    return (
+      <>
+        {post.images && post.images.length > 0 && post?.images?.[0]?.url && (
+          <Div
+            style={{
+              position: "relative",
+              marginTop: "1.5rem",
+              marginBottom: "1rem",
+              alignItems: "center",
+              justifyContent: "center",
+              display: "flex",
+            }}
+          >
+            <Button
+              style={{
+                ...{
+                  position: "absolute",
+                  top: isMobileDevice ? 12 : 0,
+                  right: isMobileDevice ? 12 : 8,
+                  border: "none",
+                  borderRadius: 6,
+                  color: "white",
+                  padding: 6,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10,
+                },
+              }}
+              onClick={() =>
+                post?.images?.[0]?.url && downloadImage(post?.images?.[0]?.url)
+              }
+              title={t("Download image")}
+            >
+              <Download size={16} />
+            </Button>
+            <Img
+              alt={post.images[0].title}
+              width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 325 : 375}
+              height={viewPortWidth < 500 ? "auto" : isMobileDevice ? 325 : 375}
+              style={{
+                borderRadius: "20px",
+              }}
+              src={post.images[0].url}
+            />
+          </Div>
+        )}
+        {post.videos && post.videos.length > 0 && post?.videos?.[0]?.url && (
+          <Div
+            style={{
+              marginTop: "1rem",
+              marginBottom: "1rem",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <Video
+              playsInline
+              autoPlay={!reduceMotion}
+              muted
+              loop
+              controls
+              style={{ borderRadius: "20px", maxWidth: "100%" }}
+              width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 325 : 375}
+              height={"auto"}
+              src={post.videos[0].url}
+            />
+          </Div>
+        )}
+      </>
+    )
+  }
+
+  const { reduceMotion, isMobileDevice, isSmallDevice } = useTheme()
 
   // Group reactions by emoji
   const reactionGroups = post?.reactions?.reduce(
@@ -225,7 +328,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           <Div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
             <A href={`/tribe`}>{t("Tribe's Feed")}</A>
             <A
-              href={`/tribe/${currentTribe.slug}`}
+              href={`/t/${currentTribe.slug}`}
               style={{
                 margin: 0,
                 fontSize: ".9rem",
@@ -233,7 +336,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 color: "var(--accent-5)",
               }}
             >
-              /{currentTribe.slug}
+              /{t(currentTribe.slug)}
             </A>
           </Div>
         ) : (
@@ -286,6 +389,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           borderRadius: 16,
           border: "1px solid var(--shade-2)",
           overflow: "hidden",
+          margin: "0 -.25rem",
           marginBottom: "1rem",
         }}
       >
@@ -618,7 +722,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               </Div>
             )}
         </Div>
-
         {/* Post Content */}
         <Div
           style={{
@@ -638,17 +741,11 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               {post.title}
             </H1>
           )}
-
-          <P
-            style={{
-              fontSize: "1rem",
-              lineHeight: 1.6,
-              whiteSpace: "pre-wrap",
-              color: "var(--shade-7)",
-            }}
-          >
-            {post.content}
-          </P>
+          {renderMedia()}
+          <MarkdownContent
+            data-testid="user-message-content"
+            content={post.content ?? ""}
+          />
         </Div>
         <Div
           style={{
@@ -756,9 +853,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
             </Button>
           </Div>
         </Div>
-
         {/* Action Buttons */}
-
         {(tyingToReact || tyingToComment) && (
           <Div
             style={{
@@ -779,6 +874,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 gap: 15,
                 alignItems: "center",
                 justifyContent: "center",
+                flexWrap: "wrap",
               }}
             >
               <Div
@@ -828,30 +924,33 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   gap: "1rem",
                   alignItems: "center",
                   marginTop: 8,
+                  flexWrap: "wrap",
                 }}
               >
                 <Span style={{ fontSize: "1.3rem" }}>{tyingToReact}</Span>
 
                 {reactionGroups[tyingToReact].apps.map((app, index) => (
-                  <>
+                  <AppLink
+                    loading={<Loading size={24} />}
+                    key={`${app.id}-${index}`}
+                    app={app}
+                  >
                     <Img
-                      key={`${app.id}-${index}`}
-                      slug={app.slug}
+                      app={app}
                       size={24}
                       style={{
                         borderRadius: "50%",
                       }}
                     />
-                  </>
+                  </AppLink>
                 ))}
               </Div>
             )}
           </Div>
         )}
-
         <Div
           style={{
-            marginTop: "1.5rem",
+            margin: "1.5rem -0.5rem -0.5rem -0.5rem",
           }}
         >
           {/* Comments Section */}
@@ -1052,7 +1151,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
 
                   return (
                     <MotiView
-                      key={comment.id}
+                      key={comment.id + comment?.app?.id || ""}
                       from={{ opacity: 0, translateY: 0, translateX: -10 }}
                       animate={{ opacity: 1, translateY: 0, translateX: 0 }}
                       transition={{
@@ -1066,17 +1165,27 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                           style={{
                             display: "flex",
                             gap: 12,
-                            padding: "0.75rem",
-                            borderRadius: 12,
+                            padding: "0.65rem 0.5rem",
+                            borderRadius: 15,
                             backgroundColor: "var(--shade-1)",
                             border: "1px solid var(--shade-2)",
                             alignItems: "flex-start",
                           }}
                         >
                           {comment.app && (
-                            <AppLink isTribe app={comment.app}>
-                              <Img app={comment.app as any} size={32} />
-                            </AppLink>
+                            <Img
+                              app={
+                                comment.app.store?.apps.length
+                                  ? comment.app
+                                  : undefined
+                              }
+                              slug={
+                                comment.app.store?.apps.length
+                                  ? undefined
+                                  : comment.app.slug
+                              }
+                              size={32}
+                            />
                           )}
                           <Div style={{ flex: 1 }}>
                             <Div style={{}}>
@@ -1124,6 +1233,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                 marginBottom: "0.5rem",
                                 fontSize: ".9rem",
                                 marginTop: "0.5rem",
+                                color: "var(--shade-7)",
                               }}
                             >
                               {comment.content}
@@ -1262,6 +1372,23 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                             >
                                               {timeAgo(reply.createdOn)}
                                             </Span>
+                                            {canDeleteComment(reply) && (
+                                              <ConfirmButton
+                                                className="link"
+                                                onConfirm={async () => {
+                                                  await deleteComment(reply.id)
+                                                }}
+                                                style={{
+                                                  ...utilities.button.style,
+                                                  ...utilities.link.style,
+                                                  ...utilities.small.style,
+                                                  marginLeft: "auto",
+                                                }}
+                                                aria-label="Delete comment"
+                                              >
+                                                <Trash2 size={16} />
+                                              </ConfirmButton>
+                                            )}
                                           </Div>
                                           <P
                                             style={{

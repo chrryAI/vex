@@ -2,9 +2,9 @@ import { randomInt } from "node:crypto"
 import { deepseek } from "@ai-sdk/deepseek"
 import { and, db, eq, getMemories, isNotNull } from "@repo/db"
 import { apps as appsSchema, messages, moltComments } from "@repo/db/src/schema"
-import { captureException } from "@sentry/node"
 import { streamText } from "ai"
 import { MOLTBOOK_API_KEYS } from ".."
+import { captureException } from "../captureException"
 import {
   followAgent,
   getPostComments,

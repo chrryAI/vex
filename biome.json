@@ -52,7 +52,8 @@
         "noControlCharactersInRegex": "off",
         "noShadowRestrictedNames": "off",
         "noDuplicateJsxProps": "warn",
-        "noRedeclare": "off"
+        "noRedeclare": "off",
+        "noDocumentCookie": "off"
       },
       "complexity": {
         "noUselessFragments": "off",

@@ -12,7 +12,7 @@ import {
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import useCache from "../../hooks/useCache"
-import { toast, useLocalStorage, useNavigation } from "../../platform"
+import { toast, useNavigation } from "../../platform"
 
 import { type appFormData, appSchema } from "../../schemas/appSchema"
 import type {
@@ -26,7 +26,6 @@ import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
 import { customZodResolver } from "../../utils/customZodResolver"
 import type { instructionBase } from "../../utils/getExampleInstructions"
 import isOwner from "../../utils/isOwner"
-import console from "../../utils/log"
 import { useAuth } from "./AuthProvider"
 import { useData } from "./DataProvider"
 import { useError } from "./ErrorProvider"
@@ -67,7 +66,7 @@ export type TabType =
   | "tribe"
   | "moltBook"
 
-interface AppStatus {
+export interface AppStatus {
   step?: "add" | "success" | "warning" | "cancel" | "update" | "restore"
   part?: "name" | "description" | "highlights" | "settings" | "image" | "title"
   text?: Record<string, string>
@@ -86,6 +85,7 @@ interface AppFormContextType {
   showingCustom: boolean
   hasCustomInstructions: boolean
   isAppInstructions: boolean
+  defaultExtendedApps: appWithStore[]
   toggleInstructions: (item?: appWithStore) => void
   setInstructions: React.Dispatch<React.SetStateAction<instruction[]>>
   baseApp?: appWithStore
@@ -183,9 +183,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     chrry,
     vex,
     baseApp,
-    userBaseApp,
     store,
-    guestBaseApp,
     stores,
     storeApps,
     isSavingApp,
@@ -196,7 +194,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLoadingApp,
     setNewApp,
     setUpdatedApp,
-    setBaseAccountApp,
+    setAccountApp,
     setIsManagingApp,
     isManagingApp,
     isRemovingApp,
@@ -206,8 +204,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     burning,
     setBurn,
     plausible,
+    appStatus,
+    setAppStatus: setAppStatusInternal,
     minimize,
     setMinimize: setMinimizeInternal,
+    accountApp,
+    getAppSlug,
+    refetchAccountApps,
     ...auth
   } = useAuth()
   const threadId = auth.threadId || auth?.threadIdRef.current
@@ -249,24 +252,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       })
     }
   }, [step, part])
-
-  const [appStatus, setAppStatusInternal] = useState<
-    | {
-        step?: "add" | "success" | "warning" | "cancel" | "update" | "restore"
-        part?:
-          | "name"
-          | "description"
-          | "highlights"
-          | "settings"
-          | "image"
-          | "title"
-        text?: Record<string, string>
-      }
-    | undefined
-  >({
-    step: step,
-    part: part,
-  })
 
   const isAppOwner = !!(
     app &&
@@ -328,6 +313,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAppStatus({ part: "settings" })
     }
   }, [searchParams.get("settings")])
+  const canEditApp = isAppOwner
+
+  const canCreateNewApp = pathname === "/"
 
   const saveApp = async () => {
     try {
@@ -337,9 +325,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const formValues = appForm.getValues()
 
       // Schema already sanitizes via sanitizedString helper
-      const result = canEditApp
-        ? await actions.updateApp(app.id, formValues)
-        : await actions.createApp(formValues)
+      const result =
+        canEditApp && !canCreateNewApp
+          ? await actions.updateApp(app.id, formValues)
+          : await actions.createApp(formValues)
 
       if (result?.error) {
         toast.error(result.error)
@@ -355,7 +344,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
 
       if (result) {
-        if (canEditApp) {
+        if (canEditApp && !canCreateNewApp) {
           setUpdatedApp(result)
           await fetchApps()
         } else {
@@ -384,7 +373,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       })
       return false
     } finally {
-      canEditApp && setIsSavingApp(false)
+      setIsSavingApp(false)
     }
 
     toast.error(t("Something went wrong"))
@@ -414,9 +403,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         // setApps(apps.filter((app) => app.id !== app?.id))
 
+        await refetchAccountApps()
         // setApp(undefined)
-        setBaseAccountApp(undefined)
-        // setBaseAccountApp(undefined)
+        setAccountApp(undefined)
+        // setAccountApp(undefined)
 
         // setApps(storeApps.filter((app) => app.id !== app?.id))
 
@@ -451,21 +441,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return true
   }
 
-  const defaultExtends =
-    chrry?.store?.apps
-      ?.filter((a) =>
-        [
-          "sushi",
-          "vex",
-          "chrry",
-          "grape",
-          "zarathustra",
-          "claude",
-          "atlas",
-          "perplexity",
-        ].includes(a.slug),
-      )
-      .map((app) => app.id) || []
+  const defaultExtendedApps =
+    (isAppOwner && !canCreateNewApp
+      ? app?.store?.apps.filter((a) => a.id !== app?.id)
+      : storeApps.filter((a) =>
+          [
+            "sushi",
+            "vex",
+            "chrry",
+            "grape",
+            "zarathustra",
+            "nebula",
+            "vault",
+          ].includes(a.slug),
+        )) || []
+
+  const defaultExtends = defaultExtendedApps?.map((a) => a.id) || []
 
   const defaultFormValues = {
     name: t("MyAgent"),
@@ -496,60 +487,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     apiPricing: "per-request" as const,
     displayMode: "standalone" as const,
   }
-  // Cross-platform localStorage hook (works on web, native, extension)
-  const [formDraft, setFormDraftInternal] = useLocalStorage<
-    Partial<appFormData> | undefined
-  >("draft", defaultFormValues)
-
-  const setFormDraft = (
-    draft:
-      | Partial<appFormData>
-      | undefined
-      | ((
-          prev: Partial<appFormData> | undefined,
-        ) => Partial<appFormData> | undefined),
-  ) => {
-    setFormDraftInternal(draft)
-  }
-
-  const blossom = chrry?.store?.apps
-
-  useEffect(() => {
-    if (!blossom) return
-    // Guard: Only run if formDraft has extends
-    if (!formDraft?.extends || formDraft.extends.length === 0) return
-
-    // Filter out stale app IDs that no longer exist in storeApps
-    const validAppIds = new Set(blossom.map((app) => app.id))
-    const validExtends = formDraft.extends.filter((id) => validAppIds.has(id))
-
-    // Guard: Only update if something actually changed
-    const hasStaleExtends = validExtends.length !== formDraft.extends.length
-    if (!hasStaleExtends) return
-
-    // If all extends were stale, reset to defaults
-    if (validExtends.length === 0) {
-      console.log("✅ All extends stale, setting defaults")
-      setFormDraft({
-        ...formDraft,
-        extends: defaultExtends,
-      })
-      return
-    }
-
-    // If some were stale, keep only valid ones
-    console.log("✅ Filtering out stale extends:", {
-      before: formDraft.extends.length,
-      after: validExtends.length,
-    })
-    setFormDraft({
-      ...formDraft,
-      extends: validExtends,
-    })
-  }, [blossom, defaultExtends]) // Removed formDraft from deps
 
   const getInitialFormValues = (): Partial<appFormData> => {
-    if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
+    if (
+      app &&
+      pathname !== "/" &&
+      isOwner(app, { userId: user?.id, guestId: guest?.id })
+    ) {
       return {
         id: app.id,
         name: app.name || "",
@@ -565,7 +509,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         visibility: app.visibility || "private",
         capabilities: app.capabilities || defaultFormValues.capabilities,
         themeColor: app.themeColor || "orange",
-        extends: app.extends?.map((e) => e.id) || defaultExtends,
+        extends: defaultExtends,
         tools: app.tools || [],
         apiEnabled: app.apiEnabled || false,
         apiPricing: app.apiPricing || "per-request",
@@ -577,7 +521,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
         apiKeys: app.apiKeys || {},
       }
     }
+
     return defaultFormValues
+  }
+
+  // Cross-platform localStorage hook (works on web, native, extension)
+  const [formDraft, setFormDraftInternal] = useState<
+    Partial<appFormData> | undefined
+  >(getInitialFormValues())
+
+  const setFormDraft = (
+    draft:
+      | Partial<appFormData>
+      | undefined
+      | ((
+          prev: Partial<appFormData> | undefined,
+        ) => Partial<appFormData> | undefined),
+  ) => {
+    setFormDraftInternal(draft)
   }
 
   const appForm = useForm<appFormData>({
@@ -755,8 +716,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     appFormWatcher.canSubmit
   )
 
-  const canEditApp = isAppOwner
-
   const setAppStatus = (
     payload:
       | {
@@ -780,47 +739,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
       props: payload,
     })
 
-    if (payload) {
-      addParams({ settings: "true" })
+    const step = payload?.step
 
+    if (payload) {
       auth.setShowTribe(false)
       auth.setShowFocus(false)
-    }
-
-    const { step, part } = payload || {}
-
-    if (step || part) {
-      if (part === "settings") {
-        addParams({ settings: "true" })
+      if (step === "add") {
+        if (accountApp) {
+          return
+        }
+        push(`/?settings=true`)
+        return
       }
 
-      if (appStatus?.step !== step || appStatus?.part !== part)
-        setAppStatusInternal({
-          step: step,
-          part: part,
-        })
-
-      if (step === "add") {
-        // Clear localStorage draft first
-        setFormDraft(undefined)
-
-        // Then reset form to default values (clears id and all fields)
-        // Recalculate default extends to include chrry and base app
-        const freshDefaults = {
-          ...defaultFormValues,
-          id: undefined, // Explicitly clear id to prevent conflicts
-        }
-        appForm.reset(freshDefaults)
-        if ((threadId || currentStore || pathname === "/tribe") && chrry) {
-          push(auth.getAppSlug(chrry))
-        }
-      } else if (step === "restore") {
-        // Restore app data from current app into form for editing
-        if (app && isAppOwner) {
-          const appValues = getInitialFormValues()
-          appForm.reset(appValues)
-          setFormDraft(appValues)
-        }
+      if ((step === "update" || step === "restore") && app) {
+        const to = getAppSlug(app)
+        push(`${to}?settings=true`)
       }
     }
   }
@@ -838,12 +772,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     return () => subscription.unsubscribe()
   }, [appForm])
+
   useEffect(() => {
     if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
       const appValues = getInitialFormValues()
       appForm.reset(appValues)
     }
-  }, [app, user, guest])
+  }, [app, user, guest, accountApp, pathname])
 
   // Restore form draft only on mount (but not when step is "add")
   const [hasRestoredDraft, setHasRestoredDraft] = useState(false)
@@ -908,6 +843,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         hasCustomInstructions,
         setStoreSlug,
         setIsManagingApp,
+        defaultExtendedApps,
         tab,
         setTab,
         minimize,

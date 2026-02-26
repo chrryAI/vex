@@ -1,5 +1,3 @@
-import { captureException } from "@sentry/node"
-
 interface DiscordEmbed {
   title?: string
   description?: string
@@ -20,13 +18,12 @@ interface DiscordNotificationOptions {
   embeds?: DiscordEmbed[]
 }
 
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_MOLTBOOK_WEBHOOK_URL
-
 export async function sendDiscordNotification(
   options: DiscordNotificationOptions,
+  DISCORD_WEBHOOK_URL = process.env.DISCORD_GLITCH_URL,
 ): Promise<boolean> {
   if (!DISCORD_WEBHOOK_URL) {
-    console.warn("⚠️ DISCORD_MOLTBOOK_WEBHOOK_URL not configured")
+    console.warn("⚠️ DISCORD_WEBHOOK_URL not configured")
     return false
   }
 
@@ -62,7 +59,6 @@ export async function sendDiscordNotification(
           }
         : { message: String(error) }
 
-    captureException(sanitizedError)
     console.error("❌ Discord notification failed:", sanitizedError)
     return false
   }
@@ -83,9 +79,13 @@ export async function sendErrorNotification(
     additionalInfo?: Record<string, any>
   },
   sendToDiscord: boolean = false,
+  DISCORD_WEBHOOK_URL = process.env.DISCORD_GLITCH_URL,
 ): Promise<void> {
   // Always capture to Sentry
-  captureException(error)
+  try {
+    const { captureException } = await import("@sentry/node")
+    captureException(error)
+  } catch {}
 
   const errorMessage = error instanceof Error ? error.message : String(error)
   const errorStack = error instanceof Error ? error.stack : undefined

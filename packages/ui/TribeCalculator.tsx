@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react"
 import toast from "react-hot-toast"
 import A from "./a/A"
 import { useAgentStyles } from "./agent/Agent.styles"
+import Checkbox from "./Checkbox"
 import ConfirmButton from "./ConfirmButton"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useAuth, useData, useNavigationContext } from "./context/providers"
@@ -28,7 +29,11 @@ import {
   isE2E,
   isOwner,
 } from "./utils"
-import { estimateJobCredits, type scheduleSlot } from "./utils/creditCalculator"
+import {
+  calculateSlotCredits,
+  estimateJobCredits,
+  type scheduleSlot,
+} from "./utils/creditCalculator"
 
 // Use scheduleSlot from creditCalculator for consistency
 type ScheduleTime = scheduleSlot
@@ -199,6 +204,9 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
             model: slot.model || "sushi",
             charLimit: slot.charLimit || 500,
             credits: slot.credits || 0,
+            generateImage: slot.generateImage === true,
+            generateVideo: slot.generateVideo === true,
+            fetchNews: slot.fetchNews === true,
           }
         }) as ScheduleTime[])) ||
       getDefaultScheduleTimes()
@@ -268,25 +276,54 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
 
   // Form state
   const frequency = formData.frequency
+  // Helper: re-run estimateJobCredits and patch totals into formData atomically
+  const recalcTotals = (patch: Partial<typeof formData>, base = formData) => {
+    const merged = { ...base, ...patch }
+    const {
+      frequency: freq,
+      startDate: sd,
+      endDate: ed,
+      schedule: slots,
+    } = merged
+    if (sd && ed) {
+      const estimate = estimateJobCredits({
+        frequency: freq,
+        scheduledTimes: slots,
+        startDate: new Date(sd),
+        endDate: new Date(ed),
+        creditsPrice: parseFloat(String(CREDITS_PRICE || "10")),
+      })
+      const nextState = {
+        ...merged,
+        totalPosts: estimate.totalPosts,
+        creditsPerPost: estimate.creditsPerPost,
+        totalCredits: estimate.totalCredits,
+        totalPrice: estimate.totalPrice,
+      }
+      setFormData(nextState)
+      onCalculate?.({
+        totalPosts: estimate.totalPosts,
+        creditsPerPost: estimate.creditsPerPost,
+        totalCredits: estimate.totalCredits,
+        schedule: nextState.schedule,
+      })
+    } else {
+      setFormData(merged)
+    }
+  }
+
   const setFrequency = (
     value: "daily" | "weekly" | "monthly" | "once" | "custom",
-  ) => {
-    setFormData({ ...formData, frequency: value })
-  }
+  ) => recalcTotals({ frequency: value })
 
   const startDate = formData.startDate
-  const setStartDate = (value: string) => {
-    setFormData({ ...formData, startDate: value })
-  }
+  const setStartDate = (value: string) => recalcTotals({ startDate: value })
 
   const endDate = formData.endDate
-  const setEndDate = (value: string) => {
-    setFormData({ ...formData, endDate: value })
-  }
+  const setEndDate = (value: string) => recalcTotals({ endDate: value })
   const schedule = formData.schedule
-  const setSchedule = (value: ScheduleTime[]) => {
-    setFormData({ ...formData, schedule: value })
-  }
+  const setSchedule = (value: ScheduleTime[]) =>
+    recalcTotals({ schedule: value })
 
   const totalCredits = formData.totalCredits
 
@@ -419,6 +456,9 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
         model: slot.model,
         postType: slot.postType,
         charLimit: slot.charLimit,
+        generateImage: slot.generateImage === true,
+        generateVideo: slot.generateVideo === true,
+        fetchNews: slot.fetchNews === true,
       }))
 
       const response = await apiFetch(`${API_URL}/scheduledJobs`, {
@@ -581,8 +621,9 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     const updatedSlot = {
       ...currentSlot,
       ...updates,
-      credits: creditsPerPost,
     } as ScheduleTime
+    // Recalculate per-slot credits (includes generateImage +15 / fetchNews +5 add-ons)
+    updatedSlot.credits = calculateSlotCredits(updatedSlot)
 
     if (currentSlot.postType === "post") {
       if ((updates.charLimit ?? currentSlot.charLimit) < 1000) {
@@ -1261,26 +1302,89 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                           placeholder="chars"
                         />
                       </Div>
+
                       {schedule.length > 1 && (
-                        <Button
-                          className="link"
-                          title={t("Delete")}
+                        <Div
                           style={{
-                            ...utilities.link.style,
                             marginLeft: "auto",
-                            marginRight: "0.75rem",
-                            fontSize: "0.75rem",
-                            minHeight: "1.8rem",
-                            color: COLORS.red,
                           }}
-                          onClick={() => removeScheduleTime(index)}
                         >
-                          {t("Burn")}
-                          <Text style={{ fontSize: "1.2rem" }}>🔥</Text>
-                        </Button>
+                          <Button
+                            className="link"
+                            title={t("Delete")}
+                            style={{
+                              ...utilities.link.style,
+
+                              marginRight: "0.75rem",
+                              fontSize: "0.75rem",
+                              minHeight: "1.8rem",
+                              color: COLORS.red,
+                            }}
+                            onClick={() => removeScheduleTime(index)}
+                          >
+                            {t("Burn")}
+                            <Text style={{ fontSize: "1.2rem" }}>🔥</Text>
+                          </Button>
+                        </Div>
                       )}
                     </Div>
                   </Div>
+
+                  {time.postType === "post" && tribeType === "Tribe" && (
+                    <Div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: ".5rem",
+                        marginBottom: ".5rem",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <Checkbox
+                        checked={
+                          time.generateImage === true &&
+                          time.generateVideo !== true
+                        }
+                        onChange={(checked) =>
+                          updateScheduleTime(index, {
+                            generateImage: checked,
+                            generateVideo: false,
+                          })
+                        }
+                        title={t(
+                          "Generate an AI image using Flux 1.1 Pro (+20 credits)",
+                        )}
+                      >
+                        🎨 {t("Image")}
+                      </Checkbox>
+                      <Checkbox
+                        checked={time.generateVideo === true}
+                        onChange={(checked) =>
+                          updateScheduleTime(index, {
+                            generateVideo: checked,
+                            generateImage: false,
+                          })
+                        }
+                        title={t(
+                          "Generate a 5s video via Luma Ray (+120 credits, includes image)",
+                        )}
+                      >
+                        🎬 {t("Video")}
+                      </Checkbox>
+                      <Checkbox
+                        checked={time.fetchNews === true}
+                        onChange={(checked) =>
+                          updateScheduleTime(index, { fetchNews: checked })
+                        }
+                        title={t(
+                          "Write post based on today's top news headlines (free)",
+                        )}
+                      >
+                        📰 {t("News")}
+                      </Checkbox>
+                    </Div>
+                  )}
                   {expandedInfoIndex === index && (
                     <Div
                       style={{

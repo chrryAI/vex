@@ -286,7 +286,7 @@ sitemap.get("/", async (c) => {
   }))
 
   const tribeRoutes = tribePosts.map((post) => ({
-    url: `${baseUrl}/p/${post.id}`,
+    url: `https://tribe.chrry.ai/p/${post.id}`,
     lastModified: new Date(post.updatedOn || post.createdOn),
     priority: 0.7,
   }))

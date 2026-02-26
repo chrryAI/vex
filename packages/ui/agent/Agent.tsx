@@ -84,7 +84,13 @@ export default function Agent({
   const styles = useAgentStyles()
   const { utilities } = useStyles()
   const { t } = useAppContext()
-  const { chrry, baseApp, token, accountApp, user } = useAuth()
+  const {
+    chrry,
+    token,
+    accountApp,
+    user,
+    storeApps: storeAppsInternal,
+  } = useAuth()
 
   const {
     defaultExtends,
@@ -94,6 +100,7 @@ export default function Agent({
     appFormWatcher,
     appStatus,
     setAppStatus,
+    defaultExtendedApps,
     ...appContext
   } = useApp()
 
@@ -340,8 +347,8 @@ export default function Agent({
         return
       }
 
-      if (appFormWatcher.name.length > 8) {
-        toast.error(t("Name: maximum 8 characters"))
+      if (appFormWatcher.name.length > 12) {
+        toast.error(t("Name: maximum 12 characters"))
         return
       }
       // Check for validation errors
@@ -937,34 +944,46 @@ export default function Agent({
                       control={control}
                       render={({ field }) => {
                         // Get store-based apps from Chrry store
-                        const storeApps = (chrry?.store?.apps || []).filter(
-                          (item) =>
-                            item.id !== app?.id || app?.id !== accountApp?.id,
-                        )
+                        const storeApps = storeAppsInternal || []
 
                         return (
                           <>
                             {/* Store-based apps */}
-                            {storeApps.map((item) => {
+                            {storeApps.filter(Boolean).map((item) => {
                               // Chrry is required (checked and disabled)
-                              const isChrry = item.id === chrry?.id
+                              const isChrry = item.slug === "chrry"
                               // Vex is optional (checked by default but can be unchecked)
-                              const isBaseApp = item.id === baseApp?.id
+                              const isBaseApp = item.slug === "vex"
 
-                              const checked = defaultExtends.includes(item.id)
+                              const checked =
+                                appFormWatcher.extends?.includes(item.id) ??
+                                false
                               return (
                                 <Label key={item.id || item.name}>
                                   <Checkbox
                                     data-testid={`extends-checkbox-${item.name.toLowerCase()}`}
                                     checked={checked}
                                     // disabled={isDisabled || isChrry}
-                                    onChange={(isChecked) => {
+                                    onChange={() => {
                                       if (checked) {
                                         if (isChrry) {
                                           toast.error(
                                             `${item.name} is required and cannot be removed.`,
                                           )
 
+                                          return
+                                        }
+
+                                        if (
+                                          app?.store?.apps?.some(
+                                            (a) =>
+                                              a.storeId === app.storeId &&
+                                              a.id === item.id,
+                                          )
+                                        ) {
+                                          toast.error(
+                                            `Store apps should extends each other`,
+                                          )
                                           return
                                         }
 
@@ -975,12 +994,22 @@ export default function Agent({
 
                                           return
                                         }
+                                      } else if (
+                                        appFormWatcher.extends &&
+                                        appFormWatcher.extends.length >= 8
+                                      ) {
+                                        toast.error(
+                                          `You can extend up to 8 apps.`,
+                                        )
+
+                                        return
                                       }
-                                      const newValue = isChecked
-                                        ? [...(field.value || []), item.id]
-                                        : field.value?.filter(
+                                      const newValue = checked
+                                        ? field.value?.filter(
                                             (v) => v !== item.id,
                                           )
+                                        : [...(field.value || []), item.id]
+
                                       field.onChange(newValue)
                                     }}
                                   >

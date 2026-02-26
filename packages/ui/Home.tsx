@@ -1,6 +1,6 @@
 "use client"
 
-import { useApp, useAuth } from "./context/providers"
+import { useAuth } from "./context/providers"
 import { useAppMetadata } from "./hooks"
 import { Div } from "./platform"
 import Thread from "./Thread"
@@ -8,7 +8,6 @@ import type { app } from "./types"
 
 export default function Home({
   className,
-  slug,
   style,
 }: {
   className?: string
@@ -16,8 +15,7 @@ export default function Home({
   app?: app
   slug?: string
 }): React.ReactElement {
-  const { language, threadId, threadIdRef } = useAuth()
-  const { currentStore: store, app } = useApp()
+  const { threadId, threadIdRef } = useAuth()
 
   useAppMetadata()
 

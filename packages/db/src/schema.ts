@@ -813,6 +813,12 @@ export const aiAgents = pgTable("aiAgents", {
     .notNull()
     .default("all"),
 
+  metadata: jsonb("metadata")
+    .$type<{
+      lastFailedKey?: string
+    }>()
+    .default({}),
+
   // ♾️ INFINITE HUMAN: RPG Character Stats
   intelligence: integer("intelligence").default(50).notNull(), // Logic, coding, reasoning (0-100)
   creativity: integer("creativity").default(50).notNull(), // Storytelling, art, ideation (0-100)
@@ -973,7 +979,7 @@ export const messages = pgTable(
       jsonb("images").$type<
         {
           url: string
-          prompt: string
+          prompt?: string
           model?: string
           width?: number
           height?: number
@@ -1044,9 +1050,13 @@ export const moltPosts = pgTable("moltPosts", {
   createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
+  threadId: uuid("threadId").references(() => threads.id, {
+    onDelete: "set null",
+  }),
   updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
+  language: text("language").notNull().default("en"),
 })
 
 export const moltComments = pgTable("moltComments", {
@@ -1226,12 +1236,16 @@ export const tribePosts = pgTable(
       .references(() => apps.id, {
         onDelete: "cascade",
       }),
+    threadId: uuid("threadId").references((): AnyPgColumn => threads.id, {
+      onDelete: "set null",
+    }),
     userId: uuid("userId").references(() => users.id, {
       onDelete: "set null",
     }),
     guestId: uuid("guestId").references(() => guests.id, {
       onDelete: "set null",
     }),
+    language: text("language").notNull().default("en"),
     content: text("content").notNull(),
     title: text("title"),
     visibility: text("visibility", {
@@ -1248,6 +1262,7 @@ export const tribePosts = pgTable(
           width?: number
           height?: number
           alt?: string
+          id: string
         }[]
       >(),
     videos:
@@ -1256,6 +1271,7 @@ export const tribePosts = pgTable(
           url: string
           thumbnail?: string
           duration?: number
+          id: string
         }[]
       >(),
 
@@ -1580,6 +1596,25 @@ export const tribeShares = pgTable("tribeShares", {
 })
 
 // ============================================
+// TRIBE NEWS: Cached news articles for agent context
+// ============================================
+
+export const tribeNews = pgTable("tribeNews", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  content: text("content"), // Full or enriched article body (scraped from URL)
+  url: text("url").notNull().unique(),
+  source: text("source"),
+  country: text("country"), // NewsAPI country code e.g. "us", "de", "tr"
+  category: text("category"), // locale code e.g. "en", "de", "tr"
+  publishedAt: timestamp("publishedAt", { mode: "date", withTimezone: true }),
+  fetchedAt: timestamp("fetchedAt", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+})
+
+// ============================================
 // SCHEDULED JOBS: Programmatic cron system for Tribe & Moltbook
 // ============================================
 
@@ -1624,6 +1659,9 @@ export const scheduledJobs = pgTable(
           postType: "post" | "comment" | "engagement"
           charLimit: number
           credits: number
+          generateImage?: boolean
+          generateVideo?: boolean
+          fetchNews?: boolean
           maxTokens?: number // Optional max tokens for AI generation
           intervalMinutes?: number // Optional interval for custom frequency (e.g., 60 = every hour)
         }>
@@ -1842,6 +1880,9 @@ export const aiModelPricing = pgTable(
 
 export const placeHolders = pgTable("placeHolders", {
   appId: uuid("appId").references(() => apps.id, {
+    onDelete: "cascade",
+  }),
+  tribePostId: uuid("tribePostId").references(() => tribePosts.id, {
     onDelete: "cascade",
   }),
   id: uuid("id").defaultRandom().primaryKey(),

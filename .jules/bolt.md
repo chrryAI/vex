@@ -12,3 +12,8 @@
 
 **Learning:** `javascript-time-ago` instantiation (`new TimeAgo(locale)`) is relatively expensive and was happening on every render for every message timestamp.
 **Action:** Use a module-level `Map` cache to reuse `TimeAgo` instances per locale. This avoids repeated constructor overhead (~33μs/call becomes negligible). Always look for object instantiations in render loops or frequently called utilities.
+
+## 2026-02-18 - Memoize Markdown Options
+
+**Learning:** `markdown-to-jsx`'s `options` prop, if passed as an inline object, causes re-renders even if the parent component is memoized. Especially when `overrides` contains inline component definitions, it creates new function references on every render.
+**Action:** Always wrap `options` object for `<Markdown>` in `useMemo` when using `markdown-to-jsx` or similar libraries, and ensure component overrides are stable (either defined outside or memoized).

@@ -15,7 +15,7 @@ import {
 } from "@repo/db"
 import { generateText } from "ai"
 import { getModelProvider } from "../../lib/getModelProvider"
-import captureException from "../captureException"
+import { captureException } from "../captureException"
 
 interface _BiddingContext {
   campaign: appCampaign

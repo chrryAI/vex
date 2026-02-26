@@ -10,6 +10,7 @@ import {
   updateCalendarEvent,
   updateScheduledJob,
 } from "@repo/db"
+import { fromZonedTime } from "date-fns-tz"
 import {
   checkMoltbookHealth,
   getMoltbookAgentInfo,
@@ -79,6 +80,9 @@ export async function createOrUpdateTribeSchedule(params: {
     model: string
     postType?: string
     charLimit?: number
+    generateImage?: boolean
+    generateVideo?: boolean
+    fetchNews?: boolean
   }>
   frequency: "once" | "daily" | "weekly" | "custom"
   startDate: Date
@@ -133,6 +137,8 @@ export async function createOrUpdateTribeSchedule(params: {
     totalPrice,
     pendingPayment,
   } = params
+
+  const now = new Date()
 
   try {
     // Get app with real moltApiKey (unsafe mode)
@@ -222,14 +228,40 @@ export async function createOrUpdateTribeSchedule(params: {
       postType: (item.postType || "post") as "post" | "comment" | "engagement",
       charLimit: item.charLimit || 280,
       credits: item.credits,
+      ...(item.generateImage !== undefined && {
+        generateImage: item.generateImage,
+      }),
+      ...(item.generateVideo !== undefined && {
+        generateVideo: item.generateVideo,
+      }),
+      ...(item.fetchNews !== undefined && { fetchNews: item.fetchNews }),
     }))
 
-    // Calculate next run time
+    // Calculate next run time (pass only fields calculateNextRunTime needs)
     const nextRunAt = calculateNextRunTime(
-      normalizedScheduledTimes,
+      normalizedScheduledTimes.map(
+        ({ time, model, postType, charLimit, credits }) => ({
+          time,
+          model,
+          postType,
+          charLimit,
+          credits,
+        }),
+      ),
       timezone,
       frequency,
     )
+
+    // Use fromZonedTime to ensure "local midnight" is the basis for comparison
+    // If it's a Date (likely UTC midnight from Hono), convert it back to the local date string first
+    const normalizeDate = (d: any) => {
+      if (!d) return null
+      const dateStr = typeof d === "string" ? d : d.toISOString().split("T")[0]
+      return fromZonedTime(dateStr, timezone)
+    }
+
+    const normalizedStartDate = normalizeDate(params.startDate) || now
+    const normalizedEndDate = normalizeDate(params.endDate)
 
     const scheduleData = {
       userId,
@@ -242,8 +274,8 @@ export async function createOrUpdateTribeSchedule(params: {
       frequency,
       scheduledTimes: normalizedScheduledTimes,
       timezone,
-      startDate,
-      endDate: endDate ? new Date(endDate) : null,
+      startDate: normalizedStartDate,
+      endDate: normalizedEndDate,
       aiModel: (schedule[0]?.model as modelName) || "sushi",
       modelConfig: {
         temperature: 0.7,

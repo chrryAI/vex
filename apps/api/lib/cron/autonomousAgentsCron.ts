@@ -1,6 +1,6 @@
 import { appCampaigns, db, eq, slotRentals, storeTimeSlots } from "@repo/db"
 import { runautonomousBidding } from "../adExchange/autonomousBidding"
-import captureException from "../captureException"
+import { captureException } from "../captureException"
 
 /**
  * AUTONOMOUS AI AGENTS CRON JOB

@@ -29,7 +29,7 @@ import sanitizeHtml from "sanitize-html"
 import { validate } from "uuid"
 import Collaboration from "../../components/emails/Collaboration"
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import { deleteFile } from "../../lib/minio"
 import {
   checkGenerationRateLimit,
