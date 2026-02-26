@@ -51,9 +51,9 @@ export function isPrivateIP(ip: string): boolean {
     // 203.0.113.0/24 (TEST-NET-3)
     if (parts[0] === 203 && parts[1] === 0 && parts[2] === 113) return true
     // 224.0.0.0/4 (Multicast)
-    if (parts[0] >= 224 && parts[0] <= 239) return true
+    if (parts[0] && parts[0] >= 224 && parts[0] <= 239) return true
     // 240.0.0.0/4 (Reserved)
-    if (parts[0] >= 240) return true
+    if (parts[0] && parts[0] >= 240) return true
     // 255.255.255.255 (Limited Broadcast)
     if (
       parts[0] === 255 &&

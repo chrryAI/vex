@@ -4734,7 +4734,6 @@ export default function Chat({
                     </Span>
                   ) : needsReview ? (
                     <A
-                      target="_blank"
                       className="button small transparent"
                       href="/privacy"
                       style={{
