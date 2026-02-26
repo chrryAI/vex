@@ -80,8 +80,15 @@ export default function Menu({
     hasStoreApps,
     burn,
     isPear,
+    siteConfig,
+    tribeSlug,
+    getTribeUrl,
+
     ...auth
   } = useAuth()
+
+  const showTribeProfile =
+    auth.showTribeProfile && auth.showTribe && !auth.postId
 
   const { setShowTribe } = useChat()
 
@@ -104,6 +111,7 @@ export default function Menu({
     setIsAccountVisible,
     goToThreads,
     addParams,
+    push,
   } = useNavigationContext()
 
   const { app } = useApp()
@@ -365,7 +373,7 @@ export default function Menu({
                   <A
                     data-testid="menu-home-button"
                     className={"link"}
-                    href={FRONTEND_URL}
+                    href={showTribeProfile ? getTribeUrl() : FRONTEND_URL}
                     onClick={(e) => {
                       addHapticFeedback()
                       plausible({
@@ -375,19 +383,31 @@ export default function Menu({
                         return
                       }
                       e.preventDefault()
+
                       setShowFocus(false)
-                      setShowTribe(false)
 
                       toggleMenuIfSmallDevice()
-                      setIsNewChat({
-                        value: true,
-                        tribe: false,
-                      })
+
+                      if (showTribeProfile) {
+                        push(`${getTribeUrl()}`)
+                      } else {
+                        setIsNewChat({
+                          value: true,
+                          tribe: false,
+                        })
+                      }
                       reload()
                     }}
                   >
-                    <Img app={app} size={28} />
-                    <Span style={styles.brand.style}>{app?.name || "Vex"}</Span>
+                    <Img
+                      size={28}
+                      app={!showTribeProfile && app ? app : undefined}
+                      slug={!showTribeProfile ? undefined : "tribe"}
+                    />
+
+                    <Span style={styles.brand.style}>
+                      {!showTribeProfile ? app?.name : <>{t("Tribe")}</>}
+                    </Span>
                   </A>
                   <Button
                     className={"link"}

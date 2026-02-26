@@ -2345,6 +2345,7 @@ export function AuthProvider({
       showAllTribe ||
       tribeSlug ||
       postId ||
+      tribeQuery ||
       props.showTribe ||
       canBeTribeProfile
     ) && canShowTribe
