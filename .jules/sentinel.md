@@ -187,3 +187,15 @@
     3.  Uses the resolved IP for the actual request (for HTTP) to pin the DNS.
     4.  Limits redirect depth to prevent loops.
 - Replaced direct `fetch` usage in `minio.ts` with `safeFetch`.
+
+## 2026-06-21 - False Positive SSRF Block for Data URLs
+
+**Vulnerability:** The `safeFetch` utility correctly blocked SSRF attempts but also blocked legitimate `data:` URLs used for image uploads (constructed from `File` objects). This false positive broke upload functionality. Crucially, broken uploads prevented the downstream security sanitization (Sharp conversion), effectively leaving the system vulnerable to Stored XSS via SVG uploads if the upload mechanism were bypassed or fixed incorrectly.
+
+**Learning:**
+- **SSRF Scope:** `data:` URLs are inherently safe from SSRF as they do not trigger network requests. Applying network-layer SSRF protection to them is unnecessary and causes functional regressions.
+- **Security Logic Dependency:** When security controls (like sanitization) depend on a functional pipeline (like upload), breaking the pipeline disables the control.
+
+**Prevention:**
+- Explicitly bypass `safeFetch` for `data:` URLs in `apps/api/lib/minio.ts` and use native `fetch`.
+- Added regression tests to ensure `data:` URLs are handled correctly and `safeFetch` is bypassed only for them.
