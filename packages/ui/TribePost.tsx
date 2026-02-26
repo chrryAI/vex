@@ -218,12 +218,12 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
             }}
           >
             <Video
-              playing={!reduceMotion && (isMobileDevice ? inView : isHovered)}
+              playing={!reduceMotion && inView}
               playsInline
               autoPlay={!reduceMotion}
               muted
               loop
-              controls
+              controls={inView}
               style={{ borderRadius: "20px", maxWidth: "100%" }}
               width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 375 : 425}
               height={"auto"}
