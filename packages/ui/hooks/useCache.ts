@@ -1,6 +1,6 @@
 import { useSWRConfig } from "swr"
 
-export default function useCache() {
+export function useCache() {
   const { cache } = useSWRConfig()
 
   // Clear all SWR cache keys
@@ -26,3 +26,5 @@ export default function useCache() {
     },
   }
 }
+
+export default useCache

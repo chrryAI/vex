@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import useCache from '../hooks/useCache'
+import { useCache } from '../hooks/useCache'
 
-// Mock useSWRConfig
-const mockCache = new Map()
+// Use vi.hoisted to share variables with the mock factory
+const { mockCache } = vi.hoisted(() => {
+  return { mockCache: new Map() }
+})
+
 vi.mock('swr', () => ({
   useSWRConfig: () => ({
     cache: mockCache
