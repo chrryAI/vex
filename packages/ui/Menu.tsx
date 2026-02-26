@@ -113,9 +113,9 @@ export default function Menu({
   } = useNavigationContext()
 
   const showTribeProfile =
-    (auth.showTribeProfile || auth.showTribe) &&
+    auth.showTribeProfile &&
     !auth.postId &&
-    !(pathname === "/" && siteConfig.isTribe)
+    (pathname === "/" ? !siteConfig.isTribe : true)
 
   const { app } = useApp()
 
