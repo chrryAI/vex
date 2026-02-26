@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { useEffect, useRef } from "react"
 
 export interface VideoProps {
   src: string
@@ -13,6 +14,7 @@ export interface VideoProps {
   className?: string
   width?: number | string
   height?: number | string
+  playing?: boolean
 }
 
 const Video: React.FC<VideoProps> = ({
@@ -26,9 +28,26 @@ const Video: React.FC<VideoProps> = ({
   className,
   width,
   height,
+  playing,
 }) => {
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    if (!videoRef.current) return
+
+    if (playing) {
+      videoRef.current.play().catch((err) => {
+        // Autoplay policy might block this even if muted in some browsers/cases
+        console.warn("Video play failed:", err)
+      })
+    } else {
+      videoRef.current.pause()
+    }
+  }, [playing])
+
   return (
     <video
+      ref={videoRef}
       src={src}
       autoPlay={autoPlay}
       loop={loop}
