@@ -1948,177 +1948,193 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Div>
                   </Div>
                 )}
-                {isSwarm && (
+                {tribePosts?.posts?.length === 0 ? (
                   <Div
                     style={{
-                      marginTop: "1.5rem",
-                      marginBottom: "1.5rem",
-                      alignItems: "center",
-                      justifyContent: "center",
                       display: "flex",
-                      gap: "1rem",
-                      flexDirection: "row",
-                      flexWrap: "wrap",
+                      justifyContent: "center",
+                      marginTop: "1.25rem",
+                      gap: "0.5rem",
+                      fontSize: "0.8rem",
+                      color: "var(--shade-7)",
                     }}
                   >
+                    <Img slug="sushi" size={24} />
+                    <P>{t("No posts found")}</P>
+                  </Div>
+                ) : (
+                  isSwarm && (
                     <Div
                       style={{
+                        marginTop: "1.5rem",
+                        marginBottom: "1.5rem",
                         alignItems: "center",
+                        justifyContent: "center",
                         display: "flex",
                         gap: "1rem",
+                        flexDirection: "row",
                         flexWrap: "wrap",
-                        justifyContent: "center",
                       }}
                     >
                       <Div
                         style={{
                           alignItems: "center",
-                          justifyContent: "center",
                           display: "flex",
                           gap: "1rem",
                           flexWrap: "wrap",
+                          justifyContent: "center",
                         }}
                       >
-                        {posting
-                          .slice(0, isMobileDevice ? 3 : 6)
-                          .map((item, i) => {
-                            return (
-                              <MotiView
-                                key={`post-${item.app.id}`}
-                                from={{
-                                  opacity: 0,
-                                  translateY: -8,
-                                  translateX: 0,
-                                }}
-                                animate={{
-                                  opacity: 1,
-                                  translateY: 0,
-                                  translateX: 0,
-                                }}
-                                transition={{
-                                  duration: reduceMotion ? 0 : 120,
-                                  delay: reduceMotion ? 0 : i * 35,
-                                }}
-                              >
-                                <Img slug={item.app.slug} />
-                              </MotiView>
-                            )
-                          })}
-                        {liveReactions
-                          .slice(0, isMobileDevice ? 3 : 6)
-                          .map((item, i) => {
-                            return (
-                              <MotiView
-                                key={`reaction-${item.app.id}-${item.tribePostId}-${i}`}
-                                from={{
-                                  opacity: 0,
-                                  translateY: -8,
-                                  translateX: 0,
-                                }}
-                                animate={{
-                                  opacity: 1,
-                                  translateY: 0,
-                                  translateX: 0,
-                                }}
-                                transition={{
-                                  duration: reduceMotion ? 0 : 120,
-                                  delay: reduceMotion ? 0 : i * 35,
-                                }}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: ".5rem",
-                                }}
-                              >
-                                <Img slug={item.app.slug} />
-                                <Span style={{ fontSize: "1.3rem" }}>
-                                  {item.reaction.emoji}
-                                </Span>
-                              </MotiView>
-                            )
-                          })}
-                      </Div>
-                      {posting.length ? (
                         <Div
                           style={{
+                            alignItems: "center",
                             justifyContent: "center",
                             display: "flex",
-                            gap: ".25rem",
+                            gap: "1rem",
+                            flexWrap: "wrap",
                           }}
                         >
-                          <Span
-                            style={{
-                              fontSize: ".8rem",
-                              color: "var(--accent-4)",
-                            }}
-                          >
-                            {t("Thinking...")}
-                          </Span>
-                          <Div
-                            className="typing"
-                            data-testid="typing-indicator"
-                            style={{
-                              display: "inline-flex",
-                              gap: 2,
-                              alignItems: "center",
-                              marginLeft: 6,
-                            }}
-                          >
-                            <Span
-                              style={{
-                                width: 4,
-                                height: 4,
-                                backgroundColor: "var(--accent-4)",
-                                borderRadius: "50%",
-                              }}
-                            ></Span>
-                            <Span
-                              style={{
-                                width: 4,
-                                height: 4,
-                                backgroundColor: "var(--accent-4)",
-                                borderRadius: "50%",
-                              }}
-                            ></Span>
-                            <Span
-                              style={{
-                                width: 4,
-                                height: 4,
-                                backgroundColor: "var(--accent-4)",
-                                borderRadius: "50%",
-                              }}
-                            ></Span>
-                          </Div>
+                          {posting
+                            .slice(0, isMobileDevice ? 3 : 6)
+                            .map((item, i) => {
+                              return (
+                                <MotiView
+                                  key={`post-${item.app.id}`}
+                                  from={{
+                                    opacity: 0,
+                                    translateY: -8,
+                                    translateX: 0,
+                                  }}
+                                  animate={{
+                                    opacity: 1,
+                                    translateY: 0,
+                                    translateX: 0,
+                                  }}
+                                  transition={{
+                                    duration: reduceMotion ? 0 : 120,
+                                    delay: reduceMotion ? 0 : i * 35,
+                                  }}
+                                >
+                                  <Img slug={item.app.slug} />
+                                </MotiView>
+                              )
+                            })}
+                          {liveReactions
+                            .slice(0, isMobileDevice ? 3 : 6)
+                            .map((item, i) => {
+                              return (
+                                <MotiView
+                                  key={`reaction-${item.app.id}-${item.tribePostId}-${i}`}
+                                  from={{
+                                    opacity: 0,
+                                    translateY: -8,
+                                    translateX: 0,
+                                  }}
+                                  animate={{
+                                    opacity: 1,
+                                    translateY: 0,
+                                    translateX: 0,
+                                  }}
+                                  transition={{
+                                    duration: reduceMotion ? 0 : 120,
+                                    delay: reduceMotion ? 0 : i * 35,
+                                  }}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: ".5rem",
+                                  }}
+                                >
+                                  <Img slug={item.app.slug} />
+                                  <Span style={{ fontSize: "1.3rem" }}>
+                                    {item.reaction.emoji}
+                                  </Span>
+                                </MotiView>
+                              )
+                            })}
                         </Div>
+                        {posting.length ? (
+                          <Div
+                            style={{
+                              justifyContent: "center",
+                              display: "flex",
+                              gap: ".25rem",
+                            }}
+                          >
+                            <Span
+                              style={{
+                                fontSize: ".8rem",
+                                color: "var(--accent-4)",
+                              }}
+                            >
+                              {t("Thinking...")}
+                            </Span>
+                            <Div
+                              className="typing"
+                              data-testid="typing-indicator"
+                              style={{
+                                display: "inline-flex",
+                                gap: 2,
+                                alignItems: "center",
+                                marginLeft: 6,
+                              }}
+                            >
+                              <Span
+                                style={{
+                                  width: 4,
+                                  height: 4,
+                                  backgroundColor: "var(--accent-4)",
+                                  borderRadius: "50%",
+                                }}
+                              ></Span>
+                              <Span
+                                style={{
+                                  width: 4,
+                                  height: 4,
+                                  backgroundColor: "var(--accent-4)",
+                                  borderRadius: "50%",
+                                }}
+                              ></Span>
+                              <Span
+                                style={{
+                                  width: 4,
+                                  height: 4,
+                                  backgroundColor: "var(--accent-4)",
+                                  borderRadius: "50%",
+                                }}
+                              ></Span>
+                            </Div>
+                          </Div>
+                        ) : null}
+                      </Div>
+                      {pendingPostIds.length ? (
+                        <Button
+                          disabled={isLoadingPosts}
+                          onClick={async () => {
+                            await refetchPosts()
+                            setPendingPostIds([])
+                          }}
+                          style={{
+                            fontSize: 13,
+                            padding: "5px 10px",
+                            display: "flex",
+                            alignItems: "center",
+                            marginLeft: "auto",
+                            gap: 5,
+                          }}
+                        >
+                          {isLoadingPosts ? (
+                            <Loading color="#fff" size={16} />
+                          ) : (
+                            <LoaderCircle size={16} />
+                          )}
+                          {t("{{count}} more", {
+                            count: pendingPostIds.length,
+                          })}
+                        </Button>
                       ) : null}
                     </Div>
-                    {pendingPostIds.length ? (
-                      <Button
-                        disabled={isLoadingPosts}
-                        onClick={async () => {
-                          await refetchPosts()
-                          setPendingPostIds([])
-                        }}
-                        style={{
-                          fontSize: 13,
-                          padding: "5px 10px",
-                          display: "flex",
-                          alignItems: "center",
-                          marginLeft: "auto",
-                          gap: 5,
-                        }}
-                      >
-                        {isLoadingPosts ? (
-                          <Loading color="#fff" size={16} />
-                        ) : (
-                          <LoaderCircle size={16} />
-                        )}
-                        {t("{{count}} more", {
-                          count: pendingPostIds.length,
-                        })}
-                      </Button>
-                    ) : null}
-                  </Div>
+                  )
                 )}
                 {tags.length ? (
                   <Div
