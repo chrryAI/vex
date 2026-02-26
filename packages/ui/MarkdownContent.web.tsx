@@ -71,19 +71,27 @@ const MarkdownContentComponent = ({
   const { addHapticFeedback } = useTheme()
   const { t } = useAppContext()
 
-  const galleryContainerStyles = usePlatformStyles({
-    display: "flex",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16,
-    marginVertical: 20,
-  })
+  const galleryContainerStyles = useMemo(
+    () =>
+      usePlatformStyles({
+        display: "flex",
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 16,
+        marginVertical: 20,
+      }),
+    [usePlatformStyles],
+  )
 
-  const imageStyles = usePlatformStyles({
-    height: 400,
-    width: "auto",
-    borderRadius: 12,
-  })
+  const imageStyles = useMemo(
+    () =>
+      usePlatformStyles({
+        height: 400,
+        width: "auto",
+        borderRadius: 12,
+      }),
+    [usePlatformStyles],
+  )
 
   useEffect(() => {
     setIsMounted(true)
@@ -101,20 +109,20 @@ const MarkdownContentComponent = ({
     }
   }, [addHapticFeedback, galleryContainerStyles, imageStyles, t])
 
-  if (!isMounted) return null
-
   return (
     <Div
       style={style}
       data-testid={dataTestId}
-      className={`${styles.markdownContent} ${className || ""}`}
+      className={clx(styles.markdownContent, className)}
     >
-      <Markdown options={markdownOptions}>
-        {processTextWithCitations({
-          content,
-          webSearchResults,
-        })}
-      </Markdown>
+      {isMounted && (
+        <Markdown options={markdownOptions}>
+          {processTextWithCitations({
+            content,
+            webSearchResults,
+          })}
+        </Markdown>
+      )}
     </Div>
   )
 }

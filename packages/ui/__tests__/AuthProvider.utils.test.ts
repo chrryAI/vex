@@ -17,11 +17,11 @@ describe("AuthProvider Utils", () => {
       expect(hasStoreApps(app)).toBe(false)
     })
 
-    it("should return false if store.apps is empty", () => {
+    it("should return false if store.apps is missing", () => {
       const app = {
         store: {
           app: { id: "1" },
-          apps: [],
+          // apps is missing
         },
       } as unknown as appWithStore
       expect(hasStoreApps(app)).toBe(false)

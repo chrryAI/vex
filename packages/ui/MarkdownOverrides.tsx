@@ -38,20 +38,31 @@ const CodeBlock: React.FC<codeBlock> = ({ language, children, className }) => {
   )
 }
 
+export interface MarkdownOverridesProps {
+  addHapticFeedback: () => void
+  galleryContainerStyles: any
+  imageStyles: any
+  t?: (key: string) => string
+  CodeBlockComponent?: React.FC<any>
+}
+
 export const createOverrides = ({
   addHapticFeedback,
   galleryContainerStyles,
   imageStyles,
   t, // Passed from hook
   CodeBlockComponent, // Allow injection
-}: {
-  addHapticFeedback: () => void
-  galleryContainerStyles: any
-  imageStyles: any
-  t?: (key: string) => string
-  CodeBlockComponent?: React.FC<any>
-}) => {
+}: MarkdownOverridesProps) => {
   const FinalCodeBlock = CodeBlockComponent || CodeBlock
+
+  const renderParagraph = (children: React.ReactNode) => (
+    <Div
+      data-testid="markdown-paragraph"
+      className={`${styles.paragraph} ${styles.paragraphDiv}`}
+    >
+      {children}
+    </Div>
+  )
 
   return {
     code({ node, inline, className, children, ...props }: any) {
@@ -81,27 +92,8 @@ export const createOverrides = ({
       )
     },
     // Customize other markdown elements as needed
-    p: ({ _node, children }: any) => {
-      return (
-        <Div
-          data-testid="markdown-paragraph"
-          className={`${styles.paragraph} ${styles.paragraphDiv}`}
-        >
-          {children}
-        </Div>
-      )
-    },
-
-    div: ({ _node, children }: any) => {
-      return (
-        <Div
-          data-testid="markdown-paragraph"
-          className={`${styles.paragraph} ${styles.paragraphDiv}`}
-        >
-          {children}
-        </Div>
-      )
-    },
+    p: ({ _node, children }: any) => renderParagraph(children),
+    div: ({ _node, children }: any) => renderParagraph(children),
 
     a: ({ href, children }: any) =>
       href ? (

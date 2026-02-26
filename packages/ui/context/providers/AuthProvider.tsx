@@ -385,7 +385,7 @@ const AuthContext = createContext<
 >(undefined)
 
 export const hasStoreApps = (app: appWithStore | undefined) => {
-  return Boolean(app?.store?.app && app?.store?.apps.length)
+  return Boolean(app?.store?.app && app?.store?.apps?.length)
 }
 
 export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
@@ -1427,13 +1427,30 @@ export function AuthProvider({
   const sessionData = sessionSwr || session
 
   useEffect(() => {
-    const diff = allApps.filter(
-      (app) => !storeApps?.some((a) => a.id === app.id),
-    )
-    if (diff && diff.length > 0) {
-      mergeApps(diff)
-    }
-  }, [allApps.length, storeApps?.length])
+    if (!allApps.length) return
+
+    setAllApps((prevApps) => {
+      const appMap = new Map(prevApps.map((a) => [a.id, a]))
+      let hasChange = false
+
+      allApps.forEach((app) => {
+        const existing = appMap.get(app.id)
+        if (!existing) {
+          appMap.set(app.id, app)
+          hasChange = true
+        } else {
+          // Check if metadata actually changed to avoid unnecessary updates
+          // For now, simpler implementation: if identities differ, we update
+          if (JSON.stringify(existing) !== JSON.stringify(app)) {
+            appMap.set(app.id, app)
+            hasChange = true
+          }
+        }
+      })
+
+      return hasChange ? Array.from(appMap.values()) : prevApps
+    })
+  }, [allApps])
 
   const _getAlterNativeDomains = (store: storeWithApps) => {
     // Map askvex.com and vex.chrry.ai as equivalent domains

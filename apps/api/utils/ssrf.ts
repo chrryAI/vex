@@ -23,8 +23,15 @@ const isProduction =
 export function isPrivateIP(ip: string): boolean {
   // Helper function to check IPv4 address
   function checkIPv4Private(ipv4: string): boolean {
+    // Strictly validate IPv4 format (exactly 4 segments, each 0-255, no leading characters or garbage)
+    if (
+      !/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
+        ipv4,
+      )
+    ) {
+      return false
+    }
     const parts = ipv4.split(".").map(Number)
-    if (parts.length !== 4) return false
 
     // 0.0.0.0/8 (Current network)
     if (parts[0] === 0) return true
@@ -112,15 +119,38 @@ export function isPrivateIP(ip: string): boolean {
     if (normalizedIP === "::1" || normalizedIP === "0:0:0:0:0:0:0:1")
       return true
     // 64:ff9b::/96 (IPv4/IPv6 translation)
-    if (normalizedIP.startsWith("64:ff9b:")) return true
     // 100::/64 (Discard-Only)
-    if (normalizedIP.startsWith("100:")) return true
     // 2001:db8::/32 (Documentation)
-    if (normalizedIP.startsWith("2001:db8:")) return true
-    // fc00::/7 (Unique Local)
+    const ipv6Blocks = expandIPv6(normalizedIP)
+    if (ipv6Blocks) {
+      // 64:ff9b::/96 - Check first 6 blocks (96 bits)
+      if (
+        ipv6Blocks[0] === 0x64 &&
+        ipv6Blocks[1] === 0xff9b &&
+        ipv6Blocks[2] === 0 &&
+        ipv6Blocks[3] === 0 &&
+        ipv6Blocks[4] === 0 &&
+        ipv6Blocks[5] === 0
+      )
+        return true
+
+      // 100::/64 - Check first 4 blocks (64 bits)
+      if (
+        ipv6Blocks[0] === 0x100 &&
+        ipv6Blocks[1] === 0 &&
+        ipv6Blocks[2] === 0 &&
+        ipv6Blocks[3] === 0
+      )
+        return true
+
+      // 2001:db8::/32 - Check first 2 blocks (32 bits)
+      if (ipv6Blocks[0] === 0x2001 && ipv6Blocks[1] === 0xdb8) return true
+    }
+
+    // fc00::/7 (Unique Local) - fc00 to fdff
     if (normalizedIP.startsWith("fc") || normalizedIP.startsWith("fd"))
       return true
-    // fe80::/10 (Link Local)
+    // fe80::/10 (Link Local) - fe80 to febf
     if (
       normalizedIP.startsWith("fe8") ||
       normalizedIP.startsWith("fe9") ||
@@ -130,6 +160,22 @@ export function isPrivateIP(ip: string): boolean {
       return true
 
     return false
+  }
+
+  function expandIPv6(ip: string): number[] | null {
+    if (!ip.includes(":")) return null
+    let fullIP = ip
+    if (ip.includes("::")) {
+      const parts = ip.split("::")
+      if (!parts[0] || !parts[1]) return null
+      const left = parts[0].split(":").filter((x) => x !== "")
+      const right = parts[1].split(":").filter((x) => x !== "")
+      const missing = 8 - (left.length + right.length)
+      fullIP = [...left, ...Array(missing).fill("0"), ...right].join(":")
+    }
+    const blocks = fullIP.split(":")
+    if (blocks.length !== 8) return null
+    return blocks.map((b) => parseInt(b, 16))
   }
 
   return false

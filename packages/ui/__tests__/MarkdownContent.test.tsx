@@ -121,16 +121,13 @@ describe("MarkdownContent", () => {
     expect(screen.getByTestId("custom-store")).toBeDefined()
   })
 
-  it("memoizes options correctly (implicit test via re-renders)", () => {
+  it("memoizes options correctly and updates content on props change", () => {
     const { rerender } = render(<MarkdownContent content="Initial" />)
     expect(screen.getByText("Initial")).toBeDefined()
 
+    // Rerender with different content should update
     rerender(<MarkdownContent content="Updated" />)
     expect(screen.getByText("Updated")).toBeDefined()
-
-    // If memoization was broken in a way that caused crashes or weird behavior,
-    // it would likely fail here or in more complex scenarios.
-    // Since we're just testing the component logic, ensuring it updates is good.
   })
 
   it("creates overrides object with correct structure", () => {
