@@ -764,7 +764,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               }}
                               style={{
                                 ...utilities.inverted.style,
-                                ...utilities.xSmall.style,
+                                ...utilities.small.style,
                                 marginLeft: "auto",
                                 fontSize: ".8rem",
                               }}
