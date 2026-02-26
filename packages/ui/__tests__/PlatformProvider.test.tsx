@@ -46,20 +46,20 @@ describe("PlatformProvider", () => {
   })
 
   it("initializes with session data if provided", () => {
-    const sessionMock = {
-      device: { type: "mobile" },
-      os: { name: "iOS" },
-    }
+      const sessionMock = {
+          device: { type: "mobile" },
+          os: { name: "iOS" },
+      }
 
-    // We can't easily mock the internal logic that uses session without more complex setup,
-    // but we can pass it and ensure it renders without error.
-    render(
-      <PlatformProvider session={sessionMock as any}>
-        <TestComponent />
-      </PlatformProvider>,
-    )
+      // We can't easily mock the internal logic that uses session without more complex setup,
+      // but we can pass it and ensure it renders without error.
+      render(
+        <PlatformProvider session={sessionMock as any}>
+          <TestComponent />
+        </PlatformProvider>
+      )
 
-    // Check if it didn't crash
-    expect(screen.getByTestId("platform")).toBeTruthy()
+      // Check if it didn't crash
+      expect(screen.getByTestId("platform")).toBeTruthy()
   })
 })

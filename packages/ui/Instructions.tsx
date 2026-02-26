@@ -304,6 +304,59 @@ export default function Instructions({
 
     setFilesInternal(f)
   }
+  // Image compression function
+  const compressImage = (
+    file: File,
+    maxWidth: number,
+    quality: number,
+  ): Promise<File> => {
+    return new Promise((resolve) => {
+      const img = new Image()
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas")
+        let width = img.width
+        let height = img.height
+
+        // Calculate new dimensions while maintaining aspect ratio
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width
+          width = maxWidth
+        }
+
+        canvas.width = width
+        canvas.height = height
+
+        const ctx = canvas.getContext("2d")
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height)
+        }
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+              })
+              resolve(compressedFile)
+            } else {
+              resolve(file)
+            }
+          },
+          "image/jpeg",
+          quality,
+        )
+      }
+
+      img.onerror = () => {
+        resolve(file)
+      }
+
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
   const handleFileSelect = async (selectedFiles: FileList | null) => {
     if (!selectedFiles) return
 
@@ -320,7 +373,27 @@ export default function Instructions({
         continue
       }
 
-      validFiles.push(file)
+      // Compress images to reduce storage and improve performance
+      const fileType = file.type.toLowerCase()
+      if (fileType.startsWith("image/")) {
+        console.log(`🖼️ Processing image: ${file.name} (${file.size} bytes)`)
+        try {
+          const compressedFile = await compressImage(file, 800, 0.7)
+          const reduction = (
+            ((file.size - compressedFile.size) / file.size) *
+            100
+          ).toFixed(1)
+          console.log(
+            `🗜️ Compressed ${file.name}: ${file.size} → ${compressedFile.size} bytes (${reduction}% reduction)`,
+          )
+          validFiles.push(compressedFile)
+        } catch (error) {
+          console.error("❌ Image compression failed:", error)
+          validFiles.push(file) // Use original if compression fails
+        }
+      } else {
+        validFiles.push(file)
+      }
     }
 
     setFiles((prev) => [...prev, ...validFiles].slice(0, MAX_FILES))

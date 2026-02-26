@@ -65,11 +65,12 @@ export default function AppLink({
   }, [currentApp, loadingApp, isTribe])
 
   useEffect(() => {
-    const sa = storeApps.find((a) => a.id === app.id)
-    if (sa) return
+    if (!app) return
 
-    mergeApps([app])
-  }, [app, mergeApps, storeApps])
+    if (!currentApp) {
+      mergeApps([app])
+    }
+  }, [currentApp, app])
 
   if (as === "a") {
     return (

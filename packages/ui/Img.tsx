@@ -6,7 +6,13 @@ import { useEffect, useState } from "react"
 import { useImgStyles } from "./Img.styles"
 import { ImageIcon } from "./icons"
 import Loading from "./Loading"
-import { MotiView, Image as PlatformImage, Span, useTheme } from "./platform"
+import {
+  Div,
+  MotiView,
+  Image as PlatformImage,
+  Span,
+  useTheme,
+} from "./platform"
 import { useInView } from "./platform/useInView" // Auto-resolves to .web or .native
 
 // Simple in-memory cache

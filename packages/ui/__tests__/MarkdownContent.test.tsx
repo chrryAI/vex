@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import MarkdownContent, { createOverrides } from "../MarkdownContent.web"
 import { mockAppContext, mockTheme } from "./mocks/mockContexts"
@@ -67,7 +67,7 @@ describe("MarkdownContent", () => {
 
   it("renders code blocks with custom component", () => {
     const code = "console.log('test')"
-    const markdown = `\`\`\`javascript\n${code}\n\`\`\``
+    const markdown = "```javascript\n" + code + "\n```"
 
     render(<MarkdownContent content={markdown} />)
 

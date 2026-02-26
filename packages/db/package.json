@@ -10,7 +10,7 @@
     "./src/better-auth-schema": "./src/better-auth-schema.ts"
   },
   "scripts": {
-    "test": "echo \"No tests for @repo/db\" && exit 0",
+    "test": "vitest run",
     "generate": "pnpm exec drizzle-kit generate",
     "g": "pnpm exec drizzle-kit generate",
     "migrate": "pnpm exec drizzle-kit migrate",

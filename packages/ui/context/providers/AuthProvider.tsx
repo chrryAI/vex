@@ -66,7 +66,6 @@ import {
   getThreadId,
   type instructionBase,
   isCI,
-  isDeepEqual,
   isDevelopment,
   isE2E,
   isOwner,
@@ -392,7 +391,6 @@ export const hasStoreApps = (app: appWithStore | undefined) => {
 export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
   // Create a map of existing apps by ID
   const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
-  let hasChange = false
 
   // Add or update apps
   newApps.forEach((newApp) => {
@@ -404,7 +402,7 @@ export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
       const existingHasStoreApps = hasStoreApps(existingApp)
 
       // Merge: prefer new app but preserve existing store.apps if new one is empty/undefined
-      const merged = {
+      existingAppsMap.set(newApp.id, {
         ...existingApp,
         ...newApp,
         store: newHasStoreApps
@@ -412,21 +410,15 @@ export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
           : existingHasStoreApps
             ? existingApp.store
             : newApp.store,
-      }
-
-      // Deep compare to detect actual changes
-      if (!isDeepEqual(existingApp, merged)) {
-        existingAppsMap.set(newApp.id, merged)
-        hasChange = true
-      }
+      })
     } else {
       existingAppsMap.set(newApp.id, newApp)
-      hasChange = true
     }
   })
 
-  // Only return a new array if something actually changed
-  return hasChange ? Array.from(existingAppsMap.values()) : prevApps
+  const result = Array.from(existingAppsMap.values())
+
+  return result
 }
 
 export function AuthProvider({
@@ -1433,6 +1425,32 @@ export function AuthProvider({
     },
   )
   const sessionData = sessionSwr || session
+
+  useEffect(() => {
+    if (!allApps.length) return
+
+    setAllApps((prevApps) => {
+      const appMap = new Map(prevApps.map((a) => [a.id, a]))
+      let hasChange = false
+
+      allApps.forEach((app) => {
+        const existing = appMap.get(app.id)
+        if (!existing) {
+          appMap.set(app.id, app)
+          hasChange = true
+        } else {
+          // Use the existing merge helper to preserve hydrated data
+          const merged = merge([existing], [app])[0]
+          if (merged && JSON.stringify(existing) !== JSON.stringify(merged)) {
+            appMap.set(app.id, merged)
+            hasChange = true
+          }
+        }
+      })
+
+      return hasChange ? Array.from(appMap.values()) : prevApps
+    })
+  }, [allApps])
 
   const _getAlterNativeDomains = (store: storeWithApps) => {
     // Map askvex.com and vex.chrry.ai as equivalent domains

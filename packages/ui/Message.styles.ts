@@ -230,7 +230,6 @@ export const MessageStyleDefs = {
     alignItems: "center",
     marginTop: 15,
     fontSize: 12,
-    flexWrap: "wrap",
   },
   left: {
     display: "flex",

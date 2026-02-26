@@ -15,8 +15,10 @@ import {
   encrypt,
   eq,
   getApp as getAppDb,
+  getApps as getAppsDb,
   getInstall,
   getStore,
+  getStoreInstall,
   getStoreInstalls,
   installApp,
   isDevelopment,
@@ -24,6 +26,7 @@ import {
   isNotNull,
   ne,
   safeDecrypt,
+  updateApp,
   updateStore,
 } from "@repo/db"
 import { appOrders, apps, storeInstalls } from "@repo/db/src/schema"

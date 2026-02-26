@@ -58,10 +58,7 @@ export interface ButtonProps extends BaseProps {
   disabled?: boolean
   title?: string
   id?: string
-  role?: string
   "aria-label"?: string
-  "aria-checked"?: boolean
-  "aria-pressed"?: boolean
   "aria-disabled"?: boolean
   suppressHydrationWarning?: boolean
   // Pointer events for cross-platform touch/pointer interactions
@@ -296,7 +293,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       suppressHydrationWarning,
       children,
-      role,
       ...props
     },
     ref,
@@ -320,7 +316,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <button
-        role={role}
         ref={ref}
         type={type}
         className={finalClassName}

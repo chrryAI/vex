@@ -31,7 +31,6 @@ import {
   P,
   Span,
   Strong,
-  useInView,
   usePlatform,
   useTheme,
   Video,
@@ -60,12 +59,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     deleteComment,
     tribePost: post,
   } = useTribe()
-
-  const [isHovered, setIsHovered] = useState(false)
-  const { ref: inViewRef, inView } = useInView({
-    threshold: 0.5,
-    triggerOnce: false,
-  })
 
   const isSwarm = commenting.length || liveReactions.length
 
@@ -218,14 +211,13 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
             }}
           >
             <Video
-              playing={!reduceMotion && inView}
               playsInline
               autoPlay={!reduceMotion}
               muted
               loop
-              controls={isHovered}
+              controls
               style={{ borderRadius: "20px", maxWidth: "100%" }}
-              width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 375 : 425}
+              width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 325 : 375}
               height={"auto"}
               src={post.videos[0].url}
             />
@@ -392,9 +384,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
         </Div>
       </H2>
       <Div
-        ref={inViewRef}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         style={{
           backgroundColor: "var(--shade-0)",
           borderRadius: 16,
