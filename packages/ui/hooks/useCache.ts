@@ -7,11 +7,19 @@ export default function useCache() {
 
   return {
     clear: (k?: string) => {
-      for (const key of cache.keys()) {
-        if (key === k) {
+      // If no key is provided, clear everything
+      if (!k) {
+        for (const key of cache.keys()) {
           cache.delete(key)
-          break
-        } else {
+        }
+        return
+      }
+
+      // If a key/pattern is provided, only delete matching keys
+      for (const key of cache.keys()) {
+        // SWR keys are often serialized strings. We use includes for partial matching
+        // to support clearing cache for a specific resource type (e.g. "app")
+        if (typeof key === "string" && key.includes(k)) {
           cache.delete(key)
         }
       }
