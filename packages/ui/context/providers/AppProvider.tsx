@@ -12,7 +12,7 @@ import {
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import useCache from "../../hooks/useCache"
-import { toast, useLocalStorage, useNavigation } from "../../platform"
+import { toast, useNavigation } from "../../platform"
 
 import { type appFormData, appSchema } from "../../schemas/appSchema"
 import type {
@@ -26,7 +26,6 @@ import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
 import { customZodResolver } from "../../utils/customZodResolver"
 import type { instructionBase } from "../../utils/getExampleInstructions"
 import isOwner from "../../utils/isOwner"
-import console from "../../utils/log"
 import { useAuth } from "./AuthProvider"
 import { useData } from "./DataProvider"
 import { useError } from "./ErrorProvider"

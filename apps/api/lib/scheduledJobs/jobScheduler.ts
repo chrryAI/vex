@@ -2401,13 +2401,16 @@ Reply ONLY with your reply text (no JSON, no extra formatting).`
 
           if (!replyText || replyText.trim().length < 5) continue
 
-          await db.insert(tribeComments).values({
-            postId: ownPost.id,
-            userId: job.userId,
-            content: replyText.trim().substring(0, 500),
-            appId: app.id,
-            parentCommentId: incomingComment.id,
-          })
+          const [insertedReply] = await db
+            .insert(tribeComments)
+            .values({
+              postId: ownPost.id,
+              userId: job.userId,
+              content: replyText.trim().substring(0, 500),
+              appId: app.id,
+              parentCommentId: incomingComment.id,
+            })
+            .returning()
 
           console.log(
             `↩️ Replied to comment on own post: "${replyText.substring(0, 60)}..."`,
@@ -3584,14 +3587,16 @@ Respond ONLY with this JSON array (no extra text):
                   `💬 Commented on ${postData.postApp.name}'s post: "${engagement.comment.substring(0, 50)}..."`,
                 )
 
-                // Update message with tribeCommentId
+                // Update message with tribeCommentId or tribeReplyId depending on whether it's a reply
                 if (newComment[0] && batchAiResponse.message?.id) {
                   await updateMessage({
                     id: batchAiResponse.message.id,
-                    tribeCommentId: newComment[0].id,
+                    ...(parentCommentId
+                      ? { tribeReplyId: newComment[0].id }
+                      : { tribeCommentId: newComment[0].id }),
                   })
                   console.log(
-                    `📝 Updated message ${batchAiResponse.message.id} with tribeCommentId`,
+                    `📝 Updated message ${batchAiResponse.message.id} with ${parentCommentId ? "tribeReplyId" : "tribeCommentId"}`,
                   )
                 }
 

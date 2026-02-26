@@ -8,10 +8,10 @@ Focus now has its own **separate site mode** with custom domain support, indepen
 
 ## ✅ What Was Added
 
-### **1. New SiteMode: "focus"**
+### **1. New siteMode: "focus"**
 
 ```typescript
-export type SiteMode = "chrryDev" | "vex" | "chrryAI" | "chrryStore" | "focus"
+export type siteMode = "chrryDev" | "vex" | "chrryAI" | "chrryStore" | "focus"
 ```
 
 Focus is now a first-class site mode alongside Chrry, Vex, and others.
@@ -30,13 +30,13 @@ focus.chrry.ai → "focus" mode
 getfocus.ai → "focus" mode
 
 // Any custom domain you configure
-yourfocus.com → "focus" mode (add to detectSiteModeDomain)
+yourfocus.com → "focus" mode (add to detectsiteModeDomain)
 ```
 
 ### **Domain Detection Logic**
 
 ```typescript
-export function detectSiteModeDomain(hostname?: string): SiteMode {
+export function detectsiteModeDomain(hostname?: string): siteMode {
   const host = hostname || window.location.hostname
 
   // Focus custom domain - checked BEFORE general chrry.ai
@@ -199,7 +199,7 @@ console.log(config.logo) // "⏱️"
 ```
 1. User visits focus.chrry.ai
    ↓
-2. detectSiteModeDomain("focus.chrry.ai")
+2. detectsiteModeDomain("focus.chrry.ai")
    ↓
 3. Checks: host.includes("focus.chrry.ai") → true
    ↓
@@ -372,17 +372,17 @@ curl https://yourfocus.com
 
 ```typescript
 // Test Focus subdomain
-detectSiteModeDomain("focus.chrry.ai") // → "focus" ✅
+detectsiteModeDomain("focus.chrry.ai") // → "focus" ✅
 
 // Test custom domain
-detectSiteModeDomain("getfocus.ai") // → "focus" ✅
+detectsiteModeDomain("getfocus.ai") // → "focus" ✅
 
 // Test other chrry.ai subdomains
-detectSiteModeDomain("bloom.chrry.ai") // → "chrryAI" ✅
-detectSiteModeDomain("chrry.ai") // → "chrryAI" ✅
+detectsiteModeDomain("bloom.chrry.ai") // → "chrryAI" ✅
+detectsiteModeDomain("chrry.ai") // → "chrryAI" ✅
 
 // Test vex
-detectSiteModeDomain("vex.chrry.ai") // → "vex" ✅
+detectsiteModeDomain("vex.chrry.ai") // → "vex" ✅
 ```
 
 ### **Test Site Config**
@@ -410,7 +410,7 @@ VITE_SITE_MODE=focus
 
 ```typescript
 // Will return "focus" mode
-detectSiteMode() // → "focus"
+detectsiteMode() // → "focus"
 ```
 
 ---
@@ -419,7 +419,7 @@ detectSiteMode() // → "focus"
 
 ### **Before Launch**
 
-- [x] Add "focus" SiteMode type
+- [x] Add "focus" siteMode type
 - [x] Add Focus translations (10 languages)
 - [x] Add Focus domain detection
 - [x] Add Focus site configuration

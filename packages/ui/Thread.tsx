@@ -565,7 +565,7 @@ const Thread = ({
           </Div>
         ) : (
           <>
-            {isGame || postId ? null : (
+            {isGame ? null : (
               <Messages
                 onCharacterProfileUpdate={handleCharacterProfileUpdate}
                 isHome={isHome}

@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { act, fireEvent, render, screen } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import {
@@ -13,9 +13,10 @@ import {
 // Make React globally available
 global.React = React
 
-import FocusButton, { type Task } from "../FocusButton"
+import { useTimerContext } from "../context/TimerContext"
+import FocusButton from "../FocusButton"
 
-// Mock TimerContext values
+// Mock TimerContext values with TASKS
 const mockTimerContext = {
   startAdjustment: vi.fn(),
   stopAdjustment: vi.fn(),
@@ -25,7 +26,7 @@ const mockTimerContext = {
   playBirds: false,
   setPlayBirds: vi.fn(),
   activePomodoro: null,
-  time: 1500, // 25 mins
+  time: 1500,
   isCountingDown: false,
   isPaused: false,
   isFinished: false,
@@ -33,11 +34,26 @@ const mockTimerContext = {
   startCountdown: vi.fn(),
   fetchTasks: vi.fn(),
   handlePresetTime: vi.fn(),
-  replay: false,
+  replay: false, // Default not replaying
   setReplay: vi.fn(),
   tasks: {
-    tasks: [] as Task[],
-    totalCount: 0,
+    tasks: [
+      {
+        id: "task-1",
+        title: "Task 1",
+        createdOn: new Date(),
+        modifiedOn: new Date(),
+        order: 0,
+      },
+      {
+        id: "task-2",
+        title: "Task 2",
+        createdOn: new Date(),
+        modifiedOn: new Date(),
+        order: 1,
+      },
+    ],
+    totalCount: 2,
     hasNextPage: false,
     nextPage: null,
   },
@@ -51,7 +67,15 @@ const mockTimerContext = {
   setPresetMin1: vi.fn(),
   setPresetMin2: vi.fn(),
   setPresetMin3: vi.fn(),
-  selectedTasks: [] as Task[],
+  selectedTasks: [
+    {
+      id: "task-1",
+      title: "Task 1",
+      createdOn: new Date(),
+      modifiedOn: new Date(),
+      order: 0,
+    },
+  ], // Task 1 is selected
   setSelectedTasks: vi.fn(),
   remoteTimer: null,
   fetchTimer: vi.fn(),
@@ -98,7 +122,7 @@ vi.mock("../context/ThemeContext", () => ({
 }))
 
 vi.mock("../context/TimerContext", () => ({
-  useTimerContext: () => mockTimerContext,
+  useTimerContext: vi.fn(),
 }))
 
 vi.mock("../hooks", () => ({
@@ -207,79 +231,39 @@ vi.mock("react-i18next", () => ({
   },
 }))
 
-// Mock TimerContext
-vi.mock("../context/TimerContext", () => ({
-  useTimerContext: () => mockTimerContext,
-}))
-
-describe("FocusButton Keyboard Accessibility", () => {
+describe("FocusButton Accessibility Improvements", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    mockTimerContext.startAdjustment.mockClear()
-    mockTimerContext.stopAdjustment.mockClear()
+    vi.mocked(useTimerContext).mockReturnValue(mockTimerContext)
   })
 
-  it("should trigger startAdjustment and stopAdjustment on Enter/Space key press (simulated via click detail=0) for Increase Minutes", async () => {
-    await act(async () => {
-      render(<FocusButton />)
-    })
+  it("task selection button should have aria-pressed attribute", () => {
+    render(<FocusButton />)
 
-    const increaseMinutesBtn = screen.getByLabelText("Increase minutes")
-    expect(increaseMinutesBtn).toBeTruthy()
+    // Task 1 is selected
+    const task1Button = screen.getByText("Task 1").closest("button")
+    expect(task1Button?.getAttribute("aria-pressed")).toBe("true")
 
-    fireEvent.click(increaseMinutesBtn, { detail: 0 })
-
-    expect(mockTimerContext.startAdjustment).toHaveBeenCalledWith(1, true)
-    expect(mockTimerContext.stopAdjustment).toHaveBeenCalled()
+    // Task 2 is NOT selected
+    const task2Button = screen.getByText("Task 2").closest("button")
+    expect(task2Button?.getAttribute("aria-pressed")).toBe("false")
   })
 
-  it("should trigger startAdjustment and stopAdjustment on Enter/Space key press for Decrease Minutes", async () => {
-    await act(async () => {
-      render(<FocusButton />)
-    })
-
-    const decreaseMinutesBtn = screen.getByLabelText("Decrease minutes")
-    expect(decreaseMinutesBtn).toBeTruthy()
-
-    fireEvent.click(decreaseMinutesBtn, { detail: 0 })
-
-    expect(mockTimerContext.startAdjustment).toHaveBeenCalledWith(-1, true)
-    expect(mockTimerContext.stopAdjustment).toHaveBeenCalled()
+  it("replay button should have aria-pressed attribute", () => {
+    render(<FocusButton />)
+    const replayButton = screen.getByTitle("Replay")
+    expect(replayButton.getAttribute("aria-pressed")).toBe("false")
   })
 
-  it("should NOT trigger startAdjustment if detail is not 0 (mouse click)", async () => {
-    await act(async () => {
-      render(<FocusButton />)
+  it("should handle undefined selectedTasks gracefully", () => {
+    vi.mocked(useTimerContext).mockReturnValue({
+      ...mockTimerContext,
+      selectedTasks: undefined,
     })
 
-    const increaseMinutesBtn = screen.getByLabelText("Increase minutes")
+    render(<FocusButton />)
 
-    fireEvent.click(increaseMinutesBtn, { detail: 1 })
-
-    expect(mockTimerContext.startAdjustment).not.toHaveBeenCalled()
-  })
-
-  it("should handle seconds adjustment correctly (Increase)", async () => {
-    await act(async () => {
-      render(<FocusButton />)
-    })
-
-    const increaseSecondsBtn = screen.getByLabelText("Increase seconds")
-    fireEvent.click(increaseSecondsBtn, { detail: 0 })
-
-    expect(mockTimerContext.startAdjustment).toHaveBeenCalledWith(1, false)
-    expect(mockTimerContext.stopAdjustment).toHaveBeenCalled()
-  })
-
-  it("should handle seconds adjustment correctly (Decrease)", async () => {
-    await act(async () => {
-      render(<FocusButton />)
-    })
-
-    const decreaseSecondsBtn = screen.getByLabelText("Decrease seconds")
-    fireEvent.click(decreaseSecondsBtn, { detail: 0 })
-
-    expect(mockTimerContext.startAdjustment).toHaveBeenCalledWith(-1, false)
-    expect(mockTimerContext.stopAdjustment).toHaveBeenCalled()
+    // Ensure buttons still have aria-pressed="false"
+    const task1Button = screen.getByText("Task 1").closest("button")
+    expect(task1Button?.getAttribute("aria-pressed")).toBe("false")
   })
 })

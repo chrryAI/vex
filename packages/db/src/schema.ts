@@ -813,6 +813,12 @@ export const aiAgents = pgTable("aiAgents", {
     .notNull()
     .default("all"),
 
+  metadata: jsonb("metadata")
+    .$type<{
+      lastFailedKey?: string
+    }>()
+    .default({}),
+
   // ♾️ INFINITE HUMAN: RPG Character Stats
   intelligence: integer("intelligence").default(50).notNull(), // Logic, coding, reasoning (0-100)
   creativity: integer("creativity").default(50).notNull(), // Storytelling, art, ideation (0-100)

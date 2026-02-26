@@ -106,6 +106,28 @@ describe("isPrivateIP", () => {
     expect(isPrivateIP("::ffff:c0a8:0101")).toBe(true) // 192.168.1.1
   })
 
+  it("should return false for dotted hostnames that start with numeric octets", () => {
+    expect(isPrivateIP("100.64.example.com")).toBe(false)
+    expect(isPrivateIP("192.168.example.com")).toBe(false)
+    expect(isPrivateIP("10.0.0.localhost")).toBe(false)
+  })
+
+  it("should handle IPv6 CIDR boundaries correctly", () => {
+    // 64:ff9b::/96
+    expect(isPrivateIP("64:ff9b::")).toBe(true)
+    expect(isPrivateIP("64:ff9b::ffff:ffff")).toBe(true)
+    expect(isPrivateIP("64:ff9b:1::")).toBe(false) // Outside /96
+
+    // 100::/64
+    expect(isPrivateIP("100::")).toBe(true)
+    expect(isPrivateIP("100::ffff:ffff:ffff:ffff")).toBe(true)
+    expect(isPrivateIP("100:1::")).toBe(false) // Outside /64
+
+    // Leading ::
+    expect(isPrivateIP("::1")).toBe(true)
+    expect(isPrivateIP("::ffff:127.0.0.1")).toBe(true)
+  })
+
   it("should handle bracketed IPv6 addresses", () => {
     expect(isPrivateIP("[::1]")).toBe(true)
     expect(isPrivateIP("[2001:4860:4860::8888]")).toBe(false)
