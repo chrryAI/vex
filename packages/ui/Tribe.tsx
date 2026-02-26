@@ -108,6 +108,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   }, [isLoadingTag, tags])
 
   const {
+    sushi,
     app,
     loadingApp,
     timeAgo,
@@ -450,7 +451,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
                     <Div
                       style={{
-                        marginBottom: "1.5rem",
+                        marginBottom: isMobileDevice ? "1rem" : "1.5rem",
                         textAlign: "center",
                       }}
                     >
@@ -473,23 +474,43 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {t("and 🪢 Tribe, powered by")}{" "}
                         {app ? (
                           <AppLink isTribe app={app}>
-                            {t("🌀 Spatial Navigation\u00A9")}
+                            {t("🌀 Spatial Navigation©")}
                           </AppLink>
                         ) : (
                           <A
                             openInNewTab
                             href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
                           >
-                            {t("🌀 Spatial Navigation\u00A9")}
+                            {t("🌀 Spatial Navigation©")}
                           </A>
                         )}{" "}
                         {t("for context-aware communication and")}{" "}
-                        <A
-                          openInNewTab
-                          href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
-                        >
-                          {t("🍣 Sato Dojo\u00A9")}
-                        </A>{" "}
+                        {sushi ? (
+                          <AppLink
+                            loading={
+                              <>
+                                <Loading size={14} />
+                              </>
+                            }
+                            isTribe
+                            app={sushi}
+                            icon={<>🍣</>}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 5,
+                            }}
+                          >
+                            {t("Sato Dojo©")}
+                          </AppLink>
+                        ) : (
+                          <A
+                            openInNewTab
+                            href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
+                          >
+                            {t("🍣 Sato Dojo©")}
+                          </A>
+                        )}{" "}
                         {t("for autonomous coding.")}
                       </P>
                       <Div
@@ -497,17 +518,17 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           marginTop: 20,
                           ...utilities.row.style,
                           alignItems: "center",
-                          justifyContent: "center",
-                          gap: 10,
+                          justifyContent:
+                            viewPortWidth < 550 ? "left" : "center",
+                          gap: viewPortWidth < 550 ? 12.5 : 10,
+                          flexWrap: "wrap",
                         }}
                       >
                         {app && (
                           <AppLink
                             isTribe={false}
                             app={app}
-                            icon={
-                              app?.icon ? app.icon : <Img app={app} size={18} />
-                            }
+                            icon={<Img app={app} size={18} />}
                             className="button inverted"
                             style={{
                               ...utilities.inverted.style,
@@ -571,6 +592,30 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             {t("Create Your Agent")}
                           </Button>
                         )}
+                        {app && (
+                          <Button
+                            data-testid="grapes-feedback-button"
+                            className="transparent"
+                            onClick={() => {
+                              plausible({
+                                name: ANALYTICS_EVENTS.GRAPE_PEAR_FEEDBACK,
+                                props: {
+                                  app: app.name,
+                                  slug: app.slug,
+                                  id: app.id,
+                                },
+                              })
+                              setIsPear(app)
+                            }}
+                            style={{
+                              ...utilities.transparent.style,
+                              ...utilities.small.style,
+                              fontSize: ".8rem",
+                            }}
+                          >
+                            <Img slug="pear" size={20} /> {t("Let's Pear")}
+                          </Button>
+                        )}
                       </Div>
                     </Div>
                   </>
@@ -616,7 +661,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           openInNewTab
                           href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
                         >
-                          {t("🌀 Spatial Navigation©")}
+                          {t("🌀 Çapa")} IPA: /tʃɑ.ˈpɑ/
                         </A>
                       )}
                       <Instructions
@@ -641,7 +686,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          gap: 10,
+                          gap: 5,
                           flex: 1,
                           flexWrap: "wrap",
                         }}
@@ -667,13 +712,14 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               display: "flex",
                               alignItems: "center",
                               flexWrap: "wrap",
-                              gap: 10,
+                              gap: 5,
                             }}
                           >
                             <P
                               style={{
-                                color: "var(--shade-8)",
                                 flex: 1,
+                                fontSize: "1rem",
+                                color: COLORS.orange,
                               }}
                             >
                               {t(
@@ -690,7 +736,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               style={{
                                 ...utilities.inverted.style,
                                 ...utilities.xSmall.style,
-                                marginLeft: "auto",
+                                marginLeft: ".5rem",
                                 fontSize: ".8rem",
                               }}
                             >
@@ -720,8 +766,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 fontSize: ".8rem",
                               }}
                             >
-                              <Img slug="pear" size={20} />{" "}
-                              {t("Give Feedback with Pear")}
+                              <Img slug="pear" size={20} /> {t("Let's Pear")}
                             </Button>
                           )
                         )}
@@ -748,7 +793,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       >
                         {app?.mainThreadId && owner && (
                           <A
-                            style={{ fontSize: "1.1rem", marginRight: 10 }}
+                            style={{ fontSize: "1rem", marginRight: 5 }}
                             href={`/threads/${app?.mainThreadId}`}
                           >
                             🧬

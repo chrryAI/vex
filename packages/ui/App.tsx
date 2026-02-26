@@ -551,14 +551,6 @@ export default function App({
             gap: "0.5rem",
           }}
         >
-          {app?.mainThreadId && isAppOwner && (
-            <A
-              style={{ fontSize: "1.1rem" }}
-              href={`/threads/${app?.mainThreadId}`}
-            >
-              🧬
-            </A>
-          )}
           <Button
             data-testid={`${minimize ? "maximize" : "minimize"}`}
             title={t(!minimize ? "Hide" : "Maximize")}
@@ -840,6 +832,14 @@ export default function App({
                 setIsWebSearchEnabled(true)
               }}
             />
+            {app?.mainThreadId && isAppOwner && (
+              <A
+                style={{ fontSize: ".9rem", marginTop: ".2rem" }}
+                href={`/threads/${app?.mainThreadId}`}
+              >
+                🧬
+              </A>
+            )}
           </Div>
           {minimize && hasHydrated && (
             <>
