@@ -67,7 +67,7 @@ const MarkdownContentComponent = ({
   style,
   webSearchResults,
 }: MarkdownContentProps) => {
-  const [isMounted, setIsMounted] = useState(false)
+  /* isMounted removed for SSR */
   const { addHapticFeedback } = useTheme()
   const { t } = useAppContext()
 
@@ -94,9 +94,10 @@ const MarkdownContentComponent = ({
   const galleryContainerStyles = usePlatformStyles(galleryContainerConfig)
   const imageStyles = usePlatformStyles(imageConfig)
 
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  /*
+   * removed isMounted hydration guard to allow SSR of markdown content.
+   * browser-only components injected via overrides handle their own mounting.
+   */
 
   const markdownOptions = useMemo(() => {
     return {
@@ -116,14 +117,12 @@ const MarkdownContentComponent = ({
       data-testid={dataTestId}
       className={clx(styles.markdownContent, className)}
     >
-      {isMounted && (
-        <Markdown options={markdownOptions}>
-          {processTextWithCitations({
-            content,
-            webSearchResults,
-          })}
-        </Markdown>
-      )}
+      <Markdown options={markdownOptions}>
+        {processTextWithCitations({
+          content,
+          webSearchResults,
+        })}
+      </Markdown>
     </Div>
   )
 }

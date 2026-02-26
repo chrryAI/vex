@@ -2903,7 +2903,7 @@ export function AuthProvider({
 
   // Create sign out wrapper
   const signOutContext = async (options: { callbackUrl?: string }) => {
-    return signOutContext(options)
+    return signOutInternal(options)
   }
 
   const popcorn = storeApps.find((app) => app.slug === "popcorn")
