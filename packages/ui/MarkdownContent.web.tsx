@@ -71,27 +71,28 @@ const MarkdownContentComponent = ({
   const { addHapticFeedback } = useTheme()
   const { t } = useAppContext()
 
-  const galleryContainerStyles = useMemo(
-    () =>
-      usePlatformStyles({
-        display: "flex",
-        flexDirection: "row",
-        flexWrap: "wrap",
-        gap: 16,
-        marginVertical: 20,
-      }),
-    [usePlatformStyles],
+  const galleryContainerConfig = useMemo(
+    () => ({
+      display: "flex",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 16,
+      marginVertical: 20,
+    }),
+    [],
   )
 
-  const imageStyles = useMemo(
-    () =>
-      usePlatformStyles({
-        height: 400,
-        width: "auto",
-        borderRadius: 12,
-      }),
-    [usePlatformStyles],
+  const imageConfig = useMemo(
+    () => ({
+      height: 400,
+      width: "auto",
+      borderRadius: 12,
+    }),
+    [],
   )
+
+  const galleryContainerStyles = usePlatformStyles(galleryContainerConfig)
+  const imageStyles = usePlatformStyles(imageConfig)
 
   useEffect(() => {
     setIsMounted(true)

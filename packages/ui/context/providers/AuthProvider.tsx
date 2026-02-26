@@ -1439,10 +1439,10 @@ export function AuthProvider({
           appMap.set(app.id, app)
           hasChange = true
         } else {
-          // Check if metadata actually changed to avoid unnecessary updates
-          // For now, simpler implementation: if identities differ, we update
-          if (JSON.stringify(existing) !== JSON.stringify(app)) {
-            appMap.set(app.id, app)
+          // Use the existing merge helper to preserve hydrated data
+          const merged = merge([existing], [app])[0]
+          if (merged && JSON.stringify(existing) !== JSON.stringify(merged)) {
+            appMap.set(app.id, merged)
             hasChange = true
           }
         }

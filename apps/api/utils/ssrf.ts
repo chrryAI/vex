@@ -167,15 +167,22 @@ export function isPrivateIP(ip: string): boolean {
     let fullIP = ip
     if (ip.includes("::")) {
       const parts = ip.split("::")
-      if (!parts[0] || !parts[1]) return null
-      const left = parts[0].split(":").filter((x) => x !== "")
-      const right = parts[1].split(":").filter((x) => x !== "")
+      if (parts.length > 2) return null // Only one :: allowed
+
+      const leftPart = parts[0] || ""
+      const rightPart = parts[1] || ""
+
+      const left = leftPart.split(":").filter((x) => x !== "")
+      const right = rightPart.split(":").filter((x) => x !== "")
+
       const missing = 8 - (left.length + right.length)
+      if (missing < 0) return null
+
       fullIP = [...left, ...Array(missing).fill("0"), ...right].join(":")
     }
     const blocks = fullIP.split(":")
     if (blocks.length !== 8) return null
-    return blocks.map((b) => parseInt(b, 16))
+    return blocks.map((b) => parseInt(b || "0", 16))
   }
 
   return false

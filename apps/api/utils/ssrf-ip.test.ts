@@ -122,6 +122,10 @@ describe("isPrivateIP", () => {
     expect(isPrivateIP("100::")).toBe(true)
     expect(isPrivateIP("100::ffff:ffff:ffff:ffff")).toBe(true)
     expect(isPrivateIP("100:1::")).toBe(false) // Outside /64
+
+    // Leading ::
+    expect(isPrivateIP("::1")).toBe(true)
+    expect(isPrivateIP("::ffff:127.0.0.1")).toBe(true)
   })
 
   it("should handle bracketed IPv6 addresses", () => {
