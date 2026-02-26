@@ -14,8 +14,10 @@ import React, {
   createContext,
   type ReactNode,
   startTransition,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react"
 import console from "../utils/log"
@@ -333,9 +335,9 @@ export function PlatformProvider({
   const [isIDE, setIsIDE] = useState(false)
   const [idePanelWidth, setIdePanelWidth] = useState(400) // Default 400px for chat panel
 
-  const toggleIDE = () => {
+  const toggleIDE = useCallback(() => {
     setIsIDE((prev) => !prev)
-  }
+  }, [])
 
   useEffect(() => {
     console.log("🔍 Platform detection:", {
@@ -488,49 +490,83 @@ export function PlatformProvider({
     checkStorageReady()
   }, [BrowserInstance])
 
-  const value: PlatformContextValue = {
-    platform: platform === "native" ? "android" : platform,
-    browser,
-    device,
-    os,
-    isWeb: _isWeb(),
-    isNative: _isNative(),
-    isIOS: _isIOS(),
-    isAndroid: _isAndroid(),
-    isExtension: _isBrowserExtension(),
-    isStandalone: _isStandalone(),
-    isChrome,
-    isFirefox,
-    isSafari,
-    isEdge,
-    supportsHover,
-    supportsTouch,
-    supportsKeyboard,
-    supportsGestures,
-    supportsCamera,
-    supportsNotifications,
-    isMobile,
-    isTablet,
-    isTauri,
-    isCapacitor: _isCapacitor(),
-    isDesktop,
-    isStorageReady,
-    // IDE state
-    isIDE,
-    toggleIDE,
-    idePanelWidth,
-    setIdePanelWidth,
-    styleRegistry,
-    updateStyleRegistry,
-    BrowserInstance,
-    orientation: "portrait",
-    viewPortWidth,
-    viewPortHeight,
-    // Server-side detection data
-    serverDevice: session?.device,
-    serverOS: session?.os,
-    serverBrowser: session?.browser,
-  }
+  // Memoize the context value to prevent unnecessary re-renders of consumers
+  const value = useMemo<PlatformContextValue>(
+    () => ({
+      platform: platform === "native" ? "android" : platform,
+      browser,
+      device,
+      os,
+      isWeb: _isWeb(),
+      isNative: _isNative(),
+      isIOS: _isIOS(),
+      isAndroid: _isAndroid(),
+      isExtension: _isBrowserExtension(),
+      isStandalone: _isStandalone(),
+      isChrome,
+      isFirefox,
+      isSafari,
+      isEdge,
+      supportsHover,
+      supportsTouch,
+      supportsKeyboard,
+      supportsGestures,
+      supportsCamera,
+      supportsNotifications,
+      isMobile,
+      isTablet,
+      isTauri,
+      isCapacitor: _isCapacitor(),
+      isDesktop,
+      isStorageReady,
+      // IDE state
+      isIDE,
+      toggleIDE,
+      idePanelWidth,
+      setIdePanelWidth,
+      styleRegistry,
+      updateStyleRegistry,
+      BrowserInstance,
+      orientation: "portrait",
+      viewPortWidth,
+      viewPortHeight,
+      // Server-side detection data
+      serverDevice: session?.device,
+      serverOS: session?.os,
+      serverBrowser: session?.browser,
+    }),
+    [
+      platform,
+      browser,
+      device,
+      os,
+      isChrome,
+      isFirefox,
+      isSafari,
+      isEdge,
+      supportsHover,
+      supportsTouch,
+      supportsKeyboard,
+      supportsGestures,
+      supportsCamera,
+      supportsNotifications,
+      isMobile,
+      isTablet,
+      isTauri,
+      isDesktop,
+      isStorageReady,
+      isIDE,
+      toggleIDE,
+      idePanelWidth,
+      setIdePanelWidth,
+      styleRegistry,
+      updateStyleRegistry,
+      BrowserInstance,
+      viewPortWidth,
+      viewPortHeight,
+      session,
+    ],
+  )
 
   return (
     <PlatformContext.Provider value={value}>
