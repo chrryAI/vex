@@ -13,7 +13,7 @@ import {
 // Make React globally available
 global.React = React
 
-import FocusButton from "../FocusButton"
+import FocusButton, { type Task } from "../FocusButton"
 
 // Mock TimerContext values
 const mockTimerContext = {
@@ -35,7 +35,12 @@ const mockTimerContext = {
   handlePresetTime: vi.fn(),
   replay: false,
   setReplay: vi.fn(),
-  tasks: { tasks: [] },
+  tasks: {
+    tasks: [] as Task[],
+    totalCount: 0,
+    hasNextPage: false,
+    nextPage: null,
+  },
   setTasks: vi.fn(),
   handleCancel: vi.fn(),
   handlePause: vi.fn(),
@@ -46,9 +51,21 @@ const mockTimerContext = {
   setPresetMin1: vi.fn(),
   setPresetMin2: vi.fn(),
   setPresetMin3: vi.fn(),
-  selectedTasks: [],
+  selectedTasks: [] as Task[],
   setSelectedTasks: vi.fn(),
   remoteTimer: null,
+  fetchTimer: vi.fn(),
+  playTimerEnd: vi.fn(),
+  updateTimer: vi.fn(),
+  isCancelled: false,
+  timer: null,
+  setTimer: vi.fn(),
+  setActivePomodoro: vi.fn(),
+  setIsCountingDown: vi.fn(),
+  setIsPaused: vi.fn(),
+  setIsFinished: vi.fn(),
+  setStartTime: vi.fn(),
+  startTime: 0,
 }
 
 // Mock contexts

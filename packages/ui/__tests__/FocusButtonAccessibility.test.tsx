@@ -53,6 +53,9 @@ const mockTimerContext = {
         order: 1,
       },
     ],
+    totalCount: 2,
+    hasNextPage: false,
+    nextPage: null,
   },
   setTasks: vi.fn(),
   handleCancel: vi.fn(),
@@ -64,9 +67,29 @@ const mockTimerContext = {
   setPresetMin1: vi.fn(),
   setPresetMin2: vi.fn(),
   setPresetMin3: vi.fn(),
-  selectedTasks: [{ id: "task-1", title: "Task 1" }], // Task 1 is selected
+  selectedTasks: [
+    {
+      id: "task-1",
+      title: "Task 1",
+      createdOn: new Date(),
+      modifiedOn: new Date(),
+      order: 0,
+    },
+  ], // Task 1 is selected
   setSelectedTasks: vi.fn(),
   remoteTimer: null,
+  fetchTimer: vi.fn(),
+  playTimerEnd: vi.fn(),
+  updateTimer: vi.fn(),
+  isCancelled: false,
+  timer: null,
+  setTimer: vi.fn(),
+  setActivePomodoro: vi.fn(),
+  setIsCountingDown: vi.fn(),
+  setIsPaused: vi.fn(),
+  setIsFinished: vi.fn(),
+  setStartTime: vi.fn(),
+  startTime: 0,
 }
 
 // Mock contexts

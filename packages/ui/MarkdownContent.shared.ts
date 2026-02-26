@@ -12,7 +12,7 @@ export interface MarkdownContentProps {
   }>
 }
 
-export interface CodeBlockProps {
+export interface codeBlock {
   language: string
   children: string
   className?: string
