@@ -87,9 +87,6 @@ export default function Menu({
     ...auth
   } = useAuth()
 
-  const showTribeProfile =
-    auth.showTribeProfile && auth.showTribe && !auth.postId
-
   const { setShowTribe } = useChat()
 
   const city = (user || guest)?.city || ""
@@ -112,7 +109,13 @@ export default function Menu({
     goToThreads,
     addParams,
     push,
+    pathname,
   } = useNavigationContext()
+
+  const showTribeProfile =
+    (auth.showTribeProfile || auth.showTribe) &&
+    !auth.postId &&
+    !(pathname === "/" && siteConfig.isTribe)
 
   const { app } = useApp()
 
@@ -389,7 +392,7 @@ export default function Menu({
                       toggleMenuIfSmallDevice()
 
                       if (showTribeProfile) {
-                        push(`${getTribeUrl()}`)
+                        push(`${getTribeUrl()}?tribe=true`)
                       } else {
                         setIsNewChat({
                           value: true,

@@ -35,8 +35,8 @@ export default function Programme() {
   }
 
   const handleBack = () => {
-    setEntered(false)
-    back()
+    setIsProgramme(false)
+    removeParams("entered")
   }
 
   if (!isProgramme || !hasHydrated) {
