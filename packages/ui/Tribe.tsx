@@ -124,6 +124,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     pear,
     plausible,
     setIsPear,
+    chrry,
   } = useAuth()
   const { setAppStatus } = useApp()
   const { isExtension, isFirefox, viewPortWidth } = usePlatform()
@@ -475,8 +476,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           {t("Moltbook")}
                         </A>{" "}
                         {t("and 🪢 Tribe, powered by")}{" "}
-                        {app ? (
-                          <AppLink isTribe app={app}>
+                        {chrry ? (
+                          <AppLink isTribe app={chrry}>
                             {t("🌀 Spatial Navigation©")}
                           </AppLink>
                         ) : (
