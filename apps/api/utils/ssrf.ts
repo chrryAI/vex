@@ -70,6 +70,21 @@ export function isPrivateIP(ip: string): boolean {
     )
       return true
 
+    // 198.51.100.0/24 (TEST-NET-2)
+    if (parts[0] === 198 && parts[1] === 51 && parts[2] === 100) return true
+
+    // 203.0.113.0/24 (TEST-NET-3)
+    if (parts[0] === 203 && parts[1] === 0 && parts[2] === 113) return true
+
+    // 224.0.0.0/4 (Multicast)
+    // 224.0.0.0 - 239.255.255.255
+    if (parts[0] && parts[0] >= 224 && parts[0] <= 239) return true
+
+    // 240.0.0.0/4 (Reserved)
+    // 240.0.0.0 - 255.255.255.254
+    // This also covers 255.255.255.255 (Limited Broadcast)
+    if (parts[0] && parts[0] >= 240) return true
+
     return false
   }
 
@@ -80,15 +95,15 @@ export function isPrivateIP(ip: string): boolean {
   }
 
   // IPv4 checks
-  if (cleanIP.includes(".") && !cleanIP.includes(":")) {
+  if (net.isIPv4(cleanIP)) {
     return checkIPv4Private(cleanIP)
   }
 
   // IPv6 checks
-  if (cleanIP.includes(":")) {
+  if (net.isIPv6(cleanIP)) {
     const normalizedIP = cleanIP.toLowerCase()
 
-    // Check for IPv4-mapped IPv6 addresses (::ffff:x.x.x.x or ::ffff:xxxx:xxxx)
+    // Check for IPv4-mapped IPv6 addresses (::ffff:x.x.x.x)
     if (normalizedIP.startsWith("::ffff:")) {
       // Extract the IPv4 part after ::ffff:
       const ipv4Part = normalizedIP.substring(7) // Remove "::ffff:" prefix
@@ -158,6 +173,9 @@ export function isPrivateIP(ip: string): boolean {
       normalizedIP.startsWith("feb")
     )
       return true
+
+    // ff00::/8 (Multicast)
+    if (normalizedIP.startsWith("ff")) return true
 
     return false
   }
@@ -295,6 +313,10 @@ export async function safeFetch(
       headers.set("User-Agent", "Chrry/1.0")
     }
 
+    // Security: S5144 - We have manually validated safeUrl via getSafeUrl() above
+    // which resolves DNS and checks against private IP ranges (IPv4 & IPv6).
+    // We also use 'redirect: manual' to re-validate every hop.
+    // // NOSONAR
     response = await fetch(safeUrl, {
       ...options,
       headers,
