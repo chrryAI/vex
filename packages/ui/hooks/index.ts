@@ -33,6 +33,8 @@ export {
   useAppMetadata,
   useStoreMetadata,
   useThreadMetadata,
+  useTribeMetadata,
+  useTribePostMetadata,
 } from "./useMetadata"
 export { usePWAInstall } from "./usePWAInstall"
 export { useComputedValue, useSyncedState } from "./useSyncedState"

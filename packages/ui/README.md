@@ -272,10 +272,9 @@ See [LICENSE](LICENSE) for details.
 ✅ **i18n** - 10 languages out of the box
 ✅ **TypeScript** - Full type safety throughout
 
-**This is a $10M+ component library, open-sourced.** 🎁
 
 ---
 
-**Built with ❤️ by [@ibsukru](https://github.com/ibsukru)**
+**Built with by [@ibsukru](https://github.com/ibsukru)**
 
 iliyan@chrry.ai

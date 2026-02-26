@@ -7,7 +7,7 @@ import Markdown from "react-native-markdown-display"
 import { useAppContext } from "./context/AppContext"
 import { Check, Copy } from "./icons"
 import {
-  type CodeBlockProps,
+  type codeBlock,
   type MarkdownContentProps,
   processTextWithCitations,
 } from "./MarkdownContent.shared"
@@ -17,11 +17,7 @@ import { Button, Div, ScrollView, Text, useTheme } from "./platform"
 export { processTextWithCitations }
 export type { MarkdownContentProps }
 
-const _CodeBlock: React.FC<CodeBlockProps> = ({
-  language,
-  children,
-  className,
-}) => {
+const _CodeBlock: React.FC<codeBlock> = ({ language, children, className }) => {
   const [copied, setCopied] = useState(false)
   const { t } = useAppContext()
   const styles = useMarkdownContentStyles()

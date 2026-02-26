@@ -6,7 +6,13 @@ import { useEffect, useState } from "react"
 import { useImgStyles } from "./Img.styles"
 import { ImageIcon } from "./icons"
 import Loading from "./Loading"
-import { Div, MotiView, Image as PlatformImage, useTheme } from "./platform"
+import {
+  Div,
+  MotiView,
+  Image as PlatformImage,
+  Span,
+  useTheme,
+} from "./platform"
 import { useInView } from "./platform/useInView" // Auto-resolves to .web or .native
 
 // Simple in-memory cache
@@ -115,24 +121,11 @@ export default function Img({
     }
   }
 
-  // useEffect(() => {
-  //   // Reset image state when src changes
-  //   setImageSrc(null)
-  //   setError(null)
-  // }, [src])
-
   useEffect(() => {
     if ((priority || inView) && !imageSrc && !error) {
       loadImage(src)
     }
   }, [inView, priority, imageSrc, error, src])
-
-  useEffect(() => {
-    return () => {
-      // Don't revoke cached URLs, they're shared
-      // The cache cleanup should be handled separately
-    }
-  }, [])
 
   const { reduceMotion } = useTheme()
 
@@ -140,10 +133,10 @@ export default function Img({
 
   if (imageSrc) {
     return (
-      <Div
+      <Span
         ref={ref}
         className={containerClass}
-        style={{ ...imgStyles.container.style, width, height, ...style }}
+        style={{ ...imgStyles.container.style, width, height }}
       >
         <MotiView
           from={{
@@ -176,23 +169,23 @@ export default function Img({
             }}
           />
         </MotiView>
-      </Div>
+      </Span>
     )
   }
 
   if (error) return <ImageIcon width={width} height={height} />
 
   return (
-    <Div
+    <Span
       ref={ref}
       className={containerClass}
       style={{ ...imgStyles.container.style, width, height }}
     >
       {isLoading && showLoading && (
-        <Div style={{ ...imgStyles.loadingPlaceholder.style, width, height }}>
+        <Span style={{ ...imgStyles.loadingPlaceholder.style, width, height }}>
           <Loading />
-        </Div>
+        </Span>
       )}
-    </Div>
+    </Span>
   )
 }

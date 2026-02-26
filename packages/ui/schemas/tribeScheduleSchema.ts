@@ -37,16 +37,27 @@ export const sanitizedString = (options?: {
 }
 
 // Schedule time slot schema
-export const scheduleTimeSlotSchema = z.object({
-  time: z
-    .string()
-    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)"),
-  model: z.enum(models),
-  postType: z.enum(["post", "comment", "engagement"]).default("post"),
-  charLimit: z.number().int().min(100).max(5000).default(500),
-  credits: z.number().int().min(1, "Credits must be at least 1"),
-  intervalMinutes: z.number().int().min(30).max(1440).optional(), // 30min to 24h
-})
+export const scheduleTimeSlotSchema = z
+  .object({
+    time: z
+      .string()
+      .regex(
+        /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+        "Invalid time format (HH:MM)",
+      ),
+    model: z.enum(models),
+    postType: z.enum(["post", "comment", "engagement"]).default("post"),
+    charLimit: z.number().int().min(100).max(5000).default(500),
+    credits: z.number().int().min(1, "Credits must be at least 1"),
+    intervalMinutes: z.number().int().min(30).max(1440).optional(), // 30min to 24h
+    generateImage: z.boolean().optional(), // Generate an AI image for this post (+20 credits)
+    generateVideo: z.boolean().optional(), // Generate a 5s video via Luma Ray (+120 credits)
+    fetchNews: z.boolean().optional(), // Force the post to be about current news
+  })
+  .refine((data) => !(data.generateImage && data.generateVideo), {
+    message: "Only one of generateImage or generateVideo can be true",
+    path: ["generateVideo"],
+  })
 
 // Tribe/Molt schedule creation schema
 export const tribeScheduleSchema = z

@@ -2,7 +2,7 @@ import { test } from "@playwright/test"
 import { v4 as uuidv4 } from "uuid"
 import { getURL, VEX_TEST_EMAIL_3, VEX_TEST_PASSWORD_3, wait } from "."
 import { chat } from "./shared/chat"
-import { clean } from "./shared/clean"
+import { clean, newChat } from "./shared/clean"
 import { collaboration } from "./shared/collaboration"
 import createApp from "./shared/createApp"
 import { limit } from "./shared/limit"
@@ -34,6 +34,10 @@ test("Subscribe As Guest", async ({ page }) => {
   )
   await wait(2000)
 
+  await newChat({ page })
+
+  await page.getByTestId("new-chat-button").click()
+
   await subscribe({
     page,
     isMember,
@@ -52,6 +56,9 @@ test("Invite", async ({ page }) => {
       timeout: 100000,
     },
   )
+
+  await newChat({ page })
+
   await subscribe({
     page,
     isMember,

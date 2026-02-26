@@ -89,6 +89,7 @@ const Thread = ({
     dailyQuestionIndex,
     setDailyQuestionIndex,
     minimize,
+    postId,
     ...auth
   } = useAuth()
 
@@ -124,7 +125,6 @@ const Thread = ({
     placeHolderText,
     isEmpty,
     showTribe,
-    setShowTribe,
   } = useChat()
 
   const hasHydrated = useHasHydrated()

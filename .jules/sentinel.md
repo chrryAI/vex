@@ -200,3 +200,14 @@
 **Prevention:**
 - **Comprehensive Blocklist:** Updated `isPrivateIP` to include all IANA reserved IPv4 ranges (0.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, 169.254.0.0/16, 192.0.0.0/24, 192.0.2.0/24, 198.18.0.0/15, 198.51.100.0/24, 203.0.113.0/24, 224.0.0.0/4, 240.0.0.0/4).
 - **IPv6 Support:** Added checks for IPv6 reserved ranges (::/128, ::1/128, fc00::/7, fe80::/10, etc.) and mapped IPv4 addresses.
+## 2026-06-21 - False Positive SSRF Block for Data URLs
+
+**Vulnerability:** The `safeFetch` utility correctly blocked SSRF attempts but also blocked legitimate `data:` URLs used for image uploads (constructed from `File` objects). This false positive broke upload functionality. Crucially, broken uploads prevented the downstream security sanitization (Sharp conversion), effectively leaving the system vulnerable to Stored XSS via SVG uploads if the upload mechanism were bypassed or fixed incorrectly.
+
+**Learning:**
+- **SSRF Scope:** `data:` URLs are inherently safe from SSRF as they do not trigger network requests. Applying network-layer SSRF protection to them is unnecessary and causes functional regressions.
+- **Security Logic Dependency:** When security controls (like sanitization) depend on a functional pipeline (like upload), breaking the pipeline disables the control.
+
+**Prevention:**
+- Explicitly bypass `safeFetch` for `data:` URLs in `apps/api/lib/minio.ts` and use native `fetch`.
+- Added regression tests to ensure `data:` URLs are handled correctly and `safeFetch` is bypassed only for them.

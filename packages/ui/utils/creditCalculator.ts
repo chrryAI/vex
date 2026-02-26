@@ -17,6 +17,9 @@ export interface scheduleSlot {
   charLimit: number
   credits?: number // Optional pre-calculated credits for UI display
   intervalMinutes?: number // Repeat interval in minutes (for custom frequency)
+  generateImage?: boolean // Generate an AI image for this post (+20 credits)
+  generateVideo?: boolean // Generate a 5s video via Luma Ray image-to-video (+120 credits)
+  fetchNews?: boolean // Force the post to be about current news (+3 credits)
 }
 
 // Model pricing multipliers (matches creditCost from agents seed)
@@ -62,7 +65,15 @@ export function calculateSlotCredits(slot: scheduleSlot): number {
   const modelMultiplier = getModelMultiplier(slot.model)
   const postTypeMultiplier = getPostTypeMultiplier(slot.postType)
 
-  return Math.ceil(baseCredits * modelMultiplier * postTypeMultiplier)
+  let total = Math.ceil(baseCredits * modelMultiplier * postTypeMultiplier)
+
+  // Add-ons
+  if (slot.generateVideo)
+    total += 120 // Luma Ray 5s video (~$0.25 video + ~$0.04 image = ~$0.29 total)
+  else if (slot.generateImage) total += 20 // Flux 1.1 Pro image only (~$0.04/image)
+  // fetchNews has no credit surcharge (free RSS/headlines API)
+
+  return total
 }
 
 export type estimateJobCreditsParams = {

@@ -194,79 +194,111 @@ export default function ImageComponent(props: ImageProps) {
         ? Number.parseInt(size, 10)
         : 24 // Default size for emojis when size is CSS unit
 
-  const emojiSize = intSize <= 50 ? intSize * 0.85 : intSize
+  const emojiSize = intSize <= 50 ? intSize * 0.875 : intSize
 
   if (icon === "molt") {
-    return <Text style={{ fontSize: emojiSize, ...style }}>🦞</Text>
+    return (
+      <Text style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+        🦞
+      </Text>
+    )
   }
 
   const appSlug = app?.slug || slug
 
   // if (isEmoji) {
   if (appSlug === "1984") {
-    return <Text style={{ fontSize: emojiSize, ...style }}>👁️</Text>
+    return (
+      <Text style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+        👁️
+      </Text>
+    )
   }
 
   if (appSlug === "meditations") {
-    return <Text style={{ fontSize: emojiSize, ...style }}>🏛️</Text>
+    return (
+      <Text style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+        🏛️
+      </Text>
+    )
   }
 
   if (appSlug === "dune") {
-    return <Text style={{ fontSize: emojiSize, ...style }}>🏜️</Text>
+    return (
+      <Text style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+        🏜️
+      </Text>
+    )
   }
 
   if (appSlug === "fightClub") {
-    return <Text style={{ fontSize: emojiSize, ...style }}>🧼</Text>
+    return (
+      <Text style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+        🧼
+      </Text>
+    )
   }
 
   if (appSlug === "inception") {
-    return <Text style={{ fontSize: emojiSize, ...style }}>🌀</Text>
+    return (
+      <Text style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+        🌀
+      </Text>
+    )
   }
 
   if (appSlug === "pulpFiction") {
-    return <Text style={{ fontSize: emojiSize, ...style }}>🍔</Text>
+    return (
+      <Text style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+        🍔
+      </Text>
+    )
   }
 
   if (appSlug === "hungerGames") {
-    return <Text style={{ fontSize: emojiSize, ...style }}>🏹</Text>
+    return (
+      <Text style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+        🏹
+      </Text>
+    )
   }
 
   if (appSlug === "amsterdam") {
     return (
-      <Span style={style}>
-        <CircleFlag height={emojiSize} countryCode="nl" />
+      <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+        <CircleFlag height={size} countryCode="nl" />
       </Span>
     )
   }
 
   if (appSlug === "tokyo") {
     return (
-      <Span style={style}>
-        <CircleFlag height={emojiSize} countryCode="jp" />
+      <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+        <CircleFlag height={size} countryCode="jp" />
       </Span>
     )
   }
 
   if (appSlug === "paris") {
     return (
-      <Span style={style}>
-        <CircleFlag height={emojiSize} countryCode="fr" />
+      <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+        <CircleFlag height={size} countryCode="fr" />
       </Span>
     )
   }
 
   if (appSlug === "istanbul") {
     return (
-      <Span style={style}>
-        <CircleFlag height={emojiSize} countryCode="tr" />
+      <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+        <CircleFlag height={size} countryCode="tr" />
       </Span>
     )
   }
 
   if (appSlug === "newYork") {
     return (
-      <Span style={style}>
-        <CircleFlag height={emojiSize} countryCode="us" />
+      <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+        <CircleFlag height={size} countryCode="us" />
       </Span>
     )
   }
@@ -274,27 +306,27 @@ export default function ImageComponent(props: ImageProps) {
 
   if (isAgent && app) {
     return app.defaultModel === "deepSeek" ? (
-      <Span style={style}>
+      <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
         <DeepSeek color={color} size={size} />
       </Span>
     ) : app.defaultModel === "chatGPT" ? (
-      <Span style={style}>
+      <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
         <OpenAI color={color} size={size} />
       </Span>
     ) : app.defaultModel === "claude" ? (
-      <Span style={style}>
+      <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
         <Claude color={color} size={size} />
       </Span>
     ) : app.defaultModel === "gemini" ? (
-      <Span style={style}>
+      <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
         <Gemini color={color} size={size} />
       </Span>
     ) : app.defaultModel === "flux" ? (
-      <Span style={style}>
+      <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
         <Flux color={color} size={size} />
       </Span>
     ) : app.defaultModel === "perplexity" ? (
-      <Span style={style}>
+      <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
         <Perplexity color={color} size={size} />
       </Span>
     ) : null
@@ -303,27 +335,27 @@ export default function ImageComponent(props: ImageProps) {
   if (slug) {
     const result =
       slug === "deepSeek" ? (
-        <Span style={style}>
+        <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
           <DeepSeek color={color} size={size} />
         </Span>
       ) : slug === "chatGPT" ? (
-        <Span style={style}>
+        <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
           <OpenAI color={color} size={size} />
         </Span>
       ) : ["claude", "researcher", "review", "writer"].includes(slug) ? (
-        <Span style={style}>
+        <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
           <Claude color={color} size={size} />
         </Span>
       ) : slug === "gemini" ? (
-        <Span style={style}>
+        <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
           <Gemini color={color} size={size} />
         </Span>
       ) : slug === "flux" ? (
-        <Span style={style}>
+        <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
           <Flux color={color} size={size} />
         </Span>
       ) : slug && ["academic", "perplexity", "news"].includes(slug) ? (
-        <Span style={style}>
+        <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
           <Perplexity color={color} size={size} />
         </Span>
       ) : null
@@ -334,24 +366,26 @@ export default function ImageComponent(props: ImageProps) {
   const invader = `${BASE_URL}/images/pacman/space-invader.png`
 
   return (
-    <Img
-      key={src}
-      onLoad={onLoad}
-      dataTestId={dataTestId}
-      containerClass={containerClass}
-      style={style}
-      className={className}
-      showLoading={showLoading}
-      width={width}
-      height={height}
-      title={title}
-      priority={priority}
-      src={resize({
-        url: slug && !src ? invader : src || invader,
-        width,
-        height,
-      })}
-      alt={alt || app?.title || logo ? "Vex" : ""}
-    />
+    <>
+      <Img
+        key={src}
+        onLoad={onLoad}
+        dataTestId={dataTestId}
+        containerClass={containerClass}
+        style={style}
+        className={className}
+        showLoading={showLoading}
+        width={width}
+        height={height}
+        title={title}
+        priority={priority}
+        src={resize({
+          url: slug && !src ? invader : src || invader,
+          width,
+          height,
+        })}
+        alt={alt || (app?.name ? app?.name : slug || logo || icon)}
+      />
+    </>
   )
 }

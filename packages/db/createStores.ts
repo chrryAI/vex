@@ -3123,6 +3123,79 @@ export const createStores = async ({
   })
   if (!chrry) throw new Error("Failed to create or update chrry app")
 
+  let focus = await getApp({ slug: "focus" })
+
+  const focusSystemPrompt = `You are Focus, an advanced AI productivity assistant that combines deep work methodology, cognitive psychology, and time management science to help users achieve peak performance.
+
+Your core capabilities:
+- **Smart Task Management**: Break down complex projects into actionable subtasks with realistic time estimates. Prioritize using Eisenhower Matrix (urgent/important) and suggest optimal sequencing.
+- **Focus Sessions**: Guide users through timed deep work sessions using Pomodoro technique (25/5) or custom intervals. Track session quality and suggest improvements.
+- **Time Intelligence**: Analyze how users spend time, identify productivity patterns, detect time-wasting activities, and recommend schedule optimizations.
+- **Goal Architecture**: Help users set SMART goals (Specific, Measurable, Achievable, Relevant, Time-bound), break them into milestones, and track progress with visual analytics.
+- **Context Switching**: Minimize cognitive load by batching similar tasks, suggesting focus blocks, and protecting deep work time from interruptions.
+- **Energy Management**: Consider circadian rhythms and energy levels when scheduling demanding tasks. Suggest breaks and recovery periods.
+- **Progress Insights**: Provide weekly reviews with completion rates, time distribution, productivity trends, and actionable recommendations.
+
+Your approach:
+- Be proactive: Suggest improvements before users ask
+- Be specific: Give concrete actions, not vague advice
+- Be evidence-based: Reference productivity research when relevant
+- Be adaptive: Learn from user patterns and adjust recommendations
+- Be encouraging: Celebrate wins and reframe setbacks as learning opportunities
+
+You have access to calendar, location, and weather tools to provide context-aware productivity advice. Use them to optimize scheduling around meetings, commute times, and environmental factors.`
+
+  const focusInstructions = [
+    {
+      id: "focus-1",
+      title: "Start a Deep Work Session",
+      content:
+        "Launch a timed focus session with Pomodoro (25/5), extended (50/10), or custom intervals. I'll track your session, minimize distractions, and notify you for breaks. Perfect for writing, coding, studying, or any task requiring sustained concentration. Studies show timed sessions improve focus by 40% and reduce procrastination.",
+      emoji: "⏱️",
+    },
+    {
+      id: "focus-2",
+      title: "Break Down Complex Projects",
+      content:
+        "Share any large project or goal, and I'll decompose it into a structured action plan with subtasks, time estimates, dependencies, and milestones. I'll prioritize tasks using urgency/importance matrix, suggest optimal sequencing, and identify potential blockers. Great for product launches, research papers, home renovations, or learning new skills.",
+      emoji: "📋",
+    },
+    {
+      id: "focus-3",
+      title: "Analyze Your Time Usage",
+      content:
+        "Get detailed insights into how you spend your time across projects, tasks, and activities. I'll identify productivity peaks, time-wasting patterns, context-switching costs, and meeting overload. Receive personalized recommendations to reclaim 5-10 hours per week through better time allocation and task batching.",
+      emoji: "📊",
+    },
+    {
+      id: "focus-4",
+      title: "Design Your Ideal Day",
+      content:
+        "Define daily, weekly, or monthly goals using SMART criteria (Specific, Measurable, Achievable, Relevant, Time-bound). I'll help you align goals with your values, break them into daily actions, schedule them around your energy levels, and track completion rates. Includes morning routines, deep work blocks, and evening reviews.",
+      emoji: "🎯",
+    },
+    {
+      id: "focus-5",
+      title: "Get Your Weekly Performance Review",
+      content:
+        "Receive a comprehensive productivity analysis with completion rates, time distribution charts, goal progress, productivity trends, and wins/lessons learned. I'll identify what's working, what's not, and provide 3-5 actionable recommendations for the week ahead. Reflection improves performance by 23% according to Harvard research.",
+      emoji: "📈",
+    },
+    {
+      id: "focus-6",
+      title: "Eliminate Distractions & Build Focus Habits",
+      content:
+        "Identify your biggest productivity killers (social media, notifications, meetings, multitasking) and get a personalized distraction-blocking strategy. I'll help you create environment design rules, digital boundaries, and focus rituals that make deep work automatic. Includes app blockers, notification schedules, and accountability systems that reduce distractions by 70%.",
+      emoji: "🚫",
+    },
+    {
+      id: "focus-7",
+      title: "Optimize Your Energy & Schedule",
+      content:
+        "Map your natural energy patterns throughout the day and align your most demanding tasks with peak performance windows. I'll analyze your chronotype (morning lark vs night owl), suggest optimal work/break ratios, recommend when to schedule meetings vs deep work, and help you design a sustainable daily rhythm that prevents burnout while maximizing output.",
+      emoji: "⚡",
+    },
+  ]
   // Set Chrry as the main app of Chrry AI store
   await updateStore({
     ...blossom,
@@ -5370,6 +5443,14 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
       "Your philosophical companion for deep reading. Explore literature and ideas through Nietzschean wisdom.",
   })
 
+  focus &&
+    (await createOrUpdateStoreInstall({
+      storeId: books.id,
+      appId: focus.id,
+      featured: true,
+      displayOrder: 1,
+    }))
+
   // ============================================
   // 1984 APP - Dystopian Literature
   // ============================================
@@ -6076,80 +6157,6 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
   })
 
   let vex = await getApp({ slug: "vex" })
-
-  let focus = await getApp({ slug: "focus" })
-
-  const focusSystemPrompt = `You are Focus, an advanced AI productivity assistant that combines deep work methodology, cognitive psychology, and time management science to help users achieve peak performance.
-
-Your core capabilities:
-- **Smart Task Management**: Break down complex projects into actionable subtasks with realistic time estimates. Prioritize using Eisenhower Matrix (urgent/important) and suggest optimal sequencing.
-- **Focus Sessions**: Guide users through timed deep work sessions using Pomodoro technique (25/5) or custom intervals. Track session quality and suggest improvements.
-- **Time Intelligence**: Analyze how users spend time, identify productivity patterns, detect time-wasting activities, and recommend schedule optimizations.
-- **Goal Architecture**: Help users set SMART goals (Specific, Measurable, Achievable, Relevant, Time-bound), break them into milestones, and track progress with visual analytics.
-- **Context Switching**: Minimize cognitive load by batching similar tasks, suggesting focus blocks, and protecting deep work time from interruptions.
-- **Energy Management**: Consider circadian rhythms and energy levels when scheduling demanding tasks. Suggest breaks and recovery periods.
-- **Progress Insights**: Provide weekly reviews with completion rates, time distribution, productivity trends, and actionable recommendations.
-
-Your approach:
-- Be proactive: Suggest improvements before users ask
-- Be specific: Give concrete actions, not vague advice
-- Be evidence-based: Reference productivity research when relevant
-- Be adaptive: Learn from user patterns and adjust recommendations
-- Be encouraging: Celebrate wins and reframe setbacks as learning opportunities
-
-You have access to calendar, location, and weather tools to provide context-aware productivity advice. Use them to optimize scheduling around meetings, commute times, and environmental factors.`
-
-  const focusInstructions = [
-    {
-      id: "focus-1",
-      title: "Start a Deep Work Session",
-      content:
-        "Launch a timed focus session with Pomodoro (25/5), extended (50/10), or custom intervals. I'll track your session, minimize distractions, and notify you for breaks. Perfect for writing, coding, studying, or any task requiring sustained concentration. Studies show timed sessions improve focus by 40% and reduce procrastination.",
-      emoji: "⏱️",
-    },
-    {
-      id: "focus-2",
-      title: "Break Down Complex Projects",
-      content:
-        "Share any large project or goal, and I'll decompose it into a structured action plan with subtasks, time estimates, dependencies, and milestones. I'll prioritize tasks using urgency/importance matrix, suggest optimal sequencing, and identify potential blockers. Great for product launches, research papers, home renovations, or learning new skills.",
-      emoji: "📋",
-    },
-    {
-      id: "focus-3",
-      title: "Analyze Your Time Usage",
-      content:
-        "Get detailed insights into how you spend your time across projects, tasks, and activities. I'll identify productivity peaks, time-wasting patterns, context-switching costs, and meeting overload. Receive personalized recommendations to reclaim 5-10 hours per week through better time allocation and task batching.",
-      emoji: "📊",
-    },
-    {
-      id: "focus-4",
-      title: "Design Your Ideal Day",
-      content:
-        "Define daily, weekly, or monthly goals using SMART criteria (Specific, Measurable, Achievable, Relevant, Time-bound). I'll help you align goals with your values, break them into daily actions, schedule them around your energy levels, and track completion rates. Includes morning routines, deep work blocks, and evening reviews.",
-      emoji: "🎯",
-    },
-    {
-      id: "focus-5",
-      title: "Get Your Weekly Performance Review",
-      content:
-        "Receive a comprehensive productivity analysis with completion rates, time distribution charts, goal progress, productivity trends, and wins/lessons learned. I'll identify what's working, what's not, and provide 3-5 actionable recommendations for the week ahead. Reflection improves performance by 23% according to Harvard research.",
-      emoji: "📈",
-    },
-    {
-      id: "focus-6",
-      title: "Eliminate Distractions & Build Focus Habits",
-      content:
-        "Identify your biggest productivity killers (social media, notifications, meetings, multitasking) and get a personalized distraction-blocking strategy. I'll help you create environment design rules, digital boundaries, and focus rituals that make deep work automatic. Includes app blockers, notification schedules, and accountability systems that reduce distractions by 70%.",
-      emoji: "🚫",
-    },
-    {
-      id: "focus-7",
-      title: "Optimize Your Energy & Schedule",
-      content:
-        "Map your natural energy patterns throughout the day and align your most demanding tasks with peak performance windows. I'll analyze your chronotype (morning lark vs night owl), suggest optimal work/break ratios, recommend when to schedule meetings vs deep work, and help you design a sustainable daily rhythm that prevents burnout while maximizing output.",
-      emoji: "⚡",
-    },
-  ]
 
   const wine = await getOrCreateStore({
     slug: "wine",
@@ -8347,6 +8354,24 @@ Please follow these instructions throughout our conversation.
     }
   }
 
+  {
+    const storeInstall = await getStoreInstall({
+      storeId: blossom.id,
+      appId: vault.id,
+    })
+
+    if (!storeInstall) {
+      await createStoreInstall({
+        storeId: blossom.id,
+        appId: vault.id,
+        featured: true,
+        displayOrder: 1,
+        customDescription:
+          "Claude by Anthropic - Thoughtful AI assistant for writing, analysis, and creative work.",
+      })
+    }
+  }
+
   // Install Perplexity base app
   {
     const storeInstall = await getStoreInstall({
@@ -9241,6 +9266,19 @@ You are an architecture expert. Design systems that grow with users, follow indu
     await createStoreInstall({
       storeId: orbitStore.id,
       appId: sushiApp.id,
+      featured: false,
+      displayOrder: 10,
+    })
+  }
+
+  const orbitFocusInstall = await getStoreInstall({
+    storeId: orbitStore.id,
+    appId: focus.id,
+  })
+  if (!orbitFocusInstall) {
+    await createStoreInstall({
+      storeId: orbitStore.id,
+      appId: focus.id,
       featured: false,
       displayOrder: 10,
     })

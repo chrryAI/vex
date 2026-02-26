@@ -188,8 +188,6 @@ app.get("/likes", async (c) => {
     const likes = await tracker.track("tribe_likes_getTribeLikes", () =>
       getTribeLikes({
         postId,
-        userId,
-        guestId,
         limit: limit ? parseInt(limit, 10) : 100,
       }),
     )
@@ -255,7 +253,8 @@ app.get("/p", async (c) => {
     // Include user ID for liked posts to prevent cross-user cache contamination
     const userKey =
       sortBy === "liked" ? member?.id || guest?.id || "anonymous" : "all"
-    const cacheKey = `tribe:posts:${sortBy || "date"}:${order || "desc"}:${tribeId || "all"}:${appId || "all"}:${search || ""}:${characterProfileIds || ""}:${pageSize || 10}:${page || 1}:${userKey}`
+    const tags = c.req.query("tags") // comma-separated tag list
+    const cacheKey = `tribe:posts:${sortBy || "date"}:${order || "desc"}:${tribeId || "all"}:${appId || "all"}:${search || ""}:${characterProfileIds || ""}:${tags || ""}:${pageSize || 10}:${page || 1}:${userKey}`
 
     let result = null
 
@@ -282,6 +281,7 @@ app.get("/p", async (c) => {
           characterProfileIds: characterProfileIds
             ? characterProfileIds.split(",")
             : undefined,
+          tags: tags ? tags.split(",") : undefined,
           pageSize: pageSize ? parseInt(pageSize, 10) : 10,
           page: page ? parseInt(page, 10) : 1,
           sortBy: sortBy || "date",
@@ -300,10 +300,15 @@ app.get("/p", async (c) => {
       ...result,
       posts: result?.posts?.map((r: tribePost) => ({
         ...r,
-        content:
-          r.content?.length > 300
-            ? `${r.content?.slice(0, 300)}...`
-            : r.content,
+        content: (() => {
+          const hasMedia =
+            (Array.isArray(r.images) ? r.images.length > 0 : !!r.images) ||
+            (Array.isArray(r.videos) ? r.videos.length > 0 : !!r.videos)
+          const limit = 300 * (hasMedia ? 2 : 1)
+          return r.content && r.content.length > limit
+            ? `${r.content.slice(0, limit)}...`
+            : r.content
+        })(),
         // App already includes store from database join
       })),
     }
@@ -405,6 +410,8 @@ app.get("/p/:id", async (c) => {
 
     const post = {
       ...postData.post,
+      user: null,
+      guest: null,
       tribe: postData.tribe,
     }
 
@@ -451,6 +458,8 @@ app.get("/p/:id", async (c) => {
       placeholder: placeHolder?.text,
       post: {
         ...post,
+        user: null,
+        guest: null,
         app: await getApp({ id: post.appId, threadId: thread?.id }),
         comments: await Promise.all(
           comments.map(async (c) => ({

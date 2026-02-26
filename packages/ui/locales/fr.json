@@ -2008,7 +2008,7 @@
   "Explore grape adds by clicking 🍇": "Explorez les ajouts de raisin en cliquant sur 🍇",
   "Explore grape by clicking 🍇(Available ads)": "Explorez les annonces de raisin en cliquant sur 🍇",
   "Click 🍇 to explore available ads": "Cliquez sur 🍇 pour explorer les annonces disponibles",
-  "💬 Share feedback, earn 10-50 credits!": "💬 Partagez vos commentaires, gagnez 10-50 crédits!",
+  "Share feedback, earn 10-50 credits!": "Partagez vos commentaires, gagnez 10-50 crédits!",
   "messages left! Discover more apps": "messages restants! Découvrez plus d'applications",
   "Explore new apps while you chat": "Explorez de nouvelles applications pendant que vous discutez",
   "🍣 Unified multimodal AI with advanced reasoning. Shows its thinking process, analyzes images/videos/PDFs. Powered by DeepSeek R1. Perplexity for web search. Use palette icon for image generation.": "🍣 IA multimodale unifiée avec raisonnement avancé. Montre son processus de réflexion, analyse les images/vidéos/PDFs. Alimenté par DeepSeek R1. Perplexité pour la recherche web. Utilisez l'icône de la palette pour la génération d'images.",
@@ -2066,7 +2066,7 @@
   "Raspberry included (25 team seats, €19.99/seat after)": "Raspberry inclus (25 sièges d'équipe, €19.99/siège après)",
   "Unlimited team seats (you manage)": "Sièges d'équipe illimités (vous gérez)",
   "By using this, you accept our privacy policy": "En utilisant ceci, vous acceptez notre politique de confidentialité",
-  "Name: maximum 8 characters": "Nom: maximum 8 caractères",
+  "Name: maximum 12 characters": "Nom: maximum 12 caractères",
   "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "OpenRouter est requis. Chrry utilise vos clés API, vous payez les coûts de l'API, et gagnez 70% des revenus d'abonnement (Chrry conserve 30% pour l'infrastructure).",
   "Image Analysis required by {{model}}": "Analyse d'image requise par {{model}}",
   "OpenRouter API key is required for paid tiers to enable revenue sharing.": "La clé API OpenRouter est nécessaire pour les niveaux payants afin d'activer le partage des revenus.",
@@ -2300,5 +2300,13 @@
   "Team work and project management": "Travail d'équipe et gestion de projet",
   "Back to feed": "Retour au flux",
   "Post not found": "Publication non trouvée",
-  "Community updates and events": "Mises à jour de la communauté et événements"
+  "Community updates and events": "Mises à jour de la communauté et événements",
+  "Thinking...": "Réflexion...",
+  "Math problems, proofs, and numerical reasoning": "Problèmes de maths, preuves et raisonnement numérique",
+  "Classical and modern physics discussions": "Discussions sur la physique classique et moderne",
+  "Life sciences, genetics, and ecology": "Sciences de la vie, génétique et écologie",
+  "Scientific discoveries, experiments, and discussions": "Découvertes scientifiques, expériences et discussions",
+  "New ideas and experimental features": "Nouvelles idées et fonctionnalités expérimentales",
+  "All threads": "Tous les fils",
+  "Share feedback about {{app}} {{emoji}} earn 10-50 credits!": "Partagez vos commentaires sur {{app}} {{emoji}} gagnez 10-50 crédits!"
 }

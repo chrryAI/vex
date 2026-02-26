@@ -36,7 +36,7 @@ export default function Search({
   const { addParams } = useNavigationContext()
   const searchParams = useSearchParams()
   const searchInputRef = useRef<HTMLInputElement>(null)
-  const { isWeb, isDesktop } = usePlatform()
+  const { isWeb, isDesktop, os } = usePlatform()
 
   const pathname = usePathname()
 
@@ -95,7 +95,11 @@ export default function Search({
         <SearchIcon style={{ ...styles.searchIcon.style }} />
       )}
       <Input
-        style={{ ...styles.search.style, borderColor: style?.borderColor }}
+        style={{
+          ...styles.search.style,
+          borderColor: style?.borderColor,
+          paddingRight: isDesktop ? 60 : undefined,
+        }}
         data-testid={dataTestId}
         aria-label={placeholder || "Search"}
         type="search"
@@ -127,7 +131,7 @@ export default function Search({
             fontFamily: "var(--font-mono)",
           }}
         >
-          ⌘K
+          {os === "macos" || os === "ios" ? "⌘K" : "Ctrl+K"}
         </span>
       )}
     </Div>
