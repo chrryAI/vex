@@ -605,6 +605,7 @@ export default function FocusButton({
               className="link"
               title={t("Replay")}
               aria-label={t("Replay")}
+              aria-pressed={replay}
               style={{
                 ...utilities.link.style,
                 ...styles.showSettings.style,
@@ -1018,6 +1019,11 @@ export default function FocusButton({
                             <Div style={styles.taskContent.style}>
                               <Button
                                 className="link"
+                                aria-pressed={
+                                  selectedTasks?.some(
+                                    (t) => t.id === task.id,
+                                  ) ?? false
+                                }
                                 onClick={() => {
                                   if (
                                     selectedTasks?.some((t) => t.id === task.id)
