@@ -748,7 +748,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       >
                         {app?.mainThreadId && owner && (
                           <A
-                            style={{ fontSize: "1.1rem", marginRight: 10 }}
+                            style={{ fontSize: "1rem", marginRight: 5 }}
                             href={`/threads/${app?.mainThreadId}`}
                           >
                             🧬
