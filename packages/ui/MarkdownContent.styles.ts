@@ -9,6 +9,7 @@ export const MarkdownContentStyleDefs = {
   markdownContent: {
     width: "100%",
     overflowWrap: "break-word",
+    color: "var(--shade-7)",
     margin: "0 !important",
     padding: "0 !important",
   },
