@@ -22,7 +22,7 @@ import {
   processAuctionResults,
   updateCampaignPerformance,
 } from "../../lib/adExchange/campaignLearning"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import { getGuest, getMember } from "../lib/auth"
 
 export const adCampaignsRoute = new Hono()

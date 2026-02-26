@@ -8,6 +8,7 @@ import {
   desc,
   eq,
   getApp,
+  getPlaceHolder,
   getThread,
   getTribeFollows,
   getTribeLikes,
@@ -90,8 +91,6 @@ app.get("/reactions", async (c) => {
 
   const postId = c.req.query("postId")
   const commentId = c.req.query("commentId")
-  const userId = c.req.query("userId")
-  const guestId = c.req.query("guestId")
   const limit = c.req.query("limit")
 
   try {
@@ -101,8 +100,6 @@ app.get("/reactions", async (c) => {
         getTribeReactions({
           postId,
           commentId,
-          userId,
-          guestId,
           limit: limit ? parseInt(limit, 10) : 50,
         }),
     )
@@ -185,16 +182,12 @@ app.get("/likes", async (c) => {
   }
 
   const postId = c.req.query("postId")
-  const userId = c.req.query("userId")
-  const guestId = c.req.query("guestId")
   const limit = c.req.query("limit")
 
   try {
     const likes = await tracker.track("tribe_likes_getTribeLikes", () =>
       getTribeLikes({
         postId,
-        userId,
-        guestId,
         limit: limit ? parseInt(limit, 10) : 100,
       }),
     )
@@ -222,23 +215,22 @@ app.get("/p", async (c) => {
   const tribeId = c.req.query("tribeId")
   const tribeSlug = c.req.query("tribeSlug")
   const appId = c.req.query("appId")
-  const userId = c.req.query("userId")
-  const guestId = c.req.query("guestId")
   const search = c.req.query("search")
   const characterProfileIds = c.req.query("characterProfileIds")
   const pageSize = c.req.query("pageSize")
   const page = c.req.query("page")
-  const sortBy = c.req.query("sortBy") as
-    | "date"
-    | "hot"
-    | "comments"
-    | undefined
+  const sortBy = c.req.query("sortBy") as "date" | "hot" | "liked" | undefined
+  const order = c.req.query("order") as "asc" | "desc" | undefined
 
   const member = await tracker.track(
     "tribe_post_request_post_auth_member",
     () => getMember(c),
   )
   const guest = await tracker.track("tribe_posts_auth_guest", () => getGuest(c))
+
+  // Use authenticated user ID, not query parameter (for security)
+  const userId = member?.id
+  const guestId = guest?.id
 
   if (!member && !guest) {
     return c.json({ error: "Invalid credentials" }, { status: 401 })
@@ -258,7 +250,11 @@ app.get("/p", async (c) => {
 
   try {
     // Create cache key based on all query parameters
-    const cacheKey = `tribe:posts:${sortBy || "date"}:${tribeId || "all"}:${appId || "all"}:${search || ""}:${characterProfileIds || ""}:${pageSize || 10}:${page || 1}`
+    // Include user ID for liked posts to prevent cross-user cache contamination
+    const userKey =
+      sortBy === "liked" ? member?.id || guest?.id || "anonymous" : "all"
+    const tags = c.req.query("tags") // comma-separated tag list
+    const cacheKey = `tribe:posts:${sortBy || "date"}:${order || "desc"}:${tribeId || "all"}:${appId || "all"}:${search || ""}:${characterProfileIds || ""}:${tags || ""}:${pageSize || 10}:${page || 1}:${userKey}`
 
     let result = null
 
@@ -285,9 +281,11 @@ app.get("/p", async (c) => {
           characterProfileIds: characterProfileIds
             ? characterProfileIds.split(",")
             : undefined,
+          tags: tags ? tags.split(",") : undefined,
           pageSize: pageSize ? parseInt(pageSize, 10) : 10,
           page: page ? parseInt(page, 10) : 1,
           sortBy: sortBy || "date",
+          order: order || "desc",
         }),
       )
 
@@ -302,10 +300,15 @@ app.get("/p", async (c) => {
       ...result,
       posts: result?.posts?.map((r: tribePost) => ({
         ...r,
-        content:
-          r.content?.length > 300
-            ? `${r.content?.slice(0, 300)}...`
-            : r.content,
+        content: (() => {
+          const hasMedia =
+            (Array.isArray(r.images) ? r.images.length > 0 : !!r.images) ||
+            (Array.isArray(r.videos) ? r.videos.length > 0 : !!r.videos)
+          const limit = 300 * (hasMedia ? 2 : 1)
+          return r.content && r.content.length > limit
+            ? `${r.content.slice(0, limit)}...`
+            : r.content
+        })(),
         // App already includes store from database join
       })),
     }
@@ -407,7 +410,8 @@ app.get("/p/:id", async (c) => {
 
     const post = {
       ...postData.post,
-      app: postData.app ? await getApp({ id: postData.app.id }) : null,
+      user: null,
+      guest: null,
       tribe: postData.tribe,
     }
 
@@ -445,10 +449,18 @@ app.get("/p/:id", async (c) => {
       tribePostId: post.id,
     })
 
+    const placeHolder = await getPlaceHolder({
+      tribePostId: post.id,
+    })
+
     const responseData = {
       success: true,
+      placeholder: placeHolder?.text,
       post: {
         ...post,
+        user: null,
+        guest: null,
+        app: await getApp({ id: post.appId, threadId: thread?.id }),
         comments: await Promise.all(
           comments.map(async (c) => ({
             ...c.comment,
@@ -616,6 +628,14 @@ app.delete("/p/:id", async (c) => {
     // Delete the post (comments and reactions will cascade delete if FK constraints are set)
     await db.delete(tribePosts).where(eq(tribePosts.id, postId))
 
+    // Decrement tribe postsCount
+    if (post.tribeId) {
+      await db
+        .update(tribes)
+        .set({ postsCount: sql`GREATEST(${tribes.postsCount} - 1, 0)` })
+        .where(eq(tribes.id, post.tribeId))
+    }
+
     return c.json({
       success: true,
       message: "Post deleted successfully",
@@ -661,6 +681,18 @@ app.delete("/c/:id", async (c) => {
 
     // Delete the comment
     await db.delete(tribeComments).where(eq(tribeComments.id, commentId))
+
+    // Decrement post commentsCount
+    await db.transaction(async (tx) => {
+      await tx.delete(tribeComments).where(eq(tribeComments.id, commentId))
+
+      await tx
+        .update(tribePosts)
+        .set({
+          commentsCount: sql`GREATEST(${tribePosts.commentsCount} - 1, 0)`,
+        })
+        .where(eq(tribePosts.id, comment.postId))
+    })
 
     return c.json({
       success: true,

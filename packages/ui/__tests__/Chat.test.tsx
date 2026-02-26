@@ -34,6 +34,7 @@ vi.mock("../context/providers", () => ({
   useNavigationContext: () => mockNavigation,
   useData: () => mockData,
   useError: () => ({ captureException: vi.fn() }),
+  useTribe: () => ({ tribePost: null }),
 }))
 
 // Mock platform module

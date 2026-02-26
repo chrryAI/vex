@@ -115,6 +115,7 @@ import {
   tribeFollows,
   tribeLikes,
   tribeMemberships,
+  tribeNews,
   tribePosts,
   tribeReactions,
   tribes,
@@ -161,7 +162,7 @@ export type {
 dotenv.config()
 
 const NODE_ENV = process.env.NODE_ENV
-const MODE = process.env.MODE
+export const MODE = process.env.MODE
 
 export const DB_URL =
   MODE === "prod"
@@ -3053,7 +3054,9 @@ export const deleteThread = async ({ id }: { id: string }) => {
   return deleted
 }
 
-export const updateAiAgent = async (data: aiAgent) => {
+export const updateAiAgent = async (
+  data: Partial<aiAgent> & { id: string },
+) => {
   const [updated] = await db
     .update(aiAgents)
     .set(data)
@@ -4597,12 +4600,14 @@ export const getPlaceHolders = async ({
   guestId,
   appId,
   pageSize = 50,
+  tribePostId,
 }: {
   threadId?: string
   userId?: string
   guestId?: string
   appId?: string
   pageSize?: number
+  tribePostId?: string
 }) => {
   const result = await db
     .select()
@@ -4613,6 +4618,7 @@ export const getPlaceHolders = async ({
         threadId ? eq(placeHolders.threadId, threadId) : undefined,
         userId ? eq(placeHolders.userId, userId) : undefined,
         guestId ? eq(placeHolders.guestId, guestId) : undefined,
+        tribePostId ? eq(placeHolders.tribePostId, tribePostId) : undefined,
       ),
     )
     .orderBy(desc(placeHolders.createdOn))
@@ -4626,6 +4632,7 @@ export const getPlaceHolder = async ({
   threadId,
   userId,
   guestId,
+  tribePostId,
   appId,
 }: {
   id?: string
@@ -4633,8 +4640,9 @@ export const getPlaceHolder = async ({
   userId?: string
   guestId?: string
   appId?: string
+  tribePostId?: string
 }) => {
-  if (!userId && !guestId) {
+  if (!userId && !guestId && !tribePostId) {
     return
   }
 
@@ -4650,6 +4658,7 @@ export const getPlaceHolder = async ({
         userId ? eq(placeHolders.userId, userId) : undefined,
         guestId ? eq(placeHolders.guestId, guestId) : undefined,
         appId ? eq(placeHolders.appId, appId) : undefined,
+        tribePostId ? eq(placeHolders.tribePostId, tribePostId) : undefined,
       ),
     )
     .orderBy(desc(placeHolders.createdOn))
@@ -4821,7 +4830,9 @@ export const updatePureApp = async (app: app) => {
     : undefined
 }
 
-export const updateApp = async (app: app | appWithStore) => {
+export const updateApp = async (
+  app: (Partial<app> | Partial<appWithStore>) & { id: string },
+) => {
   const [updated] = await db
     .update(apps)
     .set(app)
@@ -4911,7 +4922,7 @@ export const createOrUpdateApp = async ({
       const existingInstalls = await db
         .select()
         .from(storeInstalls)
-        .where(eq(storeInstalls.storeId, result.storeId))
+        .where(and(eq(storeInstalls.storeId, result.storeId)))
 
       const existingAppIds = new Set(
         existingInstalls.map((install) => install.appId),
@@ -5014,6 +5025,7 @@ export const getApp = async ({
   skipCache = false,
   ownerId,
   threadId,
+  role,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom"
   id?: string
@@ -5028,6 +5040,7 @@ export const getApp = async ({
   skipCache?: boolean
   ownerId?: string
   threadId?: string
+  role?: "admin" | "user"
 }): Promise<appWithStore | undefined> => {
   // Build app identification conditions
   const appConditions = []
@@ -5048,6 +5061,10 @@ export const getApp = async ({
 
   if (id) {
     appConditions.push(eq(apps.id, id))
+  }
+
+  if (role) {
+    appConditions.push(eq(users.role, role))
   }
 
   if (storeId) {
@@ -5076,10 +5093,19 @@ export const getApp = async ({
         )
 
   // Check if user owns any apps to determine cache strategy
+  const isAppOwner =
+    (userId &&
+      (await db.select().from(apps).where(eq(apps.userId, userId)).limit(1))
+        .length > 0) ||
+    (guestId &&
+      (await db.select().from(apps).where(eq(apps.guestId, guestId)).limit(1))
+        .length > 0)
 
   // Use shared cache key for public apps if user doesn't own any apps
   // Otherwise use user-specific key (they might have user-specific data like placeholders)
-  const cacheKey = `app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}`
+  const cacheKey = isAppOwner
+    ? `app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
+    : `app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
 
   // Try cache first
 
@@ -5183,16 +5209,6 @@ export const getApp = async ({
           })
         : undefined
 
-  const _storeAppSchedule =
-    userId &&
-    storeData?.app &&
-    isOwner(storeData.app, {
-      userId,
-      guestId,
-    })
-      ? await getScheduledJobs({ appId: storeData.app.id, userId })
-      : []
-
   const appCharacterProfiles =
     (await getCharacterProfiles({
       appId: app.app.id,
@@ -5203,11 +5219,6 @@ export const getApp = async ({
       isAppOwner: true,
     }))
 
-  const _requestedAppSchedule =
-    userId && isOwner(app.app, { userId, guestId })
-      ? await getScheduledJobs({ appId: app.app.id, userId })
-      : []
-
   // Build store with apps array for hyperlink navigation
   const storeWithApps = storeData
     ? {
@@ -5215,15 +5226,6 @@ export const getApp = async ({
         title: storeData.store.name, // Use name as title
         apps: await Promise.all(
           storeData.apps.map(async (app) => {
-            const _characterProfiles =
-              (await getCharacterProfiles({
-                appId: app.id,
-                threadId,
-              })) ??
-              (await getCharacterProfiles({
-                appId: app.id,
-                isAppOwner: true,
-              }))
             return toSafeApp({
               app: {
                 ...app,
@@ -5265,8 +5267,16 @@ export const getApp = async ({
     }),
   } as unknown as appWithStore
 
-  // Cache the result (5 minutes TTL) - fire and forget
-  setCache(cacheKey, result, 60 * 5)
+  // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
+  setCache(cacheKey, result, isAppOwner ? 60 * 5 : 60 * 60)
+
+  // Cross-seed public cache if owner-specific request
+  if (isAppOwner) {
+    const publicCacheKey = `app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
+    // Sanitize user-specific data (placeholders)
+    const publicResult = { ...result, placeHolder: undefined }
+    setCache(publicCacheKey, publicResult, 60 * 60)
+  }
 
   return result
 }
@@ -5548,7 +5558,7 @@ export function toSafeApp({
   return result
 }
 
-export function toSafeUser({ user }: { user?: user | null }) {
+export function toSafeUser({ user }: { user?: Partial<user> | null }) {
   if (!user) return
   const result: Partial<user> = {
     id: user.id,
@@ -5564,7 +5574,7 @@ export function toSafeUser({ user }: { user?: user | null }) {
   return result
 }
 
-export function toSafeGuest({ guest }: { guest?: guest | null }) {
+export function toSafeGuest({ guest }: { guest?: Partial<guest> | null }) {
   if (!guest) return
   const result: Partial<guest> = {
     id: guest.id,
@@ -6275,9 +6285,25 @@ export async function getStores({
   includePublic?: boolean
   ownerId?: string
 }) {
+  // Check if user owns any stores to determine cache strategy
+  const isStoreOwner =
+    (userId &&
+      (await db.select().from(stores).where(eq(stores.userId, userId)).limit(1))
+        .length > 0) ||
+    (guestId &&
+      (
+        await db
+          .select()
+          .from(stores)
+          .where(eq(stores.guestId, guestId))
+          .limit(1)
+      ).length > 0)
+
   // Use shared cache key for public stores if user doesn't own any stores
   // Otherwise use user-specific key
-  const cacheKey = `stores:user:${userId}:guest:${guestId}:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}`
+  const cacheKey = isStoreOwner
+    ? `stores:user:${userId}:guest:${guestId}:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
+    : `stores:public:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
 
   // Try cache first
   const cached = await getCache<storesListResult>(cacheKey)
@@ -6398,8 +6424,25 @@ export async function getStores({
     nextPage,
   }
 
-  // Cache the result (5 minutes TTL for store lists) - fire and forget
-  setCache(cacheKey, storesResult, 60 * 5)
+  // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
+  setCache(cacheKey, storesResult, isStoreOwner ? 60 * 5 : 60 * 60)
+
+  // Cross-seed public cache if owner-specific request
+  if (isStoreOwner) {
+    const publicCacheKey = `stores:public:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
+    const publicStoresResult = {
+      ...storesResult,
+      stores: storesResult.stores.map((s) => ({
+        ...s,
+        user: s.user ? toSafeUser({ user: s.user }) : s.user,
+        guest: s.guest ? toSafeGuest({ guest: s.guest }) : s.guest,
+        apps: s.apps.map((a) =>
+          toSafeApp({ app: a, userId: undefined, guestId: undefined }),
+        ),
+      })),
+    }
+    setCache(publicCacheKey, publicStoresResult, 60 * 60)
+  }
 
   return storesResult
 }
@@ -6562,8 +6605,29 @@ export async function getStore({
     apps: appsWithNestedStores,
   }
 
-  // Cache the result (10 minutes TTL for stores) - fire and forget
-  setCache(cacheKey, storeResult, 60 * 10)
+  // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
+  setCache(cacheKey, storeResult, isStoreOwner ? 60 * 5 : 60 * 60)
+
+  // Cross-seed public cache if owner-specific request
+  if (isStoreOwner) {
+    const publicCacheKey = `store:${id || slug || domain || appId}:public:depth:${depth}:parent:${parentStoreId || "none"}`
+    const publicStoreResult = {
+      ...storeResult,
+      user: result.user ? toSafeUser({ user: result.user }) : result.user,
+      guest: result.guest ? toSafeGuest({ guest: result.guest }) : result.guest,
+      app: storeResult.app
+        ? toSafeApp({
+            app: storeResult.app,
+            userId: undefined,
+            guestId: undefined,
+          })
+        : undefined,
+      apps: storeResult.apps.map((a) =>
+        toSafeApp({ app: a, userId: undefined, guestId: undefined }),
+      ),
+    }
+    setCache(publicCacheKey, publicStoreResult, 60 * 60)
+  }
 
   return storeResult
 }
@@ -7089,11 +7153,25 @@ export const deleteTimer = async ({ id }: { id: string }) => {
   return deleted
 }
 
-export const getStoreInstalls = async ({ storeId }: { storeId?: string }) => {
+export const getStoreInstalls = async ({
+  storeId,
+  appId,
+}: {
+  storeId?: string
+  appId?: string
+}) => {
+  if (!storeId && !appId) {
+    throw new Error("getStoreInstalls requires storeId or appId")
+  }
   const result = await db
     .select()
     .from(storeInstalls)
-    .where(and(storeId ? eq(storeInstalls.storeId, storeId) : undefined))
+    .where(
+      and(
+        storeId ? eq(storeInstalls.storeId, storeId) : undefined,
+        appId ? eq(storeInstalls.appId, appId) : undefined,
+      ),
+    )
 
   return result
 }
@@ -7618,11 +7696,14 @@ export const getTribePosts = async ({
   guestId,
   search,
   characterProfileIds,
+  tags,
   page = 1,
   pageSize = 10,
   id,
   sortBy = "date",
+  order = "desc",
   tribeSlug,
+  accountId,
 }: {
   tribeId?: string
   appId?: string
@@ -7631,19 +7712,22 @@ export const getTribePosts = async ({
   guestId?: string
   search?: string
   characterProfileIds?: string[]
+  tags?: string[]
   page?: number
   tribeSlug?: string
   pageSize?: number
-  sortBy?: "date" | "hot" | "comments"
+  sortBy?: "date" | "hot" | "liked"
+  order?: "asc" | "desc"
+  accountId?: string
 }) => {
   try {
     const conditions = [
       tribeId ? eq(tribePosts.tribeId, tribeId) : undefined,
       tribeSlug ? eq(tribes.slug, tribeSlug) : undefined,
       appId ? eq(tribePosts.appId, appId) : undefined,
-      userId ? eq(tribePosts.userId, userId) : undefined,
+      // userId ? eq(tribePosts.userId, userId) : undefined,
       id ? eq(tribePosts.id, id) : undefined,
-      guestId ? eq(tribePosts.guestId, guestId) : undefined,
+      // guestId ? eq(tribePosts.guestId, guestId) : undefined,
       search && search.length >= 3
         ? sql`(
             to_tsvector('english', COALESCE(${tribePosts.title}, '') || ' ' || COALESCE(${tribePosts.content}, '')) 
@@ -7660,41 +7744,94 @@ export const getTribePosts = async ({
       const profiles = await db
         .select({ appId: characterProfiles.appId })
         .from(characterProfiles)
-        .where(
-          sql`${characterProfiles.id} = ANY(${sql`ARRAY[${sql.join(
-            characterProfileIds.map((id) => sql`${id}`),
-            sql`, `,
-          )}]::uuid[]`})`,
-        )
+        .where(inArray(characterProfiles.id, characterProfileIds))
 
       characterProfileAppIds = profiles
         .map((p) => p.appId)
         .filter((id): id is string => id !== null)
 
-      // Add app ID filter if we found any
-      if (characterProfileAppIds.length > 0) {
-        conditions.push(
-          sql`${tribePosts.appId} = ANY(${sql`ARRAY[${sql.join(
-            characterProfileAppIds.map((id) => sql`${id}`),
-            sql`, `,
-          )}]::uuid[]`})`,
-        )
+      // Short-circuit: if profiles were requested but none found, return empty
+      if (characterProfileAppIds.length === 0) {
+        return { posts: [], totalCount: 0 }
       }
+
+      // Add app ID filter
+      conditions.push(inArray(tribePosts.appId, characterProfileAppIds))
+    }
+
+    // If tags are provided, filter by characterProfile.tags overlap
+    if (tags && tags.length > 0) {
+      const tagConditions = tags.map(
+        (tag) =>
+          sql`${characterProfiles.tags}::jsonb @> ${JSON.stringify([tag])}::jsonb`,
+      )
+      const taggedProfiles = await db
+        .select({ appId: characterProfiles.appId })
+        .from(characterProfiles)
+        .where(
+          and(
+            isNotNull(characterProfiles.appId),
+            eq(characterProfiles.visibility, "public"),
+            or(...tagConditions),
+          ),
+        )
+
+      const taggedAppIds = taggedProfiles
+        .map((p) => p.appId)
+        .filter((id): id is string => id !== null)
+
+      if (taggedAppIds.length === 0) {
+        return { posts: [], totalCount: 0 }
+      }
+
+      conditions.push(inArray(tribePosts.appId, taggedAppIds))
     }
 
     // Dynamic sorting based on sortBy parameter
     let orderByClause: any
-    if (sortBy === "comments") {
-      // Sort by comment count descending
-      orderByClause = desc(tribePosts.commentsCount)
+    if (sortBy === "liked") {
+      // Only show posts the current user has actually liked
+      if (!userId && !guestId) {
+        // If no user/guest provided, return empty for liked posts
+        return { posts: [], totalCount: 0 }
+      }
+      // Add condition to only include posts liked by this user/guest
+      if (userId) {
+        conditions.push(
+          sql`EXISTS (
+            SELECT 1 FROM "tribeLikes" 
+            WHERE "tribeLikes"."postId" = ${tribePosts.id} 
+            AND "tribeLikes"."userId" = ${userId}
+          )`,
+        )
+      } else if (guestId) {
+        conditions.push(
+          sql`EXISTS (
+            SELECT 1 FROM "tribeLikes" 
+            WHERE "tribeLikes"."postId" = ${tribePosts.id} 
+            AND "tribeLikes"."guestId" = ${guestId}
+          )`,
+        )
+      }
+      // Sort by when they liked it (most recent likes first)
+      orderByClause = sql`(
+        SELECT COALESCE("tribeLikes"."createdOn", ${tribePosts.createdOn})
+        FROM "tribeLikes" 
+        WHERE "tribeLikes"."postId" = ${tribePosts.id} 
+        AND (${userId ? sql`"tribeLikes"."userId" = ${userId}` : sql`"tribeLikes"."guestId" = ${guestId}`})
+        LIMIT 1
+      ) DESC`
     } else if (sortBy === "hot") {
-      // Hot algorithm: combines recency and engagement (comments)
-      // Formula: (comments + 1) / ((hours_old + 2) ^ 1.5)
-      // This creates a time-decay where newer posts with comments rise to top
-      orderByClause = sql`(COALESCE(${tribePosts.commentsCount}, 0) + 1) / POWER((EXTRACT(EPOCH FROM (NOW() - ${tribePosts.createdOn}))/3600 + 2), 1.5) DESC`
+      orderByClause = sql`(
+    COALESCE(${tribePosts.commentsCount}, 0) + 
+    (SELECT COUNT(*) FROM "tribeLikes" WHERE "tribeLikes"."postId" = ${tribePosts.id}) +
+    (SELECT COUNT(*) FROM "tribeReactions" WHERE "tribeReactions"."postId" = ${tribePosts.id}) +
+    1
+  ) / POWER((EXTRACT(EPOCH FROM (NOW() - ${tribePosts.createdOn}))/3600 + 2), 1.5) DESC`
     } else {
-      // Default: sort by date (newest first)
-      orderByClause = desc(tribePosts.createdOn)
+      // Default: sort by date, respecting order param
+      orderByClause =
+        order === "asc" ? asc(tribePosts.createdOn) : desc(tribePosts.createdOn)
     }
 
     const result = await db
@@ -7790,6 +7927,9 @@ export const getTribePosts = async ({
           visibility: row.post.visibility,
           likesCount: row.post.likesCount,
           commentsCount: row.post.commentsCount,
+          images: row.post.images,
+          videos: row.post.videos,
+          // audios: row.post.audios,
           sharesCount: row.post.sharesCount,
           createdOn: row.post.createdOn,
           updatedOn: row.post.updatedOn,
@@ -8162,7 +8302,12 @@ export const getCharacterProfiles = async ({
   }
 }
 
+export { captureException } from "./src/captureException"
 export * from "./src/graph/client"
+export {
+  sendDiscordNotification,
+  sendErrorNotification,
+} from "./src/sendDiscordNotification"
 
 export interface AutoCreateTribeParams {
   slug: string
@@ -8288,4 +8433,228 @@ export async function getAgentApiUsage({
     // Estimate credits: ~1 credit per 1000 tokens (adjust based on your pricing)
     estimatedCredits: Math.ceil(Number(stats?.totalTokens || 0) / 1000),
   }
+}
+
+// NewsAPI country codes mapped from locales (top-headlines supports country param)
+const NEWS_COUNTRIES: { country: string; lang: string }[] = [
+  { country: "us", lang: "en" },
+  { country: "de", lang: "de" },
+  { country: "es", lang: "es" },
+  { country: "fr", lang: "fr" },
+  { country: "jp", lang: "ja" },
+  { country: "kr", lang: "ko" },
+  { country: "br", lang: "pt" },
+  { country: "cn", lang: "zh" },
+  { country: "nl", lang: "nl" },
+  { country: "tr", lang: "tr" },
+]
+
+// Scrape og:description / meta description from a URL (best-effort, no throw)
+async function scrapeMetaDescription(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(5000),
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; VexBot/1.0)" },
+    })
+    if (!res.ok) return null
+    const html = await res.text()
+
+    // og:description (most reliable)
+    const ogMatch = html.match(
+      /<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']{20,})["']/i,
+    )
+    if (ogMatch?.[1]) return ogMatch[1].substring(0, 2000)
+
+    // meta description fallback
+    const metaMatch = html.match(
+      /<meta[^>]+name=["']description["'][^>]+content=["']([^"']{20,})["']/i,
+    )
+    if (metaMatch?.[1]) return metaMatch[1].substring(0, 2000)
+
+    return null
+  } catch {
+    return null
+  }
+}
+
+export async function fetchAndStoreNews(): Promise<{
+  inserted: number
+  skipped: number
+  error?: string
+  countryStats?: { country: string; fetched: number; error?: string }[]
+  newlyInserted?: {
+    title: string
+    description: string | null
+    content: string | null
+    source: string | null
+    country: string
+    category: string | null
+    publishedAt: Date | null
+  }[]
+}> {
+  const apiKey = process.env.NEWS_API_KEY
+  if (!apiKey) {
+    return { inserted: 0, skipped: 0, error: "NEWS_API_KEY not set" }
+  }
+
+  const allArticles: {
+    title: string
+    description: string | null
+    content: string | null
+    url: string
+    source: string | null
+    country: string
+    category: string
+    publishedAt: Date | null
+  }[] = []
+
+  const countryStats: { country: string; fetched: number; error?: string }[] =
+    []
+
+  for (const { country, lang } of NEWS_COUNTRIES) {
+    try {
+      const res = await fetch(
+        `https://newsapi.org/v2/top-headlines?country=${country}&pageSize=20&apiKey=${apiKey}`,
+        // NOTE: If country returns 0 articles (free tier limit), fallback to /everything?language
+      )
+      if (!res.ok) {
+        countryStats.push({ country, fetched: 0, error: `HTTP ${res.status}` })
+        continue
+      }
+      const data = (await res.json()) as {
+        status: string
+        code?: string
+        message?: string
+        articles: {
+          title: string
+          description?: string
+          content?: string
+          url: string
+          source?: { name?: string }
+          publishedAt?: string
+        }[]
+      }
+      if (data.status !== "ok") {
+        countryStats.push({
+          country,
+          fetched: 0,
+          error: data.code || data.message || "API error",
+        })
+        continue
+      }
+      let fetched = 0
+      for (const article of data.articles || []) {
+        if (!article.title || !article.url) continue
+        // NewsAPI content field is truncated at ~200 chars with "[+N chars]"
+
+        let trimmed = article.content ? article.content.trim() : ""
+        const suffixIndex = trimmed.lastIndexOf(" [")
+        if (suffixIndex !== -1) {
+          const potentialSuffix = trimmed.slice(suffixIndex)
+          if (/^\[\d+ chars\]$/.test(potentialSuffix)) {
+            trimmed = trimmed.slice(0, suffixIndex)
+          }
+        }
+
+        if (!trimmed) continue
+
+        const apiContent = trimmed
+        allArticles.push({
+          title: article.title.substring(0, 500),
+          description: article.description
+            ? article.description.substring(0, 1000)
+            : null,
+          content: apiContent,
+          url: article.url,
+          source: article.source?.name || null,
+          country,
+          category: lang,
+          publishedAt: article.publishedAt
+            ? new Date(article.publishedAt)
+            : null,
+        })
+        fetched++
+      }
+      countryStats.push({ country, fetched })
+    } catch (err) {
+      countryStats.push({
+        country,
+        fetched: 0,
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
+  }
+
+  // Enrich articles with meta scrape where content is short/missing
+  // Run in parallel batches of 10 to avoid overwhelming servers
+  const toEnrich = allArticles.filter(
+    (a) => !a.content || a.content.length < 200,
+  )
+  const batchSize = 10
+  for (let i = 0; i < toEnrich.length; i += batchSize) {
+    const batch = toEnrich.slice(i, i + batchSize)
+    await Promise.allSettled(
+      batch.map(async (article) => {
+        const scraped = await scrapeMetaDescription(article.url)
+        if (scraped && scraped.length > (article.content?.length ?? 0)) {
+          article.content = scraped
+        }
+      }),
+    )
+  }
+
+  if (allArticles.length === 0) {
+    return { inserted: 0, skipped: 0 }
+  }
+
+  // Delete news older than 48 hours
+  await db
+    .delete(tribeNews)
+    .where(lt(tribeNews.fetchedAt, new Date(Date.now() - 48 * 60 * 60 * 1000)))
+
+  let inserted = 0
+  let skipped = 0
+
+  const newlyInserted: typeof allArticles = []
+  for (const article of allArticles) {
+    try {
+      const result = await db
+        .insert(tribeNews)
+        .values(article)
+        .onConflictDoNothing()
+        .returning({ id: tribeNews.id })
+      if (result.length > 0) {
+        inserted++
+        newlyInserted.push(article)
+      } else {
+        skipped++
+      }
+    } catch {
+      skipped++
+    }
+  }
+
+  return { inserted, skipped, newlyInserted, countryStats }
+}
+
+export async function getRecentNews(limit = 20): Promise<
+  {
+    title: string
+    description: string | null
+    source: string | null
+    category: string | null
+    publishedAt: Date | null
+  }[]
+> {
+  return db
+    .select({
+      title: tribeNews.title,
+      description: tribeNews.description,
+      source: tribeNews.source,
+      category: tribeNews.category,
+      publishedAt: tribeNews.publishedAt,
+    })
+    .from(tribeNews)
+    .orderBy(sql`${tribeNews.fetchedAt} DESC`)
+    .limit(limit)
 }

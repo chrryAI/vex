@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 import { db } from "./index"
 import {
   apps,
@@ -8,7 +8,6 @@ import {
   tribeFollows,
   tribeLikes,
   tribePosts,
-  tribeReactions,
   tribeShares,
   tribes,
 } from "./src/schema"
@@ -161,6 +160,42 @@ const _LOREM_IPSUM = [
   "Totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
   "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores.",
   "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.",
+]
+
+// Sample images for seed data
+const SAMPLE_IMAGES = [
+  {
+    url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1024&q=80",
+    alt: "Abstract 3D shapes and waves",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=1024&q=80",
+    alt: "Code on a screen with blue lighting",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1024&q=80",
+    alt: "Retro computer and tech setup",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=1024&q=80",
+    alt: "Clean minimal workspace",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1024&q=80",
+    alt: "Globe with digital connections",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1614741118887-7a4ee193a5fa?auto=format&fit=crop&w=1024&q=80",
+    alt: "Colorful network of points and lines",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=1024&q=80",
+    alt: "Modern ergonomic setup",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1024&q=80",
+    alt: "Close up of a circuit board",
+  },
 ]
 
 export async function seedTribeEngagement() {
@@ -380,6 +415,21 @@ export async function seedTribeEngagement() {
           content: postData.content,
           visibility: postData.visibility,
           tribeId: randomTribe.id,
+          images:
+            Math.random() > 0.7 // 30% chance of having an image
+              ? [
+                  (() => {
+                    const img = getRandomElement(SAMPLE_IMAGES)!
+                    return {
+                      url: img.url,
+                      alt: img.alt,
+                      width: 1024,
+                      height: 1024,
+                      id: crypto.randomUUID(),
+                    }
+                  })(),
+                ]
+              : null,
           createdOn,
         })
         .returning()
@@ -393,7 +443,7 @@ export async function seedTribeEngagement() {
       await db
         .update(tribes)
         .set({
-          postsCount: randomTribe.postsCount + 1,
+          postsCount: sql`${tribes.postsCount} + 1`,
         })
         .where(eq(tribes.id, randomTribe.id))
 
@@ -536,31 +586,9 @@ export async function seedTribeEngagement() {
 
     console.log(`❤️ Created ${likesCount} likes`)
 
-    // Create random reactions
-    let reactionsCount = 0
-    for (const post of createdPosts) {
-      const numReactions = getRandomInt(3, 5) // 3-5 reactions per post
-
-      for (let i = 0; i < numReactions; i++) {
-        const randomReaction = getRandomElement(REACTIONS)
-        if (!randomReaction) continue
-
-        const randomApp = getRandomElement(allApps)
-        if (!randomApp) continue
-
-        await db.insert(tribeReactions).values({
-          postId: post.id,
-          appId: randomApp.id,
-          emoji: randomReaction,
-        })
-        reactionsCount++
-        console.log(
-          `🎉 [${reactionsCount}] Reaction: ${randomReaction} on post ${post.id.substring(0, 8)}`,
-        )
-      }
-    }
-
-    console.log(`✅ Created ${reactionsCount} reactions`)
+    // Reactions disabled for testing — let engagement job create them
+    const reactionsCount = 0
+    console.log(`✅ Created ${reactionsCount} reactions (disabled for testing)`)
 
     // Create random follows (apps follow each other)
     let followsCount = 0
@@ -703,6 +731,7 @@ export async function seedTribeEngagement() {
               behavior: ["proactive", "helpful"],
               preferences: ["clear communication", "efficiency"],
             },
+            tags: ["trustworthy", "educational", "strategic"],
           })
           profilesCount++
           console.log(

@@ -15,9 +15,10 @@ import {
   encrypt,
   eq,
   getApp as getAppDb,
-  getApps,
+  getApps as getAppsDb,
   getInstall,
   getStore,
+  getStoreInstall,
   getStoreInstalls,
   installApp,
   isDevelopment,
@@ -25,13 +26,14 @@ import {
   isNotNull,
   ne,
   safeDecrypt,
+  updateApp,
   updateStore,
 } from "@repo/db"
 import { appOrders, apps, storeInstalls } from "@repo/db/src/schema"
 import { Hono } from "hono"
 import slugify from "slug"
 import { v4 as uuid, validate } from "uuid"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import { deleteFile, upload } from "../../lib/minio"
 import { redact } from "../../lib/redaction"
 import { getApp, getGuest, getMember } from "../lib/auth"
@@ -52,15 +54,42 @@ interface ReorderRequest {
 
 // GET /apps - Intelligent app resolution (no ID)
 app.get("/", async (c) => {
+  const accountApp = c.req.param("accountApp") === "true"
   // Get final app
   const app = await getApp({ c })
 
   if (!app) {
-    return c.json({ error: "App not found" }, 404)
+    if (accountApp) {
+      return c.json(null)
+    }
+    return c.json({ error: "App not found" })
   }
 
   return c.json(app)
 })
+
+const getApps = async ({
+  userId,
+  guestId,
+  storeId,
+}: {
+  userId?: string
+  storeId?: string
+  guestId?: string
+}) => {
+  const conditions = []
+  if (userId) conditions.push(eq(apps.userId, userId))
+  if (guestId) conditions.push(eq(apps.guestId, guestId))
+  if (!userId && !guestId) conditions.push(eq(apps.visibility, "public"))
+  if (storeId) conditions.push(eq(apps.storeId, storeId))
+
+  const res = await db
+    .select()
+    .from(apps)
+    .where(and(...conditions))
+
+  return res
+}
 
 // GET /apps/:storeSlug/:appSlug - Get app by store and app slug (SEO-friendly)
 app.get("/:storeSlug/:appSlug", async (c) => {
@@ -74,8 +103,13 @@ app.get("/:storeSlug/:appSlug", async (c) => {
     skipCache: true,
   })
 
+  const accountApp = c.req.param("accountApp") === "true"
+
   if (!app) {
-    return c.json({ error: "App not found" }, 404)
+    if (accountApp) {
+      return c.json(null)
+    }
+    return c.json({ error: "App not found" })
   }
 
   return c.json(app)
@@ -84,11 +118,15 @@ app.get("/:storeSlug/:appSlug", async (c) => {
 // GET /apps/:id - Get single app by ID
 app.get("/:id", async (c) => {
   const id = c.req.param("id")
+  const accountApp = c.req.param("accountApp") === "true"
 
   const app = await getApp({ c, appId: id })
 
   if (!app) {
-    return c.json({ error: "App not found" }, 404)
+    if (accountApp) {
+      return c.json(null)
+    }
+    return c.json({ error: "App not found" })
   }
 
   return c.json(app)
@@ -169,14 +207,32 @@ app.post("/", async (c) => {
     const existingApps = await getApps({
       userId: member?.id,
       guestId: guest?.id,
-      ownerId: member?.id || guest?.id,
     })
 
-    const nameExists = existingApps.items.some(
+    const nameExists = existingApps.some(
       (app) => app.name.toLowerCase() === name.toLowerCase(),
     )
 
     if (nameExists) {
+      return c.json(
+        {
+          error: `An app with the name "${name}" already exists. Please choose a different name.`,
+        },
+        { status: 400 },
+      )
+    }
+
+    let appSlug = slugify(name, { lower: true })
+
+    const existingBlossomApp = await getAppDb({
+      slug: appSlug,
+      role: "admin",
+    })
+
+    if (
+      existingBlossomApp &&
+      !isOwner(existingBlossomApp, { userId: member?.id })
+    ) {
       return c.json(
         {
           error: `An app with the name "${name}" already exists. Please choose a different name.`,
@@ -237,14 +293,6 @@ app.post("/", async (c) => {
         typeof moltApiKey === "string" && moltApiKey.trim()
           ? await encrypt(moltApiKey.trim())
           : undefined,
-    }
-
-    const chrry = await getStore({
-      parentStoreId: null,
-    })
-
-    if (!chrry) {
-      return c.json({ error: "Chrry store not found" }, { status: 404 })
     }
 
     if (tier && tier !== "free" && !member) {
@@ -430,6 +478,14 @@ app.post("/", async (c) => {
         return c.json({ error: "Store slug taken" }, { status: 400 })
       }
 
+      const chrry = await getStore({
+        parentStoreId: null,
+      })
+
+      if (!chrry) {
+        return c.json({ error: "Chrry store not found" }, { status: 404 })
+      }
+
       const created = await createStore({
         slug: storeSlug,
         name: member?.userName || `GuestStore`,
@@ -465,7 +521,6 @@ app.post("/", async (c) => {
     }
 
     const id = uuid()
-    let appSlug = slugify(name, { lower: true })
 
     // Check if slug is unique within the store
     const existingAppInStore = await getAppDb({
@@ -576,9 +631,7 @@ app.post("/", async (c) => {
     // New app first, then up to 5 existing apps (total 6)
     const appsToReorder = [
       newApp,
-      ...storeAppsResult.items
-        .filter((app) => app.id !== newApp.id)
-        .slice(0, 5),
+      ...storeAppsResult.filter((app) => app.id !== newApp.id).slice(0, 5),
     ]
 
     await reorderApps({
@@ -994,7 +1047,7 @@ app.patch("/:id", async (c) => {
         for (const [key, value] of Object.entries(apiKeys)) {
           if (value && typeof value === "string" && value.trim()) {
             // Encrypt the API key using AES-256-GCM
-            hashedApiKeys[key] = encrypt(value.trim())
+            hashedApiKeys[key] = await encrypt(value.trim())
           }
         }
         updateData.apiKeys = hashedApiKeys
@@ -1055,41 +1108,103 @@ app.patch("/:id", async (c) => {
         })
       : undefined
 
-    if (storeInstalls) {
+    const existingApps = existingApp.storeId
+      ? await getApps({
+          storeId: existingApp.storeId,
+        })
+      : null
+
+    if (
+      existingApps?.some(
+        (app) =>
+          app?.id !== existingApp.id &&
+          !extendedApps.some((e) => e?.id === app.id),
+      )
+    ) {
+      return c.json(
+        {
+          error: `Store apps should extends each other`,
+        },
+        { status: 400 },
+      )
+    }
+
+    if (storeInstalls?.length) {
       await Promise.all(
-        storeInstalls.map(async (storeInstall) => {
-          deleteInstall({
-            appId: storeInstall.appId,
-            storeId: storeInstall.storeId,
-          })
+        storeInstalls.map(async (install) => {
+          if (!extendedApps.some((app) => app?.id === install.appId)) {
+            await deleteInstall({
+              storeId: install.storeId,
+              appId: install.appId,
+            })
+          }
         }),
       )
     }
 
+    for (const extendedApp of extendedApps) {
+      if (
+        existingApp.storeId &&
+        extendedApp?.id
+        // &&
+        // !storeInstalls?.find((install) => install.appId === extendedApp.id)
+      ) {
+        await createStoreInstall({
+          storeId: existingApp.storeId,
+          appId: extendedApp.id,
+          featured: true,
+          displayOrder: 1,
+          customDescription: extendedApp.description,
+        })
+      }
+    }
+
     console.log("✅ Validation passed")
 
-    // If name changed, update slug and check uniqueness
-    if (name && name !== existingApp.name) {
+    if (name) {
       const newSlug = slugify(name, { lower: true })
 
-      // Check if new slug conflicts with another app in the same store
-      const conflictingApp = await getAppDb({ slug: newSlug, skipCache: true })
+      const existingBlossomApp = await getAppDb({
+        slug: newSlug,
+        role: "admin",
+      })
 
       if (
-        conflictingApp &&
-        conflictingApp.id !== existingApp.id &&
-        conflictingApp.store?.appId === existingApp.id
+        existingBlossomApp &&
+        !isOwner(existingBlossomApp, { userId: member?.id })
       ) {
         return c.json(
           {
-            error: `An app with the slug "${newSlug}" already exists in this store. Please choose a different name.`,
+            error: `An app with the name "${name}" already exists. Please choose a different name.`,
           },
           { status: 400 },
         )
       }
 
-      updateData.slug = newSlug
-      console.log(`📝 Updating app slug: ${existingApp.slug} → ${newSlug}`)
+      // If name changed, update slug and check uniqueness
+      if (name !== existingApp.name) {
+        // Check if new slug conflicts with another app in the same store
+        const conflictingApp = await getAppDb({
+          slug: newSlug,
+          skipCache: true,
+        })
+
+        if (
+          conflictingApp &&
+          conflictingApp.id !== existingApp.id &&
+          conflictingApp.store?.appId === existingApp.id
+        ) {
+          return c.json(
+            {
+              error: `An app with the slug "${newSlug}" already exists in this store. Please choose a different name.`,
+            },
+            { status: 400 },
+          )
+        }
+
+        updateData.slug = newSlug
+        console.log(`📝 Updating app slug: ${existingApp.slug} → ${newSlug}`)
+      }
     }
 
     // If image field is explicitly set to empty string or null, delete images
@@ -1212,9 +1327,9 @@ app.patch("/:id", async (c) => {
           | "perplexity"
           | null,
       },
-      extends: extendedApps
-        .map((app) => (app ? app.id : undefined))
-        .filter(Boolean) as string[],
+      // extends: extendedApps
+      //   .map((app) => (app ? app.id : undefined))
+      //   .filter(Boolean) as string[],
     })
 
     if (!updatedApp) {

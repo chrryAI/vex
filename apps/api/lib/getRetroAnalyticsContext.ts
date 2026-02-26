@@ -1,6 +1,14 @@
 // ==================== TYPES ====================
 
-import { and, db, desc, eq, retroResponses, retroSessions, sql } from "@repo/db"
+import {
+  and,
+  db,
+  desc,
+  eq,
+  inArray,
+  retroResponses,
+  retroSessions,
+} from "@repo/db"
 
 type RetroSession = typeof retroSessions.$inferSelect
 type RetroResponse = typeof retroResponses.$inferSelect
@@ -77,8 +85,9 @@ async function fetchSessionResponses(
   userId?: string,
   guestId?: string,
 ) {
+  if (!sessionIds || sessionIds.length === 0) return []
   const conditions = [
-    sql`${retroResponses.sessionId} = ANY(${sessionIds})`,
+    inArray(retroResponses.sessionId, sessionIds),
     userId ? eq(retroResponses.userId, userId) : undefined,
     guestId ? eq(retroResponses.guestId, guestId) : undefined,
   ].filter(Boolean)
@@ -126,7 +135,8 @@ function calculateSessionMetrics(sessions: RetroSession[]): SessionMetrics {
 function calculateResponseMetrics(responses: RetroResponse[]): ResponseMetrics {
   const totalResponses = responses.length
   const skippedCount = responses.filter((r) => r.skipped).length
-  const skipRate = (skippedCount / totalResponses) * 100
+  const skipRate =
+    totalResponses > 0 ? (skippedCount / totalResponses) * 100 : 0
 
   const responsesWithLength = responses.filter((r) => r.responseLength)
   const avgResponseLength =

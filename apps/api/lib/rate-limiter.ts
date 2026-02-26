@@ -1,6 +1,6 @@
 // Production-grade rate limiter utilities: in-memory global limiter + exponential backoff
 
-import captureException from "./captureException"
+import { captureException } from "./captureException"
 
 // Simple in-memory global concurrency + queue limiter
 type Task<T> = {

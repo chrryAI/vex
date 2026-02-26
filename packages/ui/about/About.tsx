@@ -1,6 +1,5 @@
 "use client"
 
-import React from "react"
 import { BiLogoPostgresql } from "react-icons/bi"
 import { FaChrome } from "react-icons/fa"
 import {
@@ -52,14 +51,7 @@ import { BrowserInstance, checkIsExtension } from "../utils"
 import { getFeatures } from "../utils/subscription"
 import { useAboutStyles } from "./About.styles"
 export default function About() {
-  const {
-    chrry,
-    plausible,
-    baseApp,
-    user,
-    siteConfig: config,
-    ...auth
-  } = useAuth()
+  const { chrry, plausible, baseApp, user, siteConfig: config } = useAuth()
 
   const styles = useAboutStyles()
   const { utilities } = useStyles()
@@ -90,7 +82,7 @@ export default function About() {
       CREDITS_PRICE,
     })
 
-  const apps = baseApp?.store?.apps
+  const apps = chrry?.store?.apps || baseApp?.store?.apps
 
   return (
     <Skeleton>

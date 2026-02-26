@@ -25,7 +25,16 @@ import { CircleX, Clock, ClockPlus, InfoIcon, ThumbsUp } from "./icons"
 import Loading from "./Loading"
 import MemoryConsent from "./MemoryConsent"
 import Messages from "./Messages"
-import { A, Button, Div, Input, Span, usePlatform, useTheme } from "./platform"
+import {
+  A,
+  Button,
+  Div,
+  H2,
+  Input,
+  Span,
+  usePlatform,
+  useTheme,
+} from "./platform"
 import Share from "./Share"
 import Skeleton from "./Skeleton"
 import { BREAKPOINTS } from "./styles/breakpoints"
@@ -80,6 +89,7 @@ const Thread = ({
     dailyQuestionIndex,
     setDailyQuestionIndex,
     minimize,
+    postId,
     ...auth
   } = useAuth()
 
@@ -115,7 +125,6 @@ const Thread = ({
     placeHolderText,
     isEmpty,
     showTribe,
-    setShowTribe,
   } = useChat()
 
   const hasHydrated = useHasHydrated()
@@ -520,9 +529,35 @@ const Thread = ({
             {t("Something went wrong")}
           </Div>
         ) : status === 404 ? (
-          <Div style={styles.errorContainer.style}>
-            <InfoIcon color="var(--accent-1)" size={20} />{" "}
-            {t("Thread not found")}
+          <Div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              padding: "40px 20px",
+              minHeight: "60vh",
+              textAlign: "center",
+            }}
+          >
+            <H2 style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <Img logo="coder" size={32} />
+              {t("Thread not found")}
+            </H2>
+            <A
+              href="/tribe"
+              className="button inverted"
+              style={{
+                ...utilities.button.style,
+                ...utilities.inverted.style,
+                ...utilities.small.style,
+                marginTop: 10,
+              }}
+            >
+              <Img icon="zarathustra" size={18} />
+              {t("Back to feed")}
+            </A>
           </Div>
         ) : status === 401 ? (
           <Div style={styles.errorContainer.style}>

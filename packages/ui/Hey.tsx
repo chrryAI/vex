@@ -14,6 +14,7 @@ import { useApp } from "./context/providers"
 // Import hooks directly from their source files to avoid circular dependency with context/providers/index.tsx
 import { useAuth } from "./context/providers/AuthProvider"
 import { useNavigationContext } from "./context/providers/NavigationProvider"
+import { useTribe } from "./context/providers/TribeProvider"
 import { ErrorBoundary } from "./ErrorBoundary"
 import Home from "./Home"
 import { useHasHydrated } from "./hooks"
@@ -22,7 +23,7 @@ import Loading from "./Loading"
 import { Div, useLocalStorage, usePlatform } from "./platform"
 import { useSidebarStyles } from "./Sidebar.styles"
 import Thread from "./Thread"
-import { excludedSlugRoutes, getAppAndStoreSlugs } from "./utils/url"
+import { getAppAndStoreSlugs } from "./utils/url"
 import Programme from "./z/Programme"
 
 // Lazy load less frequently used components to reduce initial bundle
@@ -36,7 +37,6 @@ const Threads = lazy(() => import("./Threads"))
 const Users = lazy(() => import("./Users"))
 const Affiliate = lazy(() => import("./affiliate"))
 const AffiliateDashboard = lazy(() => import("./affiliateDashboard"))
-const IDE = lazy(() => import("./IDE"))
 
 // Route map with conditional lazy loading
 const ROUTES: Record<string, ComponentType<any>> = {
@@ -55,15 +55,13 @@ const ROUTES: Record<string, ComponentType<any>> = {
 
 export const Hey = memo(
   function Hey({
-    className,
     children,
-    useExtensionIcon,
   }: {
     className?: string
     children?: React.ReactNode
     useExtensionIcon?: (slug?: string) => void
   }) {
-    const { pathname, router } = useNavigationContext()
+    const { pathname } = useNavigationContext()
 
     const { isExtension } = usePlatform()
 
@@ -86,11 +84,13 @@ export const Hey = memo(
       storeApps,
       threadId,
       isProgramme,
-      isIDE,
       baseApp,
       isLoadingPosts,
       siteConfig,
+      postId,
     } = useAuth()
+
+    const { tribeSlug } = useTribe()
 
     const { appSlug } = getAppAndStoreSlugs(pathname, {
       defaultAppSlug: baseApp?.slug || siteConfig.slug,
@@ -145,6 +145,7 @@ export const Hey = memo(
       (!isSSRRoute &&
         (!!RouteComponent ||
           threadId ||
+          postId ||
           pathname === "/" ||
           pathname === "/api" ||
           app ||
@@ -158,26 +159,17 @@ export const Hey = memo(
     // Minimum splash screen duration (300ms) - starts when image loads
     useEffect(() => {
       if (!isImageLoaded) return
-      if (!app?.store?.apps?.length) return
 
       const timer = setTimeout(() => {
         setMinSplashTimeElapsed(true)
       }, 1000)
       return () => clearTimeout(timer)
-    }, [isImageLoaded, app])
+    }, [isImageLoaded])
 
     const getSplash = useCallback(
       (isSplash: boolean) => {
         const splashStyle = styles.splash
         const hiddenStyle = styles.splashHidden
-        if (!app)
-          return (
-            <Img
-              slug={showTribeLogo ? "tribe" : appSlug}
-              showLoading={false}
-              size={64}
-            />
-          )
 
         return (
           <Div
@@ -187,21 +179,20 @@ export const Hey = memo(
             }}
           >
             <Img
-              onLoad={(src) => {
+              key={app?.slug || appSlug}
+              onLoad={(_src) => {
                 setIsImageLoaded(true)
               }}
-              slug={showTribeLogo ? "tribe" : undefined}
+              slug={showTribeLogo ? "tribe" : app ? undefined : appSlug}
               app={showTribeLogo ? undefined : app}
-              // logo={isChrry ? "blossom" : undefined}
               showLoading={false}
-              size={64}
+              size={showTribeLogo ? 70 : 64}
             />
           </Div>
         )
       },
-      [app, isSplash],
+      [app, isSplash, appSlug, showTribeLogo],
     )
-    // Memoize splash component to prevent re-renders
     const splash = getSplash(isSplash)
 
     useEffect(() => {
@@ -209,16 +200,16 @@ export const Hey = memo(
         isImageLoaded &&
         isHydrated &&
         minSplashTimeElapsed &&
-        !isLoadingPosts &&
         app?.store?.apps?.length &&
+        !isLoadingPosts &&
         setIsSplash(false)
     }, [
       isImageLoaded,
       isHydrated,
+      isLoadingPosts,
       isSplash,
       minSplashTimeElapsed,
       app,
-      isLoadingPosts,
     ])
 
     // useEffect(() => {
@@ -233,13 +224,12 @@ export const Hey = memo(
           <Suspense fallback={<Loading fullScreen />}>
             <Programme />
             <Div style={{ display: isProgramme ? "none" : "block" }}>
-              {isIDE ? (
-                // IDE mode - show code editor
-                <IDE />
-              ) : isClientRoute ? (
+              {isClientRoute ? (
                 // Client-side routes: SWAP content
                 // Check thread detail FIRST before RouteComponent
-                threadId ? (
+                postId || tribeSlug ? (
+                  <Home />
+                ) : threadId ? (
                   <Thread key={threadId} />
                 ) : RouteComponent ? (
                   <RouteComponent />

@@ -37,7 +37,7 @@ One Server: Detects domain automatically
 ```typescript
 // packages/ui/utils/siteConfig.ts
 
-export function detectSiteModeDomain(hostname?: string): SiteMode {
+export function detectsiteModeDomain(hostname?: string): siteMode {
   const host =
     hostname || (typeof window !== "undefined" ? window.location.hostname : "")
 
@@ -64,9 +64,9 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
 ### **2. Hybrid Detection with Fallback**
 
 ```typescript
-export function detectSiteMode(hostname?: string): SiteMode {
+export function detectsiteMode(hostname?: string): siteMode {
   // Try domain detection first
-  const mode = detectSiteModeDomain(hostname)
+  const mode = detectsiteModeDomain(hostname)
   if (mode) {
     return mode
   }
@@ -92,11 +92,11 @@ export function detectSiteMode(hostname?: string): SiteMode {
 
 ```typescript
 export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
-  // If it's a valid SiteMode, use it directly
-  const validModes: SiteMode[] = ["chrryDev", "chrryAI", "chrryStore", "vex"]
-  const mode = validModes.includes(hostnameOrMode as SiteMode)
-    ? (hostnameOrMode as SiteMode)
-    : detectSiteMode(hostnameOrMode)
+  // If it's a valid siteMode, use it directly
+  const validModes: siteMode[] = ["chrryDev", "chrryAI", "chrryStore", "vex"]
+  const mode = validModes.includes(hostnameOrMode as siteMode)
+    ? (hostnameOrMode as siteMode)
+    : detectsiteMode(hostnameOrMode)
 
   // Return config based on mode
   if (mode === "chrryDev") {
@@ -147,8 +147,8 @@ export default async function Page() {
 
 ### **1. packages/ui/utils/siteConfig.ts**
 
-- ✅ Added `detectSiteModeDomain()` for pure domain detection
-- ✅ Updated `detectSiteMode()` to try domain first, then env vars
+- ✅ Added `detectsiteModeDomain()` for pure domain detection
+- ✅ Updated `detectsiteMode()` to try domain first, then env vars
 - ✅ Updated `getSiteConfig()` to accept hostname or mode string
 
 ### **2. apps/web/app/[locale]/blog/page.tsx**
@@ -240,19 +240,19 @@ localhost:3000          → vex        → Default (development)
 
 ```typescript
 // Test chrry.ai
-detectSiteModeDomain("chrry.ai") // → "chrryAI"
+detectsiteModeDomain("chrry.ai") // → "chrryAI"
 
 // Test focus subdomain
-detectSiteModeDomain("focus.chrry.ai") // → "chrryAI"
+detectsiteModeDomain("focus.chrry.ai") // → "chrryAI"
 
 // Test vex
-detectSiteModeDomain("vex.chrry.ai") // → "vex"
+detectsiteModeDomain("vex.chrry.ai") // → "vex"
 
 // Test chrry.dev
-detectSiteModeDomain("chrry.dev") // → "chrryDev"
+detectsiteModeDomain("chrry.dev") // → "chrryDev"
 
 // Test localhost
-detectSiteModeDomain("localhost") // → "vex"
+detectsiteModeDomain("localhost") // → "vex"
 ```
 
 ### **Test getSiteConfig**
@@ -420,7 +420,7 @@ curl https://chrry.dev
 
 1. Request comes to server
 2. Server reads `host` header
-3. `detectSiteModeDomain()` checks hostname
+3. `detectsiteModeDomain()` checks hostname
 4. Returns appropriate mode
 5. `getSiteConfig()` returns config
 6. App renders with correct branding
