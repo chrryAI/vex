@@ -80,7 +80,7 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
     "@sentry/react": "^10.10.0",
-    "@stripe/stripe-js": "^7.7.0",
+    "@stripe/stripe-js": "^8.8.0",
     "@types/chrome": "^0.1.1",
     "@types/nprogress": "^0.2.3",
     "@types/react": "19.1.12",

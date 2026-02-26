@@ -98,7 +98,7 @@ export default function Search({
         style={{
           ...styles.search.style,
           borderColor: style?.borderColor,
-          ...(isDesktop ? { paddingRight: 60 } : {}),
+          paddingRight: isDesktop ? 60 : undefined,
         }}
         data-testid={dataTestId}
         aria-label={placeholder || "Search"}
