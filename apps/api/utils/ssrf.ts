@@ -134,35 +134,12 @@ export function isPrivateIP(ip: string): boolean {
     if (normalizedIP === "::1" || normalizedIP === "0:0:0:0:0:0:0:1")
       return true
     // 64:ff9b::/96 (IPv4/IPv6 translation)
+    if (normalizedIP.startsWith("64:ff9b:")) return true
     // 100::/64 (Discard-Only)
+    if (normalizedIP.startsWith("100:")) return true
     // 2001:db8::/32 (Documentation)
-    const ipv6Blocks = expandIPv6(normalizedIP)
-    if (ipv6Blocks) {
-      // 64:ff9b::/96 - Check first 6 blocks (96 bits)
-      if (
-        ipv6Blocks[0] === 0x64 &&
-        ipv6Blocks[1] === 0xff9b &&
-        ipv6Blocks[2] === 0 &&
-        ipv6Blocks[3] === 0 &&
-        ipv6Blocks[4] === 0 &&
-        ipv6Blocks[5] === 0
-      )
-        return true
-
-      // 100::/64 - Check first 4 blocks (64 bits)
-      if (
-        ipv6Blocks[0] === 0x100 &&
-        ipv6Blocks[1] === 0 &&
-        ipv6Blocks[2] === 0 &&
-        ipv6Blocks[3] === 0
-      )
-        return true
-
-      // 2001:db8::/32 - Check first 2 blocks (32 bits)
-      if (ipv6Blocks[0] === 0x2001 && ipv6Blocks[1] === 0xdb8) return true
-    }
-
-    // fc00::/7 (Unique Local) - fc00 to fdff
+    if (normalizedIP.startsWith("2001:db8:")) return true
+    // fc00::/7 (Unique Local)
     if (normalizedIP.startsWith("fc") || normalizedIP.startsWith("fd"))
       return true
     // fe80::/10 (Link Local) - fe80 to febf
