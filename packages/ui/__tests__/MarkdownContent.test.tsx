@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import MarkdownContent, { createOverrides } from "../MarkdownContent.web"
 import { mockAppContext, mockTheme } from "./mocks/mockContexts"

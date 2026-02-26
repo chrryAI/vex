@@ -5,6 +5,7 @@ import {
   type ReactNode,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react"
 import toast from "react-hot-toast"
@@ -156,13 +157,11 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const setTags = (val: string[]) => {
     setTagsInternal(val)
 
-    const url = new URL(window.location.href)
-    if (val.length === 0) {
-      url.searchParams.set("tags", val.join(","))
+    if (val.length !== 0) {
+      addParams({ tags: val.join(",") })
     } else {
-      url.searchParams.delete("tags")
+      removeParams(["tags"])
     }
-    window.history.replaceState(null, "", url.toString())
   }
 
   const setShouldLoadPosts = (val: boolean) => {
@@ -170,11 +169,30 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setLoadPostsCounter(loadPostsCounter + 1)
   }
 
-  const [search, setSearchInitial] = useState<string | undefined>()
+  const searchParamsSearch = searchParams.get("search") || undefined
+
+  const [search, setSearchInitial] = useState<string | undefined>(
+    searchParamsSearch,
+  )
 
   const setSearch = (val?: string) => {
     setSearchInitial(val)
   }
+
+  useEffect(() => {
+    const tags = searchParams.get("tags")
+    console.log(`🚀 ~ useEffect ~ tags:`, tags)
+    if (!tags) {
+      setTagsInternal([])
+    }
+  }, [searchParams.get("tags")])
+
+  useEffect(() => {
+    if (searchParamsSearch !== search) {
+      setSearchInitial(searchParamsSearch)
+    }
+  }, [searchParamsSearch])
+
   const [until, setUntilInitial] = useState<number>(
     searchParams?.get("until") ? Number(searchParams.get("until")) : 1,
   )
@@ -699,6 +717,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     }
   }
 
+  const mergedAppsRef = useRef<string>("")
+
   useEffect(() => {
     // Collect unique apps from posts, comments, and replies using a Set
     const appsSet = new Map<string, appWithStore>()
@@ -732,8 +752,16 @@ export function TribeProvider({ children }: TribeProviderProps) {
       })
     }
 
-    // Merge all unique apps
-    mergeApps(Array.from(appsSet.values()))
+    const newApps = Array.from(appsSet.values())
+    const newAppsFingerprint = newApps
+      .map((a) => a.id)
+      .sort()
+      .join(",")
+
+    if (newApps.length > 0 && newAppsFingerprint !== mergedAppsRef.current) {
+      mergedAppsRef.current = newAppsFingerprint
+      mergeApps(newApps)
+    }
   }, [tribePosts, tribePost, mergeApps])
 
   const value: TribeContextType = {
