@@ -740,8 +740,8 @@ importers:
         specifier: ^19.1.9
         version: 19.2.3(@types/react@19.2.14)
       '@vitest/coverage-v8':
-        specifier: ^4.0.18
-        version: 4.0.18(vitest@2.1.9(@types/node@24.10.15)(happy-dom@20.7.0)(lightningcss@1.31.1)(sass@1.97.3)(terser@5.46.0))
+        specifier: ^2.1.9
+        version: 2.1.9(vitest@2.1.9(@types/node@24.10.15)(happy-dom@20.7.0)(lightningcss@1.31.1)(sass@1.97.3)(terser@5.46.0))
       cross-env:
         specifier: ^10.0.0
         version: 10.1.0
@@ -3173,8 +3173,8 @@ packages:
   '@expo/sudo-prompt@9.3.2':
     resolution: {integrity: sha512-HHQigo3rQWKMDzYDLkubN5WQOYXJJE2eNqIQC2axC2iO3mHdwnIR7FgZVvHWtBwAdzBgAP0ECp8KqS8TiMKvgw==}
 
-  '@expo/vector-icons@15.0.3':
-    resolution: {integrity: sha512-SBUyYKphmlfUBqxSfDdJ3jAdEVSALS2VUPOUyqn48oZmb2TL/O7t7/PQm5v4NQujYEPLPMTLn9KVw6H7twwbTA==}
+  '@expo/vector-icons@15.1.1':
+    resolution: {integrity: sha512-Iu2VkcoI5vygbtYngm7jb4ifxElNVXQYdDrYkT7UCEIiKLeWnQY0wf2ZhHZ+Wro6Sc5TaumpKUOqDRpLi5rkvw==}
     peerDependencies:
       expo-font: '>=14.0.4'
       react: '*'
@@ -7030,7 +7030,6 @@ packages:
 
   bun@1.3.10:
     resolution: {integrity: sha512-S/CXaXXIyA4CMjdMkYQ4T2YMqnAn4s0ysD3mlsY4bUiOCqGlv28zck4Wd4H4kpvbekx15S9mUeLQ7Uxd0tYTLA==}
-    cpu: [arm64, x64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -15406,7 +15405,7 @@ snapshots:
       chalk: 4.1.2
       debug: 4.4.3
       getenv: 2.0.0
-      glob: 13.0.5
+      glob: 13.0.6
       resolve-from: 5.0.0
       semver: 7.7.4
       slugify: 1.6.6
@@ -15470,7 +15469,7 @@ snapshots:
       chalk: 4.1.2
       debug: 4.4.3
       getenv: 2.0.0
-      glob: 13.0.5
+      glob: 13.0.6
       ignore: 5.3.2
       minimatch: 10.2.4
       resolve-from: 5.0.0
@@ -16334,7 +16333,7 @@ snapshots:
 
   '@isaacs/fs-minipass@4.0.1':
     dependencies:
-      minipass: 7.1.2
+      minipass: 7.1.3
 
   '@isaacs/ttlcache@1.4.1': {}
 
@@ -19928,11 +19927,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-v8@4.0.18(vitest@2.1.9(@types/node@24.10.15)(happy-dom@20.7.0)(lightningcss@1.31.1)(sass@1.97.3)(terser@5.46.0))':
+  '@vitest/coverage-v8@2.1.9(vitest@2.1.9(@types/node@24.10.15)(happy-dom@20.7.0)(lightningcss@1.31.1)(sass@1.97.3)(terser@5.46.0))':
     dependencies:
-      '@bcoe/v8-coverage': 1.0.2
-      '@vitest/utils': 4.0.18
-      ast-v8-to-istanbul: 0.3.12
+      '@ampproject/remapping': 2.3.0
+      '@bcoe/v8-coverage': 0.2.3
+      debug: 4.4.3
       istanbul-lib-coverage: 3.2.2
       istanbul-lib-report: 3.0.1
       istanbul-lib-source-maps: 5.0.6
@@ -19940,8 +19939,11 @@ snapshots:
       magic-string: 0.30.21
       magicast: 0.3.5
       std-env: 3.10.0
-      tinyrainbow: 3.0.3
+      test-exclude: 7.0.2
+      tinyrainbow: 1.2.0
       vitest: 2.1.9(@types/node@24.10.15)(happy-dom@20.7.0)(lightningcss@1.31.1)(sass@1.97.3)(terser@5.46.0)
+    transitivePeerDependencies:
+      - supports-color
 
   '@vitest/coverage-v8@4.0.18(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@22.19.13)(happy-dom@20.7.0)(lightningcss@1.31.1)(sass@1.97.3)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
@@ -24694,7 +24696,7 @@ snapshots:
 
   minimatch@10.2.4:
     dependencies:
-      brace-expansion: 5.0.2
+      brace-expansion: 5.0.3
 
   minimist@1.2.8: {}
 
@@ -24702,7 +24704,7 @@ snapshots:
 
   minizlib@3.1.0:
     dependencies:
-      minipass: 7.1.2
+      minipass: 7.1.3
 
   mixin-deep@1.3.2:
     dependencies:
@@ -24837,8 +24839,8 @@ snapshots:
     dependencies:
       '@next/env': 16.1.6
       '@swc/helpers': 0.5.15
-      baseline-browser-mapping: 2.9.19
-      caniuse-lite: 1.0.30001770
+      baseline-browser-mapping: 2.10.0
+      caniuse-lite: 1.0.30001774
       postcss: 8.4.31
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
@@ -26427,7 +26429,7 @@ snapshots:
 
   rimraf@6.1.3:
     dependencies:
-      glob: 13.0.5
+      glob: 13.0.6
       package-json-from-dist: 1.0.1
 
   rn-emoji-keyboard@1.7.0(react-native@0.78.3(@babel/core@7.29.0)(@babel/preset-env@7.29.0(@babel/core@7.29.0))(@types/react@19.1.12)(react@19.2.4))(react@19.2.4):
@@ -27100,7 +27102,7 @@ snapshots:
     dependencies:
       '@isaacs/fs-minipass': 4.0.1
       chownr: 3.0.0
-      minipass: 7.1.2
+      minipass: 7.1.3
       minizlib: 3.1.0
       yallist: 5.0.0
 
@@ -27129,6 +27131,12 @@ snapshots:
     dependencies:
       '@istanbuljs/schema': 0.1.3
       glob: 7.2.3
+      minimatch: 10.2.4
+
+  test-exclude@7.0.2:
+    dependencies:
+      '@istanbuljs/schema': 0.1.3
+      glob: 13.0.6
       minimatch: 10.2.4
 
   thenify-all@1.6.0:
