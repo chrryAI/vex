@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useRef, useState } from "react"
+import { type RefObject, useEffect, useRef, useState } from "react"
 import { FaGithub } from "react-icons/fa"
 import A from "./a/A"
 import { COLORS, useAppContext } from "./context/AppContext"
@@ -37,6 +37,7 @@ import {
 import Search from "./Search"
 import Skeleton from "./Skeleton"
 import { useTribeStyles } from "./Tribe.styles"
+import type { appWithStore, tribePost, user } from "./types"
 import { apiFetch, FRONTEND_URL } from "./utils"
 import isOwner from "./utils/isOwner"
 
@@ -73,7 +74,6 @@ const TribePostListItem = ({
   viewPortWidth,
   t,
   timeAgo,
-  utilities,
   toggleLike,
   isTogglingLike,
   tryAppCharacterProfile,
@@ -84,19 +84,50 @@ const TribePostListItem = ({
   user,
   deletePost,
   accountApp,
-  addParams,
   setSignInPart,
   setAppStatus,
   tags,
   setTags,
   postsRef,
-  downloadImage,
-}: any) => {
+}: {
+  post: tribePost
+  index: number
+  reduceMotion: boolean
+  isDark: boolean
+  isMobileDevice: boolean
+  isSmallDevice: boolean
+  viewPortWidth: number
+  t: (key: string, options?: any) => string
+  timeAgo: (date: Date | string) => string
+  toggleLike?: (postId: string) => Promise<{
+    liked: boolean
+  }>
+  isTogglingLike: string | undefined
+  tryAppCharacterProfile: string | undefined
+  setTryAppCharacterProfile: (id: string | undefined) => void
+  tyingToReact: string | undefined
+  setTyingToReact: (id: string | undefined) => void
+  owner: boolean
+  user?: user
+  deletePost: (postId: string) => Promise<void>
+  accountApp?: appWithStore
+  addParams: (params: any) => void
+  setSignInPart: (
+    part: "register" | "credentials" | "login" | undefined,
+  ) => void
+  setAppStatus: (status: any) => void
+  tags: string[]
+  setTags: (tags: string[]) => void
+  postsRef: RefObject<HTMLDivElement | null>
+  downloadImage: (imageUrl: string, imageName?: string) => Promise<void>
+}) => {
   const [isHovered, setIsHovered] = useState(false)
   const { ref: inViewRef, inView } = useInView({
     threshold: 0.5,
     triggerOnce: false,
   })
+
+  const { utilities } = useStyles()
 
   return (
     <MotiView
@@ -179,7 +210,8 @@ const TribePostListItem = ({
           }}
         >
           {post.images && post.images.length > 0 && post?.images?.[0]?.url && (
-            <Div
+            <A
+              href={`/p/${post.id}`}
               style={{
                 position: "relative",
                 width:
@@ -188,44 +220,24 @@ const TribePostListItem = ({
                   viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200,
               }}
             >
-              <A
-                href={`/p/${post.id}`}
+              <Img
+                alt={post.images[0].title}
+                width={
+                  viewPortWidth < 500 ? "100%" : isMobileDevice ? 300 : 200
+                }
+                height={
+                  viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200
+                }
                 style={{
-                  ...{
-                    position: "absolute",
-                    top: 8,
-                    right: 8,
-                    backgroundColor: "rgba(0, 0, 0, 0.7)",
-                    border: "none",
-                    borderRadius: 6,
-                    color: "white",
-                    padding: 6,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 10,
-                  },
+                  borderRadius: "15px",
+                  width:
+                    viewPortWidth < 500 ? "100%" : isMobileDevice ? 300 : 200,
+                  height:
+                    viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200,
                 }}
-              >
-                <Img
-                  alt={post.images[0].title}
-                  width={
-                    viewPortWidth < 500 ? "100%" : isMobileDevice ? 300 : 200
-                  }
-                  height={
-                    viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200
-                  }
-                  style={{
-                    borderRadius: "15px",
-                    width:
-                      viewPortWidth < 500 ? "100%" : isMobileDevice ? 300 : 200,
-                    height:
-                      viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200,
-                  }}
-                  src={post.images[0].url}
-                />
-              </A>
-            </Div>
+                src={post.images[0].url}
+              />{" "}
+            </A>
           )}
           {post.videos && post.videos.length > 0 && post?.videos?.[0]?.url && (
             <Div
@@ -301,7 +313,7 @@ const TribePostListItem = ({
             <Button
               className="transparent"
               onClick={async () => {
-                await toggleLike(post.id)
+                await toggleLike?.(post.id)
               }}
               style={{
                 ...utilities.transparent.style,
@@ -669,7 +681,7 @@ const TribePostListItem = ({
                                   return
                                 }
                                 setTags(tags.concat(tag))
-                                if (postsRef.current) {
+                                if (postsRef?.current) {
                                   const y =
                                     postsRef.current.getBoundingClientRect()
                                       .top +
@@ -729,7 +741,7 @@ const TribePostListItem = ({
                                 return
                               }
                               setTags(tags.concat(tag))
-                              if (postsRef.current) {
+                              if (postsRef?.current) {
                                 const y =
                                   postsRef.current.getBoundingClientRect().top +
                                   window.scrollY -
@@ -2185,8 +2197,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           isSmallDevice={isSmallDevice}
                           viewPortWidth={viewPortWidth}
                           t={t}
+                          setSignInPart={setSignInPart}
                           timeAgo={timeAgo}
-                          utilities={utilities}
                           toggleLike={toggleLike}
                           isTogglingLike={isTogglingLike}
                           tryAppCharacterProfile={tryAppCharacterProfile}
@@ -2198,7 +2210,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           deletePost={deletePost}
                           accountApp={accountApp}
                           addParams={addParams}
-                          setSignInPart={setSignInPart}
                           setAppStatus={setAppStatus}
                           tags={tags}
                           setTags={setTags}
