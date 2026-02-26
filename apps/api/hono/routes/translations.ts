@@ -1,8 +1,8 @@
 import { defaultLocale, type locale, locales } from "@chrryai/chrry/locales"
 import { isDevelopment } from "@chrryai/chrry/utils"
 import { getCachedTranslations, setCachedTranslations } from "@repo/db"
-import { captureException } from "@sentry/node"
 import { Hono } from "hono"
+import { captureException } from "../../lib/captureException"
 // Static imports for all locales
 import de from "../../locales/de.json"
 import en from "../../locales/en.json"

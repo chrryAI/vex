@@ -12,7 +12,7 @@ import {
 import slugify from "slug"
 import { v4 as uuidv4 } from "uuid"
 import { extractPDFText } from "../../lib"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import { upload } from "../../lib/minio"
 import { redact } from "../redaction"
 import { processFileForRAG } from "./ragService"

@@ -1,6 +1,6 @@
-import { captureException } from "@sentry/node"
 import { Hono } from "hono"
 import Stripe from "stripe"
+import { captureException } from "../../lib/captureException"
 import { getMember } from "../lib/auth"
 
 export const createSubscription = new Hono()
@@ -58,7 +58,7 @@ createSubscription.post("/", async (c) => {
     const isCredits = ["credits", "molt", "tribe"].includes(plan)
 
     // Minimum price validation for custom pricing (Stripe minimum is €0.50, but we set €5 for safety)
-    const MINIMUM_PRICE_EUR = 5
+    const MINIMUM_PRICE_EUR = 0
     if (customPrice !== undefined && customPrice < MINIMUM_PRICE_EUR) {
       const shortfall = MINIMUM_PRICE_EUR - customPrice
       return c.json(

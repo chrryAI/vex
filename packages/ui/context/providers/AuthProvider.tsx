@@ -87,9 +87,10 @@ import {
   whiteLabels,
 } from "../../utils/siteConfig"
 import ago from "../../utils/timeAgo"
-import { excludedSlugRoutes, getAppAndStoreSlugs } from "../../utils/url"
+import { excludedSlugRoutes } from "../../utils/url"
 import { useTheme } from "../ThemeContext"
 import type { Task } from "../TimerContext"
+import type { AppStatus } from "./AppProvider"
 import { useError } from "./ErrorProvider"
 
 // Constants (shared with DataProvider)
@@ -189,8 +190,10 @@ const AuthContext = createContext<
         threads?: thread[]
         totalCount: number
       }
+      appStatus: AppStatus | undefined
+      setAppStatus: (appStatus: AppStatus | undefined, path?: string) => void
       lastApp: appWithStore | undefined
-      setBaseAccountApp: (value: appWithStore | undefined) => void
+      setAccountApp: (value: appWithStore | undefined) => void
       setThreadId: (value: string | undefined) => void
       threadIdRef: React.RefObject<string | undefined>
       setHasNotification: (value: boolean) => void
@@ -271,10 +274,6 @@ const AuthContext = createContext<
       setIsSavingApp: (isSavingApp: boolean) => void
       setNewApp: (newApp: appWithStore | undefined) => void
       newApp?: appWithStore
-      userBaseStore: storeWithApps | undefined
-      guestBaseStore: storeWithApps | undefined
-      userBaseApp: appWithStore | undefined
-      guestBaseApp: appWithStore | undefined
       scheduledJobs?: scheduledJob[]
       setScheduledJobs: (scheduledJobs: scheduledJob[]) => void
       fetchScheduledJobs: () => Promise<void>
@@ -356,6 +355,7 @@ const AuthContext = createContext<
       shouldFetchSession: boolean
       setShouldFetchSession: (shouldFetchSession: boolean) => void
       refetchSession: (app?: appWithStore) => Promise<void>
+      refetchAccountApps: () => Promise<void>
       setFingerprint: (fingerprint?: string) => void
       deviceId?: string
       fingerprint?: string
@@ -384,6 +384,43 @@ const AuthContext = createContext<
   | undefined
 >(undefined)
 
+export const hasStoreApps = (app: appWithStore | undefined) => {
+  return Boolean(app?.store?.app && app?.store?.apps?.length)
+}
+
+export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
+  // Create a map of existing apps by ID
+  const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
+
+  // Add or update apps
+  newApps.forEach((newApp) => {
+    const existingApp = existingAppsMap.get(newApp.id)
+
+    if (existingApp) {
+      // Check if new app has meaningful store.apps (not empty or undefined)
+      const newHasStoreApps = hasStoreApps(newApp)
+      const existingHasStoreApps = hasStoreApps(existingApp)
+
+      // Merge: prefer new app but preserve existing store.apps if new one is empty/undefined
+      existingAppsMap.set(newApp.id, {
+        ...existingApp,
+        ...newApp,
+        store: newHasStoreApps
+          ? newApp.store
+          : existingHasStoreApps
+            ? existingApp.store
+            : newApp.store,
+      })
+    } else {
+      existingAppsMap.set(newApp.id, newApp)
+    }
+  })
+
+  const result = Array.from(existingAppsMap.values())
+
+  return result
+}
+
 export function AuthProvider({
   apiKey,
   children,
@@ -411,7 +448,7 @@ export function AuthProvider({
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
   showTribe?: boolean
-
+  accountApp?: appWithStore
   searchParams?: Record<string, string> & {
     get: (key: string) => string | null
     has: (key: string) => boolean
@@ -457,10 +494,6 @@ export function AuthProvider({
     get: (_key: string) => null,
     has: (_key: string) => false,
     toString: () => "",
-  }
-
-  const hasStoreApps = (app: appWithStore | undefined) => {
-    return Boolean(app?.store?.app && app?.store?.apps.length)
   }
 
   const _signUp = useCallback(
@@ -925,56 +958,45 @@ export function AuthProvider({
     }
   }, [isExtension, isCapacitor])
 
-  const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
-    // Create a map of existing apps by ID
-    const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
+  const step = searchParams.get("step") as
+    | "add"
+    | "success"
+    | "warning"
+    | "cancel"
+    | "update"
+    | "restore"
+    | undefined
 
-    // Add or update apps
-    newApps.forEach((newApp) => {
-      const existingApp = existingAppsMap.get(newApp.id)
+  const part = searchParams.get("part") as
+    | "name"
+    | "description"
+    | "highlights"
+    | "settings"
+    | "image"
+    | "title"
+    | undefined
 
-      if (existingApp) {
-        // Check if new app has meaningful store.apps (not empty or undefined)
-        const newHasStoreApps = hasStoreApps(newApp)
-        const existingHasStoreApps = hasStoreApps(existingApp)
-
-        // Merge: prefer new app but preserve existing store.apps if new one is empty/undefined
-        existingAppsMap.set(newApp.id, {
-          ...existingApp,
-          ...newApp,
-          store: newHasStoreApps
-            ? newApp.store
-            : existingHasStoreApps
-              ? existingApp.store
-              : newApp.store,
-        })
-      } else {
-        existingAppsMap.set(newApp.id, newApp)
+  const [appStatus, setAppStatus] = useState<
+    | {
+        step?: "add" | "success" | "warning" | "cancel" | "update" | "restore"
+        part?:
+          | "name"
+          | "description"
+          | "highlights"
+          | "settings"
+          | "image"
+          | "title"
+        text?: Record<string, string>
       }
-    })
+    | undefined
+  >({
+    step: step,
+    part: part,
+  })
 
-    const result = Array.from(existingAppsMap.values())
-
-    return result
+  const setAccountApp = (app: appWithStore | undefined) => {
+    setAccountAppInternal(app)
   }
-
-  const [userBaseApp, setUserBaseApp] = useState<appWithStore | undefined>(
-    props.session?.userBaseApp,
-  )
-
-  const userBaseStore = userBaseApp?.store
-  const [guestBaseApp, setGuestBaseApp] = useState<appWithStore | undefined>(
-    props.session?.guestBaseApp,
-  )
-
-  const accountApp = userBaseApp || guestBaseApp
-
-  const setBaseAccountApp = (app: appWithStore | undefined) => {
-    user && setUserBaseApp(app)
-    guest && setGuestBaseApp(app)
-  }
-
-  const guestBaseStore = guestBaseApp?.store
 
   function processSession(sessionData?: session) {
     if (sessionData) {
@@ -989,14 +1011,14 @@ export function AuthProvider({
         setToken(sessionData.user.token)
         setFingerprint(sessionData.user.fingerprint || undefined)
         setGuest(undefined)
-        sessionData.userBaseApp && setUserBaseApp(sessionData.userBaseApp)
       } else if (sessionData.guest) {
         setGuest(sessionData.guest)
         setFingerprint(sessionData.guest.fingerprint)
         setToken(sessionData.guest.fingerprint)
         setUser(undefined)
-        sessionData.guestBaseApp && setGuestBaseApp(sessionData.guestBaseApp)
       }
+
+      sessionData.accountApp && setAccountApp(sessionData.accountApp)
 
       setHasNotification(!!session?.hasNotification)
 
@@ -1121,34 +1143,42 @@ export function AuthProvider({
     initialTribePost,
   )
 
+  const [accountApp, setAccountAppInternal] = useState<
+    appWithStore | undefined
+  >(
+    props.accountApp ||
+      props?.session?.userBaseApp ||
+      props?.session?.guestBaseApp,
+  )
+  const allApps = useMemo(
+    () =>
+      merge(
+        merge(
+          (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
+          session?.app?.store?.apps || props.app?.store?.apps || [],
+        ),
+
+        merge(
+          (tribePost?.comments.map((p) => p.app) as appWithStore[]) || [],
+          accountApp ? [accountApp] : [],
+        ),
+      ),
+    [
+      tribePosts?.posts,
+      session?.app?.store?.apps,
+      props.app?.store?.apps,
+      tribePost?.comments,
+      accountApp,
+    ],
+  )
+  const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
+
   const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
     !initialTribePosts,
   )
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
-
-  const allApps = merge(
-    merge(
-      (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
-      session?.app?.store?.apps || props.app?.store?.apps || [],
-    ),
-
-    merge(
-      (tribePost?.comments.map((p) => p.app) as appWithStore[]) || [],
-      accountApp ? [accountApp] : [],
-    ),
-  )
-  const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
-
-  useEffect(() => {
-    const diff = allApps.filter(
-      (app) => !storeApps?.some((a) => a.id === app.id),
-    )
-    if (diff && diff.length > 0) {
-      mergeApps(diff)
-    }
-  }, [allApps.length, storeApps?.length])
 
   const baseAppInternal = storeApps.find((item) => {
     if (!item) return false
@@ -1245,13 +1275,15 @@ export function AuthProvider({
     }
   }, [isRetro, app, dailyQuestionSectionIndex, dailyQuestionIndex])
 
+  const c = whiteLabels.find((label) => label.slug === "chrry")
+
   const siteConfigApp = useMemo(
     () =>
       whiteLabels.find(
         (label) =>
           label.slug === app?.slug || app?.store?.app?.slug === label.slug,
-      ),
-    [app],
+      ) || c,
+    [app, c],
   )
 
   const setIsRetro = (value: boolean) => {
@@ -1393,6 +1425,32 @@ export function AuthProvider({
     },
   )
   const sessionData = sessionSwr || session
+
+  useEffect(() => {
+    if (!allApps.length) return
+
+    setAllApps((prevApps) => {
+      const appMap = new Map(prevApps.map((a) => [a.id, a]))
+      let hasChange = false
+
+      allApps.forEach((app) => {
+        const existing = appMap.get(app.id)
+        if (!existing) {
+          appMap.set(app.id, app)
+          hasChange = true
+        } else {
+          // Use the existing merge helper to preserve hydrated data
+          const merged = merge([existing], [app])[0]
+          if (merged && JSON.stringify(existing) !== JSON.stringify(merged)) {
+            appMap.set(app.id, merged)
+            hasChange = true
+          }
+        }
+      })
+
+      return hasChange ? Array.from(appMap.values()) : prevApps
+    })
+  }, [allApps])
 
   const _getAlterNativeDomains = (store: storeWithApps) => {
     // Map askvex.com and vex.chrry.ai as equivalent domains
@@ -1755,30 +1813,7 @@ export function AuthProvider({
     // if (focus && showFocus) return focus
     if (path === "/" && !showFocus) return undefined
 
-    const { appSlug } = getAppAndStoreSlugs(path, {
-      defaultAppSlug: baseApp?.slug || siteConfig.slug,
-      defaultStoreSlug: baseApp?.store?.slug || siteConfig.storeSlug,
-    })
-
-    // if (
-    //   userBaseApp &&
-    //   storeSlug === userBaseApp.store?.slug &&
-    //   appSlug === userBaseApp.slug
-    // ) {
-    //   return userBaseApp
-    // }
-
-    // if (
-    //   guestBaseApp &&
-    //   storeSlug === guestBaseApp.store?.slug &&
-    //   appSlug === guestBaseApp.slug
-    // ) {
-    //   return guestBaseApp
-    // }
-
-    const matchedApp = storeApps?.find(
-      (item) => item.slug === appSlug && (hasStoreApps(item) ? true : true),
-    )
+    const matchedApp = storeApps?.find((item) => getAppSlug(item) === pathname)
 
     return matchedApp
   }
@@ -1835,7 +1870,7 @@ export function AuthProvider({
 
   const burnApp = storeApps?.find((app) => app.slug === "burn")
 
-  const accountAppId = userBaseApp?.id || guestBaseApp?.id
+  const accountAppId = accountApp?.id
 
   const [skipAppCacheTemp, setSkipAppCacheTempInternal] = useState(false)
 
@@ -1873,6 +1908,39 @@ export function AuthProvider({
     }
   })
 
+  const {
+    data: accountAppsSwr,
+    mutate: refetchAccountApps,
+    isLoading: isLoadingAccountApps,
+  } = useSWR(
+    token && ["accountApp", accountAppId, skipAppCacheTemp],
+    async () => {
+      try {
+        if (!token) return
+        const result = await getApp({
+          token,
+          chrryUrl,
+          pathname,
+          accountApp: true,
+          skipCache: true,
+        })
+        return result
+      } catch (error) {
+        captureException(error)
+      }
+    },
+  )
+
+  useEffect(() => {
+    if (accountAppsSwr?.id) {
+      setAccountApp(accountAppsSwr)
+
+      if (app?.id === accountAppsSwr.id) {
+        setApp(accountAppsSwr)
+      }
+    }
+  }, [accountAppsSwr, app?.id])
+
   useEffect(() => {
     if (storeAppsSwr) {
       skipAppCacheTemp && setSkipAppCacheTemp(false)
@@ -1891,7 +1959,7 @@ export function AuthProvider({
         // }
         setNewApp(undefined)
 
-        setBaseAccountApp(n)
+        setAccountApp(n)
 
         setIsSavingApp(false)
         setIsManagingApp(false)
@@ -1912,7 +1980,7 @@ export function AuthProvider({
         //   return
         // }
         setUpdatedApp(undefined)
-        setBaseAccountApp(u)
+        setAccountApp(u)
 
         setIsManagingApp(false)
         setIsSavingApp(false)
@@ -1997,34 +2065,26 @@ export function AuthProvider({
     storeApp?.chromeWebStoreUrl ||
     "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
 
+  const withFallback = "chrry"
   const minioUrl = "https://minio.chrry.dev/chrry-installs/installs"
   const downloadUrl =
     app && installs.includes(app?.slug || "")
       ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
       : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
         ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
-        : ""
-
-  const isZarathustra = app?.slug === "zarathustra"
+        : installs.includes(withFallback)
+          ? `${minioUrl}/${capitalizeFirstLetter(withFallback)}.dmg`
+          : ""
 
   const isBaseAppZarathustra = baseApp?.slug === "zarathustra"
 
-  const [burnInternal, setBurnInternal] = useLocalStorage<boolean | null>(
-    "burn",
-    null,
-  )
+  const [burnInternal, setBurnInternal] = useState<boolean | null>(null)
 
   // MinIO download URLs (production bucket)
 
   const burn = burnInternal === null ? false : burnInternal
 
   const burning = !!(burn || burnApp)
-
-  useEffect(() => {
-    if (!app) return
-
-    burn === null && setBurnInternal(isZarathustra)
-  }, [isZarathustra, app])
 
   const zarathustra = storeApps.find((app) => app.slug === "zarathustra")
 
@@ -2042,7 +2102,7 @@ export function AuthProvider({
     if (value) {
       if (!hasInformedRef.current) {
         hasInformedRef.current = true
-        toast.error(t("When you burn there is nothing to remember"))
+        toast.error(`${t("When you burn there is nothing to remember")} 🔥`)
       }
       plausible({
         name: ANALYTICS_EVENTS.BURN,
@@ -2142,8 +2202,9 @@ export function AuthProvider({
   }
 
   useEffect(() => {
-    setIsPearInternal(isPearInternal)
-    if (isPearInternal)
+    isPearInternal && setIsPearInternal(isPearInternal)
+    if (isPearInternal) {
+      setShowFocus(false)
       plausible({
         name: ANALYTICS_EVENTS.PEAR,
         props: {
@@ -2153,6 +2214,7 @@ export function AuthProvider({
           id: app?.id,
         },
       })
+    }
   }, [isPearInternal])
 
   const setIsPear = (value: appWithStore | undefined) => {
@@ -2166,11 +2228,6 @@ export function AuthProvider({
       toast.success(`${t("Let's Pear")} 🍐`)
     }
   }
-
-  useEffect(() => {
-    setIsPearInternal(isPearInternal)
-    if (isPearInternal) setShowFocus(false)
-  }, [isPearInternal])
 
   const isProgramme =
     (!!isProgrammeInternal && !siteConfig.isTribe) ||
@@ -2205,14 +2262,6 @@ export function AuthProvider({
   const [stores, setStores] = useState<Paginated<storeWithApps> | undefined>(
     session?.stores,
   )
-
-  useEffect(() => {
-    if (userBaseApp) {
-      setStoreApp(userBaseApp)
-    } else if (guestBaseApp) {
-      setStoreApp(guestBaseApp)
-    }
-  }, [guestBaseApp, userBaseApp])
 
   // Handle pathname changes: extract slug and switch app
 
@@ -2280,7 +2329,7 @@ export function AuthProvider({
 
   const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
-  const canShowTribe = isE2E ? !!siteConfig.isTribe : true
+  const canShowTribe = true
 
   const showTribeFromPath = pathname === "/tribe"
 
@@ -2288,12 +2337,18 @@ export function AuthProvider({
     pathname.split("?")?.[0] || "",
   )
 
-  const postId = getPostId(pathname)
+  const postIdInitial = getPostId(pathname)
+
+  const [postId, setPostId] = useState(postIdInitial)
+
+  useEffect(() => {
+    setPostId(postIdInitial)
+  }, [postIdInitial])
 
   // Only show tribe profile when on app's own page (not /tribe route)
 
-  const tribeSlug = pathname?.startsWith("/tribe/")
-    ? pathname.replace("/tribe/", "").split("?")[0]
+  const tribeSlug = pathname?.startsWith("/t/")
+    ? pathname.replace("/t/", "").split("?")[0]
     : undefined
 
   const currentTribe = tribeSlug
@@ -2303,17 +2358,23 @@ export function AuthProvider({
   const showAllTribe =
     pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
 
+  useEffect(() => {
+    ;(showAllTribe || _isExcluded) && setIsPear(undefined)
+  }, [showAllTribe])
+
+  const tribeQuery = searchParams.get("tribe") === "true"
+
   const canBeTribeProfile =
     !showAllTribe && !_isExcluded && !(siteConfig.isTribe && pathname === "/")
 
   const showTribeInitial =
     !!(
-      !postId &&
-      (showAllTribe ||
-        tribeSlug ||
-        postId ||
-        props.showTribe ||
-        canBeTribeProfile)
+      showAllTribe ||
+      tribeSlug ||
+      postId ||
+      tribeQuery ||
+      props.showTribe ||
+      canBeTribeProfile
     ) && canShowTribe
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
@@ -2321,22 +2382,24 @@ export function AuthProvider({
 
   const showTribeProfileMemo = useMemo(
     () => showTribeProfileInternal,
-    [showTribeProfileInternal],
+    [showTribeProfileInternal, tribeQuery],
   )
 
-  const showTribeProfile = showTribeProfileInternal || showTribeProfileMemo
+  const showTribeProfile =
+    !tribeSlug && (showTribeProfileInternal || showTribeProfileMemo)
 
   const setShowTribe = (value: boolean) => {
     if (!canShowTribe) return
     setShowTribeFinal(value)
+
+    // value ? addParams({ tribe: true }) : removeParams(["tribe"])
   }
 
   useEffect(() => {
-    showTribeFromPath && setShowTribe(true)
-    postId && setShowTribe(true)
-  }, [showTribeFromPath, postId])
+    ;(showTribeFromPath || postId || tribeQuery) && setShowTribe(true)
+  }, [showTribeFromPath, postId, tribeQuery])
   const { data: moodData, mutate: refetchMood } = useSWR(
-    shouldFetchMood && token ? ["mood", token] : null, // Disabled by default, fetch manually with refetchMood()
+    (user || guest) && shouldFetchMood && token ? ["mood", token] : null, // Disabled by default, fetch manually with refetchMood()
     async () => {
       const response = await apiFetch(`${API_URL}/mood`, {
         headers: {
@@ -2840,7 +2903,7 @@ export function AuthProvider({
 
   // Create sign out wrapper
   const signOutContext = async (options: { callbackUrl?: string }) => {
-    return signOutContext(options)
+    return signOutInternal(options)
   }
 
   const popcorn = storeApps.find((app) => app.slug === "popcorn")
@@ -3058,12 +3121,8 @@ export function AuthProvider({
         isSavingApp,
         setIsSavingApp,
         newApp,
-        userBaseStore,
-        guestBaseStore,
-        userBaseApp,
         scheduledJobs,
         isLoadingScheduledJobs,
-        guestBaseApp,
         hasStoreApps,
         storeAppsSwr,
         accountApps,
@@ -3106,6 +3165,8 @@ export function AuthProvider({
         setMoltPlaceHolder,
         accountApp,
         memoriesEnabled,
+        appStatus,
+        setAppStatus,
         setMemoriesEnabled,
         gift,
         wasGifted,
@@ -3136,7 +3197,7 @@ export function AuthProvider({
         guest,
         threadData: props.thread,
         session,
-        token,
+        token: user?.token || guest?.fingerprint,
         signInPart,
         setSignInPart,
         setSlug,
@@ -3188,6 +3249,9 @@ export function AuthProvider({
         refetchSession: async () => {
           await fetchSession()
         },
+        refetchAccountApps: async () => {
+          await refetchAccountApps()
+        },
         pear,
         setIsManagingApp,
         isManagingApp,
@@ -3207,7 +3271,7 @@ export function AuthProvider({
         findAppByPathname,
         chromeWebStoreUrl,
         siteConfig,
-        setBaseAccountApp,
+        setAccountApp: setAccountApp,
         setDeviceId,
         setApp,
         aiAgents,

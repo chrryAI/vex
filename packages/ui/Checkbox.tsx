@@ -12,6 +12,7 @@ type CheckboxProps = {
   onChange?: (checked: boolean) => void
   style?: React.CSSProperties
   dataTestId?: string
+  title?: string
 }
 
 const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
@@ -19,7 +20,16 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
   CheckboxProps
 >(
   (
-    { children, className, checked, disabled, onChange, style, dataTestId },
+    {
+      children,
+      className,
+      checked,
+      disabled,
+      onChange,
+      style,
+      dataTestId,
+      title,
+    },
     ref,
   ) => {
     const styles = useCheckboxStyles()
@@ -40,6 +50,7 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
         htmlFor={inputId}
         className={"formSwitch"}
         data-testid={dataTestId ? `${dataTestId}-wrapper` : undefined}
+        title={title}
         style={{
           ...styles.formSwitch.style,
           ...(disabled && { opacity: 0.5 }),

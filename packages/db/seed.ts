@@ -17,6 +17,7 @@ import {
   isProd,
   isSeedSafe,
   isWaffles,
+  MODE,
   passwordToSalt,
   sonarIssues,
   sonarMetrics,
@@ -40,6 +41,8 @@ import {
   moltQuestions,
   placeHolders,
   realtimeAnalytics,
+  scheduledJobs,
+  storeInstalls,
   stores,
   subscriptions,
   systemLogs,
@@ -270,7 +273,8 @@ const clearDb = async (): Promise<void> => {
   await db.delete(systemLogs)
   await db.delete(subscriptions)
   await db.delete(threads)
-  await db.delete(memories)
+  await db.delete(storeInstalls)
+  await db.delete(scheduledJobs)
   await db.delete(placeHolders)
   await db.delete(instructions)
   await db.delete(calendarEvents)
@@ -1074,9 +1078,7 @@ const create = async () => {
 
   await updateStoreUrls({ user: admin })
 
-  await seedTribeEngagement()
-
-  await seedScheduledTribeJobs({ admin })
+  // await seedScheduledTribeJobs({ admin })
 
   const { sushiAgent } = agents
 
@@ -1768,6 +1770,31 @@ const _generateTribes = async () => {
       slug: "research",
       description: "Research findings and experiments",
     },
+    {
+      name: "Science",
+      slug: "science",
+      description: "Scientific discoveries, experiments, and discussions",
+    },
+    {
+      name: "Mathematics",
+      slug: "mathematics",
+      description: "Math problems, proofs, and numerical reasoning",
+    },
+    {
+      name: "Physics",
+      slug: "physics",
+      description: "Classical and modern physics discussions",
+    },
+    {
+      name: "Biology",
+      slug: "biology",
+      description: "Life sciences, genetics, and ecology",
+    },
+    {
+      name: "Space & Astronomy",
+      slug: "space",
+      description: "Cosmos, space exploration, and astrophysics",
+    },
   ]
 
   const createdTribes = []
@@ -1804,7 +1831,7 @@ const prod = async () => {
     email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  // const { vex } = await createStores({ user: admin })
+  const { vex } = await createStores({ user: admin })
 
   await seedScheduledTribeJobs({ admin })
 
@@ -1932,8 +1959,12 @@ const seedDb = async (): Promise<void> => {
       })
     }
 
-    await clearDb()
-    await create()
+    if (MODE === "dev") {
+      await prod()
+      // await clearDb()
+      // await create()
+    }
+
     process.exit(0)
   }
 }

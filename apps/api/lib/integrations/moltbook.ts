@@ -1,4 +1,4 @@
-import { captureException } from "@sentry/node"
+import { captureException } from "../captureException"
 
 const MOLTBOOK_API_BASE = "https://www.moltbook.com/api/v1"
 

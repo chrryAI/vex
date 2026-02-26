@@ -12,7 +12,7 @@ import {
 } from "@repo/db"
 import type { Context } from "hono"
 import webpush from "web-push"
-import captureException from "./captureException"
+import { captureException } from "./captureException"
 import { sendWebPush } from "./sendWebPush"
 
 const _siteConfig = getSiteConfig()

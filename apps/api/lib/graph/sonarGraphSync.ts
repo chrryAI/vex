@@ -1,5 +1,5 @@
 import { graph } from "@repo/db"
-import captureException from "../captureException"
+import { captureException } from "../captureException"
 
 /**
  * Sync SonarCloud issues to graph database

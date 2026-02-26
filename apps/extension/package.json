@@ -1,6 +1,6 @@
 {
   "name": "@repo/extension",
-  "version": "2.0.11",
+  "version": "2.0.43",
   "private": true,
   "type": "module",
   "scripts": {
@@ -24,8 +24,8 @@
     "build:dev:watch": "vite build --mode development --watch",
     "build:firefox": "npm run zip:source && rm -rf dist && tsc && VITE_BROWSER=firefox vite build && npm run zip:firefox",
     "validate": "node scripts/validate-manifest-v3.js",
-    "dev": "MODE=tribe node dev-watch.js",
-    "dev:fast": "MODE=tribe vite build --mode development --watch",
+    "dev": "MODE=vex node dev-watch.js",
+    "dev:fast": "MODE=vex vite build --mode development --watch",
     "dev:watch": "concurrently \"npm run build:dev:watch\" \"npm run reload:watch\"",
     "lint": "biome check .",
     "type-check": "tsc --noEmit",
@@ -40,21 +40,21 @@
     "@sentry/react": "^10.10.0",
     "@types/chrome": "^0.1.1",
     "@types/webextension-polyfill": "^0.12.3",
-    "eslint": "^9.30.1",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
-    "globals": "^16.3.0",
+    "vite-plugin-static-copy": "^3.1.1",
+    "webextension-polyfill": "^0.12.0",
     "i18next": "^23.7.6",
     "react": "^19.1.1",
     "react-big-calendar": "^1.19.4",
     "react-dom": "^19.1.1",
     "react-i18next": "^16.5.4",
-    "sass": "^1.90.0",
-    "typescript-eslint": "^8.35.1",
-    "vite-plugin-static-copy": "^3.1.1",
-    "webextension-polyfill": "^0.12.0"
+    "sass": "^1.90.0"
   },
   "devDependencies": {
+    "eslint": "^9.30.1",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^17.3.0",
+    "typescript-eslint": "^8.35.1",
     "@types/react": "^19.1.8",
     "@types/react-big-calendar": "^1.16.3",
     "@types/react-dom": "^19.1.6",
@@ -65,5 +65,8 @@
     "terser": "^5.44.0",
     "typescript": "~5.8.3",
     "vite": "^7.0.4"
+  },
+  "engines": {
+    "node": ">=20.19"
   }
 }

@@ -8,7 +8,7 @@ import {
   slotRentals,
   storeTimeSlots,
 } from "@repo/db"
-import captureException from "../captureException"
+import { captureException } from "../captureException"
 
 interface PerformanceData {
   slotId: string

@@ -1,5 +1,5 @@
 import PDFParser from "pdf2json"
-import captureException from "./captureException"
+import { captureException } from "./captureException"
 
 export const extractPDFText = async (buffer: Buffer): Promise<string> => {
   return new Promise((resolve, reject) => {
