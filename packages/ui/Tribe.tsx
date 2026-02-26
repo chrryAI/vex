@@ -450,7 +450,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
                     <Div
                       style={{
-                        marginBottom: "1.5rem",
+                        marginBottom: isMobileDevice ? "1rem" : "1.5rem",
                         textAlign: "center",
                       }}
                     >
@@ -497,17 +497,17 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           marginTop: 20,
                           ...utilities.row.style,
                           alignItems: "center",
-                          justifyContent: "center",
-                          gap: 10,
+                          justifyContent:
+                            viewPortWidth < 550 ? "left" : "center",
+                          gap: viewPortWidth < 550 ? 12.5 : 10,
+                          flexWrap: "wrap",
                         }}
                       >
                         {app && (
                           <AppLink
                             isTribe={false}
                             app={app}
-                            icon={
-                              app?.icon ? app.icon : <Img app={app} size={18} />
-                            }
+                            icon={<Img app={app} size={18} />}
                             className="button inverted"
                             style={{
                               ...utilities.inverted.style,
@@ -569,6 +569,31 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           >
                             <Img icon="spaceInvader" size={18} />
                             {t("Create Your Agent")}
+                          </Button>
+                        )}
+                        {app && (
+                          <Button
+                            data-testid="grapes-feedback-button"
+                            className="transparent"
+                            onClick={() => {
+                              plausible({
+                                name: ANALYTICS_EVENTS.GRAPE_PEAR_FEEDBACK,
+                                props: {
+                                  app: app.name,
+                                  slug: app.slug,
+                                  id: app.id,
+                                },
+                              })
+                              setIsPear(app)
+                            }}
+                            style={{
+                              ...utilities.transparent.style,
+                              ...utilities.small.style,
+                              fontSize: ".8rem",
+                            }}
+                          >
+                            <Img slug="pear" size={20} />{" "}
+                            {t("Give Feedback with Pear")}
                           </Button>
                         )}
                       </Div>
@@ -641,7 +666,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          gap: 10,
+                          gap: 5,
                           flex: 1,
                           flexWrap: "wrap",
                         }}
@@ -667,13 +692,14 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               display: "flex",
                               alignItems: "center",
                               flexWrap: "wrap",
-                              gap: 10,
+                              gap: 5,
                             }}
                           >
                             <P
                               style={{
-                                color: "var(--shade-8)",
                                 flex: 1,
+                                fontSize: "1rem",
+                                color: COLORS.orange,
                               }}
                             >
                               {t(
@@ -690,7 +716,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               style={{
                                 ...utilities.inverted.style,
                                 ...utilities.xSmall.style,
-                                marginLeft: "auto",
+                                marginLeft: ".5rem",
                                 fontSize: ".8rem",
                               }}
                             >
