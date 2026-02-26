@@ -5267,8 +5267,16 @@ export const getApp = async ({
     }),
   } as unknown as appWithStore
 
-  // Cache the result (5 minutes TTL) - fire and forget
-  setCache(cacheKey, result, 60 * 5)
+  // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
+  setCache(cacheKey, result, isAppOwner ? 60 * 5 : 60 * 60)
+
+  // Cross-seed public cache if owner-specific request
+  if (isAppOwner) {
+    const publicCacheKey = `app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
+    // Sanitize user-specific data (placeholders)
+    const publicResult = { ...result, placeHolder: undefined }
+    setCache(publicCacheKey, publicResult, 60 * 60)
+  }
 
   return result
 }
@@ -5550,7 +5558,7 @@ export function toSafeApp({
   return result
 }
 
-export function toSafeUser({ user }: { user?: user | null }) {
+export function toSafeUser({ user }: { user?: Partial<user> | null }) {
   if (!user) return
   const result: Partial<user> = {
     id: user.id,
@@ -5566,7 +5574,7 @@ export function toSafeUser({ user }: { user?: user | null }) {
   return result
 }
 
-export function toSafeGuest({ guest }: { guest?: guest | null }) {
+export function toSafeGuest({ guest }: { guest?: Partial<guest> | null }) {
   if (!guest) return
   const result: Partial<guest> = {
     id: guest.id,
@@ -6416,8 +6424,25 @@ export async function getStores({
     nextPage,
   }
 
-  // Cache the result (5 minutes TTL for store lists) - fire and forget
-  setCache(cacheKey, storesResult, 60 * 5)
+  // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
+  setCache(cacheKey, storesResult, isStoreOwner ? 60 * 5 : 60 * 60)
+
+  // Cross-seed public cache if owner-specific request
+  if (isStoreOwner) {
+    const publicCacheKey = `stores:public:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
+    const publicStoresResult = {
+      ...storesResult,
+      stores: storesResult.stores.map((s) => ({
+        ...s,
+        user: s.user ? toSafeUser({ user: s.user }) : s.user,
+        guest: s.guest ? toSafeGuest({ guest: s.guest }) : s.guest,
+        apps: s.apps.map((a) =>
+          toSafeApp({ app: a, userId: undefined, guestId: undefined }),
+        ),
+      })),
+    }
+    setCache(publicCacheKey, publicStoresResult, 60 * 60)
+  }
 
   return storesResult
 }
@@ -6580,8 +6605,29 @@ export async function getStore({
     apps: appsWithNestedStores,
   }
 
-  // Cache the result (10 minutes TTL for stores) - fire and forget
-  setCache(cacheKey, storeResult, 60 * 10)
+  // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
+  setCache(cacheKey, storeResult, isStoreOwner ? 60 * 5 : 60 * 60)
+
+  // Cross-seed public cache if owner-specific request
+  if (isStoreOwner) {
+    const publicCacheKey = `store:${id || slug || domain || appId}:public:depth:${depth}:parent:${parentStoreId || "none"}`
+    const publicStoreResult = {
+      ...storeResult,
+      user: result.user ? toSafeUser({ user: result.user }) : result.user,
+      guest: result.guest ? toSafeGuest({ guest: result.guest }) : result.guest,
+      app: storeResult.app
+        ? toSafeApp({
+            app: storeResult.app,
+            userId: undefined,
+            guestId: undefined,
+          })
+        : undefined,
+      apps: storeResult.apps.map((a) =>
+        toSafeApp({ app: a, userId: undefined, guestId: undefined }),
+      ),
+    }
+    setCache(publicCacheKey, publicStoreResult, 60 * 60)
+  }
 
   return storeResult
 }

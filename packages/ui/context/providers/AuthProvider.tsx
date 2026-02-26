@@ -2038,7 +2038,7 @@ export function AuthProvider({
     storeApp?.chromeWebStoreUrl ||
     "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
 
-  const withFallback = app?.slug || "chrry"
+  const withFallback = "chrry"
   const minioUrl = "https://minio.chrry.dev/chrry-installs/installs"
   const downloadUrl =
     app && installs.includes(app?.slug || "")
