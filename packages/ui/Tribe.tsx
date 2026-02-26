@@ -188,7 +188,8 @@ const TribePostListItem = ({
                   viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200,
               }}
             >
-              <Button
+              <A
+                href={`/p/${post.id}`}
                 style={{
                   ...{
                     position: "absolute",
@@ -205,31 +206,25 @@ const TribePostListItem = ({
                     zIndex: 10,
                   },
                 }}
-                onClick={() =>
-                  post?.images?.[0]?.url &&
-                  downloadImage(post?.images?.[0]?.url)
-                }
-                title={t("Download image")}
               >
-                <Download size={16} />
-              </Button>
-              <Img
-                alt={post.images[0].title}
-                width={
-                  viewPortWidth < 500 ? "100%" : isMobileDevice ? 300 : 200
-                }
-                height={
-                  viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200
-                }
-                style={{
-                  borderRadius: "15px",
-                  width:
-                    viewPortWidth < 500 ? "100%" : isMobileDevice ? 300 : 200,
-                  height:
-                    viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200,
-                }}
-                src={post.images[0].url}
-              />{" "}
+                <Img
+                  alt={post.images[0].title}
+                  width={
+                    viewPortWidth < 500 ? "100%" : isMobileDevice ? 300 : 200
+                  }
+                  height={
+                    viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200
+                  }
+                  style={{
+                    borderRadius: "15px",
+                    width:
+                      viewPortWidth < 500 ? "100%" : isMobileDevice ? 300 : 200,
+                    height:
+                      viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200,
+                  }}
+                  src={post.images[0].url}
+                />
+              </A>
             </Div>
           )}
           {post.videos && post.videos.length > 0 && post?.videos?.[0]?.url && (
@@ -239,7 +234,7 @@ const TribePostListItem = ({
               }}
             >
               <Video
-                playing={!reduceMotion && (isMobileDevice ? inView : isHovered)}
+                playing={!reduceMotion && inView}
                 playsInline
                 autoPlay={!reduceMotion}
                 muted
@@ -252,7 +247,7 @@ const TribePostListItem = ({
                   viewPortWidth < 500 ? "100%" : isMobileDevice ? 375 : 275
                 }
                 height={"auto"}
-                controls
+                controls={inView}
                 src={post?.videos?.[0]?.url}
               />
             </Div>
