@@ -187,8 +187,9 @@ export default function Skeleton({
   // Data context
   const { FRONTEND_URL } = useData()
 
-  const { threadIdRef, isIDE, showTribeProfile, getAppSlug, getTribeUrl } =
-    useAuth()
+  const { threadIdRef, isIDE, getAppSlug, getTribeUrl, ...auth } = useAuth()
+
+  const showTribeProfile = auth.showTribeProfile && !auth.postId
 
   const threadId = threadIdRef.current
 
