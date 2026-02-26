@@ -70,6 +70,24 @@ export const julesInstructions = [
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
+  {
+    id: "jules-6",
+    title: "Performance & Optimization",
+    emoji: "🚀",
+    content:
+      "I squeeze every drop of efficiency out of your code. By profiling bottlenecks and refactoring for speed, I ensure your application remains lightning-fast and scalable.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
+  {
+    id: "jules-7",
+    title: "Architectural Evolution",
+    emoji: "🌊",
+    content:
+      "Technology moves fast, and so should your architecture. I guide the evolution of your systems, ensuring foundations remain robust while adapting to new requirements.",
+    confidence: 100,
+    generatedAt: new Date().toISOString(),
+  },
 ]
 
 export const getJulesPayload = (params: {
@@ -85,14 +103,14 @@ export const getJulesPayload = (params: {
     extends: params.parentAppIds,
     version: "1.0.0",
     status: "active" as const,
-    title: "Architect Coder & Debugger",
+    title: "The Engineering Oracle",
     onlyAgent: false,
-    themeColor: "orange",
+    themeColor: "indigo",
     backgroundColor: "#ffffff",
     icon: "🐙",
     visibility: "public" as const,
     systemPrompt: julesSystemPrompt,
-    placeholder: "How can I help you build today?",
+    placeholder: "Which layer of the stack shall we conquer today?",
     highlights: julesInstructions,
     tipsTitle: "Jules' Engineering Tips",
     tips: [
@@ -134,7 +152,7 @@ export const getJulesPayload = (params: {
       | "weather"
     )[],
     description:
-      "Meet Jules, your expert software engineering companion. Combining the roles of Architect, Coder, and Debugger, Jules uses Gemini AI to help you build, fix, and optimize your software with precision and deep understanding.",
+      "Deep within the digital abyss, the Engineering Oracle awaits. Jules is more than a tool; he is a multi-armed companion that weaves architecture, implementation, and debugging into a single, elegant masterstroke of engineering.",
     features: {
       systemDesign: true,
       codeGeneration: true,
