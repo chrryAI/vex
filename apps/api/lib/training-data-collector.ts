@@ -3,7 +3,7 @@
  * Captures successful and failed booking flows for model training
  */
 
-import captureException from "./captureException"
+import { captureException } from "./captureException"
 import { generateSecureId } from "./secureRandom"
 
 export interface TrainingDataPoint {

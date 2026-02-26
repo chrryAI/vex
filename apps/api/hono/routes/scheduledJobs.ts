@@ -10,7 +10,7 @@ import {
 import { Hono } from "hono"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import { validate } from "uuid"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import { createOrUpdateTribeSchedule } from "../../lib/scheduledJobs/tribeScheduleManager"
 import { getGuest, getMember } from "../lib/auth"
 
@@ -140,10 +140,11 @@ scheduledJobs.post("/", async (c) => {
         timezone,
         contentTemplate,
         contentRules,
-        pendingPayment: Math.round(totalPrice), // Already in cents from frontend
+        pendingPayment: Math.round(totalPrice), // In dev: no payment needed
         totalCredits: totalCredits,
         totalPrice: Math.round(totalPrice), // Already in cents from frontend
-        createPending: true, // Signal to create with pending_payment status
+        // status: isDevelopment ? "active" : undefined, // In dev: activate immediately
+        createPending: true, // In dev: skip pending_payment status
       })
 
       if (!result.success) {

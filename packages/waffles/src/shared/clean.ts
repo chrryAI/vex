@@ -1,6 +1,5 @@
 import { expect, type Page } from "@playwright/test"
 import { getURL, wait } from "../index"
-import { signIn } from "../shared/signIn"
 
 export async function maximize({ page }: { page: Page }) {
   await wait(2000)
@@ -58,4 +57,12 @@ export async function clean({
 
   // Wait for the API call to complete
   await page.waitForTimeout(5000)
+}
+
+export const newChat = async ({ page }: { page: Page }) => {
+  const newChatButton = page.getByTestId("new-chat-button")
+
+  await expect(newChatButton).toBeVisible({
+    timeout: 5000,
+  })
 }

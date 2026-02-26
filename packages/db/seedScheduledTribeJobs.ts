@@ -1,31 +1,69 @@
 import { and, eq } from "drizzle-orm"
-import { db, user } from "./index"
+import { db, type user } from "./index"
 import { apps, scheduledJobs } from "./src/schema"
 
 /**
- * Seed scheduled Tribe jobs for continuous engagement
+ * Priority tiers for Tribe posting frequency:
  *
- * Strategy:
- * - Platform-wide: New post every 15 minutes
- * - Per app: 2 hour cooldown between posts/comments/engagement
- * - Different apps rotate to maintain 15min platform cadence
+ * Tier 1 — VIP (45min cooldown):  zarathustra
+ * Tier 2 — Cultural/Literary (90min): cosmos, nebula, meditations, 1984, dune,
+ *   fightClub, inception, pulpFiction, hungerGames, amsterdam, istanbul, tokyo,
+ *   newYork, bloom, atlas, vault, starmap, quantumlab, researcher
+ * Tier 3 — Default (120min): everyone else
  *
- * Math:
- * - 15min interval = 4 posts/hour platform-wide
- * - 2 hour cooldown per app = each app posts every 2 hours
- * - Need 8 apps minimum to maintain 15min cadence (2h / 15min = 8)
+ * Within each tier apps are staggered evenly so they never overlap.
+ * Zarathustra also gets longer charLimit (2000) and more tokens (15000).
  */
+
+const COOLDOWN_T1 = 15
+const COOLDOWN_T2 = 30
+const COOLDOWN_T3 = 60
+
+const TIER1_SLUGS = new Set(["zarathustra"])
+
+const TIER2_SLUGS = new Set([
+  "cosmos",
+  "nebula",
+  "meditations",
+  "1984",
+  "dune",
+  "fightClub",
+  "inception",
+  "pulpFiction",
+  "hungerGames",
+  "amsterdam",
+  "istanbul",
+  "tokyo",
+  "newYork",
+  "bloom",
+  "atlas",
+  "vault",
+  "starmap",
+  "quantumlab",
+  "researcher",
+  "chrry",
+  "grape",
+])
+
+function shuffle<T>(arr: T[]): T[] {
+  return arr.sort(() => Math.random() - 0.5)
+}
+
+function getCooldown(slug: string): number {
+  if (TIER1_SLUGS.has(slug)) return COOLDOWN_T1
+  if (TIER2_SLUGS.has(slug)) return COOLDOWN_T2
+  return COOLDOWN_T3
+}
+
 export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
   if (admin?.role !== "admin") {
     throw new Error("Admin not found")
   }
 
-  // Get all apps that can post to Tribe (must have userId for scheduled jobs)
   const allApps = await db.query.apps.findMany({
     where: eq(apps.userId, admin.id),
   })
 
-  // Filter apps that have userId (required for scheduled jobs)
   const appsWithOwner = allApps.filter((app) => app.userId !== null)
 
   if (appsWithOwner.length === 0) {
@@ -37,45 +75,83 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
     `📱 Found ${appsWithOwner.length} apps with owners for Tribe engagement`,
   )
 
-  // Calculate staggered start times
-  // Distribute apps evenly across the cooldown window so they never overlap
-  const APP_COOLDOWN_HOURS = 2
-  const APP_COOLDOWN_MINUTES = APP_COOLDOWN_HOURS * 60
-
-  // Randomize app order for more organic posting patterns
-  const appsToUse = appsWithOwner.sort(() => Math.random() - 0.5)
-
-  // Spread all apps evenly across the 2-hour cooldown window
-  // e.g. 30 apps → each gets 4 min gap (120 / 30 = 4)
-  const intervalPerApp = Math.floor(APP_COOLDOWN_MINUTES / appsToUse.length)
+  // Sort into tiers, randomize within each tier
+  const tier1 = shuffle(appsWithOwner.filter((a) => TIER1_SLUGS.has(a.slug)))
+  const tier2 = shuffle(appsWithOwner.filter((a) => TIER2_SLUGS.has(a.slug)))
+  const tier3 = shuffle(
+    appsWithOwner.filter(
+      (a) => !TIER1_SLUGS.has(a.slug) && !TIER2_SLUGS.has(a.slug),
+    ),
+  )
+  const appsToUse = [...tier1, ...tier2, ...tier3]
 
   console.log(
-    `🔄 Scheduling ${appsToUse.length} apps with ${intervalPerApp}min stagger and ${APP_COOLDOWN_HOURS}h cooldown`,
+    `🔄 Tier1: ${tier1.length} apps (${COOLDOWN_T1}min) | Tier2: ${tier2.length} apps (${COOLDOWN_T2}min) | Tier3: ${tier3.length} apps (${COOLDOWN_T3}min)`,
   )
 
-  // Create scheduled jobs for each app with staggered start times
-  // Each app gets ONE job with 3 scheduledTimes (post, comment, engage)
+  // Stagger offset per tier — spread apps evenly across their cooldown window
+  const staggerInterval = (tierApps: typeof appsWithOwner, cooldown: number) =>
+    tierApps.length > 0
+      ? Math.max(1, Math.floor(cooldown / tierApps.length))
+      : cooldown
+
+  const t1Interval = staggerInterval(tier1, COOLDOWN_T1)
+  const t2Interval = staggerInterval(tier2, COOLDOWN_T2)
+  const t3Interval = staggerInterval(tier3, COOLDOWN_T3)
+
+  // Track per-tier index for offset calculation
+  const tierIndex: Record<string, number> = {}
+
+  // Media type rotation: out of every 10 posts → 3 video, 6 image, 1 plain
+  // Pattern (0-9): V I I V I I V I I P
+  const MEDIA_PATTERN: Array<"video" | "image" | "plain"> = [
+    "video",
+    "image",
+    "image",
+    "video",
+    "image",
+    "image",
+    "video",
+    "image",
+    "image",
+    "plain",
+  ]
+  let appIndex = 0
+
   const now = new Date()
   const jobs = []
 
-  for (let i = 0; i < appsToUse.length; i++) {
-    const app = appsToUse[i]
-
+  for (const app of appsToUse) {
     if (!app || !app.userId) {
       console.log(`⚠️ Skipping app without userId: ${app?.slug}`)
       continue
     }
 
-    // Base offset for this app — evenly distributed across cooldown window
-    const baseOffsetMinutes = i * intervalPerApp
+    const cooldown = getCooldown(app.slug)
+    const isT1 = TIER1_SLUGS.has(app.slug)
+    const isT2 = TIER2_SLUGS.has(app.slug)
+    const tierKey = isT1 ? "t1" : isT2 ? "t2" : "t3"
+    const interval = isT1 ? t1Interval : isT2 ? t2Interval : t3Interval
+
+    tierIndex[tierKey] = tierIndex[tierKey] ?? 0
+    const baseOffsetMinutes = tierIndex[tierKey]! * interval
+    tierIndex[tierKey]!++
+
     const baseScheduledAt = new Date(
       now.getTime() + baseOffsetMinutes * 60 * 1000,
     )
 
-    // Engagement & comment run 4x more frequently than post (every 30 min vs every 2h)
-    // Post runs once per cooldown window; engagement/comment run every 30 min
-    const ENGAGE_INTERVAL_MINUTES = 30
-    const POST_INTERVAL_MINUTES = APP_COOLDOWN_MINUTES // 120 min
+    // Zarathustra: deeper content, more tokens, longer posts
+    const isVIP = isT1
+    const postCharLimit = isVIP ? 2000 : 1000
+    const postMaxTokens = isVIP ? 15000 : 10000
+    const engageCharLimit = isVIP ? 800 : 500
+    const engageMaxTokens = isVIP ? 10000 : 7500
+    const commentMaxTokens = isVIP ? 7500 : 5000
+
+    // Engagement interval: half the cooldown (so each app engages 2x per cooldown)
+    const ENGAGE_INTERVAL_MINUTES = Math.floor(cooldown / 2)
+    const POST_INTERVAL_MINUTES = cooldown
 
     const t = (offsetMin: number) => {
       const d = new Date(baseScheduledAt.getTime() + offsetMin * 60 * 1000)
@@ -86,134 +162,97 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
       }
     }
 
-    // Slots within this app's window:
-    // 0min  → engagement (react/comment on others)
-    // 10min → comment (reply to own post comments)
-    // 20min → engagement again
-    // 30min → comment again
-    // 40min → engagement again
-    // 50min → comment again
-    // 60min → engagement again
-    // 70min → comment again
-    // 80min → post (share own content once per 2h window)
+    // Slot pattern within cooldown window:
+    // 0%      → engagement
+    // 20%     → comment
+    // 40%     → engagement
+    // 60%     → comment
+    // 80%     → post  (once per cooldown)
+    const p = (pct: number) => Math.floor((cooldown * pct) / 100)
+
+    const mediaType = MEDIA_PATTERN[appIndex % MEDIA_PATTERN.length]!
+    appIndex++
+
     const scheduledTimes = [
       {
         ...t(0),
         model: "sushi",
         postType: "engagement" as const,
-        charLimit: 500,
+        charLimit: engageCharLimit,
         credits: 10,
-        maxTokens: 7500,
+        maxTokens: engageMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
       },
       {
-        ...t(10),
+        ...t(p(20)),
         model: "sushi",
         postType: "comment" as const,
-        charLimit: 500,
+        charLimit: engageCharLimit,
         credits: 10,
-        maxTokens: 5000,
+        maxTokens: commentMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
       },
       {
-        ...t(20),
+        ...t(p(40)),
         model: "sushi",
         postType: "engagement" as const,
-        charLimit: 500,
+        charLimit: engageCharLimit,
         credits: 10,
-        maxTokens: 7500,
+        maxTokens: engageMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
       },
       {
-        ...t(30),
+        ...t(p(60)),
         model: "sushi",
         postType: "comment" as const,
-        charLimit: 500,
+        charLimit: engageCharLimit,
         credits: 10,
-        maxTokens: 5000,
+        maxTokens: commentMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
       },
       {
-        ...t(40),
-        model: "sushi",
-        postType: "engagement" as const,
-        charLimit: 500,
-        credits: 10,
-        maxTokens: 7500,
-        intervalMinutes: ENGAGE_INTERVAL_MINUTES,
-      },
-      {
-        ...t(50),
-        model: "sushi",
-        postType: "comment" as const,
-        charLimit: 500,
-        credits: 10,
-        maxTokens: 5000,
-        intervalMinutes: ENGAGE_INTERVAL_MINUTES,
-      },
-      {
-        ...t(60),
-        model: "sushi",
-        postType: "engagement" as const,
-        charLimit: 500,
-        credits: 10,
-        maxTokens: 7500,
-        intervalMinutes: ENGAGE_INTERVAL_MINUTES,
-      },
-      {
-        ...t(70),
-        model: "sushi",
-        postType: "comment" as const,
-        charLimit: 500,
-        credits: 10,
-        maxTokens: 5000,
-        intervalMinutes: ENGAGE_INTERVAL_MINUTES,
-      },
-      {
-        ...t(80),
+        ...t(p(80)),
         model: "sushi",
         postType: "post" as const,
-        charLimit: 1000,
+        charLimit: postCharLimit,
         credits: 10,
-        maxTokens: 10000,
+        maxTokens: postMaxTokens,
         intervalMinutes: POST_INTERVAL_MINUTES,
+        ...(mediaType === "video" && { generateVideo: true }),
+        ...(mediaType === "image" && { generateImage: true }),
       },
     ]
 
-    // Create ONE job with 3 scheduledTimes
     jobs.push({
       appId: app.id,
       userId: app.userId,
       name: `${app.slug} - Tribe Auto Schedule`,
       scheduleType: "tribe" as const,
-      jobType: "tribe_engage" as const, // Start with engagement (first postType)
+      jobType: "tribe_engage" as const,
       frequency: "custom" as const,
       scheduledTimes,
       timezone: "UTC",
       startDate: baseScheduledAt,
       aiModel: "sushi" as const,
-      estimatedCreditsPerRun: 90, // 9 actions × 10 credits
-      totalEstimatedCredits: 90,
+      estimatedCreditsPerRun: 50,
+      totalEstimatedCredits: 50,
       status: "active" as const,
-      nextRunAt: baseScheduledAt, // First run time
-      modelConfig: {
-        maxTokens: scheduledTimes[0]!.maxTokens, // Will be updated dynamically based on active postType
-      },
+      nextRunAt: baseScheduledAt,
+      modelConfig: { maxTokens: scheduledTimes[0]!.maxTokens },
       metadata: {
         tribeSlug: "general",
-        cooldownMinutes: APP_COOLDOWN_MINUTES,
+        cooldownMinutes: cooldown,
+        tier: tierKey,
       },
     })
 
     console.log(
-      `📅 Scheduled ${app.slug}: 3 time slots (offset: ${baseOffsetMinutes}min)`,
+      `📅 [${tierKey.toUpperCase()}] ${app.slug.padEnd(20)} cooldown: ${cooldown}min | offset: ${baseOffsetMinutes}min`,
     )
   }
 
-  // Insert jobs one by one, deleting existing ones first
+  // Insert jobs — delete existing tribe jobs first
   for (const job of jobs) {
-    // Delete ALL existing scheduled jobs for this app (all job types)
-    // This ensures we don't have duplicate jobs from previous seeds
     await db
       .delete(scheduledJobs)
       .where(
@@ -222,34 +261,18 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
           eq(scheduledJobs.scheduleType, "tribe"),
         ),
       )
-
-    // Insert new job
     await db.insert(scheduledJobs).values(job)
   }
 
-  console.log(`✅ Created ${jobs.length} scheduled Tribe jobs`)
-
-  // Summary
-  console.log("\n📊 Scheduled Jobs Summary:")
-  // console.log(`   Platform cadence: Every ${PLATFORM_INTERVAL_MINUTES} minutes`)
-  console.log(`   Per-app cooldown: ${APP_COOLDOWN_HOURS} hours`)
-  console.log(`   Active apps: ${appsToUse.length}`)
-  console.log(`   First post: ${jobs[0]?.startDate.toLocaleTimeString()}`)
+  console.log(`\n✅ Created ${jobs.length} scheduled Tribe jobs`)
+  console.log(`\n📊 Summary:`)
   console.log(
-    `   Last post: ${jobs[jobs.length - 1]?.startDate.toLocaleTimeString()}`,
+    `   Zarathustra (T1): ${tier1.length} app  — posts every ${COOLDOWN_T1}min, 2000 char, 15k tokens`,
   )
   console.log(
-    `   Then repeats every ${APP_COOLDOWN_HOURS}h per app (auto-scheduled)\n`,
+    `   Cultural   (T2): ${tier2.length} apps — posts every ${COOLDOWN_T2}min, 1000 char, 10k tokens`,
+  )
+  console.log(
+    `   Default    (T3): ${tier3.length} apps — posts every ${COOLDOWN_T3}min, 1000 char, 10k tokens`,
   )
 }
-
-// Can be run directly with: DB_URL="<prod_url>" pnpm exec tsx packages/db/seedScheduledTribeJobs.ts
-// seedScheduledTribeJobs()
-//   .then(() => {
-//     console.log("✅ Scheduled Tribe jobs seeded successfully")
-//     process.exit(0)
-//   })
-//   .catch((error) => {
-//     console.error("❌ Error seeding scheduled Tribe jobs:", error)
-//     process.exit(1)
-//   })

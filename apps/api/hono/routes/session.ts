@@ -34,7 +34,7 @@ import { UAParser } from "ua-parser-js"
 import { v4 as uuidv4, validate as validateUuid } from "uuid"
 import * as lib from "../../lib"
 
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import cleanupTest from "../../lib/cleanupTest"
 import { checkRateLimit } from "../../lib/rateLimiting"
 import {
@@ -195,7 +195,7 @@ session.get("/", async (c) => {
     webVersion: VERSION,
     firefoxVersion: "1.1.47",
     chromeVersion: "1.1.47",
-    macosVersion: "2.0.6", // Desktop app version (macOS, Windows, Linux)
+    macosVersion: "2.0.14", // Desktop app version (macOS, Windows, Linux)
   }
 
   let member = await getMemberAction(c, { full: true, skipCache: true })

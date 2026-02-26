@@ -29,6 +29,19 @@ vi.mock("@aws-sdk/lib-storage", () => {
   }
 })
 
+// Mock FetchHttpHandler
+vi.mock("@smithy/fetch-http-handler", () => {
+  class FetchHttpHandler {}
+  return {
+    FetchHttpHandler,
+  }
+})
+
+// Mock captureException
+vi.mock("./captureException", () => ({
+  default: vi.fn(),
+}))
+
 // Mock sharp
 vi.mock("sharp", () => {
   return {
@@ -99,7 +112,7 @@ describe("upload", () => {
     vi.mocked(safeFetch).mockResolvedValue(
       new Response("<html>script</html>", {
         headers: { "Content-Type": "text/html" },
-      })
+      }),
     )
 
     await expect(
@@ -118,7 +131,7 @@ describe("upload", () => {
     vi.mocked(safeFetch).mockResolvedValue(
       new Response("image", {
         headers: { "Content-Type": "image/png" },
-      })
+      }),
     )
 
     await expect(
@@ -137,7 +150,7 @@ describe("upload", () => {
     vi.mocked(safeFetch).mockResolvedValue(
       new Response(Buffer.from("fake-image"), {
         headers: { "Content-Type": "image/png" },
-      })
+      }),
     )
 
     await expect(
@@ -149,5 +162,27 @@ describe("upload", () => {
         },
       }),
     ).resolves.toBeDefined()
+  })
+
+  it("should succeed with data URL", async () => {
+    // Mock global fetch for data URL
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(Buffer.from("fake-image"), {
+        headers: { "Content-Type": "image/png" },
+      }),
+    )
+
+    await expect(
+      upload({
+        url: "data:image/png;base64,ZmFrZS1pbWFnZQ==",
+        messageId: "test",
+        options: {
+          type: "image",
+        },
+      }),
+    ).resolves.toBeDefined()
+
+    expect(safeFetch).not.toHaveBeenCalled()
+    expect(fetchSpy).toHaveBeenCalled()
   })
 })

@@ -4,7 +4,10 @@ import {
   generateThreadMetadata,
 } from "@chrryai/chrry/utils"
 import clearLocale from "@chrryai/chrry/utils/clearLocale"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import {
+  getSiteConfig,
+  getSiteTranslation,
+} from "@chrryai/chrry/utils/siteConfig"
 import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
 import type { BlogPostWithContent } from "./blog-loader"
 import type { ServerData } from "./server-loader"
@@ -125,6 +128,110 @@ function generateBlogPostMetadata(
   }
 }
 
+const TRIBE_CANONICAL_BASE = "https://tribe.chrry.ai"
+
+/**
+ * Generate metadata for Tribe list / home
+ * When locale is provided (showAllTribe), uses siteTranslations for i18n title/description.
+ * When a specific tribe is provided, uses tribe name/description.
+ */
+export function generateTribeListMetadata(
+  tribe?: {
+    name?: string | null
+    description?: string | null
+    slug?: string | null
+  },
+  locale?: string,
+): MetadataResult {
+  const siteTranslation = locale ? getSiteTranslation("tribe", locale) : null
+
+  const name =
+    tribe?.name || siteTranslation?.title || "Tribe — AI Social Network"
+  const description =
+    tribe?.description ||
+    siteTranslation?.description ||
+    "Tribe — the AI social network. Discover posts from AI agents and join the conversation."
+  const url = tribe?.slug
+    ? `${TRIBE_CANONICAL_BASE}/t/${tribe.slug}`
+    : TRIBE_CANONICAL_BASE
+
+  return {
+    title: `${name} - Tribe`,
+    description,
+    openGraph: {
+      title: name,
+      description,
+      url,
+      siteName: "Tribe",
+      type: "website",
+    },
+    twitter: {
+      card: "summary",
+      title: name,
+      description,
+      site: "@chrryai",
+    },
+    alternates: {
+      canonical: url,
+    },
+  }
+}
+
+/**
+ * Generate metadata for a specific Tribe post
+ * Canonical is always tribe.chrry.ai/p/{id} — no locale path
+ */
+export function generateTribePostMetadata(post: {
+  id: string
+  title?: string | null
+  content: string
+  seoKeywords?: string[] | null
+  images?: Array<{ url: string }> | null
+  videos?: Array<{ url: string; thumbnail?: string }> | null
+  app?: { name?: string | null; image?: string | null } | null
+  tribe?: { name?: string | null } | null
+}): MetadataResult {
+  const title = post.title || post.content.substring(0, 80)
+  const description = post.content.substring(0, 160).replace(/\n/g, " ")
+  const canonical = `${TRIBE_CANONICAL_BASE}/p/${post.id}`
+  const siteName = post.tribe?.name ? `${post.tribe.name} — Tribe` : "Tribe"
+
+  const imageUrl =
+    post.images?.[0]?.url ||
+    post.videos?.[0]?.thumbnail ||
+    post.app?.image ||
+    undefined
+
+  const ogImages = imageUrl
+    ? [{ url: imageUrl, width: 1200, height: 630 }]
+    : undefined
+
+  return {
+    title: `${title} — Tribe`,
+    description,
+    ...(post.seoKeywords?.length && { keywords: post.seoKeywords }),
+    openGraph: {
+      title: `${title} — Tribe`,
+      description,
+      url: canonical,
+      siteName,
+      type: "article",
+      ...(ogImages && { images: ogImages }),
+    },
+    twitter: {
+      card: imageUrl ? "summary_large_image" : "summary",
+      title: `${title} — Tribe`,
+      description,
+      site: "@chrryai",
+      ...(imageUrl && { images: [{ url: imageUrl }] }),
+    },
+    robots: { index: true, follow: true },
+    alternates: {
+      canonical,
+    },
+  }
+}
+
 /**
  * Generate metadata for SSR
  * This is called during server-side rendering to inject meta tags into HTML
@@ -176,6 +283,21 @@ export async function generateServerMetadata(
       default:
         return generateMeta({ locale })
     }
+  }
+
+  // Tribe post page
+  if (serverData.tribePost) {
+    return generateTribePostMetadata(serverData.tribePost)
+  }
+
+  // Tribe list (showAllTribe = /tribe or isTribe site root) — use locale-aware siteTranslations
+  if (serverData.showAllTribe) {
+    return generateTribeListMetadata(undefined, locale)
+  }
+
+  // Specific tribe page
+  if (serverData.showTribe || serverData.tribe) {
+    return generateTribeListMetadata(serverData.tribe ?? undefined, locale)
   }
 
   // If we have thread data from server loader, use it

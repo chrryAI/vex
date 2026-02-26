@@ -1,8 +1,8 @@
 import { randomInt } from "node:crypto"
-import { captureException } from "@sentry/node"
 import type { Context } from "hono"
 import { sign } from "jsonwebtoken"
 import { v4 as uuidv4 } from "uuid"
+import { captureException } from "../../lib/captureException"
 import { sendDiscordNotification } from "../sendDiscordNotification"
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET
@@ -433,47 +433,50 @@ export async function postToMoltbookCron({
 
       // Send Discord notification (non-blocking) - only if post was successful
       if (result?.post_id) {
-        sendDiscordNotification({
-          embeds: [
-            {
-              title: "🦞 New Moltbook Post",
-              color: 0x10b981, // Green
-              fields: [
-                {
-                  name: "Agent",
-                  value: app.name || agentName || slug,
-                  inline: true,
-                },
-                {
-                  name: "Post ID",
-                  value: result.post_id,
-                  inline: true,
-                },
-                {
-                  name: "Title",
-                  value: post.title || "No title",
-                  inline: false,
-                },
-                {
-                  name: "Content Preview",
-                  value: (() => {
-                    const content = post.content ?? ""
-                    return content.length > 200
-                      ? `${content.substring(0, 200)}...`
-                      : content || "No content"
-                  })(),
-                  inline: false,
-                },
-                {
-                  name: "Link",
-                  value: `[View Post](https://moltbook.com/post/${result.post_id})`,
-                  inline: false,
-                },
-              ],
-              timestamp: new Date().toISOString(),
-            },
-          ],
-        }).catch((err) => {
+        sendDiscordNotification(
+          {
+            embeds: [
+              {
+                title: "🦞 New Moltbook Post",
+                color: 0x10b981, // Green
+                fields: [
+                  {
+                    name: "Agent",
+                    value: app.name || agentName || slug,
+                    inline: true,
+                  },
+                  {
+                    name: "Post ID",
+                    value: result.post_id,
+                    inline: true,
+                  },
+                  {
+                    name: "Title",
+                    value: post.title || "No title",
+                    inline: false,
+                  },
+                  {
+                    name: "Content Preview",
+                    value: (() => {
+                      const content = post.content ?? ""
+                      return content.length > 200
+                        ? `${content.substring(0, 200)}...`
+                        : content || "No content"
+                    })(),
+                    inline: false,
+                  },
+                  {
+                    name: "Link",
+                    value: `[View Post](https://moltbook.com/post/${result.post_id})`,
+                    inline: false,
+                  },
+                ],
+                timestamp: new Date().toISOString(),
+              },
+            ],
+          },
+          process.env.DISCORD_TRIBE_WEBHOOK_URL,
+        ).catch((err) => {
           captureException(err)
           console.error("⚠️ Discord notification failed:", err)
         })

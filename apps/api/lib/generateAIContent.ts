@@ -56,10 +56,10 @@ const memorySchema = z.array(
 type MemoryData = z.infer<typeof memorySchema>
 
 import type { appWithStore } from "@chrryai/chrry/types"
-import { captureException } from "@sentry/node"
 import { generateText, type ModelMessage } from "ai"
 import type { Context } from "hono"
 import { z } from "zod"
+import { captureException } from "../lib/captureException"
 import { getModelProvider } from "./getModelProvider"
 import { checkThreadSummaryLimit } from "./index"
 import { notifyOwnerAndCollaborations } from "./notify"
@@ -1718,6 +1718,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
                 effectiveness: 0.8,
               },
               threadId,
+              visibility: "public",
             })
             console.log(`✅ Created app character profile for app ${appId}`)
           }

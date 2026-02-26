@@ -42,6 +42,7 @@ export default function Chrry({
   pathname,
   siteConfig,
   searchParams,
+  accountApp,
   tribes,
   tribePosts,
   tribePost,
@@ -57,6 +58,7 @@ export default function Chrry({
   app?: appWithStore
   viewPortWidth?: string
   viewPortHeight?: string
+  accountApp?: appWithStore
   siteConfig?: ReturnType<typeof getSiteConfig>
   searchParams?: Record<string, string> & {
     get: (key: string) => string | null
@@ -78,6 +80,7 @@ export default function Chrry({
     <AppProviders
       useExtensionIcon={useExtensionIcon}
       locale={locale}
+      accountApp={accountApp}
       siteConfig={siteConfig}
       session={session}
       app={app}

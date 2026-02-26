@@ -1,6 +1,7 @@
+import { isDevelopment, isE2E } from "@repo/db"
 import { Hono } from "hono"
 import Stripe from "stripe"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import { getMember } from "../lib/auth"
 
 export const createCreditPurchase = new Hono()
@@ -9,7 +10,7 @@ export const createCreditPurchase = new Hono()
 createCreditPurchase.post("/", async (c) => {
   const user = await getMember(c)
   const stripe = new Stripe(
-    user?.role === "admin"
+    user?.role === "admin" && !isE2E && !isDevelopment
       ? process.env.STRIPE_SECRET_KEY_TEST!
       : process.env.STRIPE_SECRET_KEY!,
   )

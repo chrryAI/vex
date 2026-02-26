@@ -17,7 +17,7 @@ import {
   messageEmbeddings,
 } from "@repo/db/src/schema"
 import { generateText } from "ai"
-import captureException from "../../lib/captureException"
+import { captureException } from "../../lib/captureException"
 import {
   extractAndStoreKnowledge,
   getGraphContext,

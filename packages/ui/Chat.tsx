@@ -26,6 +26,7 @@ import {
   useData,
   useError,
   useNavigationContext,
+  useTribe,
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import DeleteThread from "./DeleteThread"
@@ -85,6 +86,7 @@ import {
   Button,
   Div,
   H2,
+  P,
   Span,
   Strong,
   TextArea,
@@ -254,8 +256,11 @@ export default function Chat({
     canShowTribe,
     showFocus,
     postId,
+    burnApp,
     ...auth
   } = useAuth()
+
+  const { tribePost } = useTribe()
 
   const lastTribe = user?.lastTribe
   const lastMolt = user?.lastMolt
@@ -347,17 +352,7 @@ export default function Chat({
     pathname,
   } = useNavigationContext()
 
-  const {
-    slug,
-    suggestSaveApp,
-    saveApp,
-    apps,
-    appStatus,
-    appFormWatcher,
-    minimize,
-    setMinimize,
-    setAppStatus,
-  } = useApp()
+  const { slug, appStatus, minimize, setMinimize, isAppOwner } = useApp()
 
   const threadIdRef = useRef(threadId)
 
@@ -373,6 +368,8 @@ export default function Chat({
     if (isNewChat) {
       setThreadId(undefined)
       auth.setThreadId(undefined)
+      setPostToMoltbook(false)
+      setPostToTribe(false)
     }
   }, [isNewChat])
 
@@ -481,19 +478,22 @@ export default function Chat({
 
   const [needsReview, setNeedsReviewInternal] = useState(false)
   const needsReviewRef = useRef(needsReview)
-  const placeholder = isImageGenerationEnabled
-    ? `🎨 ${t("Describe the image you want to create")} ✨`
-    : isSelectingMood
-      ? `📊 ${t("Track your mood daily")} 🎭`
-      : needsReview
-        ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
-        : isPear
-          ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
-          : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
-            ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
-            : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
-              ? `✨ ${t("Explore new apps while you chat")} 🍇`
-              : placeHolderInternal
+  const placeholder =
+    burnApp?.placeholder && burn
+      ? burnApp.placeholder
+      : isImageGenerationEnabled
+        ? `🎨 ${t("Describe the image you want to create")} ✨`
+        : isSelectingMood
+          ? `📊 ${t("Track your mood daily")} 🎭`
+          : needsReview
+            ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
+            : isPear
+              ? `💬 ${t("Share feedback, earn 10-50 credits!")} 🍇`
+              : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
+                ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
+                : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
+                  ? `✨ ${t("Explore new apps while you chat")} 🍇`
+                  : placeHolderInternal
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])
@@ -1749,9 +1749,11 @@ export default function Chat({
     setIsLoading(true)
 
     const sanitizedThreadId =
-      threadIdRef.current && validate(threadIdRef.current)
-        ? threadIdRef.current
-        : null
+      isAppOwner && tribePost?.threadId
+        ? tribePost?.threadId
+        : threadIdRef.current && validate(threadIdRef.current)
+          ? threadIdRef.current
+          : null
 
     try {
       let postRequestBody: FormData | string
@@ -3738,6 +3740,7 @@ export default function Chat({
                   {empty &&
                     !threadIdRef.current &&
                     !showQuotaInfo &&
+                    canShowTribe &&
                     !showTribe && (
                       <Div
                         style={{
@@ -4079,7 +4082,7 @@ export default function Chat({
                       ...styles.chatFloating.style,
                       ...(app?.themeColor && showTribe
                         ? {
-                            border: `1px solid ${COLORS[app?.themeColor as keyof typeof COLORS]}`,
+                            border: `1px solid ${COLORS[app?.themeColor as keyof typeof COLORS] ? COLORS[app?.themeColor as keyof typeof COLORS] : COLORS.orange}`,
                           }
                         : {}),
                       paddingBottom: 45,
@@ -4306,77 +4309,37 @@ export default function Chat({
               {/* Credit Estimate Display */}
               <Div style={styles.chatFooter.style}>
                 {!isAttaching && selectedAgent ? (
-                  <Div
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-end",
-                      gap: debateAgent ? 10 : 5,
-                    }}
-                  >
-                    <Span
+                  needsReview && !!input ? (
+                    <P style={{ color: "var(--shade-7)" }}>{placeholder}</P>
+                  ) : (
+                    <Div
                       style={{
                         display: "flex",
                         alignItems: "flex-end",
-                        gap: 9,
+                        gap: debateAgent ? 10 : 5,
                       }}
                     >
-                      <Button
-                        disabled={onlyAgent}
-                        data-testid={
-                          !debateAgent
-                            ? "add-debate-agent-button"
-                            : "agent-select-button"
-                        }
-                        data-agent-name={selectedAgent.name}
-                        title={t("Add debate agent")}
-                        onClick={() => {
-                          addHapticFeedback()
-                          if (debateAgent || selectedAgent?.name === "flux") {
-                            setIsAgentModalOpen(true)
-                          } else setIsDebateAgentModalOpen(true)
-                        }}
-                        className="link"
+                      <Span
                         style={{
-                          ...utilities.link.style,
-                          ...styles.debateAgentButton.style,
-                          ...(onlyAgent
-                            ? styles.debateAgentButtonDisabled
-                            : {}),
+                          display: "flex",
+                          alignItems: "flex-end",
+                          gap: 9,
                         }}
                       >
-                        {selectedAgent.name === "deepSeek" ? (
-                          <DeepSeek color="var(--accent-6)" size={24} />
-                        ) : selectedAgent.name === "chatGPT" ? (
-                          <OpenAI color="var(--accent-6)" size={22} />
-                        ) : selectedAgent.name === "claude" ? (
-                          <Claude color="var(--accent-6)" size={22} />
-                        ) : selectedAgent.name === "gemini" ? (
-                          <Gemini color="var(--accent-6)" size={22} />
-                        ) : selectedAgent.name === "flux" ? (
-                          <Flux color="var(--accent-6)" size={22} />
-                        ) : selectedAgent.name === "perplexity" ? (
-                          <Perplexity color="var(--accent-6)" size={22} />
-                        ) : selectedAgent.name === "sushi" ? (
-                          <Img icon="sushi" size={22} />
-                        ) : null}
-                        {onlyAgent ||
-                        selectedAgent?.name === "flux" ||
-                        debateAgent ? null : (
-                          <Plus
-                            strokeWidth={3}
-                            style={styles.plusIcon.style}
-                            size={10}
-                            color="var(--accent-6)"
-                          />
-                        )}
-                      </Button>
-                      {debateAgent && !onlyAgent ? (
                         <Button
-                          data-testid="add-debate-agent-button"
-                          data-agent-name={debateAgent.name}
+                          disabled={onlyAgent}
+                          data-testid={
+                            !debateAgent
+                              ? "add-debate-agent-button"
+                              : "agent-select-button"
+                          }
+                          data-agent-name={selectedAgent.name}
+                          title={t("Add debate agent")}
                           onClick={() => {
                             addHapticFeedback()
-                            setIsDebateAgentModalOpen(true)
+                            if (debateAgent || selectedAgent?.name === "flux") {
+                              setIsAgentModalOpen(true)
+                            } else setIsDebateAgentModalOpen(true)
                           }}
                           className="link"
                           style={{
@@ -4387,94 +4350,140 @@ export default function Chat({
                               : {}),
                           }}
                         >
-                          <Span style={{ position: "relative", left: "-2px" }}>
-                            |
-                          </Span>
-                          {debateAgent.name === "deepSeek" ? (
+                          {selectedAgent.name === "deepSeek" ? (
                             <DeepSeek color="var(--accent-6)" size={24} />
-                          ) : debateAgent.name === "chatGPT" ? (
+                          ) : selectedAgent.name === "chatGPT" ? (
                             <OpenAI color="var(--accent-6)" size={22} />
-                          ) : debateAgent.name === "claude" ? (
+                          ) : selectedAgent.name === "claude" ? (
                             <Claude color="var(--accent-6)" size={22} />
-                          ) : debateAgent.name === "gemini" ? (
+                          ) : selectedAgent.name === "gemini" ? (
                             <Gemini color="var(--accent-6)" size={22} />
-                          ) : debateAgent.name === "flux" ? (
+                          ) : selectedAgent.name === "flux" ? (
                             <Flux color="var(--accent-6)" size={22} />
-                          ) : debateAgent.name === "perplexity" ? (
+                          ) : selectedAgent.name === "perplexity" ? (
                             <Perplexity color="var(--accent-6)" size={22} />
-                          ) : debateAgent.name === "sushi" ? (
+                          ) : selectedAgent.name === "sushi" ? (
                             <Img icon="sushi" size={22} />
                           ) : null}
-                        </Button>
-                      ) : (
-                        <Button
-                          disabled={!!onlyAgent}
-                          data-agent-name={selectedAgent.name}
-                          data-testid="agent-select-button"
-                          onClick={() => {
-                            if (onlyAgent) {
-                              toast.error(
-                                t(
-                                  `{{name}} is only agent on this app. You can try sushi 🍣`,
-                                  {
-                                    name: capitalizeFirstLetter(
-                                      selectedAgent.name,
-                                    ),
-                                  },
-                                ),
-                              )
-
-                              return
-                            }
-                            addHapticFeedback()
-                            setIsAgentModalOpen(true)
-                          }}
-                          className="link"
-                          style={{
-                            ...utilities.link.style,
-                            ...styles.agentButton.style,
-                            background: "transparent",
-                          }}
-                          type="submit"
-                        >
-                          <Span
-                            style={{
-                              ...styles.agentName.style,
-                              maxWidth: viewPortWidth < 400 ? 90 : 150,
-                            }}
-                          >
-                            {selectedAgent?.displayName}
-                          </Span>
-                          {!onlyAgent && (
-                            <ChevronDown color="var(--accent-6)" size={20} />
+                          {onlyAgent ||
+                          selectedAgent?.name === "flux" ||
+                          debateAgent ? null : (
+                            <Plus
+                              strokeWidth={3}
+                              style={styles.plusIcon.style}
+                              size={10}
+                              color="var(--accent-6)"
+                            />
                           )}
                         </Button>
+                        {debateAgent && !onlyAgent ? (
+                          <Button
+                            data-testid="add-debate-agent-button"
+                            data-agent-name={debateAgent.name}
+                            onClick={() => {
+                              addHapticFeedback()
+                              setIsDebateAgentModalOpen(true)
+                            }}
+                            className="link"
+                            style={{
+                              ...utilities.link.style,
+                              ...styles.debateAgentButton.style,
+                              ...(onlyAgent
+                                ? styles.debateAgentButtonDisabled
+                                : {}),
+                            }}
+                          >
+                            <Span
+                              style={{ position: "relative", left: "-2px" }}
+                            >
+                              |
+                            </Span>
+                            {debateAgent.name === "deepSeek" ? (
+                              <DeepSeek color="var(--accent-6)" size={24} />
+                            ) : debateAgent.name === "chatGPT" ? (
+                              <OpenAI color="var(--accent-6)" size={22} />
+                            ) : debateAgent.name === "claude" ? (
+                              <Claude color="var(--accent-6)" size={22} />
+                            ) : debateAgent.name === "gemini" ? (
+                              <Gemini color="var(--accent-6)" size={22} />
+                            ) : debateAgent.name === "flux" ? (
+                              <Flux color="var(--accent-6)" size={22} />
+                            ) : debateAgent.name === "perplexity" ? (
+                              <Perplexity color="var(--accent-6)" size={22} />
+                            ) : debateAgent.name === "sushi" ? (
+                              <Img icon="sushi" size={22} />
+                            ) : null}
+                          </Button>
+                        ) : (
+                          <Button
+                            disabled={!!onlyAgent}
+                            data-agent-name={selectedAgent.name}
+                            data-testid="agent-select-button"
+                            onClick={() => {
+                              if (onlyAgent) {
+                                toast.error(
+                                  t(
+                                    `{{name}} is only agent on this app. You can try sushi 🍣`,
+                                    {
+                                      name: capitalizeFirstLetter(
+                                        selectedAgent.name,
+                                      ),
+                                    },
+                                  ),
+                                )
+
+                                return
+                              }
+                              addHapticFeedback()
+                              setIsAgentModalOpen(true)
+                            }}
+                            className="link"
+                            style={{
+                              ...utilities.link.style,
+                              ...styles.agentButton.style,
+                              background: "transparent",
+                            }}
+                            type="submit"
+                          >
+                            <Span
+                              style={{
+                                ...styles.agentName.style,
+                                maxWidth: viewPortWidth < 400 ? 90 : 150,
+                              }}
+                            >
+                              {selectedAgent?.displayName}
+                            </Span>
+                            {!onlyAgent && (
+                              <ChevronDown color="var(--accent-6)" size={20} />
+                            )}
+                          </Button>
+                        )}
+                      </Span>
+                      {!appStatus?.part && !onlyAgent && (
+                        <Button
+                          data-testid={
+                            debateAgent
+                              ? "debate-agent-delete-button"
+                              : "agent-delete-button"
+                          }
+                          style={{
+                            position: "relative",
+                            top: "-2px",
+                            ...utilities.link.style,
+                          }}
+                          className="link"
+                          onClick={() => {
+                            addHapticFeedback()
+                            debateAgent
+                              ? setDebateAgent(null)
+                              : setSelectedAgent(null)
+                          }}
+                        >
+                          <CircleX color="var(--accent-1)" size={18} />
+                        </Button>
                       )}
-                    </Span>
-                    {!appStatus?.part && !onlyAgent && (
-                      <Button
-                        data-testid={
-                          debateAgent
-                            ? "debate-agent-delete-button"
-                            : "agent-delete-button"
-                        }
-                        style={{
-                          position: "relative",
-                          top: "-2px",
-                          ...utilities.link.style,
-                        }}
-                        className="link"
-                        onClick={() => {
-                          addHapticFeedback()
-                          debateAgent
-                            ? setDebateAgent(null)
-                            : setSelectedAgent(null)
-                        }}
-                      >
-                        <CircleX color="var(--accent-1)" size={18} />
-                      </Button>
-                    )}
-                  </Div>
+                    </Div>
+                  )
                 ) : (
                   !isAttaching && (
                     <Button
@@ -4723,7 +4732,6 @@ export default function Chat({
                     </Span>
                   ) : needsReview ? (
                     <A
-                      target="_blank"
                       className="button small transparent"
                       href="/privacy"
                       style={{
