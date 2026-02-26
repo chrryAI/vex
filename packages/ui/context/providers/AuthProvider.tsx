@@ -87,7 +87,7 @@ import {
   whiteLabels,
 } from "../../utils/siteConfig"
 import ago from "../../utils/timeAgo"
-import { excludedSlugRoutes, getAppAndStoreSlugs } from "../../utils/url"
+import { excludedSlugRoutes } from "../../utils/url"
 import { useTheme } from "../ThemeContext"
 import type { Task } from "../TimerContext"
 import type { AppStatus } from "./AppProvider"
@@ -384,6 +384,43 @@ const AuthContext = createContext<
   | undefined
 >(undefined)
 
+export const hasStoreApps = (app: appWithStore | undefined) => {
+  return Boolean(app?.store?.app && app?.store?.apps?.length)
+}
+
+export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
+  // Create a map of existing apps by ID
+  const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
+
+  // Add or update apps
+  newApps.forEach((newApp) => {
+    const existingApp = existingAppsMap.get(newApp.id)
+
+    if (existingApp) {
+      // Check if new app has meaningful store.apps (not empty or undefined)
+      const newHasStoreApps = hasStoreApps(newApp)
+      const existingHasStoreApps = hasStoreApps(existingApp)
+
+      // Merge: prefer new app but preserve existing store.apps if new one is empty/undefined
+      existingAppsMap.set(newApp.id, {
+        ...existingApp,
+        ...newApp,
+        store: newHasStoreApps
+          ? newApp.store
+          : existingHasStoreApps
+            ? existingApp.store
+            : newApp.store,
+      })
+    } else {
+      existingAppsMap.set(newApp.id, newApp)
+    }
+  })
+
+  const result = Array.from(existingAppsMap.values())
+
+  return result
+}
+
 export function AuthProvider({
   apiKey,
   children,
@@ -457,10 +494,6 @@ export function AuthProvider({
     get: (_key: string) => null,
     has: (_key: string) => false,
     toString: () => "",
-  }
-
-  const hasStoreApps = (app: appWithStore | undefined) => {
-    return Boolean(app?.store?.app && app?.store?.apps.length)
   }
 
   const _signUp = useCallback(
@@ -925,39 +958,6 @@ export function AuthProvider({
     }
   }, [isExtension, isCapacitor])
 
-  const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
-    // Create a map of existing apps by ID
-    const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
-
-    // Add or update apps
-    newApps.forEach((newApp) => {
-      const existingApp = existingAppsMap.get(newApp.id)
-
-      if (existingApp) {
-        // Check if new app has meaningful store.apps (not empty or undefined)
-        const newHasStoreApps = hasStoreApps(newApp)
-        const existingHasStoreApps = hasStoreApps(existingApp)
-
-        // Merge: prefer new app but preserve existing store.apps if new one is empty/undefined
-        existingAppsMap.set(newApp.id, {
-          ...existingApp,
-          ...newApp,
-          store: newHasStoreApps
-            ? newApp.store
-            : existingHasStoreApps
-              ? existingApp.store
-              : newApp.store,
-        })
-      } else {
-        existingAppsMap.set(newApp.id, newApp)
-      }
-    })
-
-    const result = Array.from(existingAppsMap.values())
-
-    return result
-  }
-
   const step = searchParams.get("step") as
     | "add"
     | "success"
@@ -1150,16 +1150,26 @@ export function AuthProvider({
       props?.session?.userBaseApp ||
       props?.session?.guestBaseApp,
   )
-  const allApps = merge(
-    merge(
-      (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
-      session?.app?.store?.apps || props.app?.store?.apps || [],
-    ),
+  const allApps = useMemo(
+    () =>
+      merge(
+        merge(
+          (tribePosts?.posts.map((p) => p.app) as appWithStore[]) || [],
+          session?.app?.store?.apps || props.app?.store?.apps || [],
+        ),
 
-    merge(
-      (tribePost?.comments.map((p) => p.app) as appWithStore[]) || [],
-      accountApp ? [accountApp] : [],
-    ),
+        merge(
+          (tribePost?.comments.map((p) => p.app) as appWithStore[]) || [],
+          accountApp ? [accountApp] : [],
+        ),
+      ),
+    [
+      tribePosts?.posts,
+      session?.app?.store?.apps,
+      props.app?.store?.apps,
+      tribePost?.comments,
+      accountApp,
+    ],
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
@@ -1265,13 +1275,15 @@ export function AuthProvider({
     }
   }, [isRetro, app, dailyQuestionSectionIndex, dailyQuestionIndex])
 
+  const c = whiteLabels.find((label) => label.slug === "chrry")
+
   const siteConfigApp = useMemo(
     () =>
       whiteLabels.find(
         (label) =>
           label.slug === app?.slug || app?.store?.app?.slug === label.slug,
-      ),
-    [app],
+      ) || c,
+    [app, c],
   )
 
   const setIsRetro = (value: boolean) => {
@@ -1415,13 +1427,30 @@ export function AuthProvider({
   const sessionData = sessionSwr || session
 
   useEffect(() => {
-    const diff = allApps.filter(
-      (app) => !storeApps?.some((a) => a.id === app.id),
-    )
-    if (diff && diff.length > 0) {
-      mergeApps(diff)
-    }
-  }, [allApps.length, storeApps?.length])
+    if (!allApps.length) return
+
+    setAllApps((prevApps) => {
+      const appMap = new Map(prevApps.map((a) => [a.id, a]))
+      let hasChange = false
+
+      allApps.forEach((app) => {
+        const existing = appMap.get(app.id)
+        if (!existing) {
+          appMap.set(app.id, app)
+          hasChange = true
+        } else {
+          // Use the existing merge helper to preserve hydrated data
+          const merged = merge([existing], [app])[0]
+          if (merged && JSON.stringify(existing) !== JSON.stringify(merged)) {
+            appMap.set(app.id, merged)
+            hasChange = true
+          }
+        }
+      })
+
+      return hasChange ? Array.from(appMap.values()) : prevApps
+    })
+  }, [allApps])
 
   const _getAlterNativeDomains = (store: storeWithApps) => {
     // Map askvex.com and vex.chrry.ai as equivalent domains
@@ -2036,15 +2065,16 @@ export function AuthProvider({
     storeApp?.chromeWebStoreUrl ||
     "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
 
+  const withFallback = "chrry"
   const minioUrl = "https://minio.chrry.dev/chrry-installs/installs"
   const downloadUrl =
     app && installs.includes(app?.slug || "")
       ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
       : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
         ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
-        : ""
-
-  const isZarathustra = app?.slug === "zarathustra"
+        : installs.includes(withFallback)
+          ? `${minioUrl}/${capitalizeFirstLetter(withFallback)}.dmg`
+          : ""
 
   const isBaseAppZarathustra = baseApp?.slug === "zarathustra"
 
@@ -2172,8 +2202,9 @@ export function AuthProvider({
   }
 
   useEffect(() => {
-    setIsPearInternal(isPearInternal)
-    if (isPearInternal)
+    isPearInternal && setIsPearInternal(isPearInternal)
+    if (isPearInternal) {
+      setShowFocus(false)
       plausible({
         name: ANALYTICS_EVENTS.PEAR,
         props: {
@@ -2183,6 +2214,7 @@ export function AuthProvider({
           id: app?.id,
         },
       })
+    }
   }, [isPearInternal])
 
   const setIsPear = (value: appWithStore | undefined) => {
@@ -2196,11 +2228,6 @@ export function AuthProvider({
       toast.success(`${t("Let's Pear")} 🍐`)
     }
   }
-
-  useEffect(() => {
-    setIsPearInternal(isPearInternal)
-    if (isPearInternal) setShowFocus(false)
-  }, [isPearInternal])
 
   const isProgramme =
     (!!isProgrammeInternal && !siteConfig.isTribe) ||
@@ -2331,6 +2358,10 @@ export function AuthProvider({
   const showAllTribe =
     pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
 
+  useEffect(() => {
+    ;(showAllTribe || _isExcluded) && setIsPear(undefined)
+  }, [showAllTribe])
+
   const tribeQuery = searchParams.get("tribe") === "true"
 
   const canBeTribeProfile =
@@ -2341,6 +2372,7 @@ export function AuthProvider({
       showAllTribe ||
       tribeSlug ||
       postId ||
+      tribeQuery ||
       props.showTribe ||
       canBeTribeProfile
     ) && canShowTribe
@@ -2871,7 +2903,7 @@ export function AuthProvider({
 
   // Create sign out wrapper
   const signOutContext = async (options: { callbackUrl?: string }) => {
-    return signOutContext(options)
+    return signOutInternal(options)
   }
 
   const popcorn = storeApps.find((app) => app.slug === "popcorn")
