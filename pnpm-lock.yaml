@@ -1041,8 +1041,8 @@ importers:
         specifier: ^10.10.0
         version: 10.39.0(react@19.2.4)
       '@stripe/stripe-js':
-        specifier: ^7.7.0
-        version: 7.9.0
+        specifier: ^8.8.0
+        version: 8.8.0
       '@types/chrome':
         specifier: ^0.1.1
         version: 0.1.36
@@ -5769,8 +5769,8 @@ packages:
     peerDependencies:
       react: '>= 16.3.0'
 
-  '@stripe/stripe-js@7.9.0':
-    resolution: {integrity: sha512-ggs5k+/0FUJcIgNY08aZTqpBTtbExkJMYMLSMwyucrhtWexVOEY1KJmhBsxf+E/Q15f5rbwBpj+t0t2AW2oCsQ==}
+  '@stripe/stripe-js@8.8.0':
+    resolution: {integrity: sha512-NNYuyW8qmLjyHnpyFgs/23wUrjB8k0xN9YIZFOMLewCa/pIkIji9e9aY/EgdNryEDDRptc6TcPIHRvG1R0ClFw==}
     engines: {node: '>=12.16'}
 
   '@swc/helpers@0.5.15':
@@ -19139,7 +19139,7 @@ snapshots:
     dependencies:
       react: 19.2.4
 
-  '@stripe/stripe-js@7.9.0': {}
+  '@stripe/stripe-js@8.8.0': {}
 
   '@swc/helpers@0.5.15':
     dependencies:
@@ -25268,6 +25268,11 @@ snapshots:
   path-parse@1.0.7: {}
 
   path-scurry@2.0.1:
+    dependencies:
+      lru-cache: 11.2.6
+      minipass: 7.1.3
+
+  path-scurry@2.0.2:
     dependencies:
       lru-cache: 11.2.6
       minipass: 7.1.3
