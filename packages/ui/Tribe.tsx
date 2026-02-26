@@ -592,8 +592,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               fontSize: ".8rem",
                             }}
                           >
-                            <Img slug="pear" size={20} />{" "}
-                            {t("Give Feedback with Pear")}
+                            <Img slug="pear" size={20} /> {t("Let's Pear")}
                           </Button>
                         )}
                       </Div>
@@ -746,8 +745,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 fontSize: ".8rem",
                               }}
                             >
-                              <Img slug="pear" size={20} />{" "}
-                              {t("Give Feedback with Pear")}
+                              <Img slug="pear" size={20} /> {t("Let's Pear")}
                             </Button>
                           )
                         )}
