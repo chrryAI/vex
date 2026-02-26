@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import useCache from './useCache'
+import useCache from '../hooks/useCache'
 
 // Mock useSWRConfig
 const mockCache = new Map()
