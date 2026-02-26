@@ -834,7 +834,7 @@ export default function App({
             />
             {app?.mainThreadId && isAppOwner && (
               <A
-                style={{ fontSize: "1rem" }}
+                style={{ fontSize: ".9rem", marginTop: ".2rem" }}
                 href={`/threads/${app?.mainThreadId}`}
               >
                 🧬
