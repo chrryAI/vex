@@ -958,7 +958,6 @@ export function AuthProvider({
     }
   }, [isExtension, isCapacitor])
 
-
   const step = searchParams.get("step") as
     | "add"
     | "success"
