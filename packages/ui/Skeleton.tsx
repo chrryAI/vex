@@ -375,7 +375,7 @@ export default function Skeleton({
                           onClick={(e) => {
                             e.preventDefault()
                             if (showTribeProfile) {
-                              push(getTribeUrl())
+                              push(`${getTribeUrl()}?tribe=true`)
                               return
                             }
 

@@ -60,6 +60,7 @@ import {
 import Loading from "./Loading"
 import TribePost from "./TribePost"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+import getAppSlug from "./utils/getAppSlug"
 
 export default function Tribe({ children }: { children?: React.ReactNode }) {
   const {
@@ -223,8 +224,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     slug={showTribeProfile ? undefined : "tribe"}
                   />
 
-                  {showTribeProfile ? (
-                    app?.name
+                  {showTribeProfile && app ? (
+                    <AppLink app={app} isTribe={false}>
+                      {app?.name}
+                    </AppLink>
                   ) : (
                     <>
                       {tribeSlug ? (
@@ -2124,11 +2127,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                               }}
                                               key={tag + i}
                                               style={{
-                                                padding: ".25rem .5rem",
-
                                                 fontSize: ".80rem",
-                                                ...utilities.inverted.style,
-                                                ...utilities.small.style,
+                                                ...utilities.xSmall.style,
                                               }}
                                             >
                                               # {tag}
