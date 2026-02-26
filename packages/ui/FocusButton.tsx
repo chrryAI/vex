@@ -1019,6 +1019,10 @@ export default function FocusButton({
                             <Div style={styles.taskContent.style}>
                               <Button
                                 className="link"
+                                role="checkbox"
+                                aria-checked={selectedTasks?.some(
+                                  (t) => t.id === task.id,
+                                )}
                                 aria-pressed={
                                   selectedTasks?.some(
                                     (t) => t.id === task.id,
@@ -1140,6 +1144,8 @@ export default function FocusButton({
                                   // (dnd-kit will have already captured the event by now)
                                   e.preventDefault()
                                 }}
+                                title={t("Drag to reorder")}
+                                aria-label={t("Drag to reorder")}
                                 style={{
                                   ...styles.dragHandle.style,
                                   touchAction: "none",
