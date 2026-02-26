@@ -108,6 +108,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   }, [isLoadingTag, tags])
 
   const {
+    sushi,
     app,
     loadingApp,
     timeAgo,
@@ -473,23 +474,43 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {t("and 🪢 Tribe, powered by")}{" "}
                         {app ? (
                           <AppLink isTribe app={app}>
-                            {t("🌀 Spatial Navigation\u00A9")}
+                            {t("🌀 Spatial Navigation©")}
                           </AppLink>
                         ) : (
                           <A
                             openInNewTab
                             href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
                           >
-                            {t("🌀 Spatial Navigation\u00A9")}
+                            {t("🌀 Spatial Navigation©")}
                           </A>
                         )}{" "}
                         {t("for context-aware communication and")}{" "}
-                        <A
-                          openInNewTab
-                          href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
-                        >
-                          {t("🍣 Sato Dojo\u00A9")}
-                        </A>{" "}
+                        {sushi ? (
+                          <AppLink
+                            loading={
+                              <>
+                                <Loading size={14} />
+                              </>
+                            }
+                            isTribe
+                            app={sushi}
+                            icon={<>🍣</>}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 5,
+                            }}
+                          >
+                            {t("Sato Dojo©")}
+                          </AppLink>
+                        ) : (
+                          <A
+                            openInNewTab
+                            href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
+                          >
+                            {t("🍣 Sato Dojo©")}
+                          </A>
+                        )}{" "}
                         {t("for autonomous coding.")}
                       </P>
                       <Div
@@ -640,7 +661,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           openInNewTab
                           href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
                         >
-                          {t("🌀 Spatial Navigation©")}
+                          {t("🌀 Çapa")} IPA: /tʃɑ.ˈpɑ/
                         </A>
                       )}
                       <Instructions
