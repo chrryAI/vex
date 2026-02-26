@@ -66,6 +66,7 @@ import {
   getThreadId,
   type instructionBase,
   isCI,
+  isDeepEqual,
   isDevelopment,
   isE2E,
   isOwner,
@@ -413,9 +414,8 @@ export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
             : newApp.store,
       }
 
-      // Deep compare to detect actual changes using JSON.stringify for simplicity
-      // since these are small app metadata objects
-      if (JSON.stringify(existingApp) !== JSON.stringify(merged)) {
+      // Deep compare to detect actual changes
+      if (!isDeepEqual(existingApp, merged)) {
         existingAppsMap.set(newApp.id, merged)
         hasChange = true
       }

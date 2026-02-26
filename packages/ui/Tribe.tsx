@@ -50,7 +50,6 @@ import {
   BrickWallFire,
   CalendarIcon,
   CircleX,
-  Download,
   HeartPlus,
   LoaderCircle,
   Pin,
@@ -62,7 +61,6 @@ import {
 import Loading from "./Loading"
 import TribePost from "./TribePost"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
-import getAppSlug from "./utils/getAppSlug"
 
 const TribePostListItem = ({
   post,

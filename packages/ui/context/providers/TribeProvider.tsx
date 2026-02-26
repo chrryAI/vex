@@ -23,7 +23,7 @@ import type {
   tribePostWithDetails,
 } from "../../types"
 import { apiFetch } from "../../utils"
-import { useAuth, useChat, useData } from "."
+import { useAuth, useData } from "."
 export type engagement = {
   tribePostId: string
 }
