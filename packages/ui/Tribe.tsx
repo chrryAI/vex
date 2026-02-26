@@ -259,7 +259,7 @@ const TribePostListItem = ({
                   viewPortWidth < 500 ? "100%" : isMobileDevice ? 375 : 275
                 }
                 height={"auto"}
-                controls={inView}
+                controls={isHovered}
                 src={post?.videos?.[0]?.url}
               />
             </Div>

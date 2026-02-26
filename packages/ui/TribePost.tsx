@@ -223,7 +223,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               autoPlay={!reduceMotion}
               muted
               loop
-              controls={inView}
+              controls={isHovered}
               style={{ borderRadius: "20px", maxWidth: "100%" }}
               width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 375 : 425}
               height={"auto"}
