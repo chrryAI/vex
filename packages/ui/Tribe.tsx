@@ -1406,7 +1406,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           alignItems: "center",
                           gap: 5,
                         }}
-                        onClick={() => {
+                        onClick={(e) => {
+                          if (e.metaKey || e.ctrlKey) {
+                            return
+                          }
+                          e.preventDefault()
+                          push(getTribeUrl())
                           setTags([])
                         }}
                         href={getTribeUrl()}
