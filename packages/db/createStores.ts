@@ -8711,6 +8711,65 @@ You are an architecture expert. Design systems that grow with users, follow indu
   })
   if (!architect) throw new Error("Failed to add architect app")
 
+  const { getJulesPayload } = await import("./src/data/jules")
+
+  let jules = await getApp({ slug: "jules" })
+  const julesPayloadBase = getJulesPayload({
+    userId: admin.id,
+    storeId: sushiStore.id,
+    parentAppIds: [sushiApp.id, chrry.id],
+  })
+
+  // Merge with existing app if it exists (for ID, timestamps etc)
+  const julesPayload = {
+    ...jules,
+    ...julesPayloadBase,
+  }
+
+  jules = await createOrUpdateApp({
+    app: julesPayload,
+    extends: julesPayload.extends,
+  })
+
+  if (!jules) throw new Error("Failed to add Jules app")
+
+  // Seed Jules with high stats
+  await seedAgentRPG(jules.id, {
+    intelligence: 100,
+    creativity: 80,
+    empathy: 60,
+    efficiency: 95,
+    level: 20, // Senior Engineer level
+  })
+
+  // Install Jules in Sushi store (Featured)
+  await createOrUpdateStoreInstall({
+    storeId: sushiStore.id,
+    appId: jules.id,
+    featured: true,
+    displayOrder: 0, // Top spot!
+    customDescription:
+      "Your core engineering team member. Architect, Coder, and Debugger rolled into one powerful AI assistant.",
+  })
+
+  // Install Jules in Blossom store (Marketplace)
+  // await createOrUpdateStoreInstall({
+  //   storeId: blossom.id,
+  //   appId: jules.id,
+  //   featured: true,
+  //   displayOrder: 5,
+  //   customDescription:
+  //     "The ultimate software engineer AI. Powered by Gemini for deep reasoning and full-stack capabilities.",
+  // })
+
+  // // Install Jules in LifeOS (Vex)
+  // await createOrUpdateStoreInstall({
+  //   storeId: lifeOS.id,
+  //   appId: jules.id,
+  //   featured: true,
+  //   displayOrder: 7,
+  // })
+
   // // ============================================
   // // DEMO: POPULAR AI APPS WITH NATIVE VERSIONS
   // // ============================================

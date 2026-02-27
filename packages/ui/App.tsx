@@ -207,9 +207,11 @@ export default function App({
   const perplexity = apps.find((app) => app.slug === "perplexity")
   const nebula = apps.find((app) => app.slug === "nebula")
   const zarathustra = apps.find((app) => app.slug === "zarathustra")
+  const sushi = apps.find((app) => app.slug === "sushi")
 
   const isBlossom = app?.store?.id === chrry?.store?.id
   const isLifeOS = app?.store?.id === vex?.store?.id
+  const isSushi = app?.store?.id === sushi?.store?.id
 
   const getApps = () => {
     return apps
@@ -219,6 +221,7 @@ export default function App({
           item.id !== store?.appId &&
           item.id !== chrry?.id &&
           (item.id !== perplexity?.id || !isBlossom) &&
+          (item.id !== vex?.id || !isSushi) &&
           (item.id !== claude?.id || !isBlossom) &&
           (item.id !== grape?.id || (!isBlossom && !accountApp)) &&
           (item.id !== zarathustra?.id || (!isBlossom && !accountApp)) &&
@@ -1367,6 +1370,8 @@ export default function App({
               >
                 <Div style={{ ...styles.apps.style, overflowWrap: "anywhere" }}>
                   {appsState.slice(0, 5)?.map((item, index) => {
+                    const showVexHere = index === 1 && isSushi
+
                     const showAtlasHere =
                       index === 1 && (isBlossom || accountApp?.id === app?.id)
 
