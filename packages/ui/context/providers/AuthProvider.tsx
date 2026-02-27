@@ -120,6 +120,7 @@ const AuthContext = createContext<
         timestamp: number
         duration?: number
       } | null
+      showAllTribe: boolean
       timer?: timer
       tribeSlug?: string
       currentTribe?: tribe
@@ -155,8 +156,6 @@ const AuthContext = createContext<
       setDeviceId: (value: string) => void
       pear: appWithStore | undefined
       isPear: boolean
-      input: string
-      setInput: (value: string) => void
       setIsPear: (value: appWithStore | undefined) => void
       grapes: appWithStore[]
       setIsProgramme: (value: boolean) => void
@@ -797,8 +796,6 @@ export function AuthProvider({
   const [dailyQuestionSectionIndex, setDailyQuestionSectionIndex] = useState(0)
   const [dailyQuestionIndex, setDailyQuestionIndex] = useState(0)
 
-  const [input, setInput] = useState<string>("")
-
   // Reset daily questions when entering Retro mode
 
   // Derive current daily question data
@@ -1298,27 +1295,13 @@ export function AuthProvider({
     setIsRetroInternal(value)
     isRetroRef.current = value
 
-    // Clear input when exiting retro mode
-    if (!value && input) {
-      setInput("")
-    }
-
     if (value) {
       setDailyQuestionSectionIndex(0)
       setDailyQuestionIndex(0)
     }
   }
 
-  // Sync input with current question when dailyQuestionData changes
-  useEffect(() => {
-    if (isRetro && dailyQuestionData?.currentQuestion) {
-      console.log(
-        "🔄 Syncing input with question:",
-        dailyQuestionData.currentQuestion,
-      )
-      setInput(dailyQuestionData.currentQuestion)
-    }
-  }, [isRetro, dailyQuestionData?.currentQuestion])
+  // Note: Input syncing with daily questions now handled in ChatProvider
 
   const chrryUrl = CHRRY_URL
 
@@ -2025,8 +2008,10 @@ export function AuthProvider({
   const [storeApp, setStoreAppInternal] = useState<appWithStore | undefined>(
     storeAppInternal,
   )
-  const showAllTribe =
-    pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
+  const showAllTribe = !!(
+    pathname === "/tribe" ||
+    (siteConfig.isTribe && pathname === "/")
+  )
 
   const installs = [
     "atlas",
@@ -2176,7 +2161,6 @@ export function AuthProvider({
     const ask = searchParams.get("ask")
     if (ask !== null) {
       setAskInternal(ask)
-      setInput(ask)
     }
     const about = searchParams.get("about")
     about !== null && setAbout(about)
@@ -2188,8 +2172,6 @@ export function AuthProvider({
     if (value) {
       router.push(`/?ask=${encodeURIComponent(value)}`)
     }
-
-    value && setInput(value)
   }
 
   useEffect(() => {
@@ -2209,10 +2191,6 @@ export function AuthProvider({
   }, [isPearInternal])
 
   const setIsPear = (value: appWithStore | undefined) => {
-    if (value) {
-      setInput("")
-    }
-
     setIsPearInternal(!!value)
     if (value) {
       router.push(`${getAppSlug(value)}?pear=true`)
@@ -3229,8 +3207,6 @@ export function AuthProvider({
         updateMood,
         setThreadId,
         burning,
-        input,
-        setInput,
         lastAppId,
         isRemovingApp,
         storeApps, // All apps from all stores
@@ -3280,6 +3256,7 @@ export function AuthProvider({
         postId,
         mergeApps,
         getTribeUrl,
+        showAllTribe,
       }}
     >
       {children}

@@ -1831,7 +1831,7 @@ const prod = async () => {
     email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  // const { vex } = await createStores({ user: admin })
+  const { vex } = await createStores({ user: admin })
 
   await seedScheduledTribeJobs({ admin })
 
@@ -1960,7 +1960,7 @@ const seedDb = async (): Promise<void> => {
     }
 
     if (MODE === "dev") {
-      // await prod()
+      await prod()
       // await clearDb()
       // await create()
     }

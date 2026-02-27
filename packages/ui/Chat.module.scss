@@ -22,7 +22,7 @@
 }
 
 .standalone {
-  bottom: toRem.toRem(15);
+  bottom: toRem.toRem(10);
 }
 
 .drawerOpen {
@@ -156,7 +156,7 @@
   padding: 0 toRem.toRem(5);
   gap: toRem.toRem(5);
   position: relative;
-  margin-bottom: toRem.toRem(6.5);
+  margin-bottom: toRem.toRem(2.5);
 
   // transform: translateX(-50%) translateY(0);
   display: flex;
@@ -167,7 +167,7 @@
 .topChatFloatingTopInner {
   background-color: var(--shade-1);
   border: toRem.toRem(1) solid var(--shade-2);
-  padding: toRem.toRem(5);
+  padding: toRem.toRem(3) toRem.toRem(5);
   border-radius: var(--radius);
 }
 
