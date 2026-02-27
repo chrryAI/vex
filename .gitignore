@@ -93,17 +93,17 @@ apps/api/newrelic_agent.log
 apps/flash/newrelic_agent.log
 # Browser (root level only, allow apps/browser)
 /browser/
-*.dmg
+# *.dmg
 apps/sushi/dist
 
 # Generated Tauri config (template is the source of truth)
 apps/browser/src-tauri/tauri.conf.json
 
 # Binary installer files (should be uploaded to GitHub Releases)
-apps/flash/public/install/*.dmg
+# apps/flash/public/install/*.dmg
 # Tauri installers (build artifacts)
-public/installs/*.dmg
-apps/flash/public/installs/*.dmg
+# public/installs/*.dmg
+# apps/flash/public/installs/*.dmg
 *.app
 *.p8
 
