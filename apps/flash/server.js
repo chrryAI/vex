@@ -17,7 +17,7 @@ import express from "express"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "2.0.44"
+const VERSION = "2.0.45"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
