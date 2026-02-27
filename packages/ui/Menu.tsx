@@ -392,7 +392,7 @@ export default function Menu({
                       toggleMenuIfSmallDevice()
 
                       if (showTribeProfile) {
-                        push(`${getTribeUrl()}?tribe=true`)
+                        push(`${getTribeUrl()}`)
                       } else {
                         setIsNewChat({
                           value: true,
