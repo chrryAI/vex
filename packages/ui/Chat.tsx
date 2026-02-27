@@ -3704,6 +3704,8 @@ export default function Chat({
                     >
                       {isRetro && (
                         <Button
+                          aria-label={t("Close retro mode")}
+                          title={t("Close retro mode")}
                           onClick={() => setIsRetro(false)}
                           className="link"
                         >
@@ -4461,6 +4463,16 @@ export default function Chat({
                       </Span>
                       {!appStatus?.part && !onlyAgent && (
                         <Button
+                          aria-label={
+                            debateAgent
+                              ? t("Remove debate agent")
+                              : t("Remove agent")
+                          }
+                          title={
+                            debateAgent
+                              ? t("Remove debate agent")
+                              : t("Remove agent")
+                          }
                           data-testid={
                             debateAgent
                               ? "debate-agent-delete-button"
@@ -4595,6 +4607,8 @@ export default function Chat({
                   {isAttaching ? (
                     <Span style={styles.attachButtons.style}>
                       <Button
+                        aria-label={t("Close attachments")}
+                        title={t("Close attachments")}
                         data-testid="attach-button-close"
                         className="link"
                         style={{
