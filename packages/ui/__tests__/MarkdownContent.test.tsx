@@ -67,7 +67,7 @@ describe("MarkdownContent", () => {
 
   it("renders code blocks with custom component", () => {
     const code = "console.log('test')"
-    const markdown = "```javascript\n" + code + "\n```"
+    const markdown = `\`\`\`javascript\n${code}\n\`\`\``
 
     render(<MarkdownContent content={markdown} />)
 

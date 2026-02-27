@@ -2025,6 +2025,8 @@ export function AuthProvider({
   const [storeApp, setStoreAppInternal] = useState<appWithStore | undefined>(
     storeAppInternal,
   )
+  const showAllTribe =
+    pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
 
   const installs = [
     "atlas",
@@ -2049,8 +2051,9 @@ export function AuthProvider({
 
   const withFallback = "chrry"
   const minioUrl = "https://minio.chrry.dev/chrry-installs/installs"
-  const downloadUrl =
-    app && installs.includes(app?.slug || "")
+  const downloadUrl = showAllTribe
+    ? `${minioUrl}/Tribe.dmg`
+    : app && installs.includes(app?.slug || "")
       ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
       : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
         ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
@@ -2336,9 +2339,6 @@ export function AuthProvider({
   const currentTribe = tribeSlug
     ? tribes?.tribes?.find((t) => t.slug === tribeSlug)
     : undefined
-
-  const showAllTribe =
-    pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
 
   useEffect(() => {
     ;(showAllTribe || _isExcluded) && setIsPear(undefined)
