@@ -8753,22 +8753,22 @@ You are an architecture expert. Design systems that grow with users, follow indu
   })
 
   // Install Jules in Blossom store (Marketplace)
-  await createOrUpdateStoreInstall({
-    storeId: blossom.id,
-    appId: jules.id,
-    featured: true,
-    displayOrder: 5,
-    customDescription:
-      "The ultimate software engineer AI. Powered by Gemini for deep reasoning and full-stack capabilities.",
-  })
+  // await createOrUpdateStoreInstall({
+  //   storeId: blossom.id,
+  //   appId: jules.id,
+  //   featured: true,
+  //   displayOrder: 5,
+  //   customDescription:
+  //     "The ultimate software engineer AI. Powered by Gemini for deep reasoning and full-stack capabilities.",
+  // })
 
-  // Install Jules in LifeOS (Vex)
-  await createOrUpdateStoreInstall({
-    storeId: lifeOS.id,
-    appId: jules.id,
-    featured: true,
-    displayOrder: 7,
-  })
+  // // Install Jules in LifeOS (Vex)
+  // await createOrUpdateStoreInstall({
+  //   storeId: lifeOS.id,
+  //   appId: jules.id,
+  //   featured: true,
+  //   displayOrder: 7,
+  // })
 
   // // ============================================
   // // DEMO: POPULAR AI APPS WITH NATIVE VERSIONS
