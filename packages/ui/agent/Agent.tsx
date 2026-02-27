@@ -944,7 +944,7 @@ export default function Agent({
                       control={control}
                       render={({ field }) => {
                         // Get store-based apps from Chrry store
-                        const storeApps = storeAppsInternal || []
+                        const storeApps = chrry?.store?.apps || []
 
                         return (
                           <>

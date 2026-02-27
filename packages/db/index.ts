@@ -173,7 +173,7 @@ export const DB_URL =
 
 export const isCI = process.env.CI
 
-export const isSeedSafe = MODE === "e2e" && DB_URL?.includes("pb9ME51YnaFcs")
+export const isSeedSafe = DB_URL?.includes("pb9ME51YnaFcs")
 
 export const isWaffles = false
 // export const isWaffles = process.env.DB_URL?.includes("waffles")
@@ -4915,32 +4915,6 @@ export const createOrUpdateApp = async ({
 
     await db.insert(appExtends).values(extendsData)
     console.log(`✅ Created ${extendsData.length} extends relationships`)
-
-    // Install extended apps to the same store
-    if (result.storeId) {
-      // Get existing store installs for extended apps
-      const existingInstalls = await db
-        .select()
-        .from(storeInstalls)
-        .where(and(eq(storeInstalls.storeId, result.storeId)))
-
-      const existingAppIds = new Set(
-        existingInstalls.map((install) => install.appId),
-      )
-
-      // Install only new extended apps (avoid duplicates)
-      const newInstalls = extendsList
-        .filter((appId) => !existingAppIds.has(appId))
-        .map((appId) => ({
-          storeId: result!.storeId!,
-          appId,
-        }))
-
-      if (newInstalls.length > 0) {
-        await db.insert(storeInstalls).values(newInstalls)
-        console.log(`✅ Installed ${newInstalls.length} extended apps to store`)
-      }
-    }
   }
 
   return result

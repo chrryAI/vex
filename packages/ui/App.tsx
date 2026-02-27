@@ -223,8 +223,16 @@ export default function App({
           (item.id !== perplexity?.id || !isBlossom) &&
           (item.id !== vex?.id || !isSushi) &&
           (item.id !== claude?.id || !isBlossom) &&
-          (item.id !== grape?.id || (!isBlossom && !accountApp)) &&
-          (item.id !== zarathustra?.id || (!isBlossom && !accountApp)) &&
+          (item.id === grape?.id
+            ? accountApp?.id === app?.id
+              ? false
+              : !isBlossom
+            : true) &&
+          (item.id === zarathustra?.id
+            ? accountApp?.id === app?.id
+              ? false
+              : !isBlossom
+            : true) &&
           (item.id === atlas?.id ? !isBlossom && isLifeOS : true) &&
           item.id !== popcorn?.id,
       )
@@ -255,6 +263,7 @@ export default function App({
         return item
       })
   }
+  // console.log(`🚀 ~ getApps():`, getApps())
 
   const appsInternal = React.useMemo(
     () => getApps(),

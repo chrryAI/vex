@@ -5,13 +5,16 @@ import { appSchema } from "@chrryai/chrry/schemas/appSchema"
 import { isOwner } from "@chrryai/chrry/utils"
 import {
   and,
+  createAppExtend,
   createAppOrder,
   createOrUpdateApp,
+  createOrUpdateStoreInstall,
   createStore,
   createStoreInstall,
   db,
   deleteApp,
   deleteInstall,
+  deleteStore,
   encrypt,
   eq,
   getApp as getAppDb,
@@ -26,7 +29,7 @@ import {
   safeDecrypt,
   updateStore,
 } from "@repo/db"
-import { appOrders, apps, storeInstalls } from "@repo/db/src/schema"
+import { appExtends, appOrders, apps, storeInstalls } from "@repo/db/src/schema"
 import { Hono } from "hono"
 import slugify from "slug"
 import { v4 as uuid, validate } from "uuid"
@@ -566,15 +569,36 @@ app.post("/", async (c) => {
         images: images.length > 0 ? images : undefined,
         apiKeys: hashedApiKeys || undefined,
       },
-      extends: extendedApps
-        .map((app) => (app ? app.id : undefined))
-        .filter(Boolean) as string[],
     })
 
     console.log("✅ App created successfully:", newApp?.images)
 
     if (!newApp) {
       return c.json({ error: "Failed to create app" }, { status: 500 })
+    }
+
+    // Create extends relationships manually
+    if (extendedApps.length > 0) {
+      for (const extendedApp of extendedApps) {
+        if (!extendedApp) continue
+
+        // Create appExtends relationship
+        await createAppExtend({
+          appId: newApp.id,
+          toId: extendedApp.id,
+        })
+
+        // Install extended app to store (use createOrUpdate to prevent duplicates)
+        if (subjectStore?.store.id) {
+          await createOrUpdateStoreInstall({
+            storeId: subjectStore.store.id,
+            appId: extendedApp.id,
+          })
+        }
+      }
+      console.log(
+        `✅ Created ${extendedApps.length} extends relationships and store installs`,
+      )
     }
 
     if (!subjectStore.store.appId) {
@@ -621,9 +645,6 @@ app.post("/", async (c) => {
       guestId: guest?.id,
       order: 0,
     })
-
-    // Extended apps are already installed to store by createOrUpdateApp
-    // No need to manually install them here
 
     // New app first, then up to 5 existing apps (total 6)
     const appsToReorder = [
@@ -1139,25 +1160,6 @@ app.patch("/:id", async (c) => {
       )
     }
 
-    for (const extendedApp of extendedApps) {
-      if (
-        existingApp.storeId &&
-        extendedApp?.id
-        // &&
-        // !storeInstalls?.find((install) => install.appId === extendedApp.id)
-      ) {
-        await createStoreInstall({
-          storeId: existingApp.storeId,
-          appId: extendedApp.id,
-          featured: true,
-          displayOrder: 1,
-          customDescription: extendedApp.description,
-        })
-      }
-    }
-
-    console.log("✅ Validation passed")
-
     if (name) {
       const newSlug = slugify(name, { lower: true })
 
@@ -1324,13 +1326,37 @@ app.patch("/:id", async (c) => {
           | "perplexity"
           | null,
       },
-      // extends: extendedApps
-      //   .map((app) => (app ? app.id : undefined))
-      //   .filter(Boolean) as string[],
     })
 
     if (!updatedApp) {
       return c.json({ error: "Failed to update app" }, { status: 500 })
+    }
+
+    // Delete existing extends relationships first to prevent duplicates
+    await db.delete(appExtends).where(eq(appExtends.appId, updatedApp.id))
+
+    // Manually install extended apps to store and create relationships
+    if (extendedApps.length > 0) {
+      for (const extendedApp of extendedApps) {
+        if (!extendedApp) continue
+
+        // Create appExtends relationship
+        await createAppExtend({
+          appId: updatedApp.id,
+          toId: extendedApp.id,
+        })
+
+        // Install extended app to store (use createOrUpdate to prevent duplicates)
+        if (existingApp.storeId) {
+          await createOrUpdateStoreInstall({
+            storeId: existingApp.storeId,
+            appId: extendedApp.id,
+          })
+        }
+      }
+      console.log(
+        `✅ Created ${extendedApps.length} extends relationships and store installs`,
+      )
     }
 
     console.log("✅ Updated app with images:", updatedApp.images)
@@ -1402,6 +1428,10 @@ app.delete("/:id", async (c) => {
           console.error("Failed to delete image:", deleteError)
         }
       }
+    }
+
+    if (app?.id === app?.store?.appId && app.storeId) {
+      await deleteStore({ id: app.storeId })
     }
 
     // Delete the app

@@ -77,6 +77,7 @@ const _server = Bun.serve({
     // Handle regular HTTP requests with Hono
     return app.fetch(req, server)
   },
+  idleTimeout: 100,
   websocket: websocketHandler,
 })
 
