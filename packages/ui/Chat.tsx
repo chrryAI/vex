@@ -3665,6 +3665,7 @@ export default function Chat({
               >
                 {Top && (
                   <Div
+                    className={hasBottomOffset && isChatFloating ? "blur" : ""}
                     style={{
                       ...(isChatFloating
                         ? styles.topChatFloatingTopInner.style

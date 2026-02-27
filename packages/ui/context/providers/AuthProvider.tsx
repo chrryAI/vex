@@ -120,6 +120,7 @@ const AuthContext = createContext<
         timestamp: number
         duration?: number
       } | null
+      showAllTribe: boolean
       timer?: timer
       tribeSlug?: string
       currentTribe?: tribe
@@ -2007,8 +2008,10 @@ export function AuthProvider({
   const [storeApp, setStoreAppInternal] = useState<appWithStore | undefined>(
     storeAppInternal,
   )
-  const showAllTribe =
-    pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
+  const showAllTribe = !!(
+    pathname === "/tribe" ||
+    (siteConfig.isTribe && pathname === "/")
+  )
 
   const installs = [
     "atlas",
@@ -3253,6 +3256,7 @@ export function AuthProvider({
         postId,
         mergeApps,
         getTribeUrl,
+        showAllTribe,
       }}
     >
       {children}

@@ -217,6 +217,7 @@ export function ChatProvider({
     hourlyUsageLeft,
     baseApp,
     postId,
+    showAllTribe,
     ...auth
   } = useAuth()
 
@@ -470,10 +471,17 @@ export function ChatProvider({
   }
 
   useEffect(() => {
-    if (!threadIdRef.current) {
+    if (!threadIdRef.current || showAllTribe) {
+      setCollaborationStep(0)
+      setThread(undefined)
+      setProfile(undefined)
+      setStatus(null)
+      setCollaborationStatus(null)
+      setIsChatFloating(false)
+      setThreadId(undefined)
       setMessages([])
     }
-  }, [threadIdRef.current])
+  }, [threadIdRef.current, showAllTribe])
 
   const setIsNewChat = ({
     value,
