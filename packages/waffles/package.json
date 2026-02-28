@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/waffles",
-  "version": "2.0.45",
+  "version": "2.0.46",
   "description": "Production-ready Playwright testing utilities and helpers for modern web apps",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -12,7 +12,11 @@
       "require": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "e2e": "TEST_URL=http://e2e.chrry.ai playwright test --project chromium",
     "e": "TEST_URL=http://localhost:5173 playwright test --project chromium",

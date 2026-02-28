@@ -62,9 +62,9 @@ const now = new Date()
 const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
 async function createAgents() {
-  if (isProd) {
-    return undefined
-  }
+  // if (isProd) {
+  //   return undefined
+  // }
 
   const deepSeekAgent = await createAiAgent({
     name: "deepSeek",
@@ -1831,9 +1831,11 @@ const prod = async () => {
     email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  const { vex } = await createStores({ user: admin })
+  const agents = await createAgents()
+  // console.log(`🚀 ~ agents:`, agents)
+  // const { vex } = await createStores({ user: admin })
 
-  await seedScheduledTribeJobs({ admin })
+  // await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 

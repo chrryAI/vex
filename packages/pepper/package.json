@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/pepper",
-  "version": "2.0.45",
+  "version": "2.0.46",
   "description": "Universal router for React - works in web, React Native, and browser extensions with built-in view transitions",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -27,7 +27,11 @@
       "require": "./dist/extension.js"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "pnpm exec tsup",
     "dev": "pnpm exec tsup --watch",
