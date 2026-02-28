@@ -1136,6 +1136,7 @@ export function ChatProvider({
     if (showFocus) setShowFocus(false)
 
     if (!threadId && !force) return
+    if (postId && !force) return
     if (showTribe) return
     if (isEmpty || isUserScrolling || hasStoppedScrolling) return
     setTimeout(() => {

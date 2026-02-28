@@ -268,7 +268,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
   )
 
   // Handle loading and error states when fetching a specific post
-  if (postId && isLoadingPost) {
+  if (postId && (isLoadingPost || !post)) {
     return (
       <Loading
         key={"loading"}
