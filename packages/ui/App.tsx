@@ -263,7 +263,6 @@ export default function App({
         return item
       })
   }
-  // console.log(`🚀 ~ getApps():`, getApps())
 
   const appsInternal = React.useMemo(
     () => getApps(),

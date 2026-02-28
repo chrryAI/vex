@@ -181,7 +181,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   useEffect(() => {
     const tags = searchParams.get("tags")
-    console.log(`🚀 ~ useEffect ~ tags:`, tags)
     if (!tags) {
       setTagsInternal([])
     }

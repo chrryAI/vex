@@ -1867,8 +1867,29 @@ export function AuthProvider({
     if (storeAppsSwr) {
       skipAppCacheTemp && setSkipAppCacheTemp(false)
       const a = storeAppsSwr.store?.apps?.find((app) => app.id === loadingAppId)
-      if (hasStoreApps(a)) setLoadingApp(undefined)
-      // Removed duplicate merge function
+      if (hasStoreApps(a)) {
+        setLoadingApp(undefined)
+      }
+
+      if (storeAppsSwr.store?.apps?.length) {
+        mergeApps(storeAppsSwr.store?.apps)
+      }
+
+      // // Merge storeAppsSwr with current app state to preserve local changes
+      // if (app?.id && storeAppsSwr.store?.apps) {
+      //   const freshApp = storeAppsSwr.store.apps.find((a) => a.id === app.id)
+      //   if (freshApp) {
+      //     // Merge: keep local changes, update with fresh data
+      //     const mergedApp = {
+      //       ...freshApp,
+      //       ...app,
+      //       // Always take fresh data for these critical fields
+      //       store: freshApp.store,
+      //       updatedOn: freshApp.updatedOn,
+      //     }
+      //     setApp(mergedApp)
+      //   }
+      // }
 
       const n = storeAppsSwr.store?.apps.find((app) => app.id === newApp?.id)
       if (n) {
