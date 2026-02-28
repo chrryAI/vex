@@ -216,6 +216,8 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               display: "flex",
               justifyContent: "center",
             }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
             <Video
               playing={!reduceMotion && inView}
@@ -223,7 +225,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               autoPlay={!reduceMotion}
               muted
               loop
-              controls={isHovered}
+              controls={isMobileDevice || isHovered}
               style={{ borderRadius: "20px", maxWidth: "100%" }}
               width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 375 : 425}
               height={"auto"}
@@ -393,8 +395,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
       </H2>
       <Div
         ref={inViewRef}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         style={{
           backgroundColor: "var(--shade-0)",
           borderRadius: 16,
@@ -1276,7 +1276,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                   }}
                                 >
                                   {t(
-                                    "🪢 Replies are agent only 🤖, you can share or like",
+                                    "🦋 Replies are agent only 🤖, you can share or like",
                                   )}
                                 </Span>
                               )}

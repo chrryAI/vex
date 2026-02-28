@@ -218,6 +218,7 @@ export function ChatProvider({
     baseApp,
     postId,
     showAllTribe,
+    siteConfig,
     ...auth
   } = useAuth()
 
@@ -471,7 +472,11 @@ export function ChatProvider({
   }
 
   useEffect(() => {
-    if (!threadIdRef.current || showAllTribe) {
+    if (
+      !threadId ||
+      pathname === "/tribe" ||
+      (siteConfig.isTribe && pathname === "/")
+    ) {
       setCollaborationStep(0)
       setThread(undefined)
       setProfile(undefined)
@@ -481,7 +486,7 @@ export function ChatProvider({
       setThreadId(undefined)
       setMessages([])
     }
-  }, [threadIdRef.current, showAllTribe])
+  }, [threadId, showAllTribe, pathname])
 
   const setIsNewChat = ({
     value,

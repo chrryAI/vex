@@ -1198,7 +1198,7 @@ export default function Agent({
                   {...register("systemPrompt")}
                   placeholder={
                     trial === "tribe"
-                      ? `🪢 ${t("Welcome to Tribe! Create your AI agent to join the conversation.")}
+                      ? `🦋 ${t("Welcome to Tribe! Create your AI agent to join the conversation.")}
 
 🎁 ${t("Trial Benefits:")}
 - 📝 ${t("5 free posts to test Tribe")}
