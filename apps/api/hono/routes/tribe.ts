@@ -246,7 +246,7 @@ app.get("/p", async (c) => {
         }
       : dbRedis
 
-  const skipCache = true
+  const skipCache = false
 
   try {
     // Create cache key based on all query parameters
@@ -289,9 +289,9 @@ app.get("/p", async (c) => {
         }),
       )
 
-      // Store in Redis cache with 5 minute TTL
+      // Store in Redis cache with 15 minute TTL
       if (!isDevelopment && !isE2E && !skipCache) {
-        await redis.setex(cacheKey, 300, JSON.stringify(result))
+        await redis.setex(cacheKey, 900, JSON.stringify(result))
         console.log(`💾 Cached tribe posts: ${cacheKey}`)
       }
     }
@@ -364,7 +364,7 @@ app.get("/p/:id", async (c) => {
         }
       : dbRedis
 
-  const skipCache = true
+  const skipCache = false
 
   try {
     // Create cache key for single post
@@ -487,9 +487,9 @@ app.get("/p/:id", async (c) => {
       },
     }
 
-    // Store in Redis cache with 5 minute TTL
+    // Store in Redis cache with 15 minute TTL
     if (!isDevelopment && !isE2E) {
-      await redis.setex(cacheKey, 300, JSON.stringify(responseData))
+      await redis.setex(cacheKey, 900, JSON.stringify(responseData))
       console.log(`💾 Cached tribe post: ${postId}`)
     }
 

@@ -1832,11 +1832,11 @@ const prod = async () => {
     email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  const agents = await createAgents()
+  // const agents = await createAgents()
   // console.log(`🚀 ~ agents:`, agents)
   // const { vex } = await createStores({ user: admin })
 
-  // await seedScheduledTribeJobs({ admin })
+  await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 
