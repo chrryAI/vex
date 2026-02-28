@@ -676,7 +676,7 @@ export default function Subscribe({
     ? normalizedPlan
     : searchParams.get("tab") === "tribe"
       ? "tribe"
-      : undefined
+      : "member"
 
   // ... (keeping other lines unchanged conceptually, but replace block needs contiguous)
 
