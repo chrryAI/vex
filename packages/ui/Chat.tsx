@@ -458,7 +458,7 @@ export default function Chat({
   const shouldUseCompactMode = compactMode || hasBottomOffset
 
   const floatingInitial =
-    shouldUseCompactMode || minimize
+    shouldUseCompactMode || minimize || showTribe
       ? true
       : empty
         ? false
