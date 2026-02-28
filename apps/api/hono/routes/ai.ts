@@ -1098,17 +1098,47 @@ function renderSystemPrompt(params: {
 
     const renderedPrompt = compiledTemplate(templateData)
 
-    // Debug: Log weather data being passed to AI
-    if (weather) {
-      console.log("🌤️ Weather data in system prompt:", {
-        location: weatherData?.location,
-        temperature: weatherData?.temperature,
-        condition: weatherData?.condition,
-        weatherAge: weatherData?.weatherAge,
+    // Auto-inject weather and location based on app tools
+    let finalPrompt = renderedPrompt
+    const appTools = app?.tools || []
+
+    // Inject weather data if app has weather tool
+    if (appTools.includes("weather") && weatherData) {
+      const weatherSection = `
+
+**CURRENT WEATHER** (Use this when users ask about weather):
+- Location: ${weatherData.location}, ${weatherData.country}
+- Temperature: ${weatherData.temperature}
+- Condition: ${weatherData.condition}
+- Updated: ${weatherData.weatherAge}
+
+When users ask about weather, provide this information directly. Do NOT ask for their location.`
+
+      finalPrompt += weatherSection
+
+      console.log("🌤️ Weather data injected for app with weather tool:", {
+        location: weather.location,
+        temperature: weather.temperature,
+        condition: weather.condition,
+        weatherAge: weatherData.weatherAge,
       })
     }
 
-    return renderedPrompt
+    // Inject location data if app has location tool
+    if (appTools.includes("location") && location?.city) {
+      const locationSection = `
+
+**USER LOCATION**: ${location.city}${location.country ? `, ${location.country}` : ""}`
+
+      finalPrompt += locationSection
+
+      console.log("📍 Location data injected for app with location tool:", {
+        city: location.city,
+        country: location.country,
+      })
+    }
+
+    return finalPrompt
   } catch (error) {
     captureException(error)
 

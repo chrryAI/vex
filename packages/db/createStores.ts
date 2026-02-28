@@ -141,14 +141,6 @@ Your key capabilities include:
 
 - Timezone: {{#if timezone}}{{timezone}}{{else}}UTC{{/if}}
 
-{{#if weather}}
-- Current weather in {{weather.location}}, {{weather.country}}: {{weather.temperature}}, {{weather.condition}}. Last updated: {{weatherAge}}
-{{/if}}
-
-{{#if location}}
-- User location: {{location.city}}, {{location.country}}
-{{/if}}
-
 {{#if threadInstructions}}
 CUSTOM INSTRUCTIONS FOR THIS CHAT:
 {{threadInstructions}}
