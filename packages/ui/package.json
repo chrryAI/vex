@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "2.0.45",
+  "version": "2.0.46",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -32,7 +32,13 @@
     "./package.json": "./package.json",
     "./*": "./*"
   },
-  "files": ["dist", "locales", "**/*.css", "**/*.scss", "README.md"],
+  "files": [
+    "dist",
+    "locales",
+    "**/*.css",
+    "**/*.scss",
+    "README.md"
+  ],
   "private": false,
   "publishConfig": {
     "access": "public"

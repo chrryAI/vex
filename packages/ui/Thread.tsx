@@ -127,7 +127,7 @@ const Thread = ({
     ...chat
   } = useChat()
 
-  const showTribe = chat.showTribe
+  const showTribe = !!(chat.showTribe || postId)
 
   const hasHydrated = useHasHydrated()
 
