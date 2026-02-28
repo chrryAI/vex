@@ -91,15 +91,16 @@ async function createAgents() {
   })
   const chatGptAgent = await createAiAgent({
     name: "chatGPT",
-    displayName: "GPT-5.1",
-    version: "5.1",
+    displayName: "GPT-5.2 Pro",
+    version: "5.2",
     apiURL: "https://api.openai.com/v1/chat/completions",
     state: "active",
-    description: "Versatile, creative, and reliable language model.",
+    description:
+      "Most capable GPT model for complex tasks, coding, and long documents. Fast mode without reasoning.",
     creditCost: 4,
     authorization: "all",
     maxPromptSize: 128000,
-    modelId: "gpt-5.1",
+    modelId: "gpt-5.2-pro",
     order: 1,
     capabilities: {
       text: true,
@@ -1832,7 +1833,6 @@ const prod = async () => {
   })
   if (!admin) throw new Error("Admin user not found")
   const agents = await createAgents()
-  // console.log(`🚀 ~ agents:`, agents)
   // const { vex } = await createStores({ user: admin })
 
   // await seedScheduledTribeJobs({ admin })

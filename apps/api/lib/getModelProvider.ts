@@ -216,7 +216,7 @@ export async function getModelProvider(
         const openrouterProvider = createOpenRouter({
           apiKey: openrouterKeyForOpenAI,
         })
-        const modelId = "openai/gpt-5.1-chat"
+        const modelId = "openai/gpt-5.2-pro"
         return {
           provider: openrouterProvider(modelId),
           agentName: agent.name,
