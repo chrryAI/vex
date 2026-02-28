@@ -945,7 +945,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const TRAIN = owner ? `Train {{name}}` : `Try {{name}}`
 
   const storeApps = app?.store?.apps
-  // console.log(`🚀 ~ Tribe ~ storeApps:`, storeApps)
 
   return (
     <Skeleton>

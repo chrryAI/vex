@@ -204,7 +204,6 @@ export default function Chat({
 }): React.ReactElement {
   const { t, console } = useAppContext()
   const { weather, actions } = useData()
-  console.log(`🚀 ~ weather:`, weather)
 
   const styles = useChatStyles()
 
