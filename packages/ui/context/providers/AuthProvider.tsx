@@ -66,7 +66,6 @@ import {
   getThreadId,
   type instructionBase,
   isCI,
-  isDeepEqual,
   isDevelopment,
   isE2E,
   isOwner,
@@ -77,6 +76,7 @@ import {
   ANALYTICS_EVENTS,
   MEANINGFUL_EVENTS,
 } from "../../utils/analyticsEvents"
+import { hasStoreApps, merge } from "../../utils/appUtils"
 import { cleanSlug } from "../../utils/clearLocale"
 import { dailyQuestions as dailyQuestionsUtil } from "../../utils/dailyQuestions"
 import getAppSlugUtil from "../../utils/getAppSlug"
@@ -383,50 +383,6 @@ const AuthContext = createContext<
     }
   | undefined
 >(undefined)
-
-export const hasStoreApps = (app: appWithStore | undefined) => {
-  return Boolean(app?.store?.app && app?.store?.apps?.length)
-}
-
-export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
-  // Create a map of existing apps by ID
-  const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
-  let hasChange = false
-
-  // Add or update apps
-  newApps.forEach((newApp) => {
-    const existingApp = existingAppsMap.get(newApp.id)
-
-    if (existingApp) {
-      // Check if new app has meaningful store.apps (not empty or undefined)
-      const newHasStoreApps = hasStoreApps(newApp)
-      const existingHasStoreApps = hasStoreApps(existingApp)
-
-      // Merge: prefer new app but preserve existing store.apps if new one is empty/undefined
-      const merged = {
-        ...existingApp,
-        ...newApp,
-        store: newHasStoreApps
-          ? newApp.store
-          : existingHasStoreApps
-            ? existingApp.store
-            : newApp.store,
-      }
-
-      // Deep compare to detect actual changes
-      if (!isDeepEqual(existingApp, merged)) {
-        existingAppsMap.set(newApp.id, merged)
-        hasChange = true
-      }
-    } else {
-      existingAppsMap.set(newApp.id, newApp)
-      hasChange = true
-    }
-  })
-
-  // Only return a new array if something actually changed
-  return hasChange ? Array.from(existingAppsMap.values()) : prevApps
-}
 
 export function AuthProvider({
   apiKey,
@@ -1155,6 +1111,7 @@ export function AuthProvider({
       props?.session?.userBaseApp ||
       props?.session?.guestBaseApp,
   )
+  // Memoize allApps to prevent expensive array operations on every render
   const allApps = useMemo(
     () =>
       merge(
@@ -1911,8 +1868,7 @@ export function AuthProvider({
       skipAppCacheTemp && setSkipAppCacheTemp(false)
       const a = storeAppsSwr.store?.apps?.find((app) => app.id === loadingAppId)
       if (hasStoreApps(a)) setLoadingApp(undefined)
-      // Don't merge here - apps are already in initial state and tribe posts are merged separately
-      mergeApps(storeAppsSwr.store?.apps || [])
+      // Removed duplicate merge function
 
       const n = storeAppsSwr.store?.apps.find((app) => app.id === newApp?.id)
       if (n) {

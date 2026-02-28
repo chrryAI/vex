@@ -122,7 +122,7 @@ async function createAgents() {
     description: "Helpful, safe, and human-like conversational AI",
     creditCost: 3,
     authorization: "all",
-    modelId: "anthropic/claude-sonnet-4.6",
+    modelId: "anthropic/claude-sonnet-4-6",
     maxPromptSize: 200000,
     order: 0,
     capabilities: {
@@ -1962,9 +1962,9 @@ const seedDb = async (): Promise<void> => {
     }
 
     if (MODE === "dev") {
-      await prod()
-      // await clearDb()
-      // await create()
+      // await prod()
+      await clearDb()
+      await create()
     }
 
     process.exit(0)
