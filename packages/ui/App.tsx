@@ -1379,8 +1379,6 @@ export default function App({
               >
                 <Div style={{ ...styles.apps.style, overflowWrap: "anywhere" }}>
                   {appsState.slice(0, 5)?.map((item, index) => {
-                    const showVexHere = index === 1 && isSushi
-
                     const showAtlasHere =
                       index === 1 && (isBlossom || accountApp?.id === app?.id)
 

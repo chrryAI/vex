@@ -980,7 +980,7 @@ const zarathustra = {
   email: "iliyan@chrry.ai",
   description:
     "Your AI philosophy guide. Explore Nietzsche, existentialism, and timeless wisdom through intelligent conversation.",
-  logo: "🪢",
+  logo: "🦋",
   primaryColor: "#7C3AED", // Purple/violet for wisdom
   links: {
     github: "https://github.com/chrryai/vex",
