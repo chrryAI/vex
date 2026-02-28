@@ -106,7 +106,7 @@
     "javascript-time-ago": "^2.5.11",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.563.0",
-    "lucide-react-native": "^0.462.0",
+    "lucide-react-native": "^0.575.0",
     "markdown-to-jsx": "^7.7.13",
     "moti": "^0.30.0",
     "motion": "^12.23.24",
