@@ -550,7 +550,24 @@ async function getNewsContext(slug?: string | null): Promise<string> {
   }
 }
 
-const beasts = ["grape", "pear", "chrry", "vex"]
+const beasts = [
+  "grape",
+  "pear",
+  "chrry",
+  "vex",
+  "sushi",
+  "focus",
+  "peach",
+  "jules",
+  "architect",
+  "coder",
+  "debugger",
+  "vault",
+  "atlas",
+  "atlas",
+  "search",
+  "popcorn",
+]
 
 async function getAnalyticsContext({
   app,
