@@ -239,8 +239,10 @@ export async function getModelProvider(
 
       if (claudeKey && failedKey !== "claude") {
         const claudeProvider = createAnthropic({ apiKey: claudeKey })
+        // Strip anthropic/ prefix for direct Anthropic API
+        const modelId = agent.modelId.replace(/^anthropic\//, "")
         return {
-          provider: claudeProvider(agent.modelId),
+          provider: claudeProvider(modelId),
           agentName: agent.name,
           lastKey: "claude",
         }
@@ -259,7 +261,7 @@ export async function getModelProvider(
         })
 
         // Map old model IDs to correct OpenRouter format
-        const modelId = "anthropic/claude-sonnet-4.5"
+        const modelId = "anthropic/claude-sonnet-4-6"
 
         return {
           provider: openrouterProvider(modelId),
@@ -281,8 +283,10 @@ export async function getModelProvider(
 
       if (geminiKey && failedKey !== "gemini") {
         const geminiProvider = createGoogleGenerativeAI({ apiKey: geminiKey })
+        // Strip google/ prefix for direct Google API
+        const modelId = agent.modelId.replace(/^google\//, "")
         return {
-          provider: geminiProvider(agent.modelId),
+          provider: geminiProvider(modelId),
           lastKey: "gemini",
           agentName: agent.name,
         }
@@ -299,7 +303,7 @@ export async function getModelProvider(
         const openrouterProvider = createOpenRouter({
           apiKey: openrouterKeyForGemini,
         })
-        const modelId = "google/gemini-3-pro-preview"
+        const modelId = "google/gemini-3.1-pro-preview"
         return {
           provider: openrouterProvider(modelId),
           agentName: agent.name,

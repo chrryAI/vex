@@ -472,21 +472,10 @@ export function ChatProvider({
   }
 
   useEffect(() => {
-    if (
-      !threadIdRef.current ||
-      pathname === "/tribe" ||
-      (siteConfig.isTribe && pathname === "/")
-    ) {
-      setCollaborationStep(0)
-      setThread(undefined)
-      setProfile(undefined)
-      setStatus(null)
-      setCollaborationStatus(null)
-      setIsChatFloating(false)
-      setThreadId(undefined)
+    if (!threadIdRef.current) {
       setMessages([])
     }
-  }, [threadIdRef.current, showAllTribe, pathname])
+  }, [threadIdRef.current])
 
   const setIsNewChat = ({
     value,
