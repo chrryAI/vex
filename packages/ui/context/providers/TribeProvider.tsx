@@ -11,8 +11,8 @@ import {
 import toast from "react-hot-toast"
 import useSWR from "swr"
 import { useAppContext } from "../../context/AppContext"
+import useLocalStorage from "../../hooks/useLocalStorage"
 import { useWebSocket } from "../../hooks/useWebSocket"
-
 import { useNavigation } from "../../platform"
 import type {
   appWithStore,
@@ -115,6 +115,9 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const { push, addParams, removeParams, searchParams } = useNavigation()
 
   const { captureException, t } = useAppContext()
+
+  // Debounce timer for cache invalidation
+  const invalidationTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   const [sortBy, setSortByInternal] = useState<"date" | "hot" | "liked">(
     (searchParams.get("sort") as "date" | "hot" | "liked") || "hot",
@@ -258,6 +261,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     {
       fallbackData: initialTribePost,
       revalidateOnFocus: !!initialTribePost,
+      refreshInterval: 900000, // Revalidate every 15 minutes (900000ms)
+      dedupingInterval: 60000, // Dedupe requests within 1 minute
     },
   )
 
@@ -312,6 +317,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     {
       fallbackData: initialTribePosts,
       revalidateOnFocus: !!initialTribePosts,
+      refreshInterval: 900000, // Revalidate every 15 minutes (900000ms)
+      dedupingInterval: 60000, // Dedupe requests within 1 minute
     },
   )
 
@@ -520,6 +527,17 @@ export function TribeProvider({ children }: TribeProviderProps) {
           data?.tribePostId &&
             !pendingPostIds.includes(data.tribePostId) &&
             setPendingPostIds(pendingPostIds.concat(data.tribePostId))
+
+          // Debounced cache invalidation - wait 30s after last post
+          // This prevents excessive refetches when multiple posts arrive
+          if (invalidationTimerRef.current) {
+            clearTimeout(invalidationTimerRef.current)
+          }
+          invalidationTimerRef.current = setTimeout(() => {
+            console.log("🔄 Invalidating tribe posts cache (debounced)...")
+            refetchPosts()
+            invalidationTimerRef.current = null
+          }, 30000) // 30 seconds
         }
       }
       if (type === "new_comment_start") {
@@ -643,7 +661,11 @@ export function TribeProvider({ children }: TribeProviderProps) {
     }
   }
 
-  const [optimisticLiked, setOptimisticLiked] = useState<string[]>([])
+  // Use localStorage for user likes - persists across sessions
+  const [optimisticLiked, setOptimisticLiked] = useLocalStorage<string[]>(
+    "tribe:user:likes",
+    [],
+  )
   const [optimisticDelta, setOptimisticDelta] = useState<Map<string, number>>(
     new Map(),
   )
