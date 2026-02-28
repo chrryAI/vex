@@ -473,7 +473,7 @@ export function ChatProvider({
 
   useEffect(() => {
     if (
-      !threadId ||
+      !threadIdRef.current ||
       pathname === "/tribe" ||
       (siteConfig.isTribe && pathname === "/")
     ) {
@@ -486,7 +486,7 @@ export function ChatProvider({
       setThreadId(undefined)
       setMessages([])
     }
-  }, [threadId, showAllTribe, pathname])
+  }, [threadIdRef.current, showAllTribe, pathname])
 
   const setIsNewChat = ({
     value,

@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Sushi 🍒",
+  "productName": "Tribe 🍒",
   "version": "0.1.0",
-  "identifier": "dev.chrry.sushi",
+  "identifier": "dev.chrry.tribe",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5174",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Sushi 🍒",
+        "title": "Tribe 🍒",
         "width": 1200,
         "height": 800,
         "minWidth": 800,
@@ -82,8 +82,8 @@
       "icons/icon.ico"
     ],
     "category": "Productivity",
-    "shortDescription": "AI coding assistant for generation, debugging & architecture. Production-ready c",
-    "longDescription": "AI coding assistant for generation, debugging & architecture. Production-ready code in seconds. Built for developers.",
+    "shortDescription": "Your AI philosophy guide. Explore Nietzsche, existentialism, and timeless wisdom",
+    "longDescription": "Your AI philosophy guide. Explore Nietzsche, existentialism, and timeless wisdom through intelligent conversation.",
     "macOS": {
       "entitlements": "entitlements.plist",
       "signingIdentity": "Developer ID Application: iliyan velinov (F5MTBDR7VX)",

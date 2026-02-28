@@ -1319,7 +1319,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             style={{
                               ...utilities.button.style,
                               ...utilities.inverted.style,
-                              ...utilities.xSmall.style,
+                              ...utilities.small.style,
                             }}
                           >
                             {t("Go to Your Agent")}
