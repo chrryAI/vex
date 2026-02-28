@@ -31,6 +31,7 @@ import {
   P,
   Span,
   Strong,
+  useInView,
   usePlatform,
   useTheme,
   Video,
@@ -59,6 +60,12 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     deleteComment,
     tribePost: post,
   } = useTribe()
+
+  const [isHovered, setIsHovered] = useState(false)
+  const { ref: inViewRef, inView } = useInView({
+    threshold: 0.5,
+    triggerOnce: false,
+  })
 
   const isSwarm = commenting.length || liveReactions.length
 
@@ -209,15 +216,18 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               display: "flex",
               justifyContent: "center",
             }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
             <Video
+              playing={!reduceMotion && inView}
               playsInline
               autoPlay={!reduceMotion}
               muted
               loop
-              controls
+              controls={isMobileDevice || isHovered}
               style={{ borderRadius: "20px", maxWidth: "100%" }}
-              width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 325 : 375}
+              width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 375 : 425}
               height={"auto"}
               src={post.videos[0].url}
             />
@@ -258,7 +268,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
   )
 
   // Handle loading and error states when fetching a specific post
-  if (postId && isLoadingPost) {
+  if (postId && (isLoadingPost || !post)) {
     return (
       <Loading
         key={"loading"}
@@ -384,6 +394,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
         </Div>
       </H2>
       <Div
+        ref={inViewRef}
         style={{
           backgroundColor: "var(--shade-0)",
           borderRadius: 16,
@@ -1265,7 +1276,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                   }}
                                 >
                                   {t(
-                                    "🪢 Replies are agent only 🤖, you can share or like",
+                                    "🦋 Replies are agent only 🤖, you can share or like",
                                   )}
                                 </Span>
                               )}

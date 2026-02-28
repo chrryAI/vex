@@ -1,5 +1,5 @@
 // Removed imports to avoid circular dependencies during Vite config loading
-export type SiteMode =
+export type siteMode =
   | "chrryDev"
   | "vex"
   | "chrryAI"
@@ -86,7 +86,7 @@ export const isE2E =
   getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
 
 export const chrryDev = {
-  mode: "chrryDev" as SiteMode,
+  mode: "chrryDev" as siteMode,
   slug: "chrryDev",
   storeSlug: "chrry",
   favicon: "chrry",
@@ -169,7 +169,7 @@ export const chrryDev = {
 
 const vault = {
   url: "https://vault.chrry.ai",
-  mode: "vault" as SiteMode,
+  mode: "vault" as siteMode,
   slug: "vault",
   favicon: "vault",
   storeSlug: "wine",
@@ -206,7 +206,7 @@ const vault = {
 
 const pear = {
   url: "https://pear.chrry.ai",
-  mode: "pear" as SiteMode,
+  mode: "pear" as siteMode,
   slug: "pear",
   favicon: "pear",
   storeSlug: "wine",
@@ -245,7 +245,7 @@ const chrryAI = {
   favicon: "chrry",
   isStoreApp: true,
   storeSlug: "blossom",
-  mode: "chrryAI" as SiteMode,
+  mode: "chrryAI" as siteMode,
   name: "Chrry",
   domain: "chrry.ai",
   email: "iliyan@chrry.ai",
@@ -355,9 +355,9 @@ const chrryAI = {
 const focus = {
   favicon: "focus",
   isStoreApp: false,
-  mode: "focus" as SiteMode,
+  mode: "focus" as siteMode,
   slug: "focus",
-  version: "26.11.27",
+  version: "26.11.31",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -436,7 +436,7 @@ const focus = {
 
 const atlas = {
   favicon: "atlas",
-  mode: "atlas" as SiteMode,
+  mode: "atlas" as siteMode,
   slug: "atlas",
   isStoreApp: true,
   storeSlug: "compass",
@@ -528,7 +528,7 @@ const atlas = {
 const istanbul = {
   favicon: "atlas",
   isStoreApp: false,
-  mode: "istanbul" as SiteMode,
+  mode: "istanbul" as siteMode,
   slug: "istanbul",
   storeSlug: "compass",
   name: "Istanbul",
@@ -609,7 +609,7 @@ const istanbul = {
 
 const amsterdam = {
   favicon: "atlas",
-  mode: "amsterdam" as SiteMode,
+  mode: "amsterdam" as siteMode,
   slug: "amsterdam",
   isStoreApp: false,
   storeSlug: "compass",
@@ -691,7 +691,7 @@ const amsterdam = {
 
 const tokyo = {
   favicon: "atlas",
-  mode: "tokyo" as SiteMode,
+  mode: "tokyo" as siteMode,
   slug: "tokyo",
   storeSlug: "compass",
   isStoreApp: false,
@@ -773,7 +773,7 @@ const tokyo = {
 
 const newYork = {
   favicon: "atlas",
-  mode: "newYork" as SiteMode,
+  mode: "newYork" as siteMode,
   slug: "newYork",
   storeSlug: "compass",
   name: "New York",
@@ -855,7 +855,7 @@ const newYork = {
 
 const popcorn = {
   favicon: "popcorn",
-  mode: "popcorn" as SiteMode,
+  mode: "popcorn" as siteMode,
   slug: "popcorn",
   storeSlug: "movies",
   chromeWebStoreUrl:
@@ -967,7 +967,7 @@ const popcorn = {
 
 const zarathustra = {
   favicon: "zarathustra",
-  mode: "zarathustra" as SiteMode,
+  mode: "zarathustra" as siteMode,
   slug: "zarathustra",
   storeSlug: "books",
   chromeWebStoreUrl:
@@ -980,7 +980,7 @@ const zarathustra = {
   email: "iliyan@chrry.ai",
   description:
     "Your AI philosophy guide. Explore Nietzsche, existentialism, and timeless wisdom through intelligent conversation.",
-  logo: "🪢",
+  logo: "🦋",
   primaryColor: "#7C3AED", // Purple/violet for wisdom
   links: {
     github: "https://github.com/chrryai/vex",
@@ -1080,7 +1080,7 @@ const zarathustra = {
 
 const search = {
   favicon: "search",
-  mode: "search" as SiteMode,
+  mode: "search" as siteMode,
   slug: "search",
   storeSlug: "perplexityStore",
   name: "Search",
@@ -1161,7 +1161,7 @@ const search = {
 
 const nebula = {
   url: "https://orbit.chrry.ai",
-  mode: "nebula" as SiteMode,
+  mode: "nebula" as siteMode,
   slug: "nebula",
   favicon: "nebula",
   storeSlug: "orbit",
@@ -1236,7 +1236,7 @@ const nebula = {
 
 const vex = {
   url: "https://vex.chrry.ai",
-  mode: "vex" as SiteMode,
+  mode: "vex" as siteMode,
   slug: "vex",
   favicon: "vex",
   storeSlug: "lifeOS",
@@ -1319,7 +1319,7 @@ const vex = {
 
 const burn = {
   url: "https://burn.chrry.ai",
-  mode: "burn" as SiteMode,
+  mode: "burn" as siteMode,
   slug: "burn",
   favicon: "burn",
   storeSlug: "blossom",
@@ -1401,7 +1401,7 @@ const e2eVex = {
 
 const _tribe = {
   ...zarathustra,
-  mode: "tribe" as SiteMode,
+  mode: "tribe" as siteMode,
   name: "Tribe",
   url: "https://tribe.chrry.ai",
   domain: "tribe.chrry.ai",
@@ -1416,7 +1416,7 @@ const staging = {
 
 const sushi = {
   url: "https://sushi.chrry.ai",
-  mode: "sushi" as SiteMode,
+  mode: "sushi" as siteMode,
   slug: "sushi",
   favicon: "sushi",
   storeSlug: "sushiStore",
@@ -1483,7 +1483,7 @@ const sushi = {
 
 const grape = {
   url: "https://grape.chrry.ai",
-  mode: "grape" as SiteMode,
+  mode: "grape" as siteMode,
   chromeWebStoreUrl:
     "https://chromewebstore.google.com/detail/grape-🍒/kiplpljdjejcnmlfnkocbjbbcoiegjob",
   slug: "grape",
@@ -1548,7 +1548,7 @@ const grape = {
 }
 
 export interface SiteConfig {
-  mode: SiteMode
+  mode: siteMode
   slug: string
   chromeWebStoreUrl?: string
   storeSlug: string
@@ -1610,16 +1610,16 @@ export const extensions = [
   "https://popcorn.chrry.ai",
 ]
 
-type SiteTranslation = {
+type siteTranslation = {
   title: string
   description: string
 }
 
-type SiteTranslationCatalog = Record<string, SiteTranslation> & {
-  en: SiteTranslation
+type siteTranslationCatalog = Record<string, siteTranslation> & {
+  en: siteTranslation
 }
 
-const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
+const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
   vex: {
     en: {
       title: "Vex - Your Personal AI Assistant",
@@ -2691,20 +2691,20 @@ export function isTauri(): boolean {
 }
 
 export function getSiteTranslation(
-  mode: SiteMode,
+  mode: siteMode,
   locale: string,
-): SiteTranslation {
+): siteTranslation {
   const catalog = siteTranslations[mode] ?? siteTranslations.vex
   return catalog[locale] ?? catalog.en
 }
 
-export function detectSiteModeDomain(
+export function detectsiteModeDomain(
   hostname?: string,
-  mode?: SiteMode,
-): SiteMode {
-  const devMode = "tribe"
+  mode?: siteMode,
+): siteMode {
+  const devMode = "vex"
 
-  const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || devMode
+  const defaultMode = (getEnv().VITE_SITE_MODE as siteMode) || mode || devMode
 
   if (isDevelopment && !checkIsExtension() && !isTauri()) {
     return defaultMode || devMode
@@ -2843,8 +2843,8 @@ export function detectSiteModeDomain(
  * Detect which site we're running on
  * @param hostname - Optional hostname for SSR (prevents hydration mismatch)
  */
-export function detectSiteMode(hostname?: string): SiteMode {
-  const validModes: SiteMode[] = [
+export function detectsiteMode(hostname?: string): siteMode {
+  const validModes: siteMode[] = [
     "chrryDev",
     "chrryAI",
     "chrryStore",
@@ -2869,13 +2869,13 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "nebula",
   ]
 
-  // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
-  if (hostname && validModes.includes(hostname as SiteMode)) {
-    return hostname as SiteMode
+  // If hostname is already a valid siteMode (e.g., "atlas"), use it directly
+  if (hostname && validModes.includes(hostname as siteMode)) {
+    return hostname as siteMode
   }
 
   // Otherwise, detect from domain (e.g., "atlas.chrry.ai" -> "atlas")
-  const result = detectSiteModeDomain(hostname)
+  const result = detectsiteModeDomain(hostname)
   return result
 }
 
@@ -2888,7 +2888,7 @@ const getClientHostname = () => {
 
 /**
  * Get site configuration based on current domain
- * @param hostnameOrMode - Either a hostname (for SSR) or a SiteMode string
+ * @param hostnameOrMode - Either a hostname (for SSR) or a siteMode string
  */
 export function getSiteConfig(
   hostnameOrMode?: string,
@@ -2902,7 +2902,7 @@ export function getSiteConfig(
       hostname = hostnameOrMode
     }
   }
-  const mode = detectSiteMode(hostname)
+  const mode = detectsiteMode(hostname)
 
   if (mode === "nebula") {
     return nebula
@@ -3028,18 +3028,18 @@ export const whiteLabels = [
   vault,
 ]
 
-export const analyticsDomains = whiteLabels.concat(e2eVex)
+export const analyticsDomains = whiteLabels.concat(e2eVex).concat(_tribe)
 
 /**
  * Check if current site is Chrry
  */
 export function isChrryDevMode(): boolean {
-  return detectSiteMode() === "chrryDev"
+  return detectsiteMode() === "chrryDev"
 }
 
 /**
  * Check if current site is Vex
  */
 export function isVexMode(): boolean {
-  return detectSiteMode() === "vex"
+  return detectsiteMode() === "vex"
 }

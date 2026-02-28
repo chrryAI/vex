@@ -203,11 +203,15 @@ export default function App({
   const vex = apps.find((app) => app.slug === "vex")
   const atlas = apps.find((app) => app.slug === "atlas")
   const grape = apps.find((app) => app.slug === "grape")
+  const claude = apps.find((app) => app.slug === "claude")
+  const perplexity = apps.find((app) => app.slug === "perplexity")
   const nebula = apps.find((app) => app.slug === "nebula")
   const zarathustra = apps.find((app) => app.slug === "zarathustra")
+  const sushi = apps.find((app) => app.slug === "sushi")
 
   const isBlossom = app?.store?.id === chrry?.store?.id
   const isLifeOS = app?.store?.id === vex?.store?.id
+  const isSushi = app?.store?.id === sushi?.store?.id
 
   const getApps = () => {
     return apps
@@ -216,9 +220,19 @@ export default function App({
           item.id !== burnApp?.id &&
           item.id !== store?.appId &&
           item.id !== chrry?.id &&
-          (item.id !== nebula?.id || !isBlossom) &&
-          (item.id !== grape?.id || (!isBlossom && !accountApp)) &&
-          (item.id !== zarathustra?.id || (!isBlossom && !accountApp)) &&
+          (item.id !== perplexity?.id || !isBlossom) &&
+          (item.id !== vex?.id || !isSushi) &&
+          (item.id !== claude?.id || !isBlossom) &&
+          (item.id === grape?.id
+            ? accountApp?.id === app?.id
+              ? false
+              : !isBlossom
+            : true) &&
+          (item.id === zarathustra?.id
+            ? accountApp?.id === app?.id
+              ? false
+              : !isBlossom
+            : true) &&
           (item.id === atlas?.id ? !isBlossom && isLifeOS : true) &&
           item.id !== popcorn?.id,
       )
@@ -249,6 +263,7 @@ export default function App({
         return item
       })
   }
+  // console.log(`🚀 ~ getApps():`, getApps())
 
   const appsInternal = React.useMemo(
     () => getApps(),
@@ -545,6 +560,7 @@ export default function App({
             width: "100%",
             marginBottom: "0.5rem",
             position: "relative",
+            gap: "0.5rem",
           }}
         >
           <Button
@@ -828,6 +844,14 @@ export default function App({
                 setIsWebSearchEnabled(true)
               }}
             />
+            {app?.mainThreadId && isAppOwner && (
+              <A
+                style={{ fontSize: ".9rem", marginTop: ".2rem" }}
+                href={`/threads/${app?.mainThreadId}`}
+              >
+                🧬
+              </A>
+            )}
           </Div>
           {minimize && hasHydrated && (
             <>

@@ -124,8 +124,10 @@ const Thread = ({
     setLiked,
     placeHolderText,
     isEmpty,
-    showTribe,
+    ...chat
   } = useChat()
+
+  const showTribe = !!(chat.showTribe || postId)
 
   const hasHydrated = useHasHydrated()
 
@@ -565,7 +567,7 @@ const Thread = ({
           </Div>
         ) : (
           <>
-            {isGame || postId ? null : (
+            {showTribe ? null : (
               <Messages
                 onCharacterProfileUpdate={handleCharacterProfileUpdate}
                 isHome={isHome}
@@ -698,12 +700,15 @@ const Thread = ({
                                 <Img size={16} app={app} />
                               </Button>
                             </>
-                          ) : grapes.filter((g) => g.id === app?.id).length ? (
+                          ) : grapes?.length ? (
                             <Grapes
                               style={{
                                 ...utilities.button.style,
                                 ...utilities.transparent.style,
                                 ...utilities.xSmall.style,
+                                padding: 0,
+                                border: "none",
+                                backgroundColor: "transparent",
                               }}
                             />
                           ) : (

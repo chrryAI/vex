@@ -136,7 +136,7 @@ nginx (port 443)
     ↓
 Next.js (port 3008)
     ↓
-detectSiteModeDomain("berlin.chrry.ai")
+detectsiteModeDomain("berlin.chrry.ai")
     ↓
 getSiteConfig("berlin")
     ↓

@@ -204,6 +204,7 @@ export default function Chat({
 }): React.ReactElement {
   const { t, console } = useAppContext()
   const { weather, actions } = useData()
+  console.log(`🚀 ~ weather:`, weather)
 
   const styles = useChatStyles()
 
@@ -481,21 +482,19 @@ export default function Chat({
   const placeholder =
     burnApp?.placeholder && burn
       ? burnApp.placeholder
-      : tribePost?.placeholder
-        ? tribePost?.placeholder
-        : isImageGenerationEnabled
-          ? `🎨 ${t("Describe the image you want to create")} ✨`
-          : isSelectingMood
-            ? `📊 ${t("Track your mood daily")} 🎭`
-            : needsReview
-              ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
-              : isPear
-                ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
-                : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
-                  ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
-                  : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
-                    ? `✨ ${t("Explore new apps while you chat")} 🍇`
-                    : placeHolderInternal
+      : isImageGenerationEnabled
+        ? `🎨 ${t("Describe the image you want to create")} ✨`
+        : isSelectingMood
+          ? `📊 ${t("Track your mood daily")} 🎭`
+          : needsReview
+            ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
+            : isPear
+              ? `💬 ${t("Share feedback, earn 10-50 credits!")} 🍇`
+              : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
+                ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
+                : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
+                  ? `✨ ${t("Explore new apps while you chat")} 🍇`
+                  : placeHolderInternal
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])
@@ -3667,6 +3666,7 @@ export default function Chat({
               >
                 {Top && (
                   <Div
+                    className={hasBottomOffset && isChatFloating ? "blur" : ""}
                     style={{
                       ...(isChatFloating
                         ? styles.topChatFloatingTopInner.style
@@ -4195,7 +4195,7 @@ export default function Chat({
                   !isHydrated
                     ? ""
                     : postToTribe
-                      ? `${t("What should I share to Tribe?")} 🪢`
+                      ? `${t("What should I share to Tribe?")} 🦋`
                       : postToMoltbook
                         ? `${t("What should I share to Moltbook?")} 🦞`
                         : placeholder ||
@@ -4734,7 +4734,6 @@ export default function Chat({
                     </Span>
                   ) : needsReview ? (
                     <A
-                      target="_blank"
                       className="button small transparent"
                       href="/privacy"
                       style={{

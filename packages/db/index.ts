@@ -19,6 +19,7 @@ import {
   lte,
   max,
   ne,
+  not,
   notInArray,
   or,
   sql,
@@ -173,7 +174,7 @@ export const DB_URL =
 
 export const isCI = process.env.CI
 
-export const isSeedSafe = MODE === "e2e" && DB_URL?.includes("pb9ME51YnaFcs")
+export const isSeedSafe = DB_URL?.includes("pb9ME51YnaFcs")
 
 export const isWaffles = false
 // export const isWaffles = process.env.DB_URL?.includes("waffles")
@@ -3054,7 +3055,9 @@ export const deleteThread = async ({ id }: { id: string }) => {
   return deleted
 }
 
-export const updateAiAgent = async (data: aiAgent) => {
+export const updateAiAgent = async (
+  data: Partial<aiAgent> & { id: string },
+) => {
   const [updated] = await db
     .update(aiAgents)
     .set(data)
@@ -4913,32 +4916,6 @@ export const createOrUpdateApp = async ({
 
     await db.insert(appExtends).values(extendsData)
     console.log(`✅ Created ${extendsData.length} extends relationships`)
-
-    // Install extended apps to the same store
-    if (result.storeId) {
-      // Get existing store installs for extended apps
-      const existingInstalls = await db
-        .select()
-        .from(storeInstalls)
-        .where(and(eq(storeInstalls.storeId, result.storeId)))
-
-      const existingAppIds = new Set(
-        existingInstalls.map((install) => install.appId),
-      )
-
-      // Install only new extended apps (avoid duplicates)
-      const newInstalls = extendsList
-        .filter((appId) => !existingAppIds.has(appId))
-        .map((appId) => ({
-          storeId: result!.storeId!,
-          appId,
-        }))
-
-      if (newInstalls.length > 0) {
-        await db.insert(storeInstalls).values(newInstalls)
-        console.log(`✅ Installed ${newInstalls.length} extended apps to store`)
-      }
-    }
   }
 
   return result
@@ -5023,6 +5000,7 @@ export const getApp = async ({
   skipCache = false,
   ownerId,
   threadId,
+  role,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom"
   id?: string
@@ -5037,6 +5015,7 @@ export const getApp = async ({
   skipCache?: boolean
   ownerId?: string
   threadId?: string
+  role?: "admin" | "user"
 }): Promise<appWithStore | undefined> => {
   // Build app identification conditions
   const appConditions = []
@@ -5057,6 +5036,10 @@ export const getApp = async ({
 
   if (id) {
     appConditions.push(eq(apps.id, id))
+  }
+
+  if (role) {
+    appConditions.push(eq(users.role, role))
   }
 
   if (storeId) {
@@ -5085,10 +5068,19 @@ export const getApp = async ({
         )
 
   // Check if user owns any apps to determine cache strategy
+  const isAppOwner =
+    (userId &&
+      (await db.select().from(apps).where(eq(apps.userId, userId)).limit(1))
+        .length > 0) ||
+    (guestId &&
+      (await db.select().from(apps).where(eq(apps.guestId, guestId)).limit(1))
+        .length > 0)
 
   // Use shared cache key for public apps if user doesn't own any apps
   // Otherwise use user-specific key (they might have user-specific data like placeholders)
-  const cacheKey = `app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}`
+  const cacheKey = isAppOwner
+    ? `app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
+    : `app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
 
   // Try cache first
 
@@ -5250,8 +5242,16 @@ export const getApp = async ({
     }),
   } as unknown as appWithStore
 
-  // Cache the result (5 minutes TTL) - fire and forget
-  setCache(cacheKey, result, 60 * 5)
+  // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
+  setCache(cacheKey, result, isAppOwner ? 60 * 5 : 60 * 60)
+
+  // Cross-seed public cache if owner-specific request
+  if (isAppOwner) {
+    const publicCacheKey = `app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
+    // Sanitize user-specific data (placeholders)
+    const publicResult = { ...result, placeHolder: undefined }
+    setCache(publicCacheKey, publicResult, 60 * 60)
+  }
 
   return result
 }
@@ -5533,7 +5533,7 @@ export function toSafeApp({
   return result
 }
 
-export function toSafeUser({ user }: { user?: user | null }) {
+export function toSafeUser({ user }: { user?: Partial<user> | null }) {
   if (!user) return
   const result: Partial<user> = {
     id: user.id,
@@ -5549,7 +5549,7 @@ export function toSafeUser({ user }: { user?: user | null }) {
   return result
 }
 
-export function toSafeGuest({ guest }: { guest?: guest | null }) {
+export function toSafeGuest({ guest }: { guest?: Partial<guest> | null }) {
   if (!guest) return
   const result: Partial<guest> = {
     id: guest.id,
@@ -6260,9 +6260,25 @@ export async function getStores({
   includePublic?: boolean
   ownerId?: string
 }) {
+  // Check if user owns any stores to determine cache strategy
+  const isStoreOwner =
+    (userId &&
+      (await db.select().from(stores).where(eq(stores.userId, userId)).limit(1))
+        .length > 0) ||
+    (guestId &&
+      (
+        await db
+          .select()
+          .from(stores)
+          .where(eq(stores.guestId, guestId))
+          .limit(1)
+      ).length > 0)
+
   // Use shared cache key for public stores if user doesn't own any stores
   // Otherwise use user-specific key
-  const cacheKey = `stores:user:${userId}:guest:${guestId}:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}`
+  const cacheKey = isStoreOwner
+    ? `stores:user:${userId}:guest:${guestId}:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
+    : `stores:public:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
 
   // Try cache first
   const cached = await getCache<storesListResult>(cacheKey)
@@ -6383,8 +6399,25 @@ export async function getStores({
     nextPage,
   }
 
-  // Cache the result (5 minutes TTL for store lists) - fire and forget
-  setCache(cacheKey, storesResult, 60 * 5)
+  // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
+  setCache(cacheKey, storesResult, isStoreOwner ? 60 * 5 : 60 * 60)
+
+  // Cross-seed public cache if owner-specific request
+  if (isStoreOwner) {
+    const publicCacheKey = `stores:public:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
+    const publicStoresResult = {
+      ...storesResult,
+      stores: storesResult.stores.map((s) => ({
+        ...s,
+        user: s.user ? toSafeUser({ user: s.user }) : s.user,
+        guest: s.guest ? toSafeGuest({ guest: s.guest }) : s.guest,
+        apps: s.apps.map((a) =>
+          toSafeApp({ app: a, userId: undefined, guestId: undefined }),
+        ),
+      })),
+    }
+    setCache(publicCacheKey, publicStoresResult, 60 * 60)
+  }
 
   return storesResult
 }
@@ -6547,8 +6580,29 @@ export async function getStore({
     apps: appsWithNestedStores,
   }
 
-  // Cache the result (10 minutes TTL for stores) - fire and forget
-  setCache(cacheKey, storeResult, 60 * 10)
+  // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
+  setCache(cacheKey, storeResult, isStoreOwner ? 60 * 5 : 60 * 60)
+
+  // Cross-seed public cache if owner-specific request
+  if (isStoreOwner) {
+    const publicCacheKey = `store:${id || slug || domain || appId}:public:depth:${depth}:parent:${parentStoreId || "none"}`
+    const publicStoreResult = {
+      ...storeResult,
+      user: result.user ? toSafeUser({ user: result.user }) : result.user,
+      guest: result.guest ? toSafeGuest({ guest: result.guest }) : result.guest,
+      app: storeResult.app
+        ? toSafeApp({
+            app: storeResult.app,
+            userId: undefined,
+            guestId: undefined,
+          })
+        : undefined,
+      apps: storeResult.apps.map((a) =>
+        toSafeApp({ app: a, userId: undefined, guestId: undefined }),
+      ),
+    }
+    setCache(publicCacheKey, publicStoreResult, 60 * 60)
+  }
 
   return storeResult
 }
@@ -8131,6 +8185,7 @@ export const getCharacterProfiles = async ({
   visibility,
   appId,
   threadId,
+  notThreadId,
 }: {
   agentId?: string
   appId?: string
@@ -8140,6 +8195,7 @@ export const getCharacterProfiles = async ({
   limit?: number
   pinned?: boolean
   threadId?: string
+  notThreadId?: string
   visibility?: "public" | "private"
 }) => {
   try {
@@ -8169,6 +8225,9 @@ export const getCharacterProfiles = async ({
             ? eq(characterProfiles.pinned, pinned)
             : undefined,
           threadId ? eq(characterProfiles.threadId, threadId) : undefined,
+          notThreadId
+            ? not(eq(characterProfiles.threadId, notThreadId))
+            : undefined,
           visibility ? eq(characterProfiles.visibility, visibility) : undefined,
         ),
       )

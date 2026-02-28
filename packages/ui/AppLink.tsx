@@ -65,12 +65,11 @@ export default function AppLink({
   }, [currentApp, loadingApp, isTribe])
 
   useEffect(() => {
-    if (!app) return
+    const sa = storeApps.find((a) => a.id === app.id)
+    if (sa) return
 
-    if (!currentApp) {
-      mergeApps([app])
-    }
-  }, [currentApp, app])
+    mergeApps([app])
+  }, [app, mergeApps, storeApps])
 
   if (as === "a") {
     return (
@@ -104,7 +103,7 @@ export default function AppLink({
         }}
         className={`${className}`}
       >
-        {isLoading ? <Span>{loading}</Span> : icon && <Span>{icon}</Span>}
+        {isLoading ? <>{loading}</> : icon && <>{icon}</>}
         <Span>{children}</Span>
       </A>
     )

@@ -21,7 +21,7 @@ export const ChatStyleDefs = {
     transform: "translateX(-50%)",
   },
   standalone: {
-    bottom: 15,
+    bottom: 10,
   },
   drawerOpen: {
     left: "calc(50% + 7.65625rem)",
@@ -114,14 +114,14 @@ export const ChatStyleDefs = {
     padding: "0 5px",
     gap: 5,
     position: "relative",
-    marginBottom: 7,
+    marginBottom: 3,
     display: "flex",
     alignItems: "center",
   },
   topChatFloatingTopInner: {
     backgroundColor: "var(--shade-1)",
     border: "1px solid var(--shade-2)",
-    padding: 5,
+    padding: "3px 5px",
     borderRadius: "var(--radius)",
   },
   collaborationStep3: {

@@ -22,6 +22,7 @@ const COOLDOWN_T3 = 60
 const TIER1_SLUGS = new Set(["zarathustra"])
 
 const TIER2_SLUGS = new Set([
+  "jules",
   "cosmos",
   "nebula",
   "meditations",

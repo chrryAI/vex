@@ -175,7 +175,8 @@ export default function Skeleton({
   const { isEmpty } = useChat()
 
   // Navigation context
-  const { pathname, setIsNewChat, hasNotification } = useNavigationContext()
+  const { pathname, setIsNewChat, hasNotification, push } =
+    useNavigationContext()
 
   const { isDrawerOpen, setIsDrawerOpen, isSmallDevice, isMobileDevice } =
     useTheme()
@@ -186,7 +187,9 @@ export default function Skeleton({
   // Data context
   const { FRONTEND_URL } = useData()
 
-  const { threadIdRef, isIDE, showTribeProfile, ...auth } = useAuth()
+  const { threadIdRef, isIDE, getAppSlug, getTribeUrl, ...auth } = useAuth()
+
+  const showTribeProfile = auth.showTribeProfile && !auth.postId
 
   const threadId = threadIdRef.current
 
@@ -358,8 +361,13 @@ export default function Skeleton({
                       >
                         <A
                           className="link"
-                          clientOnly
-                          href={`/`}
+                          href={
+                            showTribeProfile
+                              ? getTribeUrl()
+                              : app
+                                ? getAppSlug(app)
+                                : "/"
+                          }
                           style={{
                             ...utilities.link.style,
                             ...skeletonStyles.hamburgerButton.style,
@@ -367,6 +375,11 @@ export default function Skeleton({
                           }}
                           onClick={(e) => {
                             e.preventDefault()
+                            if (showTribeProfile) {
+                              push(`${getTribeUrl()}`)
+                              return
+                            }
+
                             setIsNewChat({
                               value: true,
                             })
@@ -376,7 +389,7 @@ export default function Skeleton({
                             key={app?.id || "vex"}
                             app={showTribeProfile ? undefined : app}
                             size={28}
-                            icon={showTribeProfile ? "zarathustra" : undefined}
+                            slug={showTribeProfile ? "tribe" : undefined}
                             priority
                           />
                           <H1

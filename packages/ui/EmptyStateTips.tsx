@@ -24,7 +24,7 @@ export default function EmptyStateTips({
 }) {
   const { isManagingApp, canEditApp, app } = useApp()
   const { pathname } = useNavigationContext()
-  const { isPear, pear } = useAuth()
+  const { isPear, siteConfig, threads } = useAuth()
   const { reduceMotion: reduceMotionContext, reduceMotion } = useTheme()
   const { showTribe } = useChat()
 
@@ -34,12 +34,13 @@ export default function EmptyStateTips({
 
   const [animationKey, setAnimationKey] = useState(0)
 
-  const count = useResponsiveCount([
-    { height: 600, count: 2 },
-    { height: 700, count: 3 },
-    { height: 800, count: 4 },
-    { height: 900, count: 5 },
-  ])
+  const count =
+    useResponsiveCount([
+      { height: 600, count: 2 },
+      { height: 700, count: 3 },
+      { height: 800, count: 4 },
+      { height: 900, count: 5 },
+    ]) - (threads?.totalCount ? 1 : 0)
 
   useEffect(() => {
     if (!reduceMotion) {
@@ -50,12 +51,13 @@ export default function EmptyStateTips({
   const { viewPortHeight } = usePlatform()
 
   const getTitle = () => {
-    if (showTribe) {
-      return `🪢 ${t("Tribe Tips")}`
-    }
     if (isPear) {
       return `🍐 ${t("Feedback Tips")}`
     }
+    if (showTribe) {
+      return `🦋 ${t("Tribe Tips")}`
+    }
+
     if (isManagingApp || canEditApp) {
       return `✨ ${t("App Builder Tips")}`
     }
@@ -63,7 +65,11 @@ export default function EmptyStateTips({
   }
 
   // Show Tribe tips when in Tribe view
-  if (showTribe && pathname && ["/", "/tribe"].includes(pathname)) {
+  if (
+    showTribe &&
+    !isPear &&
+    ((pathname === "/" && siteConfig.isTribe) || ["/tribe"].includes(pathname))
+  ) {
     const tribeTips = [
       {
         tip: t(
@@ -107,7 +113,7 @@ export default function EmptyStateTips({
       <Section style={{ ...styles.emptyStateTips, ...style }}>
         <H3 style={{ marginBottom: 10, marginTop: 0 }}>{getTitle()}</H3>
         <Div style={{ ...styles.ul.style }}>
-          {tribeTips.map((item, i) => {
+          {tribeTips.slice(0, count).map((item, i) => {
             if (viewPortHeight < 600 && i >= 2) return null
             if (viewPortHeight < 700 && i >= 3) return null
             if (viewPortHeight < 800 && i >= 4) return null

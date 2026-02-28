@@ -669,7 +669,6 @@ export default function SignIn({
                   <span>{t("Login")}</span> */}
                   <A
                     openInNewTab
-                    target="_blank"
                     href={`${FRONTEND_URL}/privacy`}
                     className="button small transparent"
                     onClick={(e) => {
@@ -705,11 +704,15 @@ export default function SignIn({
               )}
             </div>
           ) : (
-            <div
+            <form
               style={{
                 display: "flex",
                 flexDirection: "column",
                 gap: "10px",
+              }}
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleLogin()
               }}
             >
               <div>
@@ -721,6 +724,7 @@ export default function SignIn({
                   data-testid="sign-in-email"
                   type="email"
                   placeholder="Email"
+                  aria-label="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -735,6 +739,7 @@ export default function SignIn({
                   data-testid="sign-in-password"
                   type="password"
                   placeholder="Password"
+                  aria-label="Password"
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
@@ -746,12 +751,13 @@ export default function SignIn({
                 }}
                 data-testid="login-submit"
                 {...(redirectUrl && { "data-redirect-url": redirectUrl })}
-                onClick={handleLogin}
                 type="submit"
+                disabled={isSignInLoading}
+                aria-busy={isSignInLoading}
               >
                 {isSignInLoading ? "Loading..." : "Login"}
               </button>
-            </div>
+            </form>
           )}
         </Modal>
       )}

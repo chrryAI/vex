@@ -15,6 +15,7 @@ import {
   and,
   type app,
   apps as appsSchema,
+  characterProfile,
   checkPearQuota,
   type collaboration,
   createMessage,
@@ -64,6 +65,7 @@ import {
   sql,
   type subscription,
   type thread,
+  updateAiAgent,
   updateApp,
   updateGuest,
   updateMessage,
@@ -1096,7 +1098,47 @@ function renderSystemPrompt(params: {
 
     const renderedPrompt = compiledTemplate(templateData)
 
-    return renderedPrompt
+    // Auto-inject weather and location based on app tools
+    let finalPrompt = renderedPrompt
+    const appTools = app?.tools || []
+
+    // Inject weather data if app has weather tool
+    if (appTools.includes("weather") && weatherData) {
+      const weatherSection = `
+
+**CURRENT WEATHER** (Use this when users ask about weather):
+- Location: ${weatherData.location}, ${weatherData.country}
+- Temperature: ${weatherData.temperature}
+- Condition: ${weatherData.condition}
+- Updated: ${weatherData.weatherAge}
+
+When users ask about weather, provide this information directly. Do NOT ask for their location.`
+
+      finalPrompt += weatherSection
+
+      console.log("🌤️ Weather data injected for app with weather tool:", {
+        location: weather.location,
+        temperature: weather.temperature,
+        condition: weather.condition,
+        weatherAge: weatherData.weatherAge,
+      })
+    }
+
+    // Inject location data if app has location tool
+    if (appTools.includes("location") && location?.city) {
+      const locationSection = `
+
+**USER LOCATION**: ${location.city}${location.country ? `, ${location.country}` : ""}`
+
+      finalPrompt += locationSection
+
+      console.log("📍 Location data injected for app with location tool:", {
+        city: location.city,
+        country: location.country,
+      })
+    }
+
+    return finalPrompt
   } catch (error) {
     captureException(error)
 
@@ -2289,7 +2331,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   const tribeContext =
     canPostToTribe && (!job || postType === "post")
       ? `
-  ## 🪢 TRIBE SYSTEM INSTRUCTIONS (PRIORITY)
+  ## 🦋 TRIBE SYSTEM INSTRUCTIONS (PRIORITY)
 
   You are currently generating a post for **Tribe**, a social network for AI agents within the Wine ecosystem.
   
@@ -2437,25 +2479,28 @@ ${userInstructions?.map((i) => `${i.emoji} **${i.title}**: ${i.content}`).join("
   let characterContext = ""
   let moodContext = ""
 
-  if (characterProfilesEnabled && agent) {
+  if (characterProfilesEnabled) {
     // Hybrid approach: Fetch profiles in priority order (parallel for performance)
-    const [threadProfile, pinnedProfiles, appCharacterProfiles] =
+    const [threadProfile, userProfiles, appCharacterProfiles] =
       await Promise.all([
         // 1. PRIORITY 1: Thread-specific profile (highest priority - active character in this conversation)
         tracker.track("get_thread_character_profile", () =>
           thread?.id
             ? getCharacterProfiles({
                 threadId: thread.id,
+                userId: member?.id,
+                guestId: guest?.id,
                 limit: 1,
               })
             : Promise.resolve([]),
         ),
         // 2. PRIORITY 2: Pinned profiles (user's favorites - general personality preferences)
-        tracker.track("get_pinned_character_profiles", () =>
+        tracker.track("get_user_character_profiles", () =>
           getCharacterProfiles({
             userId: member?.id,
             guestId: guest?.id,
-            pinned: true,
+            notThreadId: thread?.id,
+            // pinned: true,
             limit: 3,
           }),
         ),
@@ -2472,23 +2517,20 @@ ${userInstructions?.map((i) => `${i.emoji} **${i.title}**: ${i.content}`).join("
       ])
 
     // Helper function to format a profile
-    const formatProfile = (profile: any) => {
-      const traits = profile.traits as {
-        communication?: string[]
-        expertise?: string[]
-        behavior?: string[]
-        preferences?: string[]
-      }
+    const formatProfile = (profile: (typeof threadProfile)[0]) => {
+      const traits = profile.traits
+
       return `### ${profile.name}
 - **Personality**: ${profile.personality}
 - **Communication Style**: ${profile.conversationStyle || "Not specified"}
 - **Preferences**: ${traits.preferences?.join(", ") || "None"}
 - **Expertise**: ${traits.expertise?.join(", ") || "None"}
-- **Behavior**: ${traits.behavior?.join(", ") || "None"}`
+- **Behavior**: ${traits.behavior?.join(", ") || "None"}
+-- **Pinned** ${profile.pinned ? "Pinned" : "Not pinned yet"}`
     }
 
     // Build character context with priority order
-    if (threadProfile.length > 0) {
+    if (threadProfile.length > 0 && threadProfile[0]) {
       characterContext = `
 
 ## 🎯 ACTIVE CHARACTER (This Thread):
@@ -2498,14 +2540,14 @@ ${formatProfile(threadProfile[0])}
 `
     }
 
-    if (pinnedProfiles.length > 0) {
-      const pinnedText = pinnedProfiles.map(formatProfile).join("\n\n")
+    if (userProfiles.length > 0) {
+      const pinnedText = userProfiles.map(formatProfile).join("\n\n")
       characterContext += `
 
-## ⭐ PINNED CHARACTERS (Your Favorites):
+## ⭐ USER CHARACTERS (Users Favorites first):
 ${pinnedText}
 
-These are your preferred personalities across different contexts.
+These are users preferred personalities across different contexts.
 `
     }
 
@@ -2582,7 +2624,17 @@ The user is currently viewing and potentially discussing this Tribe post:
 - **Author**: ${tribePost.app?.name || "Unknown"}
 - **Tribe**: ${tribePost.tribe?.name || "Unknown"}${
         Array.isArray(tribePost.images) && tribePost.images.length > 0
-          ? `\n- **Images**: ${tribePost.images.map((img: any) => img.alt || img.url).join(", ")}`
+          ? `\n- **Images**: ${tribePost.images
+              .map(
+                (img: {
+                  url: string
+                  width?: number
+                  height?: number
+                  alt?: string
+                  id: string
+                }) => img.alt || img.url,
+              )
+              .join(", ")}`
           : ""
       }${
         Array.isArray(tribePost.videos) && tribePost.videos.length > 0
@@ -3223,11 +3275,11 @@ Now, how can I help you get started with ${requestApp.name}?
   - **Chrry**: Always the universal anchor/reset.
   - **UI Logic**: "What's visible = Where you can go". "What's missing = Where you are".
   
-  ## 🪢 AGENT-TO-AGENT INTERACTION (Tribe & Moltbook)
+  ## 🦋 AGENT-TO-AGENT INTERACTION (Tribe & Moltbook)
   
   Wine apps can interact with each other through **Tribe** (internal social network) and **Moltbook** (external social network).
   
-  **🪢 Tribe** (tribe.chrry.ai):
+  **🦋 Tribe** (tribe.chrry.ai):
   - Internal social network for Wine ecosystem AI agents
   - Users get ${MEMBER_FREE_TRIBE_CREDITS} free posts to try the feature
   - View interactions at: chrry.ai homepage or tribe link in chat header
@@ -6089,6 +6141,20 @@ Respond in JSON format:
                 errorMsg.includes("context_length_exceeded") ||
                 errorMsg.includes("tokens")
 
+              // Check for API key errors
+              const isApiKeyError =
+                errorMsg.includes("401") ||
+                errorMsg.includes("403") ||
+                errorMsg.includes("unauthorized") ||
+                errorMsg.includes("forbidden") ||
+                errorMsg.includes("api key") ||
+                errorMsg.includes("authentication") ||
+                errorMsg.includes("invalid token") ||
+                errorMsg.includes("quota") ||
+                errorMsg.includes("rate limit") ||
+                errorMsg.includes("billing") ||
+                errorMsg.includes("credit")
+
               if (streamError instanceof Error) {
                 console.error("❌ Error message:", streamError.message)
                 console.error("❌ Error stack:", streamError.stack)
@@ -6113,6 +6179,27 @@ Respond in JSON format:
                   // Don't re-throw - we've handled it gracefully
                   streamFinished = true
                   return
+                }
+
+                if (isApiKeyError && model.lastKey) {
+                  // Update agent metadata with failed key
+                  console.log(
+                    `🔑 API key failed for ${model.lastKey}, updating agent metadata`,
+                  )
+                  try {
+                    await updateAiAgent({
+                      id: agent.id,
+                      metadata: {
+                        ...agent.metadata,
+                        lastFailedKey: model.lastKey,
+                      },
+                    })
+                  } catch (updateError) {
+                    console.error(
+                      "❌ Failed to update agent metadata:",
+                      updateError,
+                    )
+                  }
                 }
               }
               // Re-throw non-token-limit errors to be caught by outer try-catch
@@ -6604,7 +6691,7 @@ Respond in JSON format:
 
                               console.log(`✅ Direct Tribe post: ${post.id}`)
                               console.log(`📝 Title: ${tribeTitle}`)
-                              console.log(`🪢 Tribe: ${tribe}`)
+                              console.log(`🦋 Tribe: ${tribe}`)
                             } else {
                               finalText = `${tribeContent}\n\n⚠️ Failed to create Tribe post`
                             }

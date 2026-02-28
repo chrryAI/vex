@@ -45,3 +45,12 @@
 
 **Learning:** The `Input`, `TextArea`, and `Select` primitives relied solely on external error messages or toasts for validation feedback, lacking semantic attributes (`aria-invalid`) to communicate error state to screen readers.
 **Action:** Added `error`, `aria-invalid`, and `aria-describedby` props to base primitives. This ensures all form fields can easily expose their validation status and link to error messages, improving accessibility by default.
+
+## 2026-02-26 - Accessible Multi-Select Lists
+
+**Learning:** The `FocusButton` task list used buttons that toggled selection state visually (check vs circle) but lacked `aria-pressed` or `role="checkbox"`. This made the selection state invisible to screen readers.
+**Action:** For custom multi-select lists implemented with buttons, always add `aria-pressed={isSelected}` to indicate the toggle state.
+## 2026-02-26 - Cross-Platform Keyboard Shortcuts
+
+**Learning:** Hardcoded keyboard shortcuts (like `⌘K`) exclude Windows/Linux users, causing confusion and potential accessibility issues. `PlatformProvider` offers robust OS detection.
+**Action:** Use `usePlatform().os` to conditionally render shortcuts (e.g., `⌘K` vs `Ctrl+K`) and dynamically adjust layout (padding) to accommodate varying text lengths. This improves clarity and inclusivity.

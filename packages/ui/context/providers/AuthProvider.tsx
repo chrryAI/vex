@@ -66,6 +66,7 @@ import {
   getThreadId,
   type instructionBase,
   isCI,
+  isDeepEqual,
   isDevelopment,
   isE2E,
   isOwner,
@@ -87,7 +88,7 @@ import {
   whiteLabels,
 } from "../../utils/siteConfig"
 import ago from "../../utils/timeAgo"
-import { excludedSlugRoutes, getAppAndStoreSlugs } from "../../utils/url"
+import { excludedSlugRoutes } from "../../utils/url"
 import { useTheme } from "../ThemeContext"
 import type { Task } from "../TimerContext"
 import { hasStoreApps, merge } from "../../utils/appUtils"
@@ -120,6 +121,7 @@ const AuthContext = createContext<
         timestamp: number
         duration?: number
       } | null
+      showAllTribe: boolean
       timer?: timer
       tribeSlug?: string
       currentTribe?: tribe
@@ -155,8 +157,6 @@ const AuthContext = createContext<
       setDeviceId: (value: string) => void
       pear: appWithStore | undefined
       isPear: boolean
-      input: string
-      setInput: (value: string) => void
       setIsPear: (value: appWithStore | undefined) => void
       grapes: appWithStore[]
       setIsProgramme: (value: boolean) => void
@@ -384,6 +384,50 @@ const AuthContext = createContext<
     }
   | undefined
 >(undefined)
+
+export const hasStoreApps = (app: appWithStore | undefined) => {
+  return Boolean(app?.store?.app && app?.store?.apps?.length)
+}
+
+export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
+  // Create a map of existing apps by ID
+  const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
+  let hasChange = false
+
+  // Add or update apps
+  newApps.forEach((newApp) => {
+    const existingApp = existingAppsMap.get(newApp.id)
+
+    if (existingApp) {
+      // Check if new app has meaningful store.apps (not empty or undefined)
+      const newHasStoreApps = hasStoreApps(newApp)
+      const existingHasStoreApps = hasStoreApps(existingApp)
+
+      // Merge: prefer new app but preserve existing store.apps if new one is empty/undefined
+      const merged = {
+        ...existingApp,
+        ...newApp,
+        store: newHasStoreApps
+          ? newApp.store
+          : existingHasStoreApps
+            ? existingApp.store
+            : newApp.store,
+      }
+
+      // Deep compare to detect actual changes
+      if (!isDeepEqual(existingApp, merged)) {
+        existingAppsMap.set(newApp.id, merged)
+        hasChange = true
+      }
+    } else {
+      existingAppsMap.set(newApp.id, newApp)
+      hasChange = true
+    }
+  })
+
+  // Only return a new array if something actually changed
+  return hasChange ? Array.from(existingAppsMap.values()) : prevApps
+}
 
 export function AuthProvider({
   apiKey,
@@ -752,8 +796,6 @@ export function AuthProvider({
 
   const [dailyQuestionSectionIndex, setDailyQuestionSectionIndex] = useState(0)
   const [dailyQuestionIndex, setDailyQuestionIndex] = useState(0)
-
-  const [input, setInput] = useState<string>("")
 
   // Reset daily questions when entering Retro mode
 
@@ -1240,23 +1282,20 @@ export function AuthProvider({
     }
   }, [isRetro, app, dailyQuestionSectionIndex, dailyQuestionIndex])
 
+  const c = whiteLabels.find((label) => label.slug === "chrry")
+
   const siteConfigApp = useMemo(
     () =>
       whiteLabels.find(
         (label) =>
           label.slug === app?.slug || app?.store?.app?.slug === label.slug,
-      ),
-    [app],
+      ) || c,
+    [app, c],
   )
 
   const setIsRetro = (value: boolean) => {
     setIsRetroInternal(value)
     isRetroRef.current = value
-
-    // Clear input when exiting retro mode
-    if (!value && input) {
-      setInput("")
-    }
 
     if (value) {
       setDailyQuestionSectionIndex(0)
@@ -1264,16 +1303,7 @@ export function AuthProvider({
     }
   }
 
-  // Sync input with current question when dailyQuestionData changes
-  useEffect(() => {
-    if (isRetro && dailyQuestionData?.currentQuestion) {
-      console.log(
-        "🔄 Syncing input with question:",
-        dailyQuestionData.currentQuestion,
-      )
-      setInput(dailyQuestionData.currentQuestion)
-    }
-  }, [isRetro, dailyQuestionData?.currentQuestion])
+  // Note: Input syncing with daily questions now handled in ChatProvider
 
   const chrryUrl = CHRRY_URL
 
@@ -1388,15 +1418,6 @@ export function AuthProvider({
     },
   )
   const sessionData = sessionSwr || session
-
-  useEffect(() => {
-    const diff = allApps.filter(
-      (app) => !storeApps?.some((a) => a.id === app.id),
-    )
-    if (diff && diff.length > 0) {
-      mergeApps(diff)
-    }
-  }, [allApps.length, storeApps?.length])
 
   const _getAlterNativeDomains = (store: storeWithApps) => {
     // Map askvex.com and vex.chrry.ai as equivalent domains
@@ -1989,6 +2010,10 @@ export function AuthProvider({
   const [storeApp, setStoreAppInternal] = useState<appWithStore | undefined>(
     storeAppInternal,
   )
+  const showAllTribe = !!(
+    pathname === "/tribe" ||
+    (siteConfig.isTribe && pathname === "/")
+  )
 
   const installs = [
     "atlas",
@@ -2011,15 +2036,17 @@ export function AuthProvider({
     storeApp?.chromeWebStoreUrl ||
     "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
 
+  const withFallback = "chrry"
   const minioUrl = "https://minio.chrry.dev/chrry-installs/installs"
-  const downloadUrl =
-    app && installs.includes(app?.slug || "")
+  const downloadUrl = showAllTribe
+    ? `${minioUrl}/Tribe.dmg`
+    : app && installs.includes(app?.slug || "")
       ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
       : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
         ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
-        : ""
-
-  const isZarathustra = app?.slug === "zarathustra"
+        : installs.includes(withFallback)
+          ? `${minioUrl}/${capitalizeFirstLetter(withFallback)}.dmg`
+          : ""
 
   const isBaseAppZarathustra = baseApp?.slug === "zarathustra"
 
@@ -2071,7 +2098,13 @@ export function AuthProvider({
   }
 
   const getTribeUrl = () => {
-    return siteConfig?.isTribe ? "/" : `/tribe`
+    return showAllTribe
+      ? siteConfig?.isTribe
+        ? "/"
+        : `/tribe`
+      : siteConfig?.isTribe
+        ? "/?tribe=true"
+        : `/tribe`
   }
 
   const canBurn = true
@@ -2130,7 +2163,6 @@ export function AuthProvider({
     const ask = searchParams.get("ask")
     if (ask !== null) {
       setAskInternal(ask)
-      setInput(ask)
     }
     const about = searchParams.get("about")
     about !== null && setAbout(about)
@@ -2142,13 +2174,12 @@ export function AuthProvider({
     if (value) {
       router.push(`/?ask=${encodeURIComponent(value)}`)
     }
-
-    value && setInput(value)
   }
 
   useEffect(() => {
-    setIsPearInternal(isPearInternal)
-    if (isPearInternal)
+    isPearInternal && setIsPearInternal(isPearInternal)
+    if (isPearInternal) {
+      setShowFocus(false)
       plausible({
         name: ANALYTICS_EVENTS.PEAR,
         props: {
@@ -2158,24 +2189,16 @@ export function AuthProvider({
           id: app?.id,
         },
       })
+    }
   }, [isPearInternal])
 
   const setIsPear = (value: appWithStore | undefined) => {
-    if (value) {
-      setInput("")
-    }
-
     setIsPearInternal(!!value)
     if (value) {
       router.push(`${getAppSlug(value)}?pear=true`)
       toast.success(`${t("Let's Pear")} 🍐`)
     }
   }
-
-  useEffect(() => {
-    setIsPearInternal(isPearInternal)
-    if (isPearInternal) setShowFocus(false)
-  }, [isPearInternal])
 
   const isProgramme =
     (!!isProgrammeInternal && !siteConfig.isTribe) ||
@@ -2303,8 +2326,9 @@ export function AuthProvider({
     ? tribes?.tribes?.find((t) => t.slug === tribeSlug)
     : undefined
 
-  const showAllTribe =
-    pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
+  useEffect(() => {
+    ;(showAllTribe || _isExcluded) && setIsPear(undefined)
+  }, [showAllTribe])
 
   const tribeQuery = searchParams.get("tribe") === "true"
 
@@ -2316,6 +2340,7 @@ export function AuthProvider({
       showAllTribe ||
       tribeSlug ||
       postId ||
+      tribeQuery ||
       props.showTribe ||
       canBeTribeProfile
     ) && canShowTribe
@@ -2846,7 +2871,7 @@ export function AuthProvider({
 
   // Create sign out wrapper
   const signOutContext = async (options: { callbackUrl?: string }) => {
-    return signOutContext(options)
+    return signOutInternal(options)
   }
 
   const popcorn = storeApps.find((app) => app.slug === "popcorn")
@@ -3184,8 +3209,6 @@ export function AuthProvider({
         updateMood,
         setThreadId,
         burning,
-        input,
-        setInput,
         lastAppId,
         isRemovingApp,
         storeApps, // All apps from all stores
@@ -3235,6 +3258,7 @@ export function AuthProvider({
         postId,
         mergeApps,
         getTribeUrl,
+        showAllTribe,
       }}
     >
       {children}

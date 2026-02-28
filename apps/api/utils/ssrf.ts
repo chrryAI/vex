@@ -20,28 +20,70 @@ const getEnv = () => {
 const isProduction =
   getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
 
-function isPrivateIP(ip: string): boolean {
+export function isPrivateIP(ip: string): boolean {
   // Helper function to check IPv4 address
   function checkIPv4Private(ipv4: string): boolean {
+    // Strictly validate IPv4 format (exactly 4 segments, each 0-255, no leading characters or garbage)
+    if (
+      !/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
+        ipv4,
+      )
+    ) {
+      return false
+    }
     const parts = ipv4.split(".").map(Number)
-    if (parts.length !== 4) return false
 
-    // 127.0.0.0/8 (Loopback)
-    if (parts[0] === 127) return true
+    // 0.0.0.0/8 (Current network)
+    if (parts[0] === 0) return true
     // 10.0.0.0/8 (Private)
     if (parts[0] === 10) return true
+    // 100.64.0.0/10 (CGNAT)
+    if (parts[0] === 100 && parts[1] && parts[1] >= 64 && parts[1] <= 127)
+      return true
+    // 127.0.0.0/8 (Loopback)
+    if (parts[0] === 127) return true
+    // 169.254.0.0/16 (Link-local)
+    if (parts[0] === 169 && parts[1] === 254) return true
     // 172.16.0.0/12 (Private)
     if (parts[0] === 172 && parts[1] && parts[1] >= 16 && parts[1] <= 31)
       return true
+    // 192.0.0.0/24 (IETF Protocol Assignments)
+    if (parts[0] === 192 && parts[1] === 0 && parts[2] === 0) return true
+    // 192.0.2.0/24 (TEST-NET-1)
+    if (parts[0] === 192 && parts[1] === 0 && parts[2] === 2) return true
     // 192.168.0.0/16 (Private)
     if (parts[0] === 192 && parts[1] === 168) return true
-    // 169.254.0.0/16 (Link-local)
-    if (parts[0] === 169 && parts[1] === 254) return true
-    // 0.0.0.0/8 (Current network)
-    if (parts[0] === 0) return true
-    // 100.64.0.0/10 (CGNAT - Carrier-Grade NAT)
-    if (parts[0] === 100 && parts[1] && parts[1] >= 64 && parts[1] <= 127)
+    // 198.51.100.0/24 (TEST-NET-2)
+    if (parts[0] === 198 && parts[1] === 51 && parts[2] === 100) return true
+    // 203.0.113.0/24 (TEST-NET-3)
+    if (parts[0] === 203 && parts[1] === 0 && parts[2] === 113) return true
+    // 224.0.0.0/4 (Multicast)
+    if (parts[0] && parts[0] >= 224 && parts[0] <= 239) return true
+    // 240.0.0.0/4 (Reserved)
+    if (parts[0] && parts[0] >= 240) return true
+    // 255.255.255.255 (Limited Broadcast)
+    if (
+      parts[0] === 255 &&
+      parts[1] === 255 &&
+      parts[2] === 255 &&
+      parts[3] === 255
+    )
       return true
+
+    // 198.51.100.0/24 (TEST-NET-2)
+    if (parts[0] === 198 && parts[1] === 51 && parts[2] === 100) return true
+
+    // 203.0.113.0/24 (TEST-NET-3)
+    if (parts[0] === 203 && parts[1] === 0 && parts[2] === 113) return true
+
+    // 224.0.0.0/4 (Multicast)
+    // 224.0.0.0 - 239.255.255.255
+    if (parts[0] && parts[0] >= 224 && parts[0] <= 239) return true
+
+    // 240.0.0.0/4 (Reserved)
+    // 240.0.0.0 - 255.255.255.254
+    // This also covers 255.255.255.255 (Limited Broadcast)
+    if (parts[0] && parts[0] >= 240) return true
 
     return false
   }
@@ -53,15 +95,15 @@ function isPrivateIP(ip: string): boolean {
   }
 
   // IPv4 checks
-  if (cleanIP.includes(".") && !cleanIP.includes(":")) {
+  if (net.isIPv4(cleanIP)) {
     return checkIPv4Private(cleanIP)
   }
 
   // IPv6 checks
-  if (cleanIP.includes(":")) {
+  if (net.isIPv6(cleanIP)) {
     const normalizedIP = cleanIP.toLowerCase()
 
-    // Check for IPv4-mapped IPv6 addresses (::ffff:x.x.x.x or ::ffff:xxxx:xxxx)
+    // Check for IPv4-mapped IPv6 addresses (::ffff:x.x.x.x)
     if (normalizedIP.startsWith("::ffff:")) {
       // Extract the IPv4 part after ::ffff:
       const ipv4Part = normalizedIP.substring(7) // Remove "::ffff:" prefix
@@ -86,13 +128,21 @@ function isPrivateIP(ip: string): boolean {
       }
     }
 
+    // :: (Unspecified)
+    if (normalizedIP === "::" || normalizedIP === "0:0:0:0:0:0:0:0") return true
     // ::1/128 (Loopback)
     if (normalizedIP === "::1" || normalizedIP === "0:0:0:0:0:0:0:1")
       return true
+    // 64:ff9b::/96 (IPv4/IPv6 translation)
+    if (normalizedIP.startsWith("64:ff9b:")) return true
+    // 100::/64 (Discard-Only)
+    if (normalizedIP.startsWith("100:")) return true
+    // 2001:db8::/32 (Documentation)
+    if (normalizedIP.startsWith("2001:db8:")) return true
     // fc00::/7 (Unique Local)
     if (normalizedIP.startsWith("fc") || normalizedIP.startsWith("fd"))
       return true
-    // fe80::/10 (Link Local)
+    // fe80::/10 (Link Local) - fe80 to febf
     if (
       normalizedIP.startsWith("fe8") ||
       normalizedIP.startsWith("fe9") ||
@@ -101,7 +151,33 @@ function isPrivateIP(ip: string): boolean {
     )
       return true
 
+    // ff00::/8 (Multicast)
+    if (normalizedIP.startsWith("ff")) return true
+
     return false
+  }
+
+  function expandIPv6(ip: string): number[] | null {
+    if (!ip.includes(":")) return null
+    let fullIP = ip
+    if (ip.includes("::")) {
+      const parts = ip.split("::")
+      if (parts.length > 2) return null // Only one :: allowed
+
+      const leftPart = parts[0] || ""
+      const rightPart = parts[1] || ""
+
+      const left = leftPart.split(":").filter((x) => x !== "")
+      const right = rightPart.split(":").filter((x) => x !== "")
+
+      const missing = 8 - (left.length + right.length)
+      if (missing < 0) return null
+
+      fullIP = [...left, ...Array(missing).fill("0"), ...right].join(":")
+    }
+    const blocks = fullIP.split(":")
+    if (blocks.length !== 8) return null
+    return blocks.map((b) => parseInt(b || "0", 16))
   }
 
   return false
@@ -214,6 +290,10 @@ export async function safeFetch(
       headers.set("User-Agent", "Chrry/1.0")
     }
 
+    // Security: S5144 - We have manually validated safeUrl via getSafeUrl() above
+    // which resolves DNS and checks against private IP ranges (IPv4 & IPv6).
+    // We also use 'redirect: manual' to re-validate every hop.
+    // // NOSONAR
     response = await fetch(safeUrl, {
       ...options,
       headers,
