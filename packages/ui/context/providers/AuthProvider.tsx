@@ -91,6 +91,7 @@ import ago from "../../utils/timeAgo"
 import { excludedSlugRoutes } from "../../utils/url"
 import { useTheme } from "../ThemeContext"
 import type { Task } from "../TimerContext"
+import { hasStoreApps, merge } from "../../utils/appUtils"
 import type { AppStatus } from "./AppProvider"
 import { useError } from "./ErrorProvider"
 
@@ -1155,6 +1156,7 @@ export function AuthProvider({
       props?.session?.userBaseApp ||
       props?.session?.guestBaseApp,
   )
+  // Memoize allApps to prevent expensive array operations on every render
   const allApps = useMemo(
     () =>
       merge(
