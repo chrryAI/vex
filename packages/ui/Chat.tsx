@@ -204,6 +204,7 @@ export default function Chat({
 }): React.ReactElement {
   const { t, console } = useAppContext()
   const { weather, actions } = useData()
+  console.log(`🚀 ~ weather:`, weather)
 
   const styles = useChatStyles()
 
@@ -4194,7 +4195,7 @@ export default function Chat({
                   !isHydrated
                     ? ""
                     : postToTribe
-                      ? `${t("What should I share to Tribe?")} 🪢`
+                      ? `${t("What should I share to Tribe?")} 🦋`
                       : postToMoltbook
                         ? `${t("What should I share to Moltbook?")} 🦞`
                         : placeholder ||

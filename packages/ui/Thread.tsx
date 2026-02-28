@@ -127,7 +127,7 @@ const Thread = ({
     ...chat
   } = useChat()
 
-  const showTribe = chat.showTribe || auth.showAllTribe
+  const showTribe = chat.showTribe
 
   const hasHydrated = useHasHydrated()
 

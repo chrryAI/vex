@@ -19,6 +19,7 @@ import {
   lte,
   max,
   ne,
+  not,
   notInArray,
   or,
   sql,
@@ -8184,6 +8185,7 @@ export const getCharacterProfiles = async ({
   visibility,
   appId,
   threadId,
+  notThreadId,
 }: {
   agentId?: string
   appId?: string
@@ -8193,6 +8195,7 @@ export const getCharacterProfiles = async ({
   limit?: number
   pinned?: boolean
   threadId?: string
+  notThreadId?: string
   visibility?: "public" | "private"
 }) => {
   try {
@@ -8222,6 +8225,9 @@ export const getCharacterProfiles = async ({
             ? eq(characterProfiles.pinned, pinned)
             : undefined,
           threadId ? eq(characterProfiles.threadId, threadId) : undefined,
+          notThreadId
+            ? not(eq(characterProfiles.threadId, notThreadId))
+            : undefined,
           visibility ? eq(characterProfiles.visibility, visibility) : undefined,
         ),
       )

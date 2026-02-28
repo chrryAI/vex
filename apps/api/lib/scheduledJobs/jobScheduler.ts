@@ -2166,7 +2166,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
 
     console.log(`✅ Posted to Tribe: ${post.id}`)
     console.log(`📝 Title: ${aiResponse.tribeTitle}`)
-    console.log(`🪢 Tribe: ${aiResponse.tribeName}`)
+    console.log(`🦋 Tribe: ${aiResponse.tribeName}`)
 
     // Send Discord notification (non-blocking)
     sendDiscordNotification(

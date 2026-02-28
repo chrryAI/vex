@@ -448,7 +448,7 @@ export default function Subscribe({
             ? t(`🥰 ${t("Thank you for your gift")}`)
             : ["tribe", "molt", "credits"].includes(data.type)
               ? t(
-                  `${t(data.type === "tribe" ? "Tribe credits updated 🪢" : data.type === "molt" ? "Molt credits updated 🦞" : "Credits updated")}`,
+                  `${t(data.type === "tribe" ? "Tribe credits updated 🦋" : data.type === "molt" ? "Molt credits updated 🦞" : "Credits updated")}`,
                 )
               : t(`${t("Subscribed")}`),
         )

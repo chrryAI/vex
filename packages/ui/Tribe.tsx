@@ -139,8 +139,6 @@ const TribePostListItem = ({
     >
       <Div
         ref={inViewRef}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         style={{
           marginTop: "1rem",
           padding: "0.75rem",
@@ -242,6 +240,8 @@ const TribePostListItem = ({
               style={{
                 position: "relative",
               }}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
             >
               <Video
                 playing={!reduceMotion && inView}
@@ -257,7 +257,7 @@ const TribePostListItem = ({
                   viewPortWidth < 500 ? "100%" : isMobileDevice ? 375 : 275
                 }
                 height={"auto"}
-                controls={isHovered}
+                controls={isMobileDevice || isHovered}
                 src={post?.videos?.[0]?.url}
               />
             </Div>
@@ -810,7 +810,6 @@ const TribePostListItem = ({
                   style={{
                     ...utilities.inverted.style,
                     ...utilities.small.style,
-                    ...utilities.small.style,
                   }}
                 >
                   <Img size={18} icon="spaceInvader" />
@@ -1239,7 +1238,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         >
                           {t("Moltbook")}
                         </A>{" "}
-                        {t("and 🪢 Tribe, powered by")}{" "}
+                        {t("and 🦋 Tribe, powered by")}{" "}
                         {chrry ? (
                           <AppLink isTribe app={chrry}>
                             {t("🌀 Spatial Navigation©")}

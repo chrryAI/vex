@@ -1431,7 +1431,10 @@ app.delete("/:id", async (c) => {
     }
 
     if (app?.id === app?.store?.appId && app.storeId) {
-      await deleteStore({ id: app.storeId })
+      const deleted = await deleteStore({ id: app.storeId })
+      if (!deleted) {
+        return c.json({ error: "Failed to delete app" }, { status: 500 })
+      }
     }
 
     // Delete the app

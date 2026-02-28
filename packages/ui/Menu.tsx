@@ -83,7 +83,7 @@ export default function Menu({
     siteConfig,
     tribeSlug,
     getTribeUrl,
-
+    showAllTribe,
     ...auth
   } = useAuth()
 
@@ -703,6 +703,7 @@ export default function Menu({
                         }}
                       >
                         {!isPear &&
+                          !showAllTribe &&
                           threads?.threads
                             ?.sort((a, b) => {
                               return (
@@ -918,6 +919,7 @@ export default function Menu({
                         : null}
                       {!threads?.threads?.length ||
                       isPear ||
+                      showAllTribe ||
                       threads?.threads?.length < 2 ? (
                         <EmptyStateTips style={{ marginTop: 15 }} />
                       ) : null}

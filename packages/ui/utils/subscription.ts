@@ -442,7 +442,7 @@ export const getFeatures = ({
     },
     {
       emoji: "🎭",
-      text: t("Customizable 👊 Tyler & 🪢 Zarathustra Personas"),
+      text: t("Customizable 👊 Tyler & 🦋 Zarathustra Personas"),
     },
     {
       emoji: "🛡️",

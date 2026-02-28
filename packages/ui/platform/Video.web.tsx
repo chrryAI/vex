@@ -33,7 +33,7 @@ const Video: React.FC<VideoProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    if (!videoRef.current) return
+    if (!videoRef.current || playing === undefined) return
 
     if (playing) {
       videoRef.current.play().catch((err) => {
