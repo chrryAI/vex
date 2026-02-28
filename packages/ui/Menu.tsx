@@ -83,11 +83,12 @@ export default function Menu({
     siteConfig,
     tribeSlug,
     getTribeUrl,
-    showAllTribe,
     ...auth
   } = useAuth()
 
-  const { setShowTribe } = useChat()
+  const { setShowTribe, showTribe } = useChat()
+
+  const showAllTribe = auth.showAllTribe && showTribe
 
   const city = (user || guest)?.city || ""
   const { utilities } = useStyles()
