@@ -12,6 +12,7 @@ export interface VideoProps {
   className?: string
   width?: number | string
   height?: number | string
+  playing?: boolean
 }
 
 const Video: React.FC<VideoProps> = ({ style, width, height }) => {

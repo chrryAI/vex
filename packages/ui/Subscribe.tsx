@@ -8,6 +8,7 @@ import { useAppContext } from "./context/AppContext"
 import {
   useApp,
   useAuth,
+  useChat,
   useData,
   useError,
   useNavigationContext,
@@ -107,12 +108,13 @@ export default function Subscribe({
     accountApp,
     app,
     setSignInPart,
-    setAsk,
-    setAbout,
+
     fetchScheduledJobs,
     setTribeStripeSession,
     getAppSlug,
   } = useAuth()
+
+  const { setAsk, setAbout } = useChat()
 
   // Note: onPaymentVerified is now called directly in verifyPayment after completion
   // to avoid race conditions with creditTransaction creation
@@ -446,7 +448,7 @@ export default function Subscribe({
             ? t(`🥰 ${t("Thank you for your gift")}`)
             : ["tribe", "molt", "credits"].includes(data.type)
               ? t(
-                  `${t(data.type === "tribe" ? "Tribe credits updated 🪢" : data.type === "molt" ? "Molt credits updated 🦞" : "Credits updated")}`,
+                  `${t(data.type === "tribe" ? "Tribe credits updated 🦋" : data.type === "molt" ? "Molt credits updated 🦞" : "Credits updated")}`,
                 )
               : t(`${t("Subscribed")}`),
         )

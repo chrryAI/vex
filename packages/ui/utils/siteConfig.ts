@@ -357,7 +357,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as siteMode,
   slug: "focus",
-  version: "26.11.27",
+  version: "26.11.31",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -980,7 +980,7 @@ const zarathustra = {
   email: "iliyan@chrry.ai",
   description:
     "Your AI philosophy guide. Explore Nietzsche, existentialism, and timeless wisdom through intelligent conversation.",
-  logo: "🪢",
+  logo: "🦋",
   primaryColor: "#7C3AED", // Purple/violet for wisdom
   links: {
     github: "https://github.com/chrryai/vex",
@@ -2702,7 +2702,7 @@ export function detectsiteModeDomain(
   hostname?: string,
   mode?: siteMode,
 ): siteMode {
-  const devMode = "tribe"
+  const devMode = "vex"
 
   const defaultMode = (getEnv().VITE_SITE_MODE as siteMode) || mode || devMode
 

@@ -66,6 +66,8 @@ const ChatContext = createContext<
       isImageGenerationEnabled: boolean
       setShowTribe: (show: boolean) => void
       showTribe: boolean | undefined
+      setAbout: (value: string | undefined) => void
+      setAsk: (value: string | undefined) => void
       setIsImageGenerationEnabled: (
         value: boolean,
         forAgent?: aiAgent | null,
@@ -209,14 +211,14 @@ export function ChatProvider({
     burn,
     setBurn,
     isPear,
-    input,
-    setInput,
     setShowFocus,
     showFocus,
     hourlyLimit,
     hourlyUsageLeft,
     baseApp,
     postId,
+    showAllTribe,
+    siteConfig,
     ...auth
   } = useAuth()
 
@@ -250,7 +252,34 @@ export function ChatProvider({
 
   const { isExtension, isMobile, isTauri } = usePlatform()
 
+  // Move input state here to prevent AuthProvider re-renders
+  const [input, setInput] = useState<string>("")
+
+  // Override setAsk and setAbout to also update input
+  const setAsk = (value: string | undefined) => {
+    auth.setAsk(value)
+    if (value) {
+      setInput(value)
+    }
+  }
+
+  const setAbout = (value: string | undefined) => {
+    auth.setAbout(value)
+  }
+
   const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
+
+  // Sync input with URL ask/about parameters
+  useEffect(() => {
+    const ask = searchParams.get("ask")
+    const about = searchParams.get("about")
+
+    if (ask) {
+      setInput(ask)
+    } else if (about) {
+      setInput(about)
+    }
+  }, [searchParams])
 
   let userNameByUrl: string | undefined
 
@@ -443,10 +472,21 @@ export function ChatProvider({
   }
 
   useEffect(() => {
-    if (!threadIdRef.current) {
+    if (
+      !threadIdRef.current ||
+      pathname === "/tribe" ||
+      (siteConfig.isTribe && pathname === "/")
+    ) {
+      setCollaborationStep(0)
+      setThread(undefined)
+      setProfile(undefined)
+      setStatus(null)
+      setCollaborationStatus(null)
+      setIsChatFloating(false)
+      setThreadId(undefined)
       setMessages([])
     }
-  }, [threadIdRef.current])
+  }, [threadIdRef.current, showAllTribe, pathname])
 
   const setIsNewChat = ({
     value,
@@ -1096,6 +1136,7 @@ export function ChatProvider({
     if (showFocus) setShowFocus(false)
 
     if (!threadId && !force) return
+    if (postId && !force) return
     if (showTribe) return
     if (isEmpty || isUserScrolling || hasStoppedScrolling) return
     setTimeout(() => {
@@ -1307,6 +1348,8 @@ export function ChatProvider({
         setShouldGetCredits,
         showTribe,
         setShowTribe,
+        setAsk,
+        setAbout,
       }}
     >
       {children}

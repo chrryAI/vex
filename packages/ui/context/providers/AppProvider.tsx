@@ -444,7 +444,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const defaultExtendedApps =
     (isAppOwner && !canCreateNewApp
       ? app?.store?.apps.filter((a) => a.id !== app?.id)
-      : storeApps.filter((a) =>
+      : chrry?.store?.apps.filter((a) =>
           [
             "sushi",
             "vex",
@@ -453,6 +453,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             "zarathustra",
             "nebula",
             "vault",
+            "focus",
           ].includes(a.slug),
         )) || []
 

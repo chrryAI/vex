@@ -55,7 +55,7 @@ export default function EmptyStateTips({
       return `🍐 ${t("Feedback Tips")}`
     }
     if (showTribe) {
-      return `🪢 ${t("Tribe Tips")}`
+      return `🦋 ${t("Tribe Tips")}`
     }
 
     if (isManagingApp || canEditApp) {

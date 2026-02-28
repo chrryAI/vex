@@ -83,11 +83,12 @@ export default function Menu({
     siteConfig,
     tribeSlug,
     getTribeUrl,
-
     ...auth
   } = useAuth()
 
-  const { setShowTribe } = useChat()
+  const { setShowTribe, showTribe } = useChat()
+
+  const showAllTribe = auth.showAllTribe && showTribe
 
   const city = (user || guest)?.city || ""
   const { utilities } = useStyles()
@@ -392,7 +393,7 @@ export default function Menu({
                       toggleMenuIfSmallDevice()
 
                       if (showTribeProfile) {
-                        push(`${getTribeUrl()}?tribe=true`)
+                        push(`${getTribeUrl()}`)
                       } else {
                         setIsNewChat({
                           value: true,
@@ -703,6 +704,7 @@ export default function Menu({
                         }}
                       >
                         {!isPear &&
+                          !showAllTribe &&
                           threads?.threads
                             ?.sort((a, b) => {
                               return (
@@ -918,6 +920,7 @@ export default function Menu({
                         : null}
                       {!threads?.threads?.length ||
                       isPear ||
+                      showAllTribe ||
                       threads?.threads?.length < 2 ? (
                         <EmptyStateTips style={{ marginTop: 15 }} />
                       ) : null}

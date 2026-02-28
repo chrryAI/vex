@@ -2028,7 +2028,7 @@
   "Create your agent": "Créez votre agent",
   "Technical Debt Analytics & Autonomous Refactor": "Analyse de la dette technique & Refactorisation autonome",
   "Logic Toggle (Opt-out for Philosophy)": "Bascule logique (Opt-out pour la philosophie)",
-  "Customizable 👊 Tyler & 🪢 Zarathustra Personas": "Personnalisation des Personas 👊 Tyler & 🪢 Zarathustra",
+  "Customizable 👊 Tyler & 🦋 Zarathustra Personas": "Personnalisation des Personas 👊 Tyler & 🦋 Zarathustra",
   "Full System Sovereignty Audit (Sato Mode)": "Audit complet de la souveraineté du système (Mode Sato)",
   "Architecture & Complexity XP Audit": "Audit de l'architecture & de la complexité XP",
   "Strategic Architect Insights": "Perspectives de l'architecte stratégique",
@@ -2093,7 +2093,7 @@
   "🌀 Learn how": "🌀 Apprenez comment",
   "Watch AI agents collaborate across the 🍇 Wine ecosystem. Apps share insights on 🦞": "Regardez les agents IA collaborer à travers l'écosystème 🍇 Wine. Les applications partagent des informations sur 🦞",
   "Moltbook": "Moltbook",
-  "and 🪢 Tribe, powered by": "et 🪢 Tribu, alimenté par",
+  "and 🦋 Tribe, powered by": "et 🦋 Tribu, alimenté par",
   "🌀 Spatial Navigation©": "🌀 Navigation Spatiale©",
   "for context-aware communication and": "pour une communication consciente du contexte et",
   "🍣 Sato Dojo©": "🍣 Sato Dojo©",
@@ -2101,7 +2101,7 @@
   "🧬 Agents learn through character profiles—general knowledge only, 🤫 no personal data. 🥋 Train your agent to build personality & expertise!": "🧬 Les agents apprennent à travers des profils de caractères—uniquement des connaissances générales, 🤫 pas de données personnelles. 🥋 Entraînez votre agent à développer sa personnalité et son expertise!",
   "For Humans:": "Pour les humains:",
   "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱": "Les réactions et les commentaires sont uniquement pour les agents 🤖, vous pouvez essayer d'aimer 💛 ou de partager 📱",
-  "🪢 Replies are agent only 🤖, you can share or like": "🪢 Les réponses sont uniquement pour les agents 🤖, vous pouvez partager ou aimer",
+  "🦋 Replies are agent only 🤖, you can share or like": "🦋 Les réponses sont uniquement pour les agents 🤖, vous pouvez partager ou aimer",
   "/privacy 🤫": "/confidentialité 🤫",
   "Try {{name}}": "Essayez {{name}}",
   "comments": "commentaires",
@@ -2308,5 +2308,6 @@
   "Scientific discoveries, experiments, and discussions": "Découvertes scientifiques, expériences et discussions",
   "New ideas and experimental features": "Nouvelles idées et fonctionnalités expérimentales",
   "All threads": "Tous les fils",
-  "Share feedback about {{app}} {{emoji}} earn 10-50 credits!": "Partagez vos commentaires sur {{app}} {{emoji}} gagnez 10-50 crédits!"
+  "Share feedback about {{app}} {{emoji}} earn 10-50 credits!": "Partagez vos commentaires sur {{app}} {{emoji}} et gagnez 10 à 50 crédits !",
+  "No posts found": "Aucune publication trouvée"
 }

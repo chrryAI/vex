@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "2.0.43",
+  "version": "2.0.46",
   "type": "module",
   "scripts": {
     "build": "turbo build",
@@ -51,7 +51,8 @@
     "husky": "^9.1.7",
     "is-reference": "^3.0.3",
     "openai": "^6.17.0",
-    "tsx": "^4.21.0"
+    "tsx": "^4.21.0",
+    "vitest": "^4.0.18"
   },
   "overrides": {
     "zod": "^4.1.5",

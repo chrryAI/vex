@@ -62,9 +62,9 @@ const now = new Date()
 const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
 async function createAgents() {
-  if (isProd) {
-    return undefined
-  }
+  // if (isProd) {
+  //   return undefined
+  // }
 
   const deepSeekAgent = await createAiAgent({
     name: "deepSeek",
@@ -115,14 +115,14 @@ async function createAgents() {
 
   const claudeAgent = await createAiAgent({
     name: "claude",
-    displayName: "Claude Sonnet 4.5",
-    version: "4.5",
+    displayName: "Claude Sonnet 4.6",
+    version: "4.6",
     apiURL: "https://api.anthropic.com/v1/messages",
     state: "active",
     description: "Helpful, safe, and human-like conversational AI",
     creditCost: 3,
     authorization: "all",
-    modelId: "claude-sonnet-4-20250514",
+    modelId: "anthropic/claude-sonnet-4.6",
     maxPromptSize: 200000,
     order: 0,
     capabilities: {
@@ -164,15 +164,15 @@ async function createAgents() {
 
   const geminiAgent = await createAiAgent({
     name: "gemini",
-    displayName: "Gemini 3.0 Pro",
-    version: "3.0",
+    displayName: "Gemini 3.1 Pro",
+    version: "3.1",
     apiURL:
       "https://generativelanguage.googleapis.com/v1/models/gemini-3.0-pro:streamGenerateContent",
     state: "active",
     description: "Most advanced Gemini 3 Pro model.",
     creditCost: 4,
     authorization: "all",
-    modelId: "gemini-3-pro-preview",
+    modelId: "google/gemini-3.1-pro-preview",
     maxPromptSize: 2000000,
     order: 1,
     capabilities: {
@@ -309,7 +309,7 @@ const clearDb = async (): Promise<void> => {
   //   if (allTribeKeys.length > 0) {
   //     await redis.del(...allTribeKeys)
   //     console.log(
-  //       `🪢 Cleared ${allTribeKeys.length} tribe cache keys from Redis`,
+  //       `🦋 Cleared ${allTribeKeys.length} tribe cache keys from Redis`,
   //     )
   //   }
 
@@ -1831,9 +1831,11 @@ const prod = async () => {
     email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  const { vex } = await createStores({ user: admin })
+  const agents = await createAgents()
+  // console.log(`🚀 ~ agents:`, agents)
+  // const { vex } = await createStores({ user: admin })
 
-  await seedScheduledTribeJobs({ admin })
+  // await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 

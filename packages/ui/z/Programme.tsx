@@ -36,7 +36,6 @@ export default function Programme() {
 
   const handleBack = () => {
     setIsProgramme(false)
-    setEntered(false)
     removeParams("entered")
   }
 

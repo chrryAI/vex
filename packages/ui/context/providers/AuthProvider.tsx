@@ -66,6 +66,7 @@ import {
   getThreadId,
   type instructionBase,
   isCI,
+  isDeepEqual,
   isDevelopment,
   isE2E,
   isOwner,
@@ -119,6 +120,7 @@ const AuthContext = createContext<
         timestamp: number
         duration?: number
       } | null
+      showAllTribe: boolean
       timer?: timer
       tribeSlug?: string
       currentTribe?: tribe
@@ -154,8 +156,6 @@ const AuthContext = createContext<
       setDeviceId: (value: string) => void
       pear: appWithStore | undefined
       isPear: boolean
-      input: string
-      setInput: (value: string) => void
       setIsPear: (value: appWithStore | undefined) => void
       grapes: appWithStore[]
       setIsProgramme: (value: boolean) => void
@@ -391,6 +391,7 @@ export const hasStoreApps = (app: appWithStore | undefined) => {
 export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
   // Create a map of existing apps by ID
   const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
+  let hasChange = false
 
   // Add or update apps
   newApps.forEach((newApp) => {
@@ -402,7 +403,7 @@ export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
       const existingHasStoreApps = hasStoreApps(existingApp)
 
       // Merge: prefer new app but preserve existing store.apps if new one is empty/undefined
-      existingAppsMap.set(newApp.id, {
+      const merged = {
         ...existingApp,
         ...newApp,
         store: newHasStoreApps
@@ -410,15 +411,21 @@ export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
           : existingHasStoreApps
             ? existingApp.store
             : newApp.store,
-      })
+      }
+
+      // Deep compare to detect actual changes
+      if (!isDeepEqual(existingApp, merged)) {
+        existingAppsMap.set(newApp.id, merged)
+        hasChange = true
+      }
     } else {
       existingAppsMap.set(newApp.id, newApp)
+      hasChange = true
     }
   })
 
-  const result = Array.from(existingAppsMap.values())
-
-  return result
+  // Only return a new array if something actually changed
+  return hasChange ? Array.from(existingAppsMap.values()) : prevApps
 }
 
 export function AuthProvider({
@@ -788,8 +795,6 @@ export function AuthProvider({
 
   const [dailyQuestionSectionIndex, setDailyQuestionSectionIndex] = useState(0)
   const [dailyQuestionIndex, setDailyQuestionIndex] = useState(0)
-
-  const [input, setInput] = useState<string>("")
 
   // Reset daily questions when entering Retro mode
 
@@ -1290,27 +1295,13 @@ export function AuthProvider({
     setIsRetroInternal(value)
     isRetroRef.current = value
 
-    // Clear input when exiting retro mode
-    if (!value && input) {
-      setInput("")
-    }
-
     if (value) {
       setDailyQuestionSectionIndex(0)
       setDailyQuestionIndex(0)
     }
   }
 
-  // Sync input with current question when dailyQuestionData changes
-  useEffect(() => {
-    if (isRetro && dailyQuestionData?.currentQuestion) {
-      console.log(
-        "🔄 Syncing input with question:",
-        dailyQuestionData.currentQuestion,
-      )
-      setInput(dailyQuestionData.currentQuestion)
-    }
-  }, [isRetro, dailyQuestionData?.currentQuestion])
+  // Note: Input syncing with daily questions now handled in ChatProvider
 
   const chrryUrl = CHRRY_URL
 
@@ -1425,32 +1416,6 @@ export function AuthProvider({
     },
   )
   const sessionData = sessionSwr || session
-
-  useEffect(() => {
-    if (!allApps.length) return
-
-    setAllApps((prevApps) => {
-      const appMap = new Map(prevApps.map((a) => [a.id, a]))
-      let hasChange = false
-
-      allApps.forEach((app) => {
-        const existing = appMap.get(app.id)
-        if (!existing) {
-          appMap.set(app.id, app)
-          hasChange = true
-        } else {
-          // Use the existing merge helper to preserve hydrated data
-          const merged = merge([existing], [app])[0]
-          if (merged && JSON.stringify(existing) !== JSON.stringify(merged)) {
-            appMap.set(app.id, merged)
-            hasChange = true
-          }
-        }
-      })
-
-      return hasChange ? Array.from(appMap.values()) : prevApps
-    })
-  }, [allApps])
 
   const _getAlterNativeDomains = (store: storeWithApps) => {
     // Map askvex.com and vex.chrry.ai as equivalent domains
@@ -2043,6 +2008,10 @@ export function AuthProvider({
   const [storeApp, setStoreAppInternal] = useState<appWithStore | undefined>(
     storeAppInternal,
   )
+  const showAllTribe = !!(
+    pathname === "/tribe" ||
+    (siteConfig.isTribe && pathname === "/")
+  )
 
   const installs = [
     "atlas",
@@ -2067,8 +2036,9 @@ export function AuthProvider({
 
   const withFallback = "chrry"
   const minioUrl = "https://minio.chrry.dev/chrry-installs/installs"
-  const downloadUrl =
-    app && installs.includes(app?.slug || "")
+  const downloadUrl = showAllTribe
+    ? `${minioUrl}/Tribe.dmg`
+    : app && installs.includes(app?.slug || "")
       ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
       : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
         ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
@@ -2126,7 +2096,13 @@ export function AuthProvider({
   }
 
   const getTribeUrl = () => {
-    return siteConfig?.isTribe ? "/" : `/tribe`
+    return showAllTribe
+      ? siteConfig?.isTribe
+        ? "/"
+        : `/tribe`
+      : siteConfig?.isTribe
+        ? "/?tribe=true"
+        : `/tribe`
   }
 
   const canBurn = true
@@ -2185,7 +2161,6 @@ export function AuthProvider({
     const ask = searchParams.get("ask")
     if (ask !== null) {
       setAskInternal(ask)
-      setInput(ask)
     }
     const about = searchParams.get("about")
     about !== null && setAbout(about)
@@ -2197,8 +2172,6 @@ export function AuthProvider({
     if (value) {
       router.push(`/?ask=${encodeURIComponent(value)}`)
     }
-
-    value && setInput(value)
   }
 
   useEffect(() => {
@@ -2218,10 +2191,6 @@ export function AuthProvider({
   }, [isPearInternal])
 
   const setIsPear = (value: appWithStore | undefined) => {
-    if (value) {
-      setInput("")
-    }
-
     setIsPearInternal(!!value)
     if (value) {
       router.push(`${getAppSlug(value)}?pear=true`)
@@ -2354,9 +2323,6 @@ export function AuthProvider({
   const currentTribe = tribeSlug
     ? tribes?.tribes?.find((t) => t.slug === tribeSlug)
     : undefined
-
-  const showAllTribe =
-    pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
 
   useEffect(() => {
     ;(showAllTribe || _isExcluded) && setIsPear(undefined)
@@ -3241,8 +3207,6 @@ export function AuthProvider({
         updateMood,
         setThreadId,
         burning,
-        input,
-        setInput,
         lastAppId,
         isRemovingApp,
         storeApps, // All apps from all stores
@@ -3292,6 +3256,7 @@ export function AuthProvider({
         postId,
         mergeApps,
         getTribeUrl,
+        showAllTribe,
       }}
     >
       {children}

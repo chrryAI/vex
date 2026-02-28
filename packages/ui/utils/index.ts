@@ -414,7 +414,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "2.0.43"
+export const VERSION = config.version || "2.0.46"
 export type instructionBase = {
   id: string
   title: string
@@ -698,26 +698,24 @@ export const OWNER_CREDITS = 999999
 
 export const isDeepEqual = (obj1: any, obj2: any): boolean => {
   if (obj1 === obj2) return true
-  if (
-    typeof obj1 !== "object" ||
-    obj1 === null ||
-    typeof obj2 !== "object" ||
-    obj2 === null
-  ) {
-    return false
+
+  if (obj1 && obj2 && typeof obj1 === "object" && typeof obj2 === "object") {
+    // Array olup olmadıklarını kontrol et
+    if (Array.isArray(obj1) !== Array.isArray(obj2)) return false
+
+    const keys = Object.keys(obj1)
+    if (keys.length !== Object.keys(obj2).length) return false
+
+    for (const key of keys) {
+      if (!Object.hasOwn(obj2, key)) return false
+      if (!isDeepEqual(obj1[key], obj2[key])) return false
+    }
+    return true
   }
 
-  const keys1 = Object.keys(obj1)
-  const keys2 = Object.keys(obj2)
-
-  if (keys1.length !== keys2.length) return false
-
-  for (const key of keys1) {
-    if (!keys2.includes(key)) return false
-    if (!isDeepEqual(obj1[key], obj2[key])) return false
-  }
-
-  return true
+  // NaN === NaN check
+  // biome-ignore lint/suspicious/noSelfCompare: Standard way to check for NaN
+  return obj1 !== obj1 && obj2 !== obj2
 }
 
 export type { estimateJobCreditsParams, scheduleSlot } from "./creditCalculator"
