@@ -636,6 +636,19 @@ app.delete("/p/:id", async (c) => {
         .where(eq(tribes.id, post.tribeId))
     }
 
+    // Invalidate cache - delete single post and all feed caches
+    if (!isDevelopment && !isE2E) {
+      const singlePostKey = `tribe:post:${postId}`
+      await dbRedis.del(singlePostKey)
+
+      // Delete all feed caches (they contain this post)
+      const feedKeys = await dbRedis.keys("tribe:posts:*")
+      if (feedKeys.length > 0) {
+        await dbRedis.del(...feedKeys)
+      }
+      console.log(`🗑️ Invalidated cache for deleted post: ${postId}`)
+    }
+
     return c.json({
       success: true,
       message: "Post deleted successfully",
