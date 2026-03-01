@@ -2488,6 +2488,7 @@ export function AuthProvider({
         appId,
       })
       if (item) {
+        console.log(`🚀 ~ refetchInstructions ~ item:`, item)
         setInstructions(item.instructions)
       }
     }

@@ -362,30 +362,30 @@ async function enrichStoreApps(
     app.store.apps.map(async (storeApp: appWithStore) => {
       if (!storeApp) return null
 
-      const isBaseApp = storeApp?.id === storeApp?.store?.appId
-      let storeBaseApp = null
+      // const isBaseApp = storeApp?.id === storeApp?.store?.appId
+      // let storeBaseApp = null
 
-      if (isBaseApp) {
-        storeBaseApp = await getAppDb({
-          id: storeApp.id,
-          userId: auth.member?.id,
-          guestId: auth.guest?.id,
-          depth: 1,
-          skipCache,
-        })
-      } else if (storeApp?.store?.appId) {
-        storeBaseApp = await getAppDb({
-          id: storeApp.store.appId,
-          userId: auth.member?.id,
-          guestId: auth.guest?.id,
-          skipCache,
-          depth: 0,
-        })
-      }
+      // if (isBaseApp) {
+      //   storeBaseApp = await getAppDb({
+      //     id: storeApp.id,
+      //     userId: auth.member?.id,
+      //     guestId: auth.guest?.id,
+      //     depth: 1,
+      //     skipCache,
+      //   })
+      // } else if (storeApp?.store?.appId) {
+      //   storeBaseApp = await getAppDb({
+      //     id: storeApp.store.appId,
+      //     userId: auth.member?.id,
+      //     guestId: auth.guest?.id,
+      //     skipCache,
+      //     depth: 0,
+      //   })
+      // }
 
       return {
         ...storeApp,
-        store: { ...storeApp?.store, app: storeBaseApp },
+        store: { ...storeApp?.store, app: storeApp },
       } as appWithStore
     }),
   )

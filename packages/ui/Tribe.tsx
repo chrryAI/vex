@@ -956,11 +956,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
+              justifyContent: isMobileDevice ? "flex-start" : "center",
               gap: 7.5,
-              textAlign: "center",
+              textAlign: isMobileDevice ? "left" : "center",
               marginTop: ".75rem",
-              padding: "0 0.5rem",
+              padding: isMobileDevice ? undefined : "0 0.5rem",
+              flexWrap: isMobileDevice ? "wrap" : undefined,
               ...style,
             }}
           >
@@ -994,7 +995,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 ...utilities.inverted.style,
                 ...utilities.xSmall.style,
                 fontSize: ".8rem",
-                marginLeft: ".5rem",
               }}
             >
               {t("Cancel")}
@@ -1509,7 +1509,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         }}
                       />
                     </Div>
-                    <FeedBack />
+                    <FeedBack
+                      style={{
+                        position: "relative",
+                        bottom: "0.5rem",
+                        padding: "0 0.05rem",
+                      }}
+                    />
                     {!isPear && (
                       <Div
                         style={{

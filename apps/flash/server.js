@@ -1,6 +1,7 @@
 import "dotenv/config"
 import fs from "node:fs/promises"
 import arcjet, { fixedWindow, shield } from "@arcjet/node"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import cookieParser from "cookie-parser"
 import express from "express"
 
@@ -17,7 +18,7 @@ import express from "express"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "2.0.48"
+const VERSION = "2.0.49"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -370,22 +371,52 @@ app.get("/sitemap.xml", async (req, res) => {
         process.env.API_URL ||
         "https://chrry.dev/api"
 
-    // Add timeout to prevent hanging
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+    const siteConfig = getSiteConfig(req.hostname)
 
-    const response = await fetch(`${apiUrl}/sitemap.xml`, {
-      headers: {
-        "X-Forwarded-Host": req.hostname,
-        "X-Forwarded-Proto": req.protocol,
-      },
-      signal: controller.signal,
-    })
+    // Retry logic for dev mode (API may not be ready immediately)
+    let response
+    let lastError
+    const maxRetries = isDev ? 3 : 1
 
-    clearTimeout(timeoutId)
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(
+          () => controller.abort(),
+          isDev ? 30000 : 10000,
+        )
 
-    if (!response.ok) {
-      throw new Error(`API returned ${response.status}`)
+        response = await fetch(
+          `${apiUrl}/sitemap.xml?chrryUrl=${encodeURIComponent(siteConfig.url)})&tribe=${siteConfig.isTribe}`,
+          {
+            headers: {
+              "X-Forwarded-Host": req.hostname,
+              "X-Forwarded-Proto": req.protocol,
+            },
+            signal: controller.signal,
+          },
+        )
+
+        clearTimeout(timeoutId)
+
+        if (response.ok) {
+          break // Success, exit retry loop
+        }
+
+        lastError = new Error(`API returned ${response.status}`)
+        if (i < maxRetries - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1))) // Exponential backoff
+        }
+      } catch (err) {
+        lastError = err
+        if (i < maxRetries - 1 && isDev) {
+          await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)))
+        }
+      }
+    }
+
+    if (!response || !response.ok) {
+      throw lastError || new Error("Failed to fetch sitemap")
     }
 
     const xml = await response.text()
@@ -414,7 +445,6 @@ app.get("/favicon.ico", async (req, res) => {
   try {
     // Use getSiteConfig for white-label detection (same as metadataToHtml)
     const hostname = req.hostname || "localhost"
-    const { getSiteConfig } = await import("@chrryai/chrry/utils/siteConfig")
     const siteConfig = getSiteConfig(`https://${hostname}`)
 
     // Match metadataToHtml logic exactly
