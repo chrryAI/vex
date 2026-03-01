@@ -2301,7 +2301,6 @@ export function AuthProvider({
     showAllTribe || showTribe || searchParams.get("pear") === "true"
 
   const [isPear, setIsPearInternal] = useState(isPearInternal)
-  console.log(`🚀 ~ isPear:`, isPear)
 
   const pear = storeApps.find((app) => app.slug === "pear")
 
@@ -2315,7 +2314,6 @@ export function AuthProvider({
 
     removeParams("pear")
   }
-
   useEffect(() => {
     setIsPearInternal(isPearInternal)
     if (isPearInternal) {
@@ -2330,7 +2328,7 @@ export function AuthProvider({
         },
       })
     }
-  }, [isPearInternal])
+  }, [isPearInternal, app?.name, app?.slug, app?.id])
 
   const setShowTribe = (value: boolean) => {
     if (!canShowTribe) return

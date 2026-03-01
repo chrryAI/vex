@@ -714,7 +714,7 @@ export default function Menu({
                             0,
                             showAllTribe || isPear
                               ? 1
-                              : threads?.threads.length,
+                              : threads?.threads?.length,
                           )
                           .map((thread, index) => (
                             <MotiView

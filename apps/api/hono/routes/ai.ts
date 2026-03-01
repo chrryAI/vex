@@ -563,7 +563,6 @@ const beasts = [
   "debugger",
   "vault",
   "atlas",
-  "atlas",
   "search",
   "popcorn",
 ]
