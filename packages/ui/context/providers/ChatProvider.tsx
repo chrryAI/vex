@@ -500,7 +500,7 @@ export function ChatProvider({
 
       final =
         pear === true
-          ? `${final}${to.includes("?") ? "&" : "?"}pear=true`
+          ? `${final}${final.includes("?") ? "&" : "?"}pear=true`
           : final
 
       setCollaborationStep(0)

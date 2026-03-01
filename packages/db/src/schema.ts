@@ -1112,7 +1112,7 @@ export const tribePostTranslations = pgTable(
   },
   (table) => ({
     // Index for fast lookups by post and language
-    postLanguageIdx: index("tribePostTranslations_post_language_idx").on(
+    postLanguageIdx: uniqueIndex("tribePostTranslations_post_language_idx").on(
       table.postId,
       table.language,
     ),
