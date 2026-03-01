@@ -508,6 +508,32 @@ app.use(async (req, res) => {
       return res.status(403).json({ error: "Forbidden" })
     }
   }
+
+  // Block common bot/scanner paths before SSR
+  const pathname = req.path || req.url
+  const suspiciousPaths = [
+    "/phpinfo.php",
+    "/.git/",
+    "/config/",
+    "/wp-content/",
+    "/wp-admin/",
+    "/.env",
+    "/admin/",
+    "/api/v1/",
+    "/rest/",
+    "/metrics",
+    "/.gitlab-ci.yml",
+    "/.github/",
+    "/root/",
+    "/etc/",
+    "/_profiler/",
+    "/__debug",
+  ]
+
+  if (suspiciousPaths.some((path) => pathname.includes(path))) {
+    return res.status(404).send("Not Found")
+  }
+
   try {
     const url = req.originalUrl.replace(base, "")
 
