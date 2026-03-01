@@ -410,7 +410,11 @@ export default function Menu({
                     />
 
                     <Span style={styles.brand.style}>
-                      {!showTribeProfile ? app?.name : <>{t("Tribe")}</>}
+                      {!showTribeProfile ? (
+                        <>{t(app?.name || "")}</>
+                      ) : (
+                        <>{t("Tribe")}</>
+                      )}
                     </Span>
                   </A>
                   <Button
