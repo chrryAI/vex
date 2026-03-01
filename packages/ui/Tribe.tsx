@@ -18,6 +18,7 @@ import Grapes from "./Grapes"
 import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
 import Instructions from "./Instructions"
+import LanguageSwitcher from "./LanguageSwitcher"
 import {
   Button,
   Div,
@@ -450,6 +451,7 @@ const TribePostListItem = ({
                 </AppLink>
               </Div>
             )}
+            <LanguageSwitcher multi />
           </Div>
           {tryAppCharacterProfile === post.id ? (
             post.app?.characterProfile && (
@@ -1279,6 +1281,55 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         )}{" "}
                         {t("for autonomous coding.")}
                       </P>
+                      {isPear && (
+                        <Div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexWrap: "wrap",
+                            gap: 10,
+                            textAlign: "center",
+                            marginTop: "1rem",
+                            padding: "0 0.5rem",
+                          }}
+                        >
+                          {isPear && pear ? (
+                            <AppLink
+                              loading={<Loading size={18} />}
+                              app={pear}
+                              icon={<Img app={pear} size={18} />}
+                            />
+                          ) : (
+                            <Img slug={"pear"} size={24} />
+                          )}
+                          <P
+                            style={{
+                              fontSize: "1rem",
+                              color: COLORS.orange,
+                            }}
+                          >
+                            {t(
+                              "Share feedback about {{app}} {{emoji}} earn 10-50 credits!",
+                              { app: app?.name, emoji: app?.icon },
+                            )}{" "}
+                            🍇
+                          </P>
+                          <Button
+                            className="inverted"
+                            onClick={() => {
+                              setIsPear(undefined)
+                            }}
+                            style={{
+                              ...utilities.inverted.style,
+                              ...utilities.xSmall.style,
+                              fontSize: ".8rem",
+                            }}
+                          >
+                            {t("Cancel")}
+                          </Button>
+                        </Div>
+                      )}
                       <Div
                         style={{
                           marginTop: 20,
@@ -1293,6 +1344,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {app && (
                           <AppLink
                             isTribe={false}
+                            isPear={isPear}
                             app={app}
                             icon={<Img app={app} size={18} />}
                             className="button inverted"
@@ -1311,6 +1363,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {accountApp ? (
                           <AppLink
                             isTribe={false}
+                            isPear={isPear}
                             app={accountApp}
                             loading={<Loading size={18} />}
                             className="inverted"
@@ -1325,6 +1378,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           </AppLink>
                         ) : showTribeProfile && app ? (
                           <AppLink
+                            isPear={isPear}
                             app={app}
                             icon={<Img icon="spaceInvader" size={18} />}
                             loading={<Loading size={18} />}
@@ -1358,7 +1412,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             {t("Create Your Agent")}
                           </Button>
                         )}
-                        {app && (
+                        {app && !isPear && (
                           <Button
                             data-testid="grapes-feedback-button"
                             className="transparent"
@@ -1451,6 +1505,9 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         gap: 10,
                         lineHeight: "1.5",
                         flexWrap: "wrap",
+                        justifyContent: "center",
+                        position: "relative",
+                        bottom: ".5rem",
                       }}
                     >
                       <Div
@@ -1460,13 +1517,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           gap: 5,
                           flex: 1,
                           flexWrap: "wrap",
+                          justifyContent: "center",
                         }}
                       >
                         {isPear && pear ? (
                           <AppLink
+                            isPear={isPear}
                             loading={<Loading size={24} />}
                             app={pear}
-                            icon={<Img app={pear} size={30} />}
+                            icon={<Img app={pear} size={24} />}
                           />
                         ) : (
                           <Img
@@ -1474,7 +1533,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             app={
                               isPear ? undefined : app?.store?.app || undefined
                             }
-                            size={30}
+                            size={isPear ? 24 : 30}
                           />
                         )}
                         {isPear ? (
@@ -1483,6 +1542,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               display: "flex",
                               alignItems: "center",
                               flexWrap: "wrap",
+                              justifyContent: "center",
                               gap: 5,
                             }}
                           >
@@ -1792,6 +1852,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       {app && app?.id !== accountApp?.id && (
                         <AppLink
                           isTribe={false}
+                          isPear={isPear}
                           app={app}
                           icon={
                             app?.icon ? (

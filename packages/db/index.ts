@@ -118,6 +118,7 @@ import {
   tribeMemberships,
   tribeNews,
   tribePosts,
+  tribePostTranslations,
   tribeReactions,
   tribes,
   users,
