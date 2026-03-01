@@ -18,7 +18,8 @@ import Grapes from "./Grapes"
 import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
 import Instructions from "./Instructions"
-// import LanguageSwitcher from "./LanguageSwitcher"
+import LanguageSwitcher from "./LanguageSwitcher"
+import type { locale } from "./locales"
 import {
   Button,
   Div,
@@ -39,7 +40,7 @@ import Search from "./Search"
 import Skeleton from "./Skeleton"
 import { useTribeStyles } from "./Tribe.styles"
 import type { appWithStore, tribePost, user } from "./types"
-import { apiFetch, FRONTEND_URL } from "./utils"
+import { apiFetch, calculateTranslationCredits, FRONTEND_URL } from "./utils"
 import isOwner from "./utils/isOwner"
 
 const FocusButton = FocusButtonMini
@@ -51,8 +52,10 @@ import {
   BrickWallFire,
   CalendarIcon,
   CircleX,
+  Coins,
   HeartPlus,
   LoaderCircle,
+  OpenAI,
   Pin,
   Quote,
   Settings2,
@@ -88,6 +91,8 @@ const TribePostListItem = ({
   tags,
   setTags,
   postsRef,
+  addParams,
+  push,
 }: {
   post: tribePost
   index: number
@@ -118,6 +123,7 @@ const TribePostListItem = ({
   tags: string[]
   setTags: (tags: string[]) => void
   postsRef: RefObject<HTMLDivElement | null>
+  push: (to: string) => void
   downloadImage: (imageUrl: string, imageName?: string) => Promise<void>
 }) => {
   const [isHovered, setIsHovered] = useState(false)
@@ -126,7 +132,60 @@ const TribePostListItem = ({
     triggerOnce: false,
   })
 
+  const languages = post.languages
+
+  const [selectedLanguage, setSelectedLanguages] = useState<locale[]>(
+    languages ?? [],
+  )
+  const [isTranslating, setIsTranslating] = useState(false)
+
+  const changes = selectedLanguage.filter((l) => !(languages ?? []).includes(l))
+
   const { utilities } = useStyles()
+  const { API_URL, token } = useAuth()
+  const { refetchPosts } = useTribe()
+
+  const { creditsLeft } = useChat()
+
+  const totalCredits =
+    calculateTranslationCredits({
+      contentLength: post.content.length,
+    }) * changes.length
+
+  const translatePost = async () => {
+    setIsTranslating(true)
+    try {
+      const response = await apiFetch(
+        `${API_URL}/tribe/p/${post.id}/translate`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            languages: changes,
+          }),
+        },
+      )
+
+      if (response.ok) {
+        const data = await response.json()
+        toast.success(`${t("Translation completed")}: ${data.message ?? ""}`)
+        await refetchPosts()
+      } else {
+        const error = await response.json()
+        toast.error(
+          `${t("Translation failed")}: ${error.error || t("An error occurred")}`,
+        )
+      }
+    } catch (error) {
+      console.error("Translation error:", error)
+      toast.error(`${t("Translation failed")}: ${t("An error occurred")}`)
+    } finally {
+      setIsTranslating(false)
+    }
+  }
 
   return (
     <MotiView
@@ -451,7 +510,60 @@ const TribePostListItem = ({
                 </AppLink>
               </Div>
             )}
-            {/* <LanguageSwitcher multi /> */}
+            {owner && (
+              <LanguageSwitcher
+                handleSetLanguages={setSelectedLanguages}
+                multi
+                languages={post.languages}
+              >
+                {totalCredits ? (
+                  <Div
+                    style={{
+                      marginTop: "1.5rem",
+                      paddingTop: ".5rem",
+                      display: "flex",
+                      alignItems: "center",
+                      fontSize: "0.85rem",
+                      gap: ".5rem",
+                      flexWrap: "wrap",
+                      borderTop: "1px dashed var(--shade-1)",
+                    }}
+                  >
+                    <OpenAI size={24} />
+                    {t("{{appName}} post will be localized by ChatGPT", {
+                      appName: post.app.name,
+                    })}
+                    <Button
+                      disabled={isTranslating}
+                      className="inverted"
+                      onClick={async () => {
+                        if (creditsLeft) {
+                          addParams({
+                            subscribe: true,
+                            plan: "credits",
+                          })
+                          return
+                        }
+                        await translatePost()
+                      }}
+                      style={{
+                        marginLeft: "auto",
+                        ...utilities.inverted.style,
+                      }}
+                    >
+                      {isTranslating ? (
+                        <Loading size={16} />
+                      ) : (
+                        <Coins size={16} />
+                      )}
+                      {t("credits_other", {
+                        count: totalCredits,
+                      })}
+                    </Button>
+                  </Div>
+                ) : null}
+              </LanguageSwitcher>
+            )}
           </Div>
           {tryAppCharacterProfile === post.id ? (
             post.app?.characterProfile && (
@@ -2254,6 +2366,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           addParams={addParams}
                           setAppStatus={setAppStatus}
                           tags={tags}
+                          push={push}
                           setTags={setTags}
                           postsRef={postsRef}
                           downloadImage={downloadImage}

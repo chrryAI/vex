@@ -133,7 +133,7 @@ export async function loadServerData(
   const isLocalePathname =
     pathname && locales.includes(pathname.split("/")?.[1] as locale)
 
-  const localeCookie = cookies.locale as locale
+  const language = cookies.locale as locale
 
   const showTribe = cookies.showTribe === "true"
   const themeCookie = cookies.theme as themeType
@@ -162,7 +162,7 @@ export async function loadServerData(
   const locale = (
     isLocalePathname
       ? pathname.split("/")?.[1] || browserLocale
-      : localeCookie || browserLocale
+      : language || browserLocale
   ) as locale
 
   const threadId = getThreadId(pathname)
@@ -384,6 +384,7 @@ export async function loadServerData(
           id: postId,
           token: apiKey,
           API_URL,
+          language,
         })
       } catch (error) {
         console.error("❌ Tribe post fetch failed:", error)
@@ -447,6 +448,7 @@ export async function loadServerData(
               API_URL,
               sortBy,
               tags,
+              language,
             })
           : Promise.resolve(undefined),
       ])

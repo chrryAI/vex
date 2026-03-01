@@ -7,7 +7,7 @@ import { useAuth } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import { CircleCheck, Languages } from "./icons"
 import { useLanguageSwitcherStyles } from "./LanguageSwitcher.styles"
-import { LANGUAGES, type locale, type locales } from "./locales"
+import { LANGUAGES, type locale, locales } from "./locales"
 import Modal from "./Modal"
 import { Button, Div } from "./platform"
 import { apiFetch } from "./utils"
@@ -17,11 +17,11 @@ const LanguageSwitcher = ({
   style,
   multi,
   children,
-  languages = LANGUAGES,
+  languages = locales,
   handleSetLanguages,
 }: {
   multi?: boolean
-  languages?: typeof LANGUAGES
+  languages?: locale[]
   children?: React.ReactNode
   style?: React.CSSProperties
   handleSetLanguages?: (languages: locale[]) => void
@@ -32,7 +32,9 @@ const LanguageSwitcher = ({
   const { utilities } = useStyles()
 
   const { language, setLanguage, user, token, plausible, API_URL } = useAuth()
-  const [selected, setSelected] = useState<typeof locales>(["en"])
+  const [selected, setSelected] = useState<locale[]>(
+    languages.length ? languages : ["en"],
+  )
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
 
@@ -100,7 +102,7 @@ const LanguageSwitcher = ({
         }}
       >
         <Div style={styles.languages.style}>
-          {languages.map((item) => (
+          {LANGUAGES.map((item) => (
             <Button
               disabled={multi ? item.code === "en" : undefined}
               key={item.code}
@@ -108,9 +110,11 @@ const LanguageSwitcher = ({
                 ...utilities.link.style,
                 ...styles.languageButton.style,
                 color: multi
-                  ? selected.includes(item.code)
-                    ? "var(--shade-8)"
-                    : undefined
+                  ? languages.includes(item.code as locale)
+                    ? "var(--accent-4)"
+                    : selected.includes(item.code)
+                      ? "var(--accent-1)"
+                      : undefined
                   : item.code === language
                     ? "var(--shade-8)"
                     : "",

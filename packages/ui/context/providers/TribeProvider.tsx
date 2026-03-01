@@ -101,6 +101,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setTribePost,
     mergeApps,
     deviceId,
+    language,
     getAppSlug,
     tribeSlug,
     currentTribe,
@@ -249,13 +250,16 @@ export function TribeProvider({ children }: TribeProviderProps) {
     error: tribePostError,
     isLoading: isLoadingPost,
   } = useSWR(
-    postId && token ? ["tribePost", postId, app?.id, loadPostCounter] : null,
+    postId && token
+      ? ["tribePost", postId, app?.id, loadPostCounter, language]
+      : null,
     () => {
       if (!token || !postId) return
 
       return actions.getTribePost({
         id: postId,
         appId: app?.id,
+        language,
       })
     },
     {
@@ -299,6 +303,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
           canShowTribeProfile,
           loadPostsCounter,
           tribeSlug,
+          language,
         ]
       : null,
     () => {
@@ -306,6 +311,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
       return actions.getTribePosts({
         pageSize: 10 * until,
         search,
+        language,
         characterProfileIds,
         tags: tags.length > 0 ? tags : undefined,
         sortBy,
