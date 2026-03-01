@@ -5068,20 +5068,12 @@ export const getApp = async ({
           eq(apps.visibility, "public"),
         )
 
-  // Check if user owns any apps to determine cache strategy
-  const isAppOwner =
-    (userId &&
-      (await db.select().from(apps).where(eq(apps.userId, userId)).limit(1))
-        .length > 0) ||
-    (guestId &&
-      (await db.select().from(apps).where(eq(apps.guestId, guestId)).limit(1))
-        .length > 0)
-
-  // Use shared cache key for public apps if user doesn't own any apps
-  // Otherwise use user-specific key (they might have user-specific data like placeholders)
-  const cacheKey = isAppOwner
-    ? `app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
-    : `app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
+  // Use user-specific cache key if userId/guestId provided (for placeholders)
+  // Otherwise use public cache key
+  const cacheKey =
+    userId || guestId
+      ? `app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
+      : `app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
 
   // Try cache first
 
@@ -5243,11 +5235,16 @@ export const getApp = async ({
     }),
   } as unknown as appWithStore
 
+  // Determine if user is owner from query result (no extra DB queries needed)
+  const isOwner =
+    (userId && app.app.userId === userId) ||
+    (guestId && app.app.guestId === guestId)
+
   // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
-  setCache(cacheKey, result, isAppOwner ? 60 * 5 : 60 * 60)
+  setCache(cacheKey, result, isOwner ? 60 * 5 : 60 * 60)
 
   // Cross-seed public cache if owner-specific request
-  if (isAppOwner) {
+  if (isOwner) {
     const publicCacheKey = `app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
     // Sanitize user-specific data (placeholders)
     const publicResult = { ...result, placeHolder: undefined }
@@ -6261,25 +6258,12 @@ export async function getStores({
   includePublic?: boolean
   ownerId?: string
 }) {
-  // Check if user owns any stores to determine cache strategy
-  const isStoreOwner =
-    (userId &&
-      (await db.select().from(stores).where(eq(stores.userId, userId)).limit(1))
-        .length > 0) ||
-    (guestId &&
-      (
-        await db
-          .select()
-          .from(stores)
-          .where(eq(stores.guestId, guestId))
-          .limit(1)
-      ).length > 0)
-
-  // Use shared cache key for public stores if user doesn't own any stores
-  // Otherwise use user-specific key
-  const cacheKey = isStoreOwner
-    ? `stores:user:${userId}:guest:${guestId}:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
-    : `stores:public:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
+  // Use user-specific cache key if userId/guestId provided
+  // Otherwise use public cache key
+  const cacheKey =
+    userId || guestId
+      ? `stores:user:${userId}:guest:${guestId}:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
+      : `stores:public:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
 
   // Try cache first
   const cached = await getCache<storesListResult>(cacheKey)
@@ -6400,6 +6384,13 @@ export async function getStores({
     nextPage,
   }
 
+  // Determine if user owns any stores from results (no extra DB queries needed)
+  const isStoreOwner = cleanedStores.some(
+    (s) =>
+      (userId && s.store.userId === userId) ||
+      (guestId && s.store.guestId === guestId),
+  )
+
   // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
   setCache(cacheKey, storesResult, isStoreOwner ? 60 * 5 : 60 * 60)
 
@@ -6446,25 +6437,12 @@ export async function getStore({
   skipCache?: boolean
   parentStoreId?: string | null
 }) {
-  // Check if user owns any stores to determine cache strategy
-  const isStoreOwner =
-    (userId &&
-      (await db.select().from(stores).where(eq(stores.userId, userId)).limit(1))
-        .length > 0) ||
-    (guestId &&
-      (
-        await db
-          .select()
-          .from(stores)
-          .where(eq(stores.guestId, guestId))
-          .limit(1)
-      ).length > 0)
-
-  // Use shared cache key for public stores if user doesn't own any stores
-  // Otherwise use user-specific key
-  const cacheKey = isStoreOwner
-    ? `store:${id || slug || domain || appId}:user:${userId}:guest:${guestId}:depth:${depth}:parent:${parentStoreId || "none"}`
-    : `store:${id || slug || domain || appId}:public:depth:${depth}:parent:${parentStoreId || "none"}`
+  // Use user-specific cache key if userId/guestId provided
+  // Otherwise use public cache key
+  const cacheKey =
+    userId || guestId
+      ? `store:${id || slug || domain || appId}:user:${userId}:guest:${guestId}:depth:${depth}:parent:${parentStoreId || "none"}`
+      : `store:${id || slug || domain || appId}:public:depth:${depth}:parent:${parentStoreId || "none"}`
 
   if (!skipCache) {
     // Try cache first
@@ -6580,6 +6558,11 @@ export async function getStore({
     app: appWithStore,
     apps: appsWithNestedStores,
   }
+
+  // Determine if user is owner from query result (no extra DB queries needed)
+  const isStoreOwner =
+    (userId && result.stores.userId === userId) ||
+    (guestId && result.stores.guestId === guestId)
 
   // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
   setCache(cacheKey, storeResult, isStoreOwner ? 60 * 5 : 60 * 60)
