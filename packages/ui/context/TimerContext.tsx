@@ -404,7 +404,7 @@ export function TimerContextProvider({
           timer: data,
           selectedTasks: activeTasks,
           type: "timer",
-          isCountingDown: signal(false) as any,
+          isCountingDown: false,
         })
         return
       }
@@ -589,6 +589,9 @@ export function TimerContextProvider({
   }, [fingerprint, token, user, timer, isLoadingTimer])
 
   useSignalEffect(() => {
+    // Register signal dependencies explicitly so it tracks them
+    const _time = time.value
+
     if (
       !tokenRef.current ||
       !isCountingDown.value ||
@@ -694,7 +697,7 @@ export function TimerContextProvider({
 
   const currentStateRef = useRef({
     time: 0,
-    isCountingDown: signal(false) as any,
+    isCountingDown: false,
     isPaused: false,
     isFinished: false,
   })
@@ -718,7 +721,7 @@ export function TimerContextProvider({
       updateTimer({
         ...timer,
         count: 0,
-        isCountingDown: signal(false) as any,
+        isCountingDown: false,
       })
     }
 
@@ -842,13 +845,13 @@ export function TimerContextProvider({
       updateTimer({
         ...timer,
         count: 0,
-        isCountingDown: signal(false) as any,
+        isCountingDown: false,
       })
 
       setTimer({
         ...timer,
         count: 0,
-        isCountingDown: signal(false) as any,
+        isCountingDown: false,
       })
     }
 
@@ -883,7 +886,7 @@ export function TimerContextProvider({
       // Update local storage for web version
       setTimerState({
         time: time.value,
-        isCountingDown: signal(false) as any,
+        isCountingDown: false,
         isPaused: true,
         timestamp: Date.now(),
         startTime,
@@ -938,7 +941,7 @@ export function TimerContextProvider({
       // Save timer state
       setTimerState({
         time: newTime,
-        isCountingDown: signal(false) as any,
+        isCountingDown: false,
         isPaused: true,
         timestamp: Date.now(),
         startTime: Date.now(),
