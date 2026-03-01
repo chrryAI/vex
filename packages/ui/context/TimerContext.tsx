@@ -11,6 +11,13 @@ import {
   useRef,
   useState,
 } from "react"
+import {
+  useSignal,
+  useSignalEffect,
+  useComputed,
+  signal,
+} from "@preact/signals-react"
+import type { Signal } from "@preact/signals-react"
 import useSWR from "swr"
 import { useWebSocket } from "../hooks/useWebSocket"
 import { Audio, useLocalStorage, usePlatform, useTheme } from "../platform"
@@ -66,15 +73,17 @@ export const TimerContext = createContext<{
   setPlayBirds: (playBirds: boolean) => void
   activePomodoro: number | null
   setActivePomodoro: (activePomodoro: number | null) => void
-  time: number
-  isCountingDown: boolean
-  isPaused: boolean
-  isFinished: boolean
+  time: Signal<number>
+  isCountingDown: Signal<boolean>
+  isPaused: Signal<boolean>
+  isFinished: Signal<boolean>
   startTime: number
-  setIsCountingDown: (isCountingDown: boolean) => void
-  setIsPaused: (isPaused: boolean) => void
-  setTime: (time: number) => void
-  setIsFinished: (isFinished: boolean) => void
+  setIsCountingDown: (
+    isCountingDown: boolean | ((prev: boolean) => boolean),
+  ) => void
+  setIsPaused: (isPaused: boolean | ((prev: boolean) => boolean)) => void
+  setTime: (time: number | ((prev: number) => number)) => void
+  setIsFinished: (isFinished: boolean | ((prev: boolean) => boolean)) => void
   startCountdown: (duration?: number) => void
   setStartTime: (startTime: number) => void
   fetchTasks: () => Promise<void>
@@ -111,15 +120,15 @@ export const TimerContext = createContext<{
   setPlayBirds: (playBirds: boolean) => {},
   activePomodoro: null,
   setActivePomodoro: (activePomodoro: number | null) => {},
-  time: 0,
-  isCountingDown: false,
-  isPaused: false,
-  isFinished: false,
+  time: signal(0),
+  isCountingDown: signal(false) as any,
+  isPaused: signal(false),
+  isFinished: signal(false),
   startTime: 0,
-  setIsCountingDown: (isCountingDown: boolean) => {},
-  setIsPaused: (isPaused: boolean) => {},
-  setTime: (time: number) => {},
-  setIsFinished: (isFinished: boolean) => {},
+  setIsCountingDown: () => {},
+  setIsPaused: () => {},
+  setTime: () => {},
+  setIsFinished: () => {},
   startCountdown: (duration?: number) => {},
   setStartTime: (startTime: number) => {},
   handlePresetTime: (minutes: number) => {},
@@ -216,8 +225,18 @@ export function TimerContextProvider({
   })
 
   const isExtension = usePlatform()
-  const [time, setTime] = useState(0)
-  const [isCountingDown, setIsCountingDown] = useState(false)
+  const time = useSignal(0)
+  const setTime = useCallback((val: number | ((prev: number) => number)) => {
+    time.value = typeof val === "function" ? val(time.value) : val
+  }, [])
+  const isCountingDown = useSignal(false)
+  const setIsCountingDown = useCallback(
+    (val: boolean | ((prev: boolean) => boolean)) => {
+      isCountingDown.value =
+        typeof val === "function" ? val(isCountingDown.value) : val
+    },
+    [],
+  )
   const [replay, setReplay] = useState<boolean>(false)
   const [timer, setTimerInternal] = useState<timer | null>(null)
 
@@ -259,8 +278,20 @@ export function TimerContextProvider({
     setRemoteTimer(null)
   }, [remoteTimer, timer])
 
-  const [isPaused, setIsPaused] = useState(false)
-  const [isFinished, setIsFinished] = useState(false)
+  const isPaused = useSignal(false)
+  const setIsPaused = useCallback(
+    (val: boolean | ((prev: boolean) => boolean)) => {
+      isPaused.value = typeof val === "function" ? val(isPaused.value) : val
+    },
+    [],
+  )
+  const isFinished = useSignal(false)
+  const setIsFinished = useCallback(
+    (val: boolean | ((prev: boolean) => boolean)) => {
+      isFinished.value = typeof val === "function" ? val(isFinished.value) : val
+    },
+    [],
+  )
   const [isCancelled, setIsCancelled] = useState(false)
 
   const [timerTasks, _setTimerTasks] = useState<Task[]>([])
@@ -373,7 +404,7 @@ export function TimerContextProvider({
           timer: data,
           selectedTasks: activeTasks,
           type: "timer",
-          isCountingDown: false,
+          isCountingDown: signal(false) as any,
         })
         return
       }
@@ -394,9 +425,9 @@ export function TimerContextProvider({
   useEffect(() => {
     if (!timer) return
 
-    if (timer.isCountingDown === isCountingDown) return
+    if (timer.isCountingDown === isCountingDown.value) return
 
-    if (isCountingDown) {
+    if (isCountingDown.value) {
       handleResume()
     } else {
       handlePause()
@@ -557,8 +588,14 @@ export function TimerContextProvider({
     }
   }, [fingerprint, token, user, timer, isLoadingTimer])
 
-  useEffect(() => {
-    if (!token || !isCountingDown || isPaused || !selectedTasks?.length) return
+  useSignalEffect(() => {
+    if (
+      !tokenRef.current ||
+      !isCountingDown.value ||
+      isPaused.value ||
+      !selectedTasksRef.current?.length
+    )
+      return
 
     const currentElapsed = startTime
       ? Math.floor((Date.now() - startTime) / 1000)
@@ -566,7 +603,7 @@ export function TimerContextProvider({
     if (currentElapsed === 0) return
 
     const currentDay = new Date()
-    const selectedIds = new Set(selectedTasks.map((t) => t.id))
+    const selectedIds = new Set(selectedTasksRef.current.map((t) => t.id))
 
     // TEK SEFERDE TÜMÜNÜ GÜNCELLEME (BAM!)
     setTasks((prevTasks) => {
@@ -597,24 +634,32 @@ export function TimerContextProvider({
       // Side Effect'i burada değil, başka bir useEffect'te yakalamak en Sato'su!
       return { ...prevTasks, tasks: newTasksList }
     })
-  }, [
-    time,
-    isCountingDown,
-    isPaused,
-    token,
-    selectedTasks?.map((t) => t.id).join(","),
-  ])
+  })
 
   // Use ref to plausible timer sync - only sync on state changes, not every second
+  const tokenRef = useRef(token)
+  const selectedTasksRef = useRef(selectedTasks)
+  useEffect(() => {
+    tokenRef.current = token
+    selectedTasksRef.current = selectedTasks
+  }, [token, selectedTasks])
+
+  const timerRefForSync = useRef(timer)
+  const fingerprintRef = useRef(fingerprint)
+  useEffect(() => {
+    timerRefForSync.current = timer
+    fingerprintRef.current = fingerprint
+  }, [timer, fingerprint])
+
   const timerSyncRef = useRef<number>(0)
 
-  useEffect(() => {
-    if (!timer || !fingerprint) return
+  useSignalEffect(() => {
+    if (!timerRefForSync.current || !fingerprintRef.current) return
 
     // Sync timer state every 5 seconds while counting, or immediately on state change
     const now = Date.now()
     const shouldSync =
-      !isCountingDown || // State changed (stopped/paused)
+      !isCountingDown.value || // State changed (stopped/paused)
       now - timerSyncRef.current >= 5000 // 5s throttle while running
 
     if (!shouldSync) return
@@ -622,12 +667,12 @@ export function TimerContextProvider({
     timerSyncRef.current = now
 
     const updatedTimer = {
-      ...timer,
+      ...timerRefForSync.current,
       preset1: presetMin1,
       preset2: presetMin2,
       preset3: presetMin3,
-      isCountingDown,
-      count: time,
+      isCountingDown: isCountingDown.value,
+      count: time.value,
     }
 
     // Update local state
@@ -638,43 +683,33 @@ export function TimerContextProvider({
 
     // Persist to localStorage via hook
     setTimerState({
-      time,
-      isCountingDown,
-      isPaused,
+      time: time.value,
+      isCountingDown: isCountingDown.value,
+      isPaused: isPaused.value,
       startTime,
       timestamp: now,
       isFinished: false,
     })
-  }, [
-    time,
-    isCountingDown,
-    isPaused,
-    timer,
-    fingerprint,
-    presetMin1,
-    presetMin2,
-    presetMin3,
-    startTime,
-  ])
+  })
 
   const currentStateRef = useRef({
     time: 0,
-    isCountingDown: false,
+    isCountingDown: signal(false) as any,
     isPaused: false,
     isFinished: false,
   })
 
-  useEffect(() => {
+  useSignalEffect(() => {
     currentStateRef.current = {
-      time,
-      isCountingDown,
-      isPaused,
-      isFinished,
+      time: Number(time.value),
+      isCountingDown: Boolean(isCountingDown.value),
+      isPaused: Boolean(isPaused.value),
+      isFinished: Boolean(isFinished.value),
     }
-  }, [time, isCountingDown, isPaused, isFinished])
+  })
 
   const handleTimerEnd = useCallback(() => {
-    if (!isCountingDown) return
+    if (!isCountingDown.value) return
 
     setIsFinished(true)
     setPlayBirds(false)
@@ -683,7 +718,7 @@ export function TimerContextProvider({
       updateTimer({
         ...timer,
         count: 0,
-        isCountingDown: false,
+        isCountingDown: signal(false) as any,
       })
     }
 
@@ -712,11 +747,11 @@ export function TimerContextProvider({
     }, 1000)
   }, [isCountingDown, timer, updateTimer, isExtension, replay, presetMin1])
 
-  useEffect(() => {
-    if (time === 0 && isCountingDown) {
+  useSignalEffect(() => {
+    if (time.value === 0 && isCountingDown.value) {
       handleTimerEnd()
     }
-  }, [time, isCountingDown])
+  })
 
   const startCountdown = useCallback(
     (duration?: number) => {
@@ -747,7 +782,7 @@ export function TimerContextProvider({
 
       console.log("Starting web timer")
       // Start local timer for web mode
-      const initialTime = duration ?? time
+      const initialTime = duration ?? time.value
       let lastUpdate = now
 
       timerRef.current = setInterval(() => {
@@ -780,7 +815,10 @@ export function TimerContextProvider({
         isFinished: false,
       })
 
-      plausible({ name: "timer_start", props: { duration: duration || time } })
+      plausible({
+        name: "timer_start",
+        props: { duration: duration || time.value },
+      })
     },
     [time, isExtension, updateTimer, timer, fingerprint],
   )
@@ -804,13 +842,13 @@ export function TimerContextProvider({
       updateTimer({
         ...timer,
         count: 0,
-        isCountingDown: false,
+        isCountingDown: signal(false) as any,
       })
 
       setTimer({
         ...timer,
         count: 0,
-        isCountingDown: false,
+        isCountingDown: signal(false) as any,
       })
     }
 
@@ -844,8 +882,8 @@ export function TimerContextProvider({
 
       // Update local storage for web version
       setTimerState({
-        time,
-        isCountingDown: false,
+        time: time.value,
+        isCountingDown: signal(false) as any,
         isPaused: true,
         timestamp: Date.now(),
         startTime,
@@ -856,7 +894,7 @@ export function TimerContextProvider({
         updateTimer({ ...timer, isCountingDown: false })
       }
 
-      plausible({ name: "timer_pause", props: { timeLeft: time } })
+      plausible({ name: "timer_pause", props: { timeLeft: time.value } })
     },
     [timer, updateTimer, time, startTime, plausible],
   )
@@ -875,9 +913,9 @@ export function TimerContextProvider({
     }
 
     // Start countdown with current display time
-    startCountdown(time)
+    startCountdown(time.value)
 
-    plausible({ name: "timer_resume", props: { timeLeft: time } })
+    plausible({ name: "timer_resume", props: { timeLeft: time.value } })
   }, [time, startCountdown, plausible])
 
   const handlePresetTime = useCallback(
@@ -889,7 +927,7 @@ export function TimerContextProvider({
       setActivePomodoro(minutes)
 
       // Stop any running timer
-      if (isCountingDown) {
+      if (isCountingDown.value) {
         if (timerRef.current) {
           clearInterval(timerRef.current)
           timerRef.current = null
@@ -900,7 +938,7 @@ export function TimerContextProvider({
       // Save timer state
       setTimerState({
         time: newTime,
-        isCountingDown: false,
+        isCountingDown: signal(false) as any,
         isPaused: true,
         timestamp: Date.now(),
         startTime: Date.now(),
@@ -932,24 +970,24 @@ export function TimerContextProvider({
       // If timer was running, calculate elapsed time
       if (state.isCountingDown && !state.isPaused && state.startTime) {
         const elapsedTime = Math.floor((Date.now() - state.startTime) / 1000)
-        state.time = Math.max(0, state.time - elapsedTime)
+        state.time = Math.max(0, Number(state.time) - elapsedTime)
       }
 
       console.log("Restoring timer state:", state)
 
       if (state) {
-        setTime(state.time)
-        setIsCountingDown(state.isCountingDown)
-        setIsPaused(state.isPaused)
-        setIsFinished(state.isFinished)
+        setTime(Number(state.time))
+        setIsCountingDown(Boolean(state.isCountingDown))
+        setIsPaused(Boolean(state.isPaused))
+        setIsFinished(Boolean(state.isFinished))
 
         if (state.startTime) {
           setStartTime(state.startTime)
         }
 
         // If timer was running, restart it
-        if (state.isCountingDown && !state.isPaused && state.time > 0) {
-          startCountdown(state.time)
+        if (state.isCountingDown && !state.isPaused && Number(state.time) > 0) {
+          startCountdown(Number(state.time))
         }
       }
     } catch (error) {
@@ -1051,7 +1089,7 @@ export function TimerContextProvider({
   const startAdjustment = useCallback(
     (direction: number, isMinutes: boolean = false) => {
       // Stop any running timer
-      if (isCountingDown) {
+      if (isCountingDown.value) {
         if (timerRef.current) {
           clearInterval(timerRef.current)
           timerRef.current = null
@@ -1127,15 +1165,15 @@ export function TimerContextProvider({
 
   // Handle keyboard events
 
-  useEffect(() => {
-    if (isFinished) {
+  useSignalEffect(() => {
+    if (isFinished.value) {
       setPlayBirds(false)
       const timer = setTimeout(() => {
         setIsFinished(false)
-      }, 1000) // Match animation duration
+      }, 1000)
       return () => clearTimeout(timer)
     }
-  }, [isFinished])
+  })
 
   // Cleanup intervals on unmount
   useEffect(() => {
@@ -1292,10 +1330,6 @@ export function TimerContextProvider({
       fetchTasks,
       playBirds,
       activePomodoro,
-      time,
-      isCountingDown,
-      isPaused,
-      isFinished,
       startTime,
       startCountdown,
       handlePresetTime,
