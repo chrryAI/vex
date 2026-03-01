@@ -1049,7 +1049,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
                   {showTribeProfile && app ? (
                     <AppLink app={app} isTribe={false}>
-                      {app?.name}
+                      {t(app?.name)}
                     </AppLink>
                   ) : (
                     <>
