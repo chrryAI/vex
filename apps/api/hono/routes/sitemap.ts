@@ -211,9 +211,15 @@ async function getWhiteLabel(app: appWithStore) {
 sitemap.get("/", async (c) => {
   const url = new URL(c.req.url)
   const forwardedHost = c.req.header("X-Forwarded-Host")
+  const forwardedProto = c.req.header("X-Forwarded-Proto") || "https"
+
+  // Convert hostname to full URL
+  const forwardedUrl = forwardedHost
+    ? `${forwardedProto}://${forwardedHost}`
+    : null
 
   const chrryUrl =
-    url.searchParams.get("chrryUrl") || forwardedHost || "https://chrry.ai"
+    url.searchParams.get("chrryUrl") || forwardedUrl || "https://chrry.ai"
   const siteconfig = getSiteConfig(chrryUrl || undefined)
 
   // Fetch app with simplified logic
