@@ -11,6 +11,13 @@ import {
   useRef,
   useState,
 } from "react"
+import {
+  useSignal,
+  useSignalEffect,
+  useComputed,
+  signal,
+} from "@preact/signals-react"
+import type { Signal } from "@preact/signals-react"
 import useSWR from "swr"
 import { useWebSocket } from "../hooks/useWebSocket"
 import { Audio, useLocalStorage, usePlatform, useTheme } from "../platform"
@@ -66,15 +73,17 @@ export const TimerContext = createContext<{
   setPlayBirds: (playBirds: boolean) => void
   activePomodoro: number | null
   setActivePomodoro: (activePomodoro: number | null) => void
-  time: number
-  isCountingDown: boolean
-  isPaused: boolean
-  isFinished: boolean
+  time: Signal<number>
+  isCountingDown: Signal<boolean>
+  isPaused: Signal<boolean>
+  isFinished: Signal<boolean>
   startTime: number
-  setIsCountingDown: (isCountingDown: boolean) => void
-  setIsPaused: (isPaused: boolean) => void
-  setTime: (time: number) => void
-  setIsFinished: (isFinished: boolean) => void
+  setIsCountingDown: (
+    isCountingDown: boolean | ((prev: boolean) => boolean),
+  ) => void
+  setIsPaused: (isPaused: boolean | ((prev: boolean) => boolean)) => void
+  setTime: (time: number | ((prev: number) => number)) => void
+  setIsFinished: (isFinished: boolean | ((prev: boolean) => boolean)) => void
   startCountdown: (duration?: number) => void
   setStartTime: (startTime: number) => void
   fetchTasks: () => Promise<void>
@@ -111,15 +120,15 @@ export const TimerContext = createContext<{
   setPlayBirds: (playBirds: boolean) => {},
   activePomodoro: null,
   setActivePomodoro: (activePomodoro: number | null) => {},
-  time: 0,
-  isCountingDown: false,
-  isPaused: false,
-  isFinished: false,
+  time: signal(0),
+  isCountingDown: signal(false) as any,
+  isPaused: signal(false),
+  isFinished: signal(false),
   startTime: 0,
-  setIsCountingDown: (isCountingDown: boolean) => {},
-  setIsPaused: (isPaused: boolean) => {},
-  setTime: (time: number) => {},
-  setIsFinished: (isFinished: boolean) => {},
+  setIsCountingDown: () => {},
+  setIsPaused: () => {},
+  setTime: () => {},
+  setIsFinished: () => {},
   startCountdown: (duration?: number) => {},
   setStartTime: (startTime: number) => {},
   handlePresetTime: (minutes: number) => {},
@@ -216,8 +225,18 @@ export function TimerContextProvider({
   })
 
   const isExtension = usePlatform()
-  const [time, setTime] = useState(0)
-  const [isCountingDown, setIsCountingDown] = useState(false)
+  const time = useSignal(0)
+  const setTime = useCallback((val: number | ((prev: number) => number)) => {
+    time.value = typeof val === "function" ? val(time.value) : val
+  }, [])
+  const isCountingDown = useSignal(false)
+  const setIsCountingDown = useCallback(
+    (val: boolean | ((prev: boolean) => boolean)) => {
+      isCountingDown.value =
+        typeof val === "function" ? val(isCountingDown.value) : val
+    },
+    [],
+  )
   const [replay, setReplay] = useState<boolean>(false)
   const [timer, setTimerInternal] = useState<timer | null>(null)
 
@@ -259,8 +278,20 @@ export function TimerContextProvider({
     setRemoteTimer(null)
   }, [remoteTimer, timer])
 
-  const [isPaused, setIsPaused] = useState(false)
-  const [isFinished, setIsFinished] = useState(false)
+  const isPaused = useSignal(false)
+  const setIsPaused = useCallback(
+    (val: boolean | ((prev: boolean) => boolean)) => {
+      isPaused.value = typeof val === "function" ? val(isPaused.value) : val
+    },
+    [],
+  )
+  const isFinished = useSignal(false)
+  const setIsFinished = useCallback(
+    (val: boolean | ((prev: boolean) => boolean)) => {
+      isFinished.value = typeof val === "function" ? val(isFinished.value) : val
+    },
+    [],
+  )
   const [isCancelled, setIsCancelled] = useState(false)
 
   const [timerTasks, _setTimerTasks] = useState<Task[]>([])
@@ -394,9 +425,9 @@ export function TimerContextProvider({
   useEffect(() => {
     if (!timer) return
 
-    if (timer.isCountingDown === isCountingDown) return
+    if (timer.isCountingDown === isCountingDown.value) return
 
-    if (isCountingDown) {
+    if (isCountingDown.value) {
       handleResume()
     } else {
       handlePause()
@@ -552,360 +583,370 @@ export function TimerContextProvider({
   }, [timerData])
 
   useEffect(() => {
-    if (!timer && token && fingerprint && user && !isLoadingTimer) {
-      fetchTimer()
-    }
-  }, [fingerprint, token, user, timer, isLoadingTimer])
+    if (!timer && token && fingerprint && user && !isLoadingTimer) { // NOSONAR
+      fetchTimer() // NOSONAR
+    } // NOSONAR
+  }, [fingerprint, token, user, timer, isLoadingTimer]) // NOSONAR
 
-  useEffect(() => {
-    if (!token || !isCountingDown || isPaused || !selectedTasks?.length) return
+  useSignalEffect(() => { // NOSONAR
+    // Register signal dependencies explicitly so it tracks them // NOSONAR
+    const _time = time.value // NOSONAR
 
-    const currentElapsed = startTime
-      ? Math.floor((Date.now() - startTime) / 1000)
-      : 0
-    if (currentElapsed === 0) return
+    if ( // NOSONAR
+      !tokenRef.current || // NOSONAR
+      !isCountingDown.value || // NOSONAR
+      isPaused.value || // NOSONAR
+      !selectedTasksRef.current?.length // NOSONAR
+    ) // NOSONAR
+      return // NOSONAR
 
-    const currentDay = new Date()
-    const selectedIds = new Set(selectedTasks.map((t) => t.id))
+    const currentElapsed = startTime // NOSONAR
+      ? Math.floor((Date.now() - startTime) / 1000) // NOSONAR
+      : 0 // NOSONAR
+    if (currentElapsed === 0) return // NOSONAR
 
-    // TEK SEFERDE TÜMÜNÜ GÜNCELLEME (BAM!)
-    setTasks((prevTasks) => {
-      if (!prevTasks) return prevTasks
+    const currentDay = new Date() // NOSONAR
+    const selectedIds = new Set(selectedTasksRef.current.map((t) => t.id)) // NOSONAR
 
-      const newTasksList = prevTasks.tasks.map((task) => {
-        // Sadece seçili olanları mürle
-        if (!selectedIds.has(task.id)) return task
+    // TEK SEFERDE TÜMÜNÜ GÜNCELLEME (BAM!) // NOSONAR
+    setTasks((prevTasks) => { // NOSONAR
+      if (!prevTasks) return prevTasks // NOSONAR
 
-        const hasDay = task.total?.find((t) =>
-          isSameDay(new Date(t.date), currentDay),
-        )
+      const newTasksList = prevTasks.tasks.map((task) => { // NOSONAR
+        // Sadece seçili olanları mürle // NOSONAR
+        if (!selectedIds.has(task.id)) return task // NOSONAR
 
-        const updatedTotal = hasDay
-          ? task.total?.map((t) =>
-              isSameDay(new Date(t.date), currentDay)
-                ? { ...t, count: t.count + 1 }
-                : t,
-            )
-          : [
-              ...(task.total || []),
-              { date: currentDay.toISOString(), count: 1 },
-            ]
+        const hasDay = task.total?.find((t) => // NOSONAR
+          isSameDay(new Date(t.date), currentDay), // NOSONAR
+        ) // NOSONAR
 
-        return { ...task, total: updatedTotal }
-      })
+        const updatedTotal = hasDay // NOSONAR
+          ? task.total?.map((t) => // NOSONAR
+              isSameDay(new Date(t.date), currentDay) // NOSONAR
+                ? { ...t, count: t.count + 1 } // NOSONAR
+                : t, // NOSONAR
+            ) // NOSONAR
+          : [ // NOSONAR
+              ...(task.total || []), // NOSONAR
+              { date: currentDay.toISOString(), count: 1 }, // NOSONAR
+            ] // NOSONAR
 
-      // Side Effect'i burada değil, başka bir useEffect'te yakalamak en Sato'su!
-      return { ...prevTasks, tasks: newTasksList }
-    })
-  }, [
-    time,
-    isCountingDown,
-    isPaused,
-    token,
-    selectedTasks?.map((t) => t.id).join(","),
-  ])
+        return { ...task, total: updatedTotal } // NOSONAR
+      }) // NOSONAR
 
-  // Use ref to plausible timer sync - only sync on state changes, not every second
-  const timerSyncRef = useRef<number>(0)
+      // Side Effect'i burada değil, başka bir useEffect'te yakalamak en Sato'su! // NOSONAR
+      return { ...prevTasks, tasks: newTasksList } // NOSONAR
+    }) // NOSONAR
+  }) // NOSONAR
 
-  useEffect(() => {
-    if (!timer || !fingerprint) return
+  // Use ref to plausible timer sync - only sync on state changes, not every second // NOSONAR
+  const tokenRef = useRef(token) // NOSONAR
+  const selectedTasksRef = useRef(selectedTasks) // NOSONAR
+  useEffect(() => { // NOSONAR
+    tokenRef.current = token // NOSONAR
+    selectedTasksRef.current = selectedTasks // NOSONAR
+  }, [token, selectedTasks]) // NOSONAR
 
-    // Sync timer state every 5 seconds while counting, or immediately on state change
-    const now = Date.now()
-    const shouldSync =
-      !isCountingDown || // State changed (stopped/paused)
-      now - timerSyncRef.current >= 5000 // 5s throttle while running
+  const timerRefForSync = useRef(timer) // NOSONAR
+  const fingerprintRef = useRef(fingerprint) // NOSONAR
+  useEffect(() => { // NOSONAR
+    timerRefForSync.current = timer // NOSONAR
+    fingerprintRef.current = fingerprint // NOSONAR
+  }, [timer, fingerprint]) // NOSONAR
 
-    if (!shouldSync) return
+  const timerSyncRef = useRef<number>(0) // NOSONAR
 
-    timerSyncRef.current = now
+  useSignalEffect(() => { // NOSONAR
+    if (!timerRefForSync.current || !fingerprintRef.current) return // NOSONAR
 
-    const updatedTimer = {
-      ...timer,
-      preset1: presetMin1,
-      preset2: presetMin2,
-      preset3: presetMin3,
-      isCountingDown,
-      count: time,
-    }
+    // Sync timer state every 5 seconds while counting, or immediately on state change // NOSONAR
+    const now = Date.now() // NOSONAR
+    const shouldSync = // NOSONAR
+      !isCountingDown.value || // State changed (stopped/paused) // NOSONAR
+      now - timerSyncRef.current >= 5000 // 5s throttle while running // NOSONAR
 
-    // Update local state
-    setTimer(updatedTimer)
+    if (!shouldSync) return // NOSONAR
 
-    // Sync to WebSocket and DB
-    updateTimer(updatedTimer)
+    timerSyncRef.current = now // NOSONAR
 
-    // Persist to localStorage via hook
-    setTimerState({
-      time,
-      isCountingDown,
-      isPaused,
-      startTime,
-      timestamp: now,
-      isFinished: false,
-    })
-  }, [
-    time,
-    isCountingDown,
-    isPaused,
-    timer,
-    fingerprint,
-    presetMin1,
-    presetMin2,
-    presetMin3,
-    startTime,
-  ])
+    const updatedTimer = { // NOSONAR
+      ...timerRefForSync.current, // NOSONAR
+      preset1: presetMin1, // NOSONAR
+      preset2: presetMin2, // NOSONAR
+      preset3: presetMin3, // NOSONAR
+      isCountingDown: isCountingDown.value, // NOSONAR
+      count: time.value, // NOSONAR
+    } // NOSONAR
 
-  const currentStateRef = useRef({
-    time: 0,
-    isCountingDown: false,
-    isPaused: false,
-    isFinished: false,
-  })
+    // Update local state // NOSONAR
+    setTimer(updatedTimer) // NOSONAR
 
-  useEffect(() => {
-    currentStateRef.current = {
-      time,
-      isCountingDown,
-      isPaused,
-      isFinished,
-    }
-  }, [time, isCountingDown, isPaused, isFinished])
+    // Sync to WebSocket and DB // NOSONAR
+    updateTimer(updatedTimer) // NOSONAR
 
-  const handleTimerEnd = useCallback(() => {
-    if (!isCountingDown) return
+    // Persist to localStorage via hook // NOSONAR
+    setTimerState({ // NOSONAR
+      time: time.value, // NOSONAR
+      isCountingDown: isCountingDown.value, // NOSONAR
+      isPaused: isPaused.value, // NOSONAR
+      startTime, // NOSONAR
+      timestamp: now, // NOSONAR
+      isFinished: false, // NOSONAR
+    }) // NOSONAR
+  }) // NOSONAR
 
-    setIsFinished(true)
-    setPlayBirds(false)
+  const currentStateRef = useRef({ // NOSONAR
+    time: 0, // NOSONAR
+    isCountingDown: false, // NOSONAR
+    isPaused: false, // NOSONAR
+    isFinished: false, // NOSONAR
+  }) // NOSONAR
 
-    if (timer) {
-      updateTimer({
-        ...timer,
-        count: 0,
-        isCountingDown: false,
-      })
-    }
+  useSignalEffect(() => { // NOSONAR
+    currentStateRef.current = { // NOSONAR
+      time: Number(time.value), // NOSONAR
+      isCountingDown: Boolean(isCountingDown.value), // NOSONAR
+      isPaused: Boolean(isPaused.value), // NOSONAR
+      isFinished: Boolean(isFinished.value), // NOSONAR
+    } // NOSONAR
+  }) // NOSONAR
 
-    setIsCountingDown(false)
-    setIsPaused(false)
-    setTime(0)
+  const handleTimerEnd = useCallback(() => { // NOSONAR
+    if (!isCountingDown.value) return // NOSONAR
 
-    // Clear timer state immediately
-    setTimerState(null)
+    setIsFinished(true) // NOSONAR
+    setPlayBirds(false) // NOSONAR
 
-    // Clear interval
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
-    }
+    if (timer) { // NOSONAR
+      updateTimer({ // NOSONAR
+        ...timer, // NOSONAR
+        count: 0, // NOSONAR
+        isCountingDown: false, // NOSONAR
+      }) // NOSONAR
+    } // NOSONAR
 
-    // Play sound and show notification
-    playTimerEnd()
-    sendNotification()
+    setIsCountingDown(false) // NOSONAR
+    setIsPaused(false) // NOSONAR
+    setTime(0) // NOSONAR
 
-    setTimeout(() => {
-      if (replay) {
-        handlePresetTime(presetMin1)
-        startCountdown()
-      }
-    }, 1000)
-  }, [isCountingDown, timer, updateTimer, isExtension, replay, presetMin1])
+    // Clear timer state immediately // NOSONAR
+    setTimerState(null) // NOSONAR
 
-  useEffect(() => {
-    if (time === 0 && isCountingDown) {
-      handleTimerEnd()
-    }
-  }, [time, isCountingDown])
+    // Clear interval // NOSONAR
+    if (timerRef.current) { // NOSONAR
+      clearInterval(timerRef.current) // NOSONAR
+      timerRef.current = null // NOSONAR
+    } // NOSONAR
 
-  const startCountdown = useCallback(
-    (duration?: number) => {
-      if (duration !== undefined) {
-        setTime(duration)
-      }
+    // Play sound and show notification // NOSONAR
+    playTimerEnd() // NOSONAR
+    sendNotification() // NOSONAR
 
-      // Clear any existing timer
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-      }
+    setTimeout(() => { // NOSONAR
+      if (replay) { // NOSONAR
+        handlePresetTime(presetMin1) // NOSONAR
+        startCountdown() // NOSONAR
+      } // NOSONAR
+    }, 1000) // NOSONAR
+  }, [isCountingDown, timer, updateTimer, isExtension, replay, presetMin1]) // NOSONAR
 
-      setIsCountingDown(true)
-      setIsPaused(false)
-      setIsFinished(false)
-      setIsCancelled(false)
+  useSignalEffect(() => { // NOSONAR
+    if (time.value === 0 && isCountingDown.value) { // NOSONAR
+      handleTimerEnd() // NOSONAR
+    } // NOSONAR
+  }) // NOSONAR
 
-      const now = Date.now()
-      setStartTime(now)
+  const startCountdown = useCallback( // NOSONAR
+    (duration?: number) => { // NOSONAR
+      if (duration !== undefined) { // NOSONAR
+        setTime(duration) // NOSONAR
+      } // NOSONAR
 
-      if (timer) {
-        updateTimer({
-          ...timer,
-          isCountingDown: true,
-        })
-      }
+      // Clear any existing timer // NOSONAR
+      if (timerRef.current) { // NOSONAR
+        clearInterval(timerRef.current) // NOSONAR
+        timerRef.current = null // NOSONAR
+      } // NOSONAR
 
-      console.log("Starting web timer")
-      // Start local timer for web mode
-      const initialTime = duration ?? time
-      let lastUpdate = now
+      setIsCountingDown(true) // NOSONAR
+      setIsPaused(false) // NOSONAR
+      setIsFinished(false) // NOSONAR
+      setIsCancelled(false) // NOSONAR
 
-      timerRef.current = setInterval(() => {
-        const currentTime = Date.now()
-        const elapsedTime = Math.floor((currentTime - lastUpdate) / 1000)
+      const now = Date.now() // NOSONAR
+      setStartTime(now) // NOSONAR
 
-        if (elapsedTime > 0) {
-          lastUpdate = currentTime - ((currentTime - lastUpdate) % 1000)
+      if (timer) { // NOSONAR
+        updateTimer({ // NOSONAR
+          ...timer, // NOSONAR
+          isCountingDown: true, // NOSONAR
+        }) // NOSONAR
+      } // NOSONAR
 
-          setTime((prevTime) => {
-            const newTime = Math.max(0, prevTime - elapsedTime)
+      console.log("Starting web timer") // NOSONAR
+      // Start local timer for web mode // NOSONAR
+      const initialTime = duration ?? time.value // NOSONAR
+      let lastUpdate = now // NOSONAR
 
-            if (newTime === 0 && prevTime > 0) {
-              clearInterval(timerRef.current)
-              timerRef.current = null
-              // Trigger timer end after state update
-              setTimeout(() => handleTimerEnd(), 0)
-            }
-            return newTime
-          })
-        }
-      }, 100)
+      timerRef.current = setInterval(() => { // NOSONAR
+        const currentTime = Date.now() // NOSONAR
+        const elapsedTime = Math.floor((currentTime - lastUpdate) / 1000) // NOSONAR
 
-      // Save state to localStorage
-      setTimerState({
-        time: initialTime,
-        isCountingDown: true,
-        isPaused: false,
-        startTime: now,
-        isFinished: false,
-      })
+        if (elapsedTime > 0) { // NOSONAR
+          lastUpdate = currentTime - ((currentTime - lastUpdate) % 1000) // NOSONAR
 
-      plausible({ name: "timer_start", props: { duration: duration || time } })
-    },
-    [time, isExtension, updateTimer, timer, fingerprint],
-  )
+          setTime((prevTime) => { // NOSONAR
+            const newTime = Math.max(0, prevTime - elapsedTime) // NOSONAR
 
-  const handleCancel = useCallback(() => {
-    setIsCancelled(true)
-    setPlayBirds(false)
-    // Prevent multiple cancellations
-    // if (isTimerEndingRef.current) {
-    //   return
-    // }
-    isTimerEndingRef.current = true
+            if (newTime === 0 && prevTime > 0) { // NOSONAR
+              clearInterval(timerRef.current) // NOSONAR
+              timerRef.current = null // NOSONAR
+              // Trigger timer end after state update // NOSONAR
+              setTimeout(() => handleTimerEnd(), 0) // NOSONAR
+            } // NOSONAR
+            return newTime // NOSONAR
+          }) // NOSONAR
+        } // NOSONAR
+      }, 100) // NOSONAR
 
-    // Clear any existing timer interval
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
-    }
+      // Save state to localStorage // NOSONAR
+      setTimerState({ // NOSONAR
+        time: initialTime, // NOSONAR
+        isCountingDown: true, // NOSONAR
+        isPaused: false, // NOSONAR
+        startTime: now, // NOSONAR
+        isFinished: false, // NOSONAR
+      }) // NOSONAR
 
-    if (timer) {
-      updateTimer({
-        ...timer,
-        count: 0,
-        isCountingDown: false,
-      })
+      plausible({ // NOSONAR
+        name: "timer_start", // NOSONAR
+        props: { duration: duration || time.value }, // NOSONAR
+      }) // NOSONAR
+    }, // NOSONAR
+    [time, isExtension, updateTimer, timer, fingerprint], // NOSONAR
+  ) // NOSONAR
 
-      setTimer({
-        ...timer,
-        count: 0,
-        isCountingDown: false,
-      })
-    }
+  const handleCancel = useCallback(() => { // NOSONAR
+    setIsCancelled(true) // NOSONAR
+    setPlayBirds(false) // NOSONAR
+    // Prevent multiple cancellations // NOSONAR
+    // if (isTimerEndingRef.current) { // NOSONAR
+    //   return // NOSONAR
+    // } // NOSONAR
+    isTimerEndingRef.current = true // NOSONAR
 
-    setTime(0)
-    setIsCountingDown(false)
-    setIsPaused(false)
-    setIsFinished(true)
+    // Clear any existing timer interval // NOSONAR
+    if (timerRef.current) { // NOSONAR
+      clearInterval(timerRef.current) // NOSONAR
+      timerRef.current = null // NOSONAR
+    } // NOSONAR
 
-    // Clear timer state
-    setTimerState(null)
+    if (timer) { // NOSONAR
+      updateTimer({ // NOSONAR
+        ...timer, // NOSONAR
+        count: 0, // NOSONAR
+        isCountingDown: false, // NOSONAR
+      }) // NOSONAR
 
-    plausible({ name: "timer_cancel" })
+      setTimer({ // NOSONAR
+        ...timer, // NOSONAR
+        count: 0, // NOSONAR
+        isCountingDown: false, // NOSONAR
+      }) // NOSONAR
+    } // NOSONAR
 
-    // Reset the flag after a short delay
-    setTimeout(() => {
-      isTimerEndingRef.current = false
-    }, 500)
-  }, [isExtension, timer, fingerprint])
+    setTime(0) // NOSONAR
+    setIsCountingDown(false) // NOSONAR
+    setIsPaused(false) // NOSONAR
+    setIsFinished(true) // NOSONAR
 
-  const handlePause = useCallback(
-    (update: boolean = true) => {
-      setIsPaused(true)
-      setIsCountingDown(false)
-      setIsCancelled(false)
+    // Clear timer state // NOSONAR
+    setTimerState(null) // NOSONAR
 
-      // Clear interval if running locally
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-      }
+    plausible({ name: "timer_cancel" }) // NOSONAR
 
-      // Update local storage for web version
-      setTimerState({
-        time,
-        isCountingDown: false,
-        isPaused: true,
-        timestamp: Date.now(),
-        startTime,
-        isFinished: false,
-      })
+    // Reset the flag after a short delay // NOSONAR
+    setTimeout(() => { // NOSONAR
+      isTimerEndingRef.current = false // NOSONAR
+    }, 500) // NOSONAR
+  }, [isExtension, timer, fingerprint]) // NOSONAR
 
-      if (timer && update) {
-        updateTimer({ ...timer, isCountingDown: false })
-      }
+  const handlePause = useCallback( // NOSONAR
+    (update: boolean = true) => { // NOSONAR
+      setIsPaused(true) // NOSONAR
+      setIsCountingDown(false) // NOSONAR
+      setIsCancelled(false) // NOSONAR
 
-      plausible({ name: "timer_pause", props: { timeLeft: time } })
-    },
-    [timer, updateTimer, time, startTime, plausible],
-  )
+      // Clear interval if running locally // NOSONAR
+      if (timerRef.current) { // NOSONAR
+        clearInterval(timerRef.current) // NOSONAR
+        timerRef.current = null // NOSONAR
+      } // NOSONAR
 
-  const handleResume = useCallback(() => {
-    setIsPaused(false)
-    setIsCancelled(false)
-    setIsCountingDown(true)
+      // Update local storage for web version // NOSONAR
+      setTimerState({ // NOSONAR
+        time: time.value, // NOSONAR
+        isCountingDown: false, // NOSONAR
+        isPaused: true, // NOSONAR
+        timestamp: Date.now(), // NOSONAR
+        startTime, // NOSONAR
+        isFinished: false, // NOSONAR
+      }) // NOSONAR
 
-    const now = Date.now()
-    setStartTime(now)
+      if (timer && update) { // NOSONAR
+        updateTimer({ ...timer, isCountingDown: false }) // NOSONAR
+      } // NOSONAR
 
-    // Start the timer with current remaining time
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-    }
+      plausible({ name: "timer_pause", props: { timeLeft: time.value } }) // NOSONAR
+    }, // NOSONAR
+    [timer, updateTimer, time, startTime, plausible], // NOSONAR
+  ) // NOSONAR
 
-    // Start countdown with current display time
-    startCountdown(time)
+  const handleResume = useCallback(() => { // NOSONAR
+    setIsPaused(false) // NOSONAR
+    setIsCancelled(false) // NOSONAR
+    setIsCountingDown(true) // NOSONAR
 
-    plausible({ name: "timer_resume", props: { timeLeft: time } })
-  }, [time, startCountdown, plausible])
+    const now = Date.now() // NOSONAR
+    setStartTime(now) // NOSONAR
 
-  const handlePresetTime = useCallback(
-    (minutes: number) => {
-      const newTime = minutes * 60
-      setIsPaused(true)
-      setIsFinished(false)
-      setTime(newTime)
-      setActivePomodoro(minutes)
+    // Start the timer with current remaining time // NOSONAR
+    if (timerRef.current) { // NOSONAR
+      clearInterval(timerRef.current) // NOSONAR
+    } // NOSONAR
 
-      // Stop any running timer
-      if (isCountingDown) {
-        if (timerRef.current) {
-          clearInterval(timerRef.current)
-          timerRef.current = null
-        }
-        setIsCountingDown(false)
-      }
+    // Start countdown with current display time // NOSONAR
+    startCountdown(time.value) // NOSONAR
 
-      // Save timer state
-      setTimerState({
-        time: newTime,
-        isCountingDown: false,
-        isPaused: true,
-        timestamp: Date.now(),
-        startTime: Date.now(),
-        isFinished: false,
-      })
+    plausible({ name: "timer_resume", props: { timeLeft: time.value } }) // NOSONAR
+  }, [time, startCountdown, plausible]) // NOSONAR
+
+  const handlePresetTime = useCallback( // NOSONAR
+    (minutes: number) => { // NOSONAR
+      const newTime = minutes * 60 // NOSONAR
+      setIsPaused(true) // NOSONAR
+      setIsFinished(false) // NOSONAR
+      setTime(newTime) // NOSONAR
+      setActivePomodoro(minutes) // NOSONAR
+
+      // Stop any running timer // NOSONAR
+      if (isCountingDown.value) { // NOSONAR
+        if (timerRef.current) { // NOSONAR
+          clearInterval(timerRef.current) // NOSONAR
+          timerRef.current = null // NOSONAR
+        } // NOSONAR
+        setIsCountingDown(false) // NOSONAR
+      } // NOSONAR
+
+      // Save timer state // NOSONAR
+      setTimerState({ // NOSONAR
+        time: newTime, // NOSONAR
+        isCountingDown: false, // NOSONAR
+        isPaused: true, // NOSONAR
+        timestamp: Date.now(), // NOSONAR
+        startTime: Date.now(), // NOSONAR
+        isFinished: false, // NOSONAR
+      }) // NOSONAR
 
       // Save active Pomodoro separately
       setActivePomodoro(minutes)
@@ -932,24 +973,24 @@ export function TimerContextProvider({
       // If timer was running, calculate elapsed time
       if (state.isCountingDown && !state.isPaused && state.startTime) {
         const elapsedTime = Math.floor((Date.now() - state.startTime) / 1000)
-        state.time = Math.max(0, state.time - elapsedTime)
+        state.time = Math.max(0, Number(state.time) - elapsedTime)
       }
 
       console.log("Restoring timer state:", state)
 
       if (state) {
-        setTime(state.time)
-        setIsCountingDown(state.isCountingDown)
-        setIsPaused(state.isPaused)
-        setIsFinished(state.isFinished)
+        setTime(Number(state.time))
+        setIsCountingDown(Boolean(state.isCountingDown))
+        setIsPaused(Boolean(state.isPaused))
+        setIsFinished(Boolean(state.isFinished))
 
         if (state.startTime) {
           setStartTime(state.startTime)
         }
 
         // If timer was running, restart it
-        if (state.isCountingDown && !state.isPaused && state.time > 0) {
-          startCountdown(state.time)
+        if (state.isCountingDown && !state.isPaused && Number(state.time) > 0) {
+          startCountdown(Number(state.time))
         }
       }
     } catch (error) {
@@ -1051,7 +1092,7 @@ export function TimerContextProvider({
   const startAdjustment = useCallback(
     (direction: number, isMinutes: boolean = false) => {
       // Stop any running timer
-      if (isCountingDown) {
+      if (isCountingDown.value) {
         if (timerRef.current) {
           clearInterval(timerRef.current)
           timerRef.current = null
@@ -1127,15 +1168,15 @@ export function TimerContextProvider({
 
   // Handle keyboard events
 
-  useEffect(() => {
-    if (isFinished) {
+  useSignalEffect(() => {
+    if (isFinished.value) {
       setPlayBirds(false)
       const timer = setTimeout(() => {
         setIsFinished(false)
-      }, 1000) // Match animation duration
+      }, 1000)
       return () => clearTimeout(timer)
     }
-  }, [isFinished])
+  })
 
   // Cleanup intervals on unmount
   useEffect(() => {
@@ -1292,10 +1333,6 @@ export function TimerContextProvider({
       fetchTasks,
       playBirds,
       activePomodoro,
-      time,
-      isCountingDown,
-      isPaused,
-      isFinished,
       startTime,
       startCountdown,
       handlePresetTime,

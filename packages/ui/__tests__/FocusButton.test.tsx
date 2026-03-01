@@ -25,10 +25,10 @@ const mockTimerContext = {
   playBirds: false,
   setPlayBirds: vi.fn(),
   activePomodoro: null,
-  time: 1500, // 25 mins
-  isCountingDown: false,
-  isPaused: false,
-  isFinished: false,
+  time: { value: 1500 }, // 25 mins
+  isCountingDown: { value: false },
+  isPaused: { value: false },
+  isFinished: { value: false },
   setTime: vi.fn(),
   startCountdown: vi.fn(),
   fetchTasks: vi.fn(),
