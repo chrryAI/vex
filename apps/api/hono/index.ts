@@ -3,6 +3,7 @@ import { serveStatic } from "@hono/node-server/serve-static"
 import * as Sentry from "@sentry/node"
 import { Hono } from "hono"
 import { apiAnalyticsMiddleware } from "./middleware/analytics"
+import { botProtectionMiddleware } from "./middleware/botProtection"
 import { corsMiddleware } from "./middleware/cors"
 import { csrfMiddleware } from "./middleware/csrf"
 import { headersMiddleware } from "./middleware/headers"
@@ -108,6 +109,9 @@ app.onError((err, c) => {
 
 // Apply custom CORS middleware (matching Next.js middleware)
 app.use("*", corsMiddleware)
+
+// Apply bot protection middleware (block suspicious requests early)
+app.use("*", botProtectionMiddleware)
 
 // Apply security headers middleware
 app.use("*", securityHeadersMiddleware)
