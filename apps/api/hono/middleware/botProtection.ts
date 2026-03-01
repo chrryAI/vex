@@ -43,6 +43,13 @@ const BOT_USER_AGENTS = [
 export const botProtectionMiddleware = async (c: Context, next: Next) => {
   const pathname = c.req.path
   const userAgent = c.req.header("user-agent")?.toLowerCase() || ""
+  const internalRequest = c.req.header("x-internal-request")
+
+  // Allow internal requests from Flash server
+  if (internalRequest === "flash-server") {
+    await next()
+    return
+  }
 
   // Block suspicious paths
   if (SUSPICIOUS_PATHS.some((path) => pathname.includes(path))) {

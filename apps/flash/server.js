@@ -1466,6 +1466,8 @@ app.get("/sitemap.xml", async (req, res) => {
             headers: {
               "X-Forwarded-Host": req.hostname,
               "X-Forwarded-Proto": req.protocol,
+              "X-Internal-Request": "flash-server",
+              "User-Agent": "Chrry-Flash-Server/1.0",
             },
             signal: controller.signal,
           },
@@ -1557,6 +1559,8 @@ app.get("/manifest.json", async (req, res) => {
       headers: {
         "X-Forwarded-Host": req.hostname,
         "X-Forwarded-Proto": req.protocol,
+        "X-Internal-Request": "flash-server",
+        "User-Agent": "Chrry-Flash-Server/1.0",
       },
     })
 
