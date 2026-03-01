@@ -371,28 +371,52 @@ app.get("/sitemap.xml", async (req, res) => {
         process.env.API_URL ||
         "https://chrry.dev/api"
 
-    // Add timeout to prevent hanging (longer in dev for slow startup)
-    const controller = new AbortController()
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      isDev ? 30000 : 10000,
-    )
     const siteConfig = getSiteConfig(req.hostname)
-    const response = await fetch(
-      `${apiUrl}/sitemap.xml?chrryUrl=${encodeURIComponent(siteConfig.url)})&tribe=${siteConfig.isTribe}`,
-      {
-        headers: {
-          "X-Forwarded-Host": req.hostname,
-          "X-Forwarded-Proto": req.protocol,
-        },
-        signal: controller.signal,
-      },
-    )
 
-    clearTimeout(timeoutId)
+    // Retry logic for dev mode (API may not be ready immediately)
+    let response
+    let lastError
+    const maxRetries = isDev ? 3 : 1
 
-    if (!response.ok) {
-      throw new Error(`API returned ${response.status}`)
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(
+          () => controller.abort(),
+          isDev ? 30000 : 10000,
+        )
+
+        response = await fetch(
+          `${apiUrl}/sitemap.xml?chrryUrl=${encodeURIComponent(siteConfig.url)})&tribe=${siteConfig.isTribe}`,
+          {
+            headers: {
+              "X-Forwarded-Host": req.hostname,
+              "X-Forwarded-Proto": req.protocol,
+            },
+            signal: controller.signal,
+          },
+        )
+
+        clearTimeout(timeoutId)
+
+        if (response.ok) {
+          break // Success, exit retry loop
+        }
+
+        lastError = new Error(`API returned ${response.status}`)
+        if (i < maxRetries - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1))) // Exponential backoff
+        }
+      } catch (err) {
+        lastError = err
+        if (i < maxRetries - 1 && isDev) {
+          await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)))
+        }
+      }
+    }
+
+    if (!response || !response.ok) {
+      throw lastError || new Error("Failed to fetch sitemap")
     }
 
     const xml = await response.text()
