@@ -22,6 +22,7 @@ import {
   tribeComments,
   tribeLikes,
   tribePosts,
+  tribePostTranslations,
   tribes,
 } from "@repo/db/src/schema"
 import { Hono } from "hono"
@@ -213,6 +214,7 @@ app.get("/likes", async (c) => {
 app.get("/p", async (c) => {
   const tracker = new PerformanceTracker("tribe_posts_request")
   const tribeId = c.req.query("tribeId")
+  const language = c.req.query("language")
   const tribeSlug = c.req.query("tribeSlug")
   const appId = c.req.query("appId")
   const search = c.req.query("search")
@@ -296,21 +298,47 @@ app.get("/p", async (c) => {
       }
     }
 
+    // Fetch translations if language is specified
+    let translationsMap: Record<string, { title?: string; content: string }> =
+      {}
+    if (language && language !== "en" && result?.posts?.length > 0) {
+      const postIds = result.posts.map((p: tribePost) => p.id)
+      const translations = await db.query.tribePostTranslations.findMany({
+        where: and(
+          eq(tribePostTranslations.language, language),
+          sql`${tribePostTranslations.postId} = ANY(${postIds})`,
+        ),
+      })
+      translationsMap = Object.fromEntries(
+        translations.map((t) => [
+          t.postId,
+          { title: t.title || undefined, content: t.content },
+        ]),
+      )
+    }
+
     const data = {
       ...result,
-      posts: result?.posts?.map((r: tribePost) => ({
-        ...r,
-        content: (() => {
-          const hasMedia =
-            (Array.isArray(r.images) ? r.images.length > 0 : !!r.images) ||
-            (Array.isArray(r.videos) ? r.videos.length > 0 : !!r.videos)
-          const limit = 300 * (hasMedia ? 2 : 1)
-          return r.content && r.content.length > limit
-            ? `${r.content.slice(0, limit)}...`
-            : r.content
-        })(),
-        // App already includes store from database join
-      })),
+      posts: result?.posts?.map((r: tribePost) => {
+        const translation = translationsMap[r.id]
+        const content = translation?.content || r.content
+        const title = translation?.title || r.title
+
+        return {
+          ...r,
+          title,
+          content: (() => {
+            const hasMedia =
+              (Array.isArray(r.images) ? r.images.length > 0 : !!r.images) ||
+              (Array.isArray(r.videos) ? r.videos.length > 0 : !!r.videos)
+            const limit = 300 * (hasMedia ? 2 : 1)
+            return content && content.length > limit
+              ? `${content.slice(0, limit)}...`
+              : content
+          })(),
+          // App already includes store from database join
+        }
+      }),
     }
 
     return c.json({
@@ -332,7 +360,7 @@ app.get("/p", async (c) => {
 // Get single tribe post with full details (comments, reactions, likes)
 app.get("/p/:id", async (c) => {
   const tracker = new PerformanceTracker("tribe_post_request")
-
+  const language = c.req.query("language")
   const member = await tracker.track("tribe_post_auth_member", () =>
     getMember(c),
   )
@@ -453,11 +481,41 @@ app.get("/p/:id", async (c) => {
       tribePostId: post.id,
     })
 
+    // Get available translations for this post
+    const translations = await tracker.track("tribe_post_translations", () =>
+      db.query.tribePostTranslations.findMany({
+        where: eq(tribePostTranslations.postId, postId),
+        columns: {
+          language: true,
+          createdOn: true,
+        },
+      }),
+    )
+
+    // Get translation if language is specified
+    let translatedTitle = post.title
+    let translatedContent = post.content
+    if (language && language !== "en") {
+      const translation = await db.query.tribePostTranslations.findFirst({
+        where: and(
+          eq(tribePostTranslations.postId, postId),
+          eq(tribePostTranslations.language, language),
+        ),
+      })
+      if (translation) {
+        translatedTitle = translation.title || post.title
+        translatedContent = translation.content
+      }
+    }
+
     const responseData = {
       success: true,
       placeholder: placeHolder?.text,
+      availableLanguages: translations.map((t) => t.language),
       post: {
         ...post,
+        title: translatedTitle,
+        content: translatedContent,
         user: null,
         guest: null,
         app: await getApp({ id: post.appId, threadId: thread?.id }),

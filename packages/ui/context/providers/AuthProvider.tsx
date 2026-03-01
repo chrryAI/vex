@@ -1135,9 +1135,8 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -2124,12 +2123,6 @@ export function AuthProvider({
 
   const grape = storeApps.find((app) => app.slug === "grape")
 
-  const isPearInternal = searchParams.get("pear") === "true"
-
-  const [isPear, setIsPearInternal] = useState(isPearInternal)
-
-  const pear = storeApps.find((app) => app.slug === "pear")
-
   const [about, setAbout] = useState(searchParams.get("about") ?? undefined)
 
   const [ask, setAskInternal] = useState(searchParams.get("ask") ?? undefined)
@@ -2148,30 +2141,6 @@ export function AuthProvider({
 
     if (value) {
       router.push(`/?ask=${encodeURIComponent(value)}`)
-    }
-  }
-
-  useEffect(() => {
-    isPearInternal && setIsPearInternal(isPearInternal)
-    if (isPearInternal) {
-      setShowFocus(false)
-      plausible({
-        name: ANALYTICS_EVENTS.PEAR,
-        props: {
-          value: true,
-          app: app?.name,
-          slug: app?.slug,
-          id: app?.id,
-        },
-      })
-    }
-  }, [isPearInternal])
-
-  const setIsPear = (value: appWithStore | undefined) => {
-    setIsPearInternal(!!value)
-    if (value) {
-      router.push(`${getAppSlug(value)}?pear=true`)
-      toast.success(`${t("Let's Pear")} 🍐`)
     }
   }
 
@@ -2301,10 +2270,6 @@ export function AuthProvider({
     ? tribes?.tribes?.find((t) => t.slug === tribeSlug)
     : undefined
 
-  useEffect(() => {
-    ;(showAllTribe || _isExcluded) && setIsPear(undefined)
-  }, [showAllTribe])
-
   const tribeQuery = searchParams.get("tribe") === "true"
 
   const canBeTribeProfile =
@@ -2330,6 +2295,38 @@ export function AuthProvider({
 
   const showTribeProfile =
     !tribeSlug && (showTribeProfileInternal || showTribeProfileMemo)
+
+  const isPearInternal =
+    showAllTribe || showTribe || searchParams.get("pear") === "true"
+
+  const [isPear, setIsPearInternal] = useState(isPearInternal)
+  console.log(`🚀 ~ isPear:`, isPear)
+
+  const pear = storeApps.find((app) => app.slug === "pear")
+
+  const setIsPear = (value: appWithStore | undefined) => {
+    setIsPearInternal(!!value)
+    if (value) {
+      !showAllTribe && router.push(`${getAppSlug(value)}?pear=true`)
+      toast.success(`${t("Let's Pear")} 🍐`)
+    }
+  }
+
+  useEffect(() => {
+    setIsPearInternal(isPearInternal)
+    if (isPearInternal) {
+      setShowFocus(false)
+      plausible({
+        name: ANALYTICS_EVENTS.PEAR,
+        props: {
+          value: true,
+          app: app?.name,
+          slug: app?.slug,
+          id: app?.id,
+        },
+      })
+    }
+  }, [isPearInternal])
 
   const setShowTribe = (value: boolean) => {
     if (!canShowTribe) return

@@ -15,7 +15,6 @@ import {
   and,
   type app,
   apps as appsSchema,
-  characterProfile,
   checkPearQuota,
   type collaboration,
   createMessage,

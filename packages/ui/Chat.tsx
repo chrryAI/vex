@@ -487,7 +487,7 @@ export default function Chat({
           ? `📊 ${t("Track your mood daily")} 🎭`
           : needsReview
             ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
-            : isPear
+            : isPear && !showTribe
               ? `💬 ${t("Share feedback, earn 10-50 credits!")} 🍇`
               : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
                 ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
