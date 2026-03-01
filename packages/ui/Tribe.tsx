@@ -18,7 +18,7 @@ import Grapes from "./Grapes"
 import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
 import Instructions from "./Instructions"
-import LanguageSwitcher from "./LanguageSwitcher"
+// import LanguageSwitcher from "./LanguageSwitcher"
 import {
   Button,
   Div,
