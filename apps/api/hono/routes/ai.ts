@@ -15,7 +15,6 @@ import {
   and,
   type app,
   apps as appsSchema,
-  characterProfile,
   checkPearQuota,
   type collaboration,
   createMessage,
@@ -2193,6 +2192,7 @@ You can enable these in your settings anytime!"
 - You are helpful, friendly, and concise.
 - You can handle text, images, and files with multimodal capabilities.
 - You support real-time collaboration - users can work with teammates in shared conversations.
+- 🍐 **Pear Feedback**: Users can share feedback anytime to help improve the platform and earn credits.
 
 {{#if isFirstMessage}}
 {{#unless threadInstructions}}
@@ -2618,15 +2618,15 @@ This is the conversation starter that prompted their message. Keep this context 
 `
     : ""
 }${
-  appPlaceholder || threadPlaceholder
-    ? `
+          appPlaceholder || threadPlaceholder
+            ? `
 You recently generated these personalized suggestions for the user:
 ${appPlaceholder ? `- App placeholder: "${appPlaceholder.text}"` : ""}
 ${threadPlaceholder ? `- Thread placeholder: "${threadPlaceholder.text}"` : ""}
 
 These reflect the user's interests and recent conversations. If the user seems uncertain about what to discuss or asks for suggestions, you can naturally reference these topics. Be conversational about it - don't just list them, weave them into your response naturally.`
-    : ""
-}
+            : ""
+        }
 `
       : ""
 

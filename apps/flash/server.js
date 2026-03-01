@@ -87,6 +87,13 @@ app.use((req, res, next) => {
 const aj = arcjet({
   key: process.env.ARCJET_KEY || "test-key",
   characteristics: ["ip"],
+  // Configure IP detection for Cloudflare
+  client: {
+    ipDetection: {
+      // Cloudflare sends real IP in CF-Connecting-IP header
+      headers: ["CF-Connecting-IP", "X-Forwarded-For", "X-Real-IP"],
+    },
+  },
   rules: [
     // Shield protects against common attacks
     shield({ mode: "LIVE" }),

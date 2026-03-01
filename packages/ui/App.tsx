@@ -836,22 +836,24 @@ export default function App({
       </H1>
       <Div style={{ ...styles.container.style }}>
         <>
-          <Div style={{ ...styles.section.style }}>
-            <EnableNotifications
-              onLocationClick={(location) => {
-                setInput(`What's the weather in ${location}?`)
-                setIsWebSearchEnabled(true)
-              }}
-            />
-            {app?.mainThreadId && isAppOwner && (
-              <A
-                style={{ fontSize: ".9rem", marginTop: ".2rem" }}
-                href={`/threads/${app?.mainThreadId}`}
-              >
-                🧬
-              </A>
-            )}
-          </Div>
+          {!isManagingApp && (
+            <Div style={{ ...styles.section.style }}>
+              <EnableNotifications
+                onLocationClick={(location) => {
+                  setInput(`What's the weather in ${location}?`)
+                  setIsWebSearchEnabled(true)
+                }}
+              />
+              {app?.mainThreadId && isAppOwner && (
+                <A
+                  style={{ fontSize: ".9rem", marginTop: ".2rem" }}
+                  href={`/threads/${app?.mainThreadId}`}
+                >
+                  🧬
+                </A>
+              )}
+            </Div>
+          )}
           {minimize && hasHydrated && (
             <>
               {

@@ -5,9 +5,9 @@ import { useEffect, useState } from "react"
 import { useAppContext } from "./context/AppContext"
 import { useAuth } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
-import { Languages } from "./icons"
+import { CircleCheck, Languages } from "./icons"
 import { useLanguageSwitcherStyles } from "./LanguageSwitcher.styles"
-import { LANGUAGES, type locale } from "./locales"
+import { LANGUAGES, type locale, type locales } from "./locales"
 import Modal from "./Modal"
 import { Button, Div } from "./platform"
 import { apiFetch } from "./utils"
@@ -15,9 +15,16 @@ import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 const LanguageSwitcher = ({
   style,
+  multi,
+  children,
+  languages = LANGUAGES,
+  handleSetLanguages,
 }: {
+  multi?: boolean
+  languages?: typeof LANGUAGES
+  children?: React.ReactNode
   style?: React.CSSProperties
-  handleSetLanguage?: (path: string, language: locale) => void
+  handleSetLanguages?: (languages: locale[]) => void
 }) => {
   const { t } = useAppContext()
   const styles = useLanguageSwitcherStyles()
@@ -25,9 +32,23 @@ const LanguageSwitcher = ({
   const { utilities } = useStyles()
 
   const { language, setLanguage, user, token, plausible, API_URL } = useAuth()
+  const [selected, setSelected] = useState<typeof locales>(["en"])
+
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
 
   const changeLanguage = (newLocale: locale) => {
+    if (multi) {
+      const result = selected.includes(newLocale)
+        ? selected.filter((l) => l !== newLocale)
+        : selected.concat(newLocale)
+
+      handleSetLanguages?.(result)
+
+      setSelected(result)
+
+      return
+    }
+
     plausible({
       name: ANALYTICS_EVENTS.LANGUAGE_SWITCHER,
       props: {
@@ -79,21 +100,32 @@ const LanguageSwitcher = ({
         }}
       >
         <Div style={styles.languages.style}>
-          {LANGUAGES.map((item) => (
+          {languages.map((item) => (
             <Button
+              disabled={multi ? item.code === "en" : undefined}
               key={item.code}
               style={{
                 ...utilities.link.style,
                 ...styles.languageButton.style,
-                color: item.code === language ? "var(--shade-8)" : "",
+                color: multi
+                  ? selected.includes(item.code)
+                    ? "var(--shade-8)"
+                    : undefined
+                  : item.code === language
+                    ? "var(--shade-8)"
+                    : "",
               }}
               onClick={() => changeLanguage(item.code)}
               className={"link"}
             >
+              {multi && selected.includes(item.code) && (
+                <CircleCheck size={18} />
+              )}
               {item.name}
             </Button>
           ))}
         </Div>
+        {children}
       </Modal>
     </>
   )

@@ -5,9 +5,11 @@ import { useEffect, useState } from "react"
 import { useAppContext } from "./context/AppContext"
 import { useApp, useChat, useNavigationContext } from "./context/providers"
 import { useAuth } from "./context/providers/AuthProvider"
+import { useStyles } from "./context/StylesContext"
 import { useEmptyStateTipsStyles } from "./EmptyStateTips.styles"
 import { useResponsiveCount } from "./hooks/useResponsiveCount"
 import {
+  Button,
   Div,
   H3,
   MotiView,
@@ -24,7 +26,14 @@ export default function EmptyStateTips({
 }) {
   const { isManagingApp, canEditApp, app } = useApp()
   const { pathname } = useNavigationContext()
-  const { isPear, siteConfig, threads } = useAuth()
+  const {
+    isPear,
+    siteConfig,
+    threads,
+    showAllTribe,
+    setIsPear,
+    showTribeProfile,
+  } = useAuth()
   const { reduceMotion: reduceMotionContext, reduceMotion } = useTheme()
   const { showTribe } = useChat()
 
@@ -50,7 +59,12 @@ export default function EmptyStateTips({
 
   const { viewPortHeight } = usePlatform()
 
+  const { utilities } = useStyles()
+
   const getTitle = () => {
+    if (showAllTribe && showTribe) {
+      return `🦋 ${t("Tribe Tips")}`
+    }
     if (isPear) {
       return `🍐 ${t("Feedback Tips")}`
     }
@@ -65,11 +79,7 @@ export default function EmptyStateTips({
   }
 
   // Show Tribe tips when in Tribe view
-  if (
-    showTribe &&
-    !isPear &&
-    ((pathname === "/" && siteConfig.isTribe) || ["/tribe"].includes(pathname))
-  ) {
+  if ((showTribe && !isPear) || showTribe) {
     const tribeTips = [
       {
         tip: t(
@@ -111,7 +121,33 @@ export default function EmptyStateTips({
 
     return (
       <Section style={{ ...styles.emptyStateTips, ...style }}>
-        <H3 style={{ marginBottom: 10, marginTop: 0 }}>{getTitle()}</H3>
+        <H3 style={{ marginBottom: 10, marginTop: 0, ...utilities.row.style }}>
+          <Span
+            style={{
+              flex: 1,
+            }}
+          >
+            {getTitle()}
+          </Span>
+          {(showTribe || showAllTribe) && !isPear
+            ? null
+            : isPear && (
+                <Button
+                  className="inverted"
+                  onClick={() => {
+                    setIsPear(undefined)
+                  }}
+                  style={{
+                    ...utilities.inverted.style,
+                    ...utilities.xSmall.style,
+                    marginLeft: "auto",
+                    fontSize: ".8rem",
+                  }}
+                >
+                  {t("Cancel")}
+                </Button>
+              )}
+        </H3>
         <Div style={{ ...styles.ul.style }}>
           {tribeTips.slice(0, count).map((item, i) => {
             if (viewPortHeight < 600 && i >= 2) return null
@@ -174,7 +210,34 @@ export default function EmptyStateTips({
 
     return (
       <Section style={{ ...styles.emptyStateTips, ...style }}>
-        <H3 style={{ marginBottom: 10, marginTop: 0 }}>{getTitle()}</H3>
+        <H3 style={{ marginBottom: 10, marginTop: 0, ...utilities.row.style }}>
+          <Span
+            style={{
+              flex: 1,
+            }}
+          >
+            {getTitle()}
+          </Span>
+          {showAllTribe || showTribe
+            ? null
+            : isPear && (
+                <Button
+                  className="inverted"
+                  onClick={() => {
+                    setIsPear(undefined)
+                  }}
+                  style={{
+                    ...utilities.inverted.style,
+                    ...utilities.xSmall.style,
+                    marginLeft: "auto",
+                    fontSize: ".8rem",
+                  }}
+                >
+                  {t("Cancel")}
+                </Button>
+              )}
+          ssss
+        </H3>{" "}
         <Div style={{ ...styles.ul.style }}>
           {builderTips.map((item, i) => {
             // Progressive display based on viewport height
