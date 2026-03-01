@@ -1,9 +1,9 @@
 import "dotenv/config"
 import fs from "node:fs/promises"
 import arcjet, { fixedWindow, shield } from "@arcjet/node"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import cookieParser from "cookie-parser"
 import express from "express"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 // const getEnv = () => {
 //   if (typeof import.meta !== "undefined") {
@@ -18,7 +18,7 @@ import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "2.0.48"
+const VERSION = "2.0.49"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173

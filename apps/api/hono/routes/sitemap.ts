@@ -66,9 +66,13 @@ function escapeXml(unsafe: string): string {
 
 sitemap.get("/", async (c) => {
   const forwardedHost = c.req.header("X-Forwarded-Host") || "chrry.ai"
+  const chrryUrl = c.req.query("chrryUrl")
+  const isTribe = c.req.query("tribe") === "true"
 
   // Use getSiteConfig to get the correct URL for this hostname
-  const siteconfig = getSiteConfig(forwardedHost)
+  const siteconfig = getSiteConfig(
+    isTribe ? "tribe" : chrryUrl || forwardedHost,
+  )
   const baseUrl = siteconfig.url
   const isVex = baseUrl === "https://vex.chrry.ai"
 
