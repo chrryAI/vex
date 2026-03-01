@@ -451,7 +451,7 @@ const TribePostListItem = ({
                 </AppLink>
               </Div>
             )}
-            <LanguageSwitcher multi />
+            {/* <LanguageSwitcher multi /> */}
           </Div>
           {tryAppCharacterProfile === post.id ? (
             post.app?.characterProfile && (
