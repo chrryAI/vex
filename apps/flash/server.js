@@ -3,6 +3,7 @@ import fs from "node:fs/promises"
 import arcjet, { fixedWindow, shield } from "@arcjet/node"
 import cookieParser from "cookie-parser"
 import express from "express"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 // const getEnv = () => {
 //   if (typeof import.meta !== "undefined") {
@@ -370,17 +371,23 @@ app.get("/sitemap.xml", async (req, res) => {
         process.env.API_URL ||
         "https://chrry.dev/api"
 
-    // Add timeout to prevent hanging
+    // Add timeout to prevent hanging (longer in dev for slow startup)
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
-
-    const response = await fetch(`${apiUrl}/sitemap.xml`, {
-      headers: {
-        "X-Forwarded-Host": req.hostname,
-        "X-Forwarded-Proto": req.protocol,
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      isDev ? 30000 : 10000,
+    )
+    const siteConfig = getSiteConfig(req.hostname)
+    const response = await fetch(
+      `${apiUrl}/sitemap.xml?chrryUrl=${encodeURIComponent(siteConfig.url)})&tribe=${siteConfig.isTribe}`,
+      {
+        headers: {
+          "X-Forwarded-Host": req.hostname,
+          "X-Forwarded-Proto": req.protocol,
+        },
+        signal: controller.signal,
       },
-      signal: controller.signal,
-    })
+    )
 
     clearTimeout(timeoutId)
 
@@ -414,7 +421,6 @@ app.get("/favicon.ico", async (req, res) => {
   try {
     // Use getSiteConfig for white-label detection (same as metadataToHtml)
     const hostname = req.hostname || "localhost"
-    const { getSiteConfig } = await import("@chrryai/chrry/utils/siteConfig")
     const siteConfig = getSiteConfig(`https://${hostname}`)
 
     // Match metadataToHtml logic exactly
