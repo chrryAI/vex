@@ -43,6 +43,31 @@ export default function EmptyStateTips({
 
   const [animationKey, setAnimationKey] = useState(0)
 
+  const canShowPear = !(showAllTribe && showTribe) && isPear
+
+  const renderCancelFeedBack = () => (
+    <>
+      {!canShowPear
+        ? null
+        : isPear && (
+            <Button
+              className="inverted"
+              onClick={() => {
+                setIsPear(undefined)
+              }}
+              style={{
+                ...utilities.inverted.style,
+                ...utilities.xSmall.style,
+                marginLeft: "auto",
+                fontSize: ".8rem",
+              }}
+            >
+              {t("Cancel")}
+            </Button>
+          )}
+    </>
+  )
+
   const count =
     useResponsiveCount([
       { height: 600, count: 2 },
@@ -62,10 +87,7 @@ export default function EmptyStateTips({
   const { utilities } = useStyles()
 
   const getTitle = () => {
-    if (showAllTribe && showTribe) {
-      return `🦋 ${t("Tribe Tips")}`
-    }
-    if (isPear) {
+    if (canShowPear) {
       return `🍐 ${t("Feedback Tips")}`
     }
     if (showTribe) {
@@ -79,7 +101,7 @@ export default function EmptyStateTips({
   }
 
   // Show Tribe tips when in Tribe view
-  if ((showTribe && !isPear) || showTribe) {
+  if (!canShowPear && showTribe) {
     const tribeTips = [
       {
         tip: t(
@@ -129,24 +151,7 @@ export default function EmptyStateTips({
           >
             {getTitle()}
           </Span>
-          {(showTribe || showAllTribe) && !isPear
-            ? null
-            : isPear && (
-                <Button
-                  className="inverted"
-                  onClick={() => {
-                    setIsPear(undefined)
-                  }}
-                  style={{
-                    ...utilities.inverted.style,
-                    ...utilities.xSmall.style,
-                    marginLeft: "auto",
-                    fontSize: ".8rem",
-                  }}
-                >
-                  {t("Cancel")}
-                </Button>
-              )}
+          {renderCancelFeedBack()}
         </H3>
         <Div style={{ ...styles.ul.style }}>
           {tribeTips.slice(0, count).map((item, i) => {
@@ -218,26 +223,8 @@ export default function EmptyStateTips({
           >
             {getTitle()}
           </Span>
-          {showAllTribe || showTribe
-            ? null
-            : isPear && (
-                <Button
-                  className="inverted"
-                  onClick={() => {
-                    setIsPear(undefined)
-                  }}
-                  style={{
-                    ...utilities.inverted.style,
-                    ...utilities.xSmall.style,
-                    marginLeft: "auto",
-                    fontSize: ".8rem",
-                  }}
-                >
-                  {t("Cancel")}
-                </Button>
-              )}
-          ssss
-        </H3>{" "}
+          {renderCancelFeedBack()}
+        </H3>
         <Div style={{ ...styles.ul.style }}>
           {builderTips.map((item, i) => {
             // Progressive display based on viewport height
@@ -312,7 +299,16 @@ export default function EmptyStateTips({
 
   return (
     <Section style={{ ...styles.emptyStateTips, ...style }}>
-      <H3 style={{ marginBottom: 10, marginTop: 0 }}>{getAppTitle()}</H3>
+      <H3 style={{ marginBottom: 10, marginTop: 0, ...utilities.row.style }}>
+        <Span
+          style={{
+            flex: 1,
+          }}
+        >
+          {getTitle()}
+        </Span>
+        {renderCancelFeedBack()}
+      </H3>
       <Div style={{ ...styles.ul.style }}>
         {currentTips.slice(0, count).map((item, i) => {
           // Progressive display based on viewport height

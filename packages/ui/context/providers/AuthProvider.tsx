@@ -1135,8 +1135,9 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] =
-    useState<boolean>(!initialTribePosts)
+  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
+    !initialTribePosts,
+  )
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -2309,7 +2310,10 @@ export function AuthProvider({
     if (value) {
       !showAllTribe && router.push(`${getAppSlug(value)}?pear=true`)
       toast.success(`${t("Let's Pear")} 🍐`)
+      return
     }
+
+    removeParams("pear")
   }
 
   useEffect(() => {
