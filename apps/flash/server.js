@@ -1093,8 +1093,6 @@ export function isVexMode() {
 //   return {}
 // }
 
-const isE2E = process.env.VITE_TESTING_ENV === "e2e"
-
 const VERSION = "2.0.49"
 // Constants
 const port = process.env.PORT || 5173
