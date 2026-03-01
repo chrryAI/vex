@@ -36,13 +36,14 @@ import { sendDiscordNotification } from "../../lib/sendDiscordNotification"
 
 export const cron = new Hono()
 
-async function clearGuests() {
+async function clearGuests(ago = 5) {
   const batchSize = 500
   let totalDeleted = 0
   let hasMore = true
   // 5 gün önceki tarih
-  const fiveDaysAgo = new Date()
-  fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5)
+
+  const daysAgo = new Date()
+  daysAgo.setDate(daysAgo.getDate() - ago)
 
   while (hasMore) {
     // Find inactive guests (no subscription, no messages, no tasks)
@@ -59,7 +60,7 @@ async function clearGuests() {
           isNull(messages.id),
           isNull(apps.id),
           sql`task.id IS NULL`,
-          lt(guests.activeOn, fiveDaysAgo),
+          lt(guests.activeOn, daysAgo),
         ),
       )
       .groupBy(guests.id, guests.ip)
@@ -196,9 +197,11 @@ cron.get("/clearGuests", async (c) => {
     }
   }
 
+  const ago = c.req.query("ago") ? Number(c.req.query("ago")) : 5
+
   try {
     console.log("🧹 Starting guest cleanup cron job...")
-    await clearGuests()
+    await clearGuests(ago)
     console.log("✅ Guest cleanup completed successfully")
 
     return c.json({
