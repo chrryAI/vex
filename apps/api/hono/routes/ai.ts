@@ -2618,15 +2618,15 @@ This is the conversation starter that prompted their message. Keep this context 
 `
     : ""
 }${
-          appPlaceholder || threadPlaceholder
-            ? `
+  appPlaceholder || threadPlaceholder
+    ? `
 You recently generated these personalized suggestions for the user:
 ${appPlaceholder ? `- App placeholder: "${appPlaceholder.text}"` : ""}
 ${threadPlaceholder ? `- Thread placeholder: "${threadPlaceholder.text}"` : ""}
 
 These reflect the user's interests and recent conversations. If the user seems uncertain about what to discuss or asks for suggestions, you can naturally reference these topics. Be conversational about it - don't just list them, weave them into your response naturally.`
-            : ""
-        }
+    : ""
+}
 `
       : ""
 
