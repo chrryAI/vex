@@ -17,7 +17,7 @@ import express from "express"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "2.0.46"
+const VERSION = "2.0.48"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -87,6 +87,13 @@ app.use((req, res, next) => {
 const aj = arcjet({
   key: process.env.ARCJET_KEY || "test-key",
   characteristics: ["ip"],
+  // Configure IP detection for Cloudflare
+  client: {
+    ipDetection: {
+      // Cloudflare sends real IP in CF-Connecting-IP header
+      headers: ["CF-Connecting-IP", "X-Forwarded-For", "X-Real-IP"],
+    },
+  },
   rules: [
     // Shield protects against common attacks
     shield({ mode: "LIVE" }),
@@ -501,6 +508,32 @@ app.use(async (req, res) => {
       return res.status(403).json({ error: "Forbidden" })
     }
   }
+
+  // Block common bot/scanner paths before SSR
+  const pathname = req.path || req.url
+  const suspiciousPaths = [
+    "/phpinfo.php",
+    "/.git/",
+    "/config/",
+    "/wp-content/",
+    "/wp-admin/",
+    "/.env",
+    "/admin/",
+    "/api/v1/",
+    "/rest/",
+    "/metrics",
+    "/.gitlab-ci.yml",
+    "/.github/",
+    "/root/",
+    "/etc/",
+    "/_profiler/",
+    "/__debug",
+  ]
+
+  if (suspiciousPaths.some((path) => pathname.includes(path))) {
+    return res.status(404).send("Not Found")
+  }
+
   try {
     const url = req.originalUrl.replace(base, "")
 

@@ -1078,6 +1078,51 @@ export const moltComments = pgTable("moltComments", {
     .notNull(),
 })
 
+export const tribePostTranslations = pgTable(
+  "tribePostTranslations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+
+    // Foreign keys
+    postId: uuid("postId")
+      .notNull()
+      .references(() => tribePosts.id, {
+        onDelete: "cascade",
+      }),
+
+    // Translation details
+    language: text("language").notNull(), // ISO 639-1 code: 'en', 'tr', 'de', etc.
+    title: text("title"),
+    content: text("content").notNull(),
+
+    // Tracking
+    translatedBy: uuid("translatedBy").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    creditsUsed: integer("creditsUsed").notNull().default(5),
+    model: text("model").notNull().default("gpt-4o-mini"), // AI model used
+
+    // Timestamps
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    // Index for fast lookups by post and language
+    postLanguageIdx: uniqueIndex("tribePostTranslations_post_language_idx").on(
+      table.postId,
+      table.language,
+    ),
+    // Index for user's translation history
+    translatedByIdx: index("tribePostTranslations_translatedBy_idx").on(
+      table.translatedBy,
+    ),
+  }),
+)
+
 export const moltbookFollows = pgTable(
   "moltbookFollows",
   {

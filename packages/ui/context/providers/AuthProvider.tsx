@@ -66,7 +66,6 @@ import {
   getThreadId,
   type instructionBase,
   isCI,
-  isDeepEqual,
   isDevelopment,
   isE2E,
   isOwner,
@@ -77,6 +76,7 @@ import {
   ANALYTICS_EVENTS,
   MEANINGFUL_EVENTS,
 } from "../../utils/analyticsEvents"
+import { hasStoreApps, merge } from "../../utils/appUtils"
 import { cleanSlug } from "../../utils/clearLocale"
 import { dailyQuestions as dailyQuestionsUtil } from "../../utils/dailyQuestions"
 import getAppSlugUtil from "../../utils/getAppSlug"
@@ -383,50 +383,6 @@ const AuthContext = createContext<
     }
   | undefined
 >(undefined)
-
-export const hasStoreApps = (app: appWithStore | undefined) => {
-  return Boolean(app?.store?.app && app?.store?.apps?.length)
-}
-
-export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
-  // Create a map of existing apps by ID
-  const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
-  let hasChange = false
-
-  // Add or update apps
-  newApps.forEach((newApp) => {
-    const existingApp = existingAppsMap.get(newApp.id)
-
-    if (existingApp) {
-      // Check if new app has meaningful store.apps (not empty or undefined)
-      const newHasStoreApps = hasStoreApps(newApp)
-      const existingHasStoreApps = hasStoreApps(existingApp)
-
-      // Merge: prefer new app but preserve existing store.apps if new one is empty/undefined
-      const merged = {
-        ...existingApp,
-        ...newApp,
-        store: newHasStoreApps
-          ? newApp.store
-          : existingHasStoreApps
-            ? existingApp.store
-            : newApp.store,
-      }
-
-      // Deep compare to detect actual changes
-      if (!isDeepEqual(existingApp, merged)) {
-        existingAppsMap.set(newApp.id, merged)
-        hasChange = true
-      }
-    } else {
-      existingAppsMap.set(newApp.id, newApp)
-      hasChange = true
-    }
-  })
-
-  // Only return a new array if something actually changed
-  return hasChange ? Array.from(existingAppsMap.values()) : prevApps
-}
 
 export function AuthProvider({
   apiKey,
@@ -1155,6 +1111,7 @@ export function AuthProvider({
       props?.session?.userBaseApp ||
       props?.session?.guestBaseApp,
   )
+  // Memoize allApps to prevent expensive array operations on every render
   const allApps = useMemo(
     () =>
       merge(
@@ -1910,9 +1867,29 @@ export function AuthProvider({
     if (storeAppsSwr) {
       skipAppCacheTemp && setSkipAppCacheTemp(false)
       const a = storeAppsSwr.store?.apps?.find((app) => app.id === loadingAppId)
-      if (hasStoreApps(a)) setLoadingApp(undefined)
-      // Don't merge here - apps are already in initial state and tribe posts are merged separately
-      mergeApps(storeAppsSwr.store?.apps || [])
+      if (hasStoreApps(a)) {
+        setLoadingApp(undefined)
+      }
+
+      if (storeAppsSwr.store?.apps?.length) {
+        mergeApps(storeAppsSwr.store?.apps)
+      }
+
+      // // Merge storeAppsSwr with current app state to preserve local changes
+      // if (app?.id && storeAppsSwr.store?.apps) {
+      //   const freshApp = storeAppsSwr.store.apps.find((a) => a.id === app.id)
+      //   if (freshApp) {
+      //     // Merge: keep local changes, update with fresh data
+      //     const mergedApp = {
+      //       ...freshApp,
+      //       ...app,
+      //       // Always take fresh data for these critical fields
+      //       store: freshApp.store,
+      //       updatedOn: freshApp.updatedOn,
+      //     }
+      //     setApp(mergedApp)
+      //   }
+      // }
 
       const n = storeAppsSwr.store?.apps.find((app) => app.id === newApp?.id)
       if (n) {
@@ -2147,12 +2124,6 @@ export function AuthProvider({
 
   const grape = storeApps.find((app) => app.slug === "grape")
 
-  const isPearInternal = searchParams.get("pear") === "true"
-
-  const [isPear, setIsPearInternal] = useState(isPearInternal)
-
-  const pear = storeApps.find((app) => app.slug === "pear")
-
   const [about, setAbout] = useState(searchParams.get("about") ?? undefined)
 
   const [ask, setAskInternal] = useState(searchParams.get("ask") ?? undefined)
@@ -2171,30 +2142,6 @@ export function AuthProvider({
 
     if (value) {
       router.push(`/?ask=${encodeURIComponent(value)}`)
-    }
-  }
-
-  useEffect(() => {
-    isPearInternal && setIsPearInternal(isPearInternal)
-    if (isPearInternal) {
-      setShowFocus(false)
-      plausible({
-        name: ANALYTICS_EVENTS.PEAR,
-        props: {
-          value: true,
-          app: app?.name,
-          slug: app?.slug,
-          id: app?.id,
-        },
-      })
-    }
-  }, [isPearInternal])
-
-  const setIsPear = (value: appWithStore | undefined) => {
-    setIsPearInternal(!!value)
-    if (value) {
-      router.push(`${getAppSlug(value)}?pear=true`)
-      toast.success(`${t("Let's Pear")} 🍐`)
     }
   }
 
@@ -2324,10 +2271,6 @@ export function AuthProvider({
     ? tribes?.tribes?.find((t) => t.slug === tribeSlug)
     : undefined
 
-  useEffect(() => {
-    ;(showAllTribe || _isExcluded) && setIsPear(undefined)
-  }, [showAllTribe])
-
   const tribeQuery = searchParams.get("tribe") === "true"
 
   const canBeTribeProfile =
@@ -2353,6 +2296,39 @@ export function AuthProvider({
 
   const showTribeProfile =
     !tribeSlug && (showTribeProfileInternal || showTribeProfileMemo)
+
+  const isPearInternal =
+    showAllTribe || showTribe || searchParams.get("pear") === "true"
+
+  const [isPear, setIsPearInternal] = useState(isPearInternal)
+
+  const pear = storeApps.find((app) => app.slug === "pear")
+
+  const setIsPear = (value: appWithStore | undefined) => {
+    setIsPearInternal(!!value)
+    if (value) {
+      !showAllTribe && router.push(`${getAppSlug(value)}?pear=true`)
+      toast.success(`${t("Let's Pear")} 🍐`)
+      return
+    }
+
+    removeParams("pear")
+  }
+  useEffect(() => {
+    setIsPearInternal(isPearInternal)
+    if (isPearInternal) {
+      setShowFocus(false)
+      plausible({
+        name: ANALYTICS_EVENTS.PEAR,
+        props: {
+          value: true,
+          app: app?.name,
+          slug: app?.slug,
+          id: app?.id,
+        },
+      })
+    }
+  }, [isPearInternal, app?.name, app?.slug, app?.id])
 
   const setShowTribe = (value: boolean) => {
     if (!canShowTribe) return

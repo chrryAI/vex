@@ -204,7 +204,6 @@ export default function Chat({
 }): React.ReactElement {
   const { t, console } = useAppContext()
   const { weather, actions } = useData()
-  console.log(`🚀 ~ weather:`, weather)
 
   const styles = useChatStyles()
 
@@ -459,7 +458,7 @@ export default function Chat({
   const shouldUseCompactMode = compactMode || hasBottomOffset
 
   const floatingInitial =
-    shouldUseCompactMode || minimize
+    shouldUseCompactMode || minimize || showTribe
       ? true
       : empty
         ? false
@@ -488,7 +487,7 @@ export default function Chat({
           ? `📊 ${t("Track your mood daily")} 🎭`
           : needsReview
             ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
-            : isPear
+            : isPear && !showTribe
               ? `💬 ${t("Share feedback, earn 10-50 credits!")} 🍇`
               : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
                 ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`

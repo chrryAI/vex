@@ -149,10 +149,12 @@ const ChatContext = createContext<
         value,
         to,
         tribe,
+        pear,
       }: {
         value: boolean
         to?: string
         tribe?: boolean
+        pear?: boolean
       }) => void
     }
   | undefined
@@ -472,35 +474,34 @@ export function ChatProvider({
   }
 
   useEffect(() => {
-    if (
-      !threadIdRef.current ||
-      pathname === "/tribe" ||
-      (siteConfig.isTribe && pathname === "/")
-    ) {
-      setCollaborationStep(0)
-      setThread(undefined)
-      setProfile(undefined)
-      setStatus(null)
-      setCollaborationStatus(null)
-      setIsChatFloating(false)
-      setThreadId(undefined)
+    if (!threadIdRef.current) {
       setMessages([])
     }
-  }, [threadIdRef.current, showAllTribe, pathname])
+  }, [threadIdRef.current])
 
   const setIsNewChat = ({
     value,
     to = app?.slug ? getAppSlug(app) : "/",
     tribe,
+    pear,
   }: {
     value: boolean
     to?: string
     tribe?: boolean
+    pear?: boolean
   }) => {
     if (value) {
       setLiked(undefined)
       setShowFocus(false)
       setShowTribe(tribe === true)
+
+      let final =
+        tribe === true ? `${to}${to.includes("?") ? "&" : "?"}tribe=true` : to
+
+      final =
+        pear === true
+          ? `${final}${final.includes("?") ? "&" : "?"}pear=true`
+          : final
 
       setCollaborationStep(0)
       setThread(undefined)
@@ -512,9 +513,7 @@ export function ChatProvider({
       setThreadId(undefined)
       setMessages([])
       threadIdRef.current = undefined
-      router.push(
-        tribe === true ? `${to}${to.includes("?") ? "&" : "?"}tribe=true` : to,
-      )
+      router.push(final)
       refetchThreads()
     } else {
       // Ensure tribe view resets when closing a new chat

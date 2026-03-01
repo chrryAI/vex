@@ -91,15 +91,16 @@ async function createAgents() {
   })
   const chatGptAgent = await createAiAgent({
     name: "chatGPT",
-    displayName: "GPT-5.1",
-    version: "5.1",
+    displayName: "GPT-5.2 Pro",
+    version: "5.2",
     apiURL: "https://api.openai.com/v1/chat/completions",
     state: "active",
-    description: "Versatile, creative, and reliable language model.",
+    description:
+      "Most capable GPT model for complex tasks, coding, and long documents. Fast mode without reasoning.",
     creditCost: 4,
     authorization: "all",
     maxPromptSize: 128000,
-    modelId: "gpt-5.1",
+    modelId: "gpt-5.2-pro",
     order: 1,
     capabilities: {
       text: true,
@@ -122,7 +123,7 @@ async function createAgents() {
     description: "Helpful, safe, and human-like conversational AI",
     creditCost: 3,
     authorization: "all",
-    modelId: "anthropic/claude-sonnet-4.6",
+    modelId: "anthropic/claude-sonnet-4-6",
     maxPromptSize: 200000,
     order: 0,
     capabilities: {
@@ -1831,11 +1832,11 @@ const prod = async () => {
     email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  const agents = await createAgents()
+  // const agents = await createAgents()
   // console.log(`🚀 ~ agents:`, agents)
   // const { vex } = await createStores({ user: admin })
 
-  // await seedScheduledTribeJobs({ admin })
+  await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 
@@ -1962,7 +1963,7 @@ const seedDb = async (): Promise<void> => {
     }
 
     if (MODE === "dev") {
-      await prod()
+      // await prod()
       // await clearDb()
       // await create()
     }
