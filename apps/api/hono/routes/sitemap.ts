@@ -226,10 +226,10 @@ sitemap.get("/", async (c) => {
   // Remove trailing slash to prevent double slashes in paths
   baseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl
   const isVex = baseUrl === "https://vex.chrry.ai"
-  const isTribe = baseUrl === "https://tribe.chrry.ai"
 
   const blogPosts = !isVex ? [] : getBlogPosts()
-  const tribePosts = isTribe ? await getAllTribePosts() : []
+  // Include tribe posts in all sitemaps - canonical URLs handle duplicate content
+  const tribePosts = await getAllTribePosts()
 
   const staticRoutes = [
     { url: baseUrl, lastModified: new Date(), priority: 1 },
