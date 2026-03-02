@@ -1137,9 +1137,8 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -1267,7 +1266,12 @@ export function AuthProvider({
   const appId = newApp?.id || updatedApp?.id || loadingAppId || app?.id
 
   const [isSavingApp, setIsSavingApp] = useState(false)
-  const [isManagingApp, setIsManagingApp] = useState(false)
+  const [isManagingApp, setIsManagingAppInternal] = useState(false)
+
+  const setIsManagingApp = (value: boolean) => {
+    setIsManagingAppInternal(value)
+    value && isPear && setIsPear(undefined)
+  }
 
   const {
     data: sessionSwr,
