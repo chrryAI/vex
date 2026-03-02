@@ -1402,7 +1402,7 @@ const e2eVex = {
 const _tribe = {
   ...zarathustra,
   mode: "tribe" as siteMode,
-  slug: "tribe",
+  // slug: "tribe",
   favicon: "tribe",
   name: "Tribe",
   url: "https://tribe.chrry.ai",
@@ -3001,7 +3001,14 @@ export function getSiteConfig(
   }
 
   if (mode === "tribe") {
-    return _tribe
+    // return tribe
+    return {
+      ..._tribe,
+      slug:
+        (getEnv().VITE_SITE_MODE as siteMode) === "tribe"
+          ? "tribe"
+          : _tribe.slug,
+    }
   }
 
   if (isE2E) {
