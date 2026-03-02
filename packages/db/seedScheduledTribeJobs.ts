@@ -1,7 +1,9 @@
-import { locales } from "@chrryai/chrry/locales"
+import { defaultLocale, locales as localesArray } from "@chrryai/chrry/locales"
 import { and, eq } from "drizzle-orm"
 import { db, type user } from "./index"
 import { apps, scheduledJobs } from "./src/schema"
+
+const locales = localesArray.filter((l) => l !== defaultLocale)
 
 /**
  * Priority tiers for Tribe posting frequency:
