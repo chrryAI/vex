@@ -1147,6 +1147,10 @@ export function AuthProvider({
   const baseAppInternal = storeApps.find((item) => {
     if (!item) return false
 
+    if (siteConfig.isTribe && item.slug === "zarathustra") {
+      return true
+    }
+
     if (
       siteConfig.slug === item.slug &&
       item.store?.slug === siteConfig.storeSlug
@@ -1745,6 +1749,8 @@ export function AuthProvider({
     if (path === "/" && !showFocus) return undefined
 
     const matchedApp = storeApps?.find((item) => getAppSlug(item) === pathname)
+    console.log(`🚀 ~ pathname:`, pathname)
+    console.log(`🚀 ~ matchedApp:`, matchedApp)
 
     return matchedApp
   }
@@ -2638,6 +2644,8 @@ export function AuthProvider({
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
+    console.log(`🚀 ~ useEffect ~ baseApp:`, baseApp, storeApps)
+
     if (!baseApp) return
     if (!storeApps.length || (!thread && threadId)) return
 
