@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { useAppContext } from "./context/AppContext"
-import { useApp, useChat, useNavigationContext } from "./context/providers"
+import { useApp, useChat } from "./context/providers"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useStyles } from "./context/StylesContext"
 import { useEmptyStateTipsStyles } from "./EmptyStateTips.styles"
@@ -25,13 +25,12 @@ export default function EmptyStateTips({
   style?: React.CSSProperties
 }) {
   const { isManagingApp, canEditApp, app } = useApp()
-  const { pathname } = useNavigationContext()
   const {
     isPear,
-    siteConfig,
     threads,
     canShowAllTribe,
     setIsPear,
+    postId,
     showTribeProfile,
   } = useAuth()
   const { reduceMotion: reduceMotionContext, reduceMotion } = useTheme()
@@ -43,7 +42,7 @@ export default function EmptyStateTips({
 
   const [animationKey, setAnimationKey] = useState(0)
 
-  const canShowPear = !(canShowAllTribe && showTribe) && isPear
+  const canShowPear = !(canShowAllTribe && showTribe) && isPear && !postId
 
   const renderCancelFeedBack = () => (
     <>
@@ -70,10 +69,13 @@ export default function EmptyStateTips({
 
   const count =
     useResponsiveCount([
-      { height: 600, count: 2 },
-      { height: 700, count: 3 },
-      { height: 800, count: 4 },
-      { height: 900, count: 5 },
+      { height: 700, count: 0 },
+      { height: 750, count: 1 },
+      { height: 800, count: 2 },
+      { height: 850, count: 3 },
+      { height: 900, count: 4 },
+      { height: 950, count: 5 },
+      { height: 1000, count: 6 },
     ]) - (threads?.totalCount ? 1 : 0)
 
   useEffect(() => {
@@ -87,21 +89,29 @@ export default function EmptyStateTips({
   const { utilities } = useStyles()
 
   const getTitle = () => {
+    if (count === 0) {
+      return ""
+    }
     if (canShowPear) {
       return `🍐 ${t("Feedback Tips")}`
     }
-    if (showTribe) {
+
+    if (showTribe && !showTribeProfile) {
       return `🦋 ${t("Tribe Tips")}`
     }
 
-    if (isManagingApp || canEditApp) {
+    if (isManagingApp) {
       return `✨ ${t("App Builder Tips")}`
+    }
+
+    if (app?.tipsTitle) {
+      return `${app?.icon} ${t(app?.tipsTitle || "")}`
     }
     return `🎯 ${t("Pro Tips")}`
   }
 
   // Show Tribe tips when in Tribe view
-  if (!canShowPear && showTribe) {
+  if (!canShowPear && showTribe && !showTribeProfile) {
     const tribeTips = [
       {
         tip: t(
@@ -155,11 +165,6 @@ export default function EmptyStateTips({
         </H3>
         <Div style={{ ...styles.ul.style }}>
           {tribeTips.slice(0, count).map((item, i) => {
-            if (viewPortHeight < 600 && i >= 2) return null
-            if (viewPortHeight < 700 && i >= 3) return null
-            if (viewPortHeight < 800 && i >= 4) return null
-            if (viewPortHeight < 900 && i >= 5) return null
-
             return (
               <Div key={i} style={styles.tip.style}>
                 <Span style={styles.tipText.style}>{item.tip}</Span>
@@ -227,12 +232,6 @@ export default function EmptyStateTips({
         </H3>
         <Div style={{ ...styles.ul.style }}>
           {builderTips.map((item, i) => {
-            // Progressive display based on viewport height
-            if (viewPortHeight < 600 && i >= 2) return null
-            if (viewPortHeight < 700 && i >= 3) return null
-            if (viewPortHeight < 800 && i >= 4) return null
-            if (viewPortHeight < 900 && i >= 5) return null
-
             return (
               <Div key={i} style={styles.tip.style}>
                 <Span style={styles.tipText.style}>{item.tip}</Span>
@@ -245,37 +244,41 @@ export default function EmptyStateTips({
     )
   }
 
-  const tips = {
-    pear: [
-      {
-        id: "pear-tip-1",
-        tip: "Be specific! Instead of 'I like it', say 'The fire icon is intuitive for privacy mode'. Specific feedback earns 2x more credits!",
-        emoji: "🎯",
-      },
-      {
-        id: "pear-tip-2",
-        tip: "Think like a helpful friend. Point out what's confusing, what's great, and what could be better. Constructive tone earns more!",
-        emoji: "💡",
-      },
-      {
-        id: "pear-tip-3",
-        tip: "Actionable suggestions are gold! 'Add keyboard shortcuts' is worth more than 'needs improvement'. Help creators know what to do!",
-        emoji: "✨",
-      },
-      {
-        id: "pear-tip-4",
-        tip: "First impressions matter! Share your initial reaction-confusion, delight, frustration. Authentic emotions help creators understand UX!",
-        emoji: "🍐",
-      },
-      {
-        id: "pear-tip-5",
-        tip: "Quality over quantity. One detailed, thoughtful feedback (20 credits) beats five vague ones (5 credits each). Take your time!",
-        emoji: "⭐",
-      },
-    ],
-  }
+  const tips = canShowPear
+    ? {
+        pear: [
+          {
+            id: "pear-tip-1",
+            tip: "Be specific! Instead of 'I like it', say 'The fire icon is intuitive for privacy mode'. Specific feedback earns 2x more credits!",
+            emoji: "🎯",
+          },
+          {
+            id: "pear-tip-2",
+            tip: "Think like a helpful friend. Point out what's confusing, what's great, and what could be better. Constructive tone earns more!",
+            emoji: "💡",
+          },
+          {
+            id: "pear-tip-3",
+            tip: "Actionable suggestions are gold! 'Add keyboard shortcuts' is worth more than 'needs improvement'. Help creators know what to do!",
+            emoji: "✨",
+          },
+          {
+            id: "pear-tip-4",
+            tip: "First impressions matter! Share your initial reaction-confusion, delight, frustration. Authentic emotions help creators understand UX!",
+            emoji: "🍐",
+          },
+          {
+            id: "pear-tip-5",
+            tip: "Quality over quantity. One detailed, thoughtful feedback (20 credits) beats five vague ones (5 credits each). Take your time!",
+            emoji: "⭐",
+          },
+        ],
+      }
+    : {
+        pear: [],
+      }
 
-  const currentTips = isPear
+  const currentTips = canShowPear
     ? tips.pear
     : app?.tips
       ? app?.tips.map((tip) => ({
@@ -285,17 +288,6 @@ export default function EmptyStateTips({
       : app?.slug
         ? tips[app?.slug as keyof typeof tips] || tips.pear
         : tips.pear
-
-  const getAppTitle = () => {
-    if (isPear) return getTitle()
-    if (app?.tips?.length)
-      return `${app?.icon} ${t(app?.tipsTitle || "Pro Tips")}`
-    if (app?.slug === "atlas") return `✈️ ${t("Travel Tips")}`
-    if (app?.slug === "bloom") return `🌸 ${t("Wellness Tips")}`
-    if (app?.slug === "peach") return `🍑 ${t("Social Tips")}`
-    if (app?.slug === "vault") return `💰 ${t("Finance Tips")}`
-    return `🎯 ${t("Pro Tips")}`
-  }
 
   return (
     <Section style={{ ...styles.emptyStateTips, ...style }}>
