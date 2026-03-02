@@ -99,7 +99,9 @@ const LanguageSwitcher = ({
       ? selected.filter((l) => l !== newLocale)
       : selected.concat(newLocale)
 
-    if (result.length > maxLanguages) {
+    const r = multi ? result : [newLocale]
+
+    if (r.length > maxLanguages) {
       toast.error(
         t("You can select up to {{maxLanguages}} languages on each batch", {
           maxLanguages,

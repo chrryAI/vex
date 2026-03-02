@@ -257,7 +257,8 @@ app.get("/p", async (c) => {
     const userKey =
       sortBy === "liked" ? member?.id || guest?.id || "anonymous" : "all"
     const tags = c.req.query("tags") // comma-separated tag list
-    const cacheKey = `tribe:posts:${sortBy || "date"}:${order || "desc"}:${tribeId || "all"}:${appId || "all"}:${search || ""}:${characterProfileIds || ""}:${tags || ""}:${pageSize || 10}:${page || 1}:${userKey}:language:${language || "en"}`
+    const id = c.req.query("id")
+    const cacheKey = `tribe:posts:${sortBy || "date"}:${order || "desc"}:${tribeId || "all"}:${tribeSlug || "all"}:${appId || "all"}:${id || "all"}:${search || ""}:${characterProfileIds || ""}:${tags || ""}:${pageSize || 10}:${page || 1}:${userKey}:language:${language || "en"}`
 
     let result = null
 
@@ -743,8 +744,11 @@ app.delete("/p/:id", async (c) => {
 
     // Invalidate cache - delete single post and all feed caches
     if (!isDevelopment && !isE2E) {
-      const singlePostKey = `tribe:post:${postId}`
-      await dbRedis.del(singlePostKey)
+      // Delete all language variations of the single post
+      const postKeys = await dbRedis.keys(`tribe:post:${postId}*`)
+      if (postKeys.length > 0) {
+        await dbRedis.del(...postKeys)
+      }
 
       // Delete all feed caches (they contain this post)
       const feedKeys = await dbRedis.keys("tribe:posts:*")
