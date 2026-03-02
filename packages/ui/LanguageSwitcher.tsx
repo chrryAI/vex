@@ -23,6 +23,7 @@ const LanguageSwitcher = ({
   onOpenChange,
   hideLanguages,
   attachTo,
+  hideOnClickOutside = true,
   ...props
 }: {
   multi?: boolean
@@ -37,6 +38,7 @@ const LanguageSwitcher = ({
   handleSetLanguages?: (languages: locale[]) => void
   hideLanguages?: locale
   attachTo?: string
+  hideOnClickOutside?: boolean
 }) => {
   const { t } = useAppContext()
   const styles = useLanguageSwitcherStyles()
@@ -142,6 +144,7 @@ const LanguageSwitcher = ({
         <Languages size={18} />
       </Button>
       <Modal
+        hideOnClickOutside={hideOnClickOutside}
         isModalOpen={isModalOpen}
         title={
           <>

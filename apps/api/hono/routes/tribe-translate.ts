@@ -17,6 +17,24 @@ import { getMember } from "../lib/auth"
 
 const app = new Hono()
 
+/**
+ * Strip optional markdown code-fence wrappers from an LLM response.
+ * Uses plain string ops instead of backtracking regexes to avoid ReDoS.
+ */
+function stripCodeFence(raw: string): string {
+  let s = raw.trim()
+  // Remove leading ``` or ```json (case-insensitive)
+  if (s.startsWith("```")) {
+    const nl = s.indexOf("\n")
+    s = nl !== -1 ? s.slice(nl + 1) : s.slice(3)
+  }
+  // Remove trailing ```
+  if (s.endsWith("```")) {
+    s = s.slice(0, s.length - 3)
+  }
+  return s.trim()
+}
+
 const openai = new OpenAI({
   apiKey: process.env.CHATGPT_API_KEY,
 })
@@ -151,12 +169,7 @@ Return the translation as JSON:`
         })
 
         const rawContent = response?.choices?.at(0)?.message?.content || "{}"
-        const translated = JSON.parse(
-          rawContent
-            .replace(/^```(?:json)?\s*/m, "")
-            .replace(/\s*```$/m, "")
-            .trim(),
-        )
+        const translated = JSON.parse(stripCodeFence(rawContent))
 
         // Save translation
         const [newTranslation] = await db
@@ -334,12 +347,7 @@ Return the translation as JSON:`
         })
 
         const rawContent = response?.choices?.at(0)?.message?.content || "{}"
-        const translated = JSON.parse(
-          rawContent
-            .replace(/^```(?:json)?\s*/m, "")
-            .replace(/\s*```$/m, "")
-            .trim(),
-        )
+        const translated = JSON.parse(stripCodeFence(rawContent))
 
         // Save translation
         const [newTranslation] = await db
