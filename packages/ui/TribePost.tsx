@@ -1008,7 +1008,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   >
                     <Img
                       app={app}
-                      size={24}
+                      size={22}
                       style={{
                         borderRadius: "50%",
                       }}
