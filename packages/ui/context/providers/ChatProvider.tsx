@@ -1,5 +1,6 @@
 "use client"
 
+import { t } from "i18next"
 import React, {
   createContext,
   type ReactNode,
@@ -12,6 +13,7 @@ import toast from "react-hot-toast"
 import useSWR from "swr"
 import { useUserScroll } from "../../hooks/useUserScroll"
 import { useWebSocket } from "../../hooks/useWebSocket"
+
 import {
   useLocalStorage,
   useNavigation,
@@ -586,12 +588,9 @@ export function ChatProvider({
               if (pearNoGainStreakRef.current >= 3) {
                 setIsPear(undefined)
                 pearNoGainStreakRef.current = 0
-                toast(
-                  "🍐 Pear mode turned off — no new feedback credits earned",
-                  {
-                    duration: 4000,
-                  },
-                )
+                toast.success(t("pearNoGainStreak"), {
+                  duration: 4000,
+                })
               }
             } else {
               // Credits went up — reset streak
