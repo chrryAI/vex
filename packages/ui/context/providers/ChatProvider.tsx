@@ -219,7 +219,7 @@ export function ChatProvider({
     hourlyUsageLeft,
     baseApp,
     postId,
-    showAllTribe,
+    canShowAllTribe,
     siteConfig,
     ...auth
   } = useAuth()

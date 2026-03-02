@@ -30,7 +30,7 @@ export default function EmptyStateTips({
     isPear,
     siteConfig,
     threads,
-    showAllTribe,
+    canShowAllTribe,
     setIsPear,
     showTribeProfile,
   } = useAuth()
@@ -43,7 +43,7 @@ export default function EmptyStateTips({
 
   const [animationKey, setAnimationKey] = useState(0)
 
-  const canShowPear = !(showAllTribe && showTribe) && isPear
+  const canShowPear = !(canShowAllTribe && showTribe) && isPear
 
   const renderCancelFeedBack = () => (
     <>

@@ -88,7 +88,7 @@ export default function Menu({
 
   const { setShowTribe, showTribe } = useChat()
 
-  const showAllTribe = auth.showAllTribe && showTribe
+  const canShowAllTribe = auth.canShowAllTribe && showTribe
 
   const city = (user || guest)?.city || ""
   const { utilities } = useStyles()
@@ -716,7 +716,7 @@ export default function Menu({
                           })
                           .slice(
                             0,
-                            showAllTribe || isPear
+                            canShowAllTribe || isPear
                               ? 1
                               : threads?.threads?.length,
                           )
@@ -924,7 +924,7 @@ export default function Menu({
                         : null}
                       {!threads?.threads?.length ||
                       isPear ||
-                      showAllTribe ||
+                      canShowAllTribe ||
                       threads?.threads?.length < 2 ? (
                         <EmptyStateTips style={{ marginTop: 15 }} />
                       ) : null}

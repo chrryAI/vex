@@ -118,6 +118,17 @@ export function getPostId(pathname?: string): string | undefined {
   return postId && isValidUuidV4(postId) ? postId : undefined
 }
 
+export function calculateTranslationCredits({
+  contentLength,
+}: {
+  contentLength?: number
+}): number {
+  if (!contentLength) return 0
+  if (contentLength < 500) return 3
+  if (contentLength < 1500) return 5
+  return 8
+}
+
 // export const isDevelopment = process.env.VITE_NODE_ENV !== "production"
 
 export const MAX_TOOL_CALLS_PER_MESSAGE = 7
