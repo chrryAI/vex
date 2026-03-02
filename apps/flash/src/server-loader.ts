@@ -55,7 +55,7 @@ export interface ServerData {
     threads: thread[]
     totalCount: number
   }
-  showAllTribe?: boolean
+  canShowAllTribe?: boolean
   accountApp?: appWithStore
   showTribe: boolean
   translations?: Record<string, any>
@@ -314,8 +314,9 @@ export async function loadServerData(
     toString: () => string
   }
 
-  const showAllTribe =
-    pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
+  const canShowAllTribe =
+    (pathname ? locales.includes(pathname as "en") : true) &&
+    (pathname === "/tribe" || (siteConfig.isTribe && pathname === "/"))
   try {
     const sessionResult = await getSession({
       // appId: appResult.id,
@@ -413,7 +414,7 @@ export async function loadServerData(
       : []
 
     const canShowTribeProfile =
-      !tribeSlug && !excludedSlugRoutes?.includes(pathname) && !showAllTribe
+      !tribeSlug && !excludedSlugRoutes?.includes(pathname) && !canShowAllTribe
 
     const [translationsResult, threadsResult, tribesResult, tribePostsResult] =
       await Promise.all([
@@ -512,7 +513,7 @@ export async function loadServerData(
     showTribe,
     accountApp,
     tribe,
-    showAllTribe,
+    canShowAllTribe,
     pathname, // Add pathname so client knows the SSR route
   }
   // Generate metadata for this route

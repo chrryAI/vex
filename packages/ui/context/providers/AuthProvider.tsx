@@ -77,7 +77,7 @@ import {
   MEANINGFUL_EVENTS,
 } from "../../utils/analyticsEvents"
 import { hasStoreApps, merge } from "../../utils/appUtils"
-import { cleanSlug } from "../../utils/clearLocale"
+import clearLocale, { cleanSlug } from "../../utils/clearLocale"
 import { dailyQuestions as dailyQuestionsUtil } from "../../utils/dailyQuestions"
 import getAppSlugUtil from "../../utils/getAppSlug"
 import { getHourlyLimit } from "../../utils/getHourlyLimit"
@@ -120,7 +120,9 @@ const AuthContext = createContext<
         timestamp: number
         duration?: number
       } | null
-      showAllTribe: boolean
+      canShowAllTribe: boolean
+      languageModal: string | undefined
+      setLanguageModal: (value: string | undefined) => void
       timer?: timer
       tribeSlug?: string
       currentTribe?: tribe
@@ -1690,6 +1692,10 @@ export function AuthProvider({
     // isExtension || isCapacitor,
   )
 
+  const [languageModal, setLanguageModal] = useState<string | undefined>(
+    undefined,
+  )
+
   // useEffect(() => {
   //   if (session?.locale) {
   //     setLanguageInternal(session?.locale)
@@ -1714,11 +1720,9 @@ export function AuthProvider({
       }
     }
 
-    router.push(
-      cleanSlug(
-        `/${language === defaultLocale ? "" : language}${pathWithoutLocale}`,
-      ),
-    )
+    const prefix = language === defaultLocale ? "" : `/${language}`
+    const newPath = cleanSlug(`${prefix}${pathWithoutLocale}`) || "/"
+    window.history.replaceState(null, "", newPath)
   }
 
   const migratedFromGuestRef = useRef(false)
@@ -1985,9 +1989,10 @@ export function AuthProvider({
   const [storeApp, setStoreAppInternal] = useState<appWithStore | undefined>(
     storeAppInternal,
   )
-  const showAllTribe = !!(
-    pathname === "/tribe" ||
-    (siteConfig.isTribe && pathname === "/")
+
+  const canShowAllTribe = !!(
+    clearLocale(pathname) === "/tribe" ||
+    (siteConfig.isTribe && !clearLocale(pathname))
   )
 
   const installs = [
@@ -2013,7 +2018,7 @@ export function AuthProvider({
 
   const withFallback = "chrry"
   const minioUrl = "https://minio.chrry.dev/chrry-installs/installs"
-  const downloadUrl = showAllTribe
+  const downloadUrl = canShowAllTribe
     ? `${minioUrl}/Tribe.dmg`
     : app && installs.includes(app?.slug || "")
       ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
@@ -2073,7 +2078,7 @@ export function AuthProvider({
   }
 
   const getTribeUrl = () => {
-    return showAllTribe
+    return canShowAllTribe
       ? siteConfig?.isTribe
         ? "/"
         : `/tribe`
@@ -2274,11 +2279,19 @@ export function AuthProvider({
   const tribeQuery = searchParams.get("tribe") === "true"
 
   const canBeTribeProfile =
-    !showAllTribe && !_isExcluded && !(siteConfig.isTribe && pathname === "/")
+    !canShowAllTribe &&
+    !_isExcluded &&
+    !(siteConfig.isTribe && !clearLocale(pathname))
+  console.log(
+    `🚀 ~ postId:`,
+    canBeTribeProfile,
+    canShowAllTribe,
+    clearLocale(pathname),
+  )
 
   const showTribeInitial =
     !!(
-      showAllTribe ||
+      canShowAllTribe ||
       tribeSlug ||
       postId ||
       tribeQuery ||
@@ -2298,7 +2311,7 @@ export function AuthProvider({
     !tribeSlug && (showTribeProfileInternal || showTribeProfileMemo)
 
   const isPearInternal =
-    showAllTribe || showTribe || searchParams.get("pear") === "true"
+    canShowAllTribe || showTribe || searchParams.get("pear") === "true"
 
   const [isPear, setIsPearInternal] = useState(isPearInternal)
 
@@ -2307,7 +2320,7 @@ export function AuthProvider({
   const setIsPear = (value: appWithStore | undefined) => {
     setIsPearInternal(!!value)
     if (value) {
-      !showAllTribe && router.push(`${getAppSlug(value)}?pear=true`)
+      !canShowAllTribe && router.push(`${getAppSlug(value)}?pear=true`)
       toast.success(`${t("Let's Pear")} 🍐`)
       return
     }
@@ -3231,9 +3244,11 @@ export function AuthProvider({
         dailyQuestionIndex,
         showTribeProfile,
         postId,
+        languageModal,
+        setLanguageModal,
         mergeApps,
         getTribeUrl,
-        showAllTribe,
+        canShowAllTribe,
       }}
     >
       {children}

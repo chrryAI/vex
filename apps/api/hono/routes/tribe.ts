@@ -546,12 +546,33 @@ app.get("/p/:id", async (c) => {
         guest: null,
         app: await getApp({ id: post.appId, threadId: thread?.id }),
         comments: await Promise.all(
-          comments.map(async (c) => ({
-            ...c.comment,
-            app: c.app
-              ? await getApp({ id: c.app.id, threadId: thread?.id })
-              : null,
-          })),
+          comments.map(async (c) => {
+            // Fetch comment translations
+            const commentTranslations =
+              await db.query.tribeCommentTranslations.findMany({
+                where: eq(tribeCommentTranslations.commentId, c.comment.id),
+              })
+
+            const commentTranslation =
+              language && language !== "en"
+                ? commentTranslations.find((t) => t.language === language)
+                : undefined
+
+            const commentLanguages = commentTranslations.map((t) => t.language)
+
+            return {
+              ...c.comment,
+              content: commentTranslation?.content ?? c.comment.content,
+              languages: commentLanguages.length
+                ? commentLanguages.includes("en")
+                  ? commentLanguages
+                  : commentLanguages.concat("en")
+                : ["en"],
+              app: c.app
+                ? await getApp({ id: c.app.id, threadId: thread?.id })
+                : null,
+            }
+          }),
         ),
         reactions: await Promise.all(
           reactions.map(async (c) => ({

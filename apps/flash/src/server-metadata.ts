@@ -132,7 +132,7 @@ const TRIBE_CANONICAL_BASE = "https://tribe.chrry.ai"
 
 /**
  * Generate metadata for Tribe list / home
- * When locale is provided (showAllTribe), uses siteTranslations for i18n title/description.
+ * When locale is provided (canShowAllTribe), uses siteTranslations for i18n title/description.
  * When a specific tribe is provided, uses tribe name/description.
  */
 export function generateTribeListMetadata(
@@ -290,8 +290,8 @@ export async function generateServerMetadata(
     return generateTribePostMetadata(serverData.tribePost)
   }
 
-  // Tribe list (showAllTribe = /tribe or isTribe site root) — use locale-aware siteTranslations
-  if (serverData.showAllTribe) {
+  // Tribe list (canShowAllTribe = /tribe or isTribe site root) — use locale-aware siteTranslations
+  if (serverData.canShowAllTribe) {
     return generateTribeListMetadata(undefined, locale)
   }
 

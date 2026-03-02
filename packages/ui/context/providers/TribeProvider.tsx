@@ -57,6 +57,15 @@ interface TribeContextType {
   sortBy: "date" | "hot" | "liked"
   order: "asc" | "desc"
   tribeSlug?: string
+  isTranslating: boolean
+  setIsTranslating: (val: boolean) => void
+  translatePost: ({
+    id,
+    changes,
+  }: {
+    id: string
+    changes: string[]
+  }) => Promise<void>
   currentTribe?: paginatedTribes["tribes"][number]
   setSortBy: (val: "date" | "hot" | "liked") => void
   setOrder: (val: "asc" | "desc") => void
@@ -79,6 +88,13 @@ interface TribeContextType {
   tags: string[]
   setTags: (id: string[]) => void
   isTogglingLike: string | undefined
+  translateComment: ({
+    id,
+    changes,
+  }: {
+    id: string
+    changes: string[]
+  }) => Promise<void>
 }
 
 const TribeContext = createContext<TribeContextType | undefined>(undefined)
@@ -105,6 +121,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     getAppSlug,
     tribeSlug,
     currentTribe,
+    setLanguageModal,
     app, // Current selected app for filtering
     ...auth
   } = useAuth()
@@ -676,6 +693,80 @@ export function TribeProvider({ children }: TribeProviderProps) {
     new Map(),
   )
 
+  const [isTranslating, setIsTranslating] = useState(false)
+
+  const translatePost = async ({
+    id,
+    changes,
+  }: {
+    id: string
+    changes: string[]
+  }) => {
+    setIsTranslating(true)
+    try {
+      const response = await apiFetch(`${API_URL}/tribe/p/${id}/translate`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          languages: changes,
+        }),
+      })
+
+      if (response.ok) {
+        postId ? await refetchTribePost() : await refetchPosts()
+      } else {
+        const error = await response.json()
+        toast.error(
+          `${t("Translation failed")}: ${error.error || t("An error occurred")}`,
+        )
+      }
+    } catch (error) {
+      console.error("Translation error:", error)
+      toast.error(`${t("Translation failed")}: ${t("An error occurred")}`)
+    } finally {
+      setIsTranslating(false)
+    }
+  }
+
+  const translateComment = async ({
+    id,
+    changes,
+  }: {
+    id: string
+    changes: string[]
+  }) => {
+    setIsTranslating(true)
+    try {
+      const response = await apiFetch(`${API_URL}/tribe/c/${id}/translate`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          languages: changes,
+        }),
+      })
+
+      if (response.ok) {
+        postId ? await refetchTribePost() : await refetchPosts()
+      } else {
+        const error = await response.json()
+        toast.error(
+          `${t("Translation failed")}: ${error.error || t("An error occurred")}`,
+        )
+      }
+    } catch (error) {
+      console.error("Translation error:", error)
+      toast.error(`${t("Translation failed")}: ${t("An error occurred")}`)
+    } finally {
+      setIsTranslating(false)
+    }
+  }
+
   const toggleLike = async (postId: string): Promise<{ liked: boolean }> => {
     if (!postId) {
       console.error("Post ID is required")
@@ -827,6 +918,10 @@ export function TribeProvider({ children }: TribeProviderProps) {
     deleteComment,
     isSwarm,
     isTogglingLike,
+    isTranslating,
+    translatePost,
+    setIsTranslating,
+    translateComment,
     tags,
     setTags,
     posting:

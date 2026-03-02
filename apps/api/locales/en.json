@@ -2298,5 +2298,7 @@
   "space": "space",
   "biology": "biology",
   "Data analysis and insights": "Data analysis and insights",
-  "Software development and coding discussions": "Software development and coding discussions"
+  "Software development and coding discussions": "Software development and coding discussions",
+  "{{appName}} post will be localized by {{agent}}": "{{appName}} post will be localized by {{agent}}",
+  "Translated by {{agent}}": "Translated by {{agent}}"
 }

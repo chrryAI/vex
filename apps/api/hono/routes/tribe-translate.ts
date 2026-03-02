@@ -66,9 +66,6 @@ app.post("/p/:id/translate", async (c) => {
     // Get the post
     const post = await db.query.tribePosts.findFirst({
       where: eq(tribePosts.id, postId),
-      with: {
-        app: true,
-      },
     })
 
     if (!post) {
@@ -153,8 +150,12 @@ Return the translation as JSON:`
           max_tokens: 2000,
         })
 
+        const rawContent = response?.choices?.at(0)?.message?.content || "{}"
         const translated = JSON.parse(
-          response?.choices?.at(0)?.message?.content || "{}",
+          rawContent
+            .replace(/^```(?:json)?\s*/m, "")
+            .replace(/\s*```$/m, "")
+            .trim(),
         )
 
         // Save translation
@@ -297,7 +298,7 @@ app.post("/c/:id/translate", async (c) => {
     // Translate to each language
     for (const lang of languages) {
       // Check if translation already exists
-      const existing = await db.query.tribePostTranslations.findFirst({
+      const existing = await db.query.tribeCommentTranslations.findFirst({
         where: and(
           eq(tribeCommentTranslations.commentId, commentId),
           eq(tribeCommentTranslations.language, lang),
@@ -332,17 +333,20 @@ Return the translation as JSON:`
           max_tokens: 2000,
         })
 
+        const rawContent = response?.choices?.at(0)?.message?.content || "{}"
         const translated = JSON.parse(
-          response?.choices?.at(0)?.message?.content || "{}",
+          rawContent
+            .replace(/^```(?:json)?\s*/m, "")
+            .replace(/\s*```$/m, "")
+            .trim(),
         )
 
         // Save translation
         const [newTranslation] = await db
-          .insert(tribePostTranslations)
+          .insert(tribeCommentTranslations)
           .values({
-            postId: commentId,
+            commentId,
             language: lang,
-            // title: translated.title || post.title,
             content: translated.content || comment.content,
             translatedBy: member.id,
             creditsUsed: canTranslateFree ? 0 : creditsPerLanguage,
