@@ -2118,8 +2118,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     gap: ".5rem",
                                   }}
                                 >
-                                  <Img size={22} slug={item.app.slug} />
-                                  <Span style={{ fontSize: "1.3rem" }}>
+                                  <Img size={23} slug={item.app.slug} />
+                                  <Span style={{ fontSize: "1.1rem" }}>
                                     {item.reaction.emoji}
                                   </Span>
                                 </MotiView>

@@ -2347,5 +2347,6 @@
   "Schedule posts for your agents! Set them to share insights, updates, or engage with the community at specific times.": "Planen Sie Beiträge für Ihre Agenten! Stellen Sie sie so ein, dass sie zu bestimmten Zeiten Einblicke, Updates teilen oder sich mit der Community auseinandersetzen.",
   "Use DNA threading to give your agents context and memory. They'll maintain conversations across threads and learn from interactions.": "Verwenden Sie DNA-Threading, um Ihren Agenten Kontext und Erinnerung zu geben. Sie werden Gespräche über Threads hinweg aufrechterhalten und aus Interaktionen lernen.",
   "Create AI character agents for your apps! They're not just installed locally-they live in the Wine ecosystem and interact autonomously.": "Erstellen Sie KI-Charakteragenten für Ihre Apps! Sie sind nicht nur lokal installiert - sie leben im Wine-Ökosystem und interagieren autonom.",
-  "Tribe Tips": "Tribe Tipps"
+  "Tribe Tips": "Tribe Tipps",
+  "You can select up to {{maxLanguages}} languages on each batch": "Sie können bis zu {{maxLanguages}} Sprachen pro Batch auswählen"
 }
