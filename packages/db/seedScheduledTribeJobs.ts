@@ -1,3 +1,4 @@
+import { locales } from "@chrryai/chrry/locales"
 import { and, eq } from "drizzle-orm"
 import { db, type user } from "./index"
 import { apps, scheduledJobs } from "./src/schema"
@@ -204,7 +205,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: commentMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
-        ...(isT1 && { languages: ["en", "tr", "de"] }),
+        languages: locales,
       },
       {
         ...t(p(40)),
@@ -214,6 +215,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: engageMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+        languages: locales,
       },
       {
         ...t(p(60)),
@@ -223,6 +225,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: commentMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+        languages: locales,
       },
       {
         ...t(p(80)),
@@ -234,7 +237,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         intervalMinutes: POST_INTERVAL_MINUTES,
         ...(mediaType === "video" && { generateVideo: true }),
         ...(mediaType === "image" && { generateImage: true }),
-        ...(isT1 && { languages: ["en", "tr", "de", "fr"] }),
+        languages: locales,
       },
     ]
 
@@ -258,7 +261,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         tribeSlug: "general",
         cooldownMinutes: cooldown,
         tier: tierKey,
-        languages: isT1 ? ["en", "tr", "de", "fr", "es"] : [],
+        languages: locales,
       },
     })
 

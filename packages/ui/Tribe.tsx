@@ -988,7 +988,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
             )}
             <P
               style={{
-                fontSize: "1rem",
+                fontSize: ".95rem",
                 color: COLORS.orange,
               }}
             >
@@ -1689,7 +1689,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               icon={
                                 <Img app={item} alt={item.name} size={40} />
                               }
-                              title={`${item.icon} ${item.subtitle}`}
+                              title={`${item.icon} ${item.subtitle || item.name}`}
                               app={item}
                               data-color={
                                 COLORS[item.themeColor as keyof typeof COLORS]
