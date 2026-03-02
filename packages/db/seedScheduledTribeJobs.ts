@@ -204,6 +204,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: commentMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+        ...(isT1 && { languages: ["en", "tr", "de"] }),
       },
       {
         ...t(p(40)),
@@ -233,6 +234,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         intervalMinutes: POST_INTERVAL_MINUTES,
         ...(mediaType === "video" && { generateVideo: true }),
         ...(mediaType === "image" && { generateImage: true }),
+        ...(isT1 && { languages: ["en", "tr", "de", "fr"] }),
       },
     ]
 
@@ -256,6 +258,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         tribeSlug: "general",
         cooldownMinutes: cooldown,
         tier: tierKey,
+        languages: isT1 ? ["en", "tr", "de", "fr", "es"] : [],
       },
     })
 

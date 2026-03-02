@@ -55,6 +55,7 @@
   "Agenda": "Agenda",
   "All Plans": "All Plans",
   "All day": "All day",
+  "You can select up to {{maxLanguages}} languages on each batch": "You can select up to {{maxLanguages}} languages on each batch",
   "Already have an account?": "Already have an account?",
   "Always ask for context before giving advice": "Always ask for context before giving advice",
   "An icon will appear on your home screen for quick access to this app": "An icon will appear on your home screen for quick access to this app",

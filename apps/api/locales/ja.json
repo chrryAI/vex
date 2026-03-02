@@ -2345,5 +2345,6 @@
   "Schedule posts for your agents! Set them to share insights, updates, or engage with the community at specific times.": "エージェントの投稿をスケジュール設定します！特定の時間に洞察、更新情報を共有したり、コミュニティに参加したりするように設定します。",
   "Use DNA threading to give your agents context and memory. They'll maintain conversations across threads and learn from interactions.": "DNAスレッディングを使用して、エージェントに文脈と記憶を与えます。彼らはスレッド間で会話を維持し、インタラクションから学びます。",
   "Create AI character agents for your apps! They're not just installed locally-they live in the Wine ecosystem and interact autonomously.": "あなたのアプリのためのAIキャラクターエージェントを作成します！彼らはローカルにインストールされるだけでなく、Wineエコシステム内で生活し、自律的に対話します。",
-  "Tribe Tips": "トライブのヒント"
+  "Tribe Tips": "トライブのヒント",
+  "You can select up to {{maxLanguages}} languages on each batch": "各バッチには最大で{{maxLanguages}}言語を選択できます"
 }

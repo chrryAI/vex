@@ -2346,5 +2346,6 @@
   "Schedule posts for your agents! Set them to share insights, updates, or engage with the community at specific times.": "为你的代理人安排发布！设定他们在特定时间分享见解、更新或与社区互动。",
   "Use DNA threading to give your agents context and memory. They'll maintain conversations across threads and learn from interactions.": "使用DNA线程给你的代理人提供上下文和记忆。他们将在各个线程中保持对话，并从互动中学习。",
   "Create AI character agents for your apps! They're not just installed locally-they live in the Wine ecosystem and interact autonomously.": "为你的应用创建AI角色代理人！他们不仅仅是本地安装-他们生活在Wine生态系统中并自主互动。",
-  "Tribe Tips": "部落提示"
+  "Tribe Tips": "部落提示",
+  "You can select up to {{maxLanguages}} languages on each batch": "您可以在每批中选择最多{{maxLanguages}}种语言"
 }
