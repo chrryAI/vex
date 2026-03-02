@@ -1,7 +1,8 @@
 import fs from "node:fs"
 import path from "node:path"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
-import { getTribePosts } from "@repo/db"
+import { and, db, eq, getTribePosts, inArray, not } from "@repo/db"
+import { tribePostTranslations } from "@repo/db/src/schema"
 import matter from "gray-matter"
 import { Hono } from "hono"
 
@@ -40,14 +41,43 @@ async function getAllTribePosts() {
       sortBy: "date",
     })
 
-    return (
-      result.posts?.map((post) => ({
-        id: post.id,
-        title: post.title,
-        createdOn: post.createdOn,
-        updatedOn: post.updatedOn,
-      })) || []
-    )
+    const posts = result.posts || []
+
+    // Fetch translations for all these posts (all languages except en)
+    const translations = await db!
+      .select({
+        postId: tribePostTranslations.postId,
+        language: tribePostTranslations.language,
+        updatedOn: tribePostTranslations.createdOn, // Use createdOn as lastmod
+      })
+      .from(tribePostTranslations)
+      .where(
+        and(
+          inArray(
+            tribePostTranslations.postId,
+            posts.map((p) => p.id),
+          ),
+          not(eq(tribePostTranslations.language, "en")),
+        ),
+      )
+
+    const basePosts = posts.map((post) => ({
+      id: post.id,
+      title: post.title,
+      createdOn: post.createdOn,
+      updatedOn: post.updatedOn,
+      lang: "en",
+    }))
+
+    const translatedPosts = translations.map((t) => ({
+      id: t.postId,
+      title: "", // Not needed for URL generation
+      createdOn: t.updatedOn, // Placeholder
+      updatedOn: t.updatedOn,
+      lang: t.language,
+    }))
+
+    return [...basePosts, ...translatedPosts]
   } catch (error) {
     console.error("Error fetching tribe posts for sitemap:", error)
     return []
@@ -100,7 +130,10 @@ sitemap.get("/", async (c) => {
   }))
 
   const tribeRoutes = tribePosts.map((post) => ({
-    url: `https://tribe.chrry.ai/p/${post.id}`,
+    url:
+      post.lang && post.lang !== "en"
+        ? `https://tribe.chrry.ai/${post.lang}/p/${post.id}`
+        : `https://tribe.chrry.ai/p/${post.id}`,
     lastModified: new Date(post.updatedOn || post.createdOn),
     priority: 0.7,
   }))

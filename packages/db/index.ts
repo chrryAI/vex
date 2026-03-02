@@ -210,6 +210,7 @@ export {
   sonarIssues,
   lte,
   sonarMetrics,
+  not,
   ne,
 }
 
