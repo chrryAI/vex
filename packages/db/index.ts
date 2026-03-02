@@ -591,6 +591,8 @@ export async function logCreditUsage({
     | "pear_feedback"
     | "pear_feedback_payment"
     | "pear_feedback_reward"
+    | "tribe_post_comment_translate"
+    | "tribe_post_translate"
   threadId?: string
   messageId?: string
   appId?: string

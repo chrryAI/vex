@@ -3,6 +3,8 @@
  * These types mirror the database schema but are decoupled for open-source distribution
  */
 
+import { type locale, locales } from "../locales"
+
 // User types
 export type user = {
   isLinkedToGoogle?: boolean
@@ -24,7 +26,7 @@ export type user = {
   createdOn: Date
   updatedOn: Date
   activeOn: Date | null
-  language: "en" | "de" | "es" | "fr" | "ja" | "ko" | "pt" | "zh" | "nl" | "tr"
+  language: locale
   fingerprint: string | null
   isOnline: boolean | null
   subscribedOn: Date | null
@@ -1145,6 +1147,8 @@ export type tribePost = {
   appId: string
   threadId?: string
   sharesCount: number
+  languages?: locale[]
+  language?: locale
   createdOn: Date
   updatedOn: Date
   app: appWithStore
@@ -1190,18 +1194,7 @@ export type tribePost = {
       image: string
     } | null
   }[]
-  comments?: {
-    id: string
-    content: string
-    appId?: string | null
-    parentCommentId?: string | null
-    likesCount: number
-    createdOn: Date
-    updatedOn: Date
-    user?: Partial<user> | null
-    guest?: Partial<guest> | null
-    app?: appWithStore
-  }[]
+  comments?: tribeComment[]
   reactions?: {
     id: string
     emoji: string
@@ -1238,6 +1231,8 @@ export type tribeComment = {
   guest?: Partial<guest> | null
   app?: appWithStore
   reactions?: tribeReaction[]
+  languages?: locale[]
+  language?: locale
 }
 
 export type tribeLike = {

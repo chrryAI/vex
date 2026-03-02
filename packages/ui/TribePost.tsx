@@ -7,20 +7,30 @@ import AppLink from "./AppLink"
 import A from "./a/A"
 import ConfirmButton from "./ConfirmButton"
 import { COLORS, useAppContext } from "./context/AppContext"
-import { useApp, useAuth, useData } from "./context/providers"
+import {
+  useApp,
+  useAuth,
+  useChat,
+  useData,
+  useNavigationContext,
+} from "./context/providers"
 import { useTribe } from "./context/providers/TribeProvider"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
 import Instructions from "./Instructions"
 import {
+  Coins,
   Download,
   Heart,
   MessageCircleReply,
+  OpenAI,
   Share2,
   Sparkles,
   Trash2,
 } from "./icons"
+import LanguageSwitcher from "./LanguageSwitcher"
 import Loading from "./Loading"
+import type { locale } from "./locales"
 import MarkdownContent from "./MarkdownContent.web"
 import {
   Button,
@@ -36,8 +46,9 @@ import {
   useTheme,
   Video,
 } from "./platform"
+import TribeTranslate from "./TribeTranslate"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
-import { apiFetch, isDevelopment } from "./utils"
+import { apiFetch, calculateTranslationCredits, isDevelopment } from "./utils"
 import isOwner from "./utils/isOwner"
 
 interface TribePostProps {
@@ -59,6 +70,10 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     deletePost,
     deleteComment,
     tribePost: post,
+    translatePost,
+    isTranslating,
+    setIsTranslating,
+    translateComment,
   } = useTribe()
 
   const [isHovered, setIsHovered] = useState(false)
@@ -67,15 +82,22 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     triggerOnce: false,
   })
 
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false)
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false)
+
   const isSwarm = commenting.length || liveReactions.length
 
   const [hasMore, setHasMore] = useState(commenting.length)
+
+  const { addParams } = useNavigationContext()
+
+  const { creditsLeft } = useChat()
 
   useEffect(() => {
     commenting.length && setHasMore(commenting.length)
   }, [commenting.length])
 
-  const { timeAgo, accountApp, user, setSignInPart, getAppSlug, loadingApp } =
+  const { timeAgo, accountApp, user, setSignInPart, getAppSlug, setLanguage } =
     useAuth()
   const { setAppStatus } = useApp()
   const { FRONTEND_URL } = useData()
@@ -158,6 +180,27 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
       toast.error("Failed to copy code")
     }
   }
+
+  const languages = post?.languages
+
+  const [selectedLanguage, setSelectedLanguages] = useState<locale[]>(
+    languages ?? [],
+  )
+
+  const [commentLanguage, setCommentLanguage] = useState<
+    | {
+        [commentId: string]: locale[]
+      }
+    | undefined
+  >(undefined)
+
+  const changes = selectedLanguage.filter((l) => !(languages ?? []).includes(l))
+
+  const totalCredits = post
+    ? calculateTranslationCredits({
+        contentLength: post.content.length,
+      }) * changes.length
+    : 0
 
   const renderMedia = () => {
     if (!post) return null
@@ -490,6 +533,23 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 </ConfirmButton>
               )}
             </Div>
+            {owner && (
+              <TribeTranslate
+                type="post"
+                id={post.id}
+                style={{
+                  position: "relative",
+                  bottom: -2,
+                  marginLeft: -2,
+                }}
+                appName={post.app.name}
+                contentLength={post.content.length}
+                existingLanguages={post.languages ?? []}
+                onSuccessNavigate={(language: locale) => {
+                  setLanguage(language)
+                }}
+              />
+            )}
           </Div>
 
           {post.app.characterProfile &&
@@ -1267,7 +1327,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                               >
                                 {t("Reply")}
                               </Button>
-
                               {tyingToReply === comment.id && (
                                 <Span
                                   style={{
@@ -1298,15 +1357,40 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                     await deleteComment(comment.id)
                                   }}
                                   style={{
-                                    ...utilities.button.style,
                                     ...utilities.link.style,
-                                    ...utilities.small.style,
                                     marginLeft: "auto",
                                   }}
                                   aria-label="Delete comment"
                                 >
                                   <Trash2 size={16} />
                                 </ConfirmButton>
+                              )}
+                              {isOwner(comment.app, {
+                                userId: user?.id,
+                              }) && (
+                                <>
+                                  {owner && (
+                                    <TribeTranslate
+                                      style={{
+                                        position: "relative",
+                                        bottom: -2,
+                                        marginLeft: 3,
+                                      }}
+                                      type="comment"
+                                      id={comment.id}
+                                      appName={post.app.name}
+                                      contentLength={
+                                        comment.content?.length ?? 0
+                                      }
+                                      existingLanguages={
+                                        comment.languages ?? []
+                                      }
+                                      onSuccessNavigate={(language: locale) => {
+                                        setLanguage(language)
+                                      }}
+                                    />
+                                  )}
+                                </>
                               )}
                             </Div>
                           </Div>

@@ -18,7 +18,7 @@ import Grapes from "./Grapes"
 import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
 import Instructions from "./Instructions"
-// import LanguageSwitcher from "./LanguageSwitcher"
+import type { locale } from "./locales"
 import {
   Button,
   Div,
@@ -38,6 +38,7 @@ import {
 import Search from "./Search"
 import Skeleton from "./Skeleton"
 import { useTribeStyles } from "./Tribe.styles"
+import TribeTranslate from "./TribeTranslate"
 import type { appWithStore, tribePost, user } from "./types"
 import { apiFetch, FRONTEND_URL } from "./utils"
 import isOwner from "./utils/isOwner"
@@ -88,6 +89,8 @@ const TribePostListItem = ({
   tags,
   setTags,
   postsRef,
+  addParams,
+  push,
 }: {
   post: tribePost
   index: number
@@ -118,6 +121,7 @@ const TribePostListItem = ({
   tags: string[]
   setTags: (tags: string[]) => void
   postsRef: RefObject<HTMLDivElement | null>
+  push: (to: string) => void
   downloadImage: (imageUrl: string, imageName?: string) => Promise<void>
 }) => {
   const [isHovered, setIsHovered] = useState(false)
@@ -451,7 +455,15 @@ const TribePostListItem = ({
                 </AppLink>
               </Div>
             )}
-            {/* <LanguageSwitcher multi /> */}
+            {owner && (
+              <TribeTranslate
+                type="post"
+                id={post.id}
+                appName={post.app.name}
+                contentLength={post.content.length}
+                existingLanguages={post.languages ?? []}
+              />
+            )}
           </Div>
           {tryAppCharacterProfile === post.id ? (
             post.app?.characterProfile && (
@@ -2254,6 +2266,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           addParams={addParams}
                           setAppStatus={setAppStatus}
                           tags={tags}
+                          push={push}
                           setTags={setTags}
                           postsRef={postsRef}
                           downloadImage={downloadImage}
