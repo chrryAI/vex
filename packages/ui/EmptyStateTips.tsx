@@ -24,7 +24,7 @@ export default function EmptyStateTips({
 }: {
   style?: React.CSSProperties
 }) {
-  const { isManagingApp, canEditApp, app } = useApp()
+  const { isManagingApp, app } = useApp()
   const {
     isPear,
     threads,
@@ -69,7 +69,6 @@ export default function EmptyStateTips({
 
   const count =
     useResponsiveCount([
-      { height: 700, count: 0 },
       { height: 750, count: 1 },
       { height: 800, count: 2 },
       { height: 850, count: 3 },
@@ -84,24 +83,23 @@ export default function EmptyStateTips({
     }
   }, [reduceMotion])
 
-  const { viewPortHeight } = usePlatform()
-
   const { utilities } = useStyles()
 
   const getTitle = () => {
     if (count === 0) {
       return ""
     }
+
+    if (isManagingApp) {
+      return `🍒 ${t("App Builder Tips")}`
+    }
+
     if (canShowPear) {
       return `🍐 ${t("Feedback Tips")}`
     }
 
     if (showTribe && !showTribeProfile) {
       return `🦋 ${t("Tribe Tips")}`
-    }
-
-    if (isManagingApp) {
-      return `✨ ${t("App Builder Tips")}`
     }
 
     if (app?.tipsTitle) {
@@ -178,7 +176,7 @@ export default function EmptyStateTips({
   }
 
   // Show app builder tips when managing or editing an app
-  if (isManagingApp || canEditApp) {
+  if (isManagingApp) {
     const builderTips = [
       {
         tip: t(
@@ -231,7 +229,7 @@ export default function EmptyStateTips({
           {renderCancelFeedBack()}
         </H3>
         <Div style={{ ...styles.ul.style }}>
-          {builderTips.map((item, i) => {
+          {builderTips.slice(0, count).map((item, i) => {
             return (
               <Div key={i} style={styles.tip.style}>
                 <Span style={styles.tipText.style}>{item.tip}</Span>
@@ -303,12 +301,6 @@ export default function EmptyStateTips({
       </H3>
       <Div style={{ ...styles.ul.style }}>
         {currentTips.slice(0, count).map((item, i) => {
-          // Progressive display based on viewport height
-          if (viewPortHeight < 600 && i >= 3) return null
-          if (viewPortHeight < 700 && i >= 4) return null
-          if (viewPortHeight < 800 && i >= 5) return null
-          if (viewPortHeight < 900 && i >= 6) return null
-
           return (
             <MotiView
               key={`tip-${i}-${animationKey}`}
