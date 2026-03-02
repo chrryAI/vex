@@ -9,7 +9,7 @@ import { CircleCheck, Languages } from "./icons"
 import { useLanguageSwitcherStyles } from "./LanguageSwitcher.styles"
 import { LANGUAGES, type locale, locales } from "./locales"
 import Modal from "./Modal"
-import { Button, Div } from "./platform"
+import { Button, Div, toast } from "./platform"
 import { apiFetch } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
@@ -24,6 +24,7 @@ const LanguageSwitcher = ({
   hideLanguages,
   attachTo,
   hideOnClickOutside = true,
+  maxLanguages = 4,
   ...props
 }: {
   multi?: boolean
@@ -39,6 +40,7 @@ const LanguageSwitcher = ({
   hideLanguages?: locale
   attachTo?: string
   hideOnClickOutside?: boolean
+  maxLanguages?: number
 }) => {
   const { t } = useAppContext()
   const styles = useLanguageSwitcherStyles()
@@ -96,6 +98,15 @@ const LanguageSwitcher = ({
     const result = selected.includes(newLocale)
       ? selected.filter((l) => l !== newLocale)
       : selected.concat(newLocale)
+
+    if (result.length > maxLanguages) {
+      toast.error(
+        t("You can select up to {{maxLanguages}} languages on each batch", {
+          maxLanguages,
+        }),
+      )
+      return
+    }
 
     setSelected(multi ? result : [newLocale])
 
