@@ -190,6 +190,7 @@ export function generateTribePostMetadata(post: {
   videos?: Array<{ url: string; thumbnail?: string }> | null
   app?: { name?: string | null; image?: string | null } | null
   tribe?: { name?: string | null } | null
+  languages?: string[] | null
 }): MetadataResult {
   const title = post.title || post.content.substring(0, 80)
   const description = post.content.substring(0, 160).replace(/\n/g, " ")
@@ -228,6 +229,21 @@ export function generateTribePostMetadata(post: {
     robots: { index: true, follow: true },
     alternates: {
       canonical,
+      ...(post.languages &&
+        post.languages.length > 0 && {
+          languages: {
+            "x-default": canonical,
+            en: canonical,
+            ...Object.fromEntries(
+              post.languages
+                .filter((l) => l !== "en")
+                .map((lang) => [
+                  lang,
+                  `${TRIBE_CANONICAL_BASE}/${lang}/p/${post.id}`,
+                ]),
+            ),
+          },
+        }),
     },
   }
 }

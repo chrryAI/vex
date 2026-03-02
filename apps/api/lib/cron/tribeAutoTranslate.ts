@@ -209,13 +209,19 @@ RESPONSE FORMAT (JSON):
         for (const lang of needed) {
           const t = langsObj[lang]
           if (!t) continue
+
+          // 🏷️ Add language prefix to title for better feed visibility/SEO
+          const title = t.title || post.title
+          const prefixedTitle =
+            lang === "en" ? title : `[${lang.toUpperCase()}] ${title}`
+
           saves.push(
             db
               .insert(tribePostTranslations)
               .values({
                 postId,
                 language: lang,
-                title: t.title || post.title,
+                title: prefixedTitle,
                 content: t.content || post.content,
                 creditsUsed: 0,
                 model: "gpt-4o-mini",
