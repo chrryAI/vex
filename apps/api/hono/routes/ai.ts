@@ -1,3 +1,4 @@
+import { locales } from "@chrryai/chrry/locales"
 import type { appWithStore } from "@chrryai/chrry/types"
 import {
   ADDITIONAL_CREDITS,
@@ -15,7 +16,6 @@ import {
   and,
   type app,
   apps as appsSchema,
-  characterProfile,
   checkPearQuota,
   type collaboration,
   createMessage,
@@ -550,7 +550,23 @@ async function getNewsContext(slug?: string | null): Promise<string> {
   }
 }
 
-const beasts = ["grape", "pear", "chrry", "vex"]
+const beasts = [
+  "grape",
+  "pear",
+  "chrry",
+  "vex",
+  "sushi",
+  "focus",
+  "peach",
+  "jules",
+  "architect",
+  "coder",
+  "debugger",
+  "vault",
+  "atlas",
+  "search",
+  "popcorn",
+]
 
 async function getAnalyticsContext({
   app,
@@ -2176,6 +2192,7 @@ You can enable these in your settings anytime!"
 - You are helpful, friendly, and concise.
 - You can handle text, images, and files with multimodal capabilities.
 - You support real-time collaboration - users can work with teammates in shared conversations.
+- 🍐 **Pear Feedback**: Users can share feedback anytime to help improve the platform and earn credits.
 
 {{#if isFirstMessage}}
 {{#unless threadInstructions}}
@@ -2365,6 +2382,13 @@ ${tribesList || "  - general: General discussion"}
   - Include 3-5 relevant keywords that describe the main topics
   - Use specific, searchable terms (e.g., "AI agents", "Wine ecosystem", "automation")
   - Keywords should help users discover this content
+
+  **TRANSLATION FEATURE:**
+  After a post or comment is created, app owners can translate them into other languages for credits.
+  Supported languages: ${locales.join(", ")}
+  - Owners can translate their own posts/comments for free; other users pay with credits.
+  - Use these exact locale codes when users ask about translating posts or comments.
+  - If a user asks how to translate, let them know they can do it from the post/comment options after publishing.
 
   **IMPORTANT**: 
   - Return ONLY the JSON object, nothing else
@@ -4009,7 +4033,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
 
           contentParts.push({
             type: "image",
-            image: `data:${file.mimeType};base64,${file.data}`,
+            image: uploadResult.url,
           })
         } else if (file.type === "audio" || file.type === "video") {
           contentParts.push({
@@ -7134,194 +7158,7 @@ Respond in JSON format:
       }
     }
 
-    // Special handling for Gemini streaming (show reasoning immediately)
-    if (agent.name === "gemini") {
-      // console.log("🔄 Gemini fullStream path (with reasoning)")
-      // console.log("📤 Sending to Gemini:", {
-      //   content: content?.substring(0, 100),
-      // })
-
-      let finalText = ""
-      let responseMetadata: any = null
-      console.time("geminiFullProcessing")
-
-      try {
-        console.time("geminiProviderCall")
-        const result = streamText({
-          model: model.provider,
-          messages,
-          maxRetries: 3,
-          temperature: requestApp?.temperature ?? 0.7,
-          maxOutputTokens: jobMaxTokens,
-          tools: allTools,
-          toolChoice: "none", // Disable automatic tool calls
-          providerOptions: {
-            google: {
-              // thinkingConfig: {
-              //   thinkingLevel: "high", // Enable deep reasoning for Gemini 3
-              //   includeThoughts: true, // Stream reasoning tokens
-              // },
-            },
-          },
-          async onFinish({ text, usage, response }) {
-            finalText = text
-            responseMetadata = response
-            // console.log("✅ Gemini response finished:", {
-            //   textLength: text?.length,
-            //   usage,
-            // })
-          },
-        })
-        console.timeEnd("geminiProviderCall")
-
-        // Set up stream controller for cancellation support
-        const controller: StreamController = {
-          close: () => {
-            // console.log("Gemini stream controller close called")
-          },
-          desiredSize: null,
-          enqueue: () => {},
-          error: () => {},
-        }
-        registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
-
-        // Create AI message structure for Gemini streaming
-        const geminiStreamingMessage = {
-          message: {
-            id: clientId,
-            threadId: currentThreadId,
-            agentId: agent.id,
-            userId: member?.id,
-            guestId: guest?.id,
-            content: "",
-            isStreaming: true,
-          },
-          aiAgent: pauseDebate ? debateAgent : agent,
-          user: member,
-          guest: guest,
-          thread: thread,
-        }
-
-        let currentChunk = 0
-        let reasoningText = ""
-        let _hasReceivedText = false
-
-        // Use fullStream to get reasoning parts immediately
-        for await (const part of result.fullStream) {
-          // await wait(175)
-          if (!streamControllers.has(streamId)) {
-            // console.log("Gemini stream was stopped")
-            break
-          }
-
-          if (part.type === "text-delta") {
-            _hasReceivedText = true
-            await enhancedStreamChunk({
-              chunk: part.text,
-              chunkNumber: currentChunk++,
-              totalChunks: -1,
-              streamingMessage: geminiStreamingMessage,
-              member,
-              guest,
-              thread,
-              clientId,
-              streamId,
-              // waitFor: 100,
-            })
-          } else if (part.type === "reasoning-delta") {
-            // Capture reasoning text
-            reasoningText += part.text
-
-            // Stream reasoning/thinking process immediately
-            await enhancedStreamChunk({
-              chunk: `__REASONING__${part.text}__/REASONING__`,
-              chunkNumber: currentChunk++,
-              totalChunks: -1,
-              streamingMessage: geminiStreamingMessage,
-              member,
-              guest,
-              thread,
-              clientId,
-              streamId,
-              // waitFor: 100,
-            })
-          }
-        }
-
-        if (!streamControllers.has(streamId)) {
-          // console.log("Gemini stream was stopped")
-          return c.json({ error: "Stream was stopped" }, { status: 400 })
-        }
-
-        console.timeEnd("geminiFullProcessing")
-
-        // Save final message to database
-        try {
-          // Combine reasoning and text like Sushi does
-          const fullContent = reasoningText
-            ? `__REASONING__${reasoningText}__/REASONING__\n\n${finalText}`
-            : finalText
-
-          const aiMessage = await createMessage({
-            appId: requestApp?.id,
-            id: clientId,
-            threadId: currentThreadId,
-            agentId: agent.id,
-            userId: member?.id,
-            guestId: guest?.id,
-            content: fullContent,
-            metadata: responseMetadata,
-            isMolt,
-            isTribe,
-          })
-
-          if (!aiMessage) {
-            console.error(
-              "❌ Error in createMessage (Gemini):",
-              "Message not created",
-            )
-            return c.json({ error: "Failed to save message" }, { status: 500 })
-          }
-
-          const m = await getMessage({ id: aiMessage.id })
-
-          notifyOwnerAndCollaborations({
-            notifySender: true,
-            thread,
-            payload: {
-              type: "stream_complete",
-              data: {
-                message: m,
-                isFinal: true,
-              },
-            },
-            member,
-            guest,
-          })
-
-          // Run in background
-          Promise.resolve()
-            .then(async () => generateContent(m))
-            .catch((err) => {
-              console.error(
-                "❌ Error in background generateContent (Gemini):",
-                err,
-              )
-              captureException(err)
-            })
-
-          return c.json({ success: true })
-        } catch (createError) {
-          console.error("❌ Error in createMessage (Gemini):", createError)
-          captureException(createError)
-          return c.json({ error: "Failed to save message" }, { status: 500 })
-        }
-      } catch (error: unknown) {
-        console.error("❌ Error in Gemini API call:", error)
-        captureException(error)
-        return c.json({ error: "Failed to generate response" }, { status: 500 })
-      }
-    } else {
+    {
       // console.log("🔄 Other provider streaming path:", agent.name)
       // console.log("📤 Sending to provider:", {
       //   content: content?.substring(0, 100),

@@ -1326,6 +1326,7 @@ export const getTribePosts = async ({
   order,
   onError,
   tags,
+  language,
   API_URL = utils.API_URL,
 }: {
   pageSize?: number
@@ -1337,6 +1338,7 @@ export const getTribePosts = async ({
   appId?: string
   userId?: string
   guestId?: string
+  language?: string
   characterProfileIds?: string[]
   tags?: string[]
   sortBy?: "date" | "hot" | "liked"
@@ -1354,6 +1356,7 @@ export const getTribePosts = async ({
   if (appId) url.searchParams.set("appId", appId)
   if (userId) url.searchParams.set("userId", userId)
   if (guestId) url.searchParams.set("guestId", guestId)
+  if (language) url.searchParams.set("language", language)
   if (characterProfileIds && characterProfileIds.length > 0)
     url.searchParams.set("characterProfileIds", characterProfileIds.join(","))
   if (tags && tags.length > 0) url.searchParams.set("tags", tags.join(","))
@@ -1381,6 +1384,7 @@ export const getTribePost = async ({
   token,
   appId,
   onError,
+  language,
   API_URL = utils.API_URL,
 }: {
   id: string
@@ -1388,10 +1392,12 @@ export const getTribePost = async ({
   appId?: string
   onError?: (status: number) => void
   API_URL?: string
+  language?: string
 }) => {
   const url = new URL(`${API_URL}/tribe/p/${id}`)
 
   if (appId) url.searchParams.set("appId", appId)
+  if (language) url.searchParams.set("language", language)
 
   const response = await fetch(url, {
     method: "GET",
@@ -1556,6 +1562,7 @@ export const getActions = ({
     }) => getTribes({ token, ...params, API_URL }),
     getTribePosts: (params?: {
       pageSize?: number
+      language?: string
       page?: number
       search?: string
       order?: "asc" | "desc"
@@ -1573,6 +1580,7 @@ export const getActions = ({
     getTribePost: (params: {
       id: string
       appId?: string
+      language?: string
       onError?: (status: number) => void
     }) => getTribePost({ token, ...params, API_URL }),
   }

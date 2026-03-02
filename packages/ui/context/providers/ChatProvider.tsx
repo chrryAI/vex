@@ -1,5 +1,6 @@
 "use client"
 
+import { t } from "i18next"
 import React, {
   createContext,
   type ReactNode,
@@ -8,9 +9,11 @@ import React, {
   useRef,
   useState,
 } from "react"
+import toast from "react-hot-toast"
 import useSWR from "swr"
 import { useUserScroll } from "../../hooks/useUserScroll"
 import { useWebSocket } from "../../hooks/useWebSocket"
+
 import {
   useLocalStorage,
   useNavigation,
@@ -149,10 +152,12 @@ const ChatContext = createContext<
         value,
         to,
         tribe,
+        pear,
       }: {
         value: boolean
         to?: string
         tribe?: boolean
+        pear?: boolean
       }) => void
     }
   | undefined
@@ -211,13 +216,14 @@ export function ChatProvider({
     burn,
     setBurn,
     isPear,
+    setIsPear,
     setShowFocus,
     showFocus,
     hourlyLimit,
     hourlyUsageLeft,
     baseApp,
     postId,
-    showAllTribe,
+    canShowAllTribe,
     siteConfig,
     ...auth
   } = useAuth()
@@ -472,35 +478,34 @@ export function ChatProvider({
   }
 
   useEffect(() => {
-    if (
-      !threadIdRef.current ||
-      pathname === "/tribe" ||
-      (siteConfig.isTribe && pathname === "/")
-    ) {
-      setCollaborationStep(0)
-      setThread(undefined)
-      setProfile(undefined)
-      setStatus(null)
-      setCollaborationStatus(null)
-      setIsChatFloating(false)
-      setThreadId(undefined)
+    if (!threadIdRef.current) {
       setMessages([])
     }
-  }, [threadIdRef.current, showAllTribe, pathname])
+  }, [threadIdRef.current])
 
   const setIsNewChat = ({
     value,
     to = app?.slug ? getAppSlug(app) : "/",
     tribe,
+    pear,
   }: {
     value: boolean
     to?: string
     tribe?: boolean
+    pear?: boolean
   }) => {
     if (value) {
       setLiked(undefined)
       setShowFocus(false)
       setShowTribe(tribe === true)
+
+      let final =
+        tribe === true ? `${to}${to.includes("?") ? "&" : "?"}tribe=true` : to
+
+      final =
+        pear === true
+          ? `${final}${final.includes("?") ? "&" : "?"}pear=true`
+          : final
 
       setCollaborationStep(0)
       setThread(undefined)
@@ -512,9 +517,7 @@ export function ChatProvider({
       setThreadId(undefined)
       setMessages([])
       threadIdRef.current = undefined
-      router.push(
-        tribe === true ? `${to}${to.includes("?") ? "&" : "?"}tribe=true` : to,
-      )
+      router.push(final)
       refetchThreads()
     } else {
       // Ensure tribe view resets when closing a new chat
@@ -553,10 +556,14 @@ export function ChatProvider({
     if (shouldGetCredits) {
       ;(async () => {
         try {
+          const creditsBefore = creditsLeft
+          let creditsAfter: number | undefined
+
           if (user) {
             const item = await actions.getUser()
 
             if (item) {
+              creditsAfter = item.creditsLeft
               setCreditsLeft(item.creditsLeft)
             }
           }
@@ -565,7 +572,29 @@ export function ChatProvider({
             const item = await actions.getGuest()
 
             if (item) {
+              creditsAfter = item.creditsLeft
               setCreditsLeft(item.creditsLeft)
+            }
+          }
+
+          // Auto-disable Pear mode if credits didn't increase 3 times in a row
+          if (
+            isPear &&
+            creditsAfter !== undefined &&
+            creditsBefore !== undefined
+          ) {
+            if (creditsAfter <= creditsBefore) {
+              pearNoGainStreakRef.current += 1
+              if (pearNoGainStreakRef.current >= 3) {
+                setIsPear(undefined)
+                pearNoGainStreakRef.current = 0
+                toast.success(t("pearNoGainStreak"), {
+                  duration: 4000,
+                })
+              }
+            } else {
+              // Credits went up — reset streak
+              pearNoGainStreakRef.current = 0
             }
           }
         } catch (error) {
@@ -794,14 +823,23 @@ export function ChatProvider({
     }
   }, [user, guest, threadId, connected])
 
-  // Credits plausibleing
-  const [creditsLeft, setCreditsLeft] = useState<number | undefined>(undefined)
+  // Credits tracking
+  const [creditsLeft, setCreditsLeftInernal] = useState<number | undefined>(
+    user?.creditsLeft || guest?.creditsLeft,
+  )
+
+  const setCreditsLeft = (creditsLeft?: number) => {
+    setCreditsLeftInernal(creditsLeft)
+  }
 
   useEffect(() => {
     if (user?.creditsLeft || guest?.creditsLeft) {
       setCreditsLeft(user?.creditsLeft || guest?.creditsLeft)
     }
   }, [user?.creditsLeft, guest?.creditsLeft])
+
+  // Track consecutive Pear messages that earned 0 credits → auto-disable after 3
+  const pearNoGainStreakRef = React.useRef(0)
 
   // AI Agents
 

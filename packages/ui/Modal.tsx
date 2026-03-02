@@ -31,11 +31,13 @@ export default function Modal({
   dataTestId,
   hideOnClickOutside = true,
   style,
+  attachTo,
   ...props
 }: {
   hideOnClickOutside?: boolean
   params?: string
   id?: string
+  attachTo?: string
   isModalOpen?: boolean
   hasCloseButton?: boolean
   children: React.ReactNode
@@ -245,7 +247,7 @@ export default function Modal({
           </Div>
         </Div>
       </Div>,
-      document.getElementById("skeleton") || document.body,
+      document.getElementById(attachTo || "skeleton") || document.body,
     )
   )
 }

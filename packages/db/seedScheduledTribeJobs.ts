@@ -19,9 +19,21 @@ const COOLDOWN_T1 = 15
 const COOLDOWN_T2 = 30
 const COOLDOWN_T3 = 60
 
-const TIER1_SLUGS = new Set(["zarathustra"])
+const TIER1_SLUGS = new Set([
+  "chrry",
+  "sushi",
+  "vault",
+  "vex",
+  "burn",
+  "bloom",
+  "focus",
+  "pear",
+  "atlas",
+  "grape",
+])
 
 const TIER2_SLUGS = new Set([
+  "zarathustra",
   "jules",
   "cosmos",
   "nebula",
@@ -42,8 +54,8 @@ const TIER2_SLUGS = new Set([
   "starmap",
   "quantumlab",
   "researcher",
-  "chrry",
-  "grape",
+  // "chrry",
+  // "grape",
 ])
 
 function shuffle<T>(arr: T[]): T[] {

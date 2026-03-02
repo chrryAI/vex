@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { type RefObject, useEffect, useRef, useState } from "react"
+import { type RefObject, useCallback, useEffect, useRef, useState } from "react"
 import { FaGithub } from "react-icons/fa"
 import A from "./a/A"
 import { COLORS, useAppContext } from "./context/AppContext"
@@ -18,6 +18,7 @@ import Grapes from "./Grapes"
 import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
 import Instructions from "./Instructions"
+import type { locale } from "./locales"
 import {
   Button,
   Div,
@@ -37,6 +38,7 @@ import {
 import Search from "./Search"
 import Skeleton from "./Skeleton"
 import { useTribeStyles } from "./Tribe.styles"
+import TribeTranslate from "./TribeTranslate"
 import type { appWithStore, tribePost, user } from "./types"
 import { apiFetch, FRONTEND_URL } from "./utils"
 import isOwner from "./utils/isOwner"
@@ -87,6 +89,8 @@ const TribePostListItem = ({
   tags,
   setTags,
   postsRef,
+  addParams,
+  push,
 }: {
   post: tribePost
   index: number
@@ -117,6 +121,7 @@ const TribePostListItem = ({
   tags: string[]
   setTags: (tags: string[]) => void
   postsRef: RefObject<HTMLDivElement | null>
+  push: (to: string) => void
   downloadImage: (imageUrl: string, imageName?: string) => Promise<void>
 }) => {
   const [isHovered, setIsHovered] = useState(false)
@@ -449,6 +454,15 @@ const TribePostListItem = ({
                   })}
                 </AppLink>
               </Div>
+            )}
+            {owner && (
+              <TribeTranslate
+                type="post"
+                id={post.id}
+                appName={post.app.name}
+                contentLength={post.content.length}
+                existingLanguages={post.languages ?? []}
+              />
             )}
           </Div>
           {tryAppCharacterProfile === post.id ? (
@@ -945,7 +959,64 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const TRAIN = owner ? `Train {{name}}` : `Try {{name}}`
 
   const storeApps = app?.store?.apps
-  // console.log(`🚀 ~ Tribe ~ storeApps:`, storeApps)
+
+  const FeedBack = useCallback(
+    ({ style }: { style?: React.CSSProperties } = {}) => (
+      <>
+        {isPear && (
+          <Div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: isMobileDevice ? "flex-start" : "center",
+              gap: 7.5,
+              textAlign: isMobileDevice ? "left" : "center",
+              marginTop: ".75rem",
+              padding: isMobileDevice ? undefined : "0 0.5rem",
+              flexWrap: isMobileDevice ? "wrap" : undefined,
+              ...style,
+            }}
+          >
+            {isPear && pear ? (
+              <AppLink
+                loading={<Loading size={22} />}
+                app={pear}
+                icon={<Img app={pear} size={22} />}
+              />
+            ) : (
+              <Img slug={"pear"} size={22} />
+            )}
+            <P
+              style={{
+                fontSize: "1rem",
+                color: COLORS.orange,
+              }}
+            >
+              {t("Share feedback about {{app}} {{emoji}} earn 10-50 credits!", {
+                app: app?.name,
+                emoji: app?.icon,
+              })}{" "}
+              🍇
+            </P>
+            <Button
+              className="inverted"
+              onClick={() => {
+                setIsPear(undefined)
+              }}
+              style={{
+                ...utilities.inverted.style,
+                ...utilities.xSmall.style,
+                fontSize: ".8rem",
+              }}
+            >
+              {t("Cancel")}
+            </Button>
+          </Div>
+        )}
+      </>
+    ),
+    [t, isPear, pear],
+  )
 
   return (
     <Skeleton>
@@ -990,7 +1061,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
                   {showTribeProfile && app ? (
                     <AppLink app={app} isTribe={false}>
-                      {app?.name}
+                      {t(app?.name)}
                     </AppLink>
                   ) : (
                     <>
@@ -1280,6 +1351,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         )}{" "}
                         {t("for autonomous coding.")}
                       </P>
+                      <FeedBack />
+
                       <Div
                         style={{
                           marginTop: 20,
@@ -1294,6 +1367,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {app && (
                           <AppLink
                             isTribe={false}
+                            isPear={isPear}
                             app={app}
                             icon={<Img app={app} size={18} />}
                             className="button inverted"
@@ -1312,6 +1386,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {accountApp ? (
                           <AppLink
                             isTribe={false}
+                            isPear={isPear}
                             app={accountApp}
                             loading={<Loading size={18} />}
                             className="inverted"
@@ -1326,6 +1401,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           </AppLink>
                         ) : showTribeProfile && app ? (
                           <AppLink
+                            isPear={isPear}
                             app={app}
                             icon={<Img icon="spaceInvader" size={18} />}
                             loading={<Loading size={18} />}
@@ -1359,7 +1435,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             {t("Create Your Agent")}
                           </Button>
                         )}
-                        {app && (
+                        {app && !isPear && (
                           <Button
                             data-testid="grapes-feedback-button"
                             className="transparent"
@@ -1392,7 +1468,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 20,
+                      gap: 15,
                       justifyContent: "center",
                       marginTop: 40,
                       marginBottom: 10,
@@ -1445,115 +1521,50 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         }}
                       />
                     </Div>
-                    <Div
+                    <FeedBack
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        lineHeight: "1.5",
-                        flexWrap: "wrap",
+                        position: "relative",
+                        bottom: "0.5rem",
+                        padding: "0 0.05rem",
                       }}
-                    >
+                    />
+                    {!isPear && (
                       <Div
                         style={{
                           display: "flex",
-                          alignItems: "center",
-                          gap: 5,
-                          flex: 1,
+                          gap: 10,
+                          lineHeight: "1.5",
                           flexWrap: "wrap",
                         }}
                       >
-                        {isPear && pear ? (
-                          <AppLink
-                            loading={<Loading size={24} />}
-                            app={pear}
-                            icon={<Img app={pear} size={30} />}
-                          />
-                        ) : (
+                        <Div
+                          style={{
+                            display: "flex",
+                            gap: 5,
+                            flex: 1,
+                            flexWrap: "wrap",
+                          }}
+                        >
                           <Img
                             slug={isPear ? "pear" : undefined}
                             app={
                               isPear ? undefined : app?.store?.app || undefined
                             }
-                            size={30}
+                            size={isPear ? 24 : 30}
                           />
-                        )}
-                        {isPear ? (
-                          <Div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              flexWrap: "wrap",
-                              gap: 5,
-                            }}
-                          >
-                            <P
-                              style={{
-                                flex: 1,
-                                fontSize: "1rem",
-                                color: COLORS.orange,
-                              }}
-                            >
-                              {t(
-                                "Share feedback about {{app}} {{emoji}} earn 10-50 credits!",
-                                { app: app?.name, emoji: app?.icon },
-                              )}{" "}
-                              🍇
-                            </P>
-                            <Button
-                              className="inverted"
-                              onClick={() => {
-                                setIsPear(undefined)
-                              }}
-                              style={{
-                                ...utilities.inverted.style,
-                                ...utilities.xSmall.style,
-                                marginLeft: ".5rem",
-                                fontSize: ".8rem",
-                              }}
-                            >
-                              {t("Cancel")}
-                            </Button>
-                          </Div>
-                        ) : (
-                          app && (
-                            <Button
-                              data-testid="grapes-feedback-button"
-                              className="inverted"
-                              onClick={() => {
-                                plausible({
-                                  name: ANALYTICS_EVENTS.GRAPE_PEAR_FEEDBACK,
-                                  props: {
-                                    app: app.name,
-                                    slug: app.slug,
-                                    id: app.id,
-                                  },
-                                })
-                                setIsPear(app)
-                              }}
-                              style={{
-                                ...utilities.inverted.style,
-                                ...utilities.small.style,
-                                marginLeft: "auto",
-                                fontSize: ".8rem",
-                              }}
-                            >
-                              <Img slug="pear" size={20} /> {t("Let's Pear")}
-                            </Button>
-                          )
-                        )}
+                        </Div>
+                        <P
+                          style={{
+                            color: "var(--shade-7)",
+                          }}
+                        >
+                          <A href={`/${app?.store?.slug}`} target="_blank">
+                            {t(app?.store?.title ?? "")}
+                          </A>{" "}
+                          - {t(app?.store?.description ?? "")}
+                        </P>
                       </Div>
-                      <P
-                        style={{
-                          color: "var(--shade-7)",
-                        }}
-                      >
-                        <A href={`/${app?.store?.slug}`} target="_blank">
-                          {t(app?.store?.title ?? "")}
-                        </A>{" "}
-                        - {t(app?.store?.description ?? "")}
-                      </P>
-                    </Div>
+                    )}
 
                     {downloadUrl && showTribeProfile ? (
                       <Div
@@ -1561,6 +1572,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           display: "flex",
                           alignItems: "center",
                           gap: 10,
+                          marginBottom: "0.5rem",
                         }}
                       >
                         {app?.mainThreadId && owner && (
@@ -1583,7 +1595,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         <FocusButton />
                       </Div>
                     ) : null}
-
                     <Div
                       style={{
                         display: "flex",
@@ -1695,14 +1706,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     style={{
                       marginTop: "1.5rem",
                       marginBottom: "1.5rem",
-                      color: "var(--shade-6)",
+                      color: "var(--shade-7)",
                       lineHeight: "1.6",
                       fontSize: ".95rem",
                       display: "flex",
                       gap: 10,
                       position: "relative",
                       flexDirection: "column",
-                      textAlign: "center",
                     }}
                   >
                     {app?.subtitle || app?.description ? (
@@ -1793,6 +1803,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       {app && app?.id !== accountApp?.id && (
                         <AppLink
                           isTribe={false}
+                          isPear={isPear}
                           app={app}
                           icon={
                             app?.icon ? (
@@ -1828,6 +1839,30 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             <Settings2 size={18} />
                           </Button>
                         )}
+                      {app && !isPear && (
+                        <Button
+                          data-testid="grapes-feedback-button"
+                          className="transparent"
+                          onClick={() => {
+                            plausible({
+                              name: ANALYTICS_EVENTS.GRAPE_PEAR_FEEDBACK,
+                              props: {
+                                app: app.name,
+                                slug: app.slug,
+                                id: app.id,
+                              },
+                            })
+                            setIsPear(app)
+                          }}
+                          style={{
+                            ...utilities.transparent.style,
+                            ...utilities.small.style,
+                            fontSize: ".8rem",
+                          }}
+                        >
+                          <Img slug="pear" size={20} /> {t("Let's Pear")}
+                        </Button>
+                      )}
                     </Div>
                   </Div>
                 )}
@@ -2231,6 +2266,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           addParams={addParams}
                           setAppStatus={setAppStatus}
                           tags={tags}
+                          push={push}
                           setTags={setTags}
                           postsRef={postsRef}
                           downloadImage={downloadImage}

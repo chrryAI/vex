@@ -109,7 +109,7 @@ export const getJulesPayload = (params: {
     status: "active" as const,
     title: "The Engineering Oracle",
     onlyAgent: false,
-    themeColor: "indigo",
+    themeColor: "red",
     backgroundColor: "#ffffff",
     icon: "🐙",
     visibility: "public" as const,

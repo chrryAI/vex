@@ -481,7 +481,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       codeExecution: true,
       pdf: true,
     },
-    themeColor: "#8B5CF6", // Default purple color
+    backgroundColor: "#000000",
+    themeColor: "orange", // Default orange color
     extends: defaultExtends, // Default: Chrry (required) and base app (if exists)
     tools: ["calendar", "location", "weather"],
     apiEnabled: false,

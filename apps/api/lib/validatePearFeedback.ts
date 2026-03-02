@@ -47,21 +47,31 @@ function createEvaluationPrompt(
   feedbackText: string,
   appName?: string,
 ): string {
-  return `You are evaluating user feedback for the app "${appName || "this app"}". 
+  return `You are evaluating user feedback for the app "${appName || "this app"}".
 
 Feedback: "${feedbackText}"
 
-Evaluate this feedback based on these criteria:
-1. **Constructive**: Offers insights or suggestions, not just complaints
-2. **Specific**: Actionable details, not vague statements
-3. **Relevant**: About the product/app experience
-4. **Unique**: Not spam or duplicate
+First, determine if this is actually feedback:
+- REJECT (isValid: false, credits: 0) if it is a question, greeting, random chat, or anything not about the app experience.
+- REJECT if it is fewer than 10 meaningful characters.
+- REJECT if it contains no real observation about the app.
 
-Award credits:
-- 5 credits: Basic valid feedback ("I like the design")
-- 10 credits: Specific feedback ("The fire icon is confusing, add a tooltip")
-- 15 credits: Actionable feedback ("Add keyboard shortcuts for power users")
-- 20 credits: Exceptional feedback (detailed UX analysis with specific suggestions)
+If it IS feedback, award credits:
+- 5 credits: Basic valid feedback — simple positive/negative opinion ("I like the design", "Feels fast")
+- 10 credits: Specific feedback — identifies a concrete UI/UX issue or detail ("The fire icon is confusing, add a tooltip")
+- 15 credits: Actionable feedback — includes a clear improvement suggestion ("Add keyboard shortcuts for power users")
+- 20 credits: Exceptional feedback — detailed UX analysis with specific, well-reasoned suggestions
+
+Examples of INVALID feedback (questions, not feedback):
+- "hey is dark mode on?"
+- "how do I reset my password?"
+- "what does this button do?"
+
+Examples of VALID feedback:
+- "I like the clean design" → 5 credits
+- "The back button goes to home instead of the previous list" → 10 credits
+- "Add bulk delete to the list view, deleting one by one is tedious" → 15 credits
+- "The checkout flow has 5 steps but 3 and 4 could be merged — users drop off heavily there" → 20 credits
 
 Respond ONLY with a JSON object in this exact format:
 {
@@ -265,13 +275,34 @@ async function awardFeedbackCredits(
 /**
  * Map credits to feedback metrics
  */
-function calculateFeedbackMetrics(credits: number) {
+function calculateFeedbackMetrics(credits: number, feedbackText?: string) {
+  // Determine sentiment from text when possible
+  const isPositiveTone = feedbackText
+    ? /\b(like|love|great|nice|clean|smooth|fast|good|awesome|excellent|beautiful|enjoy|easy)\b/i.test(
+        feedbackText,
+      )
+    : false
+
+  // feedbackType: suggestion for high-value, praise for positive simple, complaint for negative/neutral simple
+  const feedbackType =
+    credits >= 15
+      ? "suggestion"
+      : credits >= 10
+        ? "praise"
+        : isPositiveTone
+          ? "praise"
+          : "complaint"
+
   return {
     sentimentScore: credits >= 15 ? 0.8 : credits >= 10 ? 0.5 : 0.2,
     specificityScore: credits >= 15 ? 0.9 : credits >= 10 ? 0.7 : 0.5,
     actionabilityScore: credits >= 15 ? 0.9 : credits >= 10 ? 0.7 : 0.4,
-    feedbackType:
-      credits >= 15 ? "suggestion" : credits >= 10 ? "praise" : "complaint",
+    feedbackType: feedbackType as
+      | "suggestion"
+      | "praise"
+      | "complaint"
+      | "bug"
+      | "feature_request",
     category: "ux" as const,
   }
 }
@@ -288,7 +319,7 @@ async function storeFeedbackInDatabase(
   credits: number,
 ): Promise<void> {
   try {
-    const metrics = calculateFeedbackMetrics(credits)
+    const metrics = calculateFeedbackMetrics(credits, feedbackText)
 
     await db.insert(pearFeedback).values({
       content: feedbackText,
@@ -296,12 +327,7 @@ async function storeFeedbackInDatabase(
       guestId,
       appId,
       messageId,
-      feedbackType: metrics.feedbackType as
-        | "suggestion"
-        | "praise"
-        | "complaint"
-        | "bug"
-        | "feature_request",
+      feedbackType: metrics.feedbackType,
       category: metrics.category,
       sentimentScore: metrics.sentimentScore,
       specificityScore: metrics.specificityScore,

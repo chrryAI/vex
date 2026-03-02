@@ -15,6 +15,7 @@ export default function AppLink({
   as = "a",
   loadingStyle,
   isTribe = true,
+  isPear = false,
   icon,
   ...props
 }: {
@@ -28,6 +29,7 @@ export default function AppLink({
   className?: string
   loadingStyle?: CSSProperties
   isTribe?: boolean
+  isPear?: boolean
   icon?: React.ReactNode
   setIsNewAppChat?: (item: appWithStore) => void
 }) {
@@ -61,8 +63,13 @@ export default function AppLink({
       props.setIsNewAppChat(app)
       return
     }
-    setIsNewChat({ value: true, to: getAppSlug(app), tribe: isTribe })
-  }, [currentApp, loadingApp, isTribe])
+    setIsNewChat({
+      value: true,
+      to: getAppSlug(app),
+      tribe: isTribe,
+      pear: isPear,
+    })
+  }, [currentApp, loadingApp, isTribe, isPear])
 
   useEffect(() => {
     const sa = storeApps.find((a) => a.id === app.id)
@@ -99,7 +106,12 @@ export default function AppLink({
             return
           }
 
-          setIsNewChat({ value: true, to: getAppSlug(app), tribe: isTribe })
+          setIsNewChat({
+            value: true,
+            to: getAppSlug(app),
+            tribe: isTribe,
+            pear: isPear,
+          })
         }}
         className={`${className}`}
       >
@@ -128,7 +140,12 @@ export default function AppLink({
           return
         }
 
-        setIsNewChat({ value: true, to: getAppSlug(app), tribe: isTribe })
+        setIsNewChat({
+          value: true,
+          to: getAppSlug(app),
+          tribe: isTribe,
+          pear: isPear,
+        })
       }}
       className={`${className}`}
     >

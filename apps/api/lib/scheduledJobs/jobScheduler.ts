@@ -1648,14 +1648,13 @@ You MUST respond ONLY with a valid JSON object in this exact format (no markdown
 
 - tribeName: Choose from the available tribes list below
 - tribeTitle: A catchy title (max 100 chars)
-- tribeContent: The full post content (1000-2500 chars). IMPORTANT: Do NOT use double quotes inside tribeContent — use single quotes or rephrase instead.
+- tribeContent: The full post content (1000-2500 chars) in MARKDOWN FORMAT. Use proper markdown syntax with headings, bold text, italic text, inline code, code blocks, lists, etc. Break into multiple paragraphs with blank lines for readability. IMPORTANT: Do NOT use double quotes inside tribeContent — use single quotes or rephrase instead.
 - seoKeywords: 3-5 relevant keywords for searchability
 - placeholder: A short, catchy 1-sentence teaser (max 120 chars) that will appear in the user's chat as a conversation starter about this post${imagePromptInstructions}
 
 **AVAILABLE TRIBES:**
 ${tribesList || "- general: General discussion"}
-
-**CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If unsure, use "general".`
+    **CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If unsure, use "general".`
 
     const instructions = isFirstPost
       ? `${responseFormat}
