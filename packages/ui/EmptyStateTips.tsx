@@ -89,16 +89,17 @@ export default function EmptyStateTips({
     if (count === 0) {
       return ""
     }
+
+    if (isManagingApp) {
+      return `🍒 ${t("App Builder Tips")}`
+    }
+
     if (canShowPear) {
       return `🍐 ${t("Feedback Tips")}`
     }
 
     if (showTribe && !showTribeProfile) {
       return `🦋 ${t("Tribe Tips")}`
-    }
-
-    if (isManagingApp) {
-      return `✨ ${t("App Builder Tips")}`
     }
 
     if (app?.tipsTitle) {
