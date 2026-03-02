@@ -114,9 +114,10 @@ export default function Menu({
   } = useNavigationContext()
 
   const showTribeProfile =
-    auth.showTribeProfile &&
-    !auth.postId &&
-    (pathname === "/" ? !siteConfig.isTribe : true)
+    (auth.showTribeProfile &&
+      !auth.postId &&
+      (pathname === "/" ? !siteConfig.isTribe : true)) ||
+    auth.threadIdRef.current
 
   const { app } = useApp()
 
@@ -527,7 +528,12 @@ export default function Menu({
                 style={styles.menuItemButton.style}
                 className="button transparent"
               >
-                <MessageCirclePlus size={18} /> {t("New chat")}
+                {showTribeProfile ? (
+                  <Img app={app} size={18} />
+                ) : (
+                  <MessageCirclePlus size={18} />
+                )}{" "}
+                {t("New chat")}
               </A>
               <Button
                 onClick={() => {

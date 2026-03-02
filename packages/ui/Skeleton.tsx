@@ -189,7 +189,7 @@ export default function Skeleton({
 
   const { threadIdRef, isIDE, getAppSlug, getTribeUrl, ...auth } = useAuth()
 
-  const showTribeProfile = auth.showTribeProfile && !auth.postId
+  const showTribeProfile = auth.showTribeProfile && !auth.postId && isEmpty
 
   const threadId = threadIdRef.current
 

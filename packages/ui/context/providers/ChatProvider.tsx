@@ -847,7 +847,7 @@ export function ChatProvider({
     isPear && setSelectedAgent(sushiAgent)
   }, [isPear])
 
-  const onlyAgent = !!(app?.onlyAgent || isPear)
+  const onlyAgent = !!app?.onlyAgent
 
   const [debateAgent, setDebateAgentInternal] = useLocalStorage<
     aiAgent | undefined | null

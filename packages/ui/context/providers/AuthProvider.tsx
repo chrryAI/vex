@@ -2089,7 +2089,7 @@ export function AuthProvider({
         : `/tribe`
       : siteConfig?.isTribe
         ? "/?tribe=true"
-        : `/tribe`
+        : `/tribe?tribe=true`
   }
 
   const canBurn = true
