@@ -69,7 +69,6 @@ export default function EmptyStateTips({
 
   const count =
     useResponsiveCount([
-      { height: 700, count: 0 },
       { height: 750, count: 1 },
       { height: 800, count: 2 },
       { height: 850, count: 3 },
