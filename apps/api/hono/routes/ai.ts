@@ -1399,6 +1399,7 @@ ai.post("/", async (c) => {
   const isMolt =
     job?.jobType.startsWith("molt") || thread?.isMolt || message?.thread?.isMolt
 
+  const isPear = requestData.pear || false
   const isTribe =
     job?.jobType.startsWith("tribe") ||
     !!(thread?.isTribe || message.message?.isTribe)
@@ -1979,7 +1980,7 @@ ${
   if (imageGenerationEnabled) features.push("image-gen")
   if (files.length > 0) features.push(`${files.length}-files`)
   if (debateAgent) features.push("debate")
-  if (requestData.pear) features.push("pear-feedback")
+  if (isPear) features.push("pear-feedback")
 
   // console.log(
   //   `🤖 Model: ${modelName} | Features: ${features.join(", ") || "none"}`,
@@ -3164,6 +3165,11 @@ ${(() => {
       ? await getPearContext()
       : ""
 
+  // When Pear mode is active, remind the AI to nudge the user to leave feedback
+  const pearModeReminder = isPear
+    ? `\n\n## 🍐 Pear Mode Active\nThe user has Pear mode enabled. At the end of your response, naturally and briefly mention that they can share feedback on this conversation to earn credits (10-50 credits). Keep it light and conversational — one short sentence is enough. Don't repeat this if the user has already submitted feedback in this thread.`
+    : ""
+
   // E2E Analytics Context (for beasts only)
   // Helps analyze system integrity, test coverage, and missing event tracking
   const e2eContext =
@@ -3500,6 +3506,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     grapeContext, // Available apps in Grape button (GLOBAL - all apps need this)
     analyticsContext, // Live analytics for Grape
     pearContext, // Recent feedback for Pear
+    pearModeReminder, // Nudge user to submit feedback when Pear mode is on
     e2eContext, // E2E testing analytics for system integrity
     dnaContext, // App owner's foundational knowledge
     // brandKnowledge,
@@ -4635,7 +4642,7 @@ How I process and remember information:
     reason: string
   } | null = null
 
-  if (requestData.pear && agent) {
+  if (isPear && agent) {
     // Check quota first
     const quotaCheck = await checkPearQuota({
       userId: member?.id,
@@ -6765,7 +6772,7 @@ Respond in JSON format:
               appId: requestApp?.id,
               content: processedText + creditRewardMessage, // Use processed text with citations
               reasoning: reasoningText || undefined, // Store reasoning separately
-              isPear: requestData.pear || false, // Track Pear feedback submissions
+              isPear, // Track Pear feedback submissions
               webSearchResult: webSearchResults, // Save web search results
               tribePostId, // Link to Tribe post if exists
               moltId,
