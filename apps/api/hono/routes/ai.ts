@@ -4033,7 +4033,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
 
           contentParts.push({
             type: "image",
-            image: `data:${file.mimeType};base64,${file.data}`,
+            image: uploadResult.url,
           })
         } else if (file.type === "audio" || file.type === "video") {
           contentParts.push({
