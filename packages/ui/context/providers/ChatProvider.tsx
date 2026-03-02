@@ -495,17 +495,10 @@ export function ChatProvider({
     pear?: boolean
   }) => {
     if (value) {
+      shouldStopAutoScrollRef.current = true
       setLiked(undefined)
       setShowFocus(false)
       setShowTribe(tribe === true)
-
-      let final =
-        tribe === true ? `${to}${to.includes("?") ? "&" : "?"}tribe=true` : to
-
-      final =
-        pear === true
-          ? `${final}${final.includes("?") ? "&" : "?"}pear=true`
-          : final
 
       setCollaborationStep(0)
       setThread(undefined)
@@ -517,9 +510,10 @@ export function ChatProvider({
       setThreadId(undefined)
       setMessages([])
       threadIdRef.current = undefined
-      router.push(final)
+      router.push(to)
       refetchThreads()
     } else {
+      shouldStopAutoScrollRef.current = false
       // Ensure tribe view resets when closing a new chat
       setShowTribe(false)
     }
@@ -1175,7 +1169,11 @@ export function ChatProvider({
 
     if (!threadId && !force) return
     if (postId && !force) return
-    if (showTribe) return
+    // Also check window.location directly as fallback if showTribe state is stale
+    const isTribeUrl =
+      typeof window !== "undefined" &&
+      window.location.search.includes("tribe=true")
+    if (showTribe || isTribeUrl) return
     if (isEmpty || isUserScrolling || hasStoppedScrolling) return
     setTimeout(() => {
       // Use requestAnimationFrame for more stable scrolling in Tauri

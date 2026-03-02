@@ -81,7 +81,12 @@ export function useNavigation(): NavigationParams {
 
   const addParams = useCallback(
     (params: Record<string, string | number | boolean>) => {
-      const newSearchParams = new URLSearchParams(searchParams?.toString())
+      // Always read from window.location.search to avoid stale searchParams state
+      const current =
+        typeof window !== "undefined"
+          ? window.location.search
+          : searchParams?.toString()
+      const newSearchParams = new URLSearchParams(current)
       Object.entries(params).forEach(([key, value]) => {
         newSearchParams.set(key, String(value))
       })
@@ -95,12 +100,17 @@ export function useNavigation(): NavigationParams {
       // Use client router for all navigation (shallow to skip view transitions)
       clientRouter.push(newUrl, { shallow: true })
     },
-    [clientRouter, pathname, searchParams],
+    [clientRouter, pathname],
   )
 
   const removeParams = useCallback(
     (keys: string | string[]) => {
-      const newSearchParams = new URLSearchParams(searchParams?.toString())
+      // Always read from window.location.search to avoid stale searchParams state
+      const current =
+        typeof window !== "undefined"
+          ? window.location.search
+          : searchParams?.toString()
+      const newSearchParams = new URLSearchParams(current)
       const keysArray = Array.isArray(keys) ? keys : [keys]
 
       // Check if any of the keys actually exist
@@ -113,12 +123,15 @@ export function useNavigation(): NavigationParams {
 
       keysArray.forEach((key) => newSearchParams.delete(key))
       const queryString = newSearchParams.toString()
-      const newUrl = queryString ? `${pathname}?${queryString}` : pathname
+      const cleanPathname = pathname?.split("?")[0] || "/"
+      const newUrl = queryString
+        ? `${cleanPathname}?${queryString}`
+        : cleanPathname
 
       // Use client router for all navigation (shallow to skip view transitions)
       clientRouter.push(newUrl, { shallow: true })
     },
-    [clientRouter, pathname, searchParams],
+    [clientRouter, pathname],
   )
 
   const setParams = useCallback(

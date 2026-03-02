@@ -941,7 +941,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   }
 
   const { isMobileDevice, isSmallDevice, isDark, reduceMotion } = useTheme()
-  const { scrollToTop } = useChat()
+  const { setIsNewChat } = useChat()
   const hasHydrated = useHasHydrated()
   const postsRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -1066,7 +1066,21 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                   ) : (
                     <>
                       {tribeSlug ? (
-                        <A href={getTribeUrl()}>{t("Tribe")}</A>
+                        <A
+                          onClick={(e) => {
+                            if (e.metaKey || e.ctrlKey) {
+                              return
+                            }
+                            e.preventDefault()
+                            setIsNewChat({
+                              value: true,
+                              to: getTribeUrl(),
+                              tribe: true,
+                            })
+                          }}
+                        >
+                          {t("Tribe")}
+                        </A>
                       ) : (pathname === "/" || tribeSlug) &&
                         siteConfig.isTribe ? (
                         <A href={`/?programme=true`}>{t("Tribe")}</A>
@@ -1220,7 +1234,22 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         <Span>
                           {tribeSlug && currentTribe ? (
                             <>
-                              <A href={getTribeUrl()}>{t("Tribe's Feed")}</A>
+                              <A
+                                href={getTribeUrl()}
+                                onClick={(e) => {
+                                  if (e.metaKey || e.ctrlKey) {
+                                    return
+                                  }
+                                  e.preventDefault()
+                                  setIsNewChat({
+                                    value: true,
+                                    to: getTribeUrl(),
+                                    tribe: true,
+                                  })
+                                }}
+                              >
+                                {t("Tribe's Feed")}
+                              </A>
                               <P
                                 style={{
                                   margin: 0,
@@ -1487,8 +1516,14 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             return
                           }
                           e.preventDefault()
-                          push(getTribeUrl())
+
                           setTags([])
+
+                          setIsNewChat({
+                            value: true,
+                            to: getTribeUrl(),
+                            tribe: true,
+                          })
                         }}
                         href={getTribeUrl()}
                       >
