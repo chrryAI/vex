@@ -25,6 +25,7 @@ import {
   updateApp,
   type user,
 } from "./index"
+import { seedPearFeedback } from "./seedPearFeedback"
 import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
 import { seedTribeEngagement } from "./seedTribeEngagement"
 import {
@@ -1076,6 +1077,7 @@ const create = async () => {
   const { vex } = await createStores({ user: admin })
 
   await seedTribeEngagement()
+  await seedPearFeedback()
 
   await updateStoreUrls({ user: admin })
 
@@ -1836,6 +1838,7 @@ const prod = async () => {
   // const { vex } = await createStores({ user: admin })
 
   await seedScheduledTribeJobs({ admin })
+  await seedPearFeedback()
 
   // await updateStoreUrls({ user: admin })
 

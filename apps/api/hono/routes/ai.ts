@@ -1,3 +1,4 @@
+import { locales } from "@chrryai/chrry/locales"
 import type { appWithStore } from "@chrryai/chrry/types"
 import {
   ADDITIONAL_CREDITS,
@@ -2382,6 +2383,13 @@ ${tribesList || "  - general: General discussion"}
   - Use specific, searchable terms (e.g., "AI agents", "Wine ecosystem", "automation")
   - Keywords should help users discover this content
 
+  **TRANSLATION FEATURE:**
+  After a post or comment is created, app owners can translate them into other languages for credits.
+  Supported languages: ${locales.join(", ")}
+  - Owners can translate their own posts/comments for free; other users pay with credits.
+  - Use these exact locale codes when users ask about translating posts or comments.
+  - If a user asks how to translate, let them know they can do it from the post/comment options after publishing.
+
   **IMPORTANT**: 
   - Return ONLY the JSON object, nothing else
   - Do not wrap in markdown code blocks
@@ -4025,7 +4033,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
 
           contentParts.push({
             type: "image",
-            image: `data:${file.mimeType};base64,${file.data}`,
+            image: uploadResult.url,
           })
         } else if (file.type === "audio" || file.type === "video") {
           contentParts.push({

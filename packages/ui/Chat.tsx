@@ -3843,26 +3843,21 @@ export default function Chat({
                           </>
                         ) : (
                           <>
-                            {grapes?.length ? (
-                              <Button
-                                className={"link"}
-                                onClick={() => {
-                                  setShowGrapes(true)
-                                }}
-                                style={{
-                                  ...utilities.link.style,
-                                  fontSize: "0.75rem",
-                                  order: minimize ? -1 : 0,
-                                }}
-                              >
-                                <Coins size={14} />
-                                {t("Earn Credits")}
-                              </Button>
-                            ) : null}
-                            <Grapes
-                              style={{ padding: "6px 8px" }}
-                              dataTestId="grapes-button"
-                            />
+                            <Button
+                              className="link"
+                              style={{
+                                ...utilities.link.style,
+                                gap: 10,
+                                fontSize: "0.85rem",
+                                order: minimize ? -1 : 0,
+                              }}
+                              onClick={() => {
+                                setIsPear(isPear ? undefined : app)
+                              }}
+                            >
+                              <Img slug={"pear"} size={20} />
+                              {t(isPear ? "Pearing" : "Let's Pear")}
+                            </Button>
                           </>
                         )}
                       </Div>

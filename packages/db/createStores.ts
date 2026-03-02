@@ -1,5 +1,5 @@
 import enTranslations from "./en.json"
-
+import { extractTranslations } from "./extractTranslations"
 import {
   getExampleInstructions,
   type instructionBase,
@@ -8790,7 +8790,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     })
   }
 
-  // await extractTranslations()
+  await extractTranslations()
 
   // Seed fake Tribe engagement (posts, likes, reactions, comments, follows)
 
