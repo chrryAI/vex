@@ -4710,14 +4710,9 @@ export async function findJobsToRun() {
         : lte(scheduledJobs.startDate, now),
       or(isNull(scheduledJobs.endDate), gte(scheduledJobs.endDate, now)),
       // Run if nextRunAt is within the threshold or earlier
-      isDevelopment
-        ? undefined
-        : or(
-            isNull(scheduledJobs.nextRunAt),
-            lte(scheduledJobs.nextRunAt, now),
-          ),
+      or(isNull(scheduledJobs.nextRunAt), lte(scheduledJobs.nextRunAt, now)),
       // Skip jobs that have failed (have a failureReason)
-      isDevelopment ? undefined : isNull(scheduledJobs.failureReason),
+      isNull(scheduledJobs.failureReason),
     ),
   })
 
@@ -4737,7 +4732,7 @@ export async function findJobsToRun() {
   const validJobs = jobs.filter((job) => {
     if (!job.nextRunAt) return true // No nextRunAt means first run
     const jobTime = new Date(job.nextRunAt)
-    const isWithinThreshold = jobTime >= fifteenMinutesAgo
+    const isWithinThreshold = jobTime <= now && jobTime >= fifteenMinutesAgo
 
     if (!isWithinThreshold) {
       const minutesLate = Math.round(
