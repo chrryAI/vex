@@ -84,8 +84,6 @@ export default function EmptyStateTips({
     }
   }, [reduceMotion])
 
-  const { viewPortHeight } = usePlatform()
-
   const { utilities } = useStyles()
 
   const getTitle = () => {
@@ -303,12 +301,6 @@ export default function EmptyStateTips({
       </H3>
       <Div style={{ ...styles.ul.style }}>
         {currentTips.slice(0, count).map((item, i) => {
-          // Progressive display based on viewport height
-          if (viewPortHeight < 600 && i >= 3) return null
-          if (viewPortHeight < 700 && i >= 4) return null
-          if (viewPortHeight < 800 && i >= 5) return null
-          if (viewPortHeight < 900 && i >= 6) return null
-
           return (
             <MotiView
               key={`tip-${i}-${animationKey}`}
