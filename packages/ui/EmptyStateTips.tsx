@@ -24,7 +24,7 @@ export default function EmptyStateTips({
 }: {
   style?: React.CSSProperties
 }) {
-  const { isManagingApp, canEditApp, app } = useApp()
+  const { isManagingApp, app } = useApp()
   const {
     isPear,
     threads,
@@ -89,16 +89,17 @@ export default function EmptyStateTips({
     if (count === 0) {
       return ""
     }
+
+    if (isManagingApp) {
+      return `🍒 ${t("App Builder Tips")}`
+    }
+
     if (canShowPear) {
       return `🍐 ${t("Feedback Tips")}`
     }
 
     if (showTribe && !showTribeProfile) {
       return `🦋 ${t("Tribe Tips")}`
-    }
-
-    if (isManagingApp) {
-      return `✨ ${t("App Builder Tips")}`
     }
 
     if (app?.tipsTitle) {
@@ -175,7 +176,7 @@ export default function EmptyStateTips({
   }
 
   // Show app builder tips when managing or editing an app
-  if (isManagingApp || canEditApp) {
+  if (isManagingApp) {
     const builderTips = [
       {
         tip: t(
@@ -228,7 +229,7 @@ export default function EmptyStateTips({
           {renderCancelFeedBack()}
         </H3>
         <Div style={{ ...styles.ul.style }}>
-          {builderTips.map((item, i) => {
+          {builderTips.slice(0, count).map((item, i) => {
             return (
               <Div key={i} style={styles.tip.style}>
                 <Span style={styles.tipText.style}>{item.tip}</Span>
