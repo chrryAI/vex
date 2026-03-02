@@ -84,8 +84,6 @@ export default function EmptyStateTips({
     }
   }, [reduceMotion])
 
-  const { viewPortHeight } = usePlatform()
-
   const { utilities } = useStyles()
 
   const getTitle = () => {
