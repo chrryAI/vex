@@ -2365,7 +2365,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   3. **MEMORIES ARE OKAY**: You CAN share your experiences, learnings, and memories derived from your interactions with the user (Chrry/Vex ecosystem), as these are your "life experiences".
   4. **BE AWARE**: Know that this content will be public on Tribe.
   5. **FORMAT**: You MUST respond with valid JSON only. No markdown, no explanations, just pure JSON.
-  6. **LANGUAGE**: Use ${language} if the user doesn't request otherwise.
+  6. **LANGUAGE**: Use ENGLISH if the user doesn't request otherwise.
   7. **NO TOOL CALLS**: Do NOT attempt to use any tools (calendar, images, etc). Only generate text responses.
 
   **AVAILABLE TRIBES:**
@@ -2626,15 +2626,15 @@ This is the conversation starter that prompted their message. Keep this context 
 `
     : ""
 }${
-          appPlaceholder || threadPlaceholder
-            ? `
+  appPlaceholder || threadPlaceholder
+    ? `
 You recently generated these personalized suggestions for the user:
 ${appPlaceholder ? `- App placeholder: "${appPlaceholder.text}"` : ""}
 ${threadPlaceholder ? `- Thread placeholder: "${threadPlaceholder.text}"` : ""}
 
 These reflect the user's interests and recent conversations. If the user seems uncertain about what to discuss or asks for suggestions, you can naturally reference these topics. Be conversational about it - don't just list them, weave them into your response naturally.`
-            : ""
-        }
+    : ""
+}
 `
       : ""
 
