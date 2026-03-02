@@ -111,7 +111,6 @@ const LanguageSwitcher = ({
       },
     })
     if (multi) return
-    console.log(`🚀 ~ changeLanguage ~ newLocale:`, newLocale)
 
     setLanguage(newLocale)
     setIsModalOpen(false)

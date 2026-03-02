@@ -1137,9 +1137,8 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -2282,12 +2281,6 @@ export function AuthProvider({
     !canShowAllTribe &&
     !_isExcluded &&
     !(siteConfig.isTribe && !clearLocale(pathname))
-  console.log(
-    `🚀 ~ postId:`,
-    canBeTribeProfile,
-    canShowAllTribe,
-    clearLocale(pathname),
-  )
 
   const showTribeInitial =
     !!(
@@ -2501,7 +2494,6 @@ export function AuthProvider({
         appId,
       })
       if (item) {
-        console.log(`🚀 ~ refetchInstructions ~ item:`, item)
         setInstructions(item.instructions)
       }
     }
