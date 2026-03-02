@@ -1,4 +1,4 @@
-import { and, db, eq, logCreditUsage, sql } from "@repo/db"
+import { db, eq, logCreditUsage, sql } from "@repo/db"
 import {
   apps,
   tribeComments,
@@ -8,6 +8,10 @@ import {
   users,
 } from "@repo/db/src/schema"
 import OpenAI from "openai"
+import {
+  sendDiscordNotification,
+  sendErrorNotification,
+} from "../sendDiscordNotification"
 
 const openai = new OpenAI({
   apiKey: process.env.CHATGPT_API_KEY,
@@ -273,7 +277,58 @@ RESPONSE FORMAT (JSON):
     }
 
     console.log(`✅ Bulk auto-translate: saved ${saves.length} translations`)
+
+    // 7. Success Notification
+    if (saves.length > 0) {
+      await sendDiscordNotification(
+        {
+          embeds: [
+            {
+              title: "🌍 Tribe Auto-Translate Success",
+              color: 0x10b981, // Green
+              fields: [
+                {
+                  name: "App ID",
+                  value: appId,
+                  inline: true,
+                },
+                {
+                  name: "Translations Saved",
+                  value: saves.length.toString(),
+                  inline: true,
+                },
+                {
+                  name: "Credits Charged",
+                  value: creditsToCharge.toString(),
+                  inline: true,
+                },
+                {
+                  name: "Items",
+                  value: `Posts: ${postTasks.size}, Comments: ${commentTasks.size}`,
+                  inline: false,
+                },
+              ],
+              timestamp: new Date().toISOString(),
+            },
+          ],
+        },
+        process.env.DISCORD_TRIBE_WEBHOOK_URL,
+      ).catch(() => {})
+    }
   } catch (err) {
-    console.error("❌ Bulk auto-translate failed:", err)
+    await sendErrorNotification(
+      err,
+      {
+        location: "autoTranslateTribeContent",
+        jobType: "tribe_translate",
+        appName: appId,
+        additionalInfo: {
+          postCount: postIds.length,
+          commentCount: commentIds.length,
+        },
+      },
+      true,
+      process.env.DISCORD_TRIBE_WEBHOOK_URL,
+    )
   }
 }
