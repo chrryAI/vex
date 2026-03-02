@@ -127,6 +127,7 @@ export default function TribeTranslate({
       key={key}
       attachTo={key}
       onOpenChange={handleOpenChange}
+      hideOnClickOutside={false}
       isModalOpen={isModalOpen}
       handleSetLanguages={translatedLanguage ? undefined : setSelectedLanguages}
       handleSetLanguage={
