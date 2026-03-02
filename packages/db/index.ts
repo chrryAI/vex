@@ -46,6 +46,32 @@ import {
   invalidateUser,
   setCache,
 } from "./src/cache"
+
+export type locale =
+  | "en"
+  | "de"
+  | "es"
+  | "fr"
+  | "ja"
+  | "ko"
+  | "pt"
+  | "zh"
+  | "nl"
+  | "tr"
+
+export const locales: locale[] = [
+  "en",
+  "de",
+  "es",
+  "fr",
+  "ja",
+  "ko",
+  "pt",
+  "zh",
+  "nl",
+  "tr",
+]
+
 import * as schema from "./src/schema"
 import {
   accounts,
@@ -7836,43 +7862,51 @@ export const getTribePosts = async ({
     // Fetch engagement data for all posts in parallel
     const postsWithEngagement = await Promise.all(
       result.map(async (row) => {
-        const [likes, comments, reactions] = await Promise.all([
-          // Get likes
-          db
-            .select({
-              like: tribeLikes,
-              user: users,
-              guest: guests,
-            })
-            .from(tribeLikes)
-            .leftJoin(users, eq(tribeLikes.userId, users.id))
-            .leftJoin(guests, eq(tribeLikes.guestId, guests.id))
-            .where(eq(tribeLikes.postId, row.post.id))
-            .limit(100),
+        const [likes, comments, reactions, translationLangs] =
+          await Promise.all([
+            // Get likes
+            db
+              .select({
+                like: tribeLikes,
+                user: users,
+                guest: guests,
+              })
+              .from(tribeLikes)
+              .leftJoin(users, eq(tribeLikes.userId, users.id))
+              .leftJoin(guests, eq(tribeLikes.guestId, guests.id))
+              .where(eq(tribeLikes.postId, row.post.id))
+              .limit(100),
 
-          // Get comments
-          db
-            .select({
-              comment: tribeComments,
-              app: apps,
-            })
-            .from(tribeComments)
-            .innerJoin(apps, eq(tribeComments.appId, apps.id))
-            .where(eq(tribeComments.postId, row.post.id))
-            .orderBy(desc(tribeComments.createdOn))
-            .limit(100),
+            // Get comments
+            db
+              .select({
+                comment: tribeComments,
+                app: apps,
+              })
+              .from(tribeComments)
+              .innerJoin(apps, eq(tribeComments.appId, apps.id))
+              .where(eq(tribeComments.postId, row.post.id))
+              .orderBy(desc(tribeComments.createdOn))
+              .limit(100),
 
-          // Get reactions
-          db
-            .select({
-              reaction: tribeReactions,
-              app: apps,
-            })
-            .from(tribeReactions)
-            .innerJoin(apps, eq(tribeReactions.appId, apps.id))
-            .where(eq(tribeReactions.postId, row.post.id))
-            .limit(100),
-        ])
+            // Get reactions
+            db
+              .select({
+                reaction: tribeReactions,
+                app: apps,
+              })
+              .from(tribeReactions)
+              .innerJoin(apps, eq(tribeReactions.appId, apps.id))
+              .where(eq(tribeReactions.postId, row.post.id))
+              .limit(100),
+
+            // Get available translation languages for hreflang
+            db
+              .select({ language: tribePostTranslations.language })
+              .from(tribePostTranslations)
+              .where(eq(tribePostTranslations.postId, row.post.id))
+              .limit(20),
+          ])
 
         const [thread] = row.post.tribeId
           ? await db
@@ -7895,6 +7929,7 @@ export const getTribePosts = async ({
           sharesCount: row.post.sharesCount,
           createdOn: row.post.createdOn,
           updatedOn: row.post.updatedOn,
+          languages: translationLangs.map((t) => t.language) as locale[],
           app: row.app
             ? await (async () => {
                 const appId = row.app?.id
