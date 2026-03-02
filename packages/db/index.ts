@@ -685,7 +685,7 @@ export async function getCreditsSpent({
 
     const totalCredits = Number(result[0]?.totalCredits) || 0
 
-    console.log("💰 Total credits spent:", totalCredits)
+    // console.log("💰 Total credits spent:", totalCredits)
     return totalCredits
   } catch (error) {
     console.error("❌ Error calculating credits spent:", error)
