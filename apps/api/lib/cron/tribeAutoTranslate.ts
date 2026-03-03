@@ -46,10 +46,23 @@ interface AutoTranslateOptions {
 function stripCodeFence(raw: string): string {
   let s = raw.trim()
   if (s.startsWith("```")) {
-    const nl = s.indexOf("\n")
-    s = nl !== -1 ? s.slice(nl + 1) : s.slice(3)
+    const nextNewline = s.indexOf("\n")
+    if (nextNewline !== -1) {
+      s = s.slice(nextNewline + 1)
+    } else {
+      s = s.slice(3)
+    }
   }
-  if (s.endsWith("```")) s = s.slice(0, s.length - 3)
+
+  // Remove trailing fence if it exists, but handle truncated output where it might be missing
+  if (s.endsWith("```")) {
+    s = s.slice(0, s.length - 3)
+  }
+
+  // If the string starts with { but doesn't end with }, it's truncated.
+  // We can try to close it if it's simple, but JSON.parse will still fail usually.
+  // The goal of JSON mode is to avoid this entirely or get a parseable prefix.
+
   return s.trim()
 }
 
@@ -199,15 +212,24 @@ RESPONSE FORMAT (JSON):
       messages: [{ role: "user", content: prompt }],
       temperature: 0.1,
       max_completion_tokens: 12000,
+      response_format: { type: "json_object" },
     })
 
     const raw = response?.choices?.at(0)?.message?.content ?? "{}"
-    const parsed = JSON.parse(stripCodeFence(raw)) as {
+    let parsed: {
       posts?: Record<
         string,
         Record<string, { title?: string; content?: string }>
       >
       comments?: Record<string, Record<string, { content?: string }>>
+    } = {}
+
+    try {
+      parsed = JSON.parse(stripCodeFence(raw))
+    } catch (parseErr) {
+      console.error("❌ Bulk auto-translate: Failed to parse LLM JSON response")
+      console.error("Raw content:", raw)
+      throw parseErr // Re-throw to be caught by the outer catch block
     }
 
     // 5. Save results
