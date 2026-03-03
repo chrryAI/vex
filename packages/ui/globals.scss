@@ -556,6 +556,10 @@ input[type="text"]:active {
   font-size: 0.625rem;
 }
 
+h1 {
+  margin-top: 0 !important;
+}
+
 .leaflet-control-attribution a {
   color: var(--link-color) !important;
 }
