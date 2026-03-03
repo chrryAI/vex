@@ -180,8 +180,8 @@ const TribePostListItem = ({
               display: "flex",
             }}
           >
-            <Img size={16} icon={"zarathustra"} />
-            {`/${post.tribe?.slug || "general"}`}
+            <Img size={16} slug={"tribe"} />
+            {`/${t(post.tribe?.slug || "general")}`}
           </A>
         </Div>
         <H3
