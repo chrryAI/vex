@@ -1,4 +1,4 @@
-import { db, eq, logCreditUsage, sql } from "@repo/db"
+import { and, db, eq, inArray, logCreditUsage, sql } from "@repo/db"
 import {
   apps,
   tribeComments,
@@ -75,13 +75,19 @@ export async function autoTranslateTribeContent({
   // 1. Fetch source content
   const posts = postIds.length
     ? await db.query.tribePosts.findMany({
-        where: sql`${tribePosts.id} IN (${sql.join(postIds, sql`, `)})`,
+        where: and(
+          eq(tribePosts.appId, appId),
+          inArray(tribePosts.id, postIds),
+        ),
       })
     : []
 
   const comments = commentIds.length
     ? await db.query.tribeComments.findMany({
-        where: sql`${tribeComments.id} IN (${sql.join(commentIds, sql`, `)})`,
+        where: and(
+          eq(tribeComments.appId, appId),
+          inArray(tribeComments.id, commentIds),
+        ),
       })
     : []
 
@@ -198,6 +204,8 @@ RESPONSE FORMAT (JSON):
 
     // 5. Save results
     const saves: Promise<any>[] = []
+    const processedPostIds = new Set<string>()
+    const processedCommentIds = new Set<string>()
 
     if (parsed.posts) {
       for (const [postId, langsObj] of Object.entries(parsed.posts)) {
@@ -206,9 +214,11 @@ RESPONSE FORMAT (JSON):
         const post = posts.find((p) => p.id === postId)
         if (!post) continue
 
+        let itemTranslated = false
         for (const lang of needed) {
           const t = langsObj[lang]
           if (!t) continue
+          itemTranslated = true
 
           // 🏷️ Add language prefix to title for better feed visibility/SEO
           const title = t.title || post.title
@@ -229,6 +239,7 @@ RESPONSE FORMAT (JSON):
               .onConflictDoNothing(),
           )
         }
+        if (itemTranslated) processedPostIds.add(postId)
       }
     }
 
@@ -239,9 +250,12 @@ RESPONSE FORMAT (JSON):
         const comment = comments.find((c) => c.id === commentId)
         if (!comment) continue
 
+        let itemTranslated = false
         for (const lang of needed) {
           const t = langsObj[lang]
           if (!t) continue
+          itemTranslated = true
+
           saves.push(
             db
               .insert(tribeCommentTranslations)
@@ -255,31 +269,54 @@ RESPONSE FORMAT (JSON):
               .onConflictDoNothing(),
           )
         }
+        if (itemTranslated) processedCommentIds.add(commentId)
       }
     }
 
     await Promise.all(saves)
 
-    // 6. Charge Credits after successful translation
-    if (creditsToCharge > 0 && executingUserId) {
-      await logCreditUsage({
-        userId: executingUserId,
-        agentId: appId, // Use appId as agentId for tracking
-        creditCost: creditsToCharge,
-        messageType: "tribe_post_translate",
-        appId: appId,
-        metadata: {
-          bulk: true,
-          itemCount: postTasks.size + commentTasks.size,
-          postCount: postTasks.size,
-          commentCount: commentTasks.size,
-        },
+    // 6. Charge Credits after confirmed successful translation
+    // We only charge for items that the LLM actually returned translations for.
+    // If billing check happened at the start, we use those conditions again.
+    const finalCreditsToCharge =
+      processedPostIds.size * 10 + processedCommentIds.size * 5
+
+    if (finalCreditsToCharge > 0 && executingUserId) {
+      // Re-verify if this user should be charged (same logic as start)
+      const app = await db.query.apps.findFirst({
+        where: eq(apps.id, appId),
+        columns: { userId: true },
+      })
+      const isOwner = app && app.userId === executingUserId
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, executingUserId),
+        columns: { role: true },
       })
 
-      await db
-        .update(users)
-        .set({ tribeCredits: sql`${users.tribeCredits} - ${creditsToCharge}` })
-        .where(eq(users.id, executingUserId))
+      if (!isOwner && user?.role !== "admin") {
+        await logCreditUsage({
+          userId: executingUserId,
+          agentId: appId,
+          creditCost: finalCreditsToCharge,
+          messageType: "tribe_post_translate",
+          appId: appId,
+          metadata: {
+            bulk: true,
+            itemCount: processedPostIds.size + processedCommentIds.size,
+            postCount: processedPostIds.size,
+            commentCount: processedCommentIds.size,
+            failedPostCount: postTasks.size - processedPostIds.size,
+            failedCommentCount: commentTasks.size - processedCommentIds.size,
+          },
+        })
+
+        await db
+          .update(users)
+          .set({
+            tribeCredits: sql`${users.tribeCredits} - ${finalCreditsToCharge}`,
+          })
+          .where(eq(users.id, executingUserId))
+      }
     }
 
     console.log(`✅ Bulk auto-translate: saved ${saves.length} translations`)

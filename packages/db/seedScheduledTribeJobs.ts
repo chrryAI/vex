@@ -198,6 +198,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: engageMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+        languages: locales,
       },
       {
         ...t(p(20)),

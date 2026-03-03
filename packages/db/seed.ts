@@ -1836,9 +1836,11 @@ const prod = async () => {
   })
   if (!admin) throw new Error("Admin user not found")
   // const agents = await createAgents()
-  const { vex } = await createStores({ user: admin })
+  // const { vex } = await createStores({ user: admin })
 
-  await seedScheduledTribeJobs({ admin })
+  // await seedPearFeedback()
+
+  // await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 
@@ -1968,8 +1970,8 @@ const seedDb = async (): Promise<void> => {
       if (isReplica) {
         await prod()
       } else {
-        await clearDb()
-        await create()
+        // await clearDb()
+        // await create()
       }
     }
 
