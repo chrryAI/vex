@@ -18,6 +18,7 @@ import Grapes from "./Grapes"
 import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
 import Instructions from "./Instructions"
+import Markdown from "./MarkdownContent.web"
 import {
   Button,
   Div,
@@ -179,8 +180,8 @@ const TribePostListItem = ({
               display: "flex",
             }}
           >
-            <Img size={16} icon={"zarathustra"} />
-            {`/${post.tribe?.slug || "general"}`}
+            <Img size={16} slug={"tribe"} />
+            {`/${t(post.tribe?.slug || "general")}`}
           </A>
         </Div>
         <H3
@@ -266,18 +267,21 @@ const TribePostListItem = ({
               />
             </Div>
           )}
-          <P
+          <Markdown
             style={{
               fontSize: "0.95rem",
               color: "var(--shade-7)",
               lineHeight: "1.5",
               marginTop: 0,
             }}
-          >
-            {post.content.length > 300 && isSmallDevice
-              ? `${post.content.slice(0, isMobileDevice ? 300 : 400)}...`
-              : post.content}
-          </P>
+            content={
+              post.content.length > 300 && isSmallDevice
+                ? `${post.content.slice(0, isMobileDevice ? 300 : 400)}...`
+                : post.content.length > 475
+                  ? post.content.slice(0, 475) + "..."
+                  : post.content
+            }
+          />
         </Div>
         <Div
           style={{
