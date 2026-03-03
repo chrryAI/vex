@@ -113,7 +113,7 @@ const LanguageSwitcher = ({
     setSelected(multi ? result : [newLocale])
 
     if (handleSetLanguages || handleSetLanguage) {
-      handleSetLanguages?.(result)
+      handleSetLanguages?.(r)
       handleSetLanguage?.(newLocale)
 
       return
