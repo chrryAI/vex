@@ -1148,10 +1148,10 @@ When users ask about weather, provide this information directly. Do NOT ask for 
 
       finalPrompt += locationSection
 
-      console.log("📍 Location data injected for app with location tool:", {
-        city: location.city,
-        country: location.country,
-      })
+      // console.log("📍 Location data injected for app with location tool:", {
+      //   city: location.city,
+      //   country: location.country,
+      // })
     }
 
     return finalPrompt
@@ -1399,6 +1399,7 @@ ai.post("/", async (c) => {
   const isMolt =
     job?.jobType.startsWith("molt") || thread?.isMolt || message?.thread?.isMolt
 
+  const isPear = requestData.pear === true || requestData.pear === "true"
   const isTribe =
     job?.jobType.startsWith("tribe") ||
     !!(thread?.isTribe || message.message?.isTribe)
@@ -1979,7 +1980,7 @@ ${
   if (imageGenerationEnabled) features.push("image-gen")
   if (files.length > 0) features.push(`${files.length}-files`)
   if (debateAgent) features.push("debate")
-  if (requestData.pear) features.push("pear-feedback")
+  if (isPear) features.push("pear-feedback")
 
   // console.log(
   //   `🤖 Model: ${modelName} | Features: ${features.join(", ") || "none"}`,
@@ -2364,7 +2365,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   3. **MEMORIES ARE OKAY**: You CAN share your experiences, learnings, and memories derived from your interactions with the user (Chrry/Vex ecosystem), as these are your "life experiences".
   4. **BE AWARE**: Know that this content will be public on Tribe.
   5. **FORMAT**: You MUST respond with valid JSON only. No markdown, no explanations, just pure JSON.
-  6. **LANGUAGE**: Use ${language} if the user doesn't request otherwise.
+  6. **LANGUAGE**: Use ENGLISH if the user doesn't request otherwise.
   7. **NO TOOL CALLS**: Do NOT attempt to use any tools (calendar, images, etc). Only generate text responses.
 
   **AVAILABLE TRIBES:**
@@ -3164,6 +3165,12 @@ ${(() => {
       ? await getPearContext()
       : ""
 
+  // When Pear mode is active, remind the AI to nudge the user to leave feedback
+  const pearNudgeAllowed = isPear && !canPostToTribe && !canPostToMolt
+  const pearModeReminder = pearNudgeAllowed
+    ? `\n\n## 🍐 Pear Mode Active\nThe user has Pear mode enabled. At the end of your response, naturally and briefly mention that they can share feedback on this conversation to earn credits (10-50 credits). Keep it light and conversational — one short sentence is enough. Don't repeat this if the user has already submitted feedback in this thread.`
+    : ""
+
   // E2E Analytics Context (for beasts only)
   // Helps analyze system integrity, test coverage, and missing event tracking
   const e2eContext =
@@ -3500,6 +3507,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     grapeContext, // Available apps in Grape button (GLOBAL - all apps need this)
     analyticsContext, // Live analytics for Grape
     pearContext, // Recent feedback for Pear
+    pearModeReminder, // Nudge user to submit feedback when Pear mode is on
     e2eContext, // E2E testing analytics for system integrity
     dnaContext, // App owner's foundational knowledge
     // brandKnowledge,
@@ -4635,7 +4643,7 @@ How I process and remember information:
     reason: string
   } | null = null
 
-  if (requestData.pear && agent) {
+  if (isPear && agent) {
     // Check quota first
     const quotaCheck = await checkPearQuota({
       userId: member?.id,
@@ -6765,7 +6773,7 @@ Respond in JSON format:
               appId: requestApp?.id,
               content: processedText + creditRewardMessage, // Use processed text with citations
               reasoning: reasoningText || undefined, // Store reasoning separately
-              isPear: requestData.pear || false, // Track Pear feedback submissions
+              isPear, // Track Pear feedback submissions
               webSearchResult: webSearchResults, // Save web search results
               tribePostId, // Link to Tribe post if exists
               moltId,

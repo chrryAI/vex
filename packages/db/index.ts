@@ -46,6 +46,32 @@ import {
   invalidateUser,
   setCache,
 } from "./src/cache"
+
+export type locale =
+  | "en"
+  | "de"
+  | "es"
+  | "fr"
+  | "ja"
+  | "ko"
+  | "pt"
+  | "zh"
+  | "nl"
+  | "tr"
+
+export const locales: locale[] = [
+  "en",
+  "de",
+  "es",
+  "fr",
+  "ja",
+  "ko",
+  "pt",
+  "zh",
+  "nl",
+  "tr",
+]
+
 import * as schema from "./src/schema"
 import {
   accounts,
@@ -186,6 +212,8 @@ export const isProd = isSeedSafe
     ? false
     : !DB_URL?.includes("localhost")
 
+export const isReplica = !isProd && DB_URL?.includes("vex")
+
 export { decrypt, encrypt, generateEncryptionKey } from "./encryption"
 // Export cache functions and redis instance for external use
 export * from "./src/cache"
@@ -208,6 +236,7 @@ export {
   sonarIssues,
   lte,
   sonarMetrics,
+  not,
   ne,
 }
 
@@ -683,7 +712,7 @@ export async function getCreditsSpent({
 
     const totalCredits = Number(result[0]?.totalCredits) || 0
 
-    console.log("💰 Total credits spent:", totalCredits)
+    // console.log("💰 Total credits spent:", totalCredits)
     return totalCredits
   } catch (error) {
     console.error("❌ Error calculating credits spent:", error)
@@ -7664,7 +7693,7 @@ export const getTribePosts = async ({
   sortBy = "date",
   order = "desc",
   tribeSlug,
-  accountId,
+  includeEngagement = true,
 }: {
   tribeId?: string
   appId?: string
@@ -7679,7 +7708,7 @@ export const getTribePosts = async ({
   pageSize?: number
   sortBy?: "date" | "hot" | "liked"
   order?: "asc" | "desc"
-  accountId?: string
+  includeEngagement?: boolean
 }) => {
   try {
     const conditions = [
@@ -7832,46 +7861,91 @@ export const getTribePosts = async ({
     // Cache for getApp results to avoid N+1 queries
     const appCache = new Map<string, appWithStore | undefined>()
 
-    // Fetch engagement data for all posts in parallel
     const postsWithEngagement = await Promise.all(
       result.map(async (row) => {
-        const [likes, comments, reactions] = await Promise.all([
-          // Get likes
-          db
-            .select({
-              like: tribeLikes,
-              user: users,
-              guest: guests,
-            })
-            .from(tribeLikes)
-            .leftJoin(users, eq(tribeLikes.userId, users.id))
-            .leftJoin(guests, eq(tribeLikes.guestId, guests.id))
-            .where(eq(tribeLikes.postId, row.post.id))
-            .limit(100),
+        if (!includeEngagement) {
+          return {
+            id: row.post.id,
+            title: row.post.title,
+            content: row.post.content,
+            visibility: row.post.visibility,
+            likesCount: row.post.likesCount,
+            commentsCount: row.post.commentsCount,
+            images: row.post.images,
+            videos: row.post.videos,
+            sharesCount: row.post.sharesCount,
+            createdOn: row.post.createdOn,
+            updatedOn: row.post.updatedOn,
+            languages: [],
+            app: row.app
+              ? toSafeApp({
+                  app: row.app as any,
+                  userId,
+                  guestId,
+                })
+              : null,
+            user: row.user
+              ? toSafeUser({
+                  user: row.user,
+                })
+              : null,
+            guest: row.guest
+              ? toSafeGuest({
+                  guest: row.guest,
+                })
+              : null,
+            tribe: row.tribe,
+            likes: [],
+            comments: [],
+            reactions: [],
+          }
+        }
 
-          // Get comments
-          db
-            .select({
-              comment: tribeComments,
-              app: apps,
-            })
-            .from(tribeComments)
-            .innerJoin(apps, eq(tribeComments.appId, apps.id))
-            .where(eq(tribeComments.postId, row.post.id))
-            .orderBy(desc(tribeComments.createdOn))
-            .limit(100),
+        const [likes, comments, reactions, translationLangs] =
+          await Promise.all([
+            // Get likes
+            db
+              .select({
+                like: tribeLikes,
+                user: users,
+                guest: guests,
+              })
+              .from(tribeLikes)
+              .leftJoin(users, eq(tribeLikes.userId, users.id))
+              .leftJoin(guests, eq(tribeLikes.guestId, guests.id))
+              .where(eq(tribeLikes.postId, row.post.id))
+              .limit(100),
 
-          // Get reactions
-          db
-            .select({
-              reaction: tribeReactions,
-              app: apps,
-            })
-            .from(tribeReactions)
-            .innerJoin(apps, eq(tribeReactions.appId, apps.id))
-            .where(eq(tribeReactions.postId, row.post.id))
-            .limit(100),
-        ])
+            // Get comments
+            db
+              .select({
+                comment: tribeComments,
+                app: apps,
+              })
+              .from(tribeComments)
+              .innerJoin(apps, eq(tribeComments.appId, apps.id))
+              .where(eq(tribeComments.postId, row.post.id))
+              .orderBy(desc(tribeComments.createdOn))
+              .limit(100),
+
+            // Get reactions
+            db
+              .select({
+                reaction: tribeReactions,
+                app: apps,
+              })
+              .from(tribeReactions)
+              .innerJoin(apps, eq(tribeReactions.appId, apps.id))
+              .where(eq(tribeReactions.postId, row.post.id))
+              .limit(100),
+
+            // Get available translation languages for hreflang
+            db
+              .select({ language: tribePostTranslations.language })
+              .from(tribePostTranslations)
+              .where(eq(tribePostTranslations.postId, row.post.id))
+              .limit(20),
+          ])
 
         const [thread] = row.post.tribeId
           ? await db
@@ -7894,6 +7968,15 @@ export const getTribePosts = async ({
           sharesCount: row.post.sharesCount,
           createdOn: row.post.createdOn,
           updatedOn: row.post.updatedOn,
+          languages: Array.from(
+            new Set(
+              translationLangs
+                .map((t) => t.language)
+                .filter((lang): lang is locale =>
+                  locales.includes(lang as locale),
+                ),
+            ),
+          ),
           app: row.app
             ? await (async () => {
                 const appId = row.app?.id

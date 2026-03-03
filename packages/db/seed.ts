@@ -15,6 +15,7 @@ import {
   getUser,
   getUsers,
   isProd,
+  isReplica,
   isSeedSafe,
   isWaffles,
   MODE,
@@ -1831,14 +1832,15 @@ const prod = async () => {
   // await clearMemories()
   // await clearGuests()
   const admin = await getUser({
-    email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
+    email: isProd || isReplica ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
   // const agents = await createAgents()
   // const { vex } = await createStores({ user: admin })
 
-  await seedScheduledTribeJobs({ admin })
-  await seedPearFeedback()
+  // await seedPearFeedback()
+
+  // await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 
@@ -1965,9 +1967,12 @@ const seedDb = async (): Promise<void> => {
     }
 
     if (MODE === "dev") {
-      // await prod()
-      await clearDb()
-      await create()
+      if (isReplica) {
+        await prod()
+      } else {
+        // await clearDb()
+        // await create()
+      }
     }
 
     process.exit(0)

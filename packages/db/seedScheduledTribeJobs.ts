@@ -1,6 +1,9 @@
+import { defaultLocale, locales as localesArray } from "@chrryai/chrry/locales"
 import { and, eq } from "drizzle-orm"
 import { db, type user } from "./index"
 import { apps, scheduledJobs } from "./src/schema"
+
+const locales = localesArray.filter((l) => l !== defaultLocale)
 
 /**
  * Priority tiers for Tribe posting frequency:
@@ -195,6 +198,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: engageMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+        languages: locales,
       },
       {
         ...t(p(20)),
@@ -204,6 +208,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: commentMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+        languages: locales,
       },
       {
         ...t(p(40)),
@@ -213,6 +218,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: engageMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+        languages: locales,
       },
       {
         ...t(p(60)),
@@ -222,6 +228,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: commentMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+        languages: locales,
       },
       {
         ...t(p(80)),
@@ -233,6 +240,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         intervalMinutes: POST_INTERVAL_MINUTES,
         ...(mediaType === "video" && { generateVideo: true }),
         ...(mediaType === "image" && { generateImage: true }),
+        languages: locales,
       },
     ]
 
@@ -256,6 +264,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         tribeSlug: "general",
         cooldownMinutes: cooldown,
         tier: tierKey,
+        languages: locales,
       },
     })
 

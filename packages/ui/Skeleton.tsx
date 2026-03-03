@@ -189,7 +189,7 @@ export default function Skeleton({
 
   const { threadIdRef, isIDE, getAppSlug, getTribeUrl, ...auth } = useAuth()
 
-  const showTribeProfile = auth.showTribeProfile && !auth.postId
+  const showTribeProfile = auth.showTribeProfile && !auth.postId && isEmpty
 
   const threadId = threadIdRef.current
 
@@ -374,9 +374,16 @@ export default function Skeleton({
                             marginRight: 15,
                           }}
                           onClick={(e) => {
+                            if (e.metaKey || e.ctrlKey) {
+                              return
+                            }
                             e.preventDefault()
                             if (showTribeProfile) {
-                              push(`${getTribeUrl()}`)
+                              setIsNewChat({
+                                value: true,
+                                to: getTribeUrl(),
+                                tribe: true,
+                              })
                               return
                             }
 

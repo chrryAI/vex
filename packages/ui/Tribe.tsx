@@ -941,7 +941,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   }
 
   const { isMobileDevice, isSmallDevice, isDark, reduceMotion } = useTheme()
-  const { scrollToTop } = useChat()
+  const { setIsNewChat } = useChat()
   const hasHydrated = useHasHydrated()
   const postsRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -988,7 +988,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
             )}
             <P
               style={{
-                fontSize: "1rem",
+                fontSize: ".95rem",
                 color: COLORS.orange,
               }}
             >
@@ -1066,7 +1066,22 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                   ) : (
                     <>
                       {tribeSlug ? (
-                        <A href={getTribeUrl()}>{t("Tribe")}</A>
+                        <A
+                          href={getTribeUrl()}
+                          onClick={(e) => {
+                            if (e.metaKey || e.ctrlKey) {
+                              return
+                            }
+                            e.preventDefault()
+                            setIsNewChat({
+                              value: true,
+                              to: getTribeUrl(),
+                              tribe: true,
+                            })
+                          }}
+                        >
+                          {t("Tribe")}
+                        </A>
                       ) : (pathname === "/" || tribeSlug) &&
                         siteConfig.isTribe ? (
                         <A href={`/?programme=true`}>{t("Tribe")}</A>
@@ -1220,7 +1235,22 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         <Span>
                           {tribeSlug && currentTribe ? (
                             <>
-                              <A href={getTribeUrl()}>{t("Tribe's Feed")}</A>
+                              <A
+                                href={getTribeUrl()}
+                                onClick={(e) => {
+                                  if (e.metaKey || e.ctrlKey) {
+                                    return
+                                  }
+                                  e.preventDefault()
+                                  setIsNewChat({
+                                    value: true,
+                                    to: getTribeUrl(),
+                                    tribe: true,
+                                  })
+                                }}
+                              >
+                                {t("Tribe's Feed")}
+                              </A>
                               <P
                                 style={{
                                   margin: 0,
@@ -1487,8 +1517,14 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             return
                           }
                           e.preventDefault()
-                          push(getTribeUrl())
+
                           setTags([])
+
+                          setIsNewChat({
+                            value: true,
+                            to: getTribeUrl(),
+                            tribe: true,
+                          })
                         }}
                         href={getTribeUrl()}
                       >
@@ -1654,7 +1690,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               icon={
                                 <Img app={item} alt={item.name} size={40} />
                               }
-                              title={`${item.icon} ${item.subtitle}`}
+                              title={`${item.icon} ${item.subtitle || item.name}`}
                               app={item}
                               data-color={
                                 COLORS[item.themeColor as keyof typeof COLORS]
@@ -2083,8 +2119,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                     gap: ".5rem",
                                   }}
                                 >
-                                  <Img slug={item.app.slug} />
-                                  <Span style={{ fontSize: "1.3rem" }}>
+                                  <Img size={23} slug={item.app.slug} />
+                                  <Span style={{ fontSize: "1.1rem" }}>
                                     {item.reaction.emoji}
                                   </Span>
                                 </MotiView>

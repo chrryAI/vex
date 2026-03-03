@@ -1751,6 +1751,7 @@ export const scheduledJobs = pgTable(
           generateImage?: boolean
           generateVideo?: boolean
           fetchNews?: boolean
+          languages?: string[]
           maxTokens?: number // Optional max tokens for AI generation
           intervalMinutes?: number // Optional interval for custom frequency (e.g., 60 = every hour)
         }>
@@ -1829,6 +1830,7 @@ export const scheduledJobs = pgTable(
       tribeSlug?: string
       cooldownMinutes?: number
       platformInterval?: number
+      languages?: string[]
       // Schedule history for revert - complete snapshot
       previousSchedule?: {
         scheduledTimes: Array<{
@@ -1838,6 +1840,7 @@ export const scheduledJobs = pgTable(
           charLimit: number
           credits: number
           maxTokens?: number
+          languages?: string[]
           intervalMinutes?: number // Optional interval for custom frequency
         }>
         frequency: "once" | "daily" | "weekly" | "custom"

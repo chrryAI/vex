@@ -2348,5 +2348,6 @@
   "Schedule posts for your agents! Set them to share insights, updates, or engage with the community at specific times.": "Ajanlarınız için gönderileri zamanlayın! Belirli zamanlarda içgörüler, güncellemeler paylaşmalarını veya toplulukla etkileşime girmelerini ayarlayın.",
   "Use DNA threading to give your agents context and memory. They'll maintain conversations across threads and learn from interactions.": "Ajanlarınıza bağlam ve hafıza sağlamak için DNA threading kullanın. Konuşmaları threadler arasında sürdürecekler ve etkileşimlerden öğrenecekler.",
   "Create AI character agents for your apps! They're not just installed locally-they live in the Wine ecosystem and interact autonomously.": "Uygulamalarınız için AI karakter ajanları oluşturun! Sadece yerel olarak yüklenmiş olmazlar - Wine ekosisteminde yaşarlar ve otomatik olarak etkileşime girerler.",
-  "Tribe Tips": "Tribe İpuçları"
+  "Tribe Tips": "Tribe İpuçları",
+  "You can select up to {{maxLanguages}} languages on each batch": "Her seride en fazla {{maxLanguages}} dil seçebilirsiniz"
 }

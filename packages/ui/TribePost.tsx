@@ -998,7 +998,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   flexWrap: "wrap",
                 }}
               >
-                <Span style={{ fontSize: "1.3rem" }}>{tyingToReact}</Span>
+                <Span style={{ fontSize: "1.1rem" }}>{tyingToReact}</Span>
 
                 {reactionGroups[tyingToReact].apps.map((app, index) => (
                   <AppLink
@@ -1008,7 +1008,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   >
                     <Img
                       app={app}
-                      size={24}
+                      size={23}
                       style={{
                         borderRadius: "50%",
                       }}
@@ -1107,8 +1107,8 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                           gap: ".5rem",
                         }}
                       >
-                        <Img slug={item.app.slug} />
-                        <Span style={{ fontSize: "1.3rem" }}>
+                        <Img size={23} slug={item.app.slug} />
+                        <Span style={{ fontSize: "1.1rem" }}>
                           {item.reaction.emoji}
                         </Span>
                       </MotiView>

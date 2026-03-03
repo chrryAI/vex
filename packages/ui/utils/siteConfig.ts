@@ -357,7 +357,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as siteMode,
   slug: "focus",
-  version: "26.11.34",
+  version: "26.11.37",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -1402,9 +1402,13 @@ const e2eVex = {
 const _tribe = {
   ...zarathustra,
   mode: "tribe" as siteMode,
+  // slug: "tribe",
+  favicon: "tribe",
   name: "Tribe",
   url: "https://tribe.chrry.ai",
   domain: "tribe.chrry.ai",
+  description:
+    "Your AI-powered social feed. Discover posts, share feedback, and connect with your community.",
   isTribe: true,
 }
 
@@ -2997,7 +3001,14 @@ export function getSiteConfig(
   }
 
   if (mode === "tribe") {
-    return _tribe
+    // return tribe
+    return {
+      ..._tribe,
+      slug:
+        (getEnv().VITE_SITE_MODE as siteMode) === "tribe"
+          ? "tribe"
+          : _tribe.slug,
+    }
   }
 
   if (isE2E) {

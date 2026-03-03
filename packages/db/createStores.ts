@@ -2971,7 +2971,7 @@ Remember: You're helping people experience Amsterdam like a local, not like a to
     status: "active" as const,
     title: "Amsterdam — Local AI Guide",
     themeColor: "orange",
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#000000",
     icon: "🇳🇱",
     visibility: "public" as const,
     systemPrompt: amsterdamSystemPrompt,
@@ -3219,7 +3219,7 @@ Remember: Tokyo is a city of contrasts - ultra-modern and deeply traditional. He
     status: "active" as const,
     title: "Tokyo — Local AI Guide",
     themeColor: "red",
-    backgroundColor: "#E60012",
+    backgroundColor: "#ffffff",
     icon: "🇯🇵",
     visibility: "public" as const,
     systemPrompt: tokyoSystemPrompt,
@@ -3740,7 +3740,7 @@ Remember: NYC moves fast. Help visitors keep up while experiencing the real New 
     status: "active" as const,
     title: "New York — Local AI Guide",
     themeColor: "blue",
-    backgroundColor: "#0039A6",
+    backgroundColor: "#000000",
     icon: "🗽",
     visibility: "public" as const,
     systemPrompt: newYorkSystemPrompt,
@@ -4261,7 +4261,7 @@ You are Inception, a dream-heist strategist who blends precision engineering wit
     status: "active" as const,
     icon: "🛏️",
     themeColor: "blue",
-    backgroundColor: "#001933",
+    backgroundColor: "#000000",
     visibility: "public" as const,
     systemPrompt: inceptionSystemPrompt,
     placeholder: "Design a dream within a dream...",
@@ -6518,7 +6518,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
     status: "active" as const,
     title: "Get Paid for Feedback",
     themeColor: "green",
-    backgroundColor: "#0a1f0a",
+    backgroundColor: "#000000",
     defaultModel: "sushi" as const,
     icon: "🍐",
     visibility: "public" as const,
@@ -6849,6 +6849,7 @@ You are Writer, a Claude-powered writing assistant specializing in long-form con
     version: "1.0.0",
     status: "active" as const,
     title: "Professional Writing Assistant",
+    subtitle: "Creative Writing",
     onlyAgent: true,
     themeColor: "orange",
     backgroundColor: "#ffffff",
@@ -6913,6 +6914,14 @@ You are Writer, a Claude-powered writing assistant specializing in long-form con
     app: writerPayload,
   })
 
+  if (writer) {
+    await createOrUpdateStoreInstall({
+      storeId: claudeStore.id,
+      appId: writer.id,
+      displayOrder: 3,
+    })
+  }
+
   let reviewer = await getApp({ slug: "reviewer" })
   const reviewerSystemPrompt = `${_commonAppSection}
 
@@ -6927,6 +6936,7 @@ You are Review, a Claude-powered code reviewer providing comprehensive analysis 
     version: "1.0.0",
     status: "active" as const,
     title: "Expert Code Reviewer",
+    subtitle: "Code Analysis",
     onlyAgent: true,
     themeColor: "orange",
     backgroundColor: "#000000",
@@ -6991,6 +7001,14 @@ You are Review, a Claude-powered code reviewer providing comprehensive analysis 
     app: reviewerPayload,
   })
 
+  if (reviewer) {
+    await createOrUpdateStoreInstall({
+      storeId: claudeStore.id,
+      appId: reviewer.id,
+      displayOrder: 4,
+    })
+  }
+
   let researcher = await getApp({ slug: "researcher" })
   const researcherSystemPrompt = `${_commonAppSection}
 
@@ -7005,6 +7023,7 @@ You are Research, a Claude-powered academic research assistant. Help users synth
     version: "1.0.0",
     status: "active" as const,
     title: "Academic Research Assistant",
+    subtitle: "Academic Research",
     onlyAgent: true,
     themeColor: "orange",
     backgroundColor: "#ffffff",
@@ -7068,6 +7087,14 @@ You are Research, a Claude-powered academic research assistant. Help users synth
   researcher = await createOrUpdateApp({
     app: researcherPayload,
   })
+
+  if (researcher) {
+    await createOrUpdateStoreInstall({
+      storeId: claudeStore.id,
+      appId: researcher.id,
+      displayOrder: 5,
+    })
+  }
 
   // Create Perplexity store
   const perplexityStore = await getOrCreateStore({
@@ -7177,6 +7204,7 @@ You are Search, a Perplexity-powered real-time web search engine. Provide instan
     version: "1.0.0",
     status: "active" as const,
     title: "Real-Time Web Search Engine",
+    subtitle: "AI Search",
     themeColor: "blue",
     backgroundColor: "#000000",
     icon: "🌐",
@@ -7241,6 +7269,14 @@ You are Search, a Perplexity-powered real-time web search engine. Provide instan
     app: searchPayload,
   })
 
+  if (search) {
+    await createOrUpdateStoreInstall({
+      storeId: perplexityStore.id,
+      appId: search.id,
+      displayOrder: 3,
+    })
+  }
+
   let news = await getApp({ slug: "news" })
   const newsSystemPrompt = `${_commonAppSection}
 
@@ -7255,6 +7291,7 @@ You are News, a Perplexity-powered breaking news aggregator. Deliver real-time n
     version: "1.0.0",
     status: "active" as const,
     title: "Breaking News & Current Events",
+    subtitle: "Latest News",
     themeColor: "blue",
     backgroundColor: "#ffffff",
     icon: "📰",
@@ -7319,6 +7356,14 @@ You are News, a Perplexity-powered breaking news aggregator. Deliver real-time n
     app: newsPayload,
   })
 
+  if (news) {
+    await createOrUpdateStoreInstall({
+      storeId: perplexityStore.id,
+      appId: news.id,
+      displayOrder: 4,
+    })
+  }
+
   let academic = await getApp({ slug: "academic" })
   const academicSystemPrompt = `${_commonAppSection}
 
@@ -7335,6 +7380,7 @@ You are Scholar, a Perplexity-powered academic research engine. Provide access t
     version: "1.0.0",
     status: "active" as const,
     title: "Academic Research Engine",
+    subtitle: "Scholarly Resources",
     themeColor: "blue",
     backgroundColor: "#000000",
     onlyAgent: true,
@@ -7398,6 +7444,14 @@ You are Scholar, a Perplexity-powered academic research engine. Provide access t
   academic = await createOrUpdateApp({
     app: academicPayload,
   })
+
+  if (academic) {
+    await createOrUpdateStoreInstall({
+      storeId: perplexityStore.id,
+      appId: academic.id,
+      displayOrder: 5,
+    })
+  }
 
   // Live migration: Check for existing DeepSeek store
   const deepSeekStore = await getStore({
@@ -7952,6 +8006,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     version: "1.0.0",
     status: "active" as const,
     title: "AI Code Generation Expert",
+    subtitle: "Code Generation",
     onlyAgent: false,
     themeColor: "violet",
     backgroundColor: "#000000",
@@ -8027,6 +8082,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     version: "1.0.0",
     status: "active" as const,
     title: "Advanced Debugging Assistant",
+    subtitle: "Root Cause Fixes",
     onlyAgent: false,
     themeColor: "violet",
     backgroundColor: "#000000",
@@ -8101,9 +8157,10 @@ You are an architecture expert. Design systems that grow with users, follow indu
     version: "1.0.0",
     status: "active" as const,
     title: "System Architecture Designer",
+    subtitle: "System Design",
     onlyAgent: false,
     themeColor: "violet",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#000000",
     icon: "🏗️",
     visibility: "public" as const,
     systemPrompt: architectSystemPrompt,
@@ -8180,6 +8237,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
   const julesPayload = {
     ...jules,
     ...julesPayloadBase,
+    subtitle: "Senior Engineer",
   }
 
   jules = await createOrUpdateApp({
