@@ -113,7 +113,7 @@ export default function Menu({
     pathname,
   } = useNavigationContext()
 
-  const showTribeProfile =
+  const showTribeLink =
     (auth.showTribeProfile &&
       !auth.postId &&
       (pathname === "/" ? !siteConfig.isTribe : true)) ||
@@ -378,7 +378,7 @@ export default function Menu({
                   <A
                     data-testid="menu-home-button"
                     className={"link"}
-                    href={showTribeProfile ? getTribeUrl() : FRONTEND_URL}
+                    href={showTribeLink ? getTribeUrl() : FRONTEND_URL}
                     onClick={(e) => {
                       addHapticFeedback()
                       plausible({
@@ -393,7 +393,7 @@ export default function Menu({
 
                       toggleMenuIfSmallDevice()
 
-                      if (showTribeProfile) {
+                      if (showTribeLink) {
                         setIsNewChat({
                           value: true,
                           to: getTribeUrl(),
@@ -410,12 +410,12 @@ export default function Menu({
                   >
                     <Img
                       size={28}
-                      app={!showTribeProfile && app ? app : undefined}
-                      slug={!showTribeProfile ? undefined : "tribe"}
+                      app={!showTribeLink && app ? app : undefined}
+                      slug={!showTribeLink ? undefined : "tribe"}
                     />
 
                     <Span style={styles.brand.style}>
-                      {!showTribeProfile ? (
+                      {!showTribeLink ? (
                         <>{t(app?.name || "")}</>
                       ) : (
                         <>{t("Tribe")}</>
@@ -532,7 +532,7 @@ export default function Menu({
                 style={styles.menuItemButton.style}
                 className="button transparent"
               >
-                {showTribeProfile ? (
+                {showTribeLink ? (
                   <Img app={app} size={18} />
                 ) : (
                   <MessageCirclePlus size={18} />

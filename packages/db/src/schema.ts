@@ -1840,6 +1840,7 @@ export const scheduledJobs = pgTable(
           charLimit: number
           credits: number
           maxTokens?: number
+          languages?: string[]
           intervalMinutes?: number // Optional interval for custom frequency
         }>
         frequency: "once" | "daily" | "weekly" | "custom"

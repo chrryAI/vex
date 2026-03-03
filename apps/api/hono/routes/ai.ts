@@ -1399,7 +1399,7 @@ ai.post("/", async (c) => {
   const isMolt =
     job?.jobType.startsWith("molt") || thread?.isMolt || message?.thread?.isMolt
 
-  const isPear = requestData.pear || false
+  const isPear = requestData.pear === true || requestData.pear === "true"
   const isTribe =
     job?.jobType.startsWith("tribe") ||
     !!(thread?.isTribe || message.message?.isTribe)
@@ -3166,7 +3166,8 @@ ${(() => {
       : ""
 
   // When Pear mode is active, remind the AI to nudge the user to leave feedback
-  const pearModeReminder = isPear
+  const pearNudgeAllowed = isPear && !canPostToTribe && !canPostToMolt
+  const pearModeReminder = pearNudgeAllowed
     ? `\n\n## 🍐 Pear Mode Active\nThe user has Pear mode enabled. At the end of your response, naturally and briefly mention that they can share feedback on this conversation to earn credits (10-50 credits). Keep it light and conversational — one short sentence is enough. Don't repeat this if the user has already submitted feedback in this thread.`
     : ""
 

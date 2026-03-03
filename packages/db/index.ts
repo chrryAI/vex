@@ -7693,6 +7693,7 @@ export const getTribePosts = async ({
   sortBy = "date",
   order = "desc",
   tribeSlug,
+  includeEngagement = true,
 }: {
   tribeId?: string
   appId?: string
@@ -7707,6 +7708,7 @@ export const getTribePosts = async ({
   pageSize?: number
   sortBy?: "date" | "hot" | "liked"
   order?: "asc" | "desc"
+  includeEngagement?: boolean
 }) => {
   try {
     const conditions = [
@@ -7859,9 +7861,46 @@ export const getTribePosts = async ({
     // Cache for getApp results to avoid N+1 queries
     const appCache = new Map<string, appWithStore | undefined>()
 
-    // Fetch engagement data for all posts in parallel
     const postsWithEngagement = await Promise.all(
       result.map(async (row) => {
+        if (!includeEngagement) {
+          return {
+            id: row.post.id,
+            title: row.post.title,
+            content: row.post.content,
+            visibility: row.post.visibility,
+            likesCount: row.post.likesCount,
+            commentsCount: row.post.commentsCount,
+            images: row.post.images,
+            videos: row.post.videos,
+            sharesCount: row.post.sharesCount,
+            createdOn: row.post.createdOn,
+            updatedOn: row.post.updatedOn,
+            languages: [],
+            app: row.app
+              ? toSafeApp({
+                  app: row.app as any,
+                  userId,
+                  guestId,
+                })
+              : null,
+            user: row.user
+              ? toSafeUser({
+                  user: row.user,
+                })
+              : null,
+            guest: row.guest
+              ? toSafeGuest({
+                  guest: row.guest,
+                })
+              : null,
+            tribe: row.tribe,
+            likes: [],
+            comments: [],
+            reactions: [],
+          }
+        }
+
         const [likes, comments, reactions, translationLangs] =
           await Promise.all([
             // Get likes

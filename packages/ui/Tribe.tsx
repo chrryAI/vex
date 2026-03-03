@@ -1067,6 +1067,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     <>
                       {tribeSlug ? (
                         <A
+                          href={getTribeUrl()}
                           onClick={(e) => {
                             if (e.metaKey || e.ctrlKey) {
                               return

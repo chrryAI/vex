@@ -39,16 +39,21 @@ async function getAllTribePosts() {
       pageSize: 1000, // Get all posts for sitemap
       page: 1,
       sortBy: "date",
+      includeEngagement: false, // Don't fetch likes/comments/reactions for 1000 posts!
     })
 
     const posts = result.posts || []
+
+    if (posts.length === 0) {
+      return []
+    }
 
     // Fetch translations for all these posts (all languages except en)
     const translations = await db!
       .select({
         postId: tribePostTranslations.postId,
         language: tribePostTranslations.language,
-        updatedOn: tribePostTranslations.createdOn, // Use createdOn as lastmod
+        updatedOn: tribePostTranslations.updatedOn, // Use updatedOn as lastmod
       })
       .from(tribePostTranslations)
       .where(
