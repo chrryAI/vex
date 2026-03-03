@@ -1092,7 +1092,7 @@ export function isVexMode() {
 //   return {}
 // }
 
-const VERSION = "2.0.53"
+const VERSION = "2.0.54"
 // Constants
 const port = process.env.PORT || 5173
 const base = process.env.BASE || "/"

@@ -208,6 +208,7 @@ export default function App({
   const nebula = apps.find((app) => app.slug === "nebula")
   const zarathustra = apps.find((app) => app.slug === "zarathustra")
   const sushi = apps.find((app) => app.slug === "sushi")
+  const grok = apps.find((app) => app.slug === "grok")
 
   const isBlossom = app?.store?.id === chrry?.store?.id
   const isLifeOS = app?.store?.id === vex?.store?.id
@@ -223,6 +224,7 @@ export default function App({
           (item.id !== perplexity?.id || !isBlossom) &&
           (item.id !== vex?.id || !isSushi) &&
           (item.id !== claude?.id || !isBlossom) &&
+          (item.id !== grok?.id || !isBlossom) &&
           (item.id === grape?.id
             ? accountApp?.id === app?.id
               ? false
