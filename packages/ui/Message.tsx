@@ -27,6 +27,7 @@ import {
   Flux,
   Gemini,
   Globe as GlobeIcon,
+  Grok,
   LogIn,
   OpenAI,
   Perplexity,
@@ -1142,6 +1143,8 @@ function Message({
                   <Perplexity size={35} />
                 ) : agent.name === "sushi" ? (
                   <Img icon="sushi" size={35} />
+                ) : agent.name === "grok" ? (
+                  <Grok size={35} />
                 ) : null}
               </>
             ) : (
@@ -1189,6 +1192,8 @@ function Message({
                   <Perplexity size={35} />
                 ) : agent.name === "sushi" ? (
                   <Img icon="sushi" size={35} />
+                ) : agent.name === "grok" ? (
+                  <Grok size={35} />
                 ) : null}
               </>
             ) : (
@@ -1429,6 +1434,8 @@ function Message({
                       <Flux color="var(--accent-6)" size={19} />
                     ) : agent?.name === "perplexity" ? (
                       <Perplexity color="var(--accent-6)" size={19} />
+                    ) : agent?.name === "grok" ? (
+                      <Grok color="var(--accent-6)" size={19} />
                     ) : agent?.name === "sushi" ? (
                       <Img icon="sushi" showLoading={false} size={19} />
                     ) : null}

@@ -21,6 +21,8 @@ export type AgentModel =
   | "claude"
   | "gemini"
   | "perplexity"
+  | "flux"
+  | "grok"
   | "string"
 
 /**

@@ -27,7 +27,6 @@ import {
   type user,
 } from "./index"
 import { seedPearFeedback } from "./seedPearFeedback"
-import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
 import { seedTribeEngagement } from "./seedTribeEngagement"
 import {
   aiAgents,
@@ -178,6 +177,30 @@ async function createAgents() {
     modelId: "google/gemini-3.1-pro-preview",
     maxPromptSize: 2000000,
     order: 1,
+    capabilities: {
+      text: true,
+      image: true,
+      audio: true,
+      video: true,
+      webSearch: false,
+      pdf: true,
+      imageGeneration: false,
+      codeExecution: true,
+    },
+  })
+
+  const grokAgent = await createAiAgent({
+    name: "grok",
+    displayName: "Grok 4",
+    version: "4.0",
+    apiURL: "https://api.x.ai/v1/chat/completions",
+    state: "active",
+    description: "xAI's latest frontier model with 256k context and reasoning.",
+    creditCost: 4,
+    authorization: "all",
+    modelId: "x-ai/grok-4",
+    maxPromptSize: 256000,
+    order: 4,
     capabilities: {
       text: true,
       image: true,
@@ -1835,8 +1858,8 @@ const prod = async () => {
     email: isProd || isReplica ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  // const agents = await createAgents()
-  // const { vex } = await createStores({ user: admin })
+  const agents = await createAgents()
+  const { vex } = await createStores({ user: admin })
 
   // await seedPearFeedback()
 

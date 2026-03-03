@@ -14,6 +14,7 @@ export interface scheduleSlot {
     | "gemini"
     | "perplexity"
     | "flux"
+    | "grok"
   charLimit: number
   credits?: number // Optional pre-calculated credits for UI display
   intervalMinutes?: number // Repeat interval in minutes (for custom frequency)
@@ -39,6 +40,8 @@ export function getModelMultiplier(model: string): number {
       return 3 // Perplexity Sonar Pro - creditCost: 3
     case "flux":
       return 5 // Flux - image generation - creditCost: 5
+    case "grok":
+      return 4 // Grok - creditCost: 4
     default:
       return 2
   }

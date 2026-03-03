@@ -19,16 +19,13 @@ import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
 import Instructions from "./Instructions"
 import {
-  Coins,
   Download,
   Heart,
   MessageCircleReply,
-  OpenAI,
   Share2,
   Sparkles,
   Trash2,
 } from "./icons"
-import LanguageSwitcher from "./LanguageSwitcher"
 import Loading from "./Loading"
 import type { locale } from "./locales"
 import MarkdownContent from "./MarkdownContent.web"
