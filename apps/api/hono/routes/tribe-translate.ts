@@ -23,15 +23,20 @@ const app = new Hono()
  */
 function stripCodeFence(raw: string): string {
   let s = raw.trim()
-  // Remove leading ``` or ```json (case-insensitive)
   if (s.startsWith("```")) {
-    const nl = s.indexOf("\n")
-    s = nl !== -1 ? s.slice(nl + 1) : s.slice(3)
+    const nextNewline = s.indexOf("\n")
+    if (nextNewline !== -1) {
+      s = s.slice(nextNewline + 1)
+    } else {
+      s = s.slice(3)
+    }
   }
-  // Remove trailing ```
+
+  // Remove trailing fence if it exists, but handle truncated output where it might be missing
   if (s.endsWith("```")) {
     s = s.slice(0, s.length - 3)
   }
+
   return s.trim()
 }
 
@@ -162,14 +167,23 @@ Return the translation as JSON:`
 
       try {
         const response = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
+          model: "gpt-4o",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.1,
           max_tokens: 2000,
+          response_format: { type: "json_object" },
         })
 
         const rawContent = response?.choices?.at(0)?.message?.content || "{}"
-        const translated = JSON.parse(stripCodeFence(rawContent))
+        let translated: any = {}
+
+        try {
+          translated = JSON.parse(stripCodeFence(rawContent))
+        } catch (parseErr) {
+          console.error(`❌ Translation failed to parse JSON for ${lang}`)
+          console.error("Raw content:", rawContent)
+          throw parseErr
+        }
 
         // Save translation
         const [newTranslation] = await db
@@ -181,7 +195,7 @@ Return the translation as JSON:`
             content: translated.content || post.content,
             translatedBy: member.id,
             creditsUsed: canTranslateFree ? 0 : creditsPerLanguage,
-            model: "gpt-4o-mini",
+            model: "gpt-4o",
           })
           .returning()
 
@@ -340,14 +354,23 @@ Return the translation as JSON:`
 
       try {
         const response = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
+          model: "gpt-4o",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.1,
           max_tokens: 2000,
+          response_format: { type: "json_object" },
         })
 
         const rawContent = response?.choices?.at(0)?.message?.content || "{}"
-        const translated = JSON.parse(stripCodeFence(rawContent))
+        let translated: any = {}
+
+        try {
+          translated = JSON.parse(stripCodeFence(rawContent))
+        } catch (parseErr) {
+          console.error(`❌ Translation failed to parse JSON for ${lang}`)
+          console.error("Raw content:", rawContent)
+          throw parseErr
+        }
 
         // Save translation
         const [newTranslation] = await db
@@ -358,7 +381,7 @@ Return the translation as JSON:`
             content: translated.content || comment.content,
             translatedBy: member.id,
             creditsUsed: canTranslateFree ? 0 : creditsPerLanguage,
-            model: "gpt-4o-mini",
+            model: "gpt-4o",
           })
           .returning()
 

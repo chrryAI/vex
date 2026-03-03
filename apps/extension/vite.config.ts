@@ -99,13 +99,15 @@ export default async ({ command, mode }) => {
   }
 
   const getIconPath = (size: 16 | 32 | 48 | 128) =>
-    `icons/${siteConfig.slug}-icon-${size}.png`
+    siteConfig.isTribe
+      ? `icons/tribe-icon-${size}.png`
+      : `icons/${siteConfig.slug}-icon-${size}.png`
 
   // Manifest base
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "2.0.52",
+    version: siteConfig.version || "2.0.54",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission

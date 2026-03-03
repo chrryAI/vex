@@ -4896,7 +4896,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   // Note: Images/videos are handled separately by providers and don't count toward text token limits
   const TOKEN_LIMITS: Record<string, number> = {
     deepseek: 60000, // DeepSeek R1 has 64K context, use 60K to be safe
-    chatgpt: 120000, // GPT-4o has 128K context, use 120K to be safe
+    chatgpt: 120000, // gpt-4o has 128K context, use 120K to be safe
     claude: 180000, // Claude 3.5 Sonnet has 200K context, use 180K to be safe
     gemini: 1900000, // Gemini 1.5 Pro has 2M context, use 1.9M to be safe
   }

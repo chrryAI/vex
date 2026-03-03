@@ -47,6 +47,7 @@ export async function getModelProvider(
     | "sushi"
     | "gemini"
     | "perplexity"
+    | "grok"
     | "flux"
     | "openrouter"
     | string = "deepSeek",
@@ -124,7 +125,7 @@ export async function getModelProvider(
       if (chatgptKey && failedKey !== "chatGPT") {
         const openaiProvider = createOpenAI({ apiKey: chatgptKey })
         return {
-          provider: openaiProvider("gpt-4o-mini"),
+          provider: openaiProvider("gpt-4o"),
           agentName: "chatGPT",
           lastKey: "chatGPT",
         }
@@ -313,6 +314,55 @@ export async function getModelProvider(
 
       return {
         provider: createGoogleGenerativeAI({ apiKey: "" })(agent.modelId),
+        agentName: agent.name,
+      }
+    }
+
+    case "grok": {
+      const xaiKey = app?.apiKeys?.xai
+        ? safeDecrypt(app?.apiKeys?.xai)
+        : !plusTiers.includes(app?.tier || "")
+          ? process.env.XAI_API_KEY
+          : ""
+
+      if (xaiKey && failedKey !== "xai") {
+        const xaiProvider = createOpenAI({
+          apiKey: xaiKey,
+          baseURL: "https://api.x.ai/v1",
+        })
+        return {
+          provider: xaiProvider(agent.modelId.replace(/^x-ai\//, "")),
+          agentName: agent.name,
+          lastKey: "xai",
+        }
+      }
+
+      // Fallback to OpenRouter
+      const openrouterKeyForGrok = app?.apiKeys?.openrouter
+        ? safeDecrypt(app?.apiKeys?.openrouter)
+        : !plusTiers.includes(app?.tier || "")
+          ? process.env.OPENROUTER_API_KEY
+          : ""
+
+      if (openrouterKeyForGrok && failedKey !== "openrouter") {
+        const openrouterProvider = createOpenRouter({
+          apiKey: openrouterKeyForGrok,
+        })
+        const modelId = agent.modelId.startsWith("x-ai/")
+          ? agent.modelId
+          : `x-ai/${agent.modelId}`
+        return {
+          provider: openrouterProvider(modelId),
+          agentName: agent.name,
+          lastKey: "openrouter",
+        }
+      }
+
+      return {
+        provider: createOpenAI({
+          apiKey: "",
+          baseURL: "https://api.x.ai/v1",
+        })(agent.modelId),
         agentName: agent.name,
       }
     }

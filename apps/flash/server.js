@@ -326,7 +326,6 @@ const focus = {
   isStoreApp: false,
   mode: "focus",
   slug: "focus",
-  version: "26.11.33",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -1093,7 +1092,7 @@ export function isVexMode() {
 //   return {}
 // }
 
-const VERSION = "2.0.52"
+const VERSION = "2.0.54"
 // Constants
 const port = process.env.PORT || 5173
 const base = process.env.BASE || "/"

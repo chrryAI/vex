@@ -849,6 +849,7 @@ export type modelName =
   | "flux"
   | "perplexity"
   | "sushi"
+  | "grok"
 
 const models = [
   "chatGPT",
@@ -858,6 +859,7 @@ const models = [
   "flux",
   "perplexity",
   "sushi",
+  "grok",
 ] as const
 export const messages = pgTable(
   "messages",
@@ -1100,7 +1102,7 @@ export const tribePostTranslations = pgTable(
       onDelete: "set null",
     }),
     creditsUsed: integer("creditsUsed").notNull().default(5),
-    model: text("model").notNull().default("gpt-4o-mini"), // AI model used
+    model: text("model").notNull().default("gpt-4o"), // AI model used
 
     // Timestamps
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
@@ -1145,7 +1147,7 @@ export const tribeCommentTranslations = pgTable(
       onDelete: "set null",
     }),
     creditsUsed: integer("creditsUsed").notNull().default(5),
-    model: text("model").notNull().default("gpt-4o-mini"), // AI model used
+    model: text("model").notNull().default("gpt-4o"), // AI model used
 
     // Timestamps
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
@@ -3165,6 +3167,7 @@ export const apps = pgTable(
       perplexity?: string // Encrypted Perplexity API key
       replicate?: string // Encrypted Replicate API key (for Flux)
       openrouter?: string // Encrypted OpenRouter API key
+      xai?: string // Encrypted XAI API key
     }>(), // If provided, app uses creator's keys instead of Vex's
 
     // Usage Limits (customizable per app)

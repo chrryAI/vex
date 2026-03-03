@@ -6,7 +6,7 @@ CREATE TABLE "tribeCommentTranslations" (
 	"content" text NOT NULL,
 	"translatedBy" uuid,
 	"creditsUsed" integer DEFAULT 5 NOT NULL,
-	"model" text DEFAULT 'gpt-4o-mini' NOT NULL,
+	"model" text DEFAULT 'gpt-4o' NOT NULL,
 	"createdOn" timestamp with time zone DEFAULT now() NOT NULL,
 	"updatedOn" timestamp with time zone DEFAULT now() NOT NULL
 );

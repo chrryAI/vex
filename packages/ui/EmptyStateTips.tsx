@@ -8,16 +8,7 @@ import { useAuth } from "./context/providers/AuthProvider"
 import { useStyles } from "./context/StylesContext"
 import { useEmptyStateTipsStyles } from "./EmptyStateTips.styles"
 import { useResponsiveCount } from "./hooks/useResponsiveCount"
-import {
-  Button,
-  Div,
-  H3,
-  MotiView,
-  Section,
-  Span,
-  usePlatform,
-  useTheme,
-} from "./platform"
+import { Button, Div, H3, MotiView, Section, Span, useTheme } from "./platform"
 
 export default function EmptyStateTips({
   style,

@@ -86,8 +86,21 @@ Return the translations as JSON:`
             max_tokens: 4000,
           })
 
-          const translatedData = JSON.parse(response.choices[0].message.content)
+          const rawContent = response?.choices?.[0]?.message?.content
+          if (
+            typeof rawContent !== "string" ||
+            rawContent.trim().length === 0
+          ) {
+            throw new Error("Empty or non-text translation payload from model")
+          }
 
+          // Remove potential markdown code fences and surrounding whitespace
+          const content = rawContent
+            .replace(/^```json\s*/i, "")
+            .replace(/```\s*$/i, "")
+            .trim()
+
+          const translatedData = JSON.parse(content)
           Object.keys(translatedData).forEach((key) => {
             existing[key] = translatedData[key]
           })

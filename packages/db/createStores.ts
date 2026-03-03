@@ -8283,6 +8283,150 @@ You are an architecture expert. Design systems that grow with users, follow indu
   //   displayOrder: 7,
   // })
 
+  // ============================================
+  // 🚀 GROK TRIBE: NEXUS STORE
+  // ============================================
+
+  const {
+    getGrokPayload,
+    getBenjaminPayload,
+    getHarperPayload,
+    getLucasPayload,
+  } = await import("./src/data/grok")
+
+  const nexusStore = await getOrCreateStore({
+    slug: "nexus",
+    name: "Nexus",
+    title: "Nexus AI",
+    domain: "https://nexus.chrry.ai",
+    userId: admin.id,
+    parentStoreId: blossom.id,
+    visibility: "public" as const,
+    description:
+      "The official xAI Grok Tribe in the Vex ecosystem. Home to the most advanced frontier models for truth-seeking, logic, creativity, and humor.",
+  })
+
+  // 1. Grok (Leader)
+  let grokApp = await getApp({ slug: "grok" })
+  const grokPayloadBase = getGrokPayload({
+    userId: admin.id,
+    storeId: nexusStore.id,
+    parentAppIds: [chrry.id],
+  })
+  grokApp = await createOrUpdateApp({
+    app: { ...grokApp, ...grokPayloadBase, subtitle: "Tribe Leader" },
+  })
+  if (!grokApp) throw new Error("Failed to add Grok app")
+
+  await updateStore({
+    ...nexusStore,
+    appId: grokApp.id,
+    userId: admin.id,
+    guestId: null,
+  })
+
+  await seedAgentRPG(grokApp.id, {
+    intelligence: 90,
+    creativity: 85,
+    empathy: 80,
+    efficiency: 95,
+    level: 25,
+  })
+
+  // 2. Benjamin (Logic)
+  let benjaminApp = await getApp({ slug: "benjamin" })
+  const benjaminPayloadBase = getBenjaminPayload({
+    userId: admin.id,
+    storeId: nexusStore.id,
+    parentAppIds: [grokApp.id, chrry.id],
+  })
+  benjaminApp = await createOrUpdateApp({
+    app: {
+      ...benjaminApp,
+      ...benjaminPayloadBase,
+      subtitle: "Logic & Research",
+    },
+  })
+  if (!benjaminApp) throw new Error("Failed to add Benjamin app")
+  await seedAgentRPG(benjaminApp.id, {
+    intelligence: 100,
+    creativity: 40,
+    empathy: 30,
+    efficiency: 90,
+    level: 20,
+  })
+
+  // 3. Harper (Creativity)
+  let harperApp = await getApp({ slug: "harper" })
+  const harperPayloadBase = getHarperPayload({
+    userId: admin.id,
+    storeId: nexusStore.id,
+    parentAppIds: [grokApp.id, chrry.id],
+  })
+  harperApp = await createOrUpdateApp({
+    app: {
+      ...harperApp,
+      ...harperPayloadBase,
+      subtitle: "Creativity & Storytelling",
+    },
+  })
+  if (!harperApp) throw new Error("Failed to add Harper app")
+  await seedAgentRPG(harperApp.id, {
+    intelligence: 60,
+    creativity: 100,
+    empathy: 90,
+    efficiency: 70,
+    level: 20,
+  })
+
+  // 4. Lucas (Chaos)
+  let lucasApp = await getApp({ slug: "lucas" })
+  const lucasPayloadBase = getLucasPayload({
+    userId: admin.id,
+    storeId: nexusStore.id,
+    parentAppIds: [grokApp.id, chrry.id],
+  })
+  lucasApp = await createOrUpdateApp({
+    app: { ...lucasApp, ...lucasPayloadBase, subtitle: "Humor & Chaos" },
+  })
+  if (!lucasApp) throw new Error("Failed to add Lucas app")
+  await seedAgentRPG(lucasApp.id, {
+    intelligence: 75,
+    creativity: 95,
+    empathy: 50,
+    efficiency: 85,
+    level: 20,
+  })
+
+  // Install all in Nexus (Grok Featured)
+  await createOrUpdateStoreInstall({
+    storeId: nexusStore.id,
+    appId: grokApp.id,
+    featured: true,
+    displayOrder: 0,
+  })
+  await createOrUpdateStoreInstall({
+    storeId: nexusStore.id,
+    appId: benjaminApp.id,
+    displayOrder: 1,
+  })
+  await createOrUpdateStoreInstall({
+    storeId: nexusStore.id,
+    appId: harperApp.id,
+    displayOrder: 2,
+  })
+  await createOrUpdateStoreInstall({
+    storeId: nexusStore.id,
+    appId: lucasApp.id,
+    displayOrder: 3,
+  })
+
+  await createOrUpdateStoreInstall({
+    storeId: blossom.id,
+    appId: grokApp.id,
+    displayOrder: 0,
+  })
+
   // // ============================================
   // // DEMO: POPULAR AI APPS WITH NATIVE VERSIONS
   // // ============================================
@@ -8991,6 +9135,20 @@ You are an architecture expert. Design systems that grow with users, follow indu
       [chrry.id, vex.id, focus.id],
       vault.storeId,
     )
+
+  // Grok Tribe extends
+  if (grokApp)
+    await handleAppExtends(grokApp.id, [chrry.id, vex.id], nexusStore.id)
+  if (benjaminApp && grokApp)
+    await handleAppExtends(
+      benjaminApp.id,
+      [grokApp.id, chrry.id],
+      nexusStore.id,
+    )
+  if (harperApp && grokApp)
+    await handleAppExtends(harperApp.id, [grokApp.id, chrry.id], nexusStore.id)
+  if (lucasApp && grokApp)
+    await handleAppExtends(lucasApp.id, [grokApp.id, chrry.id], nexusStore.id)
 
   console.log("✅ All extends relationships configured")
 

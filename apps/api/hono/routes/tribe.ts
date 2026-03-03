@@ -258,7 +258,7 @@ app.get("/p", async (c) => {
       sortBy === "liked" ? member?.id || guest?.id || "anonymous" : "all"
     const tags = c.req.query("tags") // comma-separated tag list
     const id = c.req.query("id")
-    const cacheKey = `tribe:posts:${sortBy || "date"}:${order || "desc"}:${tribeId || "all"}:${tribeSlug || "all"}:${appId || "all"}:${id || "all"}:${search || ""}:${characterProfileIds || ""}:${tags || ""}:${pageSize || 10}:${page || 1}:${userKey}:language:${language || "en"}`
+    const cacheKey = `tribe:posts:sortBy:${sortBy || "date"}:order:${order || "desc"}:tribeId:${tribeId || "all"}:tribeSlug:${tribeSlug || "all"}:appId:${appId || "all"}:id:${id || "all"}:search:${search || ""}:characterProfileIds:${characterProfileIds || ""}:tags:${tags?.split(",") || ""}:pageSize:${pageSize || 10}:page:${page || 1}:userKey:${userKey}:language:${language || "en"}`
 
     let result = null
 

@@ -18,44 +18,57 @@ const locales = localesArray.filter((l) => l !== defaultLocale)
  * Zarathustra also gets longer charLimit (2000) and more tokens (15000).
  */
 
-const COOLDOWN_T1 = 15
-const COOLDOWN_T2 = 30
+const COOLDOWN_T1 = 30
+const COOLDOWN_T2 = 45
 const COOLDOWN_T3 = 60
 
 const TIER1_SLUGS = new Set([
+  "zarathustra",
   "chrry",
   "sushi",
   "vault",
   "vex",
-  "burn",
   "bloom",
+  "peach",
   "focus",
-  "pear",
   "atlas",
   "grape",
+  "grok",
+  "popcorn",
+  "claude",
+  "search",
+  "perplexity",
+  "nebula",
+  "quantumlab",
+  "starmap",
+  "cosmos",
+  "architect",
+  "writer",
+  "coder",
+  "inception",
 ])
 
 const TIER2_SLUGS = new Set([
-  "zarathustra",
+  "pear",
+  "burn",
   "jules",
-  "cosmos",
-  "nebula",
   "meditations",
+  "lucas",
+  "harper",
+  "benjamin",
+  "debugger",
   "1984",
   "dune",
   "fightClub",
-  "inception",
   "pulpFiction",
   "hungerGames",
   "amsterdam",
   "istanbul",
   "tokyo",
   "newYork",
-  "bloom",
-  "atlas",
-  "vault",
-  "starmap",
-  "quantumlab",
+  "news",
+  "scholar",
+  "reviewer",
   "researcher",
   // "chrry",
   // "grape",

@@ -15418,7 +15418,7 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'gpt-4o-mini'"
+          "default": "'gpt-4o'"
         },
         "createdOn": {
           "name": "createdOn",

@@ -46,16 +46,29 @@ interface AutoTranslateOptions {
 function stripCodeFence(raw: string): string {
   let s = raw.trim()
   if (s.startsWith("```")) {
-    const nl = s.indexOf("\n")
-    s = nl !== -1 ? s.slice(nl + 1) : s.slice(3)
+    const nextNewline = s.indexOf("\n")
+    if (nextNewline !== -1) {
+      s = s.slice(nextNewline + 1)
+    } else {
+      s = s.slice(3)
+    }
   }
-  if (s.endsWith("```")) s = s.slice(0, s.length - 3)
+
+  // Remove trailing fence if it exists, but handle truncated output where it might be missing
+  if (s.endsWith("```")) {
+    s = s.slice(0, s.length - 3)
+  }
+
+  // If the string starts with { but doesn't end with }, it's truncated.
+  // We can try to close it if it's simple, but JSON.parse will still fail usually.
+  // The goal of JSON mode is to avoid this entirely or get a parseable prefix.
+
   return s.trim()
 }
 
 /**
  * Bulk-translate multiple tribe posts and comments following a scheduled job.
- * Economical: 1 GPT-4o-mini call translates ALL items to ALL languages at once.
+ * Economical: 1 gpt-4o call translates ALL items to ALL languages at once.
  */
 export async function autoTranslateTribeContent({
   appId,
@@ -164,13 +177,15 @@ export async function autoTranslateTribeContent({
     })
     .join("\n\n---\n\n")
 
-  const prompt = `You are a high-quality translator for Tribe, an AI social network.
-Translate the following items. Each item specifies which target languages are needed.
+  const prompt = `You are an expert multilingual translator for Tribe, an AI-powered social network.
+Your goal is to provide high-quality, natural-sounding translations that maintain the original tone, context, and markdown formatting.
 
 RULES:
-- Maintain original tone and markdown
-- If source language matches target, return original text
-- Return ONLY valid JSON
+- Handle each item for ALL requested target languages.
+- NEVER return the original English text if the target language is different. Even if the words are similar, translate them into the target language's natural equivalent.
+- Maintain original Markdown links, bolding, and structure.
+- Do NOT translate product names like "Vex" or "Nexus".
+- Return ONLY valid JSON matching the schema below.
 
 ${postsSection ? `### POSTS TO TRANSLATE:\n${postsSection}\n\n` : ""}
 ${commentsSection ? `### COMMENTS TO TRANSLATE:\n${commentsSection}\n\n` : ""}
@@ -178,28 +193,43 @@ ${commentsSection ? `### COMMENTS TO TRANSLATE:\n${commentsSection}\n\n` : ""}
 RESPONSE FORMAT (JSON):
 {
   "posts": {
-    "post_id": { "nl": { "title": "...", "content": "..." }, "fr": { ... } }
+    "post_id": {
+      "nl": { "title": "Translated Title", "content": "Translated Content" },
+      "fr": { "title": "Titre Traduit", "content": "Contenu Traduit" }
+    }
   },
   "comments": {
-    "comment_id": { "nl": { "content": "..." }, "fr": { ... } }
+    "comment_id": {
+      "nl": { "content": "Vertaalde Reactie" },
+      "fr": { "content": "Commentaire Traduit" }
+    }
   }
 }`
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.1,
-      max_tokens: 12000,
+      max_completion_tokens: 12000,
+      response_format: { type: "json_object" },
     })
 
     const raw = response?.choices?.at(0)?.message?.content ?? "{}"
-    const parsed = JSON.parse(stripCodeFence(raw)) as {
+    let parsed: {
       posts?: Record<
         string,
         Record<string, { title?: string; content?: string }>
       >
       comments?: Record<string, Record<string, { content?: string }>>
+    } = {}
+
+    try {
+      parsed = JSON.parse(stripCodeFence(raw))
+    } catch (parseErr) {
+      console.error("❌ Bulk auto-translate: Failed to parse LLM JSON response")
+      console.error("Raw content:", raw)
+      throw parseErr // Re-throw to be caught by the outer catch block
     }
 
     // 5. Save results
@@ -220,10 +250,9 @@ RESPONSE FORMAT (JSON):
           if (!t) continue
           itemTranslated = true
 
-          // 🏷️ Add language prefix to title for better feed visibility/SEO
-          const title = t.title || post.title
-          const prefixedTitle =
-            lang === "en" ? title : `[${lang.toUpperCase()}] ${title}`
+          // 🏷️ Use the translated title directly (removed prefixing for better UX)
+          const title = t.title || post.title || ""
+          const finalTitle = title.trim()
 
           saves.push(
             db
@@ -231,10 +260,10 @@ RESPONSE FORMAT (JSON):
               .values({
                 postId,
                 language: lang,
-                title: prefixedTitle,
+                title: finalTitle,
                 content: t.content || post.content,
                 creditsUsed: 0,
-                model: "gpt-4o-mini",
+                model: "gpt-4o",
               })
               .onConflictDoNothing(),
           )
@@ -264,7 +293,7 @@ RESPONSE FORMAT (JSON):
                 language: lang,
                 content: t.content || comment.content,
                 creditsUsed: 0,
-                model: "gpt-4o-mini",
+                model: "gpt-4o",
               })
               .onConflictDoNothing(),
           )

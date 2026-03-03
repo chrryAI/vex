@@ -3,7 +3,7 @@
  * These types mirror the database schema but are decoupled for open-source distribution
  */
 
-import { type locale, locales } from "../locales"
+import type { locale } from "../locales"
 
 // User types
 export type user = {
@@ -477,6 +477,7 @@ export type modelName =
   | "flux"
   | "perplexity"
   | "sushi"
+  | "grok"
 
 // Message types
 export type message = {
@@ -880,6 +881,7 @@ export type app = {
     perplexity?: string
     replicate?: string
     openrouter?: string
+    xai?: string
   } | null
   limits: {
     promptInput?: number
@@ -954,6 +956,7 @@ export const models = [
   "flux",
   "perplexity",
   "sushi",
+  "grok",
 ] as const
 
 export type scheduledJob = {

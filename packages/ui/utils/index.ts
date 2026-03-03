@@ -425,7 +425,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "2.0.52"
+export const VERSION = config.version || "2.0.54"
 export type instructionBase = {
   id: string
   title: string
@@ -702,6 +702,20 @@ export const MAX_FILE_SIZES = {
     audio: 500 * 1024 * 1024, // 500MB - Gemini Pro 2.5 audio processing
     video: 1000 * 1024 * 1024, // 1GB - Gemini Pro 2.5 video analysis (within 2GB limit)
     text: 500 * 1024 * 1024, // 300MB - Gemini Pro 2.5 text processing
+  },
+  flux: {
+    pdf: 0,
+    image: 20 * 1024 * 1024, // 20MB - Flux Vision/Generation limit
+    audio: 0,
+    video: 0,
+    text: 0,
+  },
+  grok: {
+    pdf: 50 * 1024 * 1024, // 50MB - matches other frontier models
+    image: 20 * 1024 * 1024, // 20MB - matches other frontier models
+    audio: 25 * 1024 * 1024, // 25MB - matches other frontier models
+    video: 100 * 1024 * 1024, // 100MB - matches other frontier models
+    text: 50 * 1024 * 1024, // 50MB - matches other frontier models
   },
 }
 
