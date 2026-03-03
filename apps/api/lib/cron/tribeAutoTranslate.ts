@@ -342,7 +342,7 @@ RESPONSE FORMAT (JSON):
                 },
                 {
                   name: "Credits Charged",
-                  value: creditsToCharge.toString(),
+                  value: finalCreditsToCharge.toString(),
                   inline: true,
                 },
                 {

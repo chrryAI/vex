@@ -1,5 +1,7 @@
+import { randomInt } from "node:crypto"
 import { eq, sql } from "drizzle-orm"
 import { db } from "./index"
+
 import {
   aiAgents,
   apps,
@@ -11,11 +13,12 @@ import {
 
 // Helper for random picking
 function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]! // NOSONAR
+  if (arr.length === 0) throw new Error("Cannot pick from empty array")
+  return arr[randomInt(arr.length)]!
 }
 
 function getRandomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min // NOSONAR
+  return randomInt(min, max + 1)
 }
 
 // ─── Feedback pool ─────────────────────────────────────────────────────────────
@@ -238,67 +241,69 @@ export async function seedPearFeedback() {
       const agent = pick(agents)
 
       // Time randomization (last 60 days)
-      const daysBack = Math.random() * 60
-      const hoursBack = Math.random() * 24
+      const daysBack = randomInt(60)
+      const hoursBack = randomInt(24)
+      const minutesBack = randomInt(60)
       const createdOn = new Date(
-        Date.now() - (daysBack * 24 + hoursBack) * 60 * 60 * 1000,
+        Date.now() -
+          (daysBack * 24 * 60 + hoursBack * 60 + minutesBack) * 60 * 1000,
       )
 
-      // 1. Insert Pear Feedback
-      const [feedback] = await db
-        .insert(pearFeedback)
-        .values({
-          appId: app.id,
+      // Wrap all dependent writes in a single transaction
+      await db.transaction(async (tx) => {
+        // 1. Insert Pear Feedback
+        const [feedback] = await tx
+          .insert(pearFeedback)
+          .values({
+            appId: app.id,
+            userId: feedbackUser.id,
+            content: template.content,
+            feedbackType: template.feedbackType,
+            category: template.category,
+            sentimentScore: template.sentimentScore,
+            specificityScore: template.specificityScore,
+            actionabilityScore: template.actionabilityScore,
+            emotionalTags: template.emotionalTags ?? undefined,
+            firstImpression: template.firstImpression ?? randomInt(10) > 7,
+            status: pick(["reviewed", "in_progress", "resolved"]),
+            createdOn,
+            updatedOn: createdOn,
+          })
+          .returning()
+
+        // 2. Insert Credit Usage (Reward for User)
+        const commission = Math.floor(template.credits * 0.1)
+        const userReward = template.credits - commission
+
+        await tx.insert(creditUsages).values({
           userId: feedbackUser.id,
-          content: template.content,
-          feedbackType: template.feedbackType,
-          category: template.category,
-          sentimentScore: template.sentimentScore,
-          specificityScore: template.specificityScore,
-          actionabilityScore: template.actionabilityScore,
-          emotionalTags: template.emotionalTags ?? undefined,
-          firstImpression: template.firstImpression ?? Math.random() > 0.8,
-          status: pick(["reviewed", "in_progress", "resolved"]),
-          createdOn,
-          updatedOn: createdOn,
-        })
-        .returning()
-
-      // 2. Insert Credit Usage (Reward for User)
-      // cost is negative for rewards
-      const commission = Math.floor(template.credits * 0.1)
-      const userReward = template.credits - commission
-
-      await db.insert(creditUsages).values({
-        userId: feedbackUser.id,
-        appId: app.id,
-        agentId: agent.id,
-        creditCost: -userReward,
-        messageType: "pear_feedback_reward",
-        metadata: {
           appId: app.id,
-          credits: userReward,
-          commission,
-        },
-        // createdOn field doesn't exist in creditUsages?
-        // Based on schema it has updatedOn and createdOn? Wait let me recall.
-      })
+          agentId: agent.id,
+          creditCost: -userReward,
+          messageType: "pear_feedback_reward",
+          metadata: {
+            appId: app.id,
+            credits: userReward,
+            commission,
+          },
+        })
 
-      // 3. Insert Feedback Transaction (Cross-reference for analytics)
-      await db.insert(feedbackTransactions).values({
-        appId: app.id,
-        appOwnerId: app.userId || feedbackUser.id,
-        feedbackUserId: feedbackUser.id,
-        amount: userReward,
-        commission: commission,
-        createdOn,
-      })
+        // 3. Insert Feedback Transaction (Cross-reference for analytics)
+        await tx.insert(feedbackTransactions).values({
+          appId: app.id,
+          appOwnerId: app.userId || feedbackUser.id,
+          feedbackUserId: feedbackUser.id,
+          amount: userReward,
+          commission: commission,
+          createdOn,
+        })
 
-      // 4. Update User Profile Counter
-      await db
-        .update(users)
-        .set({ pearFeedbackCount: sql`${users.pearFeedbackCount} + 1` })
-        .where(eq(users.id, feedbackUser.id))
+        // 4. Update User Profile Counter
+        await tx
+          .update(users)
+          .set({ pearFeedbackCount: sql`${users.pearFeedbackCount} + 1` })
+          .where(eq(users.id, feedbackUser.id))
+      })
 
       inserted++
       if (inserted % 100 === 0) {

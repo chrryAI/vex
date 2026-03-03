@@ -7968,7 +7968,15 @@ export const getTribePosts = async ({
           sharesCount: row.post.sharesCount,
           createdOn: row.post.createdOn,
           updatedOn: row.post.updatedOn,
-          languages: translationLangs.map((t) => t.language) as locale[],
+          languages: Array.from(
+            new Set(
+              translationLangs
+                .map((t) => t.language)
+                .filter((lang): lang is locale =>
+                  locales.includes(lang as locale),
+                ),
+            ),
+          ),
           app: row.app
             ? await (async () => {
                 const appId = row.app?.id
