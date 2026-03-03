@@ -85,6 +85,7 @@ import console from "../../utils/log"
 import {
   getSiteConfig,
   type SiteConfig,
+  tribe as tribeSiteConfig,
   whiteLabels,
 } from "../../utils/siteConfig"
 import ago from "../../utils/timeAgo"
@@ -2021,23 +2022,8 @@ export function AuthProvider({
     "vault",
   ]
 
-  const chromeWebStoreUrl =
-    (siteConfigApp as any)?.chromeWebStoreUrl ||
-    app?.chromeWebStoreUrl ||
-    storeApp?.chromeWebStoreUrl ||
-    "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
-
   const withFallback = "chrry"
   const minioUrl = "https://minio.chrry.dev/chrry-installs/installs"
-  const downloadUrl = canShowAllTribe
-    ? `${minioUrl}/Tribe.dmg`
-    : app && installs.includes(app?.slug || "")
-      ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
-      : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
-        ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
-        : installs.includes(withFallback)
-          ? `${minioUrl}/${capitalizeFirstLetter(withFallback)}.dmg`
-          : ""
 
   const isBaseAppZarathustra = baseApp?.slug === "zarathustra"
 
@@ -2306,6 +2292,25 @@ export function AuthProvider({
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
   const showTribeProfileInternal = canBeTribeProfile
+
+  const downloadUrl =
+    canShowAllTribe && showTribe
+      ? `${minioUrl}/Tribe.dmg`
+      : app && installs.includes(app?.slug || "")
+        ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
+        : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
+          ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
+          : installs.includes(withFallback)
+            ? `${minioUrl}/${capitalizeFirstLetter(withFallback)}.dmg`
+            : ""
+
+  const chromeWebStoreUrl =
+    canShowAllTribe && showTribe
+      ? tribeSiteConfig.chromeWebStoreUrl
+      : (siteConfigApp as any)?.chromeWebStoreUrl ||
+        app?.chromeWebStoreUrl ||
+        storeApp?.chromeWebStoreUrl ||
+        "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
 
   const showTribeProfileMemo = useMemo(
     () => showTribeProfileInternal,
