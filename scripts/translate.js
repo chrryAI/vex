@@ -80,19 +80,27 @@ Return the translations as JSON:`
 
         try {
           const response = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: "gpt-4",
             messages: [{ role: "user", content: prompt }],
             temperature: 0.1,
-            max_completion_tokens: 4000,
-            response_format: { type: "json_object" },
+            max_tokens: 4000,
           })
 
-          let content = response.choices[0].message.content
-          // Remove potential markdown code blocks
-          content = content.replace(/^```json\s*/, "").replace(/```$/, "")
+          const rawContent = response?.choices?.[0]?.message?.content
+          if (
+            typeof rawContent !== "string" ||
+            rawContent.trim().length === 0
+          ) {
+            throw new Error("Empty or non-text translation payload from model")
+          }
+
+          // Remove potential markdown code fences and surrounding whitespace
+          const content = rawContent
+            .replace(/^```json\s*/i, "")
+            .replace(/```\s*$/i, "")
+            .trim()
 
           const translatedData = JSON.parse(content)
-
           Object.keys(translatedData).forEach((key) => {
             existing[key] = translatedData[key]
           })

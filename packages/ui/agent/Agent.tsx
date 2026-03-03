@@ -146,7 +146,7 @@ export default function Agent({
     deepseek: "deepSeek",
     perplexity: "perplexity",
     flux: "flux",
-    grok: "grok",
+    xai: "grok",
   }
 
   // Check if any enabled capability is not supported by agents with API keys

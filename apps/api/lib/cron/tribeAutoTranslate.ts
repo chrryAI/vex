@@ -55,7 +55,7 @@ function stripCodeFence(raw: string): string {
 
 /**
  * Bulk-translate multiple tribe posts and comments following a scheduled job.
- * Economical: 1 GPT-4o call translates ALL items to ALL languages at once.
+ * Economical: 1 gpt-4o call translates ALL items to ALL languages at once.
  */
 export async function autoTranslateTribeContent({
   appId,
