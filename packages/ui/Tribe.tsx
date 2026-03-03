@@ -1,7 +1,14 @@
 "use client"
 
 import type React from "react"
-import { type RefObject, useCallback, useEffect, useRef, useState } from "react"
+import {
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { FaGithub } from "react-icons/fa"
 import A from "./a/A"
 import { COLORS, useAppContext } from "./context/AppContext"
@@ -46,6 +53,7 @@ import isOwner from "./utils/isOwner"
 const FocusButton = FocusButtonMini
 
 import AppLink from "./AppLink"
+import Checkbox from "./Checkbox"
 import ConfirmButton from "./ConfirmButton"
 import {
   ArrowLeft,
@@ -904,6 +912,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     plausible,
     setIsPear,
     chrry,
+    burnApp,
+    burn,
+    setBurn,
+    back,
+    setDisplayedApps,
   } = useAuth()
   const { setAppStatus } = useApp()
   const { isExtension, isFirefox, viewPortWidth } = usePlatform()
@@ -961,7 +974,24 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const maxTribes = tribes?.tribes?.slice(0, 25) || []
   const TRAIN = owner ? `Train {{name}}` : `Try {{name}}`
 
-  const storeApps = app?.store?.apps
+  const storeApps = useMemo(() => {
+    return (
+      app?.store?.apps
+        ?.filter((item) => item.id !== burnApp?.id)
+        .concat(back || []) || []
+    )
+  }, [app?.store?.apps, burnApp?.id, back])
+
+  useEffect(() => {
+    if (storeApps.length > 0) {
+      setDisplayedApps((prev) => {
+        const newApps = prev.filter(
+          (app) => !storeApps.some((p) => p.id === app.id),
+        )
+        return [...newApps, ...storeApps]
+      })
+    }
+  }, [storeApps, setDisplayedApps])
 
   const FeedBack = useCallback(
     ({ style }: { style?: React.CSSProperties } = {}) => (
@@ -1612,6 +1642,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           alignItems: "center",
                           gap: 10,
                           marginBottom: "0.5rem",
+                          flexWrap: "wrap",
                         }}
                       >
                         {app?.mainThreadId && owner && (
@@ -1622,6 +1653,45 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             🧬
                           </A>
                         )}
+                        {burnApp ? (
+                          <Div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 5,
+                              position: "relative",
+                              bottom: "0.05rem",
+                            }}
+                          >
+                            {app?.id === burnApp.id ? (
+                              <Checkbox
+                                style={{
+                                  marginLeft: "auto",
+                                  fontSize: ".85rem",
+                                }}
+                                checked={burn}
+                                onChange={() => {
+                                  setBurn(!burn)
+                                }}
+                              >
+                                {t("Private Chat")}
+                              </Checkbox>
+                            ) : (
+                              <AppLink
+                                icon={<>🔥</>}
+                                app={burnApp}
+                                style={{
+                                  fontSize: ".95rem",
+                                  marginRight: 1,
+                                  color: COLORS.red,
+                                }}
+                              >
+                                {t("Burn")}
+                              </AppLink>
+                            )}
+                          </Div>
+                        ) : null}
+
                         <Instructions
                           showButton={false}
                           showDownloads={true}
@@ -1631,6 +1701,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             marginTop: 0,
                           }}
                         />
+
                         <FocusButton />
                       </Div>
                     ) : null}
@@ -1643,7 +1714,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         justifyContent: "center",
                       }}
                     >
-                      {storeApps?.map((item, i) => {
+                      {storeApps?.map((item: appWithStore, i: number) => {
                         return (
                           <MotiView
                             key={`store-app${item.id}`}

@@ -142,12 +142,14 @@ const CustomToolbar = (
         <Button
           className={clsx("inverted", styles.arrowButton)}
           onClick={() => onNavigate("PREV")}
+          aria-label={t("Previous")}
         >
           <ArrowLeftIcon size={16} />
         </Button>
         <Button
           className={clsx("inverted", styles.arrowButton)}
           onClick={() => onNavigate("NEXT")}
+          aria-label={t("Next")}
         >
           <ArrowRightIcon size={16} />
         </Button>
@@ -900,6 +902,7 @@ export default function Calendar({
           <div className={clsx(styles.dateHeader, device && styles[device])}>
             <Button
               className={clsx("link", styles.addEventButton)}
+              aria-label={t("Add event")}
               onClick={(e) => {
                 e.stopPropagation()
                 // Get current time for the selected date
