@@ -119,7 +119,7 @@ export const chat = async ({
   page,
   isMember,
   credits = 10,
-  model = "GPT-4o",
+  model = "gpt-4o",
 }: ChatTestParams) => {
   // Test message sending
   const messageInput = page.getByTestId("message-input")
