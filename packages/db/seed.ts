@@ -1860,11 +1860,11 @@ const prod = async () => {
   })
   if (!admin) throw new Error("Admin user not found")
   // const agents = await createAgents()
-  // const { vex } = await createStores({ user: admin })
+  const { vex } = await createStores({ user: admin })
 
   // await seedPearFeedback()
 
-  await seedScheduledTribeJobs({ admin })
+  // await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 
