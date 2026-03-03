@@ -145,6 +145,7 @@ export default function Agent({
     deepseek: "deepSeek",
     perplexity: "perplexity",
     flux: "flux",
+    grok: "grok",
   }
 
   // Check if any enabled capability is not supported by agents with API keys
@@ -615,6 +616,7 @@ export default function Agent({
                             { value: "chatGPT", label: "ChatGPT" },
                             { value: "gemini", label: "Gemini" },
                             { value: "perplexity", label: "Perplexity" },
+                            { value: "grok", label: "Grok" },
                             // { value: "new", label: "(New)" },
                           ]}
                           id="defaultModel"
@@ -1622,6 +1624,26 @@ export default function Agent({
                           dataTestId="perplexity-api-key"
                           type="password"
                           placeholder="pplx-..."
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      )}
+                    />
+                  </Div>
+
+                  {/* Groq Key */}
+                  <Div style={{ ...utilities.column.style }}>
+                    <Label>
+                      <Groq /> Groq
+                    </Label>
+                    <Controller
+                      name="apiKeys.groq"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          dataTestId="groq-api-key"
+                          type="password"
+                          placeholder="gsk_..."
                           {...field}
                           value={field.value || ""}
                         />

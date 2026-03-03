@@ -6,7 +6,15 @@ import { CircleFlag } from "react-circle-flags"
 import { COLORS } from "./context/AppContext"
 import { useApp } from "./context/providers"
 import Img from "./Img"
-import { Claude, DeepSeek, Flux, Gemini, OpenAI, Perplexity } from "./icons"
+import {
+  Claude,
+  DeepSeek,
+  Flux,
+  Gemini,
+  Grok,
+  OpenAI,
+  Perplexity,
+} from "./icons"
 import { getImageSrc } from "./lib"
 import { Span, Text } from "./platform"
 import type { appWithStore, store } from "./types"
@@ -56,6 +64,7 @@ type ImageProps = {
     | "claude"
     | "chatGPT"
     | "gemini"
+    | "grok"
     | "flux"
     | "chrry"
     | "raspberry"
@@ -117,6 +126,7 @@ export default function ImageComponent(props: ImageProps) {
     "gemini",
     "flux",
     "perplexity",
+    "grok",
   ]
   const isAgent =
     (slug && agents.includes(slug)) ||
@@ -329,6 +339,10 @@ export default function ImageComponent(props: ImageProps) {
       <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
         <Perplexity color={color} size={size} />
       </Span>
+    ) : app.defaultModel === "grok" ? (
+      <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+        <Grok color={color} size={size} />
+      </Span>
     ) : null
   }
 
@@ -357,6 +371,10 @@ export default function ImageComponent(props: ImageProps) {
       ) : slug && ["academic", "perplexity", "news"].includes(slug) ? (
         <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
           <Perplexity color={color} size={size} />
+        </Span>
+      ) : slug === "grok" ? (
+        <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
+          <Grok color={color} size={size} />
         </Span>
       ) : null
 

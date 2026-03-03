@@ -1323,6 +1323,8 @@ app.patch("/:id", async (c) => {
           | "claude"
           | "gemini"
           | "flux"
+          | "sushi"
+          | "grok"
           | "perplexity"
           | null,
       },

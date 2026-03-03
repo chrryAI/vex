@@ -158,6 +158,7 @@ interface AppFormContextType {
       perplexity?: string
       replicate?: string
       openrouter?: string
+      xai?: string
     }
     isDefaultValues?: boolean
     canSubmit: boolean

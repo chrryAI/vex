@@ -477,6 +477,7 @@ export type modelName =
   | "flux"
   | "perplexity"
   | "sushi"
+  | "grok"
 
 // Message types
 export type message = {
@@ -880,6 +881,7 @@ export type app = {
     perplexity?: string
     replicate?: string
     openrouter?: string
+    xai?: string
   } | null
   limits: {
     promptInput?: number
@@ -954,6 +956,7 @@ export const models = [
   "flux",
   "perplexity",
   "sushi",
+  "grok",
 ] as const
 
 export type scheduledJob = {

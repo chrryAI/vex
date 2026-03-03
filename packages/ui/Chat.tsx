@@ -58,6 +58,7 @@ import {
   Gemini,
   Globe,
   GlobeLock,
+  Grok,
   HardDrive,
   ImageIcon,
   Info,
@@ -3148,6 +3149,8 @@ export default function Chat({
                           <Perplexity size={18} />
                         ) : agent.name === "sushi" ? (
                           <Img icon="sushi" size={22} />
+                        ) : agent.name === "grok" ? (
+                          <Grok size={18} />
                         ) : null}{" "}
                         {agent.displayName}
                       </Button>
@@ -4358,6 +4361,8 @@ export default function Chat({
                             <Flux color="var(--accent-6)" size={22} />
                           ) : selectedAgent.name === "perplexity" ? (
                             <Perplexity color="var(--accent-6)" size={22} />
+                          ) : selectedAgent.name === "grok" ? (
+                            <Grok color="var(--accent-6)" size={22} />
                           ) : selectedAgent.name === "sushi" ? (
                             <Img icon="sushi" size={22} />
                           ) : null}
@@ -4406,6 +4411,8 @@ export default function Chat({
                               <Flux color="var(--accent-6)" size={22} />
                             ) : debateAgent.name === "perplexity" ? (
                               <Perplexity color="var(--accent-6)" size={22} />
+                            ) : debateAgent.name === "grok" ? (
+                              <Grok color="var(--accent-6)" size={22} />
                             ) : debateAgent.name === "sushi" ? (
                               <Img icon="sushi" size={22} />
                             ) : null}
