@@ -1752,8 +1752,6 @@ export function AuthProvider({
     if (path === "/" && !showFocus) return undefined
 
     const matchedApp = storeApps?.find((item) => getAppSlug(item) === pathname)
-    console.log(`🚀 ~ pathname:`, pathname)
-    console.log(`🚀 ~ matchedApp:`, matchedApp)
 
     return matchedApp
   }
@@ -2651,8 +2649,6 @@ export function AuthProvider({
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
-    console.log(`🚀 ~ useEffect ~ baseApp:`, baseApp, storeApps)
-
     if (!baseApp) return
     if (!storeApps.length || (!thread && threadId)) return
 
@@ -2924,7 +2920,6 @@ export function AuthProvider({
   const fp = searchParams.get("fp")
 
   const [displayedApps, setDisplayedApps] = useState<appWithStore[]>([])
-  console.log(`🚀 ~ displayedApps:`, displayedApps)
 
   // Find last navigated app that's not in displayedApps (anchor app)
   const lastAnchorApp = useMemo(() => {
@@ -2961,11 +2956,6 @@ export function AuthProvider({
     !apps.some((x) => x.id === lastApp?.id) && lastApp?.id !== app?.id
       ? lastApp
       : undefined
-
-  console.log(`🚀 ~ lastApp:`, lastApp)
-  console.log(`🚀 ~ lastAnchorApp:`, lastAnchorApp)
-
-  console.log(`🚀 ~ back:`, back)
 
   useEffect(() => {
     if (searchParams.get("auth_token")) {

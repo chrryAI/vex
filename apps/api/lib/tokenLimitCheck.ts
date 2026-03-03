@@ -44,6 +44,14 @@ const MODEL_LIMITS: Record<string, ModelLimits> = {
   "sonar-pro": { maxTokens: 200000, name: "Sonar Pro" },
   "perplexity/sonar-pro": { maxTokens: 200000, name: "Sonar Pro" },
 
+  // Grok models
+  "grok-4-1-fast": { maxTokens: 128000, name: "Grok 4.1 Fast" },
+  "grok-4-1-fast-reasoning": {
+    maxTokens: 128000,
+    name: "Grok 4.1 Fast Reasoning",
+  },
+  "grok-4-1": { maxTokens: 128000, name: "Grok 4.1" },
+
   // Flux model
   "black-forest-labs/flux-schnell": { maxTokens: 4000, name: "Flux Schnell" },
 }

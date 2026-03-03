@@ -261,7 +261,7 @@ async function scoreSlots({
     return slots.map((slot) => ({
       ...slot,
       score: calculateHeuristicScore(slot, campaign),
-      recommendedBid: slot.creditsPerHour,
+      recommendedBid: Math.max(slot.creditsPerHour, slot.minAuctionBid || 0),
       confidence: 0.5,
       bidReason: "Heuristic scoring (AI unavailable)",
       predictedROI: 0,
@@ -279,6 +279,7 @@ async function scoreSlots({
           traffic: slot.averageTraffic,
           isPrimeTime: slot.isPrimeTime,
           currentPrice: slot.creditsPerHour,
+          minAuctionBid: slot.minAuctionBid || 0,
         },
         campaign: {
           goal: campaign.optimizationGoal,
@@ -310,6 +311,8 @@ Evaluate this slot and provide:
 3. Confidence (0-1): How confident are you?
 4. Reason: Why this score/bid?
 5. Predicted ROI: Expected return on investment
+
+NOTE: recommendedBid MUST be at least ${slot.minAuctionBid || 0} credits.
 
 Consider:
 - Store traffic vs price
@@ -371,10 +374,13 @@ Return ONLY JSON:
 
       scoredSlots.push({
         ...slot,
-        score: parsed.score || 0,
-        recommendedBid: parsed.recommendedBid || slot.creditsPerHour,
-        confidence: parsed.confidence || 0.5,
-        bidReason: parsed.reason || "AI evaluation",
+        score: Math.min(100, Math.max(0, parsed.score || 0)),
+        recommendedBid: Math.max(
+          parsed.recommendedBid || slot.creditsPerHour,
+          slot.minAuctionBid || 0,
+        ),
+        confidence: Math.min(1, Math.max(0, parsed.confidence || 0.5)),
+        bidReason: parsed.reason || "AI scoring",
         predictedROI: parsed.predictedROI || 0,
       })
 

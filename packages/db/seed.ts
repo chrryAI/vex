@@ -192,14 +192,14 @@ async function createAgents() {
 
   const grokAgent = await createAiAgent({
     name: "grok",
-    displayName: "Grok 4",
-    version: "4.0",
+    displayName: "Grok 4.1 Fast",
+    version: "4.1",
     apiURL: "https://api.x.ai/v1/chat/completions",
     state: "active",
-    description: "xAI's latest frontier model with 256k context and reasoning.",
-    creditCost: 4,
+    description: "xAI's latest frontier model with reasoning.",
+    creditCost: 3,
     authorization: "all",
-    modelId: "x-ai/grok-4",
+    modelId: "x-ai/grok-4-1-fast-reasoning",
     maxPromptSize: 256000,
     order: 4,
     capabilities: {
@@ -1859,7 +1859,7 @@ const prod = async () => {
     email: isProd || isReplica ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  // const agents = await createAgents()
+  const agents = await createAgents()
   const { vex } = await createStores({ user: admin })
 
   // await seedPearFeedback()

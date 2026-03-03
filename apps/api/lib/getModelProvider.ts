@@ -52,7 +52,12 @@ export async function getModelProvider(
     | "openrouter"
     | string = "deepSeek",
   canReason = true,
-): Promise<{ provider: LanguageModel; agentName: string; lastKey?: string }> {
+): Promise<{
+  provider: LanguageModel
+  modelId: string
+  agentName: string
+  lastKey?: string
+}> {
   // const name = agentName === "sushi" && !canReason ? "deepSeek" : agentName
 
   const appApiKeys = app?.apiKeys || {}
@@ -88,6 +93,7 @@ export async function getModelProvider(
         const deepseekProvider = createDeepSeek({ apiKey: deepseekKey })
         return {
           provider: deepseekProvider("deepseek-chat"),
+          modelId: "deepseek-chat",
           agentName: agent.name,
           lastKey: "deepSeek",
         }
@@ -109,6 +115,7 @@ export async function getModelProvider(
           : `deepseek/${agent.modelId}`
         return {
           provider: openrouterProvider(modelId),
+          modelId,
           agentName: agent.name,
           lastKey: "openrouter",
         }
@@ -126,6 +133,7 @@ export async function getModelProvider(
         const openaiProvider = createOpenAI({ apiKey: chatgptKey })
         return {
           provider: openaiProvider("gpt-4o"),
+          modelId: "gpt-4o",
           agentName: "chatGPT",
           lastKey: "chatGPT",
         }
@@ -135,6 +143,7 @@ export async function getModelProvider(
       console.error("❌ No API keys available for DeepSeek or ChatGPT fallback")
       return {
         provider: createDeepSeek({ apiKey: "" })(agent.modelId),
+        modelId: agent.modelId,
         agentName: agent.name,
       }
     }
@@ -153,10 +162,10 @@ export async function getModelProvider(
 
       if (sushiKey && failedKey !== "deepSeek") {
         const sushiProvider = createDeepSeek({ apiKey: sushiKey })
+        const modelId = canReason ? "deepseek-reasoner" : "deepseek-chat"
         return {
-          provider: sushiProvider(
-            canReason ? "deepseek-reasoner" : "deepseek-chat",
-          ),
+          provider: sushiProvider(modelId),
+          modelId,
           agentName: agent.name,
           lastKey: "deepSeek",
         }
@@ -176,6 +185,7 @@ export async function getModelProvider(
           : "qwen/qwen3-235b-a22b-instruct-2507"
         return {
           provider: openrouterProvider(modelId),
+          modelId,
           agentName: agent.name,
           lastKey: "openrouter",
         }
@@ -185,6 +195,7 @@ export async function getModelProvider(
 
       return {
         provider: createDeepSeek({ apiKey: "" })("deepseek-reasoner"),
+        modelId: "deepseek-reasoner",
         agentName: agent.name,
       }
     }
@@ -201,6 +212,7 @@ export async function getModelProvider(
         const openaiProvider = createOpenAI({ apiKey: openaiKey })
         return {
           provider: openaiProvider(agent.modelId),
+          modelId: agent.modelId,
           agentName: agent.name,
           lastKey: "chatGPT",
         }
@@ -220,6 +232,7 @@ export async function getModelProvider(
         const modelId = "openai/gpt-5.2-pro"
         return {
           provider: openrouterProvider(modelId),
+          modelId,
           agentName: agent.name,
           lastKey: "openrouter",
         }
@@ -227,6 +240,7 @@ export async function getModelProvider(
 
       return {
         provider: createOpenAI({ apiKey: "" })(agent.modelId),
+        modelId: agent.modelId,
         agentName: agent.name,
       }
     }
@@ -244,6 +258,7 @@ export async function getModelProvider(
         const modelId = agent.modelId.replace(/^anthropic\//, "")
         return {
           provider: claudeProvider(modelId),
+          modelId: agent.modelId,
           agentName: agent.name,
           lastKey: "claude",
         }
@@ -266,6 +281,7 @@ export async function getModelProvider(
 
         return {
           provider: openrouterProvider(modelId),
+          modelId,
           agentName: agent.name,
           lastKey: "openrouter",
         }
@@ -273,6 +289,7 @@ export async function getModelProvider(
 
       return {
         provider: createAnthropic({ apiKey: "" })(agent.modelId),
+        modelId: agent.modelId,
         agentName: agent.name,
       }
     }
@@ -288,6 +305,7 @@ export async function getModelProvider(
         const modelId = agent.modelId.replace(/^google\//, "")
         return {
           provider: geminiProvider(modelId),
+          modelId: agent.modelId,
           lastKey: "gemini",
           agentName: agent.name,
         }
@@ -307,6 +325,7 @@ export async function getModelProvider(
         const modelId = "google/gemini-3.1-pro-preview"
         return {
           provider: openrouterProvider(modelId),
+          modelId,
           agentName: agent.name,
           lastKey: "openrouter",
         }
@@ -314,6 +333,7 @@ export async function getModelProvider(
 
       return {
         provider: createGoogleGenerativeAI({ apiKey: "" })(agent.modelId),
+        modelId: agent.modelId,
         agentName: agent.name,
       }
     }
@@ -330,8 +350,10 @@ export async function getModelProvider(
           apiKey: xaiKey,
           baseURL: "https://api.x.ai/v1",
         })
+        const modelId = canReason ? "grok-4-1-fast-reasoning" : "grok-4-1-fast"
         return {
-          provider: xaiProvider(agent.modelId.replace(/^x-ai\//, "")),
+          provider: xaiProvider(modelId),
+          modelId,
           agentName: agent.name,
           lastKey: "xai",
         }
@@ -353,6 +375,7 @@ export async function getModelProvider(
           : `x-ai/${agent.modelId}`
         return {
           provider: openrouterProvider(modelId),
+          modelId,
           agentName: agent.name,
           lastKey: "openrouter",
         }
@@ -363,6 +386,7 @@ export async function getModelProvider(
           apiKey: "",
           baseURL: "https://api.x.ai/v1",
         })(agent.modelId),
+        modelId: agent.modelId,
         agentName: agent.name,
       }
     }
@@ -380,6 +404,7 @@ export async function getModelProvider(
         })
         return {
           provider: perplexityProvider(agent.modelId),
+          modelId: agent.modelId,
           agentName: agent.name,
           lastKey: "perplexity",
         }
@@ -400,6 +425,7 @@ export async function getModelProvider(
         const modelId = "perplexity/sonar-pro"
         return {
           provider: openrouterProvider(modelId),
+          modelId,
           agentName: agent.name,
           lastKey: "openrouter",
         }
@@ -410,6 +436,7 @@ export async function getModelProvider(
           apiKey: "",
           baseURL: "https://api.perplexity.ai",
         })(agent.modelId),
+        modelId: agent.modelId,
         agentName: agent.name,
       }
     }
@@ -430,6 +457,7 @@ export async function getModelProvider(
       })
       return {
         provider: openrouterProvider(agent.modelId),
+        modelId: agent.modelId,
         agentName: agent.name,
         lastKey: "openrouter",
       }
@@ -453,6 +481,7 @@ export async function getModelProvider(
             const deepseekProvider = createDeepSeek({ apiKey: deepseekKey })
             return {
               provider: deepseekProvider(agent.modelId),
+              modelId: agent.modelId,
               agentName: agent.name,
             }
           }
@@ -468,6 +497,7 @@ export async function getModelProvider(
         })
         return {
           provider: customProvider(agent.modelId),
+          modelId: agent.modelId,
           agentName: agent.name,
         }
       }
@@ -482,6 +512,7 @@ export async function getModelProvider(
       const fallbackProvider = createDeepSeek({ apiKey: fallbackKey })
       return {
         provider: fallbackProvider("deepseek-chat"),
+        modelId: "deepseek-chat",
         agentName: "deepSeek",
       }
     }

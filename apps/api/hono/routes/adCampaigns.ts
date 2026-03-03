@@ -612,7 +612,10 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
     }
 
     // Calculate total cost
-    const totalCredits = slot.creditsPerHour * slot.durationHours
+    const totalCredits =
+      slot.directRentPrice || slot.creditsPerHour * slot.durationHours
+    const platformFee = Math.floor(totalCredits * 0.1)
+    const ownerEarnings = totalCredits - platformFee
 
     // Create rental with transaction to prevent race conditions
     const rentalStartTime = new Date(startDate)
@@ -632,7 +635,7 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
         throw new Error("Slot not found")
       }
 
-      // Deduct credits atomically inside the transaction
+      // 1. Deduct credits from Renter
       let debitOk = false
       if (member) {
         const res = await tx
@@ -656,7 +659,35 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
         throw new Error("Insufficient credits")
       }
 
-      // Count existing overlapping rentals (excluding cancelled/completed)
+      // Determine Initial Status: Manual vs Agent vs Auto
+      let initialStatus: "scheduled" | "pending_approval" = "scheduled"
+      if (slot.requiresApproval) {
+        if (slot.autoApprove) {
+          // Store Agent (Auto-Mode) is ON - Agent "decides" it's ok
+          initialStatus = "scheduled"
+        } else {
+          // Manual user approval required
+          initialStatus = "pending_approval"
+        }
+      }
+
+      // 2. Add credits to Owner (Store Owner)
+      const storeOwnerId = slot.store?.userId
+      const storeOwnerGuestId = slot.store?.guestId
+
+      if (storeOwnerId) {
+        await tx
+          .update(users)
+          .set({ credits: sql`${users.credits} + ${ownerEarnings}` })
+          .where(eq(users.id, storeOwnerId))
+      } else if (storeOwnerGuestId) {
+        await tx
+          .update(guests)
+          .set({ credits: sql`${guests.credits} + ${ownerEarnings}` })
+          .where(eq(guests.id, storeOwnerGuestId))
+      }
+
+      // Count existing overlapping rentals (excluding cancelled/completed/rejected)
       const overlappingRentals = await tx.query.slotRentals.findMany({
         where: and(
           eq(slotRentals.slotId, slotId),
@@ -668,7 +699,10 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
       })
 
       const activeOverlapping = overlappingRentals.filter(
-        (r) => r.status !== "cancelled" && r.status !== "completed",
+        (r) =>
+          r.status !== "cancelled" &&
+          r.status !== "completed" &&
+          (r as any).status !== "rejected",
       )
 
       const maxConcurrent = slot.maxConcurrentRentals || 1
@@ -691,7 +725,13 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
           optimizationGoal: "balanced",
           biddingStrategy: "smart",
           status: "active",
-          metadata: { directRental: true },
+          metadata: {
+            directRental: true,
+            platformFee,
+            ownerEarnings,
+            autoApproved:
+              initialStatus === "scheduled" && slot.requiresApproval,
+          },
         } as newAppCampaign)
         .returning()
 
@@ -713,8 +753,13 @@ adCampaignsRoute.post("/slots/:id/rent", async (c) => {
           durationHours: slot.durationHours,
           creditsCharged: totalCredits,
           priceEur: totalCredits * 0.01, // 1 credit = €0.01
-          status: "scheduled",
+          status: initialStatus,
           knowledgeBaseEnabled: true,
+          metadata: {
+            platformFee,
+            ownerEarnings,
+            requiresManualApproval: slot.requiresApproval && !slot.autoApprove,
+          },
         })
         .returning()
 
@@ -806,5 +851,58 @@ adCampaignsRoute.get("/slots/:id/availability", async (c) => {
   } catch (error) {
     captureException(error)
     return c.json({ error: "Failed to check availability" }, 500)
+  }
+})
+
+// GET /slots/:id/calculator - Get ROI calculator data for a slot
+adCampaignsRoute.get("/slots/:id/calculator", async (c) => {
+  try {
+    const slotId = c.req.param("id")
+    const slot = await db.query.storeTimeSlots.findFirst({
+      where: eq(storeTimeSlots.id, slotId),
+    })
+
+    if (!slot) {
+      return c.json({ error: "Slot not found" }, 404)
+    }
+
+    // Basic calculation logic
+    const avgTraffic = slot.averageTraffic || 0
+    const avgConversions = slot.averageConversions || 0
+    const conversionRate = avgTraffic > 0 ? avgConversions / avgTraffic : 0.01
+
+    // Suggested bid: 1.2x current price or min auction bid
+    const suggestedBid = Math.max(
+      slot.creditsPerHour * 1.2,
+      slot.minAuctionBid || 0,
+    )
+
+    // Predicted ROI (Simplified)
+    // Revenue = Conversions * 10 (credits/eur equivalent)
+    const predictedConversions = avgTraffic * conversionRate
+    const cost = suggestedBid * slot.durationHours
+    const revenue = predictedConversions * 1000 // Placeholder multiplier
+    const predictedROI = cost > 0 ? ((revenue - cost) / cost) * 100 : 0
+
+    return c.json({
+      metrics: {
+        averageTraffic: avgTraffic,
+        averageConversions: avgConversions,
+        conversionRate,
+      },
+      calculator: {
+        suggestedBid,
+        predictedROI: Math.round(predictedROI * 100) / 100,
+        estimatedImpressions: Math.round(avgTraffic * 0.8), // 80% viewability factor
+      },
+      pricing: {
+        directRentPrice: slot.directRentPrice,
+        minAuctionBid: slot.minAuctionBid,
+        baseCreditsPerHour: slot.creditsPerHour,
+      },
+    })
+  } catch (error) {
+    captureException(error)
+    return c.json({ error: "Failed to calculate slot data" }, 500)
   }
 })
