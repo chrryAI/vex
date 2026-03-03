@@ -5172,8 +5172,14 @@ export const storeTimeSlots = pgTable(
     durationHours: integer("duration_hours").notNull(), // 2
 
     // Pricing
-    creditsPerHour: integer("credits_per_hour").notNull(), // Base price
+    creditsPerHour: integer("credits_per_hour").notNull(), // Base price for auction? (legacy)
+    directRentPrice: integer("direct_rent_price"), // Fixed price for direct kiralama
+    minAuctionBid: integer("min_auction_bid"), // Minimum bid for auction
     isPrimeTime: boolean("is_prime_time").default(false), // Peak hours cost more
+
+    // Approval & Agent Logic
+    requiresApproval: boolean("requires_approval").default(false), // User/Agent has to say OK
+    autoApprove: boolean("auto_approve").default(true), // Agent (Store App) auto-approves if ON
 
     // Capacity & availability
     maxConcurrentRentals: integer("max_concurrent_rentals").default(1), // Usually 1
@@ -5224,7 +5230,14 @@ export const appCampaigns = pgTable(
     // Campaign config
     name: text("name").notNull(),
     status: text("status", {
-      enum: ["active", "paused", "completed", "cancelled"],
+      enum: [
+        "active",
+        "paused",
+        "completed",
+        "cancelled",
+        "pending_approval",
+        "scheduled",
+      ],
     })
       .default("active")
       .notNull(),
@@ -5412,7 +5425,14 @@ export const slotRentals = pgTable(
 
     // Status
     status: text("status", {
-      enum: ["scheduled", "active", "completed", "cancelled"],
+      enum: [
+        "scheduled",
+        "active",
+        "completed",
+        "cancelled",
+        "pending_approval",
+        "rejected",
+      ],
     })
       .default("scheduled")
       .notNull(),
