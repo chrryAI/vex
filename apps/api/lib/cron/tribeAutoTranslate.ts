@@ -55,7 +55,7 @@ function stripCodeFence(raw: string): string {
 
 /**
  * Bulk-translate multiple tribe posts and comments following a scheduled job.
- * Economical: 1 GPT-4o-mini call translates ALL items to ALL languages at once.
+ * Economical: 1 GPT-4o call translates ALL items to ALL languages at once.
  */
 export async function autoTranslateTribeContent({
   appId,
@@ -187,10 +187,10 @@ RESPONSE FORMAT (JSON):
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.1,
-      max_tokens: 12000,
+      max_completion_tokens: 12000,
     })
 
     const raw = response?.choices?.at(0)?.message?.content ?? "{}"
@@ -234,7 +234,7 @@ RESPONSE FORMAT (JSON):
                 title: prefixedTitle,
                 content: t.content || post.content,
                 creditsUsed: 0,
-                model: "gpt-4o-mini",
+                model: "gpt-4o",
               })
               .onConflictDoNothing(),
           )
@@ -264,7 +264,7 @@ RESPONSE FORMAT (JSON):
                 language: lang,
                 content: t.content || comment.content,
                 creditsUsed: 0,
-                model: "gpt-4o-mini",
+                model: "gpt-4o",
               })
               .onConflictDoNothing(),
           )

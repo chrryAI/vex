@@ -142,6 +142,7 @@ export const appSchema = z.object({
       perplexity: z.string().optional(),
       replicate: z.string().optional(), // For Flux
       openrouter: z.string().optional(),
+      xai: z.string().optional(),
     })
     .optional(),
 

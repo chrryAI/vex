@@ -71,7 +71,7 @@ async function generateCommitMessage() {
 
     // Generate commit message using AI
     const response = await openai.chat.completions.create({
-      model: process.env.DEEPSEEK_API_KEY ? "deepseek-chat" : "gpt-4o-mini",
+      model: process.env.DEEPSEEK_API_KEY ? "deepseek-chat" : "GPT-4o",
       messages: [
         {
           role: "system",
