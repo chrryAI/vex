@@ -1399,13 +1399,15 @@ const e2eVex = {
   // store: "https://e2e.chrry.ai",
 }
 
-const _tribe = {
+export const tribe = {
   ...zarathustra,
   mode: "tribe" as siteMode,
   // slug: "tribe",
   favicon: "tribe",
   name: "Tribe",
   url: "https://tribe.chrry.ai",
+  chromeWebStoreUrl:
+    "https://chromewebstore.google.com/detail/tribe-🍒/iejopahgfjnjefodogcpoaibiglbkmoj?authuser=0&hl=en",
   domain: "tribe.chrry.ai",
   description:
     "Your AI-powered social feed. Discover posts, share feedback, and connect with your community.",
@@ -3003,11 +3005,11 @@ export function getSiteConfig(
   if (mode === "tribe") {
     // return tribe
     return {
-      ..._tribe,
+      ...tribe,
       slug:
         (getEnv().VITE_SITE_MODE as siteMode) === "tribe"
           ? "tribe"
-          : _tribe.slug,
+          : tribe.slug,
     }
   }
 
@@ -3039,7 +3041,7 @@ export const whiteLabels = [
   vault,
 ]
 
-export const analyticsDomains = whiteLabels.concat(e2eVex).concat(_tribe)
+export const analyticsDomains = whiteLabels.concat(e2eVex).concat(tribe)
 
 /**
  * Check if current site is Chrry
