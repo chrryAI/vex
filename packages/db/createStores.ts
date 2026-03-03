@@ -8421,6 +8421,12 @@ You are an architecture expert. Design systems that grow with users, follow indu
     displayOrder: 3,
   })
 
+  await createOrUpdateStoreInstall({
+    storeId: blossom.id,
+    appId: grokApp.id,
+    displayOrder: 0,
+  })
+
   // // ============================================
   // // DEMO: POPULAR AI APPS WITH NATIVE VERSIONS
   // // ============================================
