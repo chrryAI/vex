@@ -29,6 +29,7 @@ import {
   Gemini,
   Globe,
   GlobeLock,
+  Grok,
   MicVocal,
   OpenAI,
   OpenRouter,
@@ -594,6 +595,8 @@ export default function Agent({
                           <Flux color="var(--accent-6)" size={25} />
                         ) : appFormWatcher.defaultModel === "perplexity" ? (
                           <Perplexity color="var(--accent-6)" size={25} />
+                        ) : appFormWatcher.defaultModel === "grok" ? (
+                          <Grok color="var(--accent-6)" size={25} />
                         ) : appFormWatcher.defaultModel === "sushi" ? (
                           <Img icon="sushi" size={25} />
                         ) : null}
@@ -1631,19 +1634,19 @@ export default function Agent({
                     />
                   </Div>
 
-                  {/* Groq Key */}
+                  {/* Grok Key */}
                   <Div style={{ ...utilities.column.style }}>
                     <Label>
-                      <Groq /> Groq
+                      <Grok /> Grok
                     </Label>
                     <Controller
-                      name="apiKeys.groq"
+                      name="apiKeys.xai"
                       control={control}
                       render={({ field }) => (
                         <Input
-                          dataTestId="groq-api-key"
+                          dataTestId="grok-api-key"
                           type="password"
-                          placeholder="gsk_..."
+                          placeholder="xai-..."
                           {...field}
                           value={field.value || ""}
                         />

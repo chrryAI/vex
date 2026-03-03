@@ -30,7 +30,6 @@ import {
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import DeleteThread from "./DeleteThread"
-import Grapes from "./Grapes"
 import {
   useCountdown,
   useHasHydrated,

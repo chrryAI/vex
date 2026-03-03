@@ -3,7 +3,7 @@
  * These types mirror the database schema but are decoupled for open-source distribution
  */
 
-import { type locale, locales } from "../locales"
+import type { locale } from "../locales"
 
 // User types
 export type user = {
