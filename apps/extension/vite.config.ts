@@ -99,7 +99,9 @@ export default async ({ command, mode }) => {
   }
 
   const getIconPath = (size: 16 | 32 | 48 | 128) =>
-    `icons/${siteConfig.slug}-icon-${size}.png`
+    siteConfig.isTribe
+      ? `icons/tribe-icon-${size}.png`
+      : `icons/${siteConfig.slug}-icon-${size}.png`
 
   // Manifest base
   const manifestBase = {
