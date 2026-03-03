@@ -27,6 +27,7 @@ import {
   type user,
 } from "./index"
 import { seedPearFeedback } from "./seedPearFeedback"
+import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
 import { seedTribeEngagement } from "./seedTribeEngagement"
 import {
   aiAgents,
@@ -1858,12 +1859,12 @@ const prod = async () => {
     email: isProd || isReplica ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  const agents = await createAgents()
-  const { vex } = await createStores({ user: admin })
+  // const agents = await createAgents()
+  // const { vex } = await createStores({ user: admin })
 
   // await seedPearFeedback()
 
-  // await seedScheduledTribeJobs({ admin })
+  await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 

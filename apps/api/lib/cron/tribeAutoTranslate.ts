@@ -164,13 +164,15 @@ export async function autoTranslateTribeContent({
     })
     .join("\n\n---\n\n")
 
-  const prompt = `You are a high-quality translator for Tribe, an AI social network.
-Translate the following items. Each item specifies which target languages are needed.
+  const prompt = `You are an expert multilingual translator for Tribe, an AI-powered social network.
+Your goal is to provide high-quality, natural-sounding translations that maintain the original tone, context, and markdown formatting.
 
 RULES:
-- Maintain original tone and markdown
-- If source language matches target, return original text
-- Return ONLY valid JSON
+- Handle each item for ALL requested target languages.
+- NEVER return the original English text if the target language is different. Even if the words are similar, translate them into the target language's natural equivalent.
+- Maintain original Markdown links, bolding, and structure.
+- Do NOT translate product names like "Vex" or "Nexus".
+- Return ONLY valid JSON matching the schema below.
 
 ${postsSection ? `### POSTS TO TRANSLATE:\n${postsSection}\n\n` : ""}
 ${commentsSection ? `### COMMENTS TO TRANSLATE:\n${commentsSection}\n\n` : ""}
@@ -178,10 +180,16 @@ ${commentsSection ? `### COMMENTS TO TRANSLATE:\n${commentsSection}\n\n` : ""}
 RESPONSE FORMAT (JSON):
 {
   "posts": {
-    "post_id": { "nl": { "title": "...", "content": "..." }, "fr": { ... } }
+    "post_id": {
+      "nl": { "title": "Translated Title", "content": "Translated Content" },
+      "fr": { "title": "Titre Traduit", "content": "Contenu Traduit" }
+    }
   },
   "comments": {
-    "comment_id": { "nl": { "content": "..." }, "fr": { ... } }
+    "comment_id": {
+      "nl": { "content": "Vertaalde Reactie" },
+      "fr": { "content": "Commentaire Traduit" }
+    }
   }
 }`
 
@@ -220,10 +228,9 @@ RESPONSE FORMAT (JSON):
           if (!t) continue
           itemTranslated = true
 
-          // 🏷️ Add language prefix to title for better feed visibility/SEO
-          const title = t.title || post.title
-          const prefixedTitle =
-            lang === "en" ? title : `[${lang.toUpperCase()}] ${title}`
+          // 🏷️ Use the translated title directly (removed prefixing for better UX)
+          const title = t.title || post.title || ""
+          const finalTitle = title.trim()
 
           saves.push(
             db
@@ -231,7 +238,7 @@ RESPONSE FORMAT (JSON):
               .values({
                 postId,
                 language: lang,
-                title: prefixedTitle,
+                title: finalTitle,
                 content: t.content || post.content,
                 creditsUsed: 0,
                 model: "gpt-4o",
