@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { hasStoreApps, merge } from "../context/providers/AuthProvider"
 import type { appWithStore } from "../types"
+import { hasStoreApps, merge } from "../utils/appUtils"
 
 describe("AuthProvider Utils", () => {
   describe("hasStoreApps", () => {

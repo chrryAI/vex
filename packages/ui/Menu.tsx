@@ -83,11 +83,12 @@ export default function Menu({
     siteConfig,
     tribeSlug,
     getTribeUrl,
-
     ...auth
   } = useAuth()
 
-  const { setShowTribe } = useChat()
+  const { setShowTribe, showTribe } = useChat()
+
+  const canShowAllTribe = auth.canShowAllTribe && showTribe
 
   const city = (user || guest)?.city || ""
   const { utilities } = useStyles()
@@ -112,10 +113,11 @@ export default function Menu({
     pathname,
   } = useNavigationContext()
 
-  const showTribeProfile =
-    auth.showTribeProfile &&
-    !auth.postId &&
-    (pathname === "/" ? !siteConfig.isTribe : true)
+  const showTribeLink =
+    (auth.showTribeProfile &&
+      !auth.postId &&
+      (pathname === "/" ? !siteConfig.isTribe : true)) ||
+    auth.threadIdRef.current
 
   const { app } = useApp()
 
@@ -376,7 +378,7 @@ export default function Menu({
                   <A
                     data-testid="menu-home-button"
                     className={"link"}
-                    href={showTribeProfile ? getTribeUrl() : FRONTEND_URL}
+                    href={showTribeLink ? getTribeUrl() : FRONTEND_URL}
                     onClick={(e) => {
                       addHapticFeedback()
                       plausible({
@@ -391,8 +393,12 @@ export default function Menu({
 
                       toggleMenuIfSmallDevice()
 
-                      if (showTribeProfile) {
-                        push(`${getTribeUrl()}?tribe=true`)
+                      if (showTribeLink) {
+                        setIsNewChat({
+                          value: true,
+                          to: getTribeUrl(),
+                          tribe: true,
+                        })
                       } else {
                         setIsNewChat({
                           value: true,
@@ -404,12 +410,16 @@ export default function Menu({
                   >
                     <Img
                       size={28}
-                      app={!showTribeProfile && app ? app : undefined}
-                      slug={!showTribeProfile ? undefined : "tribe"}
+                      app={!showTribeLink && app ? app : undefined}
+                      slug={!showTribeLink ? undefined : "tribe"}
                     />
 
                     <Span style={styles.brand.style}>
-                      {!showTribeProfile ? app?.name : <>{t("Tribe")}</>}
+                      {!showTribeLink ? (
+                        <>{t(app?.name || "")}</>
+                      ) : (
+                        <>{t("Tribe")}</>
+                      )}
                     </Span>
                   </A>
                   <Button
@@ -522,7 +532,12 @@ export default function Menu({
                 style={styles.menuItemButton.style}
                 className="button transparent"
               >
-                <MessageCirclePlus size={18} /> {t("New chat")}
+                {showTribeLink ? (
+                  <Img app={app} size={18} />
+                ) : (
+                  <MessageCirclePlus size={18} />
+                )}{" "}
+                {t("New chat")}
               </A>
               <Button
                 onClick={() => {
@@ -702,182 +717,183 @@ export default function Menu({
                           ...styles.threadsList.style,
                         }}
                       >
-                        {!isPear &&
-                          threads?.threads
-                            ?.sort((a, b) => {
-                              return (
-                                (b.isMainThread ? 1 : 0) -
-                                (a.isMainThread ? 1 : 0)
-                              )
-                            })
-                            .map((thread, index) => (
-                              <MotiView
-                                key={`${thread.id}-${thread.bookmarks?.length}-${animationKey}`}
-                                from={{
-                                  opacity: 0,
-                                  translateY: 0,
-                                  translateX: -10,
-                                }}
-                                animate={{
-                                  opacity: 1,
-                                  translateY: 0,
-                                  translateX: 0,
-                                }}
-                                transition={{
-                                  type: "timing",
-                                  duration: reduceMotionContext ? 0 : 100,
-                                  delay: reduceMotionContext ? 0 : index * 50,
-                                }}
-                                data-testid="menu-thread-item"
-                                style={{
-                                  ...styles.threadItem.style,
-                                  paddingRight:
-                                    collaborationStatus === "pending" ? 0 : 17,
-                                }}
-                                ref={(el: any) => {
-                                  threadRefs.current[thread.id] = el
-                                }}
-                                className="menuThreadItem"
-                              >
-                                {thread.isMainThread ? (
-                                  <Span
-                                    title={t("DNA thread")}
-                                    style={{ marginRight: 3, fontSize: 11 }}
-                                  >
-                                    🧬
-                                  </Span>
-                                ) : thread.visibility !== "private" ||
-                                  thread.collaborations?.length ? (
-                                  <Span
+                        {threads?.threads
+                          ?.sort((a, b) => {
+                            return (
+                              (b.isMainThread ? 1 : 0) -
+                              (a.isMainThread ? 1 : 0)
+                            )
+                          })
+                          .slice(
+                            0,
+                            canShowAllTribe || isPear
+                              ? 1
+                              : threads?.threads?.length,
+                          )
+                          .map((thread, index) => (
+                            <MotiView
+                              key={`${thread.id}-${thread.bookmarks?.length}-${animationKey}`}
+                              from={{
+                                opacity: 0,
+                                translateY: 0,
+                                translateX: -10,
+                              }}
+                              animate={{
+                                opacity: 1,
+                                translateY: 0,
+                                translateX: 0,
+                              }}
+                              transition={{
+                                type: "timing",
+                                duration: reduceMotionContext ? 0 : 100,
+                                delay: reduceMotionContext ? 0 : index * 50,
+                              }}
+                              data-testid="menu-thread-item"
+                              style={{
+                                ...styles.threadItem.style,
+                                paddingRight:
+                                  collaborationStatus === "pending" ? 0 : 17,
+                              }}
+                              ref={(el: any) => {
+                                threadRefs.current[thread.id] = el
+                              }}
+                              className="menuThreadItem"
+                            >
+                              {thread.isMainThread ? (
+                                <Span
+                                  title={t("DNA thread")}
+                                  style={{ marginRight: 3, fontSize: 11 }}
+                                >
+                                  🧬
+                                </Span>
+                              ) : thread.visibility !== "private" ||
+                                thread.collaborations?.length ? (
+                                <Span
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 5,
+                                    fontSize: 12,
+                                    position: "relative",
+                                    marginRight: 3,
+                                    top: "1px",
+                                  }}
+                                  title={t(thread.visibility)}
+                                >
+                                  {hasThreadNotification({
+                                    thread,
+                                    user,
+                                    guest,
+                                  }) ? (
+                                    <BellDot color={colors.accent6} size={13} />
+                                  ) : thread.collaborations?.length ? (
+                                    <UsersRound
+                                      color={colors.accent1}
+                                      size={13}
+                                    />
+                                  ) : thread.visibility === "public" ? (
+                                    <LockOpen
+                                      color={colors.accent1}
+                                      size={13}
+                                    />
+                                  ) : thread.visibility === "protected" ? (
+                                    <UserLock
+                                      color={colors.accent1}
+                                      size={13}
+                                    />
+                                  ) : null}
+                                </Span>
+                              ) : null}
+
+                              {(() => {
+                                const url = `/threads/${thread.id}`
+
+                                return (
+                                  <A
+                                    className="link"
+                                    data-testid="menu-thread-link"
                                     style={{
-                                      display: "inline-flex",
-                                      alignItems: "center",
-                                      gap: 5,
-                                      fontSize: 12,
-                                      position: "relative",
-                                      marginRight: 3,
-                                      top: "1px",
+                                      ...styles.threadItem.style,
                                     }}
-                                    title={t(thread.visibility)}
-                                  >
-                                    {hasThreadNotification({
-                                      thread,
-                                      user,
-                                      guest,
-                                    }) ? (
-                                      <BellDot
-                                        color={colors.accent6}
-                                        size={13}
-                                      />
-                                    ) : thread.collaborations?.length ? (
-                                      <UsersRound
-                                        color={colors.accent1}
-                                        size={13}
-                                      />
-                                    ) : thread.visibility === "public" ? (
-                                      <LockOpen
-                                        color={colors.accent1}
-                                        size={13}
-                                      />
-                                    ) : thread.visibility === "protected" ? (
-                                      <UserLock
-                                        color={colors.accent1}
-                                        size={13}
-                                      />
-                                    ) : null}
-                                  </Span>
-                                ) : null}
-
-                                {(() => {
-                                  const url = `/threads/${thread.id}`
-
-                                  return (
-                                    <A
-                                      className="link"
-                                      data-testid="menu-thread-link"
-                                      style={{
-                                        ...styles.threadItem.style,
-                                      }}
-                                      onClick={(e) => {
-                                        const threadApp = storeApps.find(
-                                          (app) => app.id === thread.appId,
-                                        )
-                                        if (
-                                          thread.appId &&
-                                          (!threadApp ||
-                                            !hasStoreApps(threadApp))
-                                        ) {
-                                          setLoadingThreadId(thread.id)
-                                          setLoadingAppId(thread.appId)
-                                          plausible({
-                                            name: ANALYTICS_EVENTS.THREAD_CLICK_MENU,
-                                            props: {
-                                              threadId: thread.id,
-                                            },
-                                          })
-                                          toggleMenuIfSmallDevice()
-                                          return
-                                        }
+                                    onClick={(e) => {
+                                      const threadApp = storeApps.find(
+                                        (app) => app.id === thread.appId,
+                                      )
+                                      if (
+                                        thread.appId &&
+                                        (!threadApp || !hasStoreApps(threadApp))
+                                      ) {
+                                        setLoadingThreadId(thread.id)
+                                        setLoadingAppId(thread.appId)
                                         plausible({
                                           name: ANALYTICS_EVENTS.THREAD_CLICK_MENU,
                                           props: {
                                             threadId: thread.id,
                                           },
                                         })
-                                        if (e.metaKey || e.ctrlKey) {
-                                          return
-                                        }
-                                        e.preventDefault()
-                                        isSmallDevice
-                                          ? toggleMenu()
-                                          : addHapticFeedback()
-                                        router.push(url)
-                                      }}
-                                      href={url}
-                                    >
-                                      {thread.title}
-                                    </A>
-                                  )
-                                })()}
-
-                                {loadingThreadId === thread.id ? (
-                                  <Loading
-                                    style={{
-                                      ...styles.star.style,
-                                      width: 14,
-                                      height: 14,
-                                    }}
-                                  />
-                                ) : collaborationStatus === "pending" ? (
-                                  <CollaborationStatus
-                                    dataTestId="menu"
-                                    onSave={() => {
-                                      if (threads.totalCount === 1) {
-                                        setCollaborationStatus(undefined)
+                                        toggleMenuIfSmallDevice()
+                                        return
                                       }
-                                      refetchThreads()
+                                      plausible({
+                                        name: ANALYTICS_EVENTS.THREAD_CLICK_MENU,
+                                        props: {
+                                          threadId: thread.id,
+                                        },
+                                      })
+                                      if (e.metaKey || e.ctrlKey) {
+                                        return
+                                      }
+                                      e.preventDefault()
+                                      isSmallDevice
+                                        ? toggleMenu()
+                                        : addHapticFeedback()
+                                      router.push(url)
                                     }}
-                                    style={styles.collaborationStatus.style}
-                                    thread={thread}
-                                    isIcon
-                                  />
-                                ) : (
-                                  <Bookmark
-                                    dataTestId="menu"
-                                    onSave={() => {
-                                      refetchThreads()
-                                    }}
-                                    style={{
-                                      ...styles.star.style,
-                                      ...(thread.bookmarks?.some(
-                                        (b) => b.userId === thread.userId,
-                                      ) && styles.starActive.style),
-                                    }}
-                                    thread={thread}
-                                  />
-                                )}
-                              </MotiView>
-                            ))}
+                                    href={url}
+                                  >
+                                    {thread.title}
+                                  </A>
+                                )
+                              })()}
+
+                              {loadingThreadId === thread.id ? (
+                                <Loading
+                                  style={{
+                                    ...styles.star.style,
+                                    width: 14,
+                                    height: 14,
+                                  }}
+                                />
+                              ) : collaborationStatus === "pending" ? (
+                                <CollaborationStatus
+                                  dataTestId="menu"
+                                  onSave={() => {
+                                    if (threads.totalCount === 1) {
+                                      setCollaborationStatus(undefined)
+                                    }
+                                    refetchThreads()
+                                  }}
+                                  style={styles.collaborationStatus.style}
+                                  thread={thread}
+                                  isIcon
+                                />
+                              ) : (
+                                <Bookmark
+                                  dataTestId="menu"
+                                  onSave={() => {
+                                    refetchThreads()
+                                  }}
+                                  style={{
+                                    ...styles.star.style,
+                                    ...(thread.bookmarks?.some(
+                                      (b) => b.userId === thread.userId,
+                                    ) && styles.starActive.style),
+                                  }}
+                                  thread={thread}
+                                />
+                              )}
+                            </MotiView>
+                          ))}
                       </Div>
                       {!threads?.totalCount && (
                         <>
@@ -918,6 +934,7 @@ export default function Menu({
                         : null}
                       {!threads?.threads?.length ||
                       isPear ||
+                      canShowAllTribe ||
                       threads?.threads?.length < 2 ? (
                         <EmptyStateTips style={{ marginTop: 15 }} />
                       ) : null}

@@ -118,6 +118,17 @@ export function getPostId(pathname?: string): string | undefined {
   return postId && isValidUuidV4(postId) ? postId : undefined
 }
 
+export function calculateTranslationCredits({
+  contentLength,
+}: {
+  contentLength?: number
+}): number {
+  if (!contentLength) return 0
+  if (contentLength < 500) return 3
+  if (contentLength < 1500) return 5
+  return 8
+}
+
 // export const isDevelopment = process.env.VITE_NODE_ENV !== "production"
 
 export const MAX_TOOL_CALLS_PER_MESSAGE = 7
@@ -414,7 +425,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "2.0.43"
+export const VERSION = config.version || "2.0.54"
 export type instructionBase = {
   id: string
   title: string
@@ -692,32 +703,44 @@ export const MAX_FILE_SIZES = {
     video: 1000 * 1024 * 1024, // 1GB - Gemini Pro 2.5 video analysis (within 2GB limit)
     text: 500 * 1024 * 1024, // 300MB - Gemini Pro 2.5 text processing
   },
+  flux: {
+    pdf: 0,
+    image: 20 * 1024 * 1024, // 20MB - Flux Vision/Generation limit
+    audio: 0,
+    video: 0,
+    text: 0,
+  },
+  grok: {
+    pdf: 50 * 1024 * 1024, // 50MB - matches other frontier models
+    image: 20 * 1024 * 1024, // 20MB - matches other frontier models
+    audio: 25 * 1024 * 1024, // 25MB - matches other frontier models
+    video: 100 * 1024 * 1024, // 100MB - matches other frontier models
+    text: 50 * 1024 * 1024, // 50MB - matches other frontier models
+  },
 }
 
 export const OWNER_CREDITS = 999999
 
 export const isDeepEqual = (obj1: any, obj2: any): boolean => {
   if (obj1 === obj2) return true
-  if (
-    typeof obj1 !== "object" ||
-    obj1 === null ||
-    typeof obj2 !== "object" ||
-    obj2 === null
-  ) {
-    return false
+
+  if (obj1 && obj2 && typeof obj1 === "object" && typeof obj2 === "object") {
+    // Array olup olmadıklarını kontrol et
+    if (Array.isArray(obj1) !== Array.isArray(obj2)) return false
+
+    const keys = Object.keys(obj1)
+    if (keys.length !== Object.keys(obj2).length) return false
+
+    for (const key of keys) {
+      if (!Object.hasOwn(obj2, key)) return false
+      if (!isDeepEqual(obj1[key], obj2[key])) return false
+    }
+    return true
   }
 
-  const keys1 = Object.keys(obj1)
-  const keys2 = Object.keys(obj2)
-
-  if (keys1.length !== keys2.length) return false
-
-  for (const key of keys1) {
-    if (!keys2.includes(key)) return false
-    if (!isDeepEqual(obj1[key], obj2[key])) return false
-  }
-
-  return true
+  // NaN === NaN check
+  // biome-ignore lint/suspicious/noSelfCompare: Standard way to check for NaN
+  return obj1 !== obj1 && obj2 !== obj2
 }
 
 export type { estimateJobCreditsParams, scheduleSlot } from "./creditCalculator"

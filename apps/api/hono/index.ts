@@ -3,6 +3,7 @@ import { serveStatic } from "@hono/node-server/serve-static"
 import * as Sentry from "@sentry/node"
 import { Hono } from "hono"
 import { apiAnalyticsMiddleware } from "./middleware/analytics"
+import { botProtectionMiddleware } from "./middleware/botProtection"
 import { corsMiddleware } from "./middleware/cors"
 import { csrfMiddleware } from "./middleware/csrf"
 import { headersMiddleware } from "./middleware/headers"
@@ -50,6 +51,7 @@ import { threads } from "./routes/threads"
 import { timers } from "./routes/timers"
 import { translations } from "./routes/translations"
 import tribe from "./routes/tribe"
+import tribeTranslate from "./routes/tribe-translate"
 import { tts } from "./routes/tts"
 import { user } from "./routes/user"
 import { users } from "./routes/users"
@@ -107,6 +109,9 @@ app.onError((err, c) => {
 
 // Apply custom CORS middleware (matching Next.js middleware)
 app.use("*", corsMiddleware)
+
+// Apply bot protection middleware (block suspicious requests early)
+app.use("*", botProtectionMiddleware)
 
 // Apply security headers middleware
 app.use("*", securityHeadersMiddleware)
@@ -179,6 +184,7 @@ api.route("/notify", notify)
 api.route("/analytics", analytics)
 api.route("/premium", premium)
 api.route("/tribe", tribe)
+api.route("/tribe", tribeTranslate)
 api.route("/campaigns", adCampaigns)
 
 // Mount API routes under /api

@@ -357,7 +357,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as siteMode,
   slug: "focus",
-  version: "26.11.27",
+  version: "26.11.39",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -980,7 +980,7 @@ const zarathustra = {
   email: "iliyan@chrry.ai",
   description:
     "Your AI philosophy guide. Explore Nietzsche, existentialism, and timeless wisdom through intelligent conversation.",
-  logo: "🪢",
+  logo: "🦋",
   primaryColor: "#7C3AED", // Purple/violet for wisdom
   links: {
     github: "https://github.com/chrryai/vex",
@@ -1399,12 +1399,18 @@ const e2eVex = {
   // store: "https://e2e.chrry.ai",
 }
 
-const _tribe = {
+export const tribe = {
   ...zarathustra,
   mode: "tribe" as siteMode,
+  // slug: "tribe",
+  favicon: "tribe",
   name: "Tribe",
   url: "https://tribe.chrry.ai",
+  chromeWebStoreUrl:
+    "https://chromewebstore.google.com/detail/tribe-🍒/iejopahgfjnjefodogcpoaibiglbkmoj?authuser=0&hl=en",
   domain: "tribe.chrry.ai",
+  description:
+    "Your AI-powered social feed. Discover posts, share feedback, and connect with your community.",
   isTribe: true,
 }
 
@@ -2997,7 +3003,14 @@ export function getSiteConfig(
   }
 
   if (mode === "tribe") {
-    return _tribe
+    // return tribe
+    return {
+      ...tribe,
+      slug:
+        (getEnv().VITE_SITE_MODE as siteMode) === "tribe"
+          ? "tribe"
+          : tribe.slug,
+    }
   }
 
   if (isE2E) {
@@ -3028,7 +3041,7 @@ export const whiteLabels = [
   vault,
 ]
 
-export const analyticsDomains = whiteLabels.concat(e2eVex).concat(_tribe)
+export const analyticsDomains = whiteLabels.concat(e2eVex).concat(tribe)
 
 /**
  * Check if current site is Chrry

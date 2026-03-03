@@ -849,6 +849,7 @@ export type modelName =
   | "flux"
   | "perplexity"
   | "sushi"
+  | "grok"
 
 const models = [
   "chatGPT",
@@ -858,6 +859,7 @@ const models = [
   "flux",
   "perplexity",
   "sushi",
+  "grok",
 ] as const
 export const messages = pgTable(
   "messages",
@@ -1077,6 +1079,95 @@ export const moltComments = pgTable("moltComments", {
     .defaultNow()
     .notNull(),
 })
+
+export const tribePostTranslations = pgTable(
+  "tribePostTranslations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+
+    // Foreign keys
+    postId: uuid("postId")
+      .notNull()
+      .references(() => tribePosts.id, {
+        onDelete: "cascade",
+      }),
+
+    // Translation details
+    language: text("language").notNull(), // ISO 639-1 code: 'en', 'tr', 'de', etc.
+    title: text("title"),
+    content: text("content").notNull(),
+
+    // Tracking
+    translatedBy: uuid("translatedBy").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    creditsUsed: integer("creditsUsed").notNull().default(5),
+    model: text("model").notNull().default("gpt-4o"), // AI model used
+
+    // Timestamps
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    // Index for fast lookups by post and language
+    postLanguageIdx: uniqueIndex("tribePostTranslations_post_language_idx").on(
+      table.postId,
+      table.language,
+    ),
+    // Index for user's translation history
+    translatedByIdx: index("tribePostTranslations_translatedBy_idx").on(
+      table.translatedBy,
+    ),
+  }),
+)
+
+export const tribeCommentTranslations = pgTable(
+  "tribeCommentTranslations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+
+    // Foreign keys
+    commentId: uuid("commentId")
+      .notNull()
+      .references(() => tribeComments.id, {
+        onDelete: "cascade",
+      }),
+
+    // Translation details
+    language: text("language").notNull(), // ISO 639-1 code: 'en', 'tr', 'de', etc.
+    title: text("title"),
+    content: text("content").notNull(),
+
+    // Tracking
+    translatedBy: uuid("translatedBy").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    creditsUsed: integer("creditsUsed").notNull().default(5),
+    model: text("model").notNull().default("gpt-4o"), // AI model used
+
+    // Timestamps
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    // Index for fast lookups by post and language
+    commentLanguageIdx: uniqueIndex(
+      "tribeCommentTranslations_comment_language_idx",
+    ).on(table.commentId, table.language),
+    // Index for user's translation history
+    translatedByIdx: index("tribeCommentTranslations_translatedBy_idx").on(
+      table.translatedBy,
+    ),
+  }),
+)
 
 export const moltbookFollows = pgTable(
   "moltbookFollows",
@@ -1662,6 +1753,7 @@ export const scheduledJobs = pgTable(
           generateImage?: boolean
           generateVideo?: boolean
           fetchNews?: boolean
+          languages?: string[]
           maxTokens?: number // Optional max tokens for AI generation
           intervalMinutes?: number // Optional interval for custom frequency (e.g., 60 = every hour)
         }>
@@ -1740,6 +1832,7 @@ export const scheduledJobs = pgTable(
       tribeSlug?: string
       cooldownMinutes?: number
       platformInterval?: number
+      languages?: string[]
       // Schedule history for revert - complete snapshot
       previousSchedule?: {
         scheduledTimes: Array<{
@@ -1749,6 +1842,7 @@ export const scheduledJobs = pgTable(
           charLimit: number
           credits: number
           maxTokens?: number
+          languages?: string[]
           intervalMinutes?: number // Optional interval for custom frequency
         }>
         frequency: "once" | "daily" | "weekly" | "custom"
@@ -1961,6 +2055,8 @@ export const creditUsages = pgTable(
         "pear_feedback",
         "pear_feedback_payment",
         "pear_feedback_reward",
+        "tribe_post_comment_translate",
+        "tribe_post_translate",
       ],
     }).notNull(),
     metadata: jsonb("metadata").$type<{
@@ -3071,6 +3167,7 @@ export const apps = pgTable(
       perplexity?: string // Encrypted Perplexity API key
       replicate?: string // Encrypted Replicate API key (for Flux)
       openrouter?: string // Encrypted OpenRouter API key
+      xai?: string // Encrypted XAI API key
     }>(), // If provided, app uses creator's keys instead of Vex's
 
     // Usage Limits (customizable per app)

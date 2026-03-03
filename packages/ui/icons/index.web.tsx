@@ -3,8 +3,18 @@
  * Uses lucide-react for web/browser environments
  */
 
-// AI Brand Icons - explicitly re-export to avoid conflicts with lucide-react
 export * from "@lobehub/icons"
+// AI Brand Icons - explicitly re-export to ensure they are available
+export {
+  Claude,
+  DeepSeek,
+  Flux,
+  Gemini,
+  Grok,
+  OpenAI,
+  OpenRouter,
+  Perplexity,
+} from "@lobehub/icons"
 export type { LucideProps as IconProps } from "lucide-react"
 export * from "lucide-react"
 // Resolve icon conflicts by preferring lucide-react's version

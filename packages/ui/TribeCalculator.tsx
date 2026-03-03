@@ -1820,7 +1820,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                     {user ? (
                       !accountApp ? (
                         <Div style={{}}>
-                          🪢 Continue creating app to earn FREE Tribe credits.
+                          🦋 Continue creating app to earn FREE Tribe credits.
                           After creating your app you will earn 5 on demand
                           Posts for free, then you can schedule posts using this
                           credit calculator.

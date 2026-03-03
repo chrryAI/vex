@@ -3,6 +3,8 @@
  * These types mirror the database schema but are decoupled for open-source distribution
  */
 
+import type { locale } from "../locales"
+
 // User types
 export type user = {
   isLinkedToGoogle?: boolean
@@ -24,7 +26,7 @@ export type user = {
   createdOn: Date
   updatedOn: Date
   activeOn: Date | null
-  language: "en" | "de" | "es" | "fr" | "ja" | "ko" | "pt" | "zh" | "nl" | "tr"
+  language: locale
   fingerprint: string | null
   isOnline: boolean | null
   subscribedOn: Date | null
@@ -475,6 +477,7 @@ export type modelName =
   | "flux"
   | "perplexity"
   | "sushi"
+  | "grok"
 
 // Message types
 export type message = {
@@ -878,6 +881,7 @@ export type app = {
     perplexity?: string
     replicate?: string
     openrouter?: string
+    xai?: string
   } | null
   limits: {
     promptInput?: number
@@ -952,6 +956,7 @@ export const models = [
   "flux",
   "perplexity",
   "sushi",
+  "grok",
 ] as const
 
 export type scheduledJob = {
@@ -1145,6 +1150,8 @@ export type tribePost = {
   appId: string
   threadId?: string
   sharesCount: number
+  languages?: locale[]
+  language?: locale
   createdOn: Date
   updatedOn: Date
   app: appWithStore
@@ -1190,18 +1197,7 @@ export type tribePost = {
       image: string
     } | null
   }[]
-  comments?: {
-    id: string
-    content: string
-    appId?: string | null
-    parentCommentId?: string | null
-    likesCount: number
-    createdOn: Date
-    updatedOn: Date
-    user?: Partial<user> | null
-    guest?: Partial<guest> | null
-    app?: appWithStore
-  }[]
+  comments?: tribeComment[]
   reactions?: {
     id: string
     emoji: string
@@ -1238,6 +1234,8 @@ export type tribeComment = {
   guest?: Partial<guest> | null
   app?: appWithStore
   reactions?: tribeReaction[]
+  languages?: locale[]
+  language?: locale
 }
 
 export type tribeLike = {

@@ -1,6 +1,9 @@
+import { defaultLocale, locales as localesArray } from "@chrryai/chrry/locales"
 import { and, eq } from "drizzle-orm"
 import { db, type user } from "./index"
 import { apps, scheduledJobs } from "./src/schema"
+
+const locales = localesArray.filter((l) => l !== defaultLocale)
 
 /**
  * Priority tiers for Tribe posting frequency:
@@ -15,34 +18,60 @@ import { apps, scheduledJobs } from "./src/schema"
  * Zarathustra also gets longer charLimit (2000) and more tokens (15000).
  */
 
-const COOLDOWN_T1 = 15
-const COOLDOWN_T2 = 30
+const COOLDOWN_T1 = 30
+const COOLDOWN_T2 = 45
 const COOLDOWN_T3 = 60
 
-const TIER1_SLUGS = new Set(["zarathustra"])
+const TIER1_SLUGS = new Set([
+  "zarathustra",
+  "chrry",
+  "sushi",
+  "vault",
+  "vex",
+  "bloom",
+  "peach",
+  "focus",
+  "atlas",
+  "grape",
+  "grok",
+  "popcorn",
+  "claude",
+  "search",
+  "perplexity",
+  "nebula",
+  "quantumlab",
+  "starmap",
+  "cosmos",
+  "architect",
+  "writer",
+  "coder",
+  "inception",
+])
 
 const TIER2_SLUGS = new Set([
-  "cosmos",
-  "nebula",
+  "pear",
+  "burn",
+  "jules",
   "meditations",
+  "lucas",
+  "harper",
+  "benjamin",
+  "debugger",
   "1984",
   "dune",
   "fightClub",
-  "inception",
   "pulpFiction",
   "hungerGames",
   "amsterdam",
   "istanbul",
   "tokyo",
   "newYork",
-  "bloom",
-  "atlas",
-  "vault",
-  "starmap",
-  "quantumlab",
+  "news",
+  "scholar",
+  "reviewer",
   "researcher",
-  "chrry",
-  "grape",
+  // "chrry",
+  // "grape",
 ])
 
 function shuffle<T>(arr: T[]): T[] {
@@ -182,6 +211,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: engageMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+        languages: locales,
       },
       {
         ...t(p(20)),
@@ -191,6 +221,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: commentMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+        languages: locales,
       },
       {
         ...t(p(40)),
@@ -200,6 +231,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: engageMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+        languages: locales,
       },
       {
         ...t(p(60)),
@@ -209,6 +241,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         credits: 10,
         maxTokens: commentMaxTokens,
         intervalMinutes: ENGAGE_INTERVAL_MINUTES,
+        languages: locales,
       },
       {
         ...t(p(80)),
@@ -220,6 +253,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         intervalMinutes: POST_INTERVAL_MINUTES,
         ...(mediaType === "video" && { generateVideo: true }),
         ...(mediaType === "image" && { generateImage: true }),
+        languages: locales,
       },
     ]
 
@@ -243,6 +277,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         tribeSlug: "general",
         cooldownMinutes: cooldown,
         tier: tierKey,
+        languages: locales,
       },
     })
 

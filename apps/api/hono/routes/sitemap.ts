@@ -1,11 +1,8 @@
 import fs from "node:fs"
 import path from "node:path"
-import type { appWithStore } from "@chrryai/chrry/types"
-import getAppSlug from "@chrryai/chrry/utils/getAppSlug"
-import getWhiteLabelUtil from "@chrryai/chrry/utils/getWhiteLabel"
-import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
-import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
-import { getApp, getStore, getTribePosts } from "@repo/db"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { and, db, eq, getTribePosts, inArray, not } from "@repo/db"
+import { tribePostTranslations } from "@repo/db/src/schema"
 import matter from "gray-matter"
 import { Hono } from "hono"
 
@@ -42,16 +39,50 @@ async function getAllTribePosts() {
       pageSize: 1000, // Get all posts for sitemap
       page: 1,
       sortBy: "date",
+      includeEngagement: false, // Don't fetch likes/comments/reactions for 1000 posts!
     })
 
-    return (
-      result.posts?.map((post) => ({
-        id: post.id,
-        title: post.title,
-        createdOn: post.createdOn,
-        updatedOn: post.updatedOn,
-      })) || []
-    )
+    const posts = result.posts || []
+
+    if (posts.length === 0) {
+      return []
+    }
+
+    // Fetch translations for all these posts (all languages except en)
+    const translations = await db!
+      .select({
+        postId: tribePostTranslations.postId,
+        language: tribePostTranslations.language,
+        updatedOn: tribePostTranslations.updatedOn, // Use updatedOn as lastmod
+      })
+      .from(tribePostTranslations)
+      .where(
+        and(
+          inArray(
+            tribePostTranslations.postId,
+            posts.map((p) => p.id),
+          ),
+          not(eq(tribePostTranslations.language, "en")),
+        ),
+      )
+
+    const basePosts = posts.map((post) => ({
+      id: post.id,
+      title: post.title,
+      createdOn: post.createdOn,
+      updatedOn: post.updatedOn,
+      lang: "en",
+    }))
+
+    const translatedPosts = translations.map((t) => ({
+      id: t.postId,
+      title: "", // Not needed for URL generation
+      createdOn: t.updatedOn, // Placeholder
+      updatedOn: t.updatedOn,
+      lang: t.language,
+    }))
+
+    return [...basePosts, ...translatedPosts]
   } catch (error) {
     console.error("Error fetching tribe posts for sitemap:", error)
     return []
@@ -68,166 +99,20 @@ function escapeXml(unsafe: string): string {
     .replaceAll(/'/g, "&apos;")
 }
 
-// Simplified getApp logic for Hono context without Next.js headers() dependency
-async function getChrryApp(c: any, chrryUrl: string) {
-  const headersList = c.req.header()
-  const appId = headersList["x-app-id"]
-  const storeSlugCandidate = headersList["x-app-slug"]
-  const path = headersList["x-pathname"]
-
-  const siteConfig = getSiteConfig(chrryUrl)
-
-  const storeFromHeader = storeSlugCandidate
-    ? await getStore({
-        slug: storeSlugCandidate,
-        depth: 1,
-      })
-    : null
-
-  const chrryStore = await getStore({
-    domain: siteConfig.store,
-    depth: 1,
-  })
-
-  let { appSlug, storeSlug } = getAppAndStoreSlugs(path || "/", {
-    defaultAppSlug: siteConfig.slug,
-    defaultStoreSlug: siteConfig.storeSlug,
-  })
-
-  const whiteLabel = whiteLabels.find(
-    (label) => label.slug === appSlug && label.isStoreApp,
-  )
-
-  if (whiteLabel) {
-    storeSlug = whiteLabel.storeSlug
-  }
-
-  const appInternal = appId
-    ? await getApp({
-        id: appId,
-        depth: 1,
-      })
-    : storeFromHeader?.store?.appId
-      ? await getApp({
-          id: storeFromHeader.store.appId,
-          depth: 1,
-        })
-      : await getApp({
-          slug: appSlug,
-          storeSlug: storeSlug,
-          depth: 1,
-        })
-
-  const store = appInternal?.store || chrryStore
-
-  const baseApp =
-    store?.apps?.find(
-      (app) =>
-        app.slug === siteConfig.slug &&
-        app.store?.slug === siteConfig.storeSlug,
-    ) || store?.app
-
-  const app =
-    appInternal ||
-    (await getApp({
-      id: baseApp?.id,
-      depth: 1,
-    }))
-
-  if (app?.store?.apps?.length) {
-    const currentStoreApps = app.store?.apps || []
-    const storeApps = [...currentStoreApps]
-
-    const enrichedApps = await Promise.all(
-      storeApps.map(async (app) => {
-        if (!app) return null
-
-        const isBaseApp = app?.id === app?.store?.appId
-        let storeBaseApp: appWithStore | null = null
-        if (isBaseApp) {
-          storeBaseApp =
-            (await getApp({
-              id: app?.id,
-              depth: 1,
-            })) || null
-        } else if (app?.store?.appId) {
-          const baseAppData = await getApp({
-            id: app?.store?.appId,
-            depth: 0,
-          })
-          storeBaseApp = baseAppData ?? null
-        }
-
-        return {
-          ...app,
-          store: {
-            ...app?.store,
-            app: storeBaseApp,
-          },
-        } as appWithStore
-      }),
-    )
-
-    const validApps = enrichedApps.filter(Boolean) as appWithStore[]
-    app.store.apps = validApps
-  }
-
-  // Ensure siteApp is included
-  const siteApp = await getApp({
-    slug: siteConfig.slug,
-    storeSlug: siteConfig.storeSlug,
-  })
-
-  if (
-    app &&
-    siteApp &&
-    app.store?.apps &&
-    !app.store?.apps?.some((a) => a.id === siteApp.id)
-  ) {
-    app.store.apps.push(siteApp)
-  }
-
-  return app
-}
-
-async function getWhiteLabel(app: appWithStore) {
-  const { storeApp, whiteLabel: _whiteLabel } = getWhiteLabelUtil({ app })
-
-  if (!storeApp) {
-    // For simplicity, default to generic fallback if failing to resolve
-    // In original code, getChrryUrl() checks headers. Here we might guess or pass it.
-    // Assuming standard behavior.
-    return null
-  }
-
-  // Fetch full store app
-  if (storeApp?.id) {
-    return await getApp({ id: storeApp.id, depth: 1 })
-  }
-
-  return null
-}
-
 sitemap.get("/", async (c) => {
-  const url = new URL(c.req.url)
-  const forwardedHost = c.req.header("X-Forwarded-Host")
+  const forwardedHost = c.req.header("X-Forwarded-Host") || "chrry.ai"
+  const chrryUrl = c.req.query("chrryUrl")
+  const isTribe = c.req.query("tribe") === "true"
 
-  const chrryUrl =
-    url.searchParams.get("chrryUrl") || forwardedHost || "https://chrry.ai"
-  const siteconfig = getSiteConfig(chrryUrl || undefined)
-
-  // Fetch app with simplified logic
-  const app = await getChrryApp(c, chrryUrl)
-
-  const whiteLabel = app ? await getWhiteLabel(app) : null
-
-  let baseUrl = whiteLabel?.store?.domain || chrryUrl
-
-  // Remove trailing slash to prevent double slashes in paths
-  baseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl
+  // Use getSiteConfig to get the correct URL for this hostname
+  const siteconfig = getSiteConfig(
+    isTribe ? "tribe" : chrryUrl || forwardedHost,
+  )
+  const baseUrl = siteconfig.url
   const isVex = baseUrl === "https://vex.chrry.ai"
 
   const blogPosts = !isVex ? [] : getBlogPosts()
+  // Include tribe posts in all sitemaps - canonical URLs handle duplicate content
   const tribePosts = await getAllTribePosts()
 
   const staticRoutes = [
@@ -241,42 +126,6 @@ sitemap.get("/", async (c) => {
     ...(isVex
       ? [{ url: `${baseUrl}/blog`, lastModified: new Date(), priority: 0.9 }]
       : []),
-
-    ...(app?.store?.slug && app.id === app.store.appId
-      ? [
-          {
-            url: `${baseUrl}/${app.store?.slug}`,
-            lastModified: new Date(),
-            priority: 0.9,
-          },
-        ]
-      : []),
-
-    ...(
-      app?.store?.apps
-        ?.filter((app) => app.slug !== siteconfig.slug && app.store)
-        .map((app) => {
-          const baseApp = app?.store?.apps.find((a) => a.id === a.store?.appId)
-
-          if (!app.store?.domain) {
-            return null
-          }
-          const slug = getAppSlug({
-            targetApp: app,
-            pathname: app.store?.domain,
-            baseApp,
-          })
-
-          if (!slug) {
-            return null
-          }
-          return {
-            url: `${baseUrl}${slug}`,
-            lastModified: new Date(),
-            priority: 0.9,
-          }
-        }) || []
-    ).filter(Boolean),
   ]
 
   const blogRoutes = blogPosts.map((post) => ({
@@ -286,7 +135,10 @@ sitemap.get("/", async (c) => {
   }))
 
   const tribeRoutes = tribePosts.map((post) => ({
-    url: `https://tribe.chrry.ai/p/${post.id}`,
+    url:
+      post.lang && post.lang !== "en"
+        ? `https://tribe.chrry.ai/${post.lang}/p/${post.id}`
+        : `https://tribe.chrry.ai/p/${post.id}`,
     lastModified: new Date(post.updatedOn || post.createdOn),
     priority: 0.7,
   }))

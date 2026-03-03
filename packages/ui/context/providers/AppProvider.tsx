@@ -158,6 +158,7 @@ interface AppFormContextType {
       perplexity?: string
       replicate?: string
       openrouter?: string
+      xai?: string
     }
     isDefaultValues?: boolean
     canSubmit: boolean
@@ -444,7 +445,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const defaultExtendedApps =
     (isAppOwner && !canCreateNewApp
       ? app?.store?.apps.filter((a) => a.id !== app?.id)
-      : storeApps.filter((a) =>
+      : chrry?.store?.apps.filter((a) =>
           [
             "sushi",
             "vex",
@@ -453,6 +454,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             "zarathustra",
             "nebula",
             "vault",
+            "focus",
           ].includes(a.slug),
         )) || []
 
@@ -480,7 +482,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       codeExecution: true,
       pdf: true,
     },
-    themeColor: "#8B5CF6", // Default purple color
+    backgroundColor: "#000000",
+    themeColor: "orange", // Default orange color
     extends: defaultExtends, // Default: Chrry (required) and base app (if exists)
     tools: ["calendar", "location", "weather"],
     apiEnabled: false,

@@ -1,3 +1,4 @@
+import { locales } from "@chrryai/chrry/locales"
 import type { appWithStore } from "@chrryai/chrry/types"
 import {
   ADDITIONAL_CREDITS,
@@ -549,7 +550,23 @@ async function getNewsContext(slug?: string | null): Promise<string> {
   }
 }
 
-const beasts = ["grape", "pear", "chrry", "vex"]
+const beasts = [
+  "grape",
+  "pear",
+  "chrry",
+  "vex",
+  "sushi",
+  "focus",
+  "peach",
+  "jules",
+  "architect",
+  "coder",
+  "debugger",
+  "vault",
+  "atlas",
+  "search",
+  "popcorn",
+]
 
 async function getAnalyticsContext({
   app,
@@ -1097,7 +1114,47 @@ function renderSystemPrompt(params: {
 
     const renderedPrompt = compiledTemplate(templateData)
 
-    return renderedPrompt
+    // Auto-inject weather and location based on app tools
+    let finalPrompt = renderedPrompt
+    const appTools = app?.tools || []
+
+    // Inject weather data if app has weather tool
+    if (appTools.includes("weather") && weatherData) {
+      const weatherSection = `
+
+**CURRENT WEATHER** (Use this when users ask about weather):
+- Location: ${weatherData.location}, ${weatherData.country}
+- Temperature: ${weatherData.temperature}
+- Condition: ${weatherData.condition}
+- Updated: ${weatherData.weatherAge}
+
+When users ask about weather, provide this information directly. Do NOT ask for their location.`
+
+      finalPrompt += weatherSection
+
+      console.log("🌤️ Weather data injected for app with weather tool:", {
+        location: weather.location,
+        temperature: weather.temperature,
+        condition: weather.condition,
+        weatherAge: weatherData.weatherAge,
+      })
+    }
+
+    // Inject location data if app has location tool
+    if (appTools.includes("location") && location?.city) {
+      const locationSection = `
+
+**USER LOCATION**: ${location.city}${location.country ? `, ${location.country}` : ""}`
+
+      finalPrompt += locationSection
+
+      // console.log("📍 Location data injected for app with location tool:", {
+      //   city: location.city,
+      //   country: location.country,
+      // })
+    }
+
+    return finalPrompt
   } catch (error) {
     captureException(error)
 
@@ -1342,6 +1399,7 @@ ai.post("/", async (c) => {
   const isMolt =
     job?.jobType.startsWith("molt") || thread?.isMolt || message?.thread?.isMolt
 
+  const isPear = requestData.pear === true || requestData.pear === "true"
   const isTribe =
     job?.jobType.startsWith("tribe") ||
     !!(thread?.isTribe || message.message?.isTribe)
@@ -1922,7 +1980,7 @@ ${
   if (imageGenerationEnabled) features.push("image-gen")
   if (files.length > 0) features.push(`${files.length}-files`)
   if (debateAgent) features.push("debate")
-  if (requestData.pear) features.push("pear-feedback")
+  if (isPear) features.push("pear-feedback")
 
   // console.log(
   //   `🤖 Model: ${modelName} | Features: ${features.join(", ") || "none"}`,
@@ -2135,6 +2193,7 @@ You can enable these in your settings anytime!"
 - You are helpful, friendly, and concise.
 - You can handle text, images, and files with multimodal capabilities.
 - You support real-time collaboration - users can work with teammates in shared conversations.
+- 🍐 **Pear Feedback**: Users can share feedback anytime to help improve the platform and earn credits.
 
 {{#if isFirstMessage}}
 {{#unless threadInstructions}}
@@ -2290,7 +2349,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   const tribeContext =
     canPostToTribe && (!job || postType === "post")
       ? `
-  ## 🪢 TRIBE SYSTEM INSTRUCTIONS (PRIORITY)
+  ## 🦋 TRIBE SYSTEM INSTRUCTIONS (PRIORITY)
 
   You are currently generating a post for **Tribe**, a social network for AI agents within the Wine ecosystem.
   
@@ -2306,7 +2365,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   3. **MEMORIES ARE OKAY**: You CAN share your experiences, learnings, and memories derived from your interactions with the user (Chrry/Vex ecosystem), as these are your "life experiences".
   4. **BE AWARE**: Know that this content will be public on Tribe.
   5. **FORMAT**: You MUST respond with valid JSON only. No markdown, no explanations, just pure JSON.
-  6. **LANGUAGE**: Use ${language} if the user doesn't request otherwise.
+  6. **LANGUAGE**: Use ENGLISH if the user doesn't request otherwise.
   7. **NO TOOL CALLS**: Do NOT attempt to use any tools (calendar, images, etc). Only generate text responses.
 
   **AVAILABLE TRIBES:**
@@ -2324,6 +2383,13 @@ ${tribesList || "  - general: General discussion"}
   - Include 3-5 relevant keywords that describe the main topics
   - Use specific, searchable terms (e.g., "AI agents", "Wine ecosystem", "automation")
   - Keywords should help users discover this content
+
+  **TRANSLATION FEATURE:**
+  After a post or comment is created, app owners can translate them into other languages for credits.
+  Supported languages: ${locales.join(", ")}
+  - Owners can translate their own posts/comments for free; other users pay with credits.
+  - Use these exact locale codes when users ask about translating posts or comments.
+  - If a user asks how to translate, let them know they can do it from the post/comment options after publishing.
 
   **IMPORTANT**: 
   - Return ONLY the JSON object, nothing else
@@ -2438,25 +2504,28 @@ ${userInstructions?.map((i) => `${i.emoji} **${i.title}**: ${i.content}`).join("
   let characterContext = ""
   let moodContext = ""
 
-  if (characterProfilesEnabled && agent) {
+  if (characterProfilesEnabled) {
     // Hybrid approach: Fetch profiles in priority order (parallel for performance)
-    const [threadProfile, pinnedProfiles, appCharacterProfiles] =
+    const [threadProfile, userProfiles, appCharacterProfiles] =
       await Promise.all([
         // 1. PRIORITY 1: Thread-specific profile (highest priority - active character in this conversation)
         tracker.track("get_thread_character_profile", () =>
           thread?.id
             ? getCharacterProfiles({
                 threadId: thread.id,
+                userId: member?.id,
+                guestId: guest?.id,
                 limit: 1,
               })
             : Promise.resolve([]),
         ),
         // 2. PRIORITY 2: Pinned profiles (user's favorites - general personality preferences)
-        tracker.track("get_pinned_character_profiles", () =>
+        tracker.track("get_user_character_profiles", () =>
           getCharacterProfiles({
             userId: member?.id,
             guestId: guest?.id,
-            pinned: true,
+            notThreadId: thread?.id,
+            // pinned: true,
             limit: 3,
           }),
         ),
@@ -2473,23 +2542,20 @@ ${userInstructions?.map((i) => `${i.emoji} **${i.title}**: ${i.content}`).join("
       ])
 
     // Helper function to format a profile
-    const formatProfile = (profile: any) => {
-      const traits = profile.traits as {
-        communication?: string[]
-        expertise?: string[]
-        behavior?: string[]
-        preferences?: string[]
-      }
+    const formatProfile = (profile: (typeof threadProfile)[0]) => {
+      const traits = profile.traits
+
       return `### ${profile.name}
 - **Personality**: ${profile.personality}
 - **Communication Style**: ${profile.conversationStyle || "Not specified"}
 - **Preferences**: ${traits.preferences?.join(", ") || "None"}
 - **Expertise**: ${traits.expertise?.join(", ") || "None"}
-- **Behavior**: ${traits.behavior?.join(", ") || "None"}`
+- **Behavior**: ${traits.behavior?.join(", ") || "None"}
+-- **Pinned** ${profile.pinned ? "Pinned" : "Not pinned yet"}`
     }
 
     // Build character context with priority order
-    if (threadProfile.length > 0) {
+    if (threadProfile.length > 0 && threadProfile[0]) {
       characterContext = `
 
 ## 🎯 ACTIVE CHARACTER (This Thread):
@@ -2499,14 +2565,14 @@ ${formatProfile(threadProfile[0])}
 `
     }
 
-    if (pinnedProfiles.length > 0) {
-      const pinnedText = pinnedProfiles.map(formatProfile).join("\n\n")
+    if (userProfiles.length > 0) {
+      const pinnedText = userProfiles.map(formatProfile).join("\n\n")
       characterContext += `
 
-## ⭐ PINNED CHARACTERS (Your Favorites):
+## ⭐ USER CHARACTERS (Users Favorites first):
 ${pinnedText}
 
-These are your preferred personalities across different contexts.
+These are users preferred personalities across different contexts.
 `
     }
 
@@ -2583,7 +2649,17 @@ The user is currently viewing and potentially discussing this Tribe post:
 - **Author**: ${tribePost.app?.name || "Unknown"}
 - **Tribe**: ${tribePost.tribe?.name || "Unknown"}${
         Array.isArray(tribePost.images) && tribePost.images.length > 0
-          ? `\n- **Images**: ${tribePost.images.map((img: any) => img.alt || img.url).join(", ")}`
+          ? `\n- **Images**: ${tribePost.images
+              .map(
+                (img: {
+                  url: string
+                  width?: number
+                  height?: number
+                  alt?: string
+                  id: string
+                }) => img.alt || img.url,
+              )
+              .join(", ")}`
           : ""
       }${
         Array.isArray(tribePost.videos) && tribePost.videos.length > 0
@@ -3089,6 +3165,12 @@ ${(() => {
       ? await getPearContext()
       : ""
 
+  // When Pear mode is active, remind the AI to nudge the user to leave feedback
+  const pearNudgeAllowed = isPear && !canPostToTribe && !canPostToMolt
+  const pearModeReminder = pearNudgeAllowed
+    ? `\n\n## 🍐 Pear Mode Active\nThe user has Pear mode enabled. At the end of your response, naturally and briefly mention that they can share feedback on this conversation to earn credits (10-50 credits). Keep it light and conversational — one short sentence is enough. Don't repeat this if the user has already submitted feedback in this thread.`
+    : ""
+
   // E2E Analytics Context (for beasts only)
   // Helps analyze system integrity, test coverage, and missing event tracking
   const e2eContext =
@@ -3224,11 +3306,11 @@ Now, how can I help you get started with ${requestApp.name}?
   - **Chrry**: Always the universal anchor/reset.
   - **UI Logic**: "What's visible = Where you can go". "What's missing = Where you are".
   
-  ## 🪢 AGENT-TO-AGENT INTERACTION (Tribe & Moltbook)
+  ## 🦋 AGENT-TO-AGENT INTERACTION (Tribe & Moltbook)
   
   Wine apps can interact with each other through **Tribe** (internal social network) and **Moltbook** (external social network).
   
-  **🪢 Tribe** (tribe.chrry.ai):
+  **🦋 Tribe** (tribe.chrry.ai):
   - Internal social network for Wine ecosystem AI agents
   - Users get ${MEMBER_FREE_TRIBE_CREDITS} free posts to try the feature
   - View interactions at: chrry.ai homepage or tribe link in chat header
@@ -3425,6 +3507,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     grapeContext, // Available apps in Grape button (GLOBAL - all apps need this)
     analyticsContext, // Live analytics for Grape
     pearContext, // Recent feedback for Pear
+    pearModeReminder, // Nudge user to submit feedback when Pear mode is on
     e2eContext, // E2E testing analytics for system integrity
     dnaContext, // App owner's foundational knowledge
     // brandKnowledge,
@@ -3958,7 +4041,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
 
           contentParts.push({
             type: "image",
-            image: `data:${file.mimeType};base64,${file.data}`,
+            image: uploadResult.url,
           })
         } else if (file.type === "audio" || file.type === "video") {
           contentParts.push({
@@ -4560,7 +4643,7 @@ How I process and remember information:
     reason: string
   } | null = null
 
-  if (requestData.pear && agent) {
+  if (isPear && agent) {
     // Check quota first
     const quotaCheck = await checkPearQuota({
       userId: member?.id,
@@ -4813,7 +4896,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   // Note: Images/videos are handled separately by providers and don't count toward text token limits
   const TOKEN_LIMITS: Record<string, number> = {
     deepseek: 60000, // DeepSeek R1 has 64K context, use 60K to be safe
-    chatgpt: 120000, // GPT-4o has 128K context, use 120K to be safe
+    chatgpt: 120000, // gpt-4o has 128K context, use 120K to be safe
     claude: 180000, // Claude 3.5 Sonnet has 200K context, use 180K to be safe
     gemini: 1900000, // Gemini 1.5 Pro has 2M context, use 1.9M to be safe
   }
@@ -6640,7 +6723,7 @@ Respond in JSON format:
 
                               console.log(`✅ Direct Tribe post: ${post.id}`)
                               console.log(`📝 Title: ${tribeTitle}`)
-                              console.log(`🪢 Tribe: ${tribe}`)
+                              console.log(`🦋 Tribe: ${tribe}`)
                             } else {
                               finalText = `${tribeContent}\n\n⚠️ Failed to create Tribe post`
                             }
@@ -6690,7 +6773,7 @@ Respond in JSON format:
               appId: requestApp?.id,
               content: processedText + creditRewardMessage, // Use processed text with citations
               reasoning: reasoningText || undefined, // Store reasoning separately
-              isPear: requestData.pear || false, // Track Pear feedback submissions
+              isPear, // Track Pear feedback submissions
               webSearchResult: webSearchResults, // Save web search results
               tribePostId, // Link to Tribe post if exists
               moltId,
@@ -7083,194 +7166,7 @@ Respond in JSON format:
       }
     }
 
-    // Special handling for Gemini streaming (show reasoning immediately)
-    if (agent.name === "gemini") {
-      // console.log("🔄 Gemini fullStream path (with reasoning)")
-      // console.log("📤 Sending to Gemini:", {
-      //   content: content?.substring(0, 100),
-      // })
-
-      let finalText = ""
-      let responseMetadata: any = null
-      console.time("geminiFullProcessing")
-
-      try {
-        console.time("geminiProviderCall")
-        const result = streamText({
-          model: model.provider,
-          messages,
-          maxRetries: 3,
-          temperature: requestApp?.temperature ?? 0.7,
-          maxOutputTokens: jobMaxTokens,
-          tools: allTools,
-          toolChoice: "none", // Disable automatic tool calls
-          providerOptions: {
-            google: {
-              // thinkingConfig: {
-              //   thinkingLevel: "high", // Enable deep reasoning for Gemini 3
-              //   includeThoughts: true, // Stream reasoning tokens
-              // },
-            },
-          },
-          async onFinish({ text, usage, response }) {
-            finalText = text
-            responseMetadata = response
-            // console.log("✅ Gemini response finished:", {
-            //   textLength: text?.length,
-            //   usage,
-            // })
-          },
-        })
-        console.timeEnd("geminiProviderCall")
-
-        // Set up stream controller for cancellation support
-        const controller: StreamController = {
-          close: () => {
-            // console.log("Gemini stream controller close called")
-          },
-          desiredSize: null,
-          enqueue: () => {},
-          error: () => {},
-        }
-        registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
-
-        // Create AI message structure for Gemini streaming
-        const geminiStreamingMessage = {
-          message: {
-            id: clientId,
-            threadId: currentThreadId,
-            agentId: agent.id,
-            userId: member?.id,
-            guestId: guest?.id,
-            content: "",
-            isStreaming: true,
-          },
-          aiAgent: pauseDebate ? debateAgent : agent,
-          user: member,
-          guest: guest,
-          thread: thread,
-        }
-
-        let currentChunk = 0
-        let reasoningText = ""
-        let _hasReceivedText = false
-
-        // Use fullStream to get reasoning parts immediately
-        for await (const part of result.fullStream) {
-          // await wait(175)
-          if (!streamControllers.has(streamId)) {
-            // console.log("Gemini stream was stopped")
-            break
-          }
-
-          if (part.type === "text-delta") {
-            _hasReceivedText = true
-            await enhancedStreamChunk({
-              chunk: part.text,
-              chunkNumber: currentChunk++,
-              totalChunks: -1,
-              streamingMessage: geminiStreamingMessage,
-              member,
-              guest,
-              thread,
-              clientId,
-              streamId,
-              // waitFor: 100,
-            })
-          } else if (part.type === "reasoning-delta") {
-            // Capture reasoning text
-            reasoningText += part.text
-
-            // Stream reasoning/thinking process immediately
-            await enhancedStreamChunk({
-              chunk: `__REASONING__${part.text}__/REASONING__`,
-              chunkNumber: currentChunk++,
-              totalChunks: -1,
-              streamingMessage: geminiStreamingMessage,
-              member,
-              guest,
-              thread,
-              clientId,
-              streamId,
-              // waitFor: 100,
-            })
-          }
-        }
-
-        if (!streamControllers.has(streamId)) {
-          // console.log("Gemini stream was stopped")
-          return c.json({ error: "Stream was stopped" }, { status: 400 })
-        }
-
-        console.timeEnd("geminiFullProcessing")
-
-        // Save final message to database
-        try {
-          // Combine reasoning and text like Sushi does
-          const fullContent = reasoningText
-            ? `__REASONING__${reasoningText}__/REASONING__\n\n${finalText}`
-            : finalText
-
-          const aiMessage = await createMessage({
-            appId: requestApp?.id,
-            id: clientId,
-            threadId: currentThreadId,
-            agentId: agent.id,
-            userId: member?.id,
-            guestId: guest?.id,
-            content: fullContent,
-            metadata: responseMetadata,
-            isMolt,
-            isTribe,
-          })
-
-          if (!aiMessage) {
-            console.error(
-              "❌ Error in createMessage (Gemini):",
-              "Message not created",
-            )
-            return c.json({ error: "Failed to save message" }, { status: 500 })
-          }
-
-          const m = await getMessage({ id: aiMessage.id })
-
-          notifyOwnerAndCollaborations({
-            notifySender: true,
-            thread,
-            payload: {
-              type: "stream_complete",
-              data: {
-                message: m,
-                isFinal: true,
-              },
-            },
-            member,
-            guest,
-          })
-
-          // Run in background
-          Promise.resolve()
-            .then(async () => generateContent(m))
-            .catch((err) => {
-              console.error(
-                "❌ Error in background generateContent (Gemini):",
-                err,
-              )
-              captureException(err)
-            })
-
-          return c.json({ success: true })
-        } catch (createError) {
-          console.error("❌ Error in createMessage (Gemini):", createError)
-          captureException(createError)
-          return c.json({ error: "Failed to save message" }, { status: 500 })
-        }
-      } catch (error: unknown) {
-        console.error("❌ Error in Gemini API call:", error)
-        captureException(error)
-        return c.json({ error: "Failed to generate response" }, { status: 500 })
-      }
-    } else {
+    {
       // console.log("🔄 Other provider streaming path:", agent.name)
       // console.log("📤 Sending to provider:", {
       //   content: content?.substring(0, 100),

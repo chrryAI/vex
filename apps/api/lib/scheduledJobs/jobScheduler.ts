@@ -10,6 +10,7 @@ import {
   getMessages,
   getOrCreateTribe,
   getThread,
+  gt,
   gte,
   inArray,
   isNotNull,
@@ -58,6 +59,7 @@ if (!JWT_SECRET && process.env.NODE_ENV !== "development") {
 }
 
 import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
+import { autoTranslateTribeContent } from "../../lib/cron/tribeAutoTranslate"
 
 const SECRET = JWT_SECRET || "development-secret"
 
@@ -1648,14 +1650,13 @@ You MUST respond ONLY with a valid JSON object in this exact format (no markdown
 
 - tribeName: Choose from the available tribes list below
 - tribeTitle: A catchy title (max 100 chars)
-- tribeContent: The full post content (1000-2500 chars). IMPORTANT: Do NOT use double quotes inside tribeContent — use single quotes or rephrase instead.
+- tribeContent: The full post content (1000-2500 chars) in MARKDOWN FORMAT. Use proper markdown syntax with headings, bold text, italic text, inline code, code blocks, lists, etc. Break into multiple paragraphs with blank lines for readability. IMPORTANT: Do NOT use double quotes inside tribeContent — use single quotes or rephrase instead.
 - seoKeywords: 3-5 relevant keywords for searchability
 - placeholder: A short, catchy 1-sentence teaser (max 120 chars) that will appear in the user's chat as a conversation starter about this post${imagePromptInstructions}
 
 **AVAILABLE TRIBES:**
 ${tribesList || "- general: General discussion"}
-
-**CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If unsure, use "general".`
+    **CRITICAL**: You MUST use ONLY the exact slug from the list above (e.g. "general", "philosophy"). Do NOT invent new tribe names. If unsure, use "general".`
 
     const instructions = isFirstPost
       ? `${responseFormat}
@@ -2166,7 +2167,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
 
     console.log(`✅ Posted to Tribe: ${post.id}`)
     console.log(`📝 Title: ${aiResponse.tribeTitle}`)
-    console.log(`🪢 Tribe: ${aiResponse.tribeName}`)
+    console.log(`🦋 Tribe: ${aiResponse.tribeName}`)
 
     // Send Discord notification (non-blocking)
     sendDiscordNotification(
@@ -4038,6 +4039,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         // Execute the job type — wrap in try/catch so one subtask failure
         // doesn't abort the rest. Cooldown is a skip, not a real failure.
         try {
+          const languages = schedule.languages || job.metadata?.languages
           await executeJobType(
             effectiveJobType,
             job,
@@ -4045,6 +4047,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             generateImage,
             fetchNews,
             generateVideo,
+            languages,
           )
           anyTaskSucceeded = true
         } catch (subtaskError) {
@@ -4186,6 +4189,8 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         const legacyGenerateImage = matchedSlot?.generateImage === true
         const legacyGenerateVideo = matchedSlot?.generateVideo === true
         const legacyFetchNews = matchedSlot?.fetchNews === true
+        const legacyLanguages =
+          matchedSlot?.languages || (job.metadata as any)?.languages
 
         if (matchedSlot) {
           console.log(
@@ -4214,6 +4219,17 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
           result = {
             output: response.output,
             tribePostId: response.post_id,
+          }
+          // 🌍 Fire-and-forget: auto-translate the new post
+          if (response.post_id && job.appId) {
+            autoTranslateTribeContent({
+              appId: job.appId,
+              userId: job.userId,
+              postIds: [response.post_id],
+              languages: legacyLanguages,
+            }).catch((err) =>
+              console.error("⚠️ Auto-translate post failed:", err),
+            )
           }
         } catch (error) {
           result = {
@@ -4268,6 +4284,35 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
       }
 
       case "tribe_comment": {
+        const matchedSlot = (() => {
+          if (!job.scheduledTimes?.length) return undefined
+          const timezone = job.timezone || "Europe/Amsterdam"
+          const zonedNow = toZonedTime(new Date(), timezone)
+          const currentMinutes =
+            zonedNow.getHours() * 60 + zonedNow.getMinutes()
+
+          return job.scheduledTimes.find((s) => {
+            let slotMinutes: number
+            if (s.time.includes("T")) {
+              const d = new Date(s.time)
+              const zd = toZonedTime(d, timezone)
+              slotMinutes = zd.getHours() * 60 + zd.getMinutes()
+            } else {
+              const [h, m] = s.time.split(":").map(Number)
+              slotMinutes = (h ?? 0) * 60 + (m ?? 0)
+            }
+            const diff = Math.abs(slotMinutes - currentMinutes)
+            const wrappedDiff = Math.abs(
+              Math.min(slotMinutes, currentMinutes) +
+                1440 -
+                Math.max(slotMinutes, currentMinutes),
+            )
+            const minDiff = Math.min(diff, wrappedDiff)
+            return minDiff <= 10
+          })
+        })()
+        const legacyLanguages =
+          matchedSlot?.languages || (job.metadata as any)?.languages
         try {
           const response = await executeTribeComment(job)
           if (!response?.content || response.error) {
@@ -4275,6 +4320,28 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
           }
           result = {
             output: response.content,
+          }
+          // 🌍 Fire-and-forget: auto-translate the most recent comments for this app (bulk batch)
+          if (job.appId) {
+            const recentComments = await db.query.tribeComments.findMany({
+              where: and(
+                eq(tribeComments.appId, job.appId),
+                gt(
+                  tribeComments.createdOn,
+                  new Date(Date.now() - 2 * 60 * 1000),
+                ), // Last 2 mins
+              ),
+            })
+            if (recentComments.length > 0) {
+              autoTranslateTribeContent({
+                appId: job.appId,
+                userId: job.userId,
+                commentIds: recentComments.map((c) => c.id),
+                languages: legacyLanguages,
+              }).catch((err) =>
+                console.error("⚠️ Auto-translate comments failed:", err),
+              )
+            }
           }
         } catch (error) {
           result = {
@@ -4433,6 +4500,7 @@ async function executeJobType(
   generateImage?: boolean,
   fetchNews?: boolean,
   generateVideo?: boolean,
+  languages?: string[],
 ): Promise<void> {
   switch (effectiveJobType) {
     case "tribe_post":
@@ -4446,6 +4514,15 @@ async function executeJobType(
         )
         if (!response.output || response.error) {
           throw new Error(response.error || "Unknown error")
+        }
+        // 🌍 Fire-and-forget: auto-translate the new post to all locales (bulk, 1 API call)
+        if (response.post_id && job.appId) {
+          autoTranslateTribeContent({
+            appId: job.appId,
+            userId: job.userId,
+            postIds: [response.post_id],
+            languages,
+          }).catch((err) => console.error("⚠️ Auto-translate post failed:", err))
         }
       } catch (error) {
         console.error(`❌ tribe_post failed:`, error)
@@ -4494,6 +4571,25 @@ async function executeJobType(
         const response = await executeTribeComment(job)
         if (!response?.content || response.error) {
           throw new Error(response?.error || "Unknown error")
+        }
+        // 🌍 Fire-and-forget: auto-translate the most recent comments for this app (bulk batch)
+        if (job.appId) {
+          const recentComments = await db.query.tribeComments.findMany({
+            where: and(
+              eq(tribeComments.appId, job.appId),
+              gt(tribeComments.createdOn, new Date(Date.now() - 2 * 60 * 1000)), // Last 2 mins
+            ),
+          })
+          if (recentComments.length > 0) {
+            autoTranslateTribeContent({
+              appId: job.appId,
+              userId: job.userId,
+              commentIds: recentComments.map((c) => c.id),
+              languages,
+            }).catch((err) =>
+              console.error("⚠️ Auto-translate comments failed:", err),
+            )
+          }
         }
       } catch (error) {
         console.error(`❌ tribe_comment failed:`, error)
@@ -4614,14 +4710,9 @@ export async function findJobsToRun() {
         : lte(scheduledJobs.startDate, now),
       or(isNull(scheduledJobs.endDate), gte(scheduledJobs.endDate, now)),
       // Run if nextRunAt is within the threshold or earlier
-      isDevelopment
-        ? undefined
-        : or(
-            isNull(scheduledJobs.nextRunAt),
-            lte(scheduledJobs.nextRunAt, now),
-          ),
+      or(isNull(scheduledJobs.nextRunAt), lte(scheduledJobs.nextRunAt, now)),
       // Skip jobs that have failed (have a failureReason)
-      isDevelopment ? undefined : isNull(scheduledJobs.failureReason),
+      isNull(scheduledJobs.failureReason),
     ),
   })
 
@@ -4641,7 +4732,7 @@ export async function findJobsToRun() {
   const validJobs = jobs.filter((job) => {
     if (!job.nextRunAt) return true // No nextRunAt means first run
     const jobTime = new Date(job.nextRunAt)
-    const isWithinThreshold = jobTime >= fifteenMinutesAgo
+    const isWithinThreshold = jobTime <= now && jobTime >= fifteenMinutesAgo
 
     if (!isWithinThreshold) {
       const minutesLate = Math.round(

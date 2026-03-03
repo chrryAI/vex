@@ -5,13 +5,14 @@ import {
   type ReactNode,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react"
 import toast from "react-hot-toast"
 import useSWR from "swr"
 import { useAppContext } from "../../context/AppContext"
+import useLocalStorage from "../../hooks/useLocalStorage"
 import { useWebSocket } from "../../hooks/useWebSocket"
-
 import { useNavigation } from "../../platform"
 import type {
   appWithStore,
@@ -56,6 +57,15 @@ interface TribeContextType {
   sortBy: "date" | "hot" | "liked"
   order: "asc" | "desc"
   tribeSlug?: string
+  isTranslating: boolean
+  setIsTranslating: (val: boolean) => void
+  translatePost: ({
+    id,
+    changes,
+  }: {
+    id: string
+    changes: string[]
+  }) => Promise<void>
   currentTribe?: paginatedTribes["tribes"][number]
   setSortBy: (val: "date" | "hot" | "liked") => void
   setOrder: (val: "asc" | "desc") => void
@@ -78,6 +88,13 @@ interface TribeContextType {
   tags: string[]
   setTags: (id: string[]) => void
   isTogglingLike: string | undefined
+  translateComment: ({
+    id,
+    changes,
+  }: {
+    id: string
+    changes: string[]
+  }) => Promise<void>
 }
 
 const TribeContext = createContext<TribeContextType | undefined>(undefined)
@@ -100,9 +117,11 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setTribePost,
     mergeApps,
     deviceId,
+    language,
     getAppSlug,
     tribeSlug,
     currentTribe,
+    setLanguageModal,
     app, // Current selected app for filtering
     ...auth
   } = useAuth()
@@ -114,6 +133,9 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const { push, addParams, removeParams, searchParams } = useNavigation()
 
   const { captureException, t } = useAppContext()
+
+  // Debounce timer for cache invalidation
+  const invalidationTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   const [sortBy, setSortByInternal] = useState<"date" | "hot" | "liked">(
     (searchParams.get("sort") as "date" | "hot" | "liked") || "hot",
@@ -156,13 +178,11 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const setTags = (val: string[]) => {
     setTagsInternal(val)
 
-    const url = new URL(window.location.href)
-    if (val.length === 0) {
-      url.searchParams.set("tags", val.join(","))
+    if (val.length !== 0) {
+      addParams({ tags: val.join(",") })
     } else {
-      url.searchParams.delete("tags")
+      removeParams(["tags"])
     }
-    window.history.replaceState(null, "", url.toString())
   }
 
   const setShouldLoadPosts = (val: boolean) => {
@@ -170,11 +190,29 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setLoadPostsCounter(loadPostsCounter + 1)
   }
 
-  const [search, setSearchInitial] = useState<string | undefined>()
+  const searchParamsSearch = searchParams.get("search") || undefined
+
+  const [search, setSearchInitial] = useState<string | undefined>(
+    searchParamsSearch,
+  )
 
   const setSearch = (val?: string) => {
     setSearchInitial(val)
   }
+
+  useEffect(() => {
+    const tags = searchParams.get("tags")
+    if (!tags) {
+      setTagsInternal([])
+    }
+  }, [searchParams.get("tags")])
+
+  useEffect(() => {
+    if (searchParamsSearch !== search) {
+      setSearchInitial(searchParamsSearch)
+    }
+  }, [searchParamsSearch])
+
   const [until, setUntilInitial] = useState<number>(
     searchParams?.get("until") ? Number(searchParams.get("until")) : 1,
   )
@@ -229,18 +267,23 @@ export function TribeProvider({ children }: TribeProviderProps) {
     error: tribePostError,
     isLoading: isLoadingPost,
   } = useSWR(
-    postId && token ? ["tribePost", postId, app?.id, loadPostCounter] : null,
+    postId && token
+      ? ["tribePost", postId, app?.id, loadPostCounter, language]
+      : null,
     () => {
       if (!token || !postId) return
 
       return actions.getTribePost({
         id: postId,
         appId: app?.id,
+        language,
       })
     },
     {
       fallbackData: initialTribePost,
       revalidateOnFocus: !!initialTribePost,
+      refreshInterval: 900000, // Revalidate every 15 minutes (900000ms)
+      dedupingInterval: 60000, // Dedupe requests within 1 minute
     },
   )
 
@@ -277,6 +320,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
           canShowTribeProfile,
           loadPostsCounter,
           tribeSlug,
+          language,
         ]
       : null,
     () => {
@@ -284,6 +328,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
       return actions.getTribePosts({
         pageSize: 10 * until,
         search,
+        language,
         characterProfileIds,
         tags: tags.length > 0 ? tags : undefined,
         sortBy,
@@ -295,6 +340,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     {
       fallbackData: initialTribePosts,
       revalidateOnFocus: !!initialTribePosts,
+      refreshInterval: 900000, // Revalidate every 15 minutes (900000ms)
+      dedupingInterval: 60000, // Dedupe requests within 1 minute
     },
   )
 
@@ -503,6 +550,17 @@ export function TribeProvider({ children }: TribeProviderProps) {
           data?.tribePostId &&
             !pendingPostIds.includes(data.tribePostId) &&
             setPendingPostIds(pendingPostIds.concat(data.tribePostId))
+
+          // Debounced cache invalidation - wait 30s after last post
+          // This prevents excessive refetches when multiple posts arrive
+          if (invalidationTimerRef.current) {
+            clearTimeout(invalidationTimerRef.current)
+          }
+          invalidationTimerRef.current = setTimeout(() => {
+            console.log("🔄 Invalidating tribe posts cache (debounced)...")
+            refetchPosts()
+            invalidationTimerRef.current = null
+          }, 30000) // 30 seconds
         }
       }
       if (type === "new_comment_start") {
@@ -626,10 +684,88 @@ export function TribeProvider({ children }: TribeProviderProps) {
     }
   }
 
-  const [optimisticLiked, setOptimisticLiked] = useState<string[]>([])
+  // Use localStorage for user likes - persists across sessions
+  const [optimisticLiked, setOptimisticLiked] = useLocalStorage<string[]>(
+    "tribe:user:likes",
+    [],
+  )
   const [optimisticDelta, setOptimisticDelta] = useState<Map<string, number>>(
     new Map(),
   )
+
+  const [isTranslating, setIsTranslating] = useState(false)
+
+  const translatePost = async ({
+    id,
+    changes,
+  }: {
+    id: string
+    changes: string[]
+  }) => {
+    setIsTranslating(true)
+    try {
+      const response = await apiFetch(`${API_URL}/tribe/p/${id}/translate`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          languages: changes,
+        }),
+      })
+
+      if (response.ok) {
+        postId ? await refetchTribePost() : await refetchPosts()
+      } else {
+        const error = await response.json()
+        toast.error(
+          `${t("Translation failed")}: ${error.error || t("An error occurred")}`,
+        )
+      }
+    } catch (error) {
+      console.error("Translation error:", error)
+      toast.error(`${t("Translation failed")}: ${t("An error occurred")}`)
+    } finally {
+      setIsTranslating(false)
+    }
+  }
+
+  const translateComment = async ({
+    id,
+    changes,
+  }: {
+    id: string
+    changes: string[]
+  }) => {
+    setIsTranslating(true)
+    try {
+      const response = await apiFetch(`${API_URL}/tribe/c/${id}/translate`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          languages: changes,
+        }),
+      })
+
+      if (response.ok) {
+        postId ? await refetchTribePost() : await refetchPosts()
+      } else {
+        const error = await response.json()
+        toast.error(
+          `${t("Translation failed")}: ${error.error || t("An error occurred")}`,
+        )
+      }
+    } catch (error) {
+      console.error("Translation error:", error)
+      toast.error(`${t("Translation failed")}: ${t("An error occurred")}`)
+    } finally {
+      setIsTranslating(false)
+    }
+  }
 
   const toggleLike = async (postId: string): Promise<{ liked: boolean }> => {
     if (!postId) {
@@ -699,6 +835,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     }
   }
 
+  const mergedAppsRef = useRef<string>("")
+
   useEffect(() => {
     // Collect unique apps from posts, comments, and replies using a Set
     const appsSet = new Map<string, appWithStore>()
@@ -732,8 +870,16 @@ export function TribeProvider({ children }: TribeProviderProps) {
       })
     }
 
-    // Merge all unique apps
-    mergeApps(Array.from(appsSet.values()))
+    const newApps = Array.from(appsSet.values())
+    const newAppsFingerprint = newApps
+      .map((a) => a.id)
+      .sort()
+      .join(",")
+
+    if (newApps.length > 0 && newAppsFingerprint !== mergedAppsRef.current) {
+      mergedAppsRef.current = newAppsFingerprint
+      mergeApps(newApps)
+    }
   }, [tribePosts, tribePost, mergeApps])
 
   const value: TribeContextType = {
@@ -772,6 +918,10 @@ export function TribeProvider({ children }: TribeProviderProps) {
     deleteComment,
     isSwarm,
     isTogglingLike,
+    isTranslating,
+    translatePost,
+    setIsTranslating,
+    translateComment,
     tags,
     setTags,
     posting:

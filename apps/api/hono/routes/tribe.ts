@@ -20,8 +20,10 @@ import {
 import {
   apps,
   tribeComments,
+  tribeCommentTranslations,
   tribeLikes,
   tribePosts,
+  tribePostTranslations,
   tribes,
 } from "@repo/db/src/schema"
 import { Hono } from "hono"
@@ -213,6 +215,7 @@ app.get("/likes", async (c) => {
 app.get("/p", async (c) => {
   const tracker = new PerformanceTracker("tribe_posts_request")
   const tribeId = c.req.query("tribeId")
+  const language = c.req.query("language")
   const tribeSlug = c.req.query("tribeSlug")
   const appId = c.req.query("appId")
   const search = c.req.query("search")
@@ -246,7 +249,7 @@ app.get("/p", async (c) => {
         }
       : dbRedis
 
-  const skipCache = true
+  const skipCache = false
 
   try {
     // Create cache key based on all query parameters
@@ -254,7 +257,8 @@ app.get("/p", async (c) => {
     const userKey =
       sortBy === "liked" ? member?.id || guest?.id || "anonymous" : "all"
     const tags = c.req.query("tags") // comma-separated tag list
-    const cacheKey = `tribe:posts:${sortBy || "date"}:${order || "desc"}:${tribeId || "all"}:${appId || "all"}:${search || ""}:${characterProfileIds || ""}:${tags || ""}:${pageSize || 10}:${page || 1}:${userKey}`
+    const id = c.req.query("id")
+    const cacheKey = `tribe:posts:sortBy:${sortBy || "date"}:order:${order || "desc"}:tribeId:${tribeId || "all"}:tribeSlug:${tribeSlug || "all"}:appId:${appId || "all"}:id:${id || "all"}:search:${search || ""}:characterProfileIds:${characterProfileIds || ""}:tags:${tags?.split(",") || ""}:pageSize:${pageSize || 10}:page:${page || 1}:userKey:${userKey}:language:${language || "en"}`
 
     let result = null
 
@@ -289,28 +293,81 @@ app.get("/p", async (c) => {
         }),
       )
 
-      // Store in Redis cache with 5 minute TTL
+      // Store in Redis cache with 15 minute TTL
       if (!isDevelopment && !isE2E && !skipCache) {
-        await redis.setex(cacheKey, 300, JSON.stringify(result))
+        await redis.setex(cacheKey, 900, JSON.stringify(result))
         console.log(`💾 Cached tribe posts: ${cacheKey}`)
       }
     }
 
+    // Fetch translations if language is specified
+
     const data = {
       ...result,
-      posts: result?.posts?.map((r: tribePost) => ({
-        ...r,
-        content: (() => {
-          const hasMedia =
-            (Array.isArray(r.images) ? r.images.length > 0 : !!r.images) ||
-            (Array.isArray(r.videos) ? r.videos.length > 0 : !!r.videos)
-          const limit = 300 * (hasMedia ? 2 : 1)
-          return r.content && r.content.length > limit
-            ? `${r.content.slice(0, limit)}...`
-            : r.content
-        })(),
-        // App already includes store from database join
-      })),
+      posts: await Promise.all(
+        result?.posts?.map(async (r: tribePost) => {
+          const postTranslations =
+            await db.query.tribePostTranslations.findMany({
+              where: eq(tribePostTranslations.postId, r.id),
+            })
+
+          const postTranslation = postTranslations.find(
+            (t) => t.language === language,
+          )
+          const postContent = postTranslation?.content || r.content
+          const title = postTranslation?.title || r.title
+
+          const postLanguages = postTranslations?.map((x) => x.language)
+
+          return {
+            ...r,
+            comments: await Promise.all(
+              r?.comments?.map(async (c) => {
+                const commentTranslations =
+                  await db.query.tribeCommentTranslations.findMany({
+                    where: eq(tribeCommentTranslations.commentId, c.id),
+                  })
+                const commentTranslation = commentTranslations.find(
+                  (t) => t.language === language,
+                )
+                const commentContent = commentTranslation?.content || c.content
+
+                const commentLanguages = commentTranslations.map(
+                  (x) => x.language,
+                )
+
+                return {
+                  ...c,
+                  content: commentContent,
+                  languages: commentLanguages.length
+                    ? commentLanguages.includes("en")
+                      ? commentLanguages
+                      : commentLanguages.concat("en")
+                    : ["en"],
+                  language: commentTranslation?.language || "en",
+                }
+              }) ?? [],
+            ),
+            languages: postLanguages.length
+              ? postLanguages.includes("en")
+                ? postLanguages
+                : postLanguages.concat("en")
+              : ["en"],
+            title,
+            language: postTranslation?.language || "en",
+            content: (() => {
+              const hasMedia =
+                (Array.isArray(r.images) ? r.images.length > 0 : !!r.images) ||
+                (Array.isArray(r.videos) ? r.videos.length > 0 : !!r.videos)
+              const limit = 300 * (hasMedia ? 2 : 1)
+              return postContent && postContent.length > limit
+                ? `${postContent.slice(0, limit)}...`
+                : postContent
+            })(),
+            // App already includes store from database join
+          }
+        }),
+      ),
     }
 
     return c.json({
@@ -332,7 +389,7 @@ app.get("/p", async (c) => {
 // Get single tribe post with full details (comments, reactions, likes)
 app.get("/p/:id", async (c) => {
   const tracker = new PerformanceTracker("tribe_post_request")
-
+  const language = c.req.query("language")
   const member = await tracker.track("tribe_post_auth_member", () =>
     getMember(c),
   )
@@ -364,13 +421,11 @@ app.get("/p/:id", async (c) => {
         }
       : dbRedis
 
-  const skipCache = true
+  const skipCache = false
 
   try {
     // Create cache key for single post
-    const cacheKey = `tribe:post:${postId}`
-
-    const _cachedPost = null
+    const cacheKey = `tribe:post:${postId}:language:${language || "en"}`
 
     // Check Redis cache first
     if (!skipCache && !isDevelopment && !isE2E) {
@@ -453,21 +508,72 @@ app.get("/p/:id", async (c) => {
       tribePostId: post.id,
     })
 
+    // Get available translations for this post
+    const translations = await tracker.track("tribe_post_translations", () =>
+      db.query.tribePostTranslations.findMany({
+        where: eq(tribePostTranslations.postId, postId),
+        columns: {
+          language: true,
+          createdOn: true,
+        },
+      }),
+    )
+
+    // Get translation if language is specified
+    let translatedTitle = post.title
+    let translatedContent = post.content
+    if (language && language !== "en") {
+      const translation = await db.query.tribePostTranslations.findFirst({
+        where: and(
+          eq(tribePostTranslations.postId, postId),
+          eq(tribePostTranslations.language, language),
+        ),
+      })
+      if (translation) {
+        translatedTitle = translation.title || post.title
+        translatedContent = translation.content
+      }
+    }
+
     const responseData = {
       success: true,
       placeholder: placeHolder?.text,
+      availableLanguages: translations.map((t) => t.language),
       post: {
         ...post,
+        title: translatedTitle,
+        content: translatedContent,
         user: null,
         guest: null,
         app: await getApp({ id: post.appId, threadId: thread?.id }),
         comments: await Promise.all(
-          comments.map(async (c) => ({
-            ...c.comment,
-            app: c.app
-              ? await getApp({ id: c.app.id, threadId: thread?.id })
-              : null,
-          })),
+          comments.map(async (c) => {
+            // Fetch comment translations
+            const commentTranslations =
+              await db.query.tribeCommentTranslations.findMany({
+                where: eq(tribeCommentTranslations.commentId, c.comment.id),
+              })
+
+            const commentTranslation =
+              language && language !== "en"
+                ? commentTranslations.find((t) => t.language === language)
+                : undefined
+
+            const commentLanguages = commentTranslations.map((t) => t.language)
+
+            return {
+              ...c.comment,
+              content: commentTranslation?.content ?? c.comment.content,
+              languages: commentLanguages.length
+                ? commentLanguages.includes("en")
+                  ? commentLanguages
+                  : commentLanguages.concat("en")
+                : ["en"],
+              app: c.app
+                ? await getApp({ id: c.app.id, threadId: thread?.id })
+                : null,
+            }
+          }),
         ),
         reactions: await Promise.all(
           reactions.map(async (c) => ({
@@ -487,9 +593,9 @@ app.get("/p/:id", async (c) => {
       },
     }
 
-    // Store in Redis cache with 5 minute TTL
+    // Store in Redis cache with 15 minute TTL
     if (!isDevelopment && !isE2E) {
-      await redis.setex(cacheKey, 300, JSON.stringify(responseData))
+      await redis.setex(cacheKey, 900, JSON.stringify(responseData))
       console.log(`💾 Cached tribe post: ${postId}`)
     }
 
@@ -634,6 +740,22 @@ app.delete("/p/:id", async (c) => {
         .update(tribes)
         .set({ postsCount: sql`GREATEST(${tribes.postsCount} - 1, 0)` })
         .where(eq(tribes.id, post.tribeId))
+    }
+
+    // Invalidate cache - delete single post and all feed caches
+    if (!isDevelopment && !isE2E) {
+      // Delete all language variations of the single post
+      const postKeys = await dbRedis.keys(`tribe:post:${postId}*`)
+      if (postKeys.length > 0) {
+        await dbRedis.del(...postKeys)
+      }
+
+      // Delete all feed caches (they contain this post)
+      const feedKeys = await dbRedis.keys("tribe:posts:*")
+      if (feedKeys.length > 0) {
+        await dbRedis.del(...feedKeys)
+      }
+      console.log(`🗑️ Invalidated cache for deleted post: ${postId}`)
     }
 
     return c.json({

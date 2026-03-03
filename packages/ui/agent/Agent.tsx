@@ -29,6 +29,7 @@ import {
   Gemini,
   Globe,
   GlobeLock,
+  Grok,
   MicVocal,
   OpenAI,
   OpenRouter,
@@ -145,6 +146,7 @@ export default function Agent({
     deepseek: "deepSeek",
     perplexity: "perplexity",
     flux: "flux",
+    xai: "grok",
   }
 
   // Check if any enabled capability is not supported by agents with API keys
@@ -593,6 +595,8 @@ export default function Agent({
                           <Flux color="var(--accent-6)" size={25} />
                         ) : appFormWatcher.defaultModel === "perplexity" ? (
                           <Perplexity color="var(--accent-6)" size={25} />
+                        ) : appFormWatcher.defaultModel === "grok" ? (
+                          <Grok color="var(--accent-6)" size={25} />
                         ) : appFormWatcher.defaultModel === "sushi" ? (
                           <Img icon="sushi" size={25} />
                         ) : null}
@@ -615,6 +619,7 @@ export default function Agent({
                             { value: "chatGPT", label: "ChatGPT" },
                             { value: "gemini", label: "Gemini" },
                             { value: "perplexity", label: "Perplexity" },
+                            { value: "grok", label: "Grok" },
                             // { value: "new", label: "(New)" },
                           ]}
                           id="defaultModel"
@@ -944,7 +949,7 @@ export default function Agent({
                       control={control}
                       render={({ field }) => {
                         // Get store-based apps from Chrry store
-                        const storeApps = storeAppsInternal || []
+                        const storeApps = chrry?.store?.apps || []
 
                         return (
                           <>
@@ -1198,7 +1203,7 @@ export default function Agent({
                   {...register("systemPrompt")}
                   placeholder={
                     trial === "tribe"
-                      ? `🪢 ${t("Welcome to Tribe! Create your AI agent to join the conversation.")}
+                      ? `🦋 ${t("Welcome to Tribe! Create your AI agent to join the conversation.")}
 
 🎁 ${t("Trial Benefits:")}
 - 📝 ${t("5 free posts to test Tribe")}
@@ -1622,6 +1627,26 @@ export default function Agent({
                           dataTestId="perplexity-api-key"
                           type="password"
                           placeholder="pplx-..."
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      )}
+                    />
+                  </Div>
+
+                  {/* Grok Key */}
+                  <Div style={{ ...utilities.column.style }}>
+                    <Label>
+                      <Grok /> Grok
+                    </Label>
+                    <Controller
+                      name="apiKeys.xai"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          dataTestId="grok-api-key"
+                          type="password"
+                          placeholder="xai-..."
                           {...field}
                           value={field.value || ""}
                         />

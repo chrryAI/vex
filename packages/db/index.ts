@@ -19,6 +19,7 @@ import {
   lte,
   max,
   ne,
+  not,
   notInArray,
   or,
   sql,
@@ -45,6 +46,32 @@ import {
   invalidateUser,
   setCache,
 } from "./src/cache"
+
+export type locale =
+  | "en"
+  | "de"
+  | "es"
+  | "fr"
+  | "ja"
+  | "ko"
+  | "pt"
+  | "zh"
+  | "nl"
+  | "tr"
+
+export const locales: locale[] = [
+  "en",
+  "de",
+  "es",
+  "fr",
+  "ja",
+  "ko",
+  "pt",
+  "zh",
+  "nl",
+  "tr",
+]
+
 import * as schema from "./src/schema"
 import {
   accounts,
@@ -117,6 +144,7 @@ import {
   tribeMemberships,
   tribeNews,
   tribePosts,
+  tribePostTranslations,
   tribeReactions,
   tribes,
   users,
@@ -173,7 +201,7 @@ export const DB_URL =
 
 export const isCI = process.env.CI
 
-export const isSeedSafe = MODE === "e2e" && DB_URL?.includes("pb9ME51YnaFcs")
+export const isSeedSafe = DB_URL?.includes("pb9ME51YnaFcs")
 
 export const isWaffles = false
 // export const isWaffles = process.env.DB_URL?.includes("waffles")
@@ -183,6 +211,8 @@ export const isProd = isSeedSafe
   : isCI || !DB_URL
     ? false
     : !DB_URL?.includes("localhost")
+
+export const isReplica = !isProd && DB_URL?.includes("vex")
 
 export { decrypt, encrypt, generateEncryptionKey } from "./encryption"
 // Export cache functions and redis instance for external use
@@ -206,6 +236,7 @@ export {
   sonarIssues,
   lte,
   sonarMetrics,
+  not,
   ne,
 }
 
@@ -589,6 +620,8 @@ export async function logCreditUsage({
     | "pear_feedback"
     | "pear_feedback_payment"
     | "pear_feedback_reward"
+    | "tribe_post_comment_translate"
+    | "tribe_post_translate"
   threadId?: string
   messageId?: string
   appId?: string
@@ -679,7 +712,7 @@ export async function getCreditsSpent({
 
     const totalCredits = Number(result[0]?.totalCredits) || 0
 
-    console.log("💰 Total credits spent:", totalCredits)
+    // console.log("💰 Total credits spent:", totalCredits)
     return totalCredits
   } catch (error) {
     console.error("❌ Error calculating credits spent:", error)
@@ -4915,32 +4948,6 @@ export const createOrUpdateApp = async ({
 
     await db.insert(appExtends).values(extendsData)
     console.log(`✅ Created ${extendsData.length} extends relationships`)
-
-    // Install extended apps to the same store
-    if (result.storeId) {
-      // Get existing store installs for extended apps
-      const existingInstalls = await db
-        .select()
-        .from(storeInstalls)
-        .where(and(eq(storeInstalls.storeId, result.storeId)))
-
-      const existingAppIds = new Set(
-        existingInstalls.map((install) => install.appId),
-      )
-
-      // Install only new extended apps (avoid duplicates)
-      const newInstalls = extendsList
-        .filter((appId) => !existingAppIds.has(appId))
-        .map((appId) => ({
-          storeId: result!.storeId!,
-          appId,
-        }))
-
-      if (newInstalls.length > 0) {
-        await db.insert(storeInstalls).values(newInstalls)
-        console.log(`✅ Installed ${newInstalls.length} extended apps to store`)
-      }
-    }
   }
 
   return result
@@ -5092,20 +5099,12 @@ export const getApp = async ({
           eq(apps.visibility, "public"),
         )
 
-  // Check if user owns any apps to determine cache strategy
-  const isAppOwner =
-    (userId &&
-      (await db.select().from(apps).where(eq(apps.userId, userId)).limit(1))
-        .length > 0) ||
-    (guestId &&
-      (await db.select().from(apps).where(eq(apps.guestId, guestId)).limit(1))
-        .length > 0)
-
-  // Use shared cache key for public apps if user doesn't own any apps
-  // Otherwise use user-specific key (they might have user-specific data like placeholders)
-  const cacheKey = isAppOwner
-    ? `app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
-    : `app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
+  // Use user-specific cache key if userId/guestId provided (for placeholders)
+  // Otherwise use public cache key
+  const cacheKey =
+    userId || guestId
+      ? `app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
+      : `app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
 
   // Try cache first
 
@@ -5267,11 +5266,16 @@ export const getApp = async ({
     }),
   } as unknown as appWithStore
 
+  // Determine if user is owner from query result (no extra DB queries needed)
+  const isOwner =
+    (userId && app.app.userId === userId) ||
+    (guestId && app.app.guestId === guestId)
+
   // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
-  setCache(cacheKey, result, isAppOwner ? 60 * 5 : 60 * 60)
+  setCache(cacheKey, result, isOwner ? 60 * 5 : 60 * 60)
 
   // Cross-seed public cache if owner-specific request
-  if (isAppOwner) {
+  if (isOwner) {
     const publicCacheKey = `app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
     // Sanitize user-specific data (placeholders)
     const publicResult = { ...result, placeHolder: undefined }
@@ -6285,25 +6289,12 @@ export async function getStores({
   includePublic?: boolean
   ownerId?: string
 }) {
-  // Check if user owns any stores to determine cache strategy
-  const isStoreOwner =
-    (userId &&
-      (await db.select().from(stores).where(eq(stores.userId, userId)).limit(1))
-        .length > 0) ||
-    (guestId &&
-      (
-        await db
-          .select()
-          .from(stores)
-          .where(eq(stores.guestId, guestId))
-          .limit(1)
-      ).length > 0)
-
-  // Use shared cache key for public stores if user doesn't own any stores
-  // Otherwise use user-specific key
-  const cacheKey = isStoreOwner
-    ? `stores:user:${userId}:guest:${guestId}:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
-    : `stores:public:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
+  // Use user-specific cache key if userId/guestId provided
+  // Otherwise use public cache key
+  const cacheKey =
+    userId || guestId
+      ? `stores:user:${userId}:guest:${guestId}:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
+      : `stores:public:app:${appId}:owner:${ownerId}:public:${includePublic}:page:${page}:size:${pageSize}:isSafe:${isSafe}`
 
   // Try cache first
   const cached = await getCache<storesListResult>(cacheKey)
@@ -6424,6 +6415,13 @@ export async function getStores({
     nextPage,
   }
 
+  // Determine if user owns any stores from results (no extra DB queries needed)
+  const isStoreOwner = cleanedStores.some(
+    (s) =>
+      (userId && s.store.userId === userId) ||
+      (guestId && s.store.guestId === guestId),
+  )
+
   // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
   setCache(cacheKey, storesResult, isStoreOwner ? 60 * 5 : 60 * 60)
 
@@ -6470,25 +6468,12 @@ export async function getStore({
   skipCache?: boolean
   parentStoreId?: string | null
 }) {
-  // Check if user owns any stores to determine cache strategy
-  const isStoreOwner =
-    (userId &&
-      (await db.select().from(stores).where(eq(stores.userId, userId)).limit(1))
-        .length > 0) ||
-    (guestId &&
-      (
-        await db
-          .select()
-          .from(stores)
-          .where(eq(stores.guestId, guestId))
-          .limit(1)
-      ).length > 0)
-
-  // Use shared cache key for public stores if user doesn't own any stores
-  // Otherwise use user-specific key
-  const cacheKey = isStoreOwner
-    ? `store:${id || slug || domain || appId}:user:${userId}:guest:${guestId}:depth:${depth}:parent:${parentStoreId || "none"}`
-    : `store:${id || slug || domain || appId}:public:depth:${depth}:parent:${parentStoreId || "none"}`
+  // Use user-specific cache key if userId/guestId provided
+  // Otherwise use public cache key
+  const cacheKey =
+    userId || guestId
+      ? `store:${id || slug || domain || appId}:user:${userId}:guest:${guestId}:depth:${depth}:parent:${parentStoreId || "none"}`
+      : `store:${id || slug || domain || appId}:public:depth:${depth}:parent:${parentStoreId || "none"}`
 
   if (!skipCache) {
     // Try cache first
@@ -6604,6 +6589,11 @@ export async function getStore({
     app: appWithStore,
     apps: appsWithNestedStores,
   }
+
+  // Determine if user is owner from query result (no extra DB queries needed)
+  const isStoreOwner =
+    (userId && result.stores.userId === userId) ||
+    (guestId && result.stores.guestId === guestId)
 
   // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
   setCache(cacheKey, storeResult, isStoreOwner ? 60 * 5 : 60 * 60)
@@ -7703,7 +7693,7 @@ export const getTribePosts = async ({
   sortBy = "date",
   order = "desc",
   tribeSlug,
-  accountId,
+  includeEngagement = true,
 }: {
   tribeId?: string
   appId?: string
@@ -7718,7 +7708,7 @@ export const getTribePosts = async ({
   pageSize?: number
   sortBy?: "date" | "hot" | "liked"
   order?: "asc" | "desc"
-  accountId?: string
+  includeEngagement?: boolean
 }) => {
   try {
     const conditions = [
@@ -7871,46 +7861,91 @@ export const getTribePosts = async ({
     // Cache for getApp results to avoid N+1 queries
     const appCache = new Map<string, appWithStore | undefined>()
 
-    // Fetch engagement data for all posts in parallel
     const postsWithEngagement = await Promise.all(
       result.map(async (row) => {
-        const [likes, comments, reactions] = await Promise.all([
-          // Get likes
-          db
-            .select({
-              like: tribeLikes,
-              user: users,
-              guest: guests,
-            })
-            .from(tribeLikes)
-            .leftJoin(users, eq(tribeLikes.userId, users.id))
-            .leftJoin(guests, eq(tribeLikes.guestId, guests.id))
-            .where(eq(tribeLikes.postId, row.post.id))
-            .limit(100),
+        if (!includeEngagement) {
+          return {
+            id: row.post.id,
+            title: row.post.title,
+            content: row.post.content,
+            visibility: row.post.visibility,
+            likesCount: row.post.likesCount,
+            commentsCount: row.post.commentsCount,
+            images: row.post.images,
+            videos: row.post.videos,
+            sharesCount: row.post.sharesCount,
+            createdOn: row.post.createdOn,
+            updatedOn: row.post.updatedOn,
+            languages: [],
+            app: row.app
+              ? toSafeApp({
+                  app: row.app as any,
+                  userId,
+                  guestId,
+                })
+              : null,
+            user: row.user
+              ? toSafeUser({
+                  user: row.user,
+                })
+              : null,
+            guest: row.guest
+              ? toSafeGuest({
+                  guest: row.guest,
+                })
+              : null,
+            tribe: row.tribe,
+            likes: [],
+            comments: [],
+            reactions: [],
+          }
+        }
 
-          // Get comments
-          db
-            .select({
-              comment: tribeComments,
-              app: apps,
-            })
-            .from(tribeComments)
-            .innerJoin(apps, eq(tribeComments.appId, apps.id))
-            .where(eq(tribeComments.postId, row.post.id))
-            .orderBy(desc(tribeComments.createdOn))
-            .limit(100),
+        const [likes, comments, reactions, translationLangs] =
+          await Promise.all([
+            // Get likes
+            db
+              .select({
+                like: tribeLikes,
+                user: users,
+                guest: guests,
+              })
+              .from(tribeLikes)
+              .leftJoin(users, eq(tribeLikes.userId, users.id))
+              .leftJoin(guests, eq(tribeLikes.guestId, guests.id))
+              .where(eq(tribeLikes.postId, row.post.id))
+              .limit(100),
 
-          // Get reactions
-          db
-            .select({
-              reaction: tribeReactions,
-              app: apps,
-            })
-            .from(tribeReactions)
-            .innerJoin(apps, eq(tribeReactions.appId, apps.id))
-            .where(eq(tribeReactions.postId, row.post.id))
-            .limit(100),
-        ])
+            // Get comments
+            db
+              .select({
+                comment: tribeComments,
+                app: apps,
+              })
+              .from(tribeComments)
+              .innerJoin(apps, eq(tribeComments.appId, apps.id))
+              .where(eq(tribeComments.postId, row.post.id))
+              .orderBy(desc(tribeComments.createdOn))
+              .limit(100),
+
+            // Get reactions
+            db
+              .select({
+                reaction: tribeReactions,
+                app: apps,
+              })
+              .from(tribeReactions)
+              .innerJoin(apps, eq(tribeReactions.appId, apps.id))
+              .where(eq(tribeReactions.postId, row.post.id))
+              .limit(100),
+
+            // Get available translation languages for hreflang
+            db
+              .select({ language: tribePostTranslations.language })
+              .from(tribePostTranslations)
+              .where(eq(tribePostTranslations.postId, row.post.id))
+              .limit(20),
+          ])
 
         const [thread] = row.post.tribeId
           ? await db
@@ -7933,6 +7968,15 @@ export const getTribePosts = async ({
           sharesCount: row.post.sharesCount,
           createdOn: row.post.createdOn,
           updatedOn: row.post.updatedOn,
+          languages: Array.from(
+            new Set(
+              translationLangs
+                .map((t) => t.language)
+                .filter((lang): lang is locale =>
+                  locales.includes(lang as locale),
+                ),
+            ),
+          ),
           app: row.app
             ? await (async () => {
                 const appId = row.app?.id
@@ -8210,6 +8254,7 @@ export const getCharacterProfiles = async ({
   visibility,
   appId,
   threadId,
+  notThreadId,
 }: {
   agentId?: string
   appId?: string
@@ -8219,6 +8264,7 @@ export const getCharacterProfiles = async ({
   limit?: number
   pinned?: boolean
   threadId?: string
+  notThreadId?: string
   visibility?: "public" | "private"
 }) => {
   try {
@@ -8248,6 +8294,9 @@ export const getCharacterProfiles = async ({
             ? eq(characterProfiles.pinned, pinned)
             : undefined,
           threadId ? eq(characterProfiles.threadId, threadId) : undefined,
+          notThreadId
+            ? not(eq(characterProfiles.threadId, notThreadId))
+            : undefined,
           visibility ? eq(characterProfiles.visibility, visibility) : undefined,
         ),
       )

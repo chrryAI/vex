@@ -132,7 +132,7 @@ const TRIBE_CANONICAL_BASE = "https://tribe.chrry.ai"
 
 /**
  * Generate metadata for Tribe list / home
- * When locale is provided (showAllTribe), uses siteTranslations for i18n title/description.
+ * When locale is provided (canShowAllTribe), uses siteTranslations for i18n title/description.
  * When a specific tribe is provided, uses tribe name/description.
  */
 export function generateTribeListMetadata(
@@ -190,6 +190,7 @@ export function generateTribePostMetadata(post: {
   videos?: Array<{ url: string; thumbnail?: string }> | null
   app?: { name?: string | null; image?: string | null } | null
   tribe?: { name?: string | null } | null
+  languages?: string[] | null
 }): MetadataResult {
   const title = post.title || post.content.substring(0, 80)
   const description = post.content.substring(0, 160).replace(/\n/g, " ")
@@ -228,6 +229,21 @@ export function generateTribePostMetadata(post: {
     robots: { index: true, follow: true },
     alternates: {
       canonical,
+      ...(post.languages &&
+        post.languages.length > 0 && {
+          languages: {
+            "x-default": canonical,
+            en: canonical,
+            ...Object.fromEntries(
+              post.languages
+                .filter((l) => l !== "en")
+                .map((lang) => [
+                  lang,
+                  `${TRIBE_CANONICAL_BASE}/${lang}/p/${post.id}`,
+                ]),
+            ),
+          },
+        }),
     },
   }
 }
@@ -290,8 +306,8 @@ export async function generateServerMetadata(
     return generateTribePostMetadata(serverData.tribePost)
   }
 
-  // Tribe list (showAllTribe = /tribe or isTribe site root) — use locale-aware siteTranslations
-  if (serverData.showAllTribe) {
+  // Tribe list (canShowAllTribe = /tribe or isTribe site root) — use locale-aware siteTranslations
+  if (serverData.canShowAllTribe) {
     return generateTribeListMetadata(undefined, locale)
   }
 

@@ -1,5 +1,6 @@
 "use client"
 
+import { t } from "i18next"
 import React, {
   createContext,
   type ReactNode,
@@ -8,9 +9,11 @@ import React, {
   useRef,
   useState,
 } from "react"
+import toast from "react-hot-toast"
 import useSWR from "swr"
 import { useUserScroll } from "../../hooks/useUserScroll"
 import { useWebSocket } from "../../hooks/useWebSocket"
+
 import {
   useLocalStorage,
   useNavigation,
@@ -66,6 +69,8 @@ const ChatContext = createContext<
       isImageGenerationEnabled: boolean
       setShowTribe: (show: boolean) => void
       showTribe: boolean | undefined
+      setAbout: (value: string | undefined) => void
+      setAsk: (value: string | undefined) => void
       setIsImageGenerationEnabled: (
         value: boolean,
         forAgent?: aiAgent | null,
@@ -147,10 +152,12 @@ const ChatContext = createContext<
         value,
         to,
         tribe,
+        pear,
       }: {
         value: boolean
         to?: string
         tribe?: boolean
+        pear?: boolean
       }) => void
     }
   | undefined
@@ -209,14 +216,15 @@ export function ChatProvider({
     burn,
     setBurn,
     isPear,
-    input,
-    setInput,
+    setIsPear,
     setShowFocus,
     showFocus,
     hourlyLimit,
     hourlyUsageLeft,
     baseApp,
     postId,
+    canShowAllTribe,
+    siteConfig,
     ...auth
   } = useAuth()
 
@@ -250,7 +258,34 @@ export function ChatProvider({
 
   const { isExtension, isMobile, isTauri } = usePlatform()
 
+  // Move input state here to prevent AuthProvider re-renders
+  const [input, setInput] = useState<string>("")
+
+  // Override setAsk and setAbout to also update input
+  const setAsk = (value: string | undefined) => {
+    auth.setAsk(value)
+    if (value) {
+      setInput(value)
+    }
+  }
+
+  const setAbout = (value: string | undefined) => {
+    auth.setAbout(value)
+  }
+
   const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
+
+  // Sync input with URL ask/about parameters
+  useEffect(() => {
+    const ask = searchParams.get("ask")
+    const about = searchParams.get("about")
+
+    if (ask) {
+      setInput(ask)
+    } else if (about) {
+      setInput(about)
+    }
+  }, [searchParams])
 
   let userNameByUrl: string | undefined
 
@@ -452,12 +487,15 @@ export function ChatProvider({
     value,
     to = app?.slug ? getAppSlug(app) : "/",
     tribe,
+    pear,
   }: {
     value: boolean
     to?: string
     tribe?: boolean
+    pear?: boolean
   }) => {
     if (value) {
+      shouldStopAutoScrollRef.current = true
       setLiked(undefined)
       setShowFocus(false)
       setShowTribe(tribe === true)
@@ -472,11 +510,10 @@ export function ChatProvider({
       setThreadId(undefined)
       setMessages([])
       threadIdRef.current = undefined
-      router.push(
-        tribe === true ? `${to}${to.includes("?") ? "&" : "?"}tribe=true` : to,
-      )
+      router.push(to)
       refetchThreads()
     } else {
+      shouldStopAutoScrollRef.current = false
       // Ensure tribe view resets when closing a new chat
       setShowTribe(false)
     }
@@ -513,10 +550,14 @@ export function ChatProvider({
     if (shouldGetCredits) {
       ;(async () => {
         try {
+          const creditsBefore = creditsLeft
+          let creditsAfter: number | undefined
+
           if (user) {
             const item = await actions.getUser()
 
             if (item) {
+              creditsAfter = item.creditsLeft
               setCreditsLeft(item.creditsLeft)
             }
           }
@@ -525,7 +566,29 @@ export function ChatProvider({
             const item = await actions.getGuest()
 
             if (item) {
+              creditsAfter = item.creditsLeft
               setCreditsLeft(item.creditsLeft)
+            }
+          }
+
+          // Auto-disable Pear mode if credits didn't increase 3 times in a row
+          if (
+            isPear &&
+            creditsAfter !== undefined &&
+            creditsBefore !== undefined
+          ) {
+            if (creditsAfter <= creditsBefore) {
+              pearNoGainStreakRef.current += 1
+              if (pearNoGainStreakRef.current >= 3) {
+                setIsPear(undefined)
+                pearNoGainStreakRef.current = 0
+                toast.success(t("pearNoGainStreak"), {
+                  duration: 4000,
+                })
+              }
+            } else {
+              // Credits went up — reset streak
+              pearNoGainStreakRef.current = 0
             }
           }
         } catch (error) {
@@ -754,8 +817,14 @@ export function ChatProvider({
     }
   }, [user, guest, threadId, connected])
 
-  // Credits plausibleing
-  const [creditsLeft, setCreditsLeft] = useState<number | undefined>(undefined)
+  // Credits tracking
+  const [creditsLeft, setCreditsLeftInernal] = useState<number | undefined>(
+    user?.creditsLeft || guest?.creditsLeft,
+  )
+
+  const setCreditsLeft = (creditsLeft?: number) => {
+    setCreditsLeftInernal(creditsLeft)
+  }
 
   useEffect(() => {
     if (user?.creditsLeft || guest?.creditsLeft) {
@@ -763,13 +832,16 @@ export function ChatProvider({
     }
   }, [user?.creditsLeft, guest?.creditsLeft])
 
+  // Track consecutive Pear messages that earned 0 credits → auto-disable after 3
+  const pearNoGainStreakRef = React.useRef(0)
+
   // AI Agents
 
   useEffect(() => {
     isPear && setSelectedAgent(sushiAgent)
   }, [isPear])
 
-  const onlyAgent = !!(app?.onlyAgent || isPear)
+  const onlyAgent = !!app?.onlyAgent
 
   const [debateAgent, setDebateAgentInternal] = useLocalStorage<
     aiAgent | undefined | null
@@ -1096,7 +1168,12 @@ export function ChatProvider({
     if (showFocus) setShowFocus(false)
 
     if (!threadId && !force) return
-    if (showTribe) return
+    if (postId && !force) return
+    // Also check window.location directly as fallback if showTribe state is stale
+    const isTribeUrl =
+      typeof window !== "undefined" &&
+      window.location.search.includes("tribe=true")
+    if (showTribe || isTribeUrl) return
     if (isEmpty || isUserScrolling || hasStoppedScrolling) return
     setTimeout(() => {
       // Use requestAnimationFrame for more stable scrolling in Tauri
@@ -1307,6 +1384,8 @@ export function ChatProvider({
         setShouldGetCredits,
         showTribe,
         setShowTribe,
+        setAsk,
+        setAbout,
       }}
     >
       {children}

@@ -207,9 +207,12 @@ export default function App({
   const perplexity = apps.find((app) => app.slug === "perplexity")
   const nebula = apps.find((app) => app.slug === "nebula")
   const zarathustra = apps.find((app) => app.slug === "zarathustra")
+  const sushi = apps.find((app) => app.slug === "sushi")
+  const grok = apps.find((app) => app.slug === "grok")
 
   const isBlossom = app?.store?.id === chrry?.store?.id
   const isLifeOS = app?.store?.id === vex?.store?.id
+  const isSushi = app?.store?.id === sushi?.store?.id
 
   const getApps = () => {
     return apps
@@ -219,9 +222,19 @@ export default function App({
           item.id !== store?.appId &&
           item.id !== chrry?.id &&
           (item.id !== perplexity?.id || !isBlossom) &&
+          (item.id !== vex?.id || !isSushi) &&
           (item.id !== claude?.id || !isBlossom) &&
-          (item.id !== grape?.id || (!isBlossom && !accountApp)) &&
-          (item.id !== zarathustra?.id || (!isBlossom && !accountApp)) &&
+          (item.id !== grok?.id || !isBlossom) &&
+          (item.id === grape?.id
+            ? accountApp?.id === app?.id
+              ? false
+              : !isBlossom
+            : true) &&
+          (item.id === zarathustra?.id
+            ? accountApp?.id === app?.id
+              ? false
+              : !isBlossom
+            : true) &&
           (item.id === atlas?.id ? !isBlossom && isLifeOS : true) &&
           item.id !== popcorn?.id,
       )
@@ -825,22 +838,24 @@ export default function App({
       </H1>
       <Div style={{ ...styles.container.style }}>
         <>
-          <Div style={{ ...styles.section.style }}>
-            <EnableNotifications
-              onLocationClick={(location) => {
-                setInput(`What's the weather in ${location}?`)
-                setIsWebSearchEnabled(true)
-              }}
-            />
-            {app?.mainThreadId && isAppOwner && (
-              <A
-                style={{ fontSize: ".9rem", marginTop: ".2rem" }}
-                href={`/threads/${app?.mainThreadId}`}
-              >
-                🧬
-              </A>
-            )}
-          </Div>
+          {!isManagingApp && (
+            <Div style={{ ...styles.section.style }}>
+              <EnableNotifications
+                onLocationClick={(location) => {
+                  setInput(`What's the weather in ${location}?`)
+                  setIsWebSearchEnabled(true)
+                }}
+              />
+              {app?.mainThreadId && isAppOwner && (
+                <A
+                  style={{ fontSize: ".9rem", marginTop: ".2rem" }}
+                  href={`/threads/${app?.mainThreadId}`}
+                >
+                  🧬
+                </A>
+              )}
+            </Div>
+          )}
           {minimize && hasHydrated && (
             <>
               {

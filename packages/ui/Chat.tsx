@@ -30,7 +30,6 @@ import {
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import DeleteThread from "./DeleteThread"
-import Grapes from "./Grapes"
 import {
   useCountdown,
   useHasHydrated,
@@ -58,6 +57,7 @@ import {
   Gemini,
   Globe,
   GlobeLock,
+  Grok,
   HardDrive,
   ImageIcon,
   Info,
@@ -458,7 +458,7 @@ export default function Chat({
   const shouldUseCompactMode = compactMode || hasBottomOffset
 
   const floatingInitial =
-    shouldUseCompactMode || minimize
+    shouldUseCompactMode || minimize || showTribe
       ? true
       : empty
         ? false
@@ -487,7 +487,7 @@ export default function Chat({
           ? `📊 ${t("Track your mood daily")} 🎭`
           : needsReview
             ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
-            : isPear
+            : isPear && !showTribe
               ? `💬 ${t("Share feedback, earn 10-50 credits!")} 🍇`
               : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
                 ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
@@ -3148,6 +3148,8 @@ export default function Chat({
                           <Perplexity size={18} />
                         ) : agent.name === "sushi" ? (
                           <Img icon="sushi" size={22} />
+                        ) : agent.name === "grok" ? (
+                          <Grok size={18} />
                         ) : null}{" "}
                         {agent.displayName}
                       </Button>
@@ -3665,6 +3667,7 @@ export default function Chat({
               >
                 {Top && (
                   <Div
+                    className={hasBottomOffset && isChatFloating ? "blur" : ""}
                     style={{
                       ...(isChatFloating
                         ? styles.topChatFloatingTopInner.style
@@ -3844,26 +3847,21 @@ export default function Chat({
                           </>
                         ) : (
                           <>
-                            {grapes?.length ? (
-                              <Button
-                                className={"link"}
-                                onClick={() => {
-                                  setShowGrapes(true)
-                                }}
-                                style={{
-                                  ...utilities.link.style,
-                                  fontSize: "0.75rem",
-                                  order: minimize ? -1 : 0,
-                                }}
-                              >
-                                <Coins size={14} />
-                                {t("Earn Credits")}
-                              </Button>
-                            ) : null}
-                            <Grapes
-                              style={{ padding: "6px 8px" }}
-                              dataTestId="grapes-button"
-                            />
+                            <Button
+                              className="link"
+                              style={{
+                                ...utilities.link.style,
+                                gap: 10,
+                                fontSize: "0.85rem",
+                                order: minimize ? -1 : 0,
+                              }}
+                              onClick={() => {
+                                setIsPear(isPear ? undefined : app)
+                              }}
+                            >
+                              <Img slug={"pear"} size={20} />
+                              {t(isPear ? "Pearing" : "Let's Pear")}
+                            </Button>
                           </>
                         )}
                       </Div>
@@ -4195,7 +4193,7 @@ export default function Chat({
                   !isHydrated
                     ? ""
                     : postToTribe
-                      ? `${t("What should I share to Tribe?")} 🪢`
+                      ? `${t("What should I share to Tribe?")} 🦋`
                       : postToMoltbook
                         ? `${t("What should I share to Moltbook?")} 🦞`
                         : placeholder ||
@@ -4364,6 +4362,8 @@ export default function Chat({
                             <Flux color="var(--accent-6)" size={22} />
                           ) : selectedAgent.name === "perplexity" ? (
                             <Perplexity color="var(--accent-6)" size={22} />
+                          ) : selectedAgent.name === "grok" ? (
+                            <Grok color="var(--accent-6)" size={22} />
                           ) : selectedAgent.name === "sushi" ? (
                             <Img icon="sushi" size={22} />
                           ) : null}
@@ -4412,6 +4412,8 @@ export default function Chat({
                               <Flux color="var(--accent-6)" size={22} />
                             ) : debateAgent.name === "perplexity" ? (
                               <Perplexity color="var(--accent-6)" size={22} />
+                            ) : debateAgent.name === "grok" ? (
+                              <Grok color="var(--accent-6)" size={22} />
                             ) : debateAgent.name === "sushi" ? (
                               <Img icon="sushi" size={22} />
                             ) : null}

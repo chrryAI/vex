@@ -15,6 +15,7 @@ import {
   getUser,
   getUsers,
   isProd,
+  isReplica,
   isSeedSafe,
   isWaffles,
   MODE,
@@ -25,6 +26,7 @@ import {
   updateApp,
   type user,
 } from "./index"
+import { seedPearFeedback } from "./seedPearFeedback"
 import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
 import { seedTribeEngagement } from "./seedTribeEngagement"
 import {
@@ -62,9 +64,9 @@ const now = new Date()
 const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
 async function createAgents() {
-  if (isProd) {
-    return undefined
-  }
+  // if (isProd) {
+  //   return undefined
+  // }
 
   const deepSeekAgent = await createAiAgent({
     name: "deepSeek",
@@ -91,15 +93,16 @@ async function createAgents() {
   })
   const chatGptAgent = await createAiAgent({
     name: "chatGPT",
-    displayName: "GPT-5.1",
-    version: "5.1",
+    displayName: "GPT-5.2 Pro",
+    version: "5.2",
     apiURL: "https://api.openai.com/v1/chat/completions",
     state: "active",
-    description: "Versatile, creative, and reliable language model.",
+    description:
+      "Most capable GPT model for complex tasks, coding, and long documents. Fast mode without reasoning.",
     creditCost: 4,
     authorization: "all",
     maxPromptSize: 128000,
-    modelId: "gpt-5.1",
+    modelId: "gpt-5.2-pro",
     order: 1,
     capabilities: {
       text: true,
@@ -115,14 +118,14 @@ async function createAgents() {
 
   const claudeAgent = await createAiAgent({
     name: "claude",
-    displayName: "Claude Sonnet 4.5",
-    version: "4.5",
+    displayName: "Claude Sonnet 4.6",
+    version: "4.6",
     apiURL: "https://api.anthropic.com/v1/messages",
     state: "active",
     description: "Helpful, safe, and human-like conversational AI",
     creditCost: 3,
     authorization: "all",
-    modelId: "claude-sonnet-4-20250514",
+    modelId: "anthropic/claude-sonnet-4-6",
     maxPromptSize: 200000,
     order: 0,
     capabilities: {
@@ -164,17 +167,41 @@ async function createAgents() {
 
   const geminiAgent = await createAiAgent({
     name: "gemini",
-    displayName: "Gemini 3.0 Pro",
-    version: "3.0",
+    displayName: "Gemini 3.1 Pro",
+    version: "3.1",
     apiURL:
       "https://generativelanguage.googleapis.com/v1/models/gemini-3.0-pro:streamGenerateContent",
     state: "active",
     description: "Most advanced Gemini 3 Pro model.",
     creditCost: 4,
     authorization: "all",
-    modelId: "gemini-3-pro-preview",
+    modelId: "google/gemini-3.1-pro-preview",
     maxPromptSize: 2000000,
     order: 1,
+    capabilities: {
+      text: true,
+      image: true,
+      audio: true,
+      video: true,
+      webSearch: false,
+      pdf: true,
+      imageGeneration: false,
+      codeExecution: true,
+    },
+  })
+
+  const grokAgent = await createAiAgent({
+    name: "grok",
+    displayName: "Grok 4",
+    version: "4.0",
+    apiURL: "https://api.x.ai/v1/chat/completions",
+    state: "active",
+    description: "xAI's latest frontier model with 256k context and reasoning.",
+    creditCost: 4,
+    authorization: "all",
+    modelId: "x-ai/grok-4",
+    maxPromptSize: 256000,
+    order: 4,
     capabilities: {
       text: true,
       image: true,
@@ -309,7 +336,7 @@ const clearDb = async (): Promise<void> => {
   //   if (allTribeKeys.length > 0) {
   //     await redis.del(...allTribeKeys)
   //     console.log(
-  //       `🪢 Cleared ${allTribeKeys.length} tribe cache keys from Redis`,
+  //       `🦋 Cleared ${allTribeKeys.length} tribe cache keys from Redis`,
   //     )
   //   }
 
@@ -1075,6 +1102,7 @@ const create = async () => {
   const { vex } = await createStores({ user: admin })
 
   await seedTribeEngagement()
+  await seedPearFeedback()
 
   await updateStoreUrls({ user: admin })
 
@@ -1828,12 +1856,15 @@ const prod = async () => {
   // await clearMemories()
   // await clearGuests()
   const admin = await getUser({
-    email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
+    email: isProd || isReplica ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
+  // const agents = await createAgents()
   const { vex } = await createStores({ user: admin })
 
-  await seedScheduledTribeJobs({ admin })
+  // await seedPearFeedback()
+
+  // await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 
@@ -1960,9 +1991,12 @@ const seedDb = async (): Promise<void> => {
     }
 
     if (MODE === "dev") {
-      await prod()
-      // await clearDb()
-      // await create()
+      if (isReplica) {
+        await prod()
+      } else {
+        // await clearDb()
+        // await create()
+      }
     }
 
     process.exit(0)

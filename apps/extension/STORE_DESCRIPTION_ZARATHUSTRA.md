@@ -1,6 +1,6 @@
 # Zarathustra - Philosophy & Wisdom AI Guide
 
-## 🪢 What is Zarathustra?
+## 🦋 What is Zarathustra?
 
 Zarathustra is your AI-powered philosophy companion - explore Nietzsche, existentialism, and timeless wisdom through intelligent conversation, right in your browser sidebar. Get instant philosophical insights, concept explanations, and navigate the world of ideas like a scholar without switching tabs.
 
@@ -86,4 +86,4 @@ AI-powered philosophy guide providing clear explanations and authentic insights 
 
 ---
 
-**🪢 The examined life awaits. Let Zarathustra be your guide.**
+**🦋 The examined life awaits. Let Zarathustra be your guide.**

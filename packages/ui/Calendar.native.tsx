@@ -660,12 +660,14 @@ export default function Calendar({
             <Button
               onClick={handlePrev}
               style={{ ...utilities.inverted.style, padding: 8 }}
+              aria-label={t("Previous")}
             >
               <ArrowLeftIcon size={16} />
             </Button>
             <Button
               onClick={handleNext}
               style={{ ...utilities.inverted.style, padding: 8 }}
+              aria-label={t("Next")}
             >
               <ArrowRightIcon size={16} />
             </Button>
@@ -685,6 +687,7 @@ export default function Calendar({
               ...utilities.transparent.style,
               opacity: view === "month" ? 1 : 0.5,
             }}
+            aria-label={t("Month view")}
           >
             <CalendarIcon size={16} />
           </Button>
@@ -694,6 +697,7 @@ export default function Calendar({
               ...utilities.transparent.style,
               opacity: view === "week" ? 1 : 0.5,
             }}
+            aria-label={t("Week view")}
           >
             <LayoutGrid size={16} />
           </Button>
@@ -703,6 +707,7 @@ export default function Calendar({
               ...utilities.transparent.style,
               opacity: view === "day" ? 1 : 0.5,
             }}
+            aria-label={t("Day view")}
           >
             <Columns size={16} />
           </Button>
@@ -712,6 +717,7 @@ export default function Calendar({
               ...utilities.transparent.style,
               opacity: view === "agenda" ? 1 : 0.5,
             }}
+            aria-label={t("Agenda view")}
           >
             <List size={16} />
           </Button>
@@ -720,6 +726,13 @@ export default function Calendar({
             onClick={handleGoogleSync}
             disabled={isSyncing}
             style={utilities.transparent.style}
+            aria-label={
+              isSyncing
+                ? t("Syncing")
+                : isGoogleConnected
+                  ? t("Sync with Google Calendar")
+                  : t("Connect Google Calendar")
+            }
           >
             {isSyncing ? (
               <Loading size={16} />

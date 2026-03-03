@@ -76,7 +76,8 @@ import {
   ANALYTICS_EVENTS,
   MEANINGFUL_EVENTS,
 } from "../../utils/analyticsEvents"
-import { cleanSlug } from "../../utils/clearLocale"
+import { hasStoreApps, merge } from "../../utils/appUtils"
+import clearLocale, { cleanSlug } from "../../utils/clearLocale"
 import { dailyQuestions as dailyQuestionsUtil } from "../../utils/dailyQuestions"
 import getAppSlugUtil from "../../utils/getAppSlug"
 import { getHourlyLimit } from "../../utils/getHourlyLimit"
@@ -84,6 +85,7 @@ import console from "../../utils/log"
 import {
   getSiteConfig,
   type SiteConfig,
+  tribe as tribeSiteConfig,
   whiteLabels,
 } from "../../utils/siteConfig"
 import ago from "../../utils/timeAgo"
@@ -119,6 +121,9 @@ const AuthContext = createContext<
         timestamp: number
         duration?: number
       } | null
+      canShowAllTribe: boolean
+      languageModal: string | undefined
+      setLanguageModal: (value: string | undefined) => void
       timer?: timer
       tribeSlug?: string
       currentTribe?: tribe
@@ -154,8 +159,6 @@ const AuthContext = createContext<
       setDeviceId: (value: string) => void
       pear: appWithStore | undefined
       isPear: boolean
-      input: string
-      setInput: (value: string) => void
       setIsPear: (value: appWithStore | undefined) => void
       grapes: appWithStore[]
       setIsProgramme: (value: boolean) => void
@@ -383,43 +386,6 @@ const AuthContext = createContext<
     }
   | undefined
 >(undefined)
-
-export const hasStoreApps = (app: appWithStore | undefined) => {
-  return Boolean(app?.store?.app && app?.store?.apps?.length)
-}
-
-export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
-  // Create a map of existing apps by ID
-  const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
-
-  // Add or update apps
-  newApps.forEach((newApp) => {
-    const existingApp = existingAppsMap.get(newApp.id)
-
-    if (existingApp) {
-      // Check if new app has meaningful store.apps (not empty or undefined)
-      const newHasStoreApps = hasStoreApps(newApp)
-      const existingHasStoreApps = hasStoreApps(existingApp)
-
-      // Merge: prefer new app but preserve existing store.apps if new one is empty/undefined
-      existingAppsMap.set(newApp.id, {
-        ...existingApp,
-        ...newApp,
-        store: newHasStoreApps
-          ? newApp.store
-          : existingHasStoreApps
-            ? existingApp.store
-            : newApp.store,
-      })
-    } else {
-      existingAppsMap.set(newApp.id, newApp)
-    }
-  })
-
-  const result = Array.from(existingAppsMap.values())
-
-  return result
-}
 
 export function AuthProvider({
   apiKey,
@@ -789,8 +755,6 @@ export function AuthProvider({
   const [dailyQuestionSectionIndex, setDailyQuestionSectionIndex] = useState(0)
   const [dailyQuestionIndex, setDailyQuestionIndex] = useState(0)
 
-  const [input, setInput] = useState<string>("")
-
   // Reset daily questions when entering Retro mode
 
   // Derive current daily question data
@@ -1150,6 +1114,7 @@ export function AuthProvider({
       props?.session?.userBaseApp ||
       props?.session?.guestBaseApp,
   )
+  // Memoize allApps to prevent expensive array operations on every render
   const allApps = useMemo(
     () =>
       merge(
@@ -1182,6 +1147,10 @@ export function AuthProvider({
 
   const baseAppInternal = storeApps.find((item) => {
     if (!item) return false
+
+    if (siteConfig.isTribe && item.slug === "zarathustra") {
+      return true
+    }
 
     if (
       siteConfig.slug === item.slug &&
@@ -1290,34 +1259,25 @@ export function AuthProvider({
     setIsRetroInternal(value)
     isRetroRef.current = value
 
-    // Clear input when exiting retro mode
-    if (!value && input) {
-      setInput("")
-    }
-
     if (value) {
       setDailyQuestionSectionIndex(0)
       setDailyQuestionIndex(0)
     }
   }
 
-  // Sync input with current question when dailyQuestionData changes
-  useEffect(() => {
-    if (isRetro && dailyQuestionData?.currentQuestion) {
-      console.log(
-        "🔄 Syncing input with question:",
-        dailyQuestionData.currentQuestion,
-      )
-      setInput(dailyQuestionData.currentQuestion)
-    }
-  }, [isRetro, dailyQuestionData?.currentQuestion])
+  // Note: Input syncing with daily questions now handled in ChatProvider
 
   const chrryUrl = CHRRY_URL
 
   const appId = newApp?.id || updatedApp?.id || loadingAppId || app?.id
 
   const [isSavingApp, setIsSavingApp] = useState(false)
-  const [isManagingApp, setIsManagingApp] = useState(false)
+  const [isManagingApp, setIsManagingAppInternal] = useState(false)
+
+  const setIsManagingApp = (value: boolean) => {
+    setIsManagingAppInternal(value)
+    value && isPear && setIsPear(undefined)
+  }
 
   const {
     data: sessionSwr,
@@ -1425,32 +1385,6 @@ export function AuthProvider({
     },
   )
   const sessionData = sessionSwr || session
-
-  useEffect(() => {
-    if (!allApps.length) return
-
-    setAllApps((prevApps) => {
-      const appMap = new Map(prevApps.map((a) => [a.id, a]))
-      let hasChange = false
-
-      allApps.forEach((app) => {
-        const existing = appMap.get(app.id)
-        if (!existing) {
-          appMap.set(app.id, app)
-          hasChange = true
-        } else {
-          // Use the existing merge helper to preserve hydrated data
-          const merged = merge([existing], [app])[0]
-          if (merged && JSON.stringify(existing) !== JSON.stringify(merged)) {
-            appMap.set(app.id, merged)
-            hasChange = true
-          }
-        }
-      })
-
-      return hasChange ? Array.from(appMap.values()) : prevApps
-    })
-  }, [allApps])
 
   const _getAlterNativeDomains = (store: storeWithApps) => {
     // Map askvex.com and vex.chrry.ai as equivalent domains
@@ -1768,6 +1702,10 @@ export function AuthProvider({
     // isExtension || isCapacitor,
   )
 
+  const [languageModal, setLanguageModal] = useState<string | undefined>(
+    undefined,
+  )
+
   // useEffect(() => {
   //   if (session?.locale) {
   //     setLanguageInternal(session?.locale)
@@ -1792,11 +1730,9 @@ export function AuthProvider({
       }
     }
 
-    router.push(
-      cleanSlug(
-        `/${language === defaultLocale ? "" : language}${pathWithoutLocale}`,
-      ),
-    )
+    const prefix = language === defaultLocale ? "" : `/${language}`
+    const newPath = cleanSlug(`${prefix}${pathWithoutLocale}`) || "/"
+    window.history.replaceState(null, "", newPath)
   }
 
   const migratedFromGuestRef = useRef(false)
@@ -1814,6 +1750,8 @@ export function AuthProvider({
     if (path === "/" && !showFocus) return undefined
 
     const matchedApp = storeApps?.find((item) => getAppSlug(item) === pathname)
+    console.log(`🚀 ~ pathname:`, pathname)
+    console.log(`🚀 ~ matchedApp:`, matchedApp)
 
     return matchedApp
   }
@@ -1945,9 +1883,29 @@ export function AuthProvider({
     if (storeAppsSwr) {
       skipAppCacheTemp && setSkipAppCacheTemp(false)
       const a = storeAppsSwr.store?.apps?.find((app) => app.id === loadingAppId)
-      if (hasStoreApps(a)) setLoadingApp(undefined)
-      // Don't merge here - apps are already in initial state and tribe posts are merged separately
-      mergeApps(storeAppsSwr.store?.apps || [])
+      if (hasStoreApps(a)) {
+        setLoadingApp(undefined)
+      }
+
+      if (storeAppsSwr.store?.apps?.length) {
+        mergeApps(storeAppsSwr.store?.apps)
+      }
+
+      // // Merge storeAppsSwr with current app state to preserve local changes
+      // if (app?.id && storeAppsSwr.store?.apps) {
+      //   const freshApp = storeAppsSwr.store.apps.find((a) => a.id === app.id)
+      //   if (freshApp) {
+      //     // Merge: keep local changes, update with fresh data
+      //     const mergedApp = {
+      //       ...freshApp,
+      //       ...app,
+      //       // Always take fresh data for these critical fields
+      //       store: freshApp.store,
+      //       updatedOn: freshApp.updatedOn,
+      //     }
+      //     setApp(mergedApp)
+      //   }
+      // }
 
       const n = storeAppsSwr.store?.apps.find((app) => app.id === newApp?.id)
       if (n) {
@@ -2044,6 +2002,11 @@ export function AuthProvider({
     storeAppInternal,
   )
 
+  const canShowAllTribe = !!(
+    clearLocale(pathname) === "/tribe" ||
+    (siteConfig.isTribe && !clearLocale(pathname))
+  )
+
   const installs = [
     "atlas",
     "focus",
@@ -2059,22 +2022,8 @@ export function AuthProvider({
     "vault",
   ]
 
-  const chromeWebStoreUrl =
-    (siteConfigApp as any)?.chromeWebStoreUrl ||
-    app?.chromeWebStoreUrl ||
-    storeApp?.chromeWebStoreUrl ||
-    "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
-
   const withFallback = "chrry"
   const minioUrl = "https://minio.chrry.dev/chrry-installs/installs"
-  const downloadUrl =
-    app && installs.includes(app?.slug || "")
-      ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
-      : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
-        ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
-        : installs.includes(withFallback)
-          ? `${minioUrl}/${capitalizeFirstLetter(withFallback)}.dmg`
-          : ""
 
   const isBaseAppZarathustra = baseApp?.slug === "zarathustra"
 
@@ -2126,7 +2075,13 @@ export function AuthProvider({
   }
 
   const getTribeUrl = () => {
-    return siteConfig?.isTribe ? "/" : `/tribe`
+    return canShowAllTribe
+      ? siteConfig?.isTribe
+        ? "/"
+        : `/tribe`
+      : siteConfig?.isTribe
+        ? "/?tribe=true"
+        : `/tribe?tribe=true`
   }
 
   const canBurn = true
@@ -2171,12 +2126,6 @@ export function AuthProvider({
 
   const grape = storeApps.find((app) => app.slug === "grape")
 
-  const isPearInternal = searchParams.get("pear") === "true"
-
-  const [isPear, setIsPearInternal] = useState(isPearInternal)
-
-  const pear = storeApps.find((app) => app.slug === "pear")
-
   const [about, setAbout] = useState(searchParams.get("about") ?? undefined)
 
   const [ask, setAskInternal] = useState(searchParams.get("ask") ?? undefined)
@@ -2185,7 +2134,6 @@ export function AuthProvider({
     const ask = searchParams.get("ask")
     if (ask !== null) {
       setAskInternal(ask)
-      setInput(ask)
     }
     const about = searchParams.get("about")
     about !== null && setAbout(about)
@@ -2196,36 +2144,6 @@ export function AuthProvider({
 
     if (value) {
       router.push(`/?ask=${encodeURIComponent(value)}`)
-    }
-
-    value && setInput(value)
-  }
-
-  useEffect(() => {
-    isPearInternal && setIsPearInternal(isPearInternal)
-    if (isPearInternal) {
-      setShowFocus(false)
-      plausible({
-        name: ANALYTICS_EVENTS.PEAR,
-        props: {
-          value: true,
-          app: app?.name,
-          slug: app?.slug,
-          id: app?.id,
-        },
-      })
-    }
-  }, [isPearInternal])
-
-  const setIsPear = (value: appWithStore | undefined) => {
-    if (value) {
-      setInput("")
-    }
-
-    setIsPearInternal(!!value)
-    if (value) {
-      router.push(`${getAppSlug(value)}?pear=true`)
-      toast.success(`${t("Let's Pear")} 🍐`)
     }
   }
 
@@ -2355,21 +2273,16 @@ export function AuthProvider({
     ? tribes?.tribes?.find((t) => t.slug === tribeSlug)
     : undefined
 
-  const showAllTribe =
-    pathname === "/tribe" || (siteConfig.isTribe && pathname === "/")
-
-  useEffect(() => {
-    ;(showAllTribe || _isExcluded) && setIsPear(undefined)
-  }, [showAllTribe])
-
   const tribeQuery = searchParams.get("tribe") === "true"
 
   const canBeTribeProfile =
-    !showAllTribe && !_isExcluded && !(siteConfig.isTribe && pathname === "/")
+    !canShowAllTribe &&
+    !_isExcluded &&
+    !(siteConfig.isTribe && !clearLocale(pathname))
 
   const showTribeInitial =
     !!(
-      showAllTribe ||
+      canShowAllTribe ||
       tribeSlug ||
       postId ||
       tribeQuery ||
@@ -2380,6 +2293,25 @@ export function AuthProvider({
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
   const showTribeProfileInternal = canBeTribeProfile
 
+  const downloadUrl =
+    canShowAllTribe && showTribe
+      ? `${minioUrl}/Tribe.dmg`
+      : app && installs.includes(app?.slug || "")
+        ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
+        : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
+          ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
+          : installs.includes(withFallback)
+            ? `${minioUrl}/${capitalizeFirstLetter(withFallback)}.dmg`
+            : ""
+
+  const chromeWebStoreUrl =
+    canShowAllTribe && showTribe
+      ? tribeSiteConfig.chromeWebStoreUrl
+      : (siteConfigApp as any)?.chromeWebStoreUrl ||
+        app?.chromeWebStoreUrl ||
+        storeApp?.chromeWebStoreUrl ||
+        "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
+
   const showTribeProfileMemo = useMemo(
     () => showTribeProfileInternal,
     [showTribeProfileInternal, tribeQuery],
@@ -2387,6 +2319,40 @@ export function AuthProvider({
 
   const showTribeProfile =
     !tribeSlug && (showTribeProfileInternal || showTribeProfileMemo)
+
+  const isPearInternal =
+    (canShowAllTribe || showTribe || searchParams.get("pear") === "true") &&
+    (accountApp ? app?.id !== accountApp?.id : true)
+
+  const [isPear, setIsPearInternal] = useState(isPearInternal)
+
+  const pear = storeApps.find((app) => app.slug === "pear")
+
+  const setIsPear = (value: appWithStore | undefined) => {
+    setIsPearInternal(!!value)
+    if (value) {
+      !canShowAllTribe && router.push(`${getAppSlug(value)}?pear=true`)
+      toast.success(`${t("Let's Pear")} 🍐`)
+      return
+    }
+
+    removeParams("pear")
+  }
+  useEffect(() => {
+    setIsPearInternal(isPearInternal)
+    if (isPearInternal) {
+      setShowFocus(false)
+      plausible({
+        name: ANALYTICS_EVENTS.PEAR,
+        props: {
+          value: true,
+          app: app?.name,
+          slug: app?.slug,
+          id: app?.id,
+        },
+      })
+    }
+  }, [isPearInternal, app?.name, app?.slug, app?.id])
 
   const setShowTribe = (value: boolean) => {
     if (!canShowTribe) return
@@ -2683,6 +2649,8 @@ export function AuthProvider({
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
+    console.log(`🚀 ~ useEffect ~ baseApp:`, baseApp, storeApps)
+
     if (!baseApp) return
     if (!storeApps.length || (!thread && threadId)) return
 
@@ -3241,8 +3209,6 @@ export function AuthProvider({
         updateMood,
         setThreadId,
         burning,
-        input,
-        setInput,
         lastAppId,
         isRemovingApp,
         storeApps, // All apps from all stores
@@ -3290,8 +3256,11 @@ export function AuthProvider({
         dailyQuestionIndex,
         showTribeProfile,
         postId,
+        languageModal,
+        setLanguageModal,
         mergeApps,
         getTribeUrl,
+        canShowAllTribe,
       }}
     >
       {children}

@@ -7,7 +7,13 @@ import AppLink from "./AppLink"
 import A from "./a/A"
 import ConfirmButton from "./ConfirmButton"
 import { COLORS, useAppContext } from "./context/AppContext"
-import { useApp, useAuth, useData } from "./context/providers"
+import {
+  useApp,
+  useAuth,
+  useChat,
+  useData,
+  useNavigationContext,
+} from "./context/providers"
 import { useTribe } from "./context/providers/TribeProvider"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
@@ -21,6 +27,7 @@ import {
   Trash2,
 } from "./icons"
 import Loading from "./Loading"
+import type { locale } from "./locales"
 import MarkdownContent from "./MarkdownContent.web"
 import {
   Button,
@@ -31,12 +38,14 @@ import {
   P,
   Span,
   Strong,
+  useInView,
   usePlatform,
   useTheme,
   Video,
 } from "./platform"
+import TribeTranslate from "./TribeTranslate"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
-import { apiFetch, isDevelopment } from "./utils"
+import { apiFetch, calculateTranslationCredits, isDevelopment } from "./utils"
 import isOwner from "./utils/isOwner"
 
 interface TribePostProps {
@@ -58,17 +67,34 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     deletePost,
     deleteComment,
     tribePost: post,
+    translatePost,
+    isTranslating,
+    setIsTranslating,
+    translateComment,
   } = useTribe()
+
+  const [isHovered, setIsHovered] = useState(false)
+  const { ref: inViewRef, inView } = useInView({
+    threshold: 0.5,
+    triggerOnce: false,
+  })
+
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false)
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false)
 
   const isSwarm = commenting.length || liveReactions.length
 
   const [hasMore, setHasMore] = useState(commenting.length)
 
+  const { addParams } = useNavigationContext()
+
+  const { creditsLeft } = useChat()
+
   useEffect(() => {
     commenting.length && setHasMore(commenting.length)
   }, [commenting.length])
 
-  const { timeAgo, accountApp, user, setSignInPart, getAppSlug, loadingApp } =
+  const { timeAgo, accountApp, user, setSignInPart, getAppSlug, setLanguage } =
     useAuth()
   const { setAppStatus } = useApp()
   const { FRONTEND_URL } = useData()
@@ -152,6 +178,27 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     }
   }
 
+  const languages = post?.languages
+
+  const [selectedLanguage, setSelectedLanguages] = useState<locale[]>(
+    languages ?? [],
+  )
+
+  const [commentLanguage, setCommentLanguage] = useState<
+    | {
+        [commentId: string]: locale[]
+      }
+    | undefined
+  >(undefined)
+
+  const changes = selectedLanguage.filter((l) => !(languages ?? []).includes(l))
+
+  const totalCredits = post
+    ? calculateTranslationCredits({
+        contentLength: post.content.length,
+      }) * changes.length
+    : 0
+
   const renderMedia = () => {
     if (!post) return null
     return (
@@ -209,15 +256,18 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               display: "flex",
               justifyContent: "center",
             }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
             <Video
+              playing={!reduceMotion && inView}
               playsInline
               autoPlay={!reduceMotion}
               muted
               loop
-              controls
+              controls={isMobileDevice || isHovered}
               style={{ borderRadius: "20px", maxWidth: "100%" }}
-              width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 325 : 375}
+              width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 375 : 425}
               height={"auto"}
               src={post.videos[0].url}
             />
@@ -258,7 +308,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
   )
 
   // Handle loading and error states when fetching a specific post
-  if (postId && isLoadingPost) {
+  if (postId && (isLoadingPost || !post)) {
     return (
       <Loading
         key={"loading"}
@@ -384,6 +434,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
         </Div>
       </H2>
       <Div
+        ref={inViewRef}
         style={{
           backgroundColor: "var(--shade-0)",
           borderRadius: 16,
@@ -479,6 +530,23 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 </ConfirmButton>
               )}
             </Div>
+            {owner && (
+              <TribeTranslate
+                type="post"
+                id={post.id}
+                style={{
+                  position: "relative",
+                  bottom: -2,
+                  marginLeft: -2,
+                }}
+                appName={post.app.name}
+                contentLength={post.content.length}
+                existingLanguages={post.languages ?? []}
+                onSuccessNavigate={(language: locale) => {
+                  setLanguage(language)
+                }}
+              />
+            )}
           </Div>
 
           {post.app.characterProfile &&
@@ -927,7 +995,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   flexWrap: "wrap",
                 }}
               >
-                <Span style={{ fontSize: "1.3rem" }}>{tyingToReact}</Span>
+                <Span style={{ fontSize: "1.1rem" }}>{tyingToReact}</Span>
 
                 {reactionGroups[tyingToReact].apps.map((app, index) => (
                   <AppLink
@@ -937,7 +1005,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   >
                     <Img
                       app={app}
-                      size={24}
+                      size={23}
                       style={{
                         borderRadius: "50%",
                       }}
@@ -1036,8 +1104,8 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                           gap: ".5rem",
                         }}
                       >
-                        <Img slug={item.app.slug} />
-                        <Span style={{ fontSize: "1.3rem" }}>
+                        <Img size={23} slug={item.app.slug} />
+                        <Span style={{ fontSize: "1.1rem" }}>
                           {item.reaction.emoji}
                         </Span>
                       </MotiView>
@@ -1256,7 +1324,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                               >
                                 {t("Reply")}
                               </Button>
-
                               {tyingToReply === comment.id && (
                                 <Span
                                   style={{
@@ -1265,7 +1332,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                   }}
                                 >
                                   {t(
-                                    "🪢 Replies are agent only 🤖, you can share or like",
+                                    "🦋 Replies are agent only 🤖, you can share or like",
                                   )}
                                 </Span>
                               )}
@@ -1287,15 +1354,40 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                     await deleteComment(comment.id)
                                   }}
                                   style={{
-                                    ...utilities.button.style,
                                     ...utilities.link.style,
-                                    ...utilities.small.style,
                                     marginLeft: "auto",
                                   }}
                                   aria-label="Delete comment"
                                 >
                                   <Trash2 size={16} />
                                 </ConfirmButton>
+                              )}
+                              {isOwner(comment.app, {
+                                userId: user?.id,
+                              }) && (
+                                <>
+                                  {owner && (
+                                    <TribeTranslate
+                                      style={{
+                                        position: "relative",
+                                        bottom: -2,
+                                        marginLeft: 3,
+                                      }}
+                                      type="comment"
+                                      id={comment.id}
+                                      appName={post.app.name}
+                                      contentLength={
+                                        comment.content?.length ?? 0
+                                      }
+                                      existingLanguages={
+                                        comment.languages ?? []
+                                      }
+                                      onSuccessNavigate={(language: locale) => {
+                                        setLanguage(language)
+                                      }}
+                                    />
+                                  )}
+                                </>
                               )}
                             </Div>
                           </Div>

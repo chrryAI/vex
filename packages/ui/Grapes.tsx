@@ -9,7 +9,7 @@ import type { appWithStore } from "./types"
 
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
-const Grappes = ({
+const Grapes = ({
   style,
   goToGrape,
   dataTestId,
@@ -263,4 +263,4 @@ const Grappes = ({
   )
 }
 
-export default Grappes
+export default Grapes

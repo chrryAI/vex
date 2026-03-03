@@ -77,8 +77,26 @@ const _server = Bun.serve({
     // Handle regular HTTP requests with Hono
     return app.fetch(req, server)
   },
+  idleTimeout: 255,
   websocket: websocketHandler,
 })
 
 console.log(`🚀 Hono API running on http://localhost:${port}`)
 console.log(`🔌 WebSocket server running on ws://localhost:${port}`)
+
+// Development Cron Trigger: Auto-run scheduled jobs every minute
+// if (process.env.NODE_ENV === "development") {
+//   console.log("⏰ [DEV] Starting periodic job runner (1 minute interval)")
+//   setInterval(async () => {
+//     try {
+//       const response = await fetch(
+//         `http://localhost:${port}/api/cron/runScheduledJobs`,
+//       )
+//       if (!response.ok) {
+//         console.warn(`⚠️ [DEV] Periodic job trigger failed: ${response.status}`)
+//       }
+//     } catch (error) {
+//       // Ignore connection errors during server restart
+//     }
+//   }, 60000)
+// }

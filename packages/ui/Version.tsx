@@ -55,7 +55,7 @@ export default function Version() {
         <Modal
           isModalOpen={needsUpdateModalOpen}
           hideOnClickOutside={false}
-          hasCloseButton={false}
+          hasCloseButton
           onToggle={(open) => {
             setNeedsUpdateModalOpen(open)
           }}
@@ -82,8 +82,7 @@ export default function Version() {
                 urlCopied
                   ? `Link copied! Open your favorite browser to download: ${downloadUrl.split("/").pop()} 📋`
                   : "Let's update your app to the latest version",
-              )}
-
+              )}{" "}
               {isStandalone
                 ? null
                 : isFirefox

@@ -669,7 +669,6 @@ export default function SignIn({
                   <span>{t("Login")}</span> */}
                   <A
                     openInNewTab
-                    target="_blank"
                     href={`${FRONTEND_URL}/privacy`}
                     className="button small transparent"
                     onClick={(e) => {
