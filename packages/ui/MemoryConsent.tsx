@@ -118,7 +118,6 @@ export default function MemoryConsent({
         <Div>
           <Div
             style={{
-              fontWeight: 600,
               marginBottom: "0.25rem",
               display: "flex",
               alignItems: "center",
@@ -126,7 +125,7 @@ export default function MemoryConsent({
               fontSize: ".9rem",
             }}
           >
-            <span style={{ fontSize: "1.5rem" }}>🔥</span>
+            <span style={{ fontSize: "1.2rem" }}>🔥</span>
 
             <Checkbox
               style={{ marginLeft: "auto" }}

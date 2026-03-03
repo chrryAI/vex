@@ -170,9 +170,13 @@ Return the translation as JSON:`
           model: "gpt-4o",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.1,
-          max_tokens: 2000,
+          max_tokens: 4096,
           response_format: { type: "json_object" },
         })
+
+        if (response.choices[0]?.finish_reason === "length") {
+          console.warn(`⚠️ Translation for ${lang} was truncated due to length.`)
+        }
 
         const rawContent = response?.choices?.at(0)?.message?.content || "{}"
         let translated: any = {}
@@ -357,9 +361,15 @@ Return the translation as JSON:`
           model: "gpt-4o",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.1,
-          max_tokens: 2000,
+          max_tokens: 4096,
           response_format: { type: "json_object" },
         })
+
+        if (response.choices[0]?.finish_reason === "length") {
+          console.warn(
+            `⚠️ Comment translation for ${lang} was truncated due to length.`,
+          )
+        }
 
         const rawContent = response?.choices?.at(0)?.message?.content || "{}"
         let translated: any = {}

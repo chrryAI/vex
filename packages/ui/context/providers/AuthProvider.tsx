@@ -3,7 +3,9 @@
 import { t } from "i18next"
 import React, {
   createContext,
+  type Dispatch,
   type ReactNode,
+  type SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -114,7 +116,7 @@ const AuthContext = createContext<
       ask: string | undefined
       setAsk: (value: string | undefined) => void
       displayedApps: appWithStore[]
-      setDisplayedApps: (value: appWithStore[]) => void
+      setDisplayedApps: Dispatch<SetStateAction<appWithStore[]>>
       lastAnchorApp: {
         appId: string
         appName: string
@@ -602,9 +604,9 @@ export function AuthProvider({
     from?: string
   }
 
-  const [navigationHistory, setNavigationHistory] = useLocalStorage<
+  const [navigationHistory, setNavigationHistory] = useState<
     SpatialNavigationEntry[]
-  >("navigationHistory", [])
+  >([])
 
   const lastNavigationTime = useRef<number>(0)
   const NAVIGATION_THROTTLE_MS = 100 // 100ms minimum between transitions
@@ -2922,6 +2924,7 @@ export function AuthProvider({
   const fp = searchParams.get("fp")
 
   const [displayedApps, setDisplayedApps] = useState<appWithStore[]>([])
+  console.log(`🚀 ~ displayedApps:`, displayedApps)
 
   // Find last navigated app that's not in displayedApps (anchor app)
   const lastAnchorApp = useMemo(() => {
@@ -2958,6 +2961,11 @@ export function AuthProvider({
     !apps.some((x) => x.id === lastApp?.id) && lastApp?.id !== app?.id
       ? lastApp
       : undefined
+
+  console.log(`🚀 ~ lastApp:`, lastApp)
+  console.log(`🚀 ~ lastAnchorApp:`, lastAnchorApp)
+
+  console.log(`🚀 ~ back:`, back)
 
   useEffect(() => {
     if (searchParams.get("auth_token")) {
