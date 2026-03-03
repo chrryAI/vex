@@ -59,16 +59,12 @@ function stripCodeFence(raw: string): string {
     s = s.slice(0, s.length - 3)
   }
 
-  // If the string starts with { but doesn't end with }, it's truncated.
-  // We can try to close it if it's simple, but JSON.parse will still fail usually.
-  // The goal of JSON mode is to avoid this entirely or get a parseable prefix.
-
   return s.trim()
 }
 
 /**
  * Bulk-translate multiple tribe posts and comments following a scheduled job.
- * Economical: 1 gpt-4o call translates ALL items to ALL languages at once.
+ * Economical: Batch target languages to avoid token limits for long content.
  */
 export async function autoTranslateTribeContent({
   appId,
@@ -77,241 +73,64 @@ export async function autoTranslateTribeContent({
   commentIds = [],
   languages,
 }: AutoTranslateOptions): Promise<void> {
-  const targetLanguages = languages
-    ? (languages.filter((l) => ALL_LOCALES.includes(l as Locale)) as Locale[])
-    : [...ALL_LOCALES]
-
-  if (targetLanguages.length === 0) {
-    return
-  }
-
-  // 1. Fetch source content
-  const posts = postIds.length
-    ? await db.query.tribePosts.findMany({
-        where: and(
-          eq(tribePosts.appId, appId),
-          inArray(tribePosts.id, postIds),
-        ),
-      })
-    : []
-
-  const comments = commentIds.length
-    ? await db.query.tribeComments.findMany({
-        where: and(
-          eq(tribeComments.appId, appId),
-          inArray(tribeComments.id, commentIds),
-        ),
-      })
-    : []
-
-  // 2. Identify needed translations (skip existing)
-  const postTasks = new Map<string, Locale[]>()
-  for (const p of posts) {
-    const existing = await db.query.tribePostTranslations.findMany({
-      where: eq(tribePostTranslations.postId, p.id),
-      columns: { language: true },
-    })
-    const existingLangs = new Set(existing.map((t) => t.language))
-    const needed = targetLanguages.filter((l) => !existingLangs.has(l))
-    if (needed.length > 0) postTasks.set(p.id, needed)
-  }
-
-  const commentTasks = new Map<string, Locale[]>()
-  for (const c of comments) {
-    const existing = await db.query.tribeCommentTranslations.findMany({
-      where: eq(tribeCommentTranslations.commentId, c.id),
-      columns: { language: true },
-    })
-    const existingLangs = new Set(existing.map((t) => t.language))
-    const needed = targetLanguages.filter((l) => !existingLangs.has(l))
-    if (needed.length > 0) commentTasks.set(c.id, needed)
-  }
-
-  if (postTasks.size === 0 && commentTasks.size === 0) {
-    return
-  }
-
-  // 3. Billing Logic (Premium Feature)
-  // Owner/Admin gets it for free. Others pay bulk rate (10 per post, 5 per comment).
-  let creditsToCharge = 0
-  if (executingUserId) {
-    const app = await db.query.apps.findFirst({
-      where: eq(apps.id, appId),
-      columns: { userId: true },
-    })
-
-    const isOwner = app && app.userId === executingUserId
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, executingUserId),
-      columns: { role: true, tribeCredits: true },
-    })
-
-    if (!isOwner && user?.role !== "admin") {
-      creditsToCharge = postTasks.size * 10 + commentTasks.size * 5
-
-      if (user && user.tribeCredits < creditsToCharge) {
-        console.warn(
-          `⚠️ Bulk auto-translate: User ${executingUserId} has insufficient credits (${user.tribeCredits} < ${creditsToCharge})`,
-        )
-        return
-      }
-    }
-  }
-
-  console.log(
-    `🌍 Bulk auto-translating ${postTasks.size} posts and ${commentTasks.size} comments... (Charge: ${creditsToCharge})`,
-  )
-
-  // 4. Construct bulk prompt
-  const postsSection = [...postTasks.entries()]
-    .map(([id, langs]) => {
-      const p = posts.find((item) => item.id === id)!
-      return `POST ID: ${id}\nTARGET LANGUAGES: ${langs.join(", ")}\nTITLE: ${p.title ?? ""}\nCONTENT: ${p.content ?? ""}`
-    })
-    .join("\n\n---\n\n")
-
-  const commentsSection = [...commentTasks.entries()]
-    .map(([id, langs]) => {
-      const c = comments.find((item) => item.id === id)!
-      return `COMMENT ID: ${id}\nTARGET LANGUAGES: ${langs.join(", ")}\nCONTENT: ${c.content ?? ""}`
-    })
-    .join("\n\n---\n\n")
-
-  const prompt = `You are an expert multilingual translator for Tribe, an AI-powered social network.
-Your goal is to provide high-quality, natural-sounding translations that maintain the original tone, context, and markdown formatting.
-
-RULES:
-- Handle each item for ALL requested target languages.
-- NEVER return the original English text if the target language is different. Even if the words are similar, translate them into the target language's natural equivalent.
-- Maintain original Markdown links, bolding, and structure.
-- Do NOT translate product names like "Vex" or "Nexus".
-- Return ONLY valid JSON matching the schema below.
-
-${postsSection ? `### POSTS TO TRANSLATE:\n${postsSection}\n\n` : ""}
-${commentsSection ? `### COMMENTS TO TRANSLATE:\n${commentsSection}\n\n` : ""}
-
-RESPONSE FORMAT (JSON):
-{
-  "posts": {
-    "post_id": {
-      "nl": { "title": "Translated Title", "content": "Translated Content" },
-      "fr": { "title": "Titre Traduit", "content": "Contenu Traduit" }
-    }
-  },
-  "comments": {
-    "comment_id": {
-      "nl": { "content": "Vertaalde Reactie" },
-      "fr": { "content": "Commentaire Traduit" }
-    }
-  }
-}`
-
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.1,
-      max_completion_tokens: 12000,
-      response_format: { type: "json_object" },
-    })
+    const targetLanguages = languages
+      ? (languages.filter((l) => ALL_LOCALES.includes(l as Locale)) as Locale[])
+      : [...ALL_LOCALES]
 
-    const raw = response?.choices?.at(0)?.message?.content ?? "{}"
-    let parsed: {
-      posts?: Record<
-        string,
-        Record<string, { title?: string; content?: string }>
-      >
-      comments?: Record<string, Record<string, { content?: string }>>
-    } = {}
-
-    try {
-      parsed = JSON.parse(stripCodeFence(raw))
-    } catch (parseErr) {
-      console.error("❌ Bulk auto-translate: Failed to parse LLM JSON response")
-      console.error("Raw content:", raw)
-      throw parseErr // Re-throw to be caught by the outer catch block
+    if (targetLanguages.length === 0) {
+      return
     }
 
-    // 5. Save results
-    const saves: Promise<any>[] = []
-    const processedPostIds = new Set<string>()
-    const processedCommentIds = new Set<string>()
+    // 1. Fetch source content
+    const posts = postIds.length
+      ? await db.query.tribePosts.findMany({
+          where: and(
+            eq(tribePosts.appId, appId),
+            inArray(tribePosts.id, postIds),
+          ),
+        })
+      : []
 
-    if (parsed.posts) {
-      for (const [postId, langsObj] of Object.entries(parsed.posts)) {
-        const needed = postTasks.get(postId)
-        if (!needed) continue
-        const post = posts.find((p) => p.id === postId)
-        if (!post) continue
+    const comments = commentIds.length
+      ? await db.query.tribeComments.findMany({
+          where: and(
+            eq(tribeComments.appId, appId),
+            inArray(tribeComments.id, commentIds),
+          ),
+        })
+      : []
 
-        let itemTranslated = false
-        for (const lang of needed) {
-          const t = langsObj[lang]
-          if (!t) continue
-          itemTranslated = true
-
-          // 🏷️ Use the translated title directly (removed prefixing for better UX)
-          const title = t.title || post.title || ""
-          const finalTitle = title.trim()
-
-          saves.push(
-            db
-              .insert(tribePostTranslations)
-              .values({
-                postId,
-                language: lang,
-                title: finalTitle,
-                content: t.content || post.content,
-                creditsUsed: 0,
-                model: "gpt-4o",
-              })
-              .onConflictDoNothing(),
-          )
-        }
-        if (itemTranslated) processedPostIds.add(postId)
-      }
+    // 2. Identify needed translations (skip existing)
+    const postTasks = new Map<string, Locale[]>()
+    for (const p of posts) {
+      const existing = await db.query.tribePostTranslations.findMany({
+        where: eq(tribePostTranslations.postId, p.id),
+        columns: { language: true },
+      })
+      const existingLangs = new Set(existing.map((t) => t.language))
+      const needed = targetLanguages.filter((l) => !existingLangs.has(l))
+      if (needed.length > 0) postTasks.set(p.id, needed)
     }
 
-    if (parsed.comments) {
-      for (const [commentId, langsObj] of Object.entries(parsed.comments)) {
-        const needed = commentTasks.get(commentId)
-        if (!needed) continue
-        const comment = comments.find((c) => c.id === commentId)
-        if (!comment) continue
-
-        let itemTranslated = false
-        for (const lang of needed) {
-          const t = langsObj[lang]
-          if (!t) continue
-          itemTranslated = true
-
-          saves.push(
-            db
-              .insert(tribeCommentTranslations)
-              .values({
-                commentId,
-                language: lang,
-                content: t.content || comment.content,
-                creditsUsed: 0,
-                model: "gpt-4o",
-              })
-              .onConflictDoNothing(),
-          )
-        }
-        if (itemTranslated) processedCommentIds.add(commentId)
-      }
+    const commentTasks = new Map<string, Locale[]>()
+    for (const c of comments) {
+      const existing = await db.query.tribeCommentTranslations.findMany({
+        where: eq(tribeCommentTranslations.commentId, c.id),
+        columns: { language: true },
+      })
+      const existingLangs = new Set(existing.map((t) => t.language))
+      const needed = targetLanguages.filter((l) => !existingLangs.has(l))
+      if (needed.length > 0) commentTasks.set(c.id, needed)
     }
 
-    await Promise.all(saves)
+    if (postTasks.size === 0 && commentTasks.size === 0) {
+      return
+    }
 
-    // 6. Charge Credits after confirmed successful translation
-    // We only charge for items that the LLM actually returned translations for.
-    // If billing check happened at the start, we use those conditions again.
-    const finalCreditsToCharge =
-      processedPostIds.size * 10 + processedCommentIds.size * 5
-
-    if (finalCreditsToCharge > 0 && executingUserId) {
-      // Re-verify if this user should be charged (same logic as start)
+    // 3. Billing Logic (Determine if we should charge)
+    let shouldCharge = false
+    if (executingUserId) {
       const app = await db.query.apps.findFirst({
         where: eq(apps.id, appId),
         columns: { userId: true },
@@ -321,63 +140,184 @@ RESPONSE FORMAT (JSON):
         where: eq(users.id, executingUserId),
         columns: { role: true },
       })
-
       if (!isOwner && user?.role !== "admin") {
+        shouldCharge = true
+      }
+    }
+
+    console.log(
+      `🌍 Bulk auto-translating ${postTasks.size} posts and ${commentTasks.size} comments... (Potential Charge: ${postTasks.size * 10 + commentTasks.size * 5})`,
+    )
+
+    // 4. Batch target languages for stability (3 per call)
+    const LANGUAGE_BATCH_SIZE = 3
+    const languageBatches: Locale[][] = []
+    for (let i = 0; i < targetLanguages.length; i += LANGUAGE_BATCH_SIZE) {
+      languageBatches.push(targetLanguages.slice(i, i + LANGUAGE_BATCH_SIZE))
+    }
+
+    let savedCount = 0
+    let totalCreditsCharged = 0
+    const processedPostIds = new Set<string>()
+    const processedCommentIds = new Set<string>()
+
+    for (const batch of languageBatches) {
+      console.log(`📡 Translating batch: ${batch.join(", ")}`)
+
+      const postsSection = [...postTasks.entries()]
+        .map(([id]) => {
+          const p = posts.find((item) => item.id === id)!
+          return `POST ID: ${id}\nTARGET LANGUAGES: ${batch.join(", ")}\nTITLE: ${p.title ?? ""}\nCONTENT: ${p.content ?? ""}`
+        })
+        .join("\n\n---\n\n")
+
+      const commentsSection = [...commentTasks.entries()]
+        .map(([id]) => {
+          const c = comments.find((item) => item.id === id)!
+          return `COMMENT ID: ${id}\nTARGET LANGUAGES: ${batch.join(", ")}\nCONTENT: ${c.content ?? ""}`
+        })
+        .join("\n\n---\n\n")
+
+      if (!postsSection && !commentsSection) continue
+
+      const prompt = `You are an expert multilingual translator for Tribe.
+Return ONLY valid JSON. NO markdown fences. NO text before or after.
+Translate each item for ALL provided target languages (${batch.join(", ")}).
+
+${postsSection ? `### POSTS TO TRANSLATE:\n${postsSection}\n\n` : ""}
+${commentsSection ? `### COMMENTS TO TRANSLATE:\n${commentsSection}\n\n` : ""}
+
+RESPONSE FORMAT (JSON):
+{
+  "posts": {
+    "post_id": {
+      "${batch[0]}": { "title": "...", "content": "..." }
+    }
+  },
+  "comments": {
+    "comment_id": {
+      "${batch[0]}": { "content": "..." }
+    }
+  }
+}`
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.1,
+        max_completion_tokens: 12000,
+        response_format: { type: "json_object" },
+      })
+
+      const choice = response.choices[0]
+      const raw = choice?.message?.content ?? "{}"
+      if (choice?.finish_reason === "length") {
+        console.warn("⚠️ Response truncated due to length.")
+      }
+
+      let parsed: any = {}
+      try {
+        parsed = JSON.parse(stripCodeFence(raw))
+      } catch (e) {
+        console.error("❌ Failed to parse JSON batch:", batch)
+        continue
+      }
+
+      const batchSaves: Promise<any>[] = []
+
+      if (parsed.posts) {
+        for (const [postId, langsObj] of Object.entries(parsed.posts)) {
+          const post = posts.find((p) => p.id === postId)
+          if (!post) continue
+          for (const lang of batch) {
+            const t = (langsObj as any)[lang]
+            if (!t) continue
+            batchSaves.push(
+              db
+                .insert(tribePostTranslations)
+                .values({
+                  postId,
+                  language: lang,
+                  title: (t.title || post.title || "").trim(),
+                  content: t.content || post.content,
+                  creditsUsed: 0,
+                  model: "gpt-4o",
+                })
+                .onConflictDoNothing(),
+            )
+            processedPostIds.add(postId)
+          }
+        }
+      }
+
+      if (parsed.comments) {
+        for (const [commentId, langsObj] of Object.entries(parsed.comments)) {
+          const comment = comments.find((c) => c.id === commentId)
+          if (!comment) continue
+          for (const lang of batch) {
+            const t = (langsObj as any)[lang]
+            if (!t) continue
+            batchSaves.push(
+              db
+                .insert(tribeCommentTranslations)
+                .values({
+                  commentId,
+                  language: lang,
+                  content: t.content || comment.content,
+                  creditsUsed: 0,
+                  model: "gpt-4o",
+                })
+                .onConflictDoNothing(),
+            )
+            processedCommentIds.add(commentId)
+          }
+        }
+      }
+
+      await Promise.all(batchSaves)
+      savedCount += batchSaves.length
+    }
+
+    // 6. Final Billing
+    if (shouldCharge && executingUserId) {
+      totalCreditsCharged =
+        processedPostIds.size * 10 + processedCommentIds.size * 5
+      if (totalCreditsCharged > 0) {
         await logCreditUsage({
           userId: executingUserId,
           agentId: appId,
-          creditCost: finalCreditsToCharge,
+          creditCost: totalCreditsCharged,
           messageType: "tribe_post_translate",
           appId: appId,
           metadata: {
             bulk: true,
-            itemCount: processedPostIds.size + processedCommentIds.size,
             postCount: processedPostIds.size,
             commentCount: processedCommentIds.size,
-            failedPostCount: postTasks.size - processedPostIds.size,
-            failedCommentCount: commentTasks.size - processedCommentIds.size,
           },
         })
-
         await db
           .update(users)
           .set({
-            tribeCredits: sql`${users.tribeCredits} - ${finalCreditsToCharge}`,
+            tribeCredits: sql`${users.tribeCredits} - ${totalCreditsCharged}`,
           })
           .where(eq(users.id, executingUserId))
       }
     }
 
-    console.log(`✅ Bulk auto-translate: saved ${saves.length} translations`)
-
-    // 7. Success Notification
-    if (saves.length > 0) {
+    if (savedCount > 0) {
       await sendDiscordNotification(
         {
           embeds: [
             {
               title: "🌍 Tribe Auto-Translate Success",
-              color: 0x10b981, // Green
+              color: 0x10b981,
               fields: [
+                { name: "App ID", value: appId, inline: true },
+                { name: "Saved", value: savedCount.toString(), inline: true },
                 {
-                  name: "App ID",
-                  value: appId,
+                  name: "Credits",
+                  value: totalCreditsCharged.toString(),
                   inline: true,
-                },
-                {
-                  name: "Translations Saved",
-                  value: saves.length.toString(),
-                  inline: true,
-                },
-                {
-                  name: "Credits Charged",
-                  value: finalCreditsToCharge.toString(),
-                  inline: true,
-                },
-                {
-                  name: "Items",
-                  value: `Posts: ${postTasks.size}, Comments: ${commentTasks.size}`,
-                  inline: false,
                 },
               ],
               timestamp: new Date().toISOString(),

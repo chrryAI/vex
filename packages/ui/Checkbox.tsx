@@ -54,6 +54,7 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
         style={{
           ...styles.formSwitch.style,
           ...(disabled && { opacity: 0.5 }),
+          gap: 7.5,
           ...style,
           cursor: disabled ? "not-allowed" : "pointer",
         }}

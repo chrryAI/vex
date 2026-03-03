@@ -104,10 +104,7 @@
       "rollup@>=4.0.0 <4.59.0": ">=4.59.0"
     }
   },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": ["apps/*", "packages/*"],
   "dependencies": {
     "@auth/core": "^0.37.4",
     "@axiomhq/pino": "^1.4.0",

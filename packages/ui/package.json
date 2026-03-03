@@ -98,7 +98,7 @@
     "dnd-core": "^16.0.1",
     "emoji-picker-react": "^4.14.0",
     "expo-keep-awake": "^15.0.7",
-    "firebase": "^12.9.0",
+    "firebase": "^12.10.0",
     "framer-motion": "^12.23.26",
     "i18n-iso-countries": "^7.14.0",
     "i18next": "^25.8.0",
