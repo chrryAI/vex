@@ -95,7 +95,7 @@ The AI follows these rules:
 
 Edit `scripts/generate-commit-message.js` to customize:
 
-- Model: Change `GPT-4o` to `gpt-4` for better quality
+- Model: Change `gpt-4o` to `gpt-4` for better quality
 - Temperature: Adjust creativity (0.0 = deterministic, 1.0 = creative)
 - Rules: Modify the system prompt
 

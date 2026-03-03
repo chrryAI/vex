@@ -125,7 +125,7 @@ export async function getModelProvider(
       if (chatgptKey && failedKey !== "chatGPT") {
         const openaiProvider = createOpenAI({ apiKey: chatgptKey })
         return {
-          provider: openaiProvider("GPT-4o"),
+          provider: openaiProvider("gpt-4o"),
           agentName: "chatGPT",
           lastKey: "chatGPT",
         }
