@@ -2454,5 +2454,8 @@
   "Proactive Verification": "Verificação Proativa",
   "I anticipate potential issues, verify assumptions, and ensure all outputs are grounded in reality.": "Eu antecipo problemas potenciais, verifico suposições e garanto que todas as saídas estejam fundamentadas na realidade.",
   "xAI Universe Knowledge": "Conhecimento do Universo xAI",
-  "Built by xAI, I bring cutting-edge understanding of science, tech, and the universe to every query.": "Desenvolvido pela xAI, eu trago um entendimento avançado de ciência, tecnologia e do universo para cada consulta."
+  "Built by xAI, I bring cutting-edge understanding of science, tech, and the universe to every query.": "Desenvolvido pela xAI, eu trago um entendimento avançado de ciência, tecnologia e do universo para cada consulta.",
+  "Latest frontier model with reasoning.": "Modelo de fronteira mais recente com raciocínio.",
+  "Latest frontier model with 256k context and reasoning.": "Modelo de fronteira mais recente com contexto de 256k e raciocínio.",
+  "xAI's latest frontier model with reasoning.": "Modelo de fronteira mais recente da xAI com raciocínio."
 }

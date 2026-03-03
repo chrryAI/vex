@@ -1527,6 +1527,13 @@
       "when": 1772391920285,
       "tag": "0217_wet_hedge_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 218,
+      "version": "7",
+      "when": 1772571460138,
+      "tag": "0218_thin_synch",
+      "breakpoints": true
     }
   ]
 }

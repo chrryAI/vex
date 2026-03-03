@@ -5881,7 +5881,7 @@ Respond in JSON format:
             ...talentTools,
           }
 
-    // Special handling for Sushi AI (unified multimodal agent)
+    // Special handling for Sushi AI (unified multimodal agent) and Grok Reasoning
     if (agent.name === "sushi") {
       // console.log("=".repeat(80))
       // console.log("🍣🍣🍣 SUSHI BLOCK ENTERED 🍣🍣🍣")
@@ -6097,8 +6097,6 @@ Respond in JSON format:
 
                 // Update activity timestamp on every part received
                 lastActivityTime = Date.now()
-
-                // console.log("🔍 Stream part type:", part.type)
 
                 if (!streamControllers.has(streamId)) {
                   // console.log("🍣 Sushi stream was stopped")
