@@ -70,7 +70,7 @@ function App() {
       <div className="web-content">
         <div className="web-content-placeholder">
           <div className="status-info">
-            <h1>🚀 Vex Browser</h1>
+            <h1>🚀 Vex Desktop</h1>
             <p>Active Tab: {activeTab?.title}</p>
             <p>URL: {activeTab?.url}</p>
             <p className="info-text">
