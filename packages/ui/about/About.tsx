@@ -2,7 +2,6 @@
 
 import Instructions from "chrry/Instructions"
 import { BiLogoPostgresql } from "react-icons/bi"
-import { FaChrome } from "react-icons/fa"
 import {
   SiBun,
   SiCssmodules,
@@ -11,27 +10,23 @@ import {
   SiTypescript,
   SiVite,
 } from "react-icons/si"
-import AppLink from "../AppLink"
 import A from "../a/A"
 import { COLORS, useAppContext } from "../context/AppContext"
 import {
   useApp,
   useAuth,
-  useData,
   useError,
   useNavigationContext,
 } from "../context/providers"
 import { useStyles } from "../context/StylesContext"
 import Img from "../Image"
 import {
-  BadgeCheck,
   CircleArrowLeft,
   Claude,
   Coins,
   DeepSeek,
   Gemini,
   Shell,
-  UserRoundPlus,
 } from "../icons"
 import Logo from "../Logo"
 import {
@@ -40,16 +35,13 @@ import {
   H1,
   H2,
   H3,
-  H4,
   P,
   Section,
   Span,
   usePlatform,
   useTheme,
-  Video,
 } from "../platform"
 import Skeleton from "../Skeleton"
-import type { appWithStore } from "../types"
 import {
   ADDITIONAL_CREDITS,
   AGENCY_PRICE,
@@ -70,7 +62,6 @@ import { useAboutStyles } from "./About.styles"
 export default function About() {
   const {
     chrry,
-    plausible,
     baseApp,
     user,
     siteConfig: config,
@@ -80,8 +71,6 @@ export default function About() {
 
   const styles = useAboutStyles()
   const { utilities } = useStyles()
-
-  const _isChrryAI = config.mode === "chrryAI"
 
   const { t } = useAppContext()
   const { setAppStatus } = useApp()
@@ -98,17 +87,17 @@ export default function About() {
     memberFeatures,
     creditsFeatures,
     proFeatures,
-    grapeFreeFeatures,
-    grapePlusFeatures,
-    grapeProFeatures,
     watermelonFeatures,
     watermelonPlusFeatures,
-    pearFreeFeatures,
     pearPlusFeatures,
+    grapePlusFeatures,
+    grapeFreeFeatures,
+    grapeProFeatures,
     pearProFeatures,
-    sushiFreeFeatures,
+    pearFreeFeatures,
     sushiCoderFeatures,
     sushiArchitectFeatures,
+    sushiFreeFeatures,
   } = getFeatures({
     t,
     ADDITIONAL_CREDITS,
@@ -116,6 +105,60 @@ export default function About() {
   })
 
   const apps = chrry?.store?.apps || baseApp?.store?.apps
+
+  const renderCreate = ({ slug }: { slug?: string } = {}) => {
+    return (
+      <>
+        {" "}
+        {!user ? (
+          <Button
+            className="inverted"
+            style={{
+              marginLeft: "auto",
+              fontSize: 14,
+              ...utilities.inverted.style,
+              ...utilities.small.style,
+            }}
+            onClick={() => {
+              if (checkIsExtension()) {
+                BrowserInstance?.runtime?.sendMessage({
+                  action: "openInSameTab",
+                  url: `${FRONTEND_URL}/about?signIn=register`,
+                })
+
+                return
+              }
+              router.push("/about?signIn=register")
+            }}
+          >
+            <Img slug={slug || app?.slug} size={20} /> {t("Create your agent")}
+          </Button>
+        ) : (
+          user &&
+          !accountApp && (
+            <Button
+              className="inverted"
+              style={{
+                marginLeft: "auto",
+                fontSize: 14,
+                ...utilities.inverted.style,
+                ...utilities.small.style,
+              }}
+              onClick={() => {
+                setAppStatus({
+                  part: "highlights",
+                  step: "add",
+                })
+              }}
+            >
+              <Img slug={slug || app?.slug} size={20} />{" "}
+              {t("Create your agent")}
+            </Button>
+          )
+        )}
+      </>
+    )
+  }
 
   return (
     <Skeleton>
@@ -146,20 +189,6 @@ export default function About() {
         </H1>
         <Section style={{ marginBottom: 15 }}>
           <P>
-            <a
-              onClick={(e) => {
-                addHapticFeedback()
-                if (e.metaKey || e.ctrlKey) {
-                  return
-                }
-                e.preventDefault()
-                router.push("/why")
-              }}
-              href={isStandalone ? undefined : `${FRONTEND_URL}/why`}
-            >
-              {t("why_vex")}
-            </a>
-            {", "}
             <A
               openInNewTab
               href={`${FRONTEND_URL}/blog`}
@@ -311,51 +340,7 @@ export default function About() {
         <Section>
           <H2 style={styles.h2.style}>
             <Logo size={24} /> {t("Free")}
-            {!user ? (
-              <Button
-                className="inverted"
-                style={{
-                  marginLeft: "auto",
-                  fontSize: 14,
-                  ...utilities.inverted.style,
-                  ...utilities.small.style,
-                }}
-                onClick={() => {
-                  if (checkIsExtension()) {
-                    BrowserInstance?.runtime?.sendMessage({
-                      action: "openInSameTab",
-                      url: `${FRONTEND_URL}/about?signIn=register`,
-                    })
-
-                    return
-                  }
-                  router.push("/about?signIn=register")
-                }}
-              >
-                <Img app={app} size={20} /> {t("Create your agent")}
-              </Button>
-            ) : (
-              user &&
-              !accountApp && (
-                <Button
-                  className="inverted"
-                  style={{
-                    marginLeft: "auto",
-                    fontSize: 14,
-                    ...utilities.inverted.style,
-                    ...utilities.small.style,
-                  }}
-                  onClick={() => {
-                    setAppStatus({
-                      part: "highlights",
-                      step: "add",
-                    })
-                  }}
-                >
-                  <Img app={app} size={20} /> {t("Create your agent")}
-                </Button>
-              )
-            )}
+            {renderCreate()}
           </H2>
           {memberFeatures.map((feature) => (
             <Span key={feature.text}>
@@ -473,6 +458,20 @@ export default function About() {
         </Section>
         <Section>
           <H2 style={styles.h2.style}>
+            <Img size={24} slug="sushi" /> {t("Sushi")}
+            {renderCreate({
+              slug: "sushi",
+            })}
+          </H2>
+          {sushiFreeFeatures.map((feature) => (
+            <Span key={feature.text}>
+              {" "}
+              {feature.emoji} {feature.text}
+            </Span>
+          ))}
+        </Section>
+        <Section>
+          <H2 style={styles.h2.style}>
             <Img size={24} slug="coder" /> {t("Coder")}
             <A
               openInNewTab={checkIsExtension()}
@@ -530,63 +529,99 @@ export default function About() {
         <Section>
           <H2 style={styles.h2.style}>
             <Img size={24} slug="grape" /> {t("Grape")}
-            <A
-              openInNewTab={checkIsExtension()}
-              href={`${FRONTEND_URL}/about?subscribe=true&plan=grape&grapeTier=plus`}
-              className="inverted"
-              style={{
-                marginLeft: "auto",
-                fontSize: 14,
-                ...utilities.button.style,
-                ...utilities.inverted.style,
-                fontWeight: "normal",
-              }}
-            >
-              €
-              {t("{{price}}/month", {
-                price: GRAPE_PLUS_PRICE,
-              })}
-            </A>
           </H2>
-          {pearPlusFeatures.map((feature) => (
-            <Span key={feature.text}>
-              {" "}
-              {feature.emoji} {feature.text}
-            </Span>
-          ))}
+          <Div>
+            <H3>{t("Free")}</H3>
+            {grapeFreeFeatures.map((feature) => (
+              <Span key={feature.text}>
+                {" "}
+                {feature.emoji} {feature.text}
+              </Span>
+            ))}
+            <Div style={{ marginTop: 20 }}>
+              {renderCreate({ slug: "grape" })}
+            </Div>
+          </Div>
+          <Div>
+            <H3>{t("Plus")}</H3>
+
+            {grapePlusFeatures.map((feature) => (
+              <Span key={feature.text}>
+                {" "}
+                {feature.emoji} {feature.text}
+              </Span>
+            ))}
+            <Div style={{ marginTop: 20 }}>
+              <A
+                openInNewTab={checkIsExtension()}
+                href={`${FRONTEND_URL}/about?subscribe=true&plan=grape&grapeTier=plus`}
+                className="inverted"
+                style={{
+                  marginLeft: "auto",
+                  fontSize: 14,
+                  ...utilities.button.style,
+                  ...utilities.inverted.style,
+                  fontWeight: "normal",
+                }}
+              >
+                €
+                {t("{{price}}/month", {
+                  price: GRAPE_PLUS_PRICE,
+                })}
+              </A>
+            </Div>
+          </Div>
         </Section>
         <Section>
           <H2 style={styles.h2.style}>
             <Img size={24} slug="pear" /> {t("Pear")}
-            <A
-              openInNewTab={checkIsExtension()}
-              href={`${FRONTEND_URL}/about?subscribe=true&plan=pear&pearTier=plus`}
-              className="inverted"
-              style={{
-                marginLeft: "auto",
-                fontSize: 14,
-                ...utilities.button.style,
-                ...utilities.inverted.style,
-                fontWeight: "normal",
-              }}
-            >
-              €
-              {t("{{price}}/month", {
-                price: PEAR_PLUS_PRICE,
-              })}
-            </A>
           </H2>
-          {pearPlusFeatures.map((feature) => (
-            <Span key={feature.text}>
-              {" "}
-              {feature.emoji} {feature.text}
-            </Span>
-          ))}
+          <Div>
+            <H3>{t("Free")}</H3>
+            {pearFreeFeatures.map((feature) => (
+              <Span key={feature.text}>
+                {" "}
+                {feature.emoji} {feature.text}
+              </Span>
+            ))}
+            <Div style={{ marginTop: 20 }}>
+              {renderCreate({ slug: "pear" })}
+            </Div>
+          </Div>
+          <Div>
+            <H3>{t("Plus")}</H3>
+
+            {pearPlusFeatures.map((feature) => (
+              <Span key={feature.text}>
+                {" "}
+                {feature.emoji} {feature.text}
+              </Span>
+            ))}
+            <Div style={{ marginTop: 20 }}>
+              <A
+                openInNewTab={checkIsExtension()}
+                href={`${FRONTEND_URL}/about?subscribe=true&plan=grape&grapeTier=plus`}
+                className="inverted"
+                style={{
+                  marginLeft: "auto",
+                  fontSize: 14,
+                  ...utilities.button.style,
+                  ...utilities.inverted.style,
+                  fontWeight: "normal",
+                }}
+              >
+                €
+                {t("{{price}}/month", {
+                  price: PEAR_PLUS_PRICE,
+                })}
+              </A>
+            </Div>
+          </Div>
         </Section>
 
         <Section>
           <H2 style={styles.h2.style}>
-            <Img size={24} logo="watermelon" /> {t("Agency")}
+            <Img size={24} logo="watermelon" /> {t("Watermelon")}
             <A
               openInNewTab={checkIsExtension()}
               href={`${FRONTEND_URL}/about?subscribe=true&plan=watermelon`}
