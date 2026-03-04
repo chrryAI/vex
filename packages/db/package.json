@@ -11,6 +11,7 @@
   },
   "scripts": {
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "generate": "pnpm exec drizzle-kit generate",
     "g": "pnpm exec drizzle-kit generate",
     "migrate": "pnpm exec drizzle-kit migrate",
@@ -39,6 +40,7 @@
     "@types/slug": "^5.0.9",
     "@types/uuid": "^10.0.0",
     "@upstash/redis": "^1.36.2",
+    "@vitest/coverage-v8": "^4.0.18",
     "all-the-cities": "^3.1.0",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.3.1",
