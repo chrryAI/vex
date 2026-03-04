@@ -288,7 +288,7 @@ export default function Agent({
     }
   }, [appForm?.watch("defaultModel"), aiAgent])
 
-  const isReplicateRequired =
+  const isVexteRequired =
     appForm?.watch("capabilities")?.imageGeneration &&
     !appFormWatcher.apiKeys?.replicate?.trim()
 
@@ -380,7 +380,7 @@ export default function Agent({
         } else {
           if ((tier === "plus" || tier === "pro") && capabilities) {
             // Image generation requires OpenAI
-            if (isReplicateRequired) {
+            if (isVexteRequired) {
               toast.error(
                 t(
                   "Image generation is enabled. Replicate API key is required for paid tiers",
@@ -1666,9 +1666,9 @@ export default function Agent({
                         <Input
                           dataTestId="replicate-api-key"
                           type="password"
-                          data-required={isReplicateRequired}
+                          data-required={isVexteRequired}
                           placeholder={
-                            isReplicateRequired
+                            isVexteRequired
                               ? t("Required or disable image generation")
                               : "r8_..."
                           }

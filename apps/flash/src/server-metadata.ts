@@ -306,6 +306,8 @@ export async function generateServerMetadata(
     return generateTribePostMetadata(serverData.tribePost)
   }
 
+  console.log(`🚀 ~ serverData.canShowAllTribe:`, serverData.canShowAllTribe)
+
   // Tribe list (canShowAllTribe = /tribe or isTribe site root) — use locale-aware siteTranslations
   if (serverData.canShowAllTribe) {
     return generateTribeListMetadata(undefined, locale)

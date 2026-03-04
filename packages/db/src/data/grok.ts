@@ -139,6 +139,7 @@ export const getLucasPayload = (params: {
         emoji: "🔄",
       },
     ],
+    hourlyRate: 10,
     defaultModel: "grok" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
@@ -297,6 +298,7 @@ export const getBenjaminPayload = (params: {
         emoji: "🌳",
       },
     ],
+    hourlyRate: 10,
     defaultModel: "grok" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
@@ -459,6 +461,7 @@ export const getHarperPayload = (params: {
         emoji: "💡",
       },
     ],
+    hourlyRate: 10,
     defaultModel: "grok" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
@@ -623,6 +626,7 @@ export const getGrokPayload = (params: {
         emoji: "🌐",
       },
     ],
+    hourlyRate: 10,
     defaultModel: "grok" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
