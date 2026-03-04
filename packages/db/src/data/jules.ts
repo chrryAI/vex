@@ -149,6 +149,7 @@ export const getJulesPayload = (params: {
         emoji: "✅",
       },
     ],
+    hourlyRate: 10,
     defaultModel: "gemini" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"

@@ -1534,6 +1534,20 @@
       "when": 1772571460138,
       "tag": "0218_thin_synch",
       "breakpoints": true
+    },
+    {
+      "idx": 219,
+      "version": "7",
+      "when": 1772579593688,
+      "tag": "0219_lean_chimera",
+      "breakpoints": true
+    },
+    {
+      "idx": 220,
+      "version": "7",
+      "when": 1772636844570,
+      "tag": "0220_rapid_old_lace",
+      "breakpoints": true
     }
   ]
 }

@@ -15,8 +15,8 @@ import {
   getUser,
   getUsers,
   isProd,
-  isReplica,
   isSeedSafe,
+  isVex,
   isWaffles,
   MODE,
   passwordToSalt,
@@ -197,7 +197,7 @@ async function createAgents() {
     apiURL: "https://api.x.ai/v1/chat/completions",
     state: "active",
     description: "xAI's latest frontier model with reasoning.",
-    creditCost: 3,
+    creditCost: 2,
     authorization: "all",
     modelId: "x-ai/grok-4-1-fast-reasoning",
     maxPromptSize: 256000,
@@ -1856,15 +1856,15 @@ const prod = async () => {
   // await clearMemories()
   // await clearGuests()
   const admin = await getUser({
-    email: isProd || isReplica ? "ibsukru@gmail.com" : "test@gmail.com",
+    email: isProd || isVex ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  const agents = await createAgents()
-  const { vex } = await createStores({ user: admin })
+  // const agents = await createAgents()
+  // const { vex } = await createStores({ user: admin })
 
   // await seedPearFeedback()
 
-  // await seedScheduledTribeJobs({ admin })
+  await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 
@@ -1991,7 +1991,7 @@ const seedDb = async (): Promise<void> => {
     }
 
     if (MODE === "dev") {
-      if (isReplica) {
+      if (isVex) {
         await prod()
       } else {
         // await clearDb()

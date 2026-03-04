@@ -212,7 +212,7 @@ export const isProd = isSeedSafe
     ? false
     : !DB_URL?.includes("localhost")
 
-export const isReplica = !isProd && DB_URL?.includes("vex")
+export const isVex = !isProd && DB_URL?.includes("vex")
 
 export { decrypt, encrypt, generateEncryptionKey } from "./encryption"
 // Export cache functions and redis instance for external use
