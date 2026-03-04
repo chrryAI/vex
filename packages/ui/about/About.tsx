@@ -2,7 +2,6 @@
 
 import Instructions from "chrry/Instructions"
 import { BiLogoPostgresql } from "react-icons/bi"
-import { FaChrome } from "react-icons/fa"
 import {
   SiBun,
   SiCssmodules,
@@ -11,27 +10,23 @@ import {
   SiTypescript,
   SiVite,
 } from "react-icons/si"
-import AppLink from "../AppLink"
 import A from "../a/A"
 import { COLORS, useAppContext } from "../context/AppContext"
 import {
   useApp,
   useAuth,
-  useData,
   useError,
   useNavigationContext,
 } from "../context/providers"
 import { useStyles } from "../context/StylesContext"
 import Img from "../Image"
 import {
-  BadgeCheck,
   CircleArrowLeft,
   Claude,
   Coins,
   DeepSeek,
   Gemini,
   Shell,
-  UserRoundPlus,
 } from "../icons"
 import Logo from "../Logo"
 import {
@@ -39,17 +34,13 @@ import {
   Div,
   H1,
   H2,
-  H3,
-  H4,
   P,
   Section,
   Span,
   usePlatform,
   useTheme,
-  Video,
 } from "../platform"
 import Skeleton from "../Skeleton"
-import type { appWithStore } from "../types"
 import {
   ADDITIONAL_CREDITS,
   AGENCY_PRICE,
@@ -70,7 +61,6 @@ import { useAboutStyles } from "./About.styles"
 export default function About() {
   const {
     chrry,
-    plausible,
     baseApp,
     user,
     siteConfig: config,
@@ -80,8 +70,6 @@ export default function About() {
 
   const styles = useAboutStyles()
   const { utilities } = useStyles()
-
-  const _isChrryAI = config.mode === "chrryAI"
 
   const { t } = useAppContext()
   const { setAppStatus } = useApp()
@@ -98,15 +86,9 @@ export default function About() {
     memberFeatures,
     creditsFeatures,
     proFeatures,
-    grapeFreeFeatures,
-    grapePlusFeatures,
-    grapeProFeatures,
     watermelonFeatures,
     watermelonPlusFeatures,
-    pearFreeFeatures,
     pearPlusFeatures,
-    pearProFeatures,
-    sushiFreeFeatures,
     sushiCoderFeatures,
     sushiArchitectFeatures,
   } = getFeatures({
