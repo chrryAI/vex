@@ -16,7 +16,7 @@ const defaultMockAuth = {
   dailyQuestionData: null,
   dailyQuestionIndex: 0,
   minimize: false,
-  isIDE: false,
+  isTerminal: false,
   burn: false,
   characterProfilesEnabled: true,
   characterProfiles: [] as Array<{
@@ -279,7 +279,7 @@ export const mockPlatform = {
   viewPortWidth: 1024,
   isWeb: true,
   isCapacitor: false,
-  isIDE: false,
+  isTerminal: false,
   platform: {
     isWeb: true,
     isNative: false,

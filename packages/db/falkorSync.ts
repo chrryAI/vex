@@ -423,6 +423,210 @@ export async function syncFalkorThread(threadData: {
 }
 
 /**
+ * Sync memory to FalkorDB (create or update)
+ * Safe to call - will not crash app if FalkorDB fails
+ */
+export async function syncFalkorMemory(memData: {
+  id: string
+  title: string
+  content: string
+  category: string
+  importance: number
+  usageCount: number
+  tags?: string[] | null
+  userId?: string | null
+  appId?: string | null
+  sourceThreadId?: string | null
+}) {
+  const g = await getFalkorGraph()
+  if (!g) return
+
+  try {
+    await g.query(
+      `
+      MERGE (m:Memory {id: $id})
+      SET m.title = $title,
+          m.content = $content,
+          m.category = $category,
+          m.importance = $importance,
+          m.usageCount = $usageCount,
+          m.tags = $tags
+    `,
+      {
+        params: {
+          id: memData.id,
+          title: memData.title,
+          content: memData.content,
+          category: memData.category,
+          importance: memData.importance,
+          usageCount: memData.usageCount,
+          tags: JSON.stringify(memData.tags ?? []),
+        },
+      },
+    )
+
+    if (memData.userId) {
+      await g.query(
+        `
+        MATCH (m:Memory {id: $memId})
+        MERGE (u:User {id: $userId})
+        MERGE (m)-[:BELONGS_TO]->(u)
+      `,
+        { params: { memId: memData.id, userId: memData.userId } },
+      )
+    }
+
+    if (memData.appId) {
+      await g.query(
+        `
+        MATCH (m:Memory {id: $memId})
+        MATCH (a:App {id: $appId})
+        MERGE (m)-[:ABOUT]->(a)
+      `,
+        { params: { memId: memData.id, appId: memData.appId } },
+      )
+    }
+
+    if (memData.sourceThreadId) {
+      await g.query(
+        `
+        MATCH (m:Memory {id: $memId})
+        MERGE (t:Thread {id: $threadId})
+        MERGE (m)-[:SOURCED_FROM]->(t)
+      `,
+        { params: { memId: memData.id, threadId: memData.sourceThreadId } },
+      )
+    }
+
+    console.log(`✅ Synced memory ${memData.id} to FalkorDB`)
+  } catch (error) {
+    console.error("Failed to sync memory to FalkorDB:", error)
+    captureException(error, {
+      tags: { operation: "falkor_sync_memory" },
+      extra: { memoryId: memData.id },
+    })
+  }
+}
+
+/**
+ * Delete memory from FalkorDB
+ */
+export async function deleteFalkorMemory(memoryId: string) {
+  const g = await getFalkorGraph()
+  if (!g) return
+
+  try {
+    await g.query(
+      `
+      MATCH (m:Memory {id: $memoryId})
+      DETACH DELETE m
+    `,
+      { params: { memoryId } },
+    )
+    console.log(`🗑️ Deleted memory ${memoryId} from FalkorDB`)
+  } catch (error) {
+    console.error("Failed to delete memory from FalkorDB:", error)
+    captureException(error, {
+      tags: { operation: "falkor_delete_memory" },
+      extra: { memoryId },
+    })
+  }
+}
+
+/**
+ * Sync character profile to FalkorDB (create or update)
+ * Safe to call - will not crash app if FalkorDB fails
+ */
+export async function syncFalkorCharacterProfile(profileData: {
+  id: string
+  name: string
+  personality: string
+  userRelationship?: string | null
+  tags?: string[] | null
+  agentId?: string | null
+  userId?: string | null
+}) {
+  const g = await getFalkorGraph()
+  if (!g) return
+
+  try {
+    await g.query(
+      `
+      MERGE (c:CharacterProfile {id: $id})
+      SET c.name = $name,
+          c.personality = $personality,
+          c.userRelationship = $userRelationship,
+          c.tags = $tags
+    `,
+      {
+        params: {
+          id: profileData.id,
+          name: profileData.name,
+          personality: profileData.personality,
+          userRelationship: profileData.userRelationship ?? null,
+          tags: JSON.stringify(profileData.tags ?? []),
+        },
+      },
+    )
+
+    if (profileData.agentId) {
+      await g.query(
+        `
+        MATCH (c:CharacterProfile {id: $profileId})
+        MATCH (a:App {id: $agentId})
+        MERGE (c)-[:PERSONA_OF]->(a)
+      `,
+        { params: { profileId: profileData.id, agentId: profileData.agentId } },
+      )
+    }
+
+    if (profileData.userId) {
+      await g.query(
+        `
+        MATCH (c:CharacterProfile {id: $profileId})
+        MERGE (u:User {id: $userId})
+        MERGE (c)-[:KNOWS]->(u)
+      `,
+        { params: { profileId: profileData.id, userId: profileData.userId } },
+      )
+    }
+
+    console.log(`✅ Synced character profile ${profileData.id} to FalkorDB`)
+  } catch (error) {
+    console.error("Failed to sync character profile to FalkorDB:", error)
+    captureException(error, {
+      tags: { operation: "falkor_sync_character_profile" },
+      extra: { profileId: profileData.id },
+    })
+  }
+}
+
+/**
+ * Delete character profile from FalkorDB
+ */
+export async function deleteFalkorCharacterProfile(profileId: string) {
+  const g = await getFalkorGraph()
+  if (!g) return
+
+  try {
+    await g.query(
+      `
+      MATCH (c:CharacterProfile {id: $profileId})
+      DETACH DELETE c
+    `,
+      { params: { profileId } },
+    )
+    console.log(`🗑️ Deleted character profile ${profileId} from FalkorDB`)
+  } catch (error) {
+    console.error("Failed to delete character profile from FalkorDB:", error)
+    captureException(error, {
+      tags: { operation: "falkor_delete_character_profile" },
+      extra: { profileId },
+    })
+  }
+}
+
+/**
  * Close FalkorDB connection
  * Note: Connection is managed by src/graph/client, no need to close manually
  */
