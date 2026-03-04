@@ -30,6 +30,7 @@ import {
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import DeleteThread from "./DeleteThread"
+import { FalkorDBSetupModal } from "./FalkorDBSetupModal"
 import {
   useCountdown,
   useHasHydrated,
@@ -233,7 +234,7 @@ export default function Chat({
     burn,
     isPear,
     setIsPear,
-    isIDE,
+    isTerminal,
     accountApps,
     isRetro,
     setIsRetro,
@@ -474,7 +475,7 @@ export default function Chat({
   const m = minimize && empty
 
   const isChatFloating =
-    m || isIDE || (isChatFloatingInternal && shouldUseCompactMode)
+    m || isTerminal || (isChatFloatingInternal && shouldUseCompactMode)
 
   const [needsReview, setNeedsReviewInternal] = useState(false)
   const needsReviewRef = useRef(needsReview)
@@ -649,6 +650,7 @@ export default function Chat({
     images?: { used: number; limit: number; resetTime: string }
   } | null>(null)
   const [showQuotaInfo, setShowQuotaInfoInternal] = useState(false)
+  const [showFalkorModal, setShowFalkorModal] = useState(false)
   const setShowQuotaInfo = (show: boolean) => {
     setShowQuotaInfoInternal(show)
     show &&
@@ -3433,7 +3435,7 @@ export default function Chat({
           ...(isHydrated && isStandalone && os === "ios"
             ? { marginBottom: 16 }
             : {}),
-          ...(isIDE
+          ...(isTerminal
             ? {
                 position: "fixed",
                 zIndex: 1000,
@@ -4816,7 +4818,7 @@ export default function Chat({
                 </Div>
               </Div>
             </Div>
-            {(!isChatFloating || isIDE) && (
+            {(!isChatFloating || isTerminal) && (
               <Div
                 style={{
                   ...styles.creditInfo.style,
@@ -4928,6 +4930,23 @@ export default function Chat({
                     ) : null}
                   </>
                 )}
+                {/* FalkorDB local workspace button — shown for all logged-in users */}
+                {user && (
+                  <Button
+                    data-testid="falkor-setup-button"
+                    onClick={() => setShowFalkorModal(true)}
+                    className="link"
+                    style={{
+                      ...utilities.link.style,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      opacity: 0.7,
+                    }}
+                  >
+                    <HardDrive size={15} />
+                  </Button>
+                )}
                 {user && !user?.subscription && (
                   <Button
                     data-testid="subscribe-from-chat-button"
@@ -4992,6 +5011,18 @@ export default function Chat({
           </Div>
         )}
       </Div>
+
+      {/* FalkorDB local setup modal */}
+      <FalkorDBSetupModal
+        isOpen={showFalkorModal}
+        onClose={() => setShowFalkorModal(false)}
+        user={user ?? null}
+        onLogin={() => {
+          setShowFalkorModal(false)
+          addParams({ signIn: "login", callbackUrl: pathname })
+        }}
+        apiUrl={API_URL}
+      />
     </>
   )
 }

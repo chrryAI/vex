@@ -125,7 +125,7 @@ export interface PlatformContextValue {
   isStorageReady: boolean
 
   // IDE state
-  isIDE: boolean
+  isTerminal: boolean
   toggleIDE: () => void
   idePanelWidth: number
   setIdePanelWidth: (width: number) => void
@@ -332,7 +332,7 @@ export function PlatformProvider({
   }
 
   // IDE state - MUST be defined before viewport effects that use it
-  const [isIDE, setIsIDE] = useState(false)
+  const [isTerminal, setIsIDE] = useState(false)
   const [idePanelWidth, setIdePanelWidth] = useState(400) // Default 400px for chat panel
 
   const toggleIDE = useCallback(() => {
@@ -425,14 +425,14 @@ export function PlatformProvider({
       startTransition(() => {
         // When IDE is active, set viewport to panel width
         // Otherwise use actual window width
-        if (isIDE) {
+        if (isTerminal) {
           setViewPortWidth(idePanelWidth)
         } else {
           setViewPortWidth(window.innerWidth)
         }
       })
     }
-  }, [isIDE, idePanelWidth, setViewPortWidth])
+  }, [isTerminal, idePanelWidth, setViewPortWidth])
 
   // Platform-specific value selector
   const _select = <T,>(options: {
@@ -520,7 +520,7 @@ export function PlatformProvider({
       isDesktop,
       isStorageReady,
       // IDE state
-      isIDE,
+      isTerminal,
       toggleIDE,
       idePanelWidth,
       setIdePanelWidth,
@@ -555,7 +555,7 @@ export function PlatformProvider({
       isTauri,
       isDesktop,
       isStorageReady,
-      isIDE,
+      isTerminal,
       toggleIDE,
       idePanelWidth,
       setIdePanelWidth,
