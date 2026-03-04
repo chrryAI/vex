@@ -34,6 +34,7 @@ import {
   Div,
   H1,
   H2,
+  H3,
   P,
   Section,
   Span,
@@ -89,8 +90,14 @@ export default function About() {
     watermelonFeatures,
     watermelonPlusFeatures,
     pearPlusFeatures,
+    grapePlusFeatures,
+    grapeFreeFeatures,
+    grapeProFeatures,
+    pearProFeatures,
+    pearFreeFeatures,
     sushiCoderFeatures,
     sushiArchitectFeatures,
+    sushiFreeFeatures,
   } = getFeatures({
     t,
     ADDITIONAL_CREDITS,
@@ -98,6 +105,60 @@ export default function About() {
   })
 
   const apps = chrry?.store?.apps || baseApp?.store?.apps
+
+  const renderCreate = ({ slug }: { slug?: string } = {}) => {
+    return (
+      <>
+        {" "}
+        {!user ? (
+          <Button
+            className="inverted"
+            style={{
+              marginLeft: "auto",
+              fontSize: 14,
+              ...utilities.inverted.style,
+              ...utilities.small.style,
+            }}
+            onClick={() => {
+              if (checkIsExtension()) {
+                BrowserInstance?.runtime?.sendMessage({
+                  action: "openInSameTab",
+                  url: `${FRONTEND_URL}/about?signIn=register`,
+                })
+
+                return
+              }
+              router.push("/about?signIn=register")
+            }}
+          >
+            <Img slug={slug || app?.slug} size={20} /> {t("Create your agent")}
+          </Button>
+        ) : (
+          user &&
+          !accountApp && (
+            <Button
+              className="inverted"
+              style={{
+                marginLeft: "auto",
+                fontSize: 14,
+                ...utilities.inverted.style,
+                ...utilities.small.style,
+              }}
+              onClick={() => {
+                setAppStatus({
+                  part: "highlights",
+                  step: "add",
+                })
+              }}
+            >
+              <Img slug={slug || app?.slug} size={20} />{" "}
+              {t("Create your agent")}
+            </Button>
+          )
+        )}
+      </>
+    )
+  }
 
   return (
     <Skeleton>
@@ -293,51 +354,7 @@ export default function About() {
         <Section>
           <H2 style={styles.h2.style}>
             <Logo size={24} /> {t("Free")}
-            {!user ? (
-              <Button
-                className="inverted"
-                style={{
-                  marginLeft: "auto",
-                  fontSize: 14,
-                  ...utilities.inverted.style,
-                  ...utilities.small.style,
-                }}
-                onClick={() => {
-                  if (checkIsExtension()) {
-                    BrowserInstance?.runtime?.sendMessage({
-                      action: "openInSameTab",
-                      url: `${FRONTEND_URL}/about?signIn=register`,
-                    })
-
-                    return
-                  }
-                  router.push("/about?signIn=register")
-                }}
-              >
-                <Img app={app} size={20} /> {t("Create your agent")}
-              </Button>
-            ) : (
-              user &&
-              !accountApp && (
-                <Button
-                  className="inverted"
-                  style={{
-                    marginLeft: "auto",
-                    fontSize: 14,
-                    ...utilities.inverted.style,
-                    ...utilities.small.style,
-                  }}
-                  onClick={() => {
-                    setAppStatus({
-                      part: "highlights",
-                      step: "add",
-                    })
-                  }}
-                >
-                  <Img app={app} size={20} /> {t("Create your agent")}
-                </Button>
-              )
-            )}
+            {renderCreate()}
           </H2>
           {memberFeatures.map((feature) => (
             <Span key={feature.text}>
@@ -455,6 +472,20 @@ export default function About() {
         </Section>
         <Section>
           <H2 style={styles.h2.style}>
+            <Img size={24} slug="sushi" /> {t("Sushi")}
+            {renderCreate({
+              slug: "sushi",
+            })}
+          </H2>
+          {sushiFreeFeatures.map((feature) => (
+            <Span key={feature.text}>
+              {" "}
+              {feature.emoji} {feature.text}
+            </Span>
+          ))}
+        </Section>
+        <Section>
+          <H2 style={styles.h2.style}>
             <Img size={24} slug="coder" /> {t("Coder")}
             <A
               openInNewTab={checkIsExtension()}
@@ -512,63 +543,99 @@ export default function About() {
         <Section>
           <H2 style={styles.h2.style}>
             <Img size={24} slug="grape" /> {t("Grape")}
-            <A
-              openInNewTab={checkIsExtension()}
-              href={`${FRONTEND_URL}/about?subscribe=true&plan=grape&grapeTier=plus`}
-              className="inverted"
-              style={{
-                marginLeft: "auto",
-                fontSize: 14,
-                ...utilities.button.style,
-                ...utilities.inverted.style,
-                fontWeight: "normal",
-              }}
-            >
-              €
-              {t("{{price}}/month", {
-                price: GRAPE_PLUS_PRICE,
-              })}
-            </A>
           </H2>
-          {pearPlusFeatures.map((feature) => (
-            <Span key={feature.text}>
-              {" "}
-              {feature.emoji} {feature.text}
-            </Span>
-          ))}
+          <Div>
+            <H3>{t("Free")}</H3>
+            {grapeFreeFeatures.map((feature) => (
+              <Span key={feature.text}>
+                {" "}
+                {feature.emoji} {feature.text}
+              </Span>
+            ))}
+            <Div style={{ marginTop: 20 }}>
+              {renderCreate({ slug: "grape" })}
+            </Div>
+          </Div>
+          <Div>
+            <H3>{t("Plus")}</H3>
+
+            {grapePlusFeatures.map((feature) => (
+              <Span key={feature.text}>
+                {" "}
+                {feature.emoji} {feature.text}
+              </Span>
+            ))}
+            <Div style={{ marginTop: 20 }}>
+              <A
+                openInNewTab={checkIsExtension()}
+                href={`${FRONTEND_URL}/about?subscribe=true&plan=grape&grapeTier=plus`}
+                className="inverted"
+                style={{
+                  marginLeft: "auto",
+                  fontSize: 14,
+                  ...utilities.button.style,
+                  ...utilities.inverted.style,
+                  fontWeight: "normal",
+                }}
+              >
+                €
+                {t("{{price}}/month", {
+                  price: GRAPE_PLUS_PRICE,
+                })}
+              </A>
+            </Div>
+          </Div>
         </Section>
         <Section>
           <H2 style={styles.h2.style}>
             <Img size={24} slug="pear" /> {t("Pear")}
-            <A
-              openInNewTab={checkIsExtension()}
-              href={`${FRONTEND_URL}/about?subscribe=true&plan=pear&pearTier=plus`}
-              className="inverted"
-              style={{
-                marginLeft: "auto",
-                fontSize: 14,
-                ...utilities.button.style,
-                ...utilities.inverted.style,
-                fontWeight: "normal",
-              }}
-            >
-              €
-              {t("{{price}}/month", {
-                price: PEAR_PLUS_PRICE,
-              })}
-            </A>
           </H2>
-          {pearPlusFeatures.map((feature) => (
-            <Span key={feature.text}>
-              {" "}
-              {feature.emoji} {feature.text}
-            </Span>
-          ))}
+          <Div>
+            <H3>{t("Free")}</H3>
+            {pearFreeFeatures.map((feature) => (
+              <Span key={feature.text}>
+                {" "}
+                {feature.emoji} {feature.text}
+              </Span>
+            ))}
+            <Div style={{ marginTop: 20 }}>
+              {renderCreate({ slug: "pear" })}
+            </Div>
+          </Div>
+          <Div>
+            <H3>{t("Plus")}</H3>
+
+            {pearPlusFeatures.map((feature) => (
+              <Span key={feature.text}>
+                {" "}
+                {feature.emoji} {feature.text}
+              </Span>
+            ))}
+            <Div style={{ marginTop: 20 }}>
+              <A
+                openInNewTab={checkIsExtension()}
+                href={`${FRONTEND_URL}/about?subscribe=true&plan=grape&grapeTier=plus`}
+                className="inverted"
+                style={{
+                  marginLeft: "auto",
+                  fontSize: 14,
+                  ...utilities.button.style,
+                  ...utilities.inverted.style,
+                  fontWeight: "normal",
+                }}
+              >
+                €
+                {t("{{price}}/month", {
+                  price: PEAR_PLUS_PRICE,
+                })}
+              </A>
+            </Div>
+          </Div>
         </Section>
 
         <Section>
           <H2 style={styles.h2.style}>
-            <Img size={24} logo="watermelon" /> {t("Agency")}
+            <Img size={24} logo="watermelon" /> {t("Watermelon")}
             <A
               openInNewTab={checkIsExtension()}
               href={`${FRONTEND_URL}/about?subscribe=true&plan=watermelon`}
