@@ -1584,7 +1584,20 @@ app.use(async (req, res) => {
 
   // SECURITY: Rate limiting via Arcjet (aj.protect)
   // Whitelisted domains (.chrry.ai, localhost) are trusted and skip rate limiting
+  const ua = (req.headers["user-agent"] || "").toLowerCase()
+  const isCrawler =
+    ua.includes("googlebot") ||
+    ua.includes("bingbot") ||
+    ua.includes("chrome-lighthouse") || // PageSpeed Insights
+    ua.includes("pagespeedinsights") ||
+    ua.includes("google-inspectiontool") ||
+    ua.includes("google-structured-data") ||
+    ua.includes("applebot") ||
+    ua.includes("duckduckbot") ||
+    ua.includes("slurp") // Yahoo
+
   const isWhitelisted =
+    isCrawler || // Search engine crawlers & PSI — never rate limit
     hostname.endsWith(".chrry.ai") || // All subdomains
     hostname === "chrry.ai" || // Main domain
     hostname.startsWith("localhost") || // Local development
