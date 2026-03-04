@@ -1616,10 +1616,9 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         >
                           <Img
                             slug={isPear ? "pear" : undefined}
-                            app={
-                              isPear ? undefined : app?.store?.app || undefined
-                            }
+                            app={isPear ? undefined : undefined}
                             size={isPear ? 24 : 30}
+                            logo={isPear ? undefined : "lifeOS"}
                           />
                         </Div>
                         <P
