@@ -1,6 +1,7 @@
 import AppProviders from "@chrryai/chrry/context/providers"
 import React, { useEffect, useState } from "react"
 import ReactDOM from "react-dom/client"
+import { SetupWizard } from "./components/SetupWizard"
 import { TabBar } from "./components/TabBar"
 import "@chrryai/chrry/globals.scss"
 import "./styles/browser-chrome.css"
@@ -13,6 +14,7 @@ interface Tab {
 }
 
 function App() {
+  const [isReady, setIsReady] = useState(false)
   const [tabs, setTabs] = useState<Tab[]>([
     { id: "1", url: "https://www.google.com", title: "Google" },
   ])
@@ -60,6 +62,10 @@ function App() {
 
   return (
     <div className="app">
+      {/* SetupWizard overlays everything until FalkorDB check is done.
+          When graph already has data it resolves in <200ms with no visible flash. */}
+      {!isReady && <SetupWizard onReady={() => setIsReady(true)} />}
+
       <TabBar
         tabs={tabs}
         activeTabId={activeTabId}
@@ -70,7 +76,7 @@ function App() {
       <div className="web-content">
         <div className="web-content-placeholder">
           <div className="status-info">
-            <h1>🚀 Vex Browser</h1>
+            <h1>🚀 Vex Desktop</h1>
             <p>Active Tab: {activeTab?.title}</p>
             <p>URL: {activeTab?.url}</p>
             <p className="info-text">
