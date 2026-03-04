@@ -325,8 +325,6 @@ export async function loadServerData(
     (siteConfig.isTribe &&
       (pathnameWithoutLocale === "/" || pathnameWithoutLocale === ""))
 
-  console.log(`🚀 ~ canShowAllTribe:`, canShowAllTribe, siteConfig.isTribe)
-
   try {
     const sessionResult = await getSession({
       // appId: appResult.id,
