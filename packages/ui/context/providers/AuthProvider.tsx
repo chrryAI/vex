@@ -2321,7 +2321,7 @@ export function AuthProvider({
     !tribeSlug && (showTribeProfileInternal || showTribeProfileMemo)
 
   const isPearInternal =
-    (canShowAllTribe || showTribe || searchParams.get("pear") === "true") &&
+    searchParams.get("pear") === "true" &&
     (accountApp ? app?.id !== accountApp?.id : true)
 
   const [isPear, setIsPearInternal] = useState(isPearInternal)
