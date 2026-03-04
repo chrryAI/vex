@@ -17,39 +17,6 @@ export const getEnv = () => {
   return Object.assign(Object.assign({}, processEnv), importMetaEnv)
 }
 export const isCI = getEnv().VITE_CI === "true" || getEnv().CI === "true"
-export const checkIsExtension = () => {
-  var _a, _b
-  if (
-    typeof chrome !== "undefined" &&
-    ((_a = chrome.runtime) === null || _a === void 0 ? void 0 : _a.id)
-  ) {
-    return true
-  }
-  if (
-    typeof browser !== "undefined" &&
-    ((_b = browser.runtime) === null || _b === void 0 ? void 0 : _b.id)
-  ) {
-    return true
-  }
-  return false
-}
-export const getExtensionUrl = () => {
-  var _a, _b
-  if (typeof window === "undefined") return
-  if (
-    typeof chrome !== "undefined" &&
-    ((_a = chrome.runtime) === null || _a === void 0 ? void 0 : _a.getURL)
-  ) {
-    return chrome.runtime.getURL("index.html") // Chrome
-  }
-  if (
-    typeof browser !== "undefined" &&
-    ((_b = browser.runtime) === null || _b === void 0 ? void 0 : _b.getURL)
-  ) {
-    return browser.runtime.getURL("index.html") // Firefox
-  }
-  return `${window.location.origin}/index.html` // Fallback
-}
 
 const isProduction = process.env.NODE_ENV === "production"
 
@@ -766,15 +733,7 @@ export const extensions = [
 const matchesDomain = (host, domain) => {
   return host === domain || host.endsWith(`.${domain}`)
 }
-export function isTauri() {
-  if (typeof window === "undefined") return false
-  // Check for Tauri API presence
-  return (
-    "__TAURI__" in window ||
-    "__TAURI_INTERNALS__" in window ||
-    "TAURI_EVENT_PLUGIN_INTERNALS" in window
-  )
-}
+
 export function getSiteTranslation(mode, locale) {
   var _a, _b
   const catalog =
@@ -787,7 +746,7 @@ export function detectsiteModeDomain(hostname, mode) {
   var _a, _b, _c
   const devMode = "tribe"
   const defaultMode = getEnv().VITE_SITE_MODE || mode || devMode
-  if (isDevelopment && !checkIsExtension() && !isTauri()) {
+  if (isDevelopment) {
     return defaultMode || devMode
   }
   // Get hostname from parameter or window (client-side)
@@ -975,7 +934,7 @@ export function getSiteConfig(hostnameOrMode, caller) {
   if (mode === "sushi") {
     return sushi
   }
-  if (!isTauri() && !isDevelopment && isE2E) {
+  if (!isDevelopment && isE2E) {
     return e2eVex
   }
   if (mode === "search") {
