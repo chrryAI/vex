@@ -2992,6 +2992,9 @@ export const apps = pgTable(
       .array()
       .default([]),
 
+    credits: integer("credits").default(0).notNull(),
+    hourlyRate: integer("hourlyRate").default(0).notNull(),
+
     // Basic Info
     name: text("name").notNull(), // Unique identifier (e.g., "Atlas", "my-legal-assistant")
     // displayName: text("displayName").notNull().default("Untitled Agent"), // Display name (e.g., "Atlas", "Legal Assistant")
@@ -3429,6 +3432,8 @@ export const stores = pgTable(
     teamId: uuid("teamId").references(() => teams.id, {
       onDelete: "cascade",
     }),
+    hourlyRate: integer("hourlyRate"),
+    credits: integer("credits"),
     domain: text("domain"),
     appId: uuid("appId").references((): AnyPgColumn => apps.id, {
       onDelete: "cascade",
@@ -5241,6 +5246,11 @@ export const appCampaigns = pgTable(
     })
       .default("active")
       .notNull(),
+    rentalType: text("rental_type", {
+      enum: ["app_to_store", "store_to_app"],
+    })
+      .default("app_to_store")
+      .notNull(),
 
     // Budget
     totalCredits: integer("total_credits").notNull(),
@@ -5435,6 +5445,11 @@ export const slotRentals = pgTable(
       ],
     })
       .default("scheduled")
+      .notNull(),
+    rentalType: text("rental_type", {
+      enum: ["app_to_store", "store_to_app"],
+    })
+      .default("app_to_store")
       .notNull(),
 
     // Performance tracking

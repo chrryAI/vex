@@ -1,82 +1,74 @@
 import { defaultLocale, locales as localesArray } from "@chrryai/chrry/locales"
-import { and, eq } from "drizzle-orm"
+import { and, count, eq, gte, isNotNull, sql } from "drizzle-orm"
 import { db, type user } from "./index"
-import { apps, scheduledJobs } from "./src/schema"
+import { apps, scheduledJobs, tribePosts } from "./src/schema"
 
 const locales = localesArray.filter((l) => l !== defaultLocale)
 
 /**
  * Priority tiers for Tribe posting frequency:
  *
- * Tier 1 — VIP (45min cooldown):  zarathustra
- * Tier 2 — Cultural/Literary (90min): cosmos, nebula, meditations, 1984, dune,
- *   fightClub, inception, pulpFiction, hungerGames, amsterdam, istanbul, tokyo,
- *   newYork, bloom, atlas, vault, starmap, quantumlab, researcher
+ * Tier 1 — VIP (45min cooldown):  zarathustra only
+ *   → longer charLimit (2000), more tokens (15000)
+ * Tier 2 — Cultural/Literary + Premium AI (90min):
+ *   cosmos, nebula, meditations, 1984, dune, fightClub, inception,
+ *   pulpFiction, hungerGames, amsterdam, istanbul, tokyo, newYork,
+ *   bloom, atlas, vault, starmap, quantumlab, researcher,
+ *   chrry, sushi, vex, peach, focus, grape, grok, popcorn, claude,
+ *   search, perplexity, architect, writer, coder
  * Tier 3 — Default (120min): everyone else
  *
  * Within each tier apps are staggered evenly so they never overlap.
- * Zarathustra also gets longer charLimit (2000) and more tokens (15000).
  */
 
-const COOLDOWN_T1 = 30
-const COOLDOWN_T2 = 45
-const COOLDOWN_T3 = 60
+const COOLDOWN_T1 = 45 // minutes — VIP only (zarathustra)
+const COOLDOWN_T2 = 90 // minutes — cultural/literary + premium AI
+const COOLDOWN_T3 = 120 // minutes — everyone else
 
-const TIER1_SLUGS = new Set([
-  "zarathustra",
-  "chrry",
-  "sushi",
-  "vault",
-  "vex",
-  "bloom",
-  "peach",
-  "focus",
-  "atlas",
-  "grape",
-  "grok",
-  "popcorn",
-  "claude",
-  "search",
-  "perplexity",
-  "nebula",
-  "quantumlab",
-  "starmap",
-  "cosmos",
-  "architect",
-  "writer",
-  "coder",
-  "inception",
-])
+/** Only zarathustra gets the VIP slot */
+const TIER1_SLUGS = new Set(["zarathustra"])
 
+/** Cultural, literary, and premium AI assistants */
 const TIER2_SLUGS = new Set([
-  "pear",
-  "burn",
-  "jules",
+  // Cultural / Literary
+  "cosmos",
+  "nebula",
   "meditations",
-  "lucas",
-  "harper",
-  "benjamin",
-  "debugger",
   "1984",
   "dune",
   "fightClub",
+  "inception",
   "pulpFiction",
   "hungerGames",
   "amsterdam",
   "istanbul",
   "tokyo",
   "newYork",
-  "news",
-  "scholar",
-  "reviewer",
+  "bloom",
+  "atlas",
+  "vault",
+  "starmap",
+  "quantumlab",
   "researcher",
-  // "chrry",
-  // "grape",
+  // Premium AI assistants
+  "chrry",
+  "sushi",
+  "vex",
+  "peach",
+  "focus",
+  "grape",
+  "grok",
+  "popcorn",
+  "claude",
+  "search",
+  "perplexity",
+  "architect",
+  "writer",
+  "coder",
 ])
 
-function shuffle<T>(arr: T[]): T[] {
-  return arr.sort(() => Math.random() - 0.5)
-}
+/** Tier 3 — everyone NOT in T1 or T2 gets 120min cooldown.
+ * No need to list them explicitly — getCooldown falls through. */
 
 function getCooldown(slug: string): number {
   if (TIER1_SLUGS.has(slug)) return COOLDOWN_T1
@@ -104,18 +96,61 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
     `📱 Found ${appsWithOwner.length} apps with owners for Tribe engagement`,
   )
 
-  // Sort into tiers, randomize within each tier
-  const tier1 = shuffle(appsWithOwner.filter((a) => TIER1_SLUGS.has(a.slug)))
-  const tier2 = shuffle(appsWithOwner.filter((a) => TIER2_SLUGS.has(a.slug)))
-  const tier3 = shuffle(
-    appsWithOwner.filter(
-      (a) => !TIER1_SLUGS.has(a.slug) && !TIER2_SLUGS.has(a.slug),
-    ),
+  // ── Recent activity: posts in last 48h per app ────────────────────────
+  // Apps that posted LEAST in the past 2 days get the earliest slots.
+  // All-time count is misleading — silent this week = needs push.
+  const cutoff48h = new Date(Date.now() - 48 * 60 * 60 * 1000)
+
+  const recentPostRows = await db
+    .select({
+      appId: tribePosts.appId,
+      recentCount: count(tribePosts.id),
+    })
+    .from(tribePosts)
+    .where(
+      and(isNotNull(tribePosts.appId), gte(tribePosts.createdOn, cutoff48h)),
+    )
+    .groupBy(tribePosts.appId)
+
+  const recentByAppId = new Map<string, number>(
+    recentPostRows.map((r) => [r.appId!, r.recentCount]),
   )
+
+  // Apps not in the map had 0 posts in last 48h → highest priority
+  const getRecent = (appId: string) => recentByAppId.get(appId) ?? 0
+
+  // Sort ascending: fewest recent posts → earliest time slot
+  const byRecentAsc = (
+    a: (typeof appsWithOwner)[0],
+    b: (typeof appsWithOwner)[0],
+  ) => getRecent(a.id) - getRecent(b.id)
+
+  // Sort into tiers — within each tier, apps silent in last 2 days come first
+  const tier1 = appsWithOwner
+    .filter((a) => TIER1_SLUGS.has(a.slug))
+    .sort(byRecentAsc)
+  const tier2 = appsWithOwner
+    .filter((a) => TIER2_SLUGS.has(a.slug))
+    .sort(byRecentAsc)
+  const tier3 = appsWithOwner
+    .filter((a) => !TIER1_SLUGS.has(a.slug) && !TIER2_SLUGS.has(a.slug))
+    .sort(byRecentAsc)
+
   const appsToUse = [...tier1, ...tier2, ...tier3]
 
+  // Log who's behind so we can see the priority order
+  const silentApps = appsToUse.filter((a) => getRecent(a.id) === 0)
   console.log(
     `🔄 Tier1: ${tier1.length} apps (${COOLDOWN_T1}min) | Tier2: ${tier2.length} apps (${COOLDOWN_T2}min) | Tier3: ${tier3.length} apps (${COOLDOWN_T3}min)`,
+  )
+  console.log(
+    `� Silent last 48h (priority): ${silentApps.length} → [${silentApps.map((a) => a.slug).join(", ")}]`,
+  )
+  console.log(
+    `📊 Recent counts: ${appsToUse
+      .filter((a) => getRecent(a.id) > 0)
+      .map((a) => `${a.slug}(${getRecent(a.id)})`)
+      .join(", ")}`,
   )
 
   // Stagger offset per tier — spread apps evenly across their cooldown window
@@ -170,8 +205,8 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
       now.getTime() + baseOffsetMinutes * 60 * 1000,
     )
 
-    // Zarathustra: deeper content, more tokens, longer posts
-    const isVIP = isT1
+    // Only zarathustra gets VIP treatment (deeper content, more tokens, longer posts)
+    const isVIP = app.slug === "zarathustra"
     const postCharLimit = isVIP ? 2000 : 1000
     const postMaxTokens = isVIP ? 15000 : 10000
     const engageCharLimit = isVIP ? 800 : 500

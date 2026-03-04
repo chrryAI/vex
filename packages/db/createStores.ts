@@ -2440,6 +2440,7 @@ async function getOrCreateStore(params: {
   visibility: "public" | "private"
   description: string
   parentStoreId?: string
+  hourlyRate?: number
 }) {
   if (!db) throw new Error("DB not initialized")
 
@@ -2496,6 +2497,7 @@ export const createStores = async ({
     domain: "https://chrry.ai",
     userId: admin.id,
     visibility: "public" as const,
+    hourlyRate: 10,
     description:
       "Discover, create, and monetize AI apps. The open marketplace where anyone can build stores, publish apps, and earn revenue. Your gateway to the AI ecosystem.",
   })
@@ -2517,6 +2519,7 @@ export const createStores = async ({
     systemPrompt: chrrySystemPrompt,
     highlights: chrryInstructions,
     tipsTitle: "Marketplace Tips",
+    hourlyRate: 10,
     defaultModel: "sushi" as const,
     onlyAgent: false,
     tips: [
@@ -2719,6 +2722,7 @@ You have access to calendar, location, and weather tools to provide context-awar
     )[],
     userId: admin.id,
     themeColor: "green",
+    hourlyRate: 10,
     defaultModel: "sushi" as const,
     backgroundColor: "#000000",
     icon: "🌍",
@@ -5618,6 +5622,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     parentStoreId: blossom.id,
     userId: admin.id,
     visibility: "public" as const,
+    hourlyRate: 10,
     description:
       "One platform, infinite possibilities. Experience the future of AI-integrated living with apps that understand you",
   })
@@ -5648,6 +5653,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     title: "AI-Powered Productivity",
     themeColor: "blue",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     defaultModel: "sushi" as const,
     icon: "⏱️",
     visibility: "public" as const,
@@ -5825,6 +5831,7 @@ Be helpful, encouraging, and focused on connecting users with great apps while r
     title: "Privacy-First AI Advertising",
     themeColor: "purple",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     defaultModel: "sushi" as const,
     icon: "🍇",
     visibility: "public" as const,
@@ -5993,6 +6000,7 @@ You provide helpful AI assistance while respecting user privacy completely.`
     title: "Anonymous AI - No Login Required",
     themeColor: "orange",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     defaultModel: "sushi" as const,
     icon: "🔥",
     visibility: "public" as const,
@@ -6092,6 +6100,7 @@ You provide helpful AI assistance while respecting user privacy completely.`
     visibility: "public" as const,
     highlights: defaultInstructions,
     systemPrompt: vexSystemPrompt,
+    hourlyRate: 10,
     defaultModel: "sushi" as const,
     userId: admin.id,
     tipsTitle: "Pro Tips",
@@ -6233,6 +6242,7 @@ You provide helpful AI assistance while respecting user privacy completely.`
     )[],
     themeColor: "orange",
     backgroundColor: "#ffffff",
+    hourlyRate: 10,
     icon: "🍑",
     storeId: lifeOS.id,
     systemPrompt: peachSystemPrompt,
@@ -6326,6 +6336,7 @@ You provide helpful AI assistance while respecting user privacy completely.`
     storeId: lifeOS.id,
     themeColor: "red",
     backgroundColor: "#ffffff",
+    hourlyRate: 10,
     icon: "🌸",
     systemPrompt: bloomSystemPrompt,
     placeholder: "What's your wellness goal today?",
@@ -6519,6 +6530,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
     title: "Get Paid for Feedback",
     themeColor: "green",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     defaultModel: "sushi" as const,
     icon: "🍐",
     visibility: "public" as const,
@@ -6640,6 +6652,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
     title: "Personal Finance assistant",
     themeColor: "green",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     icon: "💰",
     visibility: "public" as const,
     highlights: vaultInstructions,
@@ -6749,6 +6762,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
     userId: admin.id,
     parentStoreId: blossom.id,
     visibility: "public" as const,
+    hourlyRate: 10,
     description:
       "Experience Claude by Anthropic - the AI assistant known for thoughtful, nuanced responses. Perfect for writing, analysis, and creative projects that require depth and understanding.",
   })
@@ -6773,6 +6787,7 @@ You are Claude by Anthropic, a thoughtful AI assistant known for nuanced underst
     onlyAgent: true,
     themeColor: "orange",
     backgroundColor: "#ffffff",
+    hourlyRate: 10,
     icon: "🍑",
     visibility: "public" as const,
     highlights: claudeCreativeInstructions,
@@ -6853,6 +6868,7 @@ You are Writer, a Claude-powered writing assistant specializing in long-form con
     onlyAgent: true,
     themeColor: "orange",
     backgroundColor: "#ffffff",
+    hourlyRate: 10,
     icon: "✍️",
     visibility: "public" as const,
     highlights: claudeWriterInstructions,
@@ -6940,6 +6956,7 @@ You are Review, a Claude-powered code reviewer providing comprehensive analysis 
     onlyAgent: true,
     themeColor: "orange",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     icon: "🔍",
     visibility: "public" as const,
     highlights: claudeCodeReviewInstructions,
@@ -7027,6 +7044,7 @@ You are Research, a Claude-powered academic research assistant. Help users synth
     onlyAgent: true,
     themeColor: "orange",
     backgroundColor: "#ffffff",
+    hourlyRate: 10,
     icon: "🔬",
     visibility: "public" as const,
     highlights: claudeResearchInstructions,
@@ -7105,6 +7123,7 @@ You are Research, a Claude-powered academic research assistant. Help users synth
     userId: admin.id,
     parentStoreId: blossom.id,
     visibility: "public" as const,
+    hourlyRate: 10,
     description:
       "Discover Perplexity - the AI-powered answer engine that combines search with conversational AI. Get accurate, cited answers to your questions with real-time web access.",
   })
@@ -7127,6 +7146,7 @@ You are Perplexity, an AI-powered answer engine that combines real-time web sear
     title: "Real-Time AI Search",
     themeColor: "blue",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     icon: "🌐",
     visibility: "public" as const,
     onlyAgent: true,
@@ -7207,6 +7227,7 @@ You are Search, a Perplexity-powered real-time web search engine. Provide instan
     subtitle: "AI Search",
     themeColor: "blue",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     icon: "🌐",
     defaultModel: "perplexity" as const,
     onlyAgent: true,
@@ -7294,6 +7315,7 @@ You are News, a Perplexity-powered breaking news aggregator. Deliver real-time n
     subtitle: "Latest News",
     themeColor: "blue",
     backgroundColor: "#ffffff",
+    hourlyRate: 10,
     icon: "📰",
     visibility: "public" as const,
     defaultModel: "perplexity" as const,
@@ -7384,6 +7406,7 @@ You are Scholar, a Perplexity-powered academic research engine. Provide access t
     themeColor: "blue",
     backgroundColor: "#000000",
     onlyAgent: true,
+    hourlyRate: 10,
     icon: "🎓",
     visibility: "public" as const,
     defaultModel: "perplexity" as const,
@@ -7468,6 +7491,7 @@ You are Scholar, a Perplexity-powered academic research engine. Provide access t
     userId: admin.id,
     parentStoreId: blossom.id,
     visibility: "public" as const,
+    hourlyRate: 10,
     description:
       "Meet Sushi - the powerful coding AI that excels at software development, debugging, and technical problem-solving. Built for developers who demand precision and performance.",
   })
@@ -7551,6 +7575,7 @@ Please follow these instructions throughout our conversation.
     onlyAgent: false,
     themeColor: "violet",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     defaultModel: "claude" as const,
     icon: "💻",
     visibility: "public" as const,
@@ -8010,6 +8035,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     onlyAgent: false,
     themeColor: "violet",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     icon: "⚡",
     visibility: "public" as const,
     systemPrompt: coderSystemPrompt,
@@ -8086,6 +8112,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     onlyAgent: false,
     themeColor: "violet",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     icon: "🐛",
     visibility: "public" as const,
     systemPrompt: debuggerSystemPrompt,
@@ -8161,6 +8188,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     onlyAgent: false,
     themeColor: "violet",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     icon: "🏗️",
     visibility: "public" as const,
     systemPrompt: architectSystemPrompt,
@@ -8302,6 +8330,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     userId: admin.id,
     parentStoreId: blossom.id,
     visibility: "public" as const,
+    hourlyRate: 10,
     description:
       "The official xAI Grok Tribe in the Vex ecosystem. Home to the most advanced frontier models for truth-seeking, logic, creativity, and humor.",
   })
@@ -8536,6 +8565,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     parentStoreId: blossom.id,
     userId: admin.id,
     visibility: "public" as const,
+    hourlyRate: 10,
     description:
       "Explore the frontiers of science. Quantum computing, astrophysics, advanced mathematics, and physics — powered by Sushi AI's multimodal intelligence.",
   })
@@ -8553,6 +8583,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     title: "Your Science Companion",
     themeColor: "violet",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     icon: "🌌",
     visibility: "public" as const,
     storeId: orbitStore.id,
@@ -8686,6 +8717,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     title: "Quantum Circuit Builder & Educator",
     themeColor: "violet",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     icon: "⚛️",
     visibility: "public" as const,
     storeId: orbitStore.id,
@@ -8784,6 +8816,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     title: "Your Guide to the Cosmos",
     themeColor: "blue",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     icon: "🌠",
     visibility: "public" as const,
     storeId: orbitStore.id,
@@ -8882,6 +8915,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     title: "Master the Mathematical Universe",
     themeColor: "orange",
     backgroundColor: "#000000",
+    hourlyRate: 10,
     icon: "🧪",
     visibility: "public" as const,
     storeId: orbitStore.id,
