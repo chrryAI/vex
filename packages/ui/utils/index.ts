@@ -4,6 +4,25 @@ import countries from "i18n-iso-countries"
 import type { guest, subscription, thread, threadSummary, user } from "../types"
 import { getEnv } from "./env"
 
+export const PLUS_CREDITS_PER_MONTH = 2000
+export const ADDITIONAL_CREDITS = 500
+export const GUEST_CREDITS_PER_MONTH = 30
+export const MEMBER_CREDITS_PER_MONTH = 150
+export const MAX_INSTRUCTIONS_CHAR_COUNT = 7500
+export const MAX_THREAD_TITLE_CHAR_COUNT = 100
+
+export const FREE_DAYS = 5
+export const PLUS_PRICE = 9.99
+export const PRO_PRICE = 19.99
+export const CODER_PRICE = 50.0
+export const ARCHITECT_PRICE = 100.0
+export const AGENCY_PRICE = 1000.0
+export const SOVEREIGN_PRICE = 5000.0
+export const CREDITS_PRICE = 5.0
+export const PEAR_PLUS_PRICE = 50.0
+export const PEAR_PRO_PRICE = 500.0
+export const GRAPE_PLUS_PRICE = 50.0
+export const GRAPE_PRO_PRICE = 500.0
 // Browser API type for extension compatibility
 type BrowserAPIType = typeof chrome | typeof browser
 
@@ -77,12 +96,6 @@ const hostname = getClientHostname()
 export const CHRRY_URL =
   getEnv().VITE_CHRRY_URL ||
   (hostname ? getSiteConfig(hostname).url : "https://vex.chrry.ai")
-
-export const FREE_DAYS = 5
-export const PLUS_PRICE = 9.99
-export const PRO_PRICE = 19.99
-export const CREDITS_PRICE = 5.0
-export const ADDITIONAL_CREDITS = 500
 
 export function isValidUuidV4(uuid: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(

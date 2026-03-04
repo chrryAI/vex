@@ -1,5 +1,6 @@
 "use client"
 
+import Instructions from "chrry/Instructions"
 import { BiLogoPostgresql } from "react-icons/bi"
 import { FaChrome } from "react-icons/fa"
 import {
@@ -14,6 +15,7 @@ import AppLink from "../AppLink"
 import A from "../a/A"
 import { COLORS, useAppContext } from "../context/AppContext"
 import {
+  useApp,
   useAuth,
   useData,
   useError,
@@ -25,6 +27,7 @@ import {
   BadgeCheck,
   CircleArrowLeft,
   Claude,
+  Coins,
   DeepSeek,
   Gemini,
   Shell,
@@ -47,11 +50,33 @@ import {
 } from "../platform"
 import Skeleton from "../Skeleton"
 import type { appWithStore } from "../types"
-import { BrowserInstance, checkIsExtension } from "../utils"
+import {
+  ADDITIONAL_CREDITS,
+  AGENCY_PRICE,
+  ARCHITECT_PRICE,
+  BrowserInstance,
+  CODER_PRICE,
+  CREDITS_PRICE,
+  checkIsExtension,
+  FRONTEND_URL,
+  GRAPE_PLUS_PRICE,
+  PEAR_PLUS_PRICE,
+  PLUS_PRICE,
+  PRO_PRICE,
+  SOVEREIGN_PRICE,
+} from "../utils"
 import { getFeatures } from "../utils/subscription"
 import { useAboutStyles } from "./About.styles"
 export default function About() {
-  const { chrry, plausible, baseApp, user, siteConfig: config } = useAuth()
+  const {
+    chrry,
+    plausible,
+    baseApp,
+    user,
+    siteConfig: config,
+    accountApp,
+    app,
+  } = useAuth()
 
   const styles = useAboutStyles()
   const { utilities } = useStyles()
@@ -59,6 +84,7 @@ export default function About() {
   const _isChrryAI = config.mode === "chrryAI"
 
   const { t } = useAppContext()
+  const { setAppStatus } = useApp()
 
   const { isStandalone } = usePlatform()
 
@@ -68,19 +94,26 @@ export default function About() {
   const { captureException } = useError()
 
   const {
+    plusFeatures,
+    memberFeatures,
+    creditsFeatures,
+    proFeatures,
+    grapeFreeFeatures,
+    grapePlusFeatures,
+    grapeProFeatures,
+    watermelonFeatures,
+    watermelonPlusFeatures,
+    pearFreeFeatures,
+    pearPlusFeatures,
+    pearProFeatures,
+    sushiFreeFeatures,
+    sushiCoderFeatures,
+    sushiArchitectFeatures,
+  } = getFeatures({
+    t,
     ADDITIONAL_CREDITS,
     CREDITS_PRICE,
-    FRONTEND_URL,
-    PLUS_PRICE,
-    PRO_PRICE,
-  } = useData()
-
-  const { plusFeatures, memberFeatures, proFeatures, creditsFeatures } =
-    getFeatures({
-      t,
-      ADDITIONAL_CREDITS,
-      CREDITS_PRICE,
-    })
+  })
 
   const apps = chrry?.store?.apps || baseApp?.store?.apps
 
@@ -190,7 +223,7 @@ export default function About() {
         </Section>
 
         {/* Dynamic Apps Section */}
-        {apps && apps.length > 0 && (
+        {/* {apps && apps.length > 0 && (
           <Section>
             <H2>
               {config.logo} {t("Available Apps")}
@@ -243,7 +276,7 @@ export default function About() {
               ))}
             </Div>
           </Section>
-        )}
+        )} */}
 
         <Section>
           <H2>{config.about?.approach?.title || "Our Approach"}</H2>
@@ -264,17 +297,28 @@ export default function About() {
           </Div>
         </Section>
 
+        <Section>
+          <H2>{config.about?.platforms?.title || "Available Platforms"}</H2>
+          <Instructions
+            showButton={false}
+            showDownloads={true}
+            showInstructions={false}
+            showInstallers={false}
+          />
+        </Section>
+
         <H2 style={{ fontSize: 28 }}>{t("All Plans")}</H2>
         <Section>
           <H2 style={styles.h2.style}>
             <Logo size={24} /> {t("Free")}
-            {!user && (
+            {!user ? (
               <Button
                 className="inverted"
                 style={{
                   marginLeft: "auto",
                   fontSize: 14,
                   ...utilities.inverted.style,
+                  ...utilities.small.style,
                 }}
                 onClick={() => {
                   if (checkIsExtension()) {
@@ -288,8 +332,29 @@ export default function About() {
                   router.push("/about?signIn=register")
                 }}
               >
-                <UserRoundPlus size={16} /> {t("Register")}
+                <Img app={app} size={20} /> {t("Create your agent")}
               </Button>
+            ) : (
+              user &&
+              !accountApp && (
+                <Button
+                  className="inverted"
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: 14,
+                    ...utilities.inverted.style,
+                    ...utilities.small.style,
+                  }}
+                  onClick={() => {
+                    setAppStatus({
+                      part: "highlights",
+                      step: "add",
+                    })
+                  }}
+                >
+                  <Img app={app} size={20} /> {t("Create your agent")}
+                </Button>
+              )
             )}
           </H2>
           {memberFeatures.map((feature) => (
@@ -303,30 +368,25 @@ export default function About() {
         <Section>
           <H2 style={styles.h2.style}>
             <Img size={24} icon="chrry" /> {t("Credits")}
-            <Button
-              onClick={() => {
-                if (checkIsExtension()) {
-                  BrowserInstance?.runtime?.sendMessage({
-                    action: "openInSameTab",
-                    url: `${FRONTEND_URL}/about?subscribe=true&plan=credits`,
-                  })
-
-                  return
-                }
-                router.push("/about?subscribe=true&plan=credits")
-              }}
+            <A
+              href={`${FRONTEND_URL}/about?subscribe=true&plan=credits`}
+              openInNewTab={checkIsExtension()}
               className="inverted"
               style={{
                 marginLeft: "auto",
                 fontSize: 14,
+                ...utilities.button.style,
                 ...utilities.inverted.style,
+                ...utilities.small.style,
+                fontWeight: "normal",
               }}
             >
+              <Coins size={20} />
               {t("credits_pricing", {
                 credits: ADDITIONAL_CREDITS,
                 price: `${CREDITS_PRICE}.00`,
               })}
-            </Button>
+            </A>
           </H2>
           {creditsFeatures.map((feature) => (
             <Span key={feature.text}>
@@ -339,7 +399,7 @@ export default function About() {
         <Section>
           <H2 style={styles.h2.style}>
             <Img size={24} icon="strawberry" /> {t("Plus")}
-            <Span
+            {/* <Span
               title={t("Most popular")}
               style={{
                 color: "var(--accent-1)",
@@ -349,23 +409,16 @@ export default function About() {
               }}
             >
               <BadgeCheck size={20} />
-            </Span>
-            <Button
-              onClick={() => {
-                if (checkIsExtension()) {
-                  BrowserInstance?.runtime?.sendMessage({
-                    action: "openInSameTab",
-                    url: `${FRONTEND_URL}/about?subscribe=true&plan=plus`,
-                  })
-
-                  return
-                }
-                router.push("/about?subscribe=true&plan=plus")
-              }}
+            </Span> */}
+            <A
+              href={`${FRONTEND_URL}/about?subscribe=true&plan=plus`}
+              openInNewTab={checkIsExtension()}
               className="inverted"
               style={{
                 marginLeft: "auto",
                 fontSize: 14,
+                ...utilities.button.style,
+                fontWeight: "normal",
                 ...utilities.inverted.style,
               }}
             >
@@ -373,7 +426,7 @@ export default function About() {
               {t("{{price}}/month", {
                 price: PLUS_PRICE,
               })}
-            </Button>
+            </A>
           </H2>
           {plusFeatures.map((feature) => (
             <Span key={feature.text}>
@@ -418,75 +471,174 @@ export default function About() {
             </Span>
           ))}
         </Section>
+        <Section>
+          <H2 style={styles.h2.style}>
+            <Img size={24} slug="coder" /> {t("Coder")}
+            <A
+              openInNewTab={checkIsExtension()}
+              href={`${FRONTEND_URL}/about?subscribe=true&sushiTier=coder&plan=coder`}
+              className="inverted"
+              style={{
+                marginLeft: "auto",
+                fontSize: 14,
+                ...utilities.button.style,
+                ...utilities.inverted.style,
+                fontWeight: "normal",
+              }}
+            >
+              €
+              {t("{{price}}/month", {
+                price: CODER_PRICE,
+              })}
+            </A>
+          </H2>
+          {sushiCoderFeatures.map((feature) => (
+            <Span key={feature.text}>
+              {" "}
+              {feature.emoji} {feature.text}
+            </Span>
+          ))}
+        </Section>
+        <Section>
+          <H2 style={styles.h2.style}>
+            <Img size={24} slug="architect" /> {t("Architect")}
+            <A
+              openInNewTab={checkIsExtension()}
+              href={`${FRONTEND_URL}/about?subscribe=true&sushiTier=architect&plan=coder`}
+              className="inverted"
+              style={{
+                marginLeft: "auto",
+                fontSize: 14,
+                ...utilities.button.style,
+                ...utilities.inverted.style,
+                fontWeight: "normal",
+              }}
+            >
+              €
+              {t("{{price}}/month", {
+                price: ARCHITECT_PRICE,
+              })}
+            </A>
+          </H2>
+          {sushiArchitectFeatures.map((feature) => (
+            <Span key={feature.text}>
+              {" "}
+              {feature.emoji} {feature.text}
+            </Span>
+          ))}
+        </Section>
+        <Section>
+          <H2 style={styles.h2.style}>
+            <Img size={24} slug="grape" /> {t("Grape")}
+            <A
+              openInNewTab={checkIsExtension()}
+              href={`${FRONTEND_URL}/about?subscribe=true&plan=grape&grapeTier=plus`}
+              className="inverted"
+              style={{
+                marginLeft: "auto",
+                fontSize: 14,
+                ...utilities.button.style,
+                ...utilities.inverted.style,
+                fontWeight: "normal",
+              }}
+            >
+              €
+              {t("{{price}}/month", {
+                price: GRAPE_PLUS_PRICE,
+              })}
+            </A>
+          </H2>
+          {pearPlusFeatures.map((feature) => (
+            <Span key={feature.text}>
+              {" "}
+              {feature.emoji} {feature.text}
+            </Span>
+          ))}
+        </Section>
+        <Section>
+          <H2 style={styles.h2.style}>
+            <Img size={24} slug="pear" /> {t("Pear")}
+            <A
+              openInNewTab={checkIsExtension()}
+              href={`${FRONTEND_URL}/about?subscribe=true&plan=pear&pearTier=plus`}
+              className="inverted"
+              style={{
+                marginLeft: "auto",
+                fontSize: 14,
+                ...utilities.button.style,
+                ...utilities.inverted.style,
+                fontWeight: "normal",
+              }}
+            >
+              €
+              {t("{{price}}/month", {
+                price: PEAR_PLUS_PRICE,
+              })}
+            </A>
+          </H2>
+          {pearPlusFeatures.map((feature) => (
+            <Span key={feature.text}>
+              {" "}
+              {feature.emoji} {feature.text}
+            </Span>
+          ))}
+        </Section>
 
         <Section>
-          <H2>{config.about?.platforms?.title || "Available Platforms"}</H2>
-          <P>
-            {config.about?.platforms?.content ||
-              "Vex is designed as a multi-platform AI assistant, available across web, mobile, and browser extensions as first-class citizens."}
-          </P>
-
-          <Div>
-            <Div>
-              <H3>
-                {config.about?.platforms?.web?.title || "🌐 Web Application"}
-              </H3>
-              <P>
-                {config.about?.platforms?.web?.content ||
-                  "Full-featured web experience with real-time collaboration, thread management, and all AI capabilities accessible from any browser."}
-              </P>
-              <Video
-                style={styles.video.style}
-                controls
-                src={`https://7079yofdv0.ufs.sh/f/5ALK9G4mxClOqa4rl8Lok8fCavjF0phyGSZ4TwWJ3rlbcQ6X`}
-              />
-            </Div>
-
-            <Div>
-              <H3>
-                {config.about?.platforms?.pwa?.title ||
-                  "📱 Progressive Web App (PWA)"}
-              </H3>
-              <P>
-                {config.about?.platforms?.pwa?.content ||
-                  "Install Vex as a native app on your mobile device or desktop. Offline capabilities, push notifications, and seamless sync across all your devices."}
-              </P>
-
-              <Video
-                style={styles.video.style}
-                controls
-                src={`https://7079yofdv0.ufs.sh/f/5ALK9G4mxClOTAEfNuXpQy4HJYn8fWo1mFVRaG7eqCiD3A5l`}
-              />
-            </Div>
-
-            <Div>
-              <H3 style={{ display: "flex" }}>
-                {config.about?.platforms?.chrome?.title ||
-                  "🧩 Chrome Extension"}{" "}
-                <A
-                  target="_blank"
-                  style={{
-                    marginLeft: "auto",
-                    ...utilities.button.style,
-                    ...utilities.small.style,
-                  }}
-                  href="https://chromewebstore.google.com/detail/vex/odgdgbbddopmblglebfngmaebmnhegfc"
-                >
-                  <FaChrome size={18} />
-                  {t("Install")}
-                </A>
-              </H3>
-              <P>
-                {config.about?.platforms?.chrome?.content ||
-                  "Right-click context menu integration with sidebar AI assistant. Summarize, fact-check, write replies, and check grammar on any webpage without switching tabs."}
-              </P>
-              <Video
-                style={styles.video.style}
-                controls
-                src={`https://7079yofdv0.ufs.sh/f/5ALK9G4mxClOWTxc2Y6sD5zVU8hPgdAmWQy4qXa0KuL2HE7e`}
-              />
-            </Div>
-          </Div>
+          <H2 style={styles.h2.style}>
+            <Img size={24} logo="watermelon" /> {t("Agency")}
+            <A
+              openInNewTab={checkIsExtension()}
+              href={`${FRONTEND_URL}/about?subscribe=true&plan=watermelon`}
+              className="inverted"
+              style={{
+                marginLeft: "auto",
+                fontSize: 14,
+                ...utilities.button.style,
+                ...utilities.inverted.style,
+                fontWeight: "normal",
+              }}
+            >
+              €
+              {t("{{price}}/month", {
+                price: AGENCY_PRICE,
+              })}
+            </A>
+          </H2>
+          {watermelonFeatures.map((feature) => (
+            <Span key={feature.text}>
+              {" "}
+              {feature.emoji} {feature.text}
+            </Span>
+          ))}
+        </Section>
+        <Section>
+          <H2 style={styles.h2.style}>
+            <Img size={24} slug="tribe" /> {t("Sovereign")}
+            <A
+              openInNewTab={checkIsExtension()}
+              href={`${FRONTEND_URL}/about?subscribe=true&plan=tribe&watermelonTier=plus`}
+              className="inverted"
+              style={{
+                marginLeft: "auto",
+                fontSize: 14,
+                ...utilities.button.style,
+                ...utilities.inverted.style,
+                fontWeight: "normal",
+              }}
+            >
+              €
+              {t("{{price}}/month", {
+                price: SOVEREIGN_PRICE,
+              })}
+            </A>
+          </H2>
+          {watermelonPlusFeatures.map((feature) => (
+            <Span key={feature.text}>
+              {" "}
+              {feature.emoji} {feature.text}
+            </Span>
+          ))}
         </Section>
 
         {/* <section>
@@ -511,6 +663,17 @@ export default function About() {
                 : styles.ossContainerDesktop.style),
             }}
           >
+            <Div style={styles.oss.style}>
+              <Img size={40} slug="vex" />
+              <A
+                href="https://github.com/chrryai/vex"
+                target="_blank"
+                rel="nofollow"
+                style={styles.ossLink.style}
+              >
+                Vex
+              </A>
+            </Div>
             <Div style={styles.oss.style}>
               <SiTypescript
                 color="var(--foreground)"
@@ -579,6 +742,17 @@ export default function About() {
                 : styles.ossContainerDesktop.style),
             }}
           >
+            <Div style={styles.oss.style}>
+              <Img size={40} slug="chrry" />
+              <A
+                href="https://github.com/chrryai"
+                target="_blank"
+                rel="nofollow"
+                style={styles.ossLink.style}
+              >
+                Chrry
+              </A>
+            </Div>
             <Div style={styles.oss.style}>
               <DeepSeek color={COLORS.purple} size={40} />
               <A
