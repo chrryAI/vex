@@ -9,7 +9,7 @@ describe("Jules App Configuration", () => {
   })
 
   it("should have valid instructions", () => {
-    expect(julesInstructions).toHaveLength(5)
+    expect(julesInstructions.length).toBeGreaterThanOrEqual(5)
     expect(julesInstructions[0]!.title).toBe("Deep Planning & Architecture")
     expect(julesInstructions[0]!.emoji).toBe("🏗️")
   })

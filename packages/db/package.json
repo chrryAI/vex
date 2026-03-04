@@ -10,7 +10,7 @@
     "./src/better-auth-schema": "./src/better-auth-schema.ts"
   },
   "scripts": {
-    "test": "echo \"No tests for @repo/db\" && exit 0",
+    "test": "vitest run",
     "generate": "pnpm exec drizzle-kit generate",
     "g": "pnpm exec drizzle-kit generate",
     "migrate": "pnpm exec drizzle-kit migrate",
@@ -54,7 +54,8 @@
     "stripe": "^18.0.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "vitest": "^4.0.18"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.6.0",
