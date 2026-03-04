@@ -189,20 +189,6 @@ export default function About() {
         </H1>
         <Section style={{ marginBottom: 15 }}>
           <P>
-            <a
-              onClick={(e) => {
-                addHapticFeedback()
-                if (e.metaKey || e.ctrlKey) {
-                  return
-                }
-                e.preventDefault()
-                router.push("/why")
-              }}
-              href={isStandalone ? undefined : `${FRONTEND_URL}/why`}
-            >
-              {t("why_vex")}
-            </a>
-            {", "}
             <A
               openInNewTab
               href={`${FRONTEND_URL}/blog`}
