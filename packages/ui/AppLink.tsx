@@ -116,7 +116,7 @@ export default function AppLink({
         className={`${className}`}
       >
         {isLoading ? <>{loading}</> : icon && <>{icon}</>}
-        <Span>{children}</Span>
+        <>{children}</>
       </A>
     )
   }
@@ -154,7 +154,7 @@ export default function AppLink({
       ) : (
         icon && <Span>{icon}</Span>
       )}
-      <Span>{children}</Span>
+      <>{children}</>
     </Button>
   )
 }

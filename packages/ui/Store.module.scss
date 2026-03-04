@@ -100,8 +100,7 @@
   flex-direction: column;
   gap: toRem.toRem(10);
   outline: 1px dashed var(--shade-2);
-  padding: toRem.toRem(10);
-  padding-top: toRem.toRem(12.5);
+  padding: toRem.toRem(15) toRem.toRem(10);
   border-radius: toRem.toRem(20);
   cursor: pointer;
   transition: all 0.2s ease-in-out;
