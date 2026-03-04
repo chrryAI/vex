@@ -23,9 +23,16 @@ import {
 import type { aiAgent, instruction } from "../../types"
 import {
   ADDITIONAL_CREDITS,
+  AGENCY_PRICE,
+  ARCHITECT_PRICE,
   apiFetch,
+  CODER_PRICE,
+  FREE_DAYS,
   isDevelopment,
   isE2E,
+  PLUS_PRICE,
+  PRO_PRICE,
+  SOVEREIGN_PRICE,
   VERSION,
 } from "../../utils"
 import { getWeatherCacheTime } from "../../utils/getWeatherCacheTime"
@@ -512,10 +519,6 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
     setNeedsUpdate(update)
     setNeedsUpdateModalOpen(update)
   }, [versions, createdOn, isStandalone, isExtension, isFirefox, isTauri])
-
-  const FREE_DAYS = 5
-  const PLUS_PRICE = 9.99
-  const PRO_PRICE = 19.99
 
   return (
     <DataContext.Provider
