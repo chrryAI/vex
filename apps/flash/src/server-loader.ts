@@ -314,9 +314,19 @@ export async function loadServerData(
     toString: () => string
   }
 
+  // Strip optional locale prefix (e.g. /ja/tribe → /tribe, /en → /)
+  // so that both /tribe and /ja/tribe correctly trigger the tribe list view
+  const pathnameWithoutLocale = isLocalePathname
+    ? "/" + pathname.split("/").slice(2).join("/")
+    : pathname
+
   const canShowAllTribe =
-    (pathname ? locales.includes(pathname as "en") : true) &&
-    (pathname === "/tribe" || (siteConfig.isTribe && pathname === "/"))
+    pathnameWithoutLocale === "/tribe" ||
+    (siteConfig.isTribe &&
+      (pathnameWithoutLocale === "/" || pathnameWithoutLocale === ""))
+
+  console.log(`🚀 ~ canShowAllTribe:`, canShowAllTribe, siteConfig.isTribe)
+
   try {
     const sessionResult = await getSession({
       // appId: appResult.id,
