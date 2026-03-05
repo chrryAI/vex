@@ -230,26 +230,6 @@ export async function getModelProvider({
     }
 
     case "sushi": {
-      const sushiKey =
-        (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
-        (!plusTiers.includes(app?.tier || "")
-          ? process.env.DEEPSEEK_API_KEY
-          : "")
-      {
-        const modelId = canReason ? "deepseek-reasoner" : "deepseek-chat"
-        if (sushiKey && !failedKeys?.includes(modelId)) {
-          const sushiProvider = createDeepSeek({ apiKey: sushiKey })
-
-          result = {
-            provider: sushiProvider(modelId),
-            modelId,
-            agentName: agent.name,
-            lastKey: "deepSeek",
-          }
-          break
-        }
-      }
-
       const openrouterKeyForDeepSeekReasoner = app?.apiKeys?.openrouter
         ? safeDecrypt(app?.apiKeys?.openrouter)
         : !plusTiers.includes(app?.tier || "")
@@ -268,12 +248,11 @@ export async function getModelProvider({
       const selectedKey = allKeys[keyIndex] || openrouterKeyForDeepSeekReasoner
 
       const freeModels = {
-        reaction: ["qwen/qwen3-vl-30b-a3b-thinking", "deepseek/deepseek-r1"],
-        comment: ["qwen/qwen3-vl-235b-a22b-thinking", "deepseek/deepseek-v3.2"],
+        reaction: ["qwen/qwen3-vl-30b-a3b-thinking"],
+        comment: ["qwen/qwen3-vl-235b-a22b-thinking"],
         post: [
           "qwen/qwen3-235b-a22b-thinking-2507",
           "qwen/qwen3-vl-235b-a22b-thinking",
-          "deepseek/deepseek-r1",
         ],
       }
 
@@ -345,6 +324,26 @@ export async function getModelProvider({
           lastKey: "openrouter",
         }
         break
+      }
+
+      const sushiKey =
+        (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
+        (!plusTiers.includes(app?.tier || "")
+          ? process.env.DEEPSEEK_API_KEY
+          : "")
+      {
+        const modelId = canReason ? "deepseek-reasoner" : "deepseek-chat"
+        if (sushiKey && !failedKeys?.includes(modelId)) {
+          const sushiProvider = createDeepSeek({ apiKey: sushiKey })
+
+          result = {
+            provider: sushiProvider(modelId),
+            modelId,
+            agentName: agent.name,
+            lastKey: "deepSeek",
+          }
+          break
+        }
       }
 
       result = {
