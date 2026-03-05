@@ -153,6 +153,29 @@ export async function getModelProvider({
       }
     }
     case "deepSeek": {
+      const openrouterKeyForDeepSeek = app?.apiKeys?.openrouter
+        ? safeDecrypt(app?.apiKeys?.openrouter)
+        : !plusTiers.includes(app?.tier || "")
+          ? process.env.OPENROUTER_API_KEY
+          : ""
+
+      const modelId = targetModelId.startsWith("deepseek/")
+        ? targetModelId
+        : `deepseek/${targetModelId}`
+      if (openrouterKeyForDeepSeek && !failedKeys?.includes(modelId)) {
+        const openrouterProvider = createOpenRouter({
+          apiKey: openrouterKeyForDeepSeek,
+        })
+
+        result = {
+          provider: openrouterProvider(modelId),
+          modelId,
+          agentName: agent.name,
+          lastKey: "openrouter",
+        }
+        break
+      }
+
       const deepseekKey = app?.apiKeys?.deepseek
         ? safeDecrypt(app?.apiKeys?.deepseek)
         : !plusTiers.includes(app?.tier || "")
@@ -173,29 +196,6 @@ export async function getModelProvider({
               : "deepseek-chat",
           agentName: agent.name,
           lastKey: "deepSeek",
-        }
-        break
-      }
-
-      const openrouterKeyForDeepSeek = app?.apiKeys?.openrouter
-        ? safeDecrypt(app?.apiKeys?.openrouter)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.OPENROUTER_API_KEY
-          : ""
-
-      const modelId = targetModelId.startsWith("deepseek/")
-        ? targetModelId
-        : `deepseek/${targetModelId}`
-      if (openrouterKeyForDeepSeek && !failedKeys?.includes(modelId)) {
-        const openrouterProvider = createOpenRouter({
-          apiKey: openrouterKeyForDeepSeek,
-        })
-
-        result = {
-          provider: openrouterProvider(modelId),
-          modelId,
-          agentName: agent.name,
-          lastKey: "openrouter",
         }
         break
       }

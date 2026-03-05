@@ -55,7 +55,7 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
 
   // Initial provider selection: try Fal if we have a key, otherwise Replicate
   const providerToTry: "fal" | "replicate" =
-    options.provider || (falKey ? "fal" : "replicate")
+    options.provider || (!apiKey && falKey ? "fal" : "replicate")
   const model = options.model || "flux-pro"
 
   console.log(
