@@ -166,7 +166,7 @@ async function generateDynamicCypher(
     - MATCH (n)-[r]->(m) RETURN n.name, type(), m.name (ERROR: type() empty!)
     - MATCH (n) RETURN n.name ORDER BY score DESC (ERROR: score not defined!)`
 
-    const provider = await getModelProvider(app, "deepSeek")
+    const provider = await getModelProvider({ app })
 
     const { text } = await generateText({
       model: provider.provider, // DeepSeek: cheaper, faster, great for structured tasks
@@ -335,7 +335,7 @@ export async function linkChunkToEntities({
     Text: "${content}"
     Example: ["Entity1", "Entity2"]`
 
-    const provider = await getModelProvider(app, "deepSeek")
+    const provider = await getModelProvider({ app })
 
     const { text } = await generateText({
       model: provider.provider,
@@ -391,7 +391,7 @@ export async function extractAndStoreKnowledge(
       ]
     }`
 
-    const provider = await getModelProvider(app, "deepSeek")
+    const provider = await getModelProvider({ app })
 
     const { text } = await generateText({
       model: provider.provider, // Use a smart model for extraction
