@@ -136,7 +136,7 @@ session.get("/", async (c) => {
     const SCRAPER_PATTERN =
       /python-requests|curl\/|wget\/|scrapy|httpclient|go-http-client|java\/|libwww|perl\/|ruby\//i
     const ALLOWED_BOT_PATTERN =
-      /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebot|twitterbot|linkedinbot|applebot/i
+      /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebot|twitterbot|linkedinbot|applebot|xbot|grok|gptbot|chatgpt-user|perplexitybot|claudebot/i
 
     if (
       SCRAPER_PATTERN.test(userAgent) &&

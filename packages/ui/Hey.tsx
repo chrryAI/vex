@@ -88,6 +88,7 @@ export const Hey = memo(
       isLoadingPosts,
       siteConfig,
       postId,
+      showTribe,
     } = useAuth()
 
     const { tribeSlug } = useTribe()
@@ -201,7 +202,7 @@ export const Hey = memo(
         isHydrated &&
         minSplashTimeElapsed &&
         app?.store?.apps?.length &&
-        !isLoadingPosts &&
+        (showTribe && !postId ? !isLoadingPosts : true) &&
         setIsSplash(false)
     }, [
       isImageLoaded,
@@ -210,6 +211,8 @@ export const Hey = memo(
       isSplash,
       minSplashTimeElapsed,
       app,
+      showTribe,
+      postId,
     ])
 
     // useEffect(() => {
