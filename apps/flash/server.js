@@ -1,6 +1,5 @@
 import "dotenv/config"
 import fs from "node:fs/promises"
-import arcjet, { fixedWindow, shield } from "@arcjet/node"
 import cookieParser from "cookie-parser"
 import express from "express"
 
@@ -1116,28 +1115,31 @@ app.use((req, res, next) => {
   next()
 })
 
-// Initialize Arcjet for rate limiting and security
-const aj = arcjet({
-  key: process.env.ARCJET_KEY || "test-key",
-  characteristics: ["ip"],
-  // Configure IP detection for Cloudflare
-  client: {
-    ipDetection: {
-      // Cloudflare sends real IP in CF-Connecting-IP header
-      headers: ["CF-Connecting-IP", "X-Forwarded-For", "X-Real-IP"],
-    },
-  },
-  rules: [
-    // Shield protects against common attacks
-    shield({ mode: "LIVE" }),
-    // Rate limit SSR requests to prevent DoS
-    fixedWindow({
-      mode: "LIVE",
-      window: "1m",
-      max: 100, // 100 requests per minute per IP
-    }),
-  ],
-})
+// ─── In-memory sliding window rate limiter (100 req/min per IP) ─────────────
+// No external service needed — runs entirely in this Node.js process.
+const RL_WINDOW_MS = 60_000 // 1 minute
+const RL_MAX = 100 // max requests per window
+/** @type {Map<string, number[]>} */
+const rlStore = new Map()
+
+// Cleanup old entries every 5 minutes to prevent memory leak
+setInterval(() => {
+  const cutoff = Date.now() - RL_WINDOW_MS
+  for (const [key, timestamps] of rlStore) {
+    const fresh = timestamps.filter((t) => t > cutoff)
+    if (fresh.length === 0) rlStore.delete(key)
+    else rlStore.set(key, fresh)
+  }
+}, 5 * 60_000).unref()
+
+function isRateLimited(ip) {
+  const now = Date.now()
+  const cutoff = now - RL_WINDOW_MS
+  const timestamps = (rlStore.get(ip) || []).filter((t) => t > cutoff)
+  timestamps.push(now)
+  rlStore.set(ip, timestamps)
+  return timestamps.length > RL_MAX
+}
 
 // Add Vite or respective production middlewares
 /** @type {import('vite').ViteDevServer | undefined} */
@@ -1576,15 +1578,17 @@ app.use(async (req, res) => {
     })
   }
 
-  // Apply Arcjet protection (skip for whitelisted hosts)
+  // Apply rate limiting (skip for whitelisted hosts)
   if (!isWhitelisted) {
-    const decision = await aj.protect(req)
+    const ip =
+      req.headers["cf-connecting-ip"] ||
+      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+      req.headers["x-real-ip"] ||
+      req.ip ||
+      "0.0.0.0"
 
-    if (decision.isDenied()) {
-      if (decision.reason.isRateLimit()) {
-        return res.status(429).json({ error: "Too many requests" })
-      }
-      return res.status(403).json({ error: "Forbidden" })
+    if (isRateLimited(ip)) {
+      return res.status(429).json({ error: "Too many requests" })
     }
   }
 

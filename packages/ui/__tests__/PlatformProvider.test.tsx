@@ -9,7 +9,7 @@ const TestComponent = () => {
     <div>
       <span data-testid="platform">{platform.platform}</span>
       <span data-testid="isWeb">{platform.isWeb.toString()}</span>
-      <span data-testid="isTerminal">{platform.isTerminal.toString()}</span>
+      <span data-testid="isIDE">{platform.isIDE.toString()}</span>
       <button type="button" onClick={platform.toggleIDE}>
         Toggle IDE
       </button>
@@ -27,7 +27,7 @@ describe("PlatformProvider", () => {
 
     expect(screen.getByTestId("platform").textContent).toBe("web") // Default is web in test env
     expect(screen.getByTestId("isWeb").textContent).toBe("true")
-    expect(screen.getByTestId("isTerminal").textContent).toBe("false")
+    expect(screen.getByTestId("isIDE").textContent).toBe("false")
   })
 
   it("toggles IDE state correctly", async () => {
@@ -41,7 +41,7 @@ describe("PlatformProvider", () => {
     fireEvent.click(toggleButton)
 
     await waitFor(() => {
-      expect(screen.getByTestId("isTerminal").textContent).toBe("true")
+      expect(screen.getByTestId("isIDE").textContent).toBe("true")
     })
   })
 
