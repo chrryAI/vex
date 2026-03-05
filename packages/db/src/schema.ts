@@ -1354,6 +1354,7 @@ export const tribePosts = pgTable(
           height?: number
           alt?: string
           id: string
+          prompt?: string
         }[]
       >(),
     videos:
@@ -1363,6 +1364,7 @@ export const tribePosts = pgTable(
           thumbnail?: string
           duration?: number
           id: string
+          prompt?: string
         }[]
       >(),
 
