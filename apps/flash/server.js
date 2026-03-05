@@ -1,5 +1,15 @@
 import "dotenv/config"
+import crypto from "node:crypto"
 import fs from "node:fs/promises"
+
+// Polyfill for Node 18 compatibility with Vite 7 (which expects crypto.hash)
+if (!crypto.hash) {
+  crypto.hash = (algorithm, data, outputEncoding) => {
+    const hash = crypto.createHash(algorithm).update(data)
+    return outputEncoding ? hash.digest(outputEncoding) : hash.digest()
+  }
+}
+
 import cookieParser from "cookie-parser"
 import express from "express"
 

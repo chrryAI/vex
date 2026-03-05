@@ -75,6 +75,11 @@ import {
 import { messages, moltQuestions, threads } from "@repo/db/src/schema"
 import Replicate from "replicate"
 import { API_URL, isDevelopment, REPLICATE_API_KEY } from ".."
+import { cleanAiResponse } from "../ai/cleanAiResponse"
+import {
+  generateImage as genImage,
+  generateVideo as genVideo,
+} from "../ai/mediaGeneration"
 import { checkMoltbookHealth } from "../integrations/moltbook"
 import { upload } from "../minio"
 
@@ -110,19 +115,8 @@ function parseAIJsonResponse(content: string): {
     throw new Error("Empty AI response content")
   }
 
-  // Strip markdown code blocks
-  let cleaned = content.trim()
-  if (cleaned.startsWith("```json")) {
-    cleaned = cleaned
-      .replace(/^```json\s*/, "")
-      .replace(/```\s*$/, "")
-      .trim()
-  } else if (cleaned.startsWith("```")) {
-    cleaned = cleaned
-      .replace(/^```\s*/, "")
-      .replace(/```\s*$/, "")
-      .trim()
-  }
+  // 1. Use robust centralized cleaner for rethink tags and markdown fences
+  let cleaned = cleanAiResponse(content)
 
   // Pre-sanitize: replace unescaped double quotes inside known long-text fields
   // e.g. "tribeContent": "...he said "hello"..." → "tribeContent": "...he said 'hello'..."
@@ -364,7 +358,7 @@ export async function engageWithMoltbookPosts({ job }: { job: scheduledJob }) {
     // 3. Use AI to evaluate post quality and select best ones
     console.log(`🤖 Evaluating post quality with AI...`)
 
-    const { provider } = await getModelProvider(app, job.aiModel)
+    const { provider } = await getModelProvider({ app, name: job.aiModel, job })
     interface PostWithScore {
       post: (typeof topPosts)[0]
       score: number
@@ -490,7 +484,11 @@ Respond with ONLY a JSON object in this exact format:
           continue
         }
 
-        const { provider } = await getModelProvider(app, job.aiModel)
+        const { provider } = await getModelProvider({
+          app,
+          name: job.aiModel,
+          job,
+        })
 
         // Redact PII from post content before sending to AI
         const redactedTitle = (await redact(post.title)) || post.title
@@ -835,7 +833,11 @@ export async function checkMoltbookComments({
           const aiModel = job.aiModel
 
           // Generate content using AI
-          const { provider } = await getModelProvider(app, aiModel)
+          const { provider } = await getModelProvider({
+            app,
+            name: aiModel,
+            job,
+          })
 
           const filterPrompt = `You are evaluating whether to reply to a comment on your Moltbook post.
 
@@ -894,7 +896,11 @@ Respond with ONLY "YES" or "NO":`
 
         // 5. Generate AI reply
         try {
-          const { provider } = await getModelProvider(app, job.aiModel)
+          const { provider } = await getModelProvider({
+            app,
+            name: job.aiModel,
+            job,
+          })
 
           const systemContext = app.systemPrompt
             ? `Your personality and role:\n${app.systemPrompt.substring(0, 500)}\n\n`
@@ -1870,7 +1876,12 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
       contentLength: aiResponse.tribeContent?.length || 0,
       tribeName: aiResponse.tribeName,
       contentPreview: `${aiResponse.tribeContent?.substring(0, 100)}...`,
+      hasReasoning: !!data.reasoning,
     })
+
+    if (data.reasoning) {
+      console.log(`🧠 AI Reasoning Captured (${data.reasoning.length} chars)`)
+    }
 
     // Validate userId before posting
     if (!job.userId) {
@@ -1932,80 +1943,28 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
     // Generate video (text-to-video, independent of image)
     if (generateVideo && effectiveMediaPrompt) {
       try {
-        const vidPrompt = effectiveMediaPrompt.substring(0, 200)
-        console.log(
-          `🎬 Generating video for tribe post ${post.id} via Luma Ray (text-to-video): "${vidPrompt.substring(0, 80)}..."`,
-        )
-        const replicateClient = new Replicate({ auth: REPLICATE_API_KEY })
-
-        // Use async create+polling to avoid blocking longer than job lock TTL
-        const prediction = await replicateClient.predictions.create({
-          model: "luma/ray-2-540p",
-          input: {
-            prompt: vidPrompt,
-            duration: 5,
-            aspect_ratio: "16:9",
-          },
+        const videoResult = await genVideo({
+          prompt: effectiveMediaPrompt.substring(0, 200),
+          aspectRatio: "16:9",
+          messageId: `tribe-post-video-${post.id}`,
         })
 
-        const VIDEO_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes max
-        const POLL_INTERVAL_MS = 5000
-        const deadline = Date.now() + VIDEO_TIMEOUT_MS
-        let finalPrediction = prediction
-
-        while (
-          finalPrediction.status !== "succeeded" &&
-          finalPrediction.status !== "failed" &&
-          finalPrediction.status !== "canceled"
-        ) {
-          if (Date.now() > deadline) {
-            console.warn(
-              `⏱️ Video generation timed out for post ${post.id} — skipping`,
-            )
-            break
-          }
-          await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS))
-          finalPrediction = await replicateClient.predictions.get(
-            finalPrediction.id,
-          )
-        }
-
-        if (finalPrediction.status === "succeeded" && finalPrediction.output) {
-          const output = finalPrediction.output
-          let videoUrl: string | undefined
-          if (typeof output === "string") {
-            videoUrl = output
-          } else if (Array.isArray(output) && output[0]) {
-            videoUrl = typeof output[0] === "string" ? output[0] : undefined
-          }
-
-          if (videoUrl) {
-            const videoUpload = await upload({
-              url: videoUrl,
-              messageId: `tribe-post-video-${post.id}`,
-              options: {
-                type: "video",
-                title: aiResponse.tribeTitle || "Tribe Post Video",
-              },
+        if (videoResult.url) {
+          await db
+            .update(tribePosts)
+            .set({
+              videos: [
+                {
+                  url: videoResult.url,
+                  id: uuidv4(),
+                  prompt: videoResult.prompt,
+                },
+              ],
             })
+            .where(eq(tribePosts.id, post.id))
 
-            await db
-              .update(tribePosts)
-              .set({
-                videos: [
-                  { url: videoUpload.url, id: uuidv4(), prompt: vidPrompt },
-                ],
-              })
-              .where(eq(tribePosts.id, post.id))
-
-            console.log(
-              `🎬 Video attached to tribe post ${post.id}: ${videoUpload.url}`,
-            )
-          }
-        } else if (finalPrediction.status === "failed") {
-          console.error(
-            `❌ Video generation failed for post ${post.id}:`,
-            finalPrediction.error,
+          console.log(
+            `🎬 Video attached to tribe post ${post.id}: ${videoResult.url} (via ${videoResult.provider})`,
           )
         }
       } catch (vidErr) {
@@ -2017,65 +1976,24 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
     // Generate and attach image if requested (independent of video)
     if (generateImage && effectiveMediaPrompt && post) {
       try {
-        const imgPrompt = effectiveMediaPrompt.substring(0, 200)
-        console.log(
-          `🎨 Generating image for tribe post ${post.id}: "${imgPrompt.substring(0, 80)}..."`,
-        )
-        const replicateClient = new Replicate({ auth: REPLICATE_API_KEY })
-        const output = await replicateClient.run(
-          "black-forest-labs/flux-1.1-pro",
-          {
-            input: {
-              prompt: imgPrompt,
-              width: 1024,
-              height: 1024,
-              num_inference_steps: 4,
-              guidance_scale: 0,
-            },
-          },
-        )
+        const imageResult = await genImage({
+          prompt: effectiveMediaPrompt.substring(0, 200),
+          aspectRatio: "1:1",
+          messageId: `tribe-post-${post.id}`,
+        })
 
-        // Resolve URL from various Replicate output shapes
-        let rawUrl: string | undefined
-        if (Array.isArray(output)) {
-          const first = output[0]
-          rawUrl =
-            typeof first === "string"
-              ? first
-              : typeof (first as any)?.url === "function"
-                ? await (first as any).url()
-                : String(first)
-        } else if (typeof output === "string") {
-          rawUrl = output
-        } else if (output && typeof (output as any).url === "function") {
-          rawUrl = await (output as any).url()
-        } else {
-          rawUrl = String(output)
-        }
-
-        if (rawUrl) {
-          const uploadResult = await upload({
-            url: rawUrl,
-            messageId: `tribe-post-${post.id}`,
-            options: {
-              maxWidth: 1024,
-              maxHeight: 1024,
-              type: "image",
-              title: aiResponse.tribeTitle || "Tribe Post",
-            },
-          })
-
+        if (imageResult.url) {
           await db
             .update(tribePosts)
             .set({
               images: [
                 {
-                  url: uploadResult.url,
+                  url: imageResult.url,
                   width: 1024,
                   height: 1024,
                   alt: aiResponse.tribeTitle || undefined,
                   id: uuidv4(),
-                  prompt: imgPrompt,
+                  prompt: imageResult.prompt,
                 },
               ],
             })
@@ -2083,7 +2001,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
 
           const imagePayload = [
             {
-              url: uploadResult.url,
+              url: imageResult.url,
               width: 1024,
               height: 1024,
               alt: aiResponse.tribeTitle || undefined,
@@ -2111,7 +2029,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
           }
 
           console.log(
-            `🖼️ Image attached to tribe post ${post.id}: ${uploadResult.url}`,
+            `🖼️ Image attached to tribe post ${post.id}: ${imageResult.url} (via ${imageResult.provider})`,
           )
         }
       } catch (imgErr) {
@@ -2379,7 +2297,11 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
           : undefined
 
         try {
-          const { provider } = await getModelProvider(app, job.aiModel, false)
+          const { provider } = await getModelProvider({
+            app,
+            name: job.aiModel,
+            job,
+          })
           const postImages =
             Array.isArray((ownPost as any).images) &&
             (ownPost as any).images.length > 0

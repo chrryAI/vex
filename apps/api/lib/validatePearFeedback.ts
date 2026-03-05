@@ -381,7 +381,7 @@ export async function validatePearFeedback({
     if (basicError) return basicError
 
     // 2. Get AI provider
-    const providerResult = await getModelProvider(app)
+    const providerResult = await getModelProvider({ app })
     const deepseek = providerResult.provider
 
     // 3. Evaluate with AI
