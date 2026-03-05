@@ -171,16 +171,16 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
   // We want to limit expensive videos while keeping high image engagement.
   // Distribution: ~85% image (17), ~10% plain (2), ~5% video (1) = 20 total
   const MEDIA_PATTERN: Array<"video" | "image" | "plain"> = [
-    "video",
+    // "video",
     "image",
     "image",
     "image",
-    "plain",
+    // "plain",
     "image",
     "image",
-    "video",
+    // "video",
     "image",
-    "plain",
+    // "plain",
   ]
   let appIndex = 0
 
