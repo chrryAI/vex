@@ -55,6 +55,7 @@ export interface ServerData {
     threads: thread[]
     totalCount: number
   }
+  apiKey?: string
   canShowAllTribe?: boolean
   accountApp?: appWithStore
   showTribe: boolean
@@ -334,23 +335,25 @@ export async function loadServerData(
       (pathnameWithoutLocale === "/" || pathnameWithoutLocale === ""))
 
   try {
-    const sessionResult = await getSession({
-      // appId: appResult.id,
-      deviceId,
-      fingerprint,
-      token: apiKey,
-      agentName,
-      pathname,
-      routeType,
-      locale,
-      chrryUrl,
-      screenWidth: Number(viewPortWidth),
-      screenHeight: Number(viewPortHeight),
-      gift: gift || undefined,
-      source: "layout",
-      API_URL,
-      ip: clientIp, // Pass client IP for Arcjet
-    })
+    const sessionResult = isBot
+      ? await getSession({
+          // appId: appResult.id,
+          deviceId,
+          fingerprint,
+          token: apiKey,
+          agentName,
+          pathname,
+          routeType,
+          locale,
+          chrryUrl,
+          screenWidth: Number(viewPortWidth),
+          screenHeight: Number(viewPortHeight),
+          gift: gift || undefined,
+          source: "layout",
+          API_URL,
+          ip: clientIp, // Pass client IP for Arcjet
+        })
+      : undefined
 
     // Check if this is a blog route
     if (pathname === "/blog" || pathname.startsWith("/blog/")) {
@@ -535,6 +538,7 @@ export async function loadServerData(
     showTribe,
     accountApp,
     tribe,
+    apiKey,
     canShowAllTribe,
     pathname, // Add pathname so client knows the SSR route
   }

@@ -83,6 +83,7 @@ function App({ serverData }: AppProps) {
         tribePost={serverData?.tribePost}
         theme={serverData?.theme}
         accountApp={serverData?.accountApp}
+        apiKey={serverData?.apiKey}
       >
         {serverData?.isBlogRoute ? (
           <Skeleton>
