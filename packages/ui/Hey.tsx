@@ -86,10 +86,8 @@ export const Hey = memo(
       isProgramme,
       baseApp,
       token,
-      // isLoadingPosts,
       siteConfig,
       postId,
-      showTribe,
     } = useAuth()
 
     const { tribeSlug, isLoadingTribes } = useTribe()
