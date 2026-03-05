@@ -179,12 +179,17 @@ export const Hey = memo(
             }}
           >
             <Img
-              key={app?.slug || appSlug}
               onLoad={(_src) => {
                 setIsImageLoaded(true)
               }}
-              slug={showTribeLogo ? "tribe" : app ? undefined : appSlug}
-              app={showTribeLogo ? undefined : app}
+              slug={
+                showTribeLogo || tribeSlug || postId
+                  ? "tribe"
+                  : app?.slug !== appSlug
+                    ? undefined
+                    : appSlug
+              }
+              app={app?.slug === appSlug ? undefined : app}
               showLoading={false}
               size={showTribeLogo ? 70 : 64}
             />

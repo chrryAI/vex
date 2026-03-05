@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { useApp, useAuth } from "../context/providers"
+import { useApp, useAuth, useTribe } from "../context/providers"
 import type { storeWithApps, thread } from "../types"
 import {
   generateAppMetadata,
@@ -115,9 +115,11 @@ export function useAppMetadata() {
     language: locale,
     showFocus,
     showTribe,
-    showTribeProfile,
+    canShowAllTribe,
     postId,
   } = useAuth()
+
+  const { tribeSlug } = useTribe()
 
   const storeApp = getWhiteLabel({ app }).storeApp || baseApp
 
@@ -142,7 +144,8 @@ export function useAppMetadata() {
     : undefined
 
   useEffect(() => {
-    if (showFocus || postId || showTribe || showTribeProfile) return
+    if (showFocus || postId || (showTribe && canShowAllTribe)) return
+    if (tribeSlug) return
     if (!metadata || !enabled) return
 
     if (metadata.title) {
@@ -198,7 +201,7 @@ export function useAppMetadata() {
         updateOrCreateLink("alternate", String(url), lang)
       })
     }
-  }, [metadata, enabled, showFocus])
+  }, [metadata, enabled, showFocus, tribeSlug])
 }
 
 /**

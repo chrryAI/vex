@@ -1358,11 +1358,12 @@ function metadataToHtml(metadata, serverData) {
 
   // Favicon and Apple Touch Icons - use hostname for white-label detection
   // Use serverData.siteConfig which is already available from server-loader
-  const iconSlug = serverData?.siteConfig?.isTribe
-    ? "tribe"
-    : serverData?.siteConfig?.storeSlug === "compass"
-      ? "atlas"
-      : serverData?.siteConfig?.slug || serverData?.app?.slug || "chrry"
+  const iconSlug =
+    tribeSlug || serverData?.siteConfig?.isTribe
+      ? "tribe"
+      : serverData?.siteConfig?.storeSlug === "compass"
+        ? "atlas"
+        : serverData?.siteConfig?.slug || serverData?.app?.slug || "chrry"
   const baseIcon = `/images/apps/${iconSlug}.png`
   const apiUrl = process.env.VITE_API_URL || "https://chrry.dev/api"
 
@@ -1610,6 +1611,11 @@ app.use(async (req, res) => {
 
   // Block common bot/scanner paths before SSR
   const pathname = req.path || req.url
+
+  const tribeSlug = pathname?.startsWith("/t/")
+    ? pathname.replace("/t/", "").split("?")[0]
+    : undefined
+
   const suspiciousPaths = [
     "/phpinfo.php",
     "/.git/",
