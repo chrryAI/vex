@@ -885,8 +885,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const value: TribeContextType = {
     tribes,
     tribePosts,
-    tribePost:
-      tribePost && postId && tribePost.id === postId ? tribePost : undefined,
+    tribePost,
     search,
     until,
     characterProfileIds,
