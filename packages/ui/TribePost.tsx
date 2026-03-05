@@ -267,7 +267,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               loop
               controls={isMobileDevice || isHovered}
               style={{ borderRadius: "20px", maxWidth: "100%" }}
-              width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 375 : 425}
+              width={viewPortWidth < 500 ? "100%" : isMobileDevice ? 400 : 450}
               height={"auto"}
               src={post.videos[0].url}
             />
@@ -306,22 +306,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     },
     {},
   )
-
-  // Handle loading and error states when fetching a specific post
-  if (postId && (isLoadingPost || !post)) {
-    return (
-      <Loading
-        key={"loading"}
-        style={{
-          position: "relative",
-          bottom: "10rem",
-        }}
-        fullScreen
-      />
-    )
-  }
-
-  // Show error when post fetch failed
   if (postId && tribePostError && !isLoadingPost) {
     return (
       <Div
@@ -356,10 +340,21 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
       </Div>
     )
   }
-
-  if (!post) {
-    return <Loading fullScreen />
+  // Handle loading and error states when fetching a specific post
+  if (!post || (postId && post.id !== postId)) {
+    return (
+      <Loading
+        key={"loading"}
+        style={{
+          position: "relative",
+          bottom: "10rem",
+        }}
+        fullScreen
+      />
+    )
   }
+
+  // Show error when post fetch failed
 
   return (
     <Div>

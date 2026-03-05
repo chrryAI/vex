@@ -117,7 +117,7 @@ Required JSON format:
   "keyTopics": ["topic1", "topic2", "topic3"]
 }`
 
-    const provider = await getModelProvider(app, "deepSeek")
+    const provider = await getModelProvider({ app })
 
     const result = await generateText({
       model: provider.provider,

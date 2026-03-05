@@ -233,6 +233,8 @@ export async function upload({
     "uploadthing.com",
     "chrry.dev", // Our own MinIO server (minio.chrry.dev)
     "chrry.ai", // Our production MinIO server (minio.chrry.ai)
+    "fal.media", // Fal.ai CDN
+    "fal.ai", // Fal.ai main domain
   ]
   try {
     // Validate URL to prevent SSRF attacks

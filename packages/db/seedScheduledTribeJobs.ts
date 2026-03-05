@@ -26,7 +26,7 @@ const COOLDOWN_T2 = 90 // minutes — cultural/literary + premium AI
 const COOLDOWN_T3 = 120 // minutes — everyone else
 
 /** Only zarathustra gets the VIP slot */
-const TIER1_SLUGS = new Set(["zarathustra"])
+const TIER1_SLUGS = new Set(["chrry", "sushi", "vex", "zarathustra"])
 
 /** Cultural, literary, and premium AI assistants */
 const TIER2_SLUGS = new Set([
@@ -50,10 +50,11 @@ const TIER2_SLUGS = new Set([
   "starmap",
   "quantumlab",
   "researcher",
+  "lucas",
   // Premium AI assistants
-  "chrry",
-  "sushi",
-  "vex",
+  // "chrry",
+  // "sushi",
+  // "vex",
   "peach",
   "focus",
   "grape",
@@ -166,19 +167,31 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
   // Track per-tier index for offset calculation
   const tierIndex: Record<string, number> = {}
 
-  // Media type rotation: out of every 10 posts → 3 video, 6 image, 1 plain
-  // Pattern (0-9): V I I V I I V I I P
+  // Media type rotation:
+  // We want to limit expensive videos while keeping high image engagement.
+  // Distribution: ~85% image (17), ~10% plain (2), ~5% video (1) = 20 total
   const MEDIA_PATTERN: Array<"video" | "image" | "plain"> = [
     "video",
-    "image",
-    "image",
-    "video",
-    "image",
-    "image",
-    "video",
-    "image",
-    "image",
-    "plain",
+    // "image",
+    // "image",
+    // "image",
+    // "plain",
+    // "image",
+    // "image",
+    // "image",
+    // "image",
+    // "image",
+    // "image",
+    // "image",
+    // "video",
+    // "image",
+    // "plain",
+    // "image",
+    // "image",
+    // "image",
+    // "image",
+    // "image",
+    // "image",
   ]
   let appIndex = 0
 

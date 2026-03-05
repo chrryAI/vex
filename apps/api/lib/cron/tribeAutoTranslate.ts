@@ -8,6 +8,7 @@ import {
   users,
 } from "@repo/db/src/schema"
 import OpenAI from "openai"
+import { cleanAiResponse } from "../ai/cleanAiResponse"
 import {
   sendDiscordNotification,
   sendErrorNotification,
@@ -41,25 +42,6 @@ interface AutoTranslateOptions {
   commentIds?: string[]
   /** Override target locales. Defaults to all supported locales. */
   languages?: string[]
-}
-
-function stripCodeFence(raw: string): string {
-  let s = raw.trim()
-  if (s.startsWith("```")) {
-    const nextNewline = s.indexOf("\n")
-    if (nextNewline !== -1) {
-      s = s.slice(nextNewline + 1)
-    } else {
-      s = s.slice(3)
-    }
-  }
-
-  // Remove trailing fence if it exists, but handle truncated output where it might be missing
-  if (s.endsWith("```")) {
-    s = s.slice(0, s.length - 3)
-  }
-
-  return s.trim()
 }
 
 /**
@@ -217,7 +199,7 @@ RESPONSE FORMAT (JSON):
 
       let parsed: any = {}
       try {
-        parsed = JSON.parse(stripCodeFence(raw))
+        parsed = JSON.parse(cleanAiResponse(raw))
       } catch (e) {
         console.error("❌ Failed to parse JSON batch:", batch)
         continue

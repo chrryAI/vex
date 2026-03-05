@@ -85,6 +85,7 @@ import { generateText, type ModelMessage, streamText } from "ai"
 import Handlebars from "handlebars"
 import { Hono } from "hono"
 import Replicate from "replicate"
+import sharp from "sharp"
 import slugify from "slug"
 import { v4 as uuidv4 } from "uuid"
 import {
@@ -101,6 +102,8 @@ import {
   processMessageForRAG,
 } from "../../lib/actions/ragService"
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
+import { cleanAiResponse } from "../../lib/ai/cleanAiResponse"
+import { generateImage } from "../../lib/ai/mediaGeneration"
 import { PerformanceTracker } from "../../lib/analytics"
 import { getDNAThreadArtifacts } from "../../lib/appRAG"
 import { captureException } from "../../lib/captureException"
@@ -3906,6 +3909,22 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     const malwareResponse = await tracker.track("malware_scan", async () => {
       if (isDevelopment) console.debug("Scanning files for malware...")
       for (const file of files) {
+        if (isDevelopment)
+          console.debug(`Scanning file: ${file.name} (${file.type})`)
+
+        const fileType = file.type.toLowerCase()
+        const isText = fileType.startsWith("text/") || isTextFile(file.name)
+
+        // Skip malware scan for text files (safe types) to avoid scanner 400 errors
+        // Text files are non-executable and often lack "magic numbers" for scanner detection
+        if (isText) {
+          if (isDevelopment)
+            console.debug(
+              `⏩ Skipping malware scan for safe text file: ${file.name}`,
+            )
+          continue
+        }
+
         const arrayBuffer = await file.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
 
@@ -3939,15 +3958,40 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
       Promise.all(
         files.map(async (file) => {
           const arrayBuffer = await file.arrayBuffer()
-          const base64 = Buffer.from(arrayBuffer).toString("base64")
+          let buffer = Buffer.from(arrayBuffer) as Buffer<ArrayBufferLike>
           const mimeType = file.type
           const isText = mimeType.startsWith("text/") || isTextFile(file.name)
+
+          // Hocam resize edelim sharpla ki payload sismesin
+          if (mimeType.startsWith("image/") && !mimeType.includes("gif")) {
+            try {
+              const image = sharp(buffer)
+              const metadata = await image.metadata()
+
+              if (metadata.width && metadata.width > 1024) {
+                buffer = await image
+                  .resize({ width: 1024, withoutEnlargement: true })
+                  .webp({ quality: 80 })
+                  .toBuffer()
+                if (isDevelopment)
+                  console.debug(`📸 Resized image: ${file.name} to 1024px`)
+              } else {
+                // Sadece kaliteyi optimize et
+                buffer = await image.webp({ quality: 80 }).toBuffer()
+              }
+            } catch (err) {
+              console.error(`⚠️ Sharp resize failed for ${file.name}:`, err)
+              // Hata alırsak orijinal buffer ile devam et (safely)
+            }
+          }
+
+          const base64 = buffer.toString("base64")
 
           if (isDevelopment) {
             console.debug("File processed", {
               name: file.name,
               mimeType: mimeType || "text/plain",
-              sizeKB: Number((file.size / 1024).toFixed(1)),
+              sizeKB: Number((buffer.length / 1024).toFixed(1)),
             })
           }
 
@@ -3966,7 +4010,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
             mimeType: mimeType || "text/plain", // Default to text/plain for code files
             data: base64,
             filename: file.name,
-            size: file.size,
+            size: buffer.length,
           }
         }),
       ),
@@ -4066,7 +4110,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
 
           contentParts.push({
             type: "image",
-            image: uploadResult.url,
+            image: `data:${file.mimeType};base64,${file.data}`,
           })
         } else if (file.type === "audio" || file.type === "video") {
           contentParts.push({
@@ -4226,8 +4270,17 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             })
           }
 
+          // Intelligent truncation for text files in the prompt
+          // Limit to 50k chars for direct context, rely on RAG for the rest
+          const MAX_TEXT_FILE_CHARS = 50000
+          const previewText =
+            (textContent?.length || 0) > MAX_TEXT_FILE_CHARS
+              ? textContent!.substring(0, MAX_TEXT_FILE_CHARS) +
+                `\n\n[... content truncated for context limits - use RAG to read full content ...]`
+              : textContent
+
           uploadedFiles.push({
-            data: textContent,
+            data: previewText, // Use truncated preview for the prompt
             title: file.filename,
             appId: requestApp?.id,
             url: undefined, // No direct URL for text content
@@ -4236,9 +4289,10 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             name: file.filename,
             type: file.type,
           })
+
           contentParts.push({
             type: "text",
-            text: `[TEXT FILE: ${file.filename}] - Processed for intelligent search (${Math.round((textContent?.length || 0) / 1000)}k chars)`,
+            text: `[TEXT FILE: ${file.filename}] - Processed for intelligent search (${Math.round((textContent?.length || 0) / 1000)}k chars)\n\nFILE CONTENT PREVIEW:\n${previewText}`,
           })
         } else if (file.type === "pdf" || file.type === "application/pdf") {
           let uploadResult: uploadResultType
@@ -4280,8 +4334,17 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               // Keep original extractedText
             }
 
+            // Intelligent truncation for PDF files in the prompt
+            // Limit to 50k chars for direct context, rely on RAG for the rest
+            const MAX_PDF_CHARS = 50000
+            const previewPDFText =
+              extractedText.length > MAX_PDF_CHARS
+                ? extractedText.substring(0, MAX_PDF_CHARS) +
+                  `\n\n[... content truncated for context limits - use RAG to read full content ...]`
+                : extractedText
+
             uploadedFiles.push({
-              data: extractedText,
+              data: previewPDFText, // Use truncated preview for the prompt
               url: uploadResult.url,
               title: uploadResult.title,
               size: file.size,
@@ -4311,7 +4374,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
 
             contentParts.push({
               type: "text",
-              text: `[PDF FILE: ${file.filename}] - Processed for intelligent search (${Math.round(extractedText.length / 1000)}k chars)`,
+              text: `[PDF FILE: ${file.filename}] - Processed for intelligent search (${Math.round(extractedText.length / 1000)}k chars)\n\nFILE CONTENT PREVIEW:\n${previewPDFText}`,
             })
           } catch (error) {
             captureException(error)
@@ -4386,7 +4449,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
     if (contentParts.length === 0) {
       contentParts.push({
         type: "text",
-        text: "Please provide a detailed analysis of the attached file(s). Describe what you see, any notable content, patterns, or insights.",
+        text: "Hocam, I've attached some files. Please provide a detailed surgical technical analysis of these files immediately. Describe notably patterns, potential bugs, or architectural insights without asking for clarification. Mermi gibi olsun! 🔪",
       })
     }
 
@@ -5098,7 +5161,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       return c.json({ error: "Claude not found" }, { status: 404 })
     }
     console.log("🤖 Using Claude for multimodal (images/videos/PDFs)")
-    model = await getModelProvider(requestApp, claude.name)
+    model = await getModelProvider({ app: requestApp, name: claude.name })
   } else if (rest.webSearchEnabled && agent.name === "sushi") {
     const perplexityAgent = await getAiAgent({
       name: "perplexity",
@@ -5108,14 +5171,22 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       console.log("❌ Perplexity not found")
       return c.json({ error: "Perplexity not found" }, { status: 404 })
     }
-    model = await getModelProvider(requestApp, perplexityAgent.name)
+    model = await getModelProvider({
+      app: requestApp,
+      name: perplexityAgent.name,
+    })
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
     console.log(`🤖 Model resolution for: ${agent.name}`)
-    // Disable reasoning for scheduled jobs (they need clean JSON responses)
-    const canReason = !!shouldStream
+    // Disable reasoning for scheduled jobs (unless it's a reasoning-capable model we want to unleash)
+    const canReason = !!shouldStream || !!jobId
 
-    model = await getModelProvider(requestApp, agent.name, canReason)
+    model = await getModelProvider({
+      app: requestApp,
+      name: agent.name,
+      canReason,
+      job,
+    })
     console.log(
       `✅ Provider created using: ${model.agentName || agent.name}${jobId ? " (reasoning disabled for scheduled job)" : ""}`,
     )
@@ -5589,13 +5660,8 @@ Respond in JSON format:
         let aiDescription = "I'm generating a beautiful image for you..."
 
         try {
-          // Clean and parse the enhancement response
-          let cleanedText = enhancementResponse.text
-          if (cleanedText.includes("```json")) {
-            cleanedText = cleanedText
-              .replace(/```json\s*/, "")
-              .replace(/\s*```$/, "")
-          }
+          // Clean and parse the enhancement response using robust centralized cleaner
+          const cleanedText = cleanAiResponse(enhancementResponse.text)
 
           const enhancedData = JSON.parse(cleanedText)
           enhancedPrompt = enhancedData.enhancedPrompt || content
@@ -5677,104 +5743,52 @@ Respond in JSON format:
         // If the app has a specific key for 'replicate', use it.
         // Note: Currently Agent.tsx might not have a dedicated 'replicate' field, but if it exists in DB, we use it.
         let replicateAuth = requestApp?.tier === "free" ? REPLICATE_API_KEY : ""
-
-        // Check for 'replicate' key or reuse 'openrouter'/'deepseek' key if intended for Replicate
-        // For now, checks 'replicate' explicit key in apiKeys jsonb
         const appReplicateKey = requestApp?.apiKeys?.replicate
-
         if (appReplicateKey) {
           try {
             replicateAuth = decrypt(appReplicateKey)
             console.log("✅ Using app-specific Replicate API key")
           } catch (e) {
             captureException(e)
-
             console.warn("⚠️ Failed to decrypt Replicate key, using as-is")
             replicateAuth = appReplicateKey
           }
         }
 
-        const replicate = new Replicate({
-          auth: replicateAuth,
-        })
-
-        const output = await replicate.run("black-forest-labs/flux-1.1-pro", {
-          input: {
-            prompt: enhancedPrompt,
-            width: 1024,
-            height: 1024,
-            num_inference_steps: 4,
-            guidance_scale: 0,
-          },
-        })
-
-        if (isDevelopment)
-          console.debug("Flux raw output", { type: typeof output })
-
-        // Handle different output formats from Replicate
-        let imageUrl: string | URL
-        if (Array.isArray(output)) {
-          // Array of URLs
-          const firstItem = output[0]
-          if (typeof firstItem === "string") {
-            imageUrl = firstItem
-          } else if (
-            firstItem &&
-            typeof (firstItem as any).url === "function"
-          ) {
-            imageUrl = await (firstItem as any).url()
-          } else {
-            imageUrl = String(firstItem)
+        let falAuth = ""
+        const appFalKey = requestApp?.apiKeys?.fal
+        if (appFalKey) {
+          try {
+            falAuth = decrypt(appFalKey)
+            console.log("✅ Using app-specific Fal.ai API key")
+          } catch (e) {
+            captureException(e)
+            falAuth = appFalKey
           }
-        } else if (typeof output === "string") {
-          imageUrl = output
-        } else if (output && typeof output === "object" && "url" in output) {
-          // FileOutput object with .url() method
-          if (typeof (output as any).url === "function") {
-            imageUrl = await (output as any).url()
-          } else {
-            imageUrl = (output as any).url
-          }
-        } else {
-          // Fallback - try to get URL from FileOutput
-          imageUrl = String(output)
         }
 
-        if (!imageUrl) {
-          throw new Error("No image URL returned from Flux")
-        }
-
-        // Convert URL object to string if needed
-        const imageUrlString =
-          typeof imageUrl === "string" ? imageUrl : imageUrl.toString()
-
-        console.log(
-          "✅ Flux image generation complete:",
-          imageUrlString,
-          currentMessageContent.trim().substring(0, 10),
-        )
-
-        // Upload to UploadThing for permanent storage
+        // Generate image using unified utility (handles both Replicate and Fal.ai)
         let permanentUrl: string
         let title: string
         try {
-          const result = await upload({
-            url: imageUrlString, // Use string URL
+          const result = await generateImage({
+            prompt: enhancedPrompt,
+            aspectRatio: "1:1",
+            apiKey: replicateAuth,
+            falKey: falAuth,
             messageId: slugify(currentMessageContent.trim().substring(0, 10)),
-            options: {
-              maxWidth: 1024,
-              maxHeight: 1024,
-              title: agent.name,
-              type: "image",
-            },
           })
           permanentUrl = result.url
-          title = result.title || agent.name
+          title = agent.name
+          console.log(
+            `✅ Image generation complete via ${result.provider}:`,
+            permanentUrl,
+          )
         } catch (error: any) {
           captureException(error)
-          console.error("❌ Flux image upload failed:", error)
+          console.error("❌ Image generation/upload failed:", error)
           return c.json(
-            { error: `Failed to upload generated image: ${error.message}` },
+            { error: `Failed to generate image: ${error.message}` },
             { status: 500 },
           )
         }
@@ -5865,9 +5879,9 @@ Respond in JSON format:
     })
 
     // Combine calendar, vault, focus, image, and talent tools
-    // Disable tools for Moltbook agents (security + performance)
+    // Disable tools for Moltbook/Tribe posts, models without tool support, or background jobs
     const allTools =
-      canPostToMolt || canPostToTribe
+      canPostToMolt || canPostToTribe || !model.supportsTools || !!jobId
         ? {}
         : {
             ...calendarTools,
@@ -6207,17 +6221,30 @@ Respond in JSON format:
                   return
                 }
 
-                if (isApiKeyError && model.lastKey) {
+                if (isApiKeyError && model.modelId) {
                   // Update agent metadata with failed key
                   console.log(
-                    `🔑 API key failed for ${model.lastKey}, updating agent metadata`,
+                    `🔑 API key failed for ${model.modelId}, updating agent metadata`,
                   )
                   try {
+                    const failedModels = Array.isArray(agent.metadata?.failed)
+                      ? [...agent.metadata.failed]
+                      : []
+                    const currentModelId = model.modelId
+
+                    if (
+                      currentModelId &&
+                      !failedModels.includes(currentModelId)
+                    ) {
+                      failedModels.push(currentModelId)
+                    }
+
                     await updateAiAgent({
                       id: agent.id,
                       metadata: {
                         ...agent.metadata,
-                        lastFailedKey: model.lastKey,
+                        failed: failedModels,
+                        lastFailedKey: model.modelId,
                       },
                     })
                   } catch (updateError) {
@@ -6450,17 +6477,15 @@ Respond in JSON format:
           // Moltbook JSON Cleanup
           if (canPostToMolt && (!job || job?.jobType === "moltbook_post")) {
             try {
-              // Clean up markdown code blocks if present
-              const cleanResponse = finalText
-                .replace(/```json\n?|\n?```/g, "")
-                .trim()
+              // Use robust centralized cleaner
+              const cleanedText = cleanAiResponse(finalText)
 
               // Find the first '{' and last '}'
-              const firstOpen = cleanResponse.indexOf("{")
-              const lastClose = cleanResponse.lastIndexOf("}")
+              const firstOpen = cleanedText.indexOf("{")
+              const lastClose = cleanedText.lastIndexOf("}")
 
               if (firstOpen !== -1 && lastClose !== -1) {
-                const jsonString = cleanResponse.substring(
+                const jsonString = cleanedText.substring(
                   firstOpen,
                   lastClose + 1,
                 )
@@ -6522,23 +6547,15 @@ Respond in JSON format:
             postType !== "comment"
           ) {
             try {
-              // Clean up markdown code blocks if present
-              const cleanResponse = finalText
-                .replace(/```json\n?|\n?```/g, "")
-                .trim()
-
-              !cleanResponse &&
-                console.warn(
-                  "⚠️ Failed to parse Moltbook JSON in route:",
-                  cleanResponse,
-                )
+              // Use robust centralized cleaner
+              const cleanedText = cleanAiResponse(finalText)
 
               // Find the first '{' and last '}'
-              const firstOpen = cleanResponse.indexOf("{")
-              const lastClose = cleanResponse.lastIndexOf("}")
+              const firstOpen = cleanedText.indexOf("{")
+              const lastClose = cleanedText.lastIndexOf("}")
 
               if (firstOpen !== -1 && lastClose !== -1) {
-                const jsonString = cleanResponse.substring(
+                const jsonString = cleanedText.substring(
                   firstOpen,
                   lastClose + 1,
                 )
@@ -6856,6 +6873,7 @@ Respond in JSON format:
                 tribeSeoKeywords,
                 imagePrompt: tribeImagePrompt,
                 videoPrompt: tribeVideoPrompt,
+                reasoning: reasoningText, // Hocam reasoning'i de ekleyelim ki job scheduler okuyabilsin
               })
             }
           } catch (createError) {
@@ -7169,8 +7187,53 @@ Respond in JSON format:
       let finalText = ""
       let responseMetadata: any = null
       let toolCallsDetected = false
+      let tokenLimitWarning: string | null = null
 
-      const toolsForModel = agent.name === "perplexity" ? undefined : allTools
+      const toolsForModel =
+        job || agent.name === "perplexity" ? undefined : allTools
+
+      // Sato optimization #12: Global context protection for all providers (especially Claude 200k limit)
+      const modelId =
+        typeof model === "string" ? model : (model as any).modelId || agent.name
+      const tokenCheck = checkTokenLimit(messages, modelId)
+
+      if (tokenCheck.shouldSplit) {
+        console.warn(
+          `⚠️ Token limit exceeded for ${agent.name} - splitting conversation`,
+        )
+        const split = splitConversation(
+          messages,
+          Math.floor(tokenCheck.maxTokens * 0.7),
+        )
+
+        // Rebuild messages with summary
+        const newMessages = []
+        if (split.systemPrompt) {
+          const updatedSystemPrompt = {
+            ...split.systemPrompt,
+            content: `${split.systemPrompt.content}\n\n${split.summarizedContext}`,
+          }
+          newMessages.push(updatedSystemPrompt)
+        } else if (split.summarizedContext) {
+          newMessages.push({
+            role: "system",
+            content: split.summarizedContext,
+          })
+        }
+        newMessages.push(...split.recentMessages)
+        messages = newMessages as ModelMessage[]
+
+        tokenLimitWarning = createTokenLimitError(
+          tokenCheck.estimatedTokens,
+          tokenCheck.maxTokens,
+          tokenCheck.modelName,
+        )
+      } else if (!tokenCheck.withinLimit) {
+        // Just a warning log if we can't split or don't want to yet
+        console.warn(
+          `⚠️ High token usage for ${agent.name}: ${tokenCheck.estimatedTokens}/${tokenCheck.maxTokens}`,
+        )
+      }
 
       // Use messages format for other providers
       const result = streamText({
@@ -7373,6 +7436,9 @@ Respond in JSON format:
       }
 
       if (finalText && finalText.trim().length > 0) {
+        if (tokenLimitWarning) {
+          finalText = `ℹ️ ${tokenLimitWarning}\n\n${finalText}`
+        }
         console.log("✅ Final text captured:", finalText.substring(0, 100))
       } else if (hasReceivedContent) {
         console.log("✅ Response received via streaming chunks")

@@ -33,7 +33,7 @@ import {
   type user,
 } from "@repo/db"
 import { z } from "zod"
-
+import { generateImage } from "./ai/mediaGeneration"
 import { notify } from "./notify"
 
 export const getTools = ({
@@ -1517,52 +1517,22 @@ export const getTools = ({
         console.log("🎨 Generating image:", { prompt, aspectRatio })
 
         try {
-          const Replicate = (await import("replicate")).default
-          const replicate = new Replicate({
-            auth: process.env.REPLICATE_API_KEY,
+          const result = await generateImage({
+            prompt,
+            aspectRatio,
+            messageId: currentMessageId,
           })
 
-          console.log("🎨 Calling Flux via Replicate...")
-          const output = await replicate.run(
-            "black-forest-labs/flux-1.1-pro" as any,
-            {
-              input: {
-                prompt,
-                aspect_ratio: aspectRatio,
-                output_format: "webp",
-                output_quality: 90,
-                safety_tolerance: 2,
-              },
-            },
+          console.log(
+            "✅ Image generated:",
+            result.url,
+            `(via ${result.provider})`,
           )
-
-          // Extract URL from output (could be array, string, URL object, or FileOutput)
-          let imageUrl: string
-          if (Array.isArray(output)) {
-            imageUrl = output[0]
-          } else if (typeof output === "string") {
-            imageUrl = output
-          } else if (typeof (output as any)?.url === "function") {
-            // Replicate FileOutput has a url() method that returns URL object
-            const urlObj = await (output as any).url()
-            imageUrl = urlObj?.href || String(urlObj)
-          } else if ((output as any)?.href) {
-            // It's a URL object with href property
-            imageUrl = (output as any).href
-          } else if (typeof (output as any)?.url === "string") {
-            // Or it might be a string property
-            imageUrl = (output as any).url
-          } else {
-            // Fallback to string conversion
-            imageUrl = String(output)
-          }
-
-          console.log("✅ Image generated:", imageUrl)
 
           // Return a user-friendly message with the image URL
           return {
             success: true,
-            imageUrl,
+            imageUrl: result.url,
             prompt,
             aspectRatio,
             message: `I've created a beautiful image: "${prompt}". Here it is!`,
