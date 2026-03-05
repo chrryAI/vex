@@ -306,22 +306,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     },
     {},
   )
-
-  // Handle loading and error states when fetching a specific post
-  if (isLoadingPost || (postId && !post)) {
-    return (
-      <Loading
-        key={"loading"}
-        style={{
-          position: "relative",
-          bottom: "10rem",
-        }}
-        fullScreen
-      />
-    )
-  }
-
-  // Show error when post fetch failed
   if (postId && tribePostError && !isLoadingPost) {
     return (
       <Div
@@ -356,10 +340,21 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
       </Div>
     )
   }
-
-  if (!post) {
-    return <Loading fullScreen />
+  // Handle loading and error states when fetching a specific post
+  if (!post || isLoadingPost || (postId && !post)) {
+    return (
+      <Loading
+        key={"loading"}
+        style={{
+          position: "relative",
+          bottom: "10rem",
+        }}
+        fullScreen
+      />
+    )
   }
+
+  // Show error when post fetch failed
 
   return (
     <Div>
