@@ -2657,7 +2657,7 @@ The user is currently viewing and potentially discussing this Tribe post:
                   height?: number
                   alt?: string
                   id: string
-                }) => img.alt || img.url,
+                }) => img.alt || "image",
               )
               .join(", ")}`
           : ""

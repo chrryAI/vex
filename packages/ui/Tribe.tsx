@@ -1374,7 +1374,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         </A>{" "}
                         {t("and 🦋 Tribe, powered by")}{" "}
                         {chrry ? (
-                          <AppLink isTribe app={chrry}>
+                          <AppLink
+                            isTribe
+                            app={siteConfig.isTribe ? chrry : app || chrry}
+                          >
                             {t("🌀 Spatial Navigation©")}
                           </AppLink>
                         ) : (
