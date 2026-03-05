@@ -135,7 +135,7 @@ const Thread = ({
 
   const { pathname } = useNavigationContext()
 
-  const { isTerminal, isStandalone } = usePlatform()
+  const { isIDE, isStandalone } = usePlatform()
 
   // Navigation context
   const {
@@ -449,7 +449,7 @@ const Thread = ({
             }),
           ...{
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
-            marginBottom: isTerminal ? 50 : undefined,
+            marginBottom: isIDE ? 50 : undefined,
           },
         }}
       >

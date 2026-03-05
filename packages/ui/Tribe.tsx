@@ -1688,7 +1688,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                   color: COLORS.red,
                                 }}
                               >
-                                {t("Burn")}
+                                <Span>{t("Burn")}</Span>
                               </AppLink>
                             )}
                           </Div>

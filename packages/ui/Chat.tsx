@@ -234,7 +234,7 @@ export default function Chat({
     burn,
     isPear,
     setIsPear,
-    isTerminal,
+    isIDE,
     accountApps,
     isRetro,
     setIsRetro,
@@ -475,7 +475,7 @@ export default function Chat({
   const m = minimize && empty
 
   const isChatFloating =
-    m || isTerminal || (isChatFloatingInternal && shouldUseCompactMode)
+    m || isIDE || (isChatFloatingInternal && shouldUseCompactMode)
 
   const [needsReview, setNeedsReviewInternal] = useState(false)
   const needsReviewRef = useRef(needsReview)
@@ -3435,7 +3435,7 @@ export default function Chat({
           ...(isHydrated && isStandalone && os === "ios"
             ? { marginBottom: 16 }
             : {}),
-          ...(isTerminal
+          ...(isIDE
             ? {
                 position: "fixed",
                 zIndex: 1000,
@@ -4818,7 +4818,7 @@ export default function Chat({
                 </Div>
               </Div>
             </Div>
-            {(!isChatFloating || isTerminal) && (
+            {(!isChatFloating || isIDE) && (
               <Div
                 style={{
                   ...styles.creditInfo.style,
