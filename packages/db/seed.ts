@@ -1859,6 +1859,24 @@ const prod = async () => {
     email: isProd || isVex ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
+
+  if (!isProd) {
+    const admin = await getUser({
+      email: "test@gmail.com",
+    })
+    if (!admin) {
+      await createUser({
+        email: "test@gmail.com",
+        name: VEX_TEST_NAME,
+        password: passwordToSalt(VEX_TEST_PASSWORD),
+        role: "admin",
+        userName: "ibsukru",
+        // credits: !isSeedSafe ? 99999999 : undefined,
+        city: "Amsterdam",
+        country: "Netherlands",
+      })
+    }
+  }
   // const agents = await createAgents()
   // const { vex } = await createStores({ user: admin })
 
