@@ -1092,7 +1092,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                   }
                   slug={showTribeProfile ? undefined : "tribe"}
                 />
-
                 {showTribeProfile && app ? (
                   <AppLink app={app} isTribe={false}>
                     {t(app?.name)}
@@ -1124,7 +1123,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     )}
                   </>
                 )}
-
                 <Div
                   style={{
                     marginLeft: "auto",

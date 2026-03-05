@@ -85,6 +85,7 @@ export const Hey = memo(
       threadId,
       isProgramme,
       baseApp,
+      token,
       // isLoadingPosts,
       siteConfig,
       postId,
@@ -202,16 +203,15 @@ export const Hey = memo(
         isHydrated &&
         minSplashTimeElapsed &&
         app?.store?.apps?.length
-      setIsSplash(false)
+      token && setIsSplash(false)
     }, [
       isImageLoaded,
       isHydrated,
       isLoadingTribes,
       isSplash,
       minSplashTimeElapsed,
+      token,
       app,
-      showTribe,
-      postId,
     ])
 
     // useEffect(() => {
