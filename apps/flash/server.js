@@ -1555,6 +1555,12 @@ app.use(async (req, res) => {
     ua.includes("google-structured-data") ||
     ua.includes("applebot") ||
     ua.includes("duckduckbot") ||
+    ua.includes("xbot") ||
+    ua.includes("grok") ||
+    ua.includes("gptbot") ||
+    ua.includes("chatgpt-user") ||
+    ua.includes("perplexitybot") ||
+    ua.includes("claudebot") ||
     ua.includes("slurp") // Yahoo
 
   const isWhitelisted =

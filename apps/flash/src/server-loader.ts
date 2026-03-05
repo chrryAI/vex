@@ -122,7 +122,7 @@ export async function loadServerData(
 
   // Bot detection: only serve heavy SSR data (tribes, posts, threads) to crawlers
   const BOT_UA_PATTERN =
-    /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebot|twitterbot|linkedinbot|whatsapp|telegrambot|applebot|semrushbot|ahrefsbot|petalbot|mj12bot|dotbot|serpstatbot|rogerbot|exabot|sistrix|sogou|archive\.org_bot|ia_archiver/i
+    /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebot|twitterbot|linkedinbot|whatsapp|telegrambot|applebot|semrushbot|ahrefsbot|petalbot|mj12bot|dotbot|serpstatbot|rogerbot|exabot|sistrix|sogou|archive\.org_bot|ia_archiver|xbot|grok|gptbot|chatgpt-user|perplexitybot|claudebot/i
   const userAgent = headers["user-agent"] || ""
   const isBot = BOT_UA_PATTERN.test(userAgent)
 
