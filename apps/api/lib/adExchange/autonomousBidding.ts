@@ -251,7 +251,7 @@ async function scoreSlots({
   let provider
   try {
     const result = await getModelProvider({
-      name: "claude",
+      name: "sushi",
     })
     provider = result.provider
   } catch (_error) {

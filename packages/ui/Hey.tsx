@@ -85,13 +85,12 @@ export const Hey = memo(
       threadId,
       isProgramme,
       baseApp,
-      isLoadingPosts,
+      token,
       siteConfig,
       postId,
-      showTribe,
     } = useAuth()
 
-    const { tribeSlug } = useTribe()
+    const { tribeSlug, isLoadingTribes } = useTribe()
 
     const { appSlug } = getAppAndStoreSlugs(pathname, {
       defaultAppSlug: baseApp?.slug || siteConfig.slug,
@@ -201,18 +200,16 @@ export const Hey = memo(
         isImageLoaded &&
         isHydrated &&
         minSplashTimeElapsed &&
-        app?.store?.apps?.length &&
-        (showTribe && !postId ? !isLoadingPosts : true) &&
-        setIsSplash(false)
+        app?.store?.apps?.length
+      token && setIsSplash(false)
     }, [
       isImageLoaded,
       isHydrated,
-      isLoadingPosts,
+      isLoadingTribes,
       isSplash,
       minSplashTimeElapsed,
+      token,
       app,
-      showTribe,
-      postId,
     ])
 
     // useEffect(() => {

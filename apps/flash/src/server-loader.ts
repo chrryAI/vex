@@ -455,7 +455,7 @@ export async function loadServerData(
               API_URL,
             })
           : Promise.resolve(undefined),
-        isBot && !isBlogRoute
+        !isBlogRoute
           ? getTribes({
               pageSize: 15,
               page: 1,
@@ -532,7 +532,7 @@ export async function loadServerData(
     blogPosts: isBot ? blogPosts : undefined,
     blogPost: isBot ? blogPost : undefined,
     isBlogRoute,
-    tribes: isBot ? tribes : undefined,
+    tribes,
     tribePosts: isBot ? tribePosts : undefined,
     tribePost: isBot ? tribePost : undefined,
     showTribe,

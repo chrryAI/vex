@@ -497,11 +497,11 @@ session.get("/", async (c) => {
         }
       }
 
-      const accountApp = await getAppAction({
-        c,
-        accountApp: true,
-        skipCache: true,
-      })
+      // const accountApp = await getAppAction({
+      //   c,
+      //   accountApp: true,
+      //   skipCache: true,
+      // })
 
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401)
@@ -549,7 +549,7 @@ session.get("/", async (c) => {
         hasNotification,
         note: "This is a fake guest for bot/crawler traffic.",
         deviceId,
-        userBaseApp: accountApp,
+        // userBaseApp: accountApp,
         // app,
         env,
       })
@@ -667,11 +667,11 @@ session.get("/", async (c) => {
       setFingerprintCookie(c, fingerprint!, cookieDomain, isExtension)
       setDeviceIdCookie(c, deviceId!, cookieDomain, isExtension)
 
-      const accountApp = await getAppAction({
-        c,
-        accountApp: true,
-        skipCache: true,
-      })
+      // const accountApp = await getAppAction({
+      //   c,
+      //   accountApp: true,
+      //   skipCache: true,
+      // })
 
       return c.json({
         locale,
@@ -683,7 +683,7 @@ session.get("/", async (c) => {
         os,
         browser,
         // app,
-        guestBaseApp: accountApp,
+        // guestBaseApp: accountApp,
         aiAgent,
         versions,
         guest: {
@@ -723,14 +723,14 @@ session.get("/", async (c) => {
     setFingerprintCookie(c, fingerprint!, cookieDomain, isExtension)
     setDeviceIdCookie(c, deviceId!, cookieDomain, isExtension)
 
-    const accountApp = await getAppAction({
-      c,
-      accountApp: true,
-      skipCache: true,
-    })
+    // const accountApp = await getAppAction({
+    //   c,
+    //   accountApp: true,
+    //   skipCache: true,
+    // })
 
     return c.json({
-      guestBaseApp: accountApp,
+      // guestBaseApp: accountApp,
       locale,
       TEST_MEMBER_FINGERPRINTS,
       TEST_GUEST_FINGERPRINTS,
