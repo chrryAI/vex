@@ -1990,7 +1990,9 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
             await db
               .update(tribePosts)
               .set({
-                videos: [{ url: videoUpload.url, id: uuidv4() }],
+                videos: [
+                  { url: videoUpload.url, id: uuidv4(), prompt: vidPrompt },
+                ],
               })
               .where(eq(tribePosts.id, post.id))
 
@@ -2071,6 +2073,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
                   height: 1024,
                   alt: aiResponse.tribeTitle || undefined,
                   id: uuidv4(),
+                  prompt: imgPrompt,
                 },
               ],
             })

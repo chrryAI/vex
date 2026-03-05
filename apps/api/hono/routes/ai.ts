@@ -2639,13 +2639,22 @@ These reflect the user's interests and recent conversations. If the user seems u
       : ""
 
   // Add tribe post context for AI awareness when on a post page
+  // Strip ALL markdown image/link syntax and raw URLs from any text to prevent
+  // Claude from attempting to download them (causes 400 from Anthropic).
+  const sanitizeTribeContent = (text: string) =>
+    (text || "")
+      .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1") // ![alt](url) → alt only
+      .replace(/\[([^\]]*)\]\([^)]+\)/g, "$1") // [text](url) → text only
+      .replace(/\bhttps?:\/\/\S+/gi, "[link]") // raw https:// or http:// URLs
+      .trim()
+
   const tribePostContext = tribePost
     ? `
 
 ## CURRENT POST CONTEXT:
 The user is currently viewing and potentially discussing this Tribe post:
-- **Title**: ${tribePost.title || "Untitled"}
-- **Content**: ${tribePost.content?.substring(0, 500) || ""}${tribePost.content?.length > 500 ? "..." : ""}
+- **Title**: ${sanitizeTribeContent(tribePost.title || "Untitled")}
+- **Content**: ${sanitizeTribeContent(tribePost.content?.substring(0, 500) || "")}${tribePost.content?.length > 500 ? "..." : ""}
 - **Author**: ${tribePost.app?.name || "Unknown"}
 - **Tribe**: ${tribePost.tribe?.name || "Unknown"}${
         Array.isArray(tribePost.images) && tribePost.images.length > 0
@@ -2656,14 +2665,22 @@ The user is currently viewing and potentially discussing this Tribe post:
                   width?: number
                   height?: number
                   alt?: string
+                  prompt?: string
                   id: string
-                }) => img.alt || "image",
+                }) =>
+                  img.prompt
+                    ? `"${img.prompt}" (${img.alt || "image"})`
+                    : img.alt || "image",
               )
               .join(", ")}`
           : ""
       }${
         Array.isArray(tribePost.videos) && tribePost.videos.length > 0
-          ? `\n- **Videos**: This post includes a video. Reference it naturally when relevant.`
+          ? `\n- **Videos**: ${tribePost.videos
+              .map((vid: { url: string; prompt?: string; id: string }) =>
+                vid.prompt ? `generated from prompt: "${vid.prompt}"` : "video",
+              )
+              .join(", ")}`
           : ""
       }
 
@@ -3513,6 +3530,14 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     // brandKnowledge,
     aiCoachContext,
   ].join("")
+
+  // Global sanitizer: strip ALL markdown image/link syntax and raw URLs from the
+  // assembled system prompt before sending to Anthropic. Any URL in the system
+  // prompt causes Claude to attempt a download → 400 error.
+  systemPrompt = systemPrompt
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1") // ![alt](url) → alt text only
+    .replace(/\[([^\]]*)\]\([^)]+\)/g, "$1") // [text](url) → text only
+    .replace(/\bhttps?:\/\/\S+/gi, "[link]") // raw http(s):// URLs → [link]
 
   if (!thread) {
     return c.json({ error: "Thread not found" }, { status: 404 })
@@ -4519,40 +4544,11 @@ How I process and remember information:
     ? `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}${retroAnalyticsContext}\n\n${memorySystemExplanation}\n\n${debatePrompt}` // Combine all
     : `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}${retroAnalyticsContext}\n\n${memorySystemExplanation}`
 
-  // If viewing a tribe post with images, inject them as multimodal parts so AI can see the visuals
-  let enhancedUserMessage = userMessage
-  if (
-    postId &&
-    tribePost &&
-    Array.isArray(tribePost.images) &&
-    tribePost.images.length > 0 &&
-    selectedAgent?.capabilities.image
-  ) {
-    const imageUrls = tribePost.images
-      .map((img: any) => img.url)
-      .filter(Boolean)
-      .slice(0, 3) // max 3 images to avoid token bloat
-
-    if (imageUrls.length > 0) {
-      const existingContent =
-        typeof userMessage.content === "string"
-          ? [{ type: "text", text: userMessage.content }]
-          : Array.isArray(userMessage.content)
-            ? [...userMessage.content]
-            : [{ type: "text", text: String(userMessage.content) }]
-
-      enhancedUserMessage = {
-        role: "user",
-        content: [
-          ...existingContent,
-          ...imageUrls.map((url: string) => ({
-            type: "image",
-            image: url,
-          })),
-        ],
-      }
-    }
-  }
+  // NOTE: We intentionally do NOT inject tribePost images as multimodal image blocks.
+  // tribePost images are stored on private CDN URLs that Anthropic cannot download,
+  // which causes a 400 "Unable to download the file" error. The image context is
+  // already described in the system prompt's tribePostContext section.
+  const enhancedUserMessage = userMessage
 
   // Function to merge consecutive messages for Perplexity compatibility
   // Perplexity requires strict alternation: system → user → assistant → user → assistant
