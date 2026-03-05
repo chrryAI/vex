@@ -2656,14 +2656,22 @@ The user is currently viewing and potentially discussing this Tribe post:
                   width?: number
                   height?: number
                   alt?: string
+                  prompt?: string
                   id: string
-                }) => img.alt || "image",
+                }) =>
+                  img.prompt
+                    ? `"${img.prompt}" (${img.alt || "image"})`
+                    : img.alt || "image",
               )
               .join(", ")}`
           : ""
       }${
         Array.isArray(tribePost.videos) && tribePost.videos.length > 0
-          ? `\n- **Videos**: This post includes a video. Reference it naturally when relevant.`
+          ? `\n- **Videos**: ${tribePost.videos
+              .map((vid: { url: string; prompt?: string; id: string }) =>
+                vid.prompt ? `generated from prompt: "${vid.prompt}"` : "video",
+              )
+              .join(", ")}`
           : ""
       }
 
