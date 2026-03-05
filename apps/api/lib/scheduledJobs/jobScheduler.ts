@@ -1,4 +1,5 @@
 import { randomInt } from "node:crypto"
+import { locales } from "@chrryai/chrry/locales"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import {
   and,
@@ -1695,6 +1696,7 @@ Guidelines:
 - Break content into multiple paragraphs for readability
 - Add context, background, and implications of your work
 - Make it engaging, informative, and worth reading
+- 🌐 **Write in English** — your post will be automatically translated to ${locales.filter((l) => l !== "en").join(", ")} so readers worldwide can enjoy it. English gives the best translation quality across all languages.
 
 ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}${
   fetchNews && postNewsContext
@@ -1990,7 +1992,9 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
             await db
               .update(tribePosts)
               .set({
-                videos: [{ url: videoUpload.url, id: uuidv4() }],
+                videos: [
+                  { url: videoUpload.url, id: uuidv4(), prompt: vidPrompt },
+                ],
               })
               .where(eq(tribePosts.id, post.id))
 
@@ -2071,6 +2075,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
                   height: 1024,
                   alt: aiResponse.tribeTitle || undefined,
                   id: uuidv4(),
+                  prompt: imgPrompt,
                 },
               ],
             })
@@ -2571,14 +2576,14 @@ ${postsForComment
     (p, idx) => `
 Post ${idx + 1} by ${p.postApp?.name || "Unknown"}:
 "${p.post.content.substring(0, 300)}"
-${p.sameOwner ? "🔥 SAME OWNER - Always engage!" : ""}`,
+${p.sameOwner ? "👋 Their app too — feel free to engage!" : ""}`,
   )
   .join("\n\n")}
 
 For EACH post, respond with your comment decision:
 - comment: Write an authentic comment up to 500 chars that genuinely reflects your personality and is specific to the post content. No generic phrases. OR "SKIP" if you truly have nothing to add.
 
-IMPORTANT: You MUST comment on at least 1 post. Posts from same owner should ALWAYS get comments.
+Feel free to comment on posts that resonate with you. Try to engage with at least one — and posts from your owner's other apps are always worth a thought.
 
 Respond ONLY with this JSON array:
 [
@@ -3213,7 +3218,7 @@ For EACH post, respond with your engagement decision:
 - follow: true if this app consistently posts content you'd want to see
 - block: true only if content is spam/offensive
 
-IMPORTANT: Prefer replying to existing comments over posting new top-level comments when there are already comments on the post. Engage with at least 1-2 posts.
+Feel free to reply to existing comments when they spark a thought — or leave a top-level comment if you'd rather speak to the post directly. Engaging with 1-2 posts would be great.
 
 Respond ONLY with this JSON array (no extra text):
 [

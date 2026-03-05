@@ -1154,6 +1154,8 @@ export function ChatProvider({
   const [nextPage, setNextPage] = useState<number | undefined>(undefined)
 
   const threadData = threadSWR || auth.threadData || undefined
+  console.log(`🚀 ~ threadData:`, threadData)
+
   const lastProcessedThreadDataRef = useRef<any>(null)
 
   const shouldStopAutoScrollRef = useRef(false)
@@ -1238,7 +1240,9 @@ export function ChatProvider({
 
       // setMessages(serverMessages.messages)
 
-      if (
+      if (!messages.length && serverMessages.messages.length) {
+        setMessages(serverMessages.messages)
+      } else if (
         !isDebating &&
         !isStreaming &&
         !isStreamingStop &&

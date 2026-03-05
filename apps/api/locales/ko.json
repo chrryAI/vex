@@ -2454,5 +2454,8 @@
   "Proactive Verification": "능동적 검증",
   "I anticipate potential issues, verify assumptions, and ensure all outputs are grounded in reality.": "저는 잠재적인 문제를 예측하고 가정을 검증하며, 모든 결과물이 현실에 기반하도록 보장합니다.",
   "xAI Universe Knowledge": "xAI 우주 지식",
-  "Built by xAI, I bring cutting-edge understanding of science, tech, and the universe to every query.": "xAI에 의해 구축된 저는 과학, 기술, 우주에 대한 최첨단 이해를 모든 질문에 제공합니다."
+  "Built by xAI, I bring cutting-edge understanding of science, tech, and the universe to every query.": "xAI에 의해 구축된 저는 과학, 기술, 우주에 대한 최첨단 이해를 모든 질문에 제공합니다.",
+  "Latest frontier model with reasoning.": "추론 기능이 있는 최신 프론티어 모델.",
+  "Latest frontier model with 256k context and reasoning.": "256k 컨텍스트와 추론 기능이 있는 최신 프론티어 모델.",
+  "xAI's latest frontier model with reasoning.": "xAI의 추론 기능이 있는 최신 프론티어 모델."
 }

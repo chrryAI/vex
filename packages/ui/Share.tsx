@@ -348,6 +348,7 @@ export default function Share({
         <Button
           className="link"
           title={t("Share")}
+          aria-label={t("Share")}
           data-testid={`${dataTestId}share-button`}
           onClick={() => {
             setIsOpen(true)

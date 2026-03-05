@@ -1,4 +1,3 @@
-import arcjet, { slidingWindow } from "@arcjet/node"
 import { isDevelopment, isE2E } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { render } from "@react-email/render"
@@ -6,19 +5,9 @@ import { createInvitation, getInvitation } from "@repo/db"
 import { Hono } from "hono"
 import Invite from "../../components/emails/Invite"
 import { captureException } from "../../lib/captureException"
+import { checkRateLimit } from "../../lib/rateLimiting"
 import { sendEmail } from "../../lib/sendEmail"
 import { getGuest, getMember } from "../lib/auth"
-
-const aj = arcjet({
-  key: process.env.ARCJET_KEY!,
-  rules: [
-    slidingWindow({
-      mode: "LIVE",
-      interval: 60, // 60 seconds
-      max: 60, // 60 requests per minute
-    }),
-  ],
-})
 
 export const invite = new Hono()
 
@@ -27,9 +16,12 @@ invite.post("/", async (c) => {
   const siteConfig = getSiteConfig()
 
   if (!(isDevelopment || isE2E)) {
-    const decision = await aj.protect(c.req)
-    const success = !decision.isDenied()
-
+    const member = await getMember(c)
+    const guest = await getGuest(c)
+    const { success } = await checkRateLimit(c.req.raw, {
+      member: member ?? undefined,
+      guest: guest ?? undefined,
+    })
     if (!success) {
       return c.json({ error: "Too many requests" }, 429)
     }

@@ -220,32 +220,15 @@ export default function Store({
                   }}
                   icon={
                     <>
-                      <Div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          marginBottom: 8,
-                        }}
-                      >
-                        <Span
-                          style={{
-                            ...styles.badge.style,
-                            display: isMobileDevice ? "none" : "flex",
-                            fontSize: 12,
-                          }}
-                        >
-                          {t(app.status === "active" ? "live" : "testing")}
-                        </Span>
-                      </Div>
                       <Img
                         style={{ ...styles.appImage.style }}
                         app={app}
                         alt={app.name}
-                        size={isMobileDevice ? 40 : 50}
+                        size={35}
                       />
                     </>
                   }
+                  loading={<Loading size={isMobileDevice ? 30 : 40} />}
                   data-color={COLORS[app.themeColor as keyof typeof COLORS]}
                   className={`pointer ${loadingApp?.id === app.id ? "glow" : ""}`}
                   style={{
@@ -270,12 +253,7 @@ export default function Store({
                     }}
                   >
                     <Span style={{ ...styles.appName.style }}>
-                      {loadingAppId === app.id ? (
-                        <Loading size={16} />
-                      ) : (
-                        app.icon
-                      )}{" "}
-                      {app.name}
+                      {app.icon} {app.name}
                     </Span>
                     <Span
                       style={{
@@ -296,20 +274,14 @@ export default function Store({
               <Div style={styles.appDetails.style}>
                 <H3 style={styles.appTitle.style}>
                   {selectedApp.icon} {selectedApp.name}
-                  <A
-                    href={getAppSlug(selectedApp)}
-                    onClick={(e) => {
-                      if (e.metaKey || e.ctrlKey) {
-                        return
-                      }
-                      e.preventDefault()
-                      setIsNewAppChat({ item: selectedApp })
-                    }}
+                  <AppLink
+                    isTribe={false}
+                    app={selectedApp}
                     style={styles.tryItNow.style}
                   >
                     <ArrowRight size={16} color="var(--accent-6)" />
                     {t("Try it now!")}
-                  </A>
+                  </AppLink>
                 </H3>
                 <P style={styles.subtitle.style}>
                   {t(selectedApp.title || "")}

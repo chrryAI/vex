@@ -1,6 +1,5 @@
 import "dotenv/config"
 import fs from "node:fs/promises"
-import arcjet, { fixedWindow, shield } from "@arcjet/node"
 import cookieParser from "cookie-parser"
 import express from "express"
 
@@ -17,39 +16,6 @@ export const getEnv = () => {
   return Object.assign(Object.assign({}, processEnv), importMetaEnv)
 }
 export const isCI = getEnv().VITE_CI === "true" || getEnv().CI === "true"
-export const checkIsExtension = () => {
-  var _a, _b
-  if (
-    typeof chrome !== "undefined" &&
-    ((_a = chrome.runtime) === null || _a === void 0 ? void 0 : _a.id)
-  ) {
-    return true
-  }
-  if (
-    typeof browser !== "undefined" &&
-    ((_b = browser.runtime) === null || _b === void 0 ? void 0 : _b.id)
-  ) {
-    return true
-  }
-  return false
-}
-export const getExtensionUrl = () => {
-  var _a, _b
-  if (typeof window === "undefined") return
-  if (
-    typeof chrome !== "undefined" &&
-    ((_a = chrome.runtime) === null || _a === void 0 ? void 0 : _a.getURL)
-  ) {
-    return chrome.runtime.getURL("index.html") // Chrome
-  }
-  if (
-    typeof browser !== "undefined" &&
-    ((_b = browser.runtime) === null || _b === void 0 ? void 0 : _b.getURL)
-  ) {
-    return browser.runtime.getURL("index.html") // Firefox
-  }
-  return `${window.location.origin}/index.html` // Fallback
-}
 
 const isProduction = process.env.NODE_ENV === "production"
 
@@ -766,15 +732,7 @@ export const extensions = [
 const matchesDomain = (host, domain) => {
   return host === domain || host.endsWith(`.${domain}`)
 }
-export function isTauri() {
-  if (typeof window === "undefined") return false
-  // Check for Tauri API presence
-  return (
-    "__TAURI__" in window ||
-    "__TAURI_INTERNALS__" in window ||
-    "TAURI_EVENT_PLUGIN_INTERNALS" in window
-  )
-}
+
 export function getSiteTranslation(mode, locale) {
   var _a, _b
   const catalog =
@@ -787,7 +745,7 @@ export function detectsiteModeDomain(hostname, mode) {
   var _a, _b, _c
   const devMode = "tribe"
   const defaultMode = getEnv().VITE_SITE_MODE || mode || devMode
-  if (isDevelopment && !checkIsExtension() && !isTauri()) {
+  if (isDevelopment) {
     return defaultMode || devMode
   }
   // Get hostname from parameter or window (client-side)
@@ -975,7 +933,7 @@ export function getSiteConfig(hostnameOrMode, caller) {
   if (mode === "sushi") {
     return sushi
   }
-  if (!isTauri() && !isDevelopment && isE2E) {
+  if (!isDevelopment && isE2E) {
     return e2eVex
   }
   if (mode === "search") {
@@ -1157,28 +1115,31 @@ app.use((req, res, next) => {
   next()
 })
 
-// Initialize Arcjet for rate limiting and security
-const aj = arcjet({
-  key: process.env.ARCJET_KEY || "test-key",
-  characteristics: ["ip"],
-  // Configure IP detection for Cloudflare
-  client: {
-    ipDetection: {
-      // Cloudflare sends real IP in CF-Connecting-IP header
-      headers: ["CF-Connecting-IP", "X-Forwarded-For", "X-Real-IP"],
-    },
-  },
-  rules: [
-    // Shield protects against common attacks
-    shield({ mode: "LIVE" }),
-    // Rate limit SSR requests to prevent DoS
-    fixedWindow({
-      mode: "LIVE",
-      window: "1m",
-      max: 100, // 100 requests per minute per IP
-    }),
-  ],
-})
+// ─── In-memory sliding window rate limiter (100 req/min per IP) ─────────────
+// No external service needed — runs entirely in this Node.js process.
+const RL_WINDOW_MS = 60_000 // 1 minute
+const RL_MAX = 100 // max requests per window
+/** @type {Map<string, number[]>} */
+const rlStore = new Map()
+
+// Cleanup old entries every 5 minutes to prevent memory leak
+setInterval(() => {
+  const cutoff = Date.now() - RL_WINDOW_MS
+  for (const [key, timestamps] of rlStore) {
+    const fresh = timestamps.filter((t) => t > cutoff)
+    if (fresh.length === 0) rlStore.delete(key)
+    else rlStore.set(key, fresh)
+  }
+}, 5 * 60_000).unref()
+
+function isRateLimited(ip) {
+  const now = Date.now()
+  const cutoff = now - RL_WINDOW_MS
+  const timestamps = (rlStore.get(ip) || []).filter((t) => t > cutoff)
+  timestamps.push(now)
+  rlStore.set(ip, timestamps)
+  return timestamps.length > RL_MAX
+}
 
 // Add Vite or respective production middlewares
 /** @type {import('vite').ViteDevServer | undefined} */
@@ -1584,7 +1545,26 @@ app.use(async (req, res) => {
 
   // SECURITY: Rate limiting via Arcjet (aj.protect)
   // Whitelisted domains (.chrry.ai, localhost) are trusted and skip rate limiting
+  const ua = (req.headers["user-agent"] || "").toLowerCase()
+  const isCrawler =
+    ua.includes("googlebot") ||
+    ua.includes("bingbot") ||
+    ua.includes("chrome-lighthouse") || // PageSpeed Insights
+    ua.includes("pagespeedinsights") ||
+    ua.includes("google-inspectiontool") ||
+    ua.includes("google-structured-data") ||
+    ua.includes("applebot") ||
+    ua.includes("duckduckbot") ||
+    ua.includes("xbot") ||
+    ua.includes("grok") ||
+    ua.includes("gptbot") ||
+    ua.includes("chatgpt-user") ||
+    ua.includes("perplexitybot") ||
+    ua.includes("claudebot") ||
+    ua.includes("slurp") // Yahoo
+
   const isWhitelisted =
+    isCrawler || // Search engine crawlers & PSI — never rate limit
     hostname.endsWith(".chrry.ai") || // All subdomains
     hostname === "chrry.ai" || // Main domain
     hostname.startsWith("localhost") || // Local development
@@ -1604,15 +1584,17 @@ app.use(async (req, res) => {
     })
   }
 
-  // Apply Arcjet protection (skip for whitelisted hosts)
+  // Apply rate limiting (skip for whitelisted hosts)
   if (!isWhitelisted) {
-    const decision = await aj.protect(req)
+    const ip =
+      req.headers["cf-connecting-ip"] ||
+      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+      req.headers["x-real-ip"] ||
+      req.ip ||
+      "0.0.0.0"
 
-    if (decision.isDenied()) {
-      if (decision.reason.isRateLimit()) {
-        return res.status(429).json({ error: "Too many requests" })
-      }
-      return res.status(403).json({ error: "Forbidden" })
+    if (isRateLimited(ip)) {
+      return res.status(429).json({ error: "Too many requests" })
     }
   }
 

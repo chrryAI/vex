@@ -199,9 +199,34 @@ export default function Subscribe({
     boolean | undefined
   >(searchParams.get("subscribe") === "true" || undefined)
 
+  const SUBSCRIBE_URL_PARAMS = [
+    "subscribe",
+    "plan",
+    "sushiTier",
+    "grapeTier",
+    "pearTier",
+    "watermelonTier",
+    "part",
+    "purchaseType",
+  ]
+
+  const clearSubscribeURLParams = () => {
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    SUBSCRIBE_URL_PARAMS.forEach((key) => params.delete(key))
+    const newSearch = params.toString()
+    const newUrl = newSearch
+      ? `${window.location.pathname}?${newSearch}`
+      : window.location.pathname
+    window.history.replaceState({}, "", newUrl)
+  }
+
   const setIsModalOpen = (value: boolean, plan?: selectedPlanType) => {
     if (plan) {
       setSelectedPlan(plan)
+    }
+    if (!value) {
+      clearSubscribeURLParams()
     }
     setIsModalOpenInternal(value)
   }
@@ -1055,18 +1080,49 @@ export default function Subscribe({
 
   useEffect(() => {
     if (isModalOpen) {
+      // Re-sync plan and tier from current URL params every time modal opens
+      // This ensures navigating from e.g. Coder link → Architect link works correctly
+      const params = new URLSearchParams(window.location.search)
+      const urlSushiTier = params.get("sushiTier") as
+        | "free"
+        | "coder"
+        | "architect"
+        | null
+      const urlGrapeTier = params.get("grapeTier") as
+        | "free"
+        | "plus"
+        | "pro"
+        | null
+      const urlPearTier = params.get("pearTier") as
+        | "free"
+        | "plus"
+        | "pro"
+        | null
+      const urlWatermelonTier = params.get("watermelonTier") as
+        | "standard"
+        | "plus"
+        | null
+      if (urlSushiTier) setSushiTierInternal(urlSushiTier)
+      if (urlGrapeTier) setGrapeTierInternal(urlGrapeTier)
+      if (urlPearTier) setPearTierInternal(urlPearTier)
+      if (urlWatermelonTier) setWatermelonTierInternal(urlWatermelonTier)
       if (!selectedPlan && normalizedPlan) {
         setSelectedPlan(normalizedPlan)
       }
       return
     }
+    // Modal closed — reset all state
     setIsAdding(false)
     setSelectedPlan(undefined)
     setIsInviting(false)
     setUserToGift(null)
-
     setIsGifting(false)
     setSearch("")
+    // Reset tier states to defaults so they don't bleed into next modal open
+    setSushiTierInternal("free")
+    setGrapeTierInternal("free")
+    setPearTierInternal("free")
+    setWatermelonTierInternal("standard")
   }, [isModalOpen, normalizedPlan, selectedPlan])
 
   const features =
@@ -1446,7 +1502,7 @@ export default function Subscribe({
                     : utilities.transparent.style),
                 }}
               >
-                <Img icon="zarathustra" size={18} /> {t("Sovereign")}
+                <Img slug="tribe" size={18} /> {t("Sovereign")}
               </Button>
             </>
           ) : (

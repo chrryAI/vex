@@ -55,6 +55,7 @@ export interface ServerData {
     threads: thread[]
     totalCount: number
   }
+  apiKey?: string
   canShowAllTribe?: boolean
   accountApp?: appWithStore
   showTribe: boolean
@@ -119,16 +120,24 @@ export async function loadServerData(
       : `/${request.pathname}`) || "/"
   ).split("?")?.[0]
 
+  // Bot detection: only serve heavy SSR data (tribes, posts, threads) to crawlers
+  const BOT_UA_PATTERN =
+    /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebot|twitterbot|linkedinbot|whatsapp|telegrambot|applebot|semrushbot|ahrefsbot|petalbot|mj12bot|dotbot|serpstatbot|rogerbot|exabot|sistrix|sogou|archive\.org_bot|ia_archiver|xbot|grok|gptbot|chatgpt-user|perplexitybot|claudebot/i
+  const userAgent = headers["user-agent"] || ""
+  const isBot = BOT_UA_PATTERN.test(userAgent)
+
   // OPTIMIZATION: Start fetching blog data early to parallelize with session/app data fetching
   // This allows file system reads to happen concurrently with API calls
+  // Only fetch blog data for bots (used for SEO/OG metadata)
   const isBlogList = pathname === "/blog"
   const isBlogPost = pathname.startsWith("/blog/") && pathname !== "/blog"
 
-  const blogDataPromise = isBlogList
-    ? getBlogPosts()
-    : isBlogPost
-      ? getBlogPost(pathname.replace("/blog/", ""))
-      : Promise.resolve(null)
+  const blogDataPromise =
+    isBot && isBlogList
+      ? getBlogPosts()
+      : isBot && isBlogPost
+        ? getBlogPost(pathname.replace("/blog/", ""))
+        : Promise.resolve(null)
 
   const isLocalePathname =
     pathname && locales.includes(pathname.split("/")?.[1] as locale)
@@ -314,48 +323,55 @@ export async function loadServerData(
     toString: () => string
   }
 
+  // Strip optional locale prefix (e.g. /ja/tribe → /tribe, /en → /)
+  // so that both /tribe and /ja/tribe correctly trigger the tribe list view
+  const pathnameWithoutLocale = isLocalePathname
+    ? "/" + pathname.split("/").slice(2).join("/")
+    : pathname
+
   const canShowAllTribe =
-    (pathname ? locales.includes(pathname as "en") : true) &&
-    (pathname === "/tribe" || (siteConfig.isTribe && pathname === "/"))
+    pathnameWithoutLocale === "/tribe" ||
+    (siteConfig.isTribe &&
+      (pathnameWithoutLocale === "/" || pathnameWithoutLocale === ""))
+
   try {
-    const sessionResult = await getSession({
-      // appId: appResult.id,
-      deviceId,
-      fingerprint,
-      token: apiKey,
-      agentName,
-      pathname,
-      routeType,
-      locale,
-      chrryUrl,
-      screenWidth: Number(viewPortWidth),
-      screenHeight: Number(viewPortHeight),
-      gift: gift || undefined,
-      source: "layout",
-      API_URL,
-      ip: clientIp, // Pass client IP for Arcjet
-    })
+    const sessionResult = isBot
+      ? await getSession({
+          // appId: appResult.id,
+          deviceId,
+          fingerprint,
+          token: apiKey,
+          agentName,
+          pathname,
+          routeType,
+          locale,
+          chrryUrl,
+          screenWidth: Number(viewPortWidth),
+          screenHeight: Number(viewPortHeight),
+          gift: gift || undefined,
+          source: "layout",
+          API_URL,
+          ip: clientIp, // Pass client IP for Arcjet
+        })
+      : undefined
 
     // Check if this is a blog route
     if (pathname === "/blog" || pathname.startsWith("/blog/")) {
       isBlogRoute = true
 
-      // Reuse the early-fetched blog data promise
-      try {
-        const blogData = await blogDataPromise
+      // Only fetch blog data for bots (SEO/OG metadata)
+      if (isBot) {
+        try {
+          const blogData = await blogDataPromise
 
-        if (isBlogList) {
-          // Blog list page
-          blogPosts = blogData as BlogPost[] | undefined
-        } else if (isBlogPost) {
-          // Individual blog post page
-          blogPost = (blogData as BlogPostWithContent | null) || undefined
+          if (isBlogList) {
+            blogPosts = blogData as BlogPost[] | undefined
+          } else if (isBlogPost) {
+            blogPost = (blogData as BlogPostWithContent | null) || undefined
+          }
+        } catch (error) {
+          console.error("❌ Blog data fetch failed:", error)
         }
-      } catch (error) {
-        console.error("❌ Blog data fetch failed:", error)
-        // Fallback to null on error
-        blogPosts = undefined
-        blogPost = undefined
       }
     }
 
@@ -367,19 +383,21 @@ export async function loadServerData(
     apiKey =
       sessionResult?.user?.token || sessionResult?.guest?.fingerprint || apiKey
 
-    threadResult = threadId
-      ? await getThread({
-          id: threadId,
-          pageSize: pageSizes.posts * until,
-          token: apiKey,
-          API_URL,
-        })
-      : undefined
+    // Only fetch thread/post/app data for bots — humans hydrate client-side
+    threadResult =
+      isBot && threadId
+        ? await getThread({
+            id: threadId,
+            pageSize: pageSizes.posts * until,
+            token: apiKey,
+            API_URL,
+          })
+        : undefined
 
     const postId = getPostId(pathname)
 
     let tribePostResult: tribePostWithDetails | undefined
-    if (postId) {
+    if (isBot && postId) {
       try {
         tribePostResult = await getTribePost({
           id: postId,
@@ -398,13 +416,16 @@ export async function loadServerData(
       threadResult?.thread?.appId ||
       headers["x-app-id"]
 
-    const appResult = await getApp({
-      chrryUrl,
-      appId,
-      token: apiKey,
-      pathname,
-      API_URL,
-    })
+    // Only fetch app data for bots — client hydrates for human users
+    const appResult = isBot
+      ? await getApp({
+          chrryUrl,
+          appId,
+          token: apiKey,
+          pathname,
+          API_URL,
+        })
+      : ({ id: appId } as appWithStore)
 
     const sortBy =
       (searchParams.get("sort") as "date" | "hot" | "liked") || "hot"
@@ -416,6 +437,7 @@ export async function loadServerData(
     const canShowTribeProfile =
       !tribeSlug && !excludedSlugRoutes?.includes(pathname) && !canShowAllTribe
 
+    // Bots: fetch everything for SEO. Humans: only translations (lightweight).
     const [translationsResult, threadsResult, tribesResult, tribePostsResult] =
       await Promise.all([
         getTranslations({
@@ -424,14 +446,16 @@ export async function loadServerData(
           API_URL,
         }),
 
-        getThreads({
-          appId: appResult.id,
-          pageSize: pageSizes.menuThreads,
-          sort: "bookmark",
-          token: apiKey,
-          API_URL,
-        }),
-        !isBlogRoute
+        isBot
+          ? getThreads({
+              appId: appResult.id,
+              pageSize: pageSizes.menuThreads,
+              sort: "bookmark",
+              token: apiKey,
+              API_URL,
+            })
+          : Promise.resolve(undefined),
+        isBot && !isBlogRoute
           ? getTribes({
               pageSize: 15,
               page: 1,
@@ -440,7 +464,7 @@ export async function loadServerData(
               API_URL,
             })
           : Promise.resolve(undefined),
-        !isBlogRoute
+        isBot && !isBlogRoute
           ? getTribePosts({
               pageSize: 10,
               page: 1,
@@ -490,10 +514,11 @@ export async function loadServerData(
 
   const result = {
     session,
-    thread,
-    threads,
+    // Bots get full SSR data for SEO; humans hydrate client-side
+    thread: isBot ? thread : undefined,
+    threads: isBot ? threads : undefined,
     translations,
-    app,
+    app: isBot ? app : undefined,
     siteConfig,
     locale,
     deviceId,
@@ -504,15 +529,16 @@ export async function loadServerData(
     isDev,
     apiError,
     theme: theme as themeType,
-    blogPosts,
-    blogPost,
+    blogPosts: isBot ? blogPosts : undefined,
+    blogPost: isBot ? blogPost : undefined,
     isBlogRoute,
-    tribes,
-    tribePosts,
-    tribePost,
+    tribes: isBot ? tribes : undefined,
+    tribePosts: isBot ? tribePosts : undefined,
+    tribePost: isBot ? tribePost : undefined,
     showTribe,
     accountApp,
     tribe,
+    apiKey,
     canShowAllTribe,
     pathname, // Add pathname so client knows the SSR route
   }

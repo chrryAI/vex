@@ -3,7 +3,9 @@
 import { t } from "i18next"
 import React, {
   createContext,
+  type Dispatch,
   type ReactNode,
+  type SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -114,7 +116,7 @@ const AuthContext = createContext<
       ask: string | undefined
       setAsk: (value: string | undefined) => void
       displayedApps: appWithStore[]
-      setDisplayedApps: (value: appWithStore[]) => void
+      setDisplayedApps: Dispatch<SetStateAction<appWithStore[]>>
       lastAnchorApp: {
         appId: string
         appName: string
@@ -602,9 +604,9 @@ export function AuthProvider({
     from?: string
   }
 
-  const [navigationHistory, setNavigationHistory] = useLocalStorage<
+  const [navigationHistory, setNavigationHistory] = useState<
     SpatialNavigationEntry[]
-  >("navigationHistory", [])
+  >([])
 
   const lastNavigationTime = useRef<number>(0)
   const NAVIGATION_THROTTLE_MS = 100 // 100ms minimum between transitions
@@ -1750,8 +1752,6 @@ export function AuthProvider({
     if (path === "/" && !showFocus) return undefined
 
     const matchedApp = storeApps?.find((item) => getAppSlug(item) === pathname)
-    console.log(`🚀 ~ pathname:`, pathname)
-    console.log(`🚀 ~ matchedApp:`, matchedApp)
 
     return matchedApp
   }
@@ -2321,7 +2321,7 @@ export function AuthProvider({
     !tribeSlug && (showTribeProfileInternal || showTribeProfileMemo)
 
   const isPearInternal =
-    (canShowAllTribe || showTribe || searchParams.get("pear") === "true") &&
+    searchParams.get("pear") === "true" &&
     (accountApp ? app?.id !== accountApp?.id : true)
 
   const [isPear, setIsPearInternal] = useState(isPearInternal)
@@ -2649,8 +2649,6 @@ export function AuthProvider({
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
-    console.log(`🚀 ~ useEffect ~ baseApp:`, baseApp, storeApps)
-
     if (!baseApp) return
     if (!storeApps.length || (!thread && threadId)) return
 

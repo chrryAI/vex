@@ -15,8 +15,8 @@ import {
   getUser,
   getUsers,
   isProd,
-  isReplica,
   isSeedSafe,
+  isVex,
   isWaffles,
   MODE,
   passwordToSalt,
@@ -192,14 +192,14 @@ async function createAgents() {
 
   const grokAgent = await createAiAgent({
     name: "grok",
-    displayName: "Grok 4",
-    version: "4.0",
+    displayName: "Grok 4.1 Fast",
+    version: "4.1",
     apiURL: "https://api.x.ai/v1/chat/completions",
     state: "active",
-    description: "xAI's latest frontier model with 256k context and reasoning.",
-    creditCost: 4,
+    description: "xAI's latest frontier model with reasoning.",
+    creditCost: 2,
     authorization: "all",
-    modelId: "x-ai/grok-4",
+    modelId: "x-ai/grok-4-1-fast-reasoning",
     maxPromptSize: 256000,
     order: 4,
     capabilities: {
@@ -1856,15 +1856,33 @@ const prod = async () => {
   // await clearMemories()
   // await clearGuests()
   const admin = await getUser({
-    email: isProd || isReplica ? "ibsukru@gmail.com" : "test@gmail.com",
+    email: isProd || isVex ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
+
+  if (!isProd) {
+    const admin = await getUser({
+      email: "test@gmail.com",
+    })
+    if (!admin) {
+      await createUser({
+        email: "test@gmail.com",
+        name: VEX_TEST_NAME,
+        password: passwordToSalt(VEX_TEST_PASSWORD),
+        role: "admin",
+        userName: "ibsukru",
+        // credits: !isSeedSafe ? 99999999 : undefined,
+        city: "Amsterdam",
+        country: "Netherlands",
+      })
+    }
+  }
   // const agents = await createAgents()
-  const { vex } = await createStores({ user: admin })
+  // const { vex } = await createStores({ user: admin })
 
   // await seedPearFeedback()
 
-  // await seedScheduledTribeJobs({ admin })
+  await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 
@@ -1991,7 +2009,7 @@ const seedDb = async (): Promise<void> => {
     }
 
     if (MODE === "dev") {
-      if (isReplica) {
+      if (isVex) {
         await prod()
       } else {
         // await clearDb()

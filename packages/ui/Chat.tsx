@@ -30,6 +30,7 @@ import {
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import DeleteThread from "./DeleteThread"
+import { FalkorDBSetupModal } from "./FalkorDBSetupModal"
 import {
   useCountdown,
   useHasHydrated,
@@ -649,6 +650,7 @@ export default function Chat({
     images?: { used: number; limit: number; resetTime: string }
   } | null>(null)
   const [showQuotaInfo, setShowQuotaInfoInternal] = useState(false)
+  const [showFalkorModal, setShowFalkorModal] = useState(false)
   const setShowQuotaInfo = (show: boolean) => {
     setShowQuotaInfoInternal(show)
     show &&
@@ -3707,6 +3709,8 @@ export default function Chat({
                     >
                       {isRetro && (
                         <Button
+                          aria-label={t("Close retro mode")}
+                          title={t("Close retro mode")}
                           onClick={() => setIsRetro(false)}
                           className="link"
                         >
@@ -4463,6 +4467,16 @@ export default function Chat({
                       </Span>
                       {!appStatus?.part && !onlyAgent && (
                         <Button
+                          aria-label={
+                            debateAgent
+                              ? t("Remove debate agent")
+                              : t("Remove agent")
+                          }
+                          title={
+                            debateAgent
+                              ? t("Remove debate agent")
+                              : t("Remove agent")
+                          }
                           data-testid={
                             debateAgent
                               ? "debate-agent-delete-button"
@@ -4597,6 +4611,8 @@ export default function Chat({
                   {isAttaching ? (
                     <Span style={styles.attachButtons.style}>
                       <Button
+                        aria-label={t("Close attachments")}
+                        title={t("Close attachments")}
                         data-testid="attach-button-close"
                         className="link"
                         style={{
@@ -4914,6 +4930,23 @@ export default function Chat({
                     ) : null}
                   </>
                 )}
+                {/* FalkorDB local workspace button — shown for all logged-in users */}
+                {user && (
+                  <Button
+                    data-testid="falkor-setup-button"
+                    onClick={() => setShowFalkorModal(true)}
+                    className="link"
+                    style={{
+                      ...utilities.link.style,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      opacity: 0.7,
+                    }}
+                  >
+                    <HardDrive size={15} />
+                  </Button>
+                )}
                 {user && !user?.subscription && (
                   <Button
                     data-testid="subscribe-from-chat-button"
@@ -4978,6 +5011,18 @@ export default function Chat({
           </Div>
         )}
       </Div>
+
+      {/* FalkorDB local setup modal */}
+      <FalkorDBSetupModal
+        isOpen={showFalkorModal}
+        onClose={() => setShowFalkorModal(false)}
+        user={user ?? null}
+        onLogin={() => {
+          setShowFalkorModal(false)
+          addParams({ signIn: "login", callbackUrl: pathname })
+        }}
+        apiUrl={API_URL}
+      />
     </>
   )
 }

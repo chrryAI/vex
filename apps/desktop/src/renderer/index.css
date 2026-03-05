@@ -105,3 +105,9 @@ p {
 .info p {
   margin: 0.5rem 0;
 }
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

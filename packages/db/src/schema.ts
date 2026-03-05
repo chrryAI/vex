@@ -23,7 +23,7 @@ export const PLUS_CREDITS_PER_MONTH = 2000
 export const ADDITIONAL_CREDITS = 500
 export const GUEST_CREDITS_PER_MONTH = 30
 export const MEMBER_CREDITS_PER_MONTH = 150
-export const MAX_INSTRUCTIONS_CHAR_COUNT = 7500
+export const MAX_INSTRUCTIONS_CHAR_COUNT = 2000
 export const MAX_THREAD_TITLE_CHAR_COUNT = 100
 export const GUEST_TASKS_COUNT = 4
 export const MEMBER_TASKS_COUNT = 8
@@ -1354,6 +1354,7 @@ export const tribePosts = pgTable(
           height?: number
           alt?: string
           id: string
+          prompt?: string
         }[]
       >(),
     videos:
@@ -1363,6 +1364,7 @@ export const tribePosts = pgTable(
           thumbnail?: string
           duration?: number
           id: string
+          prompt?: string
         }[]
       >(),
 
@@ -2992,6 +2994,9 @@ export const apps = pgTable(
       .array()
       .default([]),
 
+    credits: integer("credits").default(0).notNull(),
+    hourlyRate: integer("hourlyRate").default(0).notNull(),
+
     // Basic Info
     name: text("name").notNull(), // Unique identifier (e.g., "Atlas", "my-legal-assistant")
     // displayName: text("displayName").notNull().default("Untitled Agent"), // Display name (e.g., "Atlas", "Legal Assistant")
@@ -3429,6 +3434,8 @@ export const stores = pgTable(
     teamId: uuid("teamId").references(() => teams.id, {
       onDelete: "cascade",
     }),
+    hourlyRate: integer("hourlyRate"),
+    credits: integer("credits"),
     domain: text("domain"),
     appId: uuid("appId").references((): AnyPgColumn => apps.id, {
       onDelete: "cascade",
@@ -5172,8 +5179,14 @@ export const storeTimeSlots = pgTable(
     durationHours: integer("duration_hours").notNull(), // 2
 
     // Pricing
-    creditsPerHour: integer("credits_per_hour").notNull(), // Base price
+    creditsPerHour: integer("credits_per_hour").notNull(), // Base price for auction? (legacy)
+    directRentPrice: integer("direct_rent_price"), // Fixed price for direct kiralama
+    minAuctionBid: integer("min_auction_bid"), // Minimum bid for auction
     isPrimeTime: boolean("is_prime_time").default(false), // Peak hours cost more
+
+    // Approval & Agent Logic
+    requiresApproval: boolean("requires_approval").default(false), // User/Agent has to say OK
+    autoApprove: boolean("auto_approve").default(true), // Agent (Store App) auto-approves if ON
 
     // Capacity & availability
     maxConcurrentRentals: integer("max_concurrent_rentals").default(1), // Usually 1
@@ -5224,9 +5237,21 @@ export const appCampaigns = pgTable(
     // Campaign config
     name: text("name").notNull(),
     status: text("status", {
-      enum: ["active", "paused", "completed", "cancelled"],
+      enum: [
+        "active",
+        "paused",
+        "completed",
+        "cancelled",
+        "pending_approval",
+        "scheduled",
+      ],
     })
       .default("active")
+      .notNull(),
+    rentalType: text("rental_type", {
+      enum: ["app_to_store", "store_to_app"],
+    })
+      .default("app_to_store")
       .notNull(),
 
     // Budget
@@ -5412,9 +5437,21 @@ export const slotRentals = pgTable(
 
     // Status
     status: text("status", {
-      enum: ["scheduled", "active", "completed", "cancelled"],
+      enum: [
+        "scheduled",
+        "active",
+        "completed",
+        "cancelled",
+        "pending_approval",
+        "rejected",
+      ],
     })
       .default("scheduled")
+      .notNull(),
+    rentalType: text("rental_type", {
+      enum: ["app_to_store", "store_to_app"],
+    })
+      .default("app_to_store")
       .notNull(),
 
     // Performance tracking
