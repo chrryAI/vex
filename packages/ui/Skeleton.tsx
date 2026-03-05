@@ -187,8 +187,7 @@ export default function Skeleton({
   // Data context
   const { FRONTEND_URL } = useData()
 
-  const { threadIdRef, isTerminal, getAppSlug, getTribeUrl, ...auth } =
-    useAuth()
+  const { threadIdRef, isIDE, getAppSlug, getTribeUrl, ...auth } = useAuth()
 
   const showTribeProfile = auth.showTribeProfile && !auth.postId && isEmpty
 
@@ -315,7 +314,7 @@ export default function Skeleton({
               },
             }}
           >
-            {isTerminal ? (
+            {isIDE ? (
               <></>
             ) : (
               <>

@@ -1,4 +1,3 @@
-import arcjet, { detectBot } from "@arcjet/node"
 import { type locale, locales } from "@chrryai/chrry/locales"
 import { isDevelopment, isE2E, VERSION } from "@chrryai/chrry/utils"
 import { whiteLabels } from "@chrryai/chrry/utils/siteConfig"
@@ -130,64 +129,21 @@ session.get("/", async (c) => {
   // Convert Hono request to standard Request for Arcjet
   const request = c.req.raw
 
-  // Arcjet bot detection - block bots from creating guest accounts
+  // Bot detection — block scrapers/crawlers from creating guest accounts.
+  // Allow search engines and social preview bots (they don't create accounts).
   if (!isDevelopment && !isE2E) {
-    // Extract IP from reverse proxy headers (nginx sets X-Forwarded-For)
-    const forwardedFor = c.req.header("x-forwarded-for")
-    const realIp = c.req.header("x-real-ip")
-    const clientIp =
-      url.searchParams.get("ip") ||
-      forwardedFor?.split(",")[0]?.trim() ||
-      realIp ||
-      "127.0.0.1" // Fallback for local/internal requests
+    const userAgent = c.req.header("user-agent") || ""
+    const SCRAPER_PATTERN =
+      /python-requests|curl\/|wget\/|scrapy|httpclient|go-http-client|java\/|libwww|perl\/|ruby\//i
+    const ALLOWED_BOT_PATTERN =
+      /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebot|twitterbot|linkedinbot|applebot/i
 
-    // Only call Arcjet if we have a valid external IP
-    const isValidExternalIp =
-      clientIp &&
-      clientIp !== "127.0.0.1" &&
-      clientIp !== "localhost" &&
-      !clientIp.startsWith("192.168.") &&
-      !clientIp.startsWith("10.") &&
-      !clientIp.startsWith("172.")
-
-    if (isValidExternalIp) {
-      const aj = arcjet({
-        key: process.env.ARCJET_KEY!,
-        rules: [
-          detectBot({
-            allow: [
-              "CATEGORY:SEARCH_ENGINE",
-              "CATEGORY:PREVIEW",
-              "CATEGORY:MONITOR",
-            ],
-          }),
-        ],
-      })
-      // Create Arcjet-compatible request object with guaranteed IP
-      const arcjetRequest = {
-        method: c.req.method,
-        url: c.req.url,
-        headers: Object.fromEntries(c.req.raw.headers.entries()),
-        ip: clientIp, // Use extracted IP from reverse proxy
-      }
-
-      const decision = await aj.protect(arcjetRequest)
-
-      if (decision.isDenied()) {
-        console.log("🤖 Bot detected:", {
-          reason: decision.reason,
-          userAgent: request.headers.get("user-agent"),
-          ip: decision.ip,
-        })
-        return c.json({ error: "Bot detected", reason: decision.reason }, 403)
-      }
-
-      // Log allowed bots for debugging
-      if (decision.isAllowed() && decision.reason.isBot?.()) {
-        console.log("✅ Allowed bot:", {
-          userAgent: request.headers.get("user-agent"),
-        })
-      }
+    if (
+      SCRAPER_PATTERN.test(userAgent) &&
+      !ALLOWED_BOT_PATTERN.test(userAgent)
+    ) {
+      console.log("🤖 Bot/scraper blocked:", userAgent)
+      return c.json({ error: "Bot detected" }, 403)
     }
   }
 

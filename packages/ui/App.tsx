@@ -175,7 +175,7 @@ export default function App({
     canBurn,
     setBurn,
     isPear,
-    isTerminal,
+    isIDE,
     displayedApps,
     setDisplayedApps,
     plausible,
@@ -593,7 +593,7 @@ export default function App({
           <Div
             style={{
               ...styles.appTitle.style,
-              ...(isTerminal && { fontSize: "18px" }),
+              ...(isIDE && { fontSize: "18px" }),
             }}
           >
             {app?.id === focus?.id ? (

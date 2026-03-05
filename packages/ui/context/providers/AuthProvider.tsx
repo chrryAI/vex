@@ -152,7 +152,7 @@ const AuthContext = createContext<
       grape: appWithStore | undefined
       setIsRetro: (value: boolean) => void
       accountApps: appWithStore[]
-      isTerminal: boolean
+      isIDE: boolean
       toggleIDE: () => void
       instructions?: instruction[]
       setInstructions: (value?: instruction[]) => void
@@ -449,7 +449,7 @@ export function AuthProvider({
     isCapacitor,
 
     // IDE state from platform
-    isTerminal,
+    isIDE,
     toggleIDE,
   } = usePlatform()
 
@@ -3228,7 +3228,7 @@ export function AuthProvider({
         WS_URL,
         FRONTEND_URL,
         PROD_FRONTEND_URL,
-        isTerminal,
+        isIDE,
         toggleIDE,
         isLoadingPosts,
         setIsLoadingPosts,
