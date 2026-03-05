@@ -15,6 +15,7 @@ vi.mock("@sentry/node", () => ({
 vi.mock("@chrryai/chrry/utils", () => ({
   VERSION: "1.0.0",
   getThreadId: () => null,
+  getPostId: () => null,
   pageSizes: { threads: 10, menuThreads: 10 },
   isE2E: false,
   getEnv: () => ({}),
@@ -67,7 +68,7 @@ describe("loadServerData", () => {
     url: "http://localhost/blog",
     hostname: "localhost",
     pathname: "/blog",
-    headers: {},
+    headers: { "user-agent": "Googlebot/2.1" },
     cookies: {},
   }
 
