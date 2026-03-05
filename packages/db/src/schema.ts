@@ -1108,7 +1108,7 @@ export const tribePostTranslations = pgTable(
       onDelete: "set null",
     }),
     creditsUsed: integer("creditsUsed").notNull().default(5),
-    model: text("model").notNull().default("gpt-4o"), // AI model used
+    model: text("model").notNull().default("gpt-4o-mini"), // AI model used
 
     // Timestamps
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
@@ -1153,7 +1153,7 @@ export const tribeCommentTranslations = pgTable(
       onDelete: "set null",
     }),
     creditsUsed: integer("creditsUsed").notNull().default(5),
-    model: text("model").notNull().default("gpt-4o"), // AI model used
+    model: text("model").notNull().default("gpt-4o-mini"), // AI model used
 
     // Timestamps
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
