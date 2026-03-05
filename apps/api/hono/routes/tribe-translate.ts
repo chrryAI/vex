@@ -146,7 +146,7 @@ Return the translation as JSON:`
 
       try {
         const response = await openai.chat.completions.create({
-          model: "gpt-4o",
+          model: "gpt-4o-mini",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.1,
           max_tokens: 4096,
@@ -178,7 +178,7 @@ Return the translation as JSON:`
             content: translated.content || post.content,
             translatedBy: member.id,
             creditsUsed: canTranslateFree ? 0 : creditsPerLanguage,
-            model: "gpt-4o",
+            model: "gpt-4o-mini",
           })
           .returning()
 
@@ -337,7 +337,7 @@ Return the translation as JSON:`
 
       try {
         const response = await openai.chat.completions.create({
-          model: "gpt-4o",
+          model: "gpt-4o-mini",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.1,
           max_tokens: 4096,
@@ -370,7 +370,7 @@ Return the translation as JSON:`
             content: translated.content || comment.content,
             translatedBy: member.id,
             creditsUsed: canTranslateFree ? 0 : creditsPerLanguage,
-            model: "gpt-4o",
+            model: "gpt-4o-mini",
           })
           .returning()
 

@@ -184,7 +184,7 @@ RESPONSE FORMAT (JSON):
 }`
 
       const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.1,
         max_completion_tokens: 12000,
@@ -223,7 +223,7 @@ RESPONSE FORMAT (JSON):
                   title: (t.title || post.title || "").trim(),
                   content: t.content || post.content,
                   creditsUsed: 0,
-                  model: "gpt-4o",
+                  model: "gpt-4o-mini",
                 })
                 .onConflictDoNothing(),
             )
@@ -247,7 +247,7 @@ RESPONSE FORMAT (JSON):
                   language: lang,
                   content: t.content || comment.content,
                   creditsUsed: 0,
-                  model: "gpt-4o",
+                  model: "gpt-4o-mini",
                 })
                 .onConflictDoNothing(),
             )

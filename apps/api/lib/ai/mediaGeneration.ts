@@ -187,7 +187,7 @@ export async function generateVideo(options: VideoGenerationOptions): Promise<{
     const falModel =
       model === "luma-ray"
         ? "fal-ai/luma-dream-machine/ray-2"
-        : "fal-ai/kling-video/v1.5/pro/text-to-video"
+        : "fal-ai/kling-video/v1/standard/text-to-video"
 
     if (typeof (fal as any).config === "function") {
       ;(fal as any).config({ credentials: falKey })
