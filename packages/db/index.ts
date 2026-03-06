@@ -3648,7 +3648,7 @@ export async function cleanupIncognitoThreads(retentionDays = 30) {
   const result = await db.execute(sql`
     DELETE FROM threads
     WHERE "isIncognito" = true
-    AND "createdOn" < NOW() - INTERVAL '${sql.raw(retentionDays.toString())} days'
+    AND "createdOn" < NOW() - (${retentionDays || 0} * INTERVAL '1 day')
     RETURNING id
   `)
 
