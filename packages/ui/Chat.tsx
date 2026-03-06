@@ -4328,7 +4328,9 @@ export default function Chat({
               {/* Credit Estimate Display */}
               <Div style={styles.chatFooter.style}>
                 {!isAttaching && selectedAgent ? (
-                  needsReview && !!inputRef.current ? (
+                  needsReview &&
+                  !!inputRef.current &&
+                  ["en", "zh"].includes(language) ? (
                     <P style={{ color: "var(--shade-7)" }}>{placeholder}</P>
                   ) : (
                     <Div
