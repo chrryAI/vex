@@ -73,15 +73,13 @@ import {
   updateThread,
 } from "@repo/db"
 import { messages, moltQuestions, threads } from "@repo/db/src/schema"
-import Replicate from "replicate"
-import { API_URL, isDevelopment, REPLICATE_API_KEY } from ".."
+import { API_URL, isDevelopment } from ".."
 import { cleanAiResponse } from "../ai/cleanAiResponse"
 import {
   generateImage as genImage,
   generateVideo as genVideo,
 } from "../ai/mediaGeneration"
 import { checkMoltbookHealth } from "../integrations/moltbook"
-import { upload } from "../minio"
 
 const JWT_EXPIRY = "30d"
 

@@ -2553,6 +2553,10 @@ export default function Chat({
     !!user,
   )
 
+  useEffect(() => {
+    user && setIsPrivacyApproved(true)
+  }, [user])
+
   const setNeedsReview = (value: boolean) => {
     setNeedsReviewInternal(value)
     needsReviewRef.current = value
