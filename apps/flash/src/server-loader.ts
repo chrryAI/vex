@@ -317,18 +317,16 @@ export async function loadServerData(
     if (pathname === "/blog" || pathname.startsWith("/blog/")) {
       isBlogRoute = true
 
-      if (isBot) {
-        try {
-          const blogData = await blogDataPromise
+      try {
+        const blogData = await blogDataPromise
 
-          if (isBlogList) {
-            blogPosts = blogData as BlogPost[] | undefined
-          } else if (isBlogPost) {
-            blogPost = (blogData as BlogPostWithContent | null) || undefined
-          }
-        } catch (error) {
-          console.error("❌ Blog data fetch failed:", error)
+        if (isBlogList) {
+          blogPosts = blogData as BlogPost[] | undefined
+        } else if (isBlogPost) {
+          blogPost = (blogData as BlogPostWithContent | null) || undefined
         }
+      } catch (error) {
+        console.error("❌ Blog data fetch failed:", error)
       }
     }
 

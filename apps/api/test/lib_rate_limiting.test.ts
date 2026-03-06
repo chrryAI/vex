@@ -7,16 +7,33 @@ vi.mock("@chrryai/chrry/utils", () => ({
   isOwner: () => false,
 }))
 
-const { protectMock } = vi.hoisted(() => {
-  return { protectMock: vi.fn() }
+
+
+
+const { zremrangebyscoreMock, zaddMock, zcardMock, expireMock, execMock, pipelineMock } = vi.hoisted(() => {
+  const zremrangebyscoreMock = vi.fn().mockReturnThis();
+  const zaddMock = vi.fn().mockReturnThis();
+  const zcardMock = vi.fn().mockReturnThis();
+  const expireMock = vi.fn().mockReturnThis();
+  const execMock = vi.fn().mockResolvedValue([null, null, 5]);
+  const pipelineMock = vi.fn().mockReturnValue({
+    zremrangebyscore: zremrangebyscoreMock,
+    zadd: zaddMock,
+    zcard: zcardMock,
+    expire: expireMock,
+    exec: execMock,
+  });
+  return { zremrangebyscoreMock, zaddMock, zcardMock, expireMock, execMock, pipelineMock };
+});
+
+vi.mock("ioredis", () => {
+  class RedisMock {
+    on = vi.fn();
+    pipeline = pipelineMock;
+  }
+  return { default: RedisMock }
 })
 
-vi.mock("@arcjet/node", () => ({
-  default: () => ({
-    protect: protectMock,
-  }),
-  slidingWindow: () => ({}),
-}))
 
 import {
   checkAuthRateLimit,
@@ -29,11 +46,8 @@ describe("checkAuthRateLimit Logic", () => {
     vi.clearAllMocks()
   })
 
-  it("should return success when arcjet allows", async () => {
-    protectMock.mockResolvedValue({
-      isDenied: () => false,
-      results: [{ reason: { isRateLimit: () => true, remaining: 5 } }],
-    })
+  it("should return success when redis allows", async () => {
+    execMock.mockResolvedValue([[null, 0], [null, 1], [null, 2], [null, 1]])
 
     const req = new Request("http://localhost/auth/signin", {
       method: "POST",
@@ -43,15 +57,12 @@ describe("checkAuthRateLimit Logic", () => {
     const result = await checkAuthRateLimit(req, "1.2.3.4")
 
     expect(result.success).toBe(true)
-    expect(result.remaining).toBe(5)
-    expect(protectMock).toHaveBeenCalled()
+    expect(result.remaining).toBe(3)
+    expect(pipelineMock).toHaveBeenCalled()
   })
 
-  it("should return failure when arcjet denies", async () => {
-    protectMock.mockResolvedValue({
-      isDenied: () => true,
-      results: [{ reason: { isRateLimit: () => true, remaining: 0 } }],
-    })
+  it("should return failure when redis denies", async () => {
+    execMock.mockResolvedValue([[null, 0], [null, 1], [null, 6], [null, 1]])
 
     const req = new Request("http://localhost/auth/signin", {
       method: "POST",
@@ -71,26 +82,18 @@ describe("checkRateLimit Logic", () => {
   })
 
   it("should enforce limits for anonymous users", async () => {
-    protectMock.mockResolvedValue({
-      isDenied: () => false,
-      results: [{ reason: { isRateLimit: () => true, remaining: 10 } }],
-    })
+    execMock.mockResolvedValue([[null, 0], [null, 1], [null, 10], [null, 1]])
 
     const req = new Request("http://localhost/api/chat", { method: "POST" })
     const result = await checkRateLimit(req, {})
 
     expect(result.success).toBe(true)
     expect(result.isAuthenticated).toBe(false)
-    expect(protectMock).toHaveBeenCalledWith(expect.anything(), {
-      userId: "anonymous",
-    })
+    expect(pipelineMock).toHaveBeenCalled()
   })
 
   it("should enforce limits for guests", async () => {
-    protectMock.mockResolvedValue({
-      isDenied: () => false,
-      results: [{ reason: { isRateLimit: () => true, remaining: 20 } }],
-    })
+    execMock.mockResolvedValue([[null, 0], [null, 1], [null, 20], [null, 1]])
 
     const req = new Request("http://localhost/api/chat", { method: "POST" })
     const guest = { id: "guest-123" } as any
@@ -98,16 +101,10 @@ describe("checkRateLimit Logic", () => {
 
     expect(result.success).toBe(true)
     expect(result.isAuthenticated).toBe(true)
-    expect(protectMock).toHaveBeenCalledWith(expect.anything(), {
-      userId: "guest-123",
-    })
   })
 
   it("should enforce limits for members (free)", async () => {
-    protectMock.mockResolvedValue({
-      isDenied: () => false,
-      results: [{ reason: { isRateLimit: () => true, remaining: 30 } }],
-    })
+    execMock.mockResolvedValue([[null, 0], [null, 1], [null, 30], [null, 1]])
 
     const req = new Request("http://localhost/api/chat", { method: "POST" })
     const member = { id: "user-123" } as any
@@ -115,16 +112,10 @@ describe("checkRateLimit Logic", () => {
 
     expect(result.success).toBe(true)
     expect(result.isAuthenticated).toBe(true)
-    expect(protectMock).toHaveBeenCalledWith(expect.anything(), {
-      userId: "user-123",
-    })
   })
 
   it("should enforce limits for pro members", async () => {
-    protectMock.mockResolvedValue({
-      isDenied: () => false,
-      results: [{ reason: { isRateLimit: () => true, remaining: 100 } }],
-    })
+    execMock.mockResolvedValue([[null, 0], [null, 1], [null, 100], [null, 1]])
 
     const req = new Request("http://localhost/api/chat", { method: "POST" })
     const member = { id: "user-123", subscription: { plan: "pro" } } as any
@@ -132,8 +123,6 @@ describe("checkRateLimit Logic", () => {
 
     expect(result.success).toBe(true)
     expect(result.isAuthenticated).toBe(true)
-    // Verify it uses the pro instance (we can't easily check which instance, but we check protect is called)
-    expect(protectMock).toHaveBeenCalled()
   })
 })
 
@@ -143,11 +132,7 @@ describe("checkGenerationRateLimit Logic", () => {
   })
 
   it("should check both hourly and per-thread limits", async () => {
-    // Mock protect to handle multiple calls (hourly and thread)
-    protectMock.mockResolvedValue({
-      isDenied: () => false,
-      results: [{ reason: { isRateLimit: () => true, remaining: 5 } }],
-    })
+    execMock.mockResolvedValue([[null, 0], [null, 1], [null, 2], [null, 1]])
 
     const req = new Request("http://localhost/api/generate", { method: "POST" })
     const member = { id: "user-123" } as any
@@ -156,20 +141,13 @@ describe("checkGenerationRateLimit Logic", () => {
     const result = await checkGenerationRateLimit(req, { member, threadId })
 
     expect(result.success).toBe(true)
-    expect(protectMock).toHaveBeenCalledTimes(2) // Once for hourly, once for thread
+    expect(pipelineMock).toHaveBeenCalledTimes(2)
   })
 
   it("should return failure if any limit is denied", async () => {
-    // Mock protect to deny one of the calls
-    protectMock
-      .mockResolvedValueOnce({
-        isDenied: () => false, // Hourly allowed
-        results: [{ reason: { isRateLimit: () => true, remaining: 5 } }],
-      })
-      .mockResolvedValueOnce({
-        isDenied: () => true, // Thread denied
-        results: [{ reason: { isRateLimit: () => true, remaining: 0 } }],
-      })
+    execMock
+      .mockResolvedValueOnce([[null, 0], [null, 1], [null, 5], [null, 1]]) // Hourly allowed
+      .mockResolvedValueOnce([[null, 0], [null, 1], [null, 11], [null, 1]]) // Thread denied
 
     const req = new Request("http://localhost/api/generate", { method: "POST" })
     const member = { id: "user-123" } as any

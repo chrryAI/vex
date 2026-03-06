@@ -40,6 +40,7 @@ vi.mock("@smithy/fetch-http-handler", () => {
 // Mock captureException
 vi.mock("./captureException", () => ({
   default: vi.fn(),
+  captureException: vi.fn()
 }))
 
 // Mock sharp
