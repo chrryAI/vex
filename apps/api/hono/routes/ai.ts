@@ -2641,12 +2641,15 @@ These reflect the user's interests and recent conversations. If the user seems u
   // Add tribe post context for AI awareness when on a post page
   // Strip ALL markdown image/link syntax and raw URLs from any text to prevent
   // Claude from attempting to download them (causes 400 from Anthropic).
-  const sanitizeTribeContent = (text: string) =>
-    (text || "")
-      .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1") // ![alt](url) → alt only
-      .replace(/\[([^\]]*)\]\([^)]+\)/g, "$1") // [text](url) → text only
-      .replace(/\bhttps?:\/\/\S+/gi, "[link]") // raw https:// or http:// URLs
+  const sanitizeTribeContent = (text: string) => {
+    if (!text) return ""
+    // ReDoS-safe: use non-backtracking patterns
+    return text
+      .replace(/!\[([^[\]]*)\]\((?:[^()]*|\([^()]*\))*\)/g, "$1") // ![alt](url) → alt only
+      .replace(/\[([^[\]]*)\]\((?:[^()]*|\([^()]*\))*\)/g, "$1") // [text](url) → text only
+      .replace(/\bhttps?:\/\/[^\s<>"{}|\\^`[\]]+/gi, "[link]") // raw URLs → [link]
       .trim()
+  }
 
   const tribePostContext = tribePost
     ? `
@@ -3534,10 +3537,11 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
   // Global sanitizer: strip ALL markdown image/link syntax and raw URLs from the
   // assembled system prompt before sending to Anthropic. Any URL in the system
   // prompt causes Claude to attempt a download → 400 error.
+  // ReDoS-safe: use non-backtracking patterns
   systemPrompt = systemPrompt
-    .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1") // ![alt](url) → alt text only
-    .replace(/\[([^\]]*)\]\([^)]+\)/g, "$1") // [text](url) → text only
-    .replace(/\bhttps?:\/\/\S+/gi, "[link]") // raw http(s):// URLs → [link]
+    .replace(/!\[([^[\]]*)\]\((?:[^()]*|\([^()]*\))*\)/g, "$1") // ![alt](url) → alt text only
+    .replace(/\[([^[\]]*)\]\((?:[^()]*|\([^()]*\))*\)/g, "$1") // [text](url) → text only
+    .replace(/\bhttps?:\/\/[^\s<>"{}|\\^`[\]]+/gi, "[link]") // raw http(s):// URLs → [link]
 
   if (!thread) {
     return c.json({ error: "Thread not found" }, { status: 404 })
