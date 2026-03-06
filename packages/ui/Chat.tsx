@@ -2921,7 +2921,13 @@ export default function Chat({
                 onClick={() => handleSubmit(needsReviewRef.current)}
               >
                 {needsReviewRef.current ? (
-                  <Span data-testid="chat-accept-button">
+                  <Span
+                    style={{
+                      ...utilities.row.style,
+                    }}
+                    data-testid="chat-accept-button"
+                  >
+                    {t("Accept")}
                     <CircleCheck size={30} color="var(--accent-6)" />
                   </Span>
                 ) : (
@@ -3000,7 +3006,13 @@ export default function Chat({
                 }
               >
                 {needsReview ? (
-                  <Span data-testid="chat-accept-button">
+                  <Span
+                    style={{
+                      ...utilities.row.style,
+                    }}
+                    data-testid="chat-accept-button"
+                  >
+                    {t("Accept")}
                     <CircleCheck size={30} color="var(--accent-6)" />
                   </Span>
                 ) : (
@@ -4316,7 +4328,7 @@ export default function Chat({
               {/* Credit Estimate Display */}
               <Div style={styles.chatFooter.style}>
                 {!isAttaching && selectedAgent ? (
-                  needsReview && !!input ? (
+                  needsReview && !!inputRef.current ? (
                     <P style={{ color: "var(--shade-7)" }}>{placeholder}</P>
                   ) : (
                     <Div
@@ -4760,7 +4772,7 @@ export default function Chat({
                       style={{
                         position: "relative",
                         right: "-5px",
-                        top: "-1px",
+                        top: "1px",
                       }}
                     >
                       <Link size={15} />
