@@ -70,8 +70,8 @@ pnpm build:all
 
 After building, you'll find:
 
-- **macOS**: `apps/browser/src-tauri/target/release/bundle/macos/{App Name}.app`
-- **DMG**: `apps/browser/src-tauri/target/release/bundle/dmg/{App Name}_0.1.0_aarch64.dmg`
+- **macOS**: `apps/desktop/src-tauri/target/release/bundle/macos/{App Name}.app`
+- **DMG**: `apps/desktop/src-tauri/target/release/bundle/dmg/{App Name}_0.1.0_aarch64.dmg`
 
 ### Publishing to GitHub Releases
 
@@ -89,7 +89,7 @@ After building, you'll find:
 
    ```bash
    gh release upload v1.8.47 \
-     apps/browser/src-tauri/target/release/bundle/dmg/*.dmg
+     apps/desktop/src-tauri/target/release/bundle/dmg/*.dmg
    ```
 
 3. **Update Download Links**
@@ -103,7 +103,7 @@ For faster downloads, upload to a CDN:
 1. **Cloudflare R2 / AWS S3**
 
    ```bash
-   aws s3 cp apps/browser/src-tauri/target/release/bundle/dmg/*.dmg \
+   aws s3 cp apps/desktop/src-tauri/target/release/bundle/dmg/*.dmg \
      s3://your-bucket/releases/v1.8.47/
    ```
 
@@ -146,7 +146,7 @@ jobs:
       - name: Upload to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
-          files: apps/browser/src-tauri/target/release/bundle/dmg/*.dmg
+          files: apps/desktop/src-tauri/target/release/bundle/dmg/*.dmg
 ```
 
 ## Architecture Notes
@@ -184,7 +184,7 @@ Install ImageMagick using the instructions in Prerequisites.
 
 ### "Template not found"
 
-Ensure `apps/browser/src-tauri/tauri.conf.template.json` exists.
+Ensure `apps/desktop/src-tauri/tauri.conf.template.json` exists.
 
 ### "Build fails on CI"
 

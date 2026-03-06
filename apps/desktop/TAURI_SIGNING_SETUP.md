@@ -4,7 +4,7 @@
 
 - Apple Developer Program membership
 - Apple Development certificate: `iliyan velinov (FWXW3563PG)`
-- Tauri browser app in `apps/browser/`
+- Tauri browser app in `apps/desktop/`
 
 ---
 
@@ -47,7 +47,7 @@ Your Team ID will be shown in the top right (10-character code like `ABCD123456`
 
 ### 4. Set Up Environment Variables
 
-Create `apps/browser/.env.local`:
+Create `apps/desktop/.env.local`:
 
 ```bash
 # Code Signing Identity (from Keychain Access after step 2)

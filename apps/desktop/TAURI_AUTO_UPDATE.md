@@ -26,7 +26,7 @@ Tauri's auto-update system allows apps to automatically check for and install up
 First, generate a keypair for signing updates:
 
 ```bash
-cd apps/browser/src-tauri
+cd apps/desktop/src-tauri
 cargo install tauri-cli
 cargo tauri signer generate -w ~/.tauri/vex.key
 ```
@@ -125,7 +125,7 @@ This outputs the **signature** - add it to your update JSON.
 
 ### 5. Add Update Check to Your App
 
-Create `apps/browser/src-tauri/src/updater.rs`:
+Create `apps/desktop/src-tauri/src/updater.rs`:
 
 ```rust
 use tauri::Emitter;
