@@ -2291,6 +2291,7 @@ export function AuthProvider({
     ) && canShowTribe
 
   const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
+
   const showTribeProfileInternal = canBeTribeProfile
 
   const downloadUrl =

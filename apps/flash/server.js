@@ -55,65 +55,6 @@ export const chrryDev = {
     // docs: "https://chrry.dev/docs",
     // demo: "https://chrry.dev/demo",
   },
-  features: [
-    {
-      title: "Sushi(WIP)",
-      description:
-        "🏢 Enterprise-grade compiler infrastructure with multi-agent 🤖 coordination",
-      icon: "🍣",
-      link: "https://github.com/chrryAI/sushi",
-      isOpenSource: true,
-    },
-    {
-      title: "Waffles",
-      description: "Playwright testing utilities for Sushi 🍣 e2e strikes 🎯",
-      icon: "🧇",
-      link: "https://github.com/chrryAI/waffles",
-      isOpenSource: true,
-    },
-    {
-      title: "Pepper",
-      description: "Universal router with view transitions",
-      icon: "🌶️",
-      link: "https://github.com/chrryAI/pepper",
-      isOpenSource: true,
-    },
-    {
-      title: "Components",
-      description: "100+ production-ready UI components",
-      icon: "🎨",
-      link: "https://github.com/chrryAI/vex/tree/main/packages/ui",
-      isOpenSource: true,
-    },
-    {
-      title: "Styles",
-      description: "SCSS to TypeScript converter",
-      icon: "🎭",
-      link: "https://github.com/chrryAI/vex/tree/main/scripts/scss-to-universal.js",
-      isOpenSource: true,
-    },
-    {
-      title: "Hooks",
-      description: "Reusable React hooks",
-      icon: "🪝",
-      link: "https://github.com/chrryAI/vex/tree/main/packages/ui/hooks",
-      isOpenSource: true,
-    },
-    {
-      title: "Context",
-      description: "State management providers",
-      icon: "🔄",
-      link: "https://github.com/chrryAI/vex/blob/main/packages/ui/context",
-      isOpenSource: true,
-    },
-    {
-      title: "Platform",
-      description: "Cross-platform utilities",
-      icon: "📱",
-      link: "https://github.com/chrryAI/vex/tree/main/packages/ui/platform",
-      isOpenSource: true,
-    },
-  ],
 }
 const vault = {
   url: "https://vault.chrry.ai",
@@ -134,22 +75,6 @@ const vault = {
     github: "https://github.com/chrryAI/vex",
     docs: "https://vault.chrry.ai/docs",
   },
-  features: [
-    {
-      title: "Expense Tracking",
-      description: "AI-categorized expense management",
-      icon: "💸",
-      link: "/expenses",
-      isOpenSource: true,
-    },
-    {
-      title: "White Label",
-      description: "Customize for your brand",
-      icon: "🎨",
-      link: "/white-label",
-      isOpenSource: true,
-    },
-  ],
 }
 const pear = {
   url: "https://pear.chrry.ai",
@@ -169,22 +94,6 @@ const pear = {
     github: "https://github.com/chrryAI/vex",
     docs: "https://pear.chrry.ai/docs",
   },
-  features: [
-    {
-      title: "AI Feedback Validation",
-      description: "Get rewarded for quality feedback",
-      icon: "✨",
-      link: "/feedback",
-      isOpenSource: true,
-    },
-    {
-      title: "White Label",
-      description: "Customize for your brand",
-      icon: "🎨",
-      link: "/white-label",
-      isOpenSource: true,
-    },
-  ],
 }
 const chrryAI = {
   slug: "chrry",
@@ -206,95 +115,6 @@ const chrryAI = {
     github: "https://github.com/chrryAI/vex",
     docs: "https://chrry.ai/docs",
     // store: "https://chrry.store",
-  },
-  features: [
-    {
-      title: "App Marketplace",
-      description: "Discover and install AI apps",
-      icon: "🏪",
-      link: "/explore",
-      isOpenSource: true,
-    },
-    {
-      title: "Create Stores",
-      description: "Build your own AI app marketplace",
-      icon: "🏗️",
-      link: "/stores/new",
-      isOpenSource: true,
-    },
-    {
-      title: "Publish Apps",
-      description: "Monetize your AI applications",
-      icon: "📱",
-      link: "/apps/new",
-      isOpenSource: true,
-    },
-    {
-      title: "Revenue Sharing",
-      description: "Earn 70% on every sale",
-      icon: "💰",
-      link: "/affiliate",
-      isOpenSource: true,
-    },
-    {
-      title: "Custom Domains",
-      description: "White-label your store",
-      icon: "🌐",
-      link: "/settings/domain",
-      isOpenSource: true,
-    },
-    {
-      title: "Analytics",
-      description: "Track your app performance",
-      icon: "📊",
-      link: "/analytics",
-      isOpenSource: true,
-    },
-    {
-      title: "Multi-Agent Support",
-      description: "Build for any AI platform",
-      icon: "🤖",
-      link: "/docs/agents",
-      isOpenSource: true,
-    },
-    {
-      title: "Developer Tools",
-      description: "APIs and SDKs for developers",
-      icon: "🛠️",
-      link: "/docs/api",
-      isOpenSource: true,
-    },
-  ],
-  about: {
-    intro:
-      "Chrry is the ultimate AI app marketplace where creativity meets monetization. Discover cutting-edge AI applications built by developers worldwide, or create and publish your own AI apps to earn revenue.",
-    intro2:
-      "With 70% revenue sharing for app creators, custom stores, and powerful developer tools - Chrry empowers both users and builders to harness the full potential of AI technology.",
-    approach: {
-      title: "Our Mission",
-      content:
-        "We're building the infrastructure for the AI app economy. Chrry makes it simple for developers to monetize their AI creations while giving users access to a curated marketplace of high-quality applications. Transparency in pricing, usage, and revenue sharing is at our core.",
-    },
-    platforms: {
-      title: "Available Everywhere",
-      content:
-        "Access Chrry's AI app marketplace across all your devices - web, mobile PWA, and browser extensions.",
-      web: {
-        title: "🌐 Web Application",
-        content:
-          "Full marketplace experience with app discovery, installation, and management from any browser.",
-      },
-      pwa: {
-        title: "📱 Progressive Web App",
-        content:
-          "Install Chrry on your mobile or desktop. Browse apps offline, get notifications, sync across devices.",
-      },
-      chrome: {
-        title: "🧩 Chrome Extension",
-        content:
-          "Quick access to your installed apps from the browser toolbar. Right-click integration on any webpage.",
-      },
-    },
   },
 }
 const focus = {
@@ -318,64 +138,6 @@ const focus = {
     github: "https://github.com/chrryAI/vex",
     docs: "https://focus.chrry.ai/docs",
   },
-  features: [
-    {
-      title: "Focus Timer",
-      description: "Pomodoro and custom focus sessions",
-      icon: "⏱️",
-      link: "/timer",
-      isOpenSource: true,
-    },
-    {
-      title: "Task Management",
-      description: "Organize and track your tasks",
-      icon: "✅",
-      link: "/tasks",
-      isOpenSource: true,
-    },
-    {
-      title: "AI Task Breakdown",
-      description: "Break complex projects into steps",
-      icon: "🤖",
-      link: "/ai",
-      isOpenSource: true,
-    },
-    {
-      title: "Time Tracking",
-      description: "Track time across all your tasks",
-      icon: "📊",
-      link: "/analytics",
-      isOpenSource: true,
-    },
-    {
-      title: "Progress Analytics",
-      description: "Visualize your productivity patterns",
-      icon: "📈",
-      link: "/progress",
-      isOpenSource: true,
-    },
-    {
-      title: "Goal Setting",
-      description: "Set and achieve your goals",
-      icon: "🎯",
-      link: "/goals",
-      isOpenSource: true,
-    },
-    {
-      title: "Productivity Insights",
-      description: "AI-powered productivity tips",
-      icon: "💡",
-      link: "/insights",
-      isOpenSource: true,
-    },
-    {
-      title: "Deep Work Mode",
-      description: "Eliminate distractions and focus",
-      icon: "🧠",
-      link: "/deep-work",
-      isOpenSource: true,
-    },
-  ],
 }
 const atlas = {
   favicon: "atlas",
@@ -397,74 +159,6 @@ const atlas = {
   links: {
     github: "https://github.com/chrryai/vex",
     docs: "https://atlas.chrry.ai/docs",
-  },
-  features: [
-    {
-      title: "Geo-Tagged Memory",
-      description: "Save locations with AI context",
-      icon: "📍",
-      link: "/memory",
-      isOpenSource: true,
-    },
-    {
-      title: "Travel Planning",
-      description: "Smart itineraries and local insights",
-      icon: "✈️",
-      link: "/travel",
-      isOpenSource: true,
-    },
-    {
-      title: "Local Discovery",
-      description: "Find authentic spots locals love",
-      icon: "🗺️",
-      link: "/discover",
-      isOpenSource: true,
-    },
-    {
-      title: "Weather Integration",
-      description: "Real-time weather for your locations",
-      icon: "🌤️",
-      link: "/weather",
-      isOpenSource: true,
-    },
-    {
-      title: "Browser Extension",
-      description: "Access Atlas from anywhere",
-      icon: "🔌",
-      link: "https://chrome.google.com/webstore",
-      isOpenSource: true,
-    },
-  ],
-  about: {
-    intro:
-      "Atlas is your intelligent geographic companion that transforms how you explore and remember places. Save locations with AI-powered context, create geo-tagged notes, and discover local insights wherever you go.",
-    intro2:
-      "Whether you're planning your next adventure or documenting your favorite spots - Atlas combines location intelligence with AI to help you navigate the world more meaningfully.",
-    approach: {
-      title: "Smart Geography",
-      content:
-        "We're reinventing how people interact with places. Atlas uses AI to understand not just where you've been, but why it mattered. From travel planning to local discovery - every feature is designed to enrich your geographic experiences with intelligent context.",
-    },
-    platforms: {
-      title: "Explore Anywhere",
-      content:
-        "Take Atlas with you across web, mobile, and browser - your geographic memory synced everywhere.",
-      web: {
-        title: "🌐 Web Application",
-        content:
-          "Full-featured mapping experience with location management, travel planning, and local discovery from any browser.",
-      },
-      pwa: {
-        title: "📱 Progressive Web App",
-        content:
-          "Install Atlas as a native app. Access your saved locations offline, get location-based notifications, and seamless sync.",
-      },
-      chrome: {
-        title: "🧩 Chrome Extension",
-        content:
-          "Save locations while browsing, get context-aware recommendations, and quick access to your geographic memory from the toolbar.",
-      },
-    },
   },
 }
 const istanbul = {
@@ -743,14 +437,6 @@ const matchesDomain = (host, domain) => {
   return host === domain || host.endsWith(`.${domain}`)
 }
 
-export function getSiteTranslation(mode, locale) {
-  var _a, _b
-  const catalog =
-    (_a = siteTranslations[mode]) !== null && _a !== void 0
-      ? _a
-      : siteTranslations.vex
-  return (_b = catalog[locale]) !== null && _b !== void 0 ? _b : catalog.en
-}
 export function detectsiteModeDomain(hostname, mode) {
   var _a, _b, _c
   const devMode = "tribe"
@@ -759,16 +445,8 @@ export function detectsiteModeDomain(hostname, mode) {
     return defaultMode || devMode
   }
   // Get hostname from parameter or window (client-side)
-  const rawHost =
-    hostname ||
-    (typeof window !== "undefined"
-      ? (_a =
-          window === null || window === void 0 ? void 0 : window.location) ===
-          null || _a === void 0
-        ? void 0
-        : _a.hostname
-      : "") ||
-    ""
+  const rawHost = hostname
+
   let host =
     rawHost === null || rawHost === void 0
       ? void 0
@@ -780,25 +458,7 @@ export function detectsiteModeDomain(hostname, mode) {
       console.log("Error parsing URL:", e)
     }
   }
-  // Helper function to check if hostname matches or is subdomain of domain
-  // Check if running in a browser extension
-  if (
-    typeof window !== "undefined" &&
-    ((_c =
-      (_b = window.location) === null || _b === void 0
-        ? void 0
-        : _b.protocol) === null || _c === void 0
-      ? void 0
-      : _c.startsWith("chrome-extension"))
-  ) {
-    console.log(
-      "🔍 Running in Chrome extension, using VITE_SITE_MODE:",
-      defaultMode,
-    )
-    return defaultMode
-  }
-  // Domain-based detection (use exact match or subdomain check)
-  console.log(`🔍 Detecting mode for host: "${host}"`)
+
   if (matchesDomain(host, "grape.chrry.ai")) {
     return "grape"
   }
@@ -913,18 +573,13 @@ export function detectsiteMode(hostname) {
   const result = detectsiteModeDomain(hostname)
   return result
 }
-const getClientHostname = () => {
-  if (typeof window !== "undefined" && window.location) {
-    return window.location.hostname
-  }
-  return undefined
-}
+
 /**
  * Get site configuration based on current domain
  * @param hostnameOrMode - Either a hostname (for SSR) or a siteMode string
  */
 export function getSiteConfig(hostnameOrMode, caller) {
-  let hostname = hostnameOrMode || getClientHostname()
+  let hostname = hostnameOrMode
   if (
     hostnameOrMode === null || hostnameOrMode === void 0
       ? void 0
@@ -1018,6 +673,7 @@ export function getSiteConfig(hostnameOrMode, caller) {
   // Vex configuration
   return vex
 }
+
 export const whiteLabels = [
   // chrryDev,
   chrryAI,
@@ -1035,30 +691,6 @@ export const whiteLabels = [
   pear,
   vault,
 ]
-export const analyticsDomains = whiteLabels.concat(e2eVex).concat(_tribe)
-/**
- * Check if current site is Chrry
- */
-export function isChrryDevMode() {
-  return detectsiteMode() === "chrryDev"
-}
-/**
- * Check if current site is Vex
- */
-export function isVexMode() {
-  return detectsiteMode() === "vex"
-}
-
-// const getEnv = () => {
-//   if (typeof import.meta !== "undefined") {
-//     return import.meta.env
-//   }
-//   if (typeof process.env !== "undefined") {
-//     return process.env
-//   }
-
-//   return {}
-// }
 
 const VERSION = "2.0.54"
 // Constants
@@ -1358,12 +990,12 @@ function metadataToHtml(metadata, serverData) {
 
   // Favicon and Apple Touch Icons - use hostname for white-label detection
   // Use serverData.siteConfig which is already available from server-loader
-  const iconSlug =
-    tribeSlug || serverData?.siteConfig?.isTribe
-      ? "tribe"
-      : serverData?.siteConfig?.storeSlug === "compass"
-        ? "atlas"
-        : serverData?.siteConfig?.slug || serverData?.app?.slug || "chrry"
+  const iconSlug = serverData?.siteConfig?.isTribe
+    ? "tribe"
+    : serverData?.siteConfig?.storeSlug === "compass"
+      ? "atlas"
+      : serverData?.siteConfig?.slug || serverData?.app?.slug || "chrry"
+
   const baseIcon = `/images/apps/${iconSlug}.png`
   const apiUrl = process.env.VITE_API_URL || "https://chrry.dev/api"
 
@@ -1611,11 +1243,6 @@ app.use(async (req, res) => {
 
   // Block common bot/scanner paths before SSR
   const pathname = req.path || req.url
-
-  const tribeSlug = pathname?.startsWith("/t/")
-    ? pathname.replace("/t/", "").split("?")[0]
-    : undefined
-
   const suspiciousPaths = [
     "/phpinfo.php",
     "/.git/",
@@ -1727,11 +1354,16 @@ app.use(async (req, res) => {
       }
     }
 
+    const siteConfig = getSiteConfig(`https://${req.hostname}`)
+
     // Generate metadata for SSR
     let metaTags = ""
     if (serverData?.metadata) {
       try {
-        metaTags = metadataToHtml(serverData.metadata, serverData)
+        metaTags = metadataToHtml(serverData.metadata, {
+          ...serverData,
+          siteConfig,
+        })
       } catch (error) {
         console.error("Error converting metadata to HTML:", error)
         // Continue without metadata if conversion fails
