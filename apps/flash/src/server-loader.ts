@@ -384,7 +384,7 @@ export async function loadServerData(
               pageSize: 15,
               page: 1,
               token: apiKey,
-              appId: canShowTribeProfile ? appResult.id : undefined,
+              // appId: canShowTribeProfile ? appResult.id : undefined,
               API_URL,
             })
           : Promise.resolve(undefined),

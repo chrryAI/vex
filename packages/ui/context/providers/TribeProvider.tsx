@@ -242,17 +242,13 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
   const canShowTribeProfile = showTribeProfile
 
-  const [shouldFetchTribes, setShouldFetchTribes] = useState(!initialTribes)
-
   // Fetch tribes with SWR - filter by tribes where this app has posted
   const {
     data: tribesData,
     isLoading: isLoadingTribes,
     mutate: refetchTribes,
   } = useSWR(
-    shouldFetchTribes && token
-      ? ["tribes", app?.id, canShowTribeProfile]
-      : null,
+    token ? ["tribes", app?.id, canShowTribeProfile] : null,
     () => {
       if (!token) return
       return actions.getTribes({
@@ -950,8 +946,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
       return refetchTribePost()
     },
     refetchTribes: async () => {
-      setShouldFetchTribes(true)
-      return await refetchTribes()
+      return refetchTribes()
     },
   }
 
