@@ -222,7 +222,12 @@ export const Hey = memo(
     //
 
     return (
-      <Div>
+      <Div
+        style={{
+          width: "100dvw",
+          height: "100dvh",
+        }}
+      >
         <ErrorBoundary>
           {splash}
           <Suspense fallback={<Loading fullScreen />}>

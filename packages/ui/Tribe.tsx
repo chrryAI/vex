@@ -1316,6 +1316,52 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           marginLeft: isSmallDevice ? undefined : "auto",
                         }}
                       >
+                        {app?.mainThreadId && owner && (
+                          <A
+                            style={{ fontSize: "1rem", marginRight: 5 }}
+                            href={`/threads/${app?.mainThreadId}`}
+                          >
+                            🧬
+                          </A>
+                        )}
+                        {burnApp ? (
+                          <Div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 5,
+                              position: "relative",
+                              bottom: "0.05rem",
+                            }}
+                          >
+                            {app?.id === burnApp.id ? (
+                              <Checkbox
+                                style={{
+                                  marginLeft: "auto",
+                                  fontSize: ".85rem",
+                                }}
+                                checked={burn}
+                                onChange={() => {
+                                  setBurn(!burn)
+                                }}
+                              >
+                                {t("Private Chat")}
+                              </Checkbox>
+                            ) : (
+                              <AppLink
+                                icon={<>🔥</>}
+                                app={burnApp}
+                                style={{
+                                  fontSize: ".95rem",
+                                  marginRight: 1,
+                                  color: COLORS.red,
+                                }}
+                              >
+                                <Span>{t("Burn")}</Span>
+                              </AppLink>
+                            )}
+                          </Div>
+                        ) : null}
                         <A
                           href={`${FRONTEND_URL}/calendar`}
                           title={t("Organize your life")}
