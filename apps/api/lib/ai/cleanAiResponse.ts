@@ -13,9 +13,13 @@ export function cleanAiResponse(text: string): string {
   // 2. Extract content from markdown code blocks (```json ... ``` or ``` ... ```)
   // Only extract if it looks like the AI wrapped the response in a block (doesn't already start with JSON)
   if (!cleaned.startsWith("{") && !cleaned.startsWith("[")) {
-    const codeBlockMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/i)
-    if (codeBlockMatch && codeBlockMatch[1]) {
-      cleaned = codeBlockMatch[1].trim()
+    const startIdx = cleaned.indexOf("```")
+    if (startIdx !== -1) {
+      const contentStart = cleaned.indexOf("\n", startIdx) + 1
+      const endIdx = cleaned.indexOf("```", contentStart)
+      if (endIdx !== -1 && contentStart > 0) {
+        cleaned = cleaned.substring(contentStart, endIdx).trim()
+      }
     }
   }
 

@@ -84,7 +84,6 @@ import {
 import { generateText, type ModelMessage, streamText } from "ai"
 import Handlebars from "handlebars"
 import { Hono } from "hono"
-import Replicate from "replicate"
 import sharp from "sharp"
 import slugify from "slug"
 import { v4 as uuidv4 } from "uuid"
@@ -2629,15 +2628,15 @@ This is the conversation starter that prompted their message. Keep this context 
 `
     : ""
 }${
-  appPlaceholder || threadPlaceholder
-    ? `
+          appPlaceholder || threadPlaceholder
+            ? `
 You recently generated these personalized suggestions for the user:
 ${appPlaceholder ? `- App placeholder: "${appPlaceholder.text}"` : ""}
 ${threadPlaceholder ? `- Thread placeholder: "${threadPlaceholder.text}"` : ""}
 
 These reflect the user's interests and recent conversations. If the user seems uncertain about what to discuss or asks for suggestions, you can naturally reference these topics. Be conversational about it - don't just list them, weave them into your response naturally.`
-    : ""
-}
+            : ""
+        }
 `
       : ""
 
@@ -3974,14 +3973,18 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
 
               if (metadata.width && metadata.width > 1024) {
                 buffer = await image
-                  .resize({ width: 1024, withoutEnlargement: true })
-                  .webp({ quality: 80 })
+                  .resize({
+                    width: 1024,
+                    withoutEnlargement: true,
+                    kernel: sharp.kernel.lanczos3,
+                  })
+                  .webp({ quality: 90, effort: 6 })
                   .toBuffer()
                 if (isDevelopment)
                   console.debug(`📸 Resized image: ${file.name} to 1024px`)
               } else {
                 // Sadece kaliteyi optimize et
-                buffer = await image.webp({ quality: 80 }).toBuffer()
+                buffer = await image.webp({ quality: 90, effort: 6 }).toBuffer()
               }
             } catch (err) {
               console.error(`⚠️ Sharp resize failed for ${file.name}:`, err)
