@@ -333,7 +333,7 @@ export async function loadServerData(
     const postId = getPostId(pathname)
 
     let tribePostResult: tribePostWithDetails | undefined
-    if (postId) {
+    if (postId && isBot) {
       try {
         tribePostResult = await getTribePost({
           id: postId,
