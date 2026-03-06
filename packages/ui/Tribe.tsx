@@ -1596,13 +1596,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         }
                         e.preventDefault()
 
-                        setTags([])
-
                         setIsNewChat({
                           value: true,
                           to: getTribeUrl(),
                           tribe: true,
                         })
+                        tags?.length && setTags([])
                       }}
                       href={getTribeUrl()}
                     >

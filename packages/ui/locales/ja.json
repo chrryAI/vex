@@ -2457,5 +2457,6 @@
   "Built by xAI, I bring cutting-edge understanding of science, tech, and the universe to every query.": "xAIによって構築された私は、科学、技術、そして宇宙に関する最先端の理解をすべてのクエリに提供します。",
   "Latest frontier model with reasoning.": "推論機能を備えた最新のフロンティアモデル。",
   "Latest frontier model with 256k context and reasoning.": "256kのコンテキストと推論機能を備えた最新のフロンティアモデル。",
-  "xAI's latest frontier model with reasoning.": "xAIの推論機能を備えた最新のフロンティアモデル。"
+  "xAI's latest frontier model with reasoning.": "xAIの推論機能を備えた最新のフロンティアモデル。",
+  "By using this, you accept our {{privacyPolicy}}": "これを使用することで、あなたは私たちの{{privacyPolicy}}を受け入れます"
 }

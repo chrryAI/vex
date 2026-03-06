@@ -63,7 +63,7 @@ describe("SSRF Protection", () => {
         /Access to private IP/,
       )
       await expect(getSafeUrl("http://198.18.0.1")).rejects.toThrow(
-        /Access to private IP|Invalid IP address/
+        /Access to private IP|Invalid IP address/,
       )
       await expect(getSafeUrl("http://224.0.0.1")).rejects.toThrow(
         /Access to private IP/,

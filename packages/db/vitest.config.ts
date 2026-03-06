@@ -6,8 +6,8 @@ export default defineConfig({
       DB_URL: "postgres://postgres:postgres@localhost:5432/postgres",
     },
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'lcov', 'json', 'clover'],
+      provider: "v8",
+      reporter: ["text", "lcov", "json", "clover"],
     },
   },
 })
