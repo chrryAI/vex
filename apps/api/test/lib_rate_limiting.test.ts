@@ -7,35 +7,27 @@ vi.mock("@chrryai/chrry/utils", () => ({
   isOwner: () => false,
 }))
 
-const {
-  zremrangebyscoreMock,
-  zaddMock,
-  zcardMock,
-  expireMock,
-  execMock,
-  pipelineMock,
-} = vi.hoisted(() => {
-  const zremrangebyscoreMock = vi.fn().mockReturnThis()
-  const zaddMock = vi.fn().mockReturnThis()
-  const zcardMock = vi.fn().mockReturnThis()
-  const expireMock = vi.fn().mockReturnThis()
-  const execMock = vi.fn().mockResolvedValue([null, null, 5])
-  const pipelineMock = vi.fn().mockReturnValue({
-    zremrangebyscore: zremrangebyscoreMock,
-    zadd: zaddMock,
-    zcard: zcardMock,
-    expire: expireMock,
-    exec: execMock,
-  })
-  return {
-    zremrangebyscoreMock,
-    zaddMock,
-    zcardMock,
-    expireMock,
-    execMock,
-    pipelineMock,
-  }
-})
+const { zaddMock, zcardMock, expireMock, execMock, pipelineMock } = vi.hoisted(
+  () => {
+    const zaddMock = vi.fn().mockReturnThis()
+    const zcardMock = vi.fn().mockReturnThis()
+    const expireMock = vi.fn().mockReturnThis()
+    const execMock = vi.fn().mockResolvedValue([null, null, 5])
+    const pipelineMock = vi.fn().mockReturnValue({
+      zadd: zaddMock,
+      zcard: zcardMock,
+      expire: expireMock,
+      exec: execMock,
+    })
+    return {
+      zaddMock,
+      zcardMock,
+      expireMock,
+      execMock,
+      pipelineMock,
+    }
+  },
+)
 
 vi.mock("ioredis", () => {
   class RedisMock {

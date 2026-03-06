@@ -1115,8 +1115,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       >
                         {t("Tribe")}
                       </A>
-                    ) : (pathname === "/" || tribeSlug) &&
-                      siteConfig.isTribe ? (
+                    ) : pathname === "/" && siteConfig.isTribe ? (
                       <A href={`/?programme=true`}>{t("Tribe")}</A>
                     ) : (
                       <>{t("Tribe")}</>
@@ -1658,12 +1657,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           flexWrap: "wrap",
                         }}
                       >
-                        <Img
-                          slug={isPear ? "pear" : undefined}
-                          app={isPear ? undefined : undefined}
-                          size={isPear ? 24 : 30}
-                          logo={isPear ? undefined : "lifeOS"}
-                        />
+                        <Img size={30} logo={"lifeOS"} />
                       </Div>
                       <P
                         style={{
@@ -1678,7 +1672,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Div>
                   )}
 
-                  {downloadUrl && showTribeProfile ? (
+                  {downloadUrl ? (
                     <Div
                       style={{
                         display: "flex",
