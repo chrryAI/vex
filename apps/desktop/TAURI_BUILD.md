@@ -185,7 +185,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: Vex-macOS
-          path: apps/browser/src-tauri/target/release/bundle/dmg/*.dmg
+          path: apps/desktop/src-tauri/target/release/bundle/dmg/*.dmg
 ```
 
 ## Development vs Production

@@ -1,6 +1,5 @@
 "use client"
 
-import Instructions from "chrry/Instructions"
 import { BiLogoPostgresql } from "react-icons/bi"
 import {
   SiBun,
@@ -20,6 +19,7 @@ import {
 } from "../context/providers"
 import { useStyles } from "../context/StylesContext"
 import Img from "../Image"
+import Instructions from "../Instructions"
 import {
   CircleArrowLeft,
   Claude,

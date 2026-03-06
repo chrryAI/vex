@@ -476,7 +476,7 @@ hydrateRoot(document.getElementById("app"), <App {...props} />)
 // apps/extension/src/main.tsx (Chrome Extension)
 createRoot(document.getElementById("app")).render(<App {...props} />)
 
-// apps/browser/src/main.tsx (Tauri Desktop)
+// apps/desktop/src/main.tsx (Tauri Desktop)
 createRoot(document.getElementById("app")).render(<App {...props} />)
 
 // apps/mobile/App.tsx (React Native)

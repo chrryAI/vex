@@ -18,9 +18,9 @@ const siteConfig = getSiteConfig(mode)
 // Read template config
 const templatePath = join(
   __dirname,
-  "../browser/src-tauri/tauri.conf.template.json",
+  "../desktop/src-tauri/tauri.conf.template.json",
 )
-const outputPath = join(__dirname, "../browser/src-tauri/tauri.conf.json")
+const outputPath = join(__dirname, "../desktop/src-tauri/tauri.conf.json")
 
 let configContent = readFileSync(templatePath, "utf-8")
 
