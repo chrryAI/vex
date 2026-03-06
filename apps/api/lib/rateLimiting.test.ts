@@ -33,8 +33,8 @@ vi.mock("ioredis", () => {
     exec: mockSlidingWindow,
   }
   class RedisMock {
-    on = vi.fn();
-    pipeline = () => pipeline;
+    on = vi.fn()
+    pipeline = () => pipeline
   }
   return { default: RedisMock }
 })

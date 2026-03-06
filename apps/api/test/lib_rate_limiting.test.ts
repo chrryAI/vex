@@ -7,33 +7,43 @@ vi.mock("@chrryai/chrry/utils", () => ({
   isOwner: () => false,
 }))
 
-
-
-
-const { zremrangebyscoreMock, zaddMock, zcardMock, expireMock, execMock, pipelineMock } = vi.hoisted(() => {
-  const zremrangebyscoreMock = vi.fn().mockReturnThis();
-  const zaddMock = vi.fn().mockReturnThis();
-  const zcardMock = vi.fn().mockReturnThis();
-  const expireMock = vi.fn().mockReturnThis();
-  const execMock = vi.fn().mockResolvedValue([null, null, 5]);
+const {
+  zremrangebyscoreMock,
+  zaddMock,
+  zcardMock,
+  expireMock,
+  execMock,
+  pipelineMock,
+} = vi.hoisted(() => {
+  const zremrangebyscoreMock = vi.fn().mockReturnThis()
+  const zaddMock = vi.fn().mockReturnThis()
+  const zcardMock = vi.fn().mockReturnThis()
+  const expireMock = vi.fn().mockReturnThis()
+  const execMock = vi.fn().mockResolvedValue([null, null, 5])
   const pipelineMock = vi.fn().mockReturnValue({
     zremrangebyscore: zremrangebyscoreMock,
     zadd: zaddMock,
     zcard: zcardMock,
     expire: expireMock,
     exec: execMock,
-  });
-  return { zremrangebyscoreMock, zaddMock, zcardMock, expireMock, execMock, pipelineMock };
-});
+  })
+  return {
+    zremrangebyscoreMock,
+    zaddMock,
+    zcardMock,
+    expireMock,
+    execMock,
+    pipelineMock,
+  }
+})
 
 vi.mock("ioredis", () => {
   class RedisMock {
-    on = vi.fn();
-    pipeline = pipelineMock;
+    on = vi.fn()
+    pipeline = pipelineMock
   }
   return { default: RedisMock }
 })
-
 
 import {
   checkAuthRateLimit,
@@ -47,7 +57,12 @@ describe("checkAuthRateLimit Logic", () => {
   })
 
   it("should return success when redis allows", async () => {
-    execMock.mockResolvedValue([[null, 0], [null, 1], [null, 2], [null, 1]])
+    execMock.mockResolvedValue([
+      [null, 0],
+      [null, 1],
+      [null, 2],
+      [null, 1],
+    ])
 
     const req = new Request("http://localhost/auth/signin", {
       method: "POST",
@@ -62,7 +77,12 @@ describe("checkAuthRateLimit Logic", () => {
   })
 
   it("should return failure when redis denies", async () => {
-    execMock.mockResolvedValue([[null, 0], [null, 1], [null, 6], [null, 1]])
+    execMock.mockResolvedValue([
+      [null, 0],
+      [null, 1],
+      [null, 6],
+      [null, 1],
+    ])
 
     const req = new Request("http://localhost/auth/signin", {
       method: "POST",
@@ -82,7 +102,12 @@ describe("checkRateLimit Logic", () => {
   })
 
   it("should enforce limits for anonymous users", async () => {
-    execMock.mockResolvedValue([[null, 0], [null, 1], [null, 10], [null, 1]])
+    execMock.mockResolvedValue([
+      [null, 0],
+      [null, 1],
+      [null, 10],
+      [null, 1],
+    ])
 
     const req = new Request("http://localhost/api/chat", { method: "POST" })
     const result = await checkRateLimit(req, {})
@@ -93,7 +118,12 @@ describe("checkRateLimit Logic", () => {
   })
 
   it("should enforce limits for guests", async () => {
-    execMock.mockResolvedValue([[null, 0], [null, 1], [null, 20], [null, 1]])
+    execMock.mockResolvedValue([
+      [null, 0],
+      [null, 1],
+      [null, 20],
+      [null, 1],
+    ])
 
     const req = new Request("http://localhost/api/chat", { method: "POST" })
     const guest = { id: "guest-123" } as any
@@ -104,7 +134,12 @@ describe("checkRateLimit Logic", () => {
   })
 
   it("should enforce limits for members (free)", async () => {
-    execMock.mockResolvedValue([[null, 0], [null, 1], [null, 30], [null, 1]])
+    execMock.mockResolvedValue([
+      [null, 0],
+      [null, 1],
+      [null, 30],
+      [null, 1],
+    ])
 
     const req = new Request("http://localhost/api/chat", { method: "POST" })
     const member = { id: "user-123" } as any
@@ -115,7 +150,12 @@ describe("checkRateLimit Logic", () => {
   })
 
   it("should enforce limits for pro members", async () => {
-    execMock.mockResolvedValue([[null, 0], [null, 1], [null, 100], [null, 1]])
+    execMock.mockResolvedValue([
+      [null, 0],
+      [null, 1],
+      [null, 100],
+      [null, 1],
+    ])
 
     const req = new Request("http://localhost/api/chat", { method: "POST" })
     const member = { id: "user-123", subscription: { plan: "pro" } } as any
@@ -132,7 +172,12 @@ describe("checkGenerationRateLimit Logic", () => {
   })
 
   it("should check both hourly and per-thread limits", async () => {
-    execMock.mockResolvedValue([[null, 0], [null, 1], [null, 2], [null, 1]])
+    execMock.mockResolvedValue([
+      [null, 0],
+      [null, 1],
+      [null, 2],
+      [null, 1],
+    ])
 
     const req = new Request("http://localhost/api/generate", { method: "POST" })
     const member = { id: "user-123" } as any
@@ -146,8 +191,18 @@ describe("checkGenerationRateLimit Logic", () => {
 
   it("should return failure if any limit is denied", async () => {
     execMock
-      .mockResolvedValueOnce([[null, 0], [null, 1], [null, 5], [null, 1]]) // Hourly allowed
-      .mockResolvedValueOnce([[null, 0], [null, 1], [null, 11], [null, 1]]) // Thread denied
+      .mockResolvedValueOnce([
+        [null, 0],
+        [null, 1],
+        [null, 5],
+        [null, 1],
+      ]) // Hourly allowed
+      .mockResolvedValueOnce([
+        [null, 0],
+        [null, 1],
+        [null, 11],
+        [null, 1],
+      ]) // Thread denied
 
     const req = new Request("http://localhost/api/generate", { method: "POST" })
     const member = { id: "user-123" } as any

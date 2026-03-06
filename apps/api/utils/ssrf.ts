@@ -133,11 +133,25 @@ export function isPrivateIP(ip: string): boolean {
     // ::1/128 (Loopback)
     if (normalizedIP === "::1" || normalizedIP === "0:0:0:0:0:0:0:1")
       return true
-    const ipv6Blocks = expandIPv6(normalizedIP);
+    const ipv6Blocks = expandIPv6(normalizedIP)
     if (ipv6Blocks) {
-      if (ipv6Blocks[0] === 0x64 && ipv6Blocks[1] === 0xff9b && ipv6Blocks[2] === 0 && ipv6Blocks[3] === 0 && ipv6Blocks[4] === 0 && ipv6Blocks[5] === 0) return true;
-      if (ipv6Blocks[0] === 0x100 && ipv6Blocks[1] === 0 && ipv6Blocks[2] === 0 && ipv6Blocks[3] === 0) return true;
-      if (ipv6Blocks[0] === 0x2001 && ipv6Blocks[1] === 0xdb8) return true;
+      if (
+        ipv6Blocks[0] === 0x64 &&
+        ipv6Blocks[1] === 0xff9b &&
+        ipv6Blocks[2] === 0 &&
+        ipv6Blocks[3] === 0 &&
+        ipv6Blocks[4] === 0 &&
+        ipv6Blocks[5] === 0
+      )
+        return true
+      if (
+        ipv6Blocks[0] === 0x100 &&
+        ipv6Blocks[1] === 0 &&
+        ipv6Blocks[2] === 0 &&
+        ipv6Blocks[3] === 0
+      )
+        return true
+      if (ipv6Blocks[0] === 0x2001 && ipv6Blocks[1] === 0xdb8) return true
     }
     // fc00::/7 (Unique Local)
     if (normalizedIP.startsWith("fc") || normalizedIP.startsWith("fd"))
@@ -172,8 +186,18 @@ export function isPrivateIP(ip: string): boolean {
 
       const missing = 8 - (left.length + right.length)
       if (missing < 0) return null
-      if (missing === 0 && ip.includes("::") && left.length + right.length === 8) return null
-      if (missing === 0 && ip.includes("::") && left.length + right.length === 8) return null
+      if (
+        missing === 0 &&
+        ip.includes("::") &&
+        left.length + right.length === 8
+      )
+        return null
+      if (
+        missing === 0 &&
+        ip.includes("::") &&
+        left.length + right.length === 8
+      )
+        return null
 
       fullIP = [...left, ...Array(missing).fill("0"), ...right].join(":")
     }

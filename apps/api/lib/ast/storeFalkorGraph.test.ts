@@ -1,6 +1,11 @@
-import { describe, expect, it, vi, beforeEach } from "vitest"
-import { queryCodeGraph, findFunctionCallers, findImportUsage, getFunctionCallChain } from "./storeFalkorGraph"
 import { graph } from "@repo/db"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+import {
+  findFunctionCallers,
+  findImportUsage,
+  getFunctionCallChain,
+  queryCodeGraph,
+} from "./storeFalkorGraph"
 
 vi.mock("@repo/db", () => {
   return {
@@ -17,14 +22,16 @@ describe("storeFalkorGraph", () => {
 
   it("queryCodeGraph passes query and params correctly", async () => {
     await queryCodeGraph("MATCH (n) RETURN n", { myParam: "foo" })
-    expect(graph.query).toHaveBeenCalledWith("MATCH (n) RETURN n", { params: { myParam: "foo" } })
+    expect(graph.query).toHaveBeenCalledWith("MATCH (n) RETURN n", {
+      params: { myParam: "foo" },
+    })
   })
 
   it("findFunctionCallers passes functionName correctly", async () => {
     await findFunctionCallers("myFunc")
     expect(graph.query).toHaveBeenCalledWith(
       expect.stringContaining("name: $functionName"),
-      { params: { functionName: "myFunc" } }
+      { params: { functionName: "myFunc" } },
     )
   })
 
@@ -32,7 +39,7 @@ describe("storeFalkorGraph", () => {
     await findImportUsage("my-module")
     expect(graph.query).toHaveBeenCalledWith(
       expect.stringContaining("CONTAINS $moduleName"),
-      { params: { moduleName: "my-module" } }
+      { params: { moduleName: "my-module" } },
     )
   })
 
@@ -40,11 +47,11 @@ describe("storeFalkorGraph", () => {
     await getFunctionCallChain("myFunc", 5)
     expect(graph.query).toHaveBeenCalledWith(
       expect.stringContaining("name: $functionName"),
-      { params: { functionName: "myFunc" } }
+      { params: { functionName: "myFunc" } },
     )
     expect(graph.query).toHaveBeenCalledWith(
       expect.stringContaining("CALLS*1..5"),
-      expect.anything()
+      expect.anything(),
     )
   })
 })

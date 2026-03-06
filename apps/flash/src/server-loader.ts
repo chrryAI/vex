@@ -333,7 +333,7 @@ export async function loadServerData(
     const postId = getPostId(pathname)
 
     let tribePostResult: tribePostWithDetails | undefined
-    if (isBot && postId) {
+    if (postId) {
       try {
         tribePostResult = await getTribePost({
           id: postId,
@@ -377,7 +377,7 @@ export async function loadServerData(
           API_URL,
         }),
 
-        !isBlogRoute
+        isBot && !isBlogRoute
           ? getTribes({
               pageSize: 15,
               page: 1,
@@ -421,7 +421,7 @@ export async function loadServerData(
   const result = {
     session,
     translations,
-    app: isBot ? app : undefined,
+    app,
     siteConfig,
     locale,
     deviceId,
@@ -436,8 +436,8 @@ export async function loadServerData(
     blogPost,
     isBlogRoute,
     tribes,
-    tribePosts: isBot ? tribePosts : undefined,
-    tribePost: isBot ? tribePost : undefined,
+    tribePosts,
+    tribePost,
     showTribe,
     tribe,
     apiKey,
