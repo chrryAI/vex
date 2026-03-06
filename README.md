@@ -1,3 +1,5 @@
+[![Hetzner](https://img.shields.io/badge/Hetzner-D30428?logo=Hetzner&logoColor=white)](https://hetzner.cloud/?ref=jBud3ivK4tnH)
+
 # Vex
 
 A sovereign, self-sustaining AI platform powered by user-provided models.

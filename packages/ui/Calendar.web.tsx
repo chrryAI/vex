@@ -367,6 +367,7 @@ export default function Calendar({
       })
     },
   )
+  console.log(`🚀 ~ calendarEventsData:`, calendarEventsData)
 
   // Real-time calendar event updates via WebSocket
   useWebSocket<{
@@ -974,6 +975,8 @@ export default function Calendar({
   )
 
   if (!hasHydrated) return null
+
+  if (isLoadingCalendarEvents) return <Loading fullScreen />
 
   return (
     <Skeleton>

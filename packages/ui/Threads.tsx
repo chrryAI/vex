@@ -165,16 +165,10 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
   }, [token, until, sortByDate, collaborationStatus])
 
   useEffect(() => {
-    if (error) {
-      setIsLoading(false)
+    if (error || !isLoadingThreads) {
+      isLoading && setIsLoading(false)
     }
-  }, [error])
-
-  // useEffect(() => {
-  //   if (!isLoading) {
-  //     searchInputRef.current?.focus()
-  //   }
-  // }, [isLoading])
+  }, [error, isLoadingThreads, isLoading])
 
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
@@ -182,8 +176,6 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     if (threadsData && Array.isArray(threadsData.threads)) {
       setThreads(threadsData)
       setIsLoading(false)
-
-      // setProfile(threadsData.user || threadsData?.threads?.[0]?.user)
     }
   }, [threadsData, user])
 
