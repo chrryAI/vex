@@ -88,6 +88,8 @@ export const Hey = memo(
       token,
       siteConfig,
       postId,
+      canShowAllTribe,
+      showTribe,
     } = useAuth()
 
     const { tribeSlug, isLoadingTribes } = useTribe()
@@ -115,8 +117,6 @@ export const Hey = memo(
       .replace(/^\/[a-z]{2}\//, "/")
       .slice(1)
       .split("?")[0]
-
-    const showTribeLogo = siteConfig.isTribe && pathname === "/"
 
     // Check if current route is a store slug by checking all apps
     const isStorePage = storeApps?.find(
@@ -153,6 +153,10 @@ export const Hey = memo(
 
     const isHydrated = useHasHydrated()
 
+    const showTribeLogo = showTribe
+      ? canShowAllTribe || tribeSlug || postId
+      : false
+
     const [isImageLoaded, setIsImageLoaded] = useState(false)
     const [minSplashTimeElapsed, setMinSplashTimeElapsed] = useState(false)
 
@@ -183,13 +187,7 @@ export const Hey = memo(
               onLoad={(_src) => {
                 setIsImageLoaded(true)
               }}
-              slug={
-                showTribeLogo || tribeSlug || postId
-                  ? "tribe"
-                  : app
-                    ? undefined
-                    : appSlug
-              }
+              slug={showTribeLogo ? "tribe" : app ? undefined : appSlug}
               app={showTribeLogo ? undefined : app}
               showLoading={false}
               size={showTribeLogo ? 70 : 64}

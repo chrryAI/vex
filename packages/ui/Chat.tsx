@@ -3724,6 +3724,7 @@ export default function Chat({
                           style={{
                             ...utilities.link.style,
                             marginRight: 4,
+                            marginBottom: showTribe ? 8 : undefined,
                           }}
                           onClick={() => {
                             if (isRetro) {
