@@ -4949,23 +4949,6 @@ export default function Chat({
                     ) : null}
                   </>
                 )}
-                {/* FalkorDB local workspace button — shown for all logged-in users */}
-                {user && (
-                  <Button
-                    data-testid="falkor-setup-button"
-                    onClick={() => setShowFalkorModal(true)}
-                    className="link"
-                    style={{
-                      ...utilities.link.style,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 4,
-                      opacity: 0.7,
-                    }}
-                  >
-                    <HardDrive size={15} />
-                  </Button>
-                )}
                 {user && !user?.subscription && (
                   <Button
                     data-testid="subscribe-from-chat-button"
