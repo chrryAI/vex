@@ -1860,8 +1860,6 @@ const prod = async () => {
   })
   if (!admin) throw new Error("Admin user not found")
 
-  await createEvent({ user: admin })
-
   if (!isProd) {
     const admin = await getUser({
       email: "test@gmail.com",

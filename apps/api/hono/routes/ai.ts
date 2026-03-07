@@ -1369,13 +1369,13 @@ ai.post("/", async (c) => {
       ? await getScheduledJob({ id: jobId, userId: member.id })
       : undefined
 
+  let activeSchedule = postType
+    ? job?.scheduledTimes.find((schedule) => schedule.postType === postType)
+    : undefined
   // Extract maxTokens from job's active scheduledTime
   let jobMaxTokens: number | undefined
   if (job?.scheduledTimes && job.scheduledTimes.length > 0) {
     // First try to find by postType if provided (most accurate)
-    let activeSchedule = postType
-      ? job.scheduledTimes.find((schedule) => schedule.postType === postType)
-      : undefined
 
     // Fallback to time-based matching if postType not found
     if (!activeSchedule) {
@@ -5170,7 +5170,12 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       return c.json({ error: "Claude not found" }, { status: 404 })
     }
     console.log("🤖 Using Claude for multimodal (images/videos/PDFs)")
-    model = await getModelProvider({ app: requestApp, name: claude.name, job })
+    model = await getModelProvider({
+      app: requestApp,
+      name: claude.name,
+      job,
+      activeSchedule,
+    })
   } else if (rest.webSearchEnabled && agent.name === "sushi") {
     const perplexityAgent = await getAiAgent({
       name: "perplexity",
@@ -5184,6 +5189,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       app: requestApp,
       name: perplexityAgent.name,
       job,
+      activeSchedule,
     })
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
@@ -5196,6 +5202,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       name: agent.name,
       canReason,
       job,
+      activeSchedule,
     })
     console.log(
       `✅ Provider created using: ${model.agentName || agent.name}${jobId ? " (reasoning disabled for scheduled job)" : ""}`,
@@ -5599,6 +5606,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
         const deepseekEnhanceProvider = await getModelProvider({
           app: requestApp,
           job,
+          activeSchedule,
         })
         const enhanceModelId =
           typeof deepseekEnhanceProvider.provider === "string"

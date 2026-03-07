@@ -1753,6 +1753,7 @@ export const scheduledJobs = pgTable(
     scheduledTimes: jsonb("scheduledTimes")
       .$type<
         Array<{
+          modelId?: string
           time: string // "09:00"
           model: string
           postType: "post" | "comment" | "engagement"
@@ -1833,6 +1834,7 @@ export const scheduledJobs = pgTable(
 
     // Metadata
     metadata: jsonb("metadata").$type<{
+      modelId?: string
       errors?: Array<{ timestamp: string; error: string }>
       lastOutput?: string
       performance?: { avgDuration: number; avgCredits: number }

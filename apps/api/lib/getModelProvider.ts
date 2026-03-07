@@ -53,6 +53,7 @@ export async function getModelProvider({
   app,
   name = "deepseek",
   canReason = true,
+  activeSchedule,
   job,
 }: {
   app?: app | appWithStore
@@ -69,6 +70,20 @@ export async function getModelProvider({
     | string
   canReason?: boolean
   job?: scheduledJob
+  activeSchedule?: {
+    modelId?: string
+    time: string // "09:00"
+    model: string
+    postType: "post" | "comment" | "engagement"
+    charLimit: number
+    credits: number
+    generateImage?: boolean
+    generateVideo?: boolean
+    fetchNews?: boolean
+    languages?: string[]
+    maxTokens?: number // Optional max tokens for AI generation
+    intervalMinutes?: number // Optional interval for custom frequency (e.g., 60 = every hour)
+  }
 }): Promise<{
   provider: LanguageModel
   modelId: string
@@ -314,6 +329,8 @@ export async function getModelProvider({
       })
 
       const modelId =
+        job?.metadata?.modelId ||
+        activeSchedule?.modelId ||
         sortedPool[0] ||
         (activePool.length > 0 ? activePool[0] : pool[0]) ||
         "qwen/qwen3-235b-a22b-thinking-2507"
