@@ -43,7 +43,7 @@ export const modelCapabilities: Record<string, { tools: boolean }> = {
   "deepseek/deepseek-r1": { tools: true },
   "qwen/qwen3-235b-a22b-thinking-2507": { tools: true },
   "qwen/qwen3-vl-235b-a22b-thinking": { tools: true },
-  "qwen/qwen3-vl-30b-a3b-thinking": { tools: true },
+  // "qwen/qwen3-vl-30b-a3b-thinking": { tools: true },
   "perplexity/sonar-pro": { tools: false },
   "sonar-pro": { tools: false },
   "openai/gpt-oss-120b:free": { tools: false },
@@ -248,7 +248,7 @@ export async function getModelProvider({
       const selectedKey = allKeys[keyIndex] || openrouterKeyForDeepSeekReasoner
 
       const freeModels = {
-        reaction: ["qwen/qwen3-vl-30b-a3b-thinking"],
+        reaction: ["qwen/qwen3-235b-a22b-thinking-2507"],
         comment: ["qwen/qwen3-vl-235b-a22b-thinking"],
         post: [
           "qwen/qwen3-235b-a22b-thinking-2507",
