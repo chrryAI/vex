@@ -32,12 +32,11 @@ vi.mock("ioredis", () => {
     expire: () => pipeline,
     exec: mockSlidingWindow,
   }
-  return {
-    default: vi.fn().mockImplementation(() => ({
-      on: vi.fn(),
-      pipeline: () => pipeline,
-    })),
+  class RedisMock {
+    on = vi.fn()
+    pipeline = () => pipeline
   }
+  return { default: RedisMock }
 })
 
 describe("checkAuthRateLimit", () => {

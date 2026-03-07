@@ -1,8 +1,6 @@
 import {
   getApp,
   getSession,
-  getThread,
-  getThreads,
   getTranslations,
   getTribePost,
   getTribePosts,
@@ -19,13 +17,7 @@ import type {
   tribe,
   tribePostWithDetails,
 } from "@chrryai/chrry/types"
-import {
-  API_INTERNAL_URL,
-  getPostId,
-  getThreadId,
-  isE2E,
-  pageSizes,
-} from "@chrryai/chrry/utils"
+import { API_INTERNAL_URL, getPostId, isE2E } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
 import type { themeType } from "chrry/context/ThemeContext"
@@ -45,7 +37,7 @@ export interface ServerRequest {
   pathname: string
   headers: Record<string, string | undefined>
   cookies: Record<string, string | undefined>
-  ip?: string // Client IP address from x-forwarded-for or req.ip
+  ip?: string
 }
 
 export interface ServerData {
@@ -71,7 +63,7 @@ export interface ServerData {
   isDev: boolean
   apiError?: Error
   theme: "light" | "dark"
-  pathname: string // SSR pathname for thread ID extraction
+  pathname: string
   metadata?: {
     title?: string
     description?: string
@@ -81,11 +73,9 @@ export interface ServerData {
     robots?: any
     alternates?: any
   }
-  // Blog data
   blogPosts?: BlogPost[]
   blogPost?: BlogPostWithContent
   isBlogRoute?: boolean
-  // Tribe data
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
@@ -94,14 +84,9 @@ export interface ServerData {
     get: (key: string) => string | null
     has: (key: string) => boolean
     toString: () => string
-  } // URL search params with URLSearchParams-compatible API
-  // Agent profile data
+  }
 }
 
-/**
- * Load all server-side data for SSR
- * This replaces Next.js server components data fetching
- */
 export async function loadServerData(
   request: ServerRequest,
 ): Promise<ServerData> {
@@ -111,7 +96,6 @@ export async function loadServerData(
 
   const API_URL = API_INTERNAL_URL
 
-  // Fetch test configuration from API (runtime, not build-time) - only in E2E mode
   let TEST_FINGERPRINTS: string[] = []
 
   const pathname = (
@@ -120,24 +104,19 @@ export async function loadServerData(
       : `/${request.pathname}`) || "/"
   ).split("?")?.[0]
 
-  // Bot detection: only serve heavy SSR data (tribes, posts, threads) to crawlers
   const BOT_UA_PATTERN =
     /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebot|twitterbot|linkedinbot|whatsapp|telegrambot|applebot|semrushbot|ahrefsbot|petalbot|mj12bot|dotbot|serpstatbot|rogerbot|exabot|sistrix|sogou|archive\.org_bot|ia_archiver|xbot|grok|gptbot|chatgpt-user|perplexitybot|claudebot/i
   const userAgent = headers["user-agent"] || ""
   const isBot = BOT_UA_PATTERN.test(userAgent)
 
-  // OPTIMIZATION: Start fetching blog data early to parallelize with session/app data fetching
-  // This allows file system reads to happen concurrently with API calls
-  // Only fetch blog data for bots (used for SEO/OG metadata)
   const isBlogList = pathname === "/blog"
   const isBlogPost = pathname.startsWith("/blog/") && pathname !== "/blog"
 
-  const blogDataPromise =
-    isBot && isBlogList
-      ? getBlogPosts()
-      : isBot && isBlogPost
-        ? getBlogPost(pathname.replace("/blog/", ""))
-        : Promise.resolve(null)
+  const blogDataPromise = isBlogList
+    ? getBlogPosts()
+    : isBlogPost
+      ? getBlogPost(pathname.replace("/blog/", ""))
+      : Promise.resolve(null)
 
   const isLocalePathname =
     pathname && locales.includes(pathname.split("/")?.[1] as locale)
@@ -147,17 +126,14 @@ export async function loadServerData(
   const showTribe = cookies.showTribe === "true"
   const themeCookie = cookies.theme as themeType
 
-  // Parse Accept-Language header to get browser's preferred language
   const acceptLanguage = headers["accept-language"]
   let browserLocale: locale = "en"
 
   if (acceptLanguage) {
-    // Parse Accept-Language header (e.g., "en-US,en;q=0.9,tr;q=0.8")
     const languages = acceptLanguage
       .split(",")
       .map((lang) => {
         const [code] = lang.trim().split(";")
-        // Extract base language code (e.g., "en" from "en-US")
         return code.split("-")[0].toLowerCase()
       })
       .filter((code) => locales.includes(code as locale))
@@ -167,17 +143,14 @@ export async function loadServerData(
     }
   }
 
-  // Priority: URL locale → Cookie → Browser language → Default (en)
   const locale = (
     isLocalePathname
       ? pathname.split("/")?.[1] || browserLocale
       : language || browserLocale
   ) as locale
 
-  const threadId = getThreadId(pathname)
   const urlObj = new URL(url, `http://${hostname}`)
 
-  // Parse query string for fp parameter (only if URL contains query params)
   let fpFromQuery: string | undefined
   if (url.includes("?")) {
     fpFromQuery = urlObj.searchParams.get("fp") || undefined
@@ -200,7 +173,6 @@ export async function loadServerData(
 
   const isTestFP = TEST_FINGERPRINTS.includes(fpFromQuery || "")
 
-  // Handle OAuth callback - exchange auth_code for token (more secure than token in URL)
   const authCode = urlObj.searchParams.get("auth_token")
 
   const cookieToken = cookies.token
@@ -209,7 +181,6 @@ export async function loadServerData(
 
   if (authCode) {
     try {
-      // Exchange one-time code for JWT token
       const exchangeResponse = await fetch(`${API_URL}/auth/exchange-code`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -231,7 +202,7 @@ export async function loadServerData(
 
   const apiKeyCandidate = authToken
     ? authToken
-    : cookieToken && !validate(cookieToken) // member token
+    : cookieToken && !validate(cookieToken)
       ? cookieToken
       : isTestFP
         ? fpFromQuery
@@ -249,7 +220,7 @@ export async function loadServerData(
         ? tokenCandidate
         : cookies.fingerprint || headers["x-fp"]
 
-  let apiKey =
+  const apiKey =
     tokenCandidate ||
     (isTestFP && fpFromQuery ? fpFromQuery : fingerprintCandidate) ||
     uuidv4()
@@ -262,7 +233,6 @@ export async function loadServerData(
   const viewPortWidth = cookies.viewPortWidth || ""
   const viewPortHeight = cookies.viewPortHeight || ""
 
-  // Extract client IP from request (for Arcjet fingerprinting)
   const clientIp =
     request.ip ||
     headers["x-forwarded-for"] ||
@@ -276,9 +246,6 @@ export async function loadServerData(
       }
     | undefined
 
-  // Handle OAuth callback token
-
-  // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
   const chrryUrl = getSiteConfig(hostname).url
   const tribeSlug = pathname?.startsWith("/t/")
     ? pathname.replace("/t/", "").split("?")[0]
@@ -286,23 +253,17 @@ export async function loadServerData(
 
   const siteConfig = getSiteConfig(hostname)
 
-  let thread: { thread: thread; messages: paginatedMessages } | undefined
   let session: session | undefined
   let translations: Record<string, any> | undefined
   let app: appWithStore | undefined
-  let accountApp: appWithStore | undefined
   let apiError: Error | undefined
 
-  // Fetch thread if threadId exists
-  let threadResult: { thread: thread; messages: paginatedMessages } | undefined
   let appId: string | undefined
   let isBlogRoute = false
 
-  // Blog data
   let blogPosts: BlogPost[] | undefined
   let blogPost: BlogPostWithContent | undefined
 
-  // Tribe data
   let tribes: paginatedTribes | undefined
   let tribePosts: paginatedTribePosts | undefined
   let tribePost: tribePostWithDetails | undefined
@@ -323,10 +284,8 @@ export async function loadServerData(
     toString: () => string
   }
 
-  // Strip optional locale prefix (e.g. /ja/tribe → /tribe, /en → /)
-  // so that both /tribe and /ja/tribe correctly trigger the tribe list view
   const pathnameWithoutLocale = isLocalePathname
-    ? "/" + pathname.split("/").slice(2).join("/")
+    ? `/${pathname.split("/").slice(2).join("/")}`
     : pathname
 
   const canShowAllTribe =
@@ -337,7 +296,6 @@ export async function loadServerData(
   try {
     const sessionResult = isBot
       ? await getSession({
-          // appId: appResult.id,
           deviceId,
           fingerprint,
           token: apiKey,
@@ -351,53 +309,30 @@ export async function loadServerData(
           gift: gift || undefined,
           source: "layout",
           API_URL,
-          ip: clientIp, // Pass client IP for Arcjet
+          ip: clientIp,
         })
       : undefined
 
-    // Check if this is a blog route
     if (pathname === "/blog" || pathname.startsWith("/blog/")) {
       isBlogRoute = true
 
-      // Only fetch blog data for bots (SEO/OG metadata)
-      if (isBot) {
-        try {
-          const blogData = await blogDataPromise
+      try {
+        const blogData = await blogDataPromise
 
-          if (isBlogList) {
-            blogPosts = blogData as BlogPost[] | undefined
-          } else if (isBlogPost) {
-            blogPost = (blogData as BlogPostWithContent | null) || undefined
-          }
-        } catch (error) {
-          console.error("❌ Blog data fetch failed:", error)
+        if (isBlogList) {
+          blogPosts = blogData as BlogPost[] | undefined
+        } else if (isBlogPost) {
+          blogPost = (blogData as BlogPostWithContent | null) || undefined
         }
+      } catch (error) {
+        console.error("❌ Blog data fetch failed:", error)
       }
     }
-
-    const MAX_UNTIL = 10
-    const until = searchParams.get("until")
-      ? Math.min(Number(searchParams.get("until")), MAX_UNTIL)
-      : 1
-
-    apiKey =
-      sessionResult?.user?.token || sessionResult?.guest?.fingerprint || apiKey
-
-    // Only fetch thread/post/app data for bots — humans hydrate client-side
-    threadResult =
-      isBot && threadId
-        ? await getThread({
-            id: threadId,
-            pageSize: pageSizes.posts * until,
-            token: apiKey,
-            API_URL,
-          })
-        : undefined
 
     const postId = getPostId(pathname)
 
     let tribePostResult: tribePostWithDetails | undefined
-    if (isBot && postId) {
+    if (postId && isBot) {
       try {
         tribePostResult = await getTribePost({
           id: postId,
@@ -411,12 +346,8 @@ export async function loadServerData(
       }
     }
 
-    appId =
-      tribePostResult?.appId ||
-      threadResult?.thread?.appId ||
-      headers["x-app-id"]
+    appId = tribePostResult?.appId || headers["x-app-id"]
 
-    // Only fetch app data for bots — client hydrates for human users
     const appResult = isBot
       ? await getApp({
           chrryUrl,
@@ -437,8 +368,7 @@ export async function loadServerData(
     const canShowTribeProfile =
       !tribeSlug && !excludedSlugRoutes?.includes(pathname) && !canShowAllTribe
 
-    // Bots: fetch everything for SEO. Humans: only translations (lightweight).
-    const [translationsResult, threadsResult, tribesResult, tribePostsResult] =
+    const [translationsResult, tribesResult, tribePostsResult] =
       await Promise.all([
         getTranslations({
           token: apiKey,
@@ -446,21 +376,12 @@ export async function loadServerData(
           API_URL,
         }),
 
-        isBot
-          ? getThreads({
-              appId: appResult.id,
-              pageSize: pageSizes.menuThreads,
-              sort: "bookmark",
-              token: apiKey,
-              API_URL,
-            })
-          : Promise.resolve(undefined),
         isBot && !isBlogRoute
           ? getTribes({
               pageSize: 15,
               page: 1,
               token: apiKey,
-              appId: canShowTribeProfile ? appResult.id : undefined,
+              // appId: canShowTribeProfile ? appResult.id : undefined,
               API_URL,
             })
           : Promise.resolve(undefined),
@@ -478,10 +399,6 @@ export async function loadServerData(
           : Promise.resolve(undefined),
       ])
 
-    threads = threadsResult
-
-    thread = threadResult
-
     translations = translationsResult
 
     session = sessionResult
@@ -491,34 +408,19 @@ export async function loadServerData(
     tribePosts = tribePostsResult
 
     tribe = tribes?.tribes.find((t) => t.slug === tribeSlug)
-
-    accountApp = session?.userBaseApp || session?.guestBaseApp
-    app = appResult.id === accountApp?.id ? accountApp : appResult
   } catch (error) {
     captureException(error)
     console.error("❌ API Error:", error)
     apiError = error as Error
   }
 
-  // Fetch threads
-
   const theme =
     themeCookie || (app?.backgroundColor === "#ffffff" ? "light" : "dark")
 
-  // Agent profile route
-
-  // Check if this is a tribe route OR if app slug is 'chrry'
-
-  // Try to extract store and app slugs from URL (works for /:storeSlug/:appSlug pattern)
-  // This handles clean URLs like /blossom/chrry without /agent prefix
-
   const result = {
     session,
-    // Bots get full SSR data for SEO; humans hydrate client-side
-    thread: isBot ? thread : undefined,
-    threads: isBot ? threads : undefined,
     translations,
-    app: isBot ? app : undefined,
+    app,
     siteConfig,
     locale,
     deviceId,
@@ -529,20 +431,18 @@ export async function loadServerData(
     isDev,
     apiError,
     theme: theme as themeType,
-    blogPosts: isBot ? blogPosts : undefined,
-    blogPost: isBot ? blogPost : undefined,
+    blogPosts,
+    blogPost,
     isBlogRoute,
-    tribes: isBot ? tribes : undefined,
-    tribePosts: isBot ? tribePosts : undefined,
-    tribePost: isBot ? tribePost : undefined,
+    tribes,
+    tribePosts,
+    tribePost,
     showTribe,
-    accountApp,
     tribe,
     apiKey,
     canShowAllTribe,
-    pathname, // Add pathname so client knows the SSR route
+    pathname,
   }
-  // Generate metadata for this route
   let metadata
   try {
     metadata = await generateServerMetadata(pathname, hostname, locale, result)
@@ -550,12 +450,10 @@ export async function loadServerData(
     console.error("Error generating metadata in server-loader:", error)
   }
 
-  // Parse all search params for client hydration
-
   return {
     ...result,
     fingerprint: session?.fingerprint ?? fingerprint,
     metadata,
-    searchParams, // Pass search params to client for hydration consistency
+    searchParams,
   }
 }

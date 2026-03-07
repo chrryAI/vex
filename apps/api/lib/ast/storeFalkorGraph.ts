@@ -217,9 +217,12 @@ export async function storeASTInGraph(
   }
 }
 
-export async function queryCodeGraph(query: string): Promise<any> {
+export async function queryCodeGraph(
+  query: string,
+  params?: Record<string, any>,
+): Promise<any> {
   try {
-    const result = await graph.query(query)
+    const result = await graph.query(query, params ? { params } : undefined)
     return result
   } catch (error) {
     console.error("❌ Failed to query code graph:", error)
@@ -229,19 +232,25 @@ export async function queryCodeGraph(query: string): Promise<any> {
 
 // Helper: Find all functions that call a specific function
 export async function findFunctionCallers(functionName: string): Promise<any> {
-  return queryCodeGraph(`
-    MATCH (caller:FUNCTION)-[:CALLS]->(callee:FUNCTION {name: '${functionName}'})
+  return queryCodeGraph(
+    `
+    MATCH (caller:FUNCTION)-[:CALLS]->(callee:FUNCTION {name: $functionName})
     RETURN caller.name, caller.filepath, caller.startLine
-  `)
+  `,
+    { functionName },
+  )
 }
 
 // Helper: Find all files that import a specific module
 export async function findImportUsage(moduleName: string): Promise<any> {
-  return queryCodeGraph(`
+  return queryCodeGraph(
+    `
     MATCH (f:FILE)-[:IMPORTS]->(i:IMPORT)
-    WHERE i.source CONTAINS '${moduleName}'
+    WHERE i.source CONTAINS $moduleName
     RETURN f.filepath, i.source, i.specifiers
-  `)
+  `,
+    { moduleName },
+  )
 }
 
 // Helper: Get function call chain
@@ -249,8 +258,11 @@ export async function getFunctionCallChain(
   functionName: string,
   depth: number = 3,
 ): Promise<any> {
-  return queryCodeGraph(`
-    MATCH path = (f:FUNCTION {name: '${functionName}'})-[:CALLS*1..${depth}]->(called:FUNCTION)
+  return queryCodeGraph(
+    `
+    MATCH path = (f:FUNCTION {name: $functionName})-[:CALLS*1..${depth}]->(called:FUNCTION)
     RETURN path
-  `)
+  `,
+    { functionName },
+  )
 }

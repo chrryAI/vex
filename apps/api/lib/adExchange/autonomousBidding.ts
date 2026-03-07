@@ -250,10 +250,9 @@ async function scoreSlots({
   // Get AI model for scoring
   let provider
   try {
-    const result = await getModelProvider(
-      { id: campaign.appId } as any,
-      "claude-sonnet-4",
-    )
+    const result = await getModelProvider({
+      name: "sushi",
+    })
     provider = result.provider
   } catch (_error) {
     console.warn("⚠️ Failed to get AI provider, using heuristic scoring")

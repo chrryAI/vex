@@ -1154,7 +1154,6 @@ export function ChatProvider({
   const [nextPage, setNextPage] = useState<number | undefined>(undefined)
 
   const threadData = threadSWR || auth.threadData || undefined
-  console.log(`🚀 ~ threadData:`, threadData)
 
   const lastProcessedThreadDataRef = useRef<any>(null)
 

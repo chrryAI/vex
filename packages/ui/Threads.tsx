@@ -139,6 +139,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     data: threadsData,
     mutate: refetch,
     isLoading: isLoadingThreads,
+    isValidating,
     error,
   } = useSWR(
     ["threads", until, search, sortByDate, app?.id],
@@ -165,16 +166,10 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
   }, [token, until, sortByDate, collaborationStatus])
 
   useEffect(() => {
-    if (error) {
+    if (error || !isValidating) {
       setIsLoading(false)
     }
-  }, [error])
-
-  // useEffect(() => {
-  //   if (!isLoading) {
-  //     searchInputRef.current?.focus()
-  //   }
-  // }, [isLoading])
+  }, [error, isValidating])
 
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
@@ -182,8 +177,6 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     if (threadsData && Array.isArray(threadsData.threads)) {
       setThreads(threadsData)
       setIsLoading(false)
-
-      // setProfile(threadsData.user || threadsData?.threads?.[0]?.user)
     }
   }, [threadsData, user])
 

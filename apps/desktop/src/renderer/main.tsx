@@ -1,7 +1,7 @@
 import AppProviders from "@chrryai/chrry/context/providers"
 import React, { useEffect, useState } from "react"
 import ReactDOM from "react-dom/client"
-import { SetupWizard } from "./components/SetupWizard"
+// import { SetupWizard } from "./components/SetupWizard"
 import { TabBar } from "./components/TabBar"
 import "@chrryai/chrry/globals.scss"
 import "./styles/browser-chrome.css"
@@ -64,7 +64,7 @@ function App() {
     <div className="app">
       {/* SetupWizard overlays everything until FalkorDB check is done.
           When graph already has data it resolves in <200ms with no visible flash. */}
-      {!isReady && <SetupWizard onReady={() => setIsReady(true)} />}
+      {/* {!isReady && <SetupWizard onReady={() => setIsReady(true)} />} */}
 
       <TabBar
         tabs={tabs}

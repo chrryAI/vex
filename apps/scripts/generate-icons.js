@@ -51,7 +51,7 @@ console.log(`🎨 Generating Tauri icons for mode: ${mode}`)
 
 // Paths
 const sourceIconsDir = join(__dirname, "../flash/public/images/apps")
-const tauriIconsDir = join(__dirname, "../browser/src-tauri/icons")
+const tauriIconsDir = join(__dirname, "../desktop/src-tauri/icons")
 
 // Source icon (500x500 high-res)
 const sourceIcon = join(sourceIconsDir, `${mode}.png`)

@@ -15,6 +15,22 @@ const MODEL_LIMITS: Record<string, ModelLimits> = {
   "deepseek-reasoner": { maxTokens: 131000, name: "DeepSeek Reasoner" },
   "deepseek/deepseek-chat": { maxTokens: 128000, name: "DeepSeek Chat" },
   "deepseek/deepseek-r1": { maxTokens: 131000, name: "DeepSeek R1" },
+  "deepseek/deepseek-v3": { maxTokens: 128000, name: "DeepSeek V3" },
+
+  // Qwen models
+  "qwen/qwen3-235b-a22b-thinking-2507": {
+    maxTokens: 131000,
+    name: "Qwen3 Thinking",
+  },
+  "qwen/qwen3-vl-30b-a3b-thinking": {
+    maxTokens: 131000,
+    name: "Qwen3 VL Thinking",
+  },
+  "qwen/qwen3-vl-235b-a22b-thinking": {
+    maxTokens: 131000,
+    name: "Qwen3 VL Thinking",
+  },
+  "qwen/qwen3-235b": { maxTokens: 131000, name: "Qwen3" },
 
   // Claude models
   "claude-3-5-sonnet-20241022": {
@@ -29,7 +45,7 @@ const MODEL_LIMITS: Record<string, ModelLimits> = {
   "claude-sonnet-4-20250514": { maxTokens: 200000, name: "Claude Sonnet 4.5" },
 
   // OpenAI models
-  "gpt-4o": { maxTokens: 128000, name: "gpt-4o" },
+  "gpt-4o-mini": { maxTokens: 128000, name: "gpt-4o-mini" },
   "gpt-4-turbo": { maxTokens: 128000, name: "GPT-4 Turbo" },
   "gpt-3.5-turbo": { maxTokens: 16000, name: "GPT-3.5 Turbo" },
   "gpt-5.1": { maxTokens: 128000, name: "GPT-5.1" },
@@ -98,7 +114,7 @@ export function getModelLimits(modelId: string): ModelLimits {
 export function checkTokenLimit(
   messages: Array<{ role: string; content: string | any }>,
   modelId: string,
-  safetyMargin: number = 0.9, // Use 90% of limit to be safe
+  safetyMargin: number = 0.8, // Use 80% of limit to be safe (increased from 90%)
 ): {
   withinLimit: boolean
   estimatedTokens: number
@@ -119,16 +135,17 @@ export function checkTokenLimit(
       for (const part of msg.content) {
         if (part.type === "text" && part.text) {
           totalTokens += estimateTokens(part.text)
-        } else if (part.type === "image") {
+        } else if (part.type === "image" || part.type === "image_url") {
           // Images use ~85 tokens for low detail, ~170 for high detail
-          totalTokens += 170
+          totalTokens += 200 // Increased conservative estimate
         }
       }
     }
   }
 
   const withinLimit = totalTokens <= safeLimit
-  const shouldSplit = totalTokens > safeLimit && messages.length > 10
+  // Allow splitting if we're over the safe limit and have enough messages to work with
+  const shouldSplit = totalTokens > safeLimit && messages.length >= 3
 
   return {
     withinLimit,

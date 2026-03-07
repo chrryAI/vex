@@ -60,6 +60,7 @@ import { generateText, type ModelMessage } from "ai"
 import type { Context } from "hono"
 import { z } from "zod"
 import { captureException } from "../lib/captureException"
+import { cleanAiResponse } from "./ai/cleanAiResponse"
 import { getModelProvider } from "./getModelProvider"
 import { checkThreadSummaryLimit } from "./index"
 import { notifyOwnerAndCollaborations } from "./notify"
@@ -128,12 +129,7 @@ Return only valid JSON array.`
 
   let memories: MemoryData = []
   try {
-    let jsonText = memoryResult.text.trim()
-    if (jsonText.startsWith("```json")) {
-      jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
-    } else if (jsonText.startsWith("```")) {
-      jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "")
-    }
+    const jsonText = cleanAiResponse(memoryResult.text)
     const parsedData = JSON.parse(jsonText)
     memories = memorySchema.parse(parsedData)
   } catch (error) {
@@ -755,12 +751,7 @@ Return only valid JSON object.`
   }
 
   try {
-    let jsonText = suggestionsResult.text.trim()
-    if (jsonText.startsWith("```json")) {
-      jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
-    } else if (jsonText.startsWith("```")) {
-      jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "")
-    }
+    const jsonText = cleanAiResponse(suggestionsResult.text)
     const parsedData = JSON.parse(jsonText)
     responseData = responseSchema.parse(parsedData)
   } catch (error) {
@@ -1085,13 +1076,35 @@ async function generateAIContent({
   // Skip only if both features are disabled AND no app
   if (!memoriesEnabled && !characterProfilesEnabled && !app?.id) return
 
-  const conversationText = conversationHistory
-    // .slice(-10) // Last 10 messages for context
-    .map((msg) => `${msg.role}: ${msg.content}`)
-    .join("\n")
+  // Limit conversation history to stay within context limits (target ~100k tokens max)
+  // DeepSeek has a 128k limit. 300k chars is roughly 75-100k tokens.
+  const MAX_CONVERSATION_CHARS = 300000
+  let currentChars = 0
+  const truncatedHistory = []
+
+  // Process from newest to oldest to keep most recent context
+  for (let i = conversationHistory.length - 1; i >= 0; i--) {
+    const msg = conversationHistory[i]
+    if (!msg) continue
+
+    const content = Array.isArray(msg.content)
+      ? msg.content
+          .filter((c: any) => c.type === "text")
+          .map((c: any) => c.text)
+          .join(" ")
+      : msg.content || ""
+
+    const msgText = `${msg.role}: ${content}\n`
+    if (currentChars + msgText.length > MAX_CONVERSATION_CHARS) break
+
+    truncatedHistory.unshift(msgText)
+    currentChars += msgText.length
+  }
+
+  const conversationText = truncatedHistory.join("")
 
   // Get the appropriate model provider for this agent
-  const { provider: model, agentName } = await getModelProvider(app)
+  const { provider: model, agentName } = await getModelProvider({ app })
   console.log(`🤖 Using ${agentName} for background processing`)
 
   // Use agent name for metadata tracking
@@ -1342,25 +1355,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
       type SummaryData = z.infer<typeof summarySchema>
       let summaryData: SummaryData
       try {
-        let jsonText = summaryResult.text.trim()
-
-        // Remove markdown code blocks (handle multiple backticks)
-        if (jsonText.includes("```")) {
-          // Find first occurrence of ``` and last occurrence
-          const firstBacktick = jsonText.indexOf("```")
-          const lastBacktick = jsonText.lastIndexOf("```")
-
-          if (
-            firstBacktick !== -1 &&
-            lastBacktick !== -1 &&
-            firstBacktick !== lastBacktick
-          ) {
-            // Extract content between first and last backticks
-            jsonText = jsonText.substring(firstBacktick + 3, lastBacktick)
-            // Remove "json" language identifier if present
-            jsonText = jsonText.replace(/^json\s*/, "").trim()
-          }
-        }
+        const jsonText = cleanAiResponse(summaryResult.text)
 
         const parsedData = JSON.parse(jsonText)
         summaryData = summarySchema.parse(parsedData)
@@ -1389,21 +1384,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
         type MoodData = z.infer<typeof moodSchema>
         let moodData: MoodData | null = null
         try {
-          let jsonText = moodResult.text.trim()
-          // Remove markdown code blocks safely without regex backtracking
-          if (jsonText.startsWith("```json")) {
-            jsonText = jsonText.slice(7).trimStart() // Remove "```json"
-            const endIndex = jsonText.lastIndexOf("```")
-            if (endIndex !== -1) {
-              jsonText = jsonText.slice(0, endIndex).trimEnd()
-            }
-          } else if (jsonText.startsWith("```")) {
-            jsonText = jsonText.slice(3).trimStart() // Remove "```"
-            const endIndex = jsonText.lastIndexOf("```")
-            if (endIndex !== -1) {
-              jsonText = jsonText.slice(0, endIndex).trimEnd()
-            }
-          }
+          const jsonText = cleanAiResponse(moodResult.text)
           const parsedData = JSON.parse(jsonText)
           moodData = moodSchema.parse(parsedData)
           console.log(
@@ -1448,22 +1429,24 @@ Focus on the main discussion points, user preferences, and conversation style.`
       let appCharacterData: CharacterData | null = null
 
       if (characterResult) {
-        let jsonText = characterResult.text.trim()
-        if (jsonText.startsWith("```json")) {
-          jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
-        } else if (jsonText.startsWith("```")) {
-          jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "")
-        }
-        const parsedData = JSON.parse(jsonText)
+        const jsonText = cleanAiResponse(characterResult.text)
+        try {
+          const parsedData = JSON.parse(jsonText)
 
-        // Extract userProfile
-        characterData = characterSchema.parse(
-          parsedData.userProfile || parsedData,
-        )
+          // Extract userProfile
+          characterData = characterSchema.parse(
+            parsedData.userProfile || parsedData,
+          )
 
-        // Extract appProfile if exists
-        if (parsedData.appProfile && appId) {
-          appCharacterData = characterSchema.parse(parsedData.appProfile)
+          // Extract appProfile if exists
+          if (parsedData.appProfile && appId) {
+            appCharacterData = characterSchema.parse(parsedData.appProfile)
+          }
+        } catch (parseErr) {
+          console.error("❌ Character extraction JSON parse error:", parseErr)
+          console.error("Raw response text:", characterResult.text)
+          console.error("Cleaned text for parsing:", jsonText)
+          throw parseErr
         }
 
         // Save to database

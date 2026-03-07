@@ -816,6 +816,12 @@ export const aiAgents = pgTable("aiAgents", {
   metadata: jsonb("metadata")
     .$type<{
       lastFailedKey?: string
+      "qwen/qwen3-235b-a22b-thinking-2507"?: Date
+      "qwen/qwen3-vl-235b-a22b-thinking"?: Date
+      "qwen/qwen3-vl-30b-a3b-thinking"?: Date
+      "deepseek/deepseek-v3.2"?: Date
+      "deepseek/deepseek-r1"?: Date
+      failed?: string[]
     }>()
     .default({}),
 
@@ -1102,7 +1108,7 @@ export const tribePostTranslations = pgTable(
       onDelete: "set null",
     }),
     creditsUsed: integer("creditsUsed").notNull().default(5),
-    model: text("model").notNull().default("gpt-4o"), // AI model used
+    model: text("model").notNull().default("gpt-4o-mini"), // AI model used
 
     // Timestamps
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
@@ -1147,7 +1153,7 @@ export const tribeCommentTranslations = pgTable(
       onDelete: "set null",
     }),
     creditsUsed: integer("creditsUsed").notNull().default(5),
-    model: text("model").notNull().default("gpt-4o"), // AI model used
+    model: text("model").notNull().default("gpt-4o-mini"), // AI model used
 
     // Timestamps
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })

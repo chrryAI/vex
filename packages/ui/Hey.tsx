@@ -85,13 +85,14 @@ export const Hey = memo(
       threadId,
       isProgramme,
       baseApp,
-      isLoadingPosts,
+      token,
       siteConfig,
       postId,
+      canShowAllTribe,
       showTribe,
     } = useAuth()
 
-    const { tribeSlug } = useTribe()
+    const { tribeSlug, isLoadingTribes } = useTribe()
 
     const { appSlug } = getAppAndStoreSlugs(pathname, {
       defaultAppSlug: baseApp?.slug || siteConfig.slug,
@@ -116,8 +117,6 @@ export const Hey = memo(
       .replace(/^\/[a-z]{2}\//, "/")
       .slice(1)
       .split("?")[0]
-
-    const showTribeLogo = siteConfig.isTribe && pathname === "/"
 
     // Check if current route is a store slug by checking all apps
     const isStorePage = storeApps?.find(
@@ -153,6 +152,10 @@ export const Hey = memo(
           currentStore))
 
     const isHydrated = useHasHydrated()
+
+    const showTribeLogo = showTribe
+      ? canShowAllTribe || tribeSlug || postId
+      : false
 
     const [isImageLoaded, setIsImageLoaded] = useState(false)
     const [minSplashTimeElapsed, setMinSplashTimeElapsed] = useState(false)
@@ -201,18 +204,16 @@ export const Hey = memo(
         isImageLoaded &&
         isHydrated &&
         minSplashTimeElapsed &&
-        app?.store?.apps?.length &&
-        (showTribe && !postId ? !isLoadingPosts : true) &&
-        setIsSplash(false)
+        app?.store?.apps?.length
+      token && setIsSplash(false)
     }, [
       isImageLoaded,
       isHydrated,
-      isLoadingPosts,
+      isLoadingTribes,
       isSplash,
       minSplashTimeElapsed,
+      token,
       app,
-      showTribe,
-      postId,
     ])
 
     // useEffect(() => {
@@ -221,7 +222,12 @@ export const Hey = memo(
     //
 
     return (
-      <Div>
+      <Div
+        style={{
+          width: "100dvw",
+          height: "100dvh",
+        }}
+      >
         <ErrorBoundary>
           {splash}
           <Suspense fallback={<Loading fullScreen />}>

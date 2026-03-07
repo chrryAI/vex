@@ -2,6 +2,8 @@ import { isDevelopment, isE2E, isOwner } from "@chrryai/chrry/utils"
 import type { app, guest, subscription, user } from "@repo/db"
 import Redis from "ioredis"
 
+import { generateSecureId } from "../lib/secureRandom"
+
 // ─── Redis client (reuse existing VPS Redis) ─────────────────────────────────
 const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
   lazyConnect: true,
@@ -29,7 +31,7 @@ async function slidingWindowCheck(
     const [, , count] = await redis
       .pipeline()
       .zremrangebyscore(fullKey, "-inf", windowStart) // remove old entries
-      .zadd(fullKey, now, `${now}-${Math.random()}`) // add current request
+      .zadd(fullKey, now, `${now}-${generateSecureId()}`) // add current request
       .zcard(fullKey) // count requests in window
       .expire(fullKey, windowSeconds + 1) // auto-cleanup
       .exec()

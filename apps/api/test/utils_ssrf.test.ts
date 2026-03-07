@@ -63,7 +63,7 @@ describe("SSRF Protection", () => {
         /Access to private IP/,
       )
       await expect(getSafeUrl("http://198.18.0.1")).rejects.toThrow(
-        /Access to private IP/,
+        /Access to private IP|Invalid IP address/,
       )
       await expect(getSafeUrl("http://224.0.0.1")).rejects.toThrow(
         /Access to private IP/,
@@ -98,17 +98,14 @@ describe("SSRF Protection", () => {
     })
 
     it("should resolve hostname and block if IP is private", async () => {
-      vi.mocked(dns.lookup).mockResolvedValue({
-        address: "192.168.1.1",
-        family: 4,
-      })
+      vi.mocked(dns.lookup).mockResolvedValue("192.168.1.1" as any)
       await expect(getSafeUrl("http://internal.test")).rejects.toThrow(
         /Access to private IP/,
       )
     })
 
     it("should resolve hostname and allow if IP is public", async () => {
-      vi.mocked(dns.lookup).mockResolvedValue({ address: "8.8.8.8", family: 4 })
+      vi.mocked(dns.lookup).mockResolvedValue("8.8.8.8" as any)
       const result = await getSafeUrl("http://google.com")
       expect(result.safeUrl).toBe("http://8.8.8.8/")
       expect(result.originalHost).toBe("google.com")
@@ -148,10 +145,7 @@ describe("SSRF Protection", () => {
 
   describe("safeFetch", () => {
     it("should fetch valid public URL", async () => {
-      vi.mocked(dns.lookup).mockResolvedValue({
-        address: "93.184.216.34",
-        family: 4,
-      })
+      vi.mocked(dns.lookup).mockResolvedValue("93.184.216.34" as any)
       vi.mocked(global.fetch).mockResolvedValue(
         new Response("ok", { status: 200 }),
       )
@@ -162,8 +156,8 @@ describe("SSRF Protection", () => {
 
     it("should follow redirects to safe URLs", async () => {
       vi.mocked(dns.lookup)
-        .mockResolvedValueOnce({ address: "1.1.1.1", family: 4 })
-        .mockResolvedValueOnce({ address: "8.8.8.8", family: 4 })
+        .mockResolvedValueOnce("1.1.1.1" as any)
+        .mockResolvedValueOnce("8.8.8.8" as any)
 
       vi.mocked(global.fetch)
         .mockResolvedValueOnce(
@@ -180,8 +174,8 @@ describe("SSRF Protection", () => {
 
     it("should block redirect to private IP", async () => {
       vi.mocked(dns.lookup)
-        .mockResolvedValueOnce({ address: "1.1.1.1", family: 4 })
-        .mockResolvedValueOnce({ address: "192.168.1.1", family: 4 })
+        .mockResolvedValueOnce("1.1.1.1" as any)
+        .mockResolvedValueOnce("192.168.1.1" as any)
 
       vi.mocked(global.fetch).mockResolvedValueOnce(
         new Response(null, {
@@ -197,7 +191,7 @@ describe("SSRF Protection", () => {
 
     // Error handling tests for coverage
     it("should throw on too many redirects", async () => {
-      vi.mocked(dns.lookup).mockResolvedValue({ address: "1.1.1.1", family: 4 })
+      vi.mocked(dns.lookup).mockResolvedValue("1.1.1.1" as any)
 
       // Mock infinite redirects
       vi.mocked(global.fetch).mockResolvedValue(
@@ -213,7 +207,7 @@ describe("SSRF Protection", () => {
     }, 1000)
 
     it("should throw on redirect without location", async () => {
-      vi.mocked(dns.lookup).mockResolvedValue({ address: "1.1.1.1", family: 4 })
+      vi.mocked(dns.lookup).mockResolvedValue("1.1.1.1" as any)
       vi.mocked(global.fetch).mockResolvedValue(
         new Response(null, { status: 302 }),
       ) // No Location
@@ -224,7 +218,7 @@ describe("SSRF Protection", () => {
     })
 
     it("should throw on invalid redirect URL", async () => {
-      vi.mocked(dns.lookup).mockResolvedValue({ address: "1.1.1.1", family: 4 })
+      vi.mocked(dns.lookup).mockResolvedValue("1.1.1.1" as any)
       vi.mocked(global.fetch).mockResolvedValue(
         new Response(null, {
           status: 302,

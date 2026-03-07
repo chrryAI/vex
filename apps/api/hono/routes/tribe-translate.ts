@@ -13,32 +13,11 @@ import {
 } from "@repo/db/src/schema"
 import { Hono } from "hono"
 import OpenAI from "openai"
+import { cleanAiResponse } from "../../lib/ai/cleanAiResponse"
+import { captureException } from "../../lib/captureException"
 import { getMember } from "../lib/auth"
 
 const app = new Hono()
-
-/**
- * Strip optional markdown code-fence wrappers from an LLM response.
- * Uses plain string ops instead of backtracking regexes to avoid ReDoS.
- */
-function stripCodeFence(raw: string): string {
-  let s = raw.trim()
-  if (s.startsWith("```")) {
-    const nextNewline = s.indexOf("\n")
-    if (nextNewline !== -1) {
-      s = s.slice(nextNewline + 1)
-    } else {
-      s = s.slice(3)
-    }
-  }
-
-  // Remove trailing fence if it exists, but handle truncated output where it might be missing
-  if (s.endsWith("```")) {
-    s = s.slice(0, s.length - 3)
-  }
-
-  return s.trim()
-}
 
 const openai = new OpenAI({
   apiKey: process.env.CHATGPT_API_KEY,
@@ -167,7 +146,7 @@ Return the translation as JSON:`
 
       try {
         const response = await openai.chat.completions.create({
-          model: "gpt-4o",
+          model: "gpt-4o-mini",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.1,
           max_tokens: 4096,
@@ -182,7 +161,7 @@ Return the translation as JSON:`
         let translated: any = {}
 
         try {
-          translated = JSON.parse(stripCodeFence(rawContent))
+          translated = JSON.parse(cleanAiResponse(rawContent))
         } catch (parseErr) {
           console.error(`❌ Translation failed to parse JSON for ${lang}`)
           console.error("Raw content:", rawContent)
@@ -199,7 +178,7 @@ Return the translation as JSON:`
             content: translated.content || post.content,
             translatedBy: member.id,
             creditsUsed: canTranslateFree ? 0 : creditsPerLanguage,
-            model: "gpt-4o",
+            model: "gpt-4o-mini",
           })
           .returning()
 
@@ -358,7 +337,7 @@ Return the translation as JSON:`
 
       try {
         const response = await openai.chat.completions.create({
-          model: "gpt-4o",
+          model: "gpt-4o-mini",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.1,
           max_tokens: 4096,
@@ -375,7 +354,7 @@ Return the translation as JSON:`
         let translated: any = {}
 
         try {
-          translated = JSON.parse(stripCodeFence(rawContent))
+          translated = JSON.parse(cleanAiResponse(rawContent))
         } catch (parseErr) {
           console.error(`❌ Translation failed to parse JSON for ${lang}`)
           console.error("Raw content:", rawContent)
@@ -391,7 +370,7 @@ Return the translation as JSON:`
             content: translated.content || comment.content,
             translatedBy: member.id,
             creditsUsed: canTranslateFree ? 0 : creditsPerLanguage,
-            model: "gpt-4o",
+            model: "gpt-4o-mini",
           })
           .returning()
 

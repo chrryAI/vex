@@ -133,12 +133,26 @@ export function isPrivateIP(ip: string): boolean {
     // ::1/128 (Loopback)
     if (normalizedIP === "::1" || normalizedIP === "0:0:0:0:0:0:0:1")
       return true
-    // 64:ff9b::/96 (IPv4/IPv6 translation)
-    if (normalizedIP.startsWith("64:ff9b:")) return true
-    // 100::/64 (Discard-Only)
-    if (normalizedIP.startsWith("100:")) return true
-    // 2001:db8::/32 (Documentation)
-    if (normalizedIP.startsWith("2001:db8:")) return true
+    const ipv6Blocks = expandIPv6(normalizedIP)
+    if (ipv6Blocks) {
+      if (
+        ipv6Blocks[0] === 0x64 &&
+        ipv6Blocks[1] === 0xff9b &&
+        ipv6Blocks[2] === 0 &&
+        ipv6Blocks[3] === 0 &&
+        ipv6Blocks[4] === 0 &&
+        ipv6Blocks[5] === 0
+      )
+        return true
+      if (
+        ipv6Blocks[0] === 0x100 &&
+        ipv6Blocks[1] === 0 &&
+        ipv6Blocks[2] === 0 &&
+        ipv6Blocks[3] === 0
+      )
+        return true
+      if (ipv6Blocks[0] === 0x2001 && ipv6Blocks[1] === 0xdb8) return true
+    }
     // fc00::/7 (Unique Local)
     if (normalizedIP.startsWith("fc") || normalizedIP.startsWith("fd"))
       return true
@@ -172,6 +186,18 @@ export function isPrivateIP(ip: string): boolean {
 
       const missing = 8 - (left.length + right.length)
       if (missing < 0) return null
+      if (
+        missing === 0 &&
+        ip.includes("::") &&
+        left.length + right.length === 8
+      )
+        return null
+      if (
+        missing === 0 &&
+        ip.includes("::") &&
+        left.length + right.length === 8
+      )
+        return null
 
       fullIP = [...left, ...Array(missing).fill("0"), ...right].join(":")
     }
@@ -218,7 +244,7 @@ export async function getSafeUrl(
   let address: string
   try {
     const result = await dns.lookup(hostname)
-    address = result.address
+    address = result && typeof result === "object" ? result.address : result
 
     // Validate that the result is actually an IP address
     if (!net.isIP(address)) {

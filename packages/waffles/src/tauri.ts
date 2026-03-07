@@ -13,11 +13,11 @@ import { _electron as electron, expect, test } from "@playwright/test"
 test.describe("Tauri Desktop App", () => {
   test("should launch Tauri app", async () => {
     // Path to your Tauri binary
-    // For dev: apps/browser/src-tauri/target/debug/vex
-    // For release: apps/browser/src-tauri/target/release/vex
+    // For dev: apps/desktop/src-tauri/target/debug/vex
+    // For release: apps/desktop/src-tauri/target/release/vex
     const appPath = path.join(
       __dirname,
-      "../../apps/browser/src-tauri/target/debug/vex",
+      "../../apps/desktop/src-tauri/target/debug/vex",
     )
 
     // Launch Tauri app via Electron API
@@ -51,7 +51,7 @@ test.describe("Tauri Desktop App", () => {
   test("should test OAuth flow in Tauri", async () => {
     const appPath = path.join(
       __dirname,
-      "../../apps/browser/src-tauri/target/debug/vex",
+      "../../apps/desktop/src-tauri/target/debug/vex",
     )
 
     const electronApp = await electron.launch({
@@ -79,7 +79,7 @@ test.describe("Tauri Desktop App", () => {
   test("should test Stripe payment in Tauri", async () => {
     const appPath = path.join(
       __dirname,
-      "../../apps/browser/src-tauri/target/debug/vex",
+      "../../apps/desktop/src-tauri/target/debug/vex",
     )
 
     const electronApp = await electron.launch({
@@ -98,7 +98,7 @@ test.describe("Tauri Desktop App", () => {
   test("should test window controls", async () => {
     const appPath = path.join(
       __dirname,
-      "../../apps/browser/src-tauri/target/debug/vex",
+      "../../apps/desktop/src-tauri/target/debug/vex",
     )
 
     const electronApp = await electron.launch({

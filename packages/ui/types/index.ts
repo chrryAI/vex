@@ -882,6 +882,7 @@ export type app = {
     replicate?: string
     openrouter?: string
     xai?: string
+    fal?: string
   } | null
   limits: {
     promptInput?: number

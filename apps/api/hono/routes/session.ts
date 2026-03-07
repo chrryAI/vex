@@ -37,7 +37,6 @@ import { captureException } from "../../lib/captureException"
 import cleanupTest from "../../lib/cleanupTest"
 import { checkRateLimit } from "../../lib/rateLimiting"
 import {
-  getApp as getAppAction,
   getChrryUrl,
   getGuest as getGuestAction,
   getMember as getMemberAction,
@@ -136,7 +135,7 @@ session.get("/", async (c) => {
     const SCRAPER_PATTERN =
       /python-requests|curl\/|wget\/|scrapy|httpclient|go-http-client|java\/|libwww|perl\/|ruby\//i
     const ALLOWED_BOT_PATTERN =
-      /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebot|twitterbot|linkedinbot|applebot|xbot|grok|gptbot|chatgpt-user|perplexitybot|claudebot/i
+      /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebot|facebookexternalhit|twitterbot|linkedinbot|applebot|xbot|grok|gptbot|chatgpt-user|perplexitybot|claudebot|anthropic-ai|claude-web-crawler|cohere-ai|meta-externalbot|meta-ai-bot|google-bakery|google-vertex|google-ai-search|googlebot-news|googlebot-image|msnbot|openai-gpt|search-ai-bot|wave-ai-bot|youbot|commoncrawler|ccbot/i
 
     if (
       SCRAPER_PATTERN.test(userAgent) &&
@@ -241,11 +240,11 @@ session.get("/", async (c) => {
   try {
     const agentNameParam = url.searchParams.get("agent")
 
-    const aiAgent = agentNameParam
-      ? await getAiAgent({
-          name: agentNameParam,
-        })
-      : null
+    // Parallelize aiAgent and aiAgents fetch
+    const [aiAgent, aiAgents] = await Promise.all([
+      agentNameParam ? getAiAgent({ name: agentNameParam }) : null,
+      getAiAgents(),
+    ])
 
     const fingerPrintUrl = url.searchParams.get("fp")
 
@@ -298,8 +297,6 @@ session.get("/", async (c) => {
     if (!fingerprint) {
       return c.json({ error: "Missing fingerprint" })
     }
-
-    const aiAgents = await getAiAgents()
 
     async function updateDevice({
       member,
@@ -426,6 +423,7 @@ session.get("/", async (c) => {
             ? firstPurchase.createdOn
             : new Date()
 
+          // Parallelize credit usage fetch (can't parallelize with purchases due to dependency)
           const creditUsageRecords = await getCreditUsage({
             userId: member.id,
             fromDate: usageFromDate,
@@ -440,7 +438,7 @@ session.get("/", async (c) => {
           const remainingPurchased = Math.max(0, totalPurchased - totalUsed)
 
           await updateUser({
-            ...member,
+            id: member.id,
             credits: creditsToGive + remainingPurchased,
             subscribedOn: new Date(),
           })
@@ -456,7 +454,7 @@ session.get("/", async (c) => {
         member = await getMemberAction(c, { full: true, skipCache: true })
       } else if (member.creditsLeft === 0) {
         await updateUser({
-          ...member,
+          id: member.id,
           credits:
             member.subscription?.plan === "pro"
               ? PRO_CREDITS_PER_MONTH
@@ -472,9 +470,11 @@ session.get("/", async (c) => {
         return c.json({ error: "Unauthorized" }, 401)
       }
 
-      const device = await updateDevice({ member })
-
-      const guestFingerprint = await getGuestDb({ fingerprint })
+      // Parallelize independent member queries
+      const [device, guestFingerprint] = await Promise.all([
+        updateDevice({ member }),
+        getGuestDb({ fingerprint }),
+      ])
 
       let migratedFromGuest = false
       if (!member.migratedFromGuest) {
@@ -497,32 +497,34 @@ session.get("/", async (c) => {
         }
       }
 
-      const accountApp = await getAppAction({
-        c,
-        accountApp: true,
-        skipCache: true,
-      })
+      // const accountApp = await getAppAction({
+      //   c,
+      //   accountApp: true,
+      //   skipCache: true,
+      // })
 
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401)
       }
 
-      await updateUser({
-        ...member,
-        fingerprint,
-        // ip,
-        timezone: device?.timezone ?? member.timezone,
-      })
+      // Parallelize final member update and notification check
+      const [, hasNotification] = await Promise.all([
+        updateUser({
+          id: member.id,
+          fingerprint,
+          // ip,
+          timezone: device?.timezone ?? member.timezone,
+        }),
+        hasThreadNotifications({
+          userId: member.id,
+        }),
+      ])
 
       member = await getMemberAction(c, { full: true, skipCache: true })
 
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401)
       }
-
-      const hasNotification = await hasThreadNotifications({
-        userId: member.id,
-      })
 
       setFingerprintCookie(c, fingerprint!, cookieDomain, isExtension)
       setDeviceIdCookie(c, deviceId!, cookieDomain, isExtension)
@@ -549,7 +551,7 @@ session.get("/", async (c) => {
         hasNotification,
         note: "This is a fake guest for bot/crawler traffic.",
         deviceId,
-        userBaseApp: accountApp,
+        // userBaseApp: accountApp,
         // app,
         env,
       })
@@ -600,6 +602,7 @@ session.get("/", async (c) => {
             ? firstPurchase.createdOn
             : new Date()
 
+          // Parallelize credit usage fetch (can't parallelize with purchases due to dependency)
           const creditUsageRecords = await getCreditUsage({
             guestId: existingGuest.id,
             fromDate: usageFromDate,
@@ -614,14 +617,14 @@ session.get("/", async (c) => {
           const remainingPurchased = Math.max(0, totalPurchased - totalUsed)
 
           await updateGuest({
-            ...existingGuest,
+            id: existingGuest.id,
             credits: creditsToGive + remainingPurchased,
             subscribedOn: new Date(),
           })
         } else {
           // Non-subscribers: just reset to guest credits
           await updateGuest({
-            ...existingGuest,
+            id: existingGuest.id,
             credits: creditsToGive,
             subscribedOn: new Date(),
           })
@@ -630,7 +633,7 @@ session.get("/", async (c) => {
         existingGuest = await getGuestDb({ id: existingGuest.id })
       } else if (existingGuest.creditsLeft === 0) {
         await updateGuest({
-          ...existingGuest,
+          id: existingGuest.id,
           credits:
             existingGuest.subscription?.plan === "pro"
               ? PRO_CREDITS_PER_MONTH
@@ -645,14 +648,21 @@ session.get("/", async (c) => {
         return c.json({ error: "Guest not found" }, 404)
       }
 
+      // Parallelize device update and get initial device info
       const device = await updateDevice({ guest: existingGuest })
 
-      const updatedGuest = await updateGuest({
-        ...existingGuest,
-        activeOn: new Date(),
-        timezone: device?.timezone || null,
-        fingerprint: gift || fingerprint,
-      })
+      // Parallelize guest update and notification check
+      const [updatedGuest, hasNotification] = await Promise.all([
+        updateGuest({
+          id: existingGuest.id,
+          activeOn: new Date(),
+          timezone: device?.timezone || null,
+          fingerprint: gift || fingerprint,
+        }),
+        hasThreadNotifications({
+          guestId: existingGuest.id,
+        }),
+      ])
 
       existingGuest = await getGuestDb({ id: existingGuest.id })
 
@@ -660,18 +670,14 @@ session.get("/", async (c) => {
         return c.json({ error: "Failed to update guest" })
       }
 
-      const hasNotification = await hasThreadNotifications({
-        guestId: updatedGuest.id,
-      })
-
       setFingerprintCookie(c, fingerprint!, cookieDomain, isExtension)
       setDeviceIdCookie(c, deviceId!, cookieDomain, isExtension)
 
-      const accountApp = await getAppAction({
-        c,
-        accountApp: true,
-        skipCache: true,
-      })
+      // const accountApp = await getAppAction({
+      //   c,
+      //   accountApp: true,
+      //   skipCache: true,
+      // })
 
       return c.json({
         locale,
@@ -683,7 +689,7 @@ session.get("/", async (c) => {
         os,
         browser,
         // app,
-        guestBaseApp: accountApp,
+        // guestBaseApp: accountApp,
         aiAgent,
         versions,
         guest: {
@@ -709,12 +715,15 @@ session.get("/", async (c) => {
     if (newGuest) {
       const device = await updateDevice({ guest: newGuest })
 
+      // Update guest with device timezone (no need to await since we don't use the result)
       if (device) {
-        await updateGuest({
+        updateGuest({
           ...newGuest,
           timezone: device.timezone,
           fingerprint,
-        })
+        }).catch((err) =>
+          console.error("Failed to update new guest timezone:", err),
+        )
       }
     } else {
       return c.json({ error: "Failed to create guest" })
@@ -723,14 +732,14 @@ session.get("/", async (c) => {
     setFingerprintCookie(c, fingerprint!, cookieDomain, isExtension)
     setDeviceIdCookie(c, deviceId!, cookieDomain, isExtension)
 
-    const accountApp = await getAppAction({
-      c,
-      accountApp: true,
-      skipCache: true,
-    })
+    // const accountApp = await getAppAction({
+    //   c,
+    //   accountApp: true,
+    //   skipCache: true,
+    // })
 
     return c.json({
-      guestBaseApp: accountApp,
+      // guestBaseApp: accountApp,
       locale,
       TEST_MEMBER_FINGERPRINTS,
       TEST_GUEST_FINGERPRINTS,
