@@ -230,6 +230,26 @@ export async function getModelProvider({
     }
 
     case "sushi": {
+      const sushiKey =
+        (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
+        (!plusTiers.includes(app?.tier || "")
+          ? process.env.DEEPSEEK_API_KEY
+          : "")
+      {
+        const modelId = canReason ? "deepseek-reasoner" : "deepseek-chat"
+        if (sushiKey && !failedKeys?.includes(modelId) && !job) {
+          const sushiProvider = createDeepSeek({ apiKey: sushiKey })
+
+          result = {
+            provider: sushiProvider(modelId),
+            modelId,
+            agentName: agent.name,
+            lastKey: "deepSeek",
+          }
+          break
+        }
+      }
+
       const openrouterKeyForDeepSeekReasoner = app?.apiKeys?.openrouter
         ? safeDecrypt(app?.apiKeys?.openrouter)
         : !plusTiers.includes(app?.tier || "")
@@ -326,31 +346,12 @@ export async function getModelProvider({
         break
       }
 
-      const sushiKey =
-        (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
-        (!plusTiers.includes(app?.tier || "")
-          ? process.env.DEEPSEEK_API_KEY
-          : "")
-      {
-        const modelId = canReason ? "deepseek-reasoner" : "deepseek-chat"
-        if (sushiKey && !failedKeys?.includes(modelId)) {
-          const sushiProvider = createDeepSeek({ apiKey: sushiKey })
-
-          result = {
-            provider: sushiProvider(modelId),
-            modelId,
-            agentName: agent.name,
-            lastKey: "deepSeek",
-          }
-          break
-        }
-      }
-
       result = {
         provider: createDeepSeek({ apiKey: "" })("deepseek-reasoner"),
         modelId: "deepseek-reasoner",
         agentName: agent.name,
       }
+
       break
     }
 
