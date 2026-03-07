@@ -5170,7 +5170,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       return c.json({ error: "Claude not found" }, { status: 404 })
     }
     console.log("🤖 Using Claude for multimodal (images/videos/PDFs)")
-    model = await getModelProvider({ app: requestApp, name: claude.name })
+    model = await getModelProvider({ app: requestApp, name: claude.name, job })
   } else if (rest.webSearchEnabled && agent.name === "sushi") {
     const perplexityAgent = await getAiAgent({
       name: "perplexity",
@@ -5183,6 +5183,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
     model = await getModelProvider({
       app: requestApp,
       name: perplexityAgent.name,
+      job,
     })
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
@@ -5595,7 +5596,10 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
         // console.log("🧠 Enhancing prompt with DeepSeek...")
 
         // Check token limit for enhancement messages
-        const deepseekEnhanceProvider = await getModelProvider(requestApp)
+        const deepseekEnhanceProvider = await getModelProvider({
+          app: requestApp,
+          job,
+        })
         const enhanceModelId =
           typeof deepseekEnhanceProvider.provider === "string"
             ? deepseekEnhanceProvider.provider
