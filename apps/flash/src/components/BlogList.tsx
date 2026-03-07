@@ -35,7 +35,7 @@ const timeAgo = (dateString: string) => {
 export default function BlogList({ posts, locale }: BlogListProps) {
   return (
     <div>
-      <h1 className={styles.title}>📝 Blog</h1>
+      <h1 className={styles.title}>Blog</h1>
       {posts.length === 0 ? (
         <p className={styles.emptyState}>
           No posts found. Check back later! 🌱
@@ -43,9 +43,15 @@ export default function BlogList({ posts, locale }: BlogListProps) {
       ) : (
         <ul className={styles.blogList}>
           {posts.map((post) => (
-            <li key={post.slug} style={{ marginBottom: 24 }}>
+            <li key={post.slug} style={{ padding: ".8rem 0" }}>
               <article>
-                <h2>
+                <h2
+                  style={{
+                    marginTop: 0,
+                    marginBottom: 0,
+                    fontSize: "1.1rem",
+                  }}
+                >
                   <a
                     href={`/blog/${post.slug}`}
                     aria-label={`Read full post: ${post.title}`}

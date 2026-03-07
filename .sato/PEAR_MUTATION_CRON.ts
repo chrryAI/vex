@@ -21,11 +21,6 @@
 //     for (const target of agents.filter(a => a !== agent)) {
 //       // AI generates mutation
 //       const mutation = await generateMutation(agent, target)
-
-//       // Pear auto-applies if approved
-//       if (mutation.autoApproved) {
-//         await applyMutation(mutation)
-//       }
 //     }
 //   }
 // }

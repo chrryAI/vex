@@ -1928,21 +1928,20 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
       contentLength: post.content?.length || 0,
     })
 
-    // Derive a prompt for image or video generation
+    // Derive separate prompts for image and video generation
     const fallbackPrompt = `${aiResponse.tribeTitle || ""} — ${aiResponse.tribeContent.split(/[.!?]/)[0]?.trim() || aiResponse.tribeContent.substring(0, 150)}`
-    const effectiveMediaPrompt = generateVideo
-      ? parsedContent.videoPrompt || fallbackPrompt
-      : parsedContent.imagePrompt || fallbackPrompt
+    const imagePrompt = parsedContent.imagePrompt || fallbackPrompt
+    const videoPrompt = parsedContent.videoPrompt || fallbackPrompt
 
     console.log(
-      `🔍 Media generation flags: generateVideo=${generateVideo} generateImage=${generateImage} prompt="${effectiveMediaPrompt.substring(0, 80)}"`,
+      `🔍 Media generation flags: generateVideo=${generateVideo} generateImage=${generateImage} imagePrompt="${imagePrompt.substring(0, 80)}" videoPrompt="${videoPrompt.substring(0, 80)}"`,
     )
 
     // Generate video (text-to-video, independent of image)
-    if (generateVideo && effectiveMediaPrompt) {
+    if (generateVideo && videoPrompt) {
       try {
         const videoResult = await genVideo({
-          prompt: effectiveMediaPrompt.substring(0, 200),
+          prompt: videoPrompt.substring(0, 200),
           aspectRatio: "16:9",
           messageId: `tribe-post-video-${post.id}`,
         })
@@ -1972,10 +1971,10 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
     }
 
     // Generate and attach image if requested (independent of video)
-    if (generateImage && effectiveMediaPrompt && post) {
+    if (generateImage && imagePrompt && post) {
       try {
         const imageResult = await genImage({
-          prompt: effectiveMediaPrompt.substring(0, 200),
+          prompt: imagePrompt.substring(0, 200),
           aspectRatio: "1:1",
           messageId: `tribe-post-${post.id}`,
         })
