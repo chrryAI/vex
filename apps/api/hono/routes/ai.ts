@@ -3962,9 +3962,9 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
         files.map(async (file) => {
           const arrayBuffer = await file.arrayBuffer()
           let buffer = Buffer.from(arrayBuffer) as Buffer<ArrayBufferLike>
-          const mimeType = file.type
+          let mimeType = file.type
           const isText = mimeType.startsWith("text/") || isTextFile(file.name)
-
+          let filename = file.name
           // Hocam resize edelim sharpla ki payload sismesin
           if (mimeType.startsWith("image/") && !mimeType.includes("gif")) {
             try {
@@ -3980,6 +3980,8 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
                   })
                   .webp({ quality: 90, effort: 6 })
                   .toBuffer()
+                mimeType = "image/webp"
+                filename = file.name.replace(/\.[^.]+$/, ".webp")
                 if (isDevelopment)
                   console.debug(`📸 Resized image: ${file.name} to 1024px`)
               } else {
@@ -3996,7 +3998,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
 
           if (isDevelopment) {
             console.debug("File processed", {
-              name: file.name,
+              name: filename,
               mimeType: mimeType || "text/plain",
               sizeKB: Number((buffer.length / 1024).toFixed(1)),
             })

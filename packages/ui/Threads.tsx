@@ -139,6 +139,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     data: threadsData,
     mutate: refetch,
     isLoading: isLoadingThreads,
+    isValidating,
     error,
   } = useSWR(
     ["threads", until, search, sortByDate, app?.id],
@@ -165,10 +166,10 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
   }, [token, until, sortByDate, collaborationStatus])
 
   useEffect(() => {
-    if (error || !isLoadingThreads) {
-      isLoading && setIsLoading(false)
+    if (error || !isValidating) {
+      setIsLoading(false)
     }
-  }, [error, isLoadingThreads, isLoading])
+  }, [error, isValidating])
 
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 

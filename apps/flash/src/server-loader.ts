@@ -112,12 +112,11 @@ export async function loadServerData(
   const isBlogList = pathname === "/blog"
   const isBlogPost = pathname.startsWith("/blog/") && pathname !== "/blog"
 
-  const blogDataPromise =
-    isBot && isBlogList
-      ? getBlogPosts()
-      : isBot && isBlogPost
-        ? getBlogPost(pathname.replace("/blog/", ""))
-        : Promise.resolve(null)
+  const blogDataPromise = isBlogList
+    ? getBlogPosts()
+    : isBlogPost
+      ? getBlogPost(pathname.replace("/blog/", ""))
+      : Promise.resolve(null)
 
   const isLocalePathname =
     pathname && locales.includes(pathname.split("/")?.[1] as locale)

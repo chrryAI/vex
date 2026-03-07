@@ -2370,7 +2370,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     <Sparkles size={16} />
                     {t("Load {{count}} new post", {
                       count: newPostsCount,
-                    }).replace("post", newPostsCount > 1 ? "posts" : "post")}
+                    })}
                   </Button>
                 </Div>
               )}

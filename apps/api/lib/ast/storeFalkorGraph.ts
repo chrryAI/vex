@@ -260,7 +260,7 @@ export async function getFunctionCallChain(
 ): Promise<any> {
   return queryCodeGraph(
     `
-    MATCH path = (f:FUNCTION {name: $functionName})-[:CALLS*1..${Number(depth)}]->(called:FUNCTION)
+    MATCH path = (f:FUNCTION {name: $functionName})-[:CALLS*1..${depth}]->(called:FUNCTION)
     RETURN path
   `,
     { functionName },
