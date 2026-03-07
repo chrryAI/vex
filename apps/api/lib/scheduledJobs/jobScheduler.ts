@@ -1175,6 +1175,7 @@ Important Notes:
         appId: app.id,
         agentId: selectedAgent.id,
         stream: false,
+        jobId: job?.id,
       }),
     })
 
