@@ -51,7 +51,7 @@ export const modelCapabilities: Record<string, { tools: boolean }> = {
 
 export async function getModelProvider({
   app,
-  name = "beles",
+  name = "deepSeek",
   canReason = true,
   activeSchedule,
   job,
@@ -254,7 +254,8 @@ export async function getModelProvider({
           ? process.env.DEEPSEEK_API_KEY
           : "")
       {
-        const modelId = canReason ? "deepseek-reasoner" : "deepseek-chat"
+        const modelId =
+          canReason && !job ? "deepseek-reasoner" : "deepseek-chat"
         if (sushiKey && !failedKeys?.includes(modelId)) {
           const sushiProvider = createDeepSeek({ apiKey: sushiKey })
 
@@ -295,7 +296,7 @@ export async function getModelProvider({
       }
 
       // Kategori belirleme: Job objesindeki jobType üzerinden nokta atışı yapıyoruz
-      let category: keyof typeof freeModels = "post"
+      let category: keyof typeof freeModels | undefined
 
       if (job?.jobType) {
         if (job.jobType.includes("comment")) category = "comment"
@@ -316,9 +317,9 @@ export async function getModelProvider({
           category = "comment"
       }
 
-      const pool = freeModels[category]
+      const pool = category ? freeModels[category as "post"] : []
       const failedModels = (agent.metadata?.failed || []) as string[]
-      const activePool = pool.filter((m) => !failedModels.includes(m))
+      const activePool = pool?.filter((m) => !failedModels.includes(m)) || []
 
       // Sort by last called date (least recently used first) to spread load
       const sortedPool = [...activePool].sort((a, b) => {
@@ -335,7 +336,7 @@ export async function getModelProvider({
         activeSchedule?.modelId ||
         job?.metadata?.modelId ||
         sortedPool[0] ||
-        (activePool.length > 0 ? activePool[0] : pool[0]) ||
+        (activePool?.length > 0 ? activePool[0] : pool[0]) ||
         "qwen/qwen3-235b-a22b-thinking-2507"
 
       if (openrouterKeyForDeepSeekReasoner && !failedKeys?.includes(modelId)) {
