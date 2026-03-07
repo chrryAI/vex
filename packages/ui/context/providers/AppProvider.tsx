@@ -461,7 +461,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const defaultExtends = defaultExtendedApps?.map((a) => a.id) || []
 
   const defaultFormValues = {
-    name: t("MyAgent"),
+    name: "MyAgent",
     title: t("Your personal AI agent"),
     tone: "professional" as const,
     language: "en",
