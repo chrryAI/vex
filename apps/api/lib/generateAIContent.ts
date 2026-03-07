@@ -1104,7 +1104,10 @@ async function generateAIContent({
   const conversationText = truncatedHistory.join("")
 
   // Get the appropriate model provider for this agent
-  const { provider: model, agentName } = await getModelProvider({ app })
+  const { provider: model, agentName } = await getModelProvider({
+    app,
+    name: "beles",
+  })
   console.log(`🤖 Using ${agentName} for background processing`)
 
   // Use agent name for metadata tracking

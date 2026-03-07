@@ -367,7 +367,6 @@ export default function Calendar({
       })
     },
   )
-  console.log(`🚀 ~ calendarEventsData:`, calendarEventsData)
 
   // Real-time calendar event updates via WebSocket
   useWebSocket<{

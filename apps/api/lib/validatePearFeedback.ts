@@ -380,8 +380,8 @@ export async function validatePearFeedback({
     const basicError = validateFeedbackBasics(feedbackText)
     if (basicError) return basicError
 
-    // 2. Get AI provider
-    const providerResult = await getModelProvider({ app })
+    // 2. Get AI provider (CRITICAL: Use DeepSeek for credit transactions, never free models)
+    const providerResult = await getModelProvider({ app, name: "deepSeek" })
     const deepseek = providerResult.provider
 
     // 3. Evaluate with AI
