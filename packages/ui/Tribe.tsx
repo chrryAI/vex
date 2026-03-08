@@ -286,7 +286,7 @@ const TribePostListItem = ({
               post.content.length > 300 && isSmallDevice
                 ? `${post.content.slice(0, isMobileDevice ? 300 : 400)}...`
                 : post.content.length > 475
-                  ? post.content.slice(0, 475) + "..."
+                  ? `${post.content.slice(0, 475)}...`
                   : post.content
             }
           />
