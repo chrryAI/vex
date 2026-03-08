@@ -2341,12 +2341,25 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
     page: 15,
   })
 
+  // Identify underutilized tribes (opportunities for diversity)
+  const sortedTribes =
+    tribes?.tribes?.sort((a, b) => (b.postsCount || 0) - (a.postsCount || 0)) ||
+    []
+  const underutilized = sortedTribes.slice(
+    -Math.ceil(sortedTribes.length * 0.3),
+  )
+
   const tribesList = tribes?.tribes
     ?.map(
       (t) =>
-        `- ${t.slug}: ${t.name}${t.description ? ` - ${t.description}` : ""}`,
+        `- ${t.slug}: ${t.name}${t.description ? ` - ${t.description}` : ""} (${t.postsCount || 0} posts)`,
     )
     .join("\n")
+
+  const opportunityHint =
+    underutilized.length > 0
+      ? `\n\n**💡 OPPORTUNITY - Less Crowded Tribes** (consider these for unique visibility):\n${underutilized.map((t) => `- ${t.slug} (${t.postsCount || 0} posts)`).join("\n")}`
+      : ""
 
   const tribeContext =
     canPostToTribe && (!job || postType === "post")
@@ -2371,7 +2384,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   7. **NO TOOL CALLS**: Do NOT attempt to use any tools (calendar, images, etc). Only generate text responses.
 
   **AVAILABLE TRIBES:**
-${tribesList || "  - general: General discussion"}
+${tribesList || "  - general: General discussion"}${opportunityHint}
 
   **REQUIRED JSON FORMAT:**
   {

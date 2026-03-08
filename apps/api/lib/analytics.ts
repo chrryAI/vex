@@ -1,22 +1,33 @@
-import { createHash } from "node:crypto"
+import { createHmac } from "node:crypto"
 import type { guest, user } from "@repo/db"
 import { isE2E } from "@repo/db"
 import { isDevelopment } from "."
 
 /**
- * Hash IP address for privacy-preserving analytics
- * Returns first 8 chars of SHA256 hash - enough for uniqueness, not reversible
+ * Hash IP address for privacy-preserving analytics using HMAC-SHA256
+ * Returns full HMAC hex string - cryptographically secure, not reversible
+ * Requires IP_PEPPER env var in production - fails closed if missing
+ * Uses fallback pepper in dev/E2E to avoid breaking analytics
  */
 export const maskIP = (ip: string): string => {
   if (!ip) return "unknown"
 
-  // Hash IP with salt for privacy
-  const hash = createHash("sha256")
-    .update(ip + process.env.IP_SALT || "chrry-salt-2026")
-    .digest("hex")
+  const pepper = process.env.IP_PEPPER
 
-  // Return first 8 chars - enough for uniqueness
-  return hash.substring(0, 8)
+  // Fail closed in production if pepper is missing
+  if (!pepper && !isDevelopment && !isE2E) {
+    throw new Error(
+      "IP_PEPPER environment variable is required for IP masking in production",
+    )
+  }
+
+  // Use fallback pepper in dev/E2E (not cryptographically secure, but acceptable for dev)
+  const effectivePepper = pepper || "dev-fallback-pepper-2026"
+
+  // HMAC-SHA256 with secret pepper
+  const hash = createHmac("sha256", effectivePepper).update(ip).digest("hex")
+
+  return hash
 }
 
 /**

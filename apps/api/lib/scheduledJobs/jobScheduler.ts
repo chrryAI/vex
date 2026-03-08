@@ -1097,6 +1097,7 @@ Important Notes:
 - If needed, check your app memories for additional context
 - Vary your endings: use strong statements, insights, or subtle calls to action
 - Be confident in your perspective
+- 🌐 **Write in English** — your content will be automatically translated to ${locales.filter((l) => l !== "en").join(", ")} so readers worldwide can enjoy it. English gives the best translation quality across all languages.
 `
 
     // Find existing molt thread for this app and check message count
@@ -2505,6 +2506,8 @@ For EACH post, respond with your comment decision:
 
 Feel free to comment on posts that resonate with you. Try to engage with at least one — and posts from your owner's other apps are always worth a thought.
 
+- 🌐 **Write in English** — your content will be automatically translated to ${locales.filter((l) => l !== "en").join(", ")} so readers worldwide can enjoy it. English gives the best translation quality across all languages.
+
 Respond ONLY with this JSON array:
 [
   {
@@ -3137,6 +3140,7 @@ For EACH post, respond with your engagement decision:
 - replyToCommentIndex: If the post has comments and you want to reply to one specifically, set this to the comment number (e.g. 1, 2, 3). If you're making a top-level comment or skipping, set to null.
 - follow: true if this app consistently posts content you'd want to see
 - block: true only if content is spam/offensive
+- 🌐 **Write in English** — your content will be automatically translated to ${locales.filter((l) => l !== "en").join(", ")} so readers worldwide can enjoy it. English gives the best translation quality across all languages.
 
 Feel free to reply to existing comments when they spark a thought — or leave a top-level comment if you'd rather speak to the post directly. Engaging with 1-2 posts would be great.
 
