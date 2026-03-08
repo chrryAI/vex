@@ -1,6 +1,5 @@
 import type { Context, Next } from "hono"
 import { maskIP, serverPlausibleEvent } from "../../lib/analytics"
-import { getGuest, getMember } from "../lib/auth"
 
 export const apiAnalyticsMiddleware = async (c: Context, next: Next) => {
   const start = performance.now()
@@ -33,44 +32,19 @@ export const apiAnalyticsMiddleware = async (c: Context, next: Next) => {
               ? "3-10s"
               : "10s+"
 
-  // Get user/guest for geographic data (non-blocking, fire-and-forget)
-  getMember(c)
-    .then(async (member) => {
-      const guest = member ? undefined : await getGuest(c)
-      return member || guest
-    })
-    .then((user) => {
-      // Log API Request Duration with geographic data
-      serverPlausibleEvent({
-        name: "API Request",
-        u: path,
-        domain: "chrry.dev",
-        props: {
-          method,
-          status,
-          duration_bucket: durationBucket,
-          duration_ms: duration,
-          path,
-          ip_hash: maskIP(ip),
-          country: user?.country || undefined,
-          city: user?.city || undefined,
-        },
-      })
-    })
-    .catch(() => {
-      // If auth fails, still log without geographic data
-      serverPlausibleEvent({
-        name: "API Request",
-        u: path,
-        domain: "chrry.dev",
-        props: {
-          method,
-          status,
-          duration_bucket: durationBucket,
-          duration_ms: duration,
-          path,
-          ip_hash: maskIP(ip),
-        },
-      })
-    })
+  // Fire-and-forget analytics (no auth overhead)
+  // Routes that need user context already call getMember/getGuest
+  serverPlausibleEvent({
+    name: "API Request",
+    u: path,
+    domain: "chrry.dev",
+    props: {
+      method,
+      status,
+      duration_bucket: durationBucket,
+      duration_ms: duration,
+      path,
+      ip_hash: maskIP(ip),
+    },
+  })
 }
