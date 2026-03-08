@@ -121,14 +121,12 @@ export function TribeProvider({ children }: TribeProviderProps) {
     getAppSlug,
     tribeSlug,
     currentTribe,
+    tribes,
+    setTribes,
     setLanguageModal,
     app, // Current selected app for filtering
     ...auth
   } = useAuth()
-
-  const [tribes, setTribes] = useState<paginatedTribes | undefined>(
-    initialTribes,
-  )
 
   const { push, addParams, removeParams, searchParams } = useNavigation()
 

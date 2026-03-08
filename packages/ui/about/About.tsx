@@ -18,6 +18,7 @@ import {
   useNavigationContext,
 } from "../context/providers"
 import { useStyles } from "../context/StylesContext"
+import { useHasHydrated } from "../hooks"
 import Img from "../Image"
 import Instructions from "../Instructions"
 import {
@@ -60,14 +61,9 @@ import {
 import { getFeatures } from "../utils/subscription"
 import { useAboutStyles } from "./About.styles"
 export default function About() {
-  const {
-    chrry,
-    baseApp,
-    user,
-    siteConfig: config,
-    accountApp,
-    app,
-  } = useAuth()
+  const { user, siteConfig: config, accountApp, app } = useAuth()
+
+  const hasHydrated = useHasHydrated()
 
   const styles = useAboutStyles()
   const { utilities } = useStyles()
@@ -92,8 +88,6 @@ export default function About() {
     pearPlusFeatures,
     grapePlusFeatures,
     grapeFreeFeatures,
-    grapeProFeatures,
-    pearProFeatures,
     pearFreeFeatures,
     sushiCoderFeatures,
     sushiArchitectFeatures,
@@ -103,8 +97,6 @@ export default function About() {
     ADDITIONAL_CREDITS,
     CREDITS_PRICE,
   })
-
-  const apps = chrry?.store?.apps || baseApp?.store?.apps
 
   const renderCreate = ({ slug }: { slug?: string } = {}) => {
     return (
@@ -235,7 +227,9 @@ export default function About() {
             {", "}
             <a href="https://x.com/chrryAI">@chrryAI</a>
             {", "}
-            <a href="mailto:iliyan@chrry.ai">iliyan@chrry.ai</a>
+            {hasHydrated && (
+              <a href="mailto:iliyan@chrry.ai">iliyan@chrry.ai</a>
+            )}
           </P>
         </Section>
 

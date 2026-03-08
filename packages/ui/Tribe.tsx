@@ -935,7 +935,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const { t, captureException } = useAppContext()
 
   useTribePostMetadata(tribePost ?? undefined)
-  useTribeMetadata(tribePost ? undefined : currentTribe)
+  useTribeMetadata()
 
   const downloadImage = async (imageUrl: string, imageName?: string) => {
     try {
