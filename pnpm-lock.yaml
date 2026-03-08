@@ -702,7 +702,7 @@ importers:
         specifier: ^5.1.0
         version: 5.2.1
       express-rate-limit:
-        specifier: '>=8.2.2'
+        specifier: ^8.2.2
         version: 8.3.0(express@5.2.1)
       gray-matter:
         specifier: ^4.0.3
