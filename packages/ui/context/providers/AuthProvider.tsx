@@ -2075,13 +2075,7 @@ export function AuthProvider({
   }
 
   const getTribeUrl = () => {
-    return canShowAllTribe
-      ? siteConfig?.isTribe
-        ? "/"
-        : `/tribe`
-      : siteConfig?.isTribe
-        ? "/?tribe=true"
-        : `/tribe?tribe=true`
+    return siteConfig?.isTribe ? "/" : `/tribe`
   }
 
   const canBurn = true
@@ -2272,8 +2266,6 @@ export function AuthProvider({
   const currentTribe = tribeSlug
     ? tribes?.tribes?.find((t) => t.slug === tribeSlug)
     : undefined
-
-  console.log(`🚀 ~ tribeSlug:`, currentTribe, tribeSlug, tribes)
 
   const tribeQuery = searchParams.get("tribe") === "true"
 

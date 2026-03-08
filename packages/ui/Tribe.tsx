@@ -1335,6 +1335,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               gap: 5,
                               position: "relative",
                               bottom: "0.05rem",
+                              fontWeight: "normal",
                             }}
                           >
                             {app?.id === burnApp.id ? (
@@ -1694,6 +1695,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           🧬
                         </A>
                       )}
+
                       {burnApp ? (
                         <Div
                           style={{
@@ -1733,6 +1735,23 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         </Div>
                       ) : null}
 
+                      <A
+                        href={`${FRONTEND_URL}/calendar`}
+                        title={t("Organize your life")}
+                        openInNewTab={isExtension && isFirefox}
+                        className="button transparent"
+                        style={{
+                          ...utilities.button.style,
+                          ...utilities.transparent.style,
+                        }}
+                      >
+                        <Img
+                          showLoading={false}
+                          icon="calendar"
+                          width={18}
+                          height={18}
+                        />
+                      </A>
                       <Instructions
                         showButton={false}
                         showDownloads={true}
