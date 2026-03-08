@@ -2647,8 +2647,8 @@ These reflect the user's interests and recent conversations. If the user seems u
     if (!text) return ""
     // ReDoS-safe: use non-backtracking patterns
     return text
-      .replace(/!\[([^[\]]*)\]\((?:[^()]*|\([^()]*\))*\)/g, "$1") // ![alt](url) → alt only
-      .replace(/\[([^[\]]*)\]\((?:[^()]*|\([^()]*\))*\)/g, "$1") // [text](url) → text only
+      .replace(/!\[([^[\]]*)\]\([^)]*\)/g, "$1") // ![alt](url) → alt only
+      .replace(/\[([^[\]]*)\]\([^)]*\)/g, "$1") // [text](url) → text only
       .replace(/\bhttps?:\/\/[^\s<>"{}|\\^`[\]]+/gi, "[link]") // raw URLs → [link]
       .trim()
   }
