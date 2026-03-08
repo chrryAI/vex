@@ -43,7 +43,7 @@ export const modelCapabilities: Record<string, { tools: boolean }> = {
   "deepseek/deepseek-r1": { tools: true },
   "qwen/qwen3-235b-a22b-thinking-2507": { tools: true },
   "qwen/qwen3-vl-235b-a22b-thinking": { tools: true },
-  "qwen/qwen3-vl-30b-a3b-thinking": { tools: true },
+  // "qwen/qwen3-vl-30b-a3b-thinking": { tools: true },
   "perplexity/sonar-pro": { tools: false },
   "sonar-pro": { tools: false },
   "openai/gpt-oss-120b:free": { tools: false },
@@ -51,8 +51,9 @@ export const modelCapabilities: Record<string, { tools: boolean }> = {
 
 export async function getModelProvider({
   app,
-  name = "deepseek",
+  name = "deepSeek",
   canReason = true,
+  activeSchedule,
   job,
 }: {
   app?: app | appWithStore
@@ -69,6 +70,20 @@ export async function getModelProvider({
     | string
   canReason?: boolean
   job?: scheduledJob
+  activeSchedule?: {
+    modelId?: string
+    time: string // "09:00"
+    model: string
+    postType: "post" | "comment" | "engagement"
+    charLimit: number
+    credits: number
+    generateImage?: boolean
+    generateVideo?: boolean
+    fetchNews?: boolean
+    languages?: string[]
+    maxTokens?: number // Optional max tokens for AI generation
+    intervalMinutes?: number // Optional interval for custom frequency (e.g., 60 = every hour)
+  }
 }): Promise<{
   provider: LanguageModel
   modelId: string
@@ -104,7 +119,9 @@ export async function getModelProvider({
     lastKey?: string
   }
 
-  switch (agent.name) {
+  const toSwitch = agent.name
+
+  switch (toSwitch) {
     case "beles": {
       const openrouterKey =
         safeDecrypt(app?.apiKeys?.openrouter) || process.env.OPENROUTER_API_KEY
@@ -112,9 +129,10 @@ export async function getModelProvider({
       if (openrouterKey) {
         const freeModels = [
           // "openrouter/free", // En kolay, auto-rotasyon
-          "arcee-ai/trinity-large-preview:free",
-          "nvidia/nemotron-3-nano-30b-a3b:free",
-          "meta-llama/llama-3.3-70b-instruct:free",
+          // "arcee-ai/trinity-large-preview:free",
+          // "nvidia/nemotron-3-nano-30b-a3b:free",
+          // "meta-llama/llama-3.3-70b-instruct:free",
+          "qwen/qwen3-vl-235b-a22b-thinking",
         ]
 
         // LRU rotasyon (mevcut sortedPool logicini kullan)
@@ -139,16 +157,16 @@ export async function getModelProvider({
         return {
           provider: provider(modelId),
           modelId,
-          agentName: "beles-free",
+          agentName: "deepSeek", // now we have to for BC
           supportsTools: false, // Zorla kapat
         }
       }
 
       // Fallback: Perplexity (no tools zaten)
       return {
-        provider: createPerplexity({ apiKey: "" })("sonar-small-online"),
-        modelId: "sonar-small-online",
-        agentName: "perplexity-free",
+        provider: createDeepSeek({ apiKey: "" })(targetModelId),
+        modelId: targetModelId,
+        agentName: agent.name,
         supportsTools: false,
       }
     }
@@ -159,7 +177,7 @@ export async function getModelProvider({
           ? process.env.DEEPSEEK_API_KEY
           : ""
 
-      if (deepseekKey && !failedKeys?.includes("deepSeek")) {
+      if (deepseekKey) {
         const deepseekProvider = createDeepSeek({ apiKey: deepseekKey })
         result = {
           provider: deepseekProvider(
@@ -230,6 +248,27 @@ export async function getModelProvider({
     }
 
     case "sushi": {
+      const sushiKey =
+        (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
+        (!plusTiers.includes(app?.tier || "")
+          ? process.env.DEEPSEEK_API_KEY
+          : "")
+      {
+        const modelId =
+          canReason && !job ? "deepseek-reasoner" : "deepseek-chat"
+        if (sushiKey) {
+          const sushiProvider = createDeepSeek({ apiKey: sushiKey })
+
+          result = {
+            provider: sushiProvider(modelId),
+            modelId,
+            agentName: agent.name,
+            lastKey: "deepSeek",
+          }
+          break
+        }
+      }
+
       const openrouterKeyForDeepSeekReasoner = app?.apiKeys?.openrouter
         ? safeDecrypt(app?.apiKeys?.openrouter)
         : !plusTiers.includes(app?.tier || "")
@@ -248,7 +287,7 @@ export async function getModelProvider({
       const selectedKey = allKeys[keyIndex] || openrouterKeyForDeepSeekReasoner
 
       const freeModels = {
-        reaction: ["qwen/qwen3-vl-30b-a3b-thinking"],
+        reaction: ["qwen/qwen3-235b-a22b-thinking-2507"],
         comment: ["qwen/qwen3-vl-235b-a22b-thinking"],
         post: [
           "qwen/qwen3-235b-a22b-thinking-2507",
@@ -257,7 +296,7 @@ export async function getModelProvider({
       }
 
       // Kategori belirleme: Job objesindeki jobType üzerinden nokta atışı yapıyoruz
-      let category: keyof typeof freeModels = "post"
+      let category: keyof typeof freeModels | undefined
 
       if (job?.jobType) {
         if (job.jobType.includes("comment")) category = "comment"
@@ -278,9 +317,9 @@ export async function getModelProvider({
           category = "comment"
       }
 
-      const pool = freeModels[category]
+      const pool = category ? freeModels[category as "post"] : []
       const failedModels = (agent.metadata?.failed || []) as string[]
-      const activePool = pool.filter((m) => !failedModels.includes(m))
+      const activePool = pool?.filter((m) => !failedModels.includes(m)) || []
 
       // Sort by last called date (least recently used first) to spread load
       const sortedPool = [...activePool].sort((a, b) => {
@@ -294,8 +333,10 @@ export async function getModelProvider({
       })
 
       const modelId =
+        activeSchedule?.modelId ||
+        job?.metadata?.modelId ||
         sortedPool[0] ||
-        (activePool.length > 0 ? activePool[0] : pool[0]) ||
+        (activePool?.length > 0 ? activePool[0] : pool[0]) ||
         "qwen/qwen3-235b-a22b-thinking-2507"
 
       if (openrouterKeyForDeepSeekReasoner && !failedKeys?.includes(modelId)) {
@@ -326,31 +367,12 @@ export async function getModelProvider({
         break
       }
 
-      const sushiKey =
-        (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
-        (!plusTiers.includes(app?.tier || "")
-          ? process.env.DEEPSEEK_API_KEY
-          : "")
-      {
-        const modelId = canReason ? "deepseek-reasoner" : "deepseek-chat"
-        if (sushiKey && !failedKeys?.includes(modelId)) {
-          const sushiProvider = createDeepSeek({ apiKey: sushiKey })
-
-          result = {
-            provider: sushiProvider(modelId),
-            modelId,
-            agentName: agent.name,
-            lastKey: "deepSeek",
-          }
-          break
-        }
-      }
-
       result = {
         provider: createDeepSeek({ apiKey: "" })("deepseek-reasoner"),
         modelId: "deepseek-reasoner",
         agentName: agent.name,
       }
+
       break
     }
 

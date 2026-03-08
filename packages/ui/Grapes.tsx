@@ -209,7 +209,7 @@ const Grapes = ({
                       })
                       setShowGrapes(false)
                       setSelectedGrapeApp(undefined)
-                      setIsPear(selectedGrapeApp)
+                      setIsPear(selectedGrapeApp, true)
                     }}
                     style={{}}
                   >

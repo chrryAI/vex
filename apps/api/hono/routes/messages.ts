@@ -464,23 +464,26 @@ messages.post("/", async (c) => {
     currentThreadId = newThread.id
 
     if (!isE2E) {
-      try {
-        console.log("🤖 Generating AI title...")
-        const newTitle = await generateThreadTitle({
-          messages: [messageContent],
-          instructions,
-          language: language || "en",
-          threadId: newThread.id,
-          fingerprint,
+      // Fire-and-forget: Don't block thread creation on title generation
+      generateThreadTitle({
+        messages: [messageContent],
+        instructions,
+        language: language || "en",
+        threadId: newThread.id,
+        fingerprint,
+      })
+        .then(async (newTitle) => {
+          console.log("✅ AI title generated:", newTitle)
+          await updateThread({
+            id: newThread.id,
+            title: newTitle,
+            updatedOn: new Date(),
+          })
         })
-        await updateThread({
-          id: newThread.id,
-          title: newTitle,
-          updatedOn: new Date(),
+        .catch((error) => {
+          console.error("⚠️ Failed to generate thread title:", error)
+          captureException(error)
         })
-      } catch (error) {
-        captureException(error)
-      }
     }
   }
 

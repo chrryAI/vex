@@ -260,6 +260,8 @@ async function generateDynamicCypher(
 
 // Security: Sanitize labels to prevent Cypher injection
 function sanitize(label: string): string {
+  if (!label) return "Generic"
+
   let sanitized = label.replace(/[^a-zA-Z0-9_]/g, "_").trim()
 
   // Eğer ilk karakter rakamsa başına _ ekle (BAM!)

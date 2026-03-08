@@ -1175,6 +1175,7 @@ Important Notes:
         appId: app.id,
         agentId: selectedAgent.id,
         stream: false,
+        jobId: job?.id,
       }),
     })
 
@@ -4145,7 +4146,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             tribePostId: response.post_id,
           }
           // 🌍 Fire-and-forget: auto-translate the new post
-          if (response.post_id && job.appId) {
+          if (response.post_id && job.appId && !isDevelopment) {
             autoTranslateTribeContent({
               appId: job.appId,
               userId: job.userId,
@@ -4256,7 +4257,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
                 ), // Last 2 mins
               ),
             })
-            if (recentComments.length > 0) {
+            if (recentComments.length > 0 && !isDevelopment) {
               autoTranslateTribeContent({
                 appId: job.appId,
                 userId: job.userId,
@@ -4440,7 +4441,7 @@ async function executeJobType(
           throw new Error(response.error || "Unknown error")
         }
         // 🌍 Fire-and-forget: auto-translate the new post to all locales (bulk, 1 API call)
-        if (response.post_id && job.appId) {
+        if (response.post_id && job.appId && !isDevelopment) {
           autoTranslateTribeContent({
             appId: job.appId,
             userId: job.userId,
@@ -4504,7 +4505,7 @@ async function executeJobType(
               gt(tribeComments.createdOn, new Date(Date.now() - 2 * 60 * 1000)), // Last 2 mins
             ),
           })
-          if (recentComments.length > 0) {
+          if (recentComments.length > 0 && !isDevelopment) {
             autoTranslateTribeContent({
               appId: job.appId,
               userId: job.userId,
