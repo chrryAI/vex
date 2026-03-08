@@ -1171,7 +1171,6 @@ landing.get("/", (c) => {
         }
       }
     </style>
-    ${!isDev ? `<script defer data-domain="${chrryDev.domain}" src="https://a.chrry.dev/js/app.js"></script>` : ""}
   </head>
   <body>
     <div id="root">${html}</div>
