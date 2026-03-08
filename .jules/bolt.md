@@ -17,3 +17,8 @@
 
 **Learning:** `markdown-to-jsx`'s `options` prop, if passed as an inline object, causes re-renders even if the parent component is memoized. Especially when `overrides` contains inline component definitions, it creates new function references on every render.
 **Action:** Always wrap `options` object for `<Markdown>` in `useMemo` when using `markdown-to-jsx` or similar libraries, and ensure component overrides are stable (either defined outside or memoized).
+
+## 2026-03-08 - Context Heavy Component Re-renders
+
+**Learning:** Components that rely heavily on React context (like `useData`, `useAuth`, `useStyles`) can cause widespread unnecessary re-renders in a dashboard/widget setup (like `Weather`) if not wrapped in `React.memo`. While the context itself might change, memoization prevents re-renders when the parent component updates for unrelated reasons.
+**Action:** Always wrap static or semi-static widget components (like `Weather`, `Clock`, etc.) in `React.memo` to prevent them from re-rendering when parent components update, especially if they are context-heavy. Always include comments explaining why a component is memoized.
