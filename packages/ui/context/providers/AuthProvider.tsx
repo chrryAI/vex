@@ -161,7 +161,7 @@ const AuthContext = createContext<
       setDeviceId: (value: string) => void
       pear: appWithStore | undefined
       isPear: boolean
-      setIsPear: (value: appWithStore | undefined) => void
+      setIsPear: (value: appWithStore | undefined, navigate?: boolean) => void
       grapes: appWithStore[]
       setIsProgramme: (value: boolean) => void
       showTribeProfile: boolean
@@ -2329,11 +2329,13 @@ export function AuthProvider({
 
   const pear = storeApps.find((app) => app.slug === "pear")
 
-  const setIsPear = (value: appWithStore | undefined) => {
+  const setIsPear = (value: appWithStore | undefined, navigate?: boolean) => {
     setIsPearInternal(!!value)
     if (value) {
-      !canShowAllTribe && router.push(`${getAppSlug(value)}?pear=true`)
       toast.success(`${t("Let's Pear")} 🍐`)
+      if (navigate) {
+        router.push(`${getAppSlug(value)}?pear=true`)
+      }
       return
     }
 

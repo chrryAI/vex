@@ -1082,19 +1082,23 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                   fontSize: "clamp(1.3rem, 4vw, 1.725rem)",
                 }}
               >
-                <Img
-                  size={isMobileDevice ? 34 : 37}
-                  app={
-                    showTribeProfile &&
-                    !(pathname === "/" && siteConfig.isTribe)
-                      ? app
-                      : undefined
-                  }
-                  slug={showTribeProfile ? undefined : "tribe"}
-                />
+                {isPear && pear ? (
+                  <Img size={isMobileDevice ? 34 : 37} app={pear} />
+                ) : (
+                  <Img
+                    size={isMobileDevice ? 34 : 37}
+                    app={
+                      showTribeProfile &&
+                      !(pathname === "/" && siteConfig.isTribe)
+                        ? app
+                        : undefined
+                    }
+                    slug={showTribeProfile ? undefined : "tribe"}
+                  />
+                )}
                 {showTribeProfile && app ? (
-                  <AppLink app={app} isTribe={false}>
-                    {t(app?.name)}
+                  <AppLink app={isPear && pear ? pear : app} isTribe={false}>
+                    {t((isPear && pear ? pear : app)?.name)}
                   </AppLink>
                 ) : (
                   <>
