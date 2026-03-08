@@ -156,7 +156,7 @@ export function generateTribeListMetadata(
     : TRIBE_CANONICAL_BASE
 
   return {
-    title: `${name} - Tribe`,
+    title: tribe ? `${name} - Tribe` : name,
     description,
     openGraph: {
       title: name,
