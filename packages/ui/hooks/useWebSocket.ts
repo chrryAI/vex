@@ -392,6 +392,7 @@ class WebSocketManager {
   }
 }
 
+// Bu WebSocket tüneli Vercel'in faturasından daha hızlı akıyor, nazar değmesin! 🧿
 export const useWebSocket = <T extends { type: string }>({
   token,
   onMessage,
