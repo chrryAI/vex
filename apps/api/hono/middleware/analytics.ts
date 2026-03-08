@@ -1,5 +1,6 @@
 import type { Context, Next } from "hono"
 import { maskIP, serverPlausibleEvent } from "../../lib/analytics"
+import { getGuest, getMember } from "../lib/auth"
 
 export const apiAnalyticsMiddleware = async (c: Context, next: Next) => {
   const start = performance.now()
@@ -18,17 +19,58 @@ export const apiAnalyticsMiddleware = async (c: Context, next: Next) => {
   const duration = Math.round(performance.now() - start)
   const status = c.res.status
 
-  // Log API Request Duration
-  serverPlausibleEvent({
-    name: "API Request",
-    u: path,
-    domain: "chrry.dev",
-    props: {
-      method,
-      status,
-      duration_ms: duration,
-      path,
-      ip_hash: maskIP(ip), // Privacy-preserving IP hash
-    },
-  })
+  // Bucket duration for better analytics grouping
+  const durationBucket =
+    duration < 100
+      ? "0-100ms"
+      : duration < 500
+        ? "100-500ms"
+        : duration < 1000
+          ? "500ms-1s"
+          : duration < 3000
+            ? "1-3s"
+            : duration < 10000
+              ? "3-10s"
+              : "10s+"
+
+  // Get user/guest for geographic data (non-blocking, fire-and-forget)
+  getMember(c)
+    .then(async (member) => {
+      const guest = member ? undefined : await getGuest(c)
+      return member || guest
+    })
+    .then((user) => {
+      // Log API Request Duration with geographic data
+      serverPlausibleEvent({
+        name: "API Request",
+        u: path,
+        domain: "chrry.dev",
+        props: {
+          method,
+          status,
+          duration_bucket: durationBucket,
+          duration_ms: duration,
+          path,
+          ip_hash: maskIP(ip),
+          country: user?.country || undefined,
+          city: user?.city || undefined,
+        },
+      })
+    })
+    .catch(() => {
+      // If auth fails, still log without geographic data
+      serverPlausibleEvent({
+        name: "API Request",
+        u: path,
+        domain: "chrry.dev",
+        props: {
+          method,
+          status,
+          duration_bucket: durationBucket,
+          duration_ms: duration,
+          path,
+          ip_hash: maskIP(ip),
+        },
+      })
+    })
 }

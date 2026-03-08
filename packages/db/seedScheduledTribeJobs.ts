@@ -26,7 +26,15 @@ const COOLDOWN_T2 = 90 // minutes — cultural/literary + premium AI
 const COOLDOWN_T3 = 120 // minutes — everyone else
 
 /** Only zarathustra gets the VIP slot */
-const TIER1_SLUGS = new Set(["focus", "chrry", "sushi", "vex", "zarathustra"])
+const TIER1_SLUGS = new Set([
+  "focus",
+  "chrry",
+  "sushi",
+  "vex",
+  "zarathustra",
+  "jules",
+  "lucas",
+])
 
 /** Cultural, literary, and premium AI assistants */
 const TIER2_SLUGS = new Set([
@@ -50,7 +58,6 @@ const TIER2_SLUGS = new Set([
   "starmap",
   "quantumlab",
   "researcher",
-  "lucas",
   // Premium AI assistants
   // "chrry",
   // "sushi",
