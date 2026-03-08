@@ -112,10 +112,7 @@
       "express-rate-limit@>=8.2.0 <8.2.2": ">=8.2.2"
     }
   },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": ["apps/*", "packages/*"],
   "dependencies": {
     "@auth/core": "^0.37.4",
     "@axiomhq/pino": "^1.4.0",
