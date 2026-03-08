@@ -3689,7 +3689,9 @@ export default function Chat({
                     style={{
                       ...(isChatFloating
                         ? styles.topChatFloatingTopInner.style
-                        : {}),
+                        : {
+                            marginBottom: ".35rem",
+                          }),
                       ...(collaborationStep === 3
                         ? styles.collaborationStep3Div.style
                         : {}),
@@ -4004,6 +4006,7 @@ export default function Chat({
                             position: "relative",
                             zIndex: 300,
                             fontSize: ".85rem",
+                            lineHeight: 2,
                           }}
                           isTribe
                           app={app}

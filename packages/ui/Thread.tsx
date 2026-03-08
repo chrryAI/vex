@@ -666,7 +666,7 @@ const Thread = ({
                                 height={16}
                               />
                             </A>
-                          ) : isRetro || user?.role === "admin" ? (
+                          ) : (isRetro || user?.role === "admin") && isEmpty ? (
                             <>
                               <Button
                                 onClick={() => setIsRetro(false)}
