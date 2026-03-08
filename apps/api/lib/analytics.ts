@@ -1,6 +1,23 @@
+import { createHash } from "node:crypto"
 import type { guest, user } from "@repo/db"
 import { isE2E } from "@repo/db"
 import { isDevelopment } from "."
+
+/**
+ * Hash IP address for privacy-preserving analytics
+ * Returns first 8 chars of SHA256 hash - enough for uniqueness, not reversible
+ */
+export const maskIP = (ip: string): string => {
+  if (!ip) return "unknown"
+
+  // Hash IP with salt for privacy
+  const hash = createHash("sha256")
+    .update(ip + process.env.IP_SALT || "chrry-salt-2026")
+    .digest("hex")
+
+  // Return first 8 chars - enough for uniqueness
+  return hash.substring(0, 8)
+}
 
 /**
  * Send a server-side event to Plausible Analytics
