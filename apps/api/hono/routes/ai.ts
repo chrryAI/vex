@@ -3701,7 +3701,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
   }
 
   const generateContent = async (m?: typeof message) => {
-    // if(job) return
+    if (job) return
     try {
       if (m && selectedAgent) {
         // Use user/guest from the message object to avoid race conditions
