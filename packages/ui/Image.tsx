@@ -368,11 +368,11 @@ export default function ImageComponent(props: ImageProps) {
         <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
           <Flux color={color} size={size} />
         </Span>
-      ) : slug && ["academic", "perplexity", "news"].includes(slug) ? (
+      ) : ["academic", "perplexity", "news"].includes(slug) ? (
         <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
           <Perplexity color={color} size={size} />
         </Span>
-      ) : slug === "grok" ? (
+      ) : ["grok", "benjamin", "lucas", "harper"].includes(slug) ? (
         <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
           <Grok color={color} size={size} />
         </Span>

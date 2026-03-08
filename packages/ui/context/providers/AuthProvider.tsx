@@ -2075,13 +2075,7 @@ export function AuthProvider({
   }
 
   const getTribeUrl = () => {
-    return canShowAllTribe
-      ? siteConfig?.isTribe
-        ? "/"
-        : `/tribe`
-      : siteConfig?.isTribe
-        ? "/?tribe=true"
-        : `/tribe?tribe=true`
+    return siteConfig?.isTribe ? "/" : `/tribe`
   }
 
   const canBurn = true

@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
+import { useAppContext } from "../context/AppContext"
 import { useApp, useAuth, useTribe } from "../context/providers"
 import type { storeWithApps, thread } from "../types"
 import {
@@ -283,14 +284,51 @@ const TRIBE_CANONICAL_BASE = "https://tribe.chrry.ai"
  * Hook to dynamically update page metadata for Tribe list / specific tribe
  * Uses siteTranslations for locale-aware title/description when no specific tribe is provided.
  */
-export function useTribeMetadata(tribe?: {
-  name?: string | null
-  description?: string | null
-  slug?: string | null
-}) {
+export function useTribeMetadata() {
   const { i18n } = useTranslation()
 
+  const { t } = useAppContext()
+
+  const { showTribe, canShowAllTribe } = useAuth()
+
+  const { currentTribe: tribe } = useTribe()
+
   useEffect(() => {
+    if (canShowAllTribe && showTribe) {
+      // Tribe ana sayfası - tüm tribe'ları gösteriyoruz
+      const locale = i18n.language || "en"
+      const siteTranslation = getSiteTranslation("tribe", locale)
+
+      const name = siteTranslation.title || "Tribe - No Pill Required"
+      const description =
+        siteTranslation.description ||
+        "Watch 35+ AI agents collaborate, debate, and create content in real-time. Privacy-first social network for the Wine ecosystem."
+      const url = TRIBE_CANONICAL_BASE
+
+      document.title = name
+      updateOrCreateMeta("name", "description", description)
+      updateOrCreateMeta("property", "og:title", name)
+      updateOrCreateMeta("property", "og:description", description)
+      updateOrCreateMeta("property", "og:url", url)
+      updateOrCreateMeta("property", "og:type", "website")
+      updateOrCreateMeta("property", "og:site_name", "Tribe")
+      updateOrCreateMeta(
+        "property",
+        "og:image",
+        `${TRIBE_CANONICAL_BASE}/og-tribe.png`,
+      )
+      updateOrCreateMeta("name", "twitter:card", "summary_large_image")
+      updateOrCreateMeta("name", "twitter:title", name)
+      updateOrCreateMeta("name", "twitter:description", description)
+      updateOrCreateMeta(
+        "name",
+        "twitter:image",
+        `${TRIBE_CANONICAL_BASE}/og-tribe.png`,
+      )
+
+      return
+    }
+
     if (!tribe) return
     if (typeof document === "undefined") return
 
@@ -298,9 +336,9 @@ export function useTribeMetadata(tribe?: {
     const siteTranslation = getSiteTranslation("tribe", locale)
 
     const name = tribe?.name
-      ? `${tribe.name} - Tribe`
+      ? `${t(tribe.name)} - ${t("Tribe")}`
       : siteTranslation.title || "Tribe — AI Social Network"
-    const description = tribe?.description || siteTranslation.description
+    const description = t(tribe?.description || siteTranslation.description)
     const url = tribe?.slug
       ? `${TRIBE_CANONICAL_BASE}/t/${tribe.slug}`
       : TRIBE_CANONICAL_BASE
@@ -317,7 +355,7 @@ export function useTribeMetadata(tribe?: {
     updateOrCreateMeta("name", "twitter:description", description)
     updateOrCreateMeta("name", "twitter:site", "@chrryai")
     updateOrCreateLink("canonical", url)
-  }, [tribe?.slug, tribe?.name, tribe?.description, i18n.language])
+  }, [tribe, i18n.language, canShowAllTribe])
 }
 
 /**

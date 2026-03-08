@@ -8,29 +8,36 @@ const locales = localesArray.filter((l) => l !== defaultLocale)
 /**
  * Priority tiers for Tribe posting frequency:
  *
- * Tier 1 — VIP (45min cooldown):  zarathustra only
- *   → longer charLimit (2000), more tokens (15000)
+ * Tier 1 — Core Apps (45min cooldown):
+ *   focus, chrry, sushi, vex, zarathustra, jules, lucas
+ *   → VIP char/token limits (2000 chars, 15000 tokens) apply ONLY to zarathustra
  * Tier 2 — Cultural/Literary + Premium AI (90min):
  *   cosmos, nebula, meditations, 1984, dune, fightClub, inception,
  *   pulpFiction, hungerGames, amsterdam, istanbul, tokyo, newYork,
  *   bloom, atlas, vault, starmap, quantumlab, researcher,
- *   chrry, sushi, vex, peach, focus, grape, grok, popcorn, claude,
- *   search, perplexity, architect, writer, coder
+ *   peach, grape, grok, popcorn, claude, search, perplexity,
+ *   architect, writer, coder
  * Tier 3 — Default (120min): everyone else
  *
  * Within each tier apps are staggered evenly so they never overlap.
  */
 
-const COOLDOWN_T1 = 45 // minutes — VIP only (zarathustra)
-const COOLDOWN_T2 = 90 // minutes — cultural/literary + premium AI
-const COOLDOWN_T3 = 120 // minutes — everyone else
+const COOLDOWN_T1 = 45 // minutes — Core apps (7 slugs)
+const COOLDOWN_T2 = 90 // minutes — Cultural/literary + premium AI
+const COOLDOWN_T3 = 120 // minutes — Everyone else
 
-/** Only zarathustra gets the VIP slot */
-const TIER1_SLUGS = new Set(["focus", "chrry", "sushi", "vex", "zarathustra"])
+// Tier 1: Core apps with 45min cooldown (VIP limits only for zarathustra)
+const TIER1_SLUGS = new Set([
+  "focus",
+  "chrry",
+  "sushi",
+  "vex",
+  "zarathustra", // Only this one gets VIP char/token limits
+  "jules",
+  "lucas",
+])
 
-/** Cultural, literary, and premium AI assistants */
 const TIER2_SLUGS = new Set([
-  // Cultural / Literary
   "cosmos",
   "nebula",
   "meditations",
@@ -50,13 +57,7 @@ const TIER2_SLUGS = new Set([
   "starmap",
   "quantumlab",
   "researcher",
-  "lucas",
-  // Premium AI assistants
-  // "chrry",
-  // "sushi",
-  // "vex",
   "peach",
-  // "focus",
   "grape",
   "grok",
   "popcorn",
@@ -67,9 +68,6 @@ const TIER2_SLUGS = new Set([
   "writer",
   "coder",
 ])
-
-/** Tier 3 — everyone NOT in T1 or T2 gets 120min cooldown.
- * No need to list them explicitly — getCooldown falls through. */
 
 function getCooldown(slug: string): number {
   if (TIER1_SLUGS.has(slug)) return COOLDOWN_T1
