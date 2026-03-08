@@ -119,7 +119,7 @@ export async function getModelProvider({
     lastKey?: string
   }
 
-  const toSwitch = name === "beles" ? name : agent.name
+  const toSwitch = agent.name
 
   switch (toSwitch) {
     case "beles": {
@@ -177,7 +177,7 @@ export async function getModelProvider({
           ? process.env.DEEPSEEK_API_KEY
           : ""
 
-      if (deepseekKey && !failedKeys?.includes("deepSeek")) {
+      if (deepseekKey) {
         const deepseekProvider = createDeepSeek({ apiKey: deepseekKey })
         result = {
           provider: deepseekProvider(
@@ -248,6 +248,27 @@ export async function getModelProvider({
     }
 
     case "sushi": {
+      const sushiKey =
+        (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
+        (!plusTiers.includes(app?.tier || "")
+          ? process.env.DEEPSEEK_API_KEY
+          : "")
+      {
+        const modelId =
+          canReason && !job ? "deepseek-reasoner" : "deepseek-chat"
+        if (sushiKey) {
+          const sushiProvider = createDeepSeek({ apiKey: sushiKey })
+
+          result = {
+            provider: sushiProvider(modelId),
+            modelId,
+            agentName: agent.name,
+            lastKey: "deepSeek",
+          }
+          break
+        }
+      }
+
       const openrouterKeyForDeepSeekReasoner = app?.apiKeys?.openrouter
         ? safeDecrypt(app?.apiKeys?.openrouter)
         : !plusTiers.includes(app?.tier || "")
@@ -294,31 +315,6 @@ export async function getModelProvider({
           taskTypeFallback.includes("reply")
         )
           category = "comment"
-      }
-
-      const sushiKey =
-        (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
-        (!plusTiers.includes(app?.tier || "")
-          ? process.env.DEEPSEEK_API_KEY
-          : "")
-      {
-        const modelId =
-          canReason && !job ? "deepseek-reasoner" : "deepseek-chat"
-        if (
-          sushiKey &&
-          !failedKeys?.includes(modelId) &&
-          (!category || category === "post")
-        ) {
-          const sushiProvider = createDeepSeek({ apiKey: sushiKey })
-
-          result = {
-            provider: sushiProvider(modelId),
-            modelId,
-            agentName: agent.name,
-            lastKey: "deepSeek",
-          }
-          break
-        }
       }
 
       const pool = category ? freeModels[category as "post"] : []
