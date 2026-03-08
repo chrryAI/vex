@@ -3541,8 +3541,8 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
   // prompt causes Claude to attempt a download → 400 error.
   // ReDoS-safe: use non-backtracking patterns
   systemPrompt = systemPrompt
-    .replace(/!\[([^[\]]*)\]\((?:[^()]*|\([^()]*\))*\)/g, "$1") // ![alt](url) → alt text only
-    .replace(/\[([^[\]]*)\]\((?:[^()]*|\([^()]*\))*\)/g, "$1") // [text](url) → text only
+    .replace(/!\[([^[\]]*)\]\([^()\r\n]*\)/g, "$1") // ![alt](url) → alt text only
+    .replace(/\[([^[\]]*)\]\([^()\r\n]*\)/g, "$1") // [text](url) → text only
     .replace(/\bhttps?:\/\/[^\s<>"{}|\\^`[\]]+/gi, "[link]") // raw http(s):// URLs → [link]
 
   if (!thread) {
