@@ -2335,7 +2335,10 @@ export function AuthProvider({
       toast.success(`${t("Let's Pear")} 🍐`)
       if (navigate) {
         router.push(`${getAppSlug(value)}?pear=true`)
+      } else {
+        addParams({ pear: "true" })
       }
+
       return
     }
 
