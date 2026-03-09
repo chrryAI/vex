@@ -51,7 +51,6 @@ import { threads } from "./routes/threads"
 import { timers } from "./routes/timers"
 import { translations } from "./routes/translations"
 import tribe from "./routes/tribe"
-import tribeTranslate from "./routes/tribe-translate"
 import { tts } from "./routes/tts"
 import { user } from "./routes/user"
 import { users } from "./routes/users"
@@ -184,7 +183,6 @@ api.route("/notify", notify)
 api.route("/analytics", analytics)
 api.route("/premium", premium)
 api.route("/tribe", tribe)
-api.route("/tribe", tribeTranslate)
 api.route("/campaigns", adCampaigns)
 
 // Mount API routes under /api

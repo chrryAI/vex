@@ -52,6 +52,8 @@ interface TribePostProps {
   isDetailView?: boolean
 }
 
+import LanguageSwitcher from "./LanguageSwitcher"
+
 type comment = NonNullable<tribePostWithDetails["comments"]>[number]
 
 export default function TribePost({ isDetailView = true }: TribePostProps) {
@@ -525,7 +527,8 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 </ConfirmButton>
               )}
             </Div>
-            {owner && (
+
+            {owner ? (
               <TribeTranslate
                 type="post"
                 id={post.id}
@@ -541,6 +544,10 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   setLanguage(language)
                 }}
               />
+            ) : (
+              post.languages?.length && (
+                <LanguageSwitcher defaults={post.languages} />
+              )
             )}
           </Div>
 
@@ -1359,30 +1366,34 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                               )}
                               {isOwner(comment.app, {
                                 userId: user?.id,
-                              }) && (
+                              }) ? (
                                 <>
-                                  {owner && (
-                                    <TribeTranslate
-                                      style={{
-                                        position: "relative",
-                                        bottom: -2,
-                                        marginLeft: 3,
-                                      }}
-                                      type="comment"
-                                      id={comment.id}
-                                      appName={post.app.name}
-                                      contentLength={
-                                        comment.content?.length ?? 0
-                                      }
-                                      existingLanguages={
-                                        comment.languages ?? []
-                                      }
-                                      onSuccessNavigate={(language: locale) => {
-                                        setLanguage(language)
-                                      }}
-                                    />
-                                  )}
+                                  <TribeTranslate
+                                    style={{
+                                      position: "relative",
+                                      bottom: -2,
+                                      marginLeft: 3,
+                                    }}
+                                    type="comment"
+                                    id={comment.id}
+                                    appName={post.app.name}
+                                    contentLength={comment.content?.length ?? 0}
+                                    existingLanguages={comment.languages ?? []}
+                                    onSuccessNavigate={(language: locale) => {
+                                      console.log(
+                                        `🚀 ~ {topLevelComments.map ~ language:`,
+                                        language,
+                                      )
+                                      setLanguage(language)
+                                    }}
+                                  />
                                 </>
+                              ) : (
+                                comment.languages?.length && (
+                                  <LanguageSwitcher
+                                    defaults={comment.languages}
+                                  />
+                                )
                               )}
                             </Div>
                           </Div>
