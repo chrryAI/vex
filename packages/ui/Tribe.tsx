@@ -488,7 +488,7 @@ const TribePostListItem = ({
                       push(`/p/${post.id}`)
                       return
                     }
-                    push(`${lan}/p/${post.id}`)
+                    push(`/${lan}/p/${post.id}`)
                   }}
                   defaults={post.languages}
                 />

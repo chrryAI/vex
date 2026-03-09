@@ -1015,6 +1015,7 @@ Return the translation as JSON:`
             creditsUsed: canTranslateFree ? 0 : creditsPerLanguage,
             model: "gpt-4o-mini",
           })
+          .onConflictDoNothing()
           .returning()
 
         translations.push(newTranslation)
@@ -1213,6 +1214,7 @@ Return the translation as JSON:`
             creditsUsed: canTranslateFree ? 0 : creditsPerLanguage,
             model: "gpt-4o-mini",
           })
+          .onConflictDoNothing()
           .returning()
 
         translations.push(newTranslation)
