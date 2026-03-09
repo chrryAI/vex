@@ -131,8 +131,8 @@ export async function autoTranslateTribeContent({
       `🌍 Bulk auto-translating ${postTasks.size} posts and ${commentTasks.size} comments... (Potential Charge: ${postTasks.size * 10 + commentTasks.size * 5})`,
     )
 
-    // 4. Batch target languages for stability (3 per call)
-    const LANGUAGE_BATCH_SIZE = 3
+    // 4. Batch target languages for economy (5 per call - fewer API calls)
+    const LANGUAGE_BATCH_SIZE = 5
     const languageBatches: Locale[][] = []
     for (let i = 0; i < targetLanguages.length; i += LANGUAGE_BATCH_SIZE) {
       languageBatches.push(targetLanguages.slice(i, i + LANGUAGE_BATCH_SIZE))
