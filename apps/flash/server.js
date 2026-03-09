@@ -692,7 +692,7 @@ export const whiteLabels = [
   vault,
 ]
 
-const VERSION = "2.0.61"
+const VERSION = "2.0.62"
 // Constants
 const port = process.env.PORT || 5173
 const base = process.env.BASE || "/"

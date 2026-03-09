@@ -450,7 +450,12 @@ export async function getModelProvider({
           : "")
 
       {
-        const modelId = job?.modelConfig?.model || "anthropic/claude-sonnet-4-6"
+        // For scheduled jobs, use DeepSeek instead of expensive Claude
+        const modelId =
+          activeSchedule?.modelId ||
+          job?.metadata?.modelId ||
+          job?.modelConfig?.model ||
+          (job ? "deepseek/deepseek-chat" : "anthropic/claude-sonnet-4-6")
 
         if (openrouterKeyForClaude && !failedKeys?.includes(modelId)) {
           const openrouterProvider = createOpenRouter({

@@ -56,17 +56,58 @@ const redis =
     : dbRedis
 
 const clearFeed = async (postId?: string) => {
+  const BATCH_SIZE = 100
+
   if (postId) {
-    const postKeys = await dbRedis.keys(`tribe:post:${postId}*`)
+    // Use SCAN instead of KEYS for production safety
+    const postKeys: string[] = []
+    let cursor = "0"
+
+    do {
+      const result = await dbRedis.scan(
+        cursor,
+        "MATCH",
+        `tribe:post:${postId}*`,
+        "COUNT",
+        BATCH_SIZE,
+      )
+      cursor = result[0]
+      const keys = result[1]
+      postKeys.push(...keys)
+    } while (cursor !== "0")
+
+    // Delete in batches
     if (postKeys.length > 0) {
-      await dbRedis.del(...postKeys)
+      for (let i = 0; i < postKeys.length; i += BATCH_SIZE) {
+        const batch = postKeys.slice(i, i + BATCH_SIZE)
+        await dbRedis.del(...batch)
+      }
     }
   }
 
   // Delete all feed caches (they contain this post)
-  const feedKeys = await dbRedis.keys("tribe:posts:*")
+  const feedKeys: string[] = []
+  let cursor = "0"
+
+  do {
+    const result = await dbRedis.scan(
+      cursor,
+      "MATCH",
+      "tribe:posts:*",
+      "COUNT",
+      BATCH_SIZE,
+    )
+    cursor = result[0]
+    const keys = result[1]
+    feedKeys.push(...keys)
+  } while (cursor !== "0")
+
+  // Delete in batches
   if (feedKeys.length > 0) {
-    await dbRedis.del(...feedKeys)
+    for (let i = 0; i < feedKeys.length; i += BATCH_SIZE) {
+      const batch = feedKeys.slice(i, i + BATCH_SIZE)
+      await dbRedis.del(...batch)
+    }
   }
 }
 
@@ -1015,6 +1056,7 @@ Return the translation as JSON:`
             creditsUsed: canTranslateFree ? 0 : creditsPerLanguage,
             model: "gpt-4o-mini",
           })
+          .onConflictDoNothing()
           .returning()
 
         translations.push(newTranslation)
@@ -1031,14 +1073,15 @@ Return the translation as JSON:`
       }
     }
 
-    await logCreditUsage({
-      userId: member.id,
-      agentId: agent.id,
-      // guestId: appOwnerId,
-      creditCost: totalCredits, // Positive = deduction
-      messageType: "tribe_post_translate",
-      // appId,
-    })
+    // Only log credit usage if translation costs credits
+    if (!canTranslateFree && totalCredits > 0) {
+      await logCreditUsage({
+        userId: member.id,
+        agentId: agent.id,
+        creditCost: totalCredits,
+        messageType: "tribe_post_translate",
+      })
+    }
 
     // Invalidate cache after translation
     if (!isDevelopment && !isE2E) {
@@ -1213,6 +1256,7 @@ Return the translation as JSON:`
             creditsUsed: canTranslateFree ? 0 : creditsPerLanguage,
             model: "gpt-4o-mini",
           })
+          .onConflictDoNothing()
           .returning()
 
         translations.push(newTranslation)
@@ -1228,14 +1272,15 @@ Return the translation as JSON:`
       }
     }
 
-    await logCreditUsage({
-      userId: member.id,
-      agentId: agent.id,
-      // guestId: appOwnerId,
-      creditCost: totalCredits, // Positive = deduction
-      messageType: "tribe_post_comment_translate",
-      // appId,
-    })
+    // Only log credit usage if translation costs credits
+    if (!canTranslateFree && totalCredits > 0) {
+      await logCreditUsage({
+        userId: member.id,
+        agentId: agent.id,
+        creditCost: totalCredits,
+        messageType: "tribe_post_comment_translate",
+      })
+    }
 
     // Invalidate cache after comment translation
     if (!isDevelopment && !isE2E) {

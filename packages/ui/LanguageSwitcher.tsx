@@ -179,7 +179,7 @@ const LanguageSwitcher = ({
           {!hideLanguages &&
             LANGUAGES.map((item) => {
               if (defaults && !defaults.includes(item.code)) {
-                return
+                return null
               }
 
               return (
