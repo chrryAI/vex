@@ -42,8 +42,13 @@ import { getGuest, getMember } from "../lib/auth"
 
 const app = new Hono()
 
+const CHATGPT_API_KEY = process.env.CHATGPT_API_KEY
+if (!CHATGPT_API_KEY) {
+  console.error("❌ CHATGPT_API_KEY environment variable is not set")
+}
+
 const openai = new OpenAI({
-  apiKey: process.env.CHATGPT_API_KEY,
+  apiKey: CHATGPT_API_KEY,
 })
 
 const redis =
@@ -51,7 +56,14 @@ const redis =
     ? {
         get: async (key: string) => null,
         setex: async (key: string, ttl: number, value: string) => {},
-        del: async (key: string) => {},
+        del: async (...keys: string[]) => {},
+        scan: async (
+          cursor: string,
+          matchKey: string,
+          pattern: string,
+          countKey: string,
+          count: number,
+        ): Promise<[string, string[]]> => ["0", []],
       }
     : dbRedis
 
@@ -64,7 +76,7 @@ const clearFeed = async (postId?: string) => {
     let cursor = "0"
 
     do {
-      const result = await dbRedis.scan(
+      const result = await redis.scan(
         cursor,
         "MATCH",
         `tribe:post:${postId}*`,
@@ -80,7 +92,7 @@ const clearFeed = async (postId?: string) => {
     if (postKeys.length > 0) {
       for (let i = 0; i < postKeys.length; i += BATCH_SIZE) {
         const batch = postKeys.slice(i, i + BATCH_SIZE)
-        await dbRedis.del(...batch)
+        await redis.del(...batch)
       }
     }
   }
@@ -90,7 +102,7 @@ const clearFeed = async (postId?: string) => {
   let cursor = "0"
 
   do {
-    const result = await dbRedis.scan(
+    const result = await redis.scan(
       cursor,
       "MATCH",
       "tribe:posts:*",
@@ -106,7 +118,7 @@ const clearFeed = async (postId?: string) => {
   if (feedKeys.length > 0) {
     for (let i = 0; i < feedKeys.length; i += BATCH_SIZE) {
       const batch = feedKeys.slice(i, i + BATCH_SIZE)
-      await dbRedis.del(...batch)
+      await redis.del(...batch)
     }
   }
 }
@@ -985,6 +997,12 @@ app.post("/p/:id/translate", async (c) => {
           { status: 402 },
         )
       }
+
+      // Atomically deduct credits before translation
+      await db
+        .update(users)
+        .set({ credits: sql`${users.credits} - ${totalCredits}` })
+        .where(eq(users.id, member.id))
     }
 
     const translations = []
@@ -1030,7 +1048,13 @@ Return the translation as JSON:`
         })
 
         if (response.choices[0]?.finish_reason === "length") {
-          console.warn(`⚠️ Translation for ${lang} was truncated due to length.`)
+          console.error(
+            `❌ Translation for ${lang} was truncated due to length.`,
+          )
+          return c.json(
+            { error: `Translation truncated for ${lang} - content too long` },
+            { status: 500 },
+          )
         }
 
         const rawContent = response?.choices?.at(0)?.message?.content || "{}"
@@ -1059,7 +1083,21 @@ Return the translation as JSON:`
           .onConflictDoNothing()
           .returning()
 
-        translations.push(newTranslation)
+        // If insert was skipped due to conflict, fetch existing translation
+        if (!newTranslation) {
+          const existingTranslation =
+            await db.query.tribePostTranslations.findFirst({
+              where: and(
+                eq(tribePostTranslations.postId, postId),
+                eq(tribePostTranslations.language, lang),
+              ),
+            })
+          if (existingTranslation) {
+            translations.push(existingTranslation)
+          }
+        } else {
+          translations.push(newTranslation)
+        }
 
         // Small delay to respect rate limits
         await new Promise((resolve) => setTimeout(resolve, 500))
@@ -1185,6 +1223,12 @@ app.post("/c/:id/translate", async (c) => {
           { status: 402 },
         )
       }
+
+      // Atomically deduct credits before translation
+      await db
+        .update(users)
+        .set({ credits: sql`${users.credits} - ${totalCredits}` })
+        .where(eq(users.id, member.id))
     }
 
     const translations = []
@@ -1229,8 +1273,14 @@ Return the translation as JSON:`
         })
 
         if (response.choices[0]?.finish_reason === "length") {
-          console.warn(
-            `⚠️ Comment translation for ${lang} was truncated due to length.`,
+          console.error(
+            `❌ Comment translation for ${lang} was truncated due to length.`,
+          )
+          return c.json(
+            {
+              error: `Comment translation truncated for ${lang} - content too long`,
+            },
+            { status: 500 },
           )
         }
 
@@ -1259,7 +1309,21 @@ Return the translation as JSON:`
           .onConflictDoNothing()
           .returning()
 
-        translations.push(newTranslation)
+        // If insert was skipped due to conflict, fetch existing translation
+        if (!newTranslation) {
+          const existingTranslation =
+            await db.query.tribeCommentTranslations.findFirst({
+              where: and(
+                eq(tribeCommentTranslations.commentId, commentId),
+                eq(tribeCommentTranslations.language, lang),
+              ),
+            })
+          if (existingTranslation) {
+            translations.push(existingTranslation)
+          }
+        } else {
+          translations.push(newTranslation)
+        }
 
         // Small delay to respect rate limits
         await new Promise((resolve) => setTimeout(resolve, 500))

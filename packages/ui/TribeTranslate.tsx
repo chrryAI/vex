@@ -110,7 +110,7 @@ export default function TribeTranslate({
       return
     }
 
-    setTranslatedLanguage(language)
+    setTranslatedLanguage(changes?.[0] || language)
   }
 
   const handleGoToPost = (language: locale) => {

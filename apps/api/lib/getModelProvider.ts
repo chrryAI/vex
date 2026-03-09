@@ -38,9 +38,11 @@ export const modelCapabilities: Record<string, { tools: boolean }> = {
   "google/gemini-1.5-pro": { tools: true },
   "google/gemini-1.5-flash": { tools: true },
   "deepseek-chat": { tools: true },
+  "deepseek/deepseek-chat": { tools: true },
   "deepseek-v3": { tools: true },
   "deepseek-reasoner": { tools: true },
   "deepseek/deepseek-r1": { tools: true },
+  "anthropic/claude-sonnet-4.6": { tools: true },
   "qwen/qwen3-235b-a22b-thinking-2507": { tools: true },
   "qwen/qwen3-vl-235b-a22b-thinking": { tools: true },
   // "qwen/qwen3-vl-30b-a3b-thinking": { tools: true },
@@ -455,7 +457,7 @@ export async function getModelProvider({
           activeSchedule?.modelId ||
           job?.metadata?.modelId ||
           job?.modelConfig?.model ||
-          (job ? "deepseek/deepseek-chat" : "anthropic/claude-sonnet-4-6")
+          (job ? "deepseek/deepseek-chat" : "anthropic/claude-sonnet-4.6")
 
         if (openrouterKeyForClaude && !failedKeys?.includes(modelId)) {
           const openrouterProvider = createOpenRouter({

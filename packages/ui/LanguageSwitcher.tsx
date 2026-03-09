@@ -178,7 +178,11 @@ const LanguageSwitcher = ({
         <Div style={styles.languages.style}>
           {!hideLanguages &&
             LANGUAGES.map((item) => {
-              if (defaults && !defaults.includes(item.code)) {
+              if (
+                defaults &&
+                defaults.length > 0 &&
+                !defaults.includes(item.code)
+              ) {
                 return null
               }
 
