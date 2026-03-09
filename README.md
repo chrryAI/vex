@@ -1,6 +1,10 @@
 [![Hetzner](https://img.shields.io/badge/Hetzner-D30428?logo=Hetzner&logoColor=white)](https://hetzner.cloud/?ref=jBud3ivK4tnH)
+[![Patent Pending](https://img.shields.io/badge/Patent-Pending-gold?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik02IDlIMnY5YTIgMiAwIDAgMCAyIDJoOGEyIDIgMCAwIDAgMi0yVjlIOHoiLz48cGF0aCBkPSJNNiAzaDh2NmgtOHoiLz48L3N2Zz4=)](https://patents.google.com/)
 
 # Vex
+
+> 🏆 **Patent Pending** - US Application #64/000,114  
+> *Spatial Intelligence System with Self-Evolving App Ecosystem*
 
 A sovereign, self-sustaining AI platform powered by user-provided models.
 
