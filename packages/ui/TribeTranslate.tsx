@@ -64,7 +64,7 @@ export default function TribeTranslate({
 }: TribeTranslateProps) {
   const { t } = useAppContext()
   const { utilities } = useStyles()
-  const { language, setLanguage } = useAuth()
+  const { language } = useAuth()
   const { creditsLeft } = useChat()
   const { addParams, push } = useNavigationContext()
 

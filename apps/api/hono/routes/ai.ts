@@ -3507,6 +3507,8 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
 - **DO NOT** act confused.
 - **Instead:** Acknowledge that the data is protected/redacted if relevant, or simply proceed with the redacted info.
 - If the user asks about it, explain: "I have built-in PII protection, so sensitive details are automatically redacted for your privacy."
+
+**IMPORTANT:** City names, country names, and general location information are NOT considered PII and should NEVER be redacted by you. Use them naturally in your responses (e.g., "Amsterdam", "Netherlands", etc.).
 `
 
   // Note: threadInstructions are already included in baseSystemPrompt via Handlebars template

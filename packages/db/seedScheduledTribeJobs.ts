@@ -285,7 +285,6 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         charLimit: postCharLimit,
         credits: 10,
         maxTokens: postMaxTokens,
-        modelId: "moonshotai/kimi-k2.5",
         intervalMinutes: POST_INTERVAL_MINUTES,
         ...(mediaType === "video" && { generateVideo: true }),
         ...(mediaType === "image" && { generateImage: true }),
