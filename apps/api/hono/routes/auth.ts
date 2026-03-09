@@ -204,6 +204,7 @@ function setCookieFromUrl(
 
 function validateCallbackUrl(callbackUrl: string): boolean {
   try {
+    if (callbackUrl.startsWith("vex://")) return true
     const callbackUrlObj = new URL(callbackUrl)
     return ALLOWED_DOMAINS.some(
       (domain) =>

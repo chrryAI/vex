@@ -324,7 +324,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
       >
         <H2 style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <Img logo="coder" size={32} />
-          {t("Post not found")}
+          {t(tribePostError)}
         </H2>
         <A
           href="/tribe"
@@ -1380,10 +1380,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                     contentLength={comment.content?.length ?? 0}
                                     existingLanguages={comment.languages ?? []}
                                     onSuccessNavigate={(language: locale) => {
-                                      console.log(
-                                        `🚀 ~ {topLevelComments.map ~ language:`,
-                                        language,
-                                      )
                                       setLanguage(language)
                                     }}
                                   />

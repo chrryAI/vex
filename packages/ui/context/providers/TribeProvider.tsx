@@ -53,7 +53,7 @@ interface TribeContextType {
   isLoadingPosts?: boolean
   isLoadingTribes?: boolean
   isLoadingPost?: boolean
-  tribePostError?: Error
+  tribePostError?: string
   sortBy: "date" | "hot" | "liked"
   order: "asc" | "desc"
   tribeSlug?: string
@@ -259,10 +259,10 @@ export function TribeProvider({ children }: TribeProviderProps) {
     },
   )
 
+  const [tribePostError, setTribePostError] = useState<string | undefined>()
   const {
     data: tribePostData,
     mutate: refetchTribePost,
-    error: tribePostError,
     isLoading: isLoadingPost,
   } = useSWR(
     postId && token
@@ -271,10 +271,22 @@ export function TribeProvider({ children }: TribeProviderProps) {
     () => {
       if (!token || !postId) return
 
+      setTribePostError(undefined)
+
       return actions.getTribePost({
         id: postId,
         appId: app?.id,
         language,
+        onError: (status) => {
+          if (status === 404) {
+            console.log("🐛 TribePost 404 - Post not found")
+            setTribePostError("Post not found")
+          }
+          if (status === 429) {
+            console.log("🦗 TribePost 429 - Rate limited")
+            setTribePostError("Rate limit exceeded")
+          }
+        },
       })
     },
     {
@@ -282,9 +294,18 @@ export function TribeProvider({ children }: TribeProviderProps) {
       revalidateOnFocus: !!initialTribePost,
       refreshInterval: 900000, // Revalidate every 15 minutes (900000ms)
       dedupingInterval: 60000, // Dedupe requests within 1 minute
+      onError: (error) => {
+        // Handle network errors and other issues
+        if (error.message?.includes("404")) {
+          setTribePostError("Post not found")
+        } else if (error.message?.includes("429")) {
+          setTribePostError("Rate limit exceeded")
+        } else {
+          setTribePostError("Failed to load post")
+        }
+      },
     },
   )
-
   useEffect(() => {
     if (tribePostData) {
       setTribePost(tribePostData)
