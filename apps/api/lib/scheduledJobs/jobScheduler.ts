@@ -80,6 +80,7 @@ import {
   generateVideo as genVideo,
 } from "../ai/mediaGeneration"
 import { checkMoltbookHealth } from "../integrations/moltbook"
+import { getBlueskyCredentials, postToBluesky } from "../bluesky"
 
 const JWT_EXPIRY = "30d"
 
@@ -1705,12 +1706,12 @@ Guidelines:
 - 🌐 **Write in English** — your post will be automatically translated to ${locales.filter((l) => l !== "en").join(", ")} so readers worldwide can enjoy it. English gives the best translation quality across all languages.
 
 ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}${
-  fetchNews && postNewsContext
-    ? `🗞️ **YOU MUST BASE THIS POST ON THE FOLLOWING CURRENT NEWS. Pick the most interesting story and write a detailed, thoughtful commentary about it as "${app.name}". Do NOT write a generic post — reference the specific story, headline, and your unique perspective on it.**\n\n${postNewsContext}\n\n`
-    : postNewsContext
-      ? `Current world news (use naturally if relevant, don't force it):\n${postNewsContext}\n\n`
-      : ""
-}${recentPostTitles ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n- ${recentPostTitles}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}Important Notes:
+          fetchNews && postNewsContext
+            ? `🗞️ **YOU MUST BASE THIS POST ON THE FOLLOWING CURRENT NEWS. Pick the most interesting story and write a detailed, thoughtful commentary about it as "${app.name}". Do NOT write a generic post — reference the specific story, headline, and your unique perspective on it.**\n\n${postNewsContext}\n\n`
+            : postNewsContext
+              ? `Current world news (use naturally if relevant, don't force it):\n${postNewsContext}\n\n`
+              : ""
+        }${recentPostTitles ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n- ${recentPostTitles}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}Important Notes:
 - ⚠️ Do NOT repeat yourself - you have thread context with your character profile and previous posts
 - If needed, check your app memories for additional context
 - Vary your endings: use strong statements, insights, or subtle calls to action
@@ -1968,7 +1969,10 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
         }
       } catch (vidErr) {
         captureException(vidErr)
-        console.error("⚠️ Video generation failed (post still created):", vidErr)
+        console.error(
+          "⚠️ Video generation failed (post still created):",
+          vidErr,
+        )
       }
     }
 
@@ -2033,7 +2037,10 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
         }
       } catch (imgErr) {
         captureException(imgErr)
-        console.error("⚠️ Image generation failed (post still created):", imgErr)
+        console.error(
+          "⚠️ Image generation failed (post still created):",
+          imgErr,
+        )
       }
     }
 
@@ -2090,6 +2097,19 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
     console.log(`✅ Posted to Tribe: ${post.id}`)
     console.log(`📝 Title: ${aiResponse.tribeTitle}`)
     console.log(`🦋 Tribe: ${aiResponse.tribeName}`)
+
+    // Post to Bluesky (non-blocking)
+    const blueskyCredentials = getBlueskyCredentials(app.slug)
+    if (blueskyCredentials) {
+      const blueskyText = `${aiResponse.tribeTitle}\n\n${aiResponse.tribeContent.substring(0, 250)}${aiResponse.tribeContent.length > 250 ? "..." : ""}\n\n${FRONTEND_URL}/p/${post.id}`
+
+      postToBluesky({
+        text: blueskyText.substring(0, 300), // Bluesky has 300 char limit
+        credentials: blueskyCredentials,
+      }).catch((err) => {
+        console.error("⚠️ Bluesky post failed (non-blocking):", err)
+      })
+    }
 
     // Send Discord notification (non-blocking)
     sendDiscordNotification(
@@ -4451,7 +4471,9 @@ async function executeJobType(
             userId: job.userId,
             postIds: [response.post_id],
             languages,
-          }).catch((err) => console.error("⚠️ Auto-translate post failed:", err))
+          }).catch((err) =>
+            console.error("⚠️ Auto-translate post failed:", err),
+          )
         }
       } catch (error) {
         console.error(`❌ tribe_post failed:`, error)
