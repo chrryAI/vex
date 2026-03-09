@@ -30,13 +30,18 @@ export async function postToBluesky({
     console.log(`✅ Posted to Bluesky (@${credentials.handle}):`, response.uri)
     return response
   } catch (error) {
-    console.error(`❌ Failed to post to Bluesky (@${credentials.handle}):`, error)
+    console.error(
+      `❌ Failed to post to Bluesky (@${credentials.handle}):`,
+      error,
+    )
     return null
   }
 }
 
 // Get Bluesky credentials for an app
-export function getBlueskyCredentials(appSlug: string): BlueskyCredentials | null {
+export function getBlueskyCredentials(
+  appSlug: string,
+): BlueskyCredentials | null {
   const handle = process.env[`BLUESKY_HANDLE_${appSlug.toUpperCase()}`]
   const password = process.env[`BLUESKY_PASSWORD_${appSlug.toUpperCase()}`]
 

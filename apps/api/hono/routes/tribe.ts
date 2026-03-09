@@ -918,6 +918,9 @@ function calculateCredits(contentLength: number): number {
 
 // Translate tribe post
 app.post("/p/:id/translate", async (c) => {
+  if (!openai) {
+    return c.json({ error: "Translation service unavailable" }, { status: 503 })
+  }
   const member = await getMember(c)
 
   const agent = await getAiAgent({
@@ -999,10 +1002,24 @@ app.post("/p/:id/translate", async (c) => {
       }
 
       // Atomically deduct credits before translation
-      await db
+      // Atomically check and deduct credits (prevents overdraft)
+      const [deductResult] = await db
         .update(users)
         .set({ credits: sql`${users.credits} - ${totalCredits}` })
-        .where(eq(users.id, member.id))
+        .where(
+          and(
+            eq(users.id, member.id),
+            sql`${users.credits} >= ${totalCredits}`,
+          ),
+        )
+        .returning({ credits: users.credits })
+
+      if (!deductResult) {
+        return c.json(
+          { error: "Insufficient credits (concurrent request)" },
+          { status: 402 },
+        )
+      }
     }
 
     const translations = []
@@ -1141,6 +1158,10 @@ Return the translation as JSON:`
 })
 
 app.post("/c/:id/translate", async (c) => {
+  if (!openai) {
+    return c.json({ error: "Translation service unavailable" }, { status: 503 })
+  }
+
   const agent = await getAiAgent({
     name: "chatGPT",
   })

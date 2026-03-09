@@ -1256,7 +1256,6 @@ export function AuthProvider({
       ) || c,
     [app, c],
   )
-  console.log(`🚀 ~ siteConfigApp:`, siteConfigApp)
 
   const setIsRetro = (value: boolean) => {
     setIsRetroInternal(value)
