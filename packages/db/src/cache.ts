@@ -81,7 +81,7 @@ export async function setCache<T>(
     await redis.setex(key, ttl, JSON.stringify(value))
     // Cache set - no logging to avoid massive production logs
   } catch (error) {
-    console.error(`❌ Cache SET error for ${key}:`, error)
+    console.error("❌ Cache SET error:", error)
   }
 }
 
@@ -94,7 +94,7 @@ export async function deleteCache(key: string): Promise<void> {
     await redis.del(key)
     // Cache delete - no logging to avoid verbose logs
   } catch (error) {
-    console.error(`❌ Cache DELETE error for ${key}:`, error)
+    console.error("❌ Cache DELETE error:", error)
   }
 }
 
