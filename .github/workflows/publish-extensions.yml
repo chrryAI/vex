@@ -3,12 +3,8 @@ name: Publish Browser Extensions
 on:
   push:
     tags:
-      - "extension-v*"
+      - extension-v*
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Extension version to publish"
-        required: false
 
 permissions:
   contents: write
@@ -47,7 +43,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "pnpm"
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -75,7 +71,7 @@ jobs:
           # but usually, we map them explicitly to avoid security issues.
           # For a dynamic matrix, we'll use the bpp action's ability or prepare a JSON.
 
-          # Since GitHub Actions doesn't support dynamic secret names in expressions like ${{ secrets[name] }},
+          # Since GitHub Actions doesn't support dynamic secret names in expressions like secrets[name],
           # we provide all available IDs as env vars and pick the right one.
           case "${{ matrix.site }}" in
             sushi) EXT_ID="${{ secrets.CHROME_EXTENSION_ID_SUSHI }}" ;;

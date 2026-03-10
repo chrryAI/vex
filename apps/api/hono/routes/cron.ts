@@ -47,35 +47,24 @@ cron.get("/autoTranslateMissing", async (c) => {
     }
   }
 
-  try {
-    console.log("🌍 Starting missing translations backfill...")
-    // Fire and forget in background
-    autoTranslateMissingContent()
-      .then((res) => {
-        console.log(
-          `✅ Backfill complete: ${res.postsProcessed} posts, ${res.commentsProcessed} comments`,
-        )
-      })
-      .catch((err) => {
-        captureException(err)
-        console.error("❌ Backfill failed:", err)
-      })
-
-    return c.json({
-      success: true,
-      message: "Missing translations backfill started in background",
-      timestamp: new Date().toISOString(),
+  console.log("🌍 Starting missing translations backfill...")
+  // Fire and forget in background
+  autoTranslateMissingContent()
+    .then((res) => {
+      console.log(
+        `✅ Backfill complete: ${res.postsSucceeded} posts succeeded, ${res.postsFailed} failed | ${res.commentsSucceeded} comments succeeded, ${res.commentsFailed} failed`,
+      )
     })
-  } catch (error) {
-    console.error("❌ Backfill trigger failed:", error)
-    return c.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      500,
-    )
-  }
+    .catch((err) => {
+      captureException(err)
+      console.error("❌ Backfill failed:", err)
+    })
+
+  return c.json({
+    success: true,
+    message: "Missing translations backfill started in background",
+    timestamp: new Date().toISOString(),
+  })
 })
 
 async function clearGuests(ago = 5) {

@@ -13,10 +13,20 @@ import { autoTranslateTribeContent } from "./tribeAutoTranslate"
  * Useful for backfilling new languages (like Swedish) or recovering from failed jobs.
  */
 export async function autoTranslateMissingContent(): Promise<{
-  postsProcessed: number
-  commentsProcessed: number
+  postsSucceeded: number
+  postsFailed: number
+  commentsSucceeded: number
+  commentsFailed: number
 }> {
   console.log("📂 Starting missing translations backfill job...")
+
+  const envBatchSize = process.env.TRIBE_AUTO_TRANSLATE_BATCH_SIZE
+    ? parseInt(process.env.TRIBE_AUTO_TRANSLATE_BATCH_SIZE, 10)
+    : 20
+  const batchSize = Math.max(
+    1,
+    Math.min(Number.isNaN(envBatchSize) ? 20 : envBatchSize, 1000),
+  )
 
   // 1. Find posts missing one or more translations
   const missingPosts = await db
@@ -32,7 +42,7 @@ export async function autoTranslateMissingContent(): Promise<{
     .where(isNotNull(tribePosts.appId))
     .groupBy(tribePosts.id, tribePosts.appId)
     .having(sql`count(${tribePostTranslations.id}) < ${locales.length}`)
-    .limit(20)
+    .limit(batchSize)
 
   // 2. Find comments missing one or more translations
   const missingComments = await db
@@ -48,11 +58,16 @@ export async function autoTranslateMissingContent(): Promise<{
     .where(isNotNull(tribeComments.appId))
     .groupBy(tribeComments.id, tribeComments.appId)
     .having(sql`count(${tribeCommentTranslations.id}) < ${locales.length}`)
-    .limit(20)
+    .limit(batchSize)
 
   if (missingPosts.length === 0 && missingComments.length === 0) {
     console.log("✅ No missing translations found.")
-    return { postsProcessed: 0, commentsProcessed: 0 }
+    return {
+      postsSucceeded: 0,
+      postsFailed: 0,
+      commentsSucceeded: 0,
+      commentsFailed: 0,
+    }
   }
 
   console.log(
@@ -81,6 +96,11 @@ export async function autoTranslateMissingContent(): Promise<{
     appTasks.get(c.appId)!.commentIds.push(c.id)
   }
 
+  let postsSucceeded = 0
+  let postsFailed = 0
+  let commentsSucceeded = 0
+  let commentsFailed = 0
+
   // 4. Process each app group (non-blocking, sequential for safety)
   for (const [appId, task] of appTasks.entries()) {
     console.log(
@@ -92,13 +112,19 @@ export async function autoTranslateMissingContent(): Promise<{
         postIds: task.postIds,
         commentIds: task.commentIds,
       })
+      postsSucceeded += task.postIds.length
+      commentsSucceeded += task.commentIds.length
     } catch (err) {
       console.error(`❌ Backfill failed for appId ${appId}:`, err)
+      postsFailed += task.postIds.length
+      commentsFailed += task.commentIds.length
     }
   }
 
   return {
-    postsProcessed: missingPosts.length,
-    commentsProcessed: missingComments.length,
+    postsSucceeded,
+    postsFailed,
+    commentsSucceeded,
+    commentsFailed,
   }
 }
