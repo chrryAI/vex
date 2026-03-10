@@ -61,7 +61,7 @@ import {
 } from "./src/schema"
 
 const now = new Date()
-const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+// const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
 async function createAgents() {
   // if (isProd) {

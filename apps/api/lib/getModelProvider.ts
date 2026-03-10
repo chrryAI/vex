@@ -64,14 +64,12 @@ export const modelCapabilities: Record<string, { tools: boolean }> = {
   "deepseek/deepseek-v3.2-speciale": { tools: false },
   "deepseek-v3.2": { tools: true },
   "deepseek-v3.2-speciale": { tools: false },
-  "anthropic/claude-sonnet-4.6": { tools: true },
-  "qwen/qwen3-235b-a22b-thinking-2507": { tools: true },
-  "qwen/qwen3-vl-235b-a22b-thinking": { tools: true },
-  "gpt-5.2-2025-12-11": { tools: true },
-  "gemini-3.1-pro-preview": { tools: true },
+  "gpt-5.2-pro": { tools: true },
+  "anthropic/claude-sonnet-4-6": { tools: true },
+  "google/gemini-3.1-pro-preview": { tools: true },
   "grok-4-1-fast-reasoning": { tools: true },
   "grok-4-1-fast-non-reasoning": { tools: true },
-  "x-ai/grok-4.1-fast": { tools: true },
+  "x-ai/grok-4-1-fast-reasoning": { tools: true },
   "deepseek-v3.2-thinking": { tools: true },
   "perplexity/sonar-pro": { tools: false },
   "sonar-pro": { tools: false },
@@ -421,7 +419,7 @@ export async function getModelProvider({
             ? process.env.CHATGPT_API_KEY
             : ""
 
-        const modelId = targetModelId || "gpt-5.2-2025-12-11"
+        const modelId = targetModelId || "gpt-5.2-pro"
 
         if (openaiKey && !failedKeys?.includes(modelId)) {
           const openaiProvider = createOpenAI({ apiKey: openaiKey })
@@ -441,7 +439,7 @@ export async function getModelProvider({
           ? process.env.OPENROUTER_API_KEY
           : "")
 
-      const modelId = job?.modelConfig?.model || "gpt-5.2-2025-12-11"
+      const modelId = job?.modelConfig?.model || "gpt-5.2-pro"
 
       if (openrouterKeyForOpenAI && !failedKeys?.includes(modelId)) {
         const openrouterProvider = createOpenRouter({
@@ -476,7 +474,7 @@ export async function getModelProvider({
           ? process.env.CLAUDE_API_KEY
           : ""
 
-      const modelId = targetModelId || "anthropic/claude-sonnet-4.6"
+      const modelId = targetModelId || "anthropic/claude-sonnet-4-6"
 
       if (
         claudeKey &&
@@ -504,7 +502,7 @@ export async function getModelProvider({
           activeSchedule?.modelId ||
           job?.metadata?.modelId ||
           job?.modelConfig?.model ||
-          "anthropic/claude-sonnet-4.6"
+          "anthropic/claude-sonnet-4-6"
 
         if (openrouterKeyForClaude && !failedKeys?.includes(scheduledModelId)) {
           const openrouterProvider = createOpenRouter({
@@ -534,7 +532,7 @@ export async function getModelProvider({
         break
       }
 
-      const fallbackModel = "anthropic/claude-sonnet-4.6"
+      const fallbackModel = "anthropic/claude-sonnet-4-6"
       console.warn(
         `⚠️ Creating fallback Anthropic provider with empty API key for model ${fallbackModel} (agent: ${agent.name})`,
       )
@@ -555,7 +553,7 @@ export async function getModelProvider({
         (!plusTiers.includes(app?.tier || "") ? process.env.GEMINI_API_KEY : "")
 
       {
-        const modelId = targetModelId || "gemini-3.1-pro-preview"
+        const modelId = targetModelId || "google/gemini-3.1-pro-preview"
 
         if (geminiKey && !failedKeys?.includes(modelId)) {
           const geminiProvider = createGoogleGenerativeAI({ apiKey: geminiKey })
@@ -575,7 +573,7 @@ export async function getModelProvider({
           ? process.env.OPENROUTER_API_KEY
           : ""
 
-      const modelId = job?.modelConfig?.model || "gemini-3.1-pro-preview"
+      const modelId = job?.modelConfig?.model || "google/gemini-3.1-pro-preview"
 
       if (openrouterKeyForGemini && !failedKeys?.includes(modelId)) {
         const openrouterProvider = createOpenRouter({
