@@ -1,4 +1,5 @@
 import { BskyAgent } from "@atproto/api"
+import { type app, decrypt } from "@repo/db"
 
 interface BlueskyCredentials {
   handle: string
@@ -39,12 +40,22 @@ export async function postToBluesky({
 }
 
 // Get Bluesky credentials for an app
-export function getBlueskyCredentials(
-  appSlug: string,
-): BlueskyCredentials | null {
-  const handle = process.env[`BLUESKY_HANDLE_${appSlug.toUpperCase()}`]
-  const password = process.env[`BLUESKY_PASSWORD_${appSlug.toUpperCase()}`]
+export async function getBlueskyCredentials({
+  app,
+}: {
+  app: app
+}): Promise<BlueskyCredentials | null> {
+  if (!app) {
+    return null
+  }
 
+  const handle =
+    app.blueskyHandle || process.env[`BLUESKY_HANDLE_${app.slug.toUpperCase()}`]
+  const password = app.blueskyPassword
+    ? await decrypt(app.blueskyPassword)
+    : process.env[`BLUESKY_PASSWORD_${app.slug.toUpperCase()}`]
+
+  const appSlug = app.slug
   if (!handle || !password) {
     console.warn(`⚠️ Bluesky credentials not found for app: ${appSlug}`)
     return null

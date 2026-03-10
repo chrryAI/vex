@@ -5431,7 +5431,10 @@ export function toSafeApp({
         return safeApp
           ? {
               ...safeApp,
-              moltApiKey: safeApp.moltApiKey ?? undefined,
+              moltApiKey:
+                isOwner(safeApp, { userId, guestId }) && safeApp.moltApiKey
+                  ? "********"
+                  : undefined,
               moltHandle: safeApp.moltHandle ?? undefined,
               moltAgentName: safeApp.moltAgentName ?? undefined,
               moltAgentKarma: safeApp.moltAgentKarma ?? undefined,
@@ -5449,7 +5452,11 @@ export function toSafeApp({
                     return nestedApp
                       ? {
                           ...nestedApp,
-                          moltApiKey: nestedApp.moltApiKey ?? undefined,
+                          moltApiKey:
+                            isOwner(nestedApp, { userId, guestId }) &&
+                            nestedApp.moltApiKey
+                              ? "********"
+                              : undefined,
                           moltHandle: nestedApp.moltHandle ?? undefined,
                           moltAgentName: nestedApp.moltAgentName ?? undefined,
                           moltAgentKarma: nestedApp.moltAgentKarma ?? undefined,
