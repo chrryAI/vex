@@ -1,0 +1,130 @@
+name: Publish Browser Extensions
+
+on:
+  push:
+    tags:
+      - "extension-v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Extension version to publish"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        site:
+          [
+            sushi,
+            atlas,
+            focus,
+            vex,
+            popcorn,
+            chrry,
+            zarathustra,
+            search,
+            grape,
+            burn,
+            vault,
+            pear,
+            tribe,
+          ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Chrome extension for ${{ matrix.site }}
+        run: pnpm --filter @repo/extension build:chrome:${{ matrix.site }}
+
+      - name: Verify build artifacts exist
+        run: |
+          set -e
+          test -f apps/extension/dist-chrome-${{ matrix.site }}.zip || (echo "Missing dist-chrome-${{ matrix.site }}.zip" && exit 1)
+
+      - name: Create Chrome Extension Keys JSON
+        id: create-chrome-json
+        env:
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          # Dynamically map the secret name based on matrix site
+          # Note: Secrets must be named like CHROME_EXTENSION_ID_SUSHI, CHROME_EXTENSION_ID_VEX, etc.
+        run: |
+          SITE_UPPER=$(echo "${{ matrix.site }}" | tr '[:lower:]' '[:upper:]')
+          SECRET_NAME="CHROME_EXTENSION_ID_$SITE_UPPER"
+          # We use a trick to get the secret value from the environment if needed, 
+          # but usually, we map them explicitly to avoid security issues.
+          # For a dynamic matrix, we'll use the bpp action's ability or prepare a JSON.
+
+          # Since GitHub Actions doesn't support dynamic secret names in expressions like ${{ secrets[name] }},
+          # we provide all available IDs as env vars and pick the right one.
+          case "${{ matrix.site }}" in
+            sushi) EXT_ID="${{ secrets.CHROME_EXTENSION_ID_SUSHI }}" ;;
+            atlas) EXT_ID="${{ secrets.CHROME_EXTENSION_ID_ATLAS }}" ;;
+            focus) EXT_ID="${{ secrets.CHROME_EXTENSION_ID_FOCUS }}" ;;
+            vex) EXT_ID="${{ secrets.CHROME_EXTENSION_ID_VEX }}" ;;
+            popcorn) EXT_ID="${{ secrets.CHROME_EXTENSION_ID_POPCORN }}" ;;
+            chrry) EXT_ID="${{ secrets.CHROME_EXTENSION_ID_CHRRY }}" ;;
+            zarathustra) EXT_ID="${{ secrets.CHROME_EXTENSION_ID_ZARATHUSTRA }}" ;;
+            search) EXT_ID="${{ secrets.CHROME_EXTENSION_ID_SEARCH }}" ;;
+            grape) EXT_ID="${{ secrets.CHROME_EXTENSION_ID_GRAPE }}" ;;
+            burn) EXT_ID="${{ secrets.CHROME_EXTENSION_ID_BURN }}" ;;
+            vault) EXT_ID="${{ secrets.CHROME_EXTENSION_ID_VAULT }}" ;;
+            pear) EXT_ID="${{ secrets.CHROME_EXTENSION_ID_PEAR }}" ;;
+            tribe) EXT_ID="${{ secrets.CHROME_EXTENSION_ID_TRIBE }}" ;;
+          esac
+
+          if [[ -z "$EXT_ID" ]]; then
+            echo "::warning::Extension ID not found for ${{ matrix.site }}. Skipping upload."
+            echo "skip_upload=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Prepare Keys JSON for PlasmoHQ/bpp
+          JSON_CONTENT=$(jq -n \
+            --arg clientId "$CHROME_CLIENT_ID" \
+            --arg clientSecret "$CHROME_CLIENT_SECRET" \
+            --arg refreshToken "$CHROME_REFRESH_TOKEN" \
+            --arg extId "$EXT_ID" \
+            '{\n  "$schema": "https://github.com/PlasmoHQ/bpp/raw/main/keys.schema.json",\n  "chrome": {\n    "clientId": $clientId,\n    "clientSecret": $clientSecret,\n    "refreshToken": $refreshToken,\n    "extId": $extId\n  }\n}')
+
+          echo "BPP_KEYS<<EOF" >> $GITHUB_ENV
+          echo "$JSON_CONTENT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "skip_upload=false" >> $GITHUB_OUTPUT
+
+      - name: Upload to Chrome Web Store
+        if: steps.create-chrome-json.outputs.skip_upload == 'false'
+        uses: PlasmoHQ/bpp@v3
+        with:
+          keys: ${{ env.BPP_KEYS }}
+          chrome-file: apps/extension/dist-chrome-${{ matrix.site }}.zip
+          verbose: true
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: apps/extension/dist-chrome-${{ matrix.site }}.zip
+          generate_release_notes: true
+          # Token is automatic in GitHub Actions
+          fail_on_unmatched_files: false
