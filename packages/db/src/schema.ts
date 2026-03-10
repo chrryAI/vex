@@ -3240,6 +3240,9 @@ export const apps = pgTable(
       withTimezone: true,
     }),
 
+    blueskyHandle: text("blueskyHandle"),
+    blueskyPassword: text("blueskyPassword"),
+
     moltHandle: text("moltHandle"),
     moltApiKey: text("moltApiKey"),
     moltAgentName: text("moltAgentName"),

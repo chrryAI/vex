@@ -86,7 +86,7 @@ pub fn run() {
                 if url.starts_with("vex://auth/callback") {
                     if let Ok(parsed_url) = tauri::Url::parse(url) {
                         for (key, value) in parsed_url.query_pairs() {
-                            if key == "token" {
+                            if key == "auth_token" {
                                 log::info!("OAuth callback received with token");
                                 let _ = handle_clone.emit("oauth-callback", value.to_string());
                                 break;

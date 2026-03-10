@@ -447,7 +447,8 @@ export function AuthProvider({
     os,
     browser,
     isCapacitor,
-
+    isStorageReady,
+    isTauri,
     // IDE state from platform
     isIDE,
     toggleIDE,
@@ -538,7 +539,31 @@ export function AuthProvider({
     if (isCapacitor) {
       initializeGoogleAuth().catch(console.error)
     }
-  }, [isCapacitor])
+    if (isTauri) {
+      const handleTauriAuth = async () => {
+        const { listen } = await import("@tauri-apps/api/event")
+        const unlisten = await listen("oauth-callback", (event: any) => {
+          const token = event.payload
+          if (token) {
+            console.log("✅ OAuth callback received token in frontend")
+            setToken(token)
+            setSignInPart(undefined)
+            refetchSession()
+          }
+        })
+        return unlisten
+      }
+
+      const unlistenPromise = handleTauriAuth()
+      return () => {
+        unlistenPromise.then((unlisten) => {
+          if (typeof unlisten === "function") {
+            unlisten()
+          }
+        })
+      }
+    }
+  }, [isCapacitor, isTauri])
 
   /**
    * Sign in with Google OAuth
@@ -808,8 +833,6 @@ export function AuthProvider({
   >(props.threads)
 
   const siteConfig = props.siteConfig || getSiteConfig(CHRRY_URL)
-
-  const { isStorageReady, isTauri } = usePlatform()
 
   const fingerprintParam = searchParams.get("fp") || ""
 
@@ -1256,7 +1279,6 @@ export function AuthProvider({
       ) || c,
     [app, c],
   )
-  console.log(`🚀 ~ siteConfigApp:`, siteConfigApp)
 
   const setIsRetro = (value: boolean) => {
     setIsRetroInternal(value)
