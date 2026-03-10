@@ -27,7 +27,6 @@ import {
   type user,
 } from "./index"
 import { seedPearFeedback } from "./seedPearFeedback"
-import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
 import { seedTribeEngagement } from "./seedTribeEngagement"
 import {
   aiAgents,

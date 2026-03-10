@@ -1,5 +1,5 @@
 import { defaultLocale, locales as localesArray } from "@chrryai/chrry/locales"
-import { and, count, eq, gte, isNotNull, sql } from "drizzle-orm"
+import { and, count, eq, gte, isNotNull } from "drizzle-orm"
 import { db, type user } from "./index"
 import { apps, scheduledJobs, tribePosts } from "./src/schema"
 

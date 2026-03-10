@@ -20,6 +20,7 @@ import {
   getTribePosts,
   getTribeReactions,
   getTribes,
+  inArray,
   logCreditUsage,
   sql,
 } from "@repo/db"
@@ -47,9 +48,11 @@ if (!CHATGPT_API_KEY) {
   console.error("❌ CHATGPT_API_KEY environment variable is not set")
 }
 
-const openai = new OpenAI({
-  apiKey: CHATGPT_API_KEY,
-})
+const openai = CHATGPT_API_KEY
+  ? new OpenAI({
+      apiKey: CHATGPT_API_KEY,
+    })
+  : null
 
 const redis =
   isDevelopment || isE2E
@@ -881,10 +884,7 @@ app.delete("/c/:id", async (c) => {
       )
     }
 
-    // Delete the comment
-    await db.delete(tribeComments).where(eq(tribeComments.id, commentId))
-
-    // Decrement post commentsCount
+    // Use transaction to delete the comment and decrement post commentsCount atomically
     await db.transaction(async (tx) => {
       await tx.delete(tribeComments).where(eq(tribeComments.id, commentId))
 
@@ -978,11 +978,33 @@ app.post("/p/:id/translate", async (c) => {
     const isAdmin = isDevelopment || member.role === "admin"
     const canTranslateFree = isOwner || isAdmin
 
-    // Calculate total credits needed
+    // Check which languages actually need translation
+    const existingTranslations = await db.query.tribePostTranslations.findMany({
+      where: and(
+        eq(tribePostTranslations.postId, postId),
+        inArray(tribePostTranslations.language, languages),
+      ),
+    })
+
+    const existingLangs = existingTranslations.map((t) => t.language)
+    const missingLanguages = languages.filter(
+      (lang) => !existingLangs.includes(lang),
+    )
+
+    if (missingLanguages.length === 0) {
+      return c.json({
+        success: true,
+        translations: existingTranslations,
+        creditsUsed: 0,
+        message: "All requested translations already exist.",
+      })
+    }
+
+    // Calculate total credits needed for MISSING languages
     const contentLength =
       (post.title?.length || 0) + (post.content?.length || 0)
     const creditsPerLanguage = calculateCredits(contentLength)
-    const totalCredits = creditsPerLanguage * languages.length
+    const totalCredits = creditsPerLanguage * missingLanguages.length
 
     // Check if user has enough credits (if not free)
     if (!canTranslateFree) {
@@ -1001,7 +1023,6 @@ app.post("/p/:id/translate", async (c) => {
         )
       }
 
-      // Atomically deduct credits before translation
       // Atomically check and deduct credits (prevents overdraft)
       const [deductResult] = await db
         .update(users)
@@ -1022,23 +1043,10 @@ app.post("/p/:id/translate", async (c) => {
       }
     }
 
-    const translations = []
+    const translations = [...existingTranslations]
 
-    // Translate to each language
-    for (const lang of languages) {
-      // Check if translation already exists
-      const existing = await db.query.tribePostTranslations.findFirst({
-        where: and(
-          eq(tribePostTranslations.postId, postId),
-          eq(tribePostTranslations.language, lang),
-        ),
-      })
-
-      if (existing) {
-        translations.push(existing)
-        continue
-      }
-
+    // Translate ONLY the missing languages
+    for (const lang of missingLanguages) {
       // Translate with GPT
       const prompt = `Translate this tribe post to ${lang}.
 
@@ -1206,27 +1214,44 @@ app.post("/c/:id/translate", async (c) => {
       return c.json({ error: "Comment not found" }, { status: 404 })
     }
 
-    if (!comment.appId) {
-      return c.json({ error: "Comment doesn't have an App" }, { status: 404 })
-    }
-
-    const app = await getApp({
-      id: comment.appId,
-    })
-
-    if (!app) {
-      return c.json({ error: "App not found" }, { status: 404 })
-    }
+    const app = comment.appId
+      ? await getApp({
+          id: comment.appId,
+        })
+      : null
 
     // Check if user is post owner or admin
-    const isOwner = app.userId === member.id
+    const isOwner = app && app.userId === member.id
     const isAdmin = isDevelopment || member.role === "admin"
     const canTranslateFree = isOwner || isAdmin
 
-    // Calculate total credits needed
+    // Check which languages actually need translation
+    const existingTranslations =
+      await db.query.tribeCommentTranslations.findMany({
+        where: and(
+          eq(tribeCommentTranslations.commentId, commentId),
+          inArray(tribeCommentTranslations.language, languages),
+        ),
+      })
+
+    const existingLangs = existingTranslations.map((t) => t.language)
+    const missingLanguages = languages.filter(
+      (lang) => !existingLangs.includes(lang),
+    )
+
+    if (missingLanguages.length === 0) {
+      return c.json({
+        success: true,
+        translations: existingTranslations,
+        creditsUsed: 0,
+        message: "All requested translations already exist.",
+      })
+    }
+
+    // Calculate total credits needed for MISSING languages
     const contentLength = comment.content?.length || 0
     const creditsPerLanguage = calculateCredits(contentLength)
-    const totalCredits = creditsPerLanguage * languages.length
+    const totalCredits = creditsPerLanguage * missingLanguages.length
 
     // Check if user has enough credits (if not free)
     if (!canTranslateFree) {
@@ -1245,30 +1270,30 @@ app.post("/c/:id/translate", async (c) => {
         )
       }
 
-      // Atomically deduct credits before translation
-      await db
+      // Atomically check and deduct credits (prevents overdraft)
+      const [deductResult] = await db
         .update(users)
         .set({ credits: sql`${users.credits} - ${totalCredits}` })
-        .where(eq(users.id, member.id))
+        .where(
+          and(
+            eq(users.id, member.id),
+            sql`${users.credits} >= ${totalCredits}`,
+          ),
+        )
+        .returning({ credits: users.credits })
+
+      if (!deductResult) {
+        return c.json(
+          { error: "Insufficient credits (concurrent request)" },
+          { status: 402 },
+        )
+      }
     }
 
-    const translations = []
+    const translations = [...existingTranslations]
 
-    // Translate to each language
-    for (const lang of languages) {
-      // Check if translation already exists
-      const existing = await db.query.tribeCommentTranslations.findFirst({
-        where: and(
-          eq(tribeCommentTranslations.commentId, commentId),
-          eq(tribeCommentTranslations.language, lang),
-        ),
-      })
-
-      if (existing) {
-        translations.push(existing)
-        continue
-      }
-
+    // Translate ONLY missing languages
+    for (const lang of missingLanguages) {
       // Translate with GPT
       const prompt = `Translate this tribe comment to ${lang}.
 
