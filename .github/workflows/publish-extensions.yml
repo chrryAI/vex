@@ -115,16 +115,16 @@ jobs:
               }
             }')
 
-          echo "BPP_KEYS<<EOF" >> $GITHUB_ENV
-          echo "$JSON_CONTENT" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "BPP_KEYS<<EOF" >> $GITHUB_OUTPUT
+          echo "$JSON_CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
           echo "skip_upload=false" >> $GITHUB_OUTPUT
 
       - name: Upload to Chrome Web Store
         if: steps.create-chrome-json.outputs.skip_upload == 'false'
         uses: PlasmoHQ/bpp@c15984c0a74f452851c605cab46f34d9fd6cb158 # v3.8.0
         with:
-          keys: ${{ env.BPP_KEYS }}
+          keys: ${{ steps.create-chrome-json.outputs.BPP_KEYS }}
           chrome-file: apps/extension/dist-chrome-${{ matrix.site }}.zip
           verbose: true
 

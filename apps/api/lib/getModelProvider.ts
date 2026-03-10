@@ -67,11 +67,10 @@ export const modelCapabilities: Record<string, { tools: boolean }> = {
   "anthropic/claude-sonnet-4.6": { tools: true },
   "qwen/qwen3-235b-a22b-thinking-2507": { tools: true },
   "qwen/qwen3-vl-235b-a22b-thinking": { tools: true },
-  "gpt-5.2-pro": { tools: true },
-  "openai/gpt-5.2-pro": { tools: true },
-  "google/gemini-3.1-pro-preview": { tools: true },
+  "gpt-5.2-2025-12-11": { tools: true },
+  "gemini-3.1-pro-preview": { tools: true },
   "grok-4-1-fast-reasoning": { tools: true },
-  "grok-4-1-fast": { tools: true },
+  "grok-4-1-fast-non-reasoning": { tools: true },
   "x-ai/grok-4.1-fast": { tools: true },
   "deepseek-v3.2-thinking": { tools: true },
   "perplexity/sonar-pro": { tools: false },
@@ -196,6 +195,7 @@ export async function getModelProvider({
       console.warn(
         `⚠️ Creating fallback DeepSeek provider with empty API key for model ${modelId} (agent: ${agent.name})`,
       )
+      // Deliberate non-authenticated stub for graceful failure (warnings are logged above)
       return {
         provider: createDeepSeek({ apiKey: "" })(modelId),
         modelId: modelId,
@@ -270,6 +270,7 @@ export async function getModelProvider({
       console.warn(
         `⚠️ Creating fallback DeepSeek provider with empty API key for model ${fallbackModel} (agent: ${agent.name})`,
       )
+      // Deliberate non-authenticated stub for graceful failure (warnings are logged above)
       result = {
         provider: createDeepSeek({ apiKey: "" })(fallbackModel),
         modelId: fallbackModel,
@@ -402,6 +403,7 @@ export async function getModelProvider({
       console.warn(
         `⚠️ Creating fallback DeepSeek provider with empty API key for model deepseek-reasoner (agent: ${agent.name})`,
       )
+      // Deliberate non-authenticated stub for graceful failure (warnings are logged above)
       result = {
         provider: createDeepSeek({ apiKey: "" })("deepseek-reasoner"),
         modelId: "deepseek-reasoner",
@@ -419,7 +421,7 @@ export async function getModelProvider({
             ? process.env.CHATGPT_API_KEY
             : ""
 
-        const modelId = targetModelId || "gpt-5.2-pro"
+        const modelId = targetModelId || "gpt-5.2-2025-12-11"
 
         if (openaiKey && !failedKeys?.includes(modelId)) {
           const openaiProvider = createOpenAI({ apiKey: openaiKey })
@@ -439,7 +441,7 @@ export async function getModelProvider({
           ? process.env.OPENROUTER_API_KEY
           : "")
 
-      const modelId = job?.modelConfig?.model || "openai/gpt-5.2-pro"
+      const modelId = job?.modelConfig?.model || "gpt-5.2-2025-12-11"
 
       if (openrouterKeyForOpenAI && !failedKeys?.includes(modelId)) {
         const openrouterProvider = createOpenRouter({
@@ -458,6 +460,7 @@ export async function getModelProvider({
       console.warn(
         `⚠️ Creating fallback OpenAI provider with empty API key for model ${fallbackModel} (agent: ${agent.name})`,
       )
+      // Deliberate non-authenticated stub for graceful failure (warnings are logged above)
       result = {
         provider: createOpenAI({ apiKey: "" })(fallbackModel),
         modelId: fallbackModel,
@@ -535,6 +538,7 @@ export async function getModelProvider({
       console.warn(
         `⚠️ Creating fallback Anthropic provider with empty API key for model ${fallbackModel} (agent: ${agent.name})`,
       )
+      // Deliberate non-authenticated stub for graceful failure (warnings are logged above)
       result = {
         provider: createAnthropic({ apiKey: "" })(
           fallbackModel.replace(/^anthropic\//, ""),
@@ -551,7 +555,7 @@ export async function getModelProvider({
         (!plusTiers.includes(app?.tier || "") ? process.env.GEMINI_API_KEY : "")
 
       {
-        const modelId = targetModelId || "google/gemini-3.1-pro-preview"
+        const modelId = targetModelId || "gemini-3.1-pro-preview"
 
         if (geminiKey && !failedKeys?.includes(modelId)) {
           const geminiProvider = createGoogleGenerativeAI({ apiKey: geminiKey })
@@ -571,7 +575,7 @@ export async function getModelProvider({
           ? process.env.OPENROUTER_API_KEY
           : ""
 
-      const modelId = job?.modelConfig?.model || "google/gemini-3.1-pro-preview"
+      const modelId = job?.modelConfig?.model || "gemini-3.1-pro-preview"
 
       if (openrouterKeyForGemini && !failedKeys?.includes(modelId)) {
         const openrouterProvider = createOpenRouter({
@@ -590,6 +594,7 @@ export async function getModelProvider({
       console.warn(
         `⚠️ Creating fallback Gemini provider with empty API key for model ${fallbackModel} (agent: ${agent.name})`,
       )
+      // Deliberate non-authenticated stub for graceful failure (warnings are logged above)
       result = {
         provider: createGoogleGenerativeAI({ apiKey: "" })(
           fallbackModel.replace(/^google\//, ""),
@@ -610,7 +615,9 @@ export async function getModelProvider({
       {
         const defaultGrokModel =
           job?.modelConfig?.model ||
-          (canReason ? "grok-4-1-fast-reasoning" : "grok-4-1-fast")
+          (canReason
+            ? "grok-4-1-fast-reasoning"
+            : "grok-4-1-fast-non-reasoning")
 
         if (xaiKey && !failedKeys?.includes(defaultGrokModel)) {
           const xaiProvider = createOpenAI({
@@ -677,7 +684,7 @@ export async function getModelProvider({
           apiKey: perplexityKey,
         })
         result = {
-          provider: perplexityProvider(modelId),
+          provider: perplexityProvider(modelId.replace(/^perplexity\//, "")),
           modelId: modelId,
           agentName: agent.name,
           lastKey: "perplexity",
@@ -705,13 +712,13 @@ export async function getModelProvider({
       }
 
       console.warn(
-        `⚠️ Creating fallback OpenRouter provider with empty API key for model ${modelId} (agent: ${agent.name})`,
+        `⚠️ Creating fallback Perplexity provider with empty API key for model ${modelId} (agent: ${agent.name})`,
       )
+      // Deliberate non-authenticated stub for graceful failure (warnings are logged above)
       result = {
-        provider: createOpenRouter({
-          apiKey: "",
-          baseURL: "https://api.perplexity.ai",
-        })(modelId),
+        provider: createPerplexity({ apiKey: "" })(
+          modelId.replace(/^perplexity\//, ""),
+        ),
         modelId: modelId,
         agentName: agent.name,
       }
