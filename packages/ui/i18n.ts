@@ -9,8 +9,10 @@ import ja from "./locales/ja.json"
 import ko from "./locales/ko.json"
 import nl from "./locales/nl.json"
 import pt from "./locales/pt.json"
+import sv from "./locales/sv.json"
 import tr from "./locales/tr.json"
 import zh from "./locales/zh.json"
+
 import { getCookieSync } from "./platform/cookies"
 import { storage } from "./platform/storage"
 import { BrowserInstance } from "./utils"
@@ -76,6 +78,7 @@ let savedLang: string | null
       ko: { translation: ko },
       nl: { translation: nl },
       tr: { translation: tr },
+      sv: { translation: sv },
     },
     debug: false,
     lng: safeLang,

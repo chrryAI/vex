@@ -33,20 +33,83 @@ export async function postToBluesky({
     if (video) {
       try {
         console.log(`🎬 Uploading video to Bluesky: ${video}`)
-        const response = await fetch(video)
-        const blob = await response.blob()
-        const arrayBuffer = await blob.arrayBuffer()
-        const uint8Array = new Uint8Array(arrayBuffer)
+        const videoResponse = await fetch(video)
+        const videoBlob = await videoResponse.blob()
+        const videoArrayBuffer = await videoBlob.arrayBuffer()
+        const videoUint8Array = new Uint8Array(videoArrayBuffer)
 
-        const uploadResponse = await agent.uploadBlob(uint8Array, {
-          encoding: blob.type || "video/mp4",
+        // Native video upload requires talking to video.bsky.app
+        // We can use the same session token but different service
+        const videoService = "https://video.bsky.app"
+
+        // Use manual fetch for video service to avoid agent service switching complexity
+        const uploadUrl = `${videoService}/xrpc/app.bsky.video.uploadVideo`
+        const uploadRes = await fetch(uploadUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": videoBlob.type || "video/mp4",
+            Authorization: `Bearer ${agent.session?.accessJwt}`,
+          },
+          body: videoUint8Array,
         })
 
-        if (uploadResponse.data.blob) {
+        if (!uploadRes.ok) {
+          const errText = await uploadRes.text()
+          throw new Error(
+            `Failed to upload video: ${uploadRes.status} ${errText}`,
+          )
+        }
+
+        const uploadData = await uploadRes.json()
+        const jobId = uploadData.jobId
+
+        if (!jobId) {
+          throw new Error("No jobId returned from video upload")
+        }
+
+        console.log(
+          `⏳ Video upload job started: ${jobId}, polling for status...`,
+        )
+
+        // Poll for completion (max 5 minutes)
+        let videoBlobRef: any = null
+        const startTime = Date.now()
+        while (Date.now() - startTime < 300000) {
+          const statusUrl = `${videoService}/xrpc/app.bsky.video.getJobStatus?jobId=${jobId}`
+          const statusRes = await fetch(statusUrl, {
+            headers: {
+              Authorization: `Bearer ${agent.session?.accessJwt}`,
+            },
+          })
+
+          if (statusRes.ok) {
+            const statusData = await statusRes.json()
+            const job = statusData.job
+
+            if (job.status === "job_completed") {
+              videoBlobRef = job.blob
+              console.log("✅ Video processing completed successfully")
+              break
+            } else if (job.status === "job_failed") {
+              throw new Error(
+                `Video processing failed: ${job.error || "Unknown error"}`,
+              )
+            } else {
+              console.log(`⏳ Video status: ${job.status}...`)
+            }
+          }
+
+          // Wait 5 seconds before next poll
+          await new Promise((resolve) => setTimeout(resolve, 5000))
+        }
+
+        if (videoBlobRef) {
           embed = {
             $type: "app.bsky.embed.video",
-            video: uploadResponse.data.blob,
+            video: videoBlobRef,
           }
+        } else {
+          throw new Error("Video processing timed out")
         }
       } catch (err) {
         console.error("⚠️ Failed to upload video to Bluesky:", err)

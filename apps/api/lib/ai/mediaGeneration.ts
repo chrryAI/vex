@@ -106,7 +106,7 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
       input: {
         prompt,
         aspect_ratio: aspectRatio,
-        output_format: "webp",
+        output_format: "png",
       },
     })
 

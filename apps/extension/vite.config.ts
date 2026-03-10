@@ -51,7 +51,10 @@ function platformStubPlugin(): PluginOption {
         id.startsWith("@capacitor") ||
         id.startsWith("firebase/")
       ) {
-        // Return empty stub exports
+        if (id.startsWith("@tauri-apps/api")) {
+          return `export * from "${path.resolve(__dirname, "src/stubs/tauri-api.ts")}"; export { default } from "${path.resolve(__dirname, "src/stubs/tauri-api.ts")}";`
+        }
+        // Return empty stub exports for others
         return `export default {};`
       }
       return null
