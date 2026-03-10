@@ -67,7 +67,13 @@ export const modelCapabilities: Record<string, { tools: boolean }> = {
   "anthropic/claude-sonnet-4.6": { tools: true },
   "qwen/qwen3-235b-a22b-thinking-2507": { tools: true },
   "qwen/qwen3-vl-235b-a22b-thinking": { tools: true },
-  // "qwen/qwen3-vl-30b-a3b-thinking": { tools: true },
+  "gpt-5.2-pro": { tools: true },
+  "openai/gpt-5.2-pro": { tools: true },
+  "google/gemini-3.1-pro-preview": { tools: true },
+  "grok-4-1-fast-reasoning": { tools: true },
+  "grok-4-1-fast": { tools: true },
+  "x-ai/grok-4.1-fast": { tools: true },
+  "deepseek-v3.2-thinking": { tools: true },
   "perplexity/sonar-pro": { tools: false },
   "sonar-pro": { tools: false },
   "openai/gpt-oss-120b:free": { tools: false },
@@ -187,6 +193,9 @@ export async function getModelProvider({
       }
 
       const modelId = targetModelId || "deepseek-chat"
+      console.warn(
+        `⚠️ Creating fallback DeepSeek provider with empty API key for model ${modelId} (agent: ${agent.name})`,
+      )
       return {
         provider: createDeepSeek({ apiKey: "" })(modelId),
         modelId: modelId,
@@ -258,6 +267,9 @@ export async function getModelProvider({
 
       console.error("❌ No API keys available for DeepSeek or ChatGPT fallback")
       const fallbackModel = "deepseek-chat"
+      console.warn(
+        `⚠️ Creating fallback DeepSeek provider with empty API key for model ${fallbackModel} (agent: ${agent.name})`,
+      )
       result = {
         provider: createDeepSeek({ apiKey: "" })(fallbackModel),
         modelId: fallbackModel,
@@ -387,6 +399,9 @@ export async function getModelProvider({
         break
       }
 
+      console.warn(
+        `⚠️ Creating fallback DeepSeek provider with empty API key for model deepseek-reasoner (agent: ${agent.name})`,
+      )
       result = {
         provider: createDeepSeek({ apiKey: "" })("deepseek-reasoner"),
         modelId: "deepseek-reasoner",
@@ -440,6 +455,9 @@ export async function getModelProvider({
       }
 
       const fallbackModel = "gpt-4o-mini"
+      console.warn(
+        `⚠️ Creating fallback OpenAI provider with empty API key for model ${fallbackModel} (agent: ${agent.name})`,
+      )
       result = {
         provider: createOpenAI({ apiKey: "" })(fallbackModel),
         modelId: fallbackModel,
@@ -455,7 +473,7 @@ export async function getModelProvider({
           ? process.env.CLAUDE_API_KEY
           : ""
 
-      const modelId = targetModelId || "anthropic/claude-sonnet-4-6"
+      const modelId = targetModelId || "anthropic/claude-sonnet-4.6"
 
       if (
         claudeKey &&
@@ -479,19 +497,19 @@ export async function getModelProvider({
 
       {
         // For scheduled jobs, use DeepSeek instead of expensive Claude
-        const modelId =
+        const scheduledModelId =
           activeSchedule?.modelId ||
           job?.metadata?.modelId ||
           job?.modelConfig?.model ||
           "anthropic/claude-sonnet-4.6"
 
-        if (openrouterKeyForClaude && !failedKeys?.includes(modelId)) {
+        if (openrouterKeyForClaude && !failedKeys?.includes(scheduledModelId)) {
           const openrouterProvider = createOpenRouter({
             apiKey: openrouterKeyForClaude,
           })
           result = {
-            provider: openrouterProvider(modelId),
-            modelId,
+            provider: openrouterProvider(scheduledModelId),
+            modelId: scheduledModelId,
             agentName: agent.name,
             lastKey: "openrouter",
           }
@@ -514,8 +532,13 @@ export async function getModelProvider({
       }
 
       const fallbackModel = "anthropic/claude-sonnet-4.6"
+      console.warn(
+        `⚠️ Creating fallback Anthropic provider with empty API key for model ${fallbackModel} (agent: ${agent.name})`,
+      )
       result = {
-        provider: createAnthropic({ apiKey: "" })(fallbackModel),
+        provider: createAnthropic({ apiKey: "" })(
+          fallbackModel.replace(/^anthropic\//, ""),
+        ),
         modelId: fallbackModel,
         agentName: agent.name,
       }
@@ -564,8 +587,13 @@ export async function getModelProvider({
       }
 
       const fallbackModel = "google/gemini-1.5-flash"
+      console.warn(
+        `⚠️ Creating fallback Gemini provider with empty API key for model ${fallbackModel} (agent: ${agent.name})`,
+      )
       result = {
-        provider: createGoogleGenerativeAI({ apiKey: "" })(fallbackModel),
+        provider: createGoogleGenerativeAI({ apiKey: "" })(
+          fallbackModel.replace(/^google\//, ""),
+        ),
         modelId: fallbackModel,
         agentName: agent.name,
       }
@@ -624,6 +652,9 @@ export async function getModelProvider({
         }
       }
 
+      console.warn(
+        `⚠️ Creating fallback DeepSeek provider with empty API key for model deepseek-reasoner (agent: ${agent.name})`,
+      )
       result = {
         provider: createDeepSeek({ apiKey: "" })("deepseek-reasoner"),
         modelId: "deepseek-reasoner",
@@ -673,6 +704,9 @@ export async function getModelProvider({
         break
       }
 
+      console.warn(
+        `⚠️ Creating fallback OpenRouter provider with empty API key for model ${modelId} (agent: ${agent.name})`,
+      )
       result = {
         provider: createOpenRouter({
           apiKey: "",
@@ -692,9 +726,11 @@ export async function getModelProvider({
           ? process.env.DEEPSEEK_API_KEY
           : ""
       const fallbackProvider = createDeepSeek({ apiKey: fallbackKey })
+      const fallbackModel = "deepseek-v3.2"
+      const effectiveModel = mapDeepSeekModel(fallbackModel)
       result = {
-        provider: fallbackProvider("deepseek-v3.2"),
-        modelId: "deepseek-v3.2",
+        provider: fallbackProvider(effectiveModel),
+        modelId: fallbackModel,
         agentName: "deepSeek",
       }
       break
