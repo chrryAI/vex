@@ -318,7 +318,7 @@ async function getRelevantMemoryContext({
     // Get app-specific memories
     // If user is app creator, give them 10x more app memories to see comprehensive DNA Thread knowledge
     const appMemoryPageSize = isAppCreator
-      ? pageSize * 10 // Creators get 150 app memories (10x boost)
+      ? pageSize * 3 // Creators get 150 app memories (3x boost)
       : Math.ceil(pageSize / 2) // Regular users get 7-8 app memories
 
     // Execute memory queries in parallel for performance
@@ -489,7 +489,7 @@ async function getRelevantMemoryContext({
           : ""
 
       const appCreatorNote = isAppCreator
-        ? `\n\n🎯 APP CREATOR ACCESS: You are the creator of this app. You have enhanced access to ${appMemories.length} app memories (10x boost) to see comprehensive DNA Thread knowledge and understand what your app has learned across all user interactions. This is your app's "startup summary" - use it to understand the collective intelligence your app has gained.`
+        ? `\n\n🎯 APP CREATOR ACCESS: You are the creator of this app. You have enhanced access to ${appMemories.length} app memories (3x boost) to see comprehensive DNA Thread knowledge and understand what your app has learned across all user interactions. This is your app's "startup summary" - use it to understand the collective intelligence your app has gained.`
         : ""
 
       context += `${characterContext}${knowledgeContext}${appCreatorNote}\n\n⚠️ CRITICAL: This is shared knowledge from ALL users of this app across different conversations and threads.\n- Use this knowledge to provide informed, contextual responses\n- DO NOT say "you previously asked", "you asked before", "you mentioned this earlier", or similar phrases\n- DO NOT reference timestamps or when questions were asked\n- This is NOT the current user's personal conversation history - it's collective app knowledge\n- Only mention question repetition if you see it in the CURRENT conversation thread above, not from this app knowledge`
