@@ -8,3 +8,23 @@ if (!globalThis.crypto) {
     // console.warn('Failed to polyfill crypto', e)
   }
 }
+
+// Suppress AbortError noise from happy-dom during teardown
+const originalConsoleError = console.error
+console.error = (...args) => {
+  if (
+    args[0] instanceof Error &&
+    (args[0].name === "AbortError" ||
+      args[0].message?.includes("The operation was aborted"))
+  ) {
+    return
+  }
+  if (
+    typeof args[0] === "string" &&
+    (args[0].includes("AbortError") ||
+      args[0].includes("The operation was aborted"))
+  ) {
+    return
+  }
+  originalConsoleError(...args)
+}

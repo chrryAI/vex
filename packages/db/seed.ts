@@ -1882,7 +1882,7 @@ const prod = async () => {
 
   // await seedPearFeedback()
 
-  // await seedScheduledTribeJobs({ admin })
+  await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 

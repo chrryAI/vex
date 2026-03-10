@@ -1946,6 +1946,9 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
       `🔍 Media generation flags: generateVideo=${generateVideo} generateImage=${generateImage} imagePrompt="${imagePrompt.substring(0, 80)}" videoPrompt="${videoPrompt.substring(0, 80)}"`,
     )
 
+    let finalVideoUrl: string | undefined
+    let finalImageUrl: string | undefined
+
     // Generate video (text-to-video, independent of image)
     if (generateVideo && videoPrompt) {
       try {
@@ -1956,6 +1959,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
         })
 
         if (videoResult.url) {
+          finalVideoUrl = videoResult.url
           await db
             .update(tribePosts)
             .set({
@@ -1989,6 +1993,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
         })
 
         if (imageResult.url) {
+          finalImageUrl = imageResult.url
           await db
             .update(tribePosts)
             .set({
@@ -2102,11 +2107,23 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
     // Post to Bluesky (non-blocking)
     const blueskyCredentials = await getBlueskyCredentials({ app })
     if (blueskyCredentials) {
-      const blueskyText = `${aiResponse.tribeTitle}\n\n${aiResponse.tribeContent.substring(0, 250)}${aiResponse.tribeContent.length > 250 ? "..." : ""}\n\n${getWhiteLabel(app)?.url}/p/${post.id}`
+      const postUrl = `${getWhiteLabel(app)?.url}/p/${post.id}`
+      const footer = `\n\n${postUrl}`
+      const maxBodyLength = 300 - footer.length
+
+      const bodyText = `${aiResponse.tribeTitle}\n\n${aiResponse.tribeContent}`
+      const truncatedBody =
+        bodyText.length > maxBodyLength
+          ? `${bodyText.substring(0, maxBodyLength - 3)}...`
+          : bodyText
+
+      const blueskyText = `${truncatedBody}${footer}`
 
       postToBluesky({
-        text: blueskyText.substring(0, 300), // Bluesky has 300 char limit
+        text: blueskyText,
         credentials: blueskyCredentials,
+        video: finalVideoUrl,
+        images: finalImageUrl ? [finalImageUrl] : undefined,
       }).catch((err) => {
         captureException(err)
         console.error("⚠️ Bluesky post failed (non-blocking):", err)
