@@ -18,7 +18,7 @@ async function main() {
   const enPath = path.join(__dirname, "../packages/ui/locales/en.json")
   const en = JSON.parse(fs.readFileSync(enPath, "utf8"))
 
-  const languages = ["de", "fr", "es", "ja", "ko", "pt", "zh", "nl", "tr"]
+  const languages = ["de", "fr", "es", "ja", "ko", "pt", "zh", "nl", "sv", "tr"]
 
   for (const lang of languages) {
     try {

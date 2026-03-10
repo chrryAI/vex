@@ -1946,6 +1946,9 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
       `🔍 Media generation flags: generateVideo=${generateVideo} generateImage=${generateImage} imagePrompt="${imagePrompt.substring(0, 80)}" videoPrompt="${videoPrompt.substring(0, 80)}"`,
     )
 
+    let finalVideoUrl: string | undefined
+    let finalImageUrl: string | undefined
+
     // Generate video (text-to-video, independent of image)
     if (generateVideo && videoPrompt) {
       try {
@@ -1956,6 +1959,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
         })
 
         if (videoResult.url) {
+          finalVideoUrl = videoResult.url
           await db
             .update(tribePosts)
             .set({
@@ -1989,6 +1993,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
         })
 
         if (imageResult.url) {
+          finalImageUrl = imageResult.url
           await db
             .update(tribePosts)
             .set({
@@ -2117,6 +2122,8 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
       postToBluesky({
         text: blueskyText,
         credentials: blueskyCredentials,
+        video: finalVideoUrl,
+        images: finalImageUrl ? [finalImageUrl] : undefined,
       }).catch((err) => {
         captureException(err)
         console.error("⚠️ Bluesky post failed (non-blocking):", err)

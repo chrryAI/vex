@@ -10,6 +10,7 @@ export type locale =
   | "pt"
   | "zh"
   | "nl"
+  | "sv"
   | "tr"
 
 export const locales: locale[] = [
@@ -22,6 +23,7 @@ export const locales: locale[] = [
   "pt",
   "zh",
   "nl",
+  "sv",
   "tr",
 ]
 
@@ -35,6 +37,7 @@ export const LANGUAGES = [
   { code: "pt", name: "Português" },
   { code: "zh", name: "中文" },
   { code: "nl", name: "Nederlands" },
+  { code: "sv", name: "Svenska" },
   { code: "tr", name: "Türkçe" },
 ] as const
 

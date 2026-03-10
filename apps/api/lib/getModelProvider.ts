@@ -97,8 +97,7 @@ export async function getModelProvider({
 
   const agents = await getAiAgents({ include: app?.id })
   // Hocam case-insensitive yapalım ki name="deepseek" da "deepSeek" de çalışsın
-  let agent =
-    agents.find((a) => a.name.toLowerCase() === name.toLowerCase()) || agents[0]
+  let agent = agents.find((a) => a.name.toLowerCase() === name.toLowerCase())
 
   const failedKeys = agent?.metadata?.failed
 

@@ -27,6 +27,7 @@ import {
   type user,
 } from "./index"
 import { seedPearFeedback } from "./seedPearFeedback"
+import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
 import { seedTribeEngagement } from "./seedTribeEngagement"
 import {
   aiAgents,
@@ -1881,7 +1882,7 @@ const prod = async () => {
 
   // await seedPearFeedback()
 
-  // await seedScheduledTribeJobs({ admin })
+  await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 

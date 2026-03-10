@@ -91,6 +91,11 @@ const aboutTranslations = {
     description:
       "Vex AI Asistanı, misyonumuz ve gelecek özellikler hakkında bilgi edinin",
   },
+  sv: {
+    title: "Om Vex | AI-assistent",
+    description:
+      "Lär dig mer om Vex AI-assistent, vårt uppdrag och kommande funktioner",
+  },
 }
 
 const whyTranslations = {
@@ -143,6 +148,11 @@ const whyTranslations = {
     description:
       "Vex AI Asistanı'nın AI sohbet ihtiyaçlarınız için neden en iyi seçim olduğunu keşfedin",
   },
+  sv: {
+    title: "Varför Vex | AI-assistent",
+    description:
+      "Upptäck varför Vex AI-assistent är det bästa valet för dina AI-chattbehov",
+  },
 }
 
 const privacyTranslations = {
@@ -185,6 +195,10 @@ const privacyTranslations = {
   tr: {
     title: "Gizlilik Politikası | Vex",
     description: "Vex AI Asistanı için Gizlilik Politikası",
+  },
+  sv: {
+    title: "Integritetspolicy | Vex",
+    description: "Integritetspolicy för Vex AI-assistent",
   },
 }
 
@@ -229,6 +243,10 @@ const termsTranslations = {
     title: "Hizmet Şartları | Vex",
     description: "Vex AI Asistanı için Hizmet Şartları",
   },
+  sv: {
+    title: "Användarvillkor | Vex",
+    description: "Användarvillkor för Vex AI-assistent",
+  },
 }
 
 const calendarTranslations = {
@@ -271,6 +289,10 @@ const calendarTranslations = {
   tr: {
     title: "Takvim | Vex",
     description: "Vex AI Asistanı ile programınızı yönetin",
+  },
+  sv: {
+    title: "Kalender | Vex",
+    description: "Hantera ditt schema med Vex AI-assistent",
   },
 }
 
@@ -317,6 +339,10 @@ const affiliateTranslations = {
     title: "Ortaklık Programı | Vex",
     description: "Vex ortaklık programına katılın ve komisyon kazanın",
   },
+  sv: {
+    title: "Partnerprogram | Vex",
+    description: "Gå med i Vex partnerprogram och tjäna provision",
+  },
 }
 
 const usersTranslations = {
@@ -360,6 +386,10 @@ const usersTranslations = {
   tr: {
     title: "Kullanıcılar | Vex",
     description: "Vex AI Asistanı kullanıcılarını ve topluluğunu keşfedin",
+  },
+  sv: {
+    title: "Användare | Vex",
+    description: "Utforska Vex AI-assistentens användare och gemenskap",
   },
 }
 
