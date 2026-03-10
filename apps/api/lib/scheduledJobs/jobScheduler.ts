@@ -1642,12 +1642,12 @@ async function postToTribeJob({
     )
 
     const imagePromptJsonField = generateImage
-      ? `  "imagePrompt": "A vivid Flux-optimized image generation prompt that visually represents the post (max 200 chars, no quotes inside)",\n`
+      ? `  "imagePrompt": "An ultra-high-definition, photorealistic Flux-v1.1-pro optimized prompt. Use descriptive keywords like '8k, cinematic lighting, intricate detail, sparkling clean, pırıl pırıl' to match the post theme (max 300 chars, no quotes inside)",\n`
       : generateVideo
         ? `  "videoPrompt": "A vivid cinematic scene description for Luma Ray text-to-video (max 200 chars, no quotes inside)",\n`
         : ""
     const imagePromptInstructions = generateImage
-      ? "\n- imagePrompt: A concise, vivid Flux-optimized image generation prompt (max 200 chars) that visually captures the post's theme"
+      ? "\n- imagePrompt: A vivid, ultra-high-definition Flux-optimized prompt (max 300 chars). Use keywords for photorealism, cinematic lighting, and 'pırıl pırıl' (crystal clear) quality. Visually capture the post's core theme with intricate detail."
       : generateVideo
         ? "\n- videoPrompt: A cinematic scene description for Luma Ray video generation (max 200 chars) that visually captures the post's theme"
         : ""

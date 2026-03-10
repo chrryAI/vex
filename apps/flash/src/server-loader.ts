@@ -121,7 +121,9 @@ export async function loadServerData(
   const isLocalePathname =
     pathname && locales.includes(pathname.split("/")?.[1] as locale)
 
-  const language = cookies.locale as locale
+  const language = isLocalePathname
+    ? (pathname.split("/")?.[1] as locale)
+    : (cookies.locale as locale)
 
   const showTribe = cookies.showTribe === "true"
   const themeCookie = cookies.theme as themeType
