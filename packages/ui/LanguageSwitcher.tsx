@@ -25,6 +25,7 @@ const LanguageSwitcher = ({
   attachTo,
   hideOnClickOutside = true,
   maxLanguages = 4,
+  defaults,
   ...props
 }: {
   multi?: boolean
@@ -41,6 +42,7 @@ const LanguageSwitcher = ({
   attachTo?: string
   hideOnClickOutside?: boolean
   maxLanguages?: number
+  defaults?: locale[]
 }) => {
   const { t } = useAppContext()
   const styles = useLanguageSwitcherStyles()
@@ -60,7 +62,7 @@ const LanguageSwitcher = ({
 
   const { searchParams, removeParams } = useNavigationContext()
 
-  const multi = props.multi && !languageModal
+  const multi = props.multi && !languageModal && !defaults?.length
 
   const selectedInitial = (
     props.selected ? [props.selected] : languages.length ? languages : ["en"]
@@ -175,35 +177,45 @@ const LanguageSwitcher = ({
       >
         <Div style={styles.languages.style}>
           {!hideLanguages &&
-            LANGUAGES.map((item) => (
-              <Button
-                disabled={multi ? item.code === "en" : undefined}
-                key={item.code}
-                style={{
-                  ...utilities.link.style,
-                  ...styles.languageButton.style,
-                  color: multi
-                    ? selected.includes(item.code)
-                      ? "var(--accent-1)"
-                      : languages.includes(item.code as locale)
-                        ? "var(--accent-4)"
-                        : item.code === language ||
-                            selected[selected.length - 1] === item.code
-                          ? "var(--shade-8)"
-                          : ""
-                    : item.code === language
-                      ? "var(--shade-8)"
-                      : "",
-                }}
-                onClick={() => changeLanguage(item.code)}
-                className={"link"}
-              >
-                {multi && selected.includes(item.code) && (
-                  <CircleCheck size={18} />
-                )}
-                {item.name}
-              </Button>
-            ))}
+            LANGUAGES.map((item) => {
+              if (
+                defaults &&
+                defaults.length > 0 &&
+                !defaults.includes(item.code)
+              ) {
+                return null
+              }
+
+              return (
+                <Button
+                  disabled={multi ? item.code === "en" : undefined}
+                  key={item.code}
+                  style={{
+                    ...utilities.link.style,
+                    ...styles.languageButton.style,
+                    color: multi
+                      ? selected.includes(item.code)
+                        ? "var(--accent-1)"
+                        : languages.includes(item.code as locale)
+                          ? "var(--accent-4)"
+                          : item.code === language ||
+                              selected[selected.length - 1] === item.code
+                            ? "var(--shade-8)"
+                            : ""
+                      : item.code === language
+                        ? "var(--shade-8)"
+                        : "",
+                  }}
+                  onClick={() => changeLanguage(item.code)}
+                  className={"link"}
+                >
+                  {multi && selected.includes(item.code) && (
+                    <CircleCheck size={18} />
+                  )}
+                  {item.name}
+                </Button>
+              )
+            })}
         </Div>
         {children}
       </Modal>

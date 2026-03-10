@@ -25,6 +25,8 @@ import Grapes from "./Grapes"
 import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
 import Instructions from "./Instructions"
+import LanguageSwitcher from "./LanguageSwitcher"
+import { defaultLocale } from "./locales"
 import Markdown from "./MarkdownContent.web"
 import {
   Button,
@@ -55,6 +57,7 @@ const FocusButton = FocusButtonMini
 import AppLink from "./AppLink"
 import Checkbox from "./Checkbox"
 import ConfirmButton from "./ConfirmButton"
+
 import {
   ArrowLeft,
   BrickWallFire,
@@ -137,6 +140,8 @@ const TribePostListItem = ({
     threshold: 0.5,
     triggerOnce: false,
   })
+
+  const { setLanguage } = useAuth()
 
   const { utilities } = useStyles()
 
@@ -286,7 +291,7 @@ const TribePostListItem = ({
               post.content.length > 300 && isSmallDevice
                 ? `${post.content.slice(0, isMobileDevice ? 300 : 400)}...`
                 : post.content.length > 475
-                  ? post.content.slice(0, 475) + "..."
+                  ? `${post.content.slice(0, 475)}...`
                   : post.content
             }
           />
@@ -466,7 +471,7 @@ const TribePostListItem = ({
                 </AppLink>
               </Div>
             )}
-            {owner && (
+            {owner ? (
               <TribeTranslate
                 type="post"
                 id={post.id}
@@ -474,6 +479,20 @@ const TribePostListItem = ({
                 contentLength={post.content.length}
                 existingLanguages={post.languages ?? []}
               />
+            ) : (
+              post.languages?.length && (
+                <LanguageSwitcher
+                  handleSetLanguage={(lan) => {
+                    setLanguage(lan)
+                    if (lan === defaultLocale) {
+                      push(`/p/${post.id}`)
+                      return
+                    }
+                    push(`/${lan}/p/${post.id}`)
+                  }}
+                  defaults={post.languages}
+                />
+              )
             )}
           </Div>
           {tryAppCharacterProfile === post.id ? (

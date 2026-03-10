@@ -46,7 +46,7 @@ export default function SignIn({
   style?: React.CSSProperties
   desktopAuthHandler?: DesktopAuthHandler
 }) {
-  const { isExtension, isCapacitor } = usePlatform()
+  const { isExtension, isCapacitor, isTauri } = usePlatform()
 
   const { clear } = useCache()
 
@@ -270,6 +270,21 @@ export default function SignIn({
       return
     }
 
+    // Tauri: Use system browser
+    if (isTauri) {
+      const { open } = await import("@tauri-apps/plugin-shell")
+      const { successUrl, errorUrl } = getCallbacks()
+
+      const tauriCallbackUrl = "vex://auth/callback"
+      const url = new URL(`${API_URL}/auth/signin/apple`)
+      url.searchParams.set("callbackUrl", tauriCallbackUrl)
+      url.searchParams.set("errorUrl", errorUrl.href)
+      url.searchParams.set("prompt", "select_account")
+
+      await open(url.toString())
+      return
+    }
+
     // Web/PWA: Use standard OAuth redirect
     const { successUrl, errorUrl } = getCallbacks()
 
@@ -371,6 +386,22 @@ export default function SignIn({
         errorUrl: errorUrl.href,
         callbackUrl: successUrl.toString(),
       })
+      return
+    }
+
+    // Tauri: Use system browser
+    if (isTauri) {
+      const { open } = await import("@tauri-apps/plugin-shell")
+      const { successUrl, errorUrl } = getCallbacks()
+
+      // Use the vex:// protocol for deep linking back
+      const tauriCallbackUrl = "vex://auth/callback"
+      const url = new URL(`${API_URL}/auth/signin/google`)
+      url.searchParams.set("callbackUrl", tauriCallbackUrl)
+      url.searchParams.set("errorUrl", errorUrl.href)
+      url.searchParams.set("prompt", "select_account")
+
+      await open(url.toString())
       return
     }
 

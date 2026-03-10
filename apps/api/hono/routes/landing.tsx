@@ -1,4 +1,3 @@
-import { chrryDev } from "@chrryai/chrry/utils/siteConfig"
 import { Hono } from "hono"
 import React from "react"
 import { renderToString } from "react-dom/server"

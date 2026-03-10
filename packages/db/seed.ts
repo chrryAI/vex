@@ -1878,7 +1878,7 @@ const prod = async () => {
     }
   }
   // const agents = await createAgents()
-  // const { vex } = await createStores({ user: admin })
+  const { vex } = await createStores({ user: admin })
 
   // await seedPearFeedback()
 

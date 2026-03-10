@@ -226,7 +226,7 @@ export default function CollaborationEmail({
   language = "en",
   siteConfig = getSiteConfig(),
 }: CollaborationEmailProps) {
-  const t = translations[language] || translations.en
+  const t = (translations as Record<string, any>)[language] || translations.en
   const resolvedOrigin = origin || `https://${siteConfig.domain}`
   const iconName = siteConfig.name.toLowerCase() === "vex" ? "icon" : "chrry"
 

@@ -51,7 +51,10 @@ function platformStubPlugin(): PluginOption {
         id.startsWith("@capacitor") ||
         id.startsWith("firebase/")
       ) {
-        // Return empty stub exports
+        if (id.startsWith("@tauri-apps/api")) {
+          return `export * from "${path.resolve(__dirname, "src/stubs/tauri-api.ts")}"; export { default } from "${path.resolve(__dirname, "src/stubs/tauri-api.ts")}";`
+        }
+        // Return empty stub exports for others
         return `export default {};`
       }
       return null
@@ -107,7 +110,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "2.0.60",
+    version: siteConfig.version || "2.0.63",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission

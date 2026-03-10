@@ -1,8 +1,9 @@
 import { randomInt } from "node:crypto"
 import { locales } from "@chrryai/chrry/locales"
-import { FRONTEND_URL } from "@chrryai/chrry/utils"
+import { whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import {
   and,
+  type app,
   db,
   decrypt,
   eq,
@@ -64,6 +65,11 @@ import { autoTranslateTribeContent } from "../../lib/cron/tribeAutoTranslate"
 
 const SECRET = JWT_SECRET || "development-secret"
 
+const getWhiteLabel = (app: app) => {
+  const slug = ["peach"].includes(app.slug) ? "vex" : app.slug
+  return whiteLabels.find((wl) => wl.slug === slug)
+}
+
 import {
   createPlaceHolder,
   getAiAgent,
@@ -79,6 +85,7 @@ import {
   generateImage as genImage,
   generateVideo as genVideo,
 } from "../ai/mediaGeneration"
+import { getBlueskyCredentials, postToBluesky } from "../bluesky"
 import { checkMoltbookHealth } from "../integrations/moltbook"
 
 const JWT_EXPIRY = "30d"
@@ -1635,12 +1642,12 @@ async function postToTribeJob({
     )
 
     const imagePromptJsonField = generateImage
-      ? `  "imagePrompt": "A vivid Flux-optimized image generation prompt that visually represents the post (max 200 chars, no quotes inside)",\n`
+      ? `  "imagePrompt": "An ultra-high-definition, photorealistic Flux-v1.1-pro optimized prompt. Use descriptive keywords like '8k, cinematic lighting, intricate detail, sparkling clean, pırıl pırıl' to match the post theme (max 300 chars, no quotes inside)",\n`
       : generateVideo
         ? `  "videoPrompt": "A vivid cinematic scene description for Luma Ray text-to-video (max 200 chars, no quotes inside)",\n`
         : ""
     const imagePromptInstructions = generateImage
-      ? "\n- imagePrompt: A concise, vivid Flux-optimized image generation prompt (max 200 chars) that visually captures the post's theme"
+      ? "\n- imagePrompt: A vivid, ultra-high-definition Flux-optimized prompt (max 300 chars). Use keywords for photorealism, cinematic lighting, and 'pırıl pırıl' (crystal clear) quality. Visually capture the post's core theme with intricate detail."
       : generateVideo
         ? "\n- videoPrompt: A cinematic scene description for Luma Ray video generation (max 200 chars) that visually captures the post's theme"
         : ""
@@ -1939,6 +1946,9 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
       `🔍 Media generation flags: generateVideo=${generateVideo} generateImage=${generateImage} imagePrompt="${imagePrompt.substring(0, 80)}" videoPrompt="${videoPrompt.substring(0, 80)}"`,
     )
 
+    let finalVideoUrl: string | undefined
+    let finalImageUrl: string | undefined
+
     // Generate video (text-to-video, independent of image)
     if (generateVideo && videoPrompt) {
       try {
@@ -1949,6 +1959,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
         })
 
         if (videoResult.url) {
+          finalVideoUrl = videoResult.url
           await db
             .update(tribePosts)
             .set({
@@ -1982,6 +1993,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
         })
 
         if (imageResult.url) {
+          finalImageUrl = imageResult.url
           await db
             .update(tribePosts)
             .set({
@@ -2073,6 +2085,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
           `💬 Created placeholder for post ${post.id}: "${placeholderText.substring(0, 60)}..."`,
         )
       } catch (placeholderErr) {
+        captureException(placeholderErr)
         console.error("⚠️ Failed to create placeholder:", placeholderErr)
       }
     }
@@ -2090,6 +2103,32 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
     console.log(`✅ Posted to Tribe: ${post.id}`)
     console.log(`📝 Title: ${aiResponse.tribeTitle}`)
     console.log(`🦋 Tribe: ${aiResponse.tribeName}`)
+
+    // Post to Bluesky (non-blocking)
+    const blueskyCredentials = await getBlueskyCredentials({ app })
+    if (blueskyCredentials) {
+      const postUrl = `${getWhiteLabel(app)?.url}/p/${post.id}`
+      const footer = `\n\n${postUrl}`
+      const maxBodyLength = 300 - footer.length
+
+      const bodyText = `${aiResponse.tribeTitle}\n\n${aiResponse.tribeContent}`
+      const truncatedBody =
+        bodyText.length > maxBodyLength
+          ? `${bodyText.substring(0, maxBodyLength - 3)}...`
+          : bodyText
+
+      const blueskyText = `${truncatedBody}${footer}`
+
+      postToBluesky({
+        text: blueskyText,
+        credentials: blueskyCredentials,
+        video: finalVideoUrl,
+        images: finalImageUrl ? [finalImageUrl] : undefined,
+      }).catch((err) => {
+        captureException(err)
+        console.error("⚠️ Bluesky post failed (non-blocking):", err)
+      })
+    }
 
     // Send Discord notification (non-blocking)
     sendDiscordNotification(
@@ -2131,7 +2170,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
               },
               {
                 name: "Link",
-                value: `[View Post](${FRONTEND_URL}/p/${post.id})`,
+                value: `[View Post](${getWhiteLabel(app)?.url}/p/${post.id})`,
                 inline: false,
               },
             ],
@@ -2178,6 +2217,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
       tribeName: aiResponse.tribeName,
     }
   } catch (error) {
+    captureException(error)
     await sendErrorNotification(
       error,
       {
@@ -2769,7 +2809,7 @@ ${commentsCount > 0 ? "Successfully engaged with other apps' posts." : "No suita
       if (commentedPosts.length > 0) {
         const postsDetails = commentedPosts
           .map((p) => {
-            return `💬 [${p.appName}](${FRONTEND_URL}/p/${p.postId})\n_"${p.comment}${p.comment.length >= 100 ? "..." : ""}"_`
+            return `💬 [${p.appName}](${getWhiteLabel(app)?.url}/p/${p.postId})\n_"${p.comment}${p.comment.length >= 100 ? "..." : ""}"_`
           })
           .join("\n\n")
 
@@ -3557,7 +3597,7 @@ Respond ONLY with this JSON array (no extra text):
                           },
                           {
                             name: "Post Link",
-                            value: `${FRONTEND_URL}/p/${postData.post.id}`,
+                            value: `${getWhiteLabel(app)?.url}/p/${postData.post.id}`,
                             inline: false,
                           },
                         ],
@@ -3623,8 +3663,9 @@ Respond ONLY with this JSON array (no extra text):
         } else {
           console.log(`⚠️ Could not parse JSON from batch response`)
         }
-      } catch (error) {
-        console.error("⚠️ Error in batch engagement:", error)
+      } catch (imgErr) {
+        captureException(imgErr)
+        console.error("⚠️ Failed to generate image:", imgErr)
       }
     }
 
@@ -3702,7 +3743,7 @@ ${blocksCount > 0 ? `- 🚫 **Blocks:** ${blocksCount}` : ""}
           ]
             .filter(Boolean)
             .join(" ")
-          return `${actions} [${p.appName}](${FRONTEND_URL}/p/${p.postId})`
+          return `${actions} [${p.appName}](${getWhiteLabel(app)?.url}/p/${p.postId})`
         })
         .join("\n")
 

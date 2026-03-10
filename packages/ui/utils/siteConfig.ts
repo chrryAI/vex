@@ -178,6 +178,8 @@ const vault = {
   domain: "vault.chrry.ai",
   store: "https://vault.chrry.ai",
   email: "iliyan@chrry.ai",
+  chromeWebStoreUrl:
+    "https://chromewebstore.google.com/detail/vault-🍒/hhpmohjgakgnikmagpnopifahfpbkjab",
   description:
     "AI-powered financial analytics. Track expenses, budgets, insights.",
   logo: "🏦",
@@ -214,6 +216,9 @@ const pear = {
   isStoreApp: false,
   domain: "pear.chrry.ai",
   store: "https://wine.chrry.ai",
+  chromeWebStoreUrl:
+    "https://chromewebstore.google.com/detail/pear-🍒/meeppkpnlgbamihhokdakhojclfomgbg",
+
   email: "iliyan@chrry.ai",
   description: "AI-powered feedback system. Earn credits for quality insights.",
   logo: "🍐",
@@ -357,7 +362,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as siteMode,
   slug: "focus",
-  version: "26.11.43",
+  version: "26.11.46",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -3039,6 +3044,7 @@ export const whiteLabels = [
   vex,
   pear,
   vault,
+  grape,
 ]
 
 export const analyticsDomains = whiteLabels.concat(e2eVex).concat(tribe)

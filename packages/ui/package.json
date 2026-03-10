@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "2.0.60",
+  "version": "2.0.63",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -140,6 +140,8 @@
     "sass": "^1.90.0",
     "superjson": "^2.2.2",
     "swr": "^2.2.5",
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/plugin-shell": "^2.2.2",
     "three": "^0.182.0",
     "use-debounce": "^10.0.5",
     "usehooks-ts": "^3.1.1",

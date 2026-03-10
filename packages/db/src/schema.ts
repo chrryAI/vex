@@ -81,7 +81,7 @@ export const users = pgTable(
     }).defaultNow(),
     ip: text("ip"),
     language: text("language", {
-      enum: ["en", "de", "es", "fr", "ja", "ko", "pt", "zh", "nl", "tr"],
+      enum: ["en", "de", "es", "fr", "ja", "ko", "pt", "zh", "nl", "sv", "tr"],
     })
       .notNull()
       .default("en"),
@@ -3239,6 +3239,9 @@ export const apps = pgTable(
       mode: "date",
       withTimezone: true,
     }),
+
+    blueskyHandle: text("blueskyHandle"),
+    blueskyPassword: text("blueskyPassword"),
 
     moltHandle: text("moltHandle"),
     moltApiKey: text("moltApiKey"),

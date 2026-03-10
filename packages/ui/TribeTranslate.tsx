@@ -8,7 +8,7 @@ import { useStyles } from "./context/StylesContext"
 import { Coins, OpenAI } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import Loading from "./Loading"
-import type { locale } from "./locales"
+import { type locale, locales } from "./locales"
 import { Button, Div } from "./platform"
 import { calculateTranslationCredits } from "./utils"
 
@@ -39,6 +39,7 @@ type TribeTranslateProps = (
   isModalOpen?: boolean
   onOpenChange?: (open: boolean) => void
   style?: React.CSSProperties
+  defaults?: locale[]
 }
 
 /**
@@ -58,6 +59,7 @@ export default function TribeTranslate({
   onSuccessNavigate,
   isModalOpen: _isModalOpen,
   onOpenChange,
+  defaults,
   style,
 }: TribeTranslateProps) {
   const { t } = useAppContext()
@@ -103,12 +105,12 @@ export default function TribeTranslate({
     }
 
     if (onSuccessNavigate) {
-      onSuccessNavigate(language)
+      onSuccessNavigate(changes?.[0] || language)
       handleOpenChange(false)
       return
     }
 
-    setTranslatedLanguage(language)
+    setTranslatedLanguage(changes?.[0] || language)
   }
 
   const handleGoToPost = (language: locale) => {
@@ -125,6 +127,8 @@ export default function TribeTranslate({
     <LanguageSwitcher
       style={style}
       key={key}
+      defaults={defaults}
+      maxLanguages={(existingLanguages?.length || 0) + 3}
       attachTo={key}
       onOpenChange={handleOpenChange}
       hideOnClickOutside={false}
@@ -144,7 +148,9 @@ export default function TribeTranslate({
           : undefined
       }
     >
-      {totalCredits || translatedLanguage ? (
+      {totalCredits ||
+      translatedLanguage ||
+      existingLanguages?.length === locales.length ? (
         <Div
           style={{
             marginTop: translatedLanguage ? 0 : "1.5rem",
@@ -161,14 +167,14 @@ export default function TribeTranslate({
         >
           <OpenAI size={24} />
           {t(
-            translatedLanguage
+            translatedLanguage || existingLanguages?.length === locales.length
               ? "Translated by {{agent}}"
               : "{{appName}} post will be localized by {{agent}}",
             { appName, agent: "ChatGPT" },
           )}
-
           {/* ── success state: navigate to post ─────────────────────────── */}
-          {translatedLanguage ? (
+          {translatedLanguage ||
+          existingLanguages?.length === locales.length ? (
             <Button
               disabled={isTranslating}
               className="inverted"
