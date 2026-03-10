@@ -27,6 +27,23 @@ function safeDecrypt(encryptedKey: string | undefined): string | undefined {
   }
 }
 
+/**
+ * Hocam DeepSeek native API'si bazen yeni model isimlerini (v3.2 vs) direkt yemiyor.
+ * Onların anladığı dilden konuşalım: chat veya reasoner.
+ */
+function mapDeepSeekModel(modelId: string): string {
+  const lower = modelId.toLowerCase()
+  if (
+    lower.includes("thinking") ||
+    lower.includes("reasoner") ||
+    lower.includes("speciale") ||
+    lower.includes("r1")
+  ) {
+    return "deepseek-reasoner"
+  }
+  return "deepseek-chat"
+}
+
 // Hocam buraya hangi model ne yapabiliyor yazıyoruz, ai route buna bakıp tool açıp kapatacak
 export const modelCapabilities: Record<string, { tools: boolean }> = {
   "gpt-4o": { tools: true },
@@ -42,6 +59,11 @@ export const modelCapabilities: Record<string, { tools: boolean }> = {
   "deepseek-v3": { tools: true },
   "deepseek-reasoner": { tools: true },
   "deepseek/deepseek-r1": { tools: true },
+  "deepseek/deepseek-v3.2": { tools: true },
+  "deepseek/deepseek-v3.2-thinking": { tools: true },
+  "deepseek/deepseek-v3.2-speciale": { tools: false },
+  "deepseek-v3.2": { tools: true },
+  "deepseek-v3.2-speciale": { tools: false },
   "anthropic/claude-sonnet-4.6": { tools: true },
   "qwen/qwen3-235b-a22b-thinking-2507": { tools: true },
   "qwen/qwen3-vl-235b-a22b-thinking": { tools: true },
@@ -110,8 +132,9 @@ export async function getModelProvider({
     }
   }
 
-  // Hocam burası kritik: Eğer job'da özel bir model override varsa onu kullanıyoruz
-  const targetModelId = job?.modelConfig?.model || agent.modelId
+  // Hocam burası kritik: Eğer job'da özel bir model override varsa onu kullanıyoruz.
+  // DB'deki stale datalardan kurtulduk ama job'dan gelen dinamik override'ı koruyoruz.
+  const targetModelId = job?.modelConfig?.model
 
   let result: {
     provider: LanguageModel
@@ -163,10 +186,10 @@ export async function getModelProvider({
         }
       }
 
-      // Fallback: Perplexity (no tools zaten)
+      const modelId = targetModelId || "deepseek-chat"
       return {
-        provider: createDeepSeek({ apiKey: "" })(targetModelId),
-        modelId: targetModelId,
+        provider: createDeepSeek({ apiKey: "" })(modelId),
+        modelId: modelId,
         agentName: agent.name,
         supportsTools: false,
       }
@@ -180,16 +203,12 @@ export async function getModelProvider({
 
       if (deepseekKey) {
         const deepseekProvider = createDeepSeek({ apiKey: deepseekKey })
+        const resolvedId = targetModelId || "deepseek-chat"
+        const effectiveModel = mapDeepSeekModel(resolvedId)
+
         result = {
-          provider: deepseekProvider(
-            targetModelId === "deepseek-reasoner"
-              ? targetModelId
-              : "deepseek-chat",
-          ),
-          modelId:
-            targetModelId === "deepseek-reasoner"
-              ? targetModelId
-              : "deepseek-chat",
+          provider: deepseekProvider(effectiveModel),
+          modelId: resolvedId,
           agentName: agent.name,
           lastKey: "deepSeek",
         }
@@ -202,9 +221,7 @@ export async function getModelProvider({
           ? process.env.OPENROUTER_API_KEY
           : ""
 
-      const modelId = targetModelId.startsWith("deepseek/")
-        ? targetModelId
-        : `deepseek/${targetModelId}`
+      const modelId = targetModelId || "deepseek/deepseek-chat"
       if (openrouterKeyForDeepSeek && !failedKeys?.includes(modelId)) {
         const openrouterProvider = createOpenRouter({
           apiKey: openrouterKeyForDeepSeek,
@@ -240,9 +257,10 @@ export async function getModelProvider({
       }
 
       console.error("❌ No API keys available for DeepSeek or ChatGPT fallback")
+      const fallbackModel = "deepseek-chat"
       result = {
-        provider: createDeepSeek({ apiKey: "" })(targetModelId),
-        modelId: targetModelId,
+        provider: createDeepSeek({ apiKey: "" })(fallbackModel),
+        modelId: fallbackModel,
         agentName: agent.name,
       }
       break
@@ -256,13 +274,14 @@ export async function getModelProvider({
           : "")
       {
         const modelId =
-          canReason && !job ? "deepseek-reasoner" : "deepseek-chat"
+          canReason && !job ? "deepseek-v3.2-thinking" : "deepseek-v3.2"
         if (sushiKey) {
           const sushiProvider = createDeepSeek({ apiKey: sushiKey })
+          const effectiveModel = mapDeepSeekModel(modelId)
 
           result = {
-            provider: sushiProvider(modelId),
-            modelId,
+            provider: sushiProvider(effectiveModel),
+            modelId: modelId, // Use the pretty name for capabilities check
             agentName: agent.name,
             lastKey: "deepSeek",
           }
@@ -378,21 +397,25 @@ export async function getModelProvider({
     }
 
     case "chatGPT": {
-      const openaiKey = app?.apiKeys?.openai
-        ? safeDecrypt(app?.apiKeys?.openai)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.CHATGPT_API_KEY
-          : ""
+      {
+        const openaiKey = app?.apiKeys?.openai
+          ? safeDecrypt(app?.apiKeys?.openai)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.CHATGPT_API_KEY
+            : ""
 
-      if (openaiKey && !failedKeys?.includes(targetModelId)) {
-        const openaiProvider = createOpenAI({ apiKey: openaiKey })
-        result = {
-          provider: openaiProvider(targetModelId),
-          modelId: targetModelId,
-          agentName: agent.name,
-          lastKey: "chatGPT",
+        const modelId = targetModelId || "gpt-5.2-pro"
+
+        if (openaiKey && !failedKeys?.includes(modelId)) {
+          const openaiProvider = createOpenAI({ apiKey: openaiKey })
+          result = {
+            provider: openaiProvider(modelId),
+            modelId: modelId,
+            agentName: agent.name,
+            lastKey: "chatGPT",
+          }
+          break
         }
-        break
       }
 
       const openrouterKeyForOpenAI =
@@ -416,9 +439,10 @@ export async function getModelProvider({
         break
       }
 
+      const fallbackModel = "gpt-4o-mini"
       result = {
-        provider: createOpenAI({ apiKey: "" })(targetModelId),
-        modelId: targetModelId,
+        provider: createOpenAI({ apiKey: "" })(fallbackModel),
+        modelId: fallbackModel,
         agentName: agent.name,
       }
       break
@@ -431,13 +455,16 @@ export async function getModelProvider({
           ? process.env.CLAUDE_API_KEY
           : ""
 
-      const modelId = targetModelId.replace(/^anthropic\//, "")
+      const modelId = targetModelId || "anthropic/claude-sonnet-4-6"
 
-      if (claudeKey && !failedKeys?.includes(modelId)) {
+      if (
+        claudeKey &&
+        !failedKeys?.includes(modelId.replace(/^anthropic\//, ""))
+      ) {
         const claudeProvider = createAnthropic({ apiKey: claudeKey })
         result = {
-          provider: claudeProvider(modelId),
-          modelId: targetModelId,
+          provider: claudeProvider(modelId.replace(/^anthropic\//, "")),
+          modelId: modelId,
           agentName: agent.name,
           lastKey: "claude",
         }
@@ -456,7 +483,7 @@ export async function getModelProvider({
           activeSchedule?.modelId ||
           job?.metadata?.modelId ||
           job?.modelConfig?.model ||
-          (job ? "deepseek/deepseek-chat" : "anthropic/claude-sonnet-4.6")
+          "anthropic/claude-sonnet-4.6"
 
         if (openrouterKeyForClaude && !failedKeys?.includes(modelId)) {
           const openrouterProvider = createOpenRouter({
@@ -476,18 +503,20 @@ export async function getModelProvider({
         const openrouterProvider = createOpenRouter({
           apiKey: openrouterKeyForClaude,
         })
+        const resolvedId = targetModelId || modelId
         result = {
-          provider: openrouterProvider(targetModelId),
-          modelId: targetModelId,
+          provider: openrouterProvider(resolvedId),
+          modelId: resolvedId,
           agentName: agent.name,
           lastKey: "openrouter",
         }
         break
       }
 
+      const fallbackModel = "anthropic/claude-sonnet-4.6"
       result = {
-        provider: createAnthropic({ apiKey: "" })(targetModelId),
-        modelId: targetModelId,
+        provider: createAnthropic({ apiKey: "" })(fallbackModel),
+        modelId: fallbackModel,
         agentName: agent.name,
       }
       break
@@ -498,16 +527,19 @@ export async function getModelProvider({
         (appApiKeys.google ? safeDecrypt(appApiKeys.google) : "") ||
         (!plusTiers.includes(app?.tier || "") ? process.env.GEMINI_API_KEY : "")
 
-      if (geminiKey && !failedKeys?.includes(targetModelId)) {
-        const geminiProvider = createGoogleGenerativeAI({ apiKey: geminiKey })
-        const modelId = targetModelId.replace(/^google\//, "")
-        result = {
-          provider: geminiProvider(modelId),
-          modelId: targetModelId,
-          lastKey: "gemini",
-          agentName: agent.name,
+      {
+        const modelId = targetModelId || "google/gemini-3.1-pro-preview"
+
+        if (geminiKey && !failedKeys?.includes(modelId)) {
+          const geminiProvider = createGoogleGenerativeAI({ apiKey: geminiKey })
+          result = {
+            provider: geminiProvider(modelId.replace(/^google\//, "")),
+            modelId: modelId,
+            lastKey: "gemini",
+            agentName: agent.name,
+          }
+          break
         }
-        break
       }
 
       const openrouterKeyForGemini = app?.apiKeys?.openrouter
@@ -531,9 +563,10 @@ export async function getModelProvider({
         break
       }
 
+      const fallbackModel = "google/gemini-1.5-flash"
       result = {
-        provider: createGoogleGenerativeAI({ apiKey: "" })(targetModelId),
-        modelId: targetModelId,
+        provider: createGoogleGenerativeAI({ apiKey: "" })(fallbackModel),
+        modelId: fallbackModel,
         agentName: agent.name,
       }
       break
@@ -546,73 +579,75 @@ export async function getModelProvider({
           ? process.env.XAI_API_KEY
           : ""
 
-      if (xaiKey && !failedKeys?.includes(targetModelId)) {
-        const xaiProvider = createOpenAI({
-          apiKey: xaiKey,
-          baseURL: "https://api.x.ai/v1",
-        })
-        const defaultGrokModel = canReason
-          ? "grok-4-1-fast-reasoning"
-          : "grok-4-1-fast"
-        const modelId = job?.modelConfig?.model || defaultGrokModel
-        result = {
-          provider: xaiProvider(modelId),
-          modelId,
-          agentName: agent.name,
-          lastKey: "xai",
+      {
+        const defaultGrokModel =
+          job?.modelConfig?.model ||
+          (canReason ? "grok-4-1-fast-reasoning" : "grok-4-1-fast")
+
+        if (xaiKey && !failedKeys?.includes(defaultGrokModel)) {
+          const xaiProvider = createOpenAI({
+            apiKey: xaiKey,
+            baseURL: "https://api.x.ai/v1",
+          })
+
+          result = {
+            provider: xaiProvider(defaultGrokModel),
+            modelId: defaultGrokModel,
+            agentName: agent.name,
+            lastKey: "xai",
+          }
+          break
         }
-        break
       }
 
-      const modelId = targetModelId.startsWith("x-ai/")
-        ? targetModelId
-        : `x-ai/${targetModelId}`
+      {
+        const modelId = "x-ai/grok-4.1-fast"
 
-      const openrouterKeyForGrok = app?.apiKeys?.openrouter
-        ? safeDecrypt(app?.apiKeys?.openrouter)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.OPENROUTER_API_KEY
-          : ""
+        const openrouterKeyForGrok = app?.apiKeys?.openrouter
+          ? safeDecrypt(app?.apiKeys?.openrouter)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.OPENROUTER_API_KEY
+            : ""
 
-      if (openrouterKeyForGrok && !failedKeys?.includes(modelId)) {
-        const openrouterProvider = createOpenRouter({
-          apiKey: openrouterKeyForGrok,
-        })
+        if (openrouterKeyForGrok && !failedKeys?.includes(modelId)) {
+          const openrouterProvider = createOpenRouter({
+            apiKey: openrouterKeyForGrok,
+          })
 
-        result = {
-          provider: openrouterProvider(modelId),
-          modelId,
-          agentName: agent.name,
-          lastKey: "openrouter",
+          result = {
+            provider: openrouterProvider(targetModelId || modelId),
+            modelId: targetModelId || modelId,
+            agentName: agent.name,
+            lastKey: "openrouter",
+          }
+          break
         }
-        break
       }
 
       result = {
-        provider: createOpenAI({
-          apiKey: "",
-          baseURL: "https://api.x.ai/v1",
-        })(targetModelId),
-        modelId: targetModelId,
+        provider: createDeepSeek({ apiKey: "" })("deepseek-reasoner"),
+        modelId: "deepseek-reasoner",
         agentName: agent.name,
       }
+
       break
     }
 
     case "perplexity": {
+      const modelId = job?.modelConfig?.model || "perplexity/sonar-pro"
+
       const perplexityKey = app?.apiKeys?.perplexity
         ? safeDecrypt(app?.apiKeys?.perplexity)
         : !plusTiers.includes(app?.tier || "")
           ? process.env.PERPLEXITY_API_KEY
           : ""
-
-      if (perplexityKey && !failedKeys?.includes(targetModelId)) {
+      if (perplexityKey && !failedKeys?.includes(modelId)) {
         const perplexityProvider = createPerplexity({
           apiKey: perplexityKey,
         })
         result = {
-          provider: perplexityProvider(targetModelId),
-          modelId: targetModelId,
+          provider: perplexityProvider(modelId),
+          modelId: modelId,
           agentName: agent.name,
           lastKey: "perplexity",
         }
@@ -624,8 +659,6 @@ export async function getModelProvider({
         : !plusTiers.includes(app?.tier || "")
           ? process.env.OPENROUTER_API_KEY
           : ""
-
-      const modelId = job?.modelConfig?.model || "perplexity/sonar-pro"
 
       if (openrouterKeyForPerplexity && !failedKeys?.includes(modelId)) {
         const openrouterProvider = createOpenRouter({
@@ -644,72 +677,14 @@ export async function getModelProvider({
         provider: createOpenRouter({
           apiKey: "",
           baseURL: "https://api.perplexity.ai",
-        })(targetModelId),
-        modelId: targetModelId,
+        })(modelId),
+        modelId: modelId,
         agentName: agent.name,
-      }
-      break
-    }
-
-    case "openrouter": {
-      const openrouterKey = app?.apiKeys?.openrouter
-        ? safeDecrypt(app?.apiKeys?.openrouter)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.OPENROUTER_API_KEY
-          : ""
-
-      if (!openrouterKey) {
-        throw new Error("OpenRouter API key required for openrouter agent")
-      }
-
-      const openrouterProvider = createOpenRouter({
-        apiKey: openrouterKey,
-      })
-      result = {
-        provider: openrouterProvider(targetModelId),
-        modelId: targetModelId,
-        agentName: agent.name,
-        lastKey: "openrouter",
       }
       break
     }
 
     default: {
-      if (agent.apiURL) {
-        console.log("🤖 Using custom agent:", agent.name)
-
-        const [customBaseURL, customApiKey] = (agent.apiURL || "").includes("|")
-          ? (agent.apiURL as string).split("|")
-          : ["https://api.openai.com/v1", agent.apiURL]
-
-        // Hocam burası kritik: Eğer OpenRouter kullanıyorsak createOpenRouter kullanalım
-        if (
-          (customBaseURL || "").includes("openrouter.ai") ||
-          (targetModelId || "").includes("/")
-        ) {
-          const openrouterProvider = createOpenRouter({
-            apiKey: customApiKey || process.env.OPENROUTER_API_KEY || "",
-          })
-          result = {
-            provider: openrouterProvider(targetModelId),
-            modelId: targetModelId,
-            agentName: agent.name,
-            lastKey: "openrouter",
-          }
-        } else {
-          const customProvider = createOpenAI({
-            apiKey: customApiKey,
-            baseURL: customBaseURL,
-          })
-          result = {
-            provider: customProvider(targetModelId),
-            modelId: targetModelId,
-            agentName: agent.name,
-          }
-        }
-        break
-      }
-
       console.log("⚠️ Unknown agent, using DeepSeek fallback")
       const fallbackKey = app?.apiKeys?.deepseek
         ? safeDecrypt(app?.apiKeys?.deepseek)
@@ -718,8 +693,8 @@ export async function getModelProvider({
           : ""
       const fallbackProvider = createDeepSeek({ apiKey: fallbackKey })
       result = {
-        provider: fallbackProvider("deepseek-chat"),
-        modelId: "deepseek-chat",
+        provider: fallbackProvider("deepseek-v3.2"),
+        modelId: "deepseek-v3.2",
         agentName: "deepSeek",
       }
       break

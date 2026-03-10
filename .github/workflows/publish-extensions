@@ -1,0 +1,130 @@
+# name: Publish Browser Extensions
+
+# on:
+#   push:
+#     tags:
+#       - extension-v*
+#   workflow_dispatch:
+
+# permissions:
+#   contents: write
+
+# jobs:
+#   build-and-publish:
+#     runs-on: ubuntu-latest
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         site:
+#           [
+#             sushi,
+#             atlas,
+#             focus,
+#             vex,
+#             popcorn,
+#             chrry,
+#             zarathustra,
+#             search,
+#             grape,
+#             burn,
+#             vault,
+#             pear,
+#             tribe,
+#           ]
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+#       - name: Setup pnpm
+#         uses: pnpm/action-setup@41ff726d601b7a70a8d626359bc59438096dfc7d # v4.1.0
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@846dd38a74b12574e441d8e6a176847c20c93a63 # v4.2.0
+#         with:
+#           node-version: 20
+#           cache: pnpm
+
+#       - name: Install dependencies
+#         run: pnpm install --frozen-lockfile --ignore-scripts
+
+#       - name: Build Chrome extension for ${{ matrix.site }}
+#         run: pnpm --filter @repo/extension build:chrome:${{ matrix.site }}
+
+#       - name: Verify build artifacts exist
+#         run: |
+#           set -e
+#           test -f apps/extension/dist-chrome-${{ matrix.site }}.zip || (echo "Missing dist-chrome-${{ matrix.site }}.zip" && exit 1)
+
+#       - name: Create Chrome Extension Keys JSON
+#         id: create-chrome-json
+#         env:
+#           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+#           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+#           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+#           CHROME_EXTENSION_ID_SUSHI: ${{ secrets.CHROME_EXTENSION_ID_SUSHI }}
+#           CHROME_EXTENSION_ID_ATLAS: ${{ secrets.CHROME_EXTENSION_ID_ATLAS }}
+#           CHROME_EXTENSION_ID_FOCUS: ${{ secrets.CHROME_EXTENSION_ID_FOCUS }}
+#           CHROME_EXTENSION_ID_VEX: ${{ secrets.CHROME_EXTENSION_ID_VEX }}
+#           CHROME_EXTENSION_ID_POPCORN: ${{ secrets.CHROME_EXTENSION_ID_POPCORN }}
+#           CHROME_EXTENSION_ID_CHRRY: ${{ secrets.CHROME_EXTENSION_ID_CHRRY }}
+#           CHROME_EXTENSION_ID_ZARATHUSTRA: ${{ secrets.CHROME_EXTENSION_ID_ZARATHUSTRA }}
+#           CHROME_EXTENSION_ID_SEARCH: ${{ secrets.CHROME_EXTENSION_ID_SEARCH }}
+#           CHROME_EXTENSION_ID_GRAPE: ${{ secrets.CHROME_EXTENSION_ID_GRAPE }}
+#           CHROME_EXTENSION_ID_BURN: ${{ secrets.CHROME_EXTENSION_ID_BURN }}
+#           CHROME_EXTENSION_ID_VAULT: ${{ secrets.CHROME_EXTENSION_ID_VAULT }}
+#           CHROME_EXTENSION_ID_PEAR: ${{ secrets.CHROME_EXTENSION_ID_PEAR }}
+#           CHROME_EXTENSION_ID_TRIBE: ${{ secrets.CHROME_EXTENSION_ID_TRIBE }}
+#         run: |
+#           # Dynamically map the secret name based on matrix site
+#           case "${{ matrix.site }}" in
+#             sushi) EXT_ID="$CHROME_EXTENSION_ID_SUSHI" ;;
+#             atlas) EXT_ID="$CHROME_EXTENSION_ID_ATLAS" ;;
+#             focus) EXT_ID="$CHROME_EXTENSION_ID_FOCUS" ;;
+#             vex) EXT_ID="$CHROME_EXTENSION_ID_VEX" ;;
+#             popcorn) EXT_ID="$CHROME_EXTENSION_ID_POPCORN" ;;
+#             chrry) EXT_ID="$CHROME_EXTENSION_ID_CHRRY" ;;
+#             zarathustra) EXT_ID="$CHROME_EXTENSION_ID_ZARATHUSTRA" ;;
+#             search) EXT_ID="$CHROME_EXTENSION_ID_SEARCH" ;;
+#             grape) EXT_ID="$CHROME_EXTENSION_ID_GRAPE" ;;
+#             burn) EXT_ID="$CHROME_EXTENSION_ID_BURN" ;;
+#             vault) EXT_ID="$CHROME_EXTENSION_ID_VAULT" ;;
+#             pear) EXT_ID="$CHROME_EXTENSION_ID_PEAR" ;;
+#             tribe) EXT_ID="$CHROME_EXTENSION_ID_TRIBE" ;;
+#           esac
+
+#           if [[ -z "$EXT_ID" ]]; then
+#             echo "::warning::Extension ID not found for ${{ matrix.site }}. Skipping upload."
+#             echo "skip_upload=true" >> $GITHUB_OUTPUT
+#             exit 0
+#           fi
+
+#           # Prepare Keys JSON for PlasmoHQ/bpp
+#           JSON_CONTENT=$(jq -n \
+#             --arg clientId "$CHROME_CLIENT_ID" \
+#             --arg clientSecret "$CHROME_CLIENT_SECRET" \
+#             --arg refreshToken "$CHROME_REFRESH_TOKEN" \
+#             --arg extId "$EXT_ID" \
+#             '{\n  "$schema": "https://github.com/PlasmoHQ/bpp/raw/main/keys.schema.json",\n  "chrome": {\n    "clientId": $clientId,\n    "clientSecret": $clientSecret,\n    "refreshToken": $refreshToken,\n    "extId": $extId\n  }\n}')
+
+#           echo "BPP_KEYS<<EOF" >> $GITHUB_ENV
+#           echo "$JSON_CONTENT" >> $GITHUB_ENV
+#           echo "EOF" >> $GITHUB_ENV
+#           echo "skip_upload=false" >> $GITHUB_OUTPUT
+
+#       - name: Upload to Chrome Web Store
+#         if: steps.create-chrome-json.outputs.skip_upload == 'false'
+#         uses: PlasmoHQ/bpp@f7e034440539f1c7d3c01f600f9172288a44b931 # v3.8.0
+#         with:
+#           keys: ${{ env.BPP_KEYS }}
+#           chrome-file: apps/extension/dist-chrome-${{ matrix.site }}.zip
+#           verbose: true
+
+#       - name: Create GitHub Release
+#         if: startsWith(github.ref, 'refs/tags/')
+#         uses: softprops/action-gh-release@8987d609140272a0889c8907f1523363406368d4 # v2.2.1
+#         with:
+#           files: apps/extension/dist-chrome-${{ matrix.site }}.zip
+#           generate_release_notes: true
+#           # Token is automatic in GitHub Actions
+#           fail_on_unmatched_files: false
