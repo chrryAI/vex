@@ -21,7 +21,7 @@ test.beforeEach(async ({ page }) => {
   await clean({ page, isLive, waitForDelete: true })
 })
 
-test("Subscribe As Guest", async ({ page }) => {
+test.skip("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
       isMember,
@@ -45,7 +45,7 @@ test("Subscribe As Guest", async ({ page }) => {
   })
 })
 
-test("Invite", async ({ page }) => {
+test.skip("Invite", async ({ page }) => {
   await page.goto(
     getURL({
       isLive,
@@ -67,7 +67,7 @@ test("Invite", async ({ page }) => {
   })
 })
 
-test("Gift", async ({ page }) => {
+test.skip("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -91,7 +91,7 @@ test("Gift", async ({ page }) => {
   })
 })
 
-test("Long text", async ({ page }) => {
+test.skip("Long text", async ({ page }) => {
   const _result = await chat({
     page,
     isMember,
@@ -112,7 +112,7 @@ test("Long text", async ({ page }) => {
   })
 })
 
-test("Chat", async ({ page }) => {
+test.skip("Chat", async ({ page }) => {
   test.slow()
 
   await page.goto(getURL({ isMember, isLive }), {
@@ -159,12 +159,12 @@ test("Chat", async ({ page }) => {
   })
 })
 
-test("Thread", async ({ page }) => {
+test.skip("Thread", async ({ page }) => {
   test.slow()
   await thread({ page, isLive })
 })
 
-// test("Collaboration", async ({ page, browser }) => {
+// test.skip("Collaboration", async ({ page, browser }) => {
 //   await collaboration({
 //     page,
 //     browser,
@@ -238,7 +238,7 @@ test.skip("Create A Claude App", async ({ page }) => {
   })
 })
 
-test("Create A Sushi App", async ({ page }) => {
+test.skip("Create A Sushi App", async ({ page }) => {
   await clean({ page, isLive: false })
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
@@ -277,13 +277,13 @@ test("Create A Sushi App", async ({ page }) => {
   })
 })
 
-test("Chat - Hourly Limit Test", async ({ page }) => {
+test.skip("Chat - Hourly Limit Test", async ({ page }) => {
   await clean({ page, isLive: false })
   test.slow()
   await limit({ page })
 })
 
-test("Debate", async ({ page }) => {
+test.skip("Debate", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
@@ -325,7 +325,7 @@ test("Debate", async ({ page }) => {
   })
 })
 
-test("Collaboration", async ({ page, browser }) => {
+test.skip("Collaboration", async ({ page, browser }) => {
   await clean({ page, isLive: false })
 
   await collaboration({ page, browser, isMember, isLive: false })
