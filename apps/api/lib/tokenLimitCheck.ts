@@ -16,6 +16,7 @@ const MODEL_LIMITS: Record<string, ModelLimits> = {
   "deepseek/deepseek-chat": { maxTokens: 128000, name: "DeepSeek Chat" },
   "deepseek/deepseek-r1": { maxTokens: 131000, name: "DeepSeek R1" },
   "deepseek/deepseek-v3": { maxTokens: 128000, name: "DeepSeek V3" },
+  "deepseek-v3.2-thinking": { maxTokens: 131000, name: "DeepSeek Thinking" },
 
   // Qwen models
   "qwen/qwen3-235b-a22b-thinking-2507": {
@@ -42,6 +43,10 @@ const MODEL_LIMITS: Record<string, ModelLimits> = {
     maxTokens: 200000,
     name: "Claude Sonnet 4.5",
   },
+  "anthropic/claude-sonnet-4-6": {
+    maxTokens: 200000,
+    name: "Claude Sonnet 4.6",
+  },
   "claude-sonnet-4-20250514": { maxTokens: 200000, name: "Claude Sonnet 4.5" },
 
   // OpenAI models
@@ -50,11 +55,15 @@ const MODEL_LIMITS: Record<string, ModelLimits> = {
   "gpt-3.5-turbo": { maxTokens: 16000, name: "GPT-3.5 Turbo" },
   "gpt-5.1": { maxTokens: 128000, name: "GPT-5.1" },
   "openai/gpt-5.1-chat": { maxTokens: 128000, name: "GPT-5.1" },
+  "gpt-5.2-pro": { maxTokens: 128000, name: "GPT-5.2 Pro" },
 
   // Gemini models
   "gemini-2.0-flash-exp": { maxTokens: 1000000, name: "Gemini 2.0 Flash" },
-  "gemini-3-pro-preview": { maxTokens: 2000000, name: "Gemini 3 Pro" },
-  "google/gemini-3-pro-preview": { maxTokens: 2000000, name: "Gemini 3 Pro" },
+  "gemini-3.1-pro-preview": { maxTokens: 2000000, name: "Gemini 3.1 Pro" },
+  "google/gemini-3.1-pro-preview": {
+    maxTokens: 2000000,
+    name: "Gemini 3.1 Pro",
+  },
 
   // Perplexity models
   "sonar-pro": { maxTokens: 200000, name: "Sonar Pro" },
@@ -63,6 +72,10 @@ const MODEL_LIMITS: Record<string, ModelLimits> = {
   // Grok models
   "grok-4-1-fast": { maxTokens: 128000, name: "Grok 4.1 Fast" },
   "grok-4-1-fast-reasoning": {
+    maxTokens: 128000,
+    name: "Grok 4.1 Fast Reasoning",
+  },
+  "x-ai/grok-4-1-fast-reasoning": {
     maxTokens: 128000,
     name: "Grok 4.1 Fast Reasoning",
   },

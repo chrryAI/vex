@@ -1,3 +1,4 @@
+import { locales } from "@chrryai/chrry/locales"
 import { and, db, eq, inArray, logCreditUsage, sql } from "@repo/db"
 import {
   apps,
@@ -21,18 +22,7 @@ const openai = new OpenAI({
 /**
  * All supported locales
  */
-const ALL_LOCALES = [
-  "en",
-  "de",
-  "es",
-  "fr",
-  "ja",
-  "ko",
-  "pt",
-  "zh",
-  "nl",
-  "tr",
-] as const
+const ALL_LOCALES = locales
 type Locale = (typeof ALL_LOCALES)[number]
 
 interface AutoTranslateOptions {

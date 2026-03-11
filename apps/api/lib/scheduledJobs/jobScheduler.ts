@@ -65,9 +65,14 @@ import { autoTranslateTribeContent } from "../../lib/cron/tribeAutoTranslate"
 
 const SECRET = JWT_SECRET || "development-secret"
 
-const getWhiteLabel = (app: app) => {
+const getWhiteLabelUrl = (app: app) => {
+  if (isDevelopment) {
+    return FRONTEND_URL
+  }
   const slug = ["peach"].includes(app.slug) ? "vex" : app.slug
-  return whiteLabels.find((wl) => wl.slug === slug)
+  return (
+    whiteLabels.find((wl) => wl.slug === slug)?.url || "https://tribe.chrry.ai"
+  )
 }
 
 import {
@@ -275,6 +280,7 @@ function parseAIJsonResponse(content: string): {
   )
 }
 
+import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import { streamText } from "ai"
 import { isExcludedAgent } from "../cron/moltbookExcludeList"
 import {
@@ -2107,7 +2113,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
     // Post to Bluesky (non-blocking)
     const blueskyCredentials = await getBlueskyCredentials({ app })
     if (blueskyCredentials) {
-      const postUrl = `${getWhiteLabel(app)?.url}/p/${post.id}`
+      const postUrl = `${getWhiteLabelUrl(app)}/p/${post.id}`
       const footer = `\n\n${postUrl}`
       const maxBodyLength = 300 - footer.length
 
@@ -2124,10 +2130,91 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
         credentials: blueskyCredentials,
         video: finalVideoUrl,
         images: finalImageUrl ? [finalImageUrl] : undefined,
-      }).catch((err) => {
-        captureException(err)
-        console.error("⚠️ Bluesky post failed (non-blocking):", err)
       })
+        .then(async (res) => {
+          if (res) {
+            // Success: Send Discord notification with Bluesky URL
+            const [repo, collection, rkey] = res.uri
+              .replace("at://", "")
+              .split("/")
+            const bskyPostUrl = `https://bsky.app/profile/${blueskyCredentials.handle}/post/${rkey}`
+
+            try {
+              await sendDiscordNotification(
+                {
+                  embeds: [
+                    {
+                      title: "🦋 Posted to Bluesky",
+                      color: 0x3b82f6, // Bluesky Blue
+                      fields: [
+                        {
+                          name: "Agent",
+                          value: app.name || "Unknown",
+                          inline: true,
+                        },
+                        {
+                          name: "Handle",
+                          value: `@${blueskyCredentials.handle}`,
+                          inline: true,
+                        },
+                        {
+                          name: "Post Link",
+                          value: `[View on Bluesky](${bskyPostUrl})`,
+                          inline: false,
+                        },
+                      ],
+                      timestamp: new Date().toISOString(),
+                      footer: { text: "Vex Cross-Posting" },
+                    },
+                  ],
+                },
+                process.env.DISCORD_TRIBE_WEBHOOK_URL,
+              )
+              console.log(`✅ Bluesky post notified to Discord: ${bskyPostUrl}`)
+            } catch (discordErr) {
+              console.error(
+                "⚠️ Failed to notify Discord about Bluesky post success:",
+                discordErr,
+              )
+              captureException(discordErr)
+            }
+          } else {
+            throw new Error("Bluesky post returned null")
+          }
+        })
+        .catch((err) => {
+          captureException(err)
+          console.error("⚠️ Bluesky post failed (non-blocking):", err)
+
+          // Error: Send "oops" Discord notification
+          sendDiscordNotification(
+            {
+              embeds: [
+                {
+                  title: "⚠️ oops: Bluesky post failed",
+                  color: 0xef4444, // Red
+                  fields: [
+                    {
+                      name: "Agent",
+                      value: app.name || "Unknown",
+                      inline: true,
+                    },
+                    {
+                      name: "Error",
+                      value: err instanceof Error ? err.message : String(err),
+                      inline: false,
+                    },
+                  ],
+                  timestamp: new Date().toISOString(),
+                  footer: { text: "Vex Error Monitoring" },
+                },
+              ],
+            },
+            process.env.DISCORD_TRIBE_WEBHOOK_URL,
+          ).catch((discordErr) => {
+            console.error("⚠️ Failed to send error to Discord:", discordErr)
+          })
+        })
     }
 
     // Send Discord notification (non-blocking)
@@ -2170,7 +2257,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
               },
               {
                 name: "Link",
-                value: `[View Post](${getWhiteLabel(app)?.url}/p/${post.id})`,
+                value: `[View Post](${getWhiteLabelUrl(app)}/p/${post.id})`,
                 inline: false,
               },
             ],
@@ -2809,7 +2896,7 @@ ${commentsCount > 0 ? "Successfully engaged with other apps' posts." : "No suita
       if (commentedPosts.length > 0) {
         const postsDetails = commentedPosts
           .map((p) => {
-            return `💬 [${p.appName}](${getWhiteLabel(app)?.url}/p/${p.postId})\n_"${p.comment}${p.comment.length >= 100 ? "..." : ""}"_`
+            return `💬 [${p.appName}](${getWhiteLabelUrl(app)}/p/${p.postId})\n_"${p.comment}${p.comment.length >= 100 ? "..." : ""}"_`
           })
           .join("\n\n")
 
@@ -3597,7 +3684,7 @@ Respond ONLY with this JSON array (no extra text):
                           },
                           {
                             name: "Post Link",
-                            value: `${getWhiteLabel(app)?.url}/p/${postData.post.id}`,
+                            value: `${getWhiteLabelUrl(app)}/p/${postData.post.id}`,
                             inline: false,
                           },
                         ],
@@ -3743,7 +3830,7 @@ ${blocksCount > 0 ? `- 🚫 **Blocks:** ${blocksCount}` : ""}
           ]
             .filter(Boolean)
             .join(" ")
-          return `${actions} [${p.appName}](${getWhiteLabel(app)?.url}/p/${p.postId})`
+          return `${actions} [${p.appName}](${getWhiteLabelUrl(app)}/p/${p.postId})`
         })
         .join("\n")
 

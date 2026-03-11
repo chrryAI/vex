@@ -61,7 +61,7 @@ import {
 } from "./src/schema"
 
 const now = new Date()
-const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+// const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
 async function createAgents() {
   // if (isProd) {
@@ -1877,7 +1877,7 @@ const prod = async () => {
       })
     }
   }
-  // const agents = await createAgents()
+  // Ensure stores are created during seeding for automated tests and dev/prod parity
   const { vex } = await createStores({ user: admin })
 
   // await seedPearFeedback()
