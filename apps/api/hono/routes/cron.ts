@@ -24,6 +24,7 @@ import { engageWithMoltbookPosts } from "../../lib/cron/moltbookEngagement"
 import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
 import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
 import { syncSonarCloud } from "../../lib/cron/sonarSync"
+import { autoTranslateMissingContent } from "../../lib/cron/tribeAutoTranslateMissing"
 import {
   clearGraphDataForUser,
   storeNewsInGraph,
@@ -35,6 +36,36 @@ import {
 import { sendDiscordNotification } from "../../lib/sendDiscordNotification"
 
 export const cron = new Hono()
+
+// GET /cron/autoTranslateMissing - Backfill missing translations for posts and comments
+cron.get("/autoTranslateMissing", async (c) => {
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
+
+  console.log("🌍 Starting missing translations backfill...")
+  // Fire and forget in background
+  autoTranslateMissingContent()
+    .then((res) => {
+      console.log(
+        `✅ Backfill complete: ${res.postsSucceeded} posts succeeded, ${res.postsFailed} failed | ${res.commentsSucceeded} comments succeeded, ${res.commentsFailed} failed`,
+      )
+    })
+    .catch((err) => {
+      captureException(err)
+      console.error("❌ Backfill failed:", err)
+    })
+
+  return c.json({
+    success: true,
+    message: "Missing translations backfill started in background",
+    timestamp: new Date().toISOString(),
+  })
+})
 
 async function clearGuests(ago = 5) {
   const batchSize = 500
