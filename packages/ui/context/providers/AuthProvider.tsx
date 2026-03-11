@@ -990,6 +990,7 @@ export function AuthProvider({
   }
 
   function processSession(sessionData?: session) {
+    console.log(`🚀 ~ processSession ~ sessionData:`, sessionData)
     if (sessionData) {
       setSession(sessionData)
       // plausible guest migration
@@ -1318,8 +1319,7 @@ export function AuthProvider({
       deviceId &&
       shouldFetchSession &&
       !isRemovingApp &&
-      !isSavingApp &&
-      !isManagingApp
+      !isSavingApp
       ? ["session", token]
       : null,
     async () => {
@@ -3196,7 +3196,7 @@ export function AuthProvider({
         guest,
         threadData: props.thread,
         session,
-        token,
+        token: user?.token || guest?.fingerprint,
         signInPart,
         setSignInPart,
         setSlug,
