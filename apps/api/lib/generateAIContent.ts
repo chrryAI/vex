@@ -1032,7 +1032,7 @@ async function generateAIContent({
   skipClassification = false,
   c,
   app,
-  useCustomAgent = false, // New parameter to opt into using custom agent
+  isE2E = false, // New parameter to opt into using custom agent
 }: {
   c: Context
   app?: app | appWithStore
@@ -1054,7 +1054,7 @@ async function generateAIContent({
   calendarEvents?: calendarEvent[]
   manualAppId?: string | null // Manual app ID from frontend (e.g., user on /atlas)
   skipClassification?: boolean // Skip AI classification if manually set
-  useCustomAgent?: boolean // Use app's selected agent instead of DeepSeek (may increase costs)
+  isE2E?: boolean // Use app's selected agent instead of DeepSeek (may increase costs)
 }) {
   const memoriesEnabled = user?.memoriesEnabled || guest?.memoriesEnabled
 
@@ -1075,6 +1075,214 @@ async function generateAIContent({
   // Always extract memories if we have an app (for app memories)
   // Skip only if both features are disabled AND no app
   if (!memoriesEnabled && !characterProfilesEnabled && !app?.id) return
+
+  // ─── E2E FAST-PATH ────────────────────────────────────────────────────────
+  // Skip real AI calls entirely in E2E mode. Generate randomized fake data and
+  // write it to DB so all notification flows still fire correctly.
+  if (isE2E) {
+    console.log(
+      "🧪 E2E mode: skipping AI calls, injecting fake background data",
+    )
+
+    const userId = user?.id
+    const guestId = guest?.id
+    const threadId = thread.id
+
+    const MOODS = [
+      "happy",
+      "thinking",
+      "astonished",
+      "inlove",
+      "sad",
+      "angry",
+    ] as const
+    const TONES = ["professional", "casual", "technical", "creative"] as const
+    const TOPICS = [
+      ["travel", "planning", "tokyo"],
+      ["productivity", "ai", "tools"],
+      ["coding", "typescript", "debugging"],
+      ["food", "recipes", "cooking"],
+      ["fitness", "health", "wellness"],
+    ]
+    const NAMES = [
+      "The Strategic Planner",
+      "The Creative Innovator",
+      "The Curious Learner",
+      "The Pragmatic Thinker",
+    ]
+
+    const pick = <T>(arr: readonly T[]): T =>
+      arr[Math.floor(Math.random() * arr.length)]!
+    const uid = () => uuidv4()
+
+    // 1. Fake mood
+    try {
+      await createMood({
+        userId: userId || null,
+        guestId: guestId || null,
+        type: pick(MOODS),
+        messageId: latestMessage.id,
+        metadata: {
+          detectedBy: "e2e-mock",
+          confidence: 0.7 + Math.random() * 0.3,
+          reason: "E2E test fake mood",
+          conversationContext:
+            latestMessage.content?.toString().slice(0, 200) || "",
+        },
+      })
+    } catch (err) {
+      console.warn("⚠️ E2E: Failed to create fake mood:", err)
+    }
+
+    // 2. Fake thread summary
+    try {
+      const existingSummary = await getThreadSummary({
+        userId,
+        guestId,
+        threadId,
+      })
+      const fakeTopics = pick(TOPICS)
+      const fakeSummaryData = {
+        threadId,
+        userId: userId || null,
+        guestId: guestId || null,
+        summary: `E2E test conversation about ${fakeTopics.join(", ")}.`,
+        keyTopics: fakeTopics,
+        messageCount: conversationHistory.length,
+        lastMessageAt: new Date(latestMessage.createdOn),
+        ragContext: {
+          documentSummaries: [],
+          relevantChunks: [],
+          conversationContext: "",
+        },
+        userMemories: [],
+        characterTags: {
+          agentPersonalities: [
+            {
+              agentId,
+              traits: ["helpful", "analytical"],
+              behavior: "friendly",
+            },
+          ],
+          conversationTone: pick(TONES),
+          userPreferences: ["efficiency", "clarity"],
+          contextualTags: ["e2e", "test"],
+        },
+        metadata: {
+          version: "1.0",
+          generatedBy: "e2e-mock",
+          confidence: 0.9,
+          lastUpdated: new Date().toISOString(),
+        },
+      }
+
+      if (existingSummary && isOwner(existingSummary, { userId, guestId })) {
+        await updateThreadSummary({ ...existingSummary, ...fakeSummaryData })
+      } else if (!existingSummary) {
+        await createThreadSummary(fakeSummaryData)
+      }
+    } catch (err) {
+      console.warn("⚠️ E2E: Failed to create fake summary:", err)
+    }
+
+    // 3. Fake character tag (user profile)
+    if (characterProfilesEnabled) {
+      try {
+        const existingTag = await getCharacterTag({ userId, guestId, threadId })
+        const fakeName = pick(NAMES)
+        const fakeTraits = {
+          communication: ["clear", "direct"],
+          expertise: ["general knowledge"],
+          behavior: ["curious", "analytical"],
+          preferences: ["learning", "efficiency"],
+        }
+
+        if (
+          existingTag &&
+          isOwner(existingTag, { userId, guestId }) &&
+          !existingTag.appId
+        ) {
+          await updateCharacterTag({
+            ...existingTag,
+            name: fakeName,
+            personality:
+              "E2E test personality — curious and analytical thinker.",
+            traits: fakeTraits,
+            tags: ["e2e", "test", "curious"],
+            usageCount: existingTag.usageCount + 1,
+            userRelationship: "collaborative",
+            conversationStyle: "casual",
+            metadata: {
+              version: "1.0",
+              createdBy: "e2e-mock",
+              effectiveness: 0.8,
+            },
+          })
+        } else if (!existingTag?.appId) {
+          await createCharacterTag({
+            agentId,
+            userId: userId || null,
+            guestId: guestId || null,
+            appId: null,
+            name: fakeName,
+            personality:
+              "E2E test personality — curious and analytical thinker.",
+            traits: fakeTraits,
+            tags: ["e2e", "test", "curious"],
+            usageCount: 1,
+            userRelationship: "collaborative",
+            conversationStyle: "casual",
+            metadata: {
+              version: "1.0",
+              createdBy: "e2e-mock",
+              effectiveness: 0.8,
+            },
+            threadId,
+          })
+        }
+      } catch (err) {
+        console.warn("⚠️ E2E: Failed to create fake character tag:", err)
+      }
+    }
+
+    // 4. Fake suggestions/placeholders notification (fire-and-forget, same as prod)
+    if (memoriesEnabled) {
+      const fakeTopics = pick(TOPICS)
+      const fakeSuggestions: suggestionsPayload = {
+        instructions: Array.from({ length: 3 }, () => ({
+          id: uid(),
+          title: `E2E suggestion ${uid().slice(0, 8)}`,
+          emoji: pick(["✨", "🚀", "💡", "🎯", "🔍"]),
+          content: `E2E fake suggestion about ${pick(fakeTopics)}`,
+          confidence: 0.7 + Math.random() * 0.3,
+          generatedAt: new Date().toISOString(),
+          requiresWebSearch: false,
+        })),
+        lastGenerated: new Date().toISOString(),
+      }
+
+      notifyOwnerAndCollaborations({
+        c,
+        notifySender: true,
+        member: user,
+        guest,
+        thread,
+        payload: {
+          type: "suggestions_generated",
+          data: {
+            app,
+            suggestions: fakeSuggestions,
+            placeholders: { home: null, thread: null },
+            instructions: [],
+          },
+        },
+      })
+    }
+
+    console.log("✅ E2E: Fake background data injected successfully")
+    return
+  }
+  // ─── END E2E FAST-PATH ────────────────────────────────────────────────────
 
   // Limit conversation history to stay within context limits (target ~100k tokens max)
   // DeepSeek has a 128k limit. 300k chars is roughly 75-100k tokens.
@@ -1249,31 +1457,6 @@ async function generateAIContent({
       
       Focus on observable patterns from the USER's messages and APP's character memories. Return only valid JSON.`
 
-    // Mood detection prompt (only if character profiles enabled)
-    const moodPrompt = `Analyze the USER's emotional state from this conversation:
-
-CONVERSATION:
-${conversationText}
-
-Detect the USER's current mood based on their language, tone, and content.
-
-Generate ONLY a valid JSON response:
-{
-  "type": "happy|sad|angry|astonished|inlove|thinking",
-  "confidence": 0.0-1.0,
-  "reason": "Brief explanation of why this mood was detected"
-}
-
-Mood definitions:
-- happy: Positive, cheerful, satisfied, excited
-- sad: Disappointed, melancholic, down, discouraged
-- angry: Frustrated, irritated, upset, annoyed
-- astonished: Surprised, amazed, shocked, impressed
-- inlove: Affectionate, passionate, romantic, deeply interested
-- thinking: Contemplative, analytical, pondering, curious
-
-Return only valid JSON.`
-
     // Generate thread summary
     const summaryPrompt = `Analyze this conversation and create a comprehensive summary:
 
@@ -1320,21 +1503,9 @@ Focus on the main discussion points, user preferences, and conversation style.`
       conversationStyle: z.string().optional(),
     })
 
-    const moodSchema = z.object({
-      type: z.enum([
-        "happy",
-        "sad",
-        "angry",
-        "astonished",
-        "inlove",
-        "thinking",
-      ]),
-      confidence: z.number().min(0).max(1),
-      reason: z.string().optional(),
-    })
-
-    // Generate summary, memories, character profile, and mood in parallel
-    const promises = [
+    // Generate summary and character profile in parallel
+    // Note: mood detection is handled by the AI tool call during conversation (better context)
+    const [summaryResult, characterResult] = await Promise.all([
       generateText({
         model,
         prompt: summaryPrompt,
@@ -1343,14 +1514,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
         model,
         prompt: characterPrompt,
       }),
-      generateText({
-        model,
-        prompt: moodPrompt,
-      }),
-    ]
-
-    const results = await Promise.all(promises)
-    const [summaryResult, characterResult, moodResult] = results
+    ])
 
     if (summaryResult) {
       // Extract memories using unified function (runs separately to avoid blocking)
@@ -1382,50 +1546,8 @@ Focus on the main discussion points, user preferences, and conversation style.`
 
       // Wait for memories to be extracted and saved
 
-      if (moodResult) {
-        // Parse mood result
-        type MoodData = z.infer<typeof moodSchema>
-        let moodData: MoodData | null = null
-        try {
-          const jsonText = cleanAiResponse(moodResult.text)
-          const parsedData = JSON.parse(jsonText)
-          moodData = moodSchema.parse(parsedData)
-          console.log(
-            `🎭 Detected mood: ${moodData.type} (confidence: ${moodData.confidence})`,
-          )
-        } catch (error) {
-          captureException(error)
-          console.log("⚠️ Failed to parse or validate mood:", error)
-        }
-
-        // Create mood in database if detected with sufficient confidence
-        if (moodData && moodData.confidence >= 0.6) {
-          try {
-            await createMood({
-              userId: userId || null,
-              guestId: guestId || null,
-              type: moodData.type,
-              messageId: latestMessage.id, // Link to the message that triggered mood detection
-              metadata: {
-                detectedBy: modelName,
-                confidence: moodData.confidence,
-                reason: moodData.reason,
-                conversationContext: getSmartConversationContext(
-                  conversationText,
-                  500,
-                ), // Smart context
-              },
-            })
-            console.log(
-              `✅ Created mood: ${moodData.type} (confidence: ${moodData.confidence}, reason: ${moodData.reason})`,
-            )
-          } catch (error) {
-            captureException(error)
-            console.error("❌ Failed to create mood:", error)
-          }
-        }
-      }
       // Parse character profiles (both user and app from single AI response)
+      // Note: mood is handled by AI tool call during conversation
 
       type CharacterData = z.infer<typeof characterSchema>
       let characterData: CharacterData

@@ -12,6 +12,7 @@ import {
   simulatePaste,
   wait,
 } from ".."
+import { prepare } from "./clean"
 
 // Resolve paths relative to the waffles package root
 const _getTestFilePath = (...pathSegments: string[]) => {
@@ -110,6 +111,7 @@ export const chat = async ({
   isPear?: boolean
 }) => {
   log({ page })
+
   let credits = isSubscriber ? 2000 : isMember ? 150 : 30
 
   if (creditsConsumed) {
@@ -137,6 +139,8 @@ export const chat = async ({
       timeout: 100000,
     })
     await wait(3000)
+
+    await prepare({ page })
   }
   const agentModal = page.getByTestId("agent-modal")
   await expect(agentModal).not.toBeVisible()
@@ -695,7 +699,7 @@ export const chat = async ({
     const stopButton = page.getByTestId("chat-stop-streaming-button")
 
     // Skip stop button check for models that are too fast
-    if (!TOO_FAST_MODELS.includes(prompt.model || "")) {
+    if (isLive && !TOO_FAST_MODELS.includes(prompt.model || "")) {
       await expect(stopButton).toBeVisible({
         timeout: prompt.agentMessageTimeout || agentMessageTimeout,
       })

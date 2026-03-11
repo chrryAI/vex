@@ -4,7 +4,7 @@
 # Vex
 
 > 🏆 **Patent Pending** - US Application #64/000,114  
-> *Spatial Intelligence System with Self-Evolving App Ecosystem*
+> _Spatial Intelligence System with Self-Evolving App Ecosystem_
 
 A sovereign, self-sustaining AI platform powered by user-provided models.
 
@@ -155,9 +155,9 @@ Vex is a modern monorepo built for scale and separation of concerns.
 
 Stack:
 
-Frontend: Next.js 15 (App Router), React 19
+Frontend: Vite, React 19
 
-Backend: Next.js API Routes, WebSocket Server
+Backend: Bun, Hono, WebSocket Server
 
 Data: PostgreSQL (pgvector), FalkorDB (Knowledge Graph), Drizzle ORM, Redis (Upstash)
 

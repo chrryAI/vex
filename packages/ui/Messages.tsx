@@ -28,6 +28,7 @@ import type {
   user,
 } from "./types"
 import { isOwner } from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import { isE2E } from "./utils/siteConfig"
 
 export default forwardRef<
@@ -103,7 +104,7 @@ export default forwardRef<
     app,
     chrry,
     accountApp,
-
+    plausible,
     isPear,
     ...auth
   } = useAuth()
@@ -153,6 +154,10 @@ export default forwardRef<
 
         setCharacterProfile(data)
         setLoadingCharacterProfile(undefined)
+
+        plausible({
+          name: ANALYTICS_EVENTS.CHARACTER_TAG_CREATED,
+        })
       }
       if (type === "character_tag_creating") {
         onCharacterProfileUpdate?.()

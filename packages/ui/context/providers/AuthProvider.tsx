@@ -399,6 +399,7 @@ export function AuthProvider({
   tribes: initialTribes,
   tribePosts: initialTribePosts,
   tribePost: initialTribePost,
+  testConfig,
   ...props
 }: {
   translations?: Record<string, any>
@@ -417,6 +418,7 @@ export function AuthProvider({
   tribePost?: tribePostWithDetails
   showTribe?: boolean
   accountApp?: appWithStore
+  testConfig?: { [key: string]: string[] }
   searchParams?: Record<string, string> & {
     get: (key: string) => string | null
     has: (key: string) => boolean
@@ -1052,19 +1054,19 @@ export function AuthProvider({
     },
   )
 
-  const VEX_LIVE_FINGERPRINTS = session?.VEX_LIVE_FINGERPRINTS || []
+  const VEX_LIVE_FINGERPRINTS = testConfig?.VEX_LIVE_FINGERPRINTS || []
 
   const TEST_MEMBER_FINGERPRINTS =
-    session?.TEST_MEMBER_FINGERPRINTS?.concat(VEX_LIVE_FINGERPRINTS).filter(
-      (fp) => !session?.TEST_GUEST_FINGERPRINTS?.includes(fp),
+    testConfig?.TEST_MEMBER_FINGERPRINTS?.concat(VEX_LIVE_FINGERPRINTS).filter(
+      (fp) => !testConfig?.TEST_GUEST_FINGERPRINTS?.includes(fp),
     ) || []
 
   const TEST_GUEST_FINGERPRINTS =
-    session?.TEST_GUEST_FINGERPRINTS?.concat(VEX_LIVE_FINGERPRINTS).filter(
-      (fp) => !session?.TEST_MEMBER_FINGERPRINTS?.includes(fp),
+    testConfig?.TEST_GUEST_FINGERPRINTS?.concat(VEX_LIVE_FINGERPRINTS).filter(
+      (fp) => !testConfig?.TEST_MEMBER_FINGERPRINTS?.includes(fp),
     ) || []
 
-  const TEST_MEMBER_EMAILS = session?.TEST_MEMBER_EMAILS || []
+  const TEST_MEMBER_EMAILS = testConfig?.TEST_MEMBER_EMAILS || []
 
   // Create actions instance
 
@@ -1079,7 +1081,7 @@ export function AuthProvider({
   const [isGuestTest, _setIsLiveGuestTest] = useLocalStorage<boolean>(
     "isGuestTest",
     fingerprintParam
-      ? TEST_GUEST_FINGERPRINTS.includes(fingerprintParam)
+      ? TEST_GUEST_FINGERPRINTS?.includes(fingerprintParam)
       : false,
   )
   const [isMemberTest, _setIsLiveMemberTest] = useLocalStorage<boolean>(
@@ -1824,12 +1826,20 @@ export function AuthProvider({
 
   const { captureException } = useError()
 
-  const chrry = storeApps?.find((app) => !app.store?.parentStoreId)
-  const vex = storeApps?.find((app) => app.slug === "vex")
-  const sushi = storeApps?.find((app) => app.slug === "sushi")
-  const focus = storeApps?.find((app) => app.slug === "focus")
+  const chrry = storeApps?.find(
+    (app) => hasStoreApps(app) && !app.store?.parentStoreId,
+  )
+  const vex = storeApps?.find((app) => hasStoreApps(app) && app.slug === "vex")
+  const sushi = storeApps?.find(
+    (app) => hasStoreApps(app) && app.slug === "sushi",
+  )
+  const focus = storeApps?.find(
+    (app) => hasStoreApps(app) && app.slug === "focus",
+  )
 
-  const burnApp = storeApps?.find((app) => app.slug === "burn")
+  const burnApp = storeApps?.find(
+    (app) => hasStoreApps(app) && app.slug === "burn",
+  )
 
   const accountAppId = accountApp?.id
 
@@ -3186,7 +3196,7 @@ export function AuthProvider({
         guest,
         threadData: props.thread,
         session,
-        token: user?.token || guest?.fingerprint,
+        token,
         signInPart,
         setSignInPart,
         setSlug,

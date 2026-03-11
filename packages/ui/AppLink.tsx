@@ -16,6 +16,7 @@ export default function AppLink({
   loadingStyle,
   isTribe = true,
   isPear = false,
+  href,
   icon,
   ...props
 }: {
@@ -31,6 +32,7 @@ export default function AppLink({
   isTribe?: boolean
   isPear?: boolean
   icon?: React.ReactNode
+  href?: string
   setIsNewAppChat?: (item: appWithStore) => void
 }) {
   const { setIsNewChat } = useChat()
@@ -41,7 +43,7 @@ export default function AppLink({
     loadingApp && loadingApp?.id === app?.id,
   )
 
-  const { pathname } = useNavigationContext()
+  const { push } = useNavigationContext()
 
   React.useEffect(() => {
     const l = loadingApp && loadingApp?.id === app?.id
@@ -63,6 +65,12 @@ export default function AppLink({
       props.setIsNewAppChat(app)
       return
     }
+
+    if (href) {
+      push(href)
+      return
+    }
+
     setIsNewChat({
       value: true,
       to: getAppSlug(app),
@@ -83,7 +91,7 @@ export default function AppLink({
       <A
         title={title}
         aria-label={title}
-        href={getAppSlug(app)}
+        href={href || getAppSlug(app)}
         style={{
           ...style,
           ...(isLoading ? loadingStyle : {}),
@@ -103,6 +111,11 @@ export default function AppLink({
 
           if (props.setIsNewAppChat) {
             props.setIsNewAppChat(app)
+            return
+          }
+
+          if (href) {
+            push(href)
             return
           }
 

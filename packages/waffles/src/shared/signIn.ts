@@ -1,5 +1,6 @@
 import { expect, type Page } from "@playwright/test"
 import { wait } from ".."
+import { prepare } from "./clean"
 
 export const signIn = async ({
   page,
@@ -71,6 +72,8 @@ export const signIn = async ({
   })
 
   await wait(5000)
+
+  await prepare({ page })
 
   if (signOut) {
     await accountButton.click()

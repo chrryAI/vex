@@ -18,6 +18,9 @@ export const ANALYTICS_EVENTS = {
   GAME_TOGGLE: "game-toggle",
   HIT_HOURLY_LIMIT: "hit-hourly-limit",
   FILE_UPLOAD: "file-upload",
+  SUGGESTIONS_GENERATED: "suggestions_generated",
+  COLLABORATION: "collaboration",
+  MESSAGE_COLLABORATION: "message_collaboration",
   LIKE: "like",
   VIDEO_CLICKED: "video_clicked",
   THREAD_LIKES: "thread_likes",
@@ -42,6 +45,7 @@ export const ANALYTICS_EVENTS = {
   MAXIMIZE: "maximize",
   MINIMIZE: "minimize",
   APP_BACK: "app_back",
+  CHARACTER_TAG_CREATED: "character_tag_created",
 
   // Chat & Messaging
   CHAT_SEND: "chat",
@@ -147,6 +151,8 @@ export const MEANINGFUL_EVENTS: AnalyticsEventName[] = [
   ANALYTICS_EVENTS.TIMER_PAUSE,
   ANALYTICS_EVENTS.TIMER_RESUME,
   ANALYTICS_EVENTS.PLAY_BIRD_SOUND,
+  ANALYTICS_EVENTS.SUGGESTIONS_GENERATED,
+  ANALYTICS_EVENTS.MESSAGE_COLLABORATION,
 
   // Chat & messaging - Core user interactions
   ANALYTICS_EVENTS.CHAT_SEND,
@@ -158,6 +164,8 @@ export const MEANINGFUL_EVENTS: AnalyticsEventName[] = [
   ANALYTICS_EVENTS.THREAD_CREATE,
   ANALYTICS_EVENTS.THREAD_VIEW,
   ANALYTICS_EVENTS.THREAD_DELETE,
+  ANALYTICS_EVENTS.CHARACTER_TAG_CREATED,
+  ANALYTICS_EVENTS.COLLABORATION,
 
   // Memory - Critical for personalization
   ANALYTICS_EVENTS.MEMORY_SAVE,

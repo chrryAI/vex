@@ -39,8 +39,8 @@ const Grapes = ({
   }
 
   useEffect(() => {
-    !selectedGrapeApp && setSelectedGrapeApp(grapes[0])
-  }, [grapes, selectedGrapeApp])
+    !selectedGrapeApp && setSelectedGrapeAppInternal(grapes[0])
+  }, [grapes, setSelectedGrapeAppInternal])
 
   const { utilities } = useStyles()
 

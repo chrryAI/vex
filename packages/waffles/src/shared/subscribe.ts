@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test"
 import { log, type modelName, wait } from "../index"
 import { chat } from "./chat"
-import { clean, maximize } from "./clean"
+import { clean, maximize, prepare } from "./clean"
 import { signIn } from "./signIn"
 
 export const subscribe = async ({
@@ -147,7 +147,7 @@ export const subscribe = async ({
   }
 
   const getCreditsLeft = async (page: Page) => {
-    await maximize({ page })
+    await prepare({ page })
     const creditsInfo = page.getByTestId("credits-info")
 
     await expect(creditsInfo).toBeVisible({

@@ -40,6 +40,7 @@ import {
   VectorSquare,
   Webhook,
 } from "../icons"
+import Loading from "../Loading"
 import Modal from "../Modal"
 import {
   Button,
@@ -938,96 +939,102 @@ export default function Agent({
                       ...styles.bordered.style,
                     }}
                   >
-                    <Blocks size={18} color="var(--accent-6)" />
+                    {!chrry?.store?.apps.length ? (
+                      <Loading size={22} />
+                    ) : (
+                      <Blocks size={18} color="var(--accent-6)" />
+                    )}
                     {t("Extend")}
                   </Span>
-                  <Div
-                    style={{ ...styles.field.style, ...utilities.row.style }}
-                  >
-                    <Controller
-                      name="extends"
-                      control={control}
-                      render={({ field }) => {
-                        // Get store-based apps from Chrry store
-                        const storeApps = chrry?.store?.apps || []
+                  {chrry?.store?.apps.length ? (
+                    <Div
+                      style={{ ...styles.field.style, ...utilities.row.style }}
+                    >
+                      <Controller
+                        name="extends"
+                        control={control}
+                        render={({ field }) => {
+                          // Get store-based apps from Chrry store
+                          const storeApps = chrry?.store?.apps || []
 
-                        return (
-                          <>
-                            {/* Store-based apps */}
-                            {storeApps.filter(Boolean).map((item) => {
-                              // Chrry is required (checked and disabled)
-                              const isChrry = item.slug === "chrry"
-                              // Vex is optional (checked by default but can be unchecked)
-                              const isBaseApp = item.slug === "vex"
+                          return (
+                            <>
+                              {/* Store-based apps */}
+                              {storeApps.filter(Boolean).map((item) => {
+                                // Chrry is required (checked and disabled)
+                                const isChrry = item.slug === "chrry"
+                                // Vex is optional (checked by default but can be unchecked)
+                                const isBaseApp = item.slug === "vex"
 
-                              const checked =
-                                appFormWatcher.extends?.includes(item.id) ??
-                                false
-                              return (
-                                <Label key={item.id || item.name}>
-                                  <Checkbox
-                                    data-testid={`extends-checkbox-${item.name.toLowerCase()}`}
-                                    checked={checked}
-                                    // disabled={isDisabled || isChrry}
-                                    onChange={() => {
-                                      if (checked) {
-                                        if (isChrry) {
-                                          toast.error(
-                                            `${item.name} is required and cannot be removed.`,
-                                          )
+                                const checked =
+                                  appFormWatcher.extends?.includes(item.id) ??
+                                  false
+                                return (
+                                  <Label key={item.id || item.name}>
+                                    <Checkbox
+                                      data-testid={`extends-checkbox-${item.name.toLowerCase()}`}
+                                      checked={checked}
+                                      // disabled={isDisabled || isChrry}
+                                      onChange={() => {
+                                        if (checked) {
+                                          if (isChrry) {
+                                            toast.error(
+                                              `${item.name} is required and cannot be removed.`,
+                                            )
 
-                                          return
-                                        }
+                                            return
+                                          }
 
-                                        if (
-                                          app?.store?.apps?.some(
-                                            (a) =>
-                                              a.storeId === app.storeId &&
-                                              a.id === item.id,
-                                          )
+                                          if (
+                                            app?.store?.apps?.some(
+                                              (a) =>
+                                                a.storeId === app.storeId &&
+                                                a.id === item.id,
+                                            )
+                                          ) {
+                                            toast.error(
+                                              `Store apps should extends each other`,
+                                            )
+                                            return
+                                          }
+
+                                          if (isBaseApp) {
+                                            toast.error(
+                                              `${item.name} is your base app.`,
+                                            )
+
+                                            return
+                                          }
+                                        } else if (
+                                          appFormWatcher.extends &&
+                                          appFormWatcher.extends.length >= 8
                                         ) {
                                           toast.error(
-                                            `Store apps should extends each other`,
-                                          )
-                                          return
-                                        }
-
-                                        if (isBaseApp) {
-                                          toast.error(
-                                            `${item.name} is your base app.`,
+                                            `You can extend up to 8 apps.`,
                                           )
 
                                           return
                                         }
-                                      } else if (
-                                        appFormWatcher.extends &&
-                                        appFormWatcher.extends.length >= 8
-                                      ) {
-                                        toast.error(
-                                          `You can extend up to 8 apps.`,
-                                        )
+                                        const newValue = checked
+                                          ? field.value?.filter(
+                                              (v) => v !== item.id,
+                                            )
+                                          : [...(field.value || []), item.id]
 
-                                        return
-                                      }
-                                      const newValue = checked
-                                        ? field.value?.filter(
-                                            (v) => v !== item.id,
-                                          )
-                                        : [...(field.value || []), item.id]
-
-                                      field.onChange(newValue)
-                                    }}
-                                  >
-                                    {item.icon} {item.name}
-                                  </Checkbox>
-                                </Label>
-                              )
-                            })}
-                          </>
-                        )
-                      }}
-                    />
-                  </Div>
+                                        field.onChange(newValue)
+                                      }}
+                                    >
+                                      {item.icon} {item.name}
+                                    </Checkbox>
+                                  </Label>
+                                )
+                              })}
+                            </>
+                          )
+                        }}
+                      />
+                    </Div>
+                  ) : null}
                   <Div
                     style={{
                       ...styles.field.style,

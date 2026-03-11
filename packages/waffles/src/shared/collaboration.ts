@@ -8,7 +8,7 @@ import {
   wait,
 } from ".."
 import { chat } from "./chat"
-import { clean } from "./clean"
+import { clean, prepare } from "./clean"
 import { signIn } from "./signIn"
 
 export async function collaboration({
@@ -52,6 +52,7 @@ export async function collaboration({
 
   // Send first message to create thread
 
+  await prepare({ page: page1 })
   await chat({
     bookmark: false,
     page: page1,
@@ -195,6 +196,8 @@ export async function collaboration({
   await expect(chatInput2).toBeEnabled({
     timeout: 15000,
   })
+
+  // await prepare({ page: page2 })
 
   await chat({
     page: page2,
