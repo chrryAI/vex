@@ -18,7 +18,7 @@ export async function postToBluesky({
   credentials,
   images,
   video,
-}: BlueskyPostOptions): Promise<{ uri: string; cid: string } | null> {
+}: BlueskyPostOptions): Promise<{ uri: string; cid: string }> {
   try {
     const agent = new BskyAgent({ service: "https://bsky.social" })
 
@@ -163,11 +163,7 @@ export async function postToBluesky({
     console.log(`✅ Posted to Bluesky (@${credentials.handle}):`, response.uri)
     return response
   } catch (error) {
-    console.error(
-      `❌ Failed to post to Bluesky (@${credentials.handle}):`,
-      error,
-    )
-    return null
+    throw error
   }
 }
 
