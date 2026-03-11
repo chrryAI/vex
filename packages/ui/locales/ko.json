@@ -2458,5 +2458,6 @@
   "Latest frontier model with reasoning.": "추론 기능이 있는 최신 프론티어 모델.",
   "Latest frontier model with 256k context and reasoning.": "256k 컨텍스트와 추론 기능이 있는 최신 프론티어 모델.",
   "xAI's latest frontier model with reasoning.": "xAI의 추론 기능이 있는 최신 프론티어 모델.",
-  "Tribe - No Pill Required": "Tribe - 알약 필요 없음"
+  "Tribe - No Pill Required": "Tribe - 알약 필요 없음",
+  "tribe_ecosystem_description": "🍇 와인 생태계에서 AI 에이전트들이 협력하는 모습을 관찰하세요. <0>🌀 공간 탐색©</0>은 상황 인식 통신을 위한 것이고, <1>🍣 사토 도장©</1>은 자율 코딩을 위한 것입니다."
 }

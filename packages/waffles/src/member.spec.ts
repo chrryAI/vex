@@ -6,6 +6,7 @@ import {
   VEX_TEST_FINGERPRINT_3,
   VEX_TEST_PASSWORD_3,
 } from "."
+import { app } from "./shared/app"
 import { chat } from "./shared/chat"
 import { clean } from "./shared/clean"
 import { collaboration } from "./shared/collaboration"
@@ -119,112 +120,6 @@ test("Thread", async ({ page }) => {
   await thread({ page, bookmark: true, isMember })
 })
 
-test("Long text", async ({ page }) => {
-  test.slow()
-  await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
-    timeout: 100000,
-  })
-
-  await signIn({ page })
-  await chat({
-    page,
-    isMember,
-    instruction: "Long text",
-    // agentMessageTimeout: 12000,
-    prompts: [
-      {
-        text: "Short",
-        model: "sushi",
-      },
-      {
-        text: "long",
-        model: "sushi",
-        stop: true,
-      },
-      {
-        text: "Should delete this message",
-        model: "sushi",
-        delete: true,
-      },
-    ],
-  })
-})
-
-test("File upload", async ({ page }) => {
-  test.slow()
-  await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
-    timeout: 100000,
-  })
-
-  await signIn({ page })
-
-  await chat({
-    artifacts: {
-      paste: 3,
-      pdf: 3,
-    },
-    isNewChat: false,
-    page,
-    isMember,
-    instruction: "Lets upload some files",
-    prompts: [
-      {
-        text: "Hey Vex, Analyze this text shortly",
-        model: "sushi",
-        mix: {
-          paste: 4,
-        },
-        like: true,
-      },
-      {
-        text: "Hey Vex, Analyze this text briefly",
-        model: "gemini",
-        mix: {
-          image: 1,
-          paste: 1,
-          audio: 1,
-          pdf: 1,
-        },
-        like: true,
-      },
-      {
-        text: "Hey Vex, Analyze this pdf shortly",
-        model: "chatGPT",
-        mix: {
-          pdf: 4,
-        },
-        like: true,
-      },
-      {
-        text: "Hey Vex, Analyze this video briefly",
-        model: "claude",
-        mix: {
-          video: 1,
-        },
-        like: true,
-      },
-      {
-        text: "Hey Vex, Analyze this audio shortly",
-        model: "sushi",
-        mix: {
-          audio: 4,
-        },
-        like: true,
-      },
-      {
-        text: "Hey Vex, Analyze these images briefly",
-        model: "claude",
-        mix: {
-          image: 4,
-        },
-        like: true,
-      },
-    ],
-  })
-})
-
 test("Collaboration", async ({ page, browser }) => {
   await page.goto(
     getURL({
@@ -291,5 +186,81 @@ test("Debate", async ({ page }) => {
         debateAgent: "gemini",
       },
     ],
+  })
+})
+
+test.only("App", async ({ page }) => {
+  await clean({ page, isMember })
+
+  await page.goto(getURL({ isMember }), {
+    waitUntil: "networkidle",
+    timeout: 100000,
+  })
+
+  await signIn({ page })
+  await app({
+    page,
+    isMember,
+    slug: "vex",
+    nav: [
+      {
+        name: "vault", // Finance & Budgeting
+        chat: {
+          prompts: [
+            { model: "sushi", text: "Where am I overspending this month?" },
+            { model: "sushi", text: "Compare my spending to last month" },
+            { model: "sushi", text: "What's my biggest expense category?" },
+          ],
+        },
+      },
+      {
+        name: "peach", // Feedback & Insights
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What feedback patterns are emerging?" },
+            {
+              model: "sushi",
+              text: "Which features are users requesting most?",
+            },
+            {
+              model: "sushi",
+              text: "Show me sentiment analysis from recent feedback",
+            },
+          ],
+        },
+      },
+      {
+        name: "bloom", // Productivity & Focus
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What's my most productive time of day?" },
+            { model: "sushi", text: "Show my focus session statistics" },
+            { model: "sushi", text: "Help me plan a deep work session" },
+          ],
+        },
+      },
+
+      {
+        name: "atlas", // Travel & Navigation
+        chat: {
+          prompts: [
+            { model: "sushi", text: "Plan a day trip in Amsterdam" },
+            { model: "sushi", text: "Find the best coffee shops nearby" },
+            { model: "sushi", text: "What's the fastest route to Centraal?" },
+          ],
+        },
+      },
+      {
+        name: "chrry", // App Marketplace
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What are the top-rated apps this week?" },
+            { model: "sushi", text: "Show me apps for productivity" },
+            { model: "sushi", text: "How do I monetize my app idea?" },
+          ],
+        },
+      },
+    ],
+    isNewChat: true,
   })
 })

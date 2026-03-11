@@ -238,6 +238,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
         <Div style={{ ...styles.searchContainer.style }}>
           <>
             <Search
+              loading={isLoading || isLoadingThreads}
               dataTestId="threads-search"
               placeholder={t("Search threads...")}
               scroll={false}

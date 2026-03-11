@@ -31,6 +31,15 @@ import {
 import { captureException } from "./captureException"
 import { generateServerMetadata } from "./server-metadata"
 
+export interface CookieOptions {
+  httpOnly?: boolean
+  secure?: boolean
+  sameSite?: "Strict" | "Lax" | "None"
+  maxAge?: number
+  path?: string
+  domain?: string
+}
+
 export interface ServerRequest {
   url: string
   hostname: string
@@ -38,6 +47,8 @@ export interface ServerRequest {
   headers: Record<string, string | undefined>
   cookies: Record<string, string | undefined>
   ip?: string
+  /** Framework-specific cookie setter injected by the caller (e.g. Hono handler) */
+  setCookie?: (name: string, value: string, options: CookieOptions) => void
 }
 
 export interface ServerData {
@@ -47,6 +58,7 @@ export interface ServerData {
     threads: thread[]
     totalCount: number
   }
+  testConfig: { [key: string]: string[] }
   apiKey?: string
   canShowAllTribe?: boolean
   accountApp?: appWithStore
@@ -160,13 +172,15 @@ export async function loadServerData(
 
   const deviceId = cookies.deviceId || headers["x-device-id"] || uuidv4()
 
+  let testConfig: { [key: string]: string[] } = {}
   if (isE2E && fpFromQuery) {
     try {
       const testConfigUrl = `${API_URL}/test-config?fp=${fpFromQuery}`
       const testConfigResponse = await fetch(testConfigUrl)
       if (testConfigResponse.ok) {
-        const testConfig = await testConfigResponse.json()
-        TEST_FINGERPRINTS = testConfig.TEST_FINGERPRINTS || []
+        testConfig = await testConfigResponse.json()
+        TEST_FINGERPRINTS =
+          (testConfig.TEST_FINGERPRINTS as unknown as string[]) || []
       }
     } catch (error) {
       console.error("Failed to fetch test config:", error)
@@ -180,27 +194,6 @@ export async function loadServerData(
   const cookieToken = cookies.token
 
   let authToken: string | null = cookieToken || null
-
-  if (authCode) {
-    try {
-      const exchangeResponse = await fetch(`${API_URL}/auth/exchange-code`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: authCode }),
-      })
-
-      if (exchangeResponse.ok) {
-        const { token } = await exchangeResponse.json()
-        authToken = token
-        console.log("✅ Auth code exchanged for token")
-      } else {
-        console.error("❌ Auth code exchange failed")
-      }
-    } catch (error) {
-      authToken = null
-      console.error("❌ Auth code exchange error:", error)
-    }
-  }
 
   const apiKeyCandidate = authToken
     ? authToken
@@ -222,12 +215,76 @@ export async function loadServerData(
         ? tokenCandidate
         : cookies.fingerprint || headers["x-fp"]
 
-  const apiKey =
+  let apiKey =
     tokenCandidate ||
     (isTestFP && fpFromQuery ? fpFromQuery : fingerprintCandidate) ||
     uuidv4()
 
+  if (authCode) {
+    try {
+      const exchangeResponse = await fetch(`${API_URL}/auth/exchange-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: authCode }),
+      })
+
+      if (exchangeResponse.ok) {
+        const { token } = await exchangeResponse.json()
+        authToken = token
+        apiKey = token
+        // Persist the new token as a fingerprint cookie so subsequent requests
+        // are authenticated without needing another auth code exchange
+        request.setCookie?.("fingerprint", token, {
+          httpOnly: false,
+          secure: !isDev,
+          sameSite: "None",
+          maxAge: 60 * 60 * 24 * 365, // 1 year
+          path: "/",
+          domain: hostname.includes(".")
+            ? hostname.split(".").slice(-2).join(".")
+            : undefined,
+        })
+        request.setCookie?.("token", token, {
+          httpOnly: false,
+          secure: !isDev,
+          sameSite: "None",
+          maxAge: 60 * 60 * 24 * 365,
+          path: "/",
+          domain: hostname.includes(".")
+            ? hostname.split(".").slice(-2).join(".")
+            : undefined,
+        })
+        console.log("✅ Auth code exchanged for token")
+      } else {
+        console.error("❌ Auth code exchange failed")
+      }
+    } catch (error) {
+      authToken = null
+      console.error("❌ Auth code exchange error:", error)
+    }
+  }
+
   const fingerprint = fingerprintCandidate || uuidv4()
+
+  // Always persist fingerprint + token cookies for every flow:
+  // - Guest mode: fingerprint IS the auth token, needs to survive page reloads
+  // - Authenticated: token cookie locks in the session
+  // (auth code exchange already set these above for that specific flow, skip duplicate)
+  if (!authCode) {
+    const cookieDomain = hostname.includes(".")
+      ? hostname.split(".").slice(-2).join(".")
+      : undefined
+    const cookieOpts: CookieOptions = {
+      httpOnly: false,
+      secure: !isDev,
+      sameSite: "None",
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      path: "/",
+      domain: cookieDomain,
+    }
+    request.setCookie?.("fingerprint", apiKey, cookieOpts)
+    request.setCookie?.("token", apiKey, cookieOpts)
+  }
 
   const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName
@@ -439,6 +496,7 @@ export async function loadServerData(
     tribes,
     tribePosts,
     tribePost,
+    testConfig,
     showTribe,
     tribe,
     apiKey,

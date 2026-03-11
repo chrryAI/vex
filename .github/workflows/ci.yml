@@ -2,7 +2,7 @@ name: CI
 on:
   # # will update to main when is ready
   pull_request:
-    branches: [prod]
+    branches: [main]
 
 permissions:
   contents: read
@@ -274,7 +274,7 @@ jobs:
         env:
           PLAYWRIGHT_BASE_URL: ${{ env.STAGING_URL }}
           VEX_LIVE_FINGERPRINTS: ${{ secrets.VEX_LIVE_FINGERPRINTS }}
-        run: pnpm --filter @chrryai/waffles exec playwright test guest.live.spec.ts
+        run: pnpm --filter @chrryai/waffles exec playwright test guest.spec.ts
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -330,7 +330,7 @@ jobs:
         env:
           PLAYWRIGHT_BASE_URL: ${{ env.STAGING_URL }}
           VEX_LIVE_FINGERPRINTS: ${{ secrets.VEX_LIVE_FINGERPRINTS }}
-        run: pnpm --filter @chrryai/waffles exec playwright test member.live.spec.ts
+        run: pnpm --filter @chrryai/waffles exec playwright test member.spec.ts
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}

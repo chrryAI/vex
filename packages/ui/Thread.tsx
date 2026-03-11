@@ -272,6 +272,33 @@ const Thread = ({
       }
     }
   }, [messages, autoSelectedAgent, debateAgent])
+
+  useEffect(() => {
+    if (thread?.collaborations?.length) {
+      plausible({
+        name: ANALYTICS_EVENTS.COLLABORATION,
+        props: {
+          collaborator,
+          isOwner: isOwner(thread, {
+            userId: user?.id,
+            guestId: guest?.id,
+          }),
+          activeCollaborator,
+          collaborationStatus,
+          isPendingCollaboration,
+          collaborationsCount: thread?.collaborations?.length,
+        },
+      })
+    }
+  }, [
+    collaborationStatus,
+    collaborator,
+    activeCollaborator,
+    isPendingCollaboration,
+    thread?.collaborations?.length,
+    user?.id,
+    guest?.id,
+  ])
   // aiAgents excluded to prevent loop, setSelectedAgent is stable
 
   const nameIsRequired = `👋 ${t("Name your app...")}`

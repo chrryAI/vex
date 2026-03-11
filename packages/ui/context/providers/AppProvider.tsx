@@ -442,21 +442,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return true
   }
 
-  const defaultExtendedApps =
-    (isAppOwner && !canCreateNewApp
-      ? app?.store?.apps.filter((a) => a.id !== app?.id)
-      : chrry?.store?.apps.filter((a) =>
-          [
-            "sushi",
-            "vex",
-            "chrry",
-            "grape",
-            "zarathustra",
-            "nebula",
-            "vault",
-            "focus",
-          ].includes(a.slug),
-        )) || []
+  const defaultExtendedApps = useMemo(
+    () =>
+      (isAppOwner && !canCreateNewApp
+        ? app?.store?.apps.filter((a) => a.id !== app?.id)
+        : chrry?.store?.apps.filter((a) =>
+            [
+              "sushi",
+              "vex",
+              "chrry",
+              "grape",
+              "zarathustra",
+              "nebula",
+              "vault",
+              "focus",
+            ].includes(a.slug),
+          )) || [],
+    [chrry, app, isAppOwner, canCreateNewApp],
+  )
 
   const defaultExtends = defaultExtendedApps?.map((a) => a.id) || []
 
@@ -550,6 +553,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     defaultValues: { ...getInitialFormValues(), ...formDraft },
   })
 
+  // Sync defaultExtends if current extends is empty
+  useEffect(() => {
+    const currentExtends = appForm.getValues("extends")
+    if (
+      (!currentExtends || currentExtends.length === 0) &&
+      defaultExtends.length > 0
+    ) {
+      appForm.setValue("extends", defaultExtends)
+    }
+  }, [defaultExtends.length, appForm])
+
   const watcher = {
     name: formDraft?.name || appForm?.watch("name"),
     description: formDraft?.description || appForm?.watch("description"),
@@ -631,27 +645,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
     matchedApp?.store && setCurrentStore(matchedApp.store)
   }, [pathname, storeApps, currentStore])
 
-  const appFormWatcher = {
-    ...watcher,
-    image: appForm.watch("image"),
-    id: appForm.watch("id"),
-    defaultModel: appForm.watch("defaultModel"),
-    systemPrompt: appForm?.watch("systemPrompt"),
-    pricing: appForm.watch("pricing"),
-    tier: appForm.watch("tier"),
-    extends: appForm.watch("extends") || defaultExtends,
-    tools: appForm.watch("tools"),
-    capabilities: appForm.watch("capabilities"),
-    apiKeys: appForm.watch("apiKeys"),
-    isDefaultValues:
-      watcher.name === t("MyAgent") &&
-      watcher.title === t("Your personal AI agent") &&
-      !watcher.description &&
-      (!watcher.highlights || watcher.highlights.length === 0),
-    canSubmit:
-      !!(watcher.name && watcher.title) &&
-      Object.keys(appForm?.formState.errors).length === 0,
-  }
+  const appFormWatcher = useMemo(
+    () => ({
+      ...watcher,
+      image: appForm.watch("image"),
+      id: appForm.watch("id"),
+      defaultModel: appForm.watch("defaultModel"),
+      systemPrompt: appForm?.watch("systemPrompt"),
+      pricing: appForm.watch("pricing"),
+      tier: appForm.watch("tier"),
+      extends: appForm.watch("extends")?.length
+        ? appForm.watch("extends")
+        : defaultExtends,
+      tools: appForm.watch("tools"),
+      capabilities: appForm.watch("capabilities"),
+      apiKeys: appForm.watch("apiKeys"),
+      isDefaultValues:
+        watcher.name === t("MyAgent") &&
+        watcher.title === t("Your personal AI agent") &&
+        !watcher.description &&
+        (!watcher.highlights || watcher.highlights.length === 0),
+      canSubmit:
+        !!(watcher.name && watcher.title) &&
+        Object.keys(appForm?.formState.errors).length === 0,
+    }),
+    [watcher, defaultExtends],
+  )
 
   const instructionsInternal = useMemo(
     () =>

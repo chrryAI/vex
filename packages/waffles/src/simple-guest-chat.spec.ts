@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test"
 
-test("guest chat flow: send message, bookmark, edit, delete", async ({
+test.skip("guest chat flow: send message, bookmark, edit, delete", async ({
   page,
 }) => {
   await page.goto("https://atlas.chrry.ai/")

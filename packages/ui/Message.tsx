@@ -427,6 +427,24 @@ function Message({
     message.parentMessage?.webSearchResult || [],
   )
 
+  useEffect(() => {
+    if (message?.thread?.collaborations?.length) {
+      plausible({
+        name: ANALYTICS_EVENTS.MESSAGE_COLLABORATION,
+        props: {
+          from: "message",
+          isTyping,
+          isOnline,
+          collaborationsCount: message.thread?.collaborations?.length,
+          isOwner: isOwner(message.message, {
+            userId: user?.id,
+            guestId: guest?.id,
+          }),
+        },
+      })
+    }
+  }, [message?.thread?.collaborations, isTyping, isOnline])
+
   const { actions } = useData()
 
   useEffect(() => {

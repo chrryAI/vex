@@ -1,6 +1,7 @@
 import { expect, type Page } from "@playwright/test"
 import { wait } from ".."
 import { chat } from "./chat"
+import { prepare } from "./clean"
 
 export const thread = async ({
   page,
@@ -180,6 +181,8 @@ export const thread = async ({
   await expect(page.getByText(newTitle)).not.toBeVisible()
 
   if (createChat) {
+    await prepare({ page })
+
     await chat({
       isNewChat: true,
       page,
@@ -214,6 +217,8 @@ export const thread = async ({
     await menuHomeButton.click()
 
     await wait(3000)
+
+    await prepare({ page })
 
     await chat({
       isNewChat: false,

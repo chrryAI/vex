@@ -4334,7 +4334,9 @@ export default function Chat({
                   needsReview &&
                   !!inputRef.current &&
                   ["en", "zh"].includes(language) ? (
-                    <P style={{ color: "var(--shade-7)" }}>{placeholder}</P>
+                    <P style={{ color: "var(--shade-6)", fontSize: ".85rem" }}>
+                      {placeholder}
+                    </P>
                   ) : (
                     <Div
                       style={{

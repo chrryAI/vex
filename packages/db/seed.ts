@@ -1064,7 +1064,7 @@ const create = async () => {
     return
   }
 
-  if (isWaffles) {
+  if (isVex) {
     return
   }
   // await createRealisticUsers()
@@ -1106,7 +1106,7 @@ const create = async () => {
 
   await updateStoreUrls({ user: admin })
 
-  // await seedScheduledTribeJobs({ admin })
+  await seedScheduledTribeJobs({ admin })
 
   const { sushiAgent } = agents
 
@@ -2012,8 +2012,8 @@ const seedDb = async (): Promise<void> => {
       if (isVex) {
         await prod()
       } else {
-        // await clearDb()
-        // await create()
+        await clearDb()
+        await create()
       }
     }
 

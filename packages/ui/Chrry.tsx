@@ -45,6 +45,7 @@ export default function Chrry({
   accountApp,
   tribes,
   tribePosts,
+  testConfig,
   tribePost,
   theme,
 }: {
@@ -71,6 +72,7 @@ export default function Chrry({
     totalCount: number
   }
   theme?: "light" | "dark"
+  testConfig?: { [key: string]: string[] }
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
@@ -90,6 +92,7 @@ export default function Chrry({
       onSetLanguage={onSetLanguage}
       apiKey={apiKey}
       thread={thread}
+      testConfig={testConfig}
       translations={translations}
       threads={threads}
       searchParams={searchParams}

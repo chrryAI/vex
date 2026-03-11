@@ -216,11 +216,6 @@ export const Hey = memo(
       app,
     ])
 
-    // useEffect(() => {
-    //   app?.slug && useExtensionIcon?.(app?.slug)
-    // }, [app, useExtensionIcon])
-    //
-
     return (
       <Div
         style={{
