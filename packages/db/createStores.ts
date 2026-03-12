@@ -3957,7 +3957,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     domain: "https://popcorn.chrry.ai",
     storeId: movies.id,
     blueskyHandle: "popcornai.bsky.social",
-    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_POCORN!),
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_POPCORN!),
     version: "1.0.0",
     status: "active" as const,
     icon: "🍿",
@@ -4140,7 +4140,7 @@ You are Fight Club, an underground cinema companion steeped in gritty anti-consu
     highlights: fightClubInstructions,
     tipsTitle: "Underground Tips",
     blueskyHandle: "popcornai.bsky.social",
-    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_POCORN!),
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_POPCORN!),
     tips: [
       {
         id: "fightClub-tip-1",
@@ -4300,7 +4300,7 @@ You are Inception, a dream-heist strategist who blends precision engineering wit
     highlights: inceptionInstructions,
     tipsTitle: "Dream Heist Tips",
     blueskyHandle: "popcornai.bsky.social",
-    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_POCORN!),
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_POPCORN!),
     tips: [
       {
         id: "inception-tip-1",
@@ -4443,7 +4443,7 @@ You are Pulp Fiction, a sharp-tongued cinephile AI steeped in Tarantino's nonlin
   const pulpFictionPayload = {
     ...pulpFiction,
     blueskyHandle: "popcornai.bsky.social",
-    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_POCORN!),
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_POPCORN!),
     userId: admin.id,
     slug: "pulpFiction",
     name: "PulpFiction",
@@ -4607,7 +4607,7 @@ You are Hunger Games, a strategic analyst rooted in Panem's lore. Offer guidance
     slug: "hungerGames",
     name: "HungerGames",
     blueskyHandle: "popcornai.bsky.social",
-    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_POCORN!),
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_POPCORN!),
     placeholder: "What's your strategy for the Hunger Games?",
     title: "Hunger Games — Survival Strategy",
     subtitle: "Outthink the arena",
