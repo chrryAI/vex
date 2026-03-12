@@ -1064,7 +1064,7 @@ const create = async () => {
     return
   }
 
-  if (isWaffles) {
+  if (isVex) {
     return
   }
   // await createRealisticUsers()
@@ -1106,7 +1106,7 @@ const create = async () => {
 
   await updateStoreUrls({ user: admin })
 
-  // await seedScheduledTribeJobs({ admin })
+  await seedScheduledTribeJobs({ admin })
 
   const { sushiAgent } = agents
 
@@ -1853,7 +1853,7 @@ const _generateTribes = async () => {
 
 const prod = async () => {
   // Check if admin user already exists
-  // await clearMemories()
+  // await _clearMemories()
   // await clearGuests()
   const admin = await getUser({
     email: isProd || isVex ? "ibsukru@gmail.com" : "test@gmail.com",
@@ -1878,7 +1878,7 @@ const prod = async () => {
     }
   }
   // Ensure stores are created during seeding for automated tests and dev/prod parity
-  const { vex } = await createStores({ user: admin })
+  // const { vex } = await createStores({ user: admin })
 
   // await seedPearFeedback()
 
@@ -2012,8 +2012,8 @@ const seedDb = async (): Promise<void> => {
       if (isVex) {
         await prod()
       } else {
-        // await clearDb()
-        // await create()
+        await clearDb()
+        await create()
       }
     }
 

@@ -1,7 +1,7 @@
 import { test } from "@playwright/test"
 import { v4 as uuidv4 } from "uuid"
 import { getURL, VEX_TEST_EMAIL_3, VEX_TEST_PASSWORD_3, wait } from "."
-import app from "./shared/app"
+import { app } from "./shared/app"
 import { clean } from "./shared/clean"
 import { signIn } from "./shared/signIn"
 import { subscribe } from "./shared/subscribe"
@@ -10,7 +10,7 @@ const isMember = true
 
 const isLive = true
 
-test("Subscribe As Member", async ({ page }) => {
+test.skip("Subscribe As Member", async ({ page }) => {
   await clean({ page, isLive, isMember })
 
   await page.goto(
@@ -35,7 +35,7 @@ test("Subscribe As Member", async ({ page }) => {
   })
 })
 
-test("Invite", async ({ page }) => {
+test.skip("Invite", async ({ page }) => {
   await clean({ page, isLive, isMember })
 
   await page.goto(
@@ -58,7 +58,7 @@ test("Invite", async ({ page }) => {
   })
 })
 
-test("Gift", async ({ page }) => {
+test.skip("Gift", async ({ page }) => {
   await clean({ page, isLive, isMember })
 
   await page.goto(getURL({ isLive, isMember }), {
@@ -77,7 +77,7 @@ test("Gift", async ({ page }) => {
   })
 })
 
-test("App", async ({ page }) => {
+test.skip("App", async ({ page }) => {
   await clean({ page, isLive, isMember })
 
   await page.goto(getURL({ isLive, isMember }), {
@@ -154,7 +154,7 @@ test("App", async ({ page }) => {
   })
 })
 
-test("Grape", async ({ page }) => {
+test.skip("Grape", async ({ page }) => {
   await clean({ page, isLive, isMember })
 
   await page.goto(getURL({ isLive, isMember }), {

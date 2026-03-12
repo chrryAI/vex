@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-// Suppress ECONNRESET errors globally before Next.js starts
 if (process.env.NODE_ENV !== "production") {
   const http = require("node:http")
   const https = require("node:https")
@@ -52,6 +51,3 @@ if (process.env.NODE_ENV !== "production") {
     return server
   }
 }
-
-// Now start Next.js
-require("next/dist/bin/next")

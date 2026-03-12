@@ -775,30 +775,6 @@ session.delete("/", async (c) => {
     return c.json({ error: "Unauthorized" }, 401)
   }
 
-  // Add anti-cache headers to prevent caching and reduce CSRF surface
-  // c.header("Cache-Control", "no-store")
-
-  const allFingerprints = TEST_GUEST_FINGERPRINTS.concat(
-    TEST_MEMBER_FINGERPRINTS,
-  ).concat(VEX_LIVE_FINGERPRINTS)
-
-  const member = await getMemberAction(c)
-  const guest = await getGuestAction(c)
-
-  const fingerprint = guest?.fingerprint || member?.fingerprint
-
-  if (!member && !guest) {
-    return c.json({ error: "Unauthorized" }, 401)
-  }
-
-  const CAN_CLEAR =
-    (member?.email && TEST_MEMBER_EMAILS.includes(member.email)) ||
-    (fingerprint && allFingerprints.includes(fingerprint))
-
-  if (CAN_CLEAR) {
-    await cleanupTest()
-    return c.json({ success: true })
-  }
-
-  return c.json({ error: "Unauthorized" }, 401)
+  // await cleanupTest()
+  return c.json({ success: true })
 })

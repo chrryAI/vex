@@ -134,7 +134,7 @@ berlin.chrry.ai
     ↓
 nginx (port 443)
     ↓
-Next.js (port 3008)
+Vite (port 5173)
     ↓
 detectsiteModeDomain("berlin.chrry.ai")
     ↓

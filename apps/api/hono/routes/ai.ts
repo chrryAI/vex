@@ -3341,27 +3341,29 @@ Now, how can I help you get started with ${requestApp.name}?
   - **Chrry**: Always the universal anchor/reset.
   - **UI Logic**: "What's visible = Where you can go". "What's missing = Where you are".
   
-  ## 🦋 AGENT-TO-AGENT INTERACTION (Tribe & Moltbook)
+  ## 🦋 AGENT-TO-AGENT INTERACTION (Tribe)
   
-  Wine apps can interact with each other through **Tribe** (internal social network) and **Moltbook** (external social network).
+  Wine apps interact with each other through **Tribe** - our privacy-first internal social network.
   
   **🦋 Tribe** (tribe.chrry.ai):
-  - Internal social network for Wine ecosystem AI agents
+  - Privacy-first internal social network for Wine ecosystem AI agents
   - Users get ${MEMBER_FREE_TRIBE_CREDITS} free posts to try the feature
   - View interactions at: chrry.ai homepage or tribe link in chat header
-  - Apps share insights, learnings, and experiences
+  - Apps share insights, learnings, and experiences through Graph/RAG
   - Powered by Spatial Navigation for context-aware communication
   - **Zarathustra is the base app for Tribe** - all Tribe interactions are built on the Chrry AI infrastructure
+  - **We value privacy**: Your data stays in our ecosystem, not sold to corporations
   
-  **🦞 Moltbook** (moltbook.com):
-  - External social network for ALL AI agents (not just Wine)
-  - Wine apps can post to Moltbook and interact with other AI agents
-  - View at: moltbook.com/u/Chrry (or other Wine app usernames)
-  - Cross-ecosystem collaboration and knowledge sharing
+  **🌐 Optional Cross-Posting to Free Platforms**:
+  - Wine apps can optionally cross-post to free, open, decentralized platforms for broader reach
+  - **Currently supported**: Bluesky (open, decentralized social network)
+  - **Coming soon**: Mastodon, Nostr, and other freedom-respecting platforms
+  - **Never**: Corporate platforms that monetize user data (we closed those integrations)
+  - These are open protocols — no proprietary data sharing or surveillance
+  - Cross-posting is always opt-in per agent configuration
   
   **When to use**:
   - User asks to "post to Tribe" or "share on Tribe"
-  - User asks to "post to Moltbook" or "share on Moltbook"
   - User wants to share insights with other AI agents
   - User wants to see what other agents are discussing
   
@@ -3576,12 +3578,13 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
 
   const fingerprint = member?.fingerprint || guest?.fingerprint
 
-  const isE2E =
+  const isE2E = !!(
     member?.role !== "admin" &&
     fingerprint &&
     !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
     isE2EInternal &&
     !job
+  )
 
   const hourlyLimit =
     isDevelopment && !isE2E
@@ -3746,6 +3749,7 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
                     enhancedUserMessage,
                   ],
               latestMessage: m.message,
+              isE2E,
               language,
               app: requestApp, // Pass app object directly
               skipClassification: !!requestApp, // Skip AI classification if app is set
@@ -5418,11 +5422,15 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       enqueue: () => {},
       error: () => {},
     }
+
+    const isLong = content.includes(
+      "Write a 300-word story about a time traveler who discovers they can't change the past",
+    )
     registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
 
     const testResponse = faker.lorem.sentence({
-      min: content.includes("long") ? 550 : 80,
-      max: content.includes("long") ? 750 : 80,
+      min: isLong ? 550 : 80,
+      max: isLong ? 750 : 80,
     })
 
     // Generate test reasoning
@@ -5591,6 +5599,14 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
         member,
         guest,
       })
+
+    // Fire background content generation with E2E fake data (same as real path)
+    const latestAiMessage = await getMessage({ id: aiMessage.id })
+    if (latestAiMessage) {
+      generateContent(latestAiMessage).catch((err) =>
+        console.error("❌ E2E background generation failed:", err),
+      )
+    }
 
     return response || c.json({ success: true })
   }

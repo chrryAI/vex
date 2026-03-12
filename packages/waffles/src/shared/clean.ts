@@ -8,6 +8,13 @@ export async function maximize({ page }: { page: Page }) {
   isVisible && (await max.click())
 }
 
+export async function prepare({ page }: { page: Page }) {
+  const newChatButton = page.getByTestId("new-chat-button")
+  const isVisible = await newChatButton.isVisible()
+  isVisible && (await newChatButton.click())
+  await maximize({ page })
+}
+
 export async function clean({
   page,
   fingerprint,

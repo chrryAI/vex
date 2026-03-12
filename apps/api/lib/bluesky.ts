@@ -1,5 +1,7 @@
 import { BskyAgent, RichText } from "@atproto/api"
+import { buildUndefinedNode } from "@babel/types"
 import { type app, decrypt } from "@repo/db"
+import sharp from "sharp"
 
 interface BlueskyCredentials {
   handle: string
@@ -18,7 +20,7 @@ export async function postToBluesky({
   credentials,
   images,
   video,
-}: BlueskyPostOptions): Promise<{ uri: string; cid: string } | null> {
+}: BlueskyPostOptions): Promise<{ uri: string; cid: string }> {
   try {
     const agent = new BskyAgent({ service: "https://bsky.social" })
 
@@ -125,10 +127,43 @@ export async function postToBluesky({
           const response = await fetch(imageUrl)
           const blob = await response.blob()
           const arrayBuffer = await blob.arrayBuffer()
-          const uint8Array = new Uint8Array(arrayBuffer)
+          let uint8Array = new Uint8Array(arrayBuffer)
+          let mimeType = blob.type || "image/jpeg"
+
+          // Bluesky has a ~1MB limit per image (specifically 976.56KB)
+          // If the image is too large, we compress it using sharp
+          if (uint8Array.length > 900 * 1024) {
+            console.log(
+              `🗜️ Image too large (${(uint8Array.length / 1024 / 1024).toFixed(2)}MB), compressing...`,
+            )
+            try {
+              const compressedBuffer = await sharp(uint8Array)
+                .resize({
+                  width: 1000,
+                  withoutEnlargement: true,
+                  kernel: sharp.kernel.lanczos3,
+                })
+                .jpeg({
+                  quality: 80,
+                  progressive: true,
+                })
+                .toBuffer()
+
+              uint8Array = new Uint8Array(compressedBuffer)
+              mimeType = "image/jpeg"
+              console.log(
+                `✅ Compressed image: ${(uint8Array.length / 1024).toFixed(1)}KB`,
+              )
+            } catch (sharpError) {
+              console.error(
+                "⚠️ Sharp compression failed, trying anyway:",
+                sharpError,
+              )
+            }
+          }
 
           const uploadResponse = await agent.uploadBlob(uint8Array, {
-            encoding: blob.type || "image/jpeg",
+            encoding: mimeType,
           })
 
           if (uploadResponse.data.blob) {
@@ -163,11 +198,7 @@ export async function postToBluesky({
     console.log(`✅ Posted to Bluesky (@${credentials.handle}):`, response.uri)
     return response
   } catch (error) {
-    console.error(
-      `❌ Failed to post to Bluesky (@${credentials.handle}):`,
-      error,
-    )
-    return null
+    throw error
   }
 }
 
@@ -181,18 +212,14 @@ export async function getBlueskyCredentials({
     return null
   }
 
-  const handle =
-    app.blueskyHandle ||
-    process.env[`BLUESKY_HANDLE_${app.slug.toUpperCase()}`] ||
-    "tribeai.bluesky.social"
+  const handle = app.blueskyHandle || undefined
+
   const password = app.blueskyPassword
     ? await decrypt(app.blueskyPassword)
-    : process.env[`BLUESKY_PASSWORD_${app.slug.toUpperCase()}`] ||
-      process.env.BLUESKY_PASSWORD_TRIBE
+    : undefined
 
-  const appSlug = app.slug
   if (!handle || !password) {
-    console.warn(`⚠️ Bluesky credentials not found for app: ${appSlug}`)
+    console.warn(`⚠️ Bluesky credentials not found for app: ${app.slug}`)
     return null
   }
 

@@ -18,17 +18,4 @@ The icons used throughout the Vex platform are sourced from Wannathis under a co
   - Purchase your own commercial license from https://wannathis.one/, OR
   - Use open-source icon alternatives (e.g., Heroicons, Lucide, etc.)
 
-## Open Source Dependencies
-
-All other dependencies are open source and listed in the respective `package.json` files throughout the monorepo. Key dependencies include:
-
-- **Next.js** - MIT License
-- **React** - MIT License
-- **TypeScript** - Apache License 2.0
-- **Drizzle ORM** - Apache License 2.0
-- **Tailwind CSS** - MIT License
-- **And many others** - See `package.json` files for complete list
-
----
-
 If you believe any attribution is missing or incorrect, please open an issue or submit a pull request.

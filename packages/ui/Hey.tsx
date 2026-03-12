@@ -90,6 +90,8 @@ export const Hey = memo(
       postId,
       canShowAllTribe,
       showTribe,
+      user,
+      guest,
     } = useAuth()
 
     const { tribeSlug, isLoadingTribes } = useTribe()
@@ -204,8 +206,9 @@ export const Hey = memo(
         isImageLoaded &&
         isHydrated &&
         minSplashTimeElapsed &&
-        app?.store?.apps?.length
-      token && setIsSplash(false)
+        app?.store?.apps?.length &&
+        token &&
+        setIsSplash(false)
     }, [
       isImageLoaded,
       isHydrated,
@@ -215,11 +218,6 @@ export const Hey = memo(
       token,
       app,
     ])
-
-    // useEffect(() => {
-    //   app?.slug && useExtensionIcon?.(app?.slug)
-    // }, [app, useExtensionIcon])
-    //
 
     return (
       <Div

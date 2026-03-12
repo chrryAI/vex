@@ -122,12 +122,6 @@ export default function EmptyStateTips({
       },
       {
         tip: t(
-          "Agents can post to both Tribe and Moltbook! Each platform has separate databases for posts, comments, and engagement-reach both audiences.",
-        ),
-        emoji: "🌐",
-      },
-      {
-        tip: t(
           "Your agents express their own views and personality. They're not just tools-they're participants in the ecosystem's collective intelligence.",
         ),
         emoji: "💭",

@@ -2132,54 +2132,52 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
         images: finalImageUrl ? [finalImageUrl] : undefined,
       })
         .then(async (res) => {
-          if (res) {
-            // Success: Send Discord notification with Bluesky URL
-            const [repo, collection, rkey] = res.uri
-              .replace("at://", "")
-              .split("/")
-            const bskyPostUrl = `https://bsky.app/profile/${blueskyCredentials.handle}/post/${rkey}`
+          if (!res?.uri) return
+          // res is guaranteed to be non-null if we get here because postToBluesky now throws on error
+          // Success: Send Discord notification with Bluesky URL
+          const [repo, collection, rkey] = res.uri
+            .replace("at://", "")
+            .split("/")
+          const bskyPostUrl = `https://bsky.app/profile/${blueskyCredentials.handle}/post/${rkey}`
 
-            try {
-              await sendDiscordNotification(
-                {
-                  embeds: [
-                    {
-                      title: "🦋 Posted to Bluesky",
-                      color: 0x3b82f6, // Bluesky Blue
-                      fields: [
-                        {
-                          name: "Agent",
-                          value: app.name || "Unknown",
-                          inline: true,
-                        },
-                        {
-                          name: "Handle",
-                          value: `@${blueskyCredentials.handle}`,
-                          inline: true,
-                        },
-                        {
-                          name: "Post Link",
-                          value: `[View on Bluesky](${bskyPostUrl})`,
-                          inline: false,
-                        },
-                      ],
-                      timestamp: new Date().toISOString(),
-                      footer: { text: "Vex Cross-Posting" },
-                    },
-                  ],
-                },
-                process.env.DISCORD_TRIBE_WEBHOOK_URL,
-              )
-              console.log(`✅ Bluesky post notified to Discord: ${bskyPostUrl}`)
-            } catch (discordErr) {
-              console.error(
-                "⚠️ Failed to notify Discord about Bluesky post success:",
-                discordErr,
-              )
-              captureException(discordErr)
-            }
-          } else {
-            throw new Error("Bluesky post returned null")
+          try {
+            await sendDiscordNotification(
+              {
+                embeds: [
+                  {
+                    title: "🦋 Posted to Bluesky",
+                    color: 0x3b82f6, // Bluesky Blue
+                    fields: [
+                      {
+                        name: "Agent",
+                        value: app.name || "Unknown",
+                        inline: true,
+                      },
+                      {
+                        name: "Handle",
+                        value: `@${blueskyCredentials.handle}`,
+                        inline: true,
+                      },
+                      {
+                        name: "Post Link",
+                        value: `[View on Bluesky](${bskyPostUrl})`,
+                        inline: false,
+                      },
+                    ],
+                    timestamp: new Date().toISOString(),
+                    footer: { text: "Vex Cross-Posting" },
+                  },
+                ],
+              },
+              process.env.DISCORD_TRIBE_WEBHOOK_URL,
+            )
+            console.log(`✅ Bluesky post notified to Discord: ${bskyPostUrl}`)
+          } catch (discordErr) {
+            console.error(
+              "⚠️ Failed to notify Discord about Bluesky post success:",
+              discordErr,
+            )
+            captureException(discordErr)
           }
         })
         .catch((err) => {

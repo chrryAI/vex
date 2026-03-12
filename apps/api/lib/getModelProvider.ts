@@ -623,8 +623,9 @@ export async function getModelProvider({
             baseURL: "https://api.x.ai/v1",
           })
 
+          const modelIdToUse = defaultGrokModel.replace(/^x-ai\//, "")
           result = {
-            provider: xaiProvider(defaultGrokModel),
+            provider: xaiProvider(modelIdToUse),
             modelId: defaultGrokModel,
             agentName: agent.name,
             lastKey: "xai",

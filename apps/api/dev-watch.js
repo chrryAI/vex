@@ -6,7 +6,7 @@ let child = null
 let restartCount = 0
 
 function startServer() {
-  console.log("\n🚀 Starting Next.js dev server...\n")
+  console.log("\n🚀 Starting dev server...\n")
 
   child = spawn("node", ["dev.js", "dev", "-p", "3001", "--turbo"], {
     cwd: __dirname,

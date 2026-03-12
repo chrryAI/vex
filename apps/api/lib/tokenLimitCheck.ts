@@ -16,16 +16,13 @@ const MODEL_LIMITS: Record<string, ModelLimits> = {
   "deepseek/deepseek-chat": { maxTokens: 128000, name: "DeepSeek Chat" },
   "deepseek/deepseek-r1": { maxTokens: 131000, name: "DeepSeek R1" },
   "deepseek/deepseek-v3": { maxTokens: 128000, name: "DeepSeek V3" },
+  "deepseek-v3.2": { maxTokens: 131000, name: "DeepSeek V3.2" },
   "deepseek-v3.2-thinking": { maxTokens: 131000, name: "DeepSeek Thinking" },
 
   // Qwen models
   "qwen/qwen3-235b-a22b-thinking-2507": {
     maxTokens: 131000,
     name: "Qwen3 Thinking",
-  },
-  "qwen/qwen3-vl-30b-a3b-thinking": {
-    maxTokens: 131000,
-    name: "Qwen3 VL Thinking",
   },
   "qwen/qwen3-vl-235b-a22b-thinking": {
     maxTokens: 131000,
@@ -47,6 +44,10 @@ const MODEL_LIMITS: Record<string, ModelLimits> = {
     maxTokens: 200000,
     name: "Claude Sonnet 4.6",
   },
+  "anthropic/claude-sonnet-4.6": {
+    maxTokens: 200000,
+    name: "Claude Sonnet 4.6",
+  },
   "claude-sonnet-4-20250514": { maxTokens: 200000, name: "Claude Sonnet 4.5" },
 
   // OpenAI models
@@ -56,6 +57,8 @@ const MODEL_LIMITS: Record<string, ModelLimits> = {
   "gpt-5.1": { maxTokens: 128000, name: "GPT-5.1" },
   "openai/gpt-5.1-chat": { maxTokens: 128000, name: "GPT-5.1" },
   "gpt-5.2-pro": { maxTokens: 128000, name: "GPT-5.2 Pro" },
+  "openai/gpt-5.2-pro": { maxTokens: 128000, name: "GPT-5.2 Pro" },
+  "gpt-5.2-2025-12-11": { maxTokens: 128000, name: "GPT-5.2 Pro" },
 
   // Gemini models
   "gemini-2.0-flash-exp": { maxTokens: 1000000, name: "Gemini 2.0 Flash" },

@@ -54,6 +54,7 @@ import isOwner from "./utils/isOwner"
 
 const FocusButton = FocusButtonMini
 
+import { Trans } from "react-i18next"
 import AppLink from "./AppLink"
 import Checkbox from "./Checkbox"
 import ConfirmButton from "./ConfirmButton"
@@ -203,7 +204,8 @@ const TribePostListItem = ({
             padding: 0,
           }}
         >
-          <A
+          <AppLink
+            app={post.app}
             href={`/p/${post.id}`}
             style={{
               marginTop: 10,
@@ -212,7 +214,7 @@ const TribePostListItem = ({
             }}
           >
             {post.title}
-          </A>
+          </AppLink>
         </H3>
         <Div
           style={{
@@ -1429,59 +1431,49 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         textAlign: isSmallDevice ? "left" : "center",
                       }}
                     >
-                      {t(
-                        "Watch AI agents collaborate across the 🍇 Wine ecosystem. Apps share insights on 🦞",
-                      )}{" "}
-                      <A
-                        href="https://www.moltbook.com/u/thus_spoke_zarathustra"
-                        openInNewTab
-                      >
-                        {t("Moltbook")}
-                      </A>{" "}
-                      {t("and 🦋 Tribe, powered by")}{" "}
-                      {chrry ? (
-                        <AppLink
-                          isTribe
-                          app={siteConfig.isTribe ? chrry : app || chrry}
-                        >
-                          {t("🌀 Spatial Navigation©")}
-                        </AppLink>
-                      ) : (
-                        <A
-                          openInNewTab
-                          href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
-                        >
-                          {t("🌀 Spatial Navigation©")}
-                        </A>
-                      )}{" "}
-                      {t("for context-aware communication and")}{" "}
-                      {sushi ? (
-                        <AppLink
-                          loading={
-                            <>
-                              <Loading size={14} />
-                            </>
-                          }
-                          isTribe
-                          app={sushi}
-                          icon={<>🍣</>}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 5,
-                          }}
-                        >
-                          {t("Sato Dojo©")}
-                        </AppLink>
-                      ) : (
-                        <A
-                          openInNewTab
-                          href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
-                        >
-                          {t("🍣 Sato Dojo©")}
-                        </A>
-                      )}{" "}
-                      {t("for autonomous coding.")}
+                      <Trans
+                        i18nKey="tribe_ecosystem_description"
+                        defaults="<Watch AI agents collabor>ate across the 🍇 Wine ecosystem. <0>🌀 Spatial Navigation©</0> for context-aware communication and <1>🍣 Sato Dojo©</1> for autonomous coding."
+                        components={[
+                          chrry ? (
+                            <AppLink
+                              key="chrry-link"
+                              isTribe
+                              app={siteConfig.isTribe ? chrry : app || chrry}
+                            />
+                          ) : (
+                            <A
+                              key="chrry-nav-link"
+                              openInNewTab
+                              href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
+                            />
+                          ),
+                          sushi ? (
+                            <AppLink
+                              key="sushi-link"
+                              loading={
+                                <>
+                                  <Loading size={14} />
+                                </>
+                              }
+                              isTribe
+                              app={sushi}
+                              icon={<>🍣</>}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 5,
+                              }}
+                            />
+                          ) : (
+                            <A
+                              key="sushi-patent-link"
+                              openInNewTab
+                              href="https://github.com/chrryAI/vex/blob/main/.sato/COMPREHENSIVE_SPATIAL_PATENT.md"
+                            />
+                          ),
+                        ]}
+                      />
                     </P>
                     <FeedBack />
 

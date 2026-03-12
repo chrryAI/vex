@@ -1,3 +1,4 @@
+import { isE2E } from "@chrryai/chrry/utils"
 import type { Context, Next } from "hono"
 import { isTrustedOrigin } from "./cors"
 
@@ -31,6 +32,12 @@ function sanitizeOriginForLogging(origin: string): string {
 // Paths exempt from CSRF checks (server-to-server callbacks)
 const CSRF_EXEMPT_PATHS = ["/auth/callback/apple"]
 
+// E2E-only exempt: DELETE /session is the test cleanup endpoint.
+// It's already double-guarded inside the route (isProd check + isE2E check),
+// so CSRF here adds no security — but does block cross-domain E2E test runners.
+const isE2ESessionDelete = (path: string, method: string) =>
+  isE2E && method === "DELETE" && path === "/session"
+
 export const csrfMiddleware = async (c: Context, next: Next) => {
   const method = c.req.method
 
@@ -38,6 +45,11 @@ export const csrfMiddleware = async (c: Context, next: Next) => {
   if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
     // Skip CSRF for server-to-server callbacks
     if (CSRF_EXEMPT_PATHS.some((path) => c.req.path.endsWith(path))) {
+      return next()
+    }
+
+    // Skip CSRF for E2E test cleanup endpoint (already guarded inside the route)
+    if (isE2ESessionDelete(c.req.path, method)) {
       return next()
     }
 

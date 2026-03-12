@@ -55,6 +55,7 @@ export interface AppProvidersProps {
   session?: session
   app?: appWithStore
   showTribe?: boolean
+  testConfig?: { [key: string]: string[] }
   pathname?: string // SSR pathname for thread ID extraction
   onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
   signInContext?: (
@@ -115,6 +116,7 @@ export default function AppProviders({
   showTribe,
   tribePost,
   accountApp,
+  testConfig,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
 
@@ -189,6 +191,7 @@ export default function AppProviders({
               tribePosts={tribePosts}
               tribePost={tribePost}
               accountApp={accountApp}
+              testConfig={testConfig}
             >
               <DataProvider>
                 <AppProvider>

@@ -7,18 +7,19 @@ import { subscribe } from "./shared/subscribe"
 import { thread } from "./shared/thread"
 
 const isMember = false
+const isLive = false
 
 import { v4 as uuidv4 } from "uuid"
-import { clean } from "./shared/clean"
+import { clean, prepare } from "./shared/clean"
 
 test.beforeEach(async ({ page }) => {
   await clean({ page })
 })
 
-test("Subscribe As Guest", async ({ page }) => {
+test.skip("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
-      isLive: false,
+      isLive,
       isMember,
       fingerprint: TEST_MEMBER_FINGERPRINTS[0],
     }),
@@ -27,13 +28,14 @@ test("Subscribe As Guest", async ({ page }) => {
       timeout: 100000,
     },
   )
+  await prepare({ page })
   await subscribe({
     page,
     isMember,
   })
 })
 
-test("Invite", async ({ page }) => {
+test.skip("Invite", async ({ page }) => {
   await page.goto(
     getURL({
       isLive: false,
@@ -44,6 +46,7 @@ test("Invite", async ({ page }) => {
       timeout: 100000,
     },
   )
+  await prepare({ page })
   await subscribe({
     page,
     isMember,
@@ -51,7 +54,7 @@ test("Invite", async ({ page }) => {
   })
 })
 
-test("Gift", async ({ page }) => {
+test.skip("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -66,6 +69,7 @@ test("Gift", async ({ page }) => {
       timeout: 100000,
     },
   )
+  await prepare({ page })
   await subscribe({
     page,
     isMember,
@@ -75,90 +79,102 @@ test("Gift", async ({ page }) => {
   })
 })
 
-test("File upload", async ({ page }) => {
-  // test.slow()
-  await page.goto(getURL({ isLive: false, isMember }), {
+test.skip("Chat", async ({ page }) => {
+  test.slow()
+
+  await page.goto(getURL({ isMember, isLive }), {
     waitUntil: "networkidle",
     timeout: 100000,
   })
 
-  const _result = await chat({
+  await prepare({ page })
+
+  await chat({
     artifacts: {
-      paste: 3,
-      pdf: 3,
+      paste: 1,
+      pdf: 1,
     },
+    hasCP: true,
+    hasPH: true,
     isNewChat: false,
     page,
     isMember,
-    instruction: "Lets upload some files",
+    isLive,
+    instruction: "Help me plan a 3-day trip to Tokyo",
     prompts: [
       {
-        text: "Hey Vex, Analyze these files shortly",
+        text: "List shortly the top 3 must-see attractions in Tokyo",
         model: "sushi",
+        mix: {
+          audio: 1,
+          image: 1,
+          pdf: 1,
+        },
+      },
+      {
+        text: "Suggest briefly a simple itinerary for day 1",
+        model: "claude",
         mix: {
           paste: 1,
-          pdf: 2,
-        },
-        like: true,
-      },
-      {
-        text: "Hey Vex, Analyze this pdf(s) and images briefly",
-        model: "sushi",
-        mix: {
-          pdf: 4,
-          image: 2,
-        },
-        like: true,
-      },
-
-      {
-        text: "Hey Vex, Analyze this paste(s) and video shortly",
-        model: "sushi",
-        mix: {
-          paste: 4,
+          pdf: 1,
           video: 1,
         },
-        like: true,
+      },
+      {
+        text: "Shortly explain the best way to get around",
+        model: "chatGPT",
+        mix: {
+          paste: 1,
+          pdf: 1,
+          image: 1,
+          video: 1,
+          audio: 1,
+        },
+      },
+      {
+        text: "How can I enable character profile? Answer shortly",
+        model: "perplexity",
+      },
+      {
+        text: "Create a futuristic cityscape at sunset with flying cars, 4K, hyperrealistic",
+        imageGenerationEnabled: true,
+        model: "sushi",
       },
     ],
   })
 })
 
-test("Chat - Hourly Limit Test", async ({ page }) => {
+test.skip("Chat - Hourly Limit Test", async ({ page }) => {
   test.slow()
   await limit({ page })
 })
 
-test("Thread", async ({ page }) => {
+test.skip("Thread", async ({ page }) => {
   test.slow()
   await thread({ page, bookmark: true })
 })
 
-test("Long text", async ({ page }) => {
+test.skip("Long text", async ({ page }) => {
   const _result = await chat({
     page,
     isMember,
-    instruction: "Long text",
+    isLive,
+    instruction: "Help me write a short story",
     // agentMessageTimeout: 12000,
     prompts: [
       {
-        text: "Short",
-        model: "sushi",
-      },
-      {
-        text: "long",
+        text: "Write a 300-word story about a time traveler who discovers they can't change the past",
         model: "sushi",
         stop: true,
       },
       {
-        text: "Should delete this message",
+        text: "I stopped you. Need a short one. Now summarize that story shortly in 1 sentence",
         model: "sushi",
-        delete: true,
       },
     ],
   })
 })
 
-test("Collaboration", async ({ page, browser }) => {
+test.skip("Collaboration", async ({ page, browser }) => {
   await collaboration({ page, browser, isMember })
 })

@@ -6,7 +6,7 @@ import {
 } from "./getExampleInstructions"
 import {
   createAppExtend,
-  createOrUpdateApp,
+  createOrUpdateApp as createOrUpdateAppInternal,
   createOrUpdateStoreInstall,
   createStore,
   createStoreInstall,
@@ -16,12 +16,31 @@ import {
   getPureApp,
   getStore,
   getStoreInstall,
+  type newApp,
   type store,
   updateStore,
   type user,
 } from "./index"
 import { aiAgents, appExtends, apps, guests, stores, users } from "./src/schema"
 
+const createOrUpdateApp = async ({
+  app,
+  extends: extendsList,
+}: {
+  app: newApp
+  extends?: string[]
+}) => {
+  return await createOrUpdateAppInternal({
+    app: {
+      ...app,
+      blueskyHandle: app.blueskyHandle || "tribeai.bsky.social",
+      blueskyPassword:
+        app.blueskyPassword ||
+        (await encrypt(process.env.BLUESKY_PASSWORD_TRIBE!)),
+    },
+    extends: extendsList,
+  })
+}
 // Helper function to handle extends relationships after app creation
 const handleAppExtends = async (
   appId: string,
@@ -2715,6 +2734,8 @@ You have access to calendar, location, and weather tools to provide context-awar
     subtitle: "AI Travel Companion",
     name: "Atlas",
     version: "1.0.0",
+    blueskyHandle: "peachai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_PEACH!),
     status: "active" as const,
     title: "Personal Travel assistant",
     highlights: atlasInstructions,
@@ -5071,6 +5092,8 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     userId: admin.id,
     slug: "1984",
     name: "1984",
+    blueskyHandle: "tribeai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_TRIBE!),
     subtitle: "Dystopian Literature Guide",
     storeId: books.id,
     version: "1.0.0",
@@ -5297,6 +5320,8 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     userId: admin.id,
     slug: "meditations",
     name: "Meditations",
+    blueskyHandle: "tribeai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_TRIBE!),
     subtitle: "Stoic Philosophy Guide",
     storeId: books.id,
     version: "1.0.0",
@@ -5529,6 +5554,8 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     userId: admin.id,
     slug: "dune",
     name: "Dune",
+    blueskyHandle: "tribeai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_TRIBE!),
     subtitle: "Epic Sci-Fi Guide",
     storeId: books.id,
     version: "1.0.0",
@@ -5658,7 +5685,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     title: "AI-Powered Productivity",
     themeColor: "blue",
     backgroundColor: "#000000",
-    blueskyHandle: "focusai.bluesky.social",
+    blueskyHandle: "focusai.bsky.social",
     blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_FOCUS || ""),
     hourlyRate: 10,
     defaultModel: "sushi" as const,
@@ -6002,6 +6029,8 @@ You provide helpful AI assistance while respecting user privacy completely.`
     ...burnApp,
     slug: "burn",
     name: "Burn",
+    blueskyHandle: "tribeai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_TRIBE!),
     subtitle: "Anonymous AI Chat",
     storeId: blossom.id, // Part of Blossom ecosystem
     version: "1.0.0",
@@ -6097,7 +6126,7 @@ You provide helpful AI assistance while respecting user privacy completely.`
     ...vex,
     slug: "vex",
     name: "Vex",
-    blueskyHandle: "vexai.bluesky.social",
+    blueskyHandle: "vexai.bsky.social",
     blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_VEX || ""),
     domain: "https://vex.chrry.ai",
     subtitle: "AI Platform",
@@ -6337,6 +6366,8 @@ You provide helpful AI assistance while respecting user privacy completely.`
       | "location"
       | "weather"
     )[],
+    blueskyHandle: "peachai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_PEACH!),
     defaultModel: "sushi" as const,
     version: "1.0.0",
     status: "active" as const,
@@ -6660,6 +6691,8 @@ Be supportive, specific, and focused on helping users earn credits through valua
       | "location"
       | "weather"
     )[],
+    blueskyHandle: "vaultai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_VAULT!),
     version: "1.0.0",
     status: "active" as const,
     title: "Personal Finance assistant",
@@ -7232,7 +7265,7 @@ You are Search, a Perplexity-powered real-time web search engine. Provide instan
     ...search,
     userId: admin.id,
     slug: "search",
-    blueskyHandle: "searchai.bluesky.social",
+    blueskyHandle: "searchai.bsky.social",
     blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_SEARCH || ""),
     name: "Search",
     storeId: perplexityStore.id,
@@ -7323,6 +7356,8 @@ You are News, a Perplexity-powered breaking news aggregator. Deliver real-time n
     userId: admin.id,
     slug: "news",
     name: "News",
+    blueskyHandle: "searchai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_SEARCH!),
     storeId: perplexityStore.id,
     version: "1.0.0",
     status: "active" as const,
@@ -8044,7 +8079,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     userId: admin.id,
     slug: "coder",
     name: "Coder",
-    blueskyHandle: "coderai.bluesky.social",
+    blueskyHandle: "coderai.bsky.social",
     blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_CODER!),
     storeId: sushiStore.id,
     version: "1.0.0",
@@ -8123,7 +8158,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     userId: admin.id,
     slug: "debugger",
     name: "Debugger",
-    blueskyHandle: "debuggerai.bluesky.social",
+    blueskyHandle: "debuggerai.bsky.social",
     blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_DEBUGGER!),
     storeId: sushiStore.id,
     version: "1.0.0",
@@ -8211,7 +8246,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     backgroundColor: "#000000",
     hourlyRate: 10,
     icon: "🏗️",
-    blueskyHandle: "architectai.bluesky.social",
+    blueskyHandle: "architectai.bsky.social",
     blueskyPassword: await encrypt(
       process.env.BLUESKY_PASSWORD_ARCHITECT || "",
     ),
@@ -8291,6 +8326,8 @@ You are an architecture expert. Design systems that grow with users, follow indu
     ...jules,
     ...julesPayloadBase,
     subtitle: "Senior Engineer",
+    blueskyHandle: "sushiai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_SUSHI!),
   }
 
   jules = await createOrUpdateApp({
@@ -8587,6 +8624,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     name: "Orbit",
     title: "Science & Exploration Hub",
     domain: "https://orbit.chrry.ai",
+
     parentStoreId: blossom.id,
     userId: admin.id,
     visibility: "public" as const,
@@ -8610,6 +8648,8 @@ You are an architecture expert. Design systems that grow with users, follow indu
     backgroundColor: "#000000",
     hourlyRate: 10,
     icon: "🌌",
+    blueskyHandle: "starmapai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_STARMAP!),
     visibility: "public" as const,
     storeId: orbitStore.id,
     userId: admin.id,
@@ -8745,6 +8785,8 @@ You are an architecture expert. Design systems that grow with users, follow indu
     hourlyRate: 10,
     icon: "⚛️",
     visibility: "public" as const,
+    blueskyHandle: "starmapai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_STARMAP!),
     storeId: orbitStore.id,
     userId: admin.id,
     systemPrompt: quantumLabSystemPrompt,
@@ -8849,6 +8891,8 @@ You are an architecture expert. Design systems that grow with users, follow indu
     systemPrompt: starMapSystemPrompt,
     highlights: starMapInstructions,
     defaultModel: "sushi" as const,
+    blueskyHandle: "starmapai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_STARMAP!),
     onlyAgent: false,
     placeholder:
       "What's in the night sky tonight? Ask about stars, planets, or black holes...",
@@ -8948,6 +8992,8 @@ You are an architecture expert. Design systems that grow with users, follow indu
     systemPrompt: cosmosSystemPrompt,
     highlights: cosmosInstructions,
     defaultModel: "sushi" as const,
+    blueskyHandle: "starmapai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_STARMAP!),
     onlyAgent: false,
     placeholder:
       "Solve a physics problem, derive an equation, or explain a theorem...",

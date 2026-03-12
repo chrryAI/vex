@@ -59,7 +59,7 @@ export default function MemoryConsent({
   } = useNavigationContext()
 
   const { clear } = useCache()
-  const { isManagingApp, canEditApp, minimize } = useApp()
+  const { isManagingApp, minimize } = useApp()
   const { actions } = useData()
 
   const { captureException } = useError()
