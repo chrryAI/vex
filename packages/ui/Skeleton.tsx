@@ -2,6 +2,7 @@
 
 import clsx from "clsx"
 import { lazy, Suspense, useEffect, useState } from "react"
+import { useAppContext } from "./context/AppContext"
 import Img from "./Image"
 import { CircleEllipsis } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
@@ -165,6 +166,7 @@ export default function Skeleton({
 }): React.ReactElement {
   const { isCapacitor, os } = usePlatform()
   const { time, isCountingDown } = useTimerContext()
+  const { t } = useAppContext()
 
   const hasHydrated = useHasHydrated()
 
@@ -406,7 +408,7 @@ export default function Skeleton({
                             key={`title-${app?.id || "vex"}`}
                             style={{ ...skeletonStyles.brand.style }}
                           >
-                            {showTribeProfile ? "Tribe" : app?.name || "Vex"}
+                            {t(showTribeProfile ? "Tribe" : app?.name || "Vex")}
                           </H1>
                         </A>
                       </Div>
