@@ -96,6 +96,11 @@ const aboutTranslations = {
     description:
       "Lär dig mer om Vex AI-assistent, vårt uppdrag och kommande funktioner",
   },
+  fa: {
+    title: "درباره Vex | دستیار هوش مصنوعی",
+    description:
+      "درباره دستیار هوش مصنوعی Vex، ماموریت ما و ویژگی‌های آینده بیشتر بدانید",
+  },
 }
 
 const whyTranslations = {
@@ -153,6 +158,11 @@ const whyTranslations = {
     description:
       "Upptäck varför Vex AI-assistent är det bästa valet för dina AI-chattbehov",
   },
+  fa: {
+    title: "چرا Vex | دستیار هوش مصنوعی",
+    description:
+      "کشف کنید چرا دستیار هوش مصنوعی Vex بهترین انتخاب برای نیازهای چت هوش مصنوعی شماست",
+  },
 }
 
 const privacyTranslations = {
@@ -199,6 +209,10 @@ const privacyTranslations = {
   sv: {
     title: "Integritetspolicy | Vex",
     description: "Integritetspolicy för Vex AI-assistent",
+  },
+  fa: {
+    title: "سیاست حریم خصوصی | Vex",
+    description: "سیاست حریم خصوصی برای دستیار هوش مصنوعی Vex",
   },
 }
 
@@ -247,6 +261,10 @@ const termsTranslations = {
     title: "Användarvillkor | Vex",
     description: "Användarvillkor för Vex AI-assistent",
   },
+  fa: {
+    title: "شرایط استفاده | Vex",
+    description: "شرایط استفاده از دستیار هوش مصنوعی Vex",
+  },
 }
 
 const calendarTranslations = {
@@ -293,6 +311,10 @@ const calendarTranslations = {
   sv: {
     title: "Kalender | Vex",
     description: "Hantera ditt schema med Vex AI-assistent",
+  },
+  fa: {
+    title: "تقویم | Vex",
+    description: "برنامه خود را با دستیار هوش مصنوعی Vex مدیریت کنید",
   },
 }
 
@@ -343,6 +365,10 @@ const affiliateTranslations = {
     title: "Partnerprogram | Vex",
     description: "Gå med i Vex partnerprogram och tjäna provision",
   },
+  fa: {
+    title: "برنامه همکاری | Vex",
+    description: "به برنامه همکاری Vex بپیوندید و کمیسیون کسب کنید",
+  },
 }
 
 const usersTranslations = {
@@ -390,6 +416,10 @@ const usersTranslations = {
   sv: {
     title: "Användare | Vex",
     description: "Utforska Vex AI-assistentens användare och gemenskap",
+  },
+  fa: {
+    title: "کاربران | Vex",
+    description: "کاربران و جامعه دستیار هوش مصنوعی Vex را کاوش کنید",
   },
 }
 

@@ -81,7 +81,20 @@ export const users = pgTable(
     }).defaultNow(),
     ip: text("ip"),
     language: text("language", {
-      enum: ["en", "de", "es", "fr", "ja", "ko", "pt", "zh", "nl", "sv", "tr"],
+      enum: [
+        "en",
+        "de",
+        "es",
+        "fr",
+        "ja",
+        "ko",
+        "pt",
+        "zh",
+        "nl",
+        "sv",
+        "tr",
+        "fa",
+      ],
     })
       .notNull()
       .default("en"),

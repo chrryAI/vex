@@ -83,6 +83,7 @@ export default function Menu({
     siteConfig,
     tribeSlug,
     getTribeUrl,
+    rtl,
     ...auth
   } = useAuth()
 
@@ -335,6 +336,7 @@ export default function Menu({
           ...(isCapacitor && os === "ios" ? { paddingTop: 60 } : {}),
           paddingBottom: os === "ios" || tauri ? 10 : 0,
           ...(isDrawerOpen ? styles.open.style : styles.closed.style),
+          right: rtl ? "0" : undefined,
         }}
       >
         <>
@@ -425,7 +427,11 @@ export default function Menu({
                   <Button
                     className={"link"}
                     onClick={toggleMenu}
-                    style={styles.menuButton.style}
+                    style={{
+                      ...styles.menuButton.style,
+                      marginRight: rtl ? "auto" : undefined,
+                      marginLeft: !rtl ? "auto" : undefined,
+                    }}
                   >
                     <PanelRight
                       strokeWidth={1.5}

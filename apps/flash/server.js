@@ -1423,7 +1423,10 @@ app.use(async (req, res) => {
     // Replace placeholders - inject metadata, CSS, server data, router state, lang attribute, and theme class
     console.log("🎨 Applying theme class:", sanitizedTheme)
     const html = template
-      .replace(`<html lang="en"`, `<html lang="${serverData?.locale || "en"}"`)
+      .replace(
+        `<html lang="en"`,
+        `<html class="${["fa"].includes(serverData?.locale) ? "rtl" : "lrt"}" lang="${serverData?.locale || "en"}"`,
+      )
       .replace(`class="dark"`, `class="${sanitizedTheme}"`)
       .replace(
         `<!--app-head-->`,

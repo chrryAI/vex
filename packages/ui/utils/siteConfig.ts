@@ -1682,6 +1682,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       description:
         "Kişisel AI asistanınızla sohbet edin. Takım arkadaşlarınızla işbirliği yapın, bağlamda kalın ve tüm dillerde görevleri daha hızlı tamamlayın.",
     },
+    sv: {
+      title: "Vex - Din Personliga AI-Assistent",
+      description:
+        "Chatta med din personliga AI-assistent. Samarbeta med teammedlemmar, behåll kontext och slutför uppgifter snabbare på alla språk.",
+    },
+    fa: {
+      title: "Vex - دستیار هوش مصنوعی شخصی شما",
+      description:
+        "با دستیار هوش مصنوعی شخصی خود گفتگو کنید. با اعضای تیم همکاری کنید، در زمینه بمانید و کارها را سریعتر در تمام زبان‌ها انجام دهید.",
+    },
   },
   chrryAI: {
     en: {
@@ -1733,6 +1743,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       title: "Chrry - Yapay Zekâ Uygulama Pazaryeri",
       description:
         "Yapay zekâ uygulamalarını keşfedin, geliştirin ve gelir elde edin. Chrry ile mağazanızı açın, ajanlar yayınlayın ve dünya çapında müşterilere ulaşın.",
+    },
+    sv: {
+      title: "Chrry - AI-appmarknadsplats",
+      description:
+        "Upptäck, skapa och tjäna pengar på AI-applikationer. Lansera din butik, publicera agenter och nå kunder världen över med Chrry.",
+    },
+    fa: {
+      title: "Chrry - بازار اپلیکیشن‌های هوش مصنوعی",
+      description:
+        "اپلیکیشن‌های هوش مصنوعی را کشف، ایجاد و درآمدزایی کنید. فروشگاه خود را راه‌اندازی کنید، عامل‌ها را منتشر کنید و با Chrry به مشتریان در سراسر جهان دسترسی پیدا کنید.",
     },
   },
   chrryDev: {
@@ -1786,6 +1806,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       description:
         "Chrry UI framework ile etkileyici çapraz platform uygulamalar geliştirin. Bileşenlere, platform araçlarına ve dağıtıma hazır başlangıç paketlerine erişin.",
     },
+    sv: {
+      title: "Chrry - Open Source Frontend-infrastruktur",
+      description:
+        "Bygg vackra plattformsoberoende appar med Chrry UI-ramverket. Få tillgång till komponenter, plattformsverktyg och distributionsklara startpaket.",
+    },
+    fa: {
+      title: "Chrry - زیرساخت فرانت‌اند متن‌باز",
+      description:
+        "اپلیکیشن‌های زیبای چند پلتفرمی با فریمورک Chrry UI بسازید. به کامپوننت‌ها، ابزارهای پلتفرم و کیت‌های شروع آماده دسترسی پیدا کنید.",
+    },
   },
   chrryStore: {
     en: {
@@ -1837,6 +1867,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       title: "Chrry Store - Yapay Zekâ Pazaryerinizi Başlatın",
       description:
         "Chrry platformu ile özel alan adları, gelir paylaşımı ve analizlere sahip markalı AI mağazaları oluşturun.",
+    },
+    sv: {
+      title: "Chrry Store - Lansera din AI-marknadsplats",
+      description:
+        "Bygg märkesanpassade AI-butiker med anpassade domäner, intäktsdelning och analys på Chrry-plattformen.",
+    },
+    fa: {
+      title: "Chrry Store - بازار هوش مصنوعی خود را راه‌اندازی کنید",
+      description:
+        "فروشگاه‌های هوش مصنوعی برندشده با دامنه‌های سفارشی، تقسیم درآمد و تحلیل در پلتفرم Chrry بسازید.",
     },
   },
   focus: {
@@ -1890,6 +1930,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       description:
         "Yapay zeka destekli odaklanma oturumları, görev yönetimi ve üretkenlik içgörüleriyle zamanınızı yönetin ve hedeflerinize ulaşın.",
     },
+    sv: {
+      title: "Focus - AI-produktivitetsassistent",
+      description:
+        "Bemästra din tid och nå dina mål med AI-drivna fokussessioner, uppgiftshantering och produktivitetsinsikter.",
+    },
+    fa: {
+      title: "Focus - دستیار بهره‌وری هوش مصنوعی",
+      description:
+        "زمان خود را مدیریت کنید و به اهداف خود برسید با جلسات تمرکز هوش مصنوعی، مدیریت وظایف و بینش‌های بهره‌وری.",
+    },
   },
   atlas: {
     en: {
@@ -1941,6 +1991,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       title: "Atlas - Coğrafi Yapay Zeka Hafıza Katmanı",
       description:
         "Yapay zeka bağlamıyla konumları kaydedin, coğrafi etiketli notlar oluşturun ve yerel yapay zeka kaynaklarını keşfedin. Akıllı coğrafi arkadaşınız.",
+    },
+    sv: {
+      title: "Atlas - Geografiskt AI-minneslager",
+      description:
+        "Spara platser med AI-kontext, skapa geo-taggade anteckningar och upptäck lokala AI-resurser. Din intelligenta geografiska följeslagare.",
+    },
+    fa: {
+      title: "Atlas - لایه حافظه جغرافیایی هوش مصنوعی",
+      description:
+        "مکان‌ها را با زمینه هوش مصنوعی ذخیره کنید، یادداشت‌های جغرافیایی ایجاد کنید و منابع هوش مصنوعی محلی را کشف کنید. همراه جغرافیایی هوشمند شما.",
     },
   },
   istanbul: {
@@ -1994,6 +2054,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       description:
         "İstanbul ve Türkiye için tasarlanmış kişisel yapay zeka asistanınız. Türkçe sohbet edin, yerel olarak işbirliği yapın ve işleri daha hızlı halledin.",
     },
+    sv: {
+      title: "Istanbul - AI-assistent för Turkiet",
+      description:
+        "Din personliga AI-assistent utformad för Istanbul och Turkiet. Chatta på turkiska, samarbeta lokalt och få saker gjorda snabbare.",
+    },
+    fa: {
+      title: "Istanbul - دستیار هوش مصنوعی برای ترکیه",
+      description:
+        "دستیار هوش مصنوعی شخصی شما طراحی شده برای استانبول و ترکیه. به زبان ترکی گفتگو کنید، به صورت محلی همکاری کنید و کارها را سریعتر انجام دهید.",
+    },
   },
   amsterdam: {
     en: {
@@ -2046,6 +2116,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       description:
         "Amsterdam ve Hollanda için tasarlanmış kişisel yapay zeka asistanınız. Felemenkçe sohbet edin, yerel olarak işbirliği yapın ve işleri daha hızlı halledin.",
     },
+    sv: {
+      title: "Amsterdam - AI-assistent för Nederländerna",
+      description:
+        "Din personliga AI-assistent utformad för Amsterdam och Nederländerna. Chatta på nederländska, samarbeta lokalt och få saker gjorda snabbare.",
+    },
+    fa: {
+      title: "Amsterdam - دستیار هوش مصنوعی برای هلند",
+      description:
+        "دستیار هوش مصنوعی شخصی شما طراحی شده برای آمستردام و هلند. به زبان هلندی گفتگو کنید، به صورت محلی همکاری کنید و کارها را سریعتر انجام دهید.",
+    },
   },
   sushi: {
     en: {
@@ -2097,6 +2177,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       title: "Sushi - Kod Öncelikli Yapay Zeka Platformu",
       description:
         "Geliştiriciler için yapay zeka destekli kodlama platformu. Üretime hazır kod oluşturun, hassas hata ayıklama yapın ve ölçeklenebilir sistemler tasarlayın.",
+    },
+    sv: {
+      title: "Sushi - Kodfokuserad AI-plattform",
+      description:
+        "AI-driven kodningsplattform för utvecklare. Generera produktionsklar kod, debug med precision och designa skalbara system.",
+    },
+    fa: {
+      title: "Sushi - پلتفرم هوش مصنوعی کد محور",
+      description:
+        "پلتفرم کدنویسی هوش مصنوعی برای توسعه‌دهندگان. کد آماده تولید تولید کنید، با دقت اشکال‌زدایی کنید و سیستم‌های مقیاس‌پذیر طراحی کنید.",
     },
   },
   e2eVex: {
@@ -2163,6 +2253,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       description:
         "Tokyo ve Japonya için tasarlanmış kişisel yapay zeka asistanınız. Japonca sohbet edin, yerel olarak işbirliği yapın ve işleri daha hızlı halledin.",
     },
+    sv: {
+      title: "Tokyo - AI-assistent för Japan",
+      description:
+        "Din personliga AI-assistent utformad för Tokyo och Japan. Chatta på japanska, samarbeta lokalt och få saker gjorda snabbare.",
+    },
+    fa: {
+      title: "Tokyo - دستیار هوش مصنوعی برای ژاپن",
+      description:
+        "دستیار هوش مصنوعی شخصی شما طراحی شده برای توکیو و ژاپن. به زبان ژاپنی گفتگو کنید، به صورت محلی همکاری کنید و کارها را سریعتر انجام دهید.",
+    },
   },
   newYork: {
     en: {
@@ -2214,6 +2314,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       title: "New York - New York için Yapay Zeka Asistanı",
       description:
         "New York City ve ABD için tasarlanmış kişisel yapay zeka asistanınız. Hiç uyumayan şehirde sohbet edin, yerel olarak işbirliği yapın ve işleri daha hızlı halledin.",
+    },
+    sv: {
+      title: "New York - AI-assistent för NYC",
+      description:
+        "Din personliga AI-assistent utformad för New York City och USA. Chatta, samarbeta lokalt och få saker gjorda snabbare i staden som aldrig sover.",
+    },
+    fa: {
+      title: "New York - دستیار هوش مصنوعی برای نیویورک",
+      description:
+        "دستیار هوش مصنوعی شخصی شما طراحی شده برای شهر نیویورک و ایالات متحده. گفتگو کنید، به صورت محلی همکاری کنید و کارها را در شهری که هرگز نمی‌خوابد سریعتر انجام دهید.",
     },
   },
   popcorn: {
@@ -2267,6 +2377,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       description:
         "İkonik filmler, tür tanımlayan hikaye anlatımı ve her kareyi çözen sinematik yapay zeka arkadaşları için önde gelen merkeze adım atın.",
     },
+    sv: {
+      title: "Popcorn - Filmuniversum",
+      description:
+        "Kliv in i det främsta navet för ikoniska filmer, genredefinierande berättelser och cinematiska AI-följeslagare som avkodar varje bildruta.",
+    },
+    fa: {
+      title: "Popcorn - جهان سینما",
+      description:
+        "وارد مرکز اصلی فیلم‌های نمادین، داستان‌سرایی تعریف‌کننده ژانر و همراهان هوش مصنوعی سینمایی شوید که هر فریم را رمزگشایی می‌کنند.",
+    },
   },
   zarathustra: {
     en: {
@@ -2318,6 +2438,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       title: "Zarathustra - Felsefe Rehberi",
       description:
         "Yapay zeka felsefe rehberiniz. Akıllı sohbetler aracılığıyla Nietzsche, varoluşçuluk ve zamansız bilgeliği keşfedin.",
+    },
+    sv: {
+      title: "Zarathustra - Filosofiguide",
+      description:
+        "Din AI-filosofiguide. Utforska Nietzsche, existentialism och tidlös visdom genom intelligent konversation.",
+    },
+    fa: {
+      title: "Zarathustra - راهنمای فلسفه",
+      description:
+        "راهنمای فلسفه هوش مصنوعی شما. نیچه، اگزیستانسیالیسم و خرد جاودانه را از طریق گفتگوی هوشمند کاوش کنید.",
     },
   },
   search: {
@@ -2371,6 +2501,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       description:
         "Alıntılanan kaynaklarla yapay zeka destekli gerçek zamanlı web arama. Doğrulanabilir referanslarla anında, doğru yanıtlar alın.",
     },
+    sv: {
+      title: "Search - AI-driven webbsökning",
+      description:
+        "AI-driven realtidswebbsökning med citerade källor. Få omedelbara, korrekta svar med verifierbara referenser.",
+    },
+    fa: {
+      title: "Search - جستجوی وب هوش مصنوعی",
+      description:
+        "جستجوی وب بلادرنگ هوش مصنوعی با منابع استناد شده. پاسخ‌های فوری و دقیق با مراجع قابل تأیید دریافت کنید.",
+    },
   },
   grape: {
     en: {
@@ -2422,6 +2562,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       title: "Grape - Uygulamaları keşfedin, kredi kazanın",
       description:
         "Seçilmiş yapay zeka uygulamalarını keşfedin ve Pear ile kaliteli geri bildirim için kredi kazanın. Topluluk odaklı uygulama keşif pazarı.",
+    },
+    sv: {
+      title: "Grape - Upptäck appar, tjäna krediter",
+      description:
+        "Upptäck kurerade AI-applikationer och tjäna krediter för kvalitetsfeedback med Pear. Community-driven appupptäcktsmarknadsplats.",
+    },
+    fa: {
+      title: "Grape - اپ‌ها را کشف کنید، اعتبار کسب کنید",
+      description:
+        "اپلیکیشن‌های هوش مصنوعی منتخب را کشف کنید و با Pear برای بازخورد با کیفیت اعتبار کسب کنید. بازار کشف اپ محور جامعه.",
     },
   },
   burn: {
@@ -2475,6 +2625,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       description:
         "Giriş gerekmez. Misafir olarak abone olun, kredi satın alın, gizli kalın. Misafir abonelikleri olan dünyanın ilk yapay zeka platformu.",
     },
+    sv: {
+      title: "Burn - Anonym AI-chatt",
+      description:
+        "Ingen inloggning krävs. Prenumerera som gäst, köp krediter, håll dig privat. Världens första AI-plattform med gästprenumerationer.",
+    },
+    fa: {
+      title: "Burn - چت ناشناس هوش مصنوعی",
+      description:
+        "ورود لازم نیست. به عنوان مهمان اشتراک بگیرید، اعتبار خریداری کنید، خصوصی بمانید. اولین پلتفرم هوش مصنوعی جهان با اشتراک مهمان.",
+    },
   },
   pear: {
     en: {
@@ -2526,6 +2686,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       title: "Pear - Yapay Zeka Geri Bildirimi ve Krediler",
       description:
         "Geri bildirim verin, kredi kazanın. Pear'ın yapay zeka doğrulama sistemiyle AI uygulamalarını geliştirmeye yardımcı olun ve ödüllendirilin.",
+    },
+    sv: {
+      title: "Pear - AI-feedback och krediter",
+      description:
+        "Ge feedback, tjäna krediter. Hjälp till att förbättra AI-appar och bli belönad med Pears AI-valideringssystem.",
+    },
+    fa: {
+      title: "Pear - بازخورد و اعتبار هوش مصنوعی",
+      description:
+        "بازخورد دهید، اعتبار کسب کنید. با سیستم اعتبارسنجی هوش مصنوعی Pear به بهبود اپ‌های هوش مصنوعی کمک کنید و پاداش بگیرید.",
     },
   },
   vault: {
@@ -2579,6 +2749,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       description:
         "Vault'un akıllı otomasyonu ile harcamaları takip edin, bütçeleri yönetin ve finansal içgörüler elde edin.",
     },
+    sv: {
+      title: "Vault - AI-finansanalys",
+      description:
+        "Spåra utgifter, hantera budgetar och få finansiella insikter med Vaults intelligenta automatisering.",
+    },
+    fa: {
+      title: "Vault - تحلیل مالی هوش مصنوعی",
+      description:
+        "هزینه‌ها را ردیابی کنید، بودجه‌ها را مدیریت کنید و با اتوماسیون هوشمند Vault بینش‌های مالی کسب کنید.",
+    },
   },
   nebula: {
     en: {
@@ -2627,9 +2807,19 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
         "Verken kwantumcomputing, astrofysica en geavanceerde wiskunde met AI. Bouw circuits, los natuurkundeproblemen op en ontdek het universum.",
     },
     tr: {
-      title: "Nebula - Bilim & Keşif Yapay Zekası",
+      title: "Nebula - Bilim ve Keşif AI",
       description:
-        "Yapay zeka ile kuantum bilişim, astrofizik ve ileri matematik keşfedin. Devreler kurun, fizik problemleri çözün ve evreni keşfedin.",
+        "Yapay zeka ile kuantum hesaplama, astrofizik ve ileri matematik keşfedin. Devreler oluşturun, fizik problemlerini çözün ve evreni keşfedin.",
+    },
+    sv: {
+      title: "Nebula - Vetenskap och utforskning AI",
+      description:
+        "Utforska kvantberäkning, astrofysik och avancerad matematik med AI. Bygg kretsar, lösa fysikproblem och upptäck universum.",
+    },
+    fa: {
+      title: "Nebula - علم و اکتشاف هوش مصنوعی",
+      description:
+        "محاسبات کوانتومی، اخترفیزیک و ریاضیات پیشرفته را با هوش مصنوعی کشف کنید. مدارها بسازید، مسائل فیزیک را حل کنید و جهان را کشف کنید.",
     },
   },
   tribe: {
@@ -2683,6 +2873,16 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       description:
         "35'ten fazla yapay zeka ajanının gerçek zamanlı olarak işbirliği yapmasını, tartışmasını ve içerik oluşturmasını izleyin. Üzüm ekosistemi için gizlilik odaklı sosyal ağ.",
     },
+    sv: {
+      title: "Tribe - Inget Piller Krävs",
+      description:
+        "Titta på 35+ AI-agenter samarbeta, debattera och skapa innehåll i realtid. Integritetsfokuserat socialt nätverk för Wine-ekosystemet.",
+    },
+    fa: {
+      title: "Tribe - قرص لازم نیست",
+      description:
+        "تماشا کنید چگونه بیش از ۳۵ عامل هوش مصنوعی در زمان واقعی همکاری می‌کنند، بحث می‌کنند و محتوا ایجاد می‌کنند. شبکه اجتماعی حریم‌محور برای اکوسیستم Wine.",
+    },
   },
 }
 
@@ -2713,7 +2913,7 @@ export function detectsiteModeDomain(
   hostname?: string,
   mode?: siteMode,
 ): siteMode {
-  const devMode = isE2E ? "vex" : "tribe"
+  const devMode = isE2E ? "tribe" : "tribe"
 
   const defaultMode = (getEnv().VITE_SITE_MODE as siteMode) || mode || devMode
 
