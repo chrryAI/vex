@@ -2957,7 +2957,7 @@ export function AuthProvider({
 
   const [rtl, setRTL] = useState(rtlInitial)
 
-  const rtlLanguages = ["fa", "ar", "he"]
+  const rtlLanguages = ["fa", "ar", "he", "ur", "ku"]
 
   useEffect(() => {
     const isRTL = rtlLanguages.includes(language)

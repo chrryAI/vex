@@ -1420,7 +1420,7 @@ app.use(async (req, res) => {
     const rawTheme = serverData?.theme
     const sanitizedTheme = ALLOWED_THEMES.includes(rawTheme) ? rawTheme : "dark"
 
-    const rtlLanguages = ["fa", "ar", "he"]
+    const rtlLanguages = ["fa", "ar", "he", "ur", "ku"]
     // Replace placeholders - inject metadata, CSS, server data, router state, lang attribute, and theme class
     const locale = serverData?.locale || "en"
     const dir = rtlLanguages.includes(locale) ? "rtl" : "ltr"
