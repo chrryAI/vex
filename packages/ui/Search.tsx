@@ -4,6 +4,7 @@ import nprogress from "nprogress"
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { useDebouncedCallback } from "use-debounce"
+import { useAppContext } from "./context/AppContext"
 import { useNavigationContext } from "./context/providers"
 import { usePathname, useSearchParams } from "./hooks/useWindowHistory"
 import { SearchIcon } from "./icons"
@@ -43,6 +44,8 @@ export default function Search({
   const [term, setTerm] = useState(
     searchParams?.get(paramName)?.toString() || "",
   )
+
+  const { t } = useAppContext()
 
   const isFocus =
     props.isFocus ?? searchParams?.get("focus")?.toString() === "search"
@@ -101,9 +104,9 @@ export default function Search({
           paddingRight: isDesktop ? 60 : undefined,
         }}
         data-testid={dataTestId}
-        aria-label={placeholder || "Search"}
+        aria-label={t(placeholder || "Search")}
         type="search"
-        placeholder={placeholder || "Search"}
+        placeholder={t(placeholder || "Search")}
         name="search"
         ref={searchInputRef}
         onChange={(e) => {

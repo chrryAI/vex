@@ -692,7 +692,7 @@ export const whiteLabels = [
   vault,
 ]
 
-const VERSION = "2.0.65"
+const VERSION = "2.0.66"
 // Constants
 const port = process.env.PORT || 5173
 const base = process.env.BASE || "/"
@@ -1420,10 +1420,17 @@ app.use(async (req, res) => {
     const rawTheme = serverData?.theme
     const sanitizedTheme = ALLOWED_THEMES.includes(rawTheme) ? rawTheme : "dark"
 
+    const rtlLanguages = ["fa", "ar", "he", "ur", "ku"]
     // Replace placeholders - inject metadata, CSS, server data, router state, lang attribute, and theme class
-    console.log("🎨 Applying theme class:", sanitizedTheme)
+    const locale = serverData?.locale || "en"
+    const dir = rtlLanguages.includes(locale) ? "rtl" : "ltr"
+    const htmlClass = `${sanitizedTheme}${dir === "rtl" ? " rtl" : ""}`
+
     const html = template
-      .replace(`<html lang="en"`, `<html lang="${serverData?.locale || "en"}"`)
+      .replace(
+        /<html\b[^>]*lang="en"[^>]*class="dark"[^>]*>/,
+        `<html lang="${locale}" dir="${dir}" class="${htmlClass}">`,
+      )
       .replace(`class="dark"`, `class="${sanitizedTheme}"`)
       .replace(
         `<!--app-head-->`,

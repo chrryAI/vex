@@ -80,11 +80,7 @@ export const users = pgTable(
       withTimezone: true,
     }).defaultNow(),
     ip: text("ip"),
-    language: text("language", {
-      enum: ["en", "de", "es", "fr", "ja", "ko", "pt", "zh", "nl", "sv", "tr"],
-    })
-      .notNull()
-      .default("en"),
+    language: text("language").notNull().default("en"),
     fingerprint: text("fingerprint"),
     isOnline: boolean("isOnline").default(false),
     subscribedOn: timestamp("subscribedOn", {

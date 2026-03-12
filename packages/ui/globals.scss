@@ -169,6 +169,11 @@ html.dark {
   --shadow-glow: 0 0 1.875rem hsl(120 60% 50% / 0.3);
 }
 
+html.rtl,
+html[lang="fa"] {
+  direction: rtl;
+}
+
 hr {
   border: 0.0625rem dashed var(--shade-2);
 }

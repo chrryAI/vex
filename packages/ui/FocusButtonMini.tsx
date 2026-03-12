@@ -20,7 +20,7 @@ function FocusButton({
 
   const { appStyles } = useStyles()
   const { isExtension, isFirefox, isWeb: _isWeb } = usePlatform()
-  const { focus, getAppSlug, setShowFocus, app } = useAuth()
+  const { focus, getAppSlug, setShowFocus, app, rtl } = useAuth()
 
   const hasHydrated = useHasHydrated()
 
@@ -57,12 +57,35 @@ function FocusButton({
       href={`${getAppSlug(focus)}`}
       openInNewTab={isExtension && isFirefox}
       style={{
-        ...appStyles.focus.style,
+        ...{
+          position: "relative",
+          marginLeft: rtl ? undefined : 5,
+          marginRight: !rtl ? undefined : 5,
+        },
         ...style,
       }}
     >
       {hasHydrated && (
-        <Span style={appStyles.focusTime.style}>{formatTime()}</Span>
+        <Span
+          style={{
+            position: "absolute",
+            top: -5,
+            right: rtl ? undefined : -30,
+            left: !rtl ? undefined : -30,
+            padding: "2px 6px",
+            backgroundColor: "var(--accent-1)",
+            color: "#fff",
+            borderRadius: 10,
+            fontSize: 9,
+            fontWeight: 600,
+            fontFamily: "var(--font-mono)",
+            whiteSpace: "nowrap",
+            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+            zIndex: 1,
+          }}
+        >
+          {formatTime()}
+        </Span>
       )}
       <Img
         style={appStyles.focus.style}

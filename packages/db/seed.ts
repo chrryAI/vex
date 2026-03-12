@@ -93,8 +93,8 @@ async function createAgents() {
   })
   const chatGptAgent = await createAiAgent({
     name: "chatGPT",
-    displayName: "GPT-5.2 Pro",
-    version: "5.2",
+    displayName: "GPT-5.4",
+    version: "5.4",
     apiURL: "https://api.openai.com/v1/chat/completions",
     state: "active",
     description:
@@ -102,7 +102,7 @@ async function createAgents() {
     creditCost: 4,
     authorization: "all",
     maxPromptSize: 128000,
-    modelId: "gpt-5.2-pro",
+    modelId: "openai/gpt-5.4",
     order: 1,
     capabilities: {
       text: true,
@@ -1877,8 +1877,10 @@ const prod = async () => {
       })
     }
   }
+
+  await createAgents()
   // Ensure stores are created during seeding for automated tests and dev/prod parity
-  // const { vex } = await createStores({ user: admin })
+  const { vex } = await createStores({ user: admin })
 
   // await seedPearFeedback()
 

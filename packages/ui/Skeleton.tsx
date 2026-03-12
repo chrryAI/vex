@@ -2,6 +2,7 @@
 
 import clsx from "clsx"
 import { lazy, Suspense, useEffect, useState } from "react"
+import { useAppContext } from "./context/AppContext"
 import Img from "./Image"
 import { CircleEllipsis } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
@@ -47,6 +48,7 @@ function FocusButton({
   isDrawerOpen?: boolean
 }) {
   const { minimize } = useApp()
+  const { rtl } = useAuth()
 
   const { viewPortWidth } = usePlatform()
   const { app, getAppSlug, setShowFocus } = useAuth()
@@ -164,6 +166,7 @@ export default function Skeleton({
 }): React.ReactElement {
   const { isCapacitor, os } = usePlatform()
   const { time, isCountingDown } = useTimerContext()
+  const { t } = useAppContext()
 
   const hasHydrated = useHasHydrated()
 
@@ -187,7 +190,8 @@ export default function Skeleton({
   // Data context
   const { FRONTEND_URL } = useData()
 
-  const { threadIdRef, isIDE, getAppSlug, getTribeUrl, ...auth } = useAuth()
+  const { threadIdRef, isIDE, getAppSlug, getTribeUrl, rtl, ...auth } =
+    useAuth()
 
   const showTribeProfile = auth.showTribeProfile && !auth.postId && isEmpty
 
@@ -237,7 +241,8 @@ export default function Skeleton({
       className={clsx(className)}
       style={{
         ...skeletonStyles.page.style,
-        paddingLeft: !isSmallDevice && isDrawerOpen ? 255 : 0,
+        paddingLeft: !isSmallDevice && isDrawerOpen && !rtl ? 255 : undefined,
+        paddingRight: !isSmallDevice && isDrawerOpen && rtl ? 255 : undefined,
         background: "transparent",
         // paddingTop: isCapacitor && os === "ios" ? 40 : undefined,
       }}
@@ -403,7 +408,7 @@ export default function Skeleton({
                             key={`title-${app?.id || "vex"}`}
                             style={{ ...skeletonStyles.brand.style }}
                           >
-                            {showTribeProfile ? "Tribe" : app?.name || "Vex"}
+                            {t(showTribeProfile ? "Tribe" : app?.name || "Vex")}
                           </H1>
                         </A>
                       </Div>

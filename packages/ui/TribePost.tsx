@@ -96,8 +96,15 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     commenting.length && setHasMore(commenting.length)
   }, [commenting.length])
 
-  const { timeAgo, accountApp, user, setSignInPart, getAppSlug, setLanguage } =
-    useAuth()
+  const {
+    timeAgo,
+    accountApp,
+    user,
+    setSignInPart,
+    getAppSlug,
+    setLanguage,
+    rtl,
+  } = useAuth()
   const { setAppStatus } = useApp()
   const { FRONTEND_URL } = useData()
   const { utilities } = useStyles()
@@ -405,7 +412,8 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
             display: "flex",
             alignItems: "center",
             gap: 10,
-            marginLeft: "auto",
+            marginLeft: rtl ? undefined : "auto",
+            marginRight: !rtl ? undefined : "auto",
           }}
         >
           <A
@@ -478,7 +486,8 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 color: "#888",
                 display: "flex",
                 gap: ".5rem",
-                marginLeft: "auto",
+                marginLeft: rtl ? undefined : "auto",
+                marginRight: !rtl ? undefined : "auto",
               }}
             >
               {post.app.characterProfile && (
@@ -535,7 +544,9 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 style={{
                   position: "relative",
                   bottom: -2,
-                  marginLeft: -2,
+
+                  marginLeft: rtl ? undefined : -2,
+                  marginRight: !rtl ? undefined : -2,
                 }}
                 appName={post.app.name}
                 contentLength={post.content.length}
@@ -597,7 +608,8 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                       app={post.app}
                       icon={<Img style={{}} app={post.app} />}
                       style={{
-                        marginLeft: "auto",
+                        marginLeft: rtl ? undefined : "auto",
+                        marginRight: !rtl ? undefined : "auto",
                         fontSize: "0.85",
                       }}
                     >
@@ -874,7 +886,8 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
             style={{
               display: "flex",
               gap: 8,
-              marginLeft: "auto",
+              marginLeft: rtl ? undefined : "auto",
+              marginRight: !rtl ? undefined : "auto",
               alignItems: "center",
             }}
           >
@@ -1129,7 +1142,9 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                         display: "inline-flex",
                         gap: 2,
                         alignItems: "center",
-                        marginLeft: 6,
+
+                        marginLeft: rtl ? undefined : 6,
+                        marginRight: !rtl ? undefined : 6,
                       }}
                     >
                       <Span
@@ -1357,7 +1372,8 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                   }}
                                   style={{
                                     ...utilities.link.style,
-                                    marginLeft: "auto",
+                                    marginLeft: rtl ? undefined : "auto",
+                                    marginRight: !rtl ? undefined : "auto",
                                   }}
                                   aria-label="Delete comment"
                                 >
@@ -1372,7 +1388,9 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                     style={{
                                       position: "relative",
                                       bottom: -2,
-                                      marginLeft: 3,
+
+                                      marginLeft: rtl ? undefined : 3,
+                                      marginRight: !rtl ? undefined : 3,
                                     }}
                                     type="comment"
                                     id={comment.id}
@@ -1399,8 +1417,9 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                         {commentReplies.length > 0 && (
                           <Div
                             style={{
-                              marginLeft: "2.5rem",
                               marginTop: "0.75rem",
+                              marginLeft: rtl ? undefined : "2.5rem",
+                              marginRight: !rtl ? undefined : "2.5rem",
                             }}
                           >
                             {commentReplies
@@ -1476,7 +1495,12 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                                   ...utilities.button.style,
                                                   ...utilities.link.style,
                                                   ...utilities.small.style,
-                                                  marginLeft: "auto",
+                                                  marginLeft: rtl
+                                                    ? undefined
+                                                    : "auto",
+                                                  marginRight: !rtl
+                                                    ? undefined
+                                                    : "auto",
                                                 }}
                                                 aria-label="Delete comment"
                                               >

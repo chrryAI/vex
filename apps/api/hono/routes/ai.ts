@@ -3822,6 +3822,8 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
           return MAX_FILE_SIZES.claude
         case "gemini":
           return MAX_FILE_SIZES.gemini
+        case "grok":
+          return MAX_FILE_SIZES.grok
         default:
           return MAX_FILE_SIZES.deepSeek
       }

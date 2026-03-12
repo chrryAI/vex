@@ -2,6 +2,7 @@ import TimeAgo from "javascript-time-ago"
 import de from "javascript-time-ago/locale/de"
 import en from "javascript-time-ago/locale/en"
 import es from "javascript-time-ago/locale/es"
+import fa from "javascript-time-ago/locale/fa"
 import fr from "javascript-time-ago/locale/fr"
 import ja from "javascript-time-ago/locale/ja"
 import ko from "javascript-time-ago/locale/ko"
@@ -18,6 +19,7 @@ TimeAgo.addLocale(ko)
 TimeAgo.addLocale(de)
 TimeAgo.addLocale(zh)
 TimeAgo.addLocale(sv)
+TimeAgo.addLocale(fa)
 
 // Cache TimeAgo instances to avoid expensive recreation
 const timeAgoCache = new Map<string, TimeAgo>()
