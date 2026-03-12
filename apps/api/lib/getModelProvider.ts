@@ -14,6 +14,7 @@ import {
   updateAiAgent,
 } from "@repo/db"
 import type { LanguageModel } from "ai"
+import { gateway } from "ai"
 
 const plusTiers = ["plus", "pro"]
 
@@ -415,25 +416,6 @@ export async function getModelProvider({
       const modelId =
         job?.modelConfig?.model || targetModelId || "openai/gpt-5.4"
 
-      {
-        const openaiKey = app?.apiKeys?.openai
-          ? safeDecrypt(app?.apiKeys?.openai)
-          : !plusTiers.includes(app?.tier || "")
-            ? process.env.CHATGPT_API_KEY
-            : ""
-
-        if (openaiKey && !failedKeys?.includes(modelId)) {
-          const openaiProvider = createOpenAI({ apiKey: openaiKey })
-          result = {
-            provider: openaiProvider(modelId),
-            modelId: modelId,
-            agentName: agent.name,
-            lastKey: "chatGPT",
-          }
-          break
-        }
-      }
-
       const openrouterKeyForOpenAI =
         (appApiKeys.openrouter ? safeDecrypt(appApiKeys.openrouter) : "") ||
         (!plusTiers.includes(app?.tier || "")
@@ -451,6 +433,26 @@ export async function getModelProvider({
           lastKey: "openrouter",
         }
         break
+      }
+
+      // OpenAI fallback (ucuz modeller)
+      // Bu Vercel daha update etmemis
+      const safeModels = ["gpt-4o", "gpt-4o-mini"] // ← 5.4 yok diye patlamasın
+      const openaiKey = app?.apiKeys?.openai
+        ? safeDecrypt(app?.apiKeys?.openai)
+        : process.env.OPENAI_API_KEY
+
+      for (const safeModel of safeModels) {
+        if (openaiKey && !failedKeys?.includes(safeModel)) {
+          const openaiProvider = createOpenAI({ apiKey: openaiKey })
+          result = {
+            provider: openaiProvider(safeModel),
+            modelId: safeModel, // ← Gerçek model
+            agentName: agent.name,
+            lastKey: "chatGPT",
+          }
+          break
+        }
       }
 
       const fallbackModel = "gpt-4o-mini"

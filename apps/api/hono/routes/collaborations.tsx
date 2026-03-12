@@ -1,4 +1,4 @@
-import { defaultLocale } from "@chrryai/chrry/locales"
+import { defaultLocale, type locale } from "@chrryai/chrry/locales"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import { render } from "@react-email/render"
 import {
@@ -93,7 +93,7 @@ collaborations.post("/", async (c) => {
         thread={thread}
         type="invited"
         user={member}
-        language={member?.language || defaultLocale}
+        language={(member?.language || defaultLocale) as locale}
       />,
     )
 

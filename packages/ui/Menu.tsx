@@ -350,8 +350,9 @@ export default function Menu({
                 onDoubleClick={async () => {
                   if (!isTauri) return
                   try {
-                    const { getCurrentWindow } =
-                      await import("@tauri-apps/api/window")
+                    const { getCurrentWindow } = await import(
+                      "@tauri-apps/api/window"
+                    )
                     const appWindow = getCurrentWindow()
                     const isMaximized = await appWindow.isMaximized()
                     if (isMaximized) {
@@ -507,8 +508,8 @@ export default function Menu({
                       size={14}
                       strokeWidth={3}
                       style={{
-                         marginRight: rtl ? "0.3rem" : undefined,
-                      marginLeft: !rtl ? "0.3rem": undefined,
+                        marginRight: rtl ? "0.3rem" : undefined,
+                        marginLeft: !rtl ? "0.3rem" : undefined,
                       }}
                       color={burn ? COLORS.orange : colors.shade6}
                     />
@@ -625,8 +626,8 @@ export default function Menu({
                     )}
                     <Div
                       style={{
-                       marginRight: rtl ? "auto" : undefined,
-                      marginLeft: !rtl ? "auto" : undefined,
+                        marginRight: rtl ? "auto" : undefined,
+                        marginLeft: !rtl ? "auto" : undefined,
                         display: "inline-flex",
                         alignItems: "center",
                         gap: 7.5,
@@ -968,7 +969,7 @@ export default function Menu({
               <Button
                 style={{
                   marginRight: rtl ? "auto" : undefined,
-                      marginLeft: !rtl ? "auto" : undefined,
+                  marginLeft: !rtl ? "auto" : undefined,
                   gap: 7.5,
                   color: "#f87171",
                   fontSize: "0.8rem",
@@ -1016,7 +1017,7 @@ export default function Menu({
                   style={{
                     color: colors.accent6,
                     marginRight: rtl ? 5 : undefined,
-                      marginLeft: !rtl ? 5: undefined,
+                    marginLeft: !rtl ? 5 : undefined,
                     fontSize: "0.5rem",
                   }}
                   className={"link"}
@@ -1033,8 +1034,8 @@ export default function Menu({
                   }}
                   style={{
                     color: colors.accent6,
-                 marginRight: rtl ? 5 : undefined,
-                      marginLeft: !rtl ? 5: undefined,
+                    marginRight: rtl ? 5 : undefined,
+                    marginLeft: !rtl ? 5 : undefined,
                     fontSize: "0.7rem",
                   }}
                   className={"link"}
@@ -1056,8 +1057,8 @@ export default function Menu({
                   }}
                   style={{
                     ...styles.reduceMotionButton.style,
-                   marginRight: rtl ? "auto" : undefined,
-                      marginLeft: !rtl ? "auto" : undefined,
+                    marginRight: rtl ? "auto" : undefined,
+                    marginLeft: !rtl ? "auto" : undefined,
                   }}
                   className={"link"}
                 >
@@ -1124,8 +1125,13 @@ export default function Menu({
 
               <ThemeSwitcher />
               {hasHydrated && (
-                <Span style={{ marginRight: rtl ? "auto" : undefined,
-                      marginLeft: !rtl ? "auto" : undefined,, fontSize: 12 }}>
+                <Span
+                  style={{
+                    marginRight: rtl ? "auto" : undefined,
+                    marginLeft: !rtl ? "auto" : undefined,
+                    fontSize: 12,
+                  }}
+                >
                   v{VERSION}
                 </Span>
               )}

@@ -3130,10 +3130,11 @@ export default function Chat({
                         data-testid={`agent-modal-button-${agent.name}`}
                         className={clsx(
                           `medium ${
-                            (agent.authorization === "user" &&
-                              !user &&
-                              !guest?.subscription) ||
-                            agent.id === sushiAgent?.id
+                            (
+                              agent.authorization === "user" &&
+                                !user &&
+                                !guest?.subscription
+                            ) || agent.id === sushiAgent?.id
                               ? "inverted"
                               : ""
                           }`,
@@ -3471,6 +3472,10 @@ export default function Chat({
       )}
       <Div
         key={isChatFloating ? "floating" : "fixed"}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
         style={{
           ...styles.chatContainerWrapper.style,
           // ...(rtl ? { ...styles.right.style } : { ...styles.left.style }),
@@ -3502,6 +3507,47 @@ export default function Chat({
           ...(isCapacitor && os === "ios" ? { paddingBottom: 16 } : {}),
         }}
       >
+        {isDragging && (
+          <Div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "var(--shade-2)",
+              border: "1px dashed var(--accent-5)",
+              borderRadius: 20,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "column",
+              gap: 7.5,
+              zIndex: 1000,
+              transition: "all 0.2s ease",
+            }}
+            role="region"
+            className="blur"
+            aria-label={t("Drop files here to attach")}
+          >
+            <Div
+              style={{
+                fontSize: "1.5rem",
+              }}
+            >
+              📎
+            </Div>
+            <Div
+              style={{
+                fontSize: "1rem",
+                textAlign: "center",
+                color: "var(--accent-6)",
+              }}
+            >
+              {t("Drop files here to attach")}
+            </Div>
+          </Div>
+        )}
         {isSpeechActive && (
           <Modal
             isModalOpen={isSpeechActive}
@@ -3573,8 +3619,7 @@ export default function Chat({
                           )
                         }
                         return "5"
-                      })()}{" "}
-                      {t("requests")}
+                      })()} {t("requests")}
                     </Span>
                   </Div>
                   <Div style={styles.statItem.style}>
@@ -3703,6 +3748,7 @@ export default function Chat({
             style={{
               ...styles.chatContainer.style,
               ...style,
+              opacity: isDragging ? 0 : 1,
               ...(isChatFloating ? styles.chatContainerFloating.style : {}),
             }}
           >
