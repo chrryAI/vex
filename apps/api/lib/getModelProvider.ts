@@ -412,14 +412,15 @@ export async function getModelProvider({
     }
 
     case "chatGPT": {
+      const modelId =
+        job?.modelConfig?.model || targetModelId || "openai/gpt-5.4"
+
       {
         const openaiKey = app?.apiKeys?.openai
           ? safeDecrypt(app?.apiKeys?.openai)
           : !plusTiers.includes(app?.tier || "")
             ? process.env.CHATGPT_API_KEY
             : ""
-
-        const modelId = targetModelId || "gpt-5.2-pro"
 
         if (openaiKey && !failedKeys?.includes(modelId)) {
           const openaiProvider = createOpenAI({ apiKey: openaiKey })
@@ -438,8 +439,6 @@ export async function getModelProvider({
         (!plusTiers.includes(app?.tier || "")
           ? process.env.OPENROUTER_API_KEY
           : "")
-
-      const modelId = job?.modelConfig?.model || "gpt-5.2-pro"
 
       if (openrouterKeyForOpenAI && !failedKeys?.includes(modelId)) {
         const openrouterProvider = createOpenRouter({

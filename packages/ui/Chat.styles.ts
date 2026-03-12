@@ -585,6 +585,34 @@ export const ChatStyleDefs = {
     right: -2,
     border: "1px solid transparent",
   },
+  dropZone: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "var(--accent-1-transparent, rgba(233, 30, 99, 0.1))",
+    border: "3px dashed var(--accent-4, #E91E63)",
+    borderRadius: 16,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "column",
+    gap: 16,
+    zIndex: 100,
+    backdropFilter: "blur(2px)",
+    transition: "all 0.2s ease",
+  },
+  dropZoneIcon: {
+    fontSize: 48,
+    color: "var(--accent-4, #E91E63)",
+  },
+  dropZoneText: {
+    fontSize: 16,
+    fontWeight: 500,
+    color: "var(--accent-6, #333)",
+    textAlign: "center",
+  },
 } as const
 
 import { createStyleHook } from "./styles/createStyleHook"

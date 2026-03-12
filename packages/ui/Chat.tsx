@@ -561,6 +561,10 @@ export default function Chat({
 
   const [files, setFilesInternal] = useState<File[]>([])
 
+  // Drag and drop state
+  const [isDragging, setIsDragging] = useState(false)
+  const dragCounter = useRef(0)
+
   const setFiles: Dispatch<SetStateAction<File[]>> = (data) => {
     const f = typeof data === "function" ? data(files) : data
 
@@ -1012,6 +1016,30 @@ export default function Chat({
   const removeFile = (index: number) => {
     setFilesInternal((prev) => prev.filter((_, i) => i !== index))
     device === "desktop" && setShouldFocus(true)
+  }
+
+  // Drag and drop handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault()
+    dragCounter.current++
+    if (e.dataTransfer.items?.length > 0) setIsDragging(true)
+  }
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    dragCounter.current--
+    if (dragCounter.current === 0) setIsDragging(false)
+  }
+  const handleDragOver = (e: React.DragEvent) => e.preventDefault()
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    dragCounter.current = 0
+    if (e.dataTransfer.files?.length > 0) {
+      const sushiAgent = aiAgents.find((a) => a.name === "sushi")
+      if (sushiAgent && !selectedAgent?.capabilities?.text)
+        setSelectedAgent(sushiAgent)
+      handleFileSelect(e.dataTransfer.files)
+    }
   }
 
   useEffect(() => {
@@ -3102,11 +3130,10 @@ export default function Chat({
                         data-testid={`agent-modal-button-${agent.name}`}
                         className={clsx(
                           `medium ${
-                            (
-                              agent.authorization === "user" &&
-                                !user &&
-                                !guest?.subscription
-                            ) || agent.id === sushiAgent?.id
+                            (agent.authorization === "user" &&
+                              !user &&
+                              !guest?.subscription) ||
+                            agent.id === sushiAgent?.id
                               ? "inverted"
                               : ""
                           }`,
@@ -3452,6 +3479,7 @@ export default function Chat({
             !isSmallDevice && {
               ...styles.drawerOpen.style,
               ...(rtl && {
+                left: "auto",
                 right: "calc(50% + 7.65625rem)",
                 transform: "translateX(50%)",
               }),
@@ -3545,7 +3573,8 @@ export default function Chat({
                           )
                         }
                         return "5"
-                      })()} {t("requests")}
+                      })()}{" "}
+                      {t("requests")}
                     </Span>
                   </Div>
                   <Div style={styles.statItem.style}>

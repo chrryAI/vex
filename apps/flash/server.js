@@ -1421,11 +1421,14 @@ app.use(async (req, res) => {
     const sanitizedTheme = ALLOWED_THEMES.includes(rawTheme) ? rawTheme : "dark"
 
     // Replace placeholders - inject metadata, CSS, server data, router state, lang attribute, and theme class
-    console.log("🎨 Applying theme class:", sanitizedTheme)
+    const locale = serverData?.locale || "en"
+    const dir = locale === "fa" ? "rtl" : "ltr"
+    const htmlClass = `${sanitizedTheme}${dir === "rtl" ? " rtl" : ""}`
+
     const html = template
       .replace(
-        `<html lang="en"`,
-        `<html class="${["fa"].includes(serverData?.locale) ? "rtl" : "lrt"}" lang="${serverData?.locale || "en"}"`,
+        /<html\b[^>]*lang="en"[^>]*class="dark"[^>]*>/,
+        `<html lang="${locale}" dir="${dir}" class="${htmlClass}">`,
       )
       .replace(`class="dark"`, `class="${sanitizedTheme}"`)
       .replace(
