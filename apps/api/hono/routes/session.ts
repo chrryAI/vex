@@ -775,6 +775,6 @@ session.delete("/", async (c) => {
     return c.json({ error: "Unauthorized" }, 401)
   }
 
-  await cleanupTest()
+  // await cleanupTest()
   return c.json({ success: true })
 })
