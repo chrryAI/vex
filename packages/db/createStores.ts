@@ -6,7 +6,7 @@ import {
 } from "./getExampleInstructions"
 import {
   createAppExtend,
-  createOrUpdateApp,
+  createOrUpdateApp as createOrUpdateAppInternal,
   createOrUpdateStoreInstall,
   createStore,
   createStoreInstall,
@@ -16,12 +16,31 @@ import {
   getPureApp,
   getStore,
   getStoreInstall,
+  type newApp,
   type store,
   updateStore,
   type user,
 } from "./index"
 import { aiAgents, appExtends, apps, guests, stores, users } from "./src/schema"
 
+const createOrUpdateApp = async ({
+  app,
+  extends: extendsList,
+}: {
+  app: newApp
+  extends?: string[]
+}) => {
+  return await createOrUpdateAppInternal({
+    app: {
+      ...app,
+      blueskyHandle: app.blueskyHandle || "tribeai.bsky.social",
+      blueskyPassword:
+        app.blueskyPassword ||
+        (await encrypt(process.env.BLUESKY_PASSWORD_TRIBE!)),
+    },
+    extends: extendsList,
+  })
+}
 // Helper function to handle extends relationships after app creation
 const handleAppExtends = async (
   appId: string,
@@ -2715,6 +2734,8 @@ You have access to calendar, location, and weather tools to provide context-awar
     subtitle: "AI Travel Companion",
     name: "Atlas",
     version: "1.0.0",
+    blueskyHandle: "peachai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_PEACH!),
     status: "active" as const,
     title: "Personal Travel assistant",
     highlights: atlasInstructions,
@@ -6345,8 +6366,8 @@ You provide helpful AI assistance while respecting user privacy completely.`
       | "location"
       | "weather"
     )[],
-    blueskyHandle: "tribeai.bsky.social",
-    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_TRIBE!),
+    blueskyHandle: "peachai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_PEACH!),
     defaultModel: "sushi" as const,
     version: "1.0.0",
     status: "active" as const,
