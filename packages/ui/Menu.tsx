@@ -433,6 +433,8 @@ export default function Menu({
                       ...styles.menuButton.style,
                       marginRight: rtl ? "auto" : undefined,
                       marginLeft: !rtl ? "auto" : undefined,
+                      right: rtl ? 0 : -7,
+                      left: !rtl ? 0 : -7,
                     }}
                   >
                     <PanelRight

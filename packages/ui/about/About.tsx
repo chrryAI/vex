@@ -225,8 +225,6 @@ export default function About() {
               {t("Privacy Policy")}
             </a>
             {", "}
-            <a href="https://x.com/chrryAI">@chrryAI</a>
-            {", "}
             {hasHydrated && (
               <a href="mailto:iliyan@chrry.ai">iliyan@chrry.ai</a>
             )}
