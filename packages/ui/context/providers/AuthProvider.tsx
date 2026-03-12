@@ -130,6 +130,7 @@ const AuthContext = createContext<
       tribeSlug?: string
       currentTribe?: tribe
       getTribeUrl: () => string
+      rtl: boolean
       mergeApps: (apps: appWithStore[]) => void
       postId?: string
       tribes?: paginatedTribes
@@ -2952,6 +2953,20 @@ export function AuthProvider({
 
   const fp = searchParams.get("fp")
 
+  const rtlInitial = ["fa"].includes(language)
+
+  const [rtl, setRTL] = useState(rtlInitial)
+
+  const rtlLanguages = ["fa", "ar", "he"]
+
+  useEffect(() => {
+    const isRTL = rtlLanguages.includes(language)
+    setRTL(isRTL)
+
+    document.documentElement.setAttribute("lang", language)
+    document.documentElement.setAttribute("dir", isRTL ? "rtl" : "ltr")
+  }, [language])
+
   const [displayedApps, setDisplayedApps] = useState<appWithStore[]>([])
 
   // Find last navigated app that's not in displayedApps (anchor app)
@@ -3272,6 +3287,7 @@ export function AuthProvider({
         setDeviceId,
         setApp,
         aiAgents,
+        rtl,
         timeAgo: (date: string | Date, locale = language || "en-US") =>
           ago(date, locale),
         fetchMoods: async () => {

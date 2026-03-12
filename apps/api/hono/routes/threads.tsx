@@ -1,4 +1,4 @@
-import { defaultLocale } from "@chrryai/chrry/locales"
+import { defaultLocale, type locale } from "@chrryai/chrry/locales"
 import { FRONTEND_URL, getMaxFiles, isE2E } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { render } from "@react-email/render"
@@ -519,7 +519,7 @@ threads.patch("/:id", async (c) => {
             origin: FRONTEND_URL,
             thread: thread,
             user: member,
-            language: member.language || defaultLocale,
+            language: (member.language || defaultLocale) as locale,
           }),
         )
 

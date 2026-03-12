@@ -258,6 +258,7 @@ export default function Chat({
     showFocus,
     postId,
     burnApp,
+    rtl,
     ...auth
   } = useAuth()
 
@@ -559,6 +560,10 @@ export default function Chat({
   const controller = new AbortController()
 
   const [files, setFilesInternal] = useState<File[]>([])
+
+  // Drag and drop state
+  const [isDragging, setIsDragging] = useState(false)
+  const dragCounter = useRef(0)
 
   const setFiles: Dispatch<SetStateAction<File[]>> = (data) => {
     const f = typeof data === "function" ? data(files) : data
@@ -1011,6 +1016,30 @@ export default function Chat({
   const removeFile = (index: number) => {
     setFilesInternal((prev) => prev.filter((_, i) => i !== index))
     device === "desktop" && setShouldFocus(true)
+  }
+
+  // Drag and drop handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault()
+    dragCounter.current++
+    if (e.dataTransfer.items?.length > 0) setIsDragging(true)
+  }
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    dragCounter.current--
+    if (dragCounter.current === 0) setIsDragging(false)
+  }
+  const handleDragOver = (e: React.DragEvent) => e.preventDefault()
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    dragCounter.current = 0
+    if (e.dataTransfer.files?.length > 0) {
+      const sushiAgent = aiAgents.find((a) => a.name === "sushi")
+      if (sushiAgent && !selectedAgent?.capabilities?.text)
+        setSelectedAgent(sushiAgent)
+      handleFileSelect(e.dataTransfer.files)
+    }
   }
 
   useEffect(() => {
@@ -3443,29 +3472,82 @@ export default function Chat({
       )}
       <Div
         key={isChatFloating ? "floating" : "fixed"}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
         style={{
           ...styles.chatContainerWrapper.style,
+          // ...(rtl ? { ...styles.right.style } : { ...styles.left.style }),
           ...style,
-          ...(isDrawerOpen && !isSmallDevice ? styles.drawerOpen.style : {}),
+          ...(isDrawerOpen &&
+            !isSmallDevice && {
+              ...styles.drawerOpen.style,
+              ...(rtl && {
+                left: "auto",
+                right: "calc(50% + 7.65625rem)",
+                transform: "translateX(50%)",
+              }),
+            }),
+
+          // (isDrawerOpen && !isSmallDevice && rtl
+          //     ? ...{...styles.drawerOpenRTL.style}
+          //     : undefined),
           // ...(isMobileDevice ? styles.mobile.style : {}),
           ...(isHydrated && isStandalone && os === "ios"
             ? { marginBottom: 16 }
             : {}),
-          ...(isIDE
-            ? {
-                position: "fixed",
-                zIndex: 1000,
-                // bottom: 0,
-                // right: 0,
-                transform: "none",
-                maxWidth: viewPortWidth,
-                left: "none",
-                right: 0,
-              }
-            : {}),
+          ...(isIDE && {
+            position: "fixed",
+            zIndex: 1000,
+            transform: "none",
+            maxWidth: viewPortWidth,
+            ...(rtl ? { left: 0 } : { right: 0 }),
+          }),
           ...(isCapacitor && os === "ios" ? { paddingBottom: 16 } : {}),
         }}
       >
+        {isDragging && (
+          <Div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "var(--shade-2)",
+              border: "1px dashed var(--accent-5)",
+              borderRadius: 20,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "column",
+              gap: 7.5,
+              zIndex: 1000,
+              transition: "all 0.2s ease",
+            }}
+            role="region"
+            className="blur"
+            aria-label={t("Drop files here to attach")}
+          >
+            <Div
+              style={{
+                fontSize: "1.5rem",
+              }}
+            >
+              📎
+            </Div>
+            <Div
+              style={{
+                fontSize: "1rem",
+                textAlign: "center",
+                color: "var(--accent-6)",
+              }}
+            >
+              {t("Drop files here to attach")}
+            </Div>
+          </Div>
+        )}
         {isSpeechActive && (
           <Modal
             isModalOpen={isSpeechActive}
@@ -3666,6 +3748,7 @@ export default function Chat({
             style={{
               ...styles.chatContainer.style,
               ...style,
+              opacity: isDragging ? 0 : 1,
               ...(isChatFloating ? styles.chatContainerFloating.style : {}),
             }}
           >
@@ -3700,7 +3783,14 @@ export default function Chat({
                     {Top}
                   </Div>
                 )}
-                <Div style={{ display: "flex", gap: 7.5, marginLeft: "auto" }}>
+                <Div
+                  style={{
+                    display: "flex",
+                    gap: 7.5,
+                    marginLeft: rtl ? undefined : "auto",
+                    marginRight: !rtl ? undefined : "auto",
+                  }}
+                >
                   {hasBottomOffset ? (
                     <Button
                       className="link"
@@ -4121,7 +4211,10 @@ export default function Chat({
                   data-enabled={isImageGenerationEnabled}
                   style={{
                     ...utilities.link.style,
-                    ...styles.imageGenerationButton.style,
+                    position: "absolute",
+
+                    top: 8,
+                    ...(rtl ? { left: 8 } : { right: 8 }),
                   }}
                   title={
                     isImageGenerationEnabled
@@ -4137,7 +4230,8 @@ export default function Chat({
                   <Span
                     style={{
                       fontSize: 18,
-                      marginRight: 3,
+                      marginRight: rtl ? undefined : 3,
+                      marginLeft: !rtl ? undefined : 3,
                       marginTop: 0.5,
                     }}
                   >
@@ -4255,7 +4349,10 @@ export default function Chat({
                       title={t("Close")}
                       onClick={() => setShowQuotaInfo(false)}
                       className="link"
-                      style={{ marginLeft: "auto" }}
+                      style={{
+                        marginLeft: rtl ? undefined : "auto",
+                        marginRight: !rtl ? undefined : "auto",
+                      }}
                     >
                       <CircleX size={18} color="var(--accent-1)" />
                     </Button>
@@ -4550,6 +4647,8 @@ export default function Chat({
                 <Div
                   style={{
                     ...styles.chatFooterButtons.style,
+                    marginLeft: rtl ? undefined : "auto",
+                    marginRight: !rtl ? undefined : "auto",
                   }}
                 >
                   {isHydrated && viewPortWidth > 410 && !needsReview && (

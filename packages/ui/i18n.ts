@@ -4,6 +4,7 @@ import { LANGUAGES, type locale, locales } from "./locales"
 import de from "./locales/de.json"
 import en from "./locales/en.json"
 import es from "./locales/es.json"
+import fa from "./locales/fa.json"
 import fr from "./locales/fr.json"
 import ja from "./locales/ja.json"
 import ko from "./locales/ko.json"
@@ -79,6 +80,7 @@ let savedLang: string | null
       nl: { translation: nl },
       tr: { translation: tr },
       sv: { translation: sv },
+      fa: { translation: fa },
     },
     debug: false,
     lng: safeLang,

@@ -1378,6 +1378,7 @@ export default function App({
                   ...styles.section.style,
                   ...styles.appsGrid.style,
                   padding: 0,
+                  direction: "ltr",
                 }}
               >
                 <Div style={{ ...styles.apps.style, overflowWrap: "anywhere" }}>

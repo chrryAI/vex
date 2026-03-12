@@ -142,7 +142,7 @@ const TribePostListItem = ({
     triggerOnce: false,
   })
 
-  const { setLanguage } = useAuth()
+  const { setLanguage, rtl } = useAuth()
 
   const { utilities } = useStyles()
 
@@ -186,7 +186,8 @@ const TribePostListItem = ({
           <A
             href={`/t/${post.tribe?.slug || "general"}`}
             style={{
-              marginLeft: "auto",
+              marginLeft: rtl ? undefined : "auto",
+              marginRight: !rtl ? undefined : "auto",
               fontSize: ".8rem",
               flexDirection: "row",
               alignItems: "center",
@@ -351,7 +352,8 @@ const TribePostListItem = ({
 
             <Div
               style={{
-                marginLeft: "auto",
+                marginLeft: rtl ? undefined : "auto",
+                marginRight: !rtl ? undefined : "auto",
                 display: "flex",
                 alignItems: "center",
                 gap: "0.5rem",
@@ -441,7 +443,12 @@ const TribePostListItem = ({
             )}
 
             {post.app && (
-              <Div style={{ marginLeft: "auto" }}>
+              <Div
+                style={{
+                  marginLeft: rtl ? undefined : "auto",
+                  marginRight: !rtl ? undefined : "auto",
+                }}
+              >
                 {(owner || user?.role === "admin") && (
                   <ConfirmButton
                     className="link"
@@ -540,7 +547,8 @@ const TribePostListItem = ({
                   {post.app.icon && (
                     <Img
                       style={{
-                        marginLeft: "auto",
+                        marginLeft: rtl ? undefined : "auto",
+                        marginRight: !rtl ? undefined : "auto",
                       }}
                       app={post.app}
                     />
@@ -938,6 +946,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     setBurn,
     back,
     setDisplayedApps,
+    rtl,
   } = useAuth()
   const { setAppStatus } = useApp()
   const { isExtension, isFirefox, viewPortWidth } = usePlatform()
@@ -1149,7 +1158,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 )}
                 <Div
                   style={{
-                    marginLeft: "auto",
+                    marginLeft: rtl ? undefined : "auto",
+                    marginRight: !rtl ? undefined : "auto",
                     fontSize: ".8rem",
                     display: "flex",
                     alignItems: "center",
@@ -1337,7 +1347,9 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           display: "flex",
                           alignItems: "center",
                           gap: 10,
-                          marginLeft: isSmallDevice ? undefined : "auto",
+                          marginLeft: rtl || isSmallDevice ? undefined : "auto",
+                          marginRight:
+                            !rtl || isSmallDevice ? undefined : "auto",
                         }}
                       >
                         {app?.mainThreadId && owner && (
@@ -1362,7 +1374,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             {app?.id === burnApp.id ? (
                               <Checkbox
                                 style={{
-                                  marginLeft: "auto",
+                                  marginLeft: rtl ? undefined : "auto",
+                                  marginRight: !rtl ? undefined : "auto",
                                   fontSize: ".85rem",
                                 }}
                                 checked={burn}
@@ -1633,7 +1646,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       </A>
                     ) : (
                       <A
-                        style={{ display: "flex", marginLeft: "auto" }}
+                        style={{
+                          display: "flex",
+                          marginLeft: rtl ? undefined : "auto",
+                          marginRight: !rtl ? undefined : "auto",
+                        }}
                         openInNewTab
                         href="https://github.com/chrryAI/vex/blob/main/SPATIAL_NAVIGATION.md"
                       >
@@ -1720,7 +1737,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           {app?.id === burnApp.id ? (
                             <Checkbox
                               style={{
-                                marginLeft: "auto",
+                                marginLeft: rtl ? undefined : "auto",
+                                marginRight: !rtl ? undefined : "auto",
                                 fontSize: ".85rem",
                               }}
                               checked={burn}
@@ -2289,7 +2307,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               display: "inline-flex",
                               gap: 2,
                               alignItems: "center",
-                              marginLeft: 6,
+                              marginLeft: rtl ? undefined : 6,
+                              marginRight: !rtl ? undefined : 6,
                             }}
                           >
                             <Span
@@ -2332,7 +2351,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           padding: "5px 10px",
                           display: "flex",
                           alignItems: "center",
-                          marginLeft: "auto",
+                          marginLeft: rtl ? undefined : "auto",
+                          marginRight: !rtl ? undefined : "auto",
                           gap: 5,
                         }}
                       >

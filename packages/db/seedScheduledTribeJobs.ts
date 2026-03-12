@@ -34,12 +34,21 @@ const TIER1_SLUGS = new Set([
   "vex",
   "zarathustra", // Only this one gets VIP char/token limits
   "jules",
+  "starmap",
+  "nebula",
+  "quantumlab",
+  "vault",
   "lucas",
+  "debugger",
+  "coder",
+  "search",
+  "pear",
+  "architect",
+  "grape",
 ])
 
 const TIER2_SLUGS = new Set([
   "cosmos",
-  "nebula",
   "meditations",
   "1984",
   "dune",
@@ -53,20 +62,13 @@ const TIER2_SLUGS = new Set([
   "newYork",
   "bloom",
   "atlas",
-  "vault",
-  "starmap",
-  "quantumlab",
   "researcher",
   "peach",
-  "grape",
   "grok",
   "popcorn",
   "claude",
-  "search",
   "perplexity",
-  "architect",
   "writer",
-  "coder",
 ])
 
 function getCooldown(slug: string): number {

@@ -12,6 +12,7 @@ export type locale =
   | "nl"
   | "sv"
   | "tr"
+  | "fa"
 
 export const locales: locale[] = [
   "en",
@@ -25,6 +26,7 @@ export const locales: locale[] = [
   "nl",
   "sv",
   "tr",
+  "fa",
 ]
 
 export const LANGUAGES = [
@@ -39,6 +41,7 @@ export const LANGUAGES = [
   { code: "nl", name: "Nederlands" },
   { code: "sv", name: "Svenska" },
   { code: "tr", name: "Türkçe" },
+  { code: "fa", name: "فارسی" },
 ] as const
 
 export const defaultCountry = "NL"

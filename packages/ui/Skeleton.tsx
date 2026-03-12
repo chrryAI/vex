@@ -47,6 +47,7 @@ function FocusButton({
   isDrawerOpen?: boolean
 }) {
   const { minimize } = useApp()
+  const { rtl } = useAuth()
 
   const { viewPortWidth } = usePlatform()
   const { app, getAppSlug, setShowFocus } = useAuth()
@@ -187,7 +188,8 @@ export default function Skeleton({
   // Data context
   const { FRONTEND_URL } = useData()
 
-  const { threadIdRef, isIDE, getAppSlug, getTribeUrl, ...auth } = useAuth()
+  const { threadIdRef, isIDE, getAppSlug, getTribeUrl, rtl, ...auth } =
+    useAuth()
 
   const showTribeProfile = auth.showTribeProfile && !auth.postId && isEmpty
 
@@ -237,7 +239,8 @@ export default function Skeleton({
       className={clsx(className)}
       style={{
         ...skeletonStyles.page.style,
-        paddingLeft: !isSmallDevice && isDrawerOpen ? 255 : 0,
+        paddingLeft: !isSmallDevice && isDrawerOpen && !rtl ? 255 : undefined,
+        paddingRight: !isSmallDevice && isDrawerOpen && rtl ? 255 : undefined,
         background: "transparent",
         // paddingTop: isCapacitor && os === "ios" ? 40 : undefined,
       }}
