@@ -212,45 +212,16 @@ export async function getBlueskyCredentials({
     return null
   }
 
-  const appSlug = app.slug.toUpperCase()
-  let handleSource = "global-fallback"
-  let passwordSource = "global-fallback"
+  const handle = app.blueskyHandle || undefined
 
-  let handle = app.blueskyHandle || undefined
-  if (handle) {
-    handleSource = "database"
-  } else if (appSlug && process.env[`BLUESKY_HANDLE_${appSlug}`]) {
-    handle = process.env[`BLUESKY_HANDLE_${appSlug}`] || undefined
-    handleSource = `env-BLUESKY_HANDLE_${appSlug}`
-  } else {
-    handle = "tribeai.bsky.social"
-    handleSource = "global-fallback"
-  }
-
-  let password = app.blueskyPassword
+  const password = app.blueskyPassword
     ? await decrypt(app.blueskyPassword)
     : undefined
-  if (password) {
-    passwordSource = "database"
-  } else if (appSlug && process.env[`BLUESKY_PASSWORD_${appSlug}`]) {
-    password = process.env[`BLUESKY_PASSWORD_${appSlug}`]
-    passwordSource = `env-BLUESKY_PASSWORD_${appSlug}`
-  } else {
-    password = process.env.BLUESKY_PASSWORD_TRIBE
-    passwordSource = "global-fallback"
-  }
 
   if (!handle || !password) {
     console.warn(`⚠️ Bluesky credentials not found for app: ${app.slug}`)
     return null
   }
-
-  console.log(`🔑 Bluesky Credentials for ${app.slug}:`, {
-    handle,
-    handleSource,
-    passwordSource,
-    hasPassword: !!password,
-  })
 
   return { handle, password }
 }

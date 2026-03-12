@@ -1853,7 +1853,7 @@ const _generateTribes = async () => {
 
 const prod = async () => {
   // Check if admin user already exists
-  // await clearMemories()
+  // await _clearMemories()
   // await clearGuests()
   const admin = await getUser({
     email: isProd || isVex ? "ibsukru@gmail.com" : "test@gmail.com",
@@ -1882,7 +1882,7 @@ const prod = async () => {
 
   // await seedPearFeedback()
 
-  await seedScheduledTribeJobs({ admin })
+  // await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 
