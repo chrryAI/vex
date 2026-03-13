@@ -30,7 +30,6 @@ import {
   GUEST_CREDITS_PER_MONTH,
   MEMBER_CREDITS_PER_MONTH,
   pearFeedback,
-  tribePosts,
 } from "@repo/db/src/schema"
 
 const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(

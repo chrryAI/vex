@@ -8,7 +8,7 @@ import {
   wait,
 } from ".."
 import { chat } from "./chat"
-import { clean, prepare } from "./clean"
+import { prepare } from "./clean"
 import { signIn } from "./signIn"
 
 export async function collaboration({

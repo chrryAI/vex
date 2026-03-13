@@ -11,6 +11,7 @@ try {
     socket: {
       host: FALKORDB_HOST,
       port: FALKORDB_PORT,
+      connectTimeout: 3000, // Fail fast in CI / dev environments
     },
   })
   // Verify it's actually FalkorDB by sending a test GRAPH.QUERY

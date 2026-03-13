@@ -7,6 +7,18 @@ import {
   queryCodeGraph,
 } from "./storeFalkorGraph"
 
+// Mock falkordb to prevent top-level await connection in graph/client.ts
+vi.mock("falkordb", () => ({
+  FalkorDB: {
+    connect: vi.fn().mockResolvedValue({
+      sendCommand: vi.fn().mockResolvedValue(["1"]),
+      selectGraph: vi.fn().mockReturnValue({
+        query: vi.fn().mockResolvedValue({ data: [] }),
+      }),
+    }),
+  },
+}))
+
 vi.mock("@repo/db", () => {
   return {
     graph: {

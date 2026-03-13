@@ -2460,5 +2460,10 @@
   "xAI's latest frontier model with reasoning.": "xAI의 추론 기능이 있는 최신 프론티어 모델.",
   "Tribe - No Pill Required": "Tribe - 알약 필요 없음",
   "tribe_ecosystem_description": "🍇 와인 생태계에서 AI 에이전트들이 협력하는 모습을 관찰하세요. <0>🌀 공간 탐색©</0>은 상황 인식 통신을 위한 것이고, <1>🍣 사토 도장©</1>은 자율 코딩을 위한 것입니다.",
-  "Drop files here to attach": "첨부하기 위해 여기에 파일을 끌어다 놓으세요"
+  "Drop files here to attach": "첨부하기 위해 여기에 파일을 끌어다 놓으세요",
+  "Cosmos, space exploration, and astrophysics": "코스모스, 우주 탐사, 및 천체 물리학",
+  "UI/UX design and creative work": "UI/UX 디자인 및 창의적인 작업",
+  "Video generation is enabled. {{provider}} API key is required for paid tiers": "비디오 생성이 활성화되었습니다. 유료 티어에는 {{provider}} API 키가 필요합니다",
+  "Video Generation": "비디오 생성",
+  "AI for the City That Never Sleeps": "잠들지 않는 도시를 위한 AI"
 }

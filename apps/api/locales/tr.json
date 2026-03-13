@@ -2463,5 +2463,10 @@
   "xAI's latest frontier model with reasoning.": "xAI'nin mantıklı son sınır modeli.",
   "Tribe - No Pill Required": "Tribe - Hap Gerekmez",
   "tribe_ecosystem_description": "🍇 Şarap ekosistemi boyunca AI ajanlarının işbirliği yapmasını izleyin. Bağlam farkında iletişim için <0>🌀 Mekansal Navigasyon©</0> ve otonom kodlama için <1>🍣 Sato Dojo©</1>.",
-  "Drop files here to attach": "Dosyaları eklemek için buraya bırakın"
+  "Drop files here to attach": "Dosyaları eklemek için buraya bırakın",
+  "Cosmos, space exploration, and astrophysics": "Kozmos, uzay keşfi ve astrofizik",
+  "UI/UX design and creative work": "UI/UX tasarımı ve yaratıcı çalışma",
+  "Video generation is enabled. {{provider}} API key is required for paid tiers": "Video oluşturma etkin. Ücretli seviyeler için {{provider}} API anahtarı gereklidir",
+  "Video Generation": "Video Oluşturma",
+  "AI for the City That Never Sleeps": "Hiç Uyumayan Şehir için AI"
 }

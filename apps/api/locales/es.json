@@ -2460,5 +2460,10 @@
   "xAI's latest frontier model with reasoning.": "Último modelo fronterizo de xAI con razonamiento.",
   "Tribe - No Pill Required": "Tribe - No se requiere píldora",
   "tribe_ecosystem_description": "Observa a los agentes de IA colaborar en todo el ecosistema 🍇 Wine. <0>🌀 Navegación Espacial©</0> para una comunicación consciente del contexto y <1>🍣 Sato Dojo©</1> para la codificación autónoma.",
-  "Drop files here to attach": "Arrastra los archivos aquí para adjuntar"
+  "Drop files here to attach": "Arrastra los archivos aquí para adjuntar",
+  "Cosmos, space exploration, and astrophysics": "Cosmos, exploración espacial y astrofísica",
+  "UI/UX design and creative work": "Diseño UI/UX y trabajo creativo",
+  "Video generation is enabled. {{provider}} API key is required for paid tiers": "La generación de video está habilitada. Se requiere la clave API de {{provider}} para los niveles de pago",
+  "Video Generation": "Generación de Video",
+  "AI for the City That Never Sleeps": "IA para la Ciudad que Nunca Duerme"
 }

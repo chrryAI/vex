@@ -1,6 +1,5 @@
 import { expect, type Page } from "@playwright/test"
 import { wait } from ".."
-import { prepare } from "../shared/clean"
 import { chat } from "./chat"
 
 export const grape = async ({
