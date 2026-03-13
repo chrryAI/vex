@@ -334,7 +334,7 @@ export default function Menu({
         style={{
           ...styles.menu.style,
           borderRight: rtl ? "none" : "1px dashed var(--shade-2)",
-          borderLeft: !rtl ? "none" : "1px dashed var(--shade-2)",
+          borderLeft: rtl ? "1px dashed var(--shade-2)" : "none",
           ...(isCapacitor && os === "ios" ? { paddingTop: 60 } : {}),
           paddingBottom: os === "ios" || tauri ? 10 : 0,
           ...(isDrawerOpen ? styles.open.style : styles.closed.style),
@@ -433,9 +433,9 @@ export default function Menu({
                     style={{
                       ...styles.menuButton.style,
                       marginRight: rtl ? "auto" : undefined,
-                      marginLeft: !rtl ? "auto" : undefined,
+                      marginLeft: rtl ? undefined : "auto",
                       right: rtl ? 0 : -7,
-                      left: !rtl ? 0 : -7,
+                      left: rtl ? -7 : 0,
                     }}
                   >
                     <PanelRight
@@ -513,7 +513,7 @@ export default function Menu({
                       strokeWidth={3}
                       style={{
                         marginRight: rtl ? "0.3rem" : undefined,
-                        marginLeft: !rtl ? "0.3rem" : undefined,
+                        marginLeft: rtl ? undefined : "0.3rem",
                       }}
                       color={burn ? COLORS.orange : colors.shade6}
                     />
@@ -631,7 +631,7 @@ export default function Menu({
                     <Div
                       style={{
                         marginRight: rtl ? "auto" : undefined,
-                        marginLeft: !rtl ? "auto" : undefined,
+                        marginLeft: rtl ? undefined : "auto",
                         display: "inline-flex",
                         alignItems: "center",
                         gap: 7.5,
@@ -973,7 +973,7 @@ export default function Menu({
               <Button
                 style={{
                   marginRight: rtl ? "auto" : undefined,
-                  marginLeft: !rtl ? "auto" : undefined,
+                  marginLeft: rtl ? undefined : "auto",
                   gap: 7.5,
                   color: "#f87171",
                   fontSize: "0.8rem",
@@ -1021,7 +1021,7 @@ export default function Menu({
                   style={{
                     color: colors.accent6,
                     marginRight: rtl ? 5 : undefined,
-                    marginLeft: !rtl ? 5 : undefined,
+                    marginLeft: rtl ? undefined : 5,
                     fontSize: "0.5rem",
                   }}
                   className={"link"}
@@ -1039,7 +1039,7 @@ export default function Menu({
                   style={{
                     color: colors.accent6,
                     marginRight: rtl ? 5 : undefined,
-                    marginLeft: !rtl ? 5 : undefined,
+                    marginLeft: rtl ? undefined : 5,
                     fontSize: "0.7rem",
                   }}
                   className={"link"}
@@ -1062,7 +1062,7 @@ export default function Menu({
                   style={{
                     ...styles.reduceMotionButton.style,
                     marginRight: rtl ? "auto" : undefined,
-                    marginLeft: !rtl ? "auto" : undefined,
+                    marginLeft: rtl ? undefined : "auto",
                   }}
                   className={"link"}
                 >
@@ -1132,7 +1132,7 @@ export default function Menu({
                 <Span
                   style={{
                     marginRight: rtl ? "auto" : undefined,
-                    marginLeft: !rtl ? "auto" : undefined,
+                    marginLeft: rtl ? undefined : "auto",
                     fontSize: 12,
                   }}
                 >
