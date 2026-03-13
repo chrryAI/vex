@@ -41,6 +41,7 @@ import {
   memories,
   messages,
   moltQuestions,
+  pearFeedback,
   placeHolders,
   realtimeAnalytics,
   scheduledJobs,
@@ -295,6 +296,7 @@ const clearDb = async (): Promise<void> => {
   await db.delete(tribePosts)
   await db.delete(tribeLikes)
   await db.delete(tribes)
+  await db.delete(pearFeedback)
 
   if (isWaffles) {
     return
@@ -1110,7 +1112,7 @@ const create = async () => {
   const { vex } = await createStores({ user: admin })
 
   await seedTribeEngagement()
-  await seedPearFeedback()
+  // await seedPearFeedback()
 
   await updateStoreUrls({ user: admin })
 

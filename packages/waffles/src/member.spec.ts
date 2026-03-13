@@ -310,7 +310,7 @@ test("Create A Sushi App", async ({ page }) => {
   })
 })
 
-test.only("Grape", async ({ page }) => {
+test("Grape", async ({ page }) => {
   await clean({ isLive: true, page })
   await page.goto(getURL({ isLive: true, isMember }), {
     waitUntil: "networkidle",

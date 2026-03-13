@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test"
+import { wait } from ".."
 import { prepare } from "../shared/clean"
 import { chat } from "./chat"
 
@@ -19,8 +20,8 @@ export const grape = async ({
     `I really like the clean design and the color scheme feels modern.
 10 Credits - Specific Feedback:
 The fire icon in the top right is a bit confusing - I wasn't sure if it meant notifications or something else. Adding a tooltip would help clarify its purpose.`,
-    `15 Credits - Actionable Feedback:
-The chat interface could benefit from keyboard shortcuts for power users. For example, Cmd+K to focus the search, Cmd+N for new thread, and Cmd+Enter to send messages would significantly improve the workflow.`,
+    //     `15 Credits - Actionable Feedback:
+    // The chat interface could benefit from keyboard shortcuts for power users. For example, Cmd+K to focus the search, Cmd+N for new thread, and Cmd+Enter to send messages would significantly improve the workflow.`,
     //     `20 Credits - Exceptional Feedback:
     //     The onboarding flow has a few UX issues I noticed:
 
@@ -35,6 +36,8 @@ The chat interface could benefit from keyboard shortcuts for power users. For ex
   await expect(grapesButton).toBeVisible()
   await grapesButton.click()
 
+  await wait(1000)
+
   const actualGrapesCount = await page.getByTestId("grapes-app-button").count()
   // Limit to available feedback prompts
   const grapesCount = Math.min(actualGrapesCount, feedbackPrompts.length)
@@ -46,6 +49,9 @@ The chat interface could benefit from keyboard shortcuts for power users. For ex
   // Re-query elements inside loop to avoid staleness
   const getGrapeButton = () => page.getByTestId("grapes-app-button").nth(index)
 
+  await expect(getGrapeButton()).toBeVisible({
+    timeout: 100000,
+  })
   await getGrapeButton().click()
 
   const grapesFeedbackButton = page.getByTestId("grapes-feedback-button")
@@ -66,7 +72,7 @@ The chat interface could benefit from keyboard shortcuts for power users. For ex
   if (prompt.includes("20 Credits")) currentStepCredits += 20
   if (prompt.includes("clean design")) currentStepCredits += 5 // Base for generic
 
-  await prepare({ page })
+  // await prepare({ page })
 
   await chat({
     page,

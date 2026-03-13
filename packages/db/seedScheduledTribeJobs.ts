@@ -52,7 +52,7 @@ function validateTierCapacity(
 ): void {
   if (tierApps.length === 0) return
 
-  const interval = Math.floor(cooldown / tierApps.length)
+  const interval = Math.max(1, Math.floor(cooldown / tierApps.length))
   const maxOffset = (tierApps.length - 1) * interval
   const lastEventOffset = Math.floor((cooldown * MAX_EVENT_PERCENTAGE) / 100)
   const lastEventTime = maxOffset + lastEventOffset
@@ -206,6 +206,12 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
     tier2.map((a) => a.slug),
     COOLDOWN_T2,
     "TIER_2",
+  )
+
+  validateTierCapacity(
+    tier3.map((a) => a.slug),
+    COOLDOWN_T3,
+    "TIER_3",
   )
 
   const appsToUse = [...tier1, ...tier2, ...tier3]

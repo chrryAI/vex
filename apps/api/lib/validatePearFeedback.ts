@@ -147,25 +147,38 @@ function calculateCreditDistribution(totalCredits: number): CreditDistribution {
 /**
  * Get app owner ID
  */
-async function getAppOwnerId(appId: string): Promise<string | null> {
+async function getAppOwner(
+  appId: string,
+): Promise<{ userId?: string; guestId?: string } | null> {
   const app = await db.query.apps.findFirst({
     where: eq(apps.id, appId),
     columns: { userId: true, guestId: true, id: true },
   })
-  return app?.userId || app?.guestId || null
+  if (!app) return null
+  return {
+    userId: app.userId ?? undefined,
+    guestId: app.guestId ?? undefined,
+  }
 }
 
 /**
  * Transfer credits from app owner to user
  */
-async function transferCreditsFromOwner(
-  appOwnerId: string,
-  userId: string | undefined,
-  guestId: string | undefined,
-  agentId: string,
-  credits: number,
-  appId: string,
-): Promise<void> {
+async function transferCreditsFromOwner({
+  appOwnerId,
+  userId,
+  guestId,
+  agentId,
+  credits,
+  appId,
+}: {
+  appOwnerId: string
+  userId: string | undefined
+  guestId: string | undefined
+  agentId: string
+  credits: number
+  appId: string
+}): Promise<void> {
   const { userCredits, commission } = calculateCreditDistribution(credits)
 
   console.log("🍐 Transferring credits from app owner:", {
@@ -178,8 +191,8 @@ async function transferCreditsFromOwner(
   // Deduct from app owner
   await logCreditUsage({
     userId: appOwnerId,
+    guestId: appOwnerId,
     agentId,
-    guestId: undefined, // App owner is a user, not a guest
     creditCost: credits, // Positive = deduction
     messageType: "pear_feedback_payment",
     appId,
@@ -252,17 +265,18 @@ async function awardFeedbackCredits(
     creditCost: -credits,
   })
 
-  const appOwnerId = await getAppOwnerId(appId)
+  const appOwner = await getAppOwner(appId)
 
+  const appOwnerId = appOwner?.userId || appOwner?.guestId
   if (appOwnerId) {
-    await transferCreditsFromOwner(
+    await transferCreditsFromOwner({
       appOwnerId,
       userId,
       guestId,
       agentId,
       credits,
       appId,
-    )
+    })
   } else {
     await awardCreditsFromSystem(userId, guestId, agentId, credits, appId)
   }

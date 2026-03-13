@@ -336,7 +336,7 @@ export const subscribe = async ({
 
     expect(await getCreditsLeft(giftPage)).toBeGreaterThan(150)
 
-    await clean({ page: giftPage })
+    // await clean({ page: giftPage })
     await giftContext.close()
   }
   return true
