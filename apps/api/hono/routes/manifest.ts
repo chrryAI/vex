@@ -25,6 +25,66 @@ manifest.get("/", async (c) => {
 
   // Get site config based on hostname
   const siteConfig = getSiteConfig(chrryUrl || undefined)
+  // Helper to resize images for exact dimensions (prevents blurriness on iPhone)
+  const resizeIcon = (url: string, size: number) => {
+    // Get API URL (use internal URL in production to avoid Cloudflare round-trip)
+    const apiUrl =
+      process.env.INTERNAL_API_URL ||
+      process.env.API_URL ||
+      "https://chrry.dev/api"
+
+    // Use our resize API - centers image on canvas without upscaling
+    return `${apiUrl}/resize?url=${encodeURIComponent(url)}&w=${size}&h=${size}&fit=contain&q=100`
+  }
+
+  // Handle Tribe explicitly since it's not a standard App in the DB
+  if (siteConfig.isTribe) {
+    const themeColor = siteConfig.primaryColor || "#f87171"
+    const backgroundColor = "#ffffff"
+    const baseIcon = `/images/apps/${siteConfig.favicon || "tribe"}.png`
+
+    const icon512 = resizeIcon(baseIcon, 512)
+    const icon192 = resizeIcon(baseIcon, 192)
+    const icon180 = resizeIcon(baseIcon, 180)
+
+    const manifestData = {
+      name: siteConfig.name,
+      short_name: siteConfig.name,
+      description: siteConfig.description,
+      start_url: "/",
+      display: "standalone",
+      background_color: backgroundColor,
+      theme_color: themeColor,
+      orientation: "portrait-primary",
+      icons: [
+        {
+          src: icon192,
+          sizes: "192x192",
+          type: "image/png",
+          purpose: "any maskable",
+        },
+        {
+          src: icon512,
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "any maskable",
+        },
+        {
+          src: icon180,
+          sizes: "180x180",
+          type: "image/png",
+          purpose: "any",
+        },
+      ],
+      categories: ["social", "community"],
+    }
+
+    c.header("Content-Type", "application/manifest+json")
+    c.header("Cache-Control", "public, max-age=3600, s-maxage=86400")
+
+    return c.json(manifestData)
+  }
+
   const appSlug = siteConfig.slug
 
   // Get app by slug
@@ -54,18 +114,6 @@ manifest.get("/", async (c) => {
   // Get app icons by size
   // images array: [512px, 192x192, 180x180, 128px, 32px]
   const baseIcon = app.images?.[0]?.url || `/images/apps/${app?.slug}.png`
-
-  // Helper to resize images for exact dimensions (prevents blurriness on iPhone)
-  const resizeIcon = (url: string, size: number) => {
-    // Get API URL (use internal URL in production to avoid Cloudflare round-trip)
-    const apiUrl =
-      process.env.INTERNAL_API_URL ||
-      process.env.API_URL ||
-      "https://chrry.dev/api"
-
-    // Use our resize API - centers image on canvas without upscaling
-    return `${apiUrl}/resize?url=${encodeURIComponent(url)}&w=${size}&h=${size}&fit=contain&q=100`
-  }
 
   const icon512 = app.images?.[0]?.url || resizeIcon(baseIcon, 512) // Resize to exact 512x512
   const icon192 = app.images?.[1]?.url || resizeIcon(baseIcon, 192)
