@@ -1038,7 +1038,6 @@
   "Earn {{commission}} commission by sharing {{app}} with your audience": "Verdienen Sie {{commission}} Provision, indem Sie {{app}} mit Ihrem Publikum teilen",
   "MyAgent": "MeinAgent",
   "Create Your First Store": "Erstellen Sie Ihren ersten Store",
-  "Build your own AI app marketplace in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Erstellen Sie in wenigen Minuten Ihren eigenen AI-App-Marktplatz. Wählen Sie einen Namen, passen Sie Ihr Branding an und beginnen Sie mit der Veröffentlichung von Apps. Keine Programmierkenntnisse erforderlich.",
   "Publish & Monetize Apps": "Apps veröffentlichen & monetarisieren",
   "Upload your AI apps and set your pricing. Earn 40% revenue on every sale, with automatic payouts. Track analytics and grow your business.": "Laden Sie Ihre AI-Apps hoch und legen Sie Ihre Preise fest. Verdienen Sie 40% Umsatz bei jedem Verkauf, mit automatischen Auszahlungen. Verfolgen Sie Analysen und wachsen Sie Ihr Geschäft.",
   "Nested Store Hierarchy": "Verschachtelte Store-Hierarchie",
@@ -1218,7 +1217,6 @@
   "Seamlessly incorporate facts and citations. Claude Writer helps you write well-researched, credible content with proper attribution.": "Fügen Sie nahtlos Fakten und Zitate ein. Claude Writer hilft Ihnen, gut recherchierte, glaubwürdige Inhalte mit korrekter Zuschreibung zu schreiben.",
   "Revision Assistant": "Revisionsassistent",
   "Iterate and improve drafts collaboratively. Claude Writer provides constructive feedback and helps refine your work through multiple revisions.": "Arbeiten Sie gemeinsam an Entwürfen und verbessern Sie diese. Claude Writer gibt konstruktives Feedback und hilft Ihnen, Ihre Arbeit durch mehrere Überarbeitungen zu verfeinern.",
-  "AI App Marketplace": "AI App Marktplatz",
   "AI Coding Assistant": "AI Programmierassistent",
   "Real-Time AI Search": "Echtzeit-AI-Suche",
   "Expert Code Reviewer": "Experte für Code-Review",
@@ -2462,5 +2460,11 @@
   "xAI's latest frontier model with reasoning.": "xAIs neuestes Frontier-Modell mit Begründung.",
   "Tribe - No Pill Required": "Tribe - Keine Pille erforderlich",
   "tribe_ecosystem_description": "Beobachten Sie, wie KI-Agenten im 🍇 Wein-Ökosystem zusammenarbeiten. <0>🌀 Räumliche Navigation©</0> für kontextbewusste Kommunikation und <1>🍣 Sato Dojo©</1> für autonomes Programmieren.",
-  "Drop files here to attach": "Dateien hier ablegen, um sie anzuhängen"
+  "Drop files here to attach": "Dateien hier ablegen, um sie anzuhängen",
+  "Cosmos, space exploration, and astrophysics": "Kosmos, Raumfahrt und Astrophysik",
+  "UI/UX design and creative work": "UI/UX Design und kreative Arbeit",
+  "Video generation is enabled. {{provider}} API key is required for paid tiers": "Videogenerierung ist aktiviert. Ein {{provider}} API-Schlüssel ist für kostenpflichtige Stufen erforderlich",
+  "Video Generation": "Videogenerierung",
+  "AI for the City That Never Sleeps": "KI für die Stadt, die niemals schläft",
+  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Erstellen Sie in wenigen Minuten Ihre eigene AI-Super-App. Wählen Sie einen Namen, passen Sie Ihr Branding an und beginnen Sie mit der Veröffentlichung von Apps. Keine Programmierkenntnisse erforderlich."
 }

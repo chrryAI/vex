@@ -51,7 +51,7 @@ const Grapes = ({
   if (!grapes.length && !goToGrape) return null
 
   return (
-    <Div>
+    <Div key={dataTestId || slug}>
       {grapes.length > 0 && (
         <Modal
           isModalOpen={showGrapes}

@@ -1,7 +1,7 @@
 "use client"
 
 import clsx from "clsx"
-import { lazy, Suspense, useEffect, useState } from "react"
+import { lazy, Suspense, useEffect } from "react"
 import { useAppContext } from "./context/AppContext"
 import Grapes from "./Grapes"
 import Img from "./Image"

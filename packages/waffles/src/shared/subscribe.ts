@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test"
 import { log, type modelName, wait } from "../index"
 import { chat } from "./chat"
-import { clean, maximize, prepare } from "./clean"
+import { prepare } from "./clean"
 import { signIn } from "./signIn"
 
 export const subscribe = async ({
@@ -336,7 +336,7 @@ export const subscribe = async ({
 
     expect(await getCreditsLeft(giftPage)).toBeGreaterThan(150)
 
-    await clean({ page: giftPage })
+    // await clean({ page: giftPage })
     await giftContext.close()
   }
   return true

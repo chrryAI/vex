@@ -1,8 +1,8 @@
-# Chrry - AI App Marketplace
+# Chrry - AI Super App
 
 ## 🍒 What is Chrry?
 
-Chrry is your AI app marketplace - discover and use specialized AI apps for every task, right in your browser sidebar. From research and writing to coding and collaboration, access dozens of purpose-built AI apps without switching tabs.
+Chrry is your AI super app - discover and use specialized AI apps for every task, right in your browser sidebar. From research and writing to coding and collaboration, access dozens of purpose-built AI apps without switching tabs.
 
 ## ✨ Key Features:
 
@@ -53,7 +53,7 @@ Start with guest access - no account required. Upgrade anytime for unlimited fea
 
 ### Short Description (132 characters max):
 
-AI App Marketplace in your browser. Discover specialized AI apps for every task - research, coding, writing, and more.
+AI Super App in your browser. Discover specialized AI apps for every task - research, coding, writing, and more.
 
 ### Detailed Description:
 

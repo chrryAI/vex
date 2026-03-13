@@ -8,7 +8,7 @@ import {
   wait,
 } from ".."
 import { chat } from "./chat"
-import { clean, prepare } from "./clean"
+import { prepare } from "./clean"
 import { signIn } from "./signIn"
 
 export async function collaboration({
@@ -276,7 +276,7 @@ export async function collaboration({
   await page1.waitForTimeout(3000)
   expect(await page1.getByTestId("typing-indicator").count()).toBe(0)
 
-  await clean({ page: page1 })
+  await prepare({ page: page1 })
 
   // Clean up
   await context1.close()

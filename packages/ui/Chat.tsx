@@ -359,7 +359,7 @@ export default function Chat({
   const threadIdRef = useRef(threadId)
 
   useEffect(() => {
-    if (threadId) threadIdRef.current = threadId
+    threadIdRef.current = threadId
   }, [threadId])
 
   const setThreadId = (id?: string) => {

@@ -340,8 +340,9 @@ export default function Calendar({
   }, [defaultView])
   const hasCalendarScope = user?.hasCalendarScope
 
-  const [isGoogleConnected, _setIsGoogleConnected] =
-    useState(!!hasCalendarScope)
+  const [isGoogleConnected, _setIsGoogleConnected] = useState(
+    !!hasCalendarScope,
+  )
   const [isSyncing, setIsSyncing] = useState(false)
 
   const [calendarEventsStartDate, setCalendarEventsStartDate] = useState<

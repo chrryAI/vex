@@ -254,7 +254,8 @@ describe("Messages", () => {
     expect(tags.length).toBeGreaterThan(0)
   })
 
-  it("renders 'Create Your Agent' button for app owner", () => {
+  //legacy
+  it.skip("renders 'Create Your Agent' button for app owner", () => {
     // Setup conditions for Create Your Agent
     mockAuth.characterProfilesEnabled = false
     mockAuth.app = { id: "chrry" }

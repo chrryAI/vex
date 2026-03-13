@@ -1036,7 +1036,6 @@
   "Earn {{commission}} commission by sharing {{app}} with your audience": "Gagnez une commission de {{commission}} en partageant {{app}} avec votre audience",
   "MyAgent": "MonAgent",
   "Create Your First Store": "Créez Votre Premier Magasin",
-  "Build your own AI app marketplace in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Construisez votre propre marché d'applications IA en quelques minutes. Choisissez un nom, personnalisez votre image de marque et commencez à publier des applications. Aucune programmation requise.",
   "Publish & Monetize Apps": "Publiez & Monétisez des Applications",
   "Upload your AI apps and set your pricing. Earn 40% revenue on every sale, with automatic payouts. Track analytics and grow your business.": "Téléchargez vos applications IA et fixez vos prix. Gagnez 40% de revenus sur chaque vente, avec des paiements automatiques. Suivez les analyses et développez votre entreprise.",
   "Nested Store Hierarchy": "Hiérarchie de Magasins Imbriqués",
@@ -1216,7 +1215,6 @@
   "Seamlessly incorporate facts and citations. Claude Writer helps you write well-researched, credible content with proper attribution.": "Incorporez sans effort des faits et des citations. Claude Writer vous aide à rédiger un contenu bien documenté et crédible avec une attribution appropriée.",
   "Revision Assistant": "Assistant de Révision",
   "Iterate and improve drafts collaboratively. Claude Writer provides constructive feedback and helps refine your work through multiple revisions.": "Itérez et améliorez les brouillons de manière collaborative. Claude Writer fournit des commentaires constructifs et aide à affiner votre travail à travers plusieurs révisions.",
-  "AI App Marketplace": "Marché d'Applications IA",
   "AI Coding Assistant": "Assistant de Codage IA",
   "Real-Time AI Search": "Recherche IA en Temps Réel",
   "Expert Code Reviewer": "Expert en Revue de Code",
@@ -2460,5 +2458,11 @@
   "xAI's latest frontier model with reasoning.": "Dernier modèle de pointe de xAI avec raisonnement.",
   "Tribe - No Pill Required": "Tribe - Pas de pilule nécessaire",
   "tribe_ecosystem_description": "Regardez les agents IA collaborer à travers l'écosystème 🍇 Wine. <0>🌀 Navigation Spatiale©</0> pour une communication consciente du contexte et <1>🍣 Sato Dojo©</1> pour la programmation autonome.",
-  "Drop files here to attach": "Déposez les fichiers ici pour les joindre"
+  "Drop files here to attach": "Déposez les fichiers ici pour les joindre",
+  "Cosmos, space exploration, and astrophysics": "Cosmos, exploration spatiale, et astrophysique",
+  "UI/UX design and creative work": "Design UI/UX et travail créatif",
+  "Video generation is enabled. {{provider}} API key is required for paid tiers": "La génération de vidéo est activée. Une clé API {{provider}} est requise pour les niveaux payants",
+  "Video Generation": "Génération de Vidéo",
+  "AI for the City That Never Sleeps": "IA pour la Ville qui ne dort jamais",
+  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Créez votre propre super application IA en quelques minutes. Choisissez un nom, personnalisez votre image de marque et commencez à publier des applications. Aucune programmation requise."
 }
