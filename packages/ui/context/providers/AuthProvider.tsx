@@ -1176,9 +1176,8 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -1897,7 +1896,7 @@ export function AuthProvider({
       if (!token) return
       const result = await getApp({
         token,
-        appId,
+        appId: showTribe ? undefined : appId,
         chrryUrl,
         pathname,
         skipCache:

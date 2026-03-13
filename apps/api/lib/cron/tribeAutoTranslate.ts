@@ -277,21 +277,31 @@ RESPONSE FORMAT (JSON):
     }
 
     if (savedCount > 0) {
+      const fields = [
+        { name: "App ID", value: appId, inline: true },
+        { name: "Saved", value: savedCount.toString(), inline: true },
+        {
+          name: "Credits",
+          value: totalCreditsCharged.toString(),
+          inline: true,
+        },
+      ]
+
+      if (postIds && postIds.length > 0) {
+        fields.push({
+          name: "Post Link",
+          value: `https://tribe.chrry.ai/p/${postIds[0]}`,
+          inline: false,
+        })
+      }
+
       await sendDiscordNotification(
         {
           embeds: [
             {
               title: "🌍 Tribe Auto-Translate Success",
               color: 0x10b981,
-              fields: [
-                { name: "App ID", value: appId, inline: true },
-                { name: "Saved", value: savedCount.toString(), inline: true },
-                {
-                  name: "Credits",
-                  value: totalCreditsCharged.toString(),
-                  inline: true,
-                },
-              ],
+              fields,
               timestamp: new Date().toISOString(),
             },
           ],
