@@ -32,8 +32,11 @@ export async function postToBluesky({
   // Handle video attachment (highest priority for Bluesky)
   if (video) {
     try {
-      console.log(`🎬 Uploading video to Bluesky: ${video}`)
+      console.log(`🎬 Uploading video to Bluesky`)
       const videoResponse = await fetch(video)
+      if (!videoResponse.ok) {
+        throw new Error(`Failed to fetch video: ${videoResponse.status}`)
+      }
       const videoBlob = await videoResponse.blob()
       const videoArrayBuffer = await videoBlob.arrayBuffer()
       const videoUint8Array = new Uint8Array(videoArrayBuffer)
@@ -80,6 +83,13 @@ export async function postToBluesky({
           },
         })
 
+        if (!statusRes.ok) {
+          const errText = await statusRes.text()
+          throw new Error(
+            `Video status check failed: ${statusRes.status} ${errText}`,
+          )
+        }
+
         if (statusRes.ok) {
           const statusData = await statusRes.json()
           const job = statusData.job
@@ -110,7 +120,7 @@ export async function postToBluesky({
         throw new Error("Video processing timed out")
       }
     } catch (err) {
-      console.error("⚠️ Failed to upload video to Bluesky:", err)
+      console.error("⚠️ Failed to upload video to Bluesky:")
     }
   }
   // Handle image attachments (only if no video)
@@ -120,6 +130,9 @@ export async function postToBluesky({
       for (const imageUrl of images.slice(0, 4)) {
         console.log(`🖼️ Uploading image to Bluesky: ${imageUrl}`)
         const response = await fetch(imageUrl)
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status}`)
+        }
         const blob = await response.blob()
         const arrayBuffer = await blob.arrayBuffer()
         let uint8Array = new Uint8Array(arrayBuffer)
