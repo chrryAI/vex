@@ -2675,17 +2675,6 @@ export const getThreads = async ({
 }) => {
   // const user = userId ? await getUser({ id: userId }) : undefined
   // const guest = guestId ? await getGuest({ id: guestId }) : undefined
-  // If appId is provided, check if it's the store's main app and get all sub-app IDs
-  let finalAppIds = appIds
-  if (appId && !appIds) {
-    const app = await getApp({ id: appId, userId, guestId })
-    if (app) {
-      // Only aggregate threads if this IS the store's main app
-      if (app?.store?.appId === appId) {
-        finalAppIds = app?.store?.apps?.map((a) => a.id)
-      }
-    }
-  }
 
   const formattedSearch =
     search && search.length >= 3 ? formatSearchTerm(search) : undefined
@@ -2748,21 +2737,14 @@ export const getThreads = async ({
       ? or(eq(apps.userId, ownerId), eq(apps.guestId, ownerId))
       : undefined,
 
-    finalAppIds && finalAppIds.length > 0
+    appIds && appIds.length > 0
       ? or(
-          inArray(threads.appId, finalAppIds),
+          inArray(threads.appId, appIds),
           bookmarkedThreadIds && bookmarkedThreadIds.length > 0
             ? inArray(threads.id, bookmarkedThreadIds)
             : sql`false`,
         )
-      : appId
-        ? or(
-            eq(threads.appId, appId),
-            bookmarkedThreadIds && bookmarkedThreadIds.length > 0
-              ? inArray(threads.id, bookmarkedThreadIds)
-              : sql`false`,
-          )
-        : undefined,
+      : undefined,
     formattedSearch
       ? sql`to_tsvector('english', ${messages.content}) @@ to_tsquery('english', ${formattedSearch})`
       : undefined,
@@ -2835,6 +2817,9 @@ export const getThreads = async ({
       .leftJoin(users, eq(threads.userId, users.id))
       .leftJoin(apps, eq(threads.appId, apps.id))
       .orderBy(
+        appId
+          ? sql`CASE WHEN ${threads.appId} = ${appId} THEN 0 ELSE 1 END`
+          : sql`1`,
         ...(sort === "bookmark"
           ? [
               bookmarkedThreadIds && bookmarkedThreadIds.length > 0
@@ -2844,7 +2829,7 @@ export const getThreads = async ({
                   )}]::uuid[]) THEN 0 ELSE 1 END`
                 : sql`1`,
               // Main thread first for app owners
-              appId || (finalAppIds && finalAppIds.length > 0)
+              appId || (appIds && appIds.length > 0)
                 ? sql`CASE WHEN ${threads.isMainThread} = true THEN 0 ELSE 1 END`
                 : sql`1`,
               // Prioritize threads bookmarked by current user
@@ -2924,6 +2909,9 @@ export const getThreads = async ({
       .leftJoin(users, eq(threads.userId, users.id))
       .leftJoin(apps, eq(threads.appId, apps.id))
       .orderBy(
+        appId
+          ? sql`CASE WHEN ${threads.appId} = ${appId} THEN 0 ELSE 1 END`
+          : sql`1`,
         ...(sort === "bookmark"
           ? [
               bookmarkedThreadIds && bookmarkedThreadIds.length > 0
@@ -2933,7 +2921,7 @@ export const getThreads = async ({
                   )}]::uuid[]) THEN 0 ELSE 1 END`
                 : sql`1`,
               // Main thread first for app owners
-              appId || (finalAppIds && finalAppIds.length > 0)
+              appId || (appIds && appIds.length > 0)
                 ? sql`CASE WHEN ${threads.isMainThread} = true THEN 0 ELSE 1 END`
                 : sql`1`,
               // Prioritize threads bookmarked by current user
