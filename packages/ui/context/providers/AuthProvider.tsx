@@ -1897,7 +1897,7 @@ export function AuthProvider({
       if (!token) return
       const result = await getApp({
         token,
-        appId: showTribe ? undefined : appId,
+        appId,
         chrryUrl,
         pathname,
         skipCache:

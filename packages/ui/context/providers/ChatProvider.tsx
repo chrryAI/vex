@@ -324,7 +324,7 @@ export function ChatProvider({
     error: threadsError,
   } = useSWR(
     token && shouldFetchThreads && session
-      ? ["contextThreads", toFetch, app?.id, collaborationStatus]
+      ? ["contextThreads", toFetch, app?.id, collaborationStatus, showTribe]
       : null,
     async () => {
       try {
@@ -334,7 +334,7 @@ export function ChatProvider({
               setShouldFetchThreads(false)
             }
           },
-          appId: app?.id,
+          appId: showTribe ? undefined : app?.id,
           userName: userNameByUrl,
           pageSize: pageSizes.menuThreads - (isMobile ? 2 : 0),
           sort: "bookmark",

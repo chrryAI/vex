@@ -302,7 +302,7 @@ jobs:
       - name: Install Playwright Browsers
         run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
 
-      - name: Run Live Guest Playwright tests (Real AI)
+      - name: Run Live Guest Playwright tests
         env:
           PLAYWRIGHT_BASE_URL: ${{ env.STAGING_URL }}
           VEX_LIVE_FINGERPRINTS: ${{ secrets.VEX_LIVE_FINGERPRINTS }}
@@ -358,7 +358,7 @@ jobs:
       - name: Install Playwright Browsers
         run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
 
-      - name: Run Live Member Playwright tests (Real AI)
+      - name: Run Live Member Playwright tests
         env:
           PLAYWRIGHT_BASE_URL: ${{ env.STAGING_URL }}
           VEX_LIVE_FINGERPRINTS: ${{ secrets.VEX_LIVE_FINGERPRINTS }}
