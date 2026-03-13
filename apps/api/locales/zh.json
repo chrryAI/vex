@@ -1037,7 +1037,6 @@
   "Earn {{commission}} commission by sharing {{app}} with your audience": "通过与您的受众分享{{app}}，您可以赚取{{commission}}的佣金",
   "MyAgent": "我的代理",
   "Create Your First Store": "创建您的第一家商店",
-  "Build your own AI app marketplace in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "在几分钟内建立自己的AI应用市场。选择一个名字，定制您的品牌，并开始发布应用。无需编程。",
   "Publish & Monetize Apps": "发布并盈利应用",
   "Upload your AI apps and set your pricing. Earn 40% revenue on every sale, with automatic payouts. Track analytics and grow your business.": "上传您的AI应用并设定您的价格。每次销售都能赚取40%的收入，自动支付。跟踪分析并发展您的业务。",
   "Nested Store Hierarchy": "嵌套商店层次结构",
@@ -1217,7 +1216,6 @@
   "Seamlessly incorporate facts and citations. Claude Writer helps you write well-researched, credible content with proper attribution.": "无缝地融入事实和引用。Claude Writer帮助您撰写经过良好研究，具有可信度的内容，并进行适当的归因。",
   "Revision Assistant": "修订助手",
   "Iterate and improve drafts collaboratively. Claude Writer provides constructive feedback and helps refine your work through multiple revisions.": "协同迭代和改进草稿。Claude Writer提供建设性反馈，并通过多次修订帮助您改进工作。",
-  "AI App Marketplace": "AI应用市场",
   "AI Coding Assistant": "AI编程助手",
   "Real-Time AI Search": "实时AI搜索",
   "Expert Code Reviewer": "代码审查专家",
@@ -2466,5 +2464,6 @@
   "UI/UX design and creative work": "UI/UX设计和创意工作",
   "Video generation is enabled. {{provider}} API key is required for paid tiers": "已启用视频生成。付费等级需要{{provider}} API密钥",
   "Video Generation": "视频生成",
-  "AI for the City That Never Sleeps": "为不夜城打造的 AI"
+  "AI for the City That Never Sleeps": "为不夜城打造的 AI",
+  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "在几分钟内构建您自己的AI超级应用。选择一个名称，定制您的品牌形象，并开始发布应用。无需编程。"
 }

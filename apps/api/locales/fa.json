@@ -1083,7 +1083,6 @@
   "Earn {{commission}} commission by sharing {{app}} with your audience": "با به اشتراک گذاری {{app}} با مخاطبان خود، کمیسیون {{commission}} کسب کنید",
   "Track your wellness journey and environmental impact with AI-powered insights for a healthier you and planet.": "سفر بهداشتی خود و تأثیر محیطی خود را با بینش های قدرت گرفته از AI برای یک شما و سیاره سالمتر ردیابی کنید.",
   "Create Your First Store": "اولین فروشگاه خود را ایجاد کنید",
-  "Build your own AI app marketplace in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "در عرض چند دقیقه بازار برنامه AI خود را بسازید. یک نام انتخاب کنید، برند خود را سفارشی کنید و شروع به انتشار برنامه ها کنید. نیازی به کدنویسی نیست.",
   "Publish & Monetize Apps": "انتشار و درآمدزایی از برنامه ها",
   "Upload your AI apps and set your pricing. Earn 40% revenue on every sale, with automatic payouts. Track analytics and grow your business.": "برنامه های AI خود را بارگذاری کنید و قیمت خود را تعیین کنید. در هر فروش، 40٪ درآمد کسب کنید، با پرداخت های خودکار. تحلیل ها را ردیابی کنید و کسب و کار خود را گسترش دهید.",
   "Nested Store Hierarchy": "سلسله مراتب فروشگاه تو در تو",
@@ -1263,7 +1262,6 @@
   "Seamlessly incorporate facts and citations. Claude Writer helps you write well-researched, credible content with proper attribution.": "بدون درز حقایق و ارجاعات را در بر می گیرد. کلود رایتر به شما کمک می کند محتوای معتبر و پژوهشی را با ارجاع مناسب بنویسید.",
   "Revision Assistant": "دستیار بازبینی",
   "Iterate and improve drafts collaboratively. Claude Writer provides constructive feedback and helps refine your work through multiple revisions.": "به صورت همکاری پیش نویس ها را تکرار کنید و بهبود بخشید. کلود رایتر بازخورد سازنده ای ارائه می دهد و به شما کمک می کند کار خود را از طریق چندین بازبینی بهبود ببخشید.",
-  "AI App Marketplace": "بازار برنامه های هوش مصنوعی",
   "AI Coding Assistant": "دستیار کدنویسی هوش مصنوعی",
   "Real-Time AI Search": "جستجوی هوش مصنوعی به صورت زنده",
   "Expert Code Reviewer": "بازبین کد خبره",
@@ -2454,5 +2452,6 @@
   "UI/UX design and creative work": "طراحی UI/UX و کار خلاقانه",
   "Video generation is enabled. {{provider}} API key is required for paid tiers": "تولید ویدیو فعال است. برای سطوح پرداختی، کلید API {{provider}} مورد نیاز است",
   "Video Generation": "تولید ویدیو",
-  "AI for the City That Never Sleeps": "AI برای شهری که هرگز نمی خوابد"
+  "AI for the City That Never Sleeps": "AI برای شهری که هرگز نمی خوابد",
+  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "در عرض چند دقیقه برنامه فوق العاده هوش مصنوعی خود را بسازید. یک نام انتخاب کنید، برند خود را سفارشی کنید و شروع به انتشار برنامه ها کنید. هیچ نیازی به کدنویسی نیست."
 }

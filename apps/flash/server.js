@@ -108,7 +108,7 @@ const chrryAI = {
     "https://chromewebstore.google.com/detail/chrry-🍒/odgdgbbddopmblglebfngmaebmnhegfc",
   url: "https://chrry.ai",
   store: "https://chrry.ai",
-  description: "AI App Marketplace - Discover, create, and monetize AI apps",
+  description: "AI Super App - Discover, create, and monetize AI apps",
   logo: "🍒",
   primaryColor: "#E91E63", // Cherry pink
   links: {
@@ -373,6 +373,8 @@ const e2eVex = Object.assign(Object.assign({}, vex), {
 })
 const _tribe = Object.assign(Object.assign({}, zarathustra), {
   mode: "tribe",
+  slug: "tribe",
+  storeSlug: "social",
   name: "Tribe",
   url: "https://tribe.chrry.ai",
   domain: "tribe.chrry.ai",
@@ -690,9 +692,10 @@ export const whiteLabels = [
   vex,
   pear,
   vault,
+  _tribe,
 ]
 
-const VERSION = "2.0.68"
+const VERSION = "2.0.69"
 // Constants
 const port = process.env.PORT || 5173
 const base = process.env.BASE || "/"

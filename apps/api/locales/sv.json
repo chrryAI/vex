@@ -1082,7 +1082,6 @@
   "Earn {{commission}} commission by sharing {{app}} with your audience": "Tjäna {{commission}} provision genom att dela {{app}} med din publik",
   "Track your wellness journey and environmental impact with AI-powered insights for a healthier you and planet.": "Spåra din wellness-resa och miljöpåverkan med AI-drivna insikter för en hälsosammare du och planet.",
   "Create Your First Store": "Skapa Din Första Butik",
-  "Build your own AI app marketplace in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Bygg din egen AI-appmarknad på några minuter. Välj ett namn, anpassa ditt varumärke och börja publicera appar. Ingen kodning krävs.",
   "Publish & Monetize Apps": "Publicera & Monetisera Appar",
   "Upload your AI apps and set your pricing. Earn 40% revenue on every sale, with automatic payouts. Track analytics and grow your business.": "Ladda upp dina AI-appar och sätt ditt pris. Tjäna 40% intäkter på varje försäljning, med automatiska utbetalningar. Spåra analys och väx din verksamhet.",
   "Nested Store Hierarchy": "Nästlad Butikshierarki",
@@ -1262,7 +1261,6 @@
   "Seamlessly incorporate facts and citations. Claude Writer helps you write well-researched, credible content with proper attribution.": "Inkorporera sömlöst fakta och citat. Claude Writer hjälper dig att skriva välundersökt, trovärdigt innehåll med korrekt attribution.",
   "Revision Assistant": "Revisionsassistent",
   "Iterate and improve drafts collaboratively. Claude Writer provides constructive feedback and helps refine your work through multiple revisions.": "Iterera och förbättra utkast i samarbete. Claude Writer ger konstruktiv feedback och hjälper till att förbättra ditt arbete genom flera revisioner.",
-  "AI App Marketplace": "AI App Marknadsplats",
   "AI Coding Assistant": "AI Kodningsassistent",
   "Real-Time AI Search": "Real-Time AI Sökning",
   "Expert Code Reviewer": "Expert Kodgranskare",
@@ -2454,5 +2452,6 @@
   "UI/UX design and creative work": "UI/UX-design och kreativt arbete",
   "Video generation is enabled. {{provider}} API key is required for paid tiers": "Videogenerering är aktiverad. {{provider}} API-nyckel krävs för betalda nivåer",
   "Video Generation": "Videogenerering",
-  "AI for the City That Never Sleeps": "AI för staden som aldrig sover"
+  "AI for the City That Never Sleeps": "AI för staden som aldrig sover",
+  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Bygg din egen AI superapp på några minuter. Välj ett namn, anpassa ditt varumärke och börja publicera appar. Ingen kodning krävs."
 }

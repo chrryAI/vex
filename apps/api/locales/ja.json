@@ -1036,7 +1036,6 @@
   "Earn {{commission}} commission by sharing {{app}} with your audience": "{{app}}をあなたの視聴者と共有することで{{commission}}のコミッションを獲得する",
   "MyAgent": "マイエージェント",
   "Create Your First Store": "最初のストアを作成する",
-  "Build your own AI app marketplace in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "数分で自分だけのAIアプリマーケットプレイスを作成しましょう。名前を選び、ブランディングをカスタマイズし、アプリを公開し始めます。コーディングは必要ありません。",
   "Publish & Monetize Apps": "アプリを公開して収益化する",
   "Upload your AI apps and set your pricing. Earn 40% revenue on every sale, with automatic payouts. Track analytics and grow your business.": "AIアプリをアップロードし、価格を設定します。自動支払いで、すべての販売から40％の収益を得ます。分析を追跡し、ビジネスを成長させます。",
   "Nested Store Hierarchy": "ネストされたストア階層",
@@ -1216,7 +1215,6 @@
   "Seamlessly incorporate facts and citations. Claude Writer helps you write well-researched, credible content with proper attribution.": "事実と引用をシームレスに組み込みます。Claude Writerは、適切な引用を含む信頼性の高い内容を書くのを助けます。",
   "Revision Assistant": "リビジョンアシスタント",
   "Iterate and improve drafts collaboratively. Claude Writer provides constructive feedback and helps refine your work through multiple revisions.": "共同でドラフトを反復し、改善します。Claude Writerは建設的なフィードバックを提供し、複数回の改訂を通じてあなたの作品を洗練します。",
-  "AI App Marketplace": "AIアプリマーケットプレイス",
   "AI Coding Assistant": "AIコーディングアシスタント",
   "Real-Time AI Search": "リアルタイムAI検索",
   "Expert Code Reviewer": "エキスパートコードレビュアー",
@@ -2465,5 +2463,6 @@
   "UI/UX design and creative work": "UI/UXデザインとクリエイティブな作業",
   "Video generation is enabled. {{provider}} API key is required for paid tiers": "ビデオ生成が有効化されています。有料プランには{{provider}} APIキーが必要です",
   "Video Generation": "ビデオ生成",
-  "AI for the City That Never Sleeps": "眠らない都市のためのAI"
+  "AI for the City That Never Sleeps": "眠らない都市のためのAI",
+  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "数分で自分だけのAIスーパーアプリを作成しましょう。名前を選び、ブランディングをカスタマイズし、アプリを公開し始めます。コーディングは必要ありません。"
 }

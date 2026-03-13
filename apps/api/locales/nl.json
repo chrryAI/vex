@@ -1036,7 +1036,6 @@
   "Earn {{commission}} commission by sharing {{app}} with your audience": "Verdien {{commission}} commissie door {{app}} te delen met uw publiek",
   "MyAgent": "MijnAgent",
   "Create Your First Store": "Creëer uw eerste winkel",
-  "Build your own AI app marketplace in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Bouw in enkele minuten uw eigen AI-app-marktplaats. Kies een naam, pas uw branding aan en begin met het publiceren van apps. Geen codering vereist.",
   "Publish & Monetize Apps": "Publiceer & Monetiseer Apps",
   "Upload your AI apps and set your pricing. Earn 40% revenue on every sale, with automatic payouts. Track analytics and grow your business.": "Upload uw AI-apps en stel uw prijzen in. Verdien 40% omzet op elke verkoop, met automatische uitbetalingen. Volg analyses en groei uw bedrijf.",
   "Nested Store Hierarchy": "Geneste Winkelhiërarchie",
@@ -1217,7 +1216,6 @@
   "Revision Assistant": "Revisie Assistent",
   "Iterate and improve drafts collaboratively. Claude Writer provides constructive feedback and helps refine your work through multiple revisions.": "Itereer en verbeter concepten samen. Claude Writer biedt constructieve feedback en helpt uw werk te verfijnen door meerdere revisies.",
   "Master of essays, articles, and documentation. Claude Writer excels at creating detailed, well-structured content with perfect flow and clarity.": "Meester in essays, artikelen en documentatie. Claude Writer blinkt uit in het creëren van gedetailleerde, goed gestructureerde inhoud met perfecte stroom en duidelijkheid.",
-  "AI App Marketplace": "AI App Marktplaats",
   "AI Coding Assistant": "AI Programmeerassistent",
   "Real-Time AI Search": "Real-Time AI Zoeken",
   "Expert Code Reviewer": "Expert Code Reviewer",
@@ -2466,5 +2464,6 @@
   "UI/UX design and creative work": "UI/UX ontwerp en creatief werk",
   "Video generation is enabled. {{provider}} API key is required for paid tiers": "Videogeneratie is ingeschakeld. {{provider}} API-sleutel is vereist voor betaalde niveaus",
   "Video Generation": "Videogeneratie",
-  "AI for the City That Never Sleeps": "AI voor de stad die nooit slaapt"
+  "AI for the City That Never Sleeps": "AI voor de stad die nooit slaapt",
+  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Bouw in enkele minuten je eigen AI super app. Kies een naam, pas je branding aan en begin met het publiceren van apps. Geen codering vereist."
 }

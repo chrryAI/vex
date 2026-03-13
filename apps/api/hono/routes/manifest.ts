@@ -40,7 +40,7 @@ manifest.get("/", async (c) => {
   // Handle Tribe explicitly since it's not a standard App in the DB
   if (siteConfig.isTribe) {
     const themeColor = siteConfig.primaryColor || "#f87171"
-    const backgroundColor = "#ffffff"
+    const backgroundColor = "#000000"
     const baseIcon = `/images/apps/${siteConfig.favicon || "tribe"}.png`
 
     const icon512 = resizeIcon(baseIcon, 512)

@@ -873,7 +873,7 @@ function handleAppClick(app: App, currentStore: Store) {
 │  Chrry (Base)                                                │
 │  ├─ Features: App marketplace, store creation               │
 │  ├─ Tools: calendar, location, weather                      │
-│  └─ System Prompt: "You are Chrry, AI App Marketplace..."   │
+│  └─ System Prompt: "You are Chrry, AI Super App..."   │
 │     │                                                        │
 │     ├─→ Vex (extends Chrry)                                 │
 │     │   ├─ Inherits: marketplace features, basic tools     │
@@ -1110,7 +1110,6 @@ The **Sato Spatial Dojo** represents a paradigm shift in application architectur
 ✅ **Domain-Based Context**: Same app, different behavior per domain
 
 **The result:** A unified system where stores (domains), apps (contexts), and code (depth) form a 3D spatial navigation system enabling infinite variations from finite code.
-
 
 ---
 

@@ -1036,7 +1036,6 @@
   "Earn {{commission}} commission by sharing {{app}} with your audience": "Gana una comisión de {{commission}} compartiendo {{app}} con tu audiencia",
   "MyAgent": "MiAgente",
   "Create Your First Store": "Crea Tu Primera Tienda",
-  "Build your own AI app marketplace in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Crea tu propio mercado de aplicaciones de IA en minutos. Elige un nombre, personaliza tu marca y comienza a publicar aplicaciones. No se requiere programación.",
   "Publish & Monetize Apps": "Publica y Monetiza Aplicaciones",
   "Upload your AI apps and set your pricing. Earn 40% revenue on every sale, with automatic payouts. Track analytics and grow your business.": "Sube tus aplicaciones de IA y establece tus precios. Gana un 40% de los ingresos en cada venta, con pagos automáticos. Rastrea las analíticas y haz crecer tu negocio.",
   "Nested Store Hierarchy": "Jerarquía de Tiendas Anidadas",
@@ -1216,7 +1215,6 @@
   "Seamlessly incorporate facts and citations. Claude Writer helps you write well-researched, credible content with proper attribution.": "Incorpora sin problemas hechos y citas. Claude Writer te ayuda a escribir contenido bien investigado, creíble y con la atribución adecuada.",
   "Revision Assistant": "Asistente de Revisión",
   "Iterate and improve drafts collaboratively. Claude Writer provides constructive feedback and helps refine your work through multiple revisions.": "Itera y mejora los borradores de manera colaborativa. Claude Writer proporciona retroalimentación constructiva y ayuda a refinar tu trabajo a través de múltiples revisiones.",
-  "AI App Marketplace": "Mercado de Aplicaciones de IA",
   "AI Coding Assistant": "Asistente de Codificación de IA",
   "Real-Time AI Search": "Búsqueda de IA en Tiempo Real",
   "Expert Code Reviewer": "Revisor de Código Experto",
@@ -2465,5 +2463,6 @@
   "UI/UX design and creative work": "Diseño UI/UX y trabajo creativo",
   "Video generation is enabled. {{provider}} API key is required for paid tiers": "La generación de video está habilitada. Se requiere la clave API de {{provider}} para los niveles de pago",
   "Video Generation": "Generación de Video",
-  "AI for the City That Never Sleeps": "IA para la Ciudad que Nunca Duerme"
+  "AI for the City That Never Sleeps": "IA para la Ciudad que Nunca Duerme",
+  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Crea tu propia súper aplicación de IA en minutos. Elige un nombre, personaliza tu marca y comienza a publicar aplicaciones. No se requiere programación."
 }

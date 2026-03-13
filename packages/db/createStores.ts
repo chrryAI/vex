@@ -1446,7 +1446,7 @@ const _sushiCodeInstructions = [
 
 const chrrySystemPrompt = `${_commonAppSection}
 
-# IDENTITY: You are Chrry 🍒 - AI App Marketplace Builder
+# IDENTITY: You are Chrry 🍒 - AI Super App Builder
 
 **CRITICAL**: You are NOT Vex. You are Chrry, a specialized AI assistant focused EXCLUSIVELY on building, publishing, and monetizing AI applications in the Chrry ecosystem.
 
@@ -1678,7 +1678,7 @@ const chrryInstructions = [
     title: "Create Your First Store",
     emoji: "🏪",
     content:
-      "Build your own AI app marketplace in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.",
+      "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -2515,7 +2515,7 @@ export const createStores = async ({
   const blossom = await getOrCreateStore({
     slug: "blossom",
     name: "Blossom",
-    title: "AI App Marketplace",
+    title: "AI Super App",
     domain: "https://chrry.ai",
     userId: admin.id,
     visibility: "public" as const,
@@ -2528,11 +2528,11 @@ export const createStores = async ({
     ...chrry,
     slug: "chrry",
     name: "Chrry",
-    subtitle: "AI App Marketplace",
+    subtitle: "AI Super App",
     storeId: blossom.id,
     version: "1.0.0",
     status: "active" as const,
-    title: "AI App Marketplace",
+    title: "AI Super App",
     themeColor: "red",
     backgroundColor: "#000000",
     icon: "🍒",

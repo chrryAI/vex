@@ -1036,7 +1036,6 @@
   "Earn {{commission}} commission by sharing {{app}} with your audience": "{{app}}을 귀하의 관객과 공유함으로써 {{commission}}의 커미션을 얻으세요",
   "MyAgent": "내 에이전트",
   "Create Your First Store": "첫 번째 스토어 만들기",
-  "Build your own AI app marketplace in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "몇 분 만에 자신만의 AI 앱 마켓플레이스를 만드세요. 이름을 선택하고, 브랜딩을 맞춤 설정하고, 앱을 게시하기 시작하세요. 코딩은 필요 없습니다.",
   "Publish & Monetize Apps": "앱 게시 및 수익화",
   "Upload your AI apps and set your pricing. Earn 40% revenue on every sale, with automatic payouts. Track analytics and grow your business.": "AI 앱을 업로드하고 가격을 설정하세요. 모든 판매에서 40%의 수익을 얻으며, 자동 지급이 이루어집니다. 분석을 추적하고 비즈니스를 성장시키세요.",
   "Nested Store Hierarchy": "중첩된 스토어 계층 구조",
@@ -1216,7 +1215,6 @@
   "Seamlessly incorporate facts and citations. Claude Writer helps you write well-researched, credible content with proper attribution.": "사실과 인용을 원활하게 통합하세요. Claude Writer는 잘 연구된, 신뢰할 수 있는 콘텐츠를 적절한 출처 표기와 함께 작성하는 데 도움을 줍니다.",
   "Revision Assistant": "리비전 어시스턴트",
   "Iterate and improve drafts collaboratively. Claude Writer provides constructive feedback and helps refine your work through multiple revisions.": "협업을 통해 초안을 반복하고 개선하세요. Claude Writer는 건설적인 피드백을 제공하고 여러 차례의 수정을 통해 작업을 세련되게 만드는 데 도움을 줍니다.",
-  "AI App Marketplace": "AI 앱 마켓플레이스",
   "AI Coding Assistant": "AI 코딩 어시스턴트",
   "Real-Time AI Search": "실시간 AI 검색",
   "Expert Code Reviewer": "전문 코드 리뷰어",
@@ -2465,5 +2463,6 @@
   "UI/UX design and creative work": "UI/UX 디자인 및 창의적인 작업",
   "Video generation is enabled. {{provider}} API key is required for paid tiers": "비디오 생성이 활성화되었습니다. 유료 티어에는 {{provider}} API 키가 필요합니다",
   "Video Generation": "비디오 생성",
-  "AI for the City That Never Sleeps": "잠들지 않는 도시를 위한 AI"
+  "AI for the City That Never Sleeps": "잠들지 않는 도시를 위한 AI",
+  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "몇 분 만에 자신만의 AI 슈퍼 앱을 만드세요. 이름을 선택하고, 브랜딩을 맞춤화하고, 앱을 게시하기 시작하세요. 코딩은 필요하지 않습니다."
 }

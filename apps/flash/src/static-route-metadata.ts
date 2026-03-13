@@ -45,9 +45,9 @@ interface MetadataResult {
  */
 const aboutTranslations = {
   en: {
-    title: "About Vex | AI Assistant",
+    title: "About Vex | AI Super App",
     description:
-      "Learn about Vex AI Assistant, our mission, and upcoming features",
+      "Learn about Vex AI Super App, our mission, and upcoming features",
   },
   de: {
     title: "Über Vex | KI-Assistent",
@@ -55,31 +55,31 @@ const aboutTranslations = {
       "Erfahren Sie mehr über den Vex KI-Assistenten, unsere Mission und kommende Funktionen",
   },
   fr: {
-    title: "À propos de Vex | Assistant IA",
+    title: "À propos de Vex | AI Super App",
     description:
       "Découvrez l'assistant IA Vex, notre mission et les fonctionnalités à venir",
   },
   ja: {
-    title: "Vexについて | AIアシスタント",
-    description: "Vex AIアシスタントの概要、ミッション、今後の機能について",
+    title: "Vexについて | AI Super App",
+    description: "Vex AI Super Appの概要、ミッション、今後の機能について",
   },
   ko: {
-    title: "Vex 소개 | AI 어시스턴트",
-    description: "Vex AI 어시스턴트, 우리의 미션, 향후 기능에 대해 알아보세요",
+    title: "Vex 소개 | AI Super App",
+    description: "Vex AI Super App, 우리의 미션, 향후 기능에 대해 알아보세요",
   },
   pt: {
-    title: "Sobre o Vex | Assistente de IA",
+    title: "Sobre o Vex | AI Super App",
     description:
-      "Saiba mais sobre o Assistente de IA Vex, nossa missão e recursos futuros",
+      "Saiba mais sobre o AI Super App Vex, nossa missão e recursos futuros",
   },
   es: {
-    title: "Acerca de Vex | Asistente de IA",
+    title: "Acerca de Vex | AI Super App",
     description:
-      "Conozca más sobre el Asistente de IA Vex, nuestra misión y próximas funcionalidades",
+      "Conozca más sobre el AI Super App Vex, nuestra misión y próximas funcionalidades",
   },
   zh: {
-    title: "关于Vex | AI助手",
-    description: "了解Vex AI助手、我们的使命和即将推出的功能",
+    title: "关于Vex | AI Super App",
+    description: "了解Vex AI Super App、我们的使命和即将推出的功能",
   },
   nl: {
     title: "Over Vex | AI-assistent",
@@ -87,9 +87,9 @@ const aboutTranslations = {
       "Lees meer over de Vex AI-assistent, onze missie en aankomende functies",
   },
   tr: {
-    title: "Vex Hakkında | AI Asistan",
+    title: "Vex Hakkında | AI Super App",
     description:
-      "Vex AI Asistanı, misyonumuz ve gelecek özellikler hakkında bilgi edinin",
+      "Vex AI Super Appı, misyonumuz ve gelecek özellikler hakkında bilgi edinin",
   },
   sv: {
     title: "Om Vex | AI-assistent",
@@ -97,17 +97,17 @@ const aboutTranslations = {
       "Lär dig mer om Vex AI-assistent, vårt uppdrag och kommande funktioner",
   },
   fa: {
-    title: "درباره Vex | دستیار هوش مصنوعی",
+    title: "درباره Vex | AI Super App",
     description:
-      "درباره دستیار هوش مصنوعی Vex، ماموریت ما و ویژگی‌های آینده بیشتر بدانید",
+      "درباره AI Super App Vex، ماموریت ما و ویژگی‌های آینده بیشتر بدانید",
   },
 }
 
 const whyTranslations = {
   en: {
-    title: "Why Vex | AI Assistant",
+    title: "Why Vex | AI Super App",
     description:
-      "Discover why Vex AI Assistant is the best choice for your AI chat needs",
+      "Discover why Vex AI Super App is the best choice for your AI chat needs",
   },
   de: {
     title: "Warum Vex | KI-Assistent",
@@ -115,33 +115,33 @@ const whyTranslations = {
       "Entdecken Sie, warum der Vex KI-Assistent die beste Wahl für Ihre KI-Chat-Anforderungen ist",
   },
   fr: {
-    title: "Pourquoi Vex | Assistant IA",
+    title: "Pourquoi Vex | AI Super App",
     description:
       "Découvrez pourquoi l'assistant IA Vex est le meilleur choix pour vos besoins de chat IA",
   },
   ja: {
-    title: "Vexが選ばれる理由 | AIアシスタント",
+    title: "Vexが選ばれる理由 | AI Super App",
     description:
-      "Vex AIアシスタントがAIチャットのニーズに最適な選択肢である理由を発見してください",
+      "Vex AI Super AppがAIチャットのニーズに最適な選択肢である理由を発見してください",
   },
   ko: {
-    title: "Vex를 선택해야 하는 이유 | AI 어시스턴트",
+    title: "Vex를 선택해야 하는 이유 | AI Super App",
     description:
-      "Vex AI 어시스턴트가 AI 채팅 요구 사항에 가장 적합한 선택인 이유를 알아보세요",
+      "Vex AI Super App가 AI 채팅 요구 사항에 가장 적합한 선택인 이유를 알아보세요",
   },
   pt: {
-    title: "Por que Vex | Assistente de IA",
+    title: "Por que Vex | AI Super App",
     description:
-      "Descubra por que o Assistente de IA Vex é a melhor escolha para suas necessidades de chat com IA",
+      "Descubra por que o AI Super App Vex é a melhor escolha para suas necessidades de chat com IA",
   },
   es: {
-    title: "¿Por qué Vex? | Asistente de IA",
+    title: "¿Por qué Vex? | AI Super App",
     description:
-      "Descubra por qué el Asistente de IA Vex es la mejor opción para sus necesidades de chat con IA",
+      "Descubra por qué el AI Super App Vex es la mejor opción para sus necesidades de chat con IA",
   },
   zh: {
-    title: "为什么选择Vex | AI助手",
-    description: "探索为什么Vex AI助手是您AI聊天需求的最佳选择",
+    title: "为什么选择Vex | AI Super App",
+    description: "探索为什么Vex AI Super App是您AI聊天需求的最佳选择",
   },
   nl: {
     title: "Waarom Vex | AI-assistent",
@@ -149,9 +149,9 @@ const whyTranslations = {
       "Ontdek waarom Vex AI-assistent de beste keuze is voor uw AI-chatbehoeften",
   },
   tr: {
-    title: "Neden Vex | AI Asistan",
+    title: "Neden Vex | AI Super App",
     description:
-      "Vex AI Asistanı'nın AI sohbet ihtiyaçlarınız için neden en iyi seçim olduğunu keşfedin",
+      "Vex AI Super Appı'nın AI sohbet ihtiyaçlarınız için neden en iyi seçim olduğunu keşfedin",
   },
   sv: {
     title: "Varför Vex | AI-assistent",
@@ -159,16 +159,16 @@ const whyTranslations = {
       "Upptäck varför Vex AI-assistent är det bästa valet för dina AI-chattbehov",
   },
   fa: {
-    title: "چرا Vex | دستیار هوش مصنوعی",
+    title: "چرا Vex | AI Super App",
     description:
-      "کشف کنید چرا دستیار هوش مصنوعی Vex بهترین انتخاب برای نیازهای چت هوش مصنوعی شماست",
+      "کشف کنید چرا AI Super App Vex بهترین انتخاب برای نیازهای چت هوش مصنوعی شماست",
   },
 }
 
 const privacyTranslations = {
   en: {
     title: "Privacy Policy | Vex",
-    description: "Privacy Policy for Vex AI Assistant",
+    description: "Privacy Policy for Vex AI Super App",
   },
   de: {
     title: "Datenschutzrichtlinie | Vex",
@@ -180,23 +180,23 @@ const privacyTranslations = {
   },
   ja: {
     title: "プライバシーポリシー | Vex",
-    description: "Vex AIアシスタントのプライバシーポリシー",
+    description: "Vex AI Super Appのプライバシーポリシー",
   },
   ko: {
     title: "개인정보 처리방침 | Vex",
-    description: "Vex AI 어시스턴트의 개인정보 처리방침",
+    description: "Vex AI Super App의 개인정보 처리방침",
   },
   pt: {
     title: "Política de Privacidade | Vex",
-    description: "Política de Privacidade para o Assistente de IA Vex",
+    description: "Política de Privacidade para o AI Super App Vex",
   },
   es: {
     title: "Política de Privacidad | Vex",
-    description: "Política de privacidad del Asistente de IA Vex",
+    description: "Política de privacidad del AI Super App Vex",
   },
   zh: {
     title: "隐私政策 | Vex",
-    description: "Vex AI助手的隐私政策",
+    description: "Vex AI Super App的隐私政策",
   },
   nl: {
     title: "Privacybeleid | Vex",
@@ -204,7 +204,7 @@ const privacyTranslations = {
   },
   tr: {
     title: "Gizlilik Politikası | Vex",
-    description: "Vex AI Asistanı için Gizlilik Politikası",
+    description: "Vex AI Super Appı için Gizlilik Politikası",
   },
   sv: {
     title: "Integritetspolicy | Vex",
@@ -212,14 +212,14 @@ const privacyTranslations = {
   },
   fa: {
     title: "سیاست حریم خصوصی | Vex",
-    description: "سیاست حریم خصوصی برای دستیار هوش مصنوعی Vex",
+    description: "سیاست حریم خصوصی برای AI Super App Vex",
   },
 }
 
 const termsTranslations = {
   en: {
     title: "Terms of Use | Vex",
-    description: "Terms of Use for Vex AI Assistant",
+    description: "Terms of Use for Vex AI Super App",
   },
   de: {
     title: "Nutzungsbedingungen | Vex",
@@ -231,23 +231,23 @@ const termsTranslations = {
   },
   ja: {
     title: "利用規約 | Vex",
-    description: "Vex AIアシスタントの利用規約",
+    description: "Vex AI Super Appの利用規約",
   },
   ko: {
     title: "이용 약관 | Vex",
-    description: "Vex AI 어시스턴트 이용 약관",
+    description: "Vex AI Super App 이용 약관",
   },
   pt: {
     title: "Termos de Uso | Vex",
-    description: "Termos de uso do Assistente de IA Vex",
+    description: "Termos de uso do AI Super App Vex",
   },
   es: {
     title: "Términos de Uso | Vex",
-    description: "Términos de uso del Asistente de IA Vex",
+    description: "Términos de uso del AI Super App Vex",
   },
   zh: {
     title: "服务条款 | Vex",
-    description: "Vex AI助手的服务条款",
+    description: "Vex AI Super App的服务条款",
   },
   nl: {
     title: "Servicevoorwaarden | Vex",
@@ -255,7 +255,7 @@ const termsTranslations = {
   },
   tr: {
     title: "Hizmet Şartları | Vex",
-    description: "Vex AI Asistanı için Hizmet Şartları",
+    description: "Vex AI Super Appı için Hizmet Şartları",
   },
   sv: {
     title: "Användarvillkor | Vex",
@@ -263,14 +263,14 @@ const termsTranslations = {
   },
   fa: {
     title: "شرایط استفاده | Vex",
-    description: "شرایط استفاده از دستیار هوش مصنوعی Vex",
+    description: "شرایط استفاده از AI Super App Vex",
   },
 }
 
 const calendarTranslations = {
   en: {
     title: "Calendar | Vex",
-    description: "Manage your schedule with Vex AI Assistant",
+    description: "Manage your schedule with Vex AI Super App",
   },
   de: {
     title: "Kalender | Vex",
@@ -282,23 +282,23 @@ const calendarTranslations = {
   },
   ja: {
     title: "カレンダー | Vex",
-    description: "Vex AIアシスタントでスケジュールを管理",
+    description: "Vex AI Super Appでスケジュールを管理",
   },
   ko: {
     title: "캘린더 | Vex",
-    description: "Vex AI 어시스턴트로 일정 관리",
+    description: "Vex AI Super App로 일정 관리",
   },
   pt: {
     title: "Calendário | Vex",
-    description: "Gerencie sua agenda com o Assistente de IA Vex",
+    description: "Gerencie sua agenda com o AI Super App Vex",
   },
   es: {
     title: "Calendario | Vex",
-    description: "Administre su agenda con el Asistente de IA Vex",
+    description: "Administre su agenda con el AI Super App Vex",
   },
   zh: {
     title: "日历 | Vex",
-    description: "使用Vex AI助手管理您的日程",
+    description: "使用Vex AI Super App管理您的日程",
   },
   nl: {
     title: "Agenda | Vex",
@@ -306,7 +306,7 @@ const calendarTranslations = {
   },
   tr: {
     title: "Takvim | Vex",
-    description: "Vex AI Asistanı ile programınızı yönetin",
+    description: "Vex AI Super Appı ile programınızı yönetin",
   },
   sv: {
     title: "Kalender | Vex",
@@ -314,7 +314,7 @@ const calendarTranslations = {
   },
   fa: {
     title: "تقویم | Vex",
-    description: "برنامه خود را با دستیار هوش مصنوعی Vex مدیریت کنید",
+    description: "برنامه خود را با AI Super App Vex مدیریت کنید",
   },
 }
 
@@ -374,7 +374,7 @@ const affiliateTranslations = {
 const usersTranslations = {
   en: {
     title: "Users | Vex",
-    description: "Explore Vex AI Assistant users and community",
+    description: "Explore Vex AI Super App users and community",
   },
   de: {
     title: "Benutzer | Vex",
@@ -387,23 +387,23 @@ const usersTranslations = {
   },
   ja: {
     title: "ユーザー | Vex",
-    description: "Vex AIアシスタントのユーザーとコミュニティを探索",
+    description: "Vex AI Super Appのユーザーとコミュニティを探索",
   },
   ko: {
     title: "사용자 | Vex",
-    description: "Vex AI 어시스턴트 사용자 및 커뮤니티 탐색",
+    description: "Vex AI Super App 사용자 및 커뮤니티 탐색",
   },
   pt: {
     title: "Usuários | Vex",
-    description: "Explore usuários e comunidade do Assistente de IA Vex",
+    description: "Explore usuários e comunidade do AI Super App Vex",
   },
   es: {
     title: "Usuarios | Vex",
-    description: "Explore usuarios y comunidad del Asistente de IA Vex",
+    description: "Explore usuarios y comunidad del AI Super App Vex",
   },
   zh: {
     title: "用户 | Vex",
-    description: "探索Vex AI助手用户和社区",
+    description: "探索Vex AI Super App用户和社区",
   },
   nl: {
     title: "Gebruikers | Vex",
@@ -411,7 +411,7 @@ const usersTranslations = {
   },
   tr: {
     title: "Kullanıcılar | Vex",
-    description: "Vex AI Asistanı kullanıcılarını ve topluluğunu keşfedin",
+    description: "Vex AI Super Appı kullanıcılarını ve topluluğunu keşfedin",
   },
   sv: {
     title: "Användare | Vex",
@@ -419,7 +419,7 @@ const usersTranslations = {
   },
   fa: {
     title: "کاربران | Vex",
-    description: "کاربران و جامعه دستیار هوش مصنوعی Vex را کاوش کنید",
+    description: "کاربران و جامعه AI Super App Vex را کاوش کنید",
   },
 }
 

@@ -359,7 +359,7 @@ curl https://yourfocus.com
 
 ```html
 <!-- When on chrry.ai -->
-<title>Chrry - AI App Marketplace</title>
+<title>Chrry - AI Super App</title>
 <meta name="description" content="Discover, create, and monetize AI apps..." />
 <meta property="og:url" content="https://chrry.ai" />
 ```
