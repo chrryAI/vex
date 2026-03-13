@@ -1,5 +1,6 @@
 import { expect, type Page } from "@playwright/test"
 import { getURL, wait } from "../index"
+import { signIn } from "./signIn"
 
 export async function maximize({ page }: { page: Page }) {
   await wait(2000)
@@ -33,6 +34,8 @@ export async function clean({
     timeout: 100000,
   })
 
+  await signIn({ page })
+
   await page.getByTestId("new-chat-button").click()
 
   await maximize({ page })
@@ -50,6 +53,8 @@ export async function clean({
 
   await wait(500)
 
+  const accountButton = page.getByTestId("account-button")
+
   // Second click to confirm
   await clearSessionButton.click()
 
@@ -62,8 +67,23 @@ export async function clean({
 
   await wait(5000)
 
+  await accountButton.click()
+
+  const email = page.getByTestId("account-email")
+  await expect(email).toBeVisible()
+
+  const logoutButton = page.getByTestId("account-logout-button")
+  await expect(logoutButton).toBeVisible()
+
+  await logoutButton.click()
+
+  const registerInButton = page.getByTestId("register-button")
+
+  await expect(registerInButton).toBeVisible({
+    timeout: 15000,
+  })
+
   // Wait for the API call to complete
-  await page.waitForTimeout(5000)
 }
 
 export const newChat = async ({ page }: { page: Page }) => {

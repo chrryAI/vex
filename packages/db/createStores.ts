@@ -6281,6 +6281,9 @@ You provide helpful AI assistance while respecting user privacy completely.`
     subtitle: "AI Social Network",
     slug: "peach",
     name: "Peach",
+    blueskyHandle: "peachai.bsky.social",
+    blueskyPassword: await encrypt(process.env.BLUESKY_PASSWORD_PEACH!),
+
     title: "Personal Social assistant",
     version: "1.0.0",
     status: "active" as const,

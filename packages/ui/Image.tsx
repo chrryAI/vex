@@ -50,6 +50,7 @@ type ImageProps = {
     | "watermelon"
     | "avocado"
     | "donut"
+    | string
 
   icon?:
     | "spaceInvader"
@@ -72,6 +73,8 @@ type ImageProps = {
     | "sushi"
     | "zarathustra"
     | "molt"
+    | "grape"
+    | string
 
   app?: appWithStore
   width?: number | string

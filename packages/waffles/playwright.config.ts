@@ -22,7 +22,7 @@ export default defineConfig({
   // },
   testDir: "./src",
   // globalSetup: require.resolve("./global-setup"),
-  timeout: process.env.CI ? 1200000 : 1200000, // 20 minutes in dev for long AI responses
+  timeout: process.env.CI ? 1200000 : 800000,
   /* Run tests in files in parallel */
   // fullyParallel: true,
   fullyParallel: true,

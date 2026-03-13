@@ -57,6 +57,7 @@ export const getImageSrc = ({
     | "watermelon"
     | "avocado"
     | "donut"
+    | string
   icon?:
     | "spaceInvader"
     | "pacman"
@@ -78,6 +79,8 @@ export const getImageSrc = ({
     | "zarathustra"
     | "molt"
     | "grok"
+    | "grape"
+    | string
 
   app?: appWithStore
   width?: number | string
@@ -113,58 +116,68 @@ export const getImageSrc = ({
         ? finalHeight
         : size
 
+  const appLogos = [
+    "atlas",
+    "bloom",
+    "vault",
+    "peach",
+    "vex",
+    "chrry",
+    "popcorn",
+    "sushi",
+    "focus",
+    "grape",
+    "search",
+    "zarathustra",
+    "pear",
+    "coder",
+    "architect",
+    "tribe",
+    "nebula",
+    "cosmos",
+    "starmap",
+    "quantumlab",
+    "avocado",
+    "jules",
+    "watermelon",
+    "donut",
+    "blossom",
+  ]
+
   const iconSrc = icon
-    ? icon === "spaceInvader"
-      ? `${BASE_URL}/images/pacman/space-invader.png`
-      : icon === "pacman"
-        ? `${BASE_URL}/images/pacman/pacman.png`
-        : icon === "heart"
-          ? `${BASE_URL}/images/pacman/heart.png`
-          : icon === "plus"
-            ? `${BASE_URL}/icons/plus-128.png`
-            : icon === "hamster"
-              ? `${BASE_URL}/hamster.png`
-              : icon === "frog"
-                ? `${BASE_URL}/frog.png`
-                : icon === "calendar"
-                  ? `${BASE_URL}/icons/calendar-128.png`
-                  : icon === "sushi"
-                    ? `${BASE_URL}/icons/sushi.png`
-                    : icon === "zarathustra"
-                      ? `${BASE_URL}/images/apps/zarathustra.png`
-                      : `${BASE_URL}/icons/${icon}-128.png`
+    ? appLogos.includes(icon)
+      ? `${BASE_URL}/images/apps/${icon}.png`
+      : icon === "spaceInvader"
+        ? `${BASE_URL}/images/pacman/space-invader.png`
+        : icon === "pacman"
+          ? `${BASE_URL}/images/pacman/pacman.png`
+          : icon === "heart"
+            ? `${BASE_URL}/images/pacman/heart.png`
+            : icon === "plus"
+              ? `${BASE_URL}/icons/plus-128.png`
+              : icon === "hamster"
+                ? `${BASE_URL}/hamster.png`
+                : icon === "frog"
+                  ? `${BASE_URL}/frog.png`
+                  : icon === "calendar"
+                    ? `${BASE_URL}/icons/calendar-128.png`
+                    : icon === "sushi"
+                      ? `${BASE_URL}/icons/sushi.png`
+                      : icon === "zarathustra"
+                        ? `${BASE_URL}/images/apps/zarathustra.png`
+                        : `${BASE_URL}/icons/${icon}-128.png`
     : null
 
   const logoSrc =
-    logo === "avocado"
-      ? `${BASE_URL}/images/apps/avocado.png`
-      : logo === "donut"
-        ? `${BASE_URL}/images/apps/donut.png`
-        : logo === "sushi"
-          ? `${BASE_URL}/images/apps/sushi.png`
-          : logo === "watermelon"
-            ? `${BASE_URL}/images/apps/watermelon.png`
-            : logo === "architect"
-              ? `${BASE_URL}/images/apps/architect.png`
-              : logo === "coder"
-                ? `${BASE_URL}/images/apps/coder.png`
-                : logo === "pear"
-                  ? `${BASE_URL}/images/apps/pear.png`
-                  : logo === "focus"
-                    ? `${BASE_URL}/images/focus.png`
-                    : logo === "blossom"
-                      ? `${BASE_URL}/images/apps/blossom.png`
-                      : logo === "grape"
-                        ? `${BASE_URL}/images/apps/grape.png`
-                        : logo === "chrry" || store?.slug === "explore"
-                          ? `${BASE_URL}/logo/cherry-500.png`
-                          : logo === "lifeOS" || store?.slug === "lifeOS"
-                            ? `${BASE_URL}/icons/lifeOS-128.png`
-                            : logo === "vex" || store?.slug === "vex"
-                              ? `${BASE_URL}/icons/icon-128.png`
-                              : logo
-                                ? `${BASE_URL}/icons/icon-128${logo === "isMagenta" ? "-m" : ""}${logo === "isVivid" ? "-v" : ""}.png`
-                                : null // Remote web asset
+    logo && appLogos.includes(logo)
+      ? `${BASE_URL}/images/apps/${logo}.png`
+      : logo === "lifeOS" || store?.slug === "lifeOS"
+        ? `${BASE_URL}/icons/lifeOS-128.png`
+        : logo === "vex" || store?.slug === "vex"
+          ? `${BASE_URL}/icons/icon-128.png`
+          : logo
+            ? `${BASE_URL}/icons/icon-128${logo === "isMagenta" ? "-m" : ""}${logo === "isVivid" ? "-v" : ""}.png`
+            : null // Remote web asset
 
   // Pick the right image size based on requested size
   // images array: [512px, 192px, 180px, 128px, 32px]
@@ -180,30 +193,7 @@ export const getImageSrc = ({
   const appImageSrc =
     (logo || store) && !slug
       ? null
-      : (app || slug) &&
-          [
-            "atlas",
-            "bloom",
-            "vault",
-            "peach",
-            "vex",
-            "chrry",
-            "popcorn",
-            "sushi",
-            "focus",
-            "grape",
-            "search",
-            "zarathustra",
-            "pear",
-            "coder",
-            "architect",
-            "tribe",
-            "nebula",
-            "cosmos",
-            "starmap",
-            "quantumlab",
-            "jules",
-          ].includes(app?.slug || slug || "")
+      : (app || slug) && appLogos.includes(app?.slug || slug || "")
         ? `${BASE_URL}/images/apps/${app?.slug || slug}.png`
         : getImageBySize(size) ||
           app?.image ||

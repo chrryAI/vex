@@ -1854,6 +1854,7 @@ export default function Chat({
           retro: isRetro,
           tribe: postToTribe,
           molt: postToMoltbook,
+          fingerprint,
           tribePostId: postId,
         })
       }
@@ -2008,6 +2009,7 @@ export default function Chat({
           about,
           retro: isRetro,
           appId: app?.id,
+          fingerprint,
         })
       }
 
@@ -2196,6 +2198,7 @@ export default function Chat({
       body: JSON.stringify({
         stopStreamId: streamId,
         messageId: message?.message.id,
+        fingerprint,
         agentId: isDebating
           ? message?.message.debateAgentId
           : message?.message.selectedAgentId,
@@ -2514,6 +2517,7 @@ export default function Chat({
             deviceId,
             appId: app?.id,
             retro: isRetro,
+            fingerprint,
           })
 
           try {

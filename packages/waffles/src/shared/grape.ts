@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test"
+import { prepare } from "../shared/clean"
 import { chat } from "./chat"
 
 export const grape = async ({
@@ -64,6 +65,8 @@ The chat interface could benefit from keyboard shortcuts for power users. For ex
   if (prompt.includes("15 Credits")) currentStepCredits += 15
   if (prompt.includes("20 Credits")) currentStepCredits += 20
   if (prompt.includes("clean design")) currentStepCredits += 5 // Base for generic
+
+  await prepare({ page })
 
   await chat({
     page,

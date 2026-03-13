@@ -775,6 +775,16 @@ session.delete("/", async (c) => {
     return c.json({ error: "Unauthorized" }, 401)
   }
 
-  // await cleanupTest()
+  const member = await getMemberAction(c)
+
+  if (!member) {
+    return c.json({ error: "Unauthorized" }, 401)
+  }
+
+  if (!TEST_MEMBER_EMAILS.includes(member.email)) {
+    return c.json({ error: "Unauthorized" }, 401)
+  }
+
+  await cleanupTest()
   return c.json({ success: true })
 })

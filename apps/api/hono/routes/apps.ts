@@ -650,7 +650,15 @@ app.post("/", async (c) => {
     const appsToReorder = [
       newApp,
       ...storeAppsResult.filter((app) => app.id !== newApp.id).slice(0, 5),
-    ]
+    ].map((app) => ({
+      ...app,
+      capabilities: app.capabilities
+        ? {
+            ...app.capabilities,
+            videoGeneration: app.capabilities.videoGeneration ?? false,
+          }
+        : null,
+    }))
 
     await reorderApps({
       token: member?.token || guest?.fingerprint!,

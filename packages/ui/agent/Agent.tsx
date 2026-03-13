@@ -30,6 +30,7 @@ import {
   Globe,
   GlobeLock,
   Grok,
+  Kling,
   MicVocal,
   OpenAI,
   OpenRouter,
@@ -280,18 +281,16 @@ export default function Agent({
       if (aiAgent.capabilities.image === true) {
         updatedCapabilities.image = true
       }
-
-      if (
-        JSON.stringify(capabilities) !== JSON.stringify(updatedCapabilities)
-      ) {
-        appForm?.setValue("capabilities", updatedCapabilities)
-      }
     }
   }, [appForm?.watch("defaultModel"), aiAgent])
 
-  const isVexteRequired =
+  const isImageGenerationRequired =
     appForm?.watch("capabilities")?.imageGeneration &&
     !appFormWatcher.apiKeys?.replicate?.trim()
+
+  const isVideoGenerationRequired =
+    appForm?.watch("capabilities")?.videoGeneration &&
+    !appFormWatcher.apiKeys?.fal?.trim()
 
   // Auto-check required tools
   useEffect(() => {
@@ -377,19 +376,38 @@ export default function Agent({
       // If no OpenRouter API key, automatically set to free tier
       if (tier !== "free") {
         if (!apiKeys.openrouter?.trim()) {
-          appForm.setValue("tier", "free")
-        } else {
-          if ((tier === "plus" || tier === "pro") && capabilities) {
-            // Image generation requires OpenAI
-            if (isVexteRequired) {
-              toast.error(
-                t(
-                  "Image generation is enabled. Replicate API key is required for paid tiers",
-                ),
-              )
-              setTab("api")
-              return
-            }
+          toast.error(
+            t(
+              "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).",
+            ),
+          )
+          setTab("api")
+
+          return
+        }
+        if ((tier === "plus" || tier === "pro") && capabilities) {
+          // Image generation requires OpenAI
+          if (isImageGenerationRequired) {
+            toast.error(
+              t(
+                "Image generation is enabled. Replicate API key is required for paid tiers",
+              ),
+            )
+            setTab("api")
+            return
+          }
+
+          if (isVideoGenerationRequired) {
+            toast.error(
+              t(
+                "Video generation is enabled. {{provider}} API key is required for paid tiers",
+                {
+                  provider: "Fal",
+                },
+              ),
+            )
+            setTab("api")
+            return
           }
         }
       }
@@ -786,6 +804,37 @@ export default function Agent({
                               }}
                             >
                               <Span>{t("Image Analysis")}</Span>
+                            </Checkbox>
+                          </Label>
+                        )}
+                      />
+                      <Controller
+                        name="capabilities.videoGeneration"
+                        control={control}
+                        render={({ field }) => (
+                          <Label>
+                            <Checkbox
+                              dataTestId="imageGeneration-checkbox"
+                              checked={field.value}
+                              onChange={(checked) => {
+                                if (
+                                  aiAgent?.capabilities?.videoGeneration ===
+                                  true
+                                ) {
+                                  toast.error(
+                                    t(
+                                      "Video Generation required by {{model}}",
+                                      {
+                                        model: aiAgent.name,
+                                      },
+                                    ),
+                                  )
+                                  return
+                                }
+                                field.onChange(checked)
+                              }}
+                            >
+                              <Span>{t("Video Generation")}</Span>
                             </Checkbox>
                           </Label>
                         )}
@@ -1661,6 +1710,33 @@ export default function Agent({
                     />
                   </Div>
 
+                  <Div style={{ ...utilities.column.style }}>
+                    <Label>
+                      <Kling /> Fal (Kling)
+                    </Label>
+                    <Controller
+                      name="apiKeys.fal"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          dataTestId="replicate-api-key"
+                          type="password"
+                          data-required={isImageGenerationRequired}
+                          placeholder={"fal-..."}
+                          {...field}
+                          value={field.value || ""}
+                          style={{
+                            borderColor:
+                              appFormWatcher.tier !== "free" &&
+                              appFormWatcher?.capabilities?.imageGeneration
+                                ? "var(--accent-1)"
+                                : "var(--shade-2)",
+                          }}
+                        />
+                      )}
+                    />
+                  </Div>
+
                   {/* Replicate Key */}
                   <Div style={{ ...utilities.column.style }}>
                     <Label>
@@ -1673,9 +1749,9 @@ export default function Agent({
                         <Input
                           dataTestId="replicate-api-key"
                           type="password"
-                          data-required={isVexteRequired}
+                          data-required={isImageGenerationRequired}
                           placeholder={
-                            isVexteRequired
+                            isImageGenerationRequired
                               ? t("Required or disable image generation")
                               : "r8_..."
                           }

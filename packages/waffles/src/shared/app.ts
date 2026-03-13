@@ -145,9 +145,9 @@ const app = async ({
 
       await wait(4000)
 
-      const menuHomeButton = page.getByTestId("menu-home-button")
-      await expect(menuHomeButton).toBeVisible()
-      await menuHomeButton.click()
+      const newChatButton = page.getByTestId("new-chat-button")
+      await expect(newChatButton).toBeVisible()
+      await newChatButton.click()
 
       await wait(2000)
 
@@ -155,6 +155,7 @@ const app = async ({
       if (isStoreApp) {
         await expect(storeAppButton).not.toBeVisible({ timeout: 10000 })
       } else {
+        await prepare({ page })
         await expect(storeAppButton).toBeVisible({ timeout: 10000 })
       }
 

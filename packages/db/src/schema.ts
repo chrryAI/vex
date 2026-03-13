@@ -50,6 +50,17 @@ export const users = pgTable(
       mode: "date",
       withTimezone: true,
     }),
+    apiKeys: jsonb("apiKeys").$type<{
+      openai?: string // Encrypted OpenAI API key
+      anthropic?: string // Encrypted Anthropic API key
+      google?: string // Encrypted Google API key
+      deepseek?: string // Encrypted DeepSeek API key
+      perplexity?: string // Encrypted Perplexity API key
+      replicate?: string // Encrypted Replicate API key (for Flux)
+      fal?: string // Encrypted Replicate API key (for Flux)
+      openrouter?: string // Encrypted OpenRouter API key
+      xai?: string // Encrypted XAI API key
+    }>(),
     apiKey: text("apiKey"),
     image: text("image"),
     password: text("password"),
@@ -325,6 +336,18 @@ export const guests = pgTable("guest", {
     .defaultNow()
     .notNull(),
   email: text("email"),
+
+  apiKeys: jsonb("apiKeys").$type<{
+    openai?: string // Encrypted OpenAI API key
+    anthropic?: string // Encrypted Anthropic API key
+    google?: string // Encrypted Google API key
+    deepseek?: string // Encrypted DeepSeek API key
+    perplexity?: string // Encrypted Perplexity API key
+    replicate?: string // Encrypted Replicate API key (for Flux)
+    fal?: string // Encrypted Replicate API key (for Flux)
+    openrouter?: string // Encrypted OpenRouter API key
+    xai?: string // Encrypted XAI API key
+  }>(),
 
   weather: jsonb("weather").$type<{
     location: string
@@ -790,6 +813,7 @@ export const aiAgents = pgTable("aiAgents", {
       webSearch: boolean
       imageGeneration: boolean
       codeExecution?: boolean
+      videoGeneration?: boolean
       pdf: boolean
     }>()
     .notNull()
@@ -800,6 +824,7 @@ export const aiAgents = pgTable("aiAgents", {
       video: false,
       webSearch: false,
       imageGeneration: false,
+      videoGeneration: false,
       codeExecution: false,
       pdf: false,
     }),
@@ -3107,6 +3132,7 @@ export const apps = pgTable(
         video: boolean
         webSearch: boolean
         imageGeneration: boolean
+        videoGeneration?: boolean
         codeExecution: boolean
         pdf: boolean
       }>()
@@ -3117,6 +3143,7 @@ export const apps = pgTable(
         video: true,
         webSearch: true,
         imageGeneration: true,
+        videoGeneration: true,
         codeExecution: true,
         pdf: true,
       }),
@@ -3169,6 +3196,8 @@ export const apps = pgTable(
 
     // BYOK (Bring Your Own Key) - Encrypted API keys
     apiKeys: jsonb("apiKeys").$type<{
+      fal?: string // Encrypted Replicate API key (for Flux)
+
       openai?: string // Encrypted OpenAI API key
       anthropic?: string // Encrypted Anthropic API key
       google?: string // Encrypted Google API key
@@ -3496,7 +3525,7 @@ export const installs = pgTable(
     // Either appId OR storeId must be set (not both)
     appId: uuid("appId").references(() => apps.id, { onDelete: "cascade" }),
     storeId: uuid("storeId").references(() => stores.id, {
-      onDelete: "set null",
+      onDelete: "cascade",
     }),
     userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
     guestId: uuid("guestId").references(() => guests.id, {

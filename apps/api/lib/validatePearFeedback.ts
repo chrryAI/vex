@@ -179,7 +179,7 @@ async function transferCreditsFromOwner(
   await logCreditUsage({
     userId: appOwnerId,
     agentId,
-    guestId: appOwnerId,
+    guestId: undefined, // App owner is a user, not a guest
     creditCost: credits, // Positive = deduction
     messageType: "pear_feedback_payment",
     appId,

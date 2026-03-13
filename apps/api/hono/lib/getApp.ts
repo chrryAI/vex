@@ -88,7 +88,7 @@ async function resolveAccountApp(
 
   if (auth.member) {
     const app = await getAppDb({
-      storeSlug: auth.member.userName,
+      storeSlug: auth.member.userName?.toLowerCase(),
       ownerId: auth.member.id,
       depth: 1,
       skipCache,

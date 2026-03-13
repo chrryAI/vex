@@ -161,7 +161,6 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
   const stores = await getStores({
     pageSize: 100000,
   })
-
   await Promise.all(
     stores.stores.map((store) => {
       if (store?.user?.email === process.env.VEX_TEST_EMAIL) {

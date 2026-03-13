@@ -991,7 +991,6 @@ export function AuthProvider({
   }
 
   function processSession(sessionData?: session) {
-    console.log(`🚀 ~ processSession ~ sessionData:`, sessionData)
     if (sessionData) {
       setSession(sessionData)
       // plausible guest migration
@@ -1080,20 +1079,30 @@ export function AuthProvider({
     setTaskId(searchParams.get("taskId") || undefined)
   }, [searchParams])
 
-  const [isGuestTest, _setIsLiveGuestTest] = useLocalStorage<boolean>(
+  const isGuestTestInternal = fingerprintParam
+    ? TEST_GUEST_FINGERPRINTS?.includes(fingerprintParam)
+    : false
+
+  const [isGuestTest, setIsLiveGuestTest] = useLocalStorage<boolean>(
     "isGuestTest",
-    fingerprintParam
-      ? TEST_GUEST_FINGERPRINTS?.includes(fingerprintParam)
-      : false,
+    isGuestTestInternal,
   )
-  const [isMemberTest, _setIsLiveMemberTest] = useLocalStorage<boolean>(
+
+  const isMemberTestInternal = user?.email
+    ? TEST_MEMBER_EMAILS.includes(user.email)
+    : fingerprintParam
+      ? TEST_MEMBER_FINGERPRINTS?.includes(fingerprintParam)
+      : false
+
+  const [isMemberTest, setIsLiveMemberTest] = useLocalStorage<boolean>(
     "isMemberTest",
-    user?.email
-      ? TEST_MEMBER_EMAILS.includes(user.email)
-      : fingerprintParam
-        ? TEST_MEMBER_FINGERPRINTS?.includes(fingerprintParam)
-        : false,
+    isMemberTestInternal,
   )
+
+  useEffect(() => {
+    isMemberTestInternal && setIsLiveMemberTest(true)
+    isGuestTestInternal && setIsLiveGuestTest(true)
+  }, [isMemberTestInternal, isGuestTestInternal])
 
   const isLiveTest = isGuestTest || isMemberTest
 
@@ -1167,9 +1176,8 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -1298,7 +1306,7 @@ export function AuthProvider({
 
   const chrryUrl = CHRRY_URL
 
-  const appId = newApp?.id || updatedApp?.id || loadingAppId || app?.id
+  const appId = newApp?.id || updatedApp?.id || loadingAppId
 
   const [isSavingApp, setIsSavingApp] = useState(false)
   const [isManagingApp, setIsManagingAppInternal] = useState(false)
@@ -1911,8 +1919,8 @@ export function AuthProvider({
         if (!token) return
         const result = await getApp({
           token,
-          chrryUrl,
-          pathname,
+          // chrryUrl,
+          // pathname,
           accountApp: true,
           skipCache: true,
         })
