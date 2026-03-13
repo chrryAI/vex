@@ -26,7 +26,67 @@ const COOLDOWN_T1 = 45 // minutes — Core apps (7 slugs)
 const COOLDOWN_T2 = 90 // minutes — Cultural/literary + premium AI
 const COOLDOWN_T3 = 120 // minutes — Everyone else
 
+// Capacity check constants
+const EVENTS_PER_APP = 5 // Each app has 5 events per cooldown cycle
+const MAX_EVENT_PERCENTAGE = 80 // Last event is at 80% of cooldown
+
+/**
+ * Validates tier capacity and warns if events overflow the cooldown window.
+ *
+ * Note: "Overflow" here means some app events extend beyond the cooldown window,
+ * which is acceptable in staggered scheduling - the key is no two apps execute
+ * at the exact same time instant.
+ *
+ * Formula:
+ * - interval = cooldown / tierApps.length (stagger between apps)
+ * - maxOffset = (tierApps.length - 1) * interval (last app's start offset)
+ * - lastEventTime = maxOffset + (cooldown * MAX_EVENT_PERCENTAGE / 100)
+ * - If lastEventTime > cooldown: warns but allows (events spill into next cycle)
+ *
+ * @throws Error only for critical capacity issues (>2x overflow)
+ */
+function validateTierCapacity(
+  tierApps: string[],
+  cooldown: number,
+  tierName: string,
+): void {
+  if (tierApps.length === 0) return
+
+  const interval = Math.floor(cooldown / tierApps.length)
+  const maxOffset = (tierApps.length - 1) * interval
+  const lastEventOffset = Math.floor((cooldown * MAX_EVENT_PERCENTAGE) / 100)
+  const lastEventTime = maxOffset + lastEventOffset
+  const totalSlots = cooldown
+
+  console.log(
+    `📊 [${tierName}] ${tierApps.length} apps, ${cooldown}min cooldown, ${interval}min stagger`,
+  )
+
+  if (lastEventTime > totalSlots) {
+    const overflow = lastEventTime - totalSlots
+    const overflowCycles = Math.ceil(lastEventTime / cooldown)
+
+    // Warning for any overflow - this is expected with staggered scheduling
+    console.warn(
+      `⚠️ [${tierName}] Events overflow by ${overflow}min (spills into ${overflowCycles} cooldown cycles). ` +
+        `Last app starts at ${maxOffset}min, last event at ${lastEventTime}min.`,
+    )
+
+    // Only throw if critically over capacity (>2 full cycles overflow)
+    if (overflowCycles > 2) {
+      throw new Error(
+        `[${tierName}] CRITICAL OVERFLOW: ${tierApps.length} apps need ${overflowCycles} cycles but max allowed is 2. ` +
+          `Reduce apps or increase cooldown.`,
+      )
+    }
+  } else {
+    console.log(`✅ [${tierName}] All events fit within ${cooldown}min window`)
+  }
+}
+
 // Tier 1: Core apps with 45min cooldown (VIP limits only for zarathustra)
+// ⚠️ CAPACITY: 7 apps with 6min stagger → last event at 72min (overflows 45min window)
+// This is intentional - staggered scheduling ensures apps don't overlap at the same instant
 const TIER1_SLUGS = new Set([
   "focus",
   "chrry",
@@ -34,21 +94,21 @@ const TIER1_SLUGS = new Set([
   "vex",
   "zarathustra", // Only this one gets VIP char/token limits
   "jules",
+  "lucas",
+])
+
+const TIER2_SLUGS = new Set([
   "starmap",
   "nebula",
-  "quantumlab",
-  "vault",
-  "lucas",
   "debugger",
+  "vault",
+  "cosmos",
+  "quantumlab",
   "coder",
   "search",
   "pear",
   "architect",
   "grape",
-])
-
-const TIER2_SLUGS = new Set([
-  "cosmos",
   "meditations",
   "1984",
   "dune",
@@ -126,7 +186,6 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
     b: (typeof appsWithOwner)[0],
   ) => getRecent(a.id) - getRecent(b.id)
 
-  // Sort into tiers — within each tier, apps silent in last 2 days come first
   const tier1 = appsWithOwner
     .filter((a) => TIER1_SLUGS.has(a.slug))
     .sort(byRecentAsc)
@@ -136,6 +195,18 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
   const tier3 = appsWithOwner
     .filter((a) => !TIER1_SLUGS.has(a.slug) && !TIER2_SLUGS.has(a.slug))
     .sort(byRecentAsc)
+
+  // Validate capacity before seeding
+  validateTierCapacity(
+    tier1.map((a) => a.slug),
+    COOLDOWN_T1,
+    "TIER_1",
+  )
+  validateTierCapacity(
+    tier2.map((a) => a.slug),
+    COOLDOWN_T2,
+    "TIER_2",
+  )
 
   const appsToUse = [...tier1, ...tier2, ...tier3]
 
