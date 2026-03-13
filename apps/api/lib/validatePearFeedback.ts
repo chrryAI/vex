@@ -165,14 +165,14 @@ async function getAppOwner(
  * Transfer credits from app owner to user
  */
 async function transferCreditsFromOwner({
-  appOwnerId,
+  appOwner,
   userId,
   guestId,
   agentId,
   credits,
   appId,
 }: {
-  appOwnerId: string
+  appOwner: { userId?: string; guestId?: string }
   userId: string | undefined
   guestId: string | undefined
   agentId: string
@@ -180,18 +180,21 @@ async function transferCreditsFromOwner({
   appId: string
 }): Promise<void> {
   const { userCredits, commission } = calculateCreditDistribution(credits)
+  const appOwnerId = appOwner.userId || appOwner.guestId || ""
 
   console.log("🍐 Transferring credits from app owner:", {
     appOwnerId: appOwnerId.substring(0, 8),
+    isUser: !!appOwner.userId,
+    isGuest: !!appOwner.guestId,
     totalCredits: credits,
     userCredits,
     commission,
   })
 
-  // Deduct from app owner
+  // Deduct from app owner (correctly pass userId XOR guestId)
   await logCreditUsage({
-    userId: appOwnerId,
-    guestId: appOwnerId,
+    userId: appOwner.userId,
+    guestId: appOwner.guestId,
     agentId,
     creditCost: credits, // Positive = deduction
     messageType: "pear_feedback_payment",
@@ -267,10 +270,9 @@ async function awardFeedbackCredits(
 
   const appOwner = await getAppOwner(appId)
 
-  const appOwnerId = appOwner?.userId || appOwner?.guestId
-  if (appOwnerId) {
+  if (appOwner?.userId || appOwner?.guestId) {
     await transferCreditsFromOwner({
-      appOwnerId,
+      appOwner,
       userId,
       guestId,
       agentId,
