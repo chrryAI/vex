@@ -692,7 +692,7 @@ export const whiteLabels = [
   vault,
 ]
 
-const VERSION = "2.0.67"
+const VERSION = "2.0.68"
 // Constants
 const port = process.env.PORT || 5173
 const base = process.env.BASE || "/"
@@ -1213,7 +1213,8 @@ app.use(async (req, res) => {
     hostname.startsWith("localhost") || // Local development
     hostname.startsWith("127.0.0.1") || // Local IP
     isDev || // Development mode
-    isE2E // E2E testing
+    isE2E || // E2E testing
+    req.headers["user-agent"] === "Chrry-Health-Check" // Trusted health checks
 
   // Debug logging
   if (hostname.includes("e2e") || hostname.includes("staging")) {

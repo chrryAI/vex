@@ -190,7 +190,7 @@ jobs:
 
             # Use a temporary file for the response body
             RESPONSE_FILE=$(mktemp)
-            HTTP_STATUS=$(curl -s -o "$RESPONSE_FILE" -w "%{http_code}" --compressed --connect-timeout 5 "$STAGING_API_URL/api/health")
+            HTTP_STATUS=$(curl -s -A "Chrry-Health-Check" -o "$RESPONSE_FILE" -w "%{http_code}" --compressed --connect-timeout 5 "$STAGING_API_URL/api/health")
 
             if [ "$HTTP_STATUS" -eq 200 ]; then
               API_VERSION=$(cat "$RESPONSE_FILE" | jq -r '.version' 2>/dev/null || echo "unknown")
@@ -242,7 +242,7 @@ jobs:
 
             # Use a temporary file for the response body
             RESPONSE_FILE=$(mktemp)
-            HTTP_STATUS=$(curl -s -o "$RESPONSE_FILE" -w "%{http_code}" --compressed --connect-timeout 5 "$STAGING_URL/api/health")
+            HTTP_STATUS=$(curl -s -A "Chrry-Health-Check" -o "$RESPONSE_FILE" -w "%{http_code}" --compressed --connect-timeout 5 "$STAGING_URL/api/health")
 
             if [ "$HTTP_STATUS" -eq 200 ]; then
               WEB_VERSION=$(cat "$RESPONSE_FILE" | jq -r '.version' 2>/dev/null || echo "unknown")
