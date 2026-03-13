@@ -49,7 +49,7 @@ export const botProtectionMiddleware = async (c: Context, next: Next) => {
   if (
     internalRequest === "flash-server" ||
     pathname.endsWith("/health") ||
-    c.req.header("User-Agent") === "Chrry-Health-Check"
+    userAgent === "chrry-health-check"
   ) {
     await next()
     return
