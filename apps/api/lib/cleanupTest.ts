@@ -167,7 +167,6 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
         return
       }
 
-      console.log(`🚀 ~ stores.stores.map ~ store.store.id:`, store.store.id)
       return deleteStore({ id: store.store.id })
     }),
   )

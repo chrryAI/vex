@@ -991,7 +991,6 @@ export function AuthProvider({
   }
 
   function processSession(sessionData?: session) {
-    console.log(`🚀 ~ processSession ~ sessionData:`, sessionData)
     if (sessionData) {
       setSession(sessionData)
       // plausible guest migration
@@ -1177,9 +1176,8 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)

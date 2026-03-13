@@ -340,9 +340,8 @@ export default function Calendar({
   }, [defaultView])
   const hasCalendarScope = user?.hasCalendarScope
 
-  const [isGoogleConnected, _setIsGoogleConnected] = useState(
-    !!hasCalendarScope,
-  )
+  const [isGoogleConnected, _setIsGoogleConnected] =
+    useState(!!hasCalendarScope)
   const [isSyncing, setIsSyncing] = useState(false)
 
   const [calendarEventsStartDate, setCalendarEventsStartDate] = useState<
@@ -367,7 +366,6 @@ export default function Calendar({
       })
     },
   )
-  console.log(`🚀 ~ calendarEventsData:`, calendarEventsData)
 
   // Real-time calendar event updates via WebSocket
   useWebSocket<{
