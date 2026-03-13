@@ -46,7 +46,7 @@ export const botProtectionMiddleware = async (c: Context, next: Next) => {
   const internalRequest = c.req.header("x-internal-request")
 
   // Allow internal requests from Flash server
-  if (internalRequest === "flash-server") {
+  if (internalRequest === "flash-server" || pathname.endsWith("/health")) {
     await next()
     return
   }

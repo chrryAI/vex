@@ -185,21 +185,34 @@ jobs:
           EXPECTED_VERSION=$(jq -r '.version' package.json)
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            echo "🔍 Checking $STAGING_API_URL/api/health..."
-            if curl -f --compressed $STAGING_API_URL/api/health > /dev/null 2>&1; then
-              API_VERSION=$(curl -s --compressed $STAGING_API_URL/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
-              echo "📦 API version: $API_VERSION (expected: $EXPECTED_VERSION)"
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "🔍 Attempt $ATTEMPT/$MAX_ATTEMPTS: Checking $STAGING_API_URL/api/health..."
+
+            # Use a temporary file for the response body
+            RESPONSE_FILE=$(mktemp)
+            HTTP_STATUS=$(curl -s -o "$RESPONSE_FILE" -w "%{http_code}" --compressed --connect-timeout 5 "$STAGING_API_URL/api/health")
+
+            if [ "$HTTP_STATUS" -eq 200 ]; then
+              API_VERSION=$(cat "$RESPONSE_FILE" | jq -r '.version' 2>/dev/null || echo "unknown")
+              echo "✅ API is up! version: $API_VERSION (expected: $EXPECTED_VERSION)"
 
               if [ "$API_VERSION" = "$EXPECTED_VERSION" ]; then
-                echo "✅ API deployment complete!"
+                echo "✅ API version match! Deployment complete."
+                rm "$RESPONSE_FILE"
                 exit 0
               fi
             else
-              echo "❌ Health check failed (curl exit code: $?)"
+              echo "❌ Health check failed with status: $HTTP_STATUS"
+              # Only print body if it's not too large
+              DATA=$(cat "$RESPONSE_FILE")
+              if [ ${#DATA} -lt 1000 ]; then
+                echo "📄 Response body: $DATA"
+              else
+                echo "📄 Response body too large to show"
+              fi
             fi
 
-            ATTEMPT=$((ATTEMPT + 1))
-            echo "⏳ Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            rm "$RESPONSE_FILE"
             sleep 10
           done
 
@@ -224,21 +237,34 @@ jobs:
           EXPECTED_VERSION=$(jq -r '.version' package.json)
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            echo "🔍 Checking $STAGING_URL/api/health..."
-            if curl -f --compressed $STAGING_URL/api/health > /dev/null 2>&1; then
-              WEB_VERSION=$(curl -s --compressed $STAGING_URL/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
-              echo "📦 Web version: $WEB_VERSION (expected: $EXPECTED_VERSION)"
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "🔍 Attempt $ATTEMPT/$MAX_ATTEMPTS: Checking $STAGING_URL/api/health..."
+
+            # Use a temporary file for the response body
+            RESPONSE_FILE=$(mktemp)
+            HTTP_STATUS=$(curl -s -o "$RESPONSE_FILE" -w "%{http_code}" --compressed --connect-timeout 5 "$STAGING_URL/api/health")
+
+            if [ "$HTTP_STATUS" -eq 200 ]; then
+              WEB_VERSION=$(cat "$RESPONSE_FILE" | jq -r '.version' 2>/dev/null || echo "unknown")
+              echo "✅ Web is up! version: $WEB_VERSION (expected: $EXPECTED_VERSION)"
 
               if [ "$WEB_VERSION" = "$EXPECTED_VERSION" ]; then
-                echo "✅ Web deployment complete!"
+                echo "✅ Web version match! Deployment complete."
+                rm "$RESPONSE_FILE"
                 exit 0
               fi
             else
-              echo "❌ Health check failed (curl exit code: $?)"
+              echo "❌ Health check failed with status: $HTTP_STATUS"
+              # Only print body if it's not too large
+              DATA=$(cat "$RESPONSE_FILE")
+              if [ ${#DATA} -lt 1000 ]; then
+                echo "📄 Response body: $DATA"
+              else
+                echo "📄 Response body too large to show"
+              fi
             fi
 
-            ATTEMPT=$((ATTEMPT + 1))
-            echo "⏳ Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            rm "$RESPONSE_FILE"
             sleep 10
           done
 

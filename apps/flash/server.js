@@ -1262,7 +1262,10 @@ app.use(async (req, res) => {
     "/__debug",
   ]
 
-  if (suspiciousPaths.some((path) => pathname.includes(path))) {
+  if (
+    !pathname.endsWith("/health") &&
+    suspiciousPaths.some((path) => pathname.includes(path))
+  ) {
     return res.status(404).send("Not Found")
   }
 
