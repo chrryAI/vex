@@ -1424,7 +1424,7 @@ app.use(async (req, res) => {
     // Replace placeholders - inject metadata, CSS, server data, router state, lang attribute, and theme class
     const locale = serverData?.locale || "en"
     const dir = rtlLanguages.includes(locale) ? "rtl" : "ltr"
-    const htmlClass = `${sanitizedTheme}${dir === "rtl" ? " rtl" : ""}`
+    const htmlClass = `${sanitizedTheme}`
 
     const html = template
       .replace(

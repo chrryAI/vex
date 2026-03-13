@@ -1878,9 +1878,9 @@ const prod = async () => {
     }
   }
 
-  await createAgents()
+  // await createAgents()
   // Ensure stores are created during seeding for automated tests and dev/prod parity
-  const { vex } = await createStores({ user: admin })
+  // const { vex } = await createStores({ user: admin })
 
   // await seedPearFeedback()
 
