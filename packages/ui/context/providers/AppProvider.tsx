@@ -136,6 +136,7 @@ interface AppFormContextType {
       video: boolean
       webSearch: boolean
       imageGeneration: boolean
+      videoGeneration: boolean
       codeExecution: boolean
       pdf: boolean
     }
@@ -159,6 +160,7 @@ interface AppFormContextType {
       replicate?: string
       openrouter?: string
       xai?: string
+      fal?: string
     }
     isDefaultValues?: boolean
     canSubmit: boolean
@@ -474,7 +476,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     pricing: "free" as const,
     tier: "free" as const,
     highlights: defaultInstructions,
-    visibility: "private" as const,
+    visibility: "public" as const,
     capabilities: {
       text: true,
       image: true,
@@ -482,6 +484,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       video: true,
       webSearch: true,
       imageGeneration: true,
+      videoGeneration: true,
       codeExecution: true,
       pdf: true,
     },
@@ -512,7 +515,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         pricing: app.pricing || "free",
         backgroundColor: app.backgroundColor || "#000000",
         tier: app.tier || "free",
-        visibility: app.visibility || "private",
+        visibility: app.visibility || "public",
         capabilities: app.capabilities || defaultFormValues.capabilities,
         themeColor: app.themeColor || "orange",
         extends: defaultExtends,

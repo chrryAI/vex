@@ -3,6 +3,7 @@
 import clsx from "clsx"
 import { lazy, Suspense, useEffect, useState } from "react"
 import { useAppContext } from "./context/AppContext"
+import Grapes from "./Grapes"
 import Img from "./Image"
 import { CircleEllipsis } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
@@ -38,121 +39,35 @@ import {
 } from "./platform"
 import Version from "./Version"
 
-function FocusButton({
-  time,
-  isCountingDown,
+function Grape({
   isDrawerOpen,
 }: {
   time: number
   isCountingDown?: boolean
   isDrawerOpen?: boolean
 }) {
-  const { minimize } = useApp()
-  const { rtl } = useAuth()
-
   const { viewPortWidth } = usePlatform()
-  const { app, getAppSlug, setShowFocus } = useAuth()
-
-  const focus = app?.store?.apps?.find((app) => app.slug === "focus")
 
   const hasHydrated = useHasHydrated()
-  const { isMobileDevice, isSmallDevice } = useTheme()
-  const [currentTime, setCurrentTime] = useState<Date | null>(null)
-  const { skeletonStyles, utilities } = useStyles()
-
-  useEffect(() => {
-    setCurrentTime(new Date())
-
-    if (time === 0) {
-      const interval = setInterval(() => {
-        setCurrentTime(new Date())
-      }, 1000)
-      return () => clearInterval(interval)
-    }
-  }, [time])
-
-  const formatTime = () => {
-    if (time > 0) {
-      return `${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`
-    } else if (currentTime) {
-      const hours = currentTime.getHours()
-      const minutes = currentTime.getMinutes()
-      return `${hours}:${String(minutes).padStart(2, "0")}`
-    }
-    return "--:--"
-  }
+  const { utilities } = useStyles()
 
   if (!isDrawerOpen || viewPortWidth < 700 || !hasHydrated) {
     return null
   }
 
-  if (!focus || minimize) {
-    return (
-      <>
-        <A
-          href={`/${app?.store?.slug}`}
-          className="button transparent"
-          style={{
-            ...utilities.button.style,
-            ...utilities.transparent.style,
-            ...utilities.small.style,
-            position: "relative",
-
-            left: "15.625rem",
-            ...(hasHydrated && isMobileDevice && skeletonStyles.blog.style),
-          }}
-        >
-          <Img
-            showLoading={false}
-            logo={app?.store?.slug === "blossom" ? "blossom" : "lifeOS"}
-            store={app?.store}
-            size={18}
-            priority
-          />
-          {app?.store?.name}
-        </A>
-      </>
-    )
-  }
-
   return (
-    <A
-      href={`${getAppSlug(focus)}`}
-      className="link"
-      onClick={(e) => {
-        e.preventDefault()
-        setShowFocus(true)
-      }}
+    <Grapes
+      slug={"raspberry"}
+      dataTestId="grapes-button"
       style={{
-        ...utilities.link.style,
+        ...utilities.xSmall.style,
         marginTop: !isDrawerOpen ? 1 : -7.5,
         marginLeft: isDrawerOpen ? 0 : -5,
         position: "relative",
 
         left: 250,
       }}
-    >
-      {hasHydrated && (
-        <Span
-          style={{
-            padding: "3px 6px",
-            backgroundColor: isCountingDown
-              ? "var(--accent-4)"
-              : "var(--accent-1)",
-            color: "#fff",
-            borderRadius: 20,
-            fontSize: 10,
-            fontWeight: 600,
-            fontFamily: "var(--font-mono)",
-            whiteSpace: "nowrap",
-            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-            zIndex: 1,
-          }}
-        >
-          {formatTime()}
-        </Span>
-      )}
-    </A>
+    />
   )
 }
 export default function Skeleton({
@@ -415,7 +330,7 @@ export default function Skeleton({
                     ) : null}
 
                     {isMobileDevice ? null : (
-                      <FocusButton
+                      <Grape
                         isDrawerOpen={isDrawerOpen}
                         time={time}
                         isCountingDown={isCountingDown}

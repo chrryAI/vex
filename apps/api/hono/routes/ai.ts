@@ -64,6 +64,7 @@ import {
   retroSessions,
   sql,
   type subscription,
+  TEST_MEMBER_EMAILS,
   type thread,
   updateAiAgent,
   updateApp,
@@ -1259,6 +1260,7 @@ ai.post("/", async (c) => {
       postId: formData.get("postId") as string,
       placeholder: formData.get("placeholder") as string,
       appId: formData.get("appId") as string,
+      fp: formData.get("fingerprint") as string,
       slug: formData.get("slug") as string,
       selectedAgentId: (formData.get("selectedAgentId") as string) || "",
       pauseDebate: formData.get("pauseDebate") === "true",
@@ -1321,6 +1323,7 @@ ai.post("/", async (c) => {
     placeholder,
     deviceId,
     tribeCharLimit,
+    fingerprint: fp,
     postType,
     ...rest
   } = requestData
@@ -3540,7 +3543,6 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     vaultContext,
     focusContext,
     taskContext,
-
     newsContext,
     storeContext ? spatialNavigationContext : "", // Only add spatial nav context if store context is present
     grapeContext, // Available apps in Grape button (GLOBAL - all apps need this)
@@ -3576,15 +3578,13 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     return c.json({ error: "No credits left" }, { status: 403 })
   }
 
-  const fingerprint = member?.fingerprint || guest?.fingerprint
+  const fingerprint = fp || member?.fingerprint || guest?.fingerprint
 
-  const isE2E = !!(
-    member?.role !== "admin" &&
+  const isE2E =
     fingerprint &&
     !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
     isE2EInternal &&
     !job
-  )
 
   const hourlyLimit =
     isDevelopment && !isE2E
@@ -4733,7 +4733,7 @@ How I process and remember information:
     reason: string
   } | null = null
 
-  if (isPear && agent) {
+  if (isPear && agent && !isE2E) {
     // Check quota first
     const quotaCheck = await checkPearQuota({
       userId: member?.id,

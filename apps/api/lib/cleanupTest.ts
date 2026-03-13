@@ -161,13 +161,13 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
   const stores = await getStores({
     pageSize: 100000,
   })
-
   await Promise.all(
     stores.stores.map((store) => {
       if (store?.user?.email === process.env.VEX_TEST_EMAIL) {
         return
       }
 
+      console.log(`🚀 ~ stores.stores.map ~ store.store.id:`, store.store.id)
       return deleteStore({ id: store.store.id })
     }),
   )
