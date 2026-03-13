@@ -428,6 +428,7 @@ export default function Menu({
                   </A>
                   <Button
                     className={"link"}
+                    aria-label={t("Toggle menu")}
                     onClick={toggleMenu}
                     style={{
                       ...styles.menuButton.style,
@@ -448,6 +449,7 @@ export default function Menu({
                 <Button
                   suppressHydrationWarning
                   className={"link"}
+                  aria-label={t("Toggle menu")}
                   onClick={toggleMenu}
                 >
                   <Img app={app} size={28} />
