@@ -354,6 +354,12 @@ const createApp = async ({
     await expect(replicateApiKey).toBeVisible()
     await replicateApiKey.fill("testReplicateApiKey")
 
+    const falApiKey = page.getByTestId("fal-api-key")
+    const falApiKeyRequired = await falApiKey.getAttribute("data-required")
+    expect(falApiKeyRequired).toBe("true")
+    await expect(falApiKey).toBeVisible()
+    await falApiKey.fill("testFalApiKey")
+
     const openRouterApiKey = page.getByTestId("openrouter-api-key")
     await expect(openRouterApiKey).toBeVisible()
     await openRouterApiKey.fill("testOpenRouterApiKey")

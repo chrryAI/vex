@@ -3,10 +3,12 @@ import { useCallback, useEffect } from "react"
 import { useCookie, usePlatform } from "../platform"
 import { platformCookies } from "../platform/cookies"
 import useLocalStorage from "./useLocalStorage"
+
 export default function useCookieOrLocalStorage(
   key: string,
   initialValue: any,
   canReadCookie: boolean = false,
+  currentUrl?: string,
 ) {
   const { isExtension, isNative, isTauri } = usePlatform()
 
@@ -25,12 +27,12 @@ export default function useCookieOrLocalStorage(
     }
 
     ;(async () => {
-      const cookieValue = await platformCookies.get(key)
+      const cookieValue = await platformCookies.get(key, currentUrl)
       if (cookieValue) {
         setLocalInternal(cookieValue)
       }
     })()
-  }, [key, canReadCookie, setLocalInternal])
+  }, [key, canReadCookie, setLocalInternal, currentUrl])
 
   // Extensions/native: read from cookie (cross-site), write to localStorage
   // Web: read and write to cookie

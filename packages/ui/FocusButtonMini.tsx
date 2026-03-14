@@ -59,8 +59,7 @@ function FocusButton({
       style={{
         ...{
           position: "relative",
-          marginLeft: rtl ? undefined : 5,
-          marginRight: !rtl ? undefined : 5,
+          marginRight: 5,
         },
         ...style,
       }}
@@ -70,8 +69,7 @@ function FocusButton({
           style={{
             position: "absolute",
             top: -5,
-            right: rtl ? undefined : -30,
-            left: !rtl ? undefined : -30,
+            right: -30,
             padding: "2px 6px",
             backgroundColor: "var(--accent-1)",
             color: "#fff",

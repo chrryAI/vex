@@ -142,6 +142,8 @@ const TribePostListItem = ({
     triggerOnce: false,
   })
 
+  const TRAIN = owner ? `Train {{name}}` : `Try {{name}}`
+
   const { setLanguage, rtl } = useAuth()
 
   const { utilities } = useStyles()
@@ -470,11 +472,12 @@ const TribePostListItem = ({
                   app={post.app}
                   style={{
                     ...utilities.transparent.style,
+                    ...utilities.small.style,
                   }}
                   loading={<Loading size={16} />}
-                  icon={post.app?.icon || undefined}
+                  icon={<Img app={post.app} width={18} height={18} />}
                 >
-                  {t(`Try {{name}}`, {
+                  {t(TRAIN, {
                     name: post.app?.name,
                   })}
                 </AppLink>
@@ -944,9 +947,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     burnApp,
     burn,
     setBurn,
-    back,
     setDisplayedApps,
+    displayedApps,
     rtl,
+    ...auth
   } = useAuth()
   const { setAppStatus } = useApp()
   const { isExtension, isFirefox, viewPortWidth } = usePlatform()
@@ -1004,24 +1008,35 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
   const maxTribes = tribes?.tribes?.slice(0, 25) || []
   const TRAIN = owner ? `Train {{name}}` : `Try {{name}}`
 
-  const storeApps = useMemo(() => {
-    return (
-      app?.store?.apps
-        ?.filter((item) => item.id !== burnApp?.id)
-        .concat(back || []) || []
-    )
-  }, [app?.store?.apps, burnApp?.id, back])
+  const storeApps = auth?.apps?.filter((item) => item.id !== burnApp?.id) || []
+
+  const back = storeApps.some((item) => item.id === auth?.back?.id)
+    ? undefined
+    : auth?.back
+
+  // useEffect(() => {
+  //   if (auth?.apps?.length > 0) {
+  //     setDisplayedApps(auth?.apps)
+  //   }
+  // }, [auth?.apps])
 
   useEffect(() => {
-    if (storeApps.length > 0) {
-      setDisplayedApps((prev) => {
-        const newApps = prev.filter(
-          (app) => !storeApps.some((p) => p.id === app.id),
-        )
-        return [...newApps, ...storeApps]
-      })
+    // displayedApps should only reflect CURRENT store's apps (not accumulated auth.apps)
+    // This is critical for lastAnchorApp to detect cross-store navigation correctly
+    const currentStoreApps = app?.store?.apps || []
+    const currentIds = displayedApps
+      .map((a) => a.id)
+      .sort()
+      .join(",")
+    const newIds = currentStoreApps
+      .map((a) => a.id)
+      .sort()
+      .join(",")
+
+    if (currentIds !== newIds) {
+      setDisplayedApps(currentStoreApps)
     }
-  }, [storeApps, setDisplayedApps])
+  }, [app?.store?.apps])
 
   const FeedBack = useCallback(
     ({ style }: { style?: React.CSSProperties } = {}) => (
@@ -1114,6 +1129,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
               >
                 {isPear && pear ? (
                   <Img size={isMobileDevice ? 34 : 37} app={pear} />
+                ) : app?.slug === "focus" ? (
+                  <FocusButton
+                    width={32}
+                    style={{ marginRight: 14, position: "relative", top: 1 }}
+                  />
                 ) : (
                   <Img
                     size={isMobileDevice ? 34 : 37}
@@ -1352,6 +1372,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             !rtl || isSmallDevice ? undefined : "auto",
                         }}
                       >
+                        {rtl && <FocusButton />}
+
                         {app?.mainThreadId && owner && (
                           <A
                             style={{ fontSize: "1rem", marginRight: 5 }}
@@ -1426,7 +1448,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             marginTop: 0,
                           }}
                         />
-                        <FocusButton />
+                        {!rtl && <FocusButton />}
                       </Div>
                     </Div>
                   </H2>
@@ -1690,6 +1712,26 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         }}
                       >
                         <Img size={30} logo={"lifeOS"} />
+                        {back && (
+                          <AppLink
+                            isTribe
+                            app={back}
+                            loading={<Loading size={22} />}
+                            icon={
+                              <>
+                                <ArrowLeft size={18} />
+                                <Img app={back} size={22} />
+                              </>
+                            }
+                            style={{
+                              marginLeft: rtl ? undefined : "auto",
+                              marginRight: !rtl ? undefined : "auto",
+                              fontSize: ".95rem",
+                            }}
+                          >
+                            {t(back.name)}
+                          </AppLink>
+                        )}
                       </Div>
                       <P
                         style={{
@@ -1714,6 +1756,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         flexWrap: "wrap",
                       }}
                     >
+                      {rtl && <FocusButton />}
+
                       {app?.mainThreadId && owner && (
                         <A
                           style={{ fontSize: "1rem", marginRight: 5 }}
@@ -1722,7 +1766,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           🧬
                         </A>
                       )}
-
                       {burnApp ? (
                         <Div
                           style={{
@@ -1762,7 +1805,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           )}
                         </Div>
                       ) : null}
-
                       <A
                         href={`${FRONTEND_URL}/calendar`}
                         title={t("Organize your life")}
@@ -1789,8 +1831,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           marginTop: 0,
                         }}
                       />
-
-                      <FocusButton />
+                      {!rtl && <FocusButton />}
                     </Div>
                   ) : null}
                   <Div
@@ -1997,13 +2038,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         isTribe={false}
                         isPear={isPear}
                         app={app}
-                        icon={
-                          app?.icon ? (
-                            app.icon
-                          ) : (
-                            <Img app={app} width={18} height={18} />
-                          )
-                        }
+                        icon={<Img app={app} width={18} height={18} />}
                         className="button inverted"
                         style={{
                           ...utilities.inverted.style,

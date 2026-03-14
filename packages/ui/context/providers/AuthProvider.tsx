@@ -889,6 +889,7 @@ export function AuthProvider({
       props.session?.user?.fingerprint ||
       fingerprintParam,
     isExtension,
+    siteConfig.url,
   )
 
   const ssrToken =
@@ -898,6 +899,7 @@ export function AuthProvider({
     "token",
     ssrToken,
     isExtension,
+    siteConfig.url,
   )
 
   const [tokenWeb, setTokenWeb, removeTokenWeb] = useCookie("token", ssrToken)
@@ -1767,6 +1769,23 @@ export function AuthProvider({
   //     setLanguageInternal(session?.locale)
   //   }
   // }, [session?.locale])
+
+  // URL locale priority: if the URL has a locale prefix that differs from stored language, apply it
+  useEffect(() => {
+    const pn =
+      typeof window === "undefined" ? pathname : window.location.pathname
+    for (const loc of locales) {
+      if (pn.startsWith(`/${loc}/`) || pn === `/${loc}`) {
+        if (loc !== language) {
+          setLanguageInternal(loc as locale)
+          i18n.changeLanguage(loc)
+          processRTL(loc as locale)
+        }
+        break
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // only on mount — URL is source of truth on first load
 
   const setLanguage = async (language: locale) => {
     setLanguageInternal(language)
@@ -2984,41 +3003,33 @@ export function AuthProvider({
 
   const [displayedApps, setDisplayedApps] = useState<appWithStore[]>([])
 
-  // Find last navigated app that's not in displayedApps (anchor app)
+  // Find the most recent cross-store app from navigation history:
+  // i.e., an app the user previously visited that is NOT in the current store's apps
   const lastAnchorApp = useMemo(() => {
-    if (!navigationHistory.length || !displayedApps.length) return null
-
-    // Get current app from latest navigation entry
-    const currentAppId = navigationHistory[navigationHistory.length - 1]?.appId
-
-    // Get displayed app IDs + current app
-    const displayedAppIds = new Set(displayedApps.map((a) => a.id))
-    if (currentAppId) {
-      displayedAppIds.add(currentAppId) // Exclude current app
-    }
-
-    // Find most recent app not in displayedApps and not current
+    const currentAppId = app?.id
     for (let i = navigationHistory.length - 1; i >= 0; i--) {
       const entry = navigationHistory[i]
-      if (entry && !displayedAppIds.has(entry.appId)) {
-        return {
-          appId: entry.appId,
-          appName: entry.appName,
-          timestamp: entry.timestamp,
-          duration: entry.duration,
-        }
+      if (!entry || entry.appId === currentAppId) continue
+      // Not in current store → this is the cross-store anchor
+      if (!apps.some((x) => x.id === entry.appId)) {
+        return entry
       }
     }
-
     return null
-  }, [navigationHistory, displayedApps])
+  }, [navigationHistory, app?.id, apps])
 
-  const lastApp = storeApps.find((app) => app.id === lastAnchorApp?.appId)
+  const lastApp = app
 
-  const back =
-    !apps.some((x) => x.id === lastApp?.id) && lastApp?.id !== app?.id
-      ? lastApp
-      : undefined
+  // back = the cross-store anchor app object (resolved from storeApps cache)
+  const backInitial = lastAnchorApp
+    ? storeApps.find((a) => a.id === lastAnchorApp.appId)
+    : undefined
+
+  const [back, setBack] = useState(backInitial)
+
+  useEffect(() => {
+    backInitial && setBack(backInitial)
+  }, [backInitial])
 
   useEffect(() => {
     if (searchParams.get("auth_token")) {

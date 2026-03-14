@@ -344,7 +344,7 @@ export default function Menu({
         <>
           <Div>
             {/* <Controls /> */}
-            {!isFullscreen && tauri && (
+            {!isFullscreen && tauri && !rtl && (
               <Div
                 data-tauri-drag-region
                 onDoubleClick={async () => {

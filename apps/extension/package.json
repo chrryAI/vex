@@ -1,6 +1,6 @@
 {
   "name": "@repo/extension",
-  "version": "2.0.77",
+  "version": "2.0.81",
   "private": true,
   "type": "module",
   "scripts": {
@@ -21,8 +21,8 @@
     "build:chrome:tribe": "rm -rf dist && MODE=tribe vite build && cd dist && zip -r ../dist-chrome-tribe.zip .",
     "build:chrome": "npm run build:chrome:sushi && npm run build:chrome:atlas && npm run build:chrome:focus && npm run build:chrome:vex && npm run build:chrome:popcorn && npm run build:chrome:chrry && npm run build:chrome:zarathustra && npm run build:chrome:search && npm run build:chrome:grape && npm run build:chrome:burn && npm run build:chrome:vault && npm run build:chrome:pear && npm run build:chrome:tribe",
     "build:chrome:dev": "rm -rf dist && tsc && vite build --mode development && npm run zip:chrome",
-    "build:dev": "rm -rf dist && MODE=tribe vite build --mode development",
-    "build:dev:watch": "MODE=tribe vite build --mode development --watch",
+    "build:dev": "rm -rf dist && MODE=vex vite build --mode development",
+    "build:dev:watch": "MODE=vex vite build --mode development --watch",
     "build:firefox": "npm run zip:source && rm -rf dist && tsc && VITE_BROWSER=firefox vite build && npm run zip:firefox",
     "validate": "node scripts/validate-manifest-v3.js",
     "dev": "MODE=vex node dev-watch.js",

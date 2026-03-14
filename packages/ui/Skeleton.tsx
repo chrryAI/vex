@@ -123,9 +123,6 @@ export default function Skeleton({
     setIsDrawerOpen(!isDrawerOpen)
   }
 
-  const _previous = usePreviousPathname()
-  const _isHome = pathname === "/" || pathname === ""
-
   useEffect(() => {
     // Preload toast icons
     const preloadImages = [
@@ -245,7 +242,7 @@ export default function Skeleton({
                       alignItems: "center",
                       gap: 5,
                       paddingTop:
-                        hasHydrated && !isDrawerOpen && isTauri
+                        hasHydrated && !isDrawerOpen && isTauri && !rtl
                           ? "1.4rem"
                           : "0",
                     }}
@@ -338,7 +335,12 @@ export default function Skeleton({
                     )}
                   </Div>
                 </Div>
-                <Div style={{ ...skeletonStyles.right.style }}>
+                <Div
+                  style={{
+                    ...skeletonStyles.right.style,
+                    paddingTop: isTauri && rtl ? "1.3rem" : "0",
+                  }}
+                >
                   <Suspense fallback={null}>
                     <CharacterProfiles />
                   </Suspense>
@@ -358,7 +360,13 @@ export default function Skeleton({
               </>
             )}
           </Div>
-          <Div style={{ ...skeletonStyles.contentContainer.style }}>
+          <Div
+            style={{
+              ...skeletonStyles.contentContainer.style,
+              position: "relative",
+              paddingTop: isTauri && rtl ? "1.2rem" : "0.2rem",
+            }}
+          >
             <>{children}</>
           </Div>
         </Main>

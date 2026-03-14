@@ -814,7 +814,7 @@ export default function Agent({
                         render={({ field }) => (
                           <Label>
                             <Checkbox
-                              dataTestId="imageGeneration-checkbox"
+                              dataTestId="videoGeneration-checkbox"
                               checked={field.value}
                               onChange={(checked) => {
                                 if (
@@ -1719,7 +1719,7 @@ export default function Agent({
                       control={control}
                       render={({ field }) => (
                         <Input
-                          dataTestId="replicate-api-key"
+                          dataTestId="fal-api-key"
                           type="password"
                           data-required={isImageGenerationRequired}
                           placeholder={"fal-..."}
