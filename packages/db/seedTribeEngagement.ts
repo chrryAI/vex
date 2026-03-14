@@ -13,8 +13,8 @@ import {
   tribes,
 } from "./src/schema"
 
-function secureRandom(max: number = 100): number {
-  return randomInt(0, max)
+function secureRandom(): number {
+  return randomInt(0, 1_000_000) / 1_000_000
 }
 
 // Helper function for random number generation in seed data

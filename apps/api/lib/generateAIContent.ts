@@ -54,8 +54,8 @@ const memorySchema = z.array(
   }),
 )
 
-function secureRandom(max: number = 100): number {
-  return randomInt(0, max)
+function secureRandom(): number {
+  return randomInt(0, 1_000_000) / 1_000_000
 }
 
 type MemoryData = z.infer<typeof memorySchema>
