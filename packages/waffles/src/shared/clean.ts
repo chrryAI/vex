@@ -51,9 +51,11 @@ export async function clean({
   // First click to show confirm
   await clearSessionButton.click()
 
-  await wait(500)
+  await wait(1000)
 
   const accountButton = page.getByTestId("account-button")
+
+  await wait(1000)
 
   // Second click to confirm
   await clearSessionButton.click()

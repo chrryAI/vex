@@ -43,16 +43,24 @@ export default defineConfig({
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    launchOptions: { slowMo: 200 },
-    headless: !!process.env.CI, // Run headless in CI, headed locally
-    /* Base URL to use in actions like `await page.goto('/')`. */
+    slowMo: 200,
+    args: [
+      "--disable-web-security",
+      "--enable-features=VaapiVideoDecoder",
+      // Twitter bitrate limitine uyumlu
+      "--max-video-bitrate=25000000",
+    ],
+    headless: !!process.env.CI,
     baseURL: !process.env.CI ? "http://localhost:5173" : "http://e2e.chrry.ai",
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
-    /* Grant clipboard permissions by default */
     permissions: ["clipboard-read", "clipboard-write"],
-    /* Always record video in dev, only on failure in CI */
-    video: process.env.CI ? "retain-on-failure" : "on",
+    /* EN YÜKSEK KALİTE video ayarları */
+    video: {
+      mode: process.env.CI ? "retain-on-failure" : "on",
+      size: { width: 1280, height: 720 }, // 720p - Twitter max uyumlu
+      idealFrameRate: 40, // Twitter max FPS
+      // Dosya boyutunu otomatik küçültür
+    },
   },
 
   /* Configure projects for major browsers */

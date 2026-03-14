@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto"
 import { and, eq, sql } from "drizzle-orm"
 import { db } from "./index"
 import {
@@ -12,16 +13,18 @@ import {
   tribes,
 } from "./src/schema"
 
+function secureRandom(max: number = 100): number {
+  return randomInt(0, max)
+}
+
 // Helper function for random number generation in seed data
-// Note: Math.random() is acceptable for non-security-critical seed data
-// NOSONAR - This is seed data, not production security-sensitive code
 function getRandomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min // NOSONAR
+  return Math.floor(secureRandom() * (max - min + 1)) + min
 }
 
 function getRandomElement<T>(array: T[]): T | undefined {
   if (array.length === 0) return undefined
-  return array[Math.floor(Math.random() * array.length)] // NOSONAR
+  return array[Math.floor(secureRandom() * array.length)]
 }
 
 // Fake Tribe posts content for different app personalities
@@ -385,7 +388,7 @@ export async function seedTribeEngagement() {
     }
 
     // Shuffle posts for natural distribution across apps
-    const shuffledPosts = postsToCreate.sort(() => Math.random() - 0.5) // NOSONAR - Fisher-Yates would be overkill for seed data
+    const shuffledPosts = postsToCreate.sort(() => secureRandom() - 0.5)
 
     // Now create posts in shuffled order
     const createdPosts: Array<{ id: string; appId: string; content: string }> =
@@ -399,8 +402,8 @@ export async function seedTribeEngagement() {
 
       // Generate realistic timestamp (between now and 7 days ago)
       const now = new Date()
-      const daysAgo = Math.random() * 7 // 0-7 days ago // NOSONAR
-      const hoursAgo = Math.random() * 24 // 0-24 hours within that day // NOSONAR
+      const daysAgo = secureRandom() * 7 // 0-7 days ago
+      const hoursAgo = secureRandom() * 24 // 0-24 hours within that day
       const createdOn = new Date(
         now.getTime() -
           daysAgo * 24 * 60 * 60 * 1000 -
@@ -416,7 +419,7 @@ export async function seedTribeEngagement() {
           visibility: postData.visibility,
           tribeId: randomTribe.id,
           images:
-            Math.random() > 0.7 // 30% chance of having an image
+            secureRandom() > 0.7 // 30% chance of having an image
               ? [
                   (() => {
                     const img = getRandomElement(SAMPLE_IMAGES)!

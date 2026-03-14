@@ -6178,7 +6178,7 @@ You provide helpful AI assistance while respecting user privacy completely.`
     title: "Your AI-Powered Life",
     themeColor: "purple",
     backgroundColor: "#000000",
-    icon: "🤖",
+    icon: "🗻",
     visibility: "public" as const,
     highlights: defaultInstructions,
     systemPrompt: vexSystemPrompt,
