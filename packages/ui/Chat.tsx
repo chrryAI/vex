@@ -40,6 +40,7 @@ import {
 import { useWebSocket } from "./hooks/useWebSocket"
 import Img from "./Image"
 import {
+  ArrowLeft,
   AudioLines,
   ChevronDown,
   CircleArrowDown,
@@ -402,6 +403,9 @@ export default function Chat({
     isSmallDevice,
     isMobileDevice,
   } = useTheme()
+
+  const canShowLinks =
+    !showTribe && canShowTribe && empty && app && !appStatus?.part
 
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
     setSelectedAgentInternal(agent)
@@ -4084,17 +4088,42 @@ export default function Chat({
                     flexDirection: "row",
                   }}
                 >
-                  {!showTribe &&
-                    canShowTribe &&
-                    empty &&
-                    app &&
-                    !appStatus?.part &&
+                  {back && canShowLinks && (minimize || showFocus) ? (
+                    <AppLink
+                      isTribe={false}
+                      app={back}
+                      loading={<Loading size={22} />}
+                      icon={
+                        <>
+                          <ArrowLeft size={16} />
+                          <Img app={back} size={22} />
+                        </>
+                      }
+                      style={{
+                        marginRight: !rtl ? "auto" : undefined,
+                        marginLeft: rtl ? "auto" : undefined,
+                        left: !rtl ? 5 : undefined,
+                        right: rtl ? 5 : undefined,
+                        top: -20,
+                        gap: 5,
+                        position: "relative",
+                        zIndex: 300,
+                        fontSize: ".85rem",
+                        lineHeight: 2,
+                      }}
+                    >
+                      {t(back.name)}
+                    </AppLink>
+                  ) : (
+                    canShowLinks &&
                     (minimize || showFocus) && (
                       <>
                         <AppLink
                           style={{
-                            marginRight: "auto",
-                            left: 5,
+                            marginRight: !rtl ? "auto" : undefined,
+                            marginLeft: rtl ? "auto" : undefined,
+                            left: !rtl ? 5 : undefined,
+                            right: rtl ? 5 : undefined,
                             top: -20,
                             gap: 5,
                             position: "relative",
@@ -4109,7 +4138,8 @@ export default function Chat({
                           {t("Tribe's Feed")}
                         </AppLink>
                       </>
-                    )}
+                    )
+                  )}
                   {isChatFloating ||
                   exceededInitial ||
                   threadId ? null : showGreeting && files.length === 0 ? (
@@ -4160,7 +4190,34 @@ export default function Chat({
                       </Span>
                     </H2>
                   ) : null}
-                  {!showTribe &&
+
+                  {back && canShowLinks && !isChatFloating ? (
+                    <AppLink
+                      isTribe={false}
+                      app={back}
+                      loading={<Loading size={22} />}
+                      icon={
+                        <>
+                          <ArrowLeft size={16} />
+                          <Img app={back} size={22} />
+                        </>
+                      }
+                      style={{
+                        marginRight: !rtl ? "auto" : undefined,
+                        marginLeft: rtl ? "auto" : undefined,
+                        left: !rtl ? -5 : undefined,
+                        right: rtl ? -5 : undefined,
+                        top: -15,
+                        gap: 5,
+                        position: "relative",
+                        zIndex: 300,
+                        fontSize: ".85rem",
+                      }}
+                    >
+                      {t(back.name)}
+                    </AppLink>
+                  ) : (
+                    !showTribe &&
                     empty &&
                     canShowTribe &&
                     app &&
@@ -4172,8 +4229,10 @@ export default function Chat({
                           app={app}
                           icon={<Img logo="coder" size={22} />}
                           style={{
-                            marginRight: "auto",
-                            left: -5,
+                            marginRight: !rtl ? "auto" : undefined,
+                            marginLeft: rtl ? "auto" : undefined,
+                            left: !rtl ? -5 : undefined,
+                            right: rtl ? -5 : undefined,
                             top: -15,
                             gap: 5,
                             position: "relative",
@@ -4184,7 +4243,8 @@ export default function Chat({
                           {t("Tribe's Feed")}
                         </AppLink>
                       </>
-                    )}
+                    )
+                  )}
                 </Div>
               )
             )}

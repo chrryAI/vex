@@ -2984,41 +2984,29 @@ export function AuthProvider({
 
   const [displayedApps, setDisplayedApps] = useState<appWithStore[]>([])
 
-  // Find last navigated app that's not in displayedApps (anchor app)
+  // Find the most recent cross-store app from navigation history:
+  // i.e., an app the user previously visited that is NOT in the current store's apps
   const lastAnchorApp = useMemo(() => {
-    if (!navigationHistory.length || !displayedApps.length) return null
-
-    // Get current app from latest navigation entry
-    const currentAppId = navigationHistory[navigationHistory.length - 1]?.appId
-
-    // Get displayed app IDs + current app
-    const displayedAppIds = new Set(displayedApps.map((a) => a.id))
-    if (currentAppId) {
-      displayedAppIds.add(currentAppId) // Exclude current app
-    }
-
-    // Find most recent app not in displayedApps and not current
+    const currentAppId = app?.id
     for (let i = navigationHistory.length - 1; i >= 0; i--) {
       const entry = navigationHistory[i]
-      if (entry && !displayedAppIds.has(entry.appId)) {
-        return {
-          appId: entry.appId,
-          appName: entry.appName,
-          timestamp: entry.timestamp,
-          duration: entry.duration,
-        }
+      if (!entry || entry.appId === currentAppId) continue
+      // Not in current store → this is the cross-store anchor
+      if (!apps.some((x) => x.id === entry.appId)) {
+        return entry
       }
     }
-
     return null
-  }, [navigationHistory, displayedApps])
+  }, [navigationHistory, app?.id, apps])
 
-  const lastApp = storeApps.find((app) => app.id === lastAnchorApp?.appId)
+  const lastApp = app
 
-  const back =
-    !apps.some((x) => x.id === lastApp?.id) && lastApp?.id !== app?.id
-      ? lastApp
-      : undefined
+  // back = the cross-store anchor app object (resolved from storeApps cache)
+  const back = lastAnchorApp
+    ? storeApps.find((a) => a.id === lastAnchorApp.appId)
+    : undefined
+
+  console.log(`🚀 ~ lastApp:`, { lastAnchorApp, lastApp, back })
 
   useEffect(() => {
     if (searchParams.get("auth_token")) {
