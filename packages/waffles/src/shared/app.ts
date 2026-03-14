@@ -61,7 +61,7 @@ const app = async ({
 }) => {
   if (isNewChat) {
     await page.goto(getURL({ isLive, isMember }), {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     })
     await prepare({ page })

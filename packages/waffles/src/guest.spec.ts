@@ -24,7 +24,7 @@ test("Subscribe As Guest", async ({ page }) => {
       fingerprint: TEST_MEMBER_FINGERPRINTS[0],
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -42,7 +42,7 @@ test("Invite", async ({ page }) => {
       isMember,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -56,7 +56,7 @@ test("Invite", async ({ page }) => {
 
 test("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
   await page.goto(
@@ -65,7 +65,7 @@ test("Gift", async ({ page }) => {
       isMember,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -83,7 +83,7 @@ test("Chat", async ({ page }) => {
   test.slow()
 
   await page.goto(getURL({ isMember, isLive }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 

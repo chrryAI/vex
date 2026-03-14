@@ -30,7 +30,7 @@ export async function clean({
   waitForDelete?: boolean
 }) {
   await page.goto(getURL({ isLive, isMember, fingerprint }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 

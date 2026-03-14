@@ -43,13 +43,15 @@ export default defineConfig({
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    slowMo: 200,
-    args: [
-      "--disable-web-security",
-      "--enable-features=VaapiVideoDecoder",
-      // Twitter bitrate limitine uyumlu
-      "--max-video-bitrate=25000000",
-    ],
+    launchOptions: {
+      slowMo: 200,
+      args: [
+        "--disable-web-security",
+        "--enable-features=VaapiVideoDecoder",
+        // Twitter bitrate limitine uyumlu
+        "--max-video-bitrate=25000000",
+      ],
+    },
     headless: !!process.env.CI,
     baseURL: !process.env.CI ? "http://localhost:5173" : "http://e2e.chrry.ai",
     trace: "on-first-retry",
@@ -58,7 +60,7 @@ export default defineConfig({
     video: {
       mode: process.env.CI ? "retain-on-failure" : "on",
       size: { width: 1280, height: 720 }, // 720p - Twitter max uyumlu
-      idealFrameRate: 40, // Twitter max FPS
+      // idealFrameRate: 40, // Twitter max FPS
       // Dosya boyutunu otomatik küçültür
     },
   },

@@ -22,7 +22,7 @@ const isLive = false
 
 // test("Sync Plausible", async ({ page }) => {
 //   await page.goto("https://a.chrry.dev", {
-//     waitUntil: "networkidle",
+//     waitUntil: "domcontentloaded",
 //     timeout: 100000,
 //   })
 
@@ -42,7 +42,7 @@ const isLive = false
 test("Subscribe", async ({ page }) => {
   await clean({ page })
   await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -53,7 +53,7 @@ test("Subscribe", async ({ page }) => {
 test("Invite", async ({ page }) => {
   await clean({ page })
   await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
   await signIn({ page })
@@ -63,7 +63,7 @@ test("Invite", async ({ page }) => {
       isMember,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -77,7 +77,7 @@ test("Invite", async ({ page }) => {
 test("Gift", async ({ page }) => {
   await clean({ page })
   await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
   await signIn({ page })
@@ -87,7 +87,7 @@ test("Gift", async ({ page }) => {
       isMember,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -104,7 +104,7 @@ test("Chat - Hourly Limit Test", async ({ page }) => {
   await clean({ page })
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -116,7 +116,7 @@ test("Thread", async ({ page }) => {
   await clean({ page })
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -133,7 +133,7 @@ test("Collaboration", async ({ page, browser }) => {
       fingerprint: VEX_TEST_FINGERPRINT_3,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -156,7 +156,7 @@ test("Debate", async ({ page }) => {
   await clean({ page })
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
   await signIn({ page })
@@ -198,7 +198,7 @@ test("Debate", async ({ page }) => {
 test("App", async ({ page }) => {
   await clean({ page })
   await page.goto(getURL({ isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -274,7 +274,7 @@ test("App", async ({ page }) => {
 test("Create A Sushi App", async ({ page }) => {
   await clean({ page })
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
   await wait(5000)
@@ -313,7 +313,7 @@ test("Create A Sushi App", async ({ page }) => {
 test("Grape", async ({ page }) => {
   await clean({ isLive: true, page })
   await page.goto(getURL({ isLive: true, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
