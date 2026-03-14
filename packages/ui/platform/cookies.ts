@@ -204,7 +204,10 @@ export function getCookieSync(key: string): string | null {
 /**
  * Get cookie value (cross-platform)
  */
-async function getCookie(key: string): Promise<string | null> {
+async function getCookie(
+  key: string,
+  currentUrl?: string,
+): Promise<string | null> {
   // Native: Use storage
   if (isNative()) {
     return storage.getItem(key)
@@ -214,7 +217,14 @@ async function getCookie(key: string): Promise<string | null> {
   if (isBrowserExtension()) {
     try {
       // Use the website URLs, not current tab
-      const websiteUrls = getExtensionUrls()
+      let websiteUrls = getExtensionUrls()
+      if (currentUrl) {
+        // Put current domain first so it takes priority
+        websiteUrls = [
+          currentUrl,
+          ...websiteUrls.filter((u) => u !== currentUrl),
+        ]
+      }
 
       const final = []
       // Chrome extension cookies API

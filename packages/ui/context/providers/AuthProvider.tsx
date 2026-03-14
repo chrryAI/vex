@@ -889,6 +889,7 @@ export function AuthProvider({
       props.session?.user?.fingerprint ||
       fingerprintParam,
     isExtension,
+    siteConfig.url,
   )
 
   const ssrToken =
@@ -898,6 +899,7 @@ export function AuthProvider({
     "token",
     ssrToken,
     isExtension,
+    siteConfig.url,
   )
 
   const [tokenWeb, setTokenWeb, removeTokenWeb] = useCookie("token", ssrToken)
@@ -1767,6 +1769,23 @@ export function AuthProvider({
   //     setLanguageInternal(session?.locale)
   //   }
   // }, [session?.locale])
+
+  // URL locale priority: if the URL has a locale prefix that differs from stored language, apply it
+  useEffect(() => {
+    const pn =
+      typeof window === "undefined" ? pathname : window.location.pathname
+    for (const loc of locales) {
+      if (pn.startsWith(`/${loc}/`) || pn === `/${loc}`) {
+        if (loc !== language) {
+          setLanguageInternal(loc as locale)
+          i18n.changeLanguage(loc)
+          processRTL(loc as locale)
+        }
+        break
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // only on mount — URL is source of truth on first load
 
   const setLanguage = async (language: locale) => {
     setLanguageInternal(language)

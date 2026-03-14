@@ -6,7 +6,7 @@
  */
 
 import "dotenv/config"
-import { execSync } from "node:child_process"
+import { execFileSync } from "node:child_process"
 import { readdirSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -25,16 +25,23 @@ const PUBLIC_URL = process.env.S3_PUBLIC_URL
 const INSTALLS_PATH = "../../public/installs"
 const installsDir = join(__dirname, INSTALLS_PATH)
 
+const SAFE_DMG_FILE = /^[A-Za-z0-9._-]+\.dmg$/
+function assertSafeDmgFile(file: string) {
+  if (!SAFE_DMG_FILE.test(file)) {
+    throw new Error(`Unsafe DMG filename: ${file}`)
+  }
+}
+
 function ssh(cmd: string): string {
   console.log(`  $ ${cmd}`)
-  return execSync(`ssh ${SSH_HOST} "${cmd.replace(/"/g, '\\"')}"`, {
+  return execFileSync("ssh", [SSH_HOST!, "--", cmd], {
     encoding: "utf-8",
     stdio: ["pipe", "pipe", "pipe"],
   }).trim()
 }
 
 function scp(localPath: string, remotePath: string) {
-  execSync(`scp "${localPath}" "${SSH_HOST}:${remotePath}"`, {
+  execFileSync("scp", [localPath, `${SSH_HOST!}:${remotePath}`], {
     stdio: "inherit",
   })
 }
@@ -92,6 +99,7 @@ async function uploadDMGs() {
 
   // Step 3: SCP + upload each file
   for (const file of files) {
+    assertSafeDmgFile(file)
     const localPath = join(installsDir, file)
     const remoteTmp = `/tmp/${file}`
     const key = `installs/${file}`

@@ -1246,11 +1246,37 @@ export function ChatProvider({
         !isStreaming &&
         !isStreamingStop &&
         (!threadIdRef.current ||
+          serverMessages.messages[0]?.thread?.id !== threadIdRef.current ||
           (liked !== undefined &&
-            serverMessages.messages.length !== messages.length) ||
-          serverMessages.messages[0]?.thread?.id !== threadIdRef.current)
+            serverMessages.messages.length !== messages.length))
       ) {
-        setMessages(serverMessages.messages)
+        // ID-based diff: only update if server has new messages we don't have
+        // This prevents wiping optimistic messages while server is catching up
+        const localIds = new Set(messages.map((m) => m.message?.id))
+        const serverIds = new Set(
+          serverMessages.messages.map((m) => m.message?.id),
+        )
+        const hasNewServerMessages = serverMessages.messages.some(
+          (m) => !localIds.has(m.message?.id),
+        )
+        const localHasOptimistic = messages.some(
+          (m) => !serverIds.has(m.message?.id),
+        )
+
+        if (hasNewServerMessages && !localHasOptimistic) {
+          // Server has new confirmed messages and no pending optimistics — safe to replace
+          setMessages(serverMessages.messages)
+        } else if (hasNewServerMessages && localHasOptimistic) {
+          // Merge: keep optimistic messages + add new server messages
+          const merged = [
+            ...serverMessages.messages,
+            ...messages.filter((m) => !serverIds.has(m.message?.id)),
+          ]
+          setMessages(merged)
+        } else if (!localHasOptimistic) {
+          // No new server msgs, no optimistic — replace (thread switch, pagination)
+          setMessages(serverMessages.messages)
+        }
       }
 
       setNextPage(threadData.messages.nextPage)

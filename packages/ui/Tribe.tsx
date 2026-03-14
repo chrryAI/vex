@@ -1367,6 +1367,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             !rtl || isSmallDevice ? undefined : "auto",
                         }}
                       >
+                        {rtl && <FocusButton />}
+
                         {app?.mainThreadId && owner && (
                           <A
                             style={{ fontSize: "1rem", marginRight: 5 }}
@@ -1441,7 +1443,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             marginTop: 0,
                           }}
                         />
-                        <FocusButton />
+                        {!rtl && <FocusButton />}
                       </Div>
                     </Div>
                   </H2>
@@ -1749,6 +1751,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         flexWrap: "wrap",
                       }}
                     >
+                      {rtl && <FocusButton />}
+
                       {app?.mainThreadId && owner && (
                         <A
                           style={{ fontSize: "1rem", marginRight: 5 }}
@@ -1757,7 +1761,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           🧬
                         </A>
                       )}
-
                       {burnApp ? (
                         <Div
                           style={{
@@ -1797,7 +1800,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           )}
                         </Div>
                       ) : null}
-
                       <A
                         href={`${FRONTEND_URL}/calendar`}
                         title={t("Organize your life")}
@@ -1824,8 +1826,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           marginTop: 0,
                         }}
                       />
-
-                      <FocusButton />
+                      {!rtl && <FocusButton />}
                     </Div>
                   ) : null}
                   <Div
