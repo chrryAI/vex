@@ -3002,11 +3002,15 @@ export function AuthProvider({
   const lastApp = app
 
   // back = the cross-store anchor app object (resolved from storeApps cache)
-  const back = lastAnchorApp
+  const backInitial = lastAnchorApp
     ? storeApps.find((a) => a.id === lastAnchorApp.appId)
     : undefined
 
-  console.log(`🚀 ~ lastApp:`, { lastAnchorApp, lastApp, back })
+  const [back, setBack] = useState(backInitial)
+
+  useEffect(() => {
+    backInitial && setBack(backInitial)
+  }, [backInitial])
 
   useEffect(() => {
     if (searchParams.get("auth_token")) {
