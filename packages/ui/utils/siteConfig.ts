@@ -258,7 +258,8 @@ const chrryAI = {
     "https://chromewebstore.google.com/detail/chrry-🍒/odgdgbbddopmblglebfngmaebmnhegfc",
   url: "https://chrry.ai",
   store: "https://chrry.ai",
-  description: "AI App Marketplace - Discover, create, and monetize AI apps",
+  description:
+    "AI Super App - Discover, create, and manage your AI-powered life",
   logo: "🍒",
   primaryColor: "#E91E63", // Cherry pink
   links: {
@@ -268,15 +269,15 @@ const chrryAI = {
   },
   features: [
     {
-      title: "App Marketplace",
-      description: "Discover and install AI apps",
+      title: "AI Super App",
+      description: "Access all your AI apps and agents in one place",
       icon: "🏪",
       link: "/explore",
       isOpenSource: true,
     },
     {
-      title: "Create Stores",
-      description: "Build your own AI app marketplace",
+      title: "Build Systems",
+      description: "Create your own AI-powered workflows",
       icon: "🏗️",
       link: "/stores/new",
       isOpenSource: true,
@@ -326,22 +327,22 @@ const chrryAI = {
   ],
   about: {
     intro:
-      "Chrry is the ultimate AI app marketplace where creativity meets monetization. Discover cutting-edge AI applications built by developers worldwide, or create and publish your own AI apps to earn revenue.",
+      "Chrry is the ultimate AI Super App where intelligence meets everyday life. Access cutting-edge AI applications and agents built to harmonize your digital world, or create your own AI-powered workflows.",
     intro2:
-      "With 70% revenue sharing for app creators, custom stores, and powerful developer tools - Chrry empowers both users and builders to harness the full potential of AI technology.",
+      "With powerful developer tools and a unified platform - Chrry empowers you to harness the full potential of AI technology in a single, seamless experience.",
     approach: {
       title: "Our Mission",
       content:
-        "We're building the infrastructure for the AI app economy. Chrry makes it simple for developers to monetize their AI creations while giving users access to a curated marketplace of high-quality applications. Transparency in pricing, usage, and revenue sharing is at our core.",
+        "We're building the infrastructure for the AI Super App era. Chrry makes it simple for creators to build AI-powered solutions while giving users a unified home for all their intelligence needs.",
     },
     platforms: {
       title: "Available Everywhere",
       content:
-        "Access Chrry's AI app marketplace across all your devices - web, mobile PWA, and browser extensions.",
+        "Access Chrry's AI Super App across all your devices - web, mobile PWA, and browser extensions.",
       web: {
         title: "🌐 Web Application",
         content:
-          "Full marketplace experience with app discovery, installation, and management from any browser.",
+          "Full Super App experience with app discovery, personal agents, and management from any browser.",
       },
       pwa: {
         title: "📱 Progressive Web App",
@@ -1695,7 +1696,7 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
   },
   chrryAI: {
     en: {
-      title: "Chrry - AI App Marketplace",
+      title: "Chrry - AI Super App",
       description:
         "Discover, create, and monetize AI applications. Launch your storefront, publish agents, and reach customers worldwide with Chrry.",
     },
@@ -1705,7 +1706,7 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
         "Entdecke, erstelle und monetarisiere KI-Anwendungen. Starte deinen Store, veröffentliche Agents und erreiche weltweit Kund*innen mit Chrry.",
     },
     fr: {
-      title: "Chrry - Place de marché d'applications IA",
+      title: "Chrry - AI Super App",
       description:
         "Découvrez, créez et monétisez des applications IA. Lancez votre boutique, publiez des agents et touchez des clients dans le monde entier avec Chrry.",
     },
@@ -1819,7 +1820,7 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
   },
   chrryStore: {
     en: {
-      title: "Chrry Store - Launch Your AI Marketplace",
+      title: "Chrry Store - Launch Your AI Super App Ecosystem",
       description:
         "Create branded AI stores with custom domains, revenue sharing, and analytics powered by the Chrry platform.",
     },
@@ -1829,27 +1830,27 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
         "Erstelle gebrandete KI-Stores mit eigenen Domains, Umsatzbeteiligung und Analysen – powered by Chrry.",
     },
     fr: {
-      title: "Chrry Store - Lancez votre place de marché IA",
+      title: "Chrry Store - Lancez votre AI Super App",
       description:
         "Créez des boutiques IA à votre image avec domaines personnalisés, partage de revenus et analytics grâce à la plateforme Chrry.",
     },
     ja: {
-      title: "Chrry Store - AIマーケットプレイスを立ち上げる",
+      title: "Chrry Store - AI Super Appを立ち上げる",
       description:
         "カスタムドメインや収益分配、分析を備えたブランドAIストアをChrryで構築しましょう。",
     },
     ko: {
-      title: "Chrry Store - 나만의 AI 마켓플레이스를 시작하세요",
+      title: "Chrry Store - 나만의 AI Super App을 시작하세요",
       description:
         "맞춤 도메인, 수익 공유, 분석 기능을 갖춘 브랜드형 AI 스토어를 Chrry로 구축하세요.",
     },
     pt: {
-      title: "Chrry Store - Lance seu marketplace de IA",
+      title: "Chrry Store - Lance seu AI Super App",
       description:
         "Crie lojas de IA com marca própria, domínios personalizados, revenue sharing e analytics com a plataforma Chrry.",
     },
     es: {
-      title: "Chrry Store - Lanza tu marketplace de IA",
+      title: "Chrry Store - Lanza tu AI Super App",
       description:
         "Crea tiendas de IA con tu marca, dominios personalizados, reparto de ingresos y analíticas con la plataforma Chrry.",
     },
@@ -2561,7 +2562,7 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
     tr: {
       title: "Grape - Uygulamaları keşfedin, kredi kazanın",
       description:
-        "Seçilmiş yapay zeka uygulamalarını keşfedin ve Pear ile kaliteli geri bildirim için kredi kazanın. Topluluk odaklı uygulama keşif pazarı.",
+        "Seçilmiş yapay zeka uygulamalarını keşfedin ve Pear ile kaliteli geri bildirim için kredi kazanın. Topluluk odaklı AI Süper Uygulaması.",
     },
     sv: {
       title: "Grape - Upptäck appar, tjäna krediter",
@@ -2913,7 +2914,7 @@ export function detectsiteModeDomain(
   hostname?: string,
   mode?: siteMode,
 ): siteMode {
-  const devMode = isE2E ? "tribe" : "tribe"
+  const devMode = "vex"
 
   const defaultMode = (getEnv().VITE_SITE_MODE as siteMode) || mode || devMode
 

@@ -5,25 +5,24 @@ import {
   VEX_TEST_EMAIL_3,
   VEX_TEST_FINGERPRINT_3,
   VEX_TEST_PASSWORD_3,
+  wait,
 } from "."
 import { app } from "./shared/app"
 import { chat } from "./shared/chat"
 import { clean } from "./shared/clean"
 import { collaboration } from "./shared/collaboration"
+import { createApp } from "./shared/createApp"
 import { limit } from "./shared/limit"
 import { signIn } from "./shared/signIn"
 import { subscribe } from "./shared/subscribe"
 import { thread } from "./shared/thread"
 
 const isMember = true
-
-test.beforeEach(async ({ page }) => {
-  await clean({ page })
-})
+const isLive = false
 
 // test("Sync Plausible", async ({ page }) => {
 //   await page.goto("https://a.chrry.dev", {
-//     waitUntil: "networkidle",
+//     waitUntil: "domcontentloaded",
 //     timeout: 100000,
 //   })
 
@@ -41,8 +40,9 @@ test.beforeEach(async ({ page }) => {
 // })
 
 test("Subscribe", async ({ page }) => {
+  await clean({ page })
   await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -51,8 +51,9 @@ test("Subscribe", async ({ page }) => {
 })
 
 test("Invite", async ({ page }) => {
+  await clean({ page })
   await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
   await signIn({ page })
@@ -62,7 +63,7 @@ test("Invite", async ({ page }) => {
       isMember,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -74,8 +75,9 @@ test("Invite", async ({ page }) => {
 })
 
 test("Gift", async ({ page }) => {
+  await clean({ page })
   await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
   await signIn({ page })
@@ -85,7 +87,7 @@ test("Gift", async ({ page }) => {
       isMember,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -99,9 +101,10 @@ test("Gift", async ({ page }) => {
 })
 
 test("Chat - Hourly Limit Test", async ({ page }) => {
+  await clean({ page })
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -110,9 +113,10 @@ test("Chat - Hourly Limit Test", async ({ page }) => {
 })
 
 test("Thread", async ({ page }) => {
+  await clean({ page })
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -121,6 +125,7 @@ test("Thread", async ({ page }) => {
 })
 
 test("Collaboration", async ({ page, browser }) => {
+  await clean({ page })
   await page.goto(
     getURL({
       isLive: false,
@@ -128,7 +133,7 @@ test("Collaboration", async ({ page, browser }) => {
       fingerprint: VEX_TEST_FINGERPRINT_3,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -148,9 +153,10 @@ test("Collaboration", async ({ page, browser }) => {
 })
 
 test("Debate", async ({ page }) => {
+  await clean({ page })
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
   await signIn({ page })
@@ -189,11 +195,10 @@ test("Debate", async ({ page }) => {
   })
 })
 
-test.only("App", async ({ page }) => {
-  await clean({ page, isMember })
-
+test("App", async ({ page }) => {
+  await clean({ page })
   await page.goto(getURL({ isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -202,6 +207,7 @@ test.only("App", async ({ page }) => {
     page,
     isMember,
     slug: "vex",
+    isLive,
     nav: [
       {
         name: "vault", // Finance & Budgeting
@@ -261,6 +267,65 @@ test.only("App", async ({ page }) => {
         },
       },
     ],
+    isNewChat: true,
+  })
+})
+
+test("Create A Sushi App", async ({ page }) => {
+  await clean({ page })
+  await page.goto(getURL({ isLive, isMember }), {
+    waitUntil: "domcontentloaded",
+    timeout: 100000,
+  })
+  await wait(5000)
+  await createApp({
+    page,
+    isLive,
+    app: "test",
+    slug: "vex",
+    isMember,
+    defaultAgent: "sushi",
+    theme: "light",
+    colorScheme: "red",
+    placeholder: "Sushi placeholder",
+    temperature: 0.3,
+    nav: [
+      {
+        name: "test", // Feedback & Insights
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What feedback patterns are emerging?" },
+            {
+              model: "sushi",
+              text: "Which features are users requesting most?",
+            },
+            {
+              model: "sushi",
+              text: "Show me sentiment analysis from recent feedback",
+            },
+          ],
+        },
+      },
+    ],
+  })
+})
+
+test("Grape", async ({ page }) => {
+  await clean({ isLive: true, page })
+  await page.goto(getURL({ isLive: true, isMember }), {
+    waitUntil: "domcontentloaded",
+    timeout: 100000,
+  })
+
+  await signIn({ page })
+
+  await app({
+    page,
+    isMember,
+    isLive,
+    slug: "vex",
+    nav: undefined,
+    isGrape: true,
     isNewChat: true,
   })
 })

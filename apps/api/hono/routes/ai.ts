@@ -1259,6 +1259,7 @@ ai.post("/", async (c) => {
       postId: formData.get("postId") as string,
       placeholder: formData.get("placeholder") as string,
       appId: formData.get("appId") as string,
+      fp: formData.get("fingerprint") as string,
       slug: formData.get("slug") as string,
       selectedAgentId: (formData.get("selectedAgentId") as string) || "",
       pauseDebate: formData.get("pauseDebate") === "true",
@@ -1321,6 +1322,7 @@ ai.post("/", async (c) => {
     placeholder,
     deviceId,
     tribeCharLimit,
+    fingerprint: fp,
     postType,
     ...rest
   } = requestData
@@ -3540,7 +3542,6 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     vaultContext,
     focusContext,
     taskContext,
-
     newsContext,
     storeContext ? spatialNavigationContext : "", // Only add spatial nav context if store context is present
     grapeContext, // Available apps in Grape button (GLOBAL - all apps need this)
@@ -3576,15 +3577,14 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     return c.json({ error: "No credits left" }, { status: 403 })
   }
 
-  const fingerprint = member?.fingerprint || guest?.fingerprint
+  const fingerprint =
+    fp && isE2EInternal ? fp : member?.fingerprint || guest?.fingerprint
 
-  const isE2E = !!(
-    member?.role !== "admin" &&
-    fingerprint &&
+  const isE2E =
+    !!fingerprint &&
     !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
-    isE2EInternal &&
+    !!isE2EInternal &&
     !job
-  )
 
   const hourlyLimit =
     isDevelopment && !isE2E
@@ -4733,11 +4733,25 @@ How I process and remember information:
     reason: string
   } | null = null
 
+  console.log("🍐 Pear flow check:", {
+    isPear,
+    isE2E,
+    hasAgent: !!agent,
+    agentName: agent?.name,
+    requestDataPear: requestData.pear,
+  })
+
   if (isPear && agent) {
     // Check quota first
     const quotaCheck = await checkPearQuota({
       userId: member?.id,
       guestId: guest?.id,
+    })
+
+    console.log("🍐 Quota check:", {
+      allowed: quotaCheck.allowed,
+      remaining: quotaCheck.remaining,
+      isE2EInternal,
     })
 
     if (!quotaCheck.allowed && !isE2EInternal) {
@@ -4751,6 +4765,13 @@ How I process and remember information:
       try {
         const userFeedback =
           typeof userContent === "string" ? userContent : userContent.text || ""
+
+        console.log("🍐🍐🍐 validatePearFeedback CALLED", {
+          userId: member?.id,
+          guestId: guest?.id,
+          appName: requestApp?.name,
+          feedbackPreview: userFeedback.slice(0, 50),
+        })
 
         pearValidationResult = await validatePearFeedback({
           feedbackText: userFeedback,
@@ -5090,11 +5111,6 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       `✅ Context reduced: ${textOnlyTokens} → ~${currentTokens} tokens (within ${modelLimit} limit)`,
     )
   }
-
-  console.log("📁 Processing files:", {
-    count: files.length,
-    capabilities: agent.capabilities,
-  })
 
   if (
     (!member &&

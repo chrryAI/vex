@@ -1,6 +1,8 @@
 import { expect, type Page } from "@playwright/test"
 import { getURL, type modelName, wait } from ".."
-import app from "./app"
+import { app } from "./app"
+import { prepare } from "./clean"
+
 import { signIn } from "./signIn"
 
 const COLORS = {
@@ -83,7 +85,7 @@ const createApp = async ({
 }) => {
   if (isNewChat) {
     await page.goto(getURL({ isLive, isMember }), {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     })
     // Wait for the main app container or chat input to ensure load
@@ -381,13 +383,15 @@ const createApp = async ({
   await expect(continueButton).toBeVisible()
   await continueButton.click()
 
-  await wait(1000)
+  await wait(2000)
 
   const saveAppButton = page.getByTestId("save-app")
   await expect(saveAppButton).toBeVisible()
   await saveAppButton.click()
 
   await wait(1000)
+
+  await prepare({ page })
 
   const editAppButton = page.getByTestId("edit-app")
   await expect(editAppButton).toBeVisible({
@@ -419,4 +423,4 @@ const createApp = async ({
   })
 }
 
-export default createApp
+export { createApp }

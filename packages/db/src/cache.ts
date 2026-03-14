@@ -24,6 +24,22 @@ const CACHE_TTL = {
   TRANSLATIONS: 60 * 60 * 24, // 24 hours (translations rarely change)
 }
 
+// Redact potentially sensitive parts of cache keys before logging
+function redactCacheKeyForLogging(key: string): string {
+  // Mask API keys in user cache keys like "user:apiKey:<actual-api-key>"
+  const apiKeyPrefix = "user:apiKey:"
+  if (key.startsWith(apiKeyPrefix)) {
+    return apiKeyPrefix + "***REDACTED***"
+  }
+
+  // Fallback: if "apiKey" appears anywhere else, avoid logging the full key
+  if (key.toLowerCase().includes("apikey")) {
+    return "[REDACTED CACHE KEY WITH API KEY]"
+  }
+
+  return key
+}
+
 // Cache key generators
 export const cacheKeys = {
   app: (id: string) => `app:${id}`,
@@ -49,6 +65,8 @@ export async function getCache<T>(key: string): Promise<T | null> {
     return null // Cache disabled
   }
 
+  const safeKey = redactCacheKeyForLogging(key)
+
   try {
     const cached = await redis.get(key)
     if (!cached) return null
@@ -57,13 +75,13 @@ export async function getCache<T>(key: string): Promise<T | null> {
     try {
       return JSON.parse(cached) as T
     } catch (parseError) {
-      console.error(`❌ Cache JSON parse error for ${key}:`, parseError)
+      console.error(`❌ Cache JSON parse error for ${safeKey}:`, parseError)
       // Invalid JSON in cache, delete it
       await redis.del(key)
       return null
     }
   } catch (error) {
-    console.error(`❌ Cache GET error for ${key}:`, error)
+    console.error(`❌ Cache GET error for ${safeKey}:`, error)
     return null
   }
 }

@@ -62,13 +62,13 @@ interface MetadataResult {
 
 const generateMeta = ({ locale }: { locale: locale }): MetadataResult => {
   return {
-    title: "Chrry - Your personal AI assistant",
+    title: "Chrry - Your AI Super App",
     description:
-      "Chat with AI, analyze files, and boost productivity in any language",
+      "Your personal AI Super App - Chat with agents, manage life, and automate work in any language",
     openGraph: {
-      title: "Chrry - Your personal AI assistant",
+      title: "Chrry - Your AI Super App",
       description:
-        "Chat with AI, analyze files, and boost productivity in any language",
+        "Your personal AI Super App - Chat with agents, manage life, and automate work in any language",
     },
   }
 }

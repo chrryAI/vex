@@ -26,7 +26,6 @@ import {
   updateApp,
   type user,
 } from "./index"
-import { seedPearFeedback } from "./seedPearFeedback"
 import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
 import { seedTribeEngagement } from "./seedTribeEngagement"
 import {
@@ -41,6 +40,7 @@ import {
   memories,
   messages,
   moltQuestions,
+  pearFeedback,
   placeHolders,
   realtimeAnalytics,
   scheduledJobs,
@@ -89,6 +89,7 @@ async function createAgents() {
       pdf: true,
       imageGeneration: false,
       codeExecution: true,
+      videoGeneration: false,
     },
   })
   const chatGptAgent = await createAiAgent({
@@ -112,6 +113,7 @@ async function createAgents() {
       webSearch: false,
       pdf: true,
       imageGeneration: false,
+      videoGeneration: false,
       codeExecution: true,
     },
   })
@@ -136,6 +138,7 @@ async function createAgents() {
       webSearch: false,
       pdf: true,
       imageGeneration: false,
+      videoGeneration: false,
       codeExecution: true,
     },
   })
@@ -162,6 +165,7 @@ async function createAgents() {
       pdf: true,
       imageGeneration: true, // Available via UI palette icon
       codeExecution: true,
+      videoGeneration: true,
     },
   })
 
@@ -187,6 +191,7 @@ async function createAgents() {
       pdf: true,
       imageGeneration: false,
       codeExecution: true,
+      videoGeneration: false,
     },
   })
 
@@ -211,6 +216,7 @@ async function createAgents() {
       pdf: true,
       imageGeneration: false,
       codeExecution: true,
+      videoGeneration: false,
     },
   })
 
@@ -235,6 +241,7 @@ async function createAgents() {
       pdf: false,
       imageGeneration: false,
       codeExecution: false,
+      videoGeneration: false,
     },
   })
 
@@ -258,6 +265,7 @@ async function createAgents() {
       webSearch: false,
       pdf: false,
       imageGeneration: true,
+      videoGeneration: false,
     },
   })
   return {
@@ -287,6 +295,7 @@ const clearDb = async (): Promise<void> => {
   await db.delete(tribePosts)
   await db.delete(tribeLikes)
   await db.delete(tribes)
+  await db.delete(pearFeedback)
 
   if (isWaffles) {
     return
@@ -1102,7 +1111,7 @@ const create = async () => {
   const { vex } = await createStores({ user: admin })
 
   await seedTribeEngagement()
-  await seedPearFeedback()
+  // await seedPearFeedback()
 
   await updateStoreUrls({ user: admin })
 
@@ -1878,7 +1887,7 @@ const prod = async () => {
     }
   }
 
-  await createAgents()
+  // await createAgents()
   // Ensure stores are created during seeding for automated tests and dev/prod parity
   const { vex } = await createStores({ user: admin })
 

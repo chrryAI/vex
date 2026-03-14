@@ -1555,6 +1555,41 @@
       "when": 1773101639835,
       "tag": "0221_greedy_millenium_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 222,
+      "version": "7",
+      "when": 1773364478648,
+      "tag": "0222_little_madripoor",
+      "breakpoints": true
+    },
+    {
+      "idx": 223,
+      "version": "7",
+      "when": 1773370826112,
+      "tag": "0223_swift_silver_samurai",
+      "breakpoints": true
+    },
+    {
+      "idx": 224,
+      "version": "7",
+      "when": 1773370850618,
+      "tag": "0224_charming_speed",
+      "breakpoints": true
+    },
+    {
+      "idx": 225,
+      "version": "7",
+      "when": 1773371515770,
+      "tag": "0225_far_miss_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 226,
+      "version": "7",
+      "when": 1773486885605,
+      "tag": "0226_cool_major_mapleleaf",
+      "breakpoints": true
     }
   ]
 }

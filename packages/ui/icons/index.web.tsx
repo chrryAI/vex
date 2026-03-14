@@ -11,6 +11,7 @@ export {
   Flux,
   Gemini,
   Grok,
+  Kling,
   OpenAI,
   OpenRouter,
   Perplexity,

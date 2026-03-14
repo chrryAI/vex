@@ -14,7 +14,6 @@ import {
   updateAiAgent,
 } from "@repo/db"
 import type { LanguageModel } from "ai"
-import { gateway } from "ai"
 
 const plusTiers = ["plus", "pro"]
 

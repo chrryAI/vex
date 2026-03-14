@@ -445,6 +445,7 @@ export type aiAgent = {
     video: boolean
     webSearch: boolean
     imageGeneration: boolean
+    videoGeneration?: boolean
     codeExecution?: boolean
     pdf: boolean
   }
@@ -851,6 +852,7 @@ export type app = {
     video: boolean
     webSearch: boolean
     imageGeneration: boolean
+    videoGeneration: boolean
     codeExecution: boolean
     pdf: boolean
   } | null

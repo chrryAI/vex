@@ -4,7 +4,7 @@ import { getURL, VEX_TEST_EMAIL_3, VEX_TEST_PASSWORD_3, wait } from "."
 import { chat } from "./shared/chat"
 import { clean, newChat } from "./shared/clean"
 import { collaboration } from "./shared/collaboration"
-import createApp from "./shared/createApp"
+import { createApp } from "./shared/createApp"
 import { limit } from "./shared/limit"
 import { subscribe } from "./shared/subscribe"
 import { thread } from "./shared/thread"
@@ -28,7 +28,7 @@ test.skip("Subscribe As Guest", async ({ page }) => {
       isLive,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -52,7 +52,7 @@ test.skip("Invite", async ({ page }) => {
       isMember,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -69,7 +69,7 @@ test.skip("Invite", async ({ page }) => {
 
 test.skip("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
   await page.goto(
@@ -78,7 +78,7 @@ test.skip("Gift", async ({ page }) => {
       isMember,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -116,7 +116,7 @@ test.skip("Chat", async ({ page }) => {
   test.slow()
 
   await page.goto(getURL({ isMember, isLive }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -177,7 +177,7 @@ test.skip("Thread", async ({ page }) => {
 test.skip("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isMember, isLive }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -218,7 +218,7 @@ test.skip("File upload", async ({ page }) => {
 
 test.skip("Create A Claude App", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
   await wait(5000)
@@ -241,7 +241,7 @@ test.skip("Create A Claude App", async ({ page }) => {
 test.skip("Create A Sushi App", async ({ page }) => {
   await clean({ page, isLive: false })
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
   await wait(5000)
@@ -286,7 +286,7 @@ test.skip("Chat - Hourly Limit Test", async ({ page }) => {
 test.skip("Debate", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 

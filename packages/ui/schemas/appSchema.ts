@@ -111,6 +111,7 @@ export const appSchema = z.object({
       video: z.boolean(),
       webSearch: z.boolean(),
       imageGeneration: z.boolean(),
+      videoGeneration: z.boolean(),
       codeExecution: z.boolean(),
       pdf: z.boolean(),
     })
@@ -143,6 +144,7 @@ export const appSchema = z.object({
       replicate: z.string().optional(), // For Flux
       openrouter: z.string().optional(),
       xai: z.string().optional(),
+      fal: z.string().optional(),
     })
     .optional(),
 

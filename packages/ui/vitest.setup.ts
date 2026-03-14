@@ -26,5 +26,16 @@ console.error = (...args) => {
   ) {
     return
   }
-  originalConsoleError(...args)
+  // Sanitize arguments to prevent CodeQL security warnings about clear-text logging
+  const sanitizedArgs = args.map((arg) => {
+    if (typeof arg === "string" && arg.toLowerCase().includes("apikey")) {
+      return "[REDACTED SENSITIVE DATA]"
+    }
+    if (arg && typeof arg === "object" && "apiKey" in arg) {
+      return { ...arg, apiKey: "*** REDACTED ***" }
+    }
+    return arg
+  })
+
+  originalConsoleError(...sanitizedArgs)
 }

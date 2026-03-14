@@ -8,7 +8,7 @@ import {
   wait,
 } from ".."
 import { chat } from "./chat"
-import { clean, prepare } from "./clean"
+import { prepare } from "./clean"
 import { signIn } from "./signIn"
 
 export async function collaboration({
@@ -48,7 +48,7 @@ export async function collaboration({
   const page1 = page
 
   // User 1: Create a new thread and get the thread ID
-  await page1.goto(TEST_URL, { waitUntil: "networkidle" })
+  await page1.goto(TEST_URL, { waitUntil: "domcontentloaded" })
 
   // Send first message to create thread
 
@@ -153,7 +153,7 @@ export async function collaboration({
   await wait(5000)
 
   await page2.goto(getMemberUrl(), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -169,7 +169,7 @@ export async function collaboration({
   await page2.goto(
     withShareLink ? `${getMemberUrl(`/threads/${threadId}`)}` : getMemberUrl(),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -276,7 +276,7 @@ export async function collaboration({
   await page1.waitForTimeout(3000)
   expect(await page1.getByTestId("typing-indicator").count()).toBe(0)
 
-  await clean({ page: page1 })
+  await prepare({ page: page1 })
 
   // Clean up
   await context1.close()

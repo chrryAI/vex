@@ -13,10 +13,12 @@ const Grapes = ({
   style,
   goToGrape,
   dataTestId,
+  slug = "grape",
 }: {
   style?: React.CSSProperties
   goToGrape?: boolean
   dataTestId?: string
+  slug?: string
 }) => {
   const { grapes, setIsPear, grape, plausible, showGrapes, setShowGrapes } =
     useAuth()
@@ -49,7 +51,7 @@ const Grapes = ({
   if (!grapes.length && !goToGrape) return null
 
   return (
-    <Div>
+    <Div key={dataTestId || slug}>
       {grapes.length > 0 && (
         <Modal
           isModalOpen={showGrapes}
@@ -246,7 +248,7 @@ const Grapes = ({
           })
         }}
       >
-        <Img showLoading={false} logo={"grape"} width={18} height={18} />
+        <Img showLoading={false} icon={slug} width={18} height={18} />
         {!goToGrape && grapes.length > 0 && (
           <Span
             style={{

@@ -58,7 +58,7 @@ async function globalSetup(config: FullConfig) {
   const page = await context.newPage()
 
   try {
-    await page.goto(baseURL, { waitUntil: "networkidle", timeout: 30000 })
+    await page.goto(baseURL, { waitUntil: "domcontentloaded", timeout: 30000 })
     console.log("✅ Frontend is ready!")
   } catch (error) {
     console.error("⚠️ Frontend warmup failed, but continuing:", error)

@@ -991,7 +991,6 @@ export function AuthProvider({
   }
 
   function processSession(sessionData?: session) {
-    console.log(`🚀 ~ processSession ~ sessionData:`, sessionData)
     if (sessionData) {
       setSession(sessionData)
       // plausible guest migration
@@ -1080,20 +1079,30 @@ export function AuthProvider({
     setTaskId(searchParams.get("taskId") || undefined)
   }, [searchParams])
 
-  const [isGuestTest, _setIsLiveGuestTest] = useLocalStorage<boolean>(
+  const isGuestTestInternal = fingerprintParam
+    ? TEST_GUEST_FINGERPRINTS?.includes(fingerprintParam)
+    : false
+
+  const [isGuestTest, setIsLiveGuestTest] = useLocalStorage<boolean>(
     "isGuestTest",
-    fingerprintParam
-      ? TEST_GUEST_FINGERPRINTS?.includes(fingerprintParam)
-      : false,
+    isGuestTestInternal,
   )
-  const [isMemberTest, _setIsLiveMemberTest] = useLocalStorage<boolean>(
+
+  const isMemberTestInternal = user?.email
+    ? TEST_MEMBER_EMAILS.includes(user.email)
+    : fingerprintParam
+      ? TEST_MEMBER_FINGERPRINTS?.includes(fingerprintParam)
+      : false
+
+  const [isMemberTest, setIsLiveMemberTest] = useLocalStorage<boolean>(
     "isMemberTest",
-    user?.email
-      ? TEST_MEMBER_EMAILS.includes(user.email)
-      : fingerprintParam
-        ? TEST_MEMBER_FINGERPRINTS?.includes(fingerprintParam)
-        : false,
+    isMemberTestInternal,
   )
+
+  useEffect(() => {
+    isMemberTestInternal && setIsLiveMemberTest(true)
+    isGuestTestInternal && setIsLiveGuestTest(true)
+  }, [isMemberTestInternal, isGuestTestInternal])
 
   const isLiveTest = isGuestTest || isMemberTest
 
@@ -1298,7 +1307,7 @@ export function AuthProvider({
 
   const chrryUrl = CHRRY_URL
 
-  const appId = newApp?.id || updatedApp?.id || loadingAppId || app?.id
+  const appId = newApp?.id || updatedApp?.id || loadingAppId
 
   const [isSavingApp, setIsSavingApp] = useState(false)
   const [isManagingApp, setIsManagingAppInternal] = useState(false)
@@ -1734,6 +1743,25 @@ export function AuthProvider({
     undefined,
   )
 
+  const rtlLanguages = ["fa", "ar", "he", "ur", "ku"]
+
+  // Use locale prop (server data) for initial RTL - it's sync and reliable
+  // language (from useCookieOrLocalStorage) is async and starts with default value
+  const rtlInitial = rtlLanguages.includes(locale as string)
+
+  const [rtl, setRTL] = useState(rtlInitial)
+
+  const processRTL = (l = language) => {
+    const isRTL = rtlLanguages.includes(l)
+    setRTL(isRTL)
+
+    document.documentElement.setAttribute("lang", l)
+    document.documentElement.setAttribute("dir", isRTL ? "rtl" : "ltr")
+  }
+  useEffect(() => {
+    processRTL(language)
+  }, [language])
+
   // useEffect(() => {
   //   if (session?.locale) {
   //     setLanguageInternal(session?.locale)
@@ -1744,6 +1772,7 @@ export function AuthProvider({
     setLanguageInternal(language)
     i18n.changeLanguage(language)
 
+    processRTL(language)
     const currentPath = window.location.pathname
     let pathWithoutLocale = currentPath
 
@@ -1891,8 +1920,8 @@ export function AuthProvider({
         if (!token) return
         const result = await getApp({
           token,
-          chrryUrl,
-          pathname,
+          // chrryUrl,
+          // pathname,
           accountApp: true,
           skipCache: true,
         })
@@ -2952,20 +2981,6 @@ export function AuthProvider({
   const _auth_token = searchParams.get("auth_token")
 
   const fp = searchParams.get("fp")
-
-  const rtlInitial = ["fa"].includes(language)
-
-  const [rtl, setRTL] = useState(rtlInitial)
-
-  const rtlLanguages = ["fa", "ar", "he", "ur", "ku"]
-
-  useEffect(() => {
-    const isRTL = rtlLanguages.includes(language)
-    setRTL(isRTL)
-
-    document.documentElement.setAttribute("lang", language)
-    document.documentElement.setAttribute("dir", isRTL ? "rtl" : "ltr")
-  }, [language])
 
   const [displayedApps, setDisplayedApps] = useState<appWithStore[]>([])
 

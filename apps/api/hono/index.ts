@@ -109,6 +109,17 @@ app.onError((err, c) => {
 // Apply custom CORS middleware (matching Next.js middleware)
 app.use("*", corsMiddleware)
 
+// Health check endpoint (MUST be before bot protection and other middlewares)
+app.get("/api/health", (c) => {
+  return c.json({
+    status: "ok",
+    buildId: process.env.GIT_SHA || Date.now().toString(),
+    version: require("@chrryai/chrry/package.json").version,
+    env: process.env.NODE_ENV,
+    timestamp: new Date().toISOString(),
+  })
+})
+
 // Apply bot protection middleware (block suspicious requests early)
 app.use("*", botProtectionMiddleware)
 

@@ -98,7 +98,7 @@ Title:`
     // Get the thread and app to determine which agent to use
 
     // Fallback to default if no model found
-    const { provider: model } = await getModelProvider({ app })
+    const { provider: model } = await getModelProvider({ app, name: "beles" })
 
     if (!model) {
       return "New Conversation"
@@ -209,7 +209,7 @@ Write in ${languageName}. Return only the instruction text:`
 
     // Get the thread and app to determine which agent to use
 
-    const { provider: model } = await getModelProvider({ app })
+    const { provider: model } = await getModelProvider({ app, name: "beles" })
 
     if (!model) {
       return ""

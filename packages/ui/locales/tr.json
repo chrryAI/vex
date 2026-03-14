@@ -1036,7 +1036,6 @@
   "Earn {{commission}} commission by sharing {{app}} with your audience": "{{app}}'ı kitleyle paylaşarak {{commission}} komisyon kazanın",
   "MyAgent": "BenimTemsilcim",
   "Create Your First Store": "İlk Mağazanızı Oluşturun",
-  "Build your own AI app marketplace in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Dakikalar içinde kendi AI uygulama pazar yerinizi oluşturun. Bir isim seçin, markanızı özelleştirin ve uygulamaları yayınlamaya başlayın. Kodlama gerekmez.",
   "Publish & Monetize Apps": "Uygulamaları Yayınlayın & Monetize Edin",
   "Upload your AI apps and set your pricing. Earn 40% revenue on every sale, with automatic payouts. Track analytics and grow your business.": "AI uygulamalarınızı yükleyin ve fiyatlandırmanızı belirleyin. Her satışta %40 gelir elde edin, otomatik ödemelerle. Analitikleri takip edin ve işinizi büyütün.",
   "Nested Store Hierarchy": "İç İçe Mağaza Hiyerarşisi",
@@ -1216,7 +1215,6 @@
   "Seamlessly incorporate facts and citations. Claude Writer helps you write well-researched, credible content with proper attribution.": "Gerçekleri ve alıntıları sorunsuz bir şekilde dahil edin. Claude Writer, doğru atıflarla iyi araştırılmış, güvenilir içerik yazmanıza yardımcı olur.",
   "Revision Assistant": "Revizyon Asistanı",
   "Iterate and improve drafts collaboratively. Claude Writer provides constructive feedback and helps refine your work through multiple revisions.": "Taslakları işbirliği içinde tekrarlayın ve geliştirin. Claude Writer, yapıcı geri bildirimler sağlar ve çalışmanızı birden çok revizyonla geliştirmenize yardımcı olur.",
-  "AI App Marketplace": "AI Uygulama Pazarı",
   "AI Coding Assistant": "AI Kodlama Asistanı",
   "Real-Time AI Search": "Gerçek Zamanlı AI Arama",
   "Expert Code Reviewer": "Uzman Kod İnceleyici",
@@ -2463,5 +2461,11 @@
   "xAI's latest frontier model with reasoning.": "xAI'nin mantıklı son sınır modeli.",
   "Tribe - No Pill Required": "Tribe - Hap Gerekmez",
   "tribe_ecosystem_description": "🍇 Şarap ekosistemi boyunca AI ajanlarının işbirliği yapmasını izleyin. Bağlam farkında iletişim için <0>🌀 Mekansal Navigasyon©</0> ve otonom kodlama için <1>🍣 Sato Dojo©</1>.",
-  "Drop files here to attach": "Dosyaları eklemek için buraya bırakın"
+  "Drop files here to attach": "Dosyaları eklemek için buraya bırakın",
+  "Cosmos, space exploration, and astrophysics": "Kozmos, uzay keşfi ve astrofizik",
+  "UI/UX design and creative work": "UI/UX tasarımı ve yaratıcı çalışma",
+  "Video generation is enabled. {{provider}} API key is required for paid tiers": "Video oluşturma etkin. Ücretli seviyeler için {{provider}} API anahtarı gereklidir",
+  "Video Generation": "Video Oluşturma",
+  "AI for the City That Never Sleeps": "Hiç Uyumayan Şehir için AI",
+  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Dakikalar içinde kendi AI süper uygulamanızı oluşturun. Bir isim seçin, markanızı özelleştirin ve uygulamalar yayınlamaya başlayın. Kodlama gerekmez."
 }

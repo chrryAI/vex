@@ -2,7 +2,7 @@ name: CI
 on:
   # # will update to main when is ready
   pull_request:
-    branches: [prod]
+    branches: [main]
 
 permissions:
   contents: read
@@ -139,12 +139,18 @@ jobs:
         run: pnpm turbo lint
 
       - name: Unit Tests
+        env:
+          FALKORDB_HOST: localhost
+          FALKORDB_PORT: 6379
         run: pnpm turbo test
 
       - name: Type check
         run: pnpm turbo check-types
 
       - name: Build packages
+        env:
+          FALKORDB_HOST: localhost
+          FALKORDB_PORT: 6379
         run: pnpm run build
 
   # Deploy both API and Web sequentially
@@ -179,21 +185,34 @@ jobs:
           EXPECTED_VERSION=$(jq -r '.version' package.json)
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            echo "🔍 Checking $STAGING_API_URL/api/health..."
-            if curl -f --compressed $STAGING_API_URL/api/health > /dev/null 2>&1; then
-              API_VERSION=$(curl -s --compressed $STAGING_API_URL/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
-              echo "📦 API version: $API_VERSION (expected: $EXPECTED_VERSION)"
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "🔍 Attempt $ATTEMPT/$MAX_ATTEMPTS: Checking $STAGING_API_URL/api/health..."
+
+            # Use a temporary file for the response body
+            RESPONSE_FILE=$(mktemp)
+            HTTP_STATUS=$(curl -s -A "Chrry-Health-Check" -H "X-Internal-Request: flash-server" -o "$RESPONSE_FILE" -w "%{http_code}" --compressed --connect-timeout 5 "$STAGING_API_URL/api/health")
+
+            if [ "$HTTP_STATUS" -eq 200 ]; then
+              API_VERSION=$(cat "$RESPONSE_FILE" | jq -r '.version' 2>/dev/null || echo "unknown")
+              echo "✅ API is up! version: $API_VERSION (expected: $EXPECTED_VERSION)"
 
               if [ "$API_VERSION" = "$EXPECTED_VERSION" ]; then
-                echo "✅ API deployment complete!"
+                echo "✅ API version match! Deployment complete."
+                rm "$RESPONSE_FILE"
                 exit 0
               fi
             else
-              echo "❌ Health check failed (curl exit code: $?)"
+              echo "❌ Health check failed with status: $HTTP_STATUS"
+              # Only print body if it's not too large
+              DATA=$(cat "$RESPONSE_FILE")
+              if [ ${#DATA} -lt 1000 ]; then
+                echo "📄 Response body: $DATA"
+              else
+                echo "📄 Response body too large to show"
+              fi
             fi
 
-            ATTEMPT=$((ATTEMPT + 1))
-            echo "⏳ Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            rm "$RESPONSE_FILE"
             sleep 10
           done
 
@@ -218,21 +237,34 @@ jobs:
           EXPECTED_VERSION=$(jq -r '.version' package.json)
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            echo "🔍 Checking $STAGING_URL/api/health..."
-            if curl -f --compressed $STAGING_URL/api/health > /dev/null 2>&1; then
-              WEB_VERSION=$(curl -s --compressed $STAGING_URL/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
-              echo "📦 Web version: $WEB_VERSION (expected: $EXPECTED_VERSION)"
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "🔍 Attempt $ATTEMPT/$MAX_ATTEMPTS: Checking $STAGING_URL/api/health..."
+
+            # Use a temporary file for the response body
+            RESPONSE_FILE=$(mktemp)
+            HTTP_STATUS=$(curl -s -A "Chrry-Health-Check" -o "$RESPONSE_FILE" -w "%{http_code}" --compressed --connect-timeout 5 "$STAGING_URL/api/health")
+
+            if [ "$HTTP_STATUS" -eq 200 ]; then
+              WEB_VERSION=$(cat "$RESPONSE_FILE" | jq -r '.version' 2>/dev/null || echo "unknown")
+              echo "✅ Web is up! version: $WEB_VERSION (expected: $EXPECTED_VERSION)"
 
               if [ "$WEB_VERSION" = "$EXPECTED_VERSION" ]; then
-                echo "✅ Web deployment complete!"
+                echo "✅ Web version match! Deployment complete."
+                rm "$RESPONSE_FILE"
                 exit 0
               fi
             else
-              echo "❌ Health check failed (curl exit code: $?)"
+              echo "❌ Health check failed with status: $HTTP_STATUS"
+              # Only print body if it's not too large
+              DATA=$(cat "$RESPONSE_FILE")
+              if [ ${#DATA} -lt 1000 ]; then
+                echo "📄 Response body: $DATA"
+              else
+                echo "📄 Response body too large to show"
+              fi
             fi
 
-            ATTEMPT=$((ATTEMPT + 1))
-            echo "⏳ Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            rm "$RESPONSE_FILE"
             sleep 10
           done
 
@@ -270,7 +302,7 @@ jobs:
       - name: Install Playwright Browsers
         run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
 
-      - name: Run Live Guest Playwright tests (Real AI)
+      - name: Run Live Guest Playwright tests
         env:
           PLAYWRIGHT_BASE_URL: ${{ env.STAGING_URL }}
           VEX_LIVE_FINGERPRINTS: ${{ secrets.VEX_LIVE_FINGERPRINTS }}
@@ -326,7 +358,7 @@ jobs:
       - name: Install Playwright Browsers
         run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
 
-      - name: Run Live Member Playwright tests (Real AI)
+      - name: Run Live Member Playwright tests
         env:
           PLAYWRIGHT_BASE_URL: ${{ env.STAGING_URL }}
           VEX_LIVE_FINGERPRINTS: ${{ secrets.VEX_LIVE_FINGERPRINTS }}

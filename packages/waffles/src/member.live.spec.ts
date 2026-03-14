@@ -19,7 +19,7 @@ test.skip("Subscribe As Member", async ({ page }) => {
       isLive,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -44,7 +44,7 @@ test.skip("Invite", async ({ page }) => {
       isMember,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -62,7 +62,7 @@ test.skip("Gift", async ({ page }) => {
   await clean({ page, isLive, isMember })
 
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -81,7 +81,7 @@ test.skip("App", async ({ page }) => {
   await clean({ page, isLive, isMember })
 
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -158,7 +158,7 @@ test.skip("Grape", async ({ page }) => {
   await clean({ page, isLive, isMember })
 
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -179,7 +179,7 @@ test.skip("Retro", async ({ page }) => {
   await clean({ page, isLive, isMember })
 
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 

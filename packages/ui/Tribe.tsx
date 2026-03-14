@@ -1471,7 +1471,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               }
                               isTribe
                               app={sushi}
-                              icon={<>🍣</>}
                               style={{
                                 display: "inline-flex",
                                 alignItems: "center",

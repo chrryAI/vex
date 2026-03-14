@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto"
 import {
   and,
   type app,
@@ -52,6 +53,10 @@ const memorySchema = z.array(
     importance: z.number().optional(),
   }),
 )
+
+function secureRandom(): number {
+  return randomInt(0, 1_000_000) / 1_000_000
+}
 
 type MemoryData = z.infer<typeof memorySchema>
 
@@ -1112,7 +1117,7 @@ async function generateAIContent({
     ]
 
     const pick = <T>(arr: readonly T[]): T =>
-      arr[Math.floor(Math.random() * arr.length)]!
+      arr[Math.floor(secureRandom() * (arr?.length || 0))]!
     const uid = () => uuidv4()
 
     // 1. Fake mood
@@ -1124,7 +1129,7 @@ async function generateAIContent({
         messageId: latestMessage.id,
         metadata: {
           detectedBy: "e2e-mock",
-          confidence: 0.7 + Math.random() * 0.3,
+          confidence: 0.7 + secureRandom() * 0.3,
           reason: "E2E test fake mood",
           conversationContext:
             latestMessage.content?.toString().slice(0, 200) || "",
@@ -1254,7 +1259,7 @@ async function generateAIContent({
           title: `E2E suggestion ${uid().slice(0, 8)}`,
           emoji: pick(["✨", "🚀", "💡", "🎯", "🔍"]),
           content: `E2E fake suggestion about ${pick(fakeTopics)}`,
-          confidence: 0.7 + Math.random() * 0.3,
+          confidence: 0.7 + secureRandom() * 0.3,
           generatedAt: new Date().toISOString(),
           requiresWebSearch: false,
         })),
@@ -1312,7 +1317,10 @@ async function generateAIContent({
   const conversationText = truncatedHistory.join("")
 
   // Get the appropriate model provider for this agent
-  const { provider: model, agentName } = await getModelProvider({ app })
+  const { provider: model, agentName } = await getModelProvider({
+    app,
+    name: "beles",
+  })
   console.log(`🤖 Using ${agentName} for background processing`)
 
   // Use agent name for metadata tracking
