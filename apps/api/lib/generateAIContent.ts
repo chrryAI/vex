@@ -1117,7 +1117,7 @@ async function generateAIContent({
     ]
 
     const pick = <T>(arr: readonly T[]): T =>
-      arr[Math.floor(secureRandom() * arr.length)]!
+      arr[Math.floor(secureRandom() * (arr?.length || 0))]!
     const uid = () => uuidv4()
 
     // 1. Fake mood
