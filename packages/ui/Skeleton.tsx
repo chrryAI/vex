@@ -244,10 +244,6 @@ export default function Skeleton({
                       display: "flex",
                       alignItems: "center",
                       gap: 5,
-                      paddingTop:
-                        hasHydrated && !isDrawerOpen && isTauri
-                          ? "1.4rem"
-                          : "0",
                     }}
                   >
                     {!isDrawerOpen && (
@@ -338,7 +334,12 @@ export default function Skeleton({
                     )}
                   </Div>
                 </Div>
-                <Div style={{ ...skeletonStyles.right.style }}>
+                <Div
+                  style={{
+                    ...skeletonStyles.right.style,
+                    paddingTop: hasHydrated && isTauri && rtl ? "1.4rem" : "0",
+                  }}
+                >
                   <Suspense fallback={null}>
                     <CharacterProfiles />
                   </Suspense>
@@ -358,7 +359,11 @@ export default function Skeleton({
               </>
             )}
           </Div>
-          <Div style={{ ...skeletonStyles.contentContainer.style }}>
+          <Div
+            style={{
+              paddingTop: hasHydrated && isTauri && rtl ? "1.4rem" : "0",
+            }}
+          >
             <>{children}</>
           </Div>
         </Main>

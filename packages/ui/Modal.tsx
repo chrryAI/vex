@@ -191,10 +191,10 @@ export default function Modal({
           <Div
             className="slideUp"
             data-testid={dataTestId}
-            style={styles.inner.style}
             ref={innerRef}
             id={id}
             tabIndex={-1}
+            style={{ ...styles.inner.style, outline: "none" }}
           >
             <H4
               style={{
