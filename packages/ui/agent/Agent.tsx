@@ -814,7 +814,7 @@ export default function Agent({
                         render={({ field }) => (
                           <Label>
                             <Checkbox
-                              dataTestId="imageGeneration-checkbox"
+                              dataTestId="videoGeneration-checkbox"
                               checked={field.value}
                               onChange={(checked) => {
                                 if (
