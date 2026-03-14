@@ -1583,6 +1583,13 @@
       "when": 1773371515770,
       "tag": "0225_far_miss_america",
       "breakpoints": true
+    },
+    {
+      "idx": 226,
+      "version": "7",
+      "when": 1773486885605,
+      "tag": "0226_cool_major_mapleleaf",
+      "breakpoints": true
     }
   ]
 }

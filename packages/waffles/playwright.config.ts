@@ -52,7 +52,7 @@ export default defineConfig({
         "--max-video-bitrate=25000000",
       ],
     },
-    headless: true, //!!process.env.CI,
+    headless: !!process.env.CI,
     baseURL: !process.env.CI ? "http://localhost:5173" : "http://e2e.chrry.ai",
     trace: "on-first-retry",
     permissions: ["clipboard-read", "clipboard-write"],
