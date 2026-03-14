@@ -364,7 +364,7 @@ export default function Skeleton({
             style={{
               ...skeletonStyles.contentContainer.style,
               position: "relative",
-              paddingTop: isTauri && rtl ? "1.2rem" : "0",
+              paddingTop: isTauri && rtl ? "1.2rem" : "0.2rem",
             }}
           >
             <>{children}</>
