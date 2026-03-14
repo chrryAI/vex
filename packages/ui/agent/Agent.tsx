@@ -1719,7 +1719,7 @@ export default function Agent({
                       control={control}
                       render={({ field }) => (
                         <Input
-                          dataTestId="replicate-api-key"
+                          dataTestId="fal-api-key"
                           type="password"
                           data-required={isImageGenerationRequired}
                           placeholder={"fal-..."}
