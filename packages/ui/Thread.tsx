@@ -488,8 +488,16 @@ const Thread = ({
           },
         }}
       >
-        {viewPortWidth > 1400 && (
+        {viewPortWidth >= 1400 && (
           <A
+            onClick={() => {
+              plausible({
+                name: ANALYTICS_EVENTS.WANNATHIS,
+                props: {
+                  app: app?.name,
+                },
+              })
+            }}
             href="https://wannathis.one?via=iliyan"
             target="_blank"
             rel="noopener noreferrer"

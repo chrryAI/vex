@@ -18,6 +18,7 @@ export default function AppLink({
   isPear = false,
   href,
   icon,
+  openInNewTab = false,
   ...props
 }: {
   title?: string
@@ -32,6 +33,7 @@ export default function AppLink({
   isTribe?: boolean
   isPear?: boolean
   icon?: React.ReactNode
+  openInNewTab?: boolean
   href?: string
   setIsNewAppChat?: (item: appWithStore) => void
 }) {
@@ -89,6 +91,7 @@ export default function AppLink({
   if (as === "a") {
     return (
       <A
+        openInNewTab={openInNewTab}
         title={title}
         aria-label={title}
         href={href || getAppSlug(app)}

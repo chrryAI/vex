@@ -255,6 +255,14 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
           ...style,
         }}
         onClick={() => {
+          if (isExtension) {
+            BrowserInstance?.runtime?.sendMessage({
+              action: "openInSameTab",
+              url: `${FRONTEND_URL}?account=true`,
+            })
+            return
+          }
+
           addHapticFeedback()
           setIsModalOpen(true)
         }}
