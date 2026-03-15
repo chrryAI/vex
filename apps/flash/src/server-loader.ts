@@ -425,7 +425,9 @@ export async function loadServerData(
       : []
 
     const canShowTribeProfile =
-      !tribeSlug && !excludedSlugRoutes?.includes(pathname) && !canShowAllTribe
+      !tribeSlug &&
+      !excludedSlugRoutes?.includes(pathname.replace(/^\//, "")) &&
+      !canShowAllTribe
 
     const [translationsResult, tribesResult, tribePostsResult] =
       await Promise.all([

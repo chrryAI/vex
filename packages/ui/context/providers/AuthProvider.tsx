@@ -2328,7 +2328,13 @@ export function AuthProvider({
   const showTribeFromPath = pathname === "/tribe"
 
   const _isExcluded = excludedSlugRoutes?.includes(
-    pathname.split("?")?.[0] || "",
+    (pathname.split("?")?.[0] || "").replace(/^\//, ""),
+  )
+  console.log(
+    `🚀 ~ excludedSlugRoutes:`,
+    excludedSlugRoutes,
+    pathname,
+    pathname.split("?")?.[0],
   )
 
   const postIdInitial = getPostId(pathname)
@@ -2371,7 +2377,7 @@ export function AuthProvider({
   const showTribeProfileInternal = canBeTribeProfile
 
   const downloadUrl =
-    canShowAllTribe && showTribe
+    (canShowAllTribe && showTribe) || _isExcluded
       ? `${minioUrl}/Tribe.dmg`
       : app && installs.includes(app?.slug || "")
         ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
@@ -2382,7 +2388,7 @@ export function AuthProvider({
             : ""
 
   const chromeWebStoreUrl =
-    canShowAllTribe && showTribe
+    (canShowAllTribe && showTribe) || _isExcluded
       ? tribeSiteConfig.chromeWebStoreUrl
       : (siteConfigApp as any)?.chromeWebStoreUrl ||
         app?.chromeWebStoreUrl ||
@@ -2393,6 +2399,7 @@ export function AuthProvider({
     () => showTribeProfileInternal,
     [showTribeProfileInternal, tribeQuery],
   )
+  console.log(`🚀 ~ showTribeProfileInternal:`, _isExcluded)
 
   const showTribeProfile =
     !tribeSlug && (showTribeProfileInternal || showTribeProfileMemo)
@@ -2733,8 +2740,6 @@ export function AuthProvider({
   useEffect(() => {
     if (!baseApp) return
     if (!storeApps.length || (!thread && threadId)) return
-
-    // debugger
 
     // Priority 1: If there's a thread, use the thread's app
     let matchedApp: appWithStore | undefined

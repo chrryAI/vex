@@ -2464,5 +2464,8 @@
   "Video generation is enabled. {{provider}} API key is required for paid tiers": "비디오 생성이 활성화되었습니다. 유료 티어에는 {{provider}} API 키가 필요합니다",
   "Video Generation": "비디오 생성",
   "AI for the City That Never Sleeps": "잠들지 않는 도시를 위한 AI",
-  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "몇 분 만에 자신만의 AI 슈퍼 앱을 만드세요. 이름을 선택하고, 브랜딩을 맞춤화하고, 앱을 게시하기 시작하세요. 코딩은 필요하지 않습니다."
+  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "몇 분 만에 자신만의 AI 슈퍼 앱을 만드세요. 이름을 선택하고, 브랜딩을 맞춤화하고, 앱을 게시하기 시작하세요. 코딩은 필요하지 않습니다.",
+  "Credits only required for creating anonymous apps like Burn as spam filter": "Burn과 같은 익명의 앱을 만드는 데만 크레딧이 필요합니다",
+  "Credits are never wasted — they power your app": "크레딧은 절대 낭비되지 않습니다 — 그것들이 당신의 앱을 구동합니다",
+  "Signed-in users create apps for free": "로그인한 사용자는 앱을 무료로 만들 수 있습니다"
 }

@@ -37,6 +37,7 @@ import Modal from "./Modal"
 import { Button, Div, Input, P, Span, usePlatform, useTheme } from "./platform"
 import { MotiView } from "./platform/MotiView"
 import { useSubscribeStyles } from "./Subscribe.styles"
+import ToggleAgent from "./ToggleAgent"
 import type { subscription, user } from "./types"
 import { apiFetch, capitalizeFirstLetter } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
@@ -114,7 +115,9 @@ export default function Subscribe({
     getAppSlug,
   } = useAuth()
 
-  const { setAsk, setAbout } = useChat()
+  const city = (user || guest)?.city || ""
+
+  const { setAsk, setAbout, creditsLeft } = useChat()
 
   // Note: onPaymentVerified is now called directly in verifyPayment after completion
   // to avoid race conditions with creditTransaction creation
@@ -132,7 +135,7 @@ export default function Subscribe({
   }, [props.scheduledTaskId])
 
   // Navigation context
-  const { searchParams } = useNavigationContext()
+  const { searchParams, removeParams } = useNavigationContext()
 
   // URL state persistence helper - only update when modal is open
   const updateURLParam = (key: string, value: string) => {
@@ -192,12 +195,15 @@ export default function Subscribe({
   })
 
   const { captureException } = useError()
-  const { setAppStatus } = useApp()
+  const { setAppStatus, appStatus } = useApp()
+
+  const isGuestCreatingApp =
+    !user && !!appStatus && (creditsLeft ?? 0) < ADDITIONAL_CREDITS
 
   const { addHapticFeedback, reduceMotion } = useTheme()
   const [isModalOpen, setIsModalOpenInternal] = React.useState<
     boolean | undefined
-  >(searchParams.get("subscribe") === "true" || undefined)
+  >(searchParams.get("subscribe") === "true" ? true : undefined)
 
   const SUBSCRIBE_URL_PARAMS = [
     "subscribe",
@@ -211,14 +217,10 @@ export default function Subscribe({
   ]
 
   const clearSubscribeURLParams = () => {
-    if (typeof window === "undefined") return
-    const params = new URLSearchParams(window.location.search)
-    SUBSCRIBE_URL_PARAMS.forEach((key) => params.delete(key))
-    const newSearch = params.toString()
-    const newUrl = newSearch
-      ? `${window.location.pathname}?${newSearch}`
-      : window.location.pathname
-    window.history.replaceState({}, "", newUrl)
+    // Use router's removeParams so clientRouter.state updates + notifyListeners fires
+    // window.history.replaceState alone doesn't update React searchParams state
+    // causing the useEffect below to see stale subscribe=true and reopen the modal
+    removeParams(SUBSCRIBE_URL_PARAMS)
   }
 
   const setIsModalOpen = (value: boolean, plan?: selectedPlanType) => {
@@ -232,7 +234,13 @@ export default function Subscribe({
   }
 
   useEffect(() => {
-    if (searchParams.get("subscribe") === "true") {
+    // Only open if not already open — prevents spurious re-opens on unrelated URL changes
+    if (!isModalOpen && searchParams.get("subscribe") === "true") {
+      // Sync plan from URL param when opening modal
+      const planFromUrl = searchParams.get("plan") as selectedPlanType | null
+      if (planFromUrl && selectedPlans.includes(planFromUrl)) {
+        setSelectedPlan(planFromUrl)
+      }
       setIsModalOpen(true)
     }
   }, [searchParams])
@@ -985,22 +993,15 @@ export default function Subscribe({
           </>
         ) : guest ? (
           <>
-            <Button
+            <ToggleAgent
+              small={false}
               className="inverted"
-              onClick={() => {
-                addHapticFeedback()
-                setSignInPart("register")
-              }}
               style={{
                 ...utilities.inverted.style,
                 ...styles.button.style,
                 marginTop: ".3rem",
               }}
-            >
-              {app ? <Img app={app} size={20} /> : <UserRoundPlus size={20} />}
-
-              {t("Create your agent")}
-            </Button>
+            />
             <Button
               data-testid="login-button"
               className="link"
@@ -1671,7 +1672,7 @@ export default function Subscribe({
                     style={{
                       color: "#f87171",
                     }}
-                    href={"/affiliate"}
+                    href={"/about"}
                     className={"link"}
                   >
                     <Img
@@ -1680,7 +1681,7 @@ export default function Subscribe({
                       width={16}
                       height={16}
                     />{" "}
-                    {t("Affiliate")}
+                    {t(city || "About")}
                   </A>
                 </Div>
               </MotiView>

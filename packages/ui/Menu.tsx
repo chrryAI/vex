@@ -968,7 +968,7 @@ export default function Menu({
             >
               <Img icon="hamster" showLoading={false} width={26} height={26} />
               {hasHydrated ? <Span>{new Date().getFullYear()}</Span> : null}
-              <Button
+              <A
                 style={{
                   marginRight: rtl ? "auto" : undefined,
                   marginLeft: !rtl ? "auto" : undefined,
@@ -976,21 +976,7 @@ export default function Menu({
                   color: "#f87171",
                   fontSize: "0.8rem",
                 }}
-                onClick={() => {
-                  if (checkIsExtension()) {
-                    BrowserInstance?.runtime?.sendMessage({
-                      action: "openInSameTab",
-                      url: `${FRONTEND_URL}/affiliate`,
-                    })
-
-                    isSmallDevice && toggleMenu()
-
-                    return
-                  }
-                  router.push("/affiliate")
-                  isSmallDevice && toggleMenu()
-                }}
-                className={"link"}
+                href="/about"
               >
                 <Span
                   style={{
@@ -1003,7 +989,7 @@ export default function Menu({
                   {city || "Amsterdam"}
                 </Span>
                 <Img icon="heart" width={22} height={22} />
-              </Button>
+              </A>
             </Div>
 
             <Div style={styles.colorSchemeContainer.style}>

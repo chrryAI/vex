@@ -37,12 +37,14 @@ function ssh(cmd: string): string {
   return execFileSync("ssh", [SSH_HOST!, "--", cmd], {
     encoding: "utf-8",
     stdio: ["pipe", "pipe", "pipe"],
+    env: { ...process.env, PATH: "/usr/bin:/bin:/usr/sbin:/sbin" },
   }).trim()
 }
 
 function scp(localPath: string, remotePath: string) {
   execFileSync("scp", [localPath, `${SSH_HOST!}:${remotePath}`], {
     stdio: "inherit",
+    env: { ...process.env, PATH: "/usr/bin:/bin:/usr/sbin:/sbin" },
   })
 }
 

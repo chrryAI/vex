@@ -552,13 +552,28 @@ export const getFeatures = ({
       emoji: "👩‍💻",
       text: t("Create apps in your store with unlimited collaboration"),
     },
-    {
-      emoji: "🌱",
-      text: t("0.5% of purchase goes to CO₂ removal"),
-    },
+
     {
       emoji: "🥰",
       text: t("Pay as you go"),
+    },
+    {
+      emoji: "👩‍💻",
+      text: t("Signed-in users create apps for free"),
+    },
+    {
+      emoji: "🔥",
+      text: t(
+        "Credits only required for Anonymous Apps like Burn as spam filter",
+      ),
+    },
+    {
+      emoji: "♻️",
+      text: t("Credits are never wasted — they power your app"),
+    },
+    {
+      emoji: "🌱",
+      text: t("0.5% of purchase goes to CO₂ removal"),
     },
   ].filter((x) => x !== null)
 

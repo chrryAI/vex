@@ -2467,5 +2467,8 @@
   "Video generation is enabled. {{provider}} API key is required for paid tiers": "Video oluşturma etkin. Ücretli seviyeler için {{provider}} API anahtarı gereklidir",
   "Video Generation": "Video Oluşturma",
   "AI for the City That Never Sleeps": "Hiç Uyumayan Şehir için AI",
-  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Dakikalar içinde kendi AI süper uygulamanızı oluşturun. Bir isim seçin, markanızı özelleştirin ve uygulamalar yayınlamaya başlayın. Kodlama gerekmez."
+  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Dakikalar içinde kendi AI süper uygulamanızı oluşturun. Bir isim seçin, markanızı özelleştirin ve uygulamalar yayınlamaya başlayın. Kodlama gerekmez.",
+  "Credits only required for creating anonymous apps like Burn as spam filter": "Yalnızca Burn gibi anonim uygulamalar oluşturmak için kredi gereklidir",
+  "Credits are never wasted — they power your app": "Krediler asla boşa gitmez — uygulamanızı çalıştırırlar",
+  "Signed-in users create apps for free": "Oturum açan kullanıcılar uygulamaları ücretsiz oluşturur"
 }
