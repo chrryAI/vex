@@ -501,11 +501,11 @@ const Thread = ({
             href="https://wannathis.one?via=iliyan"
             target="_blank"
             rel="noopener noreferrer"
-            className="inverted"
+            className="transparent"
             style={{
               ...utilities.button.style,
               ...utilities.small.style,
-              ...utilities.inverted.style,
+              ...utilities.transparent.style,
               position: "fixed",
               bottom: 15,
               right: 15,

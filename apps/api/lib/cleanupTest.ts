@@ -192,7 +192,7 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
       credits: MEMBER_CREDITS_PER_MONTH,
       subscribedOn: null,
       migratedFromGuest: false,
-      fingerprint: null,
+      // fingerprint: null,
       characterProfilesEnabled: false,
     }))
 
