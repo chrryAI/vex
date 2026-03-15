@@ -638,6 +638,7 @@ const Thread = ({
                 onDelete={handleDelete}
                 ref={messagesRef}
                 messages={messages}
+                isLoading={isLoading}
                 setIsLoadingMore={setIsLoadingMore}
                 setUntil={setUntil}
                 until={until}
