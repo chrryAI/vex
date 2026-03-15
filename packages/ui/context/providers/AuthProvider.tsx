@@ -2597,6 +2597,7 @@ export function AuthProvider({
   )
 
   const refetchInstructions = async ({ appId }: { appId?: string }) => {
+    if (showTribe || postId || _isExcluded) return
     if (user) {
       const item = await getUser({
         token,
