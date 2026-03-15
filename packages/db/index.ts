@@ -151,29 +151,6 @@ import {
   verificationTokens,
 } from "./src/schema"
 
-export {
-  realtimeAnalytics,
-  pearFeedback,
-  retroSessions,
-  retroResponses,
-  talentProfiles,
-  talentThreads,
-  recruitmentFlows,
-  talentEarnings,
-  talentInvitations,
-  premiumSubscriptions,
-  authExchangeCodes,
-  apps,
-  users,
-  appCampaigns,
-  autonomousBids,
-  slotRentals,
-  storeTimeSlots,
-  slotAuctions,
-  codeEmbeddings,
-  codebaseQueries,
-}
-export type { modelName }
 export type {
   appCampaign,
   autonomousBid,
@@ -186,6 +163,29 @@ export type {
   slotRental,
   storeTimeSlot,
 } from "./src/schema"
+export type { modelName }
+export {
+  appCampaigns,
+  apps,
+  authExchangeCodes,
+  autonomousBids,
+  codebaseQueries,
+  codeEmbeddings,
+  pearFeedback,
+  premiumSubscriptions,
+  realtimeAnalytics,
+  recruitmentFlows,
+  retroResponses,
+  retroSessions,
+  slotAuctions,
+  slotRentals,
+  storeTimeSlots,
+  talentEarnings,
+  talentInvitations,
+  talentProfiles,
+  talentThreads,
+  users,
+}
 
 dotenv.config()
 
@@ -218,30 +218,31 @@ export { decrypt, encrypt, generateEncryptionKey } from "./encryption"
 // Export cache functions and redis instance for external use
 export * from "./src/cache"
 export { redis, upstashRedis } from "./src/redis"
+// Export Better Auth tables
 export {
-  sql,
-  eq,
-  gte,
-  isNotNull,
-  inArray,
-  lt,
-  desc,
-  gt,
   and,
-  isNull,
+  baAccounts,
+  baSessions,
+  baVerifications,
   cosineDistance,
+  desc,
+  eq,
+  gt,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  lte,
+  max,
+  ne,
+  not,
   notInArray,
   or,
-  max,
   sonarIssues,
-  lte,
   sonarMetrics,
-  not,
-  ne,
+  sql,
 }
-
-// Export Better Auth tables
-export { baSessions, baAccounts, baVerifications }
 
 // Export analytics tables
 

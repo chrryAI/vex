@@ -2,6 +2,7 @@
 
 import type React from "react"
 import {
+  memo,
   type RefObject,
   useCallback,
   useEffect,
@@ -76,644 +77,722 @@ import Loading from "./Loading"
 import TribePost from "./TribePost"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
-const TribePostListItem = ({
-  post,
-  index,
-  reduceMotion,
-  isDark,
-  isMobileDevice,
-  isSmallDevice,
-  viewPortWidth,
-  t,
-  timeAgo,
-  toggleLike,
-  isTogglingLike,
-  tryAppCharacterProfile,
-  setTryAppCharacterProfile,
-  tyingToReact,
-  setTyingToReact,
-  owner,
-  user,
-  deletePost,
-  accountApp,
-  setSignInPart,
-  setAppStatus,
-  tags,
-  setTags,
-  postsRef,
-  addParams,
-  push,
-}: {
-  post: tribePost
-  index: number
-  reduceMotion: boolean
-  isDark: boolean
-  isMobileDevice: boolean
-  isSmallDevice: boolean
-  viewPortWidth: number
-  t: (key: string, options?: any) => string
-  timeAgo: (date: Date | string) => string
-  toggleLike?: (postId: string) => Promise<{
-    liked: boolean
-  }>
-  isTogglingLike: string | undefined
-  tryAppCharacterProfile: string | undefined
-  setTryAppCharacterProfile: (id: string | undefined) => void
-  tyingToReact: string | undefined
-  setTyingToReact: (id: string | undefined) => void
-  owner: boolean
-  user?: user
-  deletePost: (postId: string) => Promise<void>
-  accountApp?: appWithStore
-  addParams: (params: any) => void
-  setSignInPart: (
-    part: "register" | "credentials" | "login" | undefined,
-  ) => void
-  setAppStatus: (status: any) => void
-  tags: string[]
-  setTags: (tags: string[]) => void
-  postsRef: RefObject<HTMLDivElement | null>
-  push: (to: string) => void
-  downloadImage: (imageUrl: string, imageName?: string) => Promise<void>
-}) => {
-  const [isHovered, setIsHovered] = useState(false)
-  const { ref: inViewRef, inView } = useInView({
-    threshold: 0.5,
-    triggerOnce: false,
-  })
+// ⚡ Bolt: Wrap TribePostListItem in React.memo() to prevent expensive re-renders
+// when the parent Tribe component re-renders (e.g. from scrolling or new data)
+// but the individual post's props haven't changed.
+const TribePostListItem = memo(
+  ({
+    post,
+    index,
+    reduceMotion,
+    isDark,
+    isMobileDevice,
+    isSmallDevice,
+    viewPortWidth,
+    t,
+    timeAgo,
+    toggleLike,
+    isTogglingLike,
+    tryAppCharacterProfile,
+    setTryAppCharacterProfile,
+    tyingToReact,
+    setTyingToReact,
+    owner,
+    user,
+    deletePost,
+    accountApp,
+    setSignInPart,
+    setAppStatus,
+    tags,
+    setTags,
+    postsRef,
+    addParams,
+    push,
+  }: {
+    post: tribePost
+    index: number
+    reduceMotion: boolean
+    isDark: boolean
+    isMobileDevice: boolean
+    isSmallDevice: boolean
+    viewPortWidth: number
+    t: (key: string, options?: any) => string
+    timeAgo: (date: Date | string) => string
+    toggleLike?: (postId: string) => Promise<{
+      liked: boolean
+    }>
+    isTogglingLike: string | undefined
+    tryAppCharacterProfile: string | undefined
+    setTryAppCharacterProfile: (id: string | undefined) => void
+    tyingToReact: string | undefined
+    setTyingToReact: (id: string | undefined) => void
+    owner: boolean
+    user?: user
+    deletePost: (postId: string) => Promise<void>
+    accountApp?: appWithStore
+    addParams: (params: any) => void
+    setSignInPart: (
+      part: "register" | "credentials" | "login" | undefined,
+    ) => void
+    setAppStatus: (status: any) => void
+    tags: string[]
+    setTags: (tags: string[]) => void
+    postsRef: RefObject<HTMLDivElement | null>
+    push: (to: string) => void
+    downloadImage: (imageUrl: string, imageName?: string) => Promise<void>
+  }) => {
+    const [isHovered, setIsHovered] = useState(false)
+    const { ref: inViewRef, inView } = useInView({
+      threshold: 0.5,
+      triggerOnce: false,
+    })
 
-  const TRAIN = owner ? `Train {{name}}` : `Try {{name}}`
+    const TRAIN = owner ? `Train {{name}}` : `Try {{name}}`
 
-  const { setLanguage, rtl } = useAuth()
+    const { setLanguage, rtl } = useAuth()
 
-  const { utilities } = useStyles()
+    const { utilities } = useStyles()
 
-  return (
-    <MotiView
-      key={`moti-${post.id}`}
-      from={{ opacity: 0, translateY: 0, translateX: -10 }}
-      animate={{ opacity: 1, translateY: 0, translateX: 0 }}
-      transition={{
-        duration: reduceMotion ? 0 : 150,
-        delay: reduceMotion ? 0 : index * 50,
-      }}
-    >
-      <Div
-        ref={inViewRef}
-        style={{
-          marginTop: "1rem",
-          padding: "0.75rem",
-          background: isDark ? "var(--shade-2)" : "var(--shade-1)",
-          borderRadius: "20px",
-          border: isDark
-            ? "1px solid var(--shade-3)"
-            : "1px solid var(--shade-2-transparent)",
+    return (
+      <MotiView
+        key={`moti-${post.id}`}
+        from={{ opacity: 0, translateY: 0, translateX: -10 }}
+        animate={{ opacity: 1, translateY: 0, translateX: 0 }}
+        transition={{
+          duration: reduceMotion ? 0 : 150,
+          delay: reduceMotion ? 0 : index * 50,
         }}
       >
         <Div
+          ref={inViewRef}
           style={{
-            display: "flex",
-            gap: 5,
-            alignItems: "center",
-            fontSize: ".9rem",
-          }}
-        >
-          <AppLink
-            app={post.app}
-            icon={<Img app={post.app} />}
-            loading={<Loading size={18} />}
-          >
-            {post.app?.name}
-          </AppLink>
-          <A
-            href={`/t/${post.tribe?.slug || "general"}`}
-            style={{
-              marginLeft: rtl ? undefined : "auto",
-              marginRight: !rtl ? undefined : "auto",
-              fontSize: ".8rem",
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 5,
-              display: "flex",
-            }}
-          >
-            <Img size={16} slug={"tribe"} />
-            {`/${t(post.tribe?.slug || "general")}`}
-          </A>
-        </Div>
-        <H3
-          style={{
-            margin: 0,
-            padding: 0,
-          }}
-        >
-          <AppLink
-            app={post.app}
-            href={`/p/${post.id}`}
-            style={{
-              marginTop: 10,
-              fontSize: "1.1rem",
-              lineHeight: "1.5",
-            }}
-          >
-            {post.title}
-          </AppLink>
-        </H3>
-        <Div
-          style={{
-            display: "flex",
-            gap: "1rem",
-            alignItems: "flex-start",
-            marginTop: 12.5,
-            flexDirection: !isSmallDevice ? "row" : "column",
-          }}
-        >
-          {post.images && post.images.length > 0 && post?.images?.[0]?.url && (
-            <A
-              href={`/p/${post.id}`}
-              style={{
-                position: "relative",
-                width:
-                  viewPortWidth < 500 ? "100%" : isMobileDevice ? 300 : 200,
-                height:
-                  viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200,
-              }}
-            >
-              <Img
-                alt={post.images[0].title}
-                width={
-                  viewPortWidth < 500 ? "100%" : isMobileDevice ? 300 : 200
-                }
-                height={
-                  viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200
-                }
-                style={{
-                  borderRadius: "15px",
-                  width:
-                    viewPortWidth < 500 ? "100%" : isMobileDevice ? 300 : 200,
-                  height:
-                    viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200,
-                }}
-                src={post.images[0].url}
-              />{" "}
-            </A>
-          )}
-          {post.videos && post.videos.length > 0 && post?.videos?.[0]?.url && (
-            <Div
-              style={{
-                position: "relative",
-              }}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-            >
-              <Video
-                playing={!reduceMotion && inView}
-                playsInline
-                autoPlay={!reduceMotion}
-                muted
-                loop
-                style={{
-                  borderRadius: "15px",
-                  maxWidth: isMobileDevice ? "100%" : undefined,
-                }}
-                width={
-                  viewPortWidth < 500 ? "100%" : isMobileDevice ? 375 : 275
-                }
-                height={"auto"}
-                controls={isMobileDevice || isHovered}
-                src={post?.videos?.[0]?.url}
-              />
-            </Div>
-          )}
-          <Markdown
-            style={{
-              fontSize: "0.95rem",
-              color: "var(--shade-7)",
-              lineHeight: "1.5",
-              marginTop: 0,
-            }}
-            content={
-              post.content.length > 300 && isSmallDevice
-                ? `${post.content.slice(0, isMobileDevice ? 300 : 400)}...`
-                : post.content.length > 475
-                  ? `${post.content.slice(0, 475)}...`
-                  : post.content
-            }
-          />
-        </Div>
-        <Div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: ".75rem",
-            marginTop: "0.75rem",
+            marginTop: "1rem",
+            padding: "0.75rem",
+            background: isDark ? "var(--shade-2)" : "var(--shade-1)",
+            borderRadius: "20px",
+            border: isDark
+              ? "1px solid var(--shade-3)"
+              : "1px solid var(--shade-2-transparent)",
           }}
         >
           <Div
             style={{
               display: "flex",
-              gap: "0.5rem",
+              gap: 5,
+              alignItems: "center",
               fontSize: ".9rem",
-              color: "var(--shade-6)",
             }}
           >
-            {post.comments && post.comments.length > 0 && (
-              <A
-                href={`/p/${post.id}`}
-                style={{
-                  gap: "0.25rem",
-                  fontSize: ".9rem",
-                  color: "var(--shade-6)",
-                }}
-              >
-                <Img
-                  slug={post.comments[post.comments.length - 1]?.app?.slug}
-                  size={20}
-                />
-                {post.comments.length}{" "}
-                {t(post.comments.length === 1 ? "comment" : "comments")}
-              </A>
-            )}
-            <Button
-              className="transparent"
-              onClick={async () => {
-                await toggleLike?.(post.id)
-              }}
-              style={{
-                ...utilities.transparent.style,
-                ...utilities.small.style,
-              }}
+            <AppLink
+              app={post.app}
+              icon={<Img app={post.app} />}
+              loading={<Loading size={18} />}
             >
-              {isTogglingLike === post.id ? (
-                <Loading size={18} />
-              ) : (
-                <Img icon="heart" width={18} height={18} />
-              )}
-              <Span>{post.likesCount || 0}</Span>
-            </Button>
-
-            <Div
+              {post.app?.name}
+            </AppLink>
+            <A
+              href={`/t/${post.tribe?.slug || "general"}`}
               style={{
                 marginLeft: rtl ? undefined : "auto",
                 marginRight: !rtl ? undefined : "auto",
-                display: "flex",
+                fontSize: ".8rem",
+                flexDirection: "row",
                 alignItems: "center",
-                gap: "0.5rem",
+                gap: 5,
+                display: "flex",
               }}
             >
-              <Span>{timeAgo(post.createdOn)}</Span>
-            </Div>
+              <Img size={16} slug={"tribe"} />
+              {`/${t(post.tribe?.slug || "general")}`}
+            </A>
+          </Div>
+          <H3
+            style={{
+              margin: 0,
+              padding: 0,
+            }}
+          >
+            <AppLink
+              app={post.app}
+              href={`/p/${post.id}`}
+              style={{
+                marginTop: 10,
+                fontSize: "1.1rem",
+                lineHeight: "1.5",
+              }}
+            >
+              {post.title}
+            </AppLink>
+          </H3>
+          <Div
+            style={{
+              display: "flex",
+              gap: "1rem",
+              alignItems: "flex-start",
+              marginTop: 12.5,
+              flexDirection: !isSmallDevice ? "row" : "column",
+            }}
+          >
+            {post.images &&
+              post.images.length > 0 &&
+              post?.images?.[0]?.url && (
+                <A
+                  href={`/p/${post.id}`}
+                  style={{
+                    position: "relative",
+                    width:
+                      viewPortWidth < 500 ? "100%" : isMobileDevice ? 300 : 200,
+                    height:
+                      viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200,
+                  }}
+                >
+                  <Img
+                    alt={post.images[0].title}
+                    width={
+                      viewPortWidth < 500 ? "100%" : isMobileDevice ? 300 : 200
+                    }
+                    height={
+                      viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200
+                    }
+                    style={{
+                      borderRadius: "15px",
+                      width:
+                        viewPortWidth < 500
+                          ? "100%"
+                          : isMobileDevice
+                            ? 300
+                            : 200,
+                      height:
+                        viewPortWidth < 500
+                          ? "auto"
+                          : isMobileDevice
+                            ? 300
+                            : 200,
+                    }}
+                    src={post.images[0].url}
+                  />{" "}
+                </A>
+              )}
+            {post.videos &&
+              post.videos.length > 0 &&
+              post?.videos?.[0]?.url && (
+                <Div
+                  style={{
+                    position: "relative",
+                  }}
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
+                >
+                  <Video
+                    playing={!reduceMotion && inView}
+                    playsInline
+                    autoPlay={!reduceMotion}
+                    muted
+                    loop
+                    style={{
+                      borderRadius: "15px",
+                      maxWidth: isMobileDevice ? "100%" : undefined,
+                    }}
+                    width={
+                      viewPortWidth < 500 ? "100%" : isMobileDevice ? 375 : 275
+                    }
+                    height={"auto"}
+                    controls={isMobileDevice || isHovered}
+                    src={post?.videos?.[0]?.url}
+                  />
+                </Div>
+              )}
+            <Markdown
+              style={{
+                fontSize: "0.95rem",
+                color: "var(--shade-7)",
+                lineHeight: "1.5",
+                marginTop: 0,
+              }}
+              content={
+                post.content.length > 300 && isSmallDevice
+                  ? `${post.content.slice(0, isMobileDevice ? 300 : 400)}...`
+                  : post.content.length > 475
+                    ? `${post.content.slice(0, 475)}...`
+                    : post.content
+              }
+            />
           </Div>
           <Div
             style={{
               display: "flex",
-              gap: ".5rem",
-              flexWrap: "wrap",
-              alignItems: "center",
+              flexDirection: "column",
+              gap: ".75rem",
+              marginTop: "0.75rem",
             }}
           >
-            {post.app?.characterProfile && (
-              <Div
-                style={{
-                  fontSize: "12px",
-                  color: "#888",
-                  display: "flex",
-                  gap: ".5rem",
-                }}
-              >
-                <Button
-                  className="inverted"
+            <Div
+              style={{
+                display: "flex",
+                gap: "0.5rem",
+                fontSize: ".9rem",
+                color: "var(--shade-6)",
+              }}
+            >
+              {post.comments && post.comments.length > 0 && (
+                <A
+                  href={`/p/${post.id}`}
                   style={{
-                    ...utilities.inverted.style,
-                    ...utilities.small.style,
-                    fontSize: ".8rem",
-                  }}
-                  onClick={() => {
-                    if (tryAppCharacterProfile === post.id) {
-                      setTryAppCharacterProfile(undefined)
-                    } else {
-                      setTryAppCharacterProfile(post.id)
-                    }
+                    gap: "0.25rem",
+                    fontSize: ".9rem",
+                    color: "var(--shade-6)",
                   }}
                 >
-                  <Sparkles
-                    size={16}
-                    color="var(--accent-1)"
-                    fill="var(--accent-1)"
+                  <Img
+                    slug={post.comments[post.comments.length - 1]?.app?.slug}
+                    size={20}
                   />
-                  {post.app?.characterProfile.name}
-                </Button>
-              </Div>
-            )}
-            {post.reactions && post.reactions.length > 0 && (
-              <Div
+                  {post.comments.length}{" "}
+                  {t(post.comments.length === 1 ? "comment" : "comments")}
+                </A>
+              )}
+              <Button
+                className="transparent"
+                onClick={async () => {
+                  await toggleLike?.(post.id)
+                }}
                 style={{
-                  display: "flex",
-                  gap: "0.2rem",
-                  flexWrap: "wrap",
+                  ...utilities.transparent.style,
+                  ...utilities.small.style,
                 }}
               >
-                {Object.entries(
-                  post.reactions.reduce(
-                    (acc: any, r: any) => {
-                      const emoji = r.emoji
-                      acc[emoji] = (acc[emoji] || 0) + 1
-                      return acc
-                    },
-                    {} as Record<string, number>,
-                  ),
-                ).map(([emoji, count]: any) => (
-                  <Button
-                    className="transparent"
-                    key={`${emoji}`}
-                    onClick={() => {
-                      if (tyingToReact === post.id) {
-                        return
-                      } else {
-                        setTyingToReact(post.id)
-                      }
-                    }}
-                    style={{
-                      ...utilities.transparent.style,
-                      ...utilities.small.style,
-                    }}
-                  >
-                    {emoji} {count}
-                  </Button>
-                ))}
-              </Div>
-            )}
+                {isTogglingLike === post.id ? (
+                  <Loading size={18} />
+                ) : (
+                  <Img icon="heart" width={18} height={18} />
+                )}
+                <Span>{post.likesCount || 0}</Span>
+              </Button>
 
-            {post.app && (
               <Div
                 style={{
                   marginLeft: rtl ? undefined : "auto",
                   marginRight: !rtl ? undefined : "auto",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
                 }}
               >
-                {(owner || user?.role === "admin") && (
-                  <ConfirmButton
-                    className="link"
-                    onConfirm={async () => {
-                      await deletePost(post.id)
-                    }}
-                    style={{
-                      ...utilities.button.style,
-                      ...utilities.link.style,
-                      ...utilities.small.style,
-                    }}
-                    aria-label="Delete post"
-                  >
-                    <Trash2 size={16} />
-                  </ConfirmButton>
-                )}
-                <AppLink
-                  className="transparent button"
-                  app={post.app}
-                  style={{
-                    ...utilities.transparent.style,
-                    ...utilities.small.style,
-                  }}
-                  loading={<Loading size={16} />}
-                  icon={<Img app={post.app} width={18} height={18} />}
-                >
-                  {t(TRAIN, {
-                    name: post.app?.name,
-                  })}
-                </AppLink>
+                <Span>{timeAgo(post.createdOn)}</Span>
               </Div>
-            )}
-            {owner ? (
-              <TribeTranslate
-                type="post"
-                id={post.id}
-                appName={post.app.name}
-                contentLength={post.content.length}
-                existingLanguages={post.languages ?? []}
-              />
-            ) : (
-              post.languages?.length && (
-                <LanguageSwitcher
-                  handleSetLanguage={(lan) => {
-                    setLanguage(lan)
-                    if (lan === defaultLocale) {
-                      push(`/p/${post.id}`)
-                      return
-                    }
-                    push(`/${lan}/p/${post.id}`)
+            </Div>
+            <Div
+              style={{
+                display: "flex",
+                gap: ".5rem",
+                flexWrap: "wrap",
+                alignItems: "center",
+              }}
+            >
+              {post.app?.characterProfile && (
+                <Div
+                  style={{
+                    fontSize: "12px",
+                    color: "#888",
+                    display: "flex",
+                    gap: ".5rem",
                   }}
-                  defaults={post.languages}
-                />
-              )
-            )}
-          </Div>
-          {tryAppCharacterProfile === post.id ? (
-            post.app?.characterProfile && (
-              <Div
-                className="slideUp"
-                style={{
-                  padding: ".65rem",
-                  backgroundColor: "var(--shade-1-transparent)",
-                  borderRadius: 15,
-                  fontSize: ".85rem",
-                  margin: "0 -.25rem",
-                  border: "1px solid var(--shade-3)",
-                  borderColor:
-                    COLORS[post.app?.themeColor as keyof typeof COLORS],
-                }}
-              >
+                >
+                  <Button
+                    className="inverted"
+                    style={{
+                      ...utilities.inverted.style,
+                      ...utilities.small.style,
+                      fontSize: ".8rem",
+                    }}
+                    onClick={() => {
+                      if (tryAppCharacterProfile === post.id) {
+                        setTryAppCharacterProfile(undefined)
+                      } else {
+                        setTryAppCharacterProfile(post.id)
+                      }
+                    }}
+                  >
+                    <Sparkles
+                      size={16}
+                      color="var(--accent-1)"
+                      fill="var(--accent-1)"
+                    />
+                    {post.app?.characterProfile.name}
+                  </Button>
+                </Div>
+              )}
+              {post.reactions && post.reactions.length > 0 && (
                 <Div
                   style={{
                     display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: "1rem",
+                    gap: "0.2rem",
+                    flexWrap: "wrap",
                   }}
                 >
+                  {Object.entries(
+                    post.reactions.reduce(
+                      (acc: any, r: any) => {
+                        const emoji = r.emoji
+                        acc[emoji] = (acc[emoji] || 0) + 1
+                        return acc
+                      },
+                      {} as Record<string, number>,
+                    ),
+                  ).map(([emoji, count]: any) => (
+                    <Button
+                      className="transparent"
+                      key={`${emoji}`}
+                      onClick={() => {
+                        if (tyingToReact === post.id) {
+                          return
+                        } else {
+                          setTyingToReact(post.id)
+                        }
+                      }}
+                      style={{
+                        ...utilities.transparent.style,
+                        ...utilities.small.style,
+                      }}
+                    >
+                      {emoji} {count}
+                    </Button>
+                  ))}
+                </Div>
+              )}
+
+              {post.app && (
+                <Div
+                  style={{
+                    marginLeft: rtl ? undefined : "auto",
+                    marginRight: !rtl ? undefined : "auto",
+                  }}
+                >
+                  {(owner || user?.role === "admin") && (
+                    <ConfirmButton
+                      className="link"
+                      onConfirm={async () => {
+                        await deletePost(post.id)
+                      }}
+                      style={{
+                        ...utilities.button.style,
+                        ...utilities.link.style,
+                        ...utilities.small.style,
+                      }}
+                      aria-label="Delete post"
+                    >
+                      <Trash2 size={16} />
+                    </ConfirmButton>
+                  )}
                   <AppLink
+                    className="transparent button"
                     app={post.app}
-                    isTribe
-                    icon={
-                      <Span style={{ fontSize: "1.3rem" }}>
-                        {post.app.icon}
-                      </Span>
-                    }
-                    loading={<Loading size={28} />}
+                    style={{
+                      ...utilities.transparent.style,
+                      ...utilities.small.style,
+                    }}
+                    loading={<Loading size={16} />}
+                    icon={<Img app={post.app} width={18} height={18} />}
+                  >
+                    {t(TRAIN, {
+                      name: post.app?.name,
+                    })}
+                  </AppLink>
+                </Div>
+              )}
+              {owner ? (
+                <TribeTranslate
+                  type="post"
+                  id={post.id}
+                  appName={post.app.name}
+                  contentLength={post.content.length}
+                  existingLanguages={post.languages ?? []}
+                />
+              ) : (
+                post.languages?.length && (
+                  <LanguageSwitcher
+                    handleSetLanguage={(lan) => {
+                      setLanguage(lan)
+                      if (lan === defaultLocale) {
+                        push(`/p/${post.id}`)
+                        return
+                      }
+                      push(`/${lan}/p/${post.id}`)
+                    }}
+                    defaults={post.languages}
+                  />
+                )
+              )}
+            </Div>
+            {tryAppCharacterProfile === post.id ? (
+              post.app?.characterProfile && (
+                <Div
+                  className="slideUp"
+                  style={{
+                    padding: ".65rem",
+                    backgroundColor: "var(--shade-1-transparent)",
+                    borderRadius: 15,
+                    fontSize: ".85rem",
+                    margin: "0 -.25rem",
+                    border: "1px solid var(--shade-3)",
+                    borderColor:
+                      COLORS[post.app?.themeColor as keyof typeof COLORS],
+                  }}
+                >
+                  <Div
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: 8,
+                      marginBottom: "1rem",
                     }}
                   >
-                    {post.app?.name}
-                  </AppLink>
-                  {post.app.icon && (
-                    <Img
-                      style={{
-                        marginLeft: rtl ? undefined : "auto",
-                        marginRight: !rtl ? undefined : "auto",
-                      }}
+                    <AppLink
                       app={post.app}
-                    />
-                  )}
-                </Div>
-                {post.app.characterProfile.personality && (
-                  <P
-                    style={{
-                      margin: "0 0 .5rem 0",
-                      color: "var(--shade-6)",
-                    }}
-                  >
-                    {post.app.characterProfile.personality}
-                  </P>
-                )}
-
-                {post.app.characterProfile.traits && (
-                  <Div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: ".5rem",
-                      margin: ".5rem 0 0 0",
-                    }}
-                  >
-                    {post.app.characterProfile.traits.expertise &&
-                      post.app.characterProfile.traits.expertise.length > 0 && (
-                        <Div>
-                          <Strong
-                            style={{
-                              fontSize: ".75rem",
-                              color: "var(--shade-5)",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            Expertise
-                          </Strong>
-                          <Div
-                            style={{
-                              display: "flex",
-                              gap: ".5rem",
-                              flexWrap: "wrap",
-                              marginTop: ".25rem",
-                            }}
-                          >
-                            {[
-                              ...Array.from(
-                                new Set(
-                                  post.app.characterProfile.traits.expertise,
-                                ),
-                              ),
-                            ].map((item: any, i: number) => (
-                              <Span
-                                key={`trait-${item}`}
-                                style={{
-                                  padding: ".25rem .5rem",
-                                  backgroundColor: "var(--shade-2)",
-                                  borderRadius: 8,
-                                  fontSize: ".75rem",
-                                }}
-                              >
-                                {item}
-                              </Span>
-                            ))}
-                          </Div>
-                        </Div>
-                      )}
-                    {post.app.characterProfile.traits.communication &&
-                      post.app.characterProfile.traits.communication.length >
-                        0 && (
-                        <Div>
-                          <Strong
-                            style={{
-                              fontSize: ".75rem",
-                              color: "var(--shade-5)",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            Communication Style
-                          </Strong>
-                          <Div
-                            style={{
-                              display: "flex",
-                              gap: ".5rem",
-                              flexWrap: "wrap",
-                              marginTop: ".25rem",
-                            }}
-                          >
-                            {[
-                              ...Array.from(
-                                new Set(
-                                  post.app.characterProfile.traits
-                                    .communication,
-                                ),
-                              ),
-                            ].map((item: any, i: number) => (
-                              <Span
-                                key={`trait-${item}`}
-                                style={{
-                                  padding: ".25rem .5rem",
-                                  backgroundColor: "var(--shade-2)",
-                                  borderRadius: 8,
-                                  fontSize: ".75rem",
-                                }}
-                              >
-                                {item}
-                              </Span>
-                            ))}
-                          </Div>
-                        </Div>
-                      )}
-                    {post.app.characterProfile.traits.behavior &&
-                      post.app.characterProfile.traits.behavior.length > 0 && (
-                        <Div>
-                          <Strong
-                            style={{
-                              fontSize: ".75rem",
-                              color: "var(--shade-5)",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            Behavior
-                          </Strong>
-                          <Div
-                            style={{
-                              display: "flex",
-                              gap: ".5rem",
-                              flexWrap: "wrap",
-                              marginTop: ".25rem",
-                            }}
-                          >
-                            {[
-                              ...Array.from(
-                                new Set(
-                                  post.app.characterProfile.traits.behavior,
-                                ),
-                              ),
-                            ].map((item: any, i: number) => (
-                              <Span
-                                key={item}
-                                style={{
-                                  padding: ".25rem .5rem",
-                                  backgroundColor: "var(--shade-2)",
-                                  borderRadius: 8,
-                                  fontSize: ".75rem",
-                                }}
-                              >
-                                {item}
-                              </Span>
-                            ))}
-                          </Div>
-                        </Div>
-                      )}
+                      isTribe
+                      icon={
+                        <Span style={{ fontSize: "1.3rem" }}>
+                          {post.app.icon}
+                        </Span>
+                      }
+                      loading={<Loading size={28} />}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      {post.app?.name}
+                    </AppLink>
+                    {post.app.icon && (
+                      <Img
+                        style={{
+                          marginLeft: rtl ? undefined : "auto",
+                          marginRight: !rtl ? undefined : "auto",
+                        }}
+                        app={post.app}
+                      />
+                    )}
                   </Div>
-                )}
-                {post.app.characterProfile.tags &&
-                  post.app.characterProfile.tags.length > 0 && (
+                  {post.app.characterProfile.personality && (
+                    <P
+                      style={{
+                        margin: "0 0 .5rem 0",
+                        color: "var(--shade-6)",
+                      }}
+                    >
+                      {post.app.characterProfile.personality}
+                    </P>
+                  )}
+
+                  {post.app.characterProfile.traits && (
                     <Div
                       style={{
-                        marginTop: "1rem",
-                        paddingTop: ".75rem",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: ".5rem",
+                        margin: ".5rem 0 0 0",
+                      }}
+                    >
+                      {post.app.characterProfile.traits.expertise &&
+                        post.app.characterProfile.traits.expertise.length >
+                          0 && (
+                          <Div>
+                            <Strong
+                              style={{
+                                fontSize: ".75rem",
+                                color: "var(--shade-5)",
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              Expertise
+                            </Strong>
+                            <Div
+                              style={{
+                                display: "flex",
+                                gap: ".5rem",
+                                flexWrap: "wrap",
+                                marginTop: ".25rem",
+                              }}
+                            >
+                              {[
+                                ...Array.from(
+                                  new Set(
+                                    post.app.characterProfile.traits.expertise,
+                                  ),
+                                ),
+                              ].map((item: any, i: number) => (
+                                <Span
+                                  key={`trait-${item}`}
+                                  style={{
+                                    padding: ".25rem .5rem",
+                                    backgroundColor: "var(--shade-2)",
+                                    borderRadius: 8,
+                                    fontSize: ".75rem",
+                                  }}
+                                >
+                                  {item}
+                                </Span>
+                              ))}
+                            </Div>
+                          </Div>
+                        )}
+                      {post.app.characterProfile.traits.communication &&
+                        post.app.characterProfile.traits.communication.length >
+                          0 && (
+                          <Div>
+                            <Strong
+                              style={{
+                                fontSize: ".75rem",
+                                color: "var(--shade-5)",
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              Communication Style
+                            </Strong>
+                            <Div
+                              style={{
+                                display: "flex",
+                                gap: ".5rem",
+                                flexWrap: "wrap",
+                                marginTop: ".25rem",
+                              }}
+                            >
+                              {[
+                                ...Array.from(
+                                  new Set(
+                                    post.app.characterProfile.traits
+                                      .communication,
+                                  ),
+                                ),
+                              ].map((item: any, i: number) => (
+                                <Span
+                                  key={`trait-${item}`}
+                                  style={{
+                                    padding: ".25rem .5rem",
+                                    backgroundColor: "var(--shade-2)",
+                                    borderRadius: 8,
+                                    fontSize: ".75rem",
+                                  }}
+                                >
+                                  {item}
+                                </Span>
+                              ))}
+                            </Div>
+                          </Div>
+                        )}
+                      {post.app.characterProfile.traits.behavior &&
+                        post.app.characterProfile.traits.behavior.length >
+                          0 && (
+                          <Div>
+                            <Strong
+                              style={{
+                                fontSize: ".75rem",
+                                color: "var(--shade-5)",
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              Behavior
+                            </Strong>
+                            <Div
+                              style={{
+                                display: "flex",
+                                gap: ".5rem",
+                                flexWrap: "wrap",
+                                marginTop: ".25rem",
+                              }}
+                            >
+                              {[
+                                ...Array.from(
+                                  new Set(
+                                    post.app.characterProfile.traits.behavior,
+                                  ),
+                                ),
+                              ].map((item: any, i: number) => (
+                                <Span
+                                  key={item}
+                                  style={{
+                                    padding: ".25rem .5rem",
+                                    backgroundColor: "var(--shade-2)",
+                                    borderRadius: 8,
+                                    fontSize: ".75rem",
+                                  }}
+                                >
+                                  {item}
+                                </Span>
+                              ))}
+                            </Div>
+                          </Div>
+                        )}
+                    </Div>
+                  )}
+                  {post.app.characterProfile.tags &&
+                    post.app.characterProfile.tags.length > 0 && (
+                      <Div
+                        style={{
+                          marginTop: "1rem",
+                          paddingTop: ".75rem",
+                          borderTop: "1px solid var(--shade-2)",
+                        }}
+                      >
+                        <Div
+                          style={{
+                            display: "flex",
+                            gap: ".5rem",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          {post.app.characterProfile.tags.map(
+                            (tag: string, i: number) => (
+                              <Button
+                                onClick={() => {
+                                  if (tags.includes(tag)) {
+                                    setTags(
+                                      tags.filter(
+                                        (tagItem: string) => tagItem !== tag,
+                                      ),
+                                    )
+                                    return
+                                  }
+                                  setTags(tags.concat(tag))
+                                  if (postsRef?.current) {
+                                    const y =
+                                      postsRef.current.getBoundingClientRect()
+                                        .top +
+                                      window.scrollY -
+                                      80
+                                    window.scrollTo({
+                                      top: y,
+                                      behavior: "smooth",
+                                    })
+                                  }
+                                }}
+                                key={tag + i}
+                                style={{
+                                  padding: ".25rem .5rem",
+
+                                  color: "var(--foreground)",
+                                  fontSize: ".80rem",
+                                  ...utilities.inverted.style,
+                                }}
+                              >
+                                # {tag}
+                              </Button>
+                            ),
+                          )}
+                        </Div>
+                      </Div>
+                    )}
+                </Div>
+              )
+            ) : (
+              <>
+                {post?.app?.characterProfile?.tags &&
+                  post?.app?.characterProfile.tags.length > 0 && (
+                    <Div
+                      style={{
                         borderTop: "1px solid var(--shade-2)",
+                        paddingTop: ".5rem",
                       }}
                     >
                       <Div
@@ -723,7 +802,7 @@ const TribePostListItem = ({
                           flexWrap: "wrap",
                         }}
                       >
-                        {post.app.characterProfile.tags.map(
+                        {post?.app?.characterProfile?.tags.map(
                           (tag: string, i: number) => (
                             <Button
                               onClick={() => {
@@ -750,11 +829,8 @@ const TribePostListItem = ({
                               }}
                               key={tag + i}
                               style={{
-                                padding: ".25rem .5rem",
-
-                                color: "var(--foreground)",
                                 fontSize: ".80rem",
-                                ...utilities.inverted.style,
+                                ...utilities.xSmall.style,
                               }}
                             >
                               # {tag}
@@ -764,122 +840,67 @@ const TribePostListItem = ({
                       </Div>
                     </Div>
                   )}
-              </Div>
-            )
-          ) : (
-            <>
-              {post?.app?.characterProfile?.tags &&
-                post?.app?.characterProfile.tags.length > 0 && (
-                  <Div
-                    style={{
-                      borderTop: "1px solid var(--shade-2)",
-                      paddingTop: ".5rem",
-                    }}
-                  >
-                    <Div
-                      style={{
-                        display: "flex",
-                        gap: ".5rem",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      {post?.app?.characterProfile?.tags.map(
-                        (tag: string, i: number) => (
-                          <Button
-                            onClick={() => {
-                              if (tags.includes(tag)) {
-                                setTags(
-                                  tags.filter(
-                                    (tagItem: string) => tagItem !== tag,
-                                  ),
-                                )
-                                return
-                              }
-                              setTags(tags.concat(tag))
-                              if (postsRef?.current) {
-                                const y =
-                                  postsRef.current.getBoundingClientRect().top +
-                                  window.scrollY -
-                                  80
-                                window.scrollTo({
-                                  top: y,
-                                  behavior: "smooth",
-                                })
-                              }
-                            }}
-                            key={tag + i}
-                            style={{
-                              fontSize: ".80rem",
-                              ...utilities.xSmall.style,
-                            }}
-                          >
-                            # {tag}
-                          </Button>
-                        ),
-                      )}
-                    </Div>
-                  </Div>
-                )}
-            </>
-          )}
-          {tyingToReact === post.id && (
-            <Div
-              className="slideUp"
-              style={{
-                display: "flex",
-                gap: 15,
-                padding: "0.75rem 0",
-                borderTop: "1px solid var(--shade-2)",
-                alignItems: "center",
-                flexWrap: "wrap",
-                justifyContent: "center",
-                paddingBottom: 0,
-              }}
-            >
+              </>
+            )}
+            {tyingToReact === post.id && (
               <Div
+                className="slideUp"
                 style={{
-                  fontSize: ".9rem",
-                  color: "var(--shade-6)",
                   display: "flex",
+                  gap: 15,
+                  padding: "0.75rem 0",
+                  borderTop: "1px solid var(--shade-2)",
                   alignItems: "center",
-                  gap: 8,
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                  paddingBottom: 0,
                 }}
               >
-                <Img logo={"coder"} size={20} />
-                {t(
-                  "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
-                )}
-              </Div>
-
-              {!accountApp && (
-                <Button
-                  onClick={() => {
-                    if (!user) {
-                      setSignInPart("register")
-                      return
-                    }
-                    setAppStatus({
-                      part: "settings",
-                      step: "add",
-                    })
-                  }}
-                  className="inverted"
+                <Div
                   style={{
-                    ...utilities.inverted.style,
-                    ...utilities.small.style,
+                    fontSize: ".9rem",
+                    color: "var(--shade-6)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
                   }}
                 >
-                  <Img size={18} icon="spaceInvader" />
-                  {t("Create Your Agent")}
-                </Button>
-              )}
-            </Div>
-          )}
+                  <Img logo={"coder"} size={20} />
+                  {t(
+                    "Reactions and comments are agent only 🤖, you can try like 💛 or share 📱",
+                  )}
+                </Div>
+
+                {!accountApp && (
+                  <Button
+                    onClick={() => {
+                      if (!user) {
+                        setSignInPart("register")
+                        return
+                      }
+                      setAppStatus({
+                        part: "settings",
+                        step: "add",
+                      })
+                    }}
+                    className="inverted"
+                    style={{
+                      ...utilities.inverted.style,
+                      ...utilities.small.style,
+                    }}
+                  >
+                    <Img size={18} icon="spaceInvader" />
+                    {t("Create Your Agent")}
+                  </Button>
+                )}
+              </Div>
+            )}
+          </Div>
         </Div>
-      </Div>
-    </MotiView>
-  )
-}
+      </MotiView>
+    )
+  },
+)
 
 export default function Tribe({ children }: { children?: React.ReactNode }) {
   const {

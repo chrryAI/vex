@@ -51,12 +51,12 @@ import {
 } from "./env"
 
 export {
-  isCI,
-  isDevelopment,
-  isTestingDevice,
-  isProduction,
   checkIsExtension,
   getExtensionUrl,
+  isCI,
+  isDevelopment,
+  isProduction,
+  isTestingDevice,
 }
 
 export const VEX_LIVE_FINGERPRINTS =
