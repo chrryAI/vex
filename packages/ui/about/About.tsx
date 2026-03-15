@@ -43,6 +43,7 @@ import {
   useTheme,
 } from "../platform"
 import Skeleton from "../Skeleton"
+import ToggleAgent from "../ToggleAgent"
 import {
   ADDITIONAL_CREDITS,
   AGENCY_PRICE,
@@ -58,10 +59,14 @@ import {
   PRO_PRICE,
   SOVEREIGN_PRICE,
 } from "../utils"
+import { getSiteConfig } from "../utils/siteConfig"
 import { getFeatures } from "../utils/subscription"
 import { useAboutStyles } from "./About.styles"
+
 export default function About() {
-  const { user, siteConfig: config, accountApp, app } = useAuth()
+  const { user, accountApp, app } = useAuth()
+
+  const config = getSiteConfig("chrryAI")
 
   const hasHydrated = useHasHydrated()
 
@@ -101,7 +106,6 @@ export default function About() {
   const renderCreate = ({ slug }: { slug?: string } = {}) => {
     return (
       <>
-        {" "}
         {!user ? (
           <Button
             className="inverted"
@@ -128,7 +132,7 @@ export default function About() {
         ) : (
           user &&
           !accountApp && (
-            <Button
+            <ToggleAgent
               className="inverted"
               style={{
                 marginLeft: "auto",
@@ -136,16 +140,7 @@ export default function About() {
                 ...utilities.inverted.style,
                 ...utilities.small.style,
               }}
-              onClick={() => {
-                setAppStatus({
-                  part: "highlights",
-                  step: "add",
-                })
-              }}
-            >
-              <Img slug={slug || app?.slug} size={20} />{" "}
-              {t("Create your agent")}
-            </Button>
+            />
           )
         )}
       </>

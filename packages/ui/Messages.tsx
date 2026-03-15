@@ -109,11 +109,8 @@ export default forwardRef<
     ...auth
   } = useAuth()
 
-  const canCreateAgent =
-    !isE2E && !accountApp && app && chrry && app?.id === chrry?.id
-
   // Chat context
-  const { scrollToBottom } = useChat()
+  const { scrollToBottom, creditsLeft } = useChat()
 
   const threadId = auth.threadId || auth.threadIdRef.current
 
@@ -330,14 +327,6 @@ export default forwardRef<
                   data-testid={"enable-character-profiles-from-messages"}
                   disabled={isUpdating}
                   onClick={async () => {
-                    if (canCreateAgent) {
-                      setAppStatus({
-                        part: "highlights",
-                        step: "add",
-                      })
-                      return
-                    }
-
                     setShowCharacterProfiles(true)
                   }}
                   className="inverted"
@@ -348,7 +337,7 @@ export default forwardRef<
                   ) : (
                     <Img app={app} size={18} />
                   )}
-                  {t(canCreateAgent ? "Create Your Agent" : "Earn a Badge")}
+                  {t("Earn a Badge")}
                 </Button>
               ) : null}
             </Div>

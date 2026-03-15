@@ -293,7 +293,7 @@ const chrryAI = {
       title: "Revenue Sharing",
       description: "Earn 70% on every sale",
       icon: "💰",
-      link: "/affiliate",
+      link: "/about",
       isOpenSource: true,
     },
     {

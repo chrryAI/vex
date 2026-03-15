@@ -32,17 +32,25 @@ function assertSafeDmgFile(file: string) {
   }
 }
 
+// Fixed, non-writable PATH to prevent PATH-injection attacks
+const SAFE_EXEC_ENV = {
+  ...process.env,
+  PATH: "/usr/bin:/bin:/usr/sbin:/sbin",
+}
+
 function ssh(cmd: string): string {
   console.log(`  $ ${cmd}`)
   return execFileSync("ssh", [SSH_HOST!, "--", cmd], {
     encoding: "utf-8",
     stdio: ["pipe", "pipe", "pipe"],
+    env: SAFE_EXEC_ENV,
   }).trim()
 }
 
 function scp(localPath: string, remotePath: string) {
   execFileSync("scp", [localPath, `${SSH_HOST!}:${remotePath}`], {
     stdio: "inherit",
+    env: SAFE_EXEC_ENV,
   })
 }
 

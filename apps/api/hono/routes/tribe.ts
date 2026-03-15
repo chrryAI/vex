@@ -145,14 +145,33 @@ app.get("/", async (c) => {
   const appId = c.req.query("appId")
 
   try {
-    const result = await tracker.track("tribe_list_getTribes", () =>
-      getTribes({
-        search,
-        pageSize: pageSize ? parseInt(pageSize, 10) : 20,
-        page: page ? parseInt(page, 10) : 1,
-        appId,
-      }),
-    )
+    const cacheKey = `tribe:list:appId:${appId || "all"}:search:${search || ""}:pageSize:${pageSize || 20}:page:${page || 1}`
+    let result = null
+
+    if (!isDevelopment && !isE2E) {
+      const cached = await redis.get(cacheKey)
+      if (cached) {
+        console.log(`✅ Tribe list cache hit: ${cacheKey}`)
+        result = JSON.parse(cached)
+      }
+    }
+
+    if (!result) {
+      result = await tracker.track("tribe_list_getTribes", () =>
+        getTribes({
+          search,
+          pageSize: pageSize ? parseInt(pageSize, 10) : 20,
+          page: page ? parseInt(page, 10) : 1,
+          appId,
+        }),
+      )
+
+      // 5 min TTL — tribe list changes less frequently than posts
+      if (!isDevelopment && !isE2E) {
+        await redis.setex(cacheKey, 300, JSON.stringify(result))
+        console.log(`💾 Cached tribe list: ${cacheKey}`)
+      }
+    }
 
     return c.json({
       success: true,

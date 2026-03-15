@@ -1,14 +1,7 @@
 "use client"
 
 import type React from "react"
-import {
-  type RefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
+import { type RefObject, useCallback, useEffect, useRef, useState } from "react"
 import { FaGithub } from "react-icons/fa"
 import A from "./a/A"
 import { COLORS, useAppContext } from "./context/AppContext"
@@ -46,6 +39,7 @@ import {
 } from "./platform"
 import Search from "./Search"
 import Skeleton from "./Skeleton"
+import ToggleAgent from "./ToggleAgent"
 import { useTribeStyles } from "./Tribe.styles"
 import TribeTranslate from "./TribeTranslate"
 import type { appWithStore, tribePost, user } from "./types"
@@ -1005,10 +999,113 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     userId: user?.id,
   })
 
+  const subjectApp = showTribeProfile ? app : chrry
+
+  const storeApps =
+    subjectApp?.store?.apps?.filter((item) => item.id !== burnApp?.id) || []
+
+  const getStoreApps = ({ style }: { style?: React.CSSProperties } = {}) => {
+    return (
+      <Div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 15,
+          alignItems: "center",
+          justifyContent: "center",
+          ...style,
+        }}
+      >
+        {storeApps?.map((item: appWithStore, i: number) => {
+          return (
+            <MotiView
+              key={`store-app${item.id}`}
+              from={{ opacity: 0, translateY: -8, translateX: 0 }}
+              animate={{
+                opacity: 1,
+                translateY: 0,
+                translateX: 0,
+              }}
+              transition={{
+                duration: reduceMotion ? 0 : 120,
+                delay: reduceMotion ? 0 : i * 35,
+              }}
+              style={
+                {
+                  ...{
+                    position: "relative",
+                    display: "flex",
+                    alignItems: "center",
+                    flexDirection: "column",
+                    gap: 10,
+                    outline: "1px dashed var(--shade-2)",
+                    borderRadius: 20,
+                    minWidth: "initial",
+                    flex: 1,
+                    maxWidth: 100,
+                  },
+
+                  ...(subjectApp?.id === item.id && {
+                    outline: "3px solid var(--accent-5)",
+                    backgroundColor: "var(--shade-1)",
+                  }),
+                  boxShadow: COLORS[item.themeColor as keyof typeof COLORS],
+                  borderColor: COLORS[item.themeColor as keyof typeof COLORS],
+                } as React.CSSProperties
+              }
+            >
+              <AppLink
+                isTribe
+                loading={<Loading size={30} />}
+                icon={<Img app={item} alt={item.name} size={40} />}
+                title={`${item.icon} ${item.subtitle || item.name}`}
+                app={item}
+                data-color={COLORS[item.themeColor as keyof typeof COLORS]}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "1rem 1.3rem",
+                  flex: 1,
+                  position: "relative",
+                  maxWidth: 100,
+                  minWidth: "max-content",
+                  textAlign: "center",
+                }}
+                className={`pointer ${loadingApp?.id === item.id ? "glow" : ""}`}
+              >
+                <Span
+                  style={{
+                    fontSize: isMobileDevice ? ".65rem" : ".7rem",
+                    color: "var(--shade-7)",
+                    marginTop: ".25rem",
+                  }}
+                >
+                  {item.name}
+                </Span>
+              </AppLink>
+              {item.storeId !== subjectApp?.storeId && (
+                <Span
+                  style={{
+                    position: "absolute",
+                    top: 7.5,
+                    right: 7.5,
+                    fontSize: ".8rem",
+                  }}
+                >
+                  🌀
+                </Span>
+              )}
+            </MotiView>
+          )
+        })}
+      </Div>
+    )
+  }
+
   const maxTribes = tribes?.tribes?.slice(0, 25) || []
   const TRAIN = owner ? `Train {{name}}` : `Try {{name}}`
-
-  const storeApps = auth?.apps?.filter((item) => item.id !== burnApp?.id) || []
 
   const back = storeApps.some((item) => item.id === auth?.back?.id)
     ? undefined
@@ -1452,7 +1549,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       </Div>
                     </Div>
                   </H2>
-
                   <Div
                     style={{
                       marginBottom: isMobileDevice ? "1rem" : "1.5rem",
@@ -1540,58 +1636,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           })}
                         </AppLink>
                       )}
-                      {accountApp ? (
-                        <AppLink
-                          isTribe={false}
-                          isPear={isPear}
-                          app={accountApp}
-                          loading={<Loading size={18} />}
-                          className="inverted"
-                          icon={<Img app={accountApp} size={18} />}
-                          style={{
-                            ...utilities.button.style,
-                            ...utilities.inverted.style,
-                            ...utilities.small.style,
-                          }}
-                        >
-                          {t("Go to Your Agent")}
-                        </AppLink>
-                      ) : showTribeProfile && app ? (
-                        <AppLink
-                          isPear={isPear}
-                          app={app}
-                          icon={<Img icon="spaceInvader" size={18} />}
-                          loading={<Loading size={18} />}
-                          className="inverted"
-                          style={{
-                            ...utilities.button.style,
-                            ...utilities.inverted.style,
-                            ...utilities.small.style,
-                          }}
-                        >
-                          {t(TRAIN, {
-                            name: app?.name,
-                          })}
-                        </AppLink>
-                      ) : (
-                        <Button
-                          onClick={() => {
-                            if (!user) {
-                              addParams({ signIn: "login" })
-                              return
-                            }
-                            push("/?settings=true")
-                          }}
-                          className="inverted"
-                          style={{
-                            ...utilities.inverted.style,
-                            ...utilities.small.style,
-                          }}
-                        >
-                          <Img icon="spaceInvader" size={18} />
-                          {t("Create Your Agent")}
-                        </Button>
-                      )}
+                      <ToggleAgent app={undefined} />
+
                       {app && !isPear && (
                         <Button
                           data-testid="grapes-feedback-button"
@@ -1616,8 +1662,36 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           <Img slug="pear" size={20} /> {t("Let's Pear")}
                         </Button>
                       )}
+
+                      {back && (
+                        <AppLink
+                          isTribe
+                          app={back}
+                          loading={<Loading size={22} />}
+                          icon={
+                            <>
+                              <ArrowLeft size={18} />
+                              <Img app={back} size={22} />
+                            </>
+                          }
+                          style={{
+                            marginLeft:
+                              isMobileDevice || rtl ? undefined : "auto",
+                            marginRight:
+                              isMobileDevice || !rtl ? undefined : "auto",
+                            fontSize: ".95rem",
+                            marginBottom: isMobileDevice ? ".5rem" : undefined,
+                            marginTop: isMobileDevice ? ".5rem" : undefined,
+                          }}
+                        >
+                          {t(back.name)}
+                        </AppLink>
+                      )}
                     </Div>
                   </Div>
+                  {getStoreApps({
+                    style: { marginBottom: 25, marginTop: 5 },
+                  })}
                 </>
               )}
               {showTribeProfile && (
@@ -1834,104 +1908,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       {!rtl && <FocusButton />}
                     </Div>
                   ) : null}
-                  <Div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 15,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {storeApps?.map((item: appWithStore, i: number) => {
-                      return (
-                        <MotiView
-                          key={`store-app${item.id}`}
-                          from={{ opacity: 0, translateY: -8, translateX: 0 }}
-                          animate={{
-                            opacity: 1,
-                            translateY: 0,
-                            translateX: 0,
-                          }}
-                          transition={{
-                            duration: reduceMotion ? 0 : 120,
-                            delay: reduceMotion ? 0 : i * 35,
-                          }}
-                          style={
-                            {
-                              ...{
-                                position: "relative",
-                                display: "flex",
-                                alignItems: "center",
-                                flexDirection: "column",
-                                gap: 10,
-                                outline: "1px dashed var(--shade-2)",
-                                borderRadius: 20,
-                                minWidth: "initial",
-                                flex: 1,
-                                maxWidth: 100,
-                              },
-
-                              ...(app?.id === item.id && {
-                                outline: "3px solid var(--accent-5)",
-                                backgroundColor: "var(--shade-1)",
-                              }),
-                              boxShadow:
-                                COLORS[item.themeColor as keyof typeof COLORS],
-                              borderColor:
-                                COLORS[item.themeColor as keyof typeof COLORS],
-                            } as React.CSSProperties
-                          }
-                        >
-                          <AppLink
-                            isTribe
-                            loading={<Loading size={30} />}
-                            icon={<Img app={item} alt={item.name} size={40} />}
-                            title={`${item.icon} ${item.subtitle || item.name}`}
-                            app={item}
-                            data-color={
-                              COLORS[item.themeColor as keyof typeof COLORS]
-                            }
-                            style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              padding: "1rem 1.3rem",
-                              flex: 1,
-                              position: "relative",
-                              maxWidth: 100,
-                              minWidth: "max-content",
-                              textAlign: "center",
-                            }}
-                            className={`pointer ${loadingApp?.id === item.id ? "glow" : ""}`}
-                          >
-                            <Span
-                              style={{
-                                fontSize: isMobileDevice ? ".65rem" : ".7rem",
-                                color: "var(--shade-7)",
-                                marginTop: ".25rem",
-                              }}
-                            >
-                              {item.name}
-                            </Span>
-                          </AppLink>
-                          {item.storeId !== app?.storeId && (
-                            <Span
-                              style={{
-                                position: "absolute",
-                                top: 7.5,
-                                right: 7.5,
-                                fontSize: ".8rem",
-                              }}
-                            >
-                              🌀
-                            </Span>
-                          )}
-                        </MotiView>
-                      )
-                    })}
-                  </Div>
+                  {getStoreApps()}
                 </Div>
               )}
               {showTribeProfile && (
@@ -1997,59 +1974,10 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           <Settings2 size={18} />
                         </Button>
                       )}
-                    {accountApp ? (
-                      <AppLink
-                        isTribe={false}
-                        app={accountApp}
-                        loading={<Loading size={18} />}
-                        className="inverted"
-                        icon={<Img app={accountApp} size={18} />}
-                        style={{
-                          ...utilities.button.style,
-                          ...utilities.inverted.style,
-                          ...utilities.small.style,
-                        }}
-                      >
-                        {t("Go to Your Agent")}
-                      </AppLink>
-                    ) : (
-                      <Button
-                        onClick={() => {
-                          if (!user) {
-                            addParams({ signIn: "login" })
-                            return
-                          }
-
-                          push("/?settings=true")
-                        }}
-                        className="inverted"
-                        style={{
-                          ...utilities.inverted.style,
-                          ...utilities.small.style,
-                        }}
-                      >
-                        <Img icon="spaceInvader" size={18} />
-                        {t("Create Your Agent")}
-                      </Button>
-                    )}
-
-                    {app && app?.id !== accountApp?.id && (
-                      <AppLink
-                        isTribe={false}
-                        isPear={isPear}
-                        app={app}
-                        icon={<Img app={app} width={18} height={18} />}
-                        className="button inverted"
-                        style={{
-                          ...utilities.inverted.style,
-                          ...utilities.small.style,
-                        }}
-                      >
-                        {t(TRAIN, {
-                          name: app?.name,
-                        })}
-                      </AppLink>
-                    )}
+                    <ToggleAgent />
+                    {app && app.id !== accountApp?.id ? (
+                      <ToggleAgent app={app} />
+                    ) : undefined}
                     {app?.id !== accountApp?.id &&
                       isOwner(app, { userId: user?.id }) && (
                         <Button

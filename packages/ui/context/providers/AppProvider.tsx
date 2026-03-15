@@ -361,6 +361,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
           },
         })
         clearFormDraft()
+        // Clear subscribe URL params before clearing appStatus to prevent
+        // the subscribe modal from re-opening when showTribe becomes true again
+        removeParams([
+          "subscribe",
+          "plan",
+          "sushiTier",
+          "grapeTier",
+          "pearTier",
+          "watermelonTier",
+        ])
         setAppStatus(undefined)
         return true
       }
@@ -773,7 +783,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (accountApp) {
           return
         }
-        push(`/?settings=true`)
+        // push(`/?settings=true`)
         return
       }
 

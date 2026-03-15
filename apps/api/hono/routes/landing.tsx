@@ -2,19 +2,22 @@ import { Hono } from "hono"
 import React from "react"
 import { renderToString } from "react-dom/server"
 import ChrryDotDev from "../../components/ChrryDotDev"
+import Privacy from "../../components/Privacy"
+import Terms from "../../components/Terms"
 
 export const landing = new Hono()
 
-landing.get("/", (c) => {
-  const isDev = process.env.NODE_ENV !== "production"
-  const html = renderToString(React.createElement(ChrryDotDev))
-
-  return c.html(`<!DOCTYPE html>
+// Shared HTML renderer — all landing/policy pages share this big CSS
+export function renderPage(
+  html: string,
+  title = "Chrry - AI-Powered Development Platform",
+) {
+  return `<!DOCTYPE html>
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chrry - AI-Powered Development Platform</title>
+    <title>${title}</title>
     <style>
       @keyframes slideLeft {
         0% {
@@ -1174,5 +1177,39 @@ landing.get("/", (c) => {
   <body>
     <div id="root">${html}</div>
   </body>
-</html>`)
+</html>`
+}
+
+landing.get("/", (c) => {
+  const html = renderToString(React.createElement(ChrryDotDev))
+  return c.html(renderPage(html))
+})
+
+// Allowed hostnames for white-label apps (add new ones here)
+const ALLOWED_HOSTS = new Set([
+  "chrry.ai",
+  "www.chrry.ai",
+  "chrry.dev",
+  "www.chrry.dev",
+  "vex.chrry.ai",
+  "burn.chrry.ai",
+  "localhost",
+  "127.0.0.1",
+])
+
+function trustedHostname(c: any): string {
+  const host = (c.req.header("host") || "").split(":")[0].toLowerCase()
+  return ALLOWED_HOSTS.has(host) ? host : "chrry.ai"
+}
+
+landing.get("/privacy", (c) => {
+  const hostname = trustedHostname(c)
+  const html = renderToString(React.createElement(Privacy, { hostname }))
+  return c.html(renderPage(html, "Privacy Policy"))
+})
+
+landing.get("/terms", (c) => {
+  const hostname = trustedHostname(c)
+  const html = renderToString(React.createElement(Terms, { hostname }))
+  return c.html(renderPage(html, "Terms of Use"))
 })

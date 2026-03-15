@@ -50,6 +50,7 @@ import type {
   session,
   sessionGuest,
   sessionUser,
+  spatialNavigationEntry,
   storeWithApps,
   thread,
   timer,
@@ -624,16 +625,9 @@ export function AuthProvider({
   )
 
   // Spatial Navigation History
-  interface SpatialNavigationEntry {
-    appId: string
-    appName: string
-    timestamp: number
-    duration?: number
-    from?: string
-  }
 
   const [navigationHistory, setNavigationHistory] = useState<
-    SpatialNavigationEntry[]
+    spatialNavigationEntry[]
   >([])
 
   const lastNavigationTime = useRef<number>(0)
@@ -1911,22 +1905,29 @@ export function AuthProvider({
     data: storeAppsSwr,
     mutate: refetchApps,
     isLoading: isLoadingApps,
-  } = useSWR(token && ["app", appId, skipAppCacheTemp], async () => {
-    try {
-      if (!token) return
-      const result = await getApp({
-        token,
-        appId,
-        chrryUrl,
-        pathname,
-        skipCache:
-          skipAppCacheTemp || appId !== app?.id || appId === accountAppId,
-      })
-      return result
-    } catch (error) {
-      captureException(error)
-    }
-  })
+  } = useSWR(
+    token && ["app", appId, skipAppCacheTemp, isManagingApp],
+    async () => {
+      try {
+        if (!token) return
+        const result = await getApp({
+          token,
+          appId,
+          chrryUrl,
+          pathname,
+          skipCache: isManagingApp
+            ? isOwner(app, {
+                userId: user?.id,
+                guestId: guest?.id,
+              })
+            : false,
+        })
+        return result
+      } catch (error) {
+        captureException(error)
+      }
+    },
+  )
 
   const {
     data: accountAppsSwr,
@@ -2327,9 +2328,17 @@ export function AuthProvider({
 
   const showTribeFromPath = pathname === "/tribe"
 
-  const _isExcluded = excludedSlugRoutes?.includes(
-    pathname.split("?")?.[0] || "",
-  )
+  // Normalize to first path segment (strip locale prefix if present) for excludedSlugRoutes
+  const _routeSegments = (pathname.split("?")?.[0] || "")
+    .replace(/^\//, "")
+    .split("/")
+  const _routeSlug =
+    _routeSegments.length > 1 && locales.includes(_routeSegments[0] as any)
+      ? _routeSegments[1]
+      : _routeSegments[0]
+  const _isExcluded = _routeSlug
+    ? excludedSlugRoutes?.includes(_routeSlug)
+    : false
 
   const postIdInitial = getPostId(pathname)
 
@@ -2371,7 +2380,7 @@ export function AuthProvider({
   const showTribeProfileInternal = canBeTribeProfile
 
   const downloadUrl =
-    canShowAllTribe && showTribe
+    (canShowAllTribe && showTribe) || _isExcluded
       ? `${minioUrl}/Tribe.dmg`
       : app && installs.includes(app?.slug || "")
         ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
@@ -2382,7 +2391,7 @@ export function AuthProvider({
             : ""
 
   const chromeWebStoreUrl =
-    canShowAllTribe && showTribe
+    (canShowAllTribe && showTribe) || _isExcluded
       ? tribeSiteConfig.chromeWebStoreUrl
       : (siteConfigApp as any)?.chromeWebStoreUrl ||
         app?.chromeWebStoreUrl ||
@@ -2733,8 +2742,6 @@ export function AuthProvider({
   useEffect(() => {
     if (!baseApp) return
     if (!storeApps.length || (!thread && threadId)) return
-
-    // debugger
 
     // Priority 1: If there's a thread, use the thread's app
     let matchedApp: appWithStore | undefined
@@ -3092,8 +3099,8 @@ export function AuthProvider({
     plausible({
       name: ANALYTICS_EVENTS.SPATIAL_NAVIGATION,
       props: {
-        from: navigationHistory[navigationHistory.length - 1]?.appId,
-        to: app.id,
+        from: navigationHistory[navigationHistory.length - 1]?.appName,
+        to: app.name,
         duration:
           navigationHistory[navigationHistory.length - 1]?.duration || 0,
       },

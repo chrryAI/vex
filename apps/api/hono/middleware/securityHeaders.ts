@@ -28,7 +28,12 @@ export const securityHeadersMiddleware = async (c: Context, next: Next) => {
     "default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none';"
 
   // Relax CSP for landing page (root path) which uses inline styles/scripts
-  if (path === "/" || path === "/favicon.ico") {
+  if (
+    path === "/" ||
+    path === "/favicon.ico" ||
+    path === "/privacy" ||
+    path === "/terms"
+  ) {
     csp =
       "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://a.chrry.dev; img-src 'self' data: https://minio.chrry.dev; font-src 'self' data:; connect-src 'self' https://a.chrry.dev https://*.chrry.dev;"
   }

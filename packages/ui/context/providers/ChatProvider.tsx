@@ -228,6 +228,8 @@ export function ChatProvider({
     ...auth
   } = useAuth()
 
+  const [isNewChat, setIsNewChatInternal] = useState(false)
+
   // const threadId = threadIdRef.current
 
   const [isChatFloating, setIsChatFloating] = useState(false)
@@ -324,7 +326,7 @@ export function ChatProvider({
     error: threadsError,
   } = useSWR(
     token && shouldFetchThreads && session
-      ? ["contextThreads", toFetch, app?.id, collaborationStatus]
+      ? ["contextThreads", toFetch, app?.id, collaborationStatus, isNewChat]
       : null,
     async () => {
       try {
@@ -430,8 +432,6 @@ export function ChatProvider({
     fetchPendingCollaborationThreadsCount()
   }
 
-  const [isNewChat, setIsNewChatInternal] = useState(false)
-
   const [collaborationStep, setCollaborationStep] = useState(0)
 
   useEffect(() => {
@@ -496,7 +496,8 @@ export function ChatProvider({
   }) => {
     if (value) {
       shouldStopAutoScrollRef.current = true
-      setLiked(undefined)
+
+      setLikedInternal(undefined)
       setShowFocus(false)
       setShowTribe(tribe === true)
 
@@ -511,7 +512,6 @@ export function ChatProvider({
       setMessages([])
       threadIdRef.current = undefined
       router.push(to)
-      refetchThreads()
     } else {
       shouldStopAutoScrollRef.current = false
       // Ensure tribe view resets when closing a new chat
@@ -890,7 +890,7 @@ export function ChatProvider({
     }
   }, [placeHolder, app])
 
-  const { appStatus } = useApp()
+  const { appStatus, setAppStatus } = useApp()
 
   const { captureException } = useError()
 

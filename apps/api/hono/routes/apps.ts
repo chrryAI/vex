@@ -2,7 +2,7 @@
 
 import { reorderApps } from "@chrryai/chrry/lib"
 import { appSchema } from "@chrryai/chrry/schemas/appSchema"
-import { isOwner } from "@chrryai/chrry/utils"
+import { ADDITIONAL_CREDITS, isOwner } from "@chrryai/chrry/utils"
 import {
   and,
   createAppExtend,
@@ -300,6 +300,22 @@ app.post("/", async (c) => {
         { error: "You must be logged in to create a paid app" },
         { status: 401 },
       )
+    }
+
+    // 🔒 Guest credit gate: guests must have ADDITIONAL_CREDITS to create an app (anti-spam)
+    if (!member && guest) {
+      const creditsLeft = guest.creditsLeft ?? 0
+      if (creditsLeft < ADDITIONAL_CREDITS) {
+        return c.json(
+          {
+            error: `You need at least ${ADDITIONAL_CREDITS} credits to create an app as a guest. Purchase credits or sign up for a free account.`,
+            code: "INSUFFICIENT_CREDITS",
+            creditsLeft,
+            creditsRequired: ADDITIONAL_CREDITS,
+          },
+          { status: 402 },
+        )
+      }
     }
 
     // Validate with Zod schema

@@ -33,7 +33,6 @@ import {
   Main,
   Span,
   usePlatform,
-  usePreviousPathname,
   useTheme,
   VexToast,
 } from "./platform"

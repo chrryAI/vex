@@ -1404,9 +1404,7 @@ ai.post("/", async (c) => {
     job?.jobType.startsWith("molt") || thread?.isMolt || message?.thread?.isMolt
 
   const isPear = requestData.pear === true || requestData.pear === "true"
-  const isTribe =
-    job?.jobType.startsWith("tribe") ||
-    !!(thread?.isTribe || message.message?.isTribe)
+  const isTribe = job?.jobType.startsWith("tribe") || !!message.message?.isTribe
 
   // Use numeric comparison with defaults to prevent negative balances from bypassing
   const canPostToTribe =

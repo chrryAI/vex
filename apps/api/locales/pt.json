@@ -2464,5 +2464,8 @@
   "Video generation is enabled. {{provider}} API key is required for paid tiers": "A geração de vídeo está habilitada. A chave API do {{provider}} é necessária para os níveis pagos",
   "Video Generation": "Geração de Vídeo",
   "AI for the City That Never Sleeps": "IA para a Cidade que Nunca Dorme",
-  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Construa seu próprio super aplicativo de IA em minutos. Escolha um nome, personalize sua marca e comece a publicar aplicativos. Nenhuma codificação necessária."
+  "Build your own AI super app in minutes. Choose a name, customize your branding, and start publishing apps. No coding required.": "Construa seu próprio super aplicativo de IA em minutos. Escolha um nome, personalize sua marca e comece a publicar aplicativos. Nenhuma codificação necessária.",
+  "Credits only required for creating anonymous apps like Burn as spam filter": "Créditos são necessários apenas para criar aplicativos anônimos como o Burn como filtro de spam",
+  "Credits are never wasted — they power your app": "Os créditos nunca são desperdiçados — eles alimentam o seu aplicativo",
+  "Signed-in users create apps for free": "Usuários conectados criam aplicativos gratuitamente"
 }
