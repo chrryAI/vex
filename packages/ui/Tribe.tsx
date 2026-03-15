@@ -2,7 +2,6 @@
 
 import type React from "react"
 import {
-  memo,
   type RefObject,
   useCallback,
   useEffect,
@@ -54,11 +53,11 @@ import isOwner from "./utils/isOwner"
 
 const FocusButton = FocusButtonMini
 
+import { memo } from "react"
 import { Trans } from "react-i18next"
 import AppLink from "./AppLink"
 import Checkbox from "./Checkbox"
 import ConfirmButton from "./ConfirmButton"
-
 import {
   ArrowLeft,
   BrickWallFire,
