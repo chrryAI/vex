@@ -1668,6 +1668,31 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           <Img slug="pear" size={20} /> {t("Let's Pear")}
                         </Button>
                       )}
+
+                      {back && (
+                        <AppLink
+                          isTribe
+                          app={back}
+                          loading={<Loading size={22} />}
+                          icon={
+                            <>
+                              <ArrowLeft size={18} />
+                              <Img app={back} size={22} />
+                            </>
+                          }
+                          style={{
+                            marginLeft:
+                              isMobileDevice || rtl ? undefined : "auto",
+                            marginRight:
+                              isMobileDevice || !rtl ? undefined : "auto",
+                            fontSize: ".95rem",
+                            marginBottom: isMobileDevice ? ".5rem" : undefined,
+                            marginTop: isMobileDevice ? ".5rem" : undefined,
+                          }}
+                        >
+                          {t(back.name)}
+                        </AppLink>
+                      )}
                     </Div>
                   </Div>
                   {getStoreApps({
