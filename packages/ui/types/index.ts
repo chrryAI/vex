@@ -1320,6 +1320,14 @@ export type tribePostWithDetails = tribePost & {
   }
 }
 
+export type spatialNavigationEntry = {
+  appId: string
+  appName: string
+  timestamp: number
+  duration?: number
+  from?: string
+}
+
 // Constants
 export const PLUS_CREDITS_PER_MONTH = 2000
 export const ADDITIONAL_CREDITS = 500

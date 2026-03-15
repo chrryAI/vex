@@ -311,8 +311,8 @@ test("Create A Sushi App", async ({ page }) => {
 })
 
 test("Grape", async ({ page }) => {
-  await clean({ isLive: true, page })
-  await page.goto(getURL({ isLive: true, isMember }), {
+  await clean({ isLive, page })
+  await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "domcontentloaded",
     timeout: 100000,
   })

@@ -50,6 +50,7 @@ import type {
   session,
   sessionGuest,
   sessionUser,
+  spatialNavigationEntry,
   storeWithApps,
   thread,
   timer,
@@ -624,16 +625,9 @@ export function AuthProvider({
   )
 
   // Spatial Navigation History
-  interface SpatialNavigationEntry {
-    appId: string
-    appName: string
-    timestamp: number
-    duration?: number
-    from?: string
-  }
 
   const [navigationHistory, setNavigationHistory] = useState<
-    SpatialNavigationEntry[]
+    spatialNavigationEntry[]
   >([])
 
   const lastNavigationTime = useRef<number>(0)
@@ -1911,22 +1905,29 @@ export function AuthProvider({
     data: storeAppsSwr,
     mutate: refetchApps,
     isLoading: isLoadingApps,
-  } = useSWR(token && ["app", appId, skipAppCacheTemp], async () => {
-    try {
-      if (!token) return
-      const result = await getApp({
-        token,
-        appId,
-        chrryUrl,
-        pathname,
-        skipCache:
-          skipAppCacheTemp || appId !== app?.id || appId === accountAppId,
-      })
-      return result
-    } catch (error) {
-      captureException(error)
-    }
-  })
+  } = useSWR(
+    token && ["app", appId, skipAppCacheTemp, isManagingApp],
+    async () => {
+      try {
+        if (!token) return
+        const result = await getApp({
+          token,
+          appId,
+          chrryUrl,
+          pathname,
+          skipCache: isManagingApp
+            ? isOwner(app, {
+                userId: user?.id,
+                guestId: guest?.id,
+              })
+            : false,
+        })
+        return result
+      } catch (error) {
+        captureException(error)
+      }
+    },
+  )
 
   const {
     data: accountAppsSwr,
@@ -3098,8 +3099,8 @@ export function AuthProvider({
     plausible({
       name: ANALYTICS_EVENTS.SPATIAL_NAVIGATION,
       props: {
-        from: navigationHistory[navigationHistory.length - 1]?.appId,
-        to: app.id,
+        from: navigationHistory[navigationHistory.length - 1]?.appName,
+        to: app.name,
         duration:
           navigationHistory[navigationHistory.length - 1]?.duration || 0,
       },

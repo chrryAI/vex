@@ -999,18 +999,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     userId: user?.id,
   })
 
-  const storeApps =
-    (showTribeProfile ? app : chrry)?.store?.apps?.filter(
-      (item) => item.id !== burnApp?.id,
-    ) || []
+  const subjectApp = showTribeProfile ? app : chrry
 
-  const getStoreApps = ({
-    a = app,
-    style,
-  }: {
-    a?: appWithStore
-    style?: React.CSSProperties
-  } = {}) => {
+  const storeApps =
+    subjectApp?.store?.apps?.filter((item) => item.id !== burnApp?.id) || []
+
+  const getStoreApps = ({ style }: { style?: React.CSSProperties } = {}) => {
     return (
       <Div
         style={{
@@ -1022,7 +1016,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
           ...style,
         }}
       >
-        {a?.store?.apps?.map((item: appWithStore, i: number) => {
+        {storeApps?.map((item: appWithStore, i: number) => {
           return (
             <MotiView
               key={`store-app${item.id}`}
@@ -1051,7 +1045,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     maxWidth: 100,
                   },
 
-                  ...(a?.id === item.id && {
+                  ...(subjectApp?.id === item.id && {
                     outline: "3px solid var(--accent-5)",
                     backgroundColor: "var(--shade-1)",
                   }),
@@ -1091,7 +1085,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                   {item.name}
                 </Span>
               </AppLink>
-              {item.storeId !== a?.storeId && (
+              {item.storeId !== subjectApp?.storeId && (
                 <Span
                   style={{
                     position: "absolute",
@@ -1696,7 +1690,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Div>
                   </Div>
                   {getStoreApps({
-                    a: chrry,
                     style: { marginBottom: 25, marginTop: 5 },
                   })}
                 </>
