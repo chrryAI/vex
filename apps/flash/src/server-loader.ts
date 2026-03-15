@@ -424,9 +424,15 @@ export async function loadServerData(
       ? searchParams.get("tags")!.split(",").filter(Boolean)
       : []
 
+    const _slugParts = pathname.replace(/^\//, "").split("/")
+    const _normalizedSlug =
+      _slugParts.length > 1 && locales.includes(_slugParts[0] as locale)
+        ? _slugParts[1]
+        : _slugParts[0]
+
     const canShowTribeProfile =
       !tribeSlug &&
-      !excludedSlugRoutes?.includes(pathname.replace(/^\//, "")) &&
+      !excludedSlugRoutes?.includes(_normalizedSlug) &&
       !canShowAllTribe
 
     const [translationsResult, tribesResult, tribePostsResult] =

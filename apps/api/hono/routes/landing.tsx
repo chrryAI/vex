@@ -1185,14 +1185,31 @@ landing.get("/", (c) => {
   return c.html(renderPage(html))
 })
 
+// Allowed hostnames for white-label apps (add new ones here)
+const ALLOWED_HOSTS = new Set([
+  "chrry.ai",
+  "www.chrry.ai",
+  "chrry.dev",
+  "www.chrry.dev",
+  "vex.chrry.ai",
+  "burn.chrry.ai",
+  "localhost",
+  "127.0.0.1",
+])
+
+function trustedHostname(c: any): string {
+  const host = (c.req.header("host") || "").split(":")[0].toLowerCase()
+  return ALLOWED_HOSTS.has(host) ? host : "chrry.ai"
+}
+
 landing.get("/privacy", (c) => {
-  const hostname = c.req.header("host") || "chrry.ai"
+  const hostname = trustedHostname(c)
   const html = renderToString(React.createElement(Privacy, { hostname }))
   return c.html(renderPage(html, "Privacy Policy"))
 })
 
 landing.get("/terms", (c) => {
-  const hostname = c.req.header("host") || "chrry.ai"
+  const hostname = trustedHostname(c)
   const html = renderToString(React.createElement(Terms, { hostname }))
   return c.html(renderPage(html, "Terms of Use"))
 })

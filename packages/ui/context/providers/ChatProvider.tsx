@@ -497,7 +497,7 @@ export function ChatProvider({
     if (value) {
       shouldStopAutoScrollRef.current = true
 
-      setLiked(undefined)
+      setLikedInternal(undefined)
       setShowFocus(false)
       setShowTribe(tribe === true)
 

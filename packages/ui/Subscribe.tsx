@@ -238,7 +238,10 @@ export default function Subscribe({
     if (!isModalOpen && searchParams.get("subscribe") === "true") {
       // Sync plan from URL param when opening modal
       const planFromUrl = searchParams.get("plan") as selectedPlanType | null
-      if (planFromUrl && selectedPlans.includes(planFromUrl)) {
+      if (planFromUrl === "architect") {
+        setSelectedPlan("coder")
+        setSushiTier("architect")
+      } else if (planFromUrl && selectedPlans.includes(planFromUrl)) {
         setSelectedPlan(planFromUrl)
       }
       setIsModalOpen(true)
@@ -1681,7 +1684,7 @@ export default function Subscribe({
                       width={16}
                       height={16}
                     />{" "}
-                    {t(city || "About")}
+                    {city ?? t("About")}
                   </A>
                 </Div>
               </MotiView>

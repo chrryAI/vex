@@ -2327,15 +2327,17 @@ export function AuthProvider({
 
   const showTribeFromPath = pathname === "/tribe"
 
-  const _isExcluded = excludedSlugRoutes?.includes(
-    (pathname.split("?")?.[0] || "").replace(/^\//, ""),
-  )
-  console.log(
-    `🚀 ~ excludedSlugRoutes:`,
-    excludedSlugRoutes,
-    pathname,
-    pathname.split("?")?.[0],
-  )
+  // Normalize to first path segment (strip locale prefix if present) for excludedSlugRoutes
+  const _routeSegments = (pathname.split("?")?.[0] || "")
+    .replace(/^\//, "")
+    .split("/")
+  const _routeSlug =
+    _routeSegments.length > 1 && locales.includes(_routeSegments[0] as any)
+      ? _routeSegments[1]
+      : _routeSegments[0]
+  const _isExcluded = _routeSlug
+    ? excludedSlugRoutes?.includes(_routeSlug)
+    : false
 
   const postIdInitial = getPostId(pathname)
 
@@ -2399,7 +2401,6 @@ export function AuthProvider({
     () => showTribeProfileInternal,
     [showTribeProfileInternal, tribeQuery],
   )
-  console.log(`🚀 ~ showTribeProfileInternal:`, _isExcluded)
 
   const showTribeProfile =
     !tribeSlug && (showTribeProfileInternal || showTribeProfileMemo)

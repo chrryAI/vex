@@ -68,6 +68,7 @@ export default function ToggleAgent({
           justifyContent: "center",
           textAlign: "center",
           display: "inline-flex",
+          ...style,
         }}
       >
         {t(gotToText)}
@@ -91,6 +92,7 @@ export default function ToggleAgent({
           justifyContent: "center",
           textAlign: "center",
           display: "inline-flex",
+          ...style,
         }}
       >
         {t(TRAIN, {
@@ -121,6 +123,7 @@ export default function ToggleAgent({
         justifyContent: "center",
         textAlign: "center",
         display: "inline-flex",
+        ...style,
       }}
     >
       <Img size={small ? 18 : 22} icon="spaceInvader" />

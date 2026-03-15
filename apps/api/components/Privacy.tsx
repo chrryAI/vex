@@ -45,7 +45,7 @@ export default function Privacy({ hostname }: { hostname?: string }) {
   const name = config.name || "Chrry"
   const url = config.url || "https://chrry.ai"
   const email = "iliyan@chrry.ai"
-  const updated = "March 15, 2025"
+  const updated = "March 15, 2026"
 
   return (
     <>
@@ -149,7 +149,7 @@ export default function Privacy({ hostname }: { hostname?: string }) {
         </section>
         <section>
           <a
-            href={`${url}?ask=🤫 Tell me about your privacy policy`}
+            href={`${url}?ask=${encodeURIComponent("🤫 Tell me about your privacy policy")}`}
             className="ai-link"
             target="_blank"
             rel="noopener noreferrer"

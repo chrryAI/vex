@@ -1721,7 +1721,7 @@ export default function Agent({
                         <Input
                           dataTestId="fal-api-key"
                           type="password"
-                          data-required={isImageGenerationRequired}
+                          data-required={isVideoGenerationRequired}
                           placeholder={"fal-..."}
                           {...field}
                           value={field.value || ""}

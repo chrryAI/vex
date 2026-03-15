@@ -1642,7 +1642,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           })}
                         </AppLink>
                       )}
-                      <ToggleAgent app={showTribeProfile ? app : undefined} />
+                      <ToggleAgent app={undefined} />
 
                       {app && !isPear && (
                         <Button
@@ -1982,7 +1982,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         </Button>
                       )}
                     <ToggleAgent />
-                    {app && app?.id !== accountApp?.id ? (
+                    {app && app.id !== accountApp?.id ? (
                       <ToggleAgent app={app} />
                     ) : undefined}
                     {app?.id !== accountApp?.id &&

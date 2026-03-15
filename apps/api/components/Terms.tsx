@@ -42,11 +42,11 @@ export default function Terms({ hostname }: { hostname?: string }) {
   const name = config.name || "Chrry"
   const url = config.url || "https://chrry.ai"
   const email = "legal@chrry.ai"
-  const updated = "March 15, 2025"
+  const updated = "March 15, 2026"
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: css }} />
+      <style>{css}</style>
       <div className="container">
         <div className="header">
           <a href="/">← Home 🍒</a>
@@ -152,7 +152,7 @@ export default function Terms({ hostname }: { hostname?: string }) {
 
         <section>
           <a
-            href={`${url}?ask=🥋 What are the terms of use for Chrry AI?`}
+            href={`${url}?ask=${encodeURIComponent("🥋 What are the terms of use for Chrry AI?")}`}
             className="ai-link"
             target="_blank"
             rel="noopener noreferrer"
