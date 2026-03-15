@@ -1057,7 +1057,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     if (currentIds !== newIds) {
       setDisplayedApps(currentStoreApps)
     }
-  }, [app?.store?.apps])
+  }, [app?.store?.apps, displayedApps])
 
   const FeedBack = useCallback(
     ({ style }: { style?: React.CSSProperties } = {}) => (
