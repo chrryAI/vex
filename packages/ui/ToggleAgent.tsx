@@ -9,9 +9,9 @@ import {
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
 import Loading from "./Loading"
-import { Button } from "./platform"
+import { Button, usePlatform } from "./platform"
 import type { appWithStore } from "./types"
-import { ADDITIONAL_CREDITS } from "./utils"
+import { ADDITIONAL_CREDITS, BrowserInstance, FRONTEND_URL } from "./utils"
 import isOwner from "./utils/isOwner"
 export default function ToggleAgent({
   style,
@@ -44,6 +44,8 @@ export default function ToggleAgent({
   const { addParams } = useNavigationContext()
 
   const { creditsLeft } = useChat()
+
+  const { isExtension } = usePlatform()
 
   const owner = isOwner(app, {
     userId: user?.id,
@@ -106,6 +108,14 @@ export default function ToggleAgent({
         if (!user) {
           // Guest with insufficient credits OR no guest session yet → show credits modal
           if (!guest || (creditsLeft ?? 0) < ADDITIONAL_CREDITS) {
+            if (isExtension) {
+              BrowserInstance?.runtime?.sendMessage({
+                action: "openInSameTab",
+                url: `${FRONTEND_URL}?subscribe=true&extension=true&plan=credits`,
+              })
+
+              return
+            }
             addParams({ subscribe: "true", plan: "credits" })
             return
           }

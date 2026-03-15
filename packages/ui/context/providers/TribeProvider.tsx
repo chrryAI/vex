@@ -255,7 +255,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     },
     {
       fallbackData: initialTribes,
-      revalidateOnFocus: !!initialTribes,
+      // revalidateOnFocus: !!initialTribes,
     },
   )
 
@@ -291,7 +291,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     },
     {
       fallbackData: initialTribePost,
-      revalidateOnFocus: !!initialTribePost,
+      // revalidateOnFocus: !!initialTribePost,
       refreshInterval: 900000, // Revalidate every 15 minutes (900000ms)
       dedupingInterval: 60000, // Dedupe requests within 1 minute
       onError: (error) => {
@@ -358,7 +358,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     },
     {
       fallbackData: initialTribePosts,
-      revalidateOnFocus: !!initialTribePosts,
+      // revalidateOnFocus: !!initialTribePosts,
       refreshInterval: 900000, // Revalidate every 15 minutes (900000ms)
       dedupingInterval: 60000, // Dedupe requests within 1 minute
     },

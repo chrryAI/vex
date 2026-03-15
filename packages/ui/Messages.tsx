@@ -15,6 +15,7 @@ import { useUserScroll } from "./hooks/useUserScroll"
 import { useWebSocket } from "./hooks/useWebSocket"
 import Img from "./Image"
 import { CircleX, Loader, Sparkles } from "./icons"
+import Loading from "./Loading"
 import Message from "./Message"
 import { useMessagesStyles } from "./Messages.styles"
 import { Button, Div, useTheme, Video } from "./platform"
@@ -50,6 +51,7 @@ export default forwardRef<
         summary?: threadSummary
       }
     }>
+    isLoading?: boolean
     isHome?: boolean
     onPlayAudio?: () => void
     nextPage?: number
@@ -83,6 +85,7 @@ export default forwardRef<
     isHome,
     onCharacterProfileUpdate,
     style,
+    isLoading,
   },
   ref,
 ) {
@@ -246,13 +249,13 @@ export default forwardRef<
         <Div style={{ ...styles.loadMoreContainer.style }}>
           <Button
             className="transparent"
-            style={{ ...utilities.xSmall, ...utilities.transparent }}
+            style={{ ...utilities.transparent, ...utilities.xSmall }}
             onClick={() => {
               setIsLoadingMore?.(true)
               setUntil?.((until || 1) + 1)
             }}
           >
-            <Loader size={16} />
+            {isLoading ? <Loading size={16} /> : <Loader size={16} />}
             {t("Load Older")}
           </Button>
         </Div>

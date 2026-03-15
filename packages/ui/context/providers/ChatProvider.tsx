@@ -921,16 +921,13 @@ export function ChatProvider({
 
   const [isLoading, setIsLoading] = useState(!!threadId)
 
-  useEffect(() => {
-    setIsLoading(!!threadId)
-  }, [threadId])
-
   const [status, setStatus] = useState<number | null>(null)
 
   const {
     data: threadSWR,
     mutate,
-    error,
+    error: threadError,
+    isLoading: isLoadingThread,
   } = useSWR(
     shouldFetchThread && token && toFetch ? [toFetch, liked, until] : null,
     async () => {
@@ -953,6 +950,10 @@ export function ChatProvider({
       // revalidateOnMount: true,
     },
   )
+
+  useEffect(() => {
+    setIsLoading(isLoadingThread)
+  }, [isLoadingThread])
 
   const [agentName, setAgentName] = useState(session?.aiAgent?.name || "")
 
@@ -1209,8 +1210,8 @@ export function ChatProvider({
   }
 
   useEffect(() => {
-    isLoading && error && setIsLoading(false)
-  }, [error, isLoading])
+    threadError && setIsLoading(false)
+  }, [threadError])
 
   useEffect(() => {
     // if (toFetch) {
@@ -1247,8 +1248,8 @@ export function ChatProvider({
         !isStreamingStop &&
         (!threadIdRef.current ||
           serverMessages.messages[0]?.thread?.id !== threadIdRef.current ||
-          (liked !== undefined &&
-            serverMessages.messages.length !== messages.length))
+          // Load Older pagination: server returned more messages than we have locally
+          serverMessages.messages.length > messages.length)
       ) {
         // ID-based diff: only update if server has new messages we don't have
         // This prevents wiping optimistic messages while server is catching up
@@ -1361,7 +1362,7 @@ export function ChatProvider({
         until,
         liked,
         setLiked,
-        error,
+        error: threadError,
         setUntil,
         onlyAgent,
         isEmpty,

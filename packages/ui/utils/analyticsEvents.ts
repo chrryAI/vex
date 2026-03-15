@@ -20,6 +20,7 @@ export const ANALYTICS_EVENTS = {
   FILE_UPLOAD: "file-upload",
   SUGGESTIONS_GENERATED: "suggestions_generated",
   COLLABORATION: "collaboration",
+  WANNATHIS: "wannathis",
   MESSAGE_COLLABORATION: "message_collaboration",
   LIKE: "like",
   VIDEO_CLICKED: "video_clicked",
@@ -185,6 +186,7 @@ export const MEANINGFUL_EVENTS: AnalyticsEventName[] = [
   // Authentication - User lifecycle
   ANALYTICS_EVENTS.LOGIN,
   ANALYTICS_EVENTS.LOGOUT,
+  ANALYTICS_EVENTS.WANNATHIS,
   ANALYTICS_EVENTS.SIGNUP,
   ANALYTICS_EVENTS.GOOGLE_SIGNIN,
   ANALYTICS_EVENTS.APPLE_SIGNIN,

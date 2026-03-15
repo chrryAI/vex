@@ -229,12 +229,16 @@ export default function About() {
         <Section>
           <P>
             {config.logo || "🍒"}{" "}
-            {config.about?.intro ||
-              "Vex is an intelligent AI assistant designed to help you accomplish tasks efficiently and effectively. Our mission is to create a transparent, user-friendly AI experience that empowers you while respecting your privacy."}
+            {t(
+              config.about?.intro ||
+                "Vex is an intelligent AI assistant designed to help you accomplish tasks efficiently and effectively. Our mission is to create a transparent, user-friendly AI experience that empowers you while respecting your privacy.",
+            )}
           </P>
           <P style={{ marginTop: "1rem" }}>
-            {config.about?.intro2 ||
-              "With per-chat instructions, thread artifacts for document memory, and real-time collaboration features. Vex learns your context, remembers your files, and works with your team."}
+            {t(
+              config.about?.intro2 ||
+                "With per-chat instructions, thread artifacts for document memory, and real-time collaboration features. Vex learns your context, remembers your files, and works with your team.",
+            )}
           </P>
         </Section>
 
@@ -295,16 +299,18 @@ export default function About() {
         )} */}
 
         <Section>
-          <H2>{config.about?.approach?.title || "Our Approach"}</H2>
+          <H2>{t(config.about?.approach?.title || "Our Approach")}</H2>
           <P>
-            {config.about?.approach?.content ||
-              "We believe in complete transparency about how our AI works, what data we use, and how we charge for our services. Vex provides clear information about usage limits, pricing, and capabilities so you always know what to expect."}
+            {t(
+              config.about?.approach?.content ||
+                "We believe in complete transparency about how our AI works, what data we use, and how we charge for our services. Vex provides clear information about usage limits, pricing, and capabilities so you always know what to expect.",
+            )}
           </P>
         </Section>
 
         <Section>
           <H2>{t("about.transparency.title")}</H2>
-          <P>{t("about.transparency.intro")}</P>
+          <P>{t("about.transparency.intro").replace("Vex", config.name)}</P>
           <Div>
             <P>{t("about.transparency.items.pricing")}</P>
             <P>{t("about.transparency.items.usage")}</P>
@@ -314,7 +320,7 @@ export default function About() {
         </Section>
 
         <Section>
-          <H2>{config.about?.platforms?.title || "Available Platforms"}</H2>
+          <H2>{t(config.about?.platforms?.title || "Available Platforms")}</H2>
           <Instructions
             showButton={false}
             showDownloads={true}
