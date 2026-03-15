@@ -6717,6 +6717,24 @@ Be supportive, specific, and focused on helping users earn credits through valua
     displayOrder: 2,
   })
 
+  {
+    const storeInstall = await getStoreInstall({
+      storeId: blossom.id,
+      appId: pearApp.id,
+    })
+
+    if (!storeInstall) {
+      await createStoreInstall({
+        storeId: blossom.id,
+        appId: pearApp.id,
+        featured: true,
+        displayOrder: 1,
+        customDescription:
+          "Claude by Anthropic - Thoughtful AI assistant for writing, analysis, and creative work.",
+      })
+    }
+  }
+
   // Install Grape app to Wine store
   await createOrUpdateStoreInstall({
     storeId: wine.id,

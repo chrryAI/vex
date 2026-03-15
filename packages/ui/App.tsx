@@ -209,6 +209,7 @@ export default function App({
   const zarathustra = apps.find((app) => app.slug === "zarathustra")
   const sushi = apps.find((app) => app.slug === "sushi")
   const grok = apps.find((app) => app.slug === "grok")
+  const pear = apps.find((app) => app.slug === "pear")
 
   const isBlossom = app?.store?.id === chrry?.store?.id
   const isLifeOS = app?.store?.id === vex?.store?.id
@@ -225,6 +226,8 @@ export default function App({
           (item.id !== vex?.id || !isSushi) &&
           (item.id !== claude?.id || !isBlossom) &&
           (item.id !== grok?.id || !isBlossom) &&
+          //Pear zaten chatte var :)
+          (item.id !== pear?.id || !isBlossom) &&
           (item.id === grape?.id
             ? accountApp?.id === app?.id
               ? false
