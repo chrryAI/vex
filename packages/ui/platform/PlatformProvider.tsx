@@ -39,8 +39,6 @@ import {
 
 // Dimensions will be imported dynamically when needed
 
-// Re-export for backwards compatibility
-export type { PlatformType, BrowserType }
 export {
   detectPlatform,
   getBrowser,
@@ -53,6 +51,8 @@ export {
   isTauri,
   isWeb,
 } from "./detection"
+// Re-export for backwards compatibility
+export type { BrowserType, PlatformType }
 
 // Get extension URL (works for Chrome, Firefox, etc.)
 export const getExtensionUrl = (path: string = "index.html"): string => {

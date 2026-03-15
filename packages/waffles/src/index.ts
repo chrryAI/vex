@@ -170,9 +170,9 @@ export const log = ({ page }: { page: Page }) => {
 }
 
 export {
-  wait,
+  capitalizeFirstLetter,
   getURL,
   simulateInputPaste,
   simulatePaste,
-  capitalizeFirstLetter,
+  wait,
 }
