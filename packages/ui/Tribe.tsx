@@ -6,7 +6,6 @@ import {
   type RefObject,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react"
@@ -1047,11 +1046,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     const currentStoreApps = app?.store?.apps || []
     const currentIds = displayedApps
       .map((a) => a.id)
-      .sort()
+      .sort((a, b) => a.localeCompare(b))
       .join(",")
     const newIds = currentStoreApps
       .map((a) => a.id)
-      .sort()
+      .sort((a, b) => a.localeCompare(b))
       .join(",")
 
     if (currentIds !== newIds) {
