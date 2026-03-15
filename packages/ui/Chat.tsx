@@ -263,8 +263,6 @@ export default function Chat({
     ...auth
   } = useAuth()
 
-  const { tribePost } = useTribe()
-
   const lastTribe = user?.lastTribe
   const lastMolt = user?.lastMolt
   const now = new Date()
@@ -1784,11 +1782,9 @@ export default function Chat({
     setIsLoading(true)
 
     const sanitizedThreadId =
-      isAppOwner && tribePost?.threadId
-        ? tribePost?.threadId
-        : threadIdRef.current && validate(threadIdRef.current)
-          ? threadIdRef.current
-          : null
+      threadIdRef.current && validate(threadIdRef.current)
+        ? threadIdRef.current
+        : null
 
     try {
       let postRequestBody: FormData | string
