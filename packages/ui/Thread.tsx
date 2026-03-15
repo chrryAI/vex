@@ -21,7 +21,14 @@ import { useThreadPresence } from "./hooks/useThreadPresence"
 import { useUserScroll } from "./hooks/useUserScroll"
 import Img from "./Image"
 import Instructions from "./Instructions"
-import { CircleX, Clock, ClockPlus, InfoIcon, ThumbsUp } from "./icons"
+import {
+  CircleX,
+  Clock,
+  ClockPlus,
+  InfoIcon,
+  ThumbsUp,
+  WannathisIcon,
+} from "./icons"
 import Loading from "./Loading"
 import MemoryConsent from "./MemoryConsent"
 import Messages from "./Messages"
@@ -135,7 +142,7 @@ const Thread = ({
 
   const { pathname } = useNavigationContext()
 
-  const { isIDE, isStandalone } = usePlatform()
+  const { isIDE, isStandalone, viewPortWidth } = usePlatform()
 
   // Navigation context
   const {
@@ -475,11 +482,32 @@ const Thread = ({
                     : 195,
             }),
           ...{
+            position: "relative",
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
             marginBottom: isIDE ? 50 : undefined,
           },
         }}
       >
+        {viewPortWidth > 1400 && (
+          <A
+            href="https://wannathis.one?via=iliyan"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inverted"
+            style={{
+              ...utilities.button.style,
+              ...utilities.small.style,
+              ...utilities.inverted.style,
+              position: "fixed",
+              bottom: 15,
+              right: 15,
+              fontSize: "0.8rem",
+            }}
+          >
+            <WannathisIcon /> Wannathis
+          </A>
+        )}
+
         {!isVisitor && thread && (
           <Div style={styles.headers.style}>
             <Div style={styles.header.style}>
