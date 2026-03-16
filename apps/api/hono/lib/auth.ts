@@ -80,7 +80,7 @@ export async function getMember(
 
         if (exchangedToken) {
           // Successfully exchanged auth token for JWT
-          token = exchangedToken
+          const jwtToken = exchangedToken
         } else {
           // Not an auth token, try as API key
           const result = await getUser({
