@@ -2,7 +2,7 @@ import clsx from "clsx"
 import countries from "i18n-iso-countries"
 import enLocale from "i18n-iso-countries/langs/en.json"
 import { t } from "i18next"
-import React, { useState } from "react"
+import React, { memo, useState } from "react"
 import { toast } from "react-hot-toast"
 import AsyncSelect from "react-select/async"
 import { useAuth, useData } from "./context/providers"
@@ -93,7 +93,10 @@ function getWeatherColor(code: number): string {
 
 // Detect preferred unit based on country
 
-export default function Weather({
+// ⚡ Bolt Optimization:
+// Wrapped the Weather component in React.memo to prevent unnecessary re-renders
+// since it relies heavily on React context and its props are mostly stable.
+const Weather = memo(function Weather({
   style,
   showLocation,
   onLocationClick,
@@ -131,6 +134,7 @@ export default function Weather({
         },
       },
     )
+
       .then((response) => response.json())
       .then((response) => {
         return response.map((data: city) => ({
@@ -282,4 +286,6 @@ export default function Weather({
       </Span>
     </Div>
   )
-}
+})
+
+export default Weather
