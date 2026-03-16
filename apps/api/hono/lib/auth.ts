@@ -1,42 +1,16 @@
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import {
-  and,
-  authExchangeCodes,
-  db,
-  eq,
   getGuest as getGuestDb,
   getUser,
-  gt,
   type userWithRelations,
 } from "@repo/db"
 import type { Context } from "hono"
 import jwt from "jsonwebtoken"
 import { validate } from "uuid"
 import { captureException } from "../../lib/captureException"
+import { exchangeCodeForToken } from "./exchangeCode"
 
 export { getApp } from "./getApp"
-
-// ==================== HELPERS ====================
-
-async function exchangeCodeForToken(code: string): Promise<string | null> {
-  const now = new Date()
-
-  const [result] = await db
-    .update(authExchangeCodes)
-    .set({ used: true })
-    .where(
-      and(
-        eq(authExchangeCodes.code, code),
-        eq(authExchangeCodes.used, false),
-        gt(authExchangeCodes.expiresOn, now),
-      ),
-    )
-    .returning()
-
-  if (!result) return null
-
-  return result.token
-}
 
 // ==================== MAIN FUNCTION ====================
 

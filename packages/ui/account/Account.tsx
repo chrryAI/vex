@@ -1,8 +1,7 @@
 "use client"
 import React, { useEffect, useState } from "react"
 import toast from "react-hot-toast"
-import { FaApple, FaGithub, FaGoogle } from "react-icons/fa"
-import { SiMacos } from "react-icons/si"
+import { FaApple, FaGoogle } from "react-icons/fa"
 import { validate } from "uuid"
 import A from "../a/A"
 import CharacterProfiles from "../CharacterProfiles"
@@ -107,7 +106,6 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
   const isLoggingOut = searchParams.get("logout") === "true" || undefined
   const [isSaving, setIsSaving] = useState(false)
   const [apiKey, setApiKey] = useState<string | undefined>(user?.apiKey)
-  console.log(`🚀 ~ Account ~ user:`, user)
   const [isGeneratingKey, setIsGeneratingKey] = useState(false)
 
   const handleGenerateApiKey = async () => {
@@ -118,13 +116,29 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       })
+
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => "Unknown error")
+        console.error("API key generation failed:", errorText)
+        toast.error(t("Failed to generate API key"))
+        return
+      }
+
       const data = await res.json()
       if (data.apiKey) {
         setApiKey(data.apiKey)
-        await navigator.clipboard.writeText(data.apiKey)
-        toast.success(t("API key generated & copied!"))
+
+        try {
+          await navigator.clipboard.writeText(data.apiKey)
+          toast.success(t("API key generated & copied!"))
+        } catch (clipboardError) {
+          console.error("Clipboard write failed:", clipboardError)
+          toast.success(t("API key generated!"))
+          toast(t("Could not copy to clipboard"), { icon: "⚠️" })
+        }
       }
-    } catch {
+    } catch (error) {
+      console.error("API key generation error:", error)
       toast.error(t("Failed to generate API key"))
     } finally {
       setIsGeneratingKey(false)
@@ -512,9 +526,14 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
                   className="link"
                   style={utilities.link.style}
                   title={t("Copy")}
-                  onClick={() => {
-                    navigator.clipboard.writeText(apiKey)
-                    toast.success(t("Copied!"))
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(apiKey)
+                      toast.success(t("Copied!"))
+                    } catch (error) {
+                      console.error("Clipboard copy failed:", error)
+                      toast.error(t("Copy failed"))
+                    }
                   }}
                 >
                   <Copy size={18} />
@@ -540,15 +559,15 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
                 color: "var(--shade-6)",
               }}
             >
-              You can use this key while building with{" "}
+              {t("You can use this key while building with")}{" "}
               <A openInNewTab href="https://github.com/chrryAI/chrry">
-                Chrry
+                {t("Chrry")}
               </A>{" "}
-              from{" "}
+              {t("from")}{" "}
               <A openInNewTab href="https://github.com/chrryAI/chrry">
-                Github
+                {t("Github")}
               </A>{" "}
-              and using{" "}
+              {t("and using")}{" "}
               <Button
                 className="link"
                 style={{
@@ -563,9 +582,9 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
                   document.body.removeChild(a)
                 }}
               >
-                macOS
+                {t("macOS")}
               </Button>{" "}
-              app
+              {t("app")}
             </P>
           </Div>
 

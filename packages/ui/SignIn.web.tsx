@@ -231,6 +231,7 @@ export default function SignIn({
   const [password, setPassword] = React.useState("")
   const [apiKeyInput, setApiKeyInput] = React.useState("")
   const [isApiKeyLoading, setIsApiKeyLoading] = React.useState(false)
+  const [showApiKey, setShowApiKey] = React.useState(false)
 
   const handleApiKeyLogin = async () => {
     if (!apiKeyInput.trim()) return
@@ -693,14 +694,37 @@ export default function SignIn({
                     {t("Paste your API key from")}{" "}
                     <strong>chrry.ai → Account → API Key</strong>
                   </p>
-                  <input
-                    className={styles.input}
-                    type="text"
-                    placeholder="chrry_live_..."
-                    value={apiKeyInput}
-                    onChange={(e) => setApiKeyInput(e.target.value)}
-                    style={{ width: "100%" }}
-                  />
+                  <div style={{ position: "relative", width: "100%" }}>
+                    <input
+                      className={styles.input}
+                      type={showApiKey ? "text" : "password"}
+                      placeholder="chrry_live_..."
+                      value={apiKeyInput}
+                      onChange={(e) => setApiKeyInput(e.target.value)}
+                      style={{ width: "100%", paddingRight: "40px" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKey(!showApiKey)}
+                      style={{
+                        position: "absolute",
+                        right: "8px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: "4px",
+                        opacity: 0.6,
+                        fontSize: "0.85rem",
+                      }}
+                      aria-label={
+                        showApiKey ? t("Hide API key") : t("Show API key")
+                      }
+                    >
+                      {showApiKey ? "🙈" : "👁️"}
+                    </button>
+                  </div>
                   <button
                     type="submit"
                     disabled={isApiKeyLoading || !apiKeyInput.trim()}

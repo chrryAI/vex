@@ -1,7 +1,6 @@
 import { randomBytes } from "node:crypto"
 import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
 import {
-  and,
   authExchangeCodes,
   createUser,
   db,
@@ -9,7 +8,6 @@ import {
   generateApiKey,
   getStore,
   getUser,
-  gt,
   users,
 } from "@repo/db"
 
@@ -86,27 +84,6 @@ async function generateExchangeCode(token: string): Promise<string> {
   })
 
   return code
-}
-
-async function exchangeCodeForToken(code: string): Promise<string | null> {
-  const now = new Date()
-
-  // Use a single atomic UPDATE ... RETURNING query to prevent race conditions (TOCTOU)
-  const [result] = await db
-    .update(authExchangeCodes)
-    .set({ used: true })
-    .where(
-      and(
-        eq(authExchangeCodes.code, code),
-        eq(authExchangeCodes.used, false),
-        gt(authExchangeCodes.expiresOn, now),
-      ),
-    )
-    .returning()
-
-  if (!result) return null
-
-  return result.token
 }
 
 // ==================== USERNAME HELPERS ====================
@@ -881,14 +858,18 @@ authRoutes.post("/callback/apple", async (c) => {
 
 /** POST /auth/apikey/generate — create or rotate the user's api key */
 authRoutes.post("/apikey/generate", async (c) => {
-  const token = extractTokenFromRequest(c)
-  if (!token) return c.json({ error: "Unauthorized" }, 401)
+  const ip = c.req.header("x-forwarded-for")?.split(",")[0] || "127.0.0.1"
+  const { success, errorMessage } = await checkAuthRateLimit(c.req.raw, ip)
 
-  const payload = verifyToken(token)
-  if (!payload) return c.json({ error: "Unauthorized" }, 401)
+  if (!success) {
+    return c.json(
+      { error: errorMessage || "Too many attempts. Please try again later." },
+      429,
+    )
+  }
 
   const user = await getMember(c, { full: true, skipCache: true })
-  if (!user) return c.json({ error: "User not found" }, 404)
+  if (!user) return c.json({ error: "Unauthorized" }, 401)
 
   const env =
     process.env.NODE_ENV === "production" ? "production" : "development"

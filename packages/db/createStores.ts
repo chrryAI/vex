@@ -2464,6 +2464,7 @@ async function getOrCreateStore(params: {
   description: string
   parentStoreId?: string
   hourlyRate?: number
+  isSystem?: boolean
 }) {
   if (!db) throw new Error("DB not initialized")
 
@@ -2487,7 +2488,7 @@ async function getOrCreateStore(params: {
     if (!store) throw new Error(`Failed to create ${params.name} store`)
     console.log(`✅ ${params.name} store created`)
   } else {
-    const shouldBeSystem = store.isSystem || store.userId === storeData.userId
+    const shouldBeSystem = storeData.isSystem ?? store.isSystem
 
     await updateStore({ ...store, ...storeData, isSystem: shouldBeSystem })
     console.log(`✅ ${params.name} store already exists, skipping creation`)

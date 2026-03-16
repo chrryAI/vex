@@ -2023,6 +2023,20 @@ const seedDb = async (): Promise<void> => {
       if (isVex) {
         await prod()
       } else {
+        // Safety gate: only allow clearDb on local databases or with explicit opt-in
+        const databaseUrl = process.env.DATABASE_URL || ""
+        const isLocalDb =
+          databaseUrl.includes("localhost") ||
+          databaseUrl.includes("127.0.0.1") ||
+          databaseUrl.includes("0.0.0.0")
+        const allowClearDb = process.env.ALLOW_CLEAR_DB === "true"
+
+        if (!isLocalDb && !allowClearDb) {
+          throw new Error(
+            "❌ SAFETY: Cannot clear non-local database without ALLOW_CLEAR_DB=true",
+          )
+        }
+
         await clearDb()
         await create()
       }
