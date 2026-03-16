@@ -808,12 +808,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [appForm])
 
+  // Track the current app ID to prevent unnecessary resets
+  const [currentAppId, setCurrentAppId] = useState<string | undefined>(app?.id)
+
   useEffect(() => {
+    // Only reset form when app ID actually changes (switching to a different app)
+    // Don't reset on user/guest/pathname changes while editing the same app
     if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
-      const appValues = getInitialFormValues()
-      appForm.reset(appValues)
+      if (app.id !== currentAppId) {
+        const appValues = getInitialFormValues()
+        appForm.reset(appValues)
+        setCurrentAppId(app.id)
+      }
     }
-  }, [app, user, guest, accountApp, pathname])
+  }, [app?.id, user, guest])
 
   // Restore form draft only on mount (but not when step is "add")
   const [hasRestoredDraft, setHasRestoredDraft] = useState(false)
