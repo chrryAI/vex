@@ -33,6 +33,7 @@ const createOrUpdateApp = async ({
   return await createOrUpdateAppInternal({
     app: {
       ...app,
+      isSystem: app.isSystem || true,
       blueskyHandle: app.blueskyHandle || "tribeai.bsky.social",
       blueskyPassword:
         app.blueskyPassword ||
@@ -2482,11 +2483,11 @@ async function getOrCreateStore(params: {
 
   if (!store) {
     console.log(`🏪 Creating ${params.name} store...`)
-    store = await createStore({ slug, ...storeData })
+    store = await createStore({ slug, ...storeData, isSystem: true })
     if (!store) throw new Error(`Failed to create ${params.name} store`)
     console.log(`✅ ${params.name} store created`)
   } else {
-    await updateStore({ ...store, ...storeData })
+    await updateStore({ ...store, ...storeData, isSystem: true })
     console.log(`✅ ${params.name} store already exists, skipping creation`)
   }
 

@@ -2742,7 +2742,7 @@ export function AuthProvider({
 
   useEffect(() => {
     if (!baseApp) return
-    if (!storeApps.length || (!thread && threadId)) return
+    if (!storeApps.length) return
 
     // Priority 1: If there's a thread, use the thread's app
     let matchedApp: appWithStore | undefined
