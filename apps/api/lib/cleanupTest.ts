@@ -1,23 +1,21 @@
 import {
   db,
-  deleteApp,
   deleteCreditUsage,
   deleteInstruction,
   deleteMessage,
   deletePlaceHolder,
-  deleteStore,
   deleteSubscription,
   deleteThread,
-  getApps,
   getGuest as getGuestDb,
   getInstructions,
   getMessages,
   getPlaceHolders,
-  getStores,
   getSubscriptions,
   getThreads,
   getUser,
   type guest,
+  isE2E,
+  isProd,
   TEST_GUEST_FINGERPRINTS,
   TEST_MEMBER_EMAILS,
   TEST_MEMBER_FINGERPRINTS,
@@ -28,11 +26,14 @@ import {
   VEX_LIVE_FINGERPRINTS,
 } from "@repo/db"
 import {
+  apps,
   feedbackTransactions,
   GUEST_CREDITS_PER_MONTH,
   MEMBER_CREDITS_PER_MONTH,
   pearFeedback,
+  stores,
 } from "@repo/db/src/schema"
+import { eq, not } from "drizzle-orm"
 
 const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(
   TEST_MEMBER_FINGERPRINTS,
@@ -40,6 +41,13 @@ const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(
 )
 
 export default async function cleanupTest() {
+  if (isProd) {
+    return { error: "Oops, this is PROD", status: 401 as const }
+  }
+
+  if (!isE2E) {
+    return { error: "Unauthorized", status: 401 as const }
+  }
   // await db.delete(tribePosts)
   await db.delete(pearFeedback)
   await db.delete(feedbackTransactions)
@@ -67,7 +75,7 @@ export default async function cleanupTest() {
       guest.fingerprint === fingerprint &&
       allowedFingerprints.includes(fingerprint)
     ) {
-      await cleanup({
+      return await cleanup({
         guest,
       })
     }
@@ -148,7 +156,7 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
   const admin = await getUser({ email: process.env.VEX_TEST_EMAIL })
 
   if (!admin) {
-    return
+    return { success: false, error: "Admin not found", status: 401 as const }
   }
 
   const placeholders = await getPlaceHolders({
@@ -169,32 +177,9 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
     }),
   )
 
-  const stores = await getStores({
-    pageSize: 100000,
-  })
-  await Promise.all(
-    stores.stores.map((store) => {
-      if (store?.store?.userId === admin.id) {
-        return
-      }
+  await db.delete(stores).where(not(eq(stores.userId, admin.id)))
 
-      return deleteStore({ id: store.store.id })
-    }),
-  )
-
-  const apps = await getApps({
-    pageSize: 100000,
-  })
-
-  await Promise.all(
-    apps.items.map((app) => {
-      if (app?.userId === admin.id) {
-        return
-      }
-
-      return deleteApp({ id: app.id })
-    }),
-  )
+  await db.delete(apps).where(not(eq(apps.userId, admin.id)))
 
   // 4. Delete subscriptions
   const subscriptions = await getSubscriptions({
@@ -236,6 +221,8 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
       pearFeedbackCount: 0,
       characterProfilesEnabled: false,
     }))
+
+  return { success: true }
 
   // 5. Clear graph data (FalkorDB)
   // Remove all graph entities and relationships for this user/guest

@@ -2741,8 +2741,6 @@ export function AuthProvider({
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
-    console.log(`🚀 ~ useEffect ~ baseApp:`, baseApp, storeApps.length)
-
     if (!baseApp) return
     if (!storeApps.length) return
 
