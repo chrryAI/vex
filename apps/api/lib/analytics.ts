@@ -184,6 +184,14 @@ export class PerformanceTracker {
     { user, guest }: { user?: user; guest?: guest } = {},
   ) {
     const totalDuration = Math.round(performance.now() - this.start)
+    console.log(`🚀 ~ PerformanceTracker ~ totalDuration:`, {
+      workflow: this.workflowName,
+      city: user?.city || guest?.city,
+      country: user?.country || guest?.country,
+      total_duration_ms: totalDuration,
+      ...this.steps,
+      ...additionalProps,
+    })
 
     serverPlausibleEvent({
       name: "Performance Metric",
