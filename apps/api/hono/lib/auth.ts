@@ -56,10 +56,24 @@ export async function getMember(
     if (authHeader?.startsWith("Bearer ")) {
       let token = authHeader.replace("Bearer ", "")
 
-      // Check if it's a JWT (3 parts separated by dots)
-      const isJWT = token.split(".").length === 3
+      // Verify and decode the JWT token
+      const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!)
+      if (decoded.email) {
+        const user = await getUser({
+          email: decoded.email,
+          skipCache: skipCache,
+          appId,
+        })
 
-      if (!isJWT) {
+        if (user) {
+          return {
+            ...user,
+            token,
+            password: full ? user.password : null,
+          } as userWithRelations
+        }
+        return
+      } else {
         // Could be an auth token (exchange code) or API key
         // Try to exchange it first
         const exchangedToken = await exchangeCodeForToken(token)
@@ -84,25 +98,6 @@ export async function getMember(
 
           return
         }
-      }
-
-      // Verify and decode the JWT token
-      const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!)
-      if (decoded.email) {
-        const user = await getUser({
-          email: decoded.email,
-          skipCache: skipCache,
-          appId,
-        })
-
-        if (user) {
-          return {
-            ...user,
-            token,
-            password: full ? user.password : null,
-          } as userWithRelations
-        }
-        return
       }
     }
   } catch (error) {
