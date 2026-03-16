@@ -2741,8 +2741,10 @@ export function AuthProvider({
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
+    console.log(`🚀 ~ useEffect ~ baseApp:`, baseApp, storeApps.length)
+
     if (!baseApp) return
-    if (!storeApps.length || (!thread && threadId)) return
+    if (!storeApps.length) return
 
     // Priority 1: If there's a thread, use the thread's app
     let matchedApp: appWithStore | undefined
