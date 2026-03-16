@@ -2020,13 +2020,12 @@ const seedDb = async (): Promise<void> => {
     }
 
     if (MODE === "dev") {
-      await prod()
-      // if (isVex) {
-      //   await prod()
-      // } else {
-      //   await clearDb()
-      //   await create()
-      // }
+      if (isVex) {
+        await prod()
+      } else {
+        await clearDb()
+        await create()
+      }
     }
 
     process.exit(0)

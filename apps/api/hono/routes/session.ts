@@ -776,7 +776,6 @@ session.delete("/", async (c) => {
   }
 
   const member = await getMemberAction(c)
-
   if (!member) {
     return c.json({ error: "Unauthorized" }, 401)
   }

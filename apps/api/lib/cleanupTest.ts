@@ -76,9 +76,12 @@ export default async function cleanupTest() {
       guest.fingerprint === fingerprint &&
       allowedFingerprints.includes(fingerprint)
     ) {
-      return await cleanup({
+      const result = await cleanup({
         guest,
       })
+      if (result && "error" in result) {
+        return result
+      }
     }
   }
   return

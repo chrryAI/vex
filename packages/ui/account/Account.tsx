@@ -1,8 +1,10 @@
 "use client"
 import React, { useEffect, useState } from "react"
 import toast from "react-hot-toast"
-import { FaApple, FaGoogle } from "react-icons/fa"
+import { FaApple, FaGithub, FaGoogle } from "react-icons/fa"
+import { SiMacos } from "react-icons/si"
 import { validate } from "uuid"
+import A from "../a/A"
 import CharacterProfiles from "../CharacterProfiles"
 import Checkbox from "../Checkbox"
 import ConfirmButton from "../ConfirmButton"
@@ -14,14 +16,22 @@ import {
   useNavigationContext,
 } from "../context/providers"
 import { useStyles } from "../context/StylesContext"
-
 import { useRouter, useSearchParams } from "../hooks/useWindowHistory"
 import Img from "../Image"
-import { AtSign, CircleX, LogOut, Pencil, Trash2, UserRound } from "../icons"
+import {
+  AtSign,
+  CircleX,
+  Copy,
+  LogOut,
+  Pencil,
+  RefreshCw,
+  Trash2,
+  UserRound,
+} from "../icons"
 import Loading from "../Loading"
 import { uploadUserImage } from "../lib"
 import Modal from "../Modal"
-import { Button, Div, FilePicker, Input, useTheme } from "../platform"
+import { Button, Div, FilePicker, Input, P, useTheme } from "../platform"
 import {
   apiFetch,
   BrowserInstance,
@@ -52,7 +62,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
     isExtensionRedirect,
     FRONTEND_URL,
     API_URL,
-    setDeviceId,
+    downloadUrl,
   } = useAuth()
 
   const { isAccountVisible: isModalOpen, setIsAccountVisible: setIsModalOpen } =
@@ -96,6 +106,30 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
 
   const isLoggingOut = searchParams.get("logout") === "true" || undefined
   const [isSaving, setIsSaving] = useState(false)
+  const [apiKey, setApiKey] = useState<string | undefined>(user?.apiKey)
+  console.log(`🚀 ~ Account ~ user:`, user)
+  const [isGeneratingKey, setIsGeneratingKey] = useState(false)
+
+  const handleGenerateApiKey = async () => {
+    if (!token) return
+    setIsGeneratingKey(true)
+    try {
+      const res = await apiFetch(`${API_URL}/auth/apikey/generate`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (data.apiKey) {
+        setApiKey(data.apiKey)
+        await navigator.clipboard.writeText(data.apiKey)
+        toast.success(t("API key generated & copied!"))
+      }
+    } catch {
+      toast.error(t("Failed to generate API key"))
+    } finally {
+      setIsGeneratingKey(false)
+    }
+  }
 
   const handleUsernameSubmit = async () => {
     addHapticFeedback()
@@ -432,6 +466,107 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
                 {t("Delete account")}
               </ConfirmButton>
             )}
+          </Div>
+
+          {/* API Key Section */}
+          <Div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+              padding: "8px 0",
+            }}
+          >
+            <Div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontSize: "0.8rem",
+              }}
+            >
+              <Img slug="coder" /> {t("API Key")}*
+            </Div>
+            <Div
+              style={{ display: "flex", alignItems: "center", gap: ".75rem" }}
+            >
+              <code
+                style={{
+                  flex: 1,
+                  fontSize: "0.85rem",
+                  fontFamily: "monospace",
+                  color: "var(--shade-7)",
+                  borderRadius: "6px",
+                  padding: "4px 8px",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {apiKey
+                  ? `${apiKey.slice(0, 8)}...${apiKey.slice(-4)}`
+                  : t("No key yet")}
+              </code>
+              {apiKey && (
+                <Button
+                  className="link"
+                  style={utilities.link.style}
+                  title={t("Copy")}
+                  onClick={() => {
+                    navigator.clipboard.writeText(apiKey)
+                    toast.success(t("Copied!"))
+                  }}
+                >
+                  <Copy size={18} />
+                </Button>
+              )}
+              <Button
+                className="link"
+                style={utilities.link.style}
+                title={apiKey ? t("Rotate key") : t("Generate key")}
+                disabled={isGeneratingKey}
+                onClick={handleGenerateApiKey}
+              >
+                {isGeneratingKey ? (
+                  <Loading size={18} />
+                ) : (
+                  <RefreshCw size={18} />
+                )}
+              </Button>
+            </Div>
+            <P
+              style={{
+                fontSize: "0.825rem",
+                color: "var(--shade-6)",
+              }}
+            >
+              You can use this key while building with{" "}
+              <A openInNewTab href="https://github.com/chrryAI/chrry">
+                Chrry
+              </A>{" "}
+              from{" "}
+              <A openInNewTab href="https://github.com/chrryAI/chrry">
+                Github
+              </A>{" "}
+              and using{" "}
+              <Button
+                className="link"
+                style={{
+                  ...utilities.link.style,
+                }}
+                onClick={() => {
+                  const a = document.createElement("a")
+                  a.href = downloadUrl
+                  a.download = ""
+                  document.body.appendChild(a)
+                  a.click()
+                  document.body.removeChild(a)
+                }}
+              >
+                macOS
+              </Button>{" "}
+              app
+            </P>
           </Div>
 
           <Div style={styles.accounts.style}>

@@ -1,7 +1,12 @@
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import {
+  and,
+  authExchangeCodes,
+  db,
+  eq,
   getGuest as getGuestDb,
   getUser,
+  gt,
   type userWithRelations,
 } from "@repo/db"
 import type { Context } from "hono"
@@ -10,6 +15,28 @@ import { validate } from "uuid"
 import { captureException } from "../../lib/captureException"
 
 export { getApp } from "./getApp"
+
+// ==================== HELPERS ====================
+
+async function exchangeCodeForToken(code: string): Promise<string | null> {
+  const now = new Date()
+
+  const [result] = await db
+    .update(authExchangeCodes)
+    .set({ used: true })
+    .where(
+      and(
+        eq(authExchangeCodes.code, code),
+        eq(authExchangeCodes.used, false),
+        gt(authExchangeCodes.expiresOn, now),
+      ),
+    )
+    .returning()
+
+  if (!result) return null
+
+  return result.token
+}
 
 // ==================== MAIN FUNCTION ====================
 
@@ -50,33 +77,42 @@ export async function getMember(
   }
 
   try {
-    // Check for token in Authorization header
     const authHeader = c.req.header("authorization")
 
     if (authHeader?.startsWith("Bearer ")) {
-      const token = authHeader.replace("Bearer ", "")
+      let token = authHeader.replace("Bearer ", "")
 
-      // Basic JWT format validation
-      if (token.split(".").length !== 3) {
-        const fp = authHeader.replace("Bearer ", "")
+      // Check if it's a JWT (3 parts separated by dots)
+      const isJWT = token.split(".").length === 3
 
-        const result = await getUser({
-          apiKey: fp,
-          skipCache: skipCache,
-          appId,
-        })
-        if (result) {
-          return {
-            ...result,
-            token,
-            password: full ? result.password : null,
-          } as userWithRelations
+      if (!isJWT) {
+        // Could be an auth token (exchange code) or API key
+        // Try to exchange it first
+        const exchangedToken = await exchangeCodeForToken(token)
+
+        if (exchangedToken) {
+          // Successfully exchanged auth token for JWT
+          token = exchangedToken
+        } else {
+          // Not an auth token, try as API key
+          const result = await getUser({
+            apiKey: token,
+            skipCache: skipCache,
+            appId,
+          })
+          if (result) {
+            return {
+              ...result,
+              token,
+              password: full ? result.password : null,
+            } as userWithRelations
+          }
+
+          return
         }
-
-        return
       }
 
-      // Verify and decode the token
+      // Verify and decode the JWT token
       const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!)
       if (decoded.email) {
         const user = await getUser({
