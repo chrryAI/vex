@@ -147,7 +147,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
       if (!token) return
       return actions.getThreads({
         pageSize: pageSizes.threads * until,
-        appId: app?.id,
+        // appId: app?.id,
         search,
         sort: sortByDate ? "date" : "bookmark",
         // userName,

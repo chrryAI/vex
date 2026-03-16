@@ -54,7 +54,7 @@ export async function getMember(
     const authHeader = c.req.header("authorization")
 
     if (authHeader?.startsWith("Bearer ")) {
-      let token = authHeader.replace("Bearer ", "")
+      const token = authHeader.replace("Bearer ", "")
 
       // Verify and decode the JWT token
       const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!)
