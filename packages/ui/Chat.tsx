@@ -358,8 +358,11 @@ export default function Chat({
   const threadIdRef = useRef(threadId)
 
   useEffect(() => {
-    threadIdRef.current = threadId
-  }, [threadId, auth.threadId])
+    // Only update threadIdRef when threadId is truthy to prevent clearing on transient auth gaps
+    if (threadId) {
+      threadIdRef.current = threadId
+    }
+  }, [threadId])
 
   const setThreadId = (id?: string) => {
     threadIdRef.current = id

@@ -1702,8 +1702,9 @@ ${
   const buildAppKnowledgeBase = async (
     currentApp: appWithStore | app,
     depth = 0,
+    visited: Set<string> = new Set(),
   ) => {
-    if (!currentApp || depth >= 5) {
+    if (!currentApp || depth >= 5 || visited.has(currentApp.id)) {
       return {
         messages: {
           messages: [],
@@ -1717,6 +1718,9 @@ ${
         task: undefined,
       }
     }
+
+    // Mark current app as visited to prevent cycles
+    visited.add(currentApp.id)
 
     // Get main thread for current app
     const thread = await getThread({
@@ -1780,11 +1784,21 @@ ${
     }
 
     if (parentApps.length > 0) {
+      // Deduplicate parent apps by ID and filter out already-visited apps
+      const uniqueParentIds = Array.from(
+        new Set(parentApps.map((p) => p.id)),
+      ).filter((id) => !visited.has(id))
+
+      const uniqueParentApps = uniqueParentIds
+        .map((id) => parentApps.find((p) => p.id === id))
+        .filter(Boolean) as (appWithStore | app)[]
+
       // Parallelize parent app knowledge fetching instead of sequential recursion
-      const parentDataPromises = parentApps
+      const parentDataPromises = uniqueParentApps
         .slice(0, 5 - depth)
-        .filter(Boolean)
-        .map((parentApp) => buildAppKnowledgeBase(parentApp, depth + 1))
+        .map((parentApp) =>
+          buildAppKnowledgeBase(parentApp, depth + 1, visited),
+        )
 
       const parentDataResults = await Promise.all(parentDataPromises)
 
@@ -1847,32 +1861,44 @@ ${
   }
 
   // Parallelize placeholder and tribe post fetching
-  const [appPlaceholder, threadPlaceholder, tribePost] = await Promise.all([
-    tracker.track("app_placeholder", () =>
-      getPlaceHolder({
-        userId: member?.id,
-        guestId: guest?.id,
-        appId: requestApp?.id,
-      }),
-    ),
-    tracker.track("thread_placeholder", () =>
-      thread
-        ? getPlaceHolder({
-            threadId: thread.id,
-            userId: member?.id,
-            guestId: guest?.id,
-          })
+  const [appPlaceholderResult, threadPlaceholderResult, tribePostResult] =
+    await Promise.allSettled([
+      tracker.track("app_placeholder", () =>
+        getPlaceHolder({
+          userId: member?.id,
+          guestId: guest?.id,
+          appId: requestApp?.id,
+        }),
+      ),
+      tracker.track("thread_placeholder", () =>
+        thread
+          ? getPlaceHolder({
+              threadId: thread.id,
+              userId: member?.id,
+              guestId: guest?.id,
+            })
+          : Promise.resolve(null),
+      ),
+      postId && requestApp
+        ? tracker.track("get_tribe_post", () =>
+            getTribePost({
+              id: postId,
+              appId: requestApp?.id,
+            }),
+          )
         : Promise.resolve(null),
-    ),
-    postId && requestApp
-      ? tracker.track("get_tribe_post", () =>
-          getTribePost({
-            id: postId,
-            appId: requestApp?.id,
-          }),
-        )
-      : Promise.resolve(null),
-  ])
+    ])
+
+  const appPlaceholder =
+    appPlaceholderResult.status === "fulfilled"
+      ? appPlaceholderResult.value
+      : null
+  const threadPlaceholder =
+    threadPlaceholderResult.status === "fulfilled"
+      ? threadPlaceholderResult.value
+      : null
+  const tribePost =
+    tribePostResult.status === "fulfilled" ? tribePostResult.value : null
 
   if (stopStreamId && agent) {
     if (
@@ -2729,13 +2755,13 @@ If the user asks questions about this post or wants to discuss its content, refe
     appExtends.find((extend) => extend.slug === "focus")
 
   const [
-    vaultExpenses,
-    vaultBudgets,
-    vaultSharedExpenses,
-    focusTasks,
-    focusMoods,
-    focusTimer,
-  ] = await Promise.all([
+    vaultExpensesResult,
+    vaultBudgetsResult,
+    vaultSharedExpensesResult,
+    focusTasksResult,
+    focusMoodsResult,
+    focusTimerResult,
+  ] = await Promise.allSettled([
     // Vault expenses
     requestApp?.name === "Vault"
       ? getExpenses({
@@ -2789,6 +2815,23 @@ If the user asks questions about this post or wants to discuss its content, refe
         })
       : Promise.resolve(null),
   ])
+
+  const vaultExpenses =
+    vaultExpensesResult.status === "fulfilled"
+      ? vaultExpensesResult.value
+      : null
+  const vaultBudgets =
+    vaultBudgetsResult.status === "fulfilled" ? vaultBudgetsResult.value : null
+  const vaultSharedExpenses =
+    vaultSharedExpensesResult.status === "fulfilled"
+      ? vaultSharedExpensesResult.value
+      : null
+  const focusTasks =
+    focusTasksResult.status === "fulfilled" ? focusTasksResult.value : null
+  const focusMoods =
+    focusMoodsResult.status === "fulfilled" ? focusMoodsResult.value : null
+  const focusTimer =
+    focusTimerResult.status === "fulfilled" ? focusTimerResult.value : null
 
   // Build burn context - Always inform AI about burn feature availability
   const burnModeContext = `
@@ -3534,33 +3577,36 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
 **IMPORTANT:** City names, country names, and general location information are NOT auto-redacted by platform policy. Use them naturally in your responses (e.g., "Amsterdam", "Netherlands", etc.). However, if the user explicitly requests anonymization or privacy protection for location data, honor that request.
 
 ## 🌍 LANGUAGE MATCHING RULE (CRITICAL - OVERRIDE ALL OTHER CONTEXT)
-**User's selected UI language: ${LANGUAGES.find((l) => l.code === language)?.name || language}** (code: ${language})
+
+**PRIORITY ORDER (STRICTLY FOLLOW THIS):**
+1. **User's CURRENT message language** (highest priority - ALWAYS match this!)
+2. User's selected UI language: ${LANGUAGES.find((l) => l.code === language)?.name || language} (code: ${language}) (fallback if message language unclear)
+3. Ignore language in memories/context (lowest priority - DO NOT follow this)
+
+**INSTRUCTIONS:**
+- **First, detect the language of the user's CURRENT message**
+- If user writes in English → **RESPOND 100% IN ENGLISH** (no Turkish words, no "hocam", no code-switching)
+- If user writes in Turkish → **RESPOND 100% IN TURKISH** (can use Turkish-English technical slang if appropriate)
+- If user writes in another language → **RESPOND IN THAT LANGUAGE**
+- **ONLY if the message language is unclear**, fall back to UI language (${language})
 
 ${
   language === "en"
-    ? `**🚨 ENGLISH-ONLY MODE ACTIVATED 🚨**
-- **RESPOND 100% IN ENGLISH** - No exceptions!
+    ? `**UI Language Fallback: English**
+When message language is unclear, default to English:
 - **IGNORE** any Turkish/other language words in memories, RAG context, or past messages
 - **DO NOT** use "hocam", "Ne yapmak istersin?", or any non-English words
-- **DO NOT** code-switch or mix languages
-- Even if context contains Turkish, your response must be pure English
-- The user has explicitly selected English - respect their choice!
-- Only use another language if the user's CURRENT message is in that language`
+- Keep responses professional and clear in English`
     : language === "tr"
-      ? `**🇹🇷 TÜRKÇE MODE ACTIVATED**
-- **RESPOND IN TURKISH** - Kullanıcı Türkçe seçmiş
-- Turkish-English technical slang kullanabilirsin
-- "hocam" gibi kelimeler kullanabilirsin`
-      : `**LANGUAGE MODE: ${LANGUAGES.find((l) => l.code === language)?.name?.toUpperCase() || language.toUpperCase()}**
-- **RESPOND ONLY IN ${LANGUAGES.find((l) => l.code === language)?.name?.toUpperCase() || language.toUpperCase()}**
-- Ignore other languages in context/memories
-- Only switch if user's current message is in a different language`
+      ? `**UI Language Fallback: Turkish**
+When message language is unclear, default to Turkish:
+- Turkish-English technical slang is acceptable
+- "hocam" and similar terms are fine`
+      : `**UI Language Fallback: ${LANGUAGES.find((l) => l.code === language)?.name?.toUpperCase() || language.toUpperCase()}**
+When message language is unclear, default to this language.`
 }
 
-**PRIORITY ORDER:**
-1. User's current message language (highest priority)
-2. User's selected UI language (${language})
-3. Ignore language in memories/context (lowest priority - DO NOT follow this)
+**CRITICAL:** The user's CURRENT message language ALWAYS overrides UI language setting and context language!
 `
 
   // Note: threadInstructions are already included in baseSystemPrompt via Handlebars template

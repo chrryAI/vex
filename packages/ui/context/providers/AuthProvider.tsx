@@ -1108,9 +1108,23 @@ export function AuthProvider({
 
   const [isRemovingApp, setIsRemovingApp] = useState(false)
 
+  const fromInternal = (searchParams.get("from") || "web") as "web"
+  const [from, setFrom] = useState<"extension" | "web" | "mobile" | "desktop">(
+    fromInternal,
+  )
+
+  useEffect(() => {
+    fromInternal && setFrom(fromInternal)
+  }, [fromInternal])
+
   const setSignInPart = (
     part: "login" | "register" | "credentials" | undefined,
   ) => {
+    if (user) {
+      addParams({
+        account: "true",
+      })
+    }
     const newPart = part && isE2E ? "credentials" : user ? undefined : part
 
     setSignInPartInternal(newPart)
