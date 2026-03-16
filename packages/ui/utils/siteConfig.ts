@@ -69,9 +69,7 @@ export const getExtensionUrl = () => {
 }
 
 export const isProduction =
-  isTauri() ||
-  getEnv().NODE_ENV === "production" ||
-  getEnv().VITE_NODE_ENV === "production"
+  getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
 
 export const isDevelopment = checkIsExtension()
   ? [
@@ -2918,8 +2916,8 @@ export function detectsiteModeDomain(
 
   const defaultMode = (getEnv().VITE_SITE_MODE as siteMode) || mode || devMode
 
-  if (isDevelopment && !checkIsExtension() && !isTauri()) {
-    return defaultMode || devMode
+  if (isDevelopment) {
+    return devMode
   }
   // Get hostname from parameter or window (client-side)
   const rawHost =

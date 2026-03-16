@@ -1,15 +1,16 @@
 import { randomBytes } from "node:crypto"
 import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
 import {
-  and,
   authExchangeCodes,
   createUser,
   db,
   eq,
+  generateApiKey,
   getStore,
   getUser,
-  gt,
+  users,
 } from "@repo/db"
+
 import { compare, hash } from "bcrypt"
 import type { Context } from "hono"
 import { Hono } from "hono"
@@ -17,6 +18,7 @@ import { deleteCookie, getCookie, setCookie } from "hono/cookie"
 import { sign, verify } from "jsonwebtoken"
 import { v4 as uuidv4 } from "uuid"
 import { checkAuthRateLimit } from "../../lib/rateLimiting"
+import { getMember } from "../lib/auth"
 
 const authRoutes = new Hono()
 
@@ -82,27 +84,6 @@ async function generateExchangeCode(token: string): Promise<string> {
   })
 
   return code
-}
-
-async function exchangeCodeForToken(code: string): Promise<string | null> {
-  const now = new Date()
-
-  // Use a single atomic UPDATE ... RETURNING query to prevent race conditions (TOCTOU)
-  const [result] = await db
-    .update(authExchangeCodes)
-    .set({ used: true })
-    .where(
-      and(
-        eq(authExchangeCodes.code, code),
-        eq(authExchangeCodes.used, false),
-        gt(authExchangeCodes.expiresOn, now),
-      ),
-    )
-    .returning()
-
-  if (!result) return null
-
-  return result.token
 }
 
 // ==================== USERNAME HELPERS ====================
@@ -398,6 +379,8 @@ authRoutes.post("/signup/password", async (c) => {
     const token = generateToken(newUser.id, newUser.email)
     setCookieFromHost(c, token, "Lax")
 
+    const authCode = await generateExchangeCode(token)
+
     return c.json({
       user: {
         id: newUser.id,
@@ -405,6 +388,7 @@ authRoutes.post("/signup/password", async (c) => {
         name: newUser.name,
       },
       token,
+      authCode,
     })
   } catch (error) {
     console.error("Signup error:", error)
@@ -455,40 +439,6 @@ authRoutes.post("/signin/password", async (c) => {
 })
 
 /**
- * GET /api/auth/session
- */
-authRoutes.get("/session", async (c) => {
-  try {
-    const token = extractTokenFromRequest(c)
-    if (!token) {
-      return c.json({ user: null })
-    }
-
-    const payload = verifyToken(token)
-    if (!payload) {
-      return c.json({ user: null })
-    }
-
-    const user = await getUser({ id: payload.userId })
-    if (!user) {
-      return c.json({ user: null })
-    }
-
-    return c.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        image: user.image,
-      },
-    })
-  } catch (error) {
-    console.error("Session error:", error)
-    return c.json({ user: null })
-  }
-})
-
-/**
  * POST /api/auth/signout
  */
 authRoutes.post("/signout", async (c) => {
@@ -501,24 +451,32 @@ authRoutes.post("/signout", async (c) => {
 })
 
 /**
- * POST /api/auth/exchange-code
+ * POST /api/auth/refresh-token
  */
-authRoutes.post("/exchange-code", async (c) => {
+authRoutes.post("/refresh-token", async (c) => {
   try {
-    const { code } = await c.req.json()
-    if (!code) {
-      return c.json({ error: "Code required" }, 400)
-    }
-
-    const token = await exchangeCodeForToken(code)
+    const token = extractTokenFromRequest(c)
     if (!token) {
-      return c.json({ error: "Invalid or expired code" }, 401)
+      return c.json({ error: "No token provided" }, 401)
     }
 
-    return c.json({ token })
+    const payload = verifyToken(token)
+    if (!payload) {
+      return c.json({ error: "Invalid token" }, 401)
+    }
+
+    const newToken = generateToken(payload.userId, payload.email)
+    const authCode = await generateExchangeCode(newToken)
+
+    setCookieFromHost(c, newToken, "None")
+
+    return c.json({
+      token: newToken,
+      authCode,
+    })
   } catch (error) {
-    console.error("Code exchange error:", error)
-    return c.json({ error: "Code exchange failed" }, 500)
+    console.error("Token refresh error:", error)
+    return c.json({ error: "Token refresh failed" }, 500)
   }
 })
 
@@ -896,6 +854,30 @@ authRoutes.post("/callback/apple", async (c) => {
     console.error("Apple OAuth callback error:", error)
     return c.redirect(`https://chrry.ai/?error=oauth_callback_failed`)
   }
+})
+
+/** POST /auth/apikey/generate — create or rotate the user's api key */
+authRoutes.post("/apikey/generate", async (c) => {
+  const ip = c.req.header("x-forwarded-for")?.split(",")[0] || "127.0.0.1"
+  const { success, errorMessage } = await checkAuthRateLimit(c.req.raw, ip)
+
+  if (!success) {
+    return c.json(
+      { error: errorMessage || "Too many attempts. Please try again later." },
+      429,
+    )
+  }
+
+  const user = await getMember(c, { full: true, skipCache: true })
+  if (!user) return c.json({ error: "Unauthorized" }, 401)
+
+  const env =
+    process.env.NODE_ENV === "production" ? "production" : "development"
+  const newKey = generateApiKey(env)
+
+  await db.update(users).set({ apiKey: newKey }).where(eq(users.id, user.id))
+
+  return c.json({ apiKey: newKey })
 })
 
 export default authRoutes

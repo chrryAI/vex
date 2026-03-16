@@ -598,7 +598,8 @@ export function ChatProvider({
         }
       })()
     }
-  }, [shouldGetCredits, user, guest])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldGetCredits])
 
   const [shouldMutate, setShouldMutate] = useState(false)
 
