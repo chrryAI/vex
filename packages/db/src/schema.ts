@@ -3006,6 +3006,7 @@ export const apps = pgTable(
     guestId: uuid("guestId").references(() => guests.id, {
       onDelete: "cascade",
     }),
+    isSystem: boolean("isSystem").default(false).notNull(),
     mainThreadId: uuid("mainThreadId").references(
       (): AnyPgColumn => threads.id,
       {
@@ -3470,6 +3471,7 @@ export const stores = pgTable(
     teamId: uuid("teamId").references(() => teams.id, {
       onDelete: "cascade",
     }),
+    isSystem: boolean("isSystem").default(false).notNull(),
     hourlyRate: integer("hourlyRate"),
     credits: integer("credits"),
     domain: text("domain"),

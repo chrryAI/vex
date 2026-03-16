@@ -1893,7 +1893,7 @@ const prod = async () => {
 
   // await seedPearFeedback()
 
-  await seedScheduledTribeJobs({ admin })
+  // await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 
@@ -2020,12 +2020,13 @@ const seedDb = async (): Promise<void> => {
     }
 
     if (MODE === "dev") {
-      if (isVex) {
-        await prod()
-      } else {
-        await clearDb()
-        await create()
-      }
+      await prod()
+      // if (isVex) {
+      //   await prod()
+      // } else {
+      //   await clearDb()
+      //   await create()
+      // }
     }
 
     process.exit(0)
