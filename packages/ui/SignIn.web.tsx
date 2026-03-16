@@ -229,6 +229,34 @@ export default function SignIn({
 
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
+  const [apiKeyInput, setApiKeyInput] = React.useState("")
+  const [isApiKeyLoading, setIsApiKeyLoading] = React.useState(false)
+  const [showApiKey, setShowApiKey] = React.useState(false)
+
+  const handleApiKeyLogin = async () => {
+    if (!apiKeyInput.trim()) return
+    setIsApiKeyLoading(true)
+    try {
+      const res = await apiFetch(`${API_URL}/auth/apikey/exchange`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ apiKey: apiKeyInput.trim() }),
+      })
+      const data = await res.json()
+      if (data.token) {
+        setToken(data.token)
+        setPart(undefined)
+        await refetchSession()
+        toast.success(t("Signed in successfully!"))
+      } else {
+        toast.error(data.error || t("Invalid API key"))
+      }
+    } catch {
+      toast.error(t("Sign in failed. Please try again."))
+    } finally {
+      setIsApiKeyLoading(false)
+    }
+  }
 
   const handleAppleSignIn = async () => {
     // Capacitor: Use Firebase Authentication
@@ -649,89 +677,136 @@ export default function SignIn({
         >
           {part !== "credentials" ? (
             <div className={styles.signInButtons}>
-              <Button
-                data-testid={
-                  part === "login"
-                    ? "sign-in-google-button"
-                    : "register-google-button"
-                }
-                onClick={handleGoogleAuth}
-                className={clsx("inverted", styles.googleButton)}
-              >
-                <FaGoogle size={16} />{" "}
-                {t(`${part === "login" ? "Sign in" : "Register"} with Google`)}
-              </Button>
-              {isGithubSignInAvailable && (
-                <Button
-                  data-testid={
-                    part === "login"
-                      ? "sign-in-github-button"
-                      : "register-github-button"
-                  }
-                  onClick={handleGitHubAuth}
-                  className={clsx("inverted", styles.githubButton)}
-                >
-                  <FaGithub size={16} />{" "}
-                  {t(
-                    `${part === "login" ? "Sign in" : "Register"} with GitHub`,
-                  )}
-                </Button>
-              )}
-              {isAppleSignInAvailable && (
-                <button
-                  type="button"
-                  className={clsx("inverted", styles.appleButton)}
-                  onClick={handleAppleSignIn}
-                  data-testid="signInAppleButton"
-                >
-                  <FaApple size={16} />
-                  {t(`${part === "login" ? "Sign in" : "Register"} with Apple`)}
-                </button>
-              )}
-
-              {part === "register" ? (
-                <div
+              {isTauri ? (
+                /* Desktop: API key login — get key from chrry.ai/account */
+                <form
                   style={{
                     display: "flex",
-                    gap: ".3rem",
+                    flexDirection: "column",
+                    gap: "10px",
+                  }}
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    handleApiKeyLogin()
                   }}
                 >
-                  {/* <LogInIcon color="var(--accent-6)" size={16} />{" "}
-                  <span>{t("Login")}</span> */}
-                  <A
-                    openInNewTab
-                    href={`${FRONTEND_URL}/privacy`}
-                    className="button small transparent"
-                    onClick={(e) => {
-                      if (e.metaKey || e.ctrlKey) {
-                        return
+                  <p style={{ margin: 0, opacity: 0.7, fontSize: "0.85rem" }}>
+                    {t("Paste your API key from")}{" "}
+                    <strong>chrry.ai → Account → API Key</strong>
+                  </p>
+                  <div style={{ position: "relative", width: "100%" }}>
+                    <input
+                      className={styles.input}
+                      type={showApiKey ? "text" : "password"}
+                      placeholder="chrry_live_..."
+                      value={apiKeyInput}
+                      onChange={(e) => setApiKeyInput(e.target.value)}
+                      style={{ width: "100%", paddingRight: "40px" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKey(!showApiKey)}
+                      style={{
+                        position: "absolute",
+                        right: "8px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: "4px",
+                        opacity: 0.6,
+                        fontSize: "0.85rem",
+                      }}
+                      aria-label={
+                        showApiKey ? t("Hide API key") : t("Show API key")
                       }
-                      // setPart(undefined)
-
-                      // window.open(`${FRONTEND_URL}/privacy`, "_blank")
-                    }}
-                    rel="noreferrer"
+                    >
+                      {showApiKey ? "🙈" : "👁️"}
+                    </button>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isApiKeyLoading || !apiKeyInput.trim()}
+                    style={{ width: "100%" }}
                   >
-                    <LinkIcon size={16} /> {t("Privacy")}
-                  </A>
-                  <Button
-                    className="button small"
-                    onClick={() => {
-                      setPart("login")
-                    }}
-                  >
-                    <LogInIcon size={16} /> {t("Login")}
-                  </Button>
-                </div>
+                    {isApiKeyLoading ? t("Signing in...") : t("Sign in")}
+                  </button>
+                </form>
               ) : (
-                <Button
-                  className="button small"
-                  onClick={() => {
-                    setPart("register")
-                  }}
-                >
-                  <UserRoundPlus size={16} /> {t("Register")}
-                </Button>
+                <>
+                  <Button
+                    data-testid={
+                      part === "login"
+                        ? "sign-in-google-button"
+                        : "register-google-button"
+                    }
+                    onClick={handleGoogleAuth}
+                    className={clsx("inverted", styles.googleButton)}
+                  >
+                    <FaGoogle size={16} />{" "}
+                    {t(
+                      `${part === "login" ? "Sign in" : "Register"} with Google`,
+                    )}
+                  </Button>
+                  {isGithubSignInAvailable && (
+                    <Button
+                      data-testid={
+                        part === "login"
+                          ? "sign-in-github-button"
+                          : "register-github-button"
+                      }
+                      onClick={handleGitHubAuth}
+                      className={clsx("inverted", styles.githubButton)}
+                    >
+                      <FaGithub size={16} />{" "}
+                      {t(
+                        `${part === "login" ? "Sign in" : "Register"} with GitHub`,
+                      )}
+                    </Button>
+                  )}
+                  {isAppleSignInAvailable && (
+                    <button
+                      type="button"
+                      className={clsx("inverted", styles.appleButton)}
+                      onClick={handleAppleSignIn}
+                      data-testid="signInAppleButton"
+                    >
+                      <FaApple size={16} />
+                      {t(
+                        `${part === "login" ? "Sign in" : "Register"} with Apple`,
+                      )}
+                    </button>
+                  )}
+                  {part === "register" ? (
+                    <div style={{ display: "flex", gap: ".3rem" }}>
+                      <A
+                        openInNewTab
+                        href={`${FRONTEND_URL}/privacy`}
+                        className="button small transparent"
+                        onClick={(e) => {
+                          if (e.metaKey || e.ctrlKey) return
+                        }}
+                        rel="noreferrer"
+                      >
+                        <LinkIcon size={16} /> {t("Privacy")}
+                      </A>
+                      <Button
+                        className="button small"
+                        onClick={() => setPart("login")}
+                      >
+                        <LogInIcon size={16} /> {t("Login")}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      className="button small"
+                      onClick={() => setPart("register")}
+                    >
+                      <UserRoundPlus size={16} /> {t("Register")}
+                    </Button>
+                  )}
+                </>
               )}
             </div>
           ) : (
