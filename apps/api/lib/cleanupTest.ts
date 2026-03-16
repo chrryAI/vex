@@ -28,11 +28,14 @@ import {
   VEX_LIVE_FINGERPRINTS,
 } from "@repo/db"
 import {
+  apps,
   feedbackTransactions,
   GUEST_CREDITS_PER_MONTH,
   MEMBER_CREDITS_PER_MONTH,
   pearFeedback,
+  stores,
 } from "@repo/db/src/schema"
+import { eq, not } from "drizzle-orm"
 
 const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(
   TEST_MEMBER_FINGERPRINTS,
@@ -169,32 +172,9 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
     }),
   )
 
-  const stores = await getStores({
-    pageSize: 100000,
-  })
-  await Promise.all(
-    stores.stores.map((store) => {
-      if (store?.store?.userId === admin.id) {
-        return
-      }
+  await db.delete(stores).where(not(eq(stores.userId, admin.id)))
 
-      return deleteStore({ id: store.store.id })
-    }),
-  )
-
-  const apps = await getApps({
-    pageSize: 100000,
-  })
-
-  await Promise.all(
-    apps.items.map((app) => {
-      if (app?.userId === admin.id) {
-        return
-      }
-
-      return deleteApp({ id: app.id })
-    }),
-  )
+  await db.delete(apps).where(not(eq(apps.userId, admin.id)))
 
   // 4. Delete subscriptions
   const subscriptions = await getSubscriptions({
