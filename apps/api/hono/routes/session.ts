@@ -785,6 +785,15 @@ session.delete("/", async (c) => {
     return c.json({ error: "Unauthorized" }, 401)
   }
 
-  await cleanupTest()
-  return c.json({ success: true })
+  try {
+    const result = await cleanupTest()
+    if (result?.error) {
+      return c.json({ error: result.error }, result?.status || 500)
+    }
+
+    return c.json({ success: true })
+  } catch (error) {
+    console.error("Error cleaning up test:", error)
+    return c.json({ error: "Internal server error" }, 500)
+  }
 })

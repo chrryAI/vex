@@ -1,23 +1,21 @@
 import {
   db,
-  deleteApp,
   deleteCreditUsage,
   deleteInstruction,
   deleteMessage,
   deletePlaceHolder,
-  deleteStore,
   deleteSubscription,
   deleteThread,
-  getApps,
   getGuest as getGuestDb,
   getInstructions,
   getMessages,
   getPlaceHolders,
-  getStores,
   getSubscriptions,
   getThreads,
   getUser,
   type guest,
+  isE2E,
+  isProd,
   TEST_GUEST_FINGERPRINTS,
   TEST_MEMBER_EMAILS,
   TEST_MEMBER_FINGERPRINTS,
@@ -43,6 +41,13 @@ const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(
 )
 
 export default async function cleanupTest() {
+  if (isProd) {
+    return { error: "Oops, this is PROD", status: 401 as const }
+  }
+
+  if (!isE2E) {
+    return { error: "Unauthorized", status: 401 as const }
+  }
   // await db.delete(tribePosts)
   await db.delete(pearFeedback)
   await db.delete(feedbackTransactions)
@@ -70,7 +75,7 @@ export default async function cleanupTest() {
       guest.fingerprint === fingerprint &&
       allowedFingerprints.includes(fingerprint)
     ) {
-      await cleanup({
+      return await cleanup({
         guest,
       })
     }
@@ -151,7 +156,7 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
   const admin = await getUser({ email: process.env.VEX_TEST_EMAIL })
 
   if (!admin) {
-    return
+    return { success: false, error: "Admin not found", status: 401 as const }
   }
 
   const placeholders = await getPlaceHolders({
@@ -216,6 +221,8 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
       pearFeedbackCount: 0,
       characterProfilesEnabled: false,
     }))
+
+  return { success: true }
 
   // 5. Clear graph data (FalkorDB)
   // Remove all graph entities and relationships for this user/guest
