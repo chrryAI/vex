@@ -358,10 +358,6 @@ export default function Chat({
   const threadIdRef = useRef(threadId)
 
   useEffect(() => {
-    if (!auth.threadId) {
-      threadIdRef.current = undefined
-      return
-    }
     threadIdRef.current = threadId
   }, [threadId, auth.threadId])
 
@@ -370,13 +366,13 @@ export default function Chat({
   }
 
   useEffect(() => {
-    if (isNewChat) {
+    if (isNewChat || empty) {
       setThreadId(undefined)
       auth.setThreadId(undefined)
       setPostToMoltbook(false)
       setPostToTribe(false)
     }
-  }, [isNewChat])
+  }, [isNewChat, empty])
 
   // Sync input with daily question data when it changes
   useEffect(() => {
