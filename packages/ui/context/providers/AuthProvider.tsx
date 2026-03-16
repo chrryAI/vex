@@ -2626,8 +2626,6 @@ export function AuthProvider({
         return
       }
 
-      refetchInstructions({ appId: item?.id })
-
       setLastAppId(item?.id)
       setAppInternal((prevApp) => {
         const newApp = item
@@ -2636,6 +2634,11 @@ export function AuthProvider({
               image: item.image || item.images?.[0]?.url,
             }
           : undefined
+
+        // Only refetch instructions if app ID actually changed
+        if (prevApp?.id !== newApp?.id) {
+          refetchInstructions({ appId: newApp?.id })
+        }
 
         // Only update theme if app actually changed
         // Defer theme updates to avoid "setState during render" error
