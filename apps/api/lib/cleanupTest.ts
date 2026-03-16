@@ -1,4 +1,5 @@
 import {
+  and,
   db,
   deleteCreditUsage,
   deleteInstruction,
@@ -177,9 +178,13 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
     }),
   )
 
-  await db.delete(stores).where(not(eq(stores.userId, admin.id)))
+  await db
+    .delete(stores)
+    .where(and(not(eq(stores.userId, admin.id!)), eq(stores.isSystem, false)))
 
-  await db.delete(apps).where(not(eq(apps.userId, admin.id)))
+  await db
+    .delete(apps)
+    .where(and(not(eq(apps.userId, admin.id!)), eq(apps.isSystem, false)))
 
   // 4. Delete subscriptions
   const subscriptions = await getSubscriptions({
