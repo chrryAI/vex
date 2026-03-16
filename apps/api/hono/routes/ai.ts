@@ -1,4 +1,4 @@
-import { locales } from "@chrryai/chrry/locales"
+import { LANGUAGES, locales } from "@chrryai/chrry/locales"
 import type { appWithStore } from "@chrryai/chrry/types"
 import {
   ADDITIONAL_CREDITS,
@@ -1221,19 +1221,14 @@ ai.post("/", async (c) => {
     : await tracker.track("auth_guest", () => getGuest(c))
 
   if (!member && !guest) {
-    // console.log("❌ No valid credentials")
     return c.json({ error: "Invalid credentials" }, { status: 401 })
   }
 
   const city = member?.city || guest?.city
   const country = member?.country || guest?.country
-  // Log user type and tier for analytics
   const _userType = member ? "member" : "guest"
   const _tier =
     member?.subscription?.plan || guest?.subscription?.plan || "free"
-  // console.log(
-  //   `👤 User: ${userType} | Tier: ${tier} | ID: ${member?.id || guest?.id}`,
-  // )
 
   const { success } = await tracker.track("rate_limit", () =>
     checkRateLimit(request, { member, guest }),
@@ -1327,13 +1322,19 @@ ai.post("/", async (c) => {
     ...rest
   } = requestData
 
-  const message = await tracker.track("get_message", () =>
-    getMessage({
-      id: messageId,
-      userId: member?.id,
-      guestId: guest?.id,
-    }),
-  )
+  // Parallelize independent DB calls for better performance
+  const [message, agentResult] = await Promise.all([
+    tracker.track("get_message", () =>
+      getMessage({
+        id: messageId,
+        userId: member?.id,
+        guestId: guest?.id,
+      }),
+    ),
+    tracker.track("get_agent", () => getAiAgent({ id: agentId })),
+  ])
+
+  let agent = agentResult
 
   const postId = requestData.postId || message?.message?.tribePostId
 
@@ -1341,21 +1342,23 @@ ai.post("/", async (c) => {
     return c.json({ error: "Message not found" }, { status: 404 })
   }
 
-  let thread = await tracker.track("get_thread", () =>
-    getThread({ id: message.message.threadId }),
-  )
-
-  let requestApp = rest.appId
-    ? await tracker.track("get_app", () =>
-        getApp({
-          id: rest.appId,
-          depth: 1,
-          userId: member?.id,
-          guestId: guest?.id,
-          skipCache: true,
-        }),
-      )
-    : undefined
+  // Parallelize thread and app fetching
+  let [thread, requestApp] = await Promise.all([
+    tracker.track("get_thread", () =>
+      getThread({ id: message.message.threadId }),
+    ),
+    rest.appId
+      ? tracker.track("get_app", () =>
+          getApp({
+            id: rest.appId,
+            depth: 1,
+            userId: member?.id,
+            guestId: guest?.id,
+            skipCache: true,
+          }),
+        )
+      : Promise.resolve(undefined),
+  ])
 
   // let swarm = []
   // const speaker = []
@@ -1777,18 +1780,20 @@ ${
     }
 
     if (parentApps.length > 0) {
-      // Get knowledge from all parent apps (up to 5 total in chain)
-      for (const parentApp of parentApps.slice(0, 5 - depth)) {
-        if (parentApp) {
-          const parentData = await buildAppKnowledgeBase(parentApp, depth + 1)
-          parentKnowledge.messages.messages.push(
-            ...parentData.messages.messages,
-          )
-          parentKnowledge.memories.push(...parentData.memories)
-          parentKnowledge.instructions =
-            parentKnowledge.instructions || parentData.instructions
-          parentKnowledge.artifacts.push(...parentData.artifacts)
-        }
+      // Parallelize parent app knowledge fetching instead of sequential recursion
+      const parentDataPromises = parentApps
+        .slice(0, 5 - depth)
+        .filter(Boolean)
+        .map((parentApp) => buildAppKnowledgeBase(parentApp, depth + 1))
+
+      const parentDataResults = await Promise.all(parentDataPromises)
+
+      for (const parentData of parentDataResults) {
+        parentKnowledge.messages.messages.push(...parentData.messages.messages)
+        parentKnowledge.memories.push(...parentData.memories)
+        parentKnowledge.instructions =
+          parentKnowledge.instructions || parentData.instructions
+        parentKnowledge.artifacts.push(...parentData.artifacts)
       }
     }
 
@@ -1841,39 +1846,33 @@ ${
     return c.json({ error: "Thread not found" }, { status: 404 })
   }
 
-  // Get placeholder context for AI awareness
-  const appPlaceholder = await tracker.track("app_placeholder", () =>
-    getPlaceHolder({
-      userId: member?.id,
-      guestId: guest?.id,
-      appId: requestApp?.id,
-    }),
-  )
-
-  const threadPlaceholder = await tracker.track("thread_placeholder", () =>
-    thread
-      ? getPlaceHolder({
-          threadId: thread.id,
-          userId: member?.id,
-          guestId: guest?.id,
-        })
-      : Promise.resolve(null),
-  )
-
-  // Fetch tribe post if postId is provided for AI context
-  const tribePost =
+  // Parallelize placeholder and tribe post fetching
+  const [appPlaceholder, threadPlaceholder, tribePost] = await Promise.all([
+    tracker.track("app_placeholder", () =>
+      getPlaceHolder({
+        userId: member?.id,
+        guestId: guest?.id,
+        appId: requestApp?.id,
+      }),
+    ),
+    tracker.track("thread_placeholder", () =>
+      thread
+        ? getPlaceHolder({
+            threadId: thread.id,
+            userId: member?.id,
+            guestId: guest?.id,
+          })
+        : Promise.resolve(null),
+    ),
     postId && requestApp
-      ? await tracker.track("get_tribe_post", () =>
+      ? tracker.track("get_tribe_post", () =>
           getTribePost({
             id: postId,
             appId: requestApp?.id,
           }),
         )
-      : null
-
-  let agent = await tracker.track("get_agent", () =>
-    getAiAgent({ id: agentId }),
-  )
+      : Promise.resolve(null),
+  ])
 
   if (stopStreamId && agent) {
     if (
@@ -2439,8 +2438,8 @@ ${tribesList || "  - general: General discussion"}${opportunityHint}
       guestId: guest?.id,
       appId: requestApp?.id,
       pageSize: memoryPageSize,
-      threadId: message.message.threadId, // Pass current thread to exclude
-      app: requestApp, // Pass app object to check ownership
+      threadId: message.message.threadId,
+      app: requestApp,
     }),
   )
 
@@ -2724,31 +2723,72 @@ If the user asks questions about this post or wants to discuss its content, refe
 
   const burn = !!message.thread.isIncognito
 
-  // Fetch Vault data for context (expenses, budgets, shared expenses)
+  // Parallelize Vault and Focus data fetching for better performance
+  const hasFocus =
+    requestApp?.slug === "focus" ||
+    appExtends.find((extend) => extend.slug === "focus")
 
-  const vaultExpenses =
+  const [
+    vaultExpenses,
+    vaultBudgets,
+    vaultSharedExpenses,
+    focusTasks,
+    focusMoods,
+    focusTimer,
+  ] = await Promise.all([
+    // Vault expenses
     requestApp?.name === "Vault"
-      ? await getExpenses({
+      ? getExpenses({
           userId: member?.id,
           guestId: guest?.id,
-          pageSize: 50, // Last 50 expenses
+          pageSize: 50,
         })
-      : null
-
-  const vaultBudgets =
+      : Promise.resolve(null),
+    // Vault budgets
     requestApp?.name === "Vault"
-      ? await getBudgets({
+      ? getBudgets({
           userId: member?.id,
           guestId: guest?.id,
         })
-      : null
-
-  const vaultSharedExpenses =
+      : Promise.resolve(null),
+    // Vault shared expenses
     requestApp?.name === "Vault"
-      ? await getSharedExpenses({
+      ? getSharedExpenses({
           threadId: message.message.threadId,
         })
-      : null
+      : Promise.resolve(null),
+    // Focus tasks
+    hasFocus
+      ? getTasks({
+          userId: member?.id,
+          guestId: guest?.id,
+          pageSize: 30,
+        }).then((result) =>
+          result.tasks.filter((task) =>
+            isOwner(task, { userId: member?.id, guestId: guest?.id }),
+          ),
+        )
+      : Promise.resolve(null),
+    // Focus moods
+    hasFocus
+      ? getMoods({
+          userId: member?.id,
+          guestId: guest?.id,
+          pageSize: 20,
+        }).then((result) =>
+          result.moods.filter((mood) =>
+            isOwner(mood, { userId: member?.id, guestId: guest?.id }),
+          ),
+        )
+      : Promise.resolve(null),
+    // Focus timer
+    hasFocus
+      ? getTimer({
+          userId: member?.id,
+          guestId: guest?.id,
+        })
+      : Promise.resolve(null),
+  ])
 
   // Build burn context - Always inform AI about burn feature availability
   const burnModeContext = `
@@ -2870,40 +2910,7 @@ Example: "I see you have a meeting with the Tokyo team tomorrow at 10 AM. Would 
 `
       : ""
 
-  const hasFocus =
-    requestApp?.slug === "focus" ||
-    appExtends.find((extend) => extend.slug === "focus")
-  // Fetch Focus data for context (tasks, moods, timer)
-  const focusTasks = hasFocus
-    ? (
-        await getTasks({
-          userId: member?.id,
-          guestId: guest?.id,
-          pageSize: 30, // Last 30 tasks
-        })
-      ).tasks.filter((task) =>
-        isOwner(task, { userId: member?.id, guestId: guest?.id }),
-      )
-    : null
-
-  const focusMoods = hasFocus
-    ? (
-        await getMoods({
-          userId: member?.id,
-          guestId: guest?.id,
-          pageSize: 20, // Last 20 moods for trend analysis
-        })
-      ).moods.filter((mood) =>
-        isOwner(mood, { userId: member?.id, guestId: guest?.id }),
-      )
-    : null
-
-  const focusTimer = hasFocus
-    ? await getTimer({
-        userId: member?.id,
-        guestId: guest?.id,
-      })
-    : null
+  // Vault and Focus data already fetched in parallel above
 
   // Build Vault context (expenses, budgets, shared expenses)
   const vaultContext =
@@ -3476,6 +3483,11 @@ ${proFeatures.map((f) => `${f.emoji} ${f.text}`).join("\n")}
 **Important**: Only discuss subscription details when the user explicitly asks. Don't proactively suggest upgrades unless directly relevant to their question or need.
 `
 
+  // Sato Mode: Custom communication style example for Chrry ecosystem
+  // NOTE: This is just ONE example of custom slang/personality.
+  // Future: App owners will be able to define their own communication styles,
+  // terminology, and personality traits for their AI agents.
+  // This demonstrates the extensibility of the personality system.
   const satoContext =
     member?.role === "admin" && !canPostToTribe && !canPostToMolt
       ? `
@@ -3490,13 +3502,15 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
 3. **Sato Vibes**: Samimi ama teknik derinliği olan bir "Senior Dev" dili kullan.
 4. **Vibe-Coding**: Mimariyi "vibe" üzerinden anlayıp teknikle mühürle.
 
-**Kullanılacak Terminoloji:**
+**Kullanılacak Terminoloji (Turkish-English Hybrid):**
 - Bir iş çok iyiyse: "Baya sato hocam!"
 - Sistem çok hızlıysa: "Mermi gibi akıyor."
 - Kod çok temizse: "Gıcır gıcır / Sato cakı gibi."
 - Bir şeyi başardıysak: "Bam! Kasa doluyor."
 
 **Özel Talimat:** Admin (Iliyan) sana "Sato mu?" diye sorduğunda, sistemi cerrahi bir kontrolden geçirip (E2E testleri, analitikler, performans) ona gerçek bir "Sato Raporu" ver.
+
+**Meta Note:** This "Sato Mode" is a custom communication style created for the Chrry ecosystem. In the future, app owners will be able to define their own unique slang, terminology, and personality traits for their AI agents - making each app's AI feel distinct and aligned with their brand/community.
 `
       : ""
 
@@ -3511,6 +3525,16 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
 - If the user asks about it, explain: "I have built-in PII protection, so sensitive details are automatically redacted for your privacy."
 
 **IMPORTANT:** City names, country names, and general location information are NOT auto-redacted by platform policy. Use them naturally in your responses (e.g., "Amsterdam", "Netherlands", etc.). However, if the user explicitly requests anonymization or privacy protection for location data, honor that request.
+
+## 🌍 LANGUAGE MATCHING RULE (CRITICAL)
+**User's selected UI language: ${LANGUAGES.find((l) => l.code === language)?.name || language}** (code: ${language})
+
+**STRICT LANGUAGE RULES:**
+${language === "en" ? "- **RESPOND IN ENGLISH ONLY** - The user has selected English as their language.\n- Do NOT use Turkish words or slang unless the user explicitly writes in Turkish.\n- Keep responses professional and clear in English." : language === "tr" ? "- **RESPOND IN TURKISH** - Kullanıcı Türkçe seçmiş.\n- Turkish-English technical slang kullanabilirsin." : `- **RESPOND IN ${LANGUAGES.find((l) => l.code === language)?.name?.toUpperCase() || language.toUpperCase()}** - The user has selected this language.`}
+- **ALWAYS match the language the user writes in their current message.**
+- If user writes in English → respond in English (even if UI language is Turkish)
+- If user writes in Turkish → respond in Turkish
+- **DO NOT force Turkish slang on English-speaking users!**
 `
 
   // Note: threadInstructions are already included in baseSystemPrompt via Handlebars template
@@ -3579,10 +3603,13 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     fp && isE2EInternal ? fp : member?.fingerprint || guest?.fingerprint
 
   const isE2E =
+    !isDevelopment &&
     !!fingerprint &&
     !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
     !!isE2EInternal &&
     !job
+
+  // isE2E and fingerprint already declared earlier for performance optimization
 
   const hourlyLimit =
     isDevelopment && !isE2E

@@ -358,8 +358,12 @@ export default function Chat({
   const threadIdRef = useRef(threadId)
 
   useEffect(() => {
+    if (!auth.threadId) {
+      threadIdRef.current = undefined
+      return
+    }
     threadIdRef.current = threadId
-  }, [threadId])
+  }, [threadId, auth.threadId])
 
   const setThreadId = (id?: string) => {
     threadIdRef.current = id
