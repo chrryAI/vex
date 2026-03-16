@@ -1,5 +1,6 @@
 import {
   db,
+  deleteApp,
   deleteCreditUsage,
   deleteInstruction,
   deleteMessage,
@@ -7,6 +8,7 @@ import {
   deleteStore,
   deleteSubscription,
   deleteThread,
+  getApps,
   getGuest as getGuestDb,
   getInstructions,
   getMessages,
@@ -143,6 +145,12 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
     }),
   )
 
+  const admin = await getUser({ email: process.env.VEX_TEST_EMAIL })
+
+  if (!admin) {
+    return
+  }
+
   const placeholders = await getPlaceHolders({
     userId: user?.id,
     guestId: guest?.id,
@@ -166,11 +174,25 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
   })
   await Promise.all(
     stores.stores.map((store) => {
-      if (store?.user?.email === process.env.VEX_TEST_EMAIL) {
+      if (store?.store?.userId === admin.id) {
         return
       }
 
       return deleteStore({ id: store.store.id })
+    }),
+  )
+
+  const apps = await getApps({
+    pageSize: 100000,
+  })
+
+  await Promise.all(
+    apps.items.map((app) => {
+      if (app?.userId === admin.id) {
+        return
+      }
+
+      return deleteApp({ id: app.id })
     }),
   )
 
