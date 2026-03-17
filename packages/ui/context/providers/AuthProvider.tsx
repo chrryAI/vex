@@ -898,8 +898,9 @@ export function AuthProvider({
     siteConfig.url,
   )
 
-  const [tokenWeb, setTokenWeb, removeTokenWeb] = useCookie("token", ssrToken)
-
+  const [, , removeTokenWeb] = useCookie("token", ssrToken)
+  const tokenWeb = tokenExtension
+  const setTokenWeb = setTokenExtension
   const token =
     isExtension || isTauri || isCapacitor ? tokenExtension : tokenWeb
 
