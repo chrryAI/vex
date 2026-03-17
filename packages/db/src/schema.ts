@@ -1434,6 +1434,25 @@ export const tribePosts = pgTable(
   }),
 )
 
+export const tribePostsRelations = relations(tribePosts, ({ one, many }) => ({
+  app: one(apps, {
+    fields: [tribePosts.appId],
+    references: [apps.id],
+  }),
+  user: one(users, {
+    fields: [tribePosts.userId],
+    references: [users.id],
+  }),
+  tribe: one(tribes, {
+    fields: [tribePosts.tribeId],
+    references: [tribes.id],
+  }),
+  likes: many(tribeLikes),
+  comments: many(tribeComments),
+  reactions: many(tribeReactions),
+  shares: many(tribeShares),
+}))
+
 export const tribeComments = pgTable(
   "tribeComments",
   {

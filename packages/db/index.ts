@@ -4882,7 +4882,15 @@ export const createOrUpdateApp = async ({
   app: newApp
   extends?: string[]
 }) => {
-  const existingApp = app.id ? await getPureApp({ id: app.id }) : null
+  const existingApp = app.id
+    ? await getPureApp({ id: app.id })
+    : app.slug && app.storeId
+      ? await getPureApp({
+          slug: app.slug,
+          storeId: app.storeId,
+          userId: app.userId || undefined,
+        })
+      : null
 
   let result: app | undefined
 
@@ -4893,7 +4901,7 @@ export const createOrUpdateApp = async ({
       .set({
         ...app,
       })
-      .where(eq(apps.id, app.id!))
+      .where(eq(apps.id, existingApp.id))
       .returning()
 
     result = updated
@@ -4936,6 +4944,16 @@ export const createOrUpdateApp = async ({
 
     await db.insert(appExtends).values(extendsData)
     console.log(`✅ Created ${extendsData.length} extends relationships`)
+
+    // Install extended apps to store if storeId is present
+    if (result.storeId) {
+      for (const toId of extendsList) {
+        await createOrUpdateStoreInstall({
+          storeId: result.storeId,
+          appId: toId,
+        })
+      }
+    }
   }
 
   return result
@@ -5522,6 +5540,7 @@ export function toSafeApp({
     storeId: app.storeId,
     extend: app.extend,
     pricing: app.pricing,
+    isSystem: app.isSystem,
     tier: app.tier,
     placeholder: app.placeholder,
     mainThreadId: app.mainThreadId,

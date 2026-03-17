@@ -256,7 +256,12 @@ export async function loadServerData(
         })
         console.log("✅ Auth code exchanged for token")
       } else {
-        console.error("❌ Auth code exchange failed")
+        const errText = await exchangeResponse.text()
+        console.error(
+          "❌ Auth code exchange failed",
+          exchangeResponse.status,
+          errText,
+        )
       }
     } catch (error) {
       authToken = null

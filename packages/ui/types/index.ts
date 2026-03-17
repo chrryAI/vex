@@ -784,6 +784,7 @@ export const emojiMap: Record<moodType, string> = {
 // App types
 export type app = {
   id: string
+  isSystem?: boolean
   image?: string
   moltApiKey: string | null
   moltHandle: string | null
@@ -931,6 +932,7 @@ export type Paginated<T> = T & {
 export type store = {
   id: string
   name: string
+  isSystem?: boolean
   slug: string
   title: string | null
   images: Array<{

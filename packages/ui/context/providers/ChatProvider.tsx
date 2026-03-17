@@ -216,7 +216,7 @@ export function ChatProvider({
     burn,
     setBurn,
     isPear,
-    setIsPear,
+    setPear,
     setShowFocus,
     showFocus,
     hourlyLimit,
@@ -580,7 +580,7 @@ export function ChatProvider({
             if (creditsAfter <= creditsBefore) {
               pearNoGainStreakRef.current += 1
               if (pearNoGainStreakRef.current >= 3) {
-                setIsPear(undefined)
+                setPear(undefined)
                 pearNoGainStreakRef.current = 0
                 toast.success(t("pearNoGainStreak"), {
                   duration: 4000,
@@ -1157,8 +1157,6 @@ export function ChatProvider({
 
   const threadData = threadSWR || auth.threadData || undefined
 
-  const lastProcessedThreadDataRef = useRef<any>(null)
-
   const shouldStopAutoScrollRef = useRef(false)
 
   const [isLoadingMore, setIsLoadingMore] = useState(false)
@@ -1234,12 +1232,13 @@ export function ChatProvider({
 
     const serverMessages = threadData?.messages as paginatedMessages
 
-    if (threadData?.thread && Array.isArray(serverMessages.messages)) {
-      // Skip if we've already processed this exact threadData
-      // if (lastProcessedThreadDataRef.current === threadData) return
-      lastProcessedThreadDataRef.current = threadData
-
-      // Check if thread has changed - if so, clear old messages to prevent prepending
+    if (
+      threadData?.thread &&
+      Array.isArray(serverMessages.messages) &&
+      !isDebating &&
+      !isStreaming &&
+      !isStreamingStop
+    ) {
       const serverThreadId = threadData.thread.id
       const currentMessagesThreadId = messages[0]?.thread?.id
       const threadChanged =
@@ -1257,15 +1256,7 @@ export function ChatProvider({
 
       if (!messages.length && serverMessages.messages.length) {
         setMessages(serverMessages.messages)
-      } else if (
-        !isDebating &&
-        !isStreaming &&
-        !isStreamingStop &&
-        (!threadIdRef.current ||
-          serverMessages.messages[0]?.thread?.id !== threadIdRef.current ||
-          // Load Older pagination: server returned more messages than we have locally
-          serverMessages.messages.length > messages.length)
-      ) {
+      } else if (!isDebating && !isStreaming && !isStreamingStop) {
         // ID-based diff: only update if server has new messages we don't have
         // This prevents wiping optimistic messages while server is catching up
         const localIds = new Set(messages.map((m) => m.message?.id))
@@ -1279,7 +1270,14 @@ export function ChatProvider({
           (m) => !serverIds.has(m.message?.id),
         )
 
-        if (hasNewServerMessages && !localHasOptimistic) {
+        const threadSwitched =
+          !threadIdRef.current ||
+          serverMessages.messages[0]?.thread?.id !== threadIdRef.current
+
+        if (threadSwitched) {
+          // Thread switched - clear old messages immediately
+          setMessages(serverMessages.messages)
+        } else if (hasNewServerMessages && !localHasOptimistic) {
           // Server has new confirmed messages and no pending optimistics — safe to replace
           setMessages(serverMessages.messages)
         } else if (hasNewServerMessages && localHasOptimistic) {
@@ -1290,7 +1288,7 @@ export function ChatProvider({
           ]
           setMessages(merged)
         } else if (!localHasOptimistic) {
-          // No new server msgs, no optimistic — replace (thread switch, pagination)
+          // No new server msgs, no optimistic — replace (thread switch, edits, deletions)
           setMessages(serverMessages.messages)
         }
       }

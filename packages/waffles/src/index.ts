@@ -39,7 +39,8 @@ export const VEX_LIVE_FINGERPRINT = VEX_LIVE_FINGERPRINTS[0] || ""
 export const VEX_LIVE_FINGERPRINT_2 = VEX_LIVE_FINGERPRINTS[1] || ""
 export const VEX_LIVE_FINGERPRINT_3 = VEX_LIVE_FINGERPRINTS[2] || ""
 
-export const TEST_URL = process.env.PLAYWRIGHT_BASE_URL || process.env.TEST_URL!
+export const TEST_URL =
+  process.env.TEST_URL! || process.env.PLAYWRIGHT_BASE_URL!
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 export const isCI = process.env.VITE_CI || process.env.CI
@@ -66,6 +67,8 @@ const getURL = (
   const url = isMember
     ? `${base}${path}?fp=${isLive ? VEX_LIVE_FINGERPRINT_2 : fingerprint || TEST_MEMBER_FINGERPRINTS[0] || ""}`
     : `${base}${path}?fp=${isLive ? VEX_LIVE_FINGERPRINT : fingerprint || TEST_GUEST_FINGERPRINTS[0] || ""}`
+
+  console.log(`🚀 ~ base:`, base)
 
   return url
 }

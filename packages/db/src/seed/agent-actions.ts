@@ -6,14 +6,14 @@
  */
 
 import { eq } from "drizzle-orm"
-import { db } from "../index"
-import { agentActions, agents, skills } from "./agent-schema"
+import { db } from "../../index"
+import { agentActions, agents, skills } from "../agent-schema"
 import {
   calculateLevel,
   calculateTrustScore,
   calculateXP,
   getSkillsForLevel,
-} from "./agent-xp"
+} from "../agent-xp"
 
 /**
  * Record an agent action and award XP
