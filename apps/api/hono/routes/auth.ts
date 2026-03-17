@@ -428,16 +428,10 @@ authRoutes.post("/signin/password", async (c) => {
       return c.json({ error: "Invalid credentials" }, 401)
     }
 
-    console.log(`🚀 ~ authRoutes.post ~ valid:`, valid)
-
     const token = generateToken(user.id, user.email)
     setCookieFromHost(c, token, "None")
 
-    console.log(`🚀 ~ authRoutes.post ~ token:`, token)
-
     const authCode = await generateExchangeCode(token)
-
-    console.log(`🚀 ~ authRoutes.post ~ authCode:`, authCode)
 
     return c.json(buildAuthResponse(user, authCode, callbackUrl, token))
   } catch (error) {
