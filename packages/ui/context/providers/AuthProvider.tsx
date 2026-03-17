@@ -126,6 +126,8 @@ const AuthContext = createContext<
       } | null
       canShowAllTribe: boolean
       languageModal: string | undefined
+      from: string
+      setFrom: (value: string) => void
       setLanguageModal: (value: string | undefined) => void
       timer?: timer
       tribeSlug?: string
@@ -1109,9 +1111,9 @@ export function AuthProvider({
   const [isRemovingApp, setIsRemovingApp] = useState(false)
 
   const fromInternal = (searchParams.get("from") || "web") as "web"
-  const [from, setFrom] = useState<"extension" | "web" | "mobile" | "desktop">(
-    fromInternal,
-  )
+  const [from, setFrom] = useState<
+    "extension" | "web" | "mobile" | "desktop" | string
+  >(fromInternal)
 
   useEffect(() => {
     fromInternal && setFrom(fromInternal)
@@ -3334,6 +3336,8 @@ export function AuthProvider({
         findAppByPathname,
         chromeWebStoreUrl,
         siteConfig,
+        from,
+        setFrom,
         setAccountApp: setAccountApp,
         setDeviceId,
         setApp,

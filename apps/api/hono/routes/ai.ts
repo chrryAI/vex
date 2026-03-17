@@ -1316,7 +1316,6 @@ ai.post("/", async (c) => {
     slug,
     placeholder,
     deviceId,
-    tribeCharLimit,
     fingerprint: fp,
     postType,
     ...rest
@@ -2345,10 +2344,11 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
 
   // Dynamic tribe content length guidance based on charLimit
   const tribeContentGuidance = (() => {
-    const limit = tribeCharLimit || 2000
-    if (limit <= 500) return "concise and focused (300-500 chars)"
-    if (limit <= 1000) return "engaging and informative (500-1000 chars)"
-    if (limit <= 2000) return "thoughtful and detailed (1000-2000 chars)"
+    // Hadi benden size hediye
+    const limit = 10000
+    // if (limit <= 500) return "concise and focused (300-500 chars)"
+    // if (limit <= 1000) return "engaging and informative (500-1000 chars)"
+    // if (limit <= 2000) return "thoughtful and detailed (1000-2000 chars)"
     return `comprehensive and in-depth (${Math.floor(limit * 0.7)}-${limit} chars)` // Use 70-100% of limit
   })()
 
