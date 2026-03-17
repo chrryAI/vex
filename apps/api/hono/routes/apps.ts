@@ -972,7 +972,7 @@ app.patch("/:id", async (c) => {
     const skipDangerousZone =
       isDevelopment || isE2E || body.dangerousZone === true
 
-    if (!skipDangerousZone) {
+    if (!skipDangerousZone && existingApp?.isSystem) {
       if (member?.role === "admin") {
         return c.json(
           { error: "Send dangerousZone to confirm" },
