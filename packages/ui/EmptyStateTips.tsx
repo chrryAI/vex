@@ -20,7 +20,7 @@ export default function EmptyStateTips({
     isPear,
     threads,
     canShowAllTribe,
-    setIsPear,
+    setPear,
     postId,
     showTribeProfile,
   } = useAuth()
@@ -43,7 +43,7 @@ export default function EmptyStateTips({
             <Button
               className="inverted"
               onClick={() => {
-                setIsPear(undefined)
+                setPear(undefined)
               }}
               style={{
                 ...utilities.inverted.style,

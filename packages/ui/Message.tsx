@@ -104,6 +104,7 @@ function Message({
     timeAgo,
     setShowTribe,
     plausible,
+    isPear,
   } = useAuth()
 
   const styles = useMessageStyles()
@@ -1231,9 +1232,11 @@ function Message({
             />
             <Span>
               {t(
-                message.message.isImageGenerationEnabled
-                  ? "Processing"
-                  : "Thinking",
+                isPear
+                  ? "Pearing"
+                  : message.message.isImageGenerationEnabled
+                    ? "Processing"
+                    : "Thinking",
               )}
             </Span>
             <Div

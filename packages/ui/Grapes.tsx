@@ -20,7 +20,7 @@ const Grapes = ({
   dataTestId?: string
   slug?: string
 }) => {
-  const { grapes, setIsPear, grape, plausible, showGrapes, setShowGrapes } =
+  const { grapes, setPear, grape, plausible, showGrapes, setShowGrapes } =
     useAuth()
 
   const { setIsNewAppChat } = useChat()
@@ -211,7 +211,7 @@ const Grapes = ({
                       })
                       setShowGrapes(false)
                       setSelectedGrapeApp(undefined)
-                      setIsPear(selectedGrapeApp, true)
+                      setPear(selectedGrapeApp, true)
                     }}
                     style={{}}
                   >
