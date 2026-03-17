@@ -234,7 +234,8 @@ export default function Chat({
     isProgramme,
     burn,
     isPear,
-    setIsPear,
+    wasPear,
+    setPear,
     isIDE,
     accountApps,
     isRetro,
@@ -1822,6 +1823,7 @@ export default function Chat({
         formData.append("language", language)
         clientId && formData.append("clientId", clientId)
         isPear && formData.append("pear", JSON.stringify(isPear))
+        wasPear && formData.append("wasPear", JSON.stringify(wasPear))
 
         isRetro && formData.append("retro", JSON.stringify(isRetro))
         postToTribe && formData.append("tribe", JSON.stringify(postToTribe))
@@ -1854,6 +1856,7 @@ export default function Chat({
           moodId: mood?.id,
           taskId,
           pear: isPear,
+          wasPear,
           retro: isRetro,
           tribe: postToTribe,
           molt: postToMoltbook,
@@ -1975,6 +1978,7 @@ export default function Chat({
         isRetro && formData.append("retro", "true")
 
         isPear && formData.append("pear", "true")
+        wasPear && formData.append("wasPear", "true")
 
         placeholder && formData.append("placeholder", placeholder)
 
@@ -2005,6 +2009,7 @@ export default function Chat({
           imageGenerationEnabled: isImageGenerationEnabled,
           isSpeechActive,
           pear: isPear,
+          wasPear,
           deviceId,
           weather,
           placeholder,
@@ -2457,6 +2462,8 @@ export default function Chat({
           selectedAgent?.name === sushiAgent?.name &&
           isWebSearchEnabled &&
           setIsWebSearchEnabled(false)
+
+        isPear && setPear(undefined)
 
         data.streamId === streamId && setStreamId(null)
 
@@ -3974,7 +3981,7 @@ export default function Chat({
                                 order: minimize ? -1 : 0,
                               }}
                               onClick={() => {
-                                setIsPear(isPear ? undefined : app)
+                                setPear(isPear ? undefined : app)
                               }}
                             >
                               <Img slug={"pear"} size={20} />

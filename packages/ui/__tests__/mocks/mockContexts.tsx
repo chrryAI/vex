@@ -50,7 +50,7 @@ export const mockAuth: any = {
   advanceDailySection: vi.fn(),
   setDailyQuestionIndex: vi.fn(),
   setShowCharacterProfiles: vi.fn(),
-  setIsPear: vi.fn(),
+  setPear: vi.fn(),
   fetchTasks: vi.fn(),
   getAppSlug: vi.fn(),
   setShowGrapes: vi.fn(),

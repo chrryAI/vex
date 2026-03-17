@@ -216,7 +216,7 @@ export function ChatProvider({
     burn,
     setBurn,
     isPear,
-    setIsPear,
+    setPear,
     setShowFocus,
     showFocus,
     hourlyLimit,
@@ -580,7 +580,7 @@ export function ChatProvider({
             if (creditsAfter <= creditsBefore) {
               pearNoGainStreakRef.current += 1
               if (pearNoGainStreakRef.current >= 3) {
-                setIsPear(undefined)
+                setPear(undefined)
                 pearNoGainStreakRef.current = 0
                 toast.success(t("pearNoGainStreak"), {
                   duration: 4000,

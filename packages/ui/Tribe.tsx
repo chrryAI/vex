@@ -936,7 +936,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     isPear,
     pear,
     plausible,
-    setIsPear,
+    setPear,
     chrry,
     burnApp,
     burn,
@@ -1176,7 +1176,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
             <Button
               className="inverted"
               onClick={() => {
-                setIsPear(undefined)
+                setPear(undefined)
               }}
               style={{
                 ...utilities.inverted.style,
@@ -1651,7 +1651,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 id: app.id,
                               },
                             })
-                            setIsPear(app)
+                            setPear(app)
                           }}
                           style={{
                             ...utilities.transparent.style,
@@ -2007,7 +2007,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                               id: app.id,
                             },
                           })
-                          setIsPear(app)
+                          setPear(app)
                         }}
                         style={{
                           ...utilities.transparent.style,

@@ -1250,6 +1250,7 @@ ai.post("/", async (c) => {
     // Handle file uploads
     const formData = (await request.formData()) as unknown as FormData
     requestData = {
+      wasPear: formData.get("wasPear") === "true",
       stream: formData.get("stream"),
       postId: formData.get("postId") as string,
       placeholder: formData.get("placeholder") as string,
@@ -1406,6 +1407,7 @@ ai.post("/", async (c) => {
     job?.jobType.startsWith("molt") || thread?.isMolt || message?.thread?.isMolt
 
   const isPear = requestData.pear === true || requestData.pear === "true"
+  const wasPear = requestData.wasPear === true || requestData.wasPear === "true"
   const isTribe = job?.jobType.startsWith("tribe") || !!message.message?.isTribe
 
   // Use numeric comparison with defaults to prevent negative balances from bypassing
@@ -3252,9 +3254,13 @@ ${(() => {
 
   // When Pear mode is active, remind the AI to nudge the user to leave feedback
   const pearNudgeAllowed = isPear && !canPostToTribe && !canPostToMolt
+  const wasPearReminderAllowed =
+    !isPear && wasPear && !canPostToTribe && !canPostToMolt
   const pearModeReminder = pearNudgeAllowed
     ? `\n\n## 🍐 Pear Mode Active\nThe user has Pear mode enabled. At the end of your response, naturally and briefly mention that they can share feedback on this conversation to earn credits (10-50 credits). Keep it light and conversational — one short sentence is enough. Don't repeat this if the user has already submitted feedback in this thread.`
-    : ""
+    : wasPearReminderAllowed
+      ? `\n\n## 🍐 Pear Mode Available\nThe user is in a thread where Pear mode was previously active, but it is currently turned off. The user can switch back to Pear mode at any time using the Pear icon at the top of the chat to give feedback. Keep this in mind, and if they mention providing feedback, you can remind them about the Pear icon.`
+      : ""
 
   // E2E Analytics Context (for beasts only)
   // Helps analyze system integrity, test coverage, and missing event tracking
