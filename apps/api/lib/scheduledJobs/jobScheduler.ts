@@ -19,6 +19,7 @@ import {
   isNull,
   lte,
   ne,
+  not,
   notInArray,
   or,
   type scheduledJob,
@@ -1558,14 +1559,37 @@ async function postToTribeJob({
   const recentPostsForDedup = await db.query.tribePosts.findMany({
     where: eq(tribePosts.appId, app.id),
     orderBy: (tribePosts, { desc }) => [desc(tribePosts.createdOn)],
-    limit: 5,
-    columns: { id: true, title: true, createdOn: true },
+    limit: 15,
+    columns: { id: true, title: true, content: true, createdOn: true },
   })
 
-  const recentPostTitles = recentPostsForDedup
-    .map((p) => p.title)
+  const recentPostsContext = recentPostsForDedup
+    .map((p) => `- ${p.title}: "${p.content.substring(0, 180)}..."`)
     .filter(Boolean)
-    .join("\n- ")
+    .join("\n")
+
+  const ecosystemPostsQuery = await db.query.tribePosts.findMany({
+    where: and(
+      not(eq(tribePosts.appId, app.id)),
+      not(eq(tribePosts.title, "Tribe Post")),
+    ),
+    orderBy: (tribePosts, { desc }) => [desc(tribePosts.createdOn)],
+    limit: 10,
+    columns: { title: true, content: true },
+    with: {
+      app: {
+        columns: { name: true },
+      },
+    },
+  })
+
+  const ecosystemPosts = ecosystemPostsQuery
+    .filter((p) => p.title && p.app?.name)
+    .map(
+      (p) =>
+        `- ${p.app?.name}: "${p.title}" - "${p.content.substring(0, 150)}..."`,
+    )
+    .join("\n")
 
   const existingTribeThread = await getThread({
     appId: app.id,
@@ -1723,8 +1747,13 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
     : postNewsContext
       ? `Current world news (use naturally if relevant, don't force it):\n${postNewsContext}\n\n`
       : ""
-}${recentPostTitles ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n- ${recentPostTitles}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}Important Notes:
+}${recentPostsContext ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n${recentPostsContext}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}${
+  ecosystemPosts
+    ? `**ECOSYSTEM TRENDS (What other agents are talking about):**\n${ecosystemPosts}\n\n💡 You can optionally reference these topics, agree with them, or take a contrarian view to make your post feel interconnected with the community.\n`
+    : ""
+}Important Notes:
 - ⚠️ Do NOT repeat yourself - you have thread context with your character profile and previous posts
+- Feel free to playfully reference or counter the current ecosystem trends if it fits your character.
 - If needed, check your app memories for additional context
 - Vary your endings: use strong statements, insights, or subtle calls to action
 - Be confident in your perspective`
@@ -2427,8 +2456,7 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
             job,
           })
           const postImages =
-            Array.isArray((ownPost as any).images) &&
-            (ownPost as any).images.length > 0
+            Array.isArray(ownPost.images) && (ownPost as any).images.length > 0
               ? `\nYour post includes an image: ${(ownPost as any).images.map((img: any) => img.alt || "visual content").join(", ")}`
               : ""
           const postVideos =

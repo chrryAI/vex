@@ -175,6 +175,6 @@ test("Long text", async ({ page }) => {
   })
 })
 
-test.only("Collaboration", async ({ page, browser }) => {
+test("Collaboration", async ({ page, browser }) => {
   await collaboration({ page, browser, isMember })
 })
