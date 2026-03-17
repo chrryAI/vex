@@ -126,6 +126,8 @@ const AuthContext = createContext<
       } | null
       canShowAllTribe: boolean
       languageModal: string | undefined
+      from: string
+      setFrom: (value: string) => void
       setLanguageModal: (value: string | undefined) => void
       timer?: timer
       tribeSlug?: string
@@ -1108,9 +1110,23 @@ export function AuthProvider({
 
   const [isRemovingApp, setIsRemovingApp] = useState(false)
 
+  const fromInternal = (searchParams.get("from") || "web") as "web"
+  const [from, setFrom] = useState<
+    "extension" | "web" | "mobile" | "desktop" | string
+  >(fromInternal)
+
+  useEffect(() => {
+    fromInternal && setFrom(fromInternal)
+  }, [fromInternal])
+
   const setSignInPart = (
     part: "login" | "register" | "credentials" | undefined,
   ) => {
+    if (user) {
+      addParams({
+        account: "true",
+      })
+    }
     const newPart = part && isE2E ? "credentials" : user ? undefined : part
 
     setSignInPartInternal(newPart)
@@ -2626,8 +2642,6 @@ export function AuthProvider({
         return
       }
 
-      refetchInstructions({ appId: item?.id })
-
       setLastAppId(item?.id)
       setAppInternal((prevApp) => {
         const newApp = item
@@ -2636,6 +2650,11 @@ export function AuthProvider({
               image: item.image || item.images?.[0]?.url,
             }
           : undefined
+
+        // Only refetch instructions if app ID actually changed
+        if (prevApp?.id !== newApp?.id) {
+          refetchInstructions({ appId: newApp?.id })
+        }
 
         // Only update theme if app actually changed
         // Defer theme updates to avoid "setState during render" error
@@ -3317,6 +3336,8 @@ export function AuthProvider({
         findAppByPathname,
         chromeWebStoreUrl,
         siteConfig,
+        from,
+        setFrom,
         setAccountApp: setAccountApp,
         setDeviceId,
         setApp,

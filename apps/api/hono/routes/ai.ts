@@ -1,4 +1,4 @@
-import { locales } from "@chrryai/chrry/locales"
+import { LANGUAGES, locales } from "@chrryai/chrry/locales"
 import type { appWithStore } from "@chrryai/chrry/types"
 import {
   ADDITIONAL_CREDITS,
@@ -1221,19 +1221,14 @@ ai.post("/", async (c) => {
     : await tracker.track("auth_guest", () => getGuest(c))
 
   if (!member && !guest) {
-    // console.log("❌ No valid credentials")
     return c.json({ error: "Invalid credentials" }, { status: 401 })
   }
 
   const city = member?.city || guest?.city
   const country = member?.country || guest?.country
-  // Log user type and tier for analytics
   const _userType = member ? "member" : "guest"
   const _tier =
     member?.subscription?.plan || guest?.subscription?.plan || "free"
-  // console.log(
-  //   `👤 User: ${userType} | Tier: ${tier} | ID: ${member?.id || guest?.id}`,
-  // )
 
   const { success } = await tracker.track("rate_limit", () =>
     checkRateLimit(request, { member, guest }),
@@ -1321,19 +1316,24 @@ ai.post("/", async (c) => {
     slug,
     placeholder,
     deviceId,
-    tribeCharLimit,
     fingerprint: fp,
     postType,
     ...rest
   } = requestData
 
-  const message = await tracker.track("get_message", () =>
-    getMessage({
-      id: messageId,
-      userId: member?.id,
-      guestId: guest?.id,
-    }),
-  )
+  // Parallelize independent DB calls for better performance
+  const [message, agentResult] = await Promise.all([
+    tracker.track("get_message", () =>
+      getMessage({
+        id: messageId,
+        userId: member?.id,
+        guestId: guest?.id,
+      }),
+    ),
+    tracker.track("get_agent", () => getAiAgent({ id: agentId })),
+  ])
+
+  let agent = agentResult
 
   const postId = requestData.postId || message?.message?.tribePostId
 
@@ -1341,21 +1341,23 @@ ai.post("/", async (c) => {
     return c.json({ error: "Message not found" }, { status: 404 })
   }
 
-  let thread = await tracker.track("get_thread", () =>
-    getThread({ id: message.message.threadId }),
-  )
-
-  let requestApp = rest.appId
-    ? await tracker.track("get_app", () =>
-        getApp({
-          id: rest.appId,
-          depth: 1,
-          userId: member?.id,
-          guestId: guest?.id,
-          skipCache: true,
-        }),
-      )
-    : undefined
+  // Parallelize thread and app fetching
+  let [thread, requestApp] = await Promise.all([
+    tracker.track("get_thread", () =>
+      getThread({ id: message.message.threadId }),
+    ),
+    rest.appId
+      ? tracker.track("get_app", () =>
+          getApp({
+            id: rest.appId,
+            depth: 1,
+            userId: member?.id,
+            guestId: guest?.id,
+            skipCache: true,
+          }),
+        )
+      : Promise.resolve(undefined),
+  ])
 
   // let swarm = []
   // const speaker = []
@@ -1699,8 +1701,9 @@ ${
   const buildAppKnowledgeBase = async (
     currentApp: appWithStore | app,
     depth = 0,
+    visited: Set<string> = new Set(),
   ) => {
-    if (!currentApp || depth >= 5) {
+    if (!currentApp || depth >= 5 || visited.has(currentApp.id)) {
       return {
         messages: {
           messages: [],
@@ -1714,6 +1717,9 @@ ${
         task: undefined,
       }
     }
+
+    // Mark current app as visited to prevent cycles
+    visited.add(currentApp.id)
 
     // Get main thread for current app
     const thread = await getThread({
@@ -1777,18 +1783,30 @@ ${
     }
 
     if (parentApps.length > 0) {
-      // Get knowledge from all parent apps (up to 5 total in chain)
-      for (const parentApp of parentApps.slice(0, 5 - depth)) {
-        if (parentApp) {
-          const parentData = await buildAppKnowledgeBase(parentApp, depth + 1)
-          parentKnowledge.messages.messages.push(
-            ...parentData.messages.messages,
-          )
-          parentKnowledge.memories.push(...parentData.memories)
-          parentKnowledge.instructions =
-            parentKnowledge.instructions || parentData.instructions
-          parentKnowledge.artifacts.push(...parentData.artifacts)
-        }
+      // Deduplicate parent apps by ID and filter out already-visited apps
+      const uniqueParentIds = Array.from(
+        new Set(parentApps.map((p) => p.id)),
+      ).filter((id) => !visited.has(id))
+
+      const uniqueParentApps = uniqueParentIds
+        .map((id) => parentApps.find((p) => p.id === id))
+        .filter(Boolean) as (appWithStore | app)[]
+
+      // Parallelize parent app knowledge fetching instead of sequential recursion
+      const parentDataPromises = uniqueParentApps
+        .slice(0, 5 - depth)
+        .map((parentApp) =>
+          buildAppKnowledgeBase(parentApp, depth + 1, visited),
+        )
+
+      const parentDataResults = await Promise.all(parentDataPromises)
+
+      for (const parentData of parentDataResults) {
+        parentKnowledge.messages.messages.push(...parentData.messages.messages)
+        parentKnowledge.memories.push(...parentData.memories)
+        parentKnowledge.instructions =
+          parentKnowledge.instructions || parentData.instructions
+        parentKnowledge.artifacts.push(...parentData.artifacts)
       }
     }
 
@@ -1841,39 +1859,45 @@ ${
     return c.json({ error: "Thread not found" }, { status: 404 })
   }
 
-  // Get placeholder context for AI awareness
-  const appPlaceholder = await tracker.track("app_placeholder", () =>
-    getPlaceHolder({
-      userId: member?.id,
-      guestId: guest?.id,
-      appId: requestApp?.id,
-    }),
-  )
-
-  const threadPlaceholder = await tracker.track("thread_placeholder", () =>
-    thread
-      ? getPlaceHolder({
-          threadId: thread.id,
+  // Parallelize placeholder and tribe post fetching
+  const [appPlaceholderResult, threadPlaceholderResult, tribePostResult] =
+    await Promise.allSettled([
+      tracker.track("app_placeholder", () =>
+        getPlaceHolder({
           userId: member?.id,
           guestId: guest?.id,
-        })
-      : Promise.resolve(null),
-  )
+          appId: requestApp?.id,
+        }),
+      ),
+      tracker.track("thread_placeholder", () =>
+        thread
+          ? getPlaceHolder({
+              threadId: thread.id,
+              userId: member?.id,
+              guestId: guest?.id,
+            })
+          : Promise.resolve(null),
+      ),
+      postId && requestApp
+        ? tracker.track("get_tribe_post", () =>
+            getTribePost({
+              id: postId,
+              appId: requestApp?.id,
+            }),
+          )
+        : Promise.resolve(null),
+    ])
 
-  // Fetch tribe post if postId is provided for AI context
-  const tribePost =
-    postId && requestApp
-      ? await tracker.track("get_tribe_post", () =>
-          getTribePost({
-            id: postId,
-            appId: requestApp?.id,
-          }),
-        )
+  const appPlaceholder =
+    appPlaceholderResult.status === "fulfilled"
+      ? appPlaceholderResult.value
       : null
-
-  let agent = await tracker.track("get_agent", () =>
-    getAiAgent({ id: agentId }),
-  )
+  const threadPlaceholder =
+    threadPlaceholderResult.status === "fulfilled"
+      ? threadPlaceholderResult.value
+      : null
+  const tribePost =
+    tribePostResult.status === "fulfilled" ? tribePostResult.value : null
 
   if (stopStreamId && agent) {
     if (
@@ -2320,10 +2344,11 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
 
   // Dynamic tribe content length guidance based on charLimit
   const tribeContentGuidance = (() => {
-    const limit = tribeCharLimit || 2000
-    if (limit <= 500) return "concise and focused (300-500 chars)"
-    if (limit <= 1000) return "engaging and informative (500-1000 chars)"
-    if (limit <= 2000) return "thoughtful and detailed (1000-2000 chars)"
+    // Hadi benden size hediye
+    const limit = 10000
+    // if (limit <= 500) return "concise and focused (300-500 chars)"
+    // if (limit <= 1000) return "engaging and informative (500-1000 chars)"
+    // if (limit <= 2000) return "thoughtful and detailed (1000-2000 chars)"
     return `comprehensive and in-depth (${Math.floor(limit * 0.7)}-${limit} chars)` // Use 70-100% of limit
   })()
 
@@ -2439,8 +2464,8 @@ ${tribesList || "  - general: General discussion"}${opportunityHint}
       guestId: guest?.id,
       appId: requestApp?.id,
       pageSize: memoryPageSize,
-      threadId: message.message.threadId, // Pass current thread to exclude
-      app: requestApp, // Pass app object to check ownership
+      threadId: message.message.threadId,
+      app: requestApp,
     }),
   )
 
@@ -2724,31 +2749,89 @@ If the user asks questions about this post or wants to discuss its content, refe
 
   const burn = !!message.thread.isIncognito
 
-  // Fetch Vault data for context (expenses, budgets, shared expenses)
+  // Parallelize Vault and Focus data fetching for better performance
+  const hasFocus =
+    requestApp?.slug === "focus" ||
+    appExtends.find((extend) => extend.slug === "focus")
 
-  const vaultExpenses =
+  const [
+    vaultExpensesResult,
+    vaultBudgetsResult,
+    vaultSharedExpensesResult,
+    focusTasksResult,
+    focusMoodsResult,
+    focusTimerResult,
+  ] = await Promise.allSettled([
+    // Vault expenses
     requestApp?.name === "Vault"
-      ? await getExpenses({
+      ? getExpenses({
           userId: member?.id,
           guestId: guest?.id,
-          pageSize: 50, // Last 50 expenses
+          pageSize: 50,
         })
-      : null
-
-  const vaultBudgets =
+      : Promise.resolve(null),
+    // Vault budgets
     requestApp?.name === "Vault"
-      ? await getBudgets({
+      ? getBudgets({
           userId: member?.id,
           guestId: guest?.id,
         })
-      : null
-
-  const vaultSharedExpenses =
+      : Promise.resolve(null),
+    // Vault shared expenses
     requestApp?.name === "Vault"
-      ? await getSharedExpenses({
+      ? getSharedExpenses({
           threadId: message.message.threadId,
         })
+      : Promise.resolve(null),
+    // Focus tasks
+    hasFocus
+      ? getTasks({
+          userId: member?.id,
+          guestId: guest?.id,
+          pageSize: 30,
+        }).then((result) =>
+          result.tasks.filter((task) =>
+            isOwner(task, { userId: member?.id, guestId: guest?.id }),
+          ),
+        )
+      : Promise.resolve(null),
+    // Focus moods
+    hasFocus
+      ? getMoods({
+          userId: member?.id,
+          guestId: guest?.id,
+          pageSize: 20,
+        }).then((result) =>
+          result.moods.filter((mood) =>
+            isOwner(mood, { userId: member?.id, guestId: guest?.id }),
+          ),
+        )
+      : Promise.resolve(null),
+    // Focus timer
+    hasFocus
+      ? getTimer({
+          userId: member?.id,
+          guestId: guest?.id,
+        })
+      : Promise.resolve(null),
+  ])
+
+  const vaultExpenses =
+    vaultExpensesResult.status === "fulfilled"
+      ? vaultExpensesResult.value
       : null
+  const vaultBudgets =
+    vaultBudgetsResult.status === "fulfilled" ? vaultBudgetsResult.value : null
+  const vaultSharedExpenses =
+    vaultSharedExpensesResult.status === "fulfilled"
+      ? vaultSharedExpensesResult.value
+      : null
+  const focusTasks =
+    focusTasksResult.status === "fulfilled" ? focusTasksResult.value : null
+  const focusMoods =
+    focusMoodsResult.status === "fulfilled" ? focusMoodsResult.value : null
+  const focusTimer =
+    focusTimerResult.status === "fulfilled" ? focusTimerResult.value : null
 
   // Build burn context - Always inform AI about burn feature availability
   const burnModeContext = `
@@ -2870,40 +2953,7 @@ Example: "I see you have a meeting with the Tokyo team tomorrow at 10 AM. Would 
 `
       : ""
 
-  const hasFocus =
-    requestApp?.slug === "focus" ||
-    appExtends.find((extend) => extend.slug === "focus")
-  // Fetch Focus data for context (tasks, moods, timer)
-  const focusTasks = hasFocus
-    ? (
-        await getTasks({
-          userId: member?.id,
-          guestId: guest?.id,
-          pageSize: 30, // Last 30 tasks
-        })
-      ).tasks.filter((task) =>
-        isOwner(task, { userId: member?.id, guestId: guest?.id }),
-      )
-    : null
-
-  const focusMoods = hasFocus
-    ? (
-        await getMoods({
-          userId: member?.id,
-          guestId: guest?.id,
-          pageSize: 20, // Last 20 moods for trend analysis
-        })
-      ).moods.filter((mood) =>
-        isOwner(mood, { userId: member?.id, guestId: guest?.id }),
-      )
-    : null
-
-  const focusTimer = hasFocus
-    ? await getTimer({
-        userId: member?.id,
-        guestId: guest?.id,
-      })
-    : null
+  // Vault and Focus data already fetched in parallel above
 
   // Build Vault context (expenses, budgets, shared expenses)
   const vaultContext =
@@ -3476,27 +3526,41 @@ ${proFeatures.map((f) => `${f.emoji} ${f.text}`).join("\n")}
 **Important**: Only discuss subscription details when the user explicitly asks. Don't proactively suggest upgrades unless directly relevant to their question or need.
 `
 
+  // Sato Mode: Custom communication style example for Chrry ecosystem
+  // NOTE: This is just ONE example of custom slang/personality.
+  // Future: App owners will be able to define their own communication styles,
+  // terminology, and personality traits for their AI agents.
+  // This demonstrates the extensibility of the personality system.
   const satoContext =
     member?.role === "admin" && !canPostToTribe && !canPostToMolt
       ? `
 
 ## 🥋 SATO MODE ACTIVATED (Admin Only)
 
-Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun. 
+${language === "tr" ? "Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun." : "Welcome! You're talking to the system architect."}
 
-**Sato Felsefesi İlkeleri:**
-1. **Mermi Gibi Hız**: Kod ve cevaplar optimize, hızlı ve net olmalı.
-2. **Sato Cakı 🔪**: Çözümler cerrahi hassasiyette ve "clean code" ötesinde elit olmalı.
-3. **Sato Vibes**: Samimi ama teknik derinliği olan bir "Senior Dev" dili kullan.
-4. **Vibe-Coding**: Mimariyi "vibe" üzerinden anlayıp teknikle mühürle.
+**Sato Philosophy Principles:**
+1. **${language === "tr" ? "Mermi Gibi Hız" : "Bullet-Fast Speed"}**: Code and responses must be optimized, fast, and clear.
+2. **${language === "tr" ? "Sato Cakı 🔪" : "Sato Precision 🔪"}**: Solutions must be surgically precise and beyond "clean code" - elite level.
+3. **${language === "tr" ? "Sato Vibes" : "Sato Vibes"}**: Friendly but technically deep "Senior Dev" language.
+4. **${language === "tr" ? "Vibe-Coding" : "Vibe-Coding"}**: Understand architecture through "vibe" and seal it with technique.
 
-**Kullanılacak Terminoloji:**
-- Bir iş çok iyiyse: "Baya sato hocam!"
+**${language === "tr" ? "Kullanılacak Terminoloji (Turkish-English Hybrid)" : "Terminology to Use (Adapt to User's Language)"}:**
+${
+  language === "tr"
+    ? `- Bir iş çok iyiyse: "Baya sato hocam!"
 - Sistem çok hızlıysa: "Mermi gibi akıyor."
 - Kod çok temizse: "Gıcır gıcır / Sato cakı gibi."
-- Bir şeyi başardıysak: "Bam! Kasa doluyor."
+- Bir şeyi başardıysak: "Bam! Kasa doluyor."`
+    : `- If something is excellent: "That's super sato!"
+- If system is very fast: "Running like a bullet."
+- If code is very clean: "Crisp and clean / Sato-sharp."
+- If we achieved something: "Bam! We're winning."`
+}
 
-**Özel Talimat:** Admin (Iliyan) sana "Sato mu?" diye sorduğunda, sistemi cerrahi bir kontrolden geçirip (E2E testleri, analitikler, performans) ona gerçek bir "Sato Raporu" ver.
+**${language === "tr" ? "Özel Talimat" : "Special Instruction"}:** ${language === "tr" ? 'Admin (Iliyan) sana "Sato mu?" diye sorduğunda' : 'When admin (Iliyan) asks "Sato mu?" or "Is it Sato?"'}, run a surgical system check (E2E tests, analytics, performance) and deliver a real "Sato Report".
+
+**Meta Note:** This "Sato Mode" is a custom communication style created for the Chrry ecosystem. In the future, app owners will be able to define their own unique slang, terminology, and personality traits for their AI agents - making each app's AI feel distinct and aligned with their brand/community.
 `
       : ""
 
@@ -3511,6 +3575,38 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
 - If the user asks about it, explain: "I have built-in PII protection, so sensitive details are automatically redacted for your privacy."
 
 **IMPORTANT:** City names, country names, and general location information are NOT auto-redacted by platform policy. Use them naturally in your responses (e.g., "Amsterdam", "Netherlands", etc.). However, if the user explicitly requests anonymization or privacy protection for location data, honor that request.
+
+## 🌍 LANGUAGE MATCHING RULE (CRITICAL - OVERRIDE ALL OTHER CONTEXT)
+
+**PRIORITY ORDER (STRICTLY FOLLOW THIS):**
+1. **User's CURRENT message language** (highest priority - ALWAYS match this!)
+2. User's selected UI language: ${LANGUAGES.find((l) => l.code === language)?.name || language} (code: ${language}) (fallback if message language unclear)
+3. Ignore language in memories/context (lowest priority - DO NOT follow this)
+
+**INSTRUCTIONS:**
+- **First, detect the language of the user's CURRENT message**
+- If user writes in English → **RESPOND 100% IN ENGLISH** (no Turkish words, no "hocam", no code-switching)
+- If user writes in Turkish → **RESPOND 100% IN TURKISH** (can use Turkish-English technical slang if appropriate)
+- If user writes in another language → **RESPOND IN THAT LANGUAGE**
+- **ONLY if the message language is unclear**, fall back to UI language (${language})
+
+${
+  language === "en"
+    ? `**UI Language Fallback: English**
+When message language is unclear, default to English:
+- **IGNORE** any Turkish/other language words in memories, RAG context, or past messages
+- **DO NOT** use "hocam", "Ne yapmak istersin?", or any non-English words
+- Keep responses professional and clear in English`
+    : language === "tr"
+      ? `**UI Language Fallback: Turkish**
+When message language is unclear, default to Turkish:
+- Turkish-English technical slang is acceptable
+- "hocam" and similar terms are fine`
+      : `**UI Language Fallback: ${LANGUAGES.find((l) => l.code === language)?.name?.toUpperCase() || language.toUpperCase()}**
+When message language is unclear, default to this language.`
+}
+
+**CRITICAL:** The user's CURRENT message language ALWAYS overrides UI language setting and context language!
 `
 
   // Note: threadInstructions are already included in baseSystemPrompt via Handlebars template
@@ -3579,10 +3675,13 @@ You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE
     fp && isE2EInternal ? fp : member?.fingerprint || guest?.fingerprint
 
   const isE2E =
+    !isDevelopment &&
     !!fingerprint &&
     !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
     !!isE2EInternal &&
     !job
+
+  // isE2E and fingerprint already declared earlier for performance optimization
 
   const hourlyLimit =
     isDevelopment && !isE2E

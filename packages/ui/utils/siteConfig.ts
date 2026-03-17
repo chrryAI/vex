@@ -69,9 +69,7 @@ export const getExtensionUrl = () => {
 }
 
 export const isProduction =
-  isTauri() ||
-  getEnv().NODE_ENV === "production" ||
-  getEnv().VITE_NODE_ENV === "production"
+  getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
 
 export const isDevelopment = checkIsExtension()
   ? [
@@ -363,7 +361,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as siteMode,
   slug: "focus",
-  version: "26.11.51",
+  version: "26.11.52",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -2918,8 +2916,8 @@ export function detectsiteModeDomain(
 
   const defaultMode = (getEnv().VITE_SITE_MODE as siteMode) || mode || devMode
 
-  if (isDevelopment && !checkIsExtension() && !isTauri()) {
-    return defaultMode || devMode
+  if (isDevelopment) {
+    return devMode
   }
   // Get hostname from parameter or window (client-side)
   const rawHost =

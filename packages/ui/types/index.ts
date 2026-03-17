@@ -63,6 +63,7 @@ export type user = {
   hasCalendarScope?: boolean
   city: string | null
   country: string | null
+  apiKey?: string
   weather?: {
     location: string
     country: string

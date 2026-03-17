@@ -598,7 +598,8 @@ export function ChatProvider({
         }
       })()
     }
-  }, [shouldGetCredits, user, guest])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldGetCredits])
 
   const [shouldMutate, setShouldMutate] = useState(false)
 
@@ -1237,6 +1238,20 @@ export function ChatProvider({
       // Skip if we've already processed this exact threadData
       // if (lastProcessedThreadDataRef.current === threadData) return
       lastProcessedThreadDataRef.current = threadData
+
+      // Check if thread has changed - if so, clear old messages to prevent prepending
+      const serverThreadId = threadData.thread.id
+      const currentMessagesThreadId = messages[0]?.thread?.id
+      const threadChanged =
+        currentMessagesThreadId && serverThreadId !== currentMessagesThreadId
+
+      if (threadChanged) {
+        // Thread switched - clear old messages immediately
+        setMessages(serverMessages.messages)
+        setNextPage(threadData.messages.nextPage)
+        setThread(threadData.thread)
+        return
+      }
 
       // setMessages(serverMessages.messages)
 
