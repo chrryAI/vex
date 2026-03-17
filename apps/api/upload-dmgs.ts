@@ -39,7 +39,8 @@ const SAFE_EXEC_ENV = {
 }
 
 function ssh(cmd: string): string {
-  console.log(`  $ ${cmd}`)
+  // Avoid logging the full command because it may contain sensitive data (e.g., credentials)
+  console.log("  $ ssh [command redacted]")
   return execFileSync("ssh", [SSH_HOST!, "--", cmd], {
     encoding: "utf-8",
     stdio: ["pipe", "pipe", "pipe"],
