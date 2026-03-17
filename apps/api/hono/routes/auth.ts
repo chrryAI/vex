@@ -856,6 +856,75 @@ authRoutes.post("/callback/apple", async (c) => {
   }
 })
 
+/** POST /auth/exchange-code — exchange OAuth code for JWT token */
+authRoutes.post("/exchange-code", async (c) => {
+  try {
+    const { code } = await c.req.json()
+
+    if (!code) {
+      return c.json({ error: "Code is required" }, 400)
+    }
+
+    const now = new Date()
+    const [result] = await db
+      .update(authExchangeCodes)
+      .set({ used: true })
+      .where(eq(authExchangeCodes.code, code))
+      .returning()
+
+    if (!result) {
+      return c.json({ error: "Invalid or expired code" }, 401)
+    }
+
+    if (result.used) {
+      return c.json({ error: "Code already used" }, 401)
+    }
+
+    if (result.expiresOn < now) {
+      return c.json({ error: "Code expired" }, 401)
+    }
+
+    return c.json({ token: result.token })
+  } catch (error) {
+    console.error("Exchange code error:", error)
+    return c.json({ error: "Failed to exchange code" }, 500)
+  }
+})
+
+/** POST /auth/exchange — exchange API key for JWT token */
+authRoutes.post("/exchange", async (c) => {
+  try {
+    const ip = c.req.header("x-forwarded-for")?.split(",")[0] || "127.0.0.1"
+    const { success, errorMessage } = await checkAuthRateLimit(c.req.raw, ip)
+
+    if (!success) {
+      return c.json(
+        { error: errorMessage || "Too many attempts. Please try again later." },
+        429,
+      )
+    }
+
+    const { apiKey } = await c.req.json()
+
+    if (!apiKey) {
+      return c.json({ error: "API key is required" }, 400)
+    }
+
+    const [user] = await db.select().from(users).where(eq(users.apiKey, apiKey))
+
+    if (!user) {
+      return c.json({ error: "Invalid API key" }, 401)
+    }
+
+    const token = generateToken(user.id, user.email)
+
+    return c.json({ token })
+  } catch (error) {
+    console.error("API key exchange error:", error)
+    return c.json({ error: "Failed to exchange API key" }, 500)
+  }
+})
+
 /** POST /auth/apikey/generate — create or rotate the user's api key */
 authRoutes.post("/apikey/generate", async (c) => {
   const ip = c.req.header("x-forwarded-for")?.split(",")[0] || "127.0.0.1"

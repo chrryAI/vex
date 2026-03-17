@@ -167,6 +167,8 @@ export function NavigationProvider({
     setShowFocus,
     plausible,
     siteConfig,
+    from,
+    user,
   } = useAuth()
 
   const goToThreads = (params?: Record<string, string>) => {
@@ -193,8 +195,12 @@ export function NavigationProvider({
     router.push(appSlug ? `/${appSlug}` : `/${slug}`)
   }
 
+  const isAccountVisibleInternal = Boolean(
+    user && (from === "desktop" || searchParams.get("account") === "true"),
+  )
+
   const [isAccountVisible, setIsAccountVisible] = useState(
-    searchParams.get("account") === "true",
+    isAccountVisibleInternal,
   )
 
   const { isStandalone, os } = usePlatform()
