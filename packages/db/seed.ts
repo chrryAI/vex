@@ -1892,11 +1892,11 @@ const prod = async () => {
 
   // await createAgents()
   // Ensure stores are created during seeding for automated tests and dev/prod parity
-  const { vex } = await createStores({ user: admin })
+  // const { vex } = await createStores({ user: admin })
 
   // await seedPearFeedback()
 
-  // await seedScheduledTribeJobs({ admin })
+  await seedScheduledTribeJobs({ admin })
 
   // await updateStoreUrls({ user: admin })
 
@@ -2040,8 +2040,8 @@ const seedDb = async (): Promise<void> => {
           )
         }
 
-        await clearDb()
-        await create()
+        // await clearDb()
+        // await create()
       }
     }
 
