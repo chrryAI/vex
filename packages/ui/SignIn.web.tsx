@@ -62,7 +62,7 @@ export default function SignIn({
     signInPart: part,
     setSignInPart: setPart,
     siteConfig,
-    setDeviceId,
+    from,
     refetchSession,
     plausible,
   } = useAuth()
@@ -193,7 +193,7 @@ export default function SignIn({
     // }
 
     isExtensionRedirect && successUrl.searchParams.set("extension", "true")
-
+    from && successUrl.searchParams.set("from", "true")
     // fingerprint && successUrl.searchParams.set("fp", fingerprint)
 
     return {
@@ -260,7 +260,7 @@ export default function SignIn({
     }
   }
 
-  const [isDesktopSignin, setIsDesktopSignin] = useState(false)
+  const [isDesktopSignin, setIsDesktopSignin] = useState(isDevelopment)
 
   const handleAppleSignIn = async () => {
     // Capacitor: Use Firebase Authentication
@@ -284,9 +284,11 @@ export default function SignIn({
         }
 
         const { token, jwt } = await response.json()
-        setToken(jwt || token) // Use JWT if available, fallback to token
-        setPart(undefined)
-        await refetchSession()
+        // setToken(jwt || token) // Use JWT if available, fallback to token
+        console.log(`🚀 ~ handleAppleSignIn ~ jwt:`, jwt)
+        console.log(`🚀 ~ handleAppleSignIn ~ token:`, token)
+        // setPart(undefined)
+        // await refetchSession()
         toast.success("Signed in successfully!")
       } catch (error) {
         console.error("Apple auth error:", error)
@@ -738,7 +740,7 @@ export default function SignIn({
                     style={{ width: "100%", paddingRight: "40px" }}
                   />
                   {apiKeyInput.length ? (
-                    <Button disabled={isSignInLoading}>
+                    <Button type="submit" disabled={isSignInLoading}>
                       {isSignInLoading ? (
                         <Loading width={20} height={20} />
                       ) : (

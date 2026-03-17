@@ -8,7 +8,6 @@ import type { Context } from "hono"
 import jwt from "jsonwebtoken"
 import { validate } from "uuid"
 import { captureException } from "../../lib/captureException"
-import { exchangeCodeForToken } from "./exchangeCode"
 
 export { getApp } from "./getApp"
 
@@ -51,12 +50,33 @@ export async function getMember(
   }
 
   try {
+    // Check for token in Authorization header
     const authHeader = c.req.header("authorization")
 
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.replace("Bearer ", "")
 
-      // Verify and decode the JWT token
+      // Basic JWT format validation
+      if (token.split(".").length !== 3) {
+        const fp = authHeader.replace("Bearer ", "")
+
+        const result = await getUser({
+          apiKey: fp,
+          skipCache: skipCache,
+          appId,
+        })
+        if (result) {
+          return {
+            ...result,
+            token,
+            password: full ? result.password : null,
+          } as userWithRelations
+        }
+
+        return
+      }
+
+      // Verify and decode the token
       const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!)
       if (decoded.email) {
         const user = await getUser({
@@ -73,31 +93,6 @@ export async function getMember(
           } as userWithRelations
         }
         return
-      } else {
-        // Could be an auth token (exchange code) or API key
-        // Try to exchange it first
-        const exchangedToken = await exchangeCodeForToken(token)
-
-        if (exchangedToken) {
-          // Successfully exchanged auth token for JWT
-          const jwtToken = exchangedToken
-        } else {
-          // Not an auth token, try as API key
-          const result = await getUser({
-            apiKey: token,
-            skipCache: skipCache,
-            appId,
-          })
-          if (result) {
-            return {
-              ...result,
-              token,
-              password: full ? result.password : null,
-            } as userWithRelations
-          }
-
-          return
-        }
       }
     }
   } catch (error) {
