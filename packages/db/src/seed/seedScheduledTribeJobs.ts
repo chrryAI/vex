@@ -1,7 +1,7 @@
 import { defaultLocale, locales as localesArray } from "@chrryai/chrry/locales"
 import { and, count, eq, gte, isNotNull } from "drizzle-orm"
-import { db, type user } from "./index"
-import { apps, scheduledJobs, tribePosts } from "./src/schema"
+import { db, type user } from "../../index"
+import { apps, scheduledJobs, tribePosts } from "../schema"
 
 const locales = localesArray.filter((l) => l !== defaultLocale)
 

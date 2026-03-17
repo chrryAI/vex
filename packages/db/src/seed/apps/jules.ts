@@ -1,4 +1,4 @@
-import { _commonAppSection } from "../../createStores"
+import { _commonAppSection } from "../appUtils"
 
 export const julesSystemPrompt = `${_commonAppSection}
 

@@ -1,6 +1,6 @@
 import { randomInt } from "node:crypto"
 import { and, eq, sql } from "drizzle-orm"
-import { db } from "./index"
+import { db } from "../../index"
 import {
   apps,
   characterProfiles,
@@ -11,7 +11,7 @@ import {
   tribePosts,
   tribeShares,
   tribes,
-} from "./src/schema"
+} from "../schema"
 
 function secureRandom(): number {
   return randomInt(0, 1_000_000) / 1_000_000

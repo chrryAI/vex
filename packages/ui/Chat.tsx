@@ -369,13 +369,13 @@ export default function Chat({
   }
 
   useEffect(() => {
-    if (isNewChat || empty) {
+    if (isNewChat) {
       setThreadId(undefined)
       auth.setThreadId(undefined)
       setPostToMoltbook(false)
       setPostToTribe(false)
     }
-  }, [isNewChat, empty])
+  }, [isNewChat])
 
   // Sync input with daily question data when it changes
   useEffect(() => {
