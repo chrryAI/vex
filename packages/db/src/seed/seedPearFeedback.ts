@@ -1,6 +1,6 @@
 import { randomInt } from "node:crypto"
 import { eq, sql } from "drizzle-orm"
-import { db } from "./index"
+import { db } from "../../index"
 
 import {
   aiAgents,
@@ -9,7 +9,7 @@ import {
   feedbackTransactions,
   pearFeedback,
   users,
-} from "./src/schema"
+} from "../schema"
 
 // Helper for random picking
 function pick<T>(arr: T[]): T {

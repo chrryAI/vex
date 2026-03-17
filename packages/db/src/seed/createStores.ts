@@ -1,9 +1,4 @@
-import enTranslations from "./en.json"
-import { extractTranslations } from "./extractTranslations"
-import {
-  getExampleInstructions,
-  type instructionBase,
-} from "./getExampleInstructions"
+import enTranslations from "../../en.json"
 import {
   createAppExtend,
   createOrUpdateApp as createOrUpdateAppInternal,
@@ -20,8 +15,20 @@ import {
   type store,
   updateStore,
   type user,
-} from "./index"
-import { aiAgents, appExtends, apps, guests, stores, users } from "./src/schema"
+} from "../../index"
+import { aiAgents, appExtends, apps, guests, stores, users } from "../schema"
+import {
+  getBenjaminPayload,
+  getGrokPayload,
+  getHarperPayload,
+  getLucasPayload,
+} from "../seed/apps/grok"
+import { extractTranslations } from "../seed/extractTranslations"
+import {
+  getExampleInstructions,
+  type instructionBase,
+} from "../seed/getExampleInstructions"
+import { getJulesPayload } from "./apps/jules"
 
 const createOrUpdateApp = async ({
   app,
@@ -8397,8 +8404,6 @@ You are an architecture expert. Design systems that grow with users, follow indu
   })
   if (!architect) throw new Error("Failed to add architect app")
 
-  const { getJulesPayload } = await import("./src/data/jules")
-
   let jules = await getApp({ slug: "jules" })
   const julesPayloadBase = getJulesPayload({
     userId: admin.id,
@@ -8463,13 +8468,6 @@ You are an architecture expert. Design systems that grow with users, follow indu
   // ============================================
   // 🚀 GROK TRIBE: NEXUS STORE
   // ============================================
-
-  const {
-    getGrokPayload,
-    getBenjaminPayload,
-    getHarperPayload,
-    getLucasPayload,
-  } = await import("./src/data/grok")
 
   const nexusStore = await getOrCreateStore({
     slug: "nexus",
@@ -9192,7 +9190,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     })
   }
 
-  await extractTranslations()
+  // await extractTranslations()
 
   // Seed fake Tribe engagement (posts, likes, reactions, comments, follows)
 

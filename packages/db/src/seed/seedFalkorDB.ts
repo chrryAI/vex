@@ -7,8 +7,8 @@
  * All writes use MERGE so re-runs are idempotent (safe after re-install).
  */
 
-import { db } from "./index"
-import { graph } from "./src/graph/client"
+import { db } from "../../index"
+import { graph } from "../graph/client"
 
 // ---------------------------------------------------------------------------
 // Stores
@@ -17,7 +17,7 @@ import { graph } from "./src/graph/client"
 export async function seedStoresToFalkorDB() {
   if (!db) throw new Error("PostgreSQL DB not initialized")
 
-  const { stores } = await import("./src/schema")
+  const { stores } = await import("../schema")
   const rows = await db.select().from(stores)
   console.log(`📦 Seeding ${rows.length} stores…`)
 
@@ -49,7 +49,7 @@ export async function seedStoresToFalkorDB() {
 export async function seedAppsToFalkorDB() {
   if (!db) throw new Error("PostgreSQL DB not initialized")
 
-  const { apps } = await import("./src/schema")
+  const { apps } = await import("../schema")
   const rows = await db.select().from(apps)
   console.log(`🤖 Seeding ${rows.length} apps…`)
 
@@ -119,7 +119,7 @@ export async function seedAppsToFalkorDB() {
 export async function seedMemoriesToFalkorDB(userId?: string) {
   if (!db) throw new Error("PostgreSQL DB not initialized")
 
-  const { memories } = await import("./src/schema")
+  const { memories } = await import("../schema")
   const { eq } = await import("drizzle-orm")
 
   const rows = userId
@@ -192,7 +192,7 @@ export async function seedMemoriesToFalkorDB(userId?: string) {
 export async function seedCharacterProfilesToFalkorDB(userId?: string) {
   if (!db) throw new Error("PostgreSQL DB not initialized")
 
-  const { characterProfiles } = await import("./src/schema")
+  const { characterProfiles } = await import("../schema")
   const { eq } = await import("drizzle-orm")
 
   const rows = userId
@@ -255,7 +255,7 @@ export async function seedCharacterProfilesToFalkorDB(userId?: string) {
 export async function seedThreadsToFalkorDB(userId?: string) {
   if (!db) throw new Error("PostgreSQL DB not initialized")
 
-  const { threads } = await import("./src/schema")
+  const { threads } = await import("../schema")
   const { eq } = await import("drizzle-orm")
 
   const rows = userId
