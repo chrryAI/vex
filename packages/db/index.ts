@@ -5540,6 +5540,7 @@ export function toSafeApp({
     storeId: app.storeId,
     extend: app.extend,
     pricing: app.pricing,
+    isSystem: app.isSystem,
     tier: app.tier,
     placeholder: app.placeholder,
     mainThreadId: app.mainThreadId,
