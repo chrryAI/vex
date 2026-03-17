@@ -6,7 +6,7 @@
 /// <reference types="chrome" />
 
 import { useCallback, useState } from "react"
-import { getExtensionUrls } from "../utils"
+import { getExtensionUrls, isDevelopment } from "../utils"
 import console from "../utils/log"
 import { isBrowserExtension, isNative } from "./PlatformProvider"
 import { storage } from "./storage"
@@ -218,7 +218,7 @@ async function getCookie(
     try {
       // Use the website URLs, not current tab
       let websiteUrls = getExtensionUrls()
-      if (currentUrl) {
+      if (!isDevelopment && currentUrl) {
         // Put current domain first so it takes priority
         websiteUrls = [
           currentUrl,

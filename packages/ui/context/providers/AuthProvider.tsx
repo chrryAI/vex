@@ -124,6 +124,8 @@ const AuthContext = createContext<
         timestamp: number
         duration?: number
       } | null
+      wasPear: boolean
+      setWasPear: (value: boolean) => void
       canShowAllTribe: boolean
       languageModal: string | undefined
       from: string
@@ -165,7 +167,7 @@ const AuthContext = createContext<
       setDeviceId: (value: string) => void
       pear: appWithStore | undefined
       isPear: boolean
-      setIsPear: (value: appWithStore | undefined, navigate?: boolean) => void
+      setPear: (value: appWithStore | undefined, navigate?: boolean) => void
       grapes: appWithStore[]
       setIsProgramme: (value: boolean) => void
       showTribeProfile: boolean
@@ -898,8 +900,9 @@ export function AuthProvider({
     siteConfig.url,
   )
 
-  const [tokenWeb, setTokenWeb, removeTokenWeb] = useCookie("token", ssrToken)
-
+  const [, , removeTokenWeb] = useCookie("token", ssrToken)
+  const tokenWeb = tokenExtension
+  const setTokenWeb = setTokenExtension
   const token =
     isExtension || isTauri || isCapacitor ? tokenExtension : tokenWeb
 
@@ -1326,7 +1329,7 @@ export function AuthProvider({
 
   const setIsManagingApp = (value: boolean) => {
     setIsManagingAppInternal(value)
-    value && isPear && setIsPear(undefined)
+    value && isPear && setPear(undefined)
   }
 
   const {
@@ -2426,13 +2429,15 @@ export function AuthProvider({
     searchParams.get("pear") === "true" &&
     (accountApp ? app?.id !== accountApp?.id : true)
 
-  const [isPear, setIsPearInternal] = useState(isPearInternal)
+  const [isPear, setPearInternal] = useState(isPearInternal)
 
   const pear = storeApps.find((app) => app.slug === "pear")
 
-  const setIsPear = (value: appWithStore | undefined, navigate?: boolean) => {
-    setIsPearInternal(!!value)
+  const [wasPear, setWasPear] = useState(isPear)
+  const setPear = (value: appWithStore | undefined, navigate?: boolean) => {
+    setPearInternal(!!value)
     if (value) {
+      setWasPear(true)
       toast.success(`${t("Let's Pear")} 🍐`)
       if (navigate) {
         router.push(`${getAppSlug(value)}?pear=true`)
@@ -2446,7 +2451,7 @@ export function AuthProvider({
     removeParams("pear")
   }
   useEffect(() => {
-    setIsPearInternal(isPearInternal)
+    setPearInternal(isPearInternal)
     if (isPearInternal) {
       setShowFocus(false)
       plausible({
@@ -3184,6 +3189,8 @@ export function AuthProvider({
         setEnableNotifications,
         loadingAppId,
         setLoadingAppId,
+        wasPear,
+        setWasPear,
         defaultInstructions,
         isSavingApp,
         setIsSavingApp,
@@ -3242,7 +3249,7 @@ export function AuthProvider({
         isPear,
         setSkipAppCacheTemp,
         skipAppCacheTemp,
-        setIsPear,
+        setPear,
         showCharacterProfiles,
         setShowCharacterProfiles,
         characterProfiles,

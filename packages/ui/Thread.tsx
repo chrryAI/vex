@@ -97,6 +97,9 @@ const Thread = ({
     setDailyQuestionIndex,
     minimize,
     postId,
+    wasPear,
+    isPear,
+    setPear,
     ...auth
   } = useAuth()
 
@@ -764,6 +767,22 @@ const Thread = ({
                                 <Img size={16} app={app} />
                               </Button>
                             </>
+                          ) : wasPear ? (
+                            <Button
+                              className="link"
+                              style={{
+                                ...utilities.link.style,
+                                gap: 10,
+                                fontSize: "0.85rem",
+                                order: minimize ? -1 : 0,
+                              }}
+                              onClick={() => {
+                                setPear(isPear ? undefined : app)
+                              }}
+                            >
+                              {isPear && <CircleX size={14} />}
+                              <Img slug={"pear"} size={18} />
+                            </Button>
                           ) : grapes?.length ? (
                             <Grapes
                               style={{

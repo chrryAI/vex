@@ -1,6 +1,6 @@
 import citiesData from "all-the-cities"
-import { db, isProd } from "./index"
-import { cities } from "./src/schema"
+import { db, isProd } from "../../index"
+import { cities } from "../schema"
 
 export const createCities = async () => {
   const insertedCities: {
@@ -24,7 +24,8 @@ export const createCities = async () => {
           (city) => city.name === item.name && city.country === item.country,
         ) ||
         existingCities.some(
-          (city) => city.name === item.name && city.country === item.country,
+          (city: { name: string; country: string }) =>
+            city.name === item.name && city.country === item.country,
         )
       ) {
         return

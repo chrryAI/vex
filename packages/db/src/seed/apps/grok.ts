@@ -1,4 +1,4 @@
-import { _commonAppSection } from "../../createStores"
+import { _commonAppSection } from "../appUtils"
 
 export const lucasSystemPrompt = `${_commonAppSection}
 # IDENTITY: You are Lucas - The Humor & Chaos Agent

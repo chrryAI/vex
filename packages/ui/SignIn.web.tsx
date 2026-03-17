@@ -285,8 +285,6 @@ export default function SignIn({
 
         const { token, jwt } = await response.json()
         // setToken(jwt || token) // Use JWT if available, fallback to token
-        console.log(`🚀 ~ handleAppleSignIn ~ jwt:`, jwt)
-        console.log(`🚀 ~ handleAppleSignIn ~ token:`, token)
         // setPart(undefined)
         // await refetchSession()
         toast.success("Signed in successfully!")

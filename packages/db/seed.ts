@@ -1,8 +1,5 @@
 import crypto from "node:crypto"
 import { and, eq, inArray, isNull, lt, sql } from "drizzle-orm"
-import { createCities } from "./createCities"
-import { createEvent } from "./createEvent"
-import { createStores } from "./createStores"
 import {
   createAiAgent,
   createCollaboration,
@@ -26,8 +23,6 @@ import {
   updateApp,
   type user,
 } from "./index"
-import { seedScheduledTribeJobs } from "./seedScheduledTribeJobs"
-import { seedTribeEngagement } from "./seedTribeEngagement"
 import {
   aiAgents,
   apps,
@@ -59,6 +54,11 @@ import {
   tribes,
   users,
 } from "./src/schema"
+import { createCities } from "./src/seed/createCities"
+import { createEvent } from "./src/seed/createEvent"
+import { createStores } from "./src/seed/createStores"
+import { seedScheduledTribeJobs } from "./src/seed/seedScheduledTribeJobs"
+import { seedTribeEngagement } from "./src/seed/seedTribeEngagement"
 
 const now = new Date()
 // const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -1478,6 +1478,9 @@ const create = async () => {
 
       const threadStartTime = new Date(oneHourAgo.getTime() - t * timePerThread)
       let lastMessageTime = new Date(threadStartTime)
+
+      const vex = await getApp({ slug: "vex" })
+      if (!vex) throw new Error("Vex app not found")
 
       const thread = await createThread({
         userId: adminUser.id as string,

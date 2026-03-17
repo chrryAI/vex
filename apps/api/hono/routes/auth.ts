@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto"
 import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
 import {
+  and,
   authExchangeCodes,
   createUser,
   db,
@@ -431,6 +432,7 @@ authRoutes.post("/signin/password", async (c) => {
     setCookieFromHost(c, token, "None")
 
     const authCode = await generateExchangeCode(token)
+
     return c.json(buildAuthResponse(user, authCode, callbackUrl, token))
   } catch (error) {
     console.error("Signin error:", error)
@@ -869,15 +871,31 @@ authRoutes.post("/exchange-code", async (c) => {
     const [result] = await db
       .update(authExchangeCodes)
       .set({ used: true })
-      .where(eq(authExchangeCodes.code, code))
+      .where(
+        and(
+          eq(authExchangeCodes.code, code),
+          eq(authExchangeCodes.used, false),
+        ),
+      )
       .returning()
 
     if (!result) {
-      return c.json({ error: "Invalid or expired code" }, 401)
-    }
+      // If we didn't find and update a row, it means it's either invalid, expired, or already used.
+      // Let's check if it exists at all to give a better error message.
+      const existing = await db.query.authExchangeCodes.findFirst({
+        where: eq(authExchangeCodes.code, code),
+      })
 
-    if (result.used) {
-      return c.json({ error: "Code already used" }, 401)
+      if (!existing) {
+        return c.json({ error: "Invalid code" }, 401)
+      }
+      if (existing.used) {
+        return c.json({ error: "Code already used" }, 401)
+      }
+      if (existing.expiresOn < now) {
+        return c.json({ error: "Code expired" }, 401)
+      }
+      return c.json({ error: "Invalid code state" }, 401)
     }
 
     if (result.expiresOn < now) {
