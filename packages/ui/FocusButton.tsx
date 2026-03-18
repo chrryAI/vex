@@ -547,7 +547,7 @@ export default function FocusButton({
             }
             setPlayKitasaku(!playKitasaku)
           }}
-          style={styles.greeting.style}
+          style={{ ...styles.greeting.style, cursor: "pointer" }}
         >
           <>
             <Span
