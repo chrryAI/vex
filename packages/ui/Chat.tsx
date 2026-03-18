@@ -23,10 +23,8 @@ import {
   useApp,
   useAuth,
   useChat,
-  useData,
   useError,
   useNavigationContext,
-  useTribe,
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import DeleteThread from "./DeleteThread"
@@ -109,17 +107,10 @@ import {
   apiFetch,
   BrowserInstance,
   capitalizeFirstLetter,
-  isDevelopment,
   isOwner,
-  MAX_FILE_LIMITS,
-  MAX_FILE_SIZES,
-  OWNER_CREDITS,
-  PROMPT_LIMITS,
 } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import { formatFileSize, validateFile } from "./utils/fileValidation"
-
-const MAX_FILES = MAX_FILE_LIMITS.chat
 
 export default function Chat({
   className,
@@ -205,7 +196,6 @@ export default function Chat({
   onTyping?: (isTyping: boolean) => void
 }): React.ReactElement {
   const { t, console } = useAppContext()
-  const { weather, actions } = useData()
 
   const styles = useChatStyles()
 
@@ -231,6 +221,8 @@ export default function Chat({
     taskId,
     fetchTasks,
     canBurn,
+    weather,
+    actions,
     isProgramme,
     burn,
     isPear,
@@ -261,8 +253,15 @@ export default function Chat({
     postId,
     burnApp,
     rtl,
+    isDevelopment,
+    MAX_FILE_LIMITS,
+    MAX_FILE_SIZES,
+    OWNER_CREDITS,
+    PROMPT_LIMITS,
     ...auth
   } = useAuth()
+
+  const MAX_FILES = MAX_FILE_LIMITS.chat
 
   const lastTribe = user?.lastTribe
   const lastMolt = user?.lastMolt

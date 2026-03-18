@@ -23,7 +23,7 @@ import type {
   tribePostWithDetails,
 } from "../../types"
 import { apiFetch } from "../../utils"
-import { useAuth, useData } from "."
+import { useAuth } from "."
 export type engagement = {
   tribePostId: string
 }
@@ -124,6 +124,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     tribes,
     setTribes,
     setLanguageModal,
+    actions,
+    API_URL,
     app, // Current selected app for filtering
     ...auth
   } = useAuth()
@@ -235,8 +237,6 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const setCharacterProfileIds = (val: string[] | undefined) => {
     setCharacterProfileIdsInternal(val)
   }
-
-  const { actions, API_URL } = useData()
 
   const canShowTribeProfile = showTribeProfile
 

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import toast from "react-hot-toast"
 import { COLORS, useAppContext } from "../context/AppContext"
-import { useAuth, useData, useNavigationContext } from "../context/providers"
+import { useAuth, useNavigationContext } from "../context/providers"
 import { useStyles } from "../context/StylesContext"
 import { useHasHydrated } from "../hooks"
 import Img from "../Image"
@@ -20,7 +20,16 @@ import { apiFetch } from "../utils"
 import { useAffiliateStyles } from "./Affiliate.styles"
 
 export default function Affiliate() {
-  const { user, token, API_URL, FRONTEND_URL, siteConfig: config } = useAuth()
+  const {
+    user,
+    token,
+    API_URL,
+    FRONTEND_URL,
+    siteConfig: config,
+    affiliateStats,
+    refetchAffiliateData,
+    loadingAffiliateStats,
+  } = useAuth()
   const { router, addParams } = useNavigationContext()
   const { t } = useAppContext()
 
@@ -30,9 +39,6 @@ export default function Affiliate() {
   const is = useHasHydrated()
 
   const { addHapticFeedback } = useTheme()
-
-  const { affiliateStats, refetchAffiliateData, loadingAffiliateStats } =
-    useData()
 
   const [creating, setCreating] = useState(false)
 

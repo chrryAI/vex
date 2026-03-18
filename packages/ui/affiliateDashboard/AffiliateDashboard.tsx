@@ -4,7 +4,7 @@ import clsx from "clsx"
 import { useEffect } from "react"
 import toast from "react-hot-toast"
 import { COLORS, useAppContext } from "../context/AppContext"
-import { useAuth, useData, useNavigationContext } from "../context/providers"
+import { useAuth, useNavigationContext } from "../context/providers"
 import {
   CircleArrowLeft,
   Clock,
@@ -28,11 +28,17 @@ export default function AffiliateDashboard() {
 
   const styles = useAffiliateDashboardStyles()
 
-  const { affiliateStats, refetchAffiliateData, loadingAffiliateStats } =
-    useData()
   const { addHapticFeedback } = useTheme()
 
-  const { user, token, API_URL, FRONTEND_URL } = useAuth()
+  const {
+    user,
+    token,
+    API_URL,
+    FRONTEND_URL,
+    affiliateStats,
+    refetchAffiliateData,
+    loadingAffiliateStats,
+  } = useAuth()
   const { router, setIsNewChat } = useNavigationContext()
 
   const copyLink = () => {

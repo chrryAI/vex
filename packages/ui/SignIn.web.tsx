@@ -17,7 +17,6 @@ import { useAppContext } from "./context/AppContext"
 import {
   useAuth,
   useChat,
-  useData,
   useError,
   useNavigationContext,
 } from "./context/providers"
@@ -65,6 +64,12 @@ export default function SignIn({
     from,
     refetchSession,
     plausible,
+    FRONTEND_URL,
+    isE2E,
+    isCI,
+    API_URL,
+    TEST_GUEST_FINGERPRINTS,
+    TEST_MEMBER_FINGERPRINTS,
   } = useAuth()
 
   const isGithubSignInAvailable = user?.role === "admin"
@@ -83,15 +88,6 @@ export default function SignIn({
     return signInContextInternal?.(provider, options)
   }
   const { t, console } = useAppContext()
-
-  const {
-    FRONTEND_URL,
-    isE2E,
-    isCI,
-    API_URL,
-    TEST_GUEST_FINGERPRINTS,
-    TEST_MEMBER_FINGERPRINTS,
-  } = useData()
 
   const isAppleSignInAvailable = true
 
@@ -193,7 +189,7 @@ export default function SignIn({
     // }
 
     isExtensionRedirect && successUrl.searchParams.set("extension", "true")
-    from && successUrl.searchParams.set("from", "true")
+    from && successUrl.searchParams.set("from", from)
     // fingerprint && successUrl.searchParams.set("fp", fingerprint)
 
     return {
@@ -233,7 +229,6 @@ export default function SignIn({
   const [password, setPassword] = React.useState("")
   const [apiKeyInput, setApiKeyInput] = React.useState("")
   const [isApiKeyLoading, setIsApiKeyLoading] = React.useState(false)
-  const [showApiKey, setShowApiKey] = React.useState(false)
 
   const handleApiKeyLogin = async () => {
     if (!apiKeyInput.trim()) return
@@ -249,6 +244,7 @@ export default function SignIn({
         setToken(data.token)
         setPart(undefined)
         await refetchSession()
+
         toast.success(t("Signed in successfully!"))
       } else {
         toast.error(data.error || t("Invalid API key"))
@@ -260,7 +256,7 @@ export default function SignIn({
     }
   }
 
-  const [isDesktopSignin, setIsDesktopSignin] = useState(isDevelopment)
+  const [isDesktopSignin, setIsDesktopSignin] = useState(false)
 
   const handleAppleSignIn = async () => {
     // Capacitor: Use Firebase Authentication
@@ -368,6 +364,16 @@ export default function SignIn({
   }, [])
 
   const handleGoogleAuth = async () => {
+    if (isTauri) {
+      const { open } = await import("@tauri-apps/plugin-shell")
+
+      const url = new URL(`${FRONTEND_URL}/?signIn=login&from=desktop`)
+
+      await open(url.toString())
+
+      setIsDesktopSignin(true)
+      return
+    }
     // Capacitor: Use Firebase Authentication
     if (isCapacitor) {
       try {
@@ -655,7 +661,7 @@ export default function SignIn({
       ) : (
         user && <Account />
       )}
-      {part && (
+      {!user && part && (
         <Modal
           icon={
             <video
@@ -750,63 +756,7 @@ export default function SignIn({
               </form>
             ) : (
               <div className={styles.signInButtons}>
-                {isTauri ? (
-                  /* Desktop: API key login — get key from chrry.ai/account */
-                  <form
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "10px",
-                    }}
-                    onSubmit={(e) => {
-                      e.preventDefault()
-                      handleApiKeyLogin()
-                    }}
-                  >
-                    <p style={{ margin: 0, opacity: 0.7, fontSize: "0.85rem" }}>
-                      {t("Paste your API key from")}{" "}
-                      <strong>chrry.ai → Account → API Key</strong>
-                    </p>
-                    <div style={{ position: "relative", width: "100%" }}>
-                      <input
-                        className={styles.input}
-                        type={showApiKey ? "text" : "password"}
-                        placeholder="chrry_live_..."
-                        value={apiKeyInput}
-                        onChange={(e) => setApiKeyInput(e.target.value)}
-                        style={{ width: "100%", paddingRight: "40px" }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowApiKey(!showApiKey)}
-                        style={{
-                          position: "absolute",
-                          right: "8px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          padding: "4px",
-                          opacity: 0.6,
-                          fontSize: "0.85rem",
-                        }}
-                        aria-label={
-                          showApiKey ? t("Hide API key") : t("Show API key")
-                        }
-                      >
-                        {showApiKey ? "🙈" : "👁️"}
-                      </button>
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={isApiKeyLoading || !apiKeyInput.trim()}
-                      style={{ width: "100%" }}
-                    >
-                      {isApiKeyLoading ? t("Signing in...") : t("Sign in")}
-                    </button>
-                  </form>
-                ) : (
+                {
                   <>
                     <Button
                       data-testid={
@@ -880,7 +830,7 @@ export default function SignIn({
                       </Button>
                     )}
                   </>
-                )}
+                }
               </div>
             )
           ) : (

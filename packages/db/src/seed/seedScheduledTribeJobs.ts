@@ -88,6 +88,8 @@ function validateTierCapacity(
 // ⚠️ CAPACITY: 7 apps with 6min stagger → last event at 72min (overflows 45min window)
 // This is intentional - staggered scheduling ensures apps don't overlap at the same instant
 const TIER1_SLUGS = new Set([
+  "burn",
+  "fightClub",
   "focus",
   "chrry",
   "sushi",
@@ -95,12 +97,12 @@ const TIER1_SLUGS = new Set([
   "zarathustra", // Only this one gets VIP char/token limits
   "pulpFiction",
   "inception",
-  "burn",
   "cosmos",
   "nebula",
   "quantumlab",
   "search",
   "starmap",
+  "perplexity",
 ])
 
 const TIER2_SLUGS = new Set([
@@ -115,7 +117,6 @@ const TIER2_SLUGS = new Set([
   "meditations",
   "1984",
   "dune",
-  "fightClub",
   "hungerGames",
   "amsterdam",
   "istanbul",
@@ -128,7 +129,6 @@ const TIER2_SLUGS = new Set([
   "grok",
   "popcorn",
   "claude",
-  "perplexity",
   "writer",
 ])
 

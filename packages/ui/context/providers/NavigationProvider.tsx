@@ -169,6 +169,7 @@ export function NavigationProvider({
     siteConfig,
     from,
     user,
+    signInPart,
   } = useAuth()
 
   const goToThreads = (params?: Record<string, string>) => {
@@ -195,13 +196,17 @@ export function NavigationProvider({
     router.push(appSlug ? `/${appSlug}` : `/${slug}`)
   }
 
-  const isAccountVisibleInternal = Boolean(
-    user && (from === "desktop" || searchParams.get("account") === "true"),
-  )
+  const isAccountVisibleInternal = Boolean(user && from === "desktop")
 
   const [isAccountVisible, setIsAccountVisible] = useState(
     isAccountVisibleInternal,
   )
+
+  useEffect(() => {
+    if (!isAccountVisibleInternal) return
+    setIsAccountVisible(true)
+    navigation.removeParams(["signIn", "from"])
+  }, [isAccountVisibleInternal, user])
 
   const { isStandalone, os } = usePlatform()
 

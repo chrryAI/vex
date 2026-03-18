@@ -29,7 +29,7 @@ function redactCacheKeyForLogging(key: string): string {
   // Mask API keys in user cache keys like "user:apiKey:<actual-api-key>"
   const apiKeyPrefix = "user:apiKey:"
   if (key.startsWith(apiKeyPrefix)) {
-    return apiKeyPrefix + "***REDACTED***"
+    return `${apiKeyPrefix}***REDACTED***`
   }
 
   // Fallback: if "apiKey" appears anywhere else, avoid logging the full key
