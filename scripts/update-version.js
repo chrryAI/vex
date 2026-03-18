@@ -50,7 +50,6 @@ const files = [
   "apps/extension/vite.config.ts",
   "packages/ui/package.json",
   "packages/pepper/package.json",
-  "packages/ui/context/providers/DataProvider.tsx",
   "packages/waffles/package.json",
   "packages/ui/utils/index.ts",
   "packages/db/package.json",

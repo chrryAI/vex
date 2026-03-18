@@ -1295,6 +1295,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 </Div>
               </H1>
               <Div
+                as="header"
                 style={{
                   display: "flex",
                   gap: ".5rem",
