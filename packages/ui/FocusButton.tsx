@@ -457,6 +457,7 @@ export default function FocusButton({
           <Button
             data-testid="preset-1"
             data-preset-min-1={presetMin1}
+            aria-pressed={activePomodoro === presetMin1}
             className={"transparent"}
             style={{
               ...utilities.transparent.style,
@@ -477,6 +478,7 @@ export default function FocusButton({
           <Button
             data-preset-min-2={presetMin2}
             data-testid="preset-2"
+            aria-pressed={activePomodoro === presetMin2}
             className="transparent"
             style={{
               ...utilities.transparent.style,
@@ -497,6 +499,7 @@ export default function FocusButton({
           <Button
             data-preset-min-3={presetMin3}
             data-testid="preset-3"
+            aria-pressed={activePomodoro === presetMin3}
             className={"transparent"}
             style={{
               ...utilities.transparent.style,
@@ -517,6 +520,23 @@ export default function FocusButton({
           </Button>
         </Div>
         <Span
+          role="button"
+          tabIndex={0}
+          aria-pressed={playKitasaku}
+          aria-label={playKitasaku ? t("Pause video") : t("Play video")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault()
+              if (videoRef.current && os === "ios") {
+                !playKitasaku
+                  ? videoRef.current.play().catch((error: any) => {
+                      console.error(error)
+                    })
+                  : videoRef.current.pause()
+              }
+              setPlayKitasaku(!playKitasaku)
+            }
+          }}
           onClick={() => {
             if (videoRef.current && os === "ios") {
               !playKitasaku
@@ -779,6 +799,7 @@ export default function FocusButton({
             <Button
               title={playBirds ? t("Pause sound") : t("Play sound")}
               aria-label={playBirds ? t("Pause sound") : t("Play sound")}
+              aria-pressed={playBirds}
               onClick={() => setPlayBirds(!playBirds)}
               className={"link"}
               style={{ ...(playBirds ? styles.active : {}) }}
