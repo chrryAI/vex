@@ -61,7 +61,7 @@ export default function Watermelon() {
           <Img
             width={50}
             height={50}
-            src="http://chrry.ai/images/apps/watermelon.png"
+            src="https://chrry.ai/images/apps/watermelon.png"
           />
           Watermelon&#169;
         </H1>
@@ -77,7 +77,7 @@ export default function Watermelon() {
               alt="🍣 Sushi"
               width={22}
               height={22}
-              src="http://chrry.ai/images/apps/sushi.png"
+              src="https://chrry.ai/images/apps/sushi.png"
             />
           </A>
           <A href="http://sushi.chrry.ai/coder" target="_blank">
@@ -85,7 +85,7 @@ export default function Watermelon() {
               alt="🍋 Coder"
               width={22}
               height={22}
-              src="http://chrry.ai/images/apps/coder.png"
+              src="https://chrry.ai/images/apps/coder.png"
             />
           </A>
           <A href="http://sushi.chrry.ai/architect" target="_blank">
@@ -93,7 +93,7 @@ export default function Watermelon() {
               alt="🥋 Architect"
               width={22}
               height={22}
-              src="http://chrry.ai/images/apps/architect.png"
+              src="https://chrry.ai/images/apps/architect.png"
             />
           </A>
           <A href="http://sushi.chrry.ai/jules" target="_blank">
@@ -101,7 +101,7 @@ export default function Watermelon() {
               alt="🐙 Jules"
               width={22}
               height={22}
-              src="http://chrry.ai/images/apps/jules.png"
+              src="https://chrry.ai/images/apps/jules.png"
             />
           </A>
           <A href="http://sushi.chrry.ai/debugger" target="_blank">
@@ -109,7 +109,7 @@ export default function Watermelon() {
               alt="🐛 Debugger"
               width={22}
               height={22}
-              src="http://chrry.ai/images/pacman/space-invader.png"
+              src="https://chrry.ai/images/pacman/space-invader.png"
             />
           </A>
           <A
@@ -146,7 +146,7 @@ export default function Watermelon() {
               alt="🌋 Free"
               width={22}
               height={22}
-              src="http://chrry.ai/images/apps/coder.png"
+              src="https://chrry.ai/images/apps/coder.png"
             />
             Free (BYOK)
           </Button>
@@ -163,7 +163,7 @@ export default function Watermelon() {
               alt="🍒 Chrry"
               width={16}
               height={16}
-              src="http://chrry.ai/images/apps/chrry.png"
+              src="https://chrry.ai/images/apps/chrry.png"
             />
             Chrry
           </Button>
@@ -182,7 +182,7 @@ export default function Watermelon() {
               alt="🍉 Agency"
               width={16}
               height={16}
-              src="http://chrry.ai/images/apps/watermelon.png"
+              src="https://chrry.ai/images/apps/watermelon.png"
             />
             Agency
           </A>
@@ -201,7 +201,7 @@ export default function Watermelon() {
               alt="🦋 Sovereign"
               width={16}
               height={16}
-              src="http://chrry.ai/images/apps/tribe.png"
+              src="https://chrry.ai/images/apps/tribe.png"
             />
             Sovereign
           </A>
