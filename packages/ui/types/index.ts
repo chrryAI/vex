@@ -75,6 +75,57 @@ export type user = {
   } | null
 }
 
+export type envType = "development" | "production" | "staging" | "local"
+
+export type weather = {
+  location: string
+  country: string
+  temperature: string
+  condition: string
+  code: number
+  createdOn: Date
+  lastUpdated: Date
+}
+
+export type instructionBase = {
+  id: string
+  title: string
+  emoji?: string
+  requiresWebSearch?: boolean
+  content?: string
+  appName?: string
+  appId?: string | null // Match instruction type from schema
+}
+
+export type affiliateStats = {
+  hasAffiliateLink: boolean
+  code?: string
+  affiliateLink?: string
+  stats?: {
+    clicks: number
+    conversions: number
+    totalRevenue: number
+    commissionEarned: number
+    commissionPaid: number
+    commissionPending: number
+    commissionRate: number
+    status: string
+  }
+  referrals?: {
+    total: number
+    pending: number
+    converted: number
+    paid: number
+  }
+  createdOn?: string
+  pendingPayout?: {
+    id: string
+    amount: number
+    status: string
+    requestedOn: string
+  }
+}
+
 export type newUser = Partial<user>
 
 // Device types

@@ -10,9 +10,9 @@ import {
 } from "./platform"
 import { useSelectStyles } from "./Select.styles"
 
-export interface SelectProps extends Omit<PlatformSelectProps, "options"> {
+export interface selectProps extends Omit<PlatformSelectProps, "options"> {
   options: { value: string; label: string }[]
-  dataTestId?: string
+  "data-testid"?: string
 }
 
 export default function Select({
@@ -26,9 +26,9 @@ export default function Select({
   id,
   disabled,
   required,
-  dataTestId,
+  "data-testid": dataTestId,
   ...rest
-}: SelectProps) {
+}: selectProps) {
   const styles = useSelectStyles()
   const generatedId = React.useId()
 
@@ -37,7 +37,7 @@ export default function Select({
       <PlatformSelect
         className={"select"}
         name={name}
-        dataTestId={dataTestId}
+        data-testid={dataTestId}
         id={id || generatedId}
         defaultValue={defaultValue}
         value={value}

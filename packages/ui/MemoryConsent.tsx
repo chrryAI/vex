@@ -8,7 +8,6 @@ import { useAppContext } from "./context/AppContext"
 import {
   useApp,
   useAuth,
-  useData,
   useError,
   useNavigationContext,
 } from "./context/providers"
@@ -47,6 +46,7 @@ export default function MemoryConsent({
     refetchSession,
     app,
     plausible,
+    actions,
     ...auth
   } = useAuth()
 
@@ -60,7 +60,6 @@ export default function MemoryConsent({
 
   const { clear } = useCache()
   const { isManagingApp, minimize } = useApp()
-  const { actions } = useData()
 
   const { captureException } = useError()
 

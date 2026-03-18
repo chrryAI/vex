@@ -77,26 +77,39 @@ The future isn't a hierarchy of AIs; it's an **ecology**.
 
 ## ⚡ Quick Start
 
-Prerequisites
-Node.js 18+
+### 🏠 Self-Hosted (Recommended)
 
-pnpm 9+
+Run Vex entirely on your local machine with Docker. **No cloud dependencies required.**
 
-PostgreSQL 14+ (with `pgvector` extension)
-
-FalkorDB (for Knowledge Graph RAG)
-
-Installation
-Clone the Monorepo
-
-Bash
-
+```bash
+# Clone and install
 git clone https://github.com/chrryai/vex.git
 cd vex
-Install Dependencies
+pnpm install
 
-Bash
+# Start local infrastructure (PostgreSQL, Redis, MinIO, FalkorDB, Mailhog)
+pnpm local:setup
 
+# Add your API keys to .env.local
+# OPENAI_API_KEY=sk-...
+
+# Start development
+pnpm dev:all
+```
+
+**That's it!** Everything runs locally. See [SELF_HOSTING.md](SELF_HOSTING.md) for full guide.
+
+### ☁️ Cloud Setup (Alternative)
+
+Prerequisites:
+- Node.js 18+
+- pnpm 9+
+- PostgreSQL 14+ (with `pgvector` extension)
+- FalkorDB (for Knowledge Graph RAG)
+
+```bash
+git clone https://github.com/chrryai/vex.git
+cd vex
 pnpm install
 Environment Setup
 

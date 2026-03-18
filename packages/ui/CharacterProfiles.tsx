@@ -7,7 +7,7 @@ import CharacterProfile from "./CharacterProfile"
 import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
 import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
-import { useAuth, useData } from "./context/providers"
+import { useAuth } from "./context/providers"
 import { CircleX, Link, Sparkles, Trash2 } from "./icons"
 import Loading from "./Loading"
 import { updateUser } from "./lib"
@@ -32,9 +32,8 @@ export default function CharacterProfiles({
     setGuest,
     setUser,
     burn,
+    actions,
   } = useAuth()
-
-  const { actions } = useData()
 
   const [isUpdating, setIsUpdating] = useState(false)
 

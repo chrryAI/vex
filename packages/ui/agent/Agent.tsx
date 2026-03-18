@@ -1113,7 +1113,7 @@ export default function Agent({
                       control={control}
                       render={({ field }) => (
                         <Select
-                          dataTestId="visibility-select"
+                          data-testid="visibility-select"
                           style={{ ...styles.select.style }}
                           id="visibility"
                           options={[
@@ -1335,7 +1335,7 @@ export default function Agent({
                     control={control}
                     render={({ field }) => (
                       <Select
-                        dataTestId="tier-select"
+                        data-testid="tier-select"
                         style={{ ...styles.select.style }}
                         id="tier"
                         options={[

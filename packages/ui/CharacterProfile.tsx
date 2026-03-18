@@ -3,7 +3,7 @@
 import { type CSSProperties, useEffect, useState } from "react"
 import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
 import { useAppContext } from "./context/AppContext"
-import { useAuth, useChat, useData } from "./context/providers"
+import { useAuth, useChat } from "./context/providers"
 import { CircleX, Lock, Pin, PinOff, Share, Sparkles, Unlock } from "./icons"
 import Loading from "./Loading"
 import { updateThread } from "./lib"
@@ -26,8 +26,6 @@ export default function CharacterProfile({
 
   const styles = useCharacterProfilesStyles()
 
-  const { actions } = useData()
-
   useEffect(() => {
     setCharacterProfile(props.characterProfile)
   }, [props.characterProfile])
@@ -36,8 +34,15 @@ export default function CharacterProfile({
   const { t } = useAppContext()
 
   // Auth context
-  const { token, user, guest, setUser, setGuest, setShowCharacterProfiles } =
-    useAuth()
+  const {
+    token,
+    user,
+    guest,
+    actions,
+    setUser,
+    setGuest,
+    setShowCharacterProfiles,
+  } = useAuth()
 
   // Chat context
   const { thread, refetchThread } = useChat()

@@ -11,7 +11,6 @@ import {
   useApp,
   useAuth,
   useChat,
-  useData,
   useNavigationContext,
 } from "./context/providers"
 import { useTribe } from "./context/providers/TribeProvider"
@@ -104,9 +103,9 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     getAppSlug,
     setLanguage,
     rtl,
+    FRONTEND_URL,
   } = useAuth()
   const { setAppStatus } = useApp()
-  const { FRONTEND_URL } = useData()
   const { utilities } = useStyles()
 
   const [tyingToReact, setTyingToReact] = useState("")

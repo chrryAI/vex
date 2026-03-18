@@ -23,7 +23,6 @@ import {
   getHarperPayload,
   getLucasPayload,
 } from "../seed/apps/grok"
-import { extractTranslations } from "../seed/extractTranslations"
 import {
   getExampleInstructions,
   type instructionBase,

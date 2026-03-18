@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect } from "react"
 import { CircleFlag } from "react-circle-flags"
 import { COLORS } from "./context/AppContext"
-import { useApp } from "./context/providers"
+import { useApp, useAuth } from "./context/providers"
 import Img from "./Img"
 import {
   Claude,
@@ -18,12 +18,6 @@ import {
 import { getImageSrc } from "./lib"
 import { Span, Text } from "./platform"
 import type { appWithStore, store } from "./types"
-import {
-  API_URL,
-  FRONTEND_URL,
-  isDevelopment,
-  PROD_FRONTEND_URL,
-} from "./utils"
 
 type ImageProps = {
   slug?: "atlas" | "peach" | "vault" | "bloom" | string
@@ -32,7 +26,7 @@ type ImageProps = {
   size?: number
   title?: string
   showLoading?: boolean
-  dataTestId?: string
+  "data-testid"?: string
   src?: string
   logo?:
     | "lifeOS"
@@ -103,15 +97,17 @@ export default function ImageComponent(props: ImageProps) {
     app,
     style,
     containerClass,
-    dataTestId,
+    "data-testid": dataTestId,
     onLoad,
     icon,
     priority,
   } = props
 
-  const BASE_URL = FRONTEND_URL
-
   const { appFormWatcher, canEditApp } = useApp()
+
+  const { API_URL, FRONTEND_URL, isDevelopment, PROD_FRONTEND_URL } = useAuth()
+
+  const BASE_URL = FRONTEND_URL
 
   const { src, width, height, size } = getImageSrc({
     ...props,
@@ -391,7 +387,7 @@ export default function ImageComponent(props: ImageProps) {
       <Img
         key={src}
         onLoad={onLoad}
-        dataTestId={dataTestId}
+        data-testid={dataTestId}
         containerClass={containerClass}
         style={style}
         className={className}

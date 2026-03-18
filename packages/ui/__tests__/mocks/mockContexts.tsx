@@ -37,6 +37,10 @@ const defaultMockAuth = {
   postToMoltbook: false,
   moltPlaceHolder: [],
   canShowTribe: true,
+  MAX_FILE_LIMITS: { chat: 10, thread: 10 },
+  MAX_FILE_SIZES: { chat: 10 * 1024 * 1024, thread: 10 * 1024 * 1024 },
+  OWNER_CREDITS: 0,
+  PROMPT_LIMITS: { chat: 2000, thread: 2000 },
 }
 
 export const mockAuth: any = {
@@ -295,11 +299,6 @@ export const mockTheme: any = {
   isSmallDevice: false,
   isMobileDevice: false,
   reduceMotion: false,
-}
-
-export const mockData: any = {
-  weather: null,
-  actions: { updateGuest: vi.fn() },
 }
 
 export const mockAppContext = {

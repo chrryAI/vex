@@ -2040,7 +2040,7 @@ const seedDb = async (): Promise<void> => {
           )
         }
 
-        // await clearDb()
+        await clearDb()
         // await create()
       }
     }

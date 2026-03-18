@@ -8,12 +8,7 @@ import CharacterProfiles from "../CharacterProfiles"
 import Checkbox from "../Checkbox"
 import ConfirmButton from "../ConfirmButton"
 import { useAppContext } from "../context/AppContext"
-import {
-  useAuth,
-  useData,
-  useError,
-  useNavigationContext,
-} from "../context/providers"
+import { useAuth, useError, useNavigationContext } from "../context/providers"
 import { useStyles } from "../context/StylesContext"
 import { useRouter, useSearchParams } from "../hooks/useWindowHistory"
 import Img from "../Image"
@@ -30,7 +25,15 @@ import {
 import Loading from "../Loading"
 import { uploadUserImage } from "../lib"
 import Modal from "../Modal"
-import { Button, Div, FilePicker, Input, P, useTheme } from "../platform"
+import {
+  Button,
+  Div,
+  FilePicker,
+  Input,
+  P,
+  usePlatform,
+  useTheme,
+} from "../platform"
 import {
   apiFetch,
   BrowserInstance,
@@ -47,7 +50,8 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
   const { isMobileDevice } = useTheme()
   const { utilities } = useStyles()
 
-  // Split contexts for better organization
+  const { isTauri } = usePlatform()
+
   const { t } = useAppContext()
 
   // Auth context
@@ -62,6 +66,10 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
     FRONTEND_URL,
     API_URL,
     downloadUrl,
+    from,
+    setEnv,
+    env,
+    actions,
   } = useAuth()
 
   const { isAccountVisible: isModalOpen, setIsAccountVisible: setIsModalOpen } =
@@ -71,10 +79,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
 
   const { addHapticFeedback } = useTheme()
 
-  const { setEnv, env, actions } = useData()
-
   const searchParams = useSearchParams()
-  const _innerRef = React.useRef<HTMLDivElement>(null)
   const isExtension = checkIsExtension()
   const isAppleAvailable = false
   const isOAuthAccountNotLinkedError =
@@ -217,6 +222,10 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
     }
 
     await signOut()
+
+    if (isTauri) {
+      return
+    }
     // setIsModalOpen(false)
 
     if (!isExtension) {
@@ -319,7 +328,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
         {t("Account")}
       </Button>
       <Modal
-        params="?account=true"
+        params={`?account=true&from=${from}`}
         hideOnClickOutside={false}
         hasCloseButton
         icon={"🎉"}

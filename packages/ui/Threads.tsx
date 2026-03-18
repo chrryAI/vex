@@ -5,7 +5,7 @@ import useSWR from "swr"
 import type { collaboration, thread, user } from "../ui/types"
 import Bookmark from "./Bookmark"
 import { useAppContext } from "./context/AppContext"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
+import { useAuth, useNavigationContext } from "./context/providers"
 import EditThread from "./EditThread"
 import { useLocalStorage } from "./hooks"
 import Img from "./Image"
@@ -64,6 +64,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     loadingAppId,
     setLoadingAppId,
     hasStoreApps,
+    actions,
   } = useAuth()
 
   const styles = useThreadsStyles()
@@ -132,8 +133,6 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
   const [search, setSearch] = useState("")
 
   const [isLoading, setIsLoading] = useState(true)
-
-  const { actions } = useData()
 
   const {
     data: threadsData,

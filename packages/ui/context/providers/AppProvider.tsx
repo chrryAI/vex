@@ -27,7 +27,6 @@ import { customZodResolver } from "../../utils/customZodResolver"
 import type { instructionBase } from "../../utils/getExampleInstructions"
 import isOwner from "../../utils/isOwner"
 import { useAuth } from "./AuthProvider"
-import { useData } from "./DataProvider"
 import { useError } from "./ErrorProvider"
 
 export { COLORS } from "../ThemeContext"
@@ -214,10 +213,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     accountApp,
     getAppSlug,
     refetchAccountApps,
+    actions,
     ...auth
   } = useAuth()
   const threadId = auth.threadId || auth?.threadIdRef.current
-  const { actions } = useData()
 
   const { t } = useTranslation()
 

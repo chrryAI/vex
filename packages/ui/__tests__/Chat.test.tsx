@@ -14,7 +14,6 @@ import {
   mockAppContext,
   mockAuth,
   mockChat,
-  mockData,
   mockNavigation,
   mockPlatform,
   mockStyles,
@@ -32,10 +31,21 @@ vi.mock("../context/providers", () => ({
   useChat: () => mockChat,
   useApp: () => mockApp,
   useNavigationContext: () => mockNavigation,
-  useData: () => mockData,
   useError: () => ({ captureException: vi.fn() }),
   useTribe: () => ({ tribePost: null }),
 }))
+
+vi.mock("../context/providers/AuthProvider", () => ({
+  useAuth: () => mockAuth,
+}))
+
+vi.mock("../utils", async (importOriginal) => {
+  const actual = (await importOriginal()) as any
+  return {
+    ...actual,
+    MAX_FILE_LIMITS: { chat: 10 },
+  }
+})
 
 // Mock platform module
 vi.mock("../platform", async (importOriginal) => {
