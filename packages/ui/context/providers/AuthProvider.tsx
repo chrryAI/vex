@@ -959,7 +959,6 @@ export function AuthProvider({
 
   const ssrToken =
     props?.session?.user?.token || props?.session?.guest?.fingerprint || apiKey
-  // Local state for token and versions (no dependency on DataProvider)
   const [tokenExtension, setTokenExtension] = useCookieOrLocalStorage(
     "token",
     ssrToken,
