@@ -520,7 +520,7 @@ export function AuthProvider({
     utils.MEMBER_FREE_TRIBE_CREDITS,
   )
   const [PLUS_TASKS_COUNT, setPLUS_TASKS_COUNT] = useState(
-    utils.GUEST_TASKS_COUNT,
+    utils.PLUS_TASKS_COUNT,
   )
   const [WS_URL, setWS_URL] = useState(utils.WS_URL)
 
