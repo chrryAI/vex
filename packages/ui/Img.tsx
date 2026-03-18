@@ -20,7 +20,7 @@ interface ImgProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   className?: string
   onLoad?: () => void
   containerClass?: string
-  dataTestId?: string
+  "data-testid"?: string
   style?: React.CSSProperties
   showLoading?: boolean
   priority?: boolean // Skip lazy loading for above-fold images
@@ -38,7 +38,7 @@ export default function Img({
   containerClass,
   className,
   style,
-  dataTestId,
+  "data-testid": dataTestId,
   handleDimensionsChange,
   showLoading = true,
   onLoad,
@@ -151,6 +151,7 @@ export default function Img({
             src={imageSrc}
             alt={alt}
             className={className}
+            data-testid={dataTestId}
             style={{
               ...imgStyles.img.style,
               width,

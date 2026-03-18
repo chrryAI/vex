@@ -28,6 +28,7 @@ export default function Modal({
   scrollable,
   id,
   borderHeader = true,
+  "data-testid": dti,
   dataTestId,
   hideOnClickOutside = true,
   style,
@@ -41,6 +42,7 @@ export default function Modal({
   isModalOpen?: boolean
   hasCloseButton?: boolean
   children: React.ReactNode
+  dataTestId?: string
   title: React.ReactNode
   onToggle?: (open: boolean) => void
   event?: {
@@ -50,7 +52,7 @@ export default function Modal({
   scrollable?: boolean
   borderHeader?: boolean
   icon?: React.ReactNode | "blob"
-  dataTestId?: string
+  "data-testid"?: string
   style?: React.CSSProperties
 }) {
   const { viewPortHeight, viewPortWidth } = usePlatform()
@@ -190,7 +192,7 @@ export default function Modal({
         >
           <Div
             className="slideUp"
-            data-testid={dataTestId}
+            data-testid={dti || dataTestId}
             ref={innerRef}
             id={id}
             tabIndex={-1}

@@ -30,7 +30,6 @@ import type {
 } from "./types"
 import { isOwner } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
-import { isE2E } from "./utils/siteConfig"
 
 export default forwardRef<
   HTMLDivElement,

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
+import { useAuth, useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Img"
 import {
@@ -53,7 +53,7 @@ export default function Share({
   const [isOpen, setIsOpen] = useState(false)
   const [_copied, setCopied] = useState(false)
   const { collaborationStep } = useNavigationContext()
-  const { token, FRONTEND_URL, API_URL } = useAuth()
+  const { token, FRONTEND_URL, API_URL, actions } = useAuth()
 
   const { t, captureException } = useAppContext()
   const [visibility, setVisibility] = useState(thread.visibility)
@@ -257,7 +257,6 @@ export default function Share({
     }
   }
 
-  const { actions } = useData()
   const handleRevoke = async (collaborationId: string) => {
     if (!token) return
     setIsRevoking(true)

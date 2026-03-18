@@ -1,3 +1,6 @@
+/**
+ * @vitest-environment happy-dom
+ */
 import { fireEvent, render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import Message from "../Message"
@@ -6,7 +9,6 @@ import {
   mockAppContext,
   mockAuth,
   mockChat,
-  mockData,
   mockNavigation,
   mockPlatform,
   mockStyles,
@@ -30,7 +32,6 @@ vi.mock("../context/providers", () => ({
   useChat: () => mockChat,
   useApp: () => mockApp,
   useNavigationContext: () => mockNavigation,
-  useData: () => mockData,
   useError: () => ({ captureException: vi.fn() }),
 }))
 
@@ -164,7 +165,10 @@ vi.mock("../utils", async (importOriginal) => {
       (item, { userId }) => item.userId === userId || item.user?.id === userId,
     ),
     getInstructionConfig: vi.fn(() => ({ weather: "sunny" })),
-    apiFetch: vi.fn(),
+    apiFetch: vi.fn().mockResolvedValue({
+      json: () => Promise.resolve({}),
+      blob: () => Promise.resolve(new Blob()),
+    }),
   }
 })
 

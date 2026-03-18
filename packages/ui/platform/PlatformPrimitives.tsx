@@ -178,6 +178,7 @@ export interface ImageProps extends BaseProps {
   src?: string
   source?: { uri: string } | number
   alt?: string
+  title?: string
   width?: number | string
   height?: number | string
   onLoad?: () => void
@@ -644,7 +645,10 @@ export const ScrollView = forwardRef<HTMLDivElement, ScrollViewProps>(
 ScrollView.displayName = "ScrollView"
 
 export const Image = forwardRef<HTMLImageElement, ImageProps>(
-  ({ src, source, alt, className, style, width, height, ...props }, ref) => {
+  (
+    { src, title, source, alt, className, style, width, height, ...props },
+    ref,
+  ) => {
     const imageSrc =
       src ||
       (source && typeof source === "object" && "uri" in source
@@ -656,6 +660,7 @@ export const Image = forwardRef<HTMLImageElement, ImageProps>(
         ref={ref}
         src={imageSrc}
         alt={alt}
+        title={title || alt}
         className={className}
         style={style}
         width={width}

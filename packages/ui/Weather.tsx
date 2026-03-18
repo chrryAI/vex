@@ -5,7 +5,7 @@ import { t } from "i18next"
 import React, { useState } from "react"
 import { toast } from "react-hot-toast"
 import AsyncSelect from "react-select/async"
-import { useAuth, useData } from "./context/providers"
+import { useAuth } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 // import styles from "./Weather.module.scss"
 import {
@@ -102,13 +102,21 @@ export default function Weather({
   showLocation?: boolean
   onLocationClick?: (location: string) => void
 }) {
-  const { weather, refetchWeather, actions } = useData()
-
   const styles = useWeatherStyles()
 
   const { utilities } = useStyles()
 
-  const { user, guest, token, setUser, setGuest, API_URL } = useAuth()
+  const {
+    user,
+    guest,
+    token,
+    setUser,
+    setGuest,
+    API_URL,
+    weather,
+    refetchWeather,
+    actions,
+  } = useAuth()
 
   const [isLoading, setIsLoading] = useState(false)
 

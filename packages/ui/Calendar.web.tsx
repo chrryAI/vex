@@ -36,7 +36,7 @@ import toast from "react-hot-toast"
 
 import styles from "./Calendar.module.scss"
 import { COLORS, useAppContext } from "./context/AppContext"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
+import { useAuth, useNavigationContext } from "./context/providers"
 import EventModal, { type modalData } from "./EventModal"
 import { useHasHydrated } from "./hooks"
 import { useWebSocket } from "./hooks/useWebSocket"
@@ -238,8 +238,6 @@ export default function Calendar({
   defaultDate?: Date
   className?: string
 }) {
-  const { actions } = useData()
-
   useHasHydrated()
 
   const [calendarEvents, setCalendarEvents] = useState<calendarEvent[]>([])
@@ -281,11 +279,11 @@ export default function Calendar({
   const [date, setDate] = useState<Date>(new Date()) // Force current date
   const {
     token,
-    API_URL,
     signInContext,
     user,
     language: locale,
     deviceId,
+    actions,
   } = useAuth()
   const { os, device } = usePlatform()
 

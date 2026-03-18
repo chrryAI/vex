@@ -5,7 +5,6 @@ import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
 import { useAuth } from "./context/providers"
 import { useChat } from "./context/providers/ChatProvider"
-import { useData } from "./context/providers/DataProvider"
 import { useStyles } from "./context/StylesContext"
 import { CircleCheck, CircleX, UsersRound } from "./icons"
 import Loading from "./Loading"
@@ -33,7 +32,7 @@ export default function CollaborationStatus({
 
   const { t } = useAppContext()
   const { setCollaborationStatus } = useChat()
-  const { user, token } = useAuth()
+  const { user, token, actions } = useAuth()
   const { isMobileDevice } = useTheme()
   const [isLoading, setIsLoading] = useState(false)
   const [status, setStatus] = useState<
@@ -43,8 +42,6 @@ export default function CollaborationStatus({
   const collaboration = thread.collaborations?.find(
     (collaboration) => collaboration.user.id === user?.id,
   )
-
-  const { actions } = useData()
 
   useEffect(() => {
     if (collaboration) {

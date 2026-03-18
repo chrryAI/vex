@@ -9,7 +9,6 @@ import {
   useApp,
   useAuth,
   useChat,
-  useData,
   useError,
   useNavigationContext,
 } from "./context/providers"
@@ -105,6 +104,7 @@ function Message({
     setShowTribe,
     plausible,
     isPear,
+    actions,
   } = useAuth()
 
   const styles = useMessageStyles()
@@ -336,7 +336,15 @@ function Message({
         body: JSON.stringify({ text }),
       })
 
+      if (!response.ok) {
+        throw new Error(`TTS API failed with status: ${response.status}`)
+      }
+
       const data = await response.json()
+
+      if (!data) {
+        throw new Error("TTS API returned no data")
+      }
 
       if (data.usage) {
         user &&
@@ -445,8 +453,6 @@ function Message({
       })
     }
   }, [message?.thread?.collaborations, isTyping, isOnline])
-
-  const { actions } = useData()
 
   useEffect(() => {
     setWebSearchResult(message.parentMessage?.webSearchResult || [])
@@ -834,7 +840,6 @@ function Message({
                   />
                 ) : (
                   <Img
-                    showLoading={false}
                     src={`${FRONTEND_URL}/images/pacman/space-invader.png`}
                     alt="Space Invader"
                     width={35}
@@ -879,7 +884,6 @@ function Message({
                   />
                 ) : (
                   <Img
-                    showLoading={false}
                     src={`${FRONTEND_URL}/images/pacman/space-invader.png`}
                     alt="Space Invader"
                     width={35}
@@ -923,7 +927,7 @@ function Message({
                       <Div key={image.id} style={{ position: "relative" }}>
                         <Img
                           style={styles.userMessageImage.style}
-                          dataTestId="user-message-image"
+                          data-testid="user-message-image"
                           src={image.url}
                           alt={image.title}
                           width={200}
@@ -1088,7 +1092,6 @@ function Message({
                   />
                 ) : (
                   <Img
-                    showLoading={false}
                     src={`${FRONTEND_URL}/images/pacman/space-invader.png`}
                     alt="Space Invader"
                     size={35}
@@ -1131,7 +1134,7 @@ function Message({
                 ...styles.updateModalDescriptionButton.style,
               }}
             >
-              <Img app={app} showLoading={false} size={50} />
+              <Img app={app} size={50} />
             </Button>
           ))}
         </Div>
@@ -1167,7 +1170,7 @@ function Message({
                 ) : null}
               </>
             ) : (
-              <Img app={app} showLoading={false} size={35} />
+              <Img app={app} size={35} />
             )}
             <Span style={styles.agentMessageTime.style}>
               {timeAgo(message.message.createdOn, language)}
@@ -1217,7 +1220,7 @@ function Message({
               </>
             ) : (
               <Span style={styles.appIcon.style}>
-                <Img app={app} showLoading={false} size={35} />
+                <Img app={app} size={35} />
                 <Span>{app?.name || "Vex"}</Span>
               </Span>
             )}
@@ -1458,7 +1461,7 @@ function Message({
                     ) : agent?.name === "grok" ? (
                       <Grok color="var(--accent-6)" size={19} />
                     ) : agent?.name === "sushi" ? (
-                      <Img icon="sushi" showLoading={false} size={19} />
+                      <Img icon="sushi" size={19} />
                     ) : null}
                   </Span>
                 )}

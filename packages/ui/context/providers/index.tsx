@@ -8,7 +8,6 @@ export { PlatformProvider } from "../../platform"
 export { AppProvider, type TabType, useApp } from "./AppProvider"
 export { AuthProvider, useAuth } from "./AuthProvider"
 export { ChatProvider, useChat } from "./ChatProvider"
-export { DataProvider, useData } from "./DataProvider"
 // Providers
 export { ErrorProvider, useError } from "./ErrorProvider"
 export { NavigationProvider, useNavigationContext } from "./NavigationProvider"
@@ -37,7 +36,6 @@ import { TimerContextProvider } from "../TimerContext"
 import { AppProvider } from "./AppProvider"
 import { AuthProvider, type session } from "./AuthProvider"
 import { ChatProvider } from "./ChatProvider"
-import { DataProvider } from "./DataProvider"
 import { ErrorProvider } from "./ErrorProvider"
 import { NavigationProvider } from "./NavigationProvider"
 import { TribeProvider } from "./TribeProvider"
@@ -193,28 +191,26 @@ export default function AppProviders({
               accountApp={accountApp}
               testConfig={testConfig}
             >
-              <DataProvider>
-                <AppProvider>
-                  <ChatProvider>
-                    <TimerContextProvider>
-                      <NavigationProvider
-                        pathname={pathname}
-                        searchParams={searchParams}
-                      >
-                        <AppContextProvider>
-                          <StylesProvider>
-                            <TribeProvider>
-                              <Hey useExtensionIcon={useExtensionIcon}>
-                                {children}
-                              </Hey>
-                            </TribeProvider>
-                          </StylesProvider>
-                        </AppContextProvider>
-                      </NavigationProvider>
-                    </TimerContextProvider>
-                  </ChatProvider>
-                </AppProvider>
-              </DataProvider>
+              <AppProvider>
+                <ChatProvider>
+                  <TimerContextProvider>
+                    <NavigationProvider
+                      pathname={pathname}
+                      searchParams={searchParams}
+                    >
+                      <AppContextProvider>
+                        <StylesProvider>
+                          <TribeProvider>
+                            <Hey useExtensionIcon={useExtensionIcon}>
+                              {children}
+                            </Hey>
+                          </TribeProvider>
+                        </StylesProvider>
+                      </AppContextProvider>
+                    </NavigationProvider>
+                  </TimerContextProvider>
+                </ChatProvider>
+              </AppProvider>
             </AuthProvider>
           </ThemeProvider>
         </ErrorProvider>

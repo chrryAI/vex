@@ -9,7 +9,6 @@ import {
   useApp,
   useAuth,
   useChat,
-  useData,
   useError,
   useNavigationContext,
 } from "./context/providers"
@@ -29,7 +28,6 @@ import {
   SmilePlus,
   Sparkles,
   UserRound,
-  UserRoundPlus,
   UsersRound,
 } from "./icons"
 import Loading from "./Loading"
@@ -109,7 +107,15 @@ export default function Subscribe({
     accountApp,
     app,
     setSignInPart,
-
+    affiliateCode,
+    API_URL,
+    FRONTEND_URL,
+    ADDITIONAL_CREDITS,
+    CREDITS_PRICE,
+    FREE_DAYS,
+    PLUS_PRICE,
+    PRO_PRICE,
+    actions,
     fetchScheduledJobs,
     setTribeStripeSession,
     getAppSlug,
@@ -156,19 +162,6 @@ export default function Subscribe({
     setIsGiftingInternal(value)
     updateURLParam("isGifting", value.toString())
   }
-
-  // Data context
-  const {
-    affiliateCode,
-    API_URL,
-    FRONTEND_URL,
-    ADDITIONAL_CREDITS,
-    CREDITS_PRICE,
-    FREE_DAYS,
-    PLUS_PRICE,
-    PRO_PRICE,
-    actions,
-  } = useData()
 
   const { isExtension, BrowserInstance } = usePlatform()
 
@@ -417,11 +410,11 @@ export default function Subscribe({
     }
   }, [searchParams])
 
-  useEffect(() => {
-    if (!user && loggedIn) {
-      setSignInPart("login")
-    }
-  }, [user, loggedIn])
+  // useEffect(() => {
+  //   if (!user && loggedIn) {
+  //     setSignInPart("login")
+  //   }
+  // }, [user, loggedIn])
 
   const verifyPayment = async ({
     sessionId,
@@ -1236,7 +1229,7 @@ export default function Subscribe({
       <Modal
         hideOnClickOutside={false}
         hasCloseButton
-        dataTestId="subscribe-modal"
+        data-testid="subscribe-modal"
         isModalOpen={isModalOpen}
         params="?subscribe=true"
         onToggle={(open) => {

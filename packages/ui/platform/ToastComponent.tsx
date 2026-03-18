@@ -4,7 +4,7 @@
  */
 
 import { type ToasterProps, Toaster as WebToaster } from "react-hot-toast"
-import { useData } from "../context/providers/DataProvider"
+import { useAuth } from "../context/providers/AuthProvider"
 import { usePlatform } from "./PlatformProvider"
 
 // Use the actual types from react-hot-toast
@@ -27,7 +27,7 @@ export function Toast({ containerStyle, toastOptions }: ToastProps) {
 
 // Convenience component with default Vex styling
 export function VexToast() {
-  const { FRONTEND_URL } = useData()
+  const { FRONTEND_URL } = useAuth()
   const { isCapacitor, os } = usePlatform()
 
   const toastConfig: ToastProps = {

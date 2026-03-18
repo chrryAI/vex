@@ -1118,7 +1118,7 @@ export const getSession = async ({
   }
 }
 
-export type ApiActions = ReturnType<typeof getActions>
+export type apiActions = ReturnType<typeof getActions>
 
 export const getApps = async ({
   API_URL = utils.API_URL,

@@ -21,6 +21,7 @@ import React, {
   useState,
 } from "react"
 import console from "../utils/log"
+import Watermelon from "../Watermelon"
 import { useCookie } from "./cookies"
 import {
   detectPlatform as _detectPlatform,
@@ -231,6 +232,8 @@ export function PlatformProvider({
   const isDesktop = _isWeb() && viewportWidth >= 960
 
   const isTauri = _isTauri()
+
+  const [showWatermelon, setShowWatermelon] = useState(false)
 
   // Detect OS - Use server-side UAParser first, then client-side fallback
   const os: "ios" | "android" | "macos" | "windows" | "linux" | "unknown" =
@@ -570,7 +573,7 @@ export function PlatformProvider({
 
   return (
     <PlatformContext.Provider value={value}>
-      {children}
+      {showWatermelon ? <Watermelon /> : children}
     </PlatformContext.Provider>
   )
 }

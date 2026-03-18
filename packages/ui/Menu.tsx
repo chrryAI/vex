@@ -48,12 +48,7 @@ import {
 import { MotiView } from "./platform/MotiView"
 import { toast } from "./platform/toast"
 import ThemeSwitcher from "./ThemeSwitcher"
-import {
-  BrowserInstance,
-  checkIsExtension,
-  FRONTEND_URL,
-  VERSION,
-} from "./utils"
+import { FRONTEND_URL, VERSION } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import { hasThreadNotification } from "./utils/hasThreadNotification"
 

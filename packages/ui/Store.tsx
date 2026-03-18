@@ -9,7 +9,6 @@ import {
   useApp,
   useAuth,
   useChat,
-  useData,
   useNavigationContext,
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
@@ -32,8 +31,6 @@ export default function Store({
   slug?: string
   store?: storeWithApps
 }) {
-  const { FRONTEND_URL } = useData()
-
   const { isMobileDevice } = useTheme()
 
   const { utilities } = useStyles()
@@ -51,6 +48,7 @@ export default function Store({
     loadingAppId,
     hasStoreApps,
     accountApp,
+    FRONTEND_URL,
   } = useAuth()
 
   const { currentStore, setAppStatus } = useApp()

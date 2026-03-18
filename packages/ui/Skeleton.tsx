@@ -20,7 +20,6 @@ import {
   useApp,
   useAuth,
   useChat,
-  useData,
   useNavigationContext,
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
@@ -102,10 +101,16 @@ export default function Skeleton({
   const { isStandalone, isTauri } = usePlatform()
 
   // Data context
-  const { FRONTEND_URL } = useData()
 
-  const { threadIdRef, isIDE, getAppSlug, getTribeUrl, rtl, ...auth } =
-    useAuth()
+  const {
+    threadIdRef,
+    isIDE,
+    getAppSlug,
+    getTribeUrl,
+    FRONTEND_URL,
+    rtl,
+    ...auth
+  } = useAuth()
 
   const showTribeProfile = auth.showTribeProfile && !auth.postId && isEmpty
 

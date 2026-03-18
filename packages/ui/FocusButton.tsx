@@ -51,13 +51,7 @@ import {
 import SwipeableTimeControl from "./SwipeableTimeControl"
 import Testimonials from "./Testimonials"
 import ThemeSwitcher from "./ThemeSwitcher"
-import {
-  API_URL,
-  apiFetch,
-  FRONTEND_URL,
-  GUEST_TASKS_COUNT,
-  PLUS_TASKS_COUNT,
-} from "./utils"
+import { apiFetch } from "./utils"
 import { getSiteConfig } from "./utils/siteConfig"
 
 function formatTime(seconds: number): string {
@@ -95,15 +89,14 @@ export default function FocusButton({
     setEnableNotifications,
     user,
     guest,
-    baseApp,
-    bloom,
     app,
-    getAppSlug,
-    storeApps,
     focus,
     setShowFocus,
-    showFocus,
+    API_URL,
     loadingApp,
+    FRONTEND_URL,
+    PLUS_TASKS_COUNT,
+    GUEST_TASKS_COUNT,
   } = useAuth()
 
   const { searchParams, addParams, push, removeParams } = useNavigationContext()

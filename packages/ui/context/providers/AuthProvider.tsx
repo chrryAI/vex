@@ -24,7 +24,14 @@ import {
 import { useHasHydrated } from "../../hooks"
 import useCache from "../../hooks/useCache"
 import i18n from "../../i18n"
-import { getApp, getGuest, getSession, getUser } from "../../lib"
+import {
+  type apiActions,
+  getActions,
+  getApp,
+  getGuest,
+  getSession,
+  getUser,
+} from "../../lib"
 import { defaultLocale, type locale, locales } from "../../locales"
 import {
   isBrowserExtension,
@@ -36,10 +43,13 @@ import {
   usePlatform,
 } from "../../platform"
 import type {
+  affiliateStats,
   aiAgent,
   appWithStore,
   characterProfile,
+  envType,
   instruction,
+  instructionBase,
   mood,
   moodType,
   Paginated,
@@ -57,24 +67,9 @@ import type {
   tribe,
   tribePostWithDetails,
   user,
+  weather,
 } from "../../types"
-import {
-  API_URL,
-  apiFetch,
-  CHRRY_URL,
-  capitalizeFirstLetter,
-  FRONTEND_URL,
-  getExampleInstructions,
-  getPostId,
-  getThreadId,
-  type instructionBase,
-  isCI,
-  isDevelopment,
-  isE2E,
-  isOwner,
-  PROD_FRONTEND_URL,
-  WS_URL,
-} from "../../utils"
+import * as utils from "../../utils"
 import {
   ANALYTICS_EVENTS,
   MEANINGFUL_EVENTS,
@@ -84,6 +79,7 @@ import clearLocale, { cleanSlug } from "../../utils/clearLocale"
 import { dailyQuestions as dailyQuestionsUtil } from "../../utils/dailyQuestions"
 import getAppSlugUtil from "../../utils/getAppSlug"
 import { getHourlyLimit } from "../../utils/getHourlyLimit"
+import { getWeatherCacheTime } from "../../utils/getWeatherCacheTime"
 import console from "../../utils/log"
 import {
   getSiteConfig,
@@ -106,6 +102,14 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      CREDITS_PRICE: number
+      versions?: {
+        webVersion: string
+        firefoxVersion: string
+        chromeVersion: string
+        macosVersion: string
+      }
+      isE2E: boolean
       setTribes: (tribes?: paginatedTribes) => void
       setTribePosts: (tribePosts?: paginatedTribePosts) => void
       setTribePost: (tribePost?: tribePostWithDetails) => void
@@ -113,6 +117,7 @@ const AuthContext = createContext<
       hourlyUsageLeft: number
       about: string | undefined
       canShowTribe: boolean
+      actions: apiActions
       setAbout: (value: string | undefined) => void
       ask: string | undefined
       setAsk: (value: string | undefined) => void
@@ -124,6 +129,8 @@ const AuthContext = createContext<
         timestamp: number
         duration?: number
       } | null
+      refetchAffiliateData: () => Promise<void>
+      isDevelopment: boolean
       wasPear: boolean
       setWasPear: (value: boolean) => void
       canShowAllTribe: boolean
@@ -153,8 +160,14 @@ const AuthContext = createContext<
       setMoltPlaceHolder: (value: string[]) => void
       setTimer: (value: timer | undefined) => void
       chromeWebStoreUrl: string
+      affiliateStats: affiliateStats | null | undefined
+      affiliateCode: string | null
+      loadingAffiliateStats: boolean
       downloadUrl: string
       isRetro: boolean
+      setNeedsUpdateModalOpen: (value: boolean) => void
+      needsUpdateModalOpen: boolean
+      needsUpdate: boolean
       grape: appWithStore | undefined
       setIsRetro: (value: boolean) => void
       accountApps: appWithStore[]
@@ -166,11 +179,18 @@ const AuthContext = createContext<
       burnApp?: appWithStore
       setDeviceId: (value: string) => void
       pear: appWithStore | undefined
+      refetchWeather: () => void
+      weather?: weather
       isPear: boolean
       setPear: (value: appWithStore | undefined, navigate?: boolean) => void
       grapes: appWithStore[]
       setIsProgramme: (value: boolean) => void
       showTribeProfile: boolean
+      MAX_FILE_LIMITS: {
+        artifacts: number
+        chat: number
+      }
+      OWNER_CREDITS: number
       // Daily Questions State
       dailyQuestionData: {
         currentQuestion: string
@@ -355,6 +375,10 @@ const AuthContext = createContext<
       setUser: (user?: sessionUser) => void
       setGuest: (guest?: sessionGuest) => void
       slug?: string
+      PRO_PRICE: number
+      PLUS_PRICE: number
+      FREE_DAYS: number
+      ADDITIONAL_CREDITS: number
       plausible: (e: {
         name: string
         url?: string
@@ -385,12 +409,16 @@ const AuthContext = createContext<
       setSignInPart: (
         part: "login" | "register" | "credentials" | undefined,
       ) => void
-      env: "development" | "production" | "staging"
-      setEnv: (env: "development" | "production" | "staging") => void
+      env: envType
+      setEnv: (env: envType) => void
       API_URL: string
       WS_URL: string
       FRONTEND_URL: string
       PROD_FRONTEND_URL: string
+      GUEST_TASKS_COUNT: number
+      PLUS_TASKS_COUNT: number
+      MAX_FILE_SIZES: typeof utils.MAX_FILE_SIZES
+      PROMPT_LIMITS: typeof utils.PROMPT_LIMITS
     }
   | undefined
 >(undefined)
@@ -461,6 +489,47 @@ export function AuthProvider({
     isIDE,
     toggleIDE,
   } = usePlatform()
+
+  const [API_URL, setAPI_URL] = useState(utils.API_URL)
+  const [MAX_FILE_LIMITS, setMAX_FILE_LIMITS] = useState(utils.MAX_FILE_LIMITS)
+  const [OWNER_CREDITS, setOWNER_CREDITS] = useState(utils.OWNER_CREDITS)
+
+  const [MAX_FILE_SIZES, setMAX_FILE_SIZES] = useState(utils.MAX_FILE_SIZES)
+  const [PRO_PRICE, setPRO_PRICE] = useState(utils.PRO_PRICE)
+  const [PLUS_PRICE, setPLUS_PRICE] = useState(utils.PLUS_PRICE)
+  const [FREE_DAYS, setFREE_DAYS] = useState(utils.FREE_DAYS)
+  const [ADDITIONAL_CREDITS, setADDITIONAL_CREDITS] = useState(
+    utils.ADDITIONAL_CREDITS,
+  )
+  const [CREDITS_PRICE, setCREDITS_PRICE] = useState(utils.CREDITS_PRICE)
+  const [FRONTEND_URL, setFRONTEND_URL] = useState(utils.FRONTEND_URL)
+  const [CHRRY_URL, setCHRRY_URL] = useState(utils.CHRRY_URL)
+  const [isCI, setIsCI] = useState(utils.isCI)
+  const [isDevelopment, setIsDevelopment] = useState(utils.isDevelopment)
+  const [isE2E, setIsE2E] = useState(utils.isE2E)
+  const [PROD_FRONTEND_URL, setPROD_FRONTEND_URL] = useState(
+    utils.PROD_FRONTEND_URL,
+  )
+  const [GUEST_TASKS_COUNT, setGUEST_TASKS_COUNT] = useState(
+    utils.GUEST_TASKS_COUNT,
+  )
+  const [MEMBER_TASKS_COUNT, setMEMBER_TASKS_COUNT] = useState(
+    utils.MEMBER_TASKS_COUNT,
+  )
+  const [MEMBER_FREE_TRIBE_CREDITS, setMEMBER_FREE_TRIBE_CREDITS] = useState(
+    utils.MEMBER_FREE_TRIBE_CREDITS,
+  )
+  const [PLUS_TASKS_COUNT, setPLUS_TASKS_COUNT] = useState(
+    utils.GUEST_TASKS_COUNT,
+  )
+  const [WS_URL, setWS_URL] = useState(utils.WS_URL)
+
+  const apiFetch = utils.apiFetch
+  const capitalizeFirstLetter = utils.capitalizeFirstLetter
+  const getExampleInstructions = utils.getExampleInstructions
+  const getPostId = utils.getPostId
+  const getThreadId = utils.getThreadId
+  const isOwner = utils.isOwner
 
   const pathname = (typeof window === "undefined" ? props.pathname : pn) || "/"
 
@@ -819,11 +888,9 @@ export function AuthProvider({
     }
   }, [error])
 
-  const env = isDevelopment ? "development" : "production"
-
-  const setEnv = (env: "development" | "production" | "staging") => {
-    // fetchSession()
-  }
+  const [env, setEnv] = useState<envType>(
+    isDevelopment ? "development" : "production",
+  )
 
   const [threads, setThreads] = useState<
     | {
@@ -1047,14 +1114,15 @@ export function AuthProvider({
       setToken(fingerprint)
     }
   }, [token, fingerprint, isTauri, isStorageReady])
-  // setFingerprint/setToken are stable from useLocalStorage/useState
-  const [_versions, setVersions] = useState(
-    session?.versions || {
-      webVersion: VERSION,
-      firefoxVersion: VERSION,
-      chromeVersion: VERSION,
-    },
-  )
+  const [versions, setVersions] = useState<
+    | {
+        webVersion: string
+        firefoxVersion: string
+        chromeVersion: string
+        macosVersion: string
+      }
+    | undefined
+  >(session?.versions)
 
   const VEX_LIVE_FINGERPRINTS = testConfig?.VEX_LIVE_FINGERPRINTS || []
 
@@ -1126,9 +1194,11 @@ export function AuthProvider({
     part: "login" | "register" | "credentials" | undefined,
   ) => {
     if (user) {
+      removeParams("signIn")
       addParams({
         account: "true",
       })
+      return
     }
     const newPart = part && isE2E ? "credentials" : user ? undefined : part
 
@@ -1551,7 +1621,7 @@ export function AuthProvider({
     domain?: string
     props?: Record<string, any>
   }) => {
-    if (!user && !guest) return
+    if (env === "local") if (!user && !guest) return
 
     const now = Date.now()
 
@@ -2995,6 +3065,11 @@ export function AuthProvider({
     setUser(undefined)
     setGuest(undefined)
     setToken(fingerprint)
+
+    if (isCapacitor || isTauri || isExtension) {
+      await refetchSession()
+    }
+
     signOutInternal({ callbackUrl: "/" })
 
     // if (typeof window !== "undefined") {
@@ -3132,6 +3207,276 @@ export function AuthProvider({
     })
   }, [app?.id])
 
+  useEffect(() => {
+    if (session?.versions) {
+      setVersions(session.versions)
+    }
+  }, [session?.versions])
+
+  const pageSizes = {
+    threads: 20,
+    menuThreads: 10,
+    messages: 20,
+    users: 20,
+    apps: 50,
+  }
+
+  const [PROMPT_LIMITS, setPromptLimits] = useState({
+    INPUT: 7000, // Max for direct input
+    INSTRUCTIONS: 2000, // Max for instructions
+    TOTAL: 30000, // Combined max (input + context)
+    WARNING_THRESHOLD: 5000, // Show warning at this length
+    THREAD_TITLE: 100,
+  })
+
+  const [loadingAffiliateStats, setLoadingAffiliateStats] =
+    useState<boolean>(false)
+
+  const actions = useMemo(
+    () =>
+      getActions({
+        API_URL,
+        token: token || "",
+      }),
+    [API_URL, token],
+  )
+
+  const { data: affiliateData, mutate: refetchAffiliateData } = useSWR(
+    user && token && pathname.startsWith("/affiliate") ? ["affiliate"] : null,
+    async () => {
+      if (!token) {
+        return null
+      }
+      setLoadingAffiliateStats(true)
+      try {
+        const res = await apiFetch(`${API_URL}/affiliates`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const data = await res.json()
+        return data
+      } catch (error) {
+        console.error("Failed to fetch affiliate stats:", error)
+        return null
+      } finally {
+        setLoadingAffiliateStats(false)
+      }
+    },
+  )
+
+  const [affiliateStats, setAffiliateStats] = useState<
+    affiliateStats | null | undefined
+  >(null)
+
+  useEffect(() => {
+    if (affiliateData) {
+      setAffiliateStats(affiliateData)
+    } else if (!user && !loadingAffiliateStats) {
+      setAffiliateStats(null)
+    }
+  }, [affiliateData, loadingAffiliateStats, user])
+
+  const [affiliateCodeData, setAffiliateCodeData] = useLocalStorage<{
+    code: string
+    timestamp: number
+  } | null>("vex_affiliate_code", null)
+
+  const affiliateCode = useMemo(() => {
+    if (!affiliateCodeData) return null
+
+    const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000
+    const now = Date.now()
+    const isExpired = now - affiliateCodeData.timestamp > thirtyDaysInMs
+
+    if (isExpired) {
+      setAffiliateCodeData(null)
+      console.log("⏰ Affiliate code expired (30 days)")
+      return null
+    }
+
+    return affiliateCodeData.code
+  }, [affiliateCodeData, setAffiliateCodeData])
+
+  const [weather, setWeather] = useLocalStorage<
+    | {
+        location: string
+        country: string
+        temperature: string
+        condition: string
+        code: number
+        createdOn: Date
+        lastUpdated: Date
+      }
+    | undefined
+  >("weather", user?.weather || guest?.weather || undefined)
+
+  function getUnitFromCountry(country: string) {
+    const fahrenheitCountries = [
+      "United States",
+      "Bahamas",
+      "Belize",
+      "Cayman Islands",
+      "Liberia",
+    ]
+    return fahrenheitCountries.includes(country) ? "F" : "C"
+  }
+  const {
+    data: weatherData,
+    error: weatherError,
+    mutate: refetchWeather,
+  } = useSWR(
+    token ? ["weather"] : null,
+    async () => {
+      // return
+      if (!token) return null
+
+      try {
+        const res = await apiFetch(`${API_URL}/weather`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+
+        if (!res.ok) {
+          console.error(`Error fetching weather`, res)
+          return null
+        }
+        return res.json()
+      } catch (error) {
+        captureException(error)
+        console.error(`Error fetching weather`, error)
+      }
+    },
+    {
+      refreshInterval: (data) => {
+        // Use the data parameter provided by SWR
+        if (data) {
+          return getWeatherCacheTime(data) * 1000 // Convert seconds to milliseconds
+        }
+        return 15 * 60 * 1000 // Default 15 minutes if no data yet
+      },
+      onErrorRetry: (error) => {
+        if (error.message.includes("429")) return
+      },
+      shouldRetryOnError: false,
+    },
+  )
+
+  useEffect(() => {
+    if (weatherData) {
+      if (
+        !weatherData.location ||
+        !weatherData.current ||
+        !weatherData.current.condition
+      )
+        return
+
+      const unit = getUnitFromCountry(weatherData.location.country)
+      setWeather({
+        location: weatherData.location.name,
+        country: weatherData.location.country,
+        temperature: `${unit === "F" ? weatherData.current.temp_f : weatherData.current.temp_c}°${unit}`,
+        condition: weatherData.current.condition.text,
+        code: weatherData.current.condition.code,
+        createdOn: new Date(),
+        lastUpdated: weatherData.current.last_updated,
+      })
+    }
+  }, [weatherData])
+
+  const toVersionNumber = (version?: string): number => {
+    if (!version) return 0
+
+    // Split by dots and take first 3 parts for major.minor.patch
+    const parts = version.split(".").slice(0, 3)
+
+    // Pad with zeros if needed and convert each part
+    const [major = 0, minor = 0, patch = 0] = parts.map((part) => {
+      const num = Number.parseInt(part.replace(/\D/g, ""), 10)
+      return Number.isNaN(num) ? 0 : num
+    })
+
+    // Create a comparable number: major * 10000 + minor * 100 + patch
+    return major * 10000 + minor * 100 + patch
+  }
+
+  useEffect(() => {
+    if (!token) return
+    // Check URL for ref parameter
+    const ref = searchParams.get("ref")
+
+    if (ref && !affiliateCode) {
+      // Track click immediately for all users (guests and registered)
+      apiFetch(`${API_URL}/affiliates/trackClick`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ code: ref }),
+      }).catch((error) => {
+        console.error("Failed to plausible affiliate click:", error)
+      })
+
+      // Check if user is trying to use their own affiliate code
+      if (user) {
+        apiFetch(`${API_URL}/affiliates`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (!data.code) return
+            if (data.hasAffiliateLink && data.code === ref) {
+              console.log("⚠️ Cannot use your own affiliate link")
+              return
+            }
+            // Store affiliate code with timestamp
+            setAffiliateCodeData({ code: data.code, timestamp: Date.now() })
+            console.log("🎯 Affiliate code stored (30 days):", ref)
+          })
+          .catch((error) => {
+            console.error("Failed to check affiliate link:", error)
+            // If check fails, still store the code (backend will validate)
+            setAffiliateCodeData({ code: ref, timestamp: Date.now() })
+          })
+      } else {
+        // Guest users can always store affiliate codes
+        setAffiliateCodeData({ code: ref, timestamp: Date.now() })
+        console.log("🎯 Affiliate code stored (guest, 30 days):", ref)
+      }
+    }
+  }, [searchParams, affiliateCode, setAffiliateCodeData, user, token])
+
+  //Stable since
+  const RELEASE_TIMESTAMP = "2025-09-14T09:48:29.393Z" // Move to constants
+
+  const [createdOn, setCreatedOn] = useCookieOrLocalStorage("createdOn", "")
+
+  useEffect(() => {
+    if (createdOn === "") {
+      setCreatedOn(new Date().toISOString())
+    }
+  }, [createdOn])
+
+  const [needsUpdateModalOpen, setNeedsUpdateModalOpen] = useState(false)
+  const [needsUpdate, setNeedsUpdate] = useState(false)
+
+  useEffect(() => {
+    const update = !versions
+      ? false
+      : isTauri
+        ? toVersionNumber(versions?.macosVersion) > toVersionNumber(VERSION)
+        : isExtension
+          ? isFirefox
+            ? toVersionNumber(versions?.firefoxVersion) >
+              toVersionNumber(VERSION)
+            : toVersionNumber(versions?.chromeVersion) >
+              toVersionNumber(VERSION)
+          : isStandalone && createdOn
+            ? new Date(createdOn).getTime() <
+              new Date(RELEASE_TIMESTAMP).getTime()
+            : false
+    setNeedsUpdate(update)
+    setNeedsUpdateModalOpen(update)
+  }, [versions, createdOn, isStandalone, isExtension, isFirefox, isTauri])
+
   return (
     <AuthContext.Provider
       value={{
@@ -3201,6 +3546,9 @@ export function AuthProvider({
         storeAppsSwr,
         accountApps,
         threadIdRef,
+        affiliateStats,
+        affiliateCode,
+        loadingAffiliateStats,
         vex,
         fetchApps: async () => {
           await refetchApps()
@@ -3213,12 +3561,15 @@ export function AuthProvider({
         chrryUrl,
         showTribe,
         setShowTribe,
+        refetchWeather,
+        weather,
         storeApp,
         tribeStripeSession,
         setTribeStripeSession,
         store,
         stores,
         migratedFromGuestRef,
+        isDevelopment,
         setStore,
         setStores,
         getAppSlug,
@@ -3230,6 +3581,7 @@ export function AuthProvider({
         setTribes,
         canShowTribe,
         setTribePosts,
+        actions,
         setTribePost,
         postToTribe,
         setPostToTribe,
@@ -3254,6 +3606,8 @@ export function AuthProvider({
         setShowCharacterProfiles,
         characterProfiles,
         setCharacterProfiles,
+        GUEST_TASKS_COUNT,
+        PLUS_TASKS_COUNT,
         isLiveTest,
         fingerprint,
         setFingerprint,
@@ -3332,9 +3686,7 @@ export function AuthProvider({
         fetchSession,
         env,
         setEnv,
-        API_URL,
         WS_URL,
-        FRONTEND_URL,
         PROD_FRONTEND_URL,
         isIDE,
         toggleIDE,
@@ -3356,11 +3708,16 @@ export function AuthProvider({
           setShouldFetchMoods(true)
           shouldFetchMood && refetchMoods()
         },
+        MAX_FILE_LIMITS,
+        OWNER_CREDITS,
         burnApp,
         downloadUrl,
         fetchMood,
         dailyQuestionData,
         advanceDailySection,
+        setNeedsUpdateModalOpen,
+        needsUpdateModalOpen,
+        needsUpdate,
         setDailyQuestionIndex,
         dailyQuestionIndex,
         showTribeProfile,
@@ -3368,8 +3725,20 @@ export function AuthProvider({
         languageModal,
         setLanguageModal,
         mergeApps,
+        CREDITS_PRICE,
         getTribeUrl,
         canShowAllTribe,
+        refetchAffiliateData,
+        FRONTEND_URL,
+        API_URL,
+        MAX_FILE_SIZES,
+        isE2E,
+        PRO_PRICE,
+        PLUS_PRICE,
+        FREE_DAYS,
+        ADDITIONAL_CREDITS,
+        PROMPT_LIMITS,
+        versions,
       }}
     >
       {children}

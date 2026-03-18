@@ -11,7 +11,7 @@ import {
 import { FiCheck } from "react-icons/fi"
 import { SiMacos } from "react-icons/si"
 import A from "./a/A"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
+import { useAuth, useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
 import Img from "./Img"
@@ -20,24 +20,23 @@ import { Button, Div, Span, usePlatform, Video } from "./platform"
 import { useVersionStyles } from "./Version.styles"
 
 export default function Version() {
-  const {
-    setNeedsUpdateModalOpen,
-    versions,
-    needsUpdateModalOpen,
-    needsUpdate,
-  } = useData()
-
   const hasHydrated = useHasHydrated()
 
   const { showAddToHomeScreen, setShowAddToHomeScreen } = useNavigationContext()
   const { t } = useTranslation()
 
-  const { chromeWebStoreUrl, downloadUrl } = useAuth()
+  const {
+    chromeWebStoreUrl,
+    downloadUrl,
+    setNeedsUpdateModalOpen,
+    versions,
+    needsUpdateModalOpen,
+    needsUpdate,
+    FRONTEND_URL,
+  } = useAuth()
 
   const { os, isStandalone, isTauri, isFirefox, isExtension, BrowserInstance } =
     usePlatform()
-
-  const { FRONTEND_URL } = useData()
 
   const styles = useVersionStyles()
   const { utilities } = useStyles()
