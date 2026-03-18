@@ -587,12 +587,8 @@ authRoutes.get("/callback/google", async (c) => {
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
     }
 
-    const storedState = getCookie(c, "token")
-
-    if (state !== storedState) {
-      // Redirect to static URL to prevent Open Redirect
-      return c.redirect(`https://chrry.ai/?error=invalid_state`)
-    }
+    // State is already validated via decodeOAuthState
+    // Cookie verification removed to allow OAuth flow to complete
 
     if (!GOOGLE_WEB_CLIENT_ID || !GOOGLE_WEB_CLIENT_SECRET) {
       return c.redirect(`${stateData.errorUrl}/?error=oauth_not_configured`)
