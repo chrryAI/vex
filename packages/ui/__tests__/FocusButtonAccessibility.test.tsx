@@ -266,4 +266,88 @@ describe("FocusButton Accessibility Improvements", () => {
     const task1Button = screen.getByText("Task 1").closest("button")
     expect(task1Button?.getAttribute("aria-pressed")).toBe("false")
   })
+
+  it("should have aria-pressed on time preset buttons", () => {
+    vi.mocked(useTimerContext).mockReturnValue({
+      ...mockTimerContext,
+      activePomodoro: 25,
+    })
+
+    render(<FocusButton />)
+    const preset1 = screen.getByTestId("preset-1")
+    const preset2 = screen.getByTestId("preset-2")
+    const preset3 = screen.getByTestId("preset-3")
+
+    expect(preset1.getAttribute("aria-pressed")).toBe("true")
+    expect(preset2.getAttribute("aria-pressed")).toBe("false")
+    expect(preset3.getAttribute("aria-pressed")).toBe("false")
+  })
+
+  it("should have aria-pressed on sound toggle button", () => {
+    vi.mocked(useTimerContext).mockReturnValue({
+      ...mockTimerContext,
+      playBirds: true,
+    })
+
+    render(<FocusButton />)
+    const soundButton = screen.getByTitle("Pause sound")
+    expect(soundButton.getAttribute("aria-pressed")).toBe("true")
+  })
+
+  describe("Video greeting accessibility", () => {
+    it("should act as a button and toggle video on click", () => {
+      const setPlayKitasaku = vi.fn()
+      vi.mocked(useTimerContext).mockReturnValue({
+        ...mockTimerContext,
+        playKitasaku: false,
+        setPlayKitasaku,
+      })
+
+      render(<FocusButton />)
+      const greetingButton = screen.getByLabelText("Play video")
+
+      expect(greetingButton.getAttribute("role")).toBe("button")
+      expect(greetingButton.getAttribute("tabIndex")).toBe("0")
+      expect(greetingButton.getAttribute("aria-pressed")).toBe("false")
+
+      greetingButton.click()
+      expect(setPlayKitasaku).toHaveBeenCalledWith(true)
+    })
+
+    it("should toggle video on Enter key", () => {
+      const setPlayKitasaku = vi.fn()
+      vi.mocked(useTimerContext).mockReturnValue({
+        ...mockTimerContext,
+        playKitasaku: true,
+        setPlayKitasaku,
+      })
+
+      render(<FocusButton />)
+      const greetingButton = screen.getByLabelText("Pause video")
+
+      expect(greetingButton.getAttribute("aria-pressed")).toBe("true")
+
+      const enterEvent = new KeyboardEvent("keydown", { key: "Enter", bubbles: true })
+      greetingButton.dispatchEvent(enterEvent)
+
+      expect(setPlayKitasaku).toHaveBeenCalledWith(false)
+    })
+
+    it("should toggle video on Space key", () => {
+      const setPlayKitasaku = vi.fn()
+      vi.mocked(useTimerContext).mockReturnValue({
+        ...mockTimerContext,
+        playKitasaku: false,
+        setPlayKitasaku,
+      })
+
+      render(<FocusButton />)
+      const greetingButton = screen.getByLabelText("Play video")
+
+      const spaceEvent = new KeyboardEvent("keydown", { key: " ", bubbles: true })
+      greetingButton.dispatchEvent(spaceEvent)
+
+      expect(setPlayKitasaku).toHaveBeenCalledWith(true)
+    })
+  })
 })
