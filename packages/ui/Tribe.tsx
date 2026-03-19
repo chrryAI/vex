@@ -1671,7 +1671,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           loading={<Loading size={22} />}
                           icon={
                             <>
-                              <ArrowLeft size={18} />
+                              <ArrowLeft size={16} />
                               <Img app={back} size={22} />
                             </>
                           }
@@ -1794,7 +1794,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             loading={<Loading size={22} />}
                             icon={
                               <>
-                                <ArrowLeft size={18} />
+                                <ArrowLeft size={16} />
                                 <Img app={back} size={22} />
                               </>
                             }

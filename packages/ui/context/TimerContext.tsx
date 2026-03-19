@@ -198,7 +198,7 @@ export function TimerContextProvider({
       }
 
       if (type === "tasks") {
-        await fetchTimer()
+        await fetchTasks()
       }
 
       if (type === "mood") {
@@ -219,30 +219,37 @@ export function TimerContextProvider({
   const [time, setTime] = useState(0)
   const [isCountingDown, setIsCountingDown] = useState(false)
   const [replay, setReplay] = useState<boolean>(false)
-  const [timer, setTimerInternal] = useState<timer | null>(null)
+  const timer = auth.timer || null
 
   // API-first: Use state instead of localStorage
   // Timer state comes from DB via SWR, localStorage only for offline cache
   const [timerState, setTimerState] = useState<TimerState | null>(null)
   const [activePomodoro, setActivePomodoro] = useState<number | null>(null)
 
-  const setTimer = (timer: timer | null) => {
-    timer && auth.setTimer(timer)
-    setTimerInternal((prevTimer) => {
-      if (
-        prevTimer?.id === timer?.id &&
-        prevTimer?.isCountingDown === timer?.isCountingDown &&
-        prevTimer?.count === timer?.count &&
-        prevTimer?.preset1 === timer?.preset1 &&
-        prevTimer?.preset2 === timer?.preset2 &&
-        prevTimer?.preset3 === timer?.preset3
-      ) {
-        return prevTimer // No change, prevent re-render
+  const setTimer = useCallback(
+    (newTimer?: timer | null) => {
+      if (!newTimer) {
+        auth.setTimer(null)
+        return
       }
 
-      return timer
-    })
-  }
+      auth.setTimer((prevTimer) => {
+        if (
+          prevTimer?.id === newTimer.id &&
+          prevTimer?.isCountingDown === newTimer.isCountingDown &&
+          prevTimer?.count === newTimer.count &&
+          prevTimer?.preset1 === newTimer.preset1 &&
+          prevTimer?.preset2 === newTimer.preset2 &&
+          prevTimer?.preset3 === newTimer.preset3
+        ) {
+          return prevTimer // No change
+        }
+
+        return newTimer
+      })
+    },
+    [auth],
+  )
 
   const [remoteTimer, setRemoteTimer] = useState<
     (timer & { device?: device }) | null
@@ -361,11 +368,11 @@ export function TimerContextProvider({
     (data: timer) => {
       if (!token) return
 
-      const _deviceId = fingerprint
-
-      // Filter out tasks with empty total arrays (not actively running)
-      const activeTasks = selectedTasks?.filter(
-        (task) => task.total && task.total.length > 0,
+      // Pull latest task data from the main tasks state instead of using stale local state
+      const selectedIds = new Set(selectedTasks?.map((t) => t.id) || [])
+      const activeTasks = tasks?.tasks?.filter(
+        (task) =>
+          selectedIds.has(task.id) && task.total && task.total.length > 0,
       )
 
       if (!data.isCountingDown) {
@@ -388,7 +395,15 @@ export function TimerContextProvider({
         lastSent.current = now
       }
     },
-    [send, selectedTasks, token, isCountingDown, isFinished, remoteTimer],
+    [
+      send,
+      selectedTasks,
+      tasks?.tasks,
+      token,
+      isCountingDown,
+      isFinished,
+      remoteTimer,
+    ],
   )
 
   useEffect(() => {
@@ -471,7 +486,8 @@ export function TimerContextProvider({
   const isTimerEndingRef = useRef<boolean>(false)
   const adjustIntervalRef = useRef<number | null>(null)
   const lastVisibilityUpdateRef = useRef<number>(0)
-  const hasRestoredTimerRef = useRef<boolean>(false)
+  const hasAutoResumedRef = useRef<boolean>(false)
+  const lastSyncedStateRef = useRef<string>("")
 
   const [playBirds, setPlayBirds] = useState<boolean | undefined>(undefined)
 
@@ -480,82 +496,32 @@ export function TimerContextProvider({
     setPresetMin1Internal(timer.preset1)
     setPresetMin2Internal(timer.preset2)
     setPresetMin3Internal(timer.preset3)
-  }, [timer?.id])
 
-  const [shouldFetchTimer, setShouldFetchTimer] = useState(true)
-
-  const {
-    data: timerData,
-    mutate: refetchTimer,
-    isLoading: isLoadingTimer,
-  } = useSWR(
-    deviceId && token && session && shouldFetchTimer ? ["timer"] : null, // Disabled by default, fetch manually with refetchTimer()
-    async () => {
-      const response = await apiFetch(`${API_URL}/timers/${deviceId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      return response.json()
-    },
-  )
-
-  const hasAutoResumedRef = useRef(false)
+    // Sync local time when timer is restored/synced and local time is 0
+    if (timer.count > 0 && time === 0 && !isCountingDown) {
+      setTime(timer.count)
+    }
+  }, [timer?.id, timer?.count, isCountingDown, time])
 
   useEffect(() => {
     if (isCountingDown) return // Already counting
-    if (!timerData?.isCountingDown) return // DB says not counting
-    if (timerData.count === 0) return // Timer finished
+    if (!timer?.isCountingDown) return // DB says not counting
+    if (timer.count === 0) return // Timer finished
     if (hasAutoResumedRef.current) return // Already auto-resumed
 
     hasAutoResumedRef.current = true
     handleResume()
-  }, [timerData?.isCountingDown, timerData?.count])
+  }, [timer?.isCountingDown, timer?.count])
 
-  const fetchTimer = async () => {
-    setShouldFetchTimer(true)
-    shouldFetchTimer && refetchTimer()
-  }
-
-  useEffect(() => {
-    if (timerData) {
-      // Mark as restored to prevent multiple initializations
-      hasRestoredTimerRef.current = true
-
-      // Update timer object
-      setTimer(timerData)
-
-      // Restore timer state from API
-      if (timerData.isCountingDown && timerData.count > 0) {
-        setTime(timerData.count)
-        setIsCountingDown(true)
-
-        setIsPaused(false)
-        setIsFinished(false)
-        setStartTime(Date.now())
-
-        // Timer will start via the isCountingDown state change
-      } else if (timerData.count > 0) {
-        // Timer is paused
-        setTime(timerData.count)
-        setIsCountingDown(false)
-        setIsPaused(true)
-        setIsFinished(false)
-      } else {
-        // Timer is at 0
-        setTime(0)
-        setIsCountingDown(false)
-        setIsPaused(false)
-        setIsFinished(true)
-      }
-    }
-  }, [timerData])
+  const fetchTimer = useCallback(async () => {
+    await auth.fetchTimer()
+  }, [auth])
 
   useEffect(() => {
-    if (!timer && token && fingerprint && user && !isLoadingTimer) {
+    if (!timer && token && fingerprint && user) {
       fetchTimer()
     }
-  }, [fingerprint, token, user, timer, isLoadingTimer])
+  }, [fingerprint, token, user, timer])
 
   useEffect(() => {
     if (!token || !isCountingDown || isPaused || !selectedTasks?.length) return
@@ -568,7 +534,7 @@ export function TimerContextProvider({
     const currentDay = new Date()
     const selectedIds = new Set(selectedTasks.map((t) => t.id))
 
-    // TEK SEFERDE TÜMÜNÜ GÜNCELLEME (BAM!)
+    // GEMINI: TEK SEFERDE TÜMÜNÜ GÜNCELLEME (BAM!)
     setTasks((prevTasks) => {
       if (!prevTasks) return prevTasks
 
@@ -609,7 +575,16 @@ export function TimerContextProvider({
   const timerSyncRef = useRef<number>(0)
 
   useEffect(() => {
-    if (!timer || !fingerprint) return
+    const serializedState = JSON.stringify({
+      isCountingDown,
+      time,
+      presetMin1,
+      presetMin2,
+      presetMin3,
+    })
+
+    // Skip if state hasn't changed since last sync
+    if (lastSyncedStateRef.current === serializedState) return
 
     // Sync timer state every 5 seconds while counting, or immediately on state change
     const now = Date.now()
@@ -620,9 +595,10 @@ export function TimerContextProvider({
     if (!shouldSync) return
 
     timerSyncRef.current = now
+    lastSyncedStateRef.current = serializedState
 
     const updatedTimer = {
-      ...timer,
+      ...(auth.timer || {}),
       preset1: presetMin1,
       preset2: presetMin2,
       preset3: presetMin3,
@@ -631,10 +607,10 @@ export function TimerContextProvider({
     }
 
     // Update local state
-    setTimer(updatedTimer)
+    setTimer(updatedTimer as any)
 
     // Sync to WebSocket and DB
-    updateTimer(updatedTimer)
+    updateTimer(updatedTimer as any)
 
     // Persist to localStorage via hook
     setTimerState({
@@ -649,12 +625,12 @@ export function TimerContextProvider({
     time,
     isCountingDown,
     isPaused,
-    timer,
     fingerprint,
     presetMin1,
     presetMin2,
     presetMin3,
     startTime,
+    auth.timer, // Keep auth.timer but be careful
   ])
 
   const currentStateRef = useRef({
@@ -744,7 +720,6 @@ export function TimerContextProvider({
           isCountingDown: true,
         })
       }
-
       console.log("Starting web timer")
       // Start local timer for web mode
       const initialTime = duration ?? time
@@ -832,6 +807,7 @@ export function TimerContextProvider({
 
   const handlePause = useCallback(
     (update: boolean = true) => {
+      if (isPaused && !isCountingDown) return // Already paused
       setIsPaused(true)
       setIsCountingDown(false)
       setIsCancelled(false)
@@ -862,6 +838,7 @@ export function TimerContextProvider({
   )
 
   const handleResume = useCallback(() => {
+    if (isCountingDown && !isPaused) return // Already running
     setIsPaused(false)
     setIsCancelled(false)
     setIsCountingDown(true)

@@ -1,15 +1,18 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import useSWR from "swr"
 import type { collaboration, thread, user } from "../ui/types"
+import AppLink from "./AppLink"
 import Bookmark from "./Bookmark"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"
+import { useStyles } from "./context/StylesContext"
 import EditThread from "./EditThread"
 import { useLocalStorage } from "./hooks"
 import Img from "./Image"
 import {
+  ArrowLeft,
   AtSign,
   BellDot,
   CalendarIcon,
@@ -40,9 +43,13 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     setCollaborationStatus: setCollaborationStatusInternal,
   } = useNavigationContext()
 
+  const { utilities } = useStyles()
+
   const { reduceMotion } = useTheme()
 
   const [animationKey, setAnimationKey] = useState(0)
+
+  const [selectedApp, setSelectedApp] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     if (!reduceMotion) {
@@ -113,12 +120,19 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
   const [lastStarredId, setLastStarredId] = useState<string | null>(null)
 
   // Use backend sorting - no client-side sorting needed when sortByDate is false
-  const sortedThreads = threads.threads.sort((a, b) => {
+  const sortedThreads = [...threads.threads].sort((a, b) => {
     return (b.isMainThread ? 1 : 0) - (a.isMainThread ? 1 : 0)
   })
 
-  const threadRefs = useRef<{ [id: string]: HTMLDivElement | null }>({})
+  const appsWithThreads = useMemo(() => {
+    const uniqueAppIds = new Set(
+      sortedThreads.map((t) => t.appId).filter(Boolean),
+    )
+    return storeApps.filter((app) => uniqueAppIds.has(app.id))
+  }, [sortedThreads, storeApps])
 
+  const threadRefs = useRef<{ [id: string]: HTMLDivElement | null }>({})
+  const isSwarm = appsWithThreads.length > 1 || selectedApp
   useEffect(() => {
     if (lastStarredId && threadRefs.current[lastStarredId]) {
       threadRefs.current[lastStarredId]?.scrollIntoView({
@@ -141,12 +155,12 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     isValidating,
     error,
   } = useSWR(
-    ["threads", until, search, sortByDate, app?.id],
+    ["threads", until, search, sortByDate, selectedApp],
     () => {
       if (!token) return
       return actions.getThreads({
         pageSize: pageSizes.threads * until,
-        // appId: app?.id,
+        appId: selectedApp,
         search,
         sort: sortByDate ? "date" : "bookmark",
         // userName,
@@ -243,6 +257,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
               scroll={false}
               onChange={(search) => setSearch(search)}
             />
+
             {!isVisitor && (
               <>
                 <Button
@@ -306,6 +321,84 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
             )}
           </>
         </Div>
+        {isSwarm && (
+          <Div
+            style={{
+              marginTop: ".7rem",
+              marginBottom: ".25rem",
+              alignItems: "center",
+              justifyContent: "center",
+              display: "flex",
+              gap: "1rem",
+              flexDirection: "row",
+              flexWrap: "wrap",
+              fontSize: ".8rem",
+            }}
+          >
+            <Div
+              style={{
+                alignItems: "center",
+                display: "flex",
+                gap: "1rem",
+                flexWrap: "wrap",
+                justifyContent: "center",
+              }}
+            >
+              <Div
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  display: "flex",
+                  gap: "1rem",
+                  flexWrap: "wrap",
+                }}
+              >
+                {appsWithThreads.slice(0, 10).map((item, i) => {
+                  return (
+                    <MotiView
+                      key={`post-${item.id}`}
+                      from={{
+                        opacity: 0,
+                        translateY: -8,
+                        translateX: 0,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        translateY: 0,
+                        translateX: 0,
+                      }}
+                      transition={{
+                        duration: reduceMotion ? 0 : 120,
+                        delay: reduceMotion ? 0 : i * 35,
+                      }}
+                    >
+                      <Button
+                        onClick={() => {
+                          selectedApp
+                            ? setSelectedApp(undefined)
+                            : setSelectedApp(item.id)
+                        }}
+                        className="link"
+                        style={{
+                          ...utilities.link.style,
+                        }}
+                      >
+                        {selectedApp === item.id ? (
+                          isLoadingThreads ? (
+                            <Span>🌀</Span>
+                          ) : (
+                            <ArrowLeft size={16} />
+                          )
+                        ) : null}
+                        <Img app={item} /> {item?.name}
+                      </Button>
+                    </MotiView>
+                  )
+                })}
+              </Div>
+            </Div>
+          </Div>
+        )}
         {isLoading && !isLoadingMore && !search ? (
           <Div style={{ ...styles.loadingContainer.style }}>
             <Loading />
