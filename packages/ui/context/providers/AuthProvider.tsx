@@ -138,7 +138,8 @@ const AuthContext = createContext<
       from: string
       setFrom: (value: string) => void
       setLanguageModal: (value: string | undefined) => void
-      timer?: timer
+      fetchTimer: () => Promise<void>
+      timer?: timer | null
       tribeSlug?: string
       currentTribe?: tribe
       getTribeUrl: (app?: appWithStore) => string
@@ -158,7 +159,7 @@ const AuthContext = createContext<
       setPostToMoltbook: (value: boolean) => void
       moltPlaceHolder: string[]
       setMoltPlaceHolder: (value: string[]) => void
-      setTimer: (value: timer | undefined) => void
+      setTimer: Dispatch<SetStateAction<timer | undefined | null>>
       chromeWebStoreUrl: string
       affiliateStats: affiliateStats | null | undefined
       affiliateCode: string | null
@@ -1606,7 +1607,50 @@ export function AuthProvider({
 
   // Duration map to track time between same event calls
   const plausibleDurationMap = useRef<Map<string, number>>(new Map())
-  const [timer, setTimer] = useState<timer | undefined>(undefined)
+  const [timer, setTimer] = useLocalStorage<timer | undefined | null>(
+    "timer",
+    null,
+  )
+
+  const {
+    data: timerData,
+    mutate: refetchTimer,
+    isValidating,
+  } = useSWR(
+    deviceId && token && session ? ["timer", deviceId] : null,
+    async () => {
+      const response = await apiFetch(`${API_URL}/timers/${deviceId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      return response.json()
+    },
+  )
+
+  useEffect(() => {
+    if (isValidating) return
+    if (timerData && (!timer || !timer.count)) {
+      setTimer((prev) => {
+        if (
+          prev?.id === timerData.id &&
+          prev?.isCountingDown === timerData.isCountingDown &&
+          prev?.count === timerData.count &&
+          prev?.preset1 === timerData.preset1 &&
+          prev?.preset2 === timerData.preset2 &&
+          prev?.preset3 === timerData.preset3
+        ) {
+          return prev
+        }
+        return timerData
+      })
+    }
+  }, [timerData, timer, isValidating])
+
+  const fetchTimer = useCallback(async () => {
+    await refetchTimer()
+  }, [refetchTimer])
 
   const [selectedAgent, setSelectedAgent] = useState<aiAgent | undefined>()
   const plausible = ({
@@ -2126,7 +2170,7 @@ export function AuthProvider({
   }, [storeAppsSwr, newApp, updatedApp, loadingAppId])
 
   const showFocusInitial =
-    pathname === "/focus" ||
+    searchParams.get("focus") === "true" ||
     (baseApp?.slug ? baseApp?.slug === "focus" && app?.slug === "focus" : false)
 
   const [showFocus, setShowFocusInternal] = useState<boolean | undefined>(
@@ -2134,7 +2178,7 @@ export function AuthProvider({
   )
 
   useEffect(() => {
-    if (showFocusInitial === undefined && showFocusInitial !== showFocus) {
+    if (showFocusInitial !== showFocus) {
       setShowFocusInternal(showFocusInitial)
     }
   }, [showFocusInitial, showFocus])
@@ -2143,9 +2187,12 @@ export function AuthProvider({
     setShowFocusInternal(showFocus)
 
     if (showFocus) {
+      addParams({ focus: "true" })
       setThread(undefined)
       setThreadId(undefined)
       setShowTribe(false)
+    } else {
+      removeParams("focus")
     }
   }
 
@@ -2967,10 +3014,12 @@ export function AuthProvider({
 
   useEffect(() => {
     if (tasksData) {
-      Array.isArray(tasksData?.tasks) && setTasks(tasksData)
-      setIsLoadingTasks(false)
+      if (isLoadingTasks || !tasks) {
+        Array.isArray(tasksData?.tasks) && setTasks(tasksData)
+        setIsLoadingTasks(false)
+      }
     }
-  }, [tasksData])
+  }, [tasksData, isLoadingTasks, tasks])
 
   const fetchTasks = async () => {
     setShouldFetchTasks(true)
@@ -3643,6 +3692,7 @@ export function AuthProvider({
         tribeSlug,
         currentTribe,
         timer,
+        fetchTimer,
         setTimer,
         isLoadingApps,
         setShouldFetchSession,
