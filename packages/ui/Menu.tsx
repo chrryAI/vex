@@ -377,7 +377,7 @@ export default function Menu({
                   <A
                     data-testid="menu-home-button"
                     className={"link"}
-                    href={showTribeLink ? getTribeUrl() : FRONTEND_URL}
+                    href={showTribeLink ? getTribeUrl(app) : FRONTEND_URL}
                     onClick={(e) => {
                       addHapticFeedback()
                       plausible({
@@ -395,13 +395,13 @@ export default function Menu({
                       if (showTribeLink) {
                         setIsNewChat({
                           value: true,
-                          to: getTribeUrl(),
+                          to: getTribeUrl(app),
                           tribe: true,
                         })
                       } else {
                         setIsNewChat({
                           value: true,
-                          tribe: false,
+                          tribe: true,
                         })
                       }
                       reload()
