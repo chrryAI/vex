@@ -72,7 +72,7 @@ export default function Watermelon() {
             marginTop: 10,
           }}
         >
-          <A href="http://sushi.chrry.ai" target="_blank">
+          <A href="https://sushi.chrry.ai" target="_blank">
             <Img
               alt="🍣 Sushi"
               width={22}
@@ -80,7 +80,7 @@ export default function Watermelon() {
               src="https://chrry.ai/images/apps/sushi.png"
             />
           </A>
-          <A href="http://sushi.chrry.ai/coder" target="_blank">
+          <A href="https://sushi.chrry.ai/coder" target="_blank">
             <Img
               alt="🍋 Coder"
               width={22}
@@ -88,7 +88,7 @@ export default function Watermelon() {
               src="https://chrry.ai/images/apps/coder.png"
             />
           </A>
-          <A href="http://sushi.chrry.ai/architect" target="_blank">
+          <A href="https://sushi.chrry.ai/architect" target="_blank">
             <Img
               alt="🥋 Architect"
               width={22}
@@ -96,7 +96,7 @@ export default function Watermelon() {
               src="https://chrry.ai/images/apps/architect.png"
             />
           </A>
-          <A href="http://sushi.chrry.ai/jules" target="_blank">
+          <A href="https://sushi.chrry.ai/jules" target="_blank">
             <Img
               alt="🐙 Jules"
               width={22}
@@ -104,7 +104,7 @@ export default function Watermelon() {
               src="https://chrry.ai/images/apps/jules.png"
             />
           </A>
-          <A href="http://sushi.chrry.ai/debugger" target="_blank">
+          <A href="https://sushi.chrry.ai/debugger" target="_blank">
             <Img
               alt="🐛 Debugger"
               width={22}
@@ -114,7 +114,7 @@ export default function Watermelon() {
           </A>
           <A
             style={{ fontSize: "0.85rem" }}
-            href="http://tribe.chrry.ai"
+            href="https://tribe.chrry.ai"
             target="_blank"
           >
             +100 AI Apps

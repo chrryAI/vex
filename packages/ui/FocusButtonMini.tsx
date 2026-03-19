@@ -54,7 +54,7 @@ function FocusButton({
   return (
     <A
       onClick={() => setShowFocus(true)}
-      href={`${getAppSlug(focus)}`}
+      href={`${getAppSlug(focus)}?focus=true`}
       openInNewTab={isExtension && isFirefox}
       style={{
         ...{

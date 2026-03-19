@@ -68,8 +68,6 @@ const getURL = (
     ? `${base}${path}?fp=${isLive ? VEX_LIVE_FINGERPRINT_2 : fingerprint || TEST_MEMBER_FINGERPRINTS[0] || ""}`
     : `${base}${path}?fp=${isLive ? VEX_LIVE_FINGERPRINT : fingerprint || TEST_GUEST_FINGERPRINTS[0] || ""}`
 
-  console.log(`🚀 ~ base:`, base)
-
   return url
 }
 

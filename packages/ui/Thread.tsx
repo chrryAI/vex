@@ -1186,12 +1186,12 @@ const Thread = ({
   // Only load Focus on web (not extension) and after hydration
   // Show Tribe for chrry app or /tribe routes
 
-  return showTribe ? (
-    <Tribe>{render()}</Tribe>
-  ) : showFocus ? (
+  return showFocus ? (
     <Suspense fallback={<Loading fullScreen />}>
       <Focus>{render()}</Focus>
     </Suspense>
+  ) : showTribe ? (
+    <Tribe>{render()}</Tribe>
   ) : (
     <Skeleton>
       <MemoryConsent />

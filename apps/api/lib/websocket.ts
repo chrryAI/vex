@@ -32,6 +32,7 @@ async function flushTaskUpdates() {
   if (taskUpdateQueue.size === 0) return
 
   const tasksToUpdate = Array.from(taskUpdateQueue.values())
+
   taskUpdateQueue.clear()
 
   console.log(`[BATCH] Flushing ${tasksToUpdate.length} task updates`)
