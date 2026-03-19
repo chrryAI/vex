@@ -1637,8 +1637,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           })}
                         </AppLink>
                       )}
-                      <ToggleAgent app={undefined} />
 
+                      <ToggleAgent app={undefined} />
                       {app && !isPear && (
                         <Button
                           data-testid="grapes-feedback-button"
@@ -1663,7 +1663,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           <Img slug="pear" size={20} /> {t("Let's Pear")}
                         </Button>
                       )}
-
                       {back && (
                         <AppLink
                           isTribe
