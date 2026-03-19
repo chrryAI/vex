@@ -1620,7 +1620,7 @@ export function AuthProvider({
     domain?: string
     props?: Record<string, any>
   }) => {
-    if (env === "local") if (!user && !guest) return
+    if (!user && !guest) return
 
     const now = Date.now()
 
