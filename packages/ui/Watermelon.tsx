@@ -1,6 +1,39 @@
-import { A, Button, Div, H1, Image as Img, P } from "./platform"
+import { OpenRouter } from "@lobehub/icons"
+import { useState } from "react"
+import { Trans } from "react-i18next"
+import { SiMacos } from "react-icons/si"
+import AppLink from "./AppLink"
+import A from "./a/A"
+import { useAppContext } from "./context/AppContext"
+import { useNavigationContext } from "./context/providers"
+import { useAuth } from "./context/providers/AuthProvider"
+import { useStyles } from "./context/StylesContext"
+import Img from "./Image"
+import LanguageSwitcher from "./LanguageSwitcher"
+import Loading from "./Loading"
+import { Button, Div, H1, Input, Label, P, Span } from "./platform"
+import SignIn from "./SignIn"
 
 export default function Watermelon() {
+  const {
+    setSignInPart,
+    FRONTEND_URL,
+    app,
+    isDevelopment,
+    siteConfig,
+    downloadUrl,
+    chrry,
+  } = useAuth()
+
+  const { t } = useAppContext()
+
+  const [isBYOK, setIsBYOK] = useState(true)
+
+  const [openRouterApiKey, setOpenRouterApiKey] = useState("")
+
+  const { utilities } = useStyles()
+
+  const { push } = useNavigationContext()
   return (
     <Div
       style={{
@@ -10,31 +43,50 @@ export default function Watermelon() {
         color: "var(--shade-8)",
         alignItems: "center",
         justifyContent: "center",
+        flexDirection: "column",
       }}
     >
-      <P
+      <Div
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 5,
+          gap: 25,
           position: "absolute",
           top: 15,
           right: 15,
           fontSize: "0.9rem",
         }}
       >
-        <A
-          className="button inverted medium"
-          href="https://chrry.ai"
-          target="_blank"
+        <SignIn showSignIn={false} />
+        <LanguageSwitcher />
+      </Div>
+
+      {chrry && (
+        <P
           style={{
-            padding: "0.3rem 0.6rem",
-            fontFamily: "var(--font-sans)",
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            position: "absolute",
+            top: 15,
+            left: 15,
+            fontSize: "0.9rem",
           }}
         >
-          🍒 Chrry.ai
-        </A>{" "}
-      </P>
+          <AppLink
+            app={chrry}
+            icon={chrry.icon}
+            loading={<Loading size={13} />}
+            className="button inverted medium"
+            style={{
+              padding: "0.3rem 0.6rem",
+              fontFamily: "var(--font-sans)",
+            }}
+          >
+            {chrry.name}
+          </AppLink>{" "}
+        </P>
+      )}
       <Div
         style={{
           display: "flex",
@@ -43,9 +95,7 @@ export default function Watermelon() {
           alignItems: "center",
           justifyContent: "center",
           gap: 9.5,
-          flex: 1,
-          position: "relative",
-          bottom: 75,
+          marginTop: 100,
         }}
       >
         <H1
@@ -58,11 +108,7 @@ export default function Watermelon() {
             fontFamily: "var(--font-mono)",
           }}
         >
-          <Img
-            width={50}
-            height={50}
-            src="https://chrry.ai/images/apps/watermelon.png"
-          />
+          <Img width={50} height={50} slug="watermelon" />
           Watermelon&#169;
         </H1>
         <Div
@@ -72,52 +118,57 @@ export default function Watermelon() {
             marginTop: 10,
           }}
         >
-          <A href="https://sushi.chrry.ai" target="_blank">
-            <Img
-              alt="🍣 Sushi"
-              width={22}
-              height={22}
-              src="https://chrry.ai/images/apps/sushi.png"
-            />
-          </A>
-          <A href="https://sushi.chrry.ai/coder" target="_blank">
-            <Img
-              alt="🍋 Coder"
-              width={22}
-              height={22}
-              src="https://chrry.ai/images/apps/coder.png"
-            />
-          </A>
-          <A href="https://sushi.chrry.ai/architect" target="_blank">
-            <Img
-              alt="🥋 Architect"
-              width={22}
-              height={22}
-              src="https://chrry.ai/images/apps/architect.png"
-            />
-          </A>
-          <A href="https://sushi.chrry.ai/jules" target="_blank">
-            <Img
-              alt="🐙 Jules"
-              width={22}
-              height={22}
-              src="https://chrry.ai/images/apps/jules.png"
-            />
-          </A>
-          <A href="https://sushi.chrry.ai/debugger" target="_blank">
-            <Img
-              alt="🐛 Debugger"
-              width={22}
-              height={22}
-              src="https://chrry.ai/images/pacman/space-invader.png"
-            />
+          <A
+            href={
+              siteConfig.storeSlug !== "sushiStore"
+                ? "https://sushi.chrry.ai"
+                : "/"
+            }
+          >
+            <Img alt="🍣 Sushi" width={22} height={22} slug="sushi" />
           </A>
           <A
-            style={{ fontSize: "0.85rem" }}
-            href="https://tribe.chrry.ai"
-            target="_blank"
+            href={
+              siteConfig.storeSlug !== "sushiStore"
+                ? "https://sushi.chrry.ai/coder"
+                : "/coder"
+            }
+            openInNewTab={siteConfig.slug !== "chrry"}
           >
-            +100 AI Apps
+            <Img alt="🍋 Coder" width={22} height={22} slug="coder" />
+          </A>
+          <A
+            href={
+              siteConfig.storeSlug !== "sushiStore"
+                ? "https://sushi.chrry.ai/architect"
+                : "/architect"
+            }
+            openInNewTab={siteConfig.slug !== "chrry"}
+          >
+            <Img alt="🥋 Architect" width={22} height={22} slug="architect" />
+          </A>
+          <A
+            href={
+              siteConfig.storeSlug !== "sushiStore"
+                ? "https://sushi.chrry.ai/jules"
+                : "/jules"
+            }
+            openInNewTab={siteConfig.slug !== "chrry"}
+          >
+            <Img alt="🐙 Jules" width={22} height={22} slug="jules" />
+          </A>
+          <A
+            href={
+              siteConfig.storeSlug !== "sushiStore"
+                ? "https://sushi.chrry.ai/debugger"
+                : "/debugger"
+            }
+            openInNewTab={siteConfig.slug !== "chrry"}
+          >
+            <Img alt="🐛 Debugger" width={22} height={22} slug="debugger" />
+          </A>
+          <A href={"/tribe"} style={{ fontSize: "0.85rem" }}>
+            +35 AI Apps
           </A>
         </Div>
         <P
@@ -130,7 +181,7 @@ export default function Watermelon() {
             marginTop: 15,
           }}
         >
-          🔪 Choose your weapon 🏹
+          🔪 {t("Choose your weapon")} 🏹
         </P>
         <Div style={{ display: "flex", gap: 5, marginTop: 15 }}>
           <Button
@@ -205,6 +256,147 @@ export default function Watermelon() {
             />
             Sovereign
           </A>
+        </Div>
+        <Div
+          style={{
+            ...utilities.row.style,
+            gap: 15,
+            marginTop: 15,
+            flexWrap: "wrap",
+          }}
+        >
+          {!openRouterApiKey ? (
+            <A openInNewTab href="https://openrouter.ai/keys">
+              <OpenRouter size={20} /> OpenRouter
+            </A>
+          ) : null}
+          <Input
+            dataTestId="openrouter-api-key"
+            type="password"
+            placeholder="sk-..."
+            value={openRouterApiKey}
+            onChange={(e) => setOpenRouterApiKey(e.target.value)}
+            style={{
+              border: "1px solid var(--accent-6)",
+            }}
+          />
+          {openRouterApiKey ? (
+            <Button
+              onClick={() => setOpenRouterApiKey("")}
+              className="inverted"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "0.25rem 0.5rem",
+              }}
+            >
+              <OpenRouter size={20} /> Save
+            </Button>
+          ) : null}
+        </Div>
+      </Div>
+      <Div
+        style={{
+          marginTop: "auto",
+          textAlign: "center",
+          maxWidth: 500,
+          gap: 10,
+          display: "flex",
+          flexDirection: "column",
+          marginBottom: 20,
+          fontSize: ".9rem",
+        }}
+      >
+        <A
+          onClick={(e) => {
+            if (e.metaKey || e.ctrlKey) {
+              return
+            }
+
+            e.preventDefault()
+            setSignInPart("login")
+          }}
+          href="/?signIn=login"
+        >
+          <Img alt="🍋 Coder" width={22} height={22} slug="coder" />{" "}
+          {t("Login")}
+        </A>
+        <P style={{ fontSize: "0.9rem", color: "var(--shade-7)" }}>
+          <Trans
+            i18nKey="watermelon_guest_info"
+            defaults="You can use your own API key as a guest. Your data will <0>auto-migrate</0> when you <1>login</1>. Login is optional, but you can always sync your account."
+            components={[
+              <Span key="migrate" />,
+              <A key="login" onClick={() => setSignInPart("login")} />,
+            ]}
+          />
+        </P>
+        <Div>
+          <P
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              justifyContent: "flex-end",
+              marginBottom: 5,
+              fontSize: ".8rem",
+              color: "var(--shade-6)",
+            }}
+          >
+            <A
+              href={
+                siteConfig.storeSlug !== "sushiStore"
+                  ? "https://sushi.chrry.ai/jules"
+                  : "/jules"
+              }
+              openInNewTab={siteConfig.slug !== "chrry"}
+            >
+              <Img alt="🐙 Jules" width={18} height={18} slug="jules" />
+            </A>
+            {t("Sneak peek")}
+            <Button
+              className="inverted"
+              style={{
+                ...utilities.small.style,
+
+                paddingTop: "0",
+                paddingBottom: "0",
+              }}
+              onClick={() => {
+                const a = document.createElement("a")
+                a.href = downloadUrl
+                a.download = ""
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
+              }}
+            >
+              <SiMacos
+                style={{
+                  position: "relative",
+                  bottom: 1,
+                }}
+                size={32}
+              />
+              {/* {t("Install")} */}
+            </Button>
+          </P>
+
+          <P style={{ fontSize: "0.85rem", color: "var(--shade-7)" }}>
+            💻{" "}
+            <Trans
+              i18nKey="watermelon_macos_info"
+              defaults="Coming soon: A <0>macOS Desktop App</0> with local DB support (MIT Licensed) for fully private configuration."
+              components={[
+                <A
+                  key="macos"
+                  openInNewTab
+                  href="https://github.com/chrryAI/vex"
+                />,
+              ]}
+            />
+          </P>
         </Div>
       </Div>
     </Div>
