@@ -32,8 +32,9 @@ const Terms = lazy(() => import("./Terms"))
 const About = lazy(() => import("./about"))
 const Threads = lazy(() => import("./Threads"))
 const Users = lazy(() => import("./Users"))
-const Affiliate = lazy(() => import("./affiliate"))
-const AffiliateDashboard = lazy(() => import("./affiliateDashboard"))
+// Maybe later
+// const Affiliate = lazy(() => import("./affiliate"))
+// const AffiliateDashboard = lazy(() => import("./affiliateDashboard"))
 
 // Route map with conditional lazy loading
 const ROUTES: Record<string, ComponentType<any>> = {
@@ -44,8 +45,8 @@ const ROUTES: Record<string, ComponentType<any>> = {
   about: About,
   threads: Threads,
   home: Home,
-  affiliate: Affiliate,
-  "affiliate/dashboard": AffiliateDashboard,
+  // affiliate: Affiliate,
+  // "affiliate/dashboard": AffiliateDashboard,
   u: Users,
 }
 
