@@ -54,30 +54,7 @@ export default function ToggleAgent({
 
   const TRAIN = owner ? trainText : tryText
 
-  if (accountApp)
-    return (
-      <AppLink
-        className={className || "inverted"}
-        isTribe={isTribe}
-        app={accountApp}
-        loading={<Loading size={small ? 18 : 22} />}
-        icon={<Img app={accountApp} size={small ? 18 : 22} />}
-        style={{
-          ...utilities.button.style,
-          ...utilities.inverted.style,
-          ...(small ? utilities.small.style : undefined),
-          alignItems: "center",
-          justifyContent: "center",
-          textAlign: "center",
-          display: "inline-flex",
-          ...style,
-        }}
-      >
-        {t(gotToText)}
-      </AppLink>
-    )
-
-  if (app)
+  if (app && accountApp?.id !== app.id)
     return (
       <AppLink
         className={className || "inverted"}
@@ -102,6 +79,30 @@ export default function ToggleAgent({
         })}
       </AppLink>
     )
+
+  if (accountApp)
+    return (
+      <AppLink
+        className={className || "inverted"}
+        isTribe={isTribe}
+        app={accountApp}
+        loading={<Loading size={small ? 18 : 22} />}
+        icon={<Img app={accountApp} size={small ? 18 : 22} />}
+        style={{
+          ...utilities.button.style,
+          ...utilities.inverted.style,
+          ...(small ? utilities.small.style : undefined),
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          display: "inline-flex",
+          ...style,
+        }}
+      >
+        {t(gotToText)}
+      </AppLink>
+    )
+
   return (
     <Button
       onClick={() => {
