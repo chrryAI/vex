@@ -129,6 +129,8 @@ const AuthContext = createContext<
         timestamp: number
         duration?: number
       } | null
+      showWatermelon: boolean
+      setShowWatermelon: (value: boolean) => void
       refetchAffiliateData: () => Promise<void>
       isDevelopment: boolean
       wasPear: boolean
@@ -2175,6 +2177,23 @@ export function AuthProvider({
     showFocusInitial,
   )
 
+  const showWatermelonInitial =
+    searchParams.get("watermelon") === "true" || pathname === "/watermelon"
+
+  const [showWatermelon, setShowWatermelonInternal] = useState(
+    showWatermelonInitial,
+  )
+
+  const setShowWatermelon = (sw: boolean) => {
+    setShowWatermelonInternal(sw)
+
+    if (sw) {
+      addParams({ watermelon: "true" })
+    } else {
+      showWatermelon && removeParams("watermelon")
+    }
+  }
+
   useEffect(() => {
     if (showFocusInitial !== showFocus) {
       setShowFocusInternal(showFocusInitial)
@@ -3539,6 +3558,8 @@ export function AuthProvider({
         setBurn,
         canBurn,
         isProgramme,
+        showWatermelon,
+        setShowWatermelon,
         setIsProgramme,
         threads,
         setThreads,

@@ -32,6 +32,7 @@ const Terms = lazy(() => import("./Terms"))
 const About = lazy(() => import("./about"))
 const Threads = lazy(() => import("./Threads"))
 const Users = lazy(() => import("./Users"))
+const Watermelon = lazy(() => import("./Watermelon"))
 // Maybe later
 // const Affiliate = lazy(() => import("./affiliate"))
 // const AffiliateDashboard = lazy(() => import("./affiliateDashboard"))
@@ -44,6 +45,7 @@ const ROUTES: Record<string, ComponentType<any>> = {
   terms: Terms,
   about: About,
   threads: Threads,
+  watermelon: Watermelon,
   home: Home,
   // affiliate: Affiliate,
   // "affiliate/dashboard": AffiliateDashboard,
@@ -89,6 +91,7 @@ export const Hey = memo(
       showTribe,
       user,
       guest,
+      showWatermelon,
     } = useAuth()
 
     const { tribeSlug, isLoadingTribes } = useTribe()
@@ -171,10 +174,18 @@ export const Hey = memo(
               onLoad={(_src) => {
                 setIsImageLoaded(true)
               }}
-              slug={showTribeLogo ? "tribe" : app ? undefined : appSlug}
-              app={showTribeLogo ? undefined : app}
+              slug={
+                showWatermelon
+                  ? "watermelon"
+                  : showTribeLogo
+                    ? "tribe"
+                    : app
+                      ? undefined
+                      : appSlug
+              }
+              app={showTribeLogo || showWatermelon ? undefined : app}
               showLoading={false}
-              size={showTribeLogo ? 70 : 64}
+              size={showTribeLogo || showWatermelon ? 70 : 64}
             />
           </Div>
         )
