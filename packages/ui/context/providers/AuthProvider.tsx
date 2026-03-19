@@ -2181,16 +2181,16 @@ export function AuthProvider({
     }
   }, [showFocusInitial, showFocus])
 
-  const setShowFocus = (showFocus: boolean) => {
-    setShowFocusInternal(showFocus)
+  const setShowFocus = (sw: boolean) => {
+    setShowFocusInternal(sw)
 
-    if (showFocus) {
+    if (sw) {
       addParams({ focus: "true" })
       setThread(undefined)
       setThreadId(undefined)
       setShowTribe(false)
     } else {
-      removeParams("focus")
+      showFocus && removeParams("focus")
     }
   }
 
