@@ -141,7 +141,7 @@ const AuthContext = createContext<
       timer?: timer
       tribeSlug?: string
       currentTribe?: tribe
-      getTribeUrl: () => string
+      getTribeUrl: (app?: appWithStore) => string
       rtl: boolean
       mergeApps: (apps: appWithStore[]) => void
       postId?: string
@@ -1620,7 +1620,7 @@ export function AuthProvider({
     domain?: string
     props?: Record<string, any>
   }) => {
-    if (env === "local") if (!user && !guest) return
+    if (!user && !guest) return
 
     const now = Date.now()
 
@@ -2245,8 +2245,14 @@ export function AuthProvider({
     // }
   }
 
-  const getTribeUrl = () => {
-    return siteConfig?.isTribe ? "/" : `/tribe`
+  const getTribeUrl = (app?: appWithStore) => {
+    return !(siteConfig.isTribe && showTribe) &&
+      app &&
+      (getAppSlug(app) === pathname ? !showTribeProfile : true)
+      ? getAppSlug(app)
+      : siteConfig?.isTribe
+        ? "/"
+        : `/tribe`
   }
 
   const canBurn = true

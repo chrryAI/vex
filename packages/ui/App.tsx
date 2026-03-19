@@ -591,7 +591,7 @@ export default function App({
         </Div>
       )}
       <H1 style={styles.title.style}>
-        {!isManagingApp && !canEditApp && app ? (
+        {!isManagingApp && app ? (
           <Div
             style={{
               ...styles.appTitle.style,
