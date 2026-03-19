@@ -1,6 +1,6 @@
 "use client"
 
-import { useData } from "./context/providers"
+import { useAuth } from "./context/providers/AuthProvider"
 import Img from "./Img"
 import { usePlatform } from "./platform"
 import type { app } from "./types"
@@ -25,7 +25,7 @@ export default function Logo({
   slug?: "Atlas" | "Peach" | "Vault" | "Bloom" | string | null
 }) {
   const { isExtension } = usePlatform()
-  const { FRONTEND_URL } = useData()
+  const { FRONTEND_URL } = useAuth()
 
   const logoSrc = isLifeOS
     ? `${FRONTEND_URL}/icons/lifeOS-128.png`

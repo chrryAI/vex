@@ -20,7 +20,6 @@ import {
   useApp,
   useAuth,
   useChat,
-  useData,
   useError,
   useNavigationContext,
 } from "./context/providers"
@@ -62,16 +61,15 @@ import {
   useTheme as usePlatformTheme,
 } from "./platform"
 import { MotiView } from "./platform/MotiView"
-import type { instruction, thread } from "./types"
+import type { instruction, instructionBase, thread } from "./types"
 import {
   apiFetch,
   decodeHtmlEntities,
   getInstructionConfig,
   getMaxFiles,
-  type instructionBase,
   isDeepEqual,
   isOwner,
-  PROMPT_LIMITS,
+  // PROMPT_LIMITS,
 } from "./utils"
 import { formatFileSize } from "./utils/fileValidation"
 
@@ -118,8 +116,6 @@ export default function Instructions({
 }) {
   const { t, console } = useAppContext()
 
-  const { API_URL } = useData()
-
   const styles = useInstructionsStyles()
 
   const { utilities } = useStyles()
@@ -138,6 +134,9 @@ export default function Instructions({
     chromeWebStoreUrl,
     isRetro,
     dailyQuestionData,
+    API_URL,
+    weather,
+    PROMPT_LIMITS,
     ...auth
   } = useAuth()
 
@@ -178,7 +177,6 @@ export default function Instructions({
   } = useApp()
 
   const { captureException } = useError()
-  const { weather } = useData()
 
   const { os, isStandalone, isTauri, isCapacitor, isExtension } = usePlatform()
 

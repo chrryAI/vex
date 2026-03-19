@@ -14,7 +14,6 @@ import {
   mockAppContext,
   mockAuth,
   mockChat,
-  mockData,
   mockNavigation,
   mockPlatform,
   mockStyles,
@@ -32,7 +31,6 @@ vi.mock("../context/providers", () => ({
   useChat: () => mockChat,
   useApp: () => mockApp,
   useNavigationContext: () => mockNavigation,
-  useData: () => mockData,
   useError: () => ({ captureException: vi.fn() }),
 }))
 

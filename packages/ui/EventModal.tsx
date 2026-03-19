@@ -7,7 +7,7 @@ import Checkbox from "./Checkbox"
 import ColorScheme from "./ColorScheme"
 import ConfirmButton from "./ConfirmButton"
 import { COLORS, useAppContext } from "./context/AppContext"
-import { useAuth, useData } from "./context/providers"
+import { useAuth } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import { useEventModalStyles } from "./EventModal.styles"
 import {
@@ -115,7 +115,7 @@ export default function EventModal({
   const styles = useEventModalStyles()
   const { utilities } = useStyles()
   const { t } = useAppContext()
-  const { token } = useAuth()
+  const { token, actions } = useAuth()
   const _colorOptions = getColorOptions(t)
 
   const [isSaving, setIsSaving] = useState(false)
@@ -168,8 +168,6 @@ export default function EventModal({
   )
 
   const eventId = initialData?.eventId
-
-  const { actions } = useData()
 
   // Focus flow: when startTime changes, move to endTime; when endTime changes, to location
   const startTime = watch("startTime")

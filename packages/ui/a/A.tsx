@@ -1,5 +1,5 @@
 import React from "react"
-import { useData } from "../context/providers"
+import { useAuth } from "../context/providers/AuthProvider"
 import { A, useNavigation, usePlatform, useTheme } from "../platform"
 
 const Anchor = React.forwardRef<
@@ -16,7 +16,7 @@ const Anchor = React.forwardRef<
     { clientOnly, target, children, preventDefault, openInNewTab, ...props },
     ref,
   ) => {
-    const { FRONTEND_URL } = useData()
+    const { FRONTEND_URL } = useAuth()
 
     const { addHapticFeedback } = useTheme()
     const { isExtension, BrowserInstance, isTauri } = usePlatform()

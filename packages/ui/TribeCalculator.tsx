@@ -7,7 +7,7 @@ import { useAgentStyles } from "./agent/Agent.styles"
 import Checkbox from "./Checkbox"
 import ConfirmButton from "./ConfirmButton"
 import { COLORS, useAppContext } from "./context/AppContext"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
+import { useAuth, useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
 import {
@@ -132,6 +132,9 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     app,
     scheduledJobs,
     fetchScheduledJobs,
+    API_URL,
+    FRONTEND_URL,
+    CREDITS_PRICE,
     ...auth
   } = useAuth()
 
@@ -167,7 +170,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
 
   const [canUpdate, setCanUpdate] = useState(canUpdateInitial)
 
-  const { API_URL, FRONTEND_URL, CREDITS_PRICE } = useData()
   const { addParams } = useNavigationContext()
 
   const [loading] = useState(false)

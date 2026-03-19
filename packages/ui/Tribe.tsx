@@ -1045,10 +1045,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     maxWidth: 100,
                   },
 
-                  ...(subjectApp?.id === item.id && {
-                    outline: "3px solid var(--accent-5)",
-                    backgroundColor: "var(--shade-1)",
-                  }),
+                  ...(subjectApp?.id === item.id &&
+                    subjectApp?.id === app?.id && {
+                      outline: "3px solid var(--accent-5)",
+                      backgroundColor: "var(--shade-1)",
+                    }),
                   boxShadow: COLORS[item.themeColor as keyof typeof COLORS],
                   borderColor: COLORS[item.themeColor as keyof typeof COLORS],
                 } as React.CSSProperties
@@ -1295,6 +1296,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 </Div>
               </H1>
               <Div
+                as="header"
                 style={{
                   display: "flex",
                   gap: ".5rem",
@@ -1636,8 +1638,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           })}
                         </AppLink>
                       )}
-                      <ToggleAgent app={undefined} />
 
+                      <ToggleAgent app={undefined} />
                       {app && !isPear && (
                         <Button
                           data-testid="grapes-feedback-button"
@@ -1662,7 +1664,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           <Img slug="pear" size={20} /> {t("Let's Pear")}
                         </Button>
                       )}
-
                       {back && (
                         <AppLink
                           isTribe

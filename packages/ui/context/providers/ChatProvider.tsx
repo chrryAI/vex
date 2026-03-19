@@ -37,7 +37,6 @@ import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
 import { hasThreadNotification } from "../../utils/hasThreadNotification"
 import { useApp } from "./AppProvider"
 import { useAuth } from "./AuthProvider"
-import { useData } from "./DataProvider"
 import { useError } from "./ErrorProvider"
 
 interface placeHolder {
@@ -225,6 +224,7 @@ export function ChatProvider({
     postId,
     canShowAllTribe,
     siteConfig,
+    actions,
     ...auth
   } = useAuth()
 
@@ -1106,8 +1106,6 @@ export function ChatProvider({
     setSelectedAgent(a)
     setDebateAgent(null)
   }, [app, aiAgents])
-
-  const { actions } = useData()
 
   const isDebating = !!debateAgent
 

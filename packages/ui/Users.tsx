@@ -7,7 +7,7 @@ import toast from "react-hot-toast"
 import useSWR from "swr"
 import Collaborate from "./Collaborate"
 import { useAppContext } from "./context/AppContext"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
+import { useAuth, useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import { useWindowHistory } from "./hooks/useWindowHistory"
 import Img from "./Img"
@@ -31,7 +31,7 @@ const Users = ({ style }: { style?: React.CSSProperties }) => {
   const styles = useUsersStyles()
   const { utilities } = useStyles()
   const [until, setUntil] = useState<number>(1)
-  const { token } = useAuth()
+  const { token, actions } = useAuth()
   const { t } = useAppContext()
   const { router, searchParams } = useNavigationContext()
   const [find, setFind] = useState(searchParams?.get("find") || "")
@@ -64,8 +64,6 @@ const Users = ({ style }: { style?: React.CSSProperties }) => {
   const [selectedCharacterProfileId, setSelectedCharacterProfileId] = useState<
     string | undefined
   >(undefined)
-
-  const { actions } = useData()
 
   const [users, setUsers] = useState<
     (user & { characterProfiles: characterProfile[] })[]

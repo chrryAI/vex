@@ -14,7 +14,6 @@ import {
   mockAppContext,
   mockAuth,
   mockChat,
-  mockData,
   mockNavigation,
   mockPlatform,
   mockStyles,
@@ -32,8 +31,15 @@ vi.mock("../context/providers", () => ({
   useChat: () => mockChat,
   useApp: () => mockApp,
   useNavigationContext: () => mockNavigation,
-  useData: () => mockData,
   useError: () => ({ captureException: vi.fn() }),
+}))
+
+vi.mock("../context/providers/AuthProvider", () => ({
+  useAuth: () => mockAuth,
+}))
+
+vi.mock("../context/providers/AuthProvider", () => ({
+  useAuth: () => mockAuth,
 }))
 
 // Mock platform module

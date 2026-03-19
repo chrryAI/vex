@@ -1,6 +1,6 @@
-import fs from "fs"
-import path from "path"
-import { fileURLToPath } from "url"
+import fs from "node:fs"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -241,7 +241,7 @@ for (const p of payloadsToReplace) {
 // Insert right after the previous imports
 content = content.replace(
   "import { getSushiPayload",
-  allImports + "import { getSushiPayload",
+  `${allImports}import { getSushiPayload}`,
 )
 
 fs.writeFileSync(srcPath, content)

@@ -15,7 +15,6 @@ import {
   useApp,
   useAuth,
   useChat,
-  useData,
   useNavigationContext,
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
@@ -180,14 +179,14 @@ export default function App({
     setDisplayedApps,
     plausible,
     lastApp: _lastApp,
+    FRONTEND_URL,
+    API_URL,
     ...auth
   } = useAuth()
 
   const burn = burnApp?.id === app?.id || auth.burn
 
   const storeApp = auth.storeApp
-
-  const { FRONTEND_URL, API_URL } = useData()
 
   const { router, getStoreSlug, addParams } = useNavigationContext()
 
@@ -592,7 +591,7 @@ export default function App({
         </Div>
       )}
       <H1 style={styles.title.style}>
-        {!isManagingApp && !canEditApp && app ? (
+        {!isManagingApp && app ? (
           <Div
             style={{
               ...styles.appTitle.style,

@@ -1,60 +1,61 @@
 import console from "../../utils/log"
-import { FRONTEND_URL } from ".."
+import * as utils from ".."
 
-const registerServiceWorker =
-  async (): Promise<ServiceWorkerRegistration | null> => {
-    // Temporarily disable service worker to prevent reload loop
-    return null
+const registerServiceWorker = async (
+  FRONTEND_URL = utils.FRONTEND_URL,
+): Promise<ServiceWorkerRegistration | null> => {
+  // Temporarily disable service worker to prevent reload loop
+  return null
 
-    if ("serviceWorker" in navigator) {
-      try {
-        const registration = await navigator.serviceWorker.register(
-          `${FRONTEND_URL}/sw.js`,
-          {
-            scope: "/",
-            type: "classic", // Explicitly disable module mode
-            updateViaCache: "none", // Always check for SW updates
-          },
-        )
+  if ("serviceWorker" in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.register(
+        `${FRONTEND_URL}/sw.js`,
+        {
+          scope: "/",
+          type: "classic", // Explicitly disable module mode
+          updateViaCache: "none", // Always check for SW updates
+        },
+      )
 
-        // Check for updates immediately
-        registration.update()
+      // Check for updates immediately
+      registration.update()
 
-        // Listen for new service worker installation
-        registration.addEventListener("updatefound", () => {
-          const newWorker = registration.installing
-          if (!newWorker) return
+      // Listen for new service worker installation
+      registration.addEventListener("updatefound", () => {
+        const newWorker = registration.installing
+        if (!newWorker) return
 
-          // Track if this is an update (not first install)
-          const isUpdate = !!navigator.serviceWorker.controller
+        // Track if this is an update (not first install)
+        const isUpdate = !!navigator.serviceWorker.controller
 
-          newWorker.addEventListener("statechange", () => {
-            if (newWorker.state === "activated" && isUpdate) {
-              // Only reload on updates, not first install
-              console.log("Service worker updated, reloading page...")
-              window.location.reload()
-            } else if (newWorker.state === "activated") {
-              console.log("Service worker installed (first time)")
-            }
-          })
+        newWorker.addEventListener("statechange", () => {
+          if (newWorker.state === "activated" && isUpdate) {
+            // Only reload on updates, not first install
+            console.log("Service worker updated, reloading page...")
+            window.location.reload()
+          } else if (newWorker.state === "activated") {
+            console.log("Service worker installed (first time)")
+          }
         })
+      })
 
-        // Listen for controller change (new SW took over)
-        navigator.serviceWorker.addEventListener("controllerchange", () => {
-          console.log("Service worker controller changed")
-        })
+      // Listen for controller change (new SW took over)
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        console.log("Service worker controller changed")
+      })
 
-        console.log("Service Worker registered successfully")
-        return registration
-      } catch (error) {
-        console.error("Service Worker registration failed:", error)
-        return null
-      }
-    } else {
-      console.log("Service workers are not supported in this browser")
+      console.log("Service Worker registered successfully")
+      return registration
+    } catch (error) {
+      console.error("Service Worker registration failed:", error)
       return null
     }
+  } else {
+    console.log("Service workers are not supported in this browser")
+    return null
   }
+}
 
 /**
  * Manually check for service worker updates

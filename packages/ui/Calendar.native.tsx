@@ -25,7 +25,7 @@ import toast from "react-hot-toast"
 import useSWR from "swr"
 import { useCalendarStyles } from "./Calendar.styles"
 import { COLORS, useAppContext } from "./context/AppContext"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
+import { useAuth, useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import { useWebSocket } from "./hooks/useWebSocket"
 import {
@@ -72,11 +72,17 @@ export default function Calendar({
 }) {
   const styles = useCalendarStyles()
   const { utilities } = useStyles()
-  const { actions } = useData()
   const { t } = useAppContext()
   const [date, setDate] = useState<Date>(new Date())
   const [view, setView] = useState<ViewType>("month")
-  const { token, user, language: locale, deviceId, signInContext } = useAuth()
+  const {
+    token,
+    user,
+    language: locale,
+    deviceId,
+    signInContext,
+    actions,
+  } = useAuth()
   const { os } = usePlatform()
   const { searchParams } = useNavigationContext()
 

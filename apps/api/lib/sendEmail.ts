@@ -27,24 +27,43 @@ export const sendEmail = async ({
     return { success: true, skipped: true }
   }
 
-  const apiKey = process.env.ZEPTOMAIL_API_KEY
-
-  if (!apiKey) {
-    console.warn("ZEPTOMAIL_API_KEY not set, skipping email")
-    return { success: false, error: "Email API key not configured" }
-  }
-
   const chrryUrl = getChrryUrl(c.req.raw)
   const _siteConfig = getSiteConfig(chrryUrl)
 
-  const transporter = nodemailer.createTransport({
-    host: "smtp.zeptomail.eu",
-    port: 587,
-    auth: {
-      user: "emailapikey",
-      pass: apiKey,
-    },
-  })
+  // Check if running in local mode (Mailhog)
+  const isLocalMode =
+    process.env.SMTP_HOST === "localhost" ||
+    (process.env.NODE_ENV === "development" && !process.env.ZEPTOMAIL_API_KEY)
+
+  let transporter: nodemailer.Transporter
+
+  if (isLocalMode) {
+    // Use Mailhog for local development
+    console.log("📧 Using Mailhog (local SMTP) for email")
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || "localhost",
+      port: Number(process.env.SMTP_PORT) || 1025,
+      secure: false,
+      ignoreTLS: true,
+    })
+  } else {
+    // Use Zeptomail for production
+    const apiKey = process.env.ZEPTOMAIL_API_KEY
+
+    if (!apiKey) {
+      console.warn("ZEPTOMAIL_API_KEY not set, skipping email")
+      return { success: false, error: "Email API key not configured" }
+    }
+
+    transporter = nodemailer.createTransport({
+      host: "smtp.zeptomail.eu",
+      port: 587,
+      auth: {
+        user: "emailapikey",
+        pass: apiKey,
+      },
+    })
+  }
 
   try {
     // Add timeout to prevent hanging

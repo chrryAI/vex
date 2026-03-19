@@ -14,7 +14,6 @@ import {
   mockAppContext,
   mockAuth,
   mockChat,
-  mockData,
   mockNavigation,
   mockPlatform,
   mockStyles,
@@ -32,7 +31,6 @@ vi.mock("../context/providers", () => ({
   useChat: () => mockChat,
   useApp: () => mockApp,
   useNavigationContext: () => mockNavigation,
-  useData: () => mockData,
   useError: () => ({ captureException: vi.fn() }),
 }))
 
@@ -52,12 +50,10 @@ vi.mock("../platform", async (importOriginal) => {
     ),
     Span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
     P: ({ children, ...props }: any) => <p {...props}>{children}</p>,
-    Input: ({ ...props }: any) => (
-      <input
-        {...props}
-        data-testid={props["data-testid"] || props.dataTestId}
-      />
-    ),
+    Input: ({ ...props }: any) => {
+      const { dataTestId, "data-testid": dataTestIdKebab, ...rest } = props
+      return <input {...rest} data-testid={dataTestIdKebab || dataTestId} />
+    },
     Label: ({ children, ...props }: any) => (
       <label {...props}>{children}</label>
     ),
@@ -120,17 +116,21 @@ vi.mock("../Modal", () => ({
 vi.mock("../Loading", () => ({ default: () => <div data-testid="loading" /> }))
 vi.mock("../Image", () => ({ default: () => <div data-testid="image" /> }))
 vi.mock("../Select", () => ({
-  default: (props: any) => (
-    <select {...props} data-testid={props["data-testid"] || props.dataTestId} />
-  ),
+  default: (props: any) => {
+    const { dataTestId, "data-testid": dataTestIdKebab, ...rest } = props
+    return <select {...rest} data-testid={dataTestIdKebab || dataTestId} />
+  },
 }))
 vi.mock("../Checkbox", () => ({
-  default: ({ children, ...props }: any) => (
-    <div data-testid={props.dataTestId}>
-      <input type="checkbox" {...props} />
-      {children}
-    </div>
-  ),
+  default: ({ children, ...props }: any) => {
+    const { dataTestId, "data-testid": dataTestIdKebab, ...rest } = props
+    return (
+      <div data-testid={dataTestIdKebab || dataTestId}>
+        <input type="checkbox" {...rest} />
+        {children}
+      </div>
+    )
+  },
 }))
 vi.mock("../ColorScheme", () => ({
   default: () => <div data-testid="color-scheme" />,

@@ -48,12 +48,7 @@ import {
 import { MotiView } from "./platform/MotiView"
 import { toast } from "./platform/toast"
 import ThemeSwitcher from "./ThemeSwitcher"
-import {
-  BrowserInstance,
-  checkIsExtension,
-  FRONTEND_URL,
-  VERSION,
-} from "./utils"
+import { FRONTEND_URL, VERSION } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import { hasThreadNotification } from "./utils/hasThreadNotification"
 
@@ -382,7 +377,7 @@ export default function Menu({
                   <A
                     data-testid="menu-home-button"
                     className={"link"}
-                    href={showTribeLink ? getTribeUrl() : FRONTEND_URL}
+                    href={showTribeLink ? getTribeUrl(app) : FRONTEND_URL}
                     onClick={(e) => {
                       addHapticFeedback()
                       plausible({
@@ -400,13 +395,13 @@ export default function Menu({
                       if (showTribeLink) {
                         setIsNewChat({
                           value: true,
-                          to: getTribeUrl(),
+                          to: getTribeUrl(app),
                           tribe: true,
                         })
                       } else {
                         setIsNewChat({
                           value: true,
-                          tribe: false,
+                          tribe: true,
                         })
                       }
                       reload()

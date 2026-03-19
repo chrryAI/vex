@@ -9,9 +9,7 @@ import {
   useEffect,
   useState,
 } from "react"
-import AgentProfile from "./AgentProfile"
 import { useApp } from "./context/providers"
-// Import hooks directly from their source files to avoid circular dependency with context/providers/index.tsx
 import { useAuth } from "./context/providers/AuthProvider"
 import { useNavigationContext } from "./context/providers/NavigationProvider"
 import { useTribe } from "./context/providers/TribeProvider"
@@ -26,7 +24,6 @@ import Thread from "./Thread"
 import { getAppAndStoreSlugs } from "./utils/url"
 import Programme from "./z/Programme"
 
-// Lazy load less frequently used components to reduce initial bundle
 const Store = lazy(() => import("./Store"))
 const Calendar = lazy(() => import("./Calendar"))
 const Why = lazy(() => import("./Why"))
@@ -35,8 +32,9 @@ const Terms = lazy(() => import("./Terms"))
 const About = lazy(() => import("./about"))
 const Threads = lazy(() => import("./Threads"))
 const Users = lazy(() => import("./Users"))
-const Affiliate = lazy(() => import("./affiliate"))
-const AffiliateDashboard = lazy(() => import("./affiliateDashboard"))
+// Maybe later
+// const Affiliate = lazy(() => import("./affiliate"))
+// const AffiliateDashboard = lazy(() => import("./affiliateDashboard"))
 
 // Route map with conditional lazy loading
 const ROUTES: Record<string, ComponentType<any>> = {
@@ -47,10 +45,9 @@ const ROUTES: Record<string, ComponentType<any>> = {
   about: About,
   threads: Threads,
   home: Home,
-  affiliate: Affiliate,
-  "affiliate/dashboard": AffiliateDashboard,
+  // affiliate: Affiliate,
+  // "affiliate/dashboard": AffiliateDashboard,
   u: Users,
-  agent: AgentProfile,
 }
 
 export const Hey = memo(
@@ -105,43 +102,29 @@ export const Hey = memo(
 
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]
 
-    // SSR routes that should be handled by Next.js
-    // Check both exact matches and path prefixes (e.g., /blog/dear-claude)
     const ssrRoutes = ["blog"]
     const ssrPrefixes = ["/blog"]
     const isSSRRoute =
       (lastPathSegment && ssrRoutes.includes(lastPathSegment)) ||
       ssrPrefixes.some((prefix) => pathname.startsWith(prefix))
 
-    // Detect if this is an app slug (atlas, peach, vault, etc.)
-
     const pathWithoutLocale = pathname
       .replace(/^\/[a-z]{2}\//, "/")
       .slice(1)
       .split("?")[0]
 
-    // Check if current route is a store slug by checking all apps
     const isStorePage = storeApps?.find(
       (app) => app.store?.slug === pathWithoutLocale,
     )
 
-    // Check if this is an agent profile route
-    const isAgentRoute = pathname.startsWith("/agent/")
-
-    // Auto-detect route component
-    // Priority: Store pages > Agent routes > Full path match (nested routes) > Last segment > App slugs > Thread IDs
     const RouteComponent = isStorePage
-      ? Store // Store slugs render Store component
-      : isAgentRoute
-        ? AgentProfile // Agent profile pages
-        : pathWithoutLocale && ROUTES[pathWithoutLocale]
-          ? ROUTES[pathWithoutLocale]
-          : lastPathSegment && ROUTES[lastPathSegment]
-            ? ROUTES[lastPathSegment]
-            : null
+      ? Store
+      : pathWithoutLocale && ROUTES[pathWithoutLocale]
+        ? ROUTES[pathWithoutLocale]
+        : lastPathSegment && ROUTES[lastPathSegment]
+          ? ROUTES[lastPathSegment]
+          : null
 
-    // Check if this is a client-side route
-    // Skip SSR routes completely - let Next.js handle them
     const isClientRoute =
       isExtension ||
       (!isSSRRoute &&
@@ -162,7 +145,6 @@ export const Hey = memo(
     const [isImageLoaded, setIsImageLoaded] = useState(false)
     const [minSplashTimeElapsed, setMinSplashTimeElapsed] = useState(false)
 
-    // Minimum splash screen duration (300ms) - starts when image loads
     useEffect(() => {
       if (!isImageLoaded) return
 
@@ -232,8 +214,6 @@ export const Hey = memo(
             <Programme />
             <Div style={{ display: isProgramme ? "none" : "block" }}>
               {isClientRoute ? (
-                // Client-side routes: SWAP content
-                // Check thread detail FIRST before RouteComponent
                 postId || tribeSlug ? (
                   <Home />
                 ) : threadId ? (
@@ -253,7 +233,6 @@ export const Hey = memo(
     )
   },
   (prevProps, nextProps) => {
-    // Only re-render if className or children actually changed
     return (
       prevProps.className === nextProps.className &&
       prevProps.children === nextProps.children

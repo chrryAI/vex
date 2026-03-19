@@ -2,7 +2,7 @@ import type React from "react"
 import { useCallback } from "react"
 import { toast } from "react-hot-toast"
 import { useAppContext } from "../context/AppContext"
-import { useAuth, useData } from "../context/providers"
+import { useAuth } from "../context/providers"
 import type { app, appWithStore } from "../types"
 import console from "../utils/log"
 
@@ -23,7 +23,7 @@ export function useAppReorder({
 }: UseAppReorderProps) {
   const { t } = useAppContext()
 
-  const { token } = useAuth()
+  const { token, actions } = useAuth()
   // Move app during drag (live preview)
   const moveApp = useCallback(
     (dragIndex: number, hoverIndex: number) => {
@@ -39,8 +39,6 @@ export function useAppReorder({
     },
     [setApps],
   )
-
-  const { actions } = useData()
 
   // Save order to database when drop completes
   const handleDrop = useCallback(
