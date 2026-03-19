@@ -534,10 +534,8 @@ export function TimerContextProvider({
     const currentDay = new Date()
     const selectedIds = new Set(selectedTasks.map((t) => t.id))
 
-    // TEK SEFERDE TÜMÜNÜ GÜNCELLEME (BAM!)
+    // GEMINI: TEK SEFERDE TÜMÜNÜ GÜNCELLEME (BAM!)
     setTasks((prevTasks) => {
-      // console.log(`🚀 ~ useEffect ~ prevTasks:`, prevTasks)
-
       if (!prevTasks) return prevTasks
 
       const newTasksList = prevTasks.tasks.map((task) => {
