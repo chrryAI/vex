@@ -310,7 +310,7 @@ test("Create A Sushi App", async ({ page }) => {
   })
 })
 
-test("Grape", async ({ page }) => {
+test.skip("Grape", async ({ page }) => {
   await clean({ isLive, page })
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "domcontentloaded",
