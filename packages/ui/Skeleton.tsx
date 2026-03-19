@@ -302,7 +302,7 @@ export default function Skeleton({
                             if (showTribeProfile) {
                               setIsNewChat({
                                 value: true,
-                                to: getTribeUrl(),
+                                to: getTribeUrl(app),
                                 tribe: true,
                               })
                               return
