@@ -241,6 +241,7 @@ export function ThemeProvider({
 
   // Cross-platform setTheme with analytics
   const setTheme = (newTheme: themeType) => {
+    if (themeMode === newTheme) return
     setThemeMode(newTheme)
     // Track theme change (if analytics available)
   }

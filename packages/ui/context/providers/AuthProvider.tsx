@@ -2492,22 +2492,16 @@ export function AuthProvider({
 
   const showWatermelonInitial = !!(
     (siteConfig.isWatermelon && clearLocale(pathname) === "") ||
-    searchParams.get("watermelon") === "true" ||
     pathname === "/watermelon"
   )
 
-  const [showWatermelon, setShowWatermelonInternal] = useState<boolean>(
+  const [showWatermelon, setShowWatermelonInternal] = useLocalStorage<boolean>(
+    "showWatermelon",
     showWatermelonInitial || !!siteConfig.isWatermelon,
   )
 
   const setShowWatermelon = (sw: boolean) => {
     setShowWatermelonInternal(sw)
-
-    // if (sw) {
-    //   addParams({ watermelon: "true" })
-    // } else {
-    //   showWatermelon && removeParams("watermelon")
-    // }
   }
 
   useEffect(() => {

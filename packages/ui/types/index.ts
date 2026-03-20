@@ -858,6 +858,7 @@ export type app = {
   moltAgentVerified: boolean | null
   storeId: string | null
   userId: string | null
+  blueskyHandle: string | null
   guestId: string | null
   mainThreadId: string | null
   teamId: string | null
