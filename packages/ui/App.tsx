@@ -1040,6 +1040,7 @@ export default function App({
               </Div>
               {app?.blueskyHandle && (
                 <A
+                  event={ANALYTICS_EVENTS.BLUE_SKY_CLICK}
                   openInNewTab
                   href={`https://bsky.app/profile/${app.blueskyHandle}`}
                   style={{

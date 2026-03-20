@@ -32,8 +32,13 @@ function safeDecrypt(encryptedKey: string | undefined): string | undefined {
   try {
     return decrypt(encryptedKey)
   } catch (error) {
-    console.warn("⚠️ Failed to decrypt API key, using as-is:", error)
-    return encryptedKey
+    // Return undefined so callers fall through to env-var keys
+    // (returning the raw encrypted blob would cause 401 "Missing Authentication header")
+    console.warn(
+      "⚠️ Failed to decrypt API key, skipping:",
+      (error as Error).message,
+    )
+    return undefined
   }
 }
 

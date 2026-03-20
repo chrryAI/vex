@@ -2505,10 +2505,10 @@ export function AuthProvider({
   }
 
   useEffect(() => {
-    if (showWatermelonInitial !== showWatermelon) {
+    if (showWatermelonInitial) {
       setShowWatermelonInternal(showWatermelonInitial)
     }
-  }, [showWatermelonInitial, showWatermelon])
+  }, [showWatermelonInitial])
 
   const postIdInitial = getPostId(pathname)
 
