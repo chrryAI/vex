@@ -498,7 +498,7 @@ export async function getApp({
   const appId = extractAppId(c, params)
 
   // 3. Get auth context
-  const member = await getMember(c, { full: true, skipCache: true })
+  const member = await getMember(c, { skipCache: true })
   const guest = await getGuest(c, { skipCache: true })
   const auth: AuthContext = { member, guest }
 

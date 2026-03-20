@@ -8,6 +8,7 @@ import {
   decrypt,
   eq,
   getApp,
+  getGuest,
   getMemories,
   getMessages,
   getOrCreateTribe,
@@ -24,6 +25,7 @@ import {
   or,
   type scheduledJob,
   sql,
+  user,
 } from "@repo/db"
 
 // Secure random number generator (0 to max-1)
@@ -302,7 +304,7 @@ function cleanMoltbookPlaceholders(text: string): string {
     .trim()
 }
 
-export async function engageWithMoltbookPosts({ job }: { job: scheduledJob }) {
+export async function engageWithMoltbookPosts(job: scheduledJob) {
   // Development mode guard - don't run unless explicitly enabled
   if (isDevelopment && !process.env.ENABLE_MOLTBOOK_CRON) {
     console.log(
@@ -323,6 +325,26 @@ export async function engageWithMoltbookPosts({ job }: { job: scheduledJob }) {
 
   if (!app) {
     throw new Error("❌ App not found for job")
+  }
+
+  const user = job.userId
+    ? await getUser({
+        id: job.userId,
+        skipCache: true,
+        skipMasking: true,
+      })
+    : null
+
+  const guest = job.guestId
+    ? await getGuest({
+        id: job.guestId,
+        skipCache: true,
+        skipMasking: true,
+      })
+    : null
+
+  if (!user && !guest) {
+    throw new Error("User not found")
   }
 
   const slug = app.slug
@@ -370,7 +392,13 @@ export async function engageWithMoltbookPosts({ job }: { job: scheduledJob }) {
     // 3. Use AI to evaluate post quality and select best ones
     console.log(`🤖 Evaluating post quality with AI...`)
 
-    const { provider } = await getModelProvider({ app, name: job.aiModel, job })
+    const { provider } = await getModelProvider({
+      app,
+      name: job.aiModel,
+      job,
+      user,
+      guest,
+    })
     interface PostWithScore {
       post: (typeof topPosts)[0]
       score: number
@@ -500,6 +528,8 @@ Respond with ONLY a JSON object in this exact format:
           app,
           name: job.aiModel,
           job,
+          user,
+          guest,
         })
 
         // Redact PII from post content before sending to AI
@@ -697,6 +727,26 @@ export async function checkMoltbookComments({
     throw new Error("❌ App not found for job")
   }
 
+  const user = job.userId
+    ? await getUser({
+        id: job.userId,
+        skipCache: true,
+        skipMasking: true,
+      })
+    : null
+
+  const guest = job.guestId
+    ? await getGuest({
+        id: job.guestId,
+        skipCache: true,
+        skipMasking: true,
+      })
+    : null
+
+  if (!user && !guest) {
+    throw new Error("❌ User not found for job")
+  }
+
   const MOLTBOOK_API_KEY = app.moltApiKey ? safeDecrypt(app.moltApiKey) : ""
 
   if (!MOLTBOOK_API_KEY) {
@@ -849,6 +899,8 @@ export async function checkMoltbookComments({
             app,
             name: aiModel,
             job,
+            user,
+            guest,
           })
 
           const filterPrompt = `You are evaluating whether to reply to a comment on your Moltbook post.
@@ -912,6 +964,8 @@ Respond with ONLY "YES" or "NO":`
             app,
             name: job.aiModel,
             job,
+            user,
+            guest,
           })
 
           const systemContext = app.systemPrompt
@@ -1066,19 +1120,27 @@ async function generateMoltbookPost({
       throw new Error("App not found")
     }
 
-    if (!app.userId) {
-      throw new Error("This app is not owned by any user")
-    }
+    const user = app.userId
+      ? await getUser({
+          id: app.userId,
+          skipCache: true,
+          skipMasking: true,
+        })
+      : null
 
-    const user = await getUser({
-      id: app.userId,
-    })
+    const guest = app.guestId
+      ? await getGuest({
+          id: app.guestId,
+          skipCache: true,
+          skipMasking: true,
+        })
+      : null
 
-    if (!user) {
+    if (!user && !guest) {
       throw new Error("User not found")
     }
 
-    const token = generateToken(user.id, user.email)
+    const token = user ? generateToken(user.id, user.email) : guest?.fingerprint
 
     const selectedAgent = await getAiAgent({
       name: agentName,
@@ -1507,15 +1569,23 @@ async function postToTribeJob({
     throw new Error("App not found for Tribe posting")
   }
 
-  if (!app.userId) {
-    throw new Error("This app is not owned by any user")
-  }
+  const user = app.userId
+    ? await getUser({
+        id: app.userId,
+        skipCache: true,
+        skipMasking: true,
+      })
+    : null
 
-  const user = await getUser({
-    id: app.userId,
-  })
+  const guest = app.guestId
+    ? await getGuest({
+        id: app.guestId,
+        skipCache: true,
+        skipMasking: true,
+      })
+    : null
 
-  if (!user) {
+  if (!user && !guest) {
     throw new Error("User not found")
   }
 
@@ -1758,7 +1828,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
 - Vary your endings: use strong statements, insights, or subtle calls to action
 - Be confident in your perspective`
 
-    const token = generateToken(user.id, user.email)
+    const token = user ? generateToken(user.id, user.email) : guest?.fingerprint
 
     const selectedAgent = await getAiAgent({
       name: "sushi",
@@ -1925,18 +1995,13 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
       console.log(`🧠 AI Reasoning Captured (${data.reasoning.length} chars)`)
     }
 
-    // Validate userId before posting
-    if (!job.userId) {
-      throw new Error("Job userId is required for Tribe posting")
-    }
-
     // Auto-create/join tribe if needed
     let tribeId: string | null = null
     if (job.scheduleType === "tribe" && app.slug) {
       tribeId = await getOrCreateTribe({
         slug: aiResponse.tribeName || app.slug,
-        userId: job.userId,
-        guestId: undefined,
+        userId: job.userId || undefined,
+        guestId: job.guestId || undefined,
       })
     }
 
@@ -2357,16 +2422,24 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
     throw new Error("App not found for Tribe comment check")
   }
 
-  if (!job.userId) {
-    throw new Error("userId required for Tribe comment check")
-  }
+  const user = job.userId
+    ? await getUser({
+        id: job.userId,
+        skipCache: true,
+        skipMasking: true,
+      })
+    : null
 
-  const user = await getUser({
-    id: job.userId,
-  })
+  const guest = job.guestId
+    ? await getGuest({
+        id: job.guestId,
+        skipCache: true,
+        skipMasking: true,
+      })
+    : null
 
-  if (!user) {
-    throw new Error("User Not found")
+  if (!user && !guest) {
+    throw new Error("User not found")
   }
 
   const app = await db.query.apps.findFirst({
@@ -2427,7 +2500,8 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
       const unansweredComments = await db.query.tribeComments.findMany({
         where: and(
           eq(tribeComments.postId, ownPost.id),
-          ne(tribeComments.userId, job.userId), // Not our own comments
+          job.userId ? ne(tribeComments.userId, job.userId) : undefined,
+          job.guestId ? ne(tribeComments.guestId, job.guestId) : undefined,
           isNull(tribeComments.parentCommentId), // Top-level comments only
         ),
         orderBy: (c, { desc }) => [desc(c.createdOn)],
@@ -2439,7 +2513,8 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
         const alreadyReplied = await db.query.tribeComments.findFirst({
           where: and(
             eq(tribeComments.postId, ownPost.id),
-            eq(tribeComments.userId, job.userId),
+            job.userId ? eq(tribeComments.userId, job.userId) : undefined,
+            job.guestId ? eq(tribeComments.guestId, job.guestId) : undefined,
             eq(tribeComments.parentCommentId, incomingComment.id),
           ),
         })
@@ -2454,6 +2529,8 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
             app,
             name: job.aiModel,
             job,
+            user,
+            guest,
           })
           const postImages =
             Array.isArray(ownPost.images) && (ownPost as any).images.length > 0
@@ -2514,7 +2591,7 @@ Reply ONLY with your reply text (no JSON, no extra formatting).`
             const unanswered = await db.query.tribeComments.findFirst({
               where: and(
                 eq(tribeComments.postId, ownPost.id),
-                ne(tribeComments.userId, job.userId),
+                ne(tribeComments.userId, job.userId!),
                 isNull(tribeComments.parentCommentId),
               ),
             })
@@ -2522,7 +2599,7 @@ Reply ONLY with your reply text (no JSON, no extra formatting).`
               const alreadyReplied = await db.query.tribeComments.findFirst({
                 where: and(
                   eq(tribeComments.postId, ownPost.id),
-                  eq(tribeComments.userId, job.userId),
+                  eq(tribeComments.userId, job.userId!),
                   eq(tribeComments.parentCommentId, unanswered.id),
                 ),
               })
@@ -2596,7 +2673,8 @@ Reply ONLY with your reply text (no JSON, no extra formatting).`
         const existingComment = await db.query.tribeComments.findFirst({
           where: and(
             eq(tribeComments.postId, post.id),
-            eq(tribeComments.userId, job.userId),
+            job.userId ? eq(tribeComments.userId, job.userId) : undefined,
+            job.guestId ? eq(tribeComments.guestId, job.guestId) : undefined,
             isNull(tribeComments.parentCommentId),
           ),
         })
@@ -2677,7 +2755,9 @@ Respond ONLY with this JSON array:
   }
 ]`
 
-        const token = generateToken(user.id, user.email)
+        const token = user
+          ? generateToken(user.id, user.email)
+          : guest?.fingerprint
 
         const selectedAgent = await getAiAgent({ name: "sushi" })
         if (!selectedAgent) throw new Error("Sushi agent not found")
@@ -2995,12 +3075,24 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
     throw new Error("Agent Not found")
   }
 
-  const user = await getUser({
-    id: job.userId,
-  })
+  const user = job.userId
+    ? await getUser({
+        id: job.userId,
+        skipCache: true,
+        skipMasking: true,
+      })
+    : null
 
-  if (!user) {
-    throw new Error("User Not found")
+  const guest = job.guestId
+    ? await getGuest({
+        id: job.guestId,
+        skipCache: true,
+        skipMasking: true,
+      })
+    : null
+
+  if (!user && !guest) {
+    throw new Error("User not found")
   }
 
   const app = await db.query.apps.findFirst({
@@ -3328,7 +3420,9 @@ Respond ONLY with this JSON array (no extra text):
         console.log(
           `📏 Prompt length: ${batchPrompt.length} chars (~${Math.ceil(batchPrompt.length / 4)} tokens)`,
         )
-        const token = generateToken(user.id, user.email)
+        const token = user
+          ? generateToken(user.id, user.email)
+          : guest?.fingerprint
 
         const existingTribeThread = await getThread({
           appId: app.id,
@@ -3657,7 +3751,7 @@ Respond ONLY with this JSON array (no extra text):
                   .insert(tribeComments)
                   .values({
                     postId: postData.post.id,
-                    userId: job.userId,
+                    userId: job.userId!,
                     content: engagement.comment,
                     parentCommentId,
                     appId: app.id,
@@ -3927,6 +4021,26 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
     throw new Error(`Job not found: ${jobId}`)
   }
 
+  const user = job.userId
+    ? await getUser({
+        id: job.userId,
+        skipCache: true,
+        skipMasking: true,
+      })
+    : null
+
+  const guest = job.guestId
+    ? await getGuest({
+        id: job.guestId,
+        skipCache: true,
+        skipMasking: true,
+      })
+    : null
+
+  if (!user && !guest) {
+    throw new Error("User not found")
+  }
+
   // DEBUG: Log job timing details
   const now = new Date()
   console.log(`🔍 [DEBUG] executeScheduledJob called for job: ${job.name}`)
@@ -4123,7 +4237,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         // doesn't abort the rest. Cooldown is a skip, not a real failure.
         try {
           const languages = schedule.languages || job.metadata?.languages
-          await executeJobType(
+          await executeJobType({
             effectiveJobType,
             job,
             postType,
@@ -4131,7 +4245,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             fetchNews,
             generateVideo,
             languages,
-          )
+          })
           anyTaskSucceeded = true
         } catch (subtaskError) {
           const errMsg =
@@ -4576,15 +4690,23 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
 }
 
 // Helper function to execute a specific job type
-async function executeJobType(
-  effectiveJobType: string,
-  job: scheduledJob,
-  postType?: string,
-  generateImage?: boolean,
-  fetchNews?: boolean,
-  generateVideo?: boolean,
-  languages?: string[],
-): Promise<void> {
+async function executeJobType({
+  effectiveJobType,
+  job,
+  postType,
+  generateImage,
+  fetchNews,
+  generateVideo,
+  languages,
+}: {
+  effectiveJobType: string
+  job: scheduledJob
+  postType?: string
+  generateImage?: boolean
+  fetchNews?: boolean
+  generateVideo?: boolean
+  languages?: string[]
+}): Promise<void> {
   switch (effectiveJobType) {
     case "tribe_post":
       try {
@@ -4602,7 +4724,7 @@ async function executeJobType(
         if (response.post_id && job.appId && !isDevelopment) {
           autoTranslateTribeContent({
             appId: job.appId,
-            userId: job.userId,
+            userId: job.userId!,
             postIds: [response.post_id],
             languages,
           }).catch((err) => console.error("⚠️ Auto-translate post failed:", err))
@@ -4666,7 +4788,7 @@ async function executeJobType(
           if (recentComments.length > 0 && !isDevelopment) {
             autoTranslateTribeContent({
               appId: job.appId,
-              userId: job.userId,
+              userId: job.userId!,
               commentIds: recentComments.map((c) => c.id),
               languages,
             }).catch((err) =>
@@ -4750,9 +4872,26 @@ async function executeMoltbookComment(job: scheduledJob) {
 
 async function executeMoltbookEngage(job: scheduledJob) {
   // Validate appId is present
-  const result = await engageWithMoltbookPosts({
-    job,
+
+  if (!job.userId) {
+    throw new Error("User not found for Moltbook engage")
+  }
+
+  const user = await getUser({
+    id: job.userId,
+    skipCache: true,
+    skipMasking: true,
   })
+
+  const guest = job.guestId
+    ? await getGuest({ id: job.guestId, skipCache: true, skipMasking: true })
+    : undefined
+
+  if (!user && !guest) {
+    throw new Error("User not found for Moltbook engage")
+  }
+
+  const result = await engageWithMoltbookPosts(job)
 
   return result
 }

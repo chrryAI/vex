@@ -29,6 +29,18 @@ export const GUEST_TASKS_COUNT = 4
 export const MEMBER_TASKS_COUNT = 8
 export const MEMBER_FREE_TRIBE_CREDITS = 5
 
+export type apiKeys = {
+  openai?: string // Encrypted OpenAI API key
+  anthropic?: string // Encrypted Anthropic API key
+  google?: string // Encrypted Google API key
+  deepseek?: string // Encrypted DeepSeek API key
+  perplexity?: string // Encrypted Perplexity API key
+  replicate?: string // Encrypted Replicate API key (for Flux)
+  fal?: string // Encrypted Replicate API key (for Flux)
+  openrouter?: string // Encrypted OpenRouter API key
+  xai?: string // Encrypted XAI API key
+}
+
 export const PROMPT_LIMITS = {
   INPUT: 7000, // Max for direct input
   INSTRUCTIONS: 2000, // Max for instructions
@@ -1764,11 +1776,12 @@ export const scheduledJobs = pgTable(
     appId: uuid("appId").references(() => apps.id, {
       onDelete: "cascade",
     }),
-    userId: uuid("userId")
-      .notNull()
-      .references(() => users.id, {
-        onDelete: "cascade",
-      }),
+    userId: uuid("userId").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
 
     // Job configuration
     name: text("name").notNull(), // User-friendly name

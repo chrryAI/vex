@@ -49,8 +49,12 @@ export const getDailyImageLimit = ({
   guest?: Partial<guest> & { subscription?: subscription }
 }) => {
   const multiplier = member?.role === "admin" ? 10 : 1
-  if (member?.subscription || guest?.subscription) {
-    return 50 * multiplier // Plus users: 50 images per day
+  const byokMultiplier =
+    member?.apiKeys?.openrouter || guest?.apiKeys?.openrouter ? 2 : 1
+  const subscriptionMultiplier =
+    member?.subscription?.plan || guest?.subscription?.plan === "pro" ? 2 : 1
+  if (member?.subscription || guest?.subscription || byokMultiplier > 1) {
+    return 50 * subscriptionMultiplier * multiplier * byokMultiplier // Plus users: 50 images per day
   } else if (member) {
     return 10 * multiplier // Free users: 10 images per day
   } else {

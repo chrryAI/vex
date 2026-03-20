@@ -601,6 +601,7 @@ export const updateUser = async ({
   city,
   country,
   API_URL = utils.API_URL,
+  openRouterApiKey,
 }: {
   language?: string
   name?: string
@@ -613,6 +614,7 @@ export const updateUser = async ({
   API_URL?: string
   city?: string
   country?: string
+  openRouterApiKey?: string
 }) => {
   const response = await fetch(`${API_URL}/user`, {
     method: "PATCH",
@@ -626,6 +628,7 @@ export const updateUser = async ({
       memoriesEnabled,
       city,
       country,
+      openRouterApiKey,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -644,6 +647,7 @@ export const updateGuest = async ({
   country,
   token,
   API_URL = utils.API_URL,
+  openRouterApiKey,
 }: {
   favouriteAgent?: string
   characterProfilesEnabled?: boolean
@@ -652,6 +656,7 @@ export const updateGuest = async ({
   memoriesEnabled?: boolean
   API_URL?: string
   token: string
+  openRouterApiKey?: string
 }) => {
   const response = await fetch(`${API_URL}/guest`, {
     method: "PATCH",
@@ -661,6 +666,7 @@ export const updateGuest = async ({
       memoriesEnabled,
       city,
       country,
+      openRouterApiKey,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -1468,6 +1474,7 @@ export const getActions = ({
       favouriteAgent?: string
       characterProfilesEnabled?: boolean
       memoriesEnabled?: boolean
+      openRouterApiKey?: string
       city?: string
       country?: string
     }) => updateUser({ token, ...params, API_URL }),
@@ -1481,6 +1488,7 @@ export const getActions = ({
       favouriteAgent?: string
       characterProfilesEnabled?: boolean
       city?: string
+      openRouterApiKey?: string
       country?: string
       memoriesEnabled?: boolean
     }) => updateGuest({ token, ...params, API_URL }),

@@ -1,4 +1,13 @@
-import { and, cosineDistance, db, desc, eq, sql } from "@repo/db"
+import {
+  and,
+  cosineDistance,
+  db,
+  desc,
+  eq,
+  type guest,
+  sql,
+  type user,
+} from "@repo/db"
 import { newsArticles } from "@repo/db/src/schema"
 import { embed } from "ai"
 import { asc } from "drizzle-orm"
@@ -56,11 +65,25 @@ const NEWS_SOURCES = {
 /**
  * Generate embedding for text
  */
-async function getEmbedding(text: string): Promise<number[] | null> {
+async function getEmbedding({
+  text,
+  user,
+  guest,
+  app,
+}: {
+  text: string
+  user?: user
+  guest?: guest
+  app?: any
+}): Promise<number[] | null> {
   try {
-    const provider = await getEmbeddingProvider()
+    const { provider, modelId } = await getEmbeddingProvider({
+      user,
+      guest,
+      app,
+    })
     const { embedding } = await embed({
-      model: provider.embedding("text-embedding-3-small"),
+      model: provider.embedding(modelId),
       value: text,
     })
     return embedding
@@ -109,7 +132,8 @@ async function fetchFeed(
             // Generate embedding
             const contentText =
               `${item.title || ""} ${item.contentSnippet || item.content || ""} ${item.categories?.join(" ") || ""}`.trim()
-            const embedding = await getEmbedding(contentText)
+            // In fetchFeed we don't have user/guest yet, so we use default provider
+            const embedding = await getEmbedding({ text: contentText })
 
             // Insert new article
             await db.insert(newsArticles).values({
@@ -145,7 +169,13 @@ async function fetchFeed(
 /**
  * Fetch all news from all sources
  */
-export async function fetchAllNews(): Promise<void> {
+export async function fetchAllNews({
+  user,
+  guest,
+}: {
+  user?: user
+  guest?: guest
+}): Promise<void> {
   console.log("🗞️ Starting news fetch...")
 
   for (const [sourceKey, sourceConfig] of Object.entries(NEWS_SOURCES)) {
@@ -222,7 +252,7 @@ export async function searchNews(
   limit: number = 20,
 ): Promise<any[]> {
   // Vector search with embeddings
-  const embedding = await getEmbedding(query)
+  const embedding = await getEmbedding({ text: query })
 
   if (embedding) {
     return await db

@@ -29,7 +29,7 @@ export const weather = new Hono()
 
 // GET /weather - Get weather for user's location
 weather.get("/", async (c) => {
-  const member = await getMember(c, { full: true, skipCache: true })
+  const member = await getMember(c, { skipCache: true })
   const guest = await getGuest(c, { skipCache: true })
 
   const redis =
@@ -98,14 +98,14 @@ weather.get("/", async (c) => {
     if (location) {
       if (member) {
         await updateUser({
-          ...member,
+          id: member.id,
           city: location.city,
           country: location.country,
           weather: weatherCache,
         })
       } else if (guest) {
         await updateGuest({
-          ...guest,
+          id: guest.id,
           city: location.city,
           country: location.country,
           weather: weatherCache,
@@ -222,7 +222,7 @@ weather.get("/", async (c) => {
 
     if (member) {
       await updateUser({
-        ...member,
+        id: member.id,
         city: locationUpdate.city,
         country: locationUpdate.country,
         weather: weatherCache,
@@ -231,7 +231,7 @@ weather.get("/", async (c) => {
       await redis.del(`user:${member.id}`)
     } else if (guest) {
       await updateGuest({
-        ...guest,
+        id: guest.id,
         city: locationUpdate.city,
         country: locationUpdate.country,
         weather: weatherCache,

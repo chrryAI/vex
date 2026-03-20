@@ -5111,7 +5111,7 @@ export default function Chat({
                               }}
                             >
                               {creditsLeft > OWNER_CREDITS / 10
-                                ? t("Unlimited credits")
+                                ? t("BYOK")
                                 : t("credit_left", {
                                     count: creditsLeft,
                                   })}

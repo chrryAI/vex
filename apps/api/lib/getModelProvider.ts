@@ -10,8 +10,11 @@ import {
   type app,
   decrypt,
   getAiAgents,
+  type guest,
   type scheduledJob,
   updateAiAgent,
+  type user,
+  type userWithRelations,
 } from "@repo/db"
 import type { LanguageModel } from "ai"
 
@@ -19,6 +22,13 @@ const plusTiers = ["plus", "pro"]
 
 function safeDecrypt(encryptedKey: string | undefined): string | undefined {
   if (!encryptedKey) return undefined
+
+  // If already masked (contains '...'), don't try to decrypt
+  if (encryptedKey.includes("...")) {
+    console.warn("⚠️ API key is already masked, cannot decrypt")
+    return undefined
+  }
+
   try {
     return decrypt(encryptedKey)
   } catch (error) {
@@ -81,6 +91,8 @@ export async function getModelProvider({
   name = "deepSeek",
   canReason = true,
   activeSchedule,
+  user,
+  guest,
   job,
 }: {
   app?: app | appWithStore
@@ -97,6 +109,8 @@ export async function getModelProvider({
     | string
   canReason?: boolean
   job?: scheduledJob
+  user?: user | userWithRelations | null
+  guest?: guest | null
   activeSchedule?: {
     modelId?: string
     time: string // "09:00"
@@ -151,7 +165,10 @@ export async function getModelProvider({
   switch (toSwitch) {
     case "beles": {
       const openrouterKey =
-        safeDecrypt(app?.apiKeys?.openrouter) || process.env.OPENROUTER_API_KEY
+        safeDecrypt(user?.apiKeys?.openrouter) ||
+        safeDecrypt(guest?.apiKeys?.openrouter) ||
+        safeDecrypt(app?.apiKeys?.openrouter) ||
+        process.env.OPENROUTER_API_KEY
 
       if (openrouterKey) {
         const freeModels = [
@@ -202,11 +219,19 @@ export async function getModelProvider({
       }
     }
     case "deepSeek": {
-      const deepseekKey = app?.apiKeys?.deepseek
-        ? safeDecrypt(app?.apiKeys?.deepseek)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.DEEPSEEK_API_KEY
-          : ""
+      const byokKey = user?.apiKeys?.openrouter
+        ? safeDecrypt(user?.apiKeys?.openrouter)
+        : guest?.apiKeys?.openrouter
+          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          : undefined
+
+      const deepseekKey = byokKey
+        ? undefined
+        : app?.apiKeys?.deepseek
+          ? safeDecrypt(app?.apiKeys?.deepseek)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.DEEPSEEK_API_KEY
+            : ""
 
       if (deepseekKey) {
         const deepseekProvider = createDeepSeek({ apiKey: deepseekKey })
@@ -222,11 +247,13 @@ export async function getModelProvider({
         break
       }
 
-      const openrouterKeyForDeepSeek = app?.apiKeys?.openrouter
-        ? safeDecrypt(app?.apiKeys?.openrouter)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.OPENROUTER_API_KEY
-          : ""
+      const openrouterKeyForDeepSeek = byokKey
+        ? byokKey
+        : app?.apiKeys?.openrouter
+          ? safeDecrypt(app?.apiKeys?.openrouter)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.OPENROUTER_API_KEY
+            : ""
 
       const modelId = targetModelId || "deepseek/deepseek-chat"
       if (openrouterKeyForDeepSeek && !failedKeys?.includes(modelId)) {
@@ -278,11 +305,19 @@ export async function getModelProvider({
     }
 
     case "sushi": {
-      const sushiKey =
-        (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
-        (!plusTiers.includes(app?.tier || "")
-          ? process.env.DEEPSEEK_API_KEY
-          : "")
+      const byokKey = user?.apiKeys?.openrouter
+        ? safeDecrypt(user?.apiKeys?.openrouter)
+        : guest?.apiKeys?.openrouter
+          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          : undefined
+      const sushiKey = byokKey
+        ? undefined
+        : app?.apiKeys?.deepseek
+          ? safeDecrypt(app?.apiKeys?.deepseek)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.DEEPSEEK_API_KEY
+            : ""
+
       {
         const modelId =
           canReason && !job ? "deepseek-v3.2-thinking" : "deepseek-v3.2"
@@ -300,14 +335,15 @@ export async function getModelProvider({
         }
       }
 
-      const openrouterKeyForDeepSeekReasoner = app?.apiKeys?.openrouter
-        ? safeDecrypt(app?.apiKeys?.openrouter)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.OPENROUTER_API_KEY
-          : ""
+      const openrouterKeyForDeepSeekReasoner = byokKey
+        ? byokKey
+        : app?.apiKeys?.openrouter
+          ? safeDecrypt(app?.apiKeys?.openrouter)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.OPENROUTER_API_KEY
+            : undefined
 
-      const rawKeys =
-        openrouterKeyForDeepSeekReasoner || process.env.OPENROUTER_KEYS || ""
+      const rawKeys = openrouterKeyForDeepSeekReasoner || ""
       const allKeys = rawKeys
         .split(",")
         .map((k: string) => k.trim())
@@ -315,7 +351,9 @@ export async function getModelProvider({
 
       const keyIndex =
         Math.floor(Date.now() / (1000 * 60 * 30)) % (allKeys.length || 1)
-      const selectedKey = allKeys[keyIndex] || openrouterKeyForDeepSeekReasoner
+      const selectedKey = openrouterKeyForDeepSeekReasoner || allKeys[keyIndex]
+
+      const isBYOK = !!openrouterKeyForDeepSeekReasoner
 
       const freeModels = {
         reaction: ["qwen/qwen3-235b-a22b-thinking-2507"],
@@ -325,6 +363,9 @@ export async function getModelProvider({
           "qwen/qwen3-vl-235b-a22b-thinking",
         ],
       }
+
+      // Hocam if it's not a job and we have BYOK, don't use the free pool
+      const useFreePool = !isBYOK || !!job
 
       // Kategori belirleme: Job objesindeki jobType üzerinden nokta atışı yapıyoruz
       let category: keyof typeof freeModels | undefined
@@ -348,7 +389,14 @@ export async function getModelProvider({
           category = "comment"
       }
 
-      const pool = category ? freeModels[category as "post"] : []
+      const pool =
+        useFreePool && category
+          ? freeModels[category as "post"]
+          : [
+              category === "comment"
+                ? "qwen/qwen3-vl-235b-a22b-thinking"
+                : "qwen/qwen3-235b-a22b-thinking-2507",
+            ]
       const failedModels = (agent.metadata?.failed || []) as string[]
       const activePool = pool?.filter((m) => !failedModels.includes(m)) || []
 
@@ -412,14 +460,23 @@ export async function getModelProvider({
     }
 
     case "chatGPT": {
+      const byokKey = user?.apiKeys?.openrouter
+        ? safeDecrypt(user?.apiKeys?.openrouter)
+        : guest?.apiKeys?.openrouter
+          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          : undefined
       const modelId =
         job?.modelConfig?.model || targetModelId || "openai/gpt-5.4"
 
-      const openrouterKeyForOpenAI =
-        (appApiKeys.openrouter ? safeDecrypt(appApiKeys.openrouter) : "") ||
-        (!plusTiers.includes(app?.tier || "")
-          ? process.env.OPENROUTER_API_KEY
-          : "")
+      const openrouterKeyForOpenAI = byokKey
+        ? byokKey
+        : appApiKeys.openrouter
+          ? safeDecrypt(appApiKeys.openrouter)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.OPENROUTER_API_KEY
+            : !plusTiers.includes(app?.tier || "")
+              ? process.env.OPENROUTER_API_KEY
+              : ""
 
       if (openrouterKeyForOpenAI && !failedKeys?.includes(modelId)) {
         const openrouterProvider = createOpenRouter({
@@ -468,11 +525,18 @@ export async function getModelProvider({
     }
 
     case "claude": {
-      const claudeKey = app?.apiKeys?.anthropic
-        ? safeDecrypt(app?.apiKeys?.anthropic)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.CLAUDE_API_KEY
-          : ""
+      const byokKey = user?.apiKeys?.openrouter
+        ? safeDecrypt(user?.apiKeys?.openrouter)
+        : guest?.apiKeys?.openrouter
+          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          : undefined
+      const claudeKey = byokKey
+        ? undefined
+        : app?.apiKeys?.anthropic
+          ? safeDecrypt(app?.apiKeys?.anthropic)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.CLAUDE_API_KEY
+            : ""
 
       const modelId = targetModelId || "anthropic/claude-sonnet-4-6"
 
@@ -490,11 +554,13 @@ export async function getModelProvider({
         break
       }
 
-      const openrouterKeyForClaude =
-        (appApiKeys.openrouter ? safeDecrypt(appApiKeys.openrouter) : "") ||
-        (!plusTiers.includes(app?.tier || "")
-          ? process.env.OPENROUTER_API_KEY
-          : "")
+      const openrouterKeyForClaude = byokKey
+        ? byokKey
+        : appApiKeys.openrouter
+          ? safeDecrypt(appApiKeys.openrouter)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.OPENROUTER_API_KEY
+            : ""
 
       {
         // For scheduled jobs, use DeepSeek instead of expensive Claude
@@ -548,9 +614,18 @@ export async function getModelProvider({
     }
 
     case "gemini": {
-      const geminiKey =
-        (appApiKeys.google ? safeDecrypt(appApiKeys.google) : "") ||
-        (!plusTiers.includes(app?.tier || "") ? process.env.GEMINI_API_KEY : "")
+      const byokKey = user?.apiKeys?.openrouter
+        ? safeDecrypt(user?.apiKeys?.openrouter)
+        : guest?.apiKeys?.openrouter
+          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          : undefined
+      const geminiKey = byokKey
+        ? undefined
+        : appApiKeys.google
+          ? safeDecrypt(appApiKeys.google)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.GEMINI_API_KEY
+            : ""
 
       {
         const modelId = targetModelId || "google/gemini-3.1-pro-preview"
@@ -567,11 +642,13 @@ export async function getModelProvider({
         }
       }
 
-      const openrouterKeyForGemini = app?.apiKeys?.openrouter
-        ? safeDecrypt(app?.apiKeys?.openrouter)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.OPENROUTER_API_KEY
-          : ""
+      const openrouterKeyForGemini = byokKey
+        ? byokKey
+        : app?.apiKeys?.openrouter
+          ? safeDecrypt(app?.apiKeys?.openrouter)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.OPENROUTER_API_KEY
+            : ""
 
       const modelId = job?.modelConfig?.model || "google/gemini-3.1-pro-preview"
 
@@ -604,11 +681,18 @@ export async function getModelProvider({
     }
 
     case "grok": {
-      const xaiKey = app?.apiKeys?.xai
-        ? safeDecrypt(app?.apiKeys?.xai)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.XAI_API_KEY
-          : ""
+      const byokKey = user?.apiKeys?.openrouter
+        ? safeDecrypt(user?.apiKeys?.openrouter)
+        : guest?.apiKeys?.openrouter
+          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          : undefined
+      const xaiKey = byokKey
+        ? undefined
+        : app?.apiKeys?.xai
+          ? safeDecrypt(app?.apiKeys?.xai)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.XAI_API_KEY
+            : ""
 
       {
         const defaultGrokModel =
@@ -637,11 +721,13 @@ export async function getModelProvider({
       {
         const modelId = "x-ai/grok-4.1-fast"
 
-        const openrouterKeyForGrok = app?.apiKeys?.openrouter
-          ? safeDecrypt(app?.apiKeys?.openrouter)
-          : !plusTiers.includes(app?.tier || "")
-            ? process.env.OPENROUTER_API_KEY
-            : ""
+        const openrouterKeyForGrok = byokKey
+          ? byokKey
+          : app?.apiKeys?.openrouter
+            ? safeDecrypt(app?.apiKeys?.openrouter)
+            : !plusTiers.includes(app?.tier || "")
+              ? process.env.OPENROUTER_API_KEY
+              : ""
 
         if (openrouterKeyForGrok && !failedKeys?.includes(modelId)) {
           const openrouterProvider = createOpenRouter({
@@ -671,13 +757,20 @@ export async function getModelProvider({
     }
 
     case "perplexity": {
+      const byokKey = user?.apiKeys?.openrouter
+        ? safeDecrypt(user?.apiKeys?.openrouter)
+        : guest?.apiKeys?.openrouter
+          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          : undefined
       const modelId = job?.modelConfig?.model || "perplexity/sonar-pro"
 
-      const perplexityKey = app?.apiKeys?.perplexity
-        ? safeDecrypt(app?.apiKeys?.perplexity)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.PERPLEXITY_API_KEY
-          : ""
+      const perplexityKey = byokKey
+        ? undefined
+        : app?.apiKeys?.perplexity
+          ? safeDecrypt(app?.apiKeys?.perplexity)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.PERPLEXITY_API_KEY
+            : ""
       if (perplexityKey && !failedKeys?.includes(modelId)) {
         const perplexityProvider = createPerplexity({
           apiKey: perplexityKey,
@@ -691,11 +784,13 @@ export async function getModelProvider({
         break
       }
 
-      const openrouterKeyForPerplexity = app?.apiKeys?.openrouter
-        ? safeDecrypt(app?.apiKeys?.openrouter)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.OPENROUTER_API_KEY
-          : ""
+      const openrouterKeyForPerplexity = byokKey
+        ? byokKey
+        : app?.apiKeys?.openrouter
+          ? safeDecrypt(app?.apiKeys?.openrouter)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.OPENROUTER_API_KEY
+            : ""
 
       if (openrouterKeyForPerplexity && !failedKeys?.includes(modelId)) {
         const openrouterProvider = createOpenRouter({
@@ -725,12 +820,19 @@ export async function getModelProvider({
     }
 
     default: {
+      const byokKey = user?.apiKeys?.openrouter
+        ? safeDecrypt(user?.apiKeys?.openrouter)
+        : guest?.apiKeys?.openrouter
+          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          : undefined
       console.log("⚠️ Unknown agent, using DeepSeek fallback")
-      const fallbackKey = app?.apiKeys?.deepseek
-        ? safeDecrypt(app?.apiKeys?.deepseek)
-        : !plusTiers.includes(app?.tier || "")
-          ? process.env.DEEPSEEK_API_KEY
-          : ""
+      const fallbackKey = byokKey
+        ? byokKey
+        : app?.apiKeys?.deepseek
+          ? safeDecrypt(app?.apiKeys?.deepseek)
+          : !plusTiers.includes(app?.tier || "")
+            ? process.env.DEEPSEEK_API_KEY
+            : ""
       const fallbackProvider = createDeepSeek({ apiKey: fallbackKey })
       const fallbackModel = "deepseek-v3.2"
       const effectiveModel = mapDeepSeekModel(fallbackModel)
@@ -752,16 +854,42 @@ export async function getModelProvider({
   }
 }
 
-export async function getEmbeddingProvider(app?: app | appWithStore) {
-  const openaiKey = app?.apiKeys?.openai
-    ? safeDecrypt(app?.apiKeys?.openai)
-    : !plusTiers.includes(app?.tier || "")
+export async function getEmbeddingProvider({
+  app,
+  user,
+  guest,
+}: {
+  app?: app | appWithStore
+  user?: user
+  guest?: guest
+}) {
+  const openaiKey =
+    safeDecrypt(user?.apiKeys?.openai) ||
+    safeDecrypt(guest?.apiKeys?.openai) ||
+    safeDecrypt(app?.apiKeys?.openai) ||
+    (!plusTiers.includes(app?.tier || "")
       ? process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY
-      : ""
+      : "")
 
-  if (!openaiKey) {
-    throw new Error("OpenAI API key required for embeddings")
+  if (openaiKey) {
+    return {
+      provider: createOpenAI({ apiKey: openaiKey }),
+      modelId: "text-embedding-3-small",
+    }
   }
 
-  return createOpenAI({ apiKey: openaiKey })
+  const openrouterKey =
+    safeDecrypt(user?.apiKeys?.openrouter) ||
+    safeDecrypt(guest?.apiKeys?.openrouter) ||
+    safeDecrypt(app?.apiKeys?.openrouter) ||
+    (!plusTiers.includes(app?.tier || "") ? process.env.OPENROUTER_API_KEY : "")
+
+  if (openrouterKey) {
+    return {
+      provider: createOpenRouter({ apiKey: openrouterKey }),
+      modelId: "openai/text-embedding-3-small",
+    }
+  }
+
+  throw new Error("OpenAI or OpenRouter API key required for embeddings")
 }

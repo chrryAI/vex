@@ -203,7 +203,7 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
 
   user &&
     (await updateUser({
-      ...user,
+      id: user.id,
       credits: MEMBER_CREDITS_PER_MONTH,
       subscribedOn: null,
       migratedFromGuest: false,
@@ -215,7 +215,7 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
   // during concurrent operations (e.g., AI streaming while cleanup runs)
   guest &&
     (await updateGuest({
-      ...guest,
+      id: guest.id,
       credits: GUEST_CREDITS_PER_MONTH,
       subscribedOn: null,
       migratedToUser: false,

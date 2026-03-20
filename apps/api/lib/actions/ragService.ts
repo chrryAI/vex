@@ -5,10 +5,13 @@ import {
   db,
   desc,
   eq,
+  getGuest,
   getUser,
+  type guest,
   isDevelopment,
   isE2E as isE2EInternal,
   sql,
+  type user,
   VEX_LIVE_FINGERPRINTS,
 } from "@repo/db"
 import {
@@ -16,7 +19,7 @@ import {
   documentSummaries,
   messageEmbeddings,
 } from "@repo/db/src/schema"
-import { generateText } from "ai"
+import { embed, generateText } from "ai"
 import { captureException } from "../../lib/captureException"
 import {
   extractAndStoreKnowledge,
@@ -24,7 +27,7 @@ import {
   linkChunkToEntities,
   storeDocumentChunk,
 } from "../../lib/graph/graphService"
-import { getModelProvider } from "../getModelProvider"
+import { getEmbeddingProvider, getModelProvider } from "../getModelProvider"
 
 const API_KEY = process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY
 
@@ -65,30 +68,17 @@ export function chunkText(
 }
 
 // Generate embeddings using OpenAI API
-export async function generateEmbedding(text: string): Promise<number[]> {
+export async function generateEmbedding(
+  text: string,
+  options: { user?: user; guest?: guest; app?: app | appWithStore } = {},
+): Promise<number[]> {
   try {
-    const response = await fetch("https://api.openai.com/v1/embeddings", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "text-embedding-3-small",
-        input: text.substring(0, 8000),
-        encoding_format: "float",
-      }),
+    const { provider, modelId } = await getEmbeddingProvider(options)
+    const { embedding } = await embed({
+      model: provider.embedding(modelId),
+      value: text.substring(0, 8000),
     })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(
-        `OpenAI Embeddings API error: ${response.status} - ${errorText}`,
-      )
-    }
-
-    const data = await response.json()
-    return data.data[0].embedding
+    return embedding
   } catch (error) {
     console.error("❌ Error generating embedding:", error)
     captureException(error)
@@ -97,11 +87,19 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 }
 
 // Generate document summary
-export async function generateDocumentSummary(
-  content: string,
-  filename: string,
-  app?: app | appWithStore,
-): Promise<{
+export async function generateDocumentSummary({
+  content,
+  filename,
+  app,
+  member,
+  guest,
+}: {
+  content: string
+  filename: string
+  app?: app | appWithStore
+  member?: user
+  guest?: guest
+}): Promise<{
   summary: string
   keyTopics: string[]
 }> {
@@ -117,7 +115,7 @@ Required JSON format:
   "keyTopics": ["topic1", "topic2", "topic3"]
 }`
 
-    const provider = await getModelProvider({ app })
+    const provider = await getModelProvider({ app, user: member, guest })
 
     const result = await generateText({
       model: provider.provider,
@@ -171,6 +169,8 @@ export async function processFileForRAG({
   userId,
   guestId,
   app,
+  member,
+  guest,
 }: {
   content: string
   filename: string
@@ -181,6 +181,8 @@ export async function processFileForRAG({
   userId?: string
   guestId?: string
   app?: app | appWithStore
+  member?: user
+  guest?: guest
 }): Promise<void> {
   console.log(
     `📚 Processing ${filename} for RAG (${Math.round(fileSizeBytes / 1024)}KB)...`,
@@ -188,11 +190,13 @@ export async function processFileForRAG({
 
   try {
     // 1. Generate document summary
-    const { summary, keyTopics } = await generateDocumentSummary(
+    const { summary, keyTopics } = await generateDocumentSummary({
       content,
       filename,
       app,
-    )
+      member,
+      guest,
+    })
     console.log(
       `📋 Generated summary for ${filename}:`,
       summary.substring(0, 100),
@@ -324,11 +328,17 @@ export async function findRelevantChunks({
   threadId,
   limit = 5,
   threshold = 0.75,
+  user,
+  guest,
+  app,
 }: {
   query: string
   threadId: string
   limit?: number
   threshold?: number
+  user?: user
+  guest?: guest
+  app?: app | appWithStore
 }): Promise<
   Array<{
     content: string
@@ -344,7 +354,7 @@ export async function findRelevantChunks({
     )
 
     // Generate query embedding
-    const queryEmbedding = await generateEmbedding(query)
+    const queryEmbedding = await generateEmbedding(query, { user, guest, app })
 
     // Use raw SQL for vector similarity search with pgvector
     // CRITICAL: Use raw operator in ORDER BY for index usage (HNSW/IVFFlat)
@@ -403,9 +413,16 @@ export async function getDocumentSummaries(threadId: string) {
 export async function buildRAGContext(
   query: string,
   threadId: string,
+  options: { user?: user; guest?: guest; app?: app | appWithStore } = {},
 ): Promise<string> {
   const [relevantChunks, documentSummaries] = await Promise.all([
-    findRelevantChunks({ query, threadId, limit: 3, threshold: 0.7 }),
+    findRelevantChunks({
+      query,
+      threadId,
+      limit: 3,
+      threshold: 0.7,
+      ...options,
+    }),
     getDocumentSummaries(threadId),
   ])
 
@@ -458,6 +475,13 @@ export async function processMessageForRAG({
     const member = userId
       ? await getUser({
           id: userId,
+          skipMasking: true,
+        })
+      : undefined
+    const guest = guestId
+      ? await getGuest({
+          id: guestId,
+          skipMasking: true,
         })
       : undefined
 
@@ -481,7 +505,11 @@ export async function processMessageForRAG({
 
     // Generate embedding for the message
     console.log("🔢 Generating embedding...")
-    const embedding = await generateEmbedding(content)
+    const embedding = await generateEmbedding(content, {
+      user: member || undefined,
+      guest: guest || undefined,
+      app,
+    })
     console.log("✅ Embedding generated:", embedding.length, "dimensions")
 
     // Store message embedding
@@ -526,6 +554,9 @@ export async function findRelevantMessages({
   limit = 5,
   threshold = 0.75,
   excludeMessageId,
+  user,
+  guest,
+  app,
 }: {
   query: string
   threadId: string
@@ -534,6 +565,9 @@ export async function findRelevantMessages({
   limit?: number
   threshold?: number
   excludeMessageId?: string
+  user?: user
+  guest?: guest
+  app?: app | appWithStore
 }): Promise<
   Array<{
     messageId: string
@@ -546,7 +580,11 @@ export async function findRelevantMessages({
 > {
   try {
     // Generate query embedding
-    const queryEmbedding = await generateEmbedding(query)
+    const queryEmbedding = await generateEmbedding(query, {
+      user: user || undefined,
+      guest: guest || undefined,
+      app,
+    })
 
     // Search for similar messages using pgvector
     // CRITICAL: Use raw operator in ORDER BY for index usage (HNSW/IVFFlat)
@@ -593,15 +631,27 @@ export async function buildEnhancedRAGContext({
   threadId,
   excludeMessageId,
   app,
+  user,
+  guest,
 }: {
   query: string
   threadId: string
   excludeMessageId?: string
   app?: app | appWithStore
+  user?: user
+  guest?: guest
 }): Promise<string> {
   const [relevantChunks, documentSummaries, relevantMessages, graphContext] =
     await Promise.all([
-      findRelevantChunks({ query, threadId, limit: 3, threshold: 0.7 }),
+      findRelevantChunks({
+        query,
+        threadId,
+        limit: 3,
+        threshold: 0.7,
+        user,
+        guest,
+        app,
+      }),
       getDocumentSummaries(threadId),
       findRelevantMessages({
         query,
@@ -609,13 +659,18 @@ export async function buildEnhancedRAGContext({
         limit: 3,
         threshold: 0.7,
         excludeMessageId,
+        user,
+        guest,
+        app,
       }),
       // Graph Retrieval - Only if enabled
       process.env.ENABLE_GRAPH_RAG === "true"
-        ? getGraphContext(query, app).catch((err) => {
-            console.error("Failed to get graph context:", err)
-            return ""
-          })
+        ? getGraphContext({ queryText: query, app, user, guest }).catch(
+            (err) => {
+              console.error("Failed to get graph context:", err)
+              return ""
+            },
+          )
         : Promise.resolve(""),
     ])
 

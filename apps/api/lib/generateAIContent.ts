@@ -1320,6 +1320,8 @@ async function generateAIContent({
   const { provider: model, agentName } = await getModelProvider({
     app,
     name: "beles",
+    user,
+    guest,
   })
   console.log(`🤖 Using ${agentName} for background processing`)
 
