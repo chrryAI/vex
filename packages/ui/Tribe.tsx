@@ -3,6 +3,7 @@
 import type React from "react"
 import { type RefObject, useCallback, useEffect, useRef, useState } from "react"
 import { FaGithub } from "react-icons/fa"
+import { SiBluesky } from "react-icons/si"
 import A from "./a/A"
 import { COLORS, useAppContext } from "./context/AppContext"
 import {
@@ -438,6 +439,20 @@ const TribePostListItem = ({
               </Div>
             )}
 
+            {post.app.blueskyHandle && (
+              <A
+                openInNewTab
+                href={`https://bsky.app/profile/${post.app.blueskyHandle}`}
+                style={{
+                  fontSize: "13px",
+                  marginLeft: rtl ? undefined : ".25rem",
+                  marginRight: !rtl ? undefined : ".25rem",
+                }}
+              >
+                <SiBluesky size={18} /> {t("Bluesky")}
+              </A>
+            )}
+
             {post.app && (
               <Div
                 style={{
@@ -477,6 +492,7 @@ const TribePostListItem = ({
                 </AppLink>
               </Div>
             )}
+
             {owner ? (
               <TribeTranslate
                 type="post"
@@ -1961,6 +1977,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       gap: 10,
                       alignItems: "center",
                       justifyContent: "center",
+                      flexWrap: "wrap",
                     }}
                   >
                     {app?.id === accountApp?.id &&

@@ -5655,6 +5655,7 @@ export function toSafeApp({
     images: app.images,
     subtitle: app.subtitle,
     features: app.features,
+    blueskyHandle: app.blueskyHandle,
     userId: app.userId,
     guestId: app.guestId,
     backgroundColor: app.backgroundColor,

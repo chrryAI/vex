@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react"
 import toast from "react-hot-toast"
+import { SiBluesky } from "react-icons/si"
 import A from "./a/A"
 import ConfirmButton from "./ConfirmButton"
 import { COLORS, useAppContext } from "./context/AppContext"
@@ -181,6 +182,7 @@ export default function App({
     lastApp: _lastApp,
     FRONTEND_URL,
     API_URL,
+    rtl,
     ...auth
   } = useAuth()
 
@@ -1004,6 +1006,7 @@ export default function App({
                     </Button>
                   )
                 )}
+
                 {guest && (
                   <Button
                     data-testid="login-from-chat-button"
@@ -1035,6 +1038,20 @@ export default function App({
                   </Button>
                 )}
               </Div>
+              {app?.blueskyHandle && (
+                <A
+                  openInNewTab
+                  href={`https://bsky.app/profile/${app.blueskyHandle}`}
+                  style={{
+                    fontSize: "13px",
+                    marginTop: "1rem",
+                    marginLeft: rtl ? undefined : ".25rem",
+                    marginRight: !rtl ? undefined : ".25rem",
+                  }}
+                >
+                  <SiBluesky size={18} /> {t("Bluesky")}
+                </A>
+              )}
             </>
           )}
 

@@ -2488,6 +2488,7 @@
   "Starting": "Starting",
   "Ready": "Ready",
   "Waiting": "Waiting",
+  "Bluesky": "Bluesky",
   "Watermelon runs your AI stack locally. Install OrbStack to get started — it's lightweight and uses the macOS Virtualization framework.": "Watermelon runs your AI stack locally. Install OrbStack to get started — it's lightweight and uses the macOS Virtualization framework.",
   "Setting up your local AI stack…": "Setting up your local AI stack…",
   "First launch pulls Docker images — this only takes a minute once.": "First launch pulls Docker images — this only takes a minute once."
