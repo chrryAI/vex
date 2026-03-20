@@ -1655,6 +1655,11 @@ export function AuthProvider({
   }, [refetchTimer])
 
   const [selectedAgent, setSelectedAgent] = useState<aiAgent | undefined>()
+  const isBYOK = !!user?.apiKeys?.openrouter || !!guest?.apiKeys?.openrouter
+  const isReplicateBYOK =
+    !!user?.apiKeys?.replicate || !!guest?.apiKeys?.replicate
+  const isFalYOK = !!user?.apiKeys?.fal || !!guest?.apiKeys?.fal
+
   const plausible = ({
     name,
     url,
@@ -1729,6 +1734,9 @@ export function AuthProvider({
       creditsLeft,
       hourlyLimit,
       hourlyUsageLeft,
+      isBYOK,
+      isReplicateBYOK,
+      isFalYOK,
     }
 
     const finalProps = burn
@@ -1737,6 +1745,7 @@ export function AuthProvider({
           ...basic,
           ...enrichedProps,
           isMember: !!user,
+          isBYOK,
           isGuest: !!guest,
           isSubscriber: !!(user || guest)?.subscription,
           isOwner: isOwner(app, {
@@ -2177,25 +2186,6 @@ export function AuthProvider({
     showFocusInitial,
   )
 
-  const showWatermelonInitial =
-    siteConfig.isWatermelon ||
-    searchParams.get("watermelon") === "true" ||
-    pathname === "/watermelon"
-
-  const [showWatermelon, setShowWatermelonInternal] = useState(
-    showWatermelonInitial,
-  )
-
-  const setShowWatermelon = (sw: boolean) => {
-    setShowWatermelonInternal(sw)
-
-    if (sw) {
-      addParams({ watermelon: "true" })
-    } else {
-      showWatermelon && removeParams("watermelon")
-    }
-  }
-
   useEffect(() => {
     if (showFocusInitial !== showFocus) {
       setShowFocusInternal(showFocusInitial)
@@ -2499,6 +2489,32 @@ export function AuthProvider({
   const _isExcluded = _routeSlug
     ? excludedSlugRoutes?.includes(_routeSlug)
     : false
+
+  const showWatermelonInitial = !!(
+    (siteConfig.isWatermelon && clearLocale(pathname) === "") ||
+    searchParams.get("watermelon") === "true" ||
+    pathname === "/watermelon"
+  )
+
+  const [showWatermelon, setShowWatermelonInternal] = useState<boolean>(
+    showWatermelonInitial || !!siteConfig.isWatermelon,
+  )
+
+  const setShowWatermelon = (sw: boolean) => {
+    setShowWatermelonInternal(sw)
+
+    // if (sw) {
+    //   addParams({ watermelon: "true" })
+    // } else {
+    //   showWatermelon && removeParams("watermelon")
+    // }
+  }
+
+  useEffect(() => {
+    if (showWatermelonInitial !== showWatermelon) {
+      setShowWatermelonInternal(showWatermelonInitial)
+    }
+  }, [showWatermelonInitial, showWatermelon])
 
   const postIdInitial = getPostId(pathname)
 

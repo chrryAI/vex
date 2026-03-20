@@ -1,13 +1,13 @@
 "use client"
 
 import clsx from "clsx"
-import { lazy, Suspense, useEffect } from "react"
+import { lazy, Suspense } from "react"
 import { useAppContext } from "./context/AppContext"
-import Grapes from "./Grapes"
 import Img from "./Image"
-import { Circle, CircleCheck, CircleEllipsis } from "./icons"
+import { CircleCheck, CircleEllipsis } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import Menu from "./Menu"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 // Lazy load heavy components to reduce initial bundle
 const Subscribe = lazy(() => import("./Subscribe"))
@@ -15,7 +15,6 @@ const SignIn = lazy(() => import("./SignIn"))
 const CharacterProfiles = lazy(() => import("./CharacterProfiles"))
 
 import A from "./a/A"
-import AddToHomeScreen from "./addToHomeScreen"
 import {
   useApp,
   useAuth,
@@ -25,16 +24,7 @@ import {
 import { useStyles } from "./context/StylesContext"
 import { useTimerContext } from "./context/TimerContext"
 import { useHasHydrated } from "./hooks"
-import {
-  Button,
-  Div,
-  H1,
-  Main,
-  Span,
-  usePlatform,
-  useTheme,
-  VexToast,
-} from "./platform"
+import { Button, Div, H1, Main, Span, usePlatform, useTheme } from "./platform"
 import Version from "./Version"
 
 function Watermelon({
@@ -46,7 +36,7 @@ function Watermelon({
 }) {
   const { viewPortWidth } = usePlatform()
   const { t } = useAppContext()
-  const { user, guest } = useAuth()
+  const { user, guest, siteConfig, setShowWatermelon } = useAuth()
 
   const hasHydrated = useHasHydrated()
   const { utilities } = useStyles()
@@ -57,7 +47,11 @@ function Watermelon({
 
   return (
     <A
-      href={"/watermelon"}
+      onClick={() => {
+        setShowWatermelon(true)
+      }}
+      event={ANALYTICS_EVENTS.WM_BYOK_CLICK}
+      href={siteConfig.isWatermelon ? "/" : "/watermelon"}
       style={{
         ...utilities.xSmall.style,
         marginTop: !isDrawerOpen ? 1 : -7.5,

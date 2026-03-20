@@ -17,6 +17,7 @@ const baseProtectedRoutes = [
   "blog",
   "tribe",
   "t",
+  "watermelon",
 ]
 
 export const protectedRoutes = Array.from(

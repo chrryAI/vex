@@ -3,7 +3,6 @@ import {
   getGuest as getGuestDb,
   getUser,
   type guestWithRelations,
-  updateUser,
   type userWithRelations,
 } from "@repo/db"
 import type { Context } from "hono"
