@@ -1,5 +1,12 @@
 import { isDevelopment, isE2E, isOwner } from "@chrryai/chrry/utils"
-import type { app, guest, subscription, user } from "@repo/db"
+import type {
+  app,
+  guest,
+  guestWithRelations,
+  subscription,
+  user,
+  userWithRelations,
+} from "@repo/db"
 import Redis from "ioredis"
 
 import { generateSecureId } from "../lib/secureRandom"
@@ -54,6 +61,7 @@ const LIMITS = {
   plus: 600,
   pro: 1200,
   appOwner: 5000,
+  byok: 10000,
 } as const
 
 // ─── Title generation limits (requests per hour) ─────────────────────────────
@@ -64,6 +72,7 @@ const TITLE_LIMITS = {
   plus: 50,
   pro: 150,
   appOwner: 500,
+  byok: 1000,
 } as const
 
 // ─── Per-thread limits (requests per 24h) ────────────────────────────────────
@@ -74,6 +83,7 @@ const THREAD_LIMITS = {
   plus: 15,
   pro: 30,
   appOwner: 100,
+  byok: 1000,
 } as const
 
 // ─── Auth rate limit (5 attempts per minute per IP) ──────────────────────────
@@ -82,10 +92,11 @@ const AUTH_LIMIT = 5
 type Tier = keyof typeof LIMITS
 
 function getTier(
-  member?: user & { subscription?: subscription },
-  guest?: guest & { subscription?: subscription },
+  member?: userWithRelations,
+  guest?: guestWithRelations,
   isAppOwner?: boolean,
 ): Tier {
+  if (member?.apiKeys?.openrouter) return "byok"
   if (isAppOwner) return "appOwner"
   const plan = member?.subscription?.plan || guest?.subscription?.plan
   if (plan === "pro") return "pro"
@@ -103,8 +114,8 @@ export async function checkRateLimit(
     member,
     guest,
   }: {
-    member?: user & { subscription?: subscription }
-    guest?: guest & { subscription?: subscription }
+    member?: userWithRelations
+    guest?: guestWithRelations
     app?: app
   },
 ) {
@@ -140,8 +151,8 @@ export async function checkGenerationRateLimit(
     guest,
     app,
   }: {
-    member?: user & { subscription?: subscription }
-    guest?: guest & { subscription?: subscription }
+    member?: userWithRelations
+    guest?: guestWithRelations
     threadId: string
     app?: app
   },

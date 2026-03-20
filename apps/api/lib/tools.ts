@@ -1521,6 +1521,8 @@ export const getTools = ({
             prompt,
             aspectRatio,
             messageId: currentMessageId,
+            user: member,
+            guest,
           })
 
           console.log(

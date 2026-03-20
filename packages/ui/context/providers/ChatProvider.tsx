@@ -62,6 +62,10 @@ const ChatContext = createContext<
         tribe?: boolean
       }) => void
       shouldFocus: boolean
+      needsReplicate: boolean
+      setNeedsReplicate: (value: boolean) => void
+      needsFal: boolean
+      setNeedsFal: (value: boolean) => void
       setShouldFocus: (shouldFocus: boolean) => void
       placeHolderText: string | undefined
       setPlaceHolderText: (placeHolderText: string | undefined) => void
@@ -956,6 +960,17 @@ export function ChatProvider({
     setIsLoading(isLoadingThread)
   }, [isLoadingThread])
 
+  const isBYOK = Boolean(
+    user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter,
+  )
+
+  const needsReplicateInternal =
+    isBYOK &&
+    Boolean(user ? !user?.apiKeys?.replicate : !guest?.apiKeys?.replicate)
+
+  const needsFalInternal =
+    isBYOK && Boolean(user ? !user?.apiKeys?.fal : !guest?.apiKeys?.fal)
+
   const [agentName, setAgentName] = useState(session?.aiAgent?.name || "")
 
   const [isWebSearchEnabled, setIsWebSearchEnabledInternal] = useState<boolean>(
@@ -967,10 +982,22 @@ export function ChatProvider({
 
   const isImageGenerationEnabledRef = useRef<boolean>(isImageGenerationEnabled)
 
+  const [needsReplicate, setNeedsReplicate] = useState<boolean>(false)
+
+  const [needsFal, setNeedsFal] = useState<boolean>(false)
+
   const setIsImageGenerationEnabled = (
     value: boolean,
     forAgent?: aiAgent | null,
   ) => {
+    if (value) {
+      if (needsReplicateInternal) {
+        setNeedsReplicate(true)
+        return
+      }
+    }
+
+    needsReplicate && setNeedsReplicate(false)
     isImageGenerationEnabledRef.current = value
     setIsImageGenerationEnabledInternal(value)
     setSelectedAgentInternal(forAgent || sushiAgent)
@@ -1404,6 +1431,10 @@ export function ChatProvider({
         setIsNewChat,
         isNewChat,
         hasNotification,
+        needsReplicate,
+        setNeedsReplicate,
+        needsFal,
+        setNeedsFal,
         isLoadingThreads,
         setIsLoadingThreads,
         threads,

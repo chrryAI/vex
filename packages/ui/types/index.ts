@@ -11,6 +11,7 @@ export type user = {
   isLinkedToApple?: boolean
   hasRefreshToken?: boolean
   id: string
+  apiKeys: apiKeys | null
   tribeCredits: number
   adConsent?: boolean
   stripeConnectAccountId?: string
@@ -219,6 +220,18 @@ export type newTaskLog = {
 
 export type newDevice = Partial<device>
 
+export type apiKeys = {
+  openai?: string // Encrypted OpenAI API key
+  anthropic?: string // Encrypted Anthropic API key
+  google?: string // Encrypted Google API key
+  deepseek?: string // Encrypted DeepSeek API key
+  perplexity?: string // Encrypted Perplexity API key
+  replicate?: string // Encrypted Replicate API key (for Flux)
+  fal?: string // Encrypted Replicate API key (for Flux)
+  openrouter?: string // Encrypted OpenRouter API key
+  xai?: string // Encrypted XAI API key
+}
+
 // Subscription types
 export type subscription = {
   id: string
@@ -244,6 +257,7 @@ export type guest = {
   fingerprint: string
   activeOn: Date
   email: string | null
+  apiKeys: apiKeys | null
   tasksCount: number
   adConsent?: boolean
   pendingCollaborationThreadsCount?: number
@@ -928,17 +942,7 @@ export type app = {
   stripeProductId: string | null
   stripePriceId: string | null
   revenueShare: number | null
-  apiKeys: {
-    openai?: string
-    anthropic?: string
-    google?: string
-    deepseek?: string
-    perplexity?: string
-    replicate?: string
-    openrouter?: string
-    xai?: string
-    fal?: string
-  } | null
+  apiKeys: apiKeys | null
   limits: {
     promptInput?: number
     promptTotal?: number

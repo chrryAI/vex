@@ -115,7 +115,7 @@ export async function POST(request: Request) {
 
     if (guest) {
       await updateGuest({
-        ...guest,
+        id: guest.id,
         credits: Math.max(guest.credits, PLUS_CREDITS_PER_MONTH),
         subscribedOn: new Date(),
       })
@@ -345,14 +345,14 @@ const migrateGuestToUser = async (guest: Guest, user: User) => {
 
   // Mark guest as migrated
   await updateGuest({
-    ...guest,
+    id: guest.id,
     migratedToUser: true,
     fingerprint: uuidv4(), // New fingerprint to prevent reuse
   })
 
   // Update user with migration flag
   await updateUser({
-    ...user,
+    id: user.id,
     migratedFromGuest: true,
   })
 

@@ -5,7 +5,7 @@ import { lazy, Suspense, useEffect } from "react"
 import { useAppContext } from "./context/AppContext"
 import Grapes from "./Grapes"
 import Img from "./Image"
-import { CircleEllipsis } from "./icons"
+import { Circle, CircleCheck, CircleEllipsis } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import Menu from "./Menu"
 
@@ -44,17 +44,14 @@ function Watermelon({
   isCountingDown?: boolean
   isDrawerOpen?: boolean
 }) {
-  const { user } = useAuth()
   const { viewPortWidth } = usePlatform()
+  const { t } = useAppContext()
+  const { user, guest } = useAuth()
 
   const hasHydrated = useHasHydrated()
   const { utilities } = useStyles()
 
   if (!isDrawerOpen || viewPortWidth < 700 || !hasHydrated) {
-    return null
-  }
-
-  if (user?.role !== "admin") {
     return null
   }
 
@@ -66,11 +63,16 @@ function Watermelon({
         marginTop: !isDrawerOpen ? 1 : -7.5,
         marginLeft: isDrawerOpen ? 0 : -5,
         position: "relative",
-
+        display: "flex",
+        alignItems: "center",
+        gap: 5,
         left: 250,
       }}
     >
-      <Img slug="watermelon" width={22} height={22} /> BYOK (Free)
+      <Img slug="watermelon" width={22} height={22} /> BYOK ({t("Free")})
+      {user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter ? (
+        <CircleCheck color="var(--accent-4)" size={14} />
+      ) : null}
     </A>
   )
 }
@@ -132,27 +134,6 @@ export default function Skeleton({
     addHapticFeedback()
     setIsDrawerOpen(!isDrawerOpen)
   }
-
-  useEffect(() => {
-    // Preload toast icons
-    const preloadImages = [
-      `${FRONTEND_URL}/frog.png`,
-      `${FRONTEND_URL}/hamster.png`,
-    ]
-
-    if (typeof Image !== "undefined") {
-      preloadImages.forEach((src) => {
-        const img = new Image()
-        img.src = src
-      })
-    }
-
-    // Enable body scroll on Capacitor
-    if (isCapacitor && os === "ios") {
-      document.body.style.overflow = "auto"
-      ;(document.body.style as any).WebkitOverflowScrolling = "touch"
-    }
-  }, [FRONTEND_URL, isCapacitor, os])
 
   // Call ALL hooks sssbefore any conditional returns
   const { skeletonStyles, utilities } = useStyles()
@@ -381,12 +362,6 @@ export default function Skeleton({
           </Div>
         </Main>
       </Div>
-      {hasHydrated && (
-        <>
-          <AddToHomeScreen />
-          <VexToast />
-        </>
-      )}
     </Div>
   )
 }

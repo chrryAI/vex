@@ -1215,10 +1215,14 @@ ai.post("/", async (c) => {
   // console.log("🚀 POST /api/ai - Request received")
   // console.time("messageProcessing")
 
-  const member = await tracker.track("auth_member", () => getMember(c))
+  const member = await tracker.track("auth_member", () =>
+    getMember(c, { skipCache: true, skipMasking: true }),
+  )
   const guest = member
     ? undefined
-    : await tracker.track("auth_guest", () => getGuest(c))
+    : await tracker.track("auth_guest", () =>
+        getGuest(c, { skipCache: true, skipMasking: true }),
+      )
 
   if (!member && !guest) {
     return c.json({ error: "Invalid credentials" }, { status: 401 })
@@ -2143,7 +2147,7 @@ You can enable these in your settings anytime!"
   if (hasNoArtifacts && files.length > 0) {
     await tracker.track("upload_artifacts", () =>
       files.length > 0 && thread
-        ? uploadArtifacts({ files, thread, member, guest })
+        ? uploadArtifacts({ files, thread, member, guest, app: requestApp })
         : Promise.resolve(null),
     )
   }
@@ -3838,10 +3842,18 @@ When message language is unclear, default to this language.`
               c,
               thread,
               user: messageUser
-                ? await getUserDb({ id: messageUser?.id, skipCache: true })
+                ? await getUserDb({
+                    id: messageUser?.id,
+                    skipCache: true,
+                    skipMasking: true,
+                  })
                 : undefined,
               guest: messageGuest
-                ? await getGuestDb({ id: messageGuest?.id, skipCache: true })
+                ? await getGuestDb({
+                    id: messageGuest?.id,
+                    skipCache: true,
+                    skipMasking: true,
+                  })
                 : undefined,
               agentId: selectedAgent.id,
               conversationHistory: !suggestionMessages
@@ -4398,6 +4410,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               userId: member?.id,
               guestId: guest?.id,
               app: requestApp,
+              member,
+              guest,
             }).catch((error) => {
               captureException(error)
               console.error("❌ Failed to process text file for RAG:", error)
@@ -4499,6 +4513,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 threadId: thread.id,
                 userId: member?.id,
                 guestId: guest?.id,
+                member,
+                guest,
                 app: requestApp,
               }).catch((error) => {
                 captureException(error)
@@ -4625,6 +4641,8 @@ ${lastMessageContent}
           query: content,
           threadId: thread.id,
           app: requestApp,
+          user: member,
+          guest,
         })
       : ""
 
@@ -4884,6 +4902,8 @@ How I process and remember information:
           agentId: agent?.id,
           app: requestApp,
           messageId: message.message.id,
+          user: member,
+          guest: guest,
         })
 
         // Increment quota after successful validation
@@ -5316,6 +5336,8 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       name: claude.name,
       job,
       activeSchedule,
+      user: member,
+      guest,
     })
   } else if (rest.webSearchEnabled && agent.name === "sushi") {
     const perplexityAgent = await getAiAgent({
@@ -5331,6 +5353,8 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       name: perplexityAgent.name,
       job,
       activeSchedule,
+      user: member,
+      guest,
     })
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
@@ -5344,6 +5368,8 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       canReason,
       job,
       activeSchedule,
+      user: member,
+      guest,
     })
     console.log(
       `✅ Provider created using: ${model.agentName || agent.name}${jobId ? " (reasoning disabled for scheduled job)" : ""}`,
@@ -5760,6 +5786,8 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
           app: requestApp,
           job,
           activeSchedule,
+          user: member,
+          guest,
         })
         const enhanceModelId =
           typeof deepseekEnhanceProvider.provider === "string"
@@ -5950,6 +5978,9 @@ Respond in JSON format:
             aspectRatio: "1:1",
             apiKey: replicateAuth,
             falKey: falAuth,
+            user: member,
+            guest: guest,
+            app: requestApp,
             messageId: slugify(currentMessageContent.trim().substring(0, 10)),
           })
           permanentUrl = result.url

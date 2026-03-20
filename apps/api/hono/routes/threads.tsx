@@ -52,7 +52,7 @@ export const threads = new Hono()
 // GET /threads - List threads
 threads.get("/", async (c) => {
   const request = c.req.raw
-  const member = await getMemberAction(c, { full: true, skipCache: true })
+  const member = await getMemberAction(c, { skipCache: true })
   const guest = await getGuestAction(c, { skipCache: true })
 
   if (!member && !guest) {
@@ -257,7 +257,7 @@ threads.get("/:id", async (c) => {
     return c.json({ error: "Thread not found", status: 404 }, 404)
   }
 
-  const member = await getMemberAction(c, { full: true, skipCache: true })
+  const member = await getMemberAction(c, { skipCache: true })
   const guest = await getGuestAction(c, { skipCache: true })
 
   const pageSize = Number(c.req.query("pageSize") || "100")
@@ -297,13 +297,12 @@ threads.get("/:id", async (c) => {
 // DELETE /threads/:id - Delete thread
 threads.delete("/:id", async (c) => {
   const id = c.req.param("id")
-  const _request = c.req.raw
 
   if (!id || !validate(id)) {
     return c.json({ error: "Thread not found", status: 404 }, 404)
   }
 
-  const member = await getMemberAction(c, { full: true, skipCache: true })
+  const member = await getMemberAction(c, { skipCache: true })
   const guest = await getGuestAction(c, { skipCache: true })
 
   if (!member && !guest) {
@@ -410,8 +409,11 @@ threads.patch("/:id", async (c) => {
     requestData = await c.req.json()
   }
 
-  const member = await getMemberAction(c, { full: true, skipCache: true })
-  const guest = await getGuestAction(c, { skipCache: true })
+  const member = await getMemberAction(c, {
+    skipCache: true,
+    skipMasking: true,
+  })
+  const guest = await getGuestAction(c, { skipCache: true, skipMasking: true })
 
   if (!member && !guest) {
     return c.json({ error: "Unauthorized", status: 401 }, 401)
@@ -466,6 +468,8 @@ threads.patch("/:id", async (c) => {
     requestData.appId && validate(requestData.appId as string)
       ? requestData.appId
       : null
+
+  const app = appId ? await getApp({ id: appId }) : null
 
   if (instructions && instructions.length > PROMPT_LIMITS.INSTRUCTIONS) {
     return c.json({ error: "Instructions too long" }, 400)
@@ -629,6 +633,8 @@ threads.patch("/:id", async (c) => {
       messages: messages.messages.map((m) => m.message.content),
       instructions,
       language,
+      user: member,
+      guest,
       threadId: id,
       fingerprint: member?.fingerprint || guest?.fingerprint,
     })
@@ -669,6 +675,8 @@ threads.patch("/:id", async (c) => {
           currentInstructions: instructions,
           language,
           threadId: id,
+          user: member,
+          guest,
           fingerprint: member?.fingerprint || guest?.fingerprint,
         }),
       },
@@ -727,7 +735,7 @@ threads.patch("/:id", async (c) => {
 
   await updateThreadDb({
     ...thread,
-    appId: appId ?? thread.appId,
+    appId: app?.id ?? thread.appId,
     star: star === 0 ? null : star,
     moltUrl,
     title: sanitizeHtml(redactedTitle || thread.title),
@@ -745,6 +753,7 @@ threads.patch("/:id", async (c) => {
         thread: updatedThread,
         member,
         guest,
+        app,
       })
     }
   }
