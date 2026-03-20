@@ -2502,5 +2502,6 @@
   "Watermelon runs your AI stack locally. Install OrbStack to get started — it's lightweight and uses the macOS Virtualization framework.": "Watermelon exécute votre pile IA localement. Installez OrbStack pour commencer — c'est léger et utilise le cadre de virtualisation macOS.",
   "Setting up your local AI stack…": "Configuration de votre pile IA locale…",
   "First launch pulls Docker images — this only takes a minute once.": "Le premier lancement récupère les images Docker — cela ne prend qu'une minute une fois.",
-  "Bluesky": "Bluesky"
+  "Bluesky": "Bluesky",
+  "Please save your OpenRouter API key first": "Veuillez d'abord enregistrer votre clé API OpenRouter"
 }
