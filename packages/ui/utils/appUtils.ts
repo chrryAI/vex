@@ -12,6 +12,9 @@ export const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
 
   // Add or update apps
   newApps.forEach((newApp) => {
+    if (!newApp?.id) {
+      return
+    }
     const existingApp = existingAppsMap.get(newApp.id)
 
     if (existingApp) {

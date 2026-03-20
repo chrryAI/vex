@@ -2471,5 +2471,10 @@
   "With powerful developer tools and a unified platform - Chrry empowers you to harness the full potential of AI technology in a single, seamless experience.": "Med kraftfulla utvecklarverktyg och en enhetlig plattform - ger Chrry dig möjlighet att utnyttja hela potentialen av AI-teknologi i en enda, sömlös upplevelse.",
   "Chrry is the ultimate AI Super App where intelligence meets everyday life. Access cutting-edge AI applications and agents built to harmonize your digital world, or create your own AI-powered workflows.": "Chrry är den ultimata AI Super App där intelligens möter vardagslivet. Få tillgång till banbrytande AI-applikationer och agenter byggda för att harmonisera din digitala värld, eller skapa dina egna AI-drivna arbetsflöden.",
   "Choose your weapon": "Välj ditt vapen",
-  "BYOK": "BYOK"
+  "BYOK": "BYOK",
+  "watermelon_guest_info": "Du kan använda din egen API-nyckel som gäst. Dina data kommer att <0>automigrera</0> när du <1>loggar in</1>. Inloggning är valfritt, men du kan alltid synkronisera ditt konto.",
+  "AES-256 GCM (Galois/Counter Mode)": "AES-256 GCM (Galois/Counter Mode)",
+  "watermelon_macos_info": "Kommer snart: En <0>macOS Skrivbordsapp</0> med stöd för lokal DB (MIT-licensierad) för helt privat konfiguration.",
+  "Sneak peek": "Sneak peek",
+  "+{{count}} AI Apps": "+{{count}} AI-appar"
 }
