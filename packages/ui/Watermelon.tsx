@@ -16,6 +16,7 @@ import Loading from "./Loading"
 import { updateGuest, updateUser } from "./lib"
 import { Button, Div, Form, H1, Input, Label, P, Span, toast } from "./platform"
 import SignIn from "./SignIn"
+import Subscribe from "./Subscribe"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function Watermelon() {
@@ -88,6 +89,7 @@ export default function Watermelon() {
         }}
       >
         <SignIn showSignIn={false} />
+        <Subscribe />
         <LanguageSwitcher />
       </Div>
 

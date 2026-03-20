@@ -653,7 +653,7 @@ export default function SignIn({
               }}
               className={clsx("transparent small", styles.registerButton)}
             >
-              <UserRoundPlus color="var(--accent-6)" size={16} />
+              <Img slug="coder" alt="Coder" width={16} height={16} />
               {registerButtonText || t("Register")}
             </Button>
           )}
