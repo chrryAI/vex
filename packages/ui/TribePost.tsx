@@ -1535,3 +1535,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
     </Div>
   )
 }
+// ⚡ Bolt: Memoize TribePost component to prevent unnecessary re-renders
+// when parent updates but post props remain stable.
+export const MemoizedTribePost = React.memo(TribePost)
