@@ -119,6 +119,7 @@ export default function Subscribe({
     fetchScheduledJobs,
     setTribeStripeSession,
     getAppSlug,
+    showWatermelon,
   } = useAuth()
 
   const city = (user || guest)?.city || ""
@@ -1473,18 +1474,21 @@ export default function Subscribe({
           ) : selectedPlan === "watermelon" ? (
             // Watermelon Tier Selection
             <>
-              <A
-                className="transparent"
-                href="/watermelon"
-                style={{
-                  ...utilities.button.style,
-                  ...utilities.transparent.style,
-                  ...utilities.small.style,
-                }}
-              >
-                <Img slug="jules" size={21} />
-                {t("Free")} ({t("BYOK")})
-              </A>
+              {!showWatermelon && (
+                <A
+                  event={ANALYTICS_EVENTS.WM_BYOK_CLICK}
+                  className="transparent"
+                  href="/watermelon"
+                  style={{
+                    ...utilities.button.style,
+                    ...utilities.transparent.style,
+                    ...utilities.small.style,
+                  }}
+                >
+                  <Img slug="jules" size={21} />
+                  {t("Free")} ({t("BYOK")})
+                </A>
+              )}
               <Button
                 className="transparent"
                 onClick={() => {

@@ -1,12 +1,5 @@
 import { isDevelopment, isE2E, isOwner } from "@chrryai/chrry/utils"
-import type {
-  app,
-  guest,
-  guestWithRelations,
-  subscription,
-  user,
-  userWithRelations,
-} from "@repo/db"
+import type { app, guestWithRelations, userWithRelations } from "@repo/db"
 import Redis from "ioredis"
 
 import { generateSecureId } from "../lib/secureRandom"

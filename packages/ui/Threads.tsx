@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import useSWR from "swr"
 import type { collaboration, thread, user } from "../ui/types"
-import AppLink from "./AppLink"
 import Bookmark from "./Bookmark"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"

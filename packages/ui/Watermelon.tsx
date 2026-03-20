@@ -4,17 +4,16 @@ import { Trans } from "react-i18next"
 import { SiMacos } from "react-icons/si"
 import AppLink from "./AppLink"
 import A from "./a/A"
-import Checkbox from "./Checkbox"
 import { useAppContext } from "./context/AppContext"
 import { useNavigationContext } from "./context/providers"
+import { COLORS } from "./context/providers/AppProvider"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
-import { ArrowRight, Info } from "./icons"
+import { ArrowRight, Coins } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import Loading from "./Loading"
-import { updateGuest, updateUser } from "./lib"
-import { Button, Div, Form, H1, Input, Label, P, Span, toast } from "./platform"
+import { Button, Div, Form, H1, Input, P, Span, toast } from "./platform"
 import SignIn from "./SignIn"
 import Subscribe from "./Subscribe"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
@@ -211,7 +210,7 @@ export default function Watermelon() {
             }}
           >
             <Img alt="🌋 Free" width={22} height={22} slug="coder" />
-            Free (BYOK)
+            {t("Free")} (BYOK)
           </Button>
           {app && (
             <AppLink
@@ -229,6 +228,7 @@ export default function Watermelon() {
               }}
             >
               {app.name}
+              <Coins size={14} color={COLORS.red} />
             </AppLink>
           )}
           <A
@@ -240,7 +240,6 @@ export default function Watermelon() {
             }}
             className="button transparent"
             href="?subscribe=true&plan=watermelon"
-            target="_blank"
           >
             <Img
               alt="🍉 Agency"
@@ -258,8 +257,7 @@ export default function Watermelon() {
               padding: "0.25rem 0.5rem",
             }}
             className="button transparent"
-            href="?subscribe=true&plan=watermelon"
-            target="_blank"
+            href="?subscribe=true&plan=watermelon&watermelonTier=plus"
           >
             <Img alt="🦋 Sovereign" width={22} height={22} slug="tribe" />
             Sovereign
