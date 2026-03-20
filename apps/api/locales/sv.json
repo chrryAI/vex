@@ -2483,5 +2483,12 @@
   "OpenRouter API key deleted successfully": "OpenRouter API-nyckel raderad framgångsrikt",
   "Invalid Replicate API key format (Expected r8_...)": "Ogiltigt format för Replicate API-nyckel (Förväntat r8_...)",
   "OpenRouter API key saved successfully": "OpenRouter API-nyckel sparad framgångsrikt",
-  "Invalid OpenRouter API key format (Expected sk-or-v1-...)": "Ogiltigt format för OpenRouter API-nyckel (Förväntat sk-or-v1-...)"
+  "Invalid OpenRouter API key format (Expected sk-or-v1-...)": "Ogiltigt format för OpenRouter API-nyckel (Förväntat sk-or-v1-...)",
+  "Starting Watermelon": "Startar Watermelon",
+  "Starting": "Startar",
+  "Ready": "Klar",
+  "Waiting": "Väntar",
+  "Watermelon runs your AI stack locally. Install OrbStack to get started — it's lightweight and uses the macOS Virtualization framework.": "Watermelon kör din AI-stack lokalt. Installera OrbStack för att komma igång - det är lättviktigt och använder macOS Virtualiseringsramverk.",
+  "Setting up your local AI stack…": "Ställer in din lokala AI-stack...",
+  "First launch pulls Docker images — this only takes a minute once.": "Första starten hämtar Docker-bilder - detta tar bara en minut en gång."
 }
