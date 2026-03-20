@@ -2056,6 +2056,9 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
           prompt: videoPrompt.substring(0, 200),
           aspectRatio: "16:9",
           messageId: `tribe-post-video-${post.id}`,
+          user,
+          guest,
+          app,
         })
 
         if (videoResult.url) {

@@ -1,5 +1,13 @@
+import type { appWithStore } from "@chrryai/chrry/types"
 import * as fal from "@fal-ai/serverless-client"
-import { decrypt, type guest, type user } from "@repo/db"
+import {
+  type app,
+  decrypt,
+  type guest,
+  safeDecrypt,
+  type user,
+  type userWithRelations,
+} from "@repo/db"
 import Replicate from "replicate"
 import { v4 as uuidv4 } from "uuid"
 import { captureException } from "../captureException"
@@ -22,6 +30,7 @@ export interface ImageGenerationOptions {
   falKey?: string // Fal API key override
   user?: user
   guest?: guest
+  app?: app | appWithStore
 }
 
 /**
@@ -37,9 +46,12 @@ export interface VideoGenerationOptions {
   messageId?: string
   apiKey?: string // Replicate API key override
   falKey?: string // Fal API key override
-  user?: user
-  guest?: guest
+  user?: user | userWithRelations | null
+  guest?: guest | null
+  app?: app | appWithStore | null
 }
+
+const plusTiers = ["plus", "pro"]
 
 /**
  * Unified Image Generation
@@ -48,6 +60,7 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
   url: string
   prompt: string
   provider: string
+
   model: string
 }> {
   const isBYOK = !!options.user?.apiKeys?.openrouter
@@ -55,15 +68,31 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
     ? await decrypt(options.user?.apiKeys?.replicate)
     : undefined
 
+  const byokReplicateAppKey = byokReplicateKey
+    ? undefined
+    : options.app?.apiKeys?.replicate
+      ? safeDecrypt(options.app?.apiKeys?.replicate)
+      : !plusTiers.includes(options.app?.tier || "")
+        ? process.env.REPLICATE_API_KEY
+        : ""
+
   const byokFalKey = options.user?.apiKeys?.fal
     ? await decrypt(options.user?.apiKeys?.fal)
     : undefined
+
+  const byokFalAppKey = byokFalKey
+    ? undefined
+    : options.app?.apiKeys?.fal
+      ? safeDecrypt(options.app?.apiKeys?.fal)
+      : !plusTiers.includes(options.app?.tier || "")
+        ? process.env.FAL_KEY
+        : ""
   const {
     prompt,
     aspectRatio = "1:1",
     messageId = uuidv4(),
-    apiKey = isBYOK ? byokReplicateKey : undefined,
-    falKey = isBYOK ? byokFalKey : FAL_KEY,
+    apiKey = isBYOK ? byokReplicateKey || byokReplicateAppKey : undefined,
+    falKey = isBYOK ? byokFalKey || byokFalAppKey : FAL_KEY,
   } = options
 
   // Initial provider selection: try Fal if we have a key, otherwise Replicate
@@ -182,16 +211,32 @@ export async function generateVideo(options: VideoGenerationOptions): Promise<{
     ? await decrypt(options.user?.apiKeys?.replicate)
     : undefined
 
+  const byokReplicateAppKey = byokReplicateKey
+    ? undefined
+    : options.app?.apiKeys?.replicate
+      ? safeDecrypt(options.app?.apiKeys?.replicate)
+      : !plusTiers.includes(options.app?.tier || "")
+        ? process.env.REPLICATE_API_KEY
+        : ""
+
   const byokFalKey = options.user?.apiKeys?.fal
     ? await decrypt(options.user?.apiKeys?.fal)
     : undefined
+
+  const byokFalAppKey = byokFalKey
+    ? undefined
+    : options.app?.apiKeys?.fal
+      ? safeDecrypt(options.app?.apiKeys?.fal)
+      : !plusTiers.includes(options.app?.tier || "")
+        ? process.env.FAL_KEY
+        : ""
 
   const {
     prompt,
     aspectRatio = "16:9",
     messageId = uuidv4(),
-    apiKey = isBYOK ? byokReplicateKey : REPLICATE_API_KEY,
-    falKey = isBYOK ? byokFalKey : FAL_KEY,
+    apiKey = isBYOK ? byokReplicateKey || byokReplicateAppKey : undefined,
+    falKey = isBYOK ? byokFalKey || byokFalAppKey : FAL_KEY,
   } = options
 
   // Initial provider selection: try Fal if we have a key, otherwise Replicate
@@ -300,10 +345,7 @@ export async function generateVideo(options: VideoGenerationOptions): Promise<{
     }
   } catch (error) {
     if (providerToTry === "fal" && apiKey) {
-      console.warn(
-        "⚠️ Fal.ai video failed, falling back to Replicate...",
-        error,
-      )
+      console.warn("⚠️ Fal.ai video failed, falling back to Replicate...", error)
       try {
         return await tryReplicate()
       } catch (replicateError) {

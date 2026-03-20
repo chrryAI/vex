@@ -418,8 +418,6 @@ export async function getModelProvider({
         (activePool?.length > 0 ? activePool[0] : pool[0]) ||
         "qwen/qwen3-235b-a22b-thinking-2507"
 
-      console.log(`🚀 ~ modelId:`, modelId)
-
       if (openrouterKeyForDeepSeekReasoner && !failedKeys?.includes(modelId)) {
         // Hocam inci gibi dizelim: Seçtiğimiz başarılı modeli hemen tarihlendiriyoruz
         // Await etmiyoruz ki akışı bozmasın (background update)

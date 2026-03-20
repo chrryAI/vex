@@ -3842,10 +3842,18 @@ When message language is unclear, default to this language.`
               c,
               thread,
               user: messageUser
-                ? await getUserDb({ id: messageUser?.id, skipCache: true })
+                ? await getUserDb({
+                    id: messageUser?.id,
+                    skipCache: true,
+                    skipMasking: true,
+                  })
                 : undefined,
               guest: messageGuest
-                ? await getGuestDb({ id: messageGuest?.id, skipCache: true })
+                ? await getGuestDb({
+                    id: messageGuest?.id,
+                    skipCache: true,
+                    skipMasking: true,
+                  })
                 : undefined,
               agentId: selectedAgent.id,
               conversationHistory: !suggestionMessages
@@ -5970,6 +5978,9 @@ Respond in JSON format:
             aspectRatio: "1:1",
             apiKey: replicateAuth,
             falKey: falAuth,
+            user: member,
+            guest: guest,
+            app: requestApp,
             messageId: slugify(currentMessageContent.trim().substring(0, 10)),
           })
           permanentUrl = result.url

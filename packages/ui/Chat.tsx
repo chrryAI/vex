@@ -3793,15 +3793,15 @@ export default function Chat({
               onSubmit={async (e) => {
                 e.preventDefault()
                 if (!replicateApiKey) {
-                  toast.error("Please enter your OpenRouter API key")
+                  toast.error("Please enter your Replicate API key")
                   return
                 }
 
-                // Client-side regex validation
-                const openRouterRegex = /^sk-or-v1-[a-zA-Z0-9]{64}$/
-                if (!openRouterRegex.test(replicateApiKey.trim())) {
+                // Client-side regex validation (Replicate keys start with r8_)
+                const replicateRegex = /^r8_[a-zA-Z0-9]{37,42}$/
+                if (!replicateRegex.test(replicateApiKey.trim())) {
                   toast.error(
-                    "Invalid OpenRouter API key format (Expected sk-or-v1-...)",
+                    "Invalid Replicate API key format (Expected r8_...)",
                   )
                   return
                 }
@@ -3815,10 +3815,12 @@ export default function Chat({
 
                     setUser({
                       ...user,
-                      apiKeys: { replicate: replicateApiKey },
+                      apiKeys: { ...user.apiKeys, replicate: replicateApiKey },
                     })
 
                     toast.success("Replicate API key saved successfully")
+                    setNeedsReplicate(false)
+                    setIsImageGenerationEnabled(true)
                   }
 
                   if (guest) {
@@ -3846,7 +3848,6 @@ export default function Chat({
               style={{
                 ...utilities.row.style,
                 gap: 15,
-                marginTop: 15,
                 flexWrap: "wrap",
               }}
             >
@@ -3858,6 +3859,7 @@ export default function Chat({
                 onChange={(e) => setReplicateApiKey(e.target.value)}
                 style={{
                   border: "1px solid var(--accent-6)",
+                  flex: 1,
                 }}
               />
               {replicateApiKey ? (
@@ -3874,26 +3876,12 @@ export default function Chat({
                   <Flux size={20} />
                   {isSavingReplicateApiKey
                     ? "Saving..."
-                    : user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter
+                    : user?.apiKeys?.replicate || guest?.apiKeys?.replicate
                       ? "Update"
                       : "Save"}
                 </Button>
               ) : null}
             </Form>
-            <Div>
-              <Div style={{ ...utilities.column.style }}>
-                <Input
-                  dataTestId="replicate-api-key"
-                  type="password"
-                  data-required={true}
-                  placeholder={"r8_..."}
-                  value={""}
-                  style={{
-                    borderColor: "var(--accent-5)",
-                  }}
-                />
-              </Div>
-            </Div>
           </Modal>
         )}
         {isHydrated && (
