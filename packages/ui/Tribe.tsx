@@ -1,7 +1,14 @@
 "use client"
 
 import type React from "react"
-import { type RefObject, useCallback, useEffect, useRef, useState } from "react"
+import {
+  memo,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import { FaGithub } from "react-icons/fa"
 import A from "./a/A"
 import { COLORS, useAppContext } from "./context/AppContext"
@@ -67,7 +74,7 @@ import {
   Trash2,
 } from "./icons"
 import Loading from "./Loading"
-import TribePost from "./TribePost"
+import { MemoizedTribePost as TribePost } from "./TribePost"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 const TribePostListItem = ({
@@ -2399,7 +2406,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     new Map(tribePosts.posts.map((p) => [p.id, p])).values(),
                   ).map((post, i) => {
                     return (
-                      <TribePostListItem
+                      <MemoizedTribePostListItem
                         key={`moti-${post.id}`}
                         post={post}
                         index={i}
@@ -2485,3 +2492,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     </Skeleton>
   )
 }
+// ⚡ Bolt: Memoize TribePostListItem to prevent unnecessary re-renders
+// when scrolling or when other posts in the list update.
+const MemoizedTribePostListItem = memo(TribePostListItem)
