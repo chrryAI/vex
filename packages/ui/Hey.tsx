@@ -18,7 +18,7 @@ import Home from "./Home"
 import { useHasHydrated } from "./hooks"
 import Img from "./Image"
 import Loading from "./Loading"
-import { Div, useLocalStorage, usePlatform } from "./platform"
+import { Div, useLocalStorage, usePlatform, VexToast } from "./platform"
 import { useSidebarStyles } from "./Sidebar.styles"
 import Thread from "./Thread"
 import { getAppAndStoreSlugs } from "./utils/url"
@@ -62,7 +62,7 @@ export const Hey = memo(
   }) {
     const { pathname } = useNavigationContext()
 
-    const { isExtension } = usePlatform()
+    const { isExtension, isCapacitor, os } = usePlatform()
 
     const styles = useSidebarStyles()
 
@@ -92,6 +92,7 @@ export const Hey = memo(
       user,
       guest,
       showWatermelon,
+      FRONTEND_URL,
     } = useAuth()
 
     const { tribeSlug, isLoadingTribes } = useTribe()
@@ -195,6 +196,27 @@ export const Hey = memo(
     const splash = getSplash(isSplash)
 
     useEffect(() => {
+      // Preload toast icons
+      const preloadImages = [
+        `${FRONTEND_URL}/frog.png`,
+        `${FRONTEND_URL}/hamster.png`,
+      ]
+
+      if (typeof Image !== "undefined") {
+        preloadImages.forEach((src) => {
+          const img = new Image()
+          img.src = src
+        })
+      }
+
+      // Enable body scroll on Capacitor
+      if (isCapacitor && os === "ios") {
+        document.body.style.overflow = "auto"
+        ;(document.body.style as any).WebkitOverflowScrolling = "touch"
+      }
+    }, [FRONTEND_URL, isCapacitor, os])
+
+    useEffect(() => {
       isSplash &&
         isImageLoaded &&
         isHydrated &&
@@ -238,6 +260,11 @@ export const Hey = memo(
                 children
               )}
             </Div>
+            {isHydrated && (
+              <>
+                <VexToast />
+              </>
+            )}
           </Suspense>
         </ErrorBoundary>
       </Div>

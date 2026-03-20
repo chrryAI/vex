@@ -1,18 +1,24 @@
 import crypto from "node:crypto"
 import {
   and,
+  type app,
   type appCampaign,
   appCampaigns,
+  apps,
   type autonomousBid,
   autonomousBids,
   db,
   eq,
   gte,
+  type guest,
   inArray,
   sql,
   type storeTimeSlot,
   storeTimeSlots,
+  type user,
+  users,
 } from "@repo/db"
+import { guests } from "@repo/db/src/schema"
 import { generateText } from "ai"
 import { getModelProvider } from "../../lib/getModelProvider"
 import { captureException } from "../captureException"
@@ -67,9 +73,27 @@ export async function runautonomousBidding({
       where: eq(appCampaigns.id, campaignId),
     })
 
+    const user = campaign?.userId
+      ? await db.query.users.findFirst({
+          where: eq(users.id, campaign.userId),
+        })
+      : undefined
+
+    const guest = campaign?.guestId
+      ? await db.query.guests.findFirst({
+          where: eq(guests.id, campaign.guestId),
+        })
+      : undefined
+
     if (!campaign || campaign.status !== "active") {
       return { skipped: true, reason: "Campaign not active" }
     }
+
+    const app = campaign?.appId
+      ? await db.query.apps.findFirst({
+          where: eq(apps.id, campaign.appId),
+        })
+      : undefined
 
     if (campaign.creditsRemaining <= 0) {
       // Auto-pause campaign
@@ -101,6 +125,10 @@ export async function runautonomousBidding({
     const scoredSlots = await scoreSlots({
       slots: availableSlots,
       campaign,
+      user,
+      app,
+      guest,
+
       historicalPerformance: await getHistoricalPerformance(campaignId),
     })
 
@@ -239,11 +267,17 @@ async function getHistoricalPerformance(
 async function scoreSlots({
   slots,
   campaign,
+  user,
+  app,
   historicalPerformance,
+  guest,
 }: {
   slots: storeTimeSlot[]
   campaign: appCampaign
   historicalPerformance: PerformanceData[]
+  user?: user
+  app?: app
+  guest?: guest
 }): Promise<ScoredSlot[]> {
   const scoredSlots: ScoredSlot[] = []
 
@@ -252,6 +286,9 @@ async function scoreSlots({
   try {
     const result = await getModelProvider({
       name: "sushi",
+      user,
+      app,
+      guest,
     })
     provider = result.provider
   } catch (_error) {

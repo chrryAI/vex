@@ -175,7 +175,11 @@ Explain how this code works, referencing specific files, functions, and line num
       return c.json({ error: "App not found" }, 404)
     }
 
-    const { provider } = await getModelProvider({ app, name: "claude" })
+    const { provider } = await getModelProvider({
+      app,
+      name: "claude",
+      user: member,
+    })
 
     const { text, usage } = await generateText({
       model: provider,

@@ -3,6 +3,7 @@ import { isValidUsername } from "@chrryai/chrry/utils"
 import { protectedRoutes } from "@chrryai/chrry/utils/url"
 import {
   deleteUser,
+  encrypt,
   getStore,
   getUser,
   updateStore,
@@ -15,6 +16,10 @@ import { captureException } from "../../lib/captureException"
 import { clearGraphDataForUser } from "../../lib/graph/graphService"
 import { deleteFile, upload } from "../../lib/minio"
 import { scanFileForMalware } from "../../lib/security"
+import {
+  type ProviderName,
+  validateApiKey,
+} from "../../lib/utils/validateApiKey"
 import { isPrivateIP } from "../../utils/ssrf"
 import { getMember } from "../lib/auth"
 
@@ -73,7 +78,10 @@ user.get("/", async (c) => {
 
 // PATCH /user - Update user profile
 user.patch("/", async (c) => {
-  const member = await getMember(c, { full: true, skipCache: true })
+  const member = await getMember(c, {
+    skipCache: true,
+    skipMasking: true, // Get unmasked keys for merging
+  })
 
   const {
     language,
@@ -85,10 +93,63 @@ user.patch("/", async (c) => {
     memoriesEnabled,
     city,
     country,
+    apiKeys,
+    openRouterApiKey,
+    replicateApiKey,
+    falApiKey,
   } = await c.req.json()
 
   if (!member) {
     return c.json({ error: "Unauthorized" }, 401)
+  }
+
+  // Safely merge API keys if any are provided
+  const keys = member.apiKeys ? { ...member.apiKeys } : {}
+  let hasKeyUpdates = false
+
+  const updateKey = async (
+    provider: ProviderName,
+    value: string | undefined | null,
+  ) => {
+    if (value === undefined) return
+    if (value === null || value.trim() === "") {
+      delete (keys as any)[provider]
+      hasKeyUpdates = true
+      return
+    }
+
+    const trimmed = value.trim()
+    if (!validateApiKey(provider, trimmed)) {
+      throw new Error(`Invalid ${provider} API key format`)
+    }
+
+    ;(keys as any)[provider] = await encrypt(trimmed)
+    hasKeyUpdates = true
+  }
+
+  try {
+    if (apiKeys && typeof apiKeys === "object") {
+      for (const [provider, value] of Object.entries(apiKeys || {})) {
+        await updateKey(provider as ProviderName, value as string)
+      }
+    }
+
+    if (openRouterApiKey !== undefined)
+      await updateKey("openrouter", openRouterApiKey)
+    if (replicateApiKey !== undefined)
+      await updateKey("replicate", replicateApiKey)
+    if (falApiKey !== undefined) await updateKey("fal", falApiKey)
+  } catch (err: any) {
+    return c.json({ error: err.message }, 400)
+  }
+
+  // If apiKeys was provided as a full object, or if we have updates, use the merged 'keys'
+  // Otherwise, fallback to what was there (member.apiKeys)
+  const finalKeys =
+    apiKeys === null ? null : hasKeyUpdates ? keys : member.apiKeys
+
+  if (image && !(await isValidImageUrl(image))) {
+    return c.json({ error: "Invalid image URL" }, 400)
   }
 
   if (protectedRoutes.includes(userName)) {
@@ -100,10 +161,6 @@ user.patch("/", async (c) => {
       { error: "Username must be 3-20 alphanumeric characters" },
       400,
     )
-  }
-
-  if (image && !(await isValidImageUrl(image))) {
-    return c.json({ error: "Invalid image URL" }, 400)
   }
 
   const exists = async (username: string) => {
@@ -155,7 +212,7 @@ user.patch("/", async (c) => {
   try {
     // Update user
     await updateUser({
-      ...member,
+      id: member.id,
       language: language ?? "en",
       name: name ?? member.name,
       image: image ?? member.image,
@@ -166,6 +223,7 @@ user.patch("/", async (c) => {
       favouriteAgent: favouriteAgent ?? member.favouriteAgent,
       city: city ?? member.city,
       country: country ?? member.country,
+      apiKeys: finalKeys,
     })
 
     // If username changed, update store slug if it matches old username
@@ -239,7 +297,7 @@ user.delete("/", async (c) => {
 
 // PATCH /user/image - Upload profile image
 user.patch("/image", async (c) => {
-  const member = await getMember(c, { full: true, skipCache: true })
+  const member = await getMember(c, { skipCache: true })
 
   if (!member) {
     return c.json({ error: "Unauthorized" }, 401)
@@ -253,7 +311,7 @@ user.patch("/image", async (c) => {
   }
 
   if (!image) {
-    await updateUser({ ...member, image: null })
+    await updateUser({ id: member.id, image: null })
     return c.json({ url: null })
   }
 
@@ -294,7 +352,7 @@ user.patch("/image", async (c) => {
       },
     })
 
-    await updateUser({ ...member, image: uploadResult.url })
+    await updateUser({ id: member.id, image: uploadResult.url })
 
     return c.json({ url: uploadResult.url })
   } catch (_error) {

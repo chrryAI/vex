@@ -2,6 +2,8 @@ import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import {
   getGuest as getGuestDb,
   getUser,
+  type guestWithRelations,
+  updateUser,
   type userWithRelations,
 } from "@repo/db"
 import type { Context } from "hono"
@@ -19,9 +21,10 @@ export async function getMember(
     byEmail?: string
     full?: boolean
     skipCache?: boolean
+    skipMasking?: boolean
   } = {},
-) {
-  const { byEmail } = options
+): Promise<(userWithRelations & { token?: string }) | undefined> {
+  const { byEmail, skipMasking } = options
 
   const request = c.req.raw
 
@@ -34,7 +37,12 @@ export async function getMember(
   const full = options.full || skipCache
 
   if (byEmail) {
-    const user = await getUser({ email: byEmail, skipCache, appId })
+    const user = await getUser({
+      email: byEmail,
+      skipCache,
+      appId,
+      skipMasking: options.skipMasking,
+    })
 
     if (user) {
       const token = jwt.sign({ email: byEmail }, process.env.NEXTAUTH_SECRET!)
@@ -44,7 +52,7 @@ export async function getMember(
         token,
         sessionCookie: undefined,
         password: full ? user.password : null,
-      }
+      } as userWithRelations & { token?: string }
     }
     return
   }
@@ -64,6 +72,7 @@ export async function getMember(
           apiKey: fp,
           skipCache: skipCache,
           appId,
+          skipMasking,
         })
         if (result) {
           return {
@@ -83,6 +92,7 @@ export async function getMember(
           email: decoded.email,
           skipCache: skipCache,
           appId,
+          skipMasking,
         })
 
         if (user) {
@@ -106,8 +116,11 @@ export async function getMember(
  */
 export async function getGuest(
   c?: Context,
-  { skipCache }: { skipCache?: boolean } = {},
-) {
+  {
+    skipCache,
+    skipMasking,
+  }: { skipCache?: boolean; skipMasking?: boolean } = {},
+): Promise<guestWithRelations | undefined> {
   const request = c?.req.raw
   const appIdHeader = request?.headers.get("x-app-id")
   const appIdParam = c?.req.query("appId")
@@ -129,7 +142,12 @@ export async function getGuest(
         return
       }
 
-      const result = await getGuestDb({ fingerprint: fp, skipCache, appId })
+      const result = await getGuestDb({
+        fingerprint: fp,
+        skipCache,
+        appId,
+        skipMasking,
+      })
 
       if (!result) {
         const cookieFingerprint = c.req
@@ -143,7 +161,12 @@ export async function getGuest(
         const fingerprint = cookieFingerprint || headerFingerprint
 
         if (fingerprint) {
-          const result = await getGuestDb({ fingerprint, skipCache, appId })
+          const result = await getGuestDb({
+            fingerprint,
+            skipCache,
+            appId,
+            skipMasking,
+          })
 
           return result || undefined
         }

@@ -12,7 +12,7 @@ export const tts = new Hono()
 
 // POST /tts - Text-to-speech conversion
 tts.post("/", async (c) => {
-  const member = await getMember(c, { full: true, skipCache: true })
+  const member = await getMember(c, { skipCache: true })
   const guest = member ? undefined : await getGuest(c, { skipCache: true })
 
   if (!member && !guest) {

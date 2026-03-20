@@ -1,5 +1,5 @@
+import type { appWithStore, modelName } from "@chrryai/chrry/types"
 import * as bcrypt from "bcrypt"
-import type { appWithStore, modelName } from "chrry/types"
 import * as dotenv from "dotenv"
 import {
   and,
@@ -82,6 +82,7 @@ import {
   agentApiUsage,
   aiAgents,
   analyticsSites,
+  type apiKeys,
   appCampaigns,
   appExtends,
   appOrders,
@@ -519,7 +520,7 @@ export function safeDecrypt(
   } catch (error) {
     // Security: Return undefined instead of encrypted value to prevent key leakage
     // If decryption fails, the key is invalid or corrupted - don't expose it
-    console.error("❌ Failed to decrypt API key - key may be corrupted:", error)
+    // console.error("❌ Failed to decrypt API key - key may be corrupted:", error)
     return undefined
   }
 }
@@ -914,6 +915,7 @@ export const getUser = async ({
   apiKey,
   appId,
   skipCache = false,
+  skipMasking = false,
 }: {
   email?: string
   id?: string
@@ -927,21 +929,24 @@ export const getUser = async ({
   apiKey?: string
   appId?: string
   skipCache?: boolean
+  skipMasking?: boolean
 }) => {
   // Generate cache key based on lookup method (must match invalidation keys)
-  const cacheKey = id
-    ? `user:${id}`
+  const baseKey = id
+    ? `user:id:${id}`
     : email
       ? `user:email:${email}`
-      : appleId
-        ? `user:appleId:${appleId}`
-        : fingerprint
-          ? `user:fingerprint:${fingerprint}`
-          : userName
-            ? `user:userName:${userName}`
-            : apiKey
-              ? `user:apiKey:${apiKey}`
+      : apiKey
+        ? `user:apiKey:${apiKey}`
+        : userName
+          ? `user:userName:${userName}`
+          : appleId
+            ? `user:appleId:${appleId}`
+            : fingerprint
+              ? `user:fingerprint:${fingerprint}`
               : null
+
+  const cacheKey = baseKey ? `${baseKey}${skipMasking ? ":raw" : ""}` : null
 
   // Skip cache if requested (e.g., for session updates) or no valid cache key
   if (!skipCache && cacheKey) {
@@ -1068,12 +1073,15 @@ export const getUser = async ({
   const creditsLeft =
     isDevelopment && isAppOwner
       ? OWNER_CREDITS
-      : isAppOwner && !!app?.apiKeys?.openrouter && app?.tier !== "free"
+      : result?.user?.apiKeys?.openrouter
         ? OWNER_CREDITS
-        : Math.max(result ? result.user.credits - creditsSpent : 0, 0)
+        : isAppOwner && !!app?.apiKeys?.openrouter && app?.tier !== "free"
+          ? OWNER_CREDITS
+          : Math.max(result ? result.user.credits - creditsSpent : 0, 0)
 
   const userData = result
     ? {
+        ...result.user,
         isLinkedToGoogle: !!googleAccount,
         isLinkedToApple: !!appleAccount,
         hasCalendarScope:
@@ -1101,6 +1109,23 @@ export const getUser = async ({
           userId: result.user.id,
           pinned: true,
         }),
+        apiKeys: skipMasking
+          ? result.user.apiKeys
+          : result.user.apiKeys
+            ? Object.keys(result.user.apiKeys).reduce((acc, key) => {
+                const encryptedVal =
+                  result.user?.apiKeys?.[
+                    key as keyof typeof result.user.apiKeys
+                  ]
+                const val = encryptedVal
+                  ? safeDecrypt(encryptedVal) || encryptedVal
+                  : undefined
+                acc[key as keyof apiKeys] = val
+                  ? `${val.slice(0, 8)}...${val.slice(-4)}`
+                  : undefined
+                return acc
+              }, {} as apiKeys)
+            : null,
         lastMessage: lastMessage
           ? {
               ...lastMessage,
@@ -1134,7 +1159,6 @@ export const getUser = async ({
         }).then((res) => res.totalCount),
 
         subscription,
-        ...result.user,
       }
     : undefined
 
@@ -1143,7 +1167,7 @@ export const getUser = async ({
     await setCache(cacheKey, userData, 60 * 5) // Cache for 5 minutes
   }
 
-  return userData
+  return userData as unknown as userWithRelations | undefined
 }
 
 export const getUsers = async ({
@@ -1319,6 +1343,19 @@ export const createVerificationToken = async (token: newVerificationToken) => {
 }
 
 export const updateUser = async (user: Partial<user> & { id: string }) => {
+  // Final safety: never save masked keys
+  if (user.apiKeys && typeof user.apiKeys === "object") {
+    const hasMasked = Object.values(user.apiKeys).some(
+      (val) => typeof val === "string" && val.includes("..."),
+    )
+    if (hasMasked) {
+      console.warn(
+        "⚠️ updateUser: Attempted to save masked API keys, stripping them for safety.",
+      )
+      delete user.apiKeys
+    }
+  }
+
   const [updated] = await db
     .update(users)
     .set({
@@ -2034,6 +2071,31 @@ export async function migrateUser({
           .where(eq(threads.guestId, guestId))
           .returning({ id: threads.id }),
         tx
+          .update(scheduledJobs)
+          .set({ userId, guestId: null, updatedOn: now })
+          .where(eq(scheduledJobs.guestId, guestId))
+          .returning({ id: scheduledJobs.id }),
+        tx
+          .update(placeHolders)
+          .set({ userId, guestId: null, updatedOn: now })
+          .where(eq(placeHolders.guestId, guestId))
+          .returning({ id: placeHolders.id }),
+        tx
+          .update(tribePosts)
+          .set({ userId, guestId: null, updatedOn: now })
+          .where(eq(tribePosts.guestId, guestId))
+          .returning({ id: tribePosts.id }),
+        tx
+          .update(tribeLikes)
+          .set({ userId, guestId: null })
+          .where(eq(tribeLikes.guestId, guestId))
+          .returning({ id: tribeLikes.id }),
+        tx
+          .update(tribeComments)
+          .set({ userId, guestId: null })
+          .where(eq(tribeComments.guestId, guestId))
+          .returning({ id: tribeComments.id }),
+        tx
           .update(messages)
           .set({ userId, guestId: null, updatedOn: now })
           .where(eq(messages.guestId, guestId))
@@ -2131,6 +2193,21 @@ export async function migrateUser({
         }
       }
 
+      // API Keys migration - only if user has none
+      if (!user.apiKeys || Object.keys(user.apiKeys).length === 0) {
+        const rawGuest = await tx
+          .select({ apiKeys: guests.apiKeys })
+          .from(guests)
+          .where(eq(guests.id, guestId))
+
+        if (
+          rawGuest[0]?.apiKeys &&
+          Object.keys(rawGuest[0].apiKeys).length > 0
+        ) {
+          userUpdateData.apiKeys = rawGuest[0].apiKeys
+        }
+      }
+
       await tx.update(users).set(userUpdateData).where(eq(users.id, userId))
 
       // --- FINAL: GUEST CLEANUP ---
@@ -2200,6 +2277,7 @@ export const getGuest = async ({
   email,
   appId,
   skipCache = false,
+  skipMasking = false,
 }: {
   id?: string
   ip?: string
@@ -2208,17 +2286,20 @@ export const getGuest = async ({
   email?: string
   appId?: string
   skipCache?: boolean
+  skipMasking?: boolean
 }) => {
   // Generate cache key based on lookup method (must match invalidation keys)
-  const cacheKey = id
-    ? `guest:${id}`
+  const baseKey = id
+    ? `guest:id:${id}`
     : fingerprint
-      ? `guest:fp:${fingerprint}`
+      ? `guest:fingerprint:${fingerprint}`
       : ip
         ? `guest:ip:${ip}`
         : email
           ? `guest:email:${email}`
           : null
+
+  const cacheKey = baseKey ? `${baseKey}${skipMasking ? ":raw" : ""}` : null
 
   // Skip cache if requested (e.g., for session updates) or no valid cache key
   if (!skipCache && cacheKey) {
@@ -2264,6 +2345,8 @@ export const getGuest = async ({
       })
     : undefined
 
+  const app = appId ? await getPureApp({ id: appId }) : undefined
+
   // Calculate credits spent
   const creditsSpent = result
     ? await getCreditsSpent({
@@ -2272,7 +2355,20 @@ export const getGuest = async ({
       })
     : 0
 
-  const creditsLeft = Math.max(result ? result.credits - creditsSpent : 0, 0)
+  const isAppOwner =
+    result &&
+    app &&
+    isOwner(app, {
+      userId: result.id,
+    })
+  const creditsLeft =
+    isDevelopment && isAppOwner
+      ? OWNER_CREDITS
+      : result?.apiKeys?.openrouter
+        ? OWNER_CREDITS
+        : isAppOwner && !!app?.apiKeys?.openrouter && app?.tier !== "free"
+          ? OWNER_CREDITS
+          : Math.max(result ? result.credits - creditsSpent : 0, 0)
 
   const guestData = result
     ? {
@@ -2293,6 +2389,21 @@ export const getGuest = async ({
           guestId: result.id,
           pageSize: 7,
         }),
+        apiKeys: skipMasking
+          ? result.apiKeys
+          : result.apiKeys
+            ? Object.keys(result.apiKeys).reduce((acc, key) => {
+                const encryptedVal =
+                  result.apiKeys?.[key as keyof typeof result.apiKeys]
+                const val = encryptedVal
+                  ? safeDecrypt(encryptedVal) || encryptedVal
+                  : undefined
+                acc[key as keyof apiKeys] = val
+                  ? `${val.slice(0, 8)}...${val.slice(-4)}`
+                  : undefined
+                return acc
+              }, {} as apiKeys)
+            : null,
 
         placeHolder: await getPlaceHolder({
           guestId: result.id,
@@ -2322,10 +2433,23 @@ export const getGuest = async ({
     await setCache(cacheKey, guestData, 60 * 5) // Cache for 5 minutes
   }
 
-  return guestData
+  return guestData as guestWithRelations | null
 }
 
 export const updateGuest = async (guest: Partial<guest> & { id: string }) => {
+  // Final safety: never save masked keys
+  if (guest.apiKeys && typeof guest.apiKeys === "object") {
+    const hasMasked = Object.values(guest.apiKeys).some(
+      (val) => typeof val === "string" && val.includes("..."),
+    )
+    if (hasMasked) {
+      console.warn(
+        "⚠️ updateGuest: Attempted to save masked API keys, stripping them for safety.",
+      )
+      delete guest.apiKeys
+    }
+  }
+
   const [updated] = await db
     .update(guests)
     .set(guest)
@@ -5561,15 +5685,14 @@ export function toSafeApp({
       app.apiKeys &&
       typeof app.apiKeys === "object" &&
       isOwner(app, { userId, guestId })
-        ? Object.keys(app.apiKeys).reduce(
-            (acc, key) => {
-              acc[key] = app?.apiKeys?.[key as keyof typeof app.apiKeys]
-                ? "********"
-                : undefined
-              return acc
-            },
-            {} as Record<string, string | undefined>,
-          )
+        ? Object.keys(app.apiKeys).reduce((acc, key) => {
+            acc[key as keyof apiKeys] = app?.apiKeys?.[
+              key as keyof typeof app.apiKeys
+            ]
+              ? "********"
+              : undefined
+            return acc
+          }, {} as apiKeys)
         : undefined,
   }
 

@@ -102,7 +102,7 @@ async function getMemberWithToken(token: string) {
   }
 
   if (decoded?.email) {
-    const user = await getUser({ email: decoded.email })
+    const user = await getUser({ email: decoded.email, skipMasking: true })
     if (user) {
       console.log("getMemberWithToken: user resolved", user.id)
       return { ...user, token, password: null }
@@ -118,7 +118,11 @@ async function getGuestWithToken(token: string) {
     return null
   }
 
-  const guest = await getGuest({ fingerprint: token, skipCache: true })
+  const guest = await getGuest({
+    fingerprint: token,
+    skipCache: true,
+    skipMasking: true,
+  })
   if (guest) {
     console.log("getGuestWithToken: guest resolved", guest.id)
   }

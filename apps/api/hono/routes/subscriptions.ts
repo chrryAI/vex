@@ -80,7 +80,7 @@ subscriptions.post("/changePlan", async (c) => {
   }
 
   try {
-    const user = await getMember(c, { full: true, skipCache: true })
+    const user = await getMember(c, { skipCache: true })
     const guest = !user ? await getGuest(c, { skipCache: true }) : undefined
     const subscription = user?.subscription || guest?.subscription
 
@@ -152,9 +152,9 @@ subscriptions.post("/changePlan", async (c) => {
     const newCredits = Math.max(currentCredits, newPlanCredits)
 
     if (user) {
-      await updateUser({ ...user, credits: newCredits })
+      await updateUser({ id: user.id, credits: newCredits })
     } else if (guest) {
-      await updateGuest({ ...guest, credits: newCredits })
+      await updateGuest({ id: guest.id, credits: newCredits })
     }
 
     return c.json({

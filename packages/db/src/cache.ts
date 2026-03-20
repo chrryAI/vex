@@ -247,21 +247,23 @@ export async function invalidateUser(
   userName?: string | null,
   apiKey?: string | null,
 ) {
-  await deleteCache(cacheKeys.user(id))
+  // Use pattern delete to clear both regular and :raw versions
+  await deleteCachePattern(`user:${id}*`)
+
   if (email) {
-    await deleteCache(cacheKeys.userByEmail(email))
+    await deleteCachePattern(`user:email:${email}*`)
   }
   if (appleId) {
-    await deleteCache(`user:appleId:${appleId}`)
+    await deleteCachePattern(`user:appleId:${appleId}*`)
   }
   if (fingerprint) {
-    await deleteCache(`user:fingerprint:${fingerprint}`)
+    await deleteCachePattern(`user:fingerprint:${fingerprint}*`)
   }
   if (userName) {
-    await deleteCache(`user:userName:${userName}`)
+    await deleteCachePattern(`user:userName:${userName}*`)
   }
   if (apiKey) {
-    await deleteCache(`user:apiKey:${apiKey}`)
+    await deleteCachePattern(`user:apiKey:${apiKey}*`)
   }
 }
 
@@ -295,15 +297,17 @@ export async function invalidateGuest(
   ip?: string | null,
   email?: string | null,
 ) {
-  await deleteCache(cacheKeys.guest(id))
+  // Use pattern delete to clear both regular and :raw versions
+  await deleteCachePattern(`guest:${id}*`)
+
   if (fingerprint) {
-    await deleteCache(cacheKeys.guestByFingerprint(fingerprint))
+    await deleteCachePattern(`guest:fp:${fingerprint}*`)
   }
   if (ip) {
-    await deleteCache(`guest:ip:${ip}`)
+    await deleteCachePattern(`guest:ip:${ip}*`)
   }
   if (email) {
-    await deleteCache(`guest:email:${email}`)
+    await deleteCachePattern(`guest:email:${email}*`)
   }
 }
 

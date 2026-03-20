@@ -10,7 +10,7 @@ export function initCronJobs() {
   cron.schedule("0 * * * *", async () => {
     console.log("🗞️ Cron: Fetching news...")
     try {
-      await fetchAllNews()
+      await fetchAllNews({})
       console.log("✅ Cron: News fetched successfully")
     } catch (error) {
       console.error("❌ Cron: Error fetching news:", error)
@@ -23,6 +23,6 @@ export function initCronJobs() {
 // For testing: Run immediately
 export async function runNewsFetchNow() {
   console.log("🗞️ Manual: Fetching news...")
-  await fetchAllNews()
+  await fetchAllNews({})
   console.log("✅ Manual: News fetched successfully")
 }

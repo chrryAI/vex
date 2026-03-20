@@ -1,5 +1,12 @@
 import type { appWithStore } from "@chrryai/chrry/types"
-import { db, eq, logCreditUsage, pearFeedback } from "@repo/db"
+import {
+  db,
+  eq,
+  type guest,
+  logCreditUsage,
+  pearFeedback,
+  type user,
+} from "@repo/db"
 import { apps, feedbackTransactions } from "@repo/db/src/schema"
 import { generateText } from "ai"
 import { getModelProvider } from "./getModelProvider"
@@ -372,6 +379,8 @@ export async function validatePearFeedback({
   agentId,
   app,
   messageId,
+  user,
+  guest,
 }: {
   feedbackText: string
   userId?: string
@@ -380,6 +389,8 @@ export async function validatePearFeedback({
   agentId: string
   app: appWithStore
   messageId?: string
+  user?: user
+  guest?: guest
 }): Promise<FeedbackValidationResult> {
   console.log("🍐🍐🍐 validatePearFeedback CALLED:", {
     feedbackLength: feedbackText?.length,
@@ -397,7 +408,12 @@ export async function validatePearFeedback({
     if (basicError) return basicError
 
     // 2. Get AI provider (CRITICAL: Use DeepSeek for credit transactions, never free models)
-    const providerResult = await getModelProvider({ app, name: "deepSeek" })
+    const providerResult = await getModelProvider({
+      app,
+      name: "deepSeek",
+      user,
+      guest,
+    })
     const deepseek = providerResult.provider
 
     // 3. Evaluate with AI
