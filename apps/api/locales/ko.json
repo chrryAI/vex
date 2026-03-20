@@ -2501,5 +2501,6 @@
   "Waiting": "대기 중",
   "Watermelon runs your AI stack locally. Install OrbStack to get started — it's lightweight and uses the macOS Virtualization framework.": "Watermelon은 귀하의 AI 스택을 로컬에서 실행합니다. 시작하려면 OrbStack을 설치하세요 — 이는 가볍고 macOS 가상화 프레임워크를 사용합니다.",
   "Setting up your local AI stack…": "로컬 AI 스택 설정 중...",
-  "First launch pulls Docker images — this only takes a minute once.": "첫 실행은 Docker 이미지를 가져오는데 — 이는 한 번에 단지 1분만 소요됩니다."
+  "First launch pulls Docker images — this only takes a minute once.": "첫 실행은 Docker 이미지를 가져오는데 — 이는 한 번에 단지 1분만 소요됩니다.",
+  "Bluesky": "블루스카이"
 }
