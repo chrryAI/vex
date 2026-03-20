@@ -15,6 +15,7 @@ import Loading from "./Loading"
 import { updateGuest, updateUser } from "./lib"
 import { Button, Div, Form, H1, Input, Label, P, Span, toast } from "./platform"
 import SignIn from "./SignIn"
+import Checkbox from "./Checkbox"
 
 export default function Watermelon() {
   const {

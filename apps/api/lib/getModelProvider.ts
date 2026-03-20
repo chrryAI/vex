@@ -134,11 +134,13 @@ export async function getModelProvider({
 }> {
   const appApiKeys = app?.apiKeys || {}
 
+  const isBYOK = !!user?.apiKeys?.openrouter || !!guest?.apiKeys?.openrouter
+
   const agents = await getAiAgents({ include: app?.id })
   // Hocam case-insensitive yapalım ki name="deepseek" da "deepSeek" de çalışsın
   let agent = agents.find((a) => a.name.toLowerCase() === name.toLowerCase())
 
-  const failedKeys = agent?.metadata?.failed
+  const failedKeys = isBYOK ? [] : agent?.metadata?.failed
 
   if (!agent) {
     agent = agents.find((a) => a.name === "deepSeek") as aiAgent
@@ -353,8 +355,6 @@ export async function getModelProvider({
         Math.floor(Date.now() / (1000 * 60 * 30)) % (allKeys.length || 1)
       const selectedKey = openrouterKeyForDeepSeekReasoner || allKeys[keyIndex]
 
-      const isBYOK = !!openrouterKeyForDeepSeekReasoner
-
       const freeModels = {
         reaction: ["qwen/qwen3-235b-a22b-thinking-2507"],
         comment: ["qwen/qwen3-vl-235b-a22b-thinking"],
@@ -417,6 +417,8 @@ export async function getModelProvider({
         sortedPool[0] ||
         (activePool?.length > 0 ? activePool[0] : pool[0]) ||
         "qwen/qwen3-235b-a22b-thinking-2507"
+
+      console.log(`🚀 ~ modelId:`, modelId)
 
       if (openrouterKeyForDeepSeekReasoner && !failedKeys?.includes(modelId)) {
         // Hocam inci gibi dizelim: Seçtiğimiz başarılı modeli hemen tarihlendiriyoruz
