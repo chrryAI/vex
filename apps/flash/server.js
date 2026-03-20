@@ -374,11 +374,18 @@ const e2eVex = Object.assign(Object.assign({}, vex), {
 const _tribe = Object.assign(Object.assign({}, zarathustra), {
   mode: "tribe",
   slug: "tribe",
-  storeSlug: "social",
   name: "Tribe",
   url: "https://tribe.chrry.ai",
   domain: "tribe.chrry.ai",
   isTribe: true,
+})
+const watermelon = Object.assign(Object.assign({}, zarathustra), {
+  mode: "watermelon",
+  slug: "watermelon",
+  name: "Watermelon",
+  url: "https://watermelon.chrry.ai",
+  domain: "watermelon.chrry.ai",
+  isWatermelon: true,
 })
 const staging = Object.assign(Object.assign({}, chrryAI), {
   url: "https://staging.chrry.ai",
@@ -491,6 +498,9 @@ export function detectsiteModeDomain(hostname, mode) {
   if (matchesDomain(host, "amsterdam.chrry.ai")) {
     return "amsterdam"
   }
+  if (matchesDomain(host, "watermelon.chrry.ai")) {
+    return "watermelon"
+  }
   if (matchesDomain(host, "tokyo.chrry.ai")) {
     return "tokyo"
   }
@@ -566,6 +576,7 @@ export function detectsiteMode(hostname) {
     "vault",
     "tribe",
     "nebula",
+    "watermelon",
   ]
   // If hostname is already a valid siteMode (e.g., "atlas"), use it directly
   if (hostname && validModes.includes(hostname)) {
@@ -668,6 +679,9 @@ export function getSiteConfig(hostnameOrMode, caller) {
   if (mode === "tribe") {
     return _tribe
   }
+  if (mode === "watermelon") {
+    return watermelon
+  }
   if (isE2E) {
     return e2eVex
   }
@@ -695,7 +709,7 @@ export const whiteLabels = [
   _tribe,
 ]
 
-const VERSION = "2.1.29"
+const VERSION = "2.1.30"
 // Constants
 const port = process.env.PORT || 5173
 const base = process.env.BASE || "/"
@@ -993,11 +1007,13 @@ function metadataToHtml(metadata, serverData) {
 
   // Favicon and Apple Touch Icons - use hostname for white-label detection
   // Use serverData.siteConfig which is already available from server-loader
-  const iconSlug = serverData?.siteConfig?.isTribe
-    ? "tribe"
-    : serverData?.siteConfig?.storeSlug === "compass"
-      ? "atlas"
-      : serverData?.siteConfig?.slug || serverData?.app?.slug || "chrry"
+  const iconSlug = serverData?.siteConfig?.isWatermelon
+    ? "watermelon"
+    : serverData?.siteConfig?.isTribe
+      ? "tribe"
+      : serverData?.siteConfig?.storeSlug === "compass"
+        ? "atlas"
+        : serverData?.siteConfig?.slug || serverData?.app?.slug || "chrry"
 
   const baseIcon = `/images/apps/${iconSlug}.png`
   const apiUrl = process.env.VITE_API_URL || "https://chrry.dev/api"
