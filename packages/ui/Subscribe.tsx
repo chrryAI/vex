@@ -1473,6 +1473,18 @@ export default function Subscribe({
           ) : selectedPlan === "watermelon" ? (
             // Watermelon Tier Selection
             <>
+              <A
+                className="transparent"
+                href="/watermelon"
+                style={{
+                  ...utilities.button.style,
+                  ...utilities.transparent.style,
+                  ...utilities.small.style,
+                }}
+              >
+                <Img slug="jules" size={21} />
+                {t("Free")} ({t("BYOK")})
+              </A>
               <Button
                 className="transparent"
                 onClick={() => {
