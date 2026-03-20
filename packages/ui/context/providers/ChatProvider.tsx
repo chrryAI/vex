@@ -229,6 +229,7 @@ export function ChatProvider({
     canShowAllTribe,
     siteConfig,
     actions,
+    setShowWatermelon,
     ...auth
   } = useAuth()
 
@@ -504,6 +505,7 @@ export function ChatProvider({
       setLikedInternal(undefined)
       setShowFocus(false)
       setShowTribe(tribe === true)
+      setShowWatermelon(false)
 
       setCollaborationStep(0)
       setThread(undefined)
