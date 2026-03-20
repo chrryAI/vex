@@ -60,6 +60,7 @@ export default function Watermelon() {
         alignItems: "center",
         justifyContent: "center",
         flexDirection: "column",
+        padding: "0 1rem",
       }}
     >
       <Div
@@ -199,7 +200,16 @@ export default function Watermelon() {
         >
           🔪 {t("Choose your weapon")} 🏹
         </P>
-        <Div style={{ display: "flex", gap: 5, marginTop: 15 }}>
+        <Div
+          style={{
+            display: "flex",
+            gap: 10,
+            marginTop: 15,
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <Button
             className="inverted"
             style={{
@@ -209,23 +219,18 @@ export default function Watermelon() {
               padding: "0.25rem 0.5rem",
             }}
           >
-            <Img
-              alt="🌋 Free"
-              width={22}
-              height={22}
-              src="https://chrry.ai/images/apps/coder.png"
-            />
+            <Img alt="🌋 Free" width={22} height={22} slug="coder" />
             Free (BYOK)
           </Button>
           {app && (
             <AppLink
               app={app}
-              className="button inverted"
-              icon={<Img app={app} alt={app.name} width={16} height={16} />}
+              className="button transparent"
+              icon={<Img app={app} alt={app.name} width={22} height={22} />}
               loading={<Loading size={13} />}
               style={{
                 ...utilities.button.style,
-                ...utilities.inverted.style,
+                ...utilities.transparent.style,
                 display: "flex",
                 alignItems: "center",
                 gap: 5,
@@ -242,14 +247,14 @@ export default function Watermelon() {
               gap: 5,
               padding: "0.25rem 0.5rem",
             }}
-            className="button inverted"
-            href="https://chrry.ai/?subscribe=true&plan=watermelon"
+            className="button transparent"
+            href="?subscribe=true&plan=watermelon"
             target="_blank"
           >
             <Img
               alt="🍉 Agency"
-              width={16}
-              height={16}
+              width={22}
+              height={22}
               src="https://chrry.ai/images/apps/watermelon.png"
             />
             Agency
@@ -261,16 +266,11 @@ export default function Watermelon() {
               gap: 5,
               padding: "0.25rem 0.5rem",
             }}
-            className="button inverted"
-            href="https://chrry.ai/?subscribe=true&plan=watermelon"
+            className="button transparent"
+            href="?subscribe=true&plan=watermelon"
             target="_blank"
           >
-            <Img
-              alt="🦋 Sovereign"
-              width={16}
-              height={16}
-              src="https://chrry.ai/images/apps/tribe.png"
-            />
+            <Img alt="🦋 Sovereign" width={22} height={22} slug="tribe" />
             Sovereign
           </A>
         </Div>
