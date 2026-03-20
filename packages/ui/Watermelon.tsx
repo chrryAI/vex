@@ -23,13 +23,19 @@ export default function Watermelon() {
     app,
     siteConfig,
     downloadUrl,
-    chrry,
+    getAppSlug,
     user,
     guest,
     setGuest,
     setUser,
     actions,
+    storeApps,
   } = useAuth()
+
+  const coder = storeApps.find((app) => app.slug === "coder")
+  const architect = storeApps.find((app) => app.slug === "architect")
+  const jules = storeApps.find((app) => app.slug === "jules")
+  const debuggerApp = storeApps.find((app) => app.slug === "debugger")
 
   const { t } = useAppContext()
 
@@ -126,71 +132,41 @@ export default function Watermelon() {
           }}
         >
           <Img width={50} height={50} slug="watermelon" />
-          Watermelon&#169;
+          {t("Watermelon")}&#169;
         </H1>
         <Div
           style={{
             display: "flex",
             gap: 15,
-            marginTop: 10,
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "center",
+            marginTop: 15,
+            marginBottom: 5,
           }}
         >
-          <A
-            href={
-              siteConfig.storeSlug !== "sushiStore"
-                ? "https://sushi.chrry.ai"
-                : "/"
-            }
-          >
-            <Img alt="🍣 Sushi" width={22} height={22} slug="sushi" />
-          </A>
-          <A
-            href={
-              siteConfig.storeSlug !== "sushiStore"
-                ? "https://sushi.chrry.ai/coder"
-                : "/coder"
-            }
-            openInNewTab={siteConfig.slug !== "chrry"}
-          >
-            <Img alt="🍋 Coder" width={22} height={22} slug="coder" />
-          </A>
-          <A
-            href={
-              siteConfig.storeSlug !== "sushiStore"
-                ? "https://sushi.chrry.ai/architect"
-                : "/architect"
-            }
-            openInNewTab={siteConfig.slug !== "chrry"}
-          >
-            <Img alt="🥋 Architect" width={22} height={22} slug="architect" />
-          </A>
-          <A
-            href={
-              siteConfig.storeSlug !== "sushiStore"
-                ? "https://sushi.chrry.ai/jules"
-                : "/jules"
-            }
-            openInNewTab={siteConfig.slug !== "chrry"}
-          >
-            <Img alt="🐙 Jules" width={22} height={22} slug="jules" />
-          </A>
-          <A
-            href={
-              siteConfig.storeSlug !== "sushiStore"
-                ? "https://sushi.chrry.ai/debugger"
-                : "/debugger"
-            }
-            openInNewTab={siteConfig.slug !== "chrry"}
-          >
-            <Img alt="🐛 Debugger" width={22} height={22} slug="debugger" />
-          </A>
+          {storeApps.slice(0, 7).map((item, i) => {
+            return (
+              <Div key={`post-${item.id}`}>
+                <AppLink
+                  app={item}
+                  className="link"
+                  style={{
+                    ...utilities.link.style,
+                  }}
+                >
+                  <Img app={item} />
+                </AppLink>
+              </Div>
+            )
+          })}
           <A href={"/tribe"} style={{ fontSize: "0.85rem" }}>
-            +35 AI Apps
+            {t("+{{count}} AI Apps", { count: storeApps.length })}
           </A>
         </Div>
         <P
           style={{
-            fontSize: "0.95rem",
+            fontSize: "1rem",
             color: "var(--shade-7)",
             display: "flex",
             alignItems: "center",
@@ -378,7 +354,7 @@ export default function Watermelon() {
             openInNewTab
             href="https://github.com/chrryAI/vex/blob/main/packages/db/encryption.ts"
           >
-            🔑 AES-256 GCM (Galois/Counter Mode)*
+            🔑 {t("AES-256 GCM (Galois/Counter Mode)")}
             <ArrowRight size={14} color="var(--accent-5)" />
           </A>
         </P>

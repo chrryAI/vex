@@ -2482,5 +2482,10 @@
   "With powerful developer tools and a unified platform - Chrry empowers you to harness the full potential of AI technology in a single, seamless experience.": "Com ferramentas poderosas para desenvolvedores e uma plataforma unificada - Chrry permite que você aproveite todo o potencial da tecnologia AI em uma única experiência contínua.",
   "Chrry is the ultimate AI Super App where intelligence meets everyday life. Access cutting-edge AI applications and agents built to harmonize your digital world, or create your own AI-powered workflows.": "Chrry é o último Super App AI onde a inteligência encontra a vida cotidiana. Acesse aplicativos e agentes AI de ponta construídos para harmonizar seu mundo digital, ou crie seus próprios fluxos de trabalho alimentados por AI.",
   "Choose your weapon": "Escolha sua arma",
-  "BYOK": "BYOK"
+  "BYOK": "BYOK",
+  "watermelon_guest_info": "Você pode usar sua própria chave API como convidado. Seus dados irão <0>migrar automaticamente</0> quando você <1>fizer login</1>. O login é opcional, mas você sempre pode sincronizar sua conta.",
+  "AES-256 GCM (Galois/Counter Mode)": "AES-256 GCM (Galois/Counter Mode)",
+  "watermelon_macos_info": "Em breve: Um <0>Aplicativo de Desktop macOS</0> com suporte a DB local (Licenciado pelo MIT) para uma configuração totalmente privada.",
+  "Sneak peek": "Prévia",
+  "+{{count}} AI Apps": "+{{count}} Apps de IA"
 }
