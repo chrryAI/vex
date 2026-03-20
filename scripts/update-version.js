@@ -53,6 +53,7 @@ const files = [
   "packages/waffles/package.json",
   "packages/ui/utils/index.ts",
   "packages/db/package.json",
+  "packages/ui/context/providers/AuthProvider.tsx",
   "apps/flash/server.js",
 ].map((f) => path.resolve(__dirname, "..", f))
 
