@@ -37,13 +37,14 @@ import {
 } from "./platform"
 import Version from "./Version"
 
-function Grape({
+function Watermelon({
   isDrawerOpen,
 }: {
   time: number
   isCountingDown?: boolean
   isDrawerOpen?: boolean
 }) {
+  const { user } = useAuth()
   const { viewPortWidth } = usePlatform()
 
   const hasHydrated = useHasHydrated()
@@ -53,10 +54,13 @@ function Grape({
     return null
   }
 
+  if (user?.role !== "admin") {
+    return null
+  }
+
   return (
-    <Grapes
-      slug={"raspberry"}
-      dataTestId="grapes-button"
+    <A
+      href={"/watermelon"}
       style={{
         ...utilities.xSmall.style,
         marginTop: !isDrawerOpen ? 1 : -7.5,
@@ -65,7 +69,9 @@ function Grape({
 
         left: 250,
       }}
-    />
+    >
+      <Img slug="watermelon" width={22} height={22} /> BYOK (Free)
+    </A>
   )
 }
 export default function Skeleton({
@@ -331,7 +337,7 @@ export default function Skeleton({
                     ) : null}
 
                     {isMobileDevice ? null : (
-                      <Grape
+                      <Watermelon
                         isDrawerOpen={isDrawerOpen}
                         time={time}
                         isCountingDown={isCountingDown}

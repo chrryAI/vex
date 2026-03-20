@@ -33,11 +33,6 @@ env:
   # Database
   DB_URL: ${{ secrets.DB_URL }}
 
-  # Auth
-  NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-  NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
-  AUTH_TRUST_HOST: ${{ secrets.AUTH_TRUST_HOST }}
-
   # Test users
   VEX_TEST_EMAIL: ${{ secrets.VEX_TEST_EMAIL }}
   VEX_TEST_NAME: ${{ secrets.VEX_TEST_NAME }}
@@ -55,33 +50,8 @@ env:
   TEST_MEMBER_EMAILS: ${{ secrets.TEST_MEMBER_EMAILS }}
   TEST_GUEST_FINGERPRINTS: ${{ secrets.TEST_GUEST_FINGERPRINTS }}
 
-  # Push notifications
-  VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
-  VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
-
-  # Stripe
-  STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-  STRIPE_PRICE_PLUS_ID: ${{ secrets.STRIPE_PRICE_PLUS_ID }}
-  STRIPE_PRICE_CREDITS_ID: ${{ secrets.STRIPE_PRICE_CREDITS_ID }}
-  STRIPE_PRICE_PRO_ID: ${{ secrets.STRIPE_PRICE_PRO_ID }}
-  VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
-
-  # OAuth
-  APPLE_CLIENT_ID: ${{ secrets.APPLE_CLIENT_ID }}
-  APPLE_CLIENT_SECRET: ${{ secrets.APPLE_CLIENT_SECRET }}
-  GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
-  GOOGLE_WEB_CLIENT_SECRET: ${{ secrets.GOOGLE_WEB_CLIENT_SECRET }}
-
   # URLs
   CHRRY_URL: ${{ secrets.CHRRY_URL }}
-  VITE_API_URL: ${{ secrets.VITE_API_URL }}
-  VITE_SITE_MODE: ${{ secrets.VITE_SITE_MODE }}
-  VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
-  WS_SERVER_URL: ${{ secrets.WS_SERVER_URL }}
-
-  # Redis
-  REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-  REDIS_URL: ${{ secrets.REDIS_URL }}
 
 jobs:
   # Safety check: prevent external PRs from triggering deployments
