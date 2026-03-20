@@ -792,6 +792,53 @@ setInterval(() => {
   }
 }, 5 * 60_000).unref()
 
+// ─── SSR HTML cache for public post pages ────────────────────────────────────
+// Post pages (/p/<uuid>) are heavily crawled by bots & social scrapers.
+// Cache the rendered HTML for 5 minutes to avoid redundant DB queries.
+const SSR_CACHE_TTL_MS = 5 * 60_000 // 5 minutes
+const SSR_CACHE_MAX = 500 // max entries
+/** @type {Map<string, { html: string; ts: number }>} */
+const ssrCache = new Map()
+
+function getSsrCacheKey(url) {
+  // Strip locale prefix (e.g. "zh/p/abc" → "p/abc") so all locales share one entry
+  return url.replace(/^[a-z]{2}\//, "")
+}
+
+function isPostUrl(url) {
+  // Match /p/<uuid> with optional leading locale e.g. zh/p/...
+  return /^(?:[a-z]{2}\/)?p\/[0-9a-f-]{36}/.test(url.replace(/^\//, ""))
+}
+
+function getCachedSsr(url) {
+  const key = getSsrCacheKey(url)
+  const entry = ssrCache.get(key)
+  if (!entry) return null
+  if (Date.now() - entry.ts > SSR_CACHE_TTL_MS) {
+    ssrCache.delete(key)
+    return null
+  }
+  return entry.html
+}
+
+function setCachedSsr(url, html) {
+  const key = getSsrCacheKey(url)
+  // LRU eviction: delete oldest entry when full
+  if (ssrCache.size >= SSR_CACHE_MAX) {
+    const oldest = ssrCache.keys().next().value
+    ssrCache.delete(oldest)
+  }
+  ssrCache.set(key, { html, ts: Date.now() })
+}
+
+// Periodically clean expired SSR cache entries
+setInterval(() => {
+  const cutoff = Date.now() - SSR_CACHE_TTL_MS
+  for (const [key, entry] of ssrCache) {
+    if (entry.ts < cutoff) ssrCache.delete(key)
+  }
+}, SSR_CACHE_TTL_MS).unref()
+
 function isRateLimited(ip) {
   const now = Date.now()
   const cutoff = now - RL_WINDOW_MS
@@ -1352,6 +1399,17 @@ app.use(async (req, res) => {
     // Load server data first (optional - can be undefined for client-only rendering)
     let serverData
     if (loadData) {
+      // ── SSR cache: serve cached HTML for post pages (skip DB + render) ──
+      if (isPostUrl(url)) {
+        const cachedHtml = getCachedSsr(url)
+        if (cachedHtml) {
+          return res
+            .status(200)
+            .set({ "Content-Type": "text/html", "X-SSR-Cache": "HIT" })
+            .end(cachedHtml)
+        }
+      }
+
       console.log("🔍 Loading server data for:", url)
       // You can build the context from req here
       const context = {
@@ -1464,7 +1522,15 @@ app.use(async (req, res) => {
 
     console.log(`✅ HTML generated with theme: ${sanitizedTheme}`)
 
-    res.status(200).set({ "Content-Type": "text/html" }).end(html)
+    // Cache post page HTML for 5 minutes
+    if (isPostUrl(url)) {
+      setCachedSsr(url, html)
+    }
+
+    res
+      .status(200)
+      .set({ "Content-Type": "text/html", "X-SSR-Cache": "MISS" })
+      .end(html)
   } catch (e) {
     vite?.ssrFixStacktrace(e)
     console.error(e.stack) // Log for debugging
