@@ -2490,5 +2490,12 @@
   "AES-256 GCM (Galois/Counter Mode)": "AES-256 GCM (Galois/Sayaç Modu)",
   "watermelon_macos_info": "Yakında: Tamamen özel konfigürasyon için yerel DB desteğiyle birlikte <0>macOS Masaüstü Uygulaması</0> (MIT Lisanslı).",
   "Sneak peek": "Ön izleme",
-  "+{{count}} AI Apps": "+{{count}} AI Uygulamaları"
+  "+{{count}} AI Apps": "+{{count}} AI Uygulamaları",
+  "Replicate API key saved successfully": "Replicate API anahtarı başarıyla kaydedildi",
+  "Please enter your OpenRouter API key": "Lütfen OpenRouter API anahtarınızı girin",
+  "Please enter your Replicate API key": "Lütfen Replicate API anahtarınızı girin",
+  "OpenRouter API key deleted successfully": "OpenRouter API anahtarı başarıyla silindi",
+  "Invalid Replicate API key format (Expected r8_...)": "Geçersiz Replicate API anahtarı formatı (Beklenen r8_...)",
+  "OpenRouter API key saved successfully": "OpenRouter API anahtarı başarıyla kaydedildi",
+  "Invalid OpenRouter API key format (Expected sk-or-v1-...)": "Geçersiz OpenRouter API anahtarı formatı (Beklenen sk-or-v1-...)"
 }

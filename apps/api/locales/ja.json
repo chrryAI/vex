@@ -2487,5 +2487,12 @@
   "AES-256 GCM (Galois/Counter Mode)": "AES-256 GCM (ガロア/カウンターモード)",
   "watermelon_macos_info": "近日公開: ローカルDBサポート（MITライセンス）を備えた<0>macOSデスクトップアプリ</0>で、完全にプライベートな設定が可能です。",
   "Sneak peek": "先行視聴",
-  "+{{count}} AI Apps": "+{{count}} AIアプリ"
+  "+{{count}} AI Apps": "+{{count}} AIアプリ",
+  "Replicate API key saved successfully": "Replicate APIキーが正常に保存されました",
+  "Please enter your OpenRouter API key": "OpenRouter APIキーを入力してください",
+  "Please enter your Replicate API key": "Replicate APIキーを入力してください",
+  "OpenRouter API key deleted successfully": "OpenRouter APIキーが正常に削除されました",
+  "Invalid Replicate API key format (Expected r8_...)": "無効なReplicate APIキーフォーマット（r8_...が期待されます）",
+  "OpenRouter API key saved successfully": "OpenRouter APIキーが正常に保存されました",
+  "Invalid OpenRouter API key format (Expected sk-or-v1-...)": "無効なOpenRouter APIキーフォーマット（sk-or-v1-...が期待されます）"
 }

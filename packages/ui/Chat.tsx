@@ -3778,8 +3778,6 @@ export default function Chat({
               if (!open) {
                 setNeedsReplicate(false)
               }
-
-              setNeedsReplicate(open)
             }}
             hasCloseButton
             icon={<Flux />}
