@@ -1284,7 +1284,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     gap: ".75rem",
                   }}
                 >
-                  <A openInNewTab href="https://chrry.dev">
+                  <A
+                    event={ANALYTICS_EVENTS.CHERRY_DEV_CLICK}
+                    openInNewTab
+                    href="https://chrry.dev"
+                  >
                     <FaGithub />
                     AGPLv3
                   </A>

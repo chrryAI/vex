@@ -16,6 +16,7 @@ import Loading from "./Loading"
 import { updateGuest, updateUser } from "./lib"
 import { Button, Div, Form, H1, Input, Label, P, Span, toast } from "./platform"
 import SignIn from "./SignIn"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function Watermelon() {
   const {
@@ -30,6 +31,7 @@ export default function Watermelon() {
     setUser,
     actions,
     storeApps,
+    plausible,
   } = useAuth()
 
   const coder = storeApps.find((app) => app.slug === "coder")
@@ -37,7 +39,7 @@ export default function Watermelon() {
   const jules = storeApps.find((app) => app.slug === "jules")
   const debuggerApp = storeApps.find((app) => app.slug === "debugger")
 
-  const { t } = useAppContext()
+  const { t, captureException } = useAppContext()
 
   const openRouterApiKeyInitialValue =
     user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter || ""
@@ -45,6 +47,11 @@ export default function Watermelon() {
   const [openRouterApiKey, setOpenRouterApiKey] = useState(
     openRouterApiKeyInitialValue,
   )
+
+  useEffect(() => {
+    if (!user && !guest) return
+    plausible({ name: ANALYTICS_EVENTS.WATERMELON })
+  }, [user, guest])
 
   useEffect(() => {
     setOpenRouterApiKey(openRouterApiKeyInitialValue)
@@ -98,6 +105,7 @@ export default function Watermelon() {
         >
           <AppLink
             app={app}
+            event={ANALYTICS_EVENTS.WM_APP_LINK_CLICK}
             icon={<Img app={app} alt={app.name} width={16} height={16} />}
             loading={<Loading size={13} />}
             className="button inverted medium"
@@ -149,6 +157,7 @@ export default function Watermelon() {
             return (
               <Div key={`post-${item.id}`}>
                 <AppLink
+                  event={ANALYTICS_EVENTS.WM_APP_LINK_CLICK}
                   app={item}
                   className="link"
                   style={{
@@ -160,7 +169,11 @@ export default function Watermelon() {
               </Div>
             )
           })}
-          <A href={"/tribe"} style={{ fontSize: "0.85rem" }}>
+          <A
+            href={"/tribe"}
+            event={ANALYTICS_EVENTS.WM_TRIBE_LINK_CLICK}
+            style={{ fontSize: "0.85rem" }}
+          >
             {t("+{{count}} AI Apps", { count: storeApps.length })}
           </A>
         </Div>
@@ -252,8 +265,10 @@ export default function Watermelon() {
         </Div>
         <Form
           onSubmit={async (e) => {
+            plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT })
             e.preventDefault()
             if (!openRouterApiKey) {
+              plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_ERROR })
               toast.error("Please enter your OpenRouter API key")
               return
             }
@@ -280,6 +295,7 @@ export default function Watermelon() {
                 })
 
                 toast.success("OpenRouter API key saved successfully")
+                plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_SUCCESS })
               }
 
               if (guest) {
@@ -293,10 +309,13 @@ export default function Watermelon() {
                   ...guest,
                   apiKeys: { ...guest.apiKeys, openrouter: openRouterApiKey },
                 })
+                plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_SUCCESS })
               }
             } catch (error) {
               console.error(error)
               toast.error("Something went wrong")
+              captureException(error)
+              plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_ERROR })
             } finally {
               setIsSavingOpenRouterApiKey(false)
             }
@@ -457,6 +476,7 @@ export default function Watermelon() {
               defaults="Coming soon: A <0>macOS Desktop App</0> with local DB support (MIT Licensed) for fully private configuration."
               components={[
                 <A
+                  event={ANALYTICS_EVENTS.GH_REPO_CLICK}
                   key="macos"
                   openInNewTab
                   href="https://github.com/chrryAI/vex"
