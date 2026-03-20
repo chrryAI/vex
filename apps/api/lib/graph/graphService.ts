@@ -1,5 +1,14 @@
 import type { appWithStore } from "@chrryai/chrry/types"
-import { type app, db, eq, graph, isDevelopment, isE2E } from "@repo/db"
+import {
+  type app,
+  db,
+  eq,
+  graph,
+  type guest,
+  isDevelopment,
+  isE2E,
+  type user,
+} from "@repo/db"
 import { threads } from "@repo/db/src/schema"
 import { embed, generateText } from "ai"
 import { captureException } from "../captureException"
@@ -59,15 +68,26 @@ async function ensureIndices() {
 }
 
 // Generate embedding for text
-async function getEmbedding(
-  text: string,
-  app?: app | appWithStore,
-): Promise<number[] | null> {
+async function getEmbedding({
+  text,
+  app,
+  user,
+  guest,
+}: {
+  text: string
+  app?: app | appWithStore
+  user?: user
+  guest?: guest
+}): Promise<number[] | null> {
   try {
-    const provider = await getEmbeddingProvider(app)
+    const { provider, modelId } = await getEmbeddingProvider({
+      app,
+      user,
+      guest,
+    })
 
     const { embedding } = await embed({
-      model: provider.embedding("text-embedding-3-small"),
+      model: provider.embedding(modelId),
       value: text,
     })
     return embedding
@@ -112,10 +132,17 @@ export async function findPath(
  * Level 5: Dynamic Cypher Reasoner
  * Generates a custom Cypher query based on user intent and current graph schema.
  */
-async function generateDynamicCypher(
-  queryText: string,
-  app?: app | appWithStore,
-): Promise<string | null> {
+async function generateDynamicCypher({
+  queryText,
+  app,
+  user,
+  guest,
+}: {
+  queryText: string
+  app?: app | appWithStore
+  user?: user
+  guest?: guest
+}): Promise<string | null> {
   try {
     const prompt = `You are an expert FalkorDB Cypher architect. Generate a Cypher query to retrieve context for this user question: "${queryText}"
     
@@ -166,7 +193,7 @@ async function generateDynamicCypher(
     - MATCH (n)-[r]->(m) RETURN n.name, type(), m.name (ERROR: type() empty!)
     - MATCH (n) RETURN n.name ORDER BY score DESC (ERROR: score not defined!)`
 
-    const provider = await getModelProvider({ app })
+    const provider = await getModelProvider({ app, user, guest })
 
     const { text } = await generateText({
       model: provider.provider, // DeepSeek: cheaper, faster, great for structured tasks
@@ -380,6 +407,8 @@ export async function extractAndStoreKnowledge(
   content: string,
   userId?: string,
   app?: app | appWithStore,
+  user?: user,
+  guest?: guest,
 ) {
   try {
     // 1. LLM Extraction
@@ -452,8 +481,18 @@ export async function extractAndStoreKnowledge(
       const sanitizedTarget = target.replace(/['"]/g, "")
 
       // Generate embeddings
-      const sourceEmbedding = await getEmbedding(sanitizedSource, app)
-      const targetEmbedding = await getEmbedding(sanitizedTarget, app)
+      const sourceEmbedding = await getEmbedding({
+        text: sanitizedSource,
+        app,
+        user,
+        guest,
+      })
+      const targetEmbedding = await getEmbedding({
+        text: sanitizedTarget,
+        app,
+        user,
+        guest,
+      })
 
       // Cypher query to merge nodes and create relationship
       // SECURITY: Using parameterized queries to prevent injection
@@ -537,10 +576,17 @@ export async function extractAndStoreKnowledge(
 }
 
 // Retrieve relevant graph context
-export async function getGraphContext(
-  queryText: string,
-  app?: app | appWithStore,
-): Promise<string> {
+export async function getGraphContext({
+  queryText,
+  app,
+  user,
+  guest,
+}: {
+  queryText: string
+  app?: app | appWithStore
+  user?: user
+  guest?: guest
+}): Promise<string> {
   try {
     // Ensure indices exist before querying
     await ensureIndices()
@@ -549,7 +595,12 @@ export async function getGraphContext(
 
     // Level 5: Dynamic Reasoner (Primary)
     // AI determines the best way to query the graph for THIS specific question
-    const dynamicQuery = await generateDynamicCypher(queryText, app)
+    const dynamicQuery = await generateDynamicCypher({
+      queryText,
+      app,
+      user,
+      guest,
+    })
     if (dynamicQuery) {
       try {
         // Pass queryText as parameter for safe injection-free queries
@@ -571,7 +622,7 @@ export async function getGraphContext(
 
     // Fallback: Triple-Hybrid Search (Level 4 logic)
     // 1. Vector Search (Semantic)
-    const embedding = await getEmbedding(queryText, app)
+    const embedding = await getEmbedding({ text: queryText, app, user, guest })
     if (embedding) {
       try {
         // FalkorDB vector query: queryNodes(label, attribute, k, vector)
@@ -719,7 +770,7 @@ export async function storeNewsInGraph(article: {
       .filter(Boolean)
       .join(". ")
       .substring(0, 3000)
-    const embedding = await getEmbedding(content)
+    const embedding = await getEmbedding({ text: content })
     const articleName = article.title.substring(0, 200).replace(/['"]/g, "")
     const category = article.category || "general"
     const source = article.source || "unknown"
@@ -782,7 +833,7 @@ export async function getNewsContext(
 ): Promise<string> {
   try {
     await ensureIndices()
-    const embedding = await getEmbedding(queryText)
+    const embedding = await getEmbedding({ text: queryText })
     if (!embedding) return ""
 
     const vectorQuery = `

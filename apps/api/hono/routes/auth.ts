@@ -273,7 +273,7 @@ function createOAuthState(callbackUrl: string, errorUrl: string): string {
 // ==================== USER HELPERS ====================
 
 async function findOrCreateUser(profile: UserProfile): Promise<any> {
-  let user = await getUser({ email: profile.email })
+  let user: any = await getUser({ email: profile.email })
 
   if (!user) {
     user = await createUser({
@@ -951,7 +951,7 @@ authRoutes.post("/apikey/generate", async (c) => {
     )
   }
 
-  const user = await getMember(c, { full: true, skipCache: true })
+  const user = await getMember(c, { skipCache: true })
   if (!user) return c.json({ error: "Unauthorized" }, 401)
 
   const env =

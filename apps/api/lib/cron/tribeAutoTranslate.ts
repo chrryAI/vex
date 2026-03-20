@@ -27,7 +27,7 @@ type Locale = (typeof ALL_LOCALES)[number]
 
 interface AutoTranslateOptions {
   appId: string
-  userId?: string // The user executing the job
+  userId?: string | null // The user executing the job
   postIds?: string[]
   commentIds?: string[]
   /** Override target locales. Defaults to all supported locales. */

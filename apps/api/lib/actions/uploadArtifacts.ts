@@ -1,12 +1,16 @@
 "use server"
 
+import type { appWithStore } from "@chrryai/chrry/types"
 import { isE2E as isE2EInternal } from "@chrryai/chrry/utils"
 // Note: getMember/getGuest are passed as parameters, not imported
 import {
+  type app,
   createMessage,
   getMessages,
+  type guest,
   type thread,
   updateThread,
+  type user,
   VEX_LIVE_FINGERPRINTS,
 } from "@repo/db"
 import slugify from "slug"
@@ -22,11 +26,13 @@ export const uploadArtifacts = async ({
   thread,
   member,
   guest,
+  app,
 }: {
   files: File[]
   thread: thread
-  member?: any
-  guest?: any
+  member?: user
+  guest?: guest
+  app?: app | null | appWithStore
 }) => {
   if (!member && !guest) {
     throw new Error("User or guest not found")
@@ -36,7 +42,7 @@ export const uploadArtifacts = async ({
   const isE2E =
     member?.role !== "admin" &&
     fingerprint &&
-    !VEX_LIVE_FINGERPRINTS.includes(member?.fingerprint) &&
+    !VEX_LIVE_FINGERPRINTS.includes(member?.fingerprint || "") &&
     isE2EInternal
   const memoriesEnabled = (member || guest)?.memoriesEnabled
 
@@ -120,6 +126,9 @@ export const uploadArtifacts = async ({
               fileSizeBytes: file.size,
               messageId: messageIdForRAG,
               threadId: thread.id,
+              member,
+              guest,
+              app: app || undefined,
               userId: member?.id,
               guestId: guest?.id,
             }).catch((error) => {

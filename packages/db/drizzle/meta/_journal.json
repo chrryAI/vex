@@ -1597,6 +1597,20 @@
       "when": 1773658383121,
       "tag": "0227_clumsy_korath",
       "breakpoints": true
+    },
+    {
+      "idx": 228,
+      "version": "7",
+      "when": 1773962595087,
+      "tag": "0228_noisy_molly_hayes",
+      "breakpoints": true
+    },
+    {
+      "idx": 229,
+      "version": "7",
+      "when": 1773963471471,
+      "tag": "0229_flawless_veda",
+      "breakpoints": true
     }
   ]
 }

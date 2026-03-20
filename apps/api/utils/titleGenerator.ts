@@ -1,6 +1,13 @@
 import { isE2E as isE2EInternal } from "@chrryai/chrry/utils"
 import { faker } from "@faker-js/faker"
-import { getPureApp, getThread, getUser, VEX_LIVE_FINGERPRINTS } from "@repo/db"
+import {
+  getPureApp,
+  getThread,
+  getUser,
+  type guest,
+  type user,
+  VEX_LIVE_FINGERPRINTS,
+} from "@repo/db"
 import { generateText } from "ai"
 import { captureException } from "../lib/captureException"
 import { getModelProvider } from "../lib/getModelProvider"
@@ -14,12 +21,16 @@ export async function generateThreadTitle({
   language = "en",
   fingerprint,
   threadId,
+  user,
+  guest,
 }: {
   messages: string[] | Array<{ threadId?: string; content: string }>
   instructions?: string | null
   language?: string
   fingerprint?: string
   threadId?: string
+  user?: user
+  guest?: guest
 }): Promise<string> {
   const thread = await getThread({
     id: threadId,
@@ -98,7 +109,12 @@ Title:`
     // Get the thread and app to determine which agent to use
 
     // Fallback to default if no model found
-    const { provider: model } = await getModelProvider({ app, name: "beles" })
+    const { provider: model } = await getModelProvider({
+      app,
+      name: "beles",
+      user,
+      guest,
+    })
 
     if (!model) {
       return "New Conversation"
@@ -130,12 +146,16 @@ export async function generateThreadInstructions({
   language = "en",
   threadId,
   fingerprint,
+  user,
+  guest,
 }: {
   messages: string[] | Array<{ threadId?: string; content: string }>
   currentInstructions?: string | null
   language?: string
   threadId?: string
   fingerprint?: string
+  user?: user
+  guest?: guest
 }): Promise<string> {
   const thread = await getThread({
     id: threadId,
@@ -209,7 +229,12 @@ Write in ${languageName}. Return only the instruction text:`
 
     // Get the thread and app to determine which agent to use
 
-    const { provider: model } = await getModelProvider({ app, name: "beles" })
+    const { provider: model } = await getModelProvider({
+      app,
+      name: "beles",
+      user,
+      guest,
+    })
 
     if (!model) {
       return ""

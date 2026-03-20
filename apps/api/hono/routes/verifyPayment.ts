@@ -239,7 +239,7 @@ verifyPayment.post("/", async (c) => {
           (CREDITS_PER_MONTH - MEMBER_CREDITS_PER_MONTH)
 
         await updateUser({
-          ...user,
+          id: user.id,
           credits: newCredits,
           subscribedOn: new Date(),
         })
@@ -256,7 +256,7 @@ verifyPayment.post("/", async (c) => {
         newCredits = excessCredits + CREDITS_PER_MONTH
 
         await updateGuest({
-          ...guest,
+          id: guest.id,
           credits: newCredits,
           subscribedOn: new Date(),
         })
@@ -379,7 +379,7 @@ verifyPayment.post("/", async (c) => {
             if (pearCredits > 0) {
               // Update user's pearFeedbackCount
               await updateUser({
-                ...user,
+                id: user.id,
                 pearFeedbackCount: pearCredits,
               })
 
@@ -520,14 +520,14 @@ verifyPayment.post("/", async (c) => {
 
               if (user) {
                 await updateUser({
-                  ...user,
+                  id: user.id,
                   credits: newCredits + bonusCredits,
                 })
 
                 user = await getUser({ id: user.id, skipCache: true })
               } else if (guest) {
                 await updateGuest({
-                  ...guest,
+                  id: guest.id,
                   credits: newCredits + bonusCredits,
                 })
                 guest = await getGuest({ id: guest.id, skipCache: true })
@@ -633,7 +633,7 @@ verifyPayment.post("/", async (c) => {
 
       if (user) {
         await updateUser({
-          ...user,
+          id: user.id,
           credits: user.credits + totalCredits,
         })
 
@@ -661,7 +661,7 @@ verifyPayment.post("/", async (c) => {
 
       if (guest) {
         await updateGuest({
-          ...guest,
+          id: guest.id,
           credits: guest.credits + totalCredits,
         })
 

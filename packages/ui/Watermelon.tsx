@@ -1,35 +1,51 @@
 import { OpenRouter } from "@lobehub/icons"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Trans } from "react-i18next"
 import { SiMacos } from "react-icons/si"
 import AppLink from "./AppLink"
 import A from "./a/A"
+import Checkbox from "./Checkbox"
 import { useAppContext } from "./context/AppContext"
 import { useNavigationContext } from "./context/providers"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
+import { ArrowRight, Info } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import Loading from "./Loading"
-import { Button, Div, H1, Input, Label, P, Span } from "./platform"
+import { updateGuest, updateUser } from "./lib"
+import { Button, Div, Form, H1, Input, Label, P, Span, toast } from "./platform"
 import SignIn from "./SignIn"
 
 export default function Watermelon() {
   const {
     setSignInPart,
-    FRONTEND_URL,
     app,
-    isDevelopment,
     siteConfig,
     downloadUrl,
     chrry,
+    user,
+    guest,
+    setGuest,
+    setUser,
+    actions,
   } = useAuth()
 
   const { t } = useAppContext()
 
-  const [isBYOK, setIsBYOK] = useState(true)
+  const openRouterApiKeyInitialValue =
+    user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter || ""
 
-  const [openRouterApiKey, setOpenRouterApiKey] = useState("")
+  const [openRouterApiKey, setOpenRouterApiKey] = useState(
+    openRouterApiKeyInitialValue,
+  )
+
+  useEffect(() => {
+    setOpenRouterApiKey(openRouterApiKeyInitialValue)
+  }, [openRouterApiKeyInitialValue])
+
+  const [isSavingOpenRouterApiKey, setIsSavingOpenRouterApiKey] =
+    useState(false)
 
   const { utilities } = useStyles()
 
@@ -61,7 +77,7 @@ export default function Watermelon() {
         <LanguageSwitcher />
       </Div>
 
-      {chrry && (
+      {app && (
         <P
           style={{
             display: "flex",
@@ -74,8 +90,8 @@ export default function Watermelon() {
           }}
         >
           <AppLink
-            app={chrry}
-            icon={chrry.icon}
+            app={app}
+            icon={<Img app={app} alt={app.name} width={16} height={16} />}
             loading={<Loading size={13} />}
             className="button inverted medium"
             style={{
@@ -83,7 +99,7 @@ export default function Watermelon() {
               fontFamily: "var(--font-sans)",
             }}
           >
-            {chrry.name}
+            {app.name}
           </AppLink>{" "}
         </P>
       )}
@@ -201,23 +217,24 @@ export default function Watermelon() {
             />
             Free (BYOK)
           </Button>
-          <Button
-            className="inverted"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-              padding: "0.25rem 0.5rem",
-            }}
-          >
-            <Img
-              alt="🍒 Chrry"
-              width={16}
-              height={16}
-              src="https://chrry.ai/images/apps/chrry.png"
-            />
-            Chrry
-          </Button>
+          {app && (
+            <AppLink
+              app={app}
+              className="button inverted"
+              icon={<Img app={app} alt={app.name} width={16} height={16} />}
+              loading={<Loading size={13} />}
+              style={{
+                ...utilities.button.style,
+                ...utilities.inverted.style,
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "0.25rem 0.5rem",
+              }}
+            >
+              {app.name}
+            </AppLink>
+          )}
           <A
             style={{
               display: "flex",
@@ -257,7 +274,57 @@ export default function Watermelon() {
             Sovereign
           </A>
         </Div>
-        <Div
+        <Form
+          onSubmit={async (e) => {
+            e.preventDefault()
+            if (!openRouterApiKey) {
+              toast.error("Please enter your OpenRouter API key")
+              return
+            }
+
+            // Client-side regex validation
+            const openRouterRegex = /^sk-or-v1-[a-zA-Z0-9]{64}$/
+            if (!openRouterRegex.test(openRouterApiKey.trim())) {
+              toast.error(
+                "Invalid OpenRouter API key format (Expected sk-or-v1-...)",
+              )
+              return
+            }
+
+            try {
+              setIsSavingOpenRouterApiKey(true)
+              if (user) {
+                await actions.updateUser({
+                  openRouterApiKey,
+                })
+
+                setUser({
+                  ...user,
+                  apiKeys: { ...user.apiKeys, openrouter: openRouterApiKey },
+                })
+
+                toast.success("OpenRouter API key saved successfully")
+              }
+
+              if (guest) {
+                await actions.updateGuest({
+                  openRouterApiKey,
+                })
+
+                toast.success("OpenRouter API key saved successfully")
+
+                setGuest({
+                  ...guest,
+                  apiKeys: { ...guest.apiKeys, openrouter: openRouterApiKey },
+                })
+              }
+            } catch (error) {
+              console.error(error)
+              toast.error("Something went wrong")
+            } finally {
+              setIsSavingOpenRouterApiKey(false)
+            }
+          }}
           style={{
             ...utilities.row.style,
             gap: 15,
@@ -267,12 +334,12 @@ export default function Watermelon() {
         >
           {!openRouterApiKey ? (
             <A openInNewTab href="https://openrouter.ai/keys">
-              <OpenRouter size={20} /> OpenRouter
+              <OpenRouter size={20} /> OpenRouter*
             </A>
           ) : null}
           <Input
             dataTestId="openrouter-api-key"
-            type="password"
+            type="text"
             placeholder="sk-..."
             value={openRouterApiKey}
             onChange={(e) => setOpenRouterApiKey(e.target.value)}
@@ -282,8 +349,8 @@ export default function Watermelon() {
           />
           {openRouterApiKey ? (
             <Button
-              onClick={() => setOpenRouterApiKey("")}
               className="inverted"
+              type="submit"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -291,10 +358,30 @@ export default function Watermelon() {
                 padding: "0.25rem 0.5rem",
               }}
             >
-              <OpenRouter size={20} /> Save
+              <OpenRouter size={20} />
+              {isSavingOpenRouterApiKey
+                ? "Saving..."
+                : user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter
+                  ? "Update"
+                  : "Save"}
             </Button>
           ) : null}
-        </Div>
+        </Form>
+        <P style={{ fontSize: ".85rem", marginTop: 10 }}>
+          <A
+            style={{
+              color: "var(--shade-6)",
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+            }}
+            openInNewTab
+            href="https://github.com/chrryAI/vex/blob/main/packages/db/encryption.ts"
+          >
+            🔑 AES-256 GCM (Galois/Counter Mode)*
+            <ArrowRight size={14} color="var(--accent-5)" />
+          </A>
+        </P>
       </Div>
       <Div
         style={{
@@ -308,30 +395,34 @@ export default function Watermelon() {
           fontSize: ".9rem",
         }}
       >
-        <A
-          onClick={(e) => {
-            if (e.metaKey || e.ctrlKey) {
-              return
-            }
+        {!user && (
+          <>
+            <A
+              onClick={(e) => {
+                if (e.metaKey || e.ctrlKey) {
+                  return
+                }
 
-            e.preventDefault()
-            setSignInPart("login")
-          }}
-          href="/?signIn=login"
-        >
-          <Img alt="🍋 Coder" width={22} height={22} slug="coder" />{" "}
-          {t("Login")}
-        </A>
-        <P style={{ fontSize: "0.9rem", color: "var(--shade-7)" }}>
-          <Trans
-            i18nKey="watermelon_guest_info"
-            defaults="You can use your own API key as a guest. Your data will <0>auto-migrate</0> when you <1>login</1>. Login is optional, but you can always sync your account."
-            components={[
-              <Span key="migrate" />,
-              <A key="login" onClick={() => setSignInPart("login")} />,
-            ]}
-          />
-        </P>
+                e.preventDefault()
+                setSignInPart("login")
+              }}
+              href="/?signIn=login"
+            >
+              <Img alt="🍋 Coder" width={22} height={22} slug="coder" />{" "}
+              {t("Login")}
+            </A>
+            <P style={{ fontSize: "0.9rem", color: "var(--shade-7)" }}>
+              <Trans
+                i18nKey="watermelon_guest_info"
+                defaults="You can use your own API key as a guest. Your data will <0>auto-migrate</0> when you <1>login</1>. Login is optional, but you can always sync your account."
+                components={[
+                  <Span key="migrate" />,
+                  <A key="login" onClick={() => setSignInPart("login")} />,
+                ]}
+              />
+            </P>
+          </>
+        )}
         <Div>
           <P
             style={{

@@ -204,8 +204,16 @@ messages.get("/", async (c) => {
 
 // POST /messages - Create new message (and potentially thread)
 messages.post("/", async (c) => {
-  const member = await getMember(c)
-  const guest = member ? undefined : await getGuest(c)
+  const member = await getMember(c, {
+    skipCache: true,
+    skipMasking: true,
+  })
+  const guest = member
+    ? undefined
+    : await getGuest(c, {
+        skipCache: true,
+        skipMasking: true,
+      })
   if (!member && !guest) {
     return c.json({ error: "Invalid credentials" }, 401)
   }
@@ -471,6 +479,8 @@ messages.post("/", async (c) => {
         language: language || "en",
         threadId: newThread.id,
         fingerprint,
+        user: member,
+        guest,
       })
         .then(async (newTitle) => {
           console.log("✅ AI title generated:", newTitle)
@@ -567,6 +577,7 @@ messages.post("/", async (c) => {
       thread,
       member,
       guest,
+      app,
     })
   }
 

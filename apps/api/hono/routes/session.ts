@@ -153,7 +153,7 @@ session.get("/", async (c) => {
     macosVersion: "2.0.78", // Desktop app version (macOS, Windows, Linux)
   }
 
-  let member = await getMemberAction(c, { full: true, skipCache: true })
+  let member = await getMemberAction(c, { skipCache: true })
 
   const guest = await getGuestAction(c, { skipCache: true })
 
@@ -445,13 +445,15 @@ session.get("/", async (c) => {
         } else {
           // Non-subscribers: just reset to member credits
           await updateUser({
-            ...member,
+            id: member.id,
             credits: creditsToGive,
             subscribedOn: new Date(),
           })
         }
 
-        member = await getMemberAction(c, { full: true, skipCache: true })
+        member = await getMemberAction(c, {
+          skipCache: true,
+        })
       } else if (member.creditsLeft === 0) {
         await updateUser({
           id: member.id,
@@ -463,7 +465,9 @@ session.get("/", async (c) => {
                 : MEMBER_CREDITS_PER_MONTH,
         })
 
-        member = await getMemberAction(c, { full: true, skipCache: true })
+        member = await getMemberAction(c, {
+          skipCache: true,
+        })
       }
 
       if (!member) {
@@ -491,7 +495,6 @@ session.get("/", async (c) => {
           member.migratedFromGuest = true
           migratedFromGuest = true
           member = await getMemberAction(c, {
-            full: true,
             skipCache: true,
           })
         }
@@ -520,7 +523,7 @@ session.get("/", async (c) => {
         }),
       ])
 
-      member = await getMemberAction(c, { full: true, skipCache: true })
+      member = await getMemberAction(c, { skipCache: true })
 
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401)

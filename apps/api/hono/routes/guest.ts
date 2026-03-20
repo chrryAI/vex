@@ -1,6 +1,10 @@
-import { getGuest, updateGuest } from "@repo/db"
+import { encrypt, getGuest, updateGuest } from "@repo/db"
 import { Hono } from "hono"
 import { captureException } from "../../lib/captureException"
+import {
+  type ProviderName,
+  validateApiKey,
+} from "../../lib/utils/validateApiKey"
 import { getGuest as getGuestAction } from "../lib/auth"
 
 export const guest = new Hono()
@@ -9,6 +13,7 @@ export const guest = new Hono()
 guest.patch("/", async (c) => {
   const guestData = await getGuestAction(c, {
     skipCache: true,
+    skipMasking: true, // Get unmasked keys for merging
   })
 
   const {
@@ -17,11 +22,60 @@ guest.patch("/", async (c) => {
     city,
     country,
     memoriesEnabled,
+    apiKeys,
+    openRouterApiKey,
+    replicateApiKey,
+    falApiKey,
   } = await c.req.json()
 
   if (!guestData) {
     return c.json({ error: "Unauthorized" }, 401)
   }
+
+  // Safely merge API keys if any are provided
+  const keys = guestData.apiKeys ? { ...guestData.apiKeys } : {}
+  let hasKeyUpdates = false
+
+  const updateKey = async (
+    provider: ProviderName,
+    value: string | undefined | null,
+  ) => {
+    if (value === undefined) return
+    if (value === null || value.trim() === "") {
+      delete (keys as any)[provider]
+      hasKeyUpdates = true
+      return
+    }
+
+    const trimmed = value.trim()
+    if (!validateApiKey(provider, trimmed)) {
+      throw new Error(`Invalid ${provider} API key format`)
+    }
+
+    ;(keys as any)[provider] = await encrypt(trimmed)
+    hasKeyUpdates = true
+  }
+
+  try {
+    if (apiKeys && typeof apiKeys === "object") {
+      for (const [provider, value] of Object.entries(apiKeys || {})) {
+        await updateKey(provider as ProviderName, value as string)
+      }
+    }
+
+    if (openRouterApiKey !== undefined)
+      await updateKey("openrouter", openRouterApiKey)
+    if (replicateApiKey !== undefined)
+      await updateKey("replicate", replicateApiKey)
+    if (falApiKey !== undefined) await updateKey("fal", falApiKey)
+  } catch (err: any) {
+    return c.json({ error: err.message }, 400)
+  }
+
+  // If apiKeys was provided as a full object, or if we have updates, use the merged 'keys'
+  // Otherwise, fallback to what was there (guestData.apiKeys)
+  const finalKeys =
+    apiKeys === null ? null : hasKeyUpdates ? keys : guestData.apiKeys
 
   try {
     await updateGuest({
@@ -32,6 +86,7 @@ guest.patch("/", async (c) => {
       memoriesEnabled: memoriesEnabled ?? guestData.memoriesEnabled,
       city: city ?? guestData.city,
       country: country ?? guestData.country,
+      apiKeys: finalKeys,
     })
 
     const updatedGuest = await getGuest({
