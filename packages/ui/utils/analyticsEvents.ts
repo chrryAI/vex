@@ -15,6 +15,7 @@ export const ANALYTICS_EVENTS = {
   IS_ATTACHING: "is-attaching",
   CHERRY_DEV_CLICK: "cherry_dev_click",
   VOICE_CONVERSATION: "voice_conversation",
+  BLUE_SKY_CLICK: "blue_sky_click",
   VOICE_INPUT: "voice-input",
   WM_APP_LINK_CLICK: "wm_app_link_click",
   WM_BYOK_SUBMIT: "wm_byok_submit",
@@ -176,7 +177,7 @@ export const MEANINGFUL_EVENTS: AnalyticsEventName[] = [
   ANALYTICS_EVENTS.MESSAGE_COLLABORATION,
   ANALYTICS_EVENTS.APP_LINK_CLICK,
   ANALYTICS_EVENTS.WATERMELON,
-
+  ANALYTICS_EVENTS.BLUE_SKY_CLICK,
   // Chat & messaging - Core user interactions
   ANALYTICS_EVENTS.CHAT_SEND,
   ANALYTICS_EVENTS.AGENT_SELECTED,

@@ -4,6 +4,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { createOpenAI } from "@ai-sdk/openai"
 import { createPerplexity } from "@ai-sdk/perplexity"
 import type { appWithStore } from "@chrryai/chrry/types"
+import { isE2E } from "@chrryai/chrry/utils"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 import {
   type aiAgent,
@@ -20,6 +21,15 @@ import type { LanguageModel } from "ai"
 
 const plusTiers = ["plus", "pro"]
 
+/**
+ * E2e'de her app free tier gibi davransın (env key'lere erişsin).
+ * Production'da gerçek tier'a bakılır.
+ */
+function isFreeTier(app?: { tier?: string | null } | null): boolean {
+  if (isE2E) return true
+  return isFreeTier(app)
+}
+
 function safeDecrypt(encryptedKey: string | undefined): string | undefined {
   if (!encryptedKey) return undefined
 
@@ -32,8 +42,36 @@ function safeDecrypt(encryptedKey: string | undefined): string | undefined {
   try {
     return decrypt(encryptedKey)
   } catch (error) {
-    console.warn("⚠️ Failed to decrypt API key, using as-is:", error)
-    return encryptedKey
+    // Return undefined so callers fall through to env-var keys
+    // (returning the raw encrypted blob would cause 401 "Missing Authentication header")
+    console.warn(
+      "⚠️ Failed to decrypt API key, skipping:",
+      (error as Error).message,
+    )
+    return undefined
+  }
+}
+
+/**
+ * BYOK path: if the user/guest has set a key but decrypt fails,
+ * throw a clear error instead of silently falling back to platform keys.
+ * This prevents billing the platform for a user's failed key.
+ * In e2e, keys are fake so we skip and return undefined (fallback to env).
+ */
+function byokDecrypt(encryptedKey: string | undefined): string | undefined {
+  if (!encryptedKey) return undefined
+  if (encryptedKey.includes("...")) return undefined
+
+  try {
+    return decrypt(encryptedKey)
+  } catch (error) {
+    if (isE2E) {
+      // e2e uses fake keys — silently skip, fall through to env var
+      return undefined
+    }
+    throw new Error(
+      "Your API key could not be decrypted. Please re-enter it in Settings.",
+    )
   }
 }
 
@@ -167,8 +205,8 @@ export async function getModelProvider({
   switch (toSwitch) {
     case "beles": {
       const openrouterKey =
-        safeDecrypt(user?.apiKeys?.openrouter) ||
-        safeDecrypt(guest?.apiKeys?.openrouter) ||
+        byokDecrypt(user?.apiKeys?.openrouter) ||
+        byokDecrypt(guest?.apiKeys?.openrouter) ||
         safeDecrypt(app?.apiKeys?.openrouter) ||
         process.env.OPENROUTER_API_KEY
 
@@ -222,16 +260,16 @@ export async function getModelProvider({
     }
     case "deepSeek": {
       const byokKey = user?.apiKeys?.openrouter
-        ? safeDecrypt(user?.apiKeys?.openrouter)
+        ? byokDecrypt(user?.apiKeys?.openrouter)
         : guest?.apiKeys?.openrouter
-          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          ? byokDecrypt(guest?.apiKeys?.openrouter)
           : undefined
 
       const deepseekKey = byokKey
         ? undefined
         : app?.apiKeys?.deepseek
           ? safeDecrypt(app?.apiKeys?.deepseek)
-          : !plusTiers.includes(app?.tier || "")
+          : isFreeTier(app)
             ? process.env.DEEPSEEK_API_KEY
             : ""
 
@@ -253,7 +291,7 @@ export async function getModelProvider({
         ? byokKey
         : app?.apiKeys?.openrouter
           ? safeDecrypt(app?.apiKeys?.openrouter)
-          : !plusTiers.includes(app?.tier || "")
+          : isFreeTier(app)
             ? process.env.OPENROUTER_API_KEY
             : ""
 
@@ -275,7 +313,7 @@ export async function getModelProvider({
       console.warn("⚠️ No DeepSeek API key found, falling back to ChatGPT")
       const chatgptKey = app?.apiKeys?.openai
         ? safeDecrypt(app?.apiKeys?.openai)
-        : !plusTiers.includes(app?.tier || "")
+        : isFreeTier(app)
           ? process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY
           : ""
 
@@ -308,15 +346,15 @@ export async function getModelProvider({
 
     case "sushi": {
       const byokKey = user?.apiKeys?.openrouter
-        ? safeDecrypt(user?.apiKeys?.openrouter)
+        ? byokDecrypt(user?.apiKeys?.openrouter)
         : guest?.apiKeys?.openrouter
-          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          ? byokDecrypt(guest?.apiKeys?.openrouter)
           : undefined
       const sushiKey = byokKey
         ? undefined
         : app?.apiKeys?.deepseek
           ? safeDecrypt(app?.apiKeys?.deepseek)
-          : !plusTiers.includes(app?.tier || "")
+          : isFreeTier(app)
             ? process.env.DEEPSEEK_API_KEY
             : ""
 
@@ -341,7 +379,7 @@ export async function getModelProvider({
         ? byokKey
         : app?.apiKeys?.openrouter
           ? safeDecrypt(app?.apiKeys?.openrouter)
-          : !plusTiers.includes(app?.tier || "")
+          : isFreeTier(app)
             ? process.env.OPENROUTER_API_KEY
             : undefined
 
@@ -461,9 +499,9 @@ export async function getModelProvider({
 
     case "chatGPT": {
       const byokKey = user?.apiKeys?.openrouter
-        ? safeDecrypt(user?.apiKeys?.openrouter)
+        ? byokDecrypt(user?.apiKeys?.openrouter)
         : guest?.apiKeys?.openrouter
-          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          ? byokDecrypt(guest?.apiKeys?.openrouter)
           : undefined
       const modelId =
         job?.modelConfig?.model || targetModelId || "openai/gpt-5.4"
@@ -472,9 +510,9 @@ export async function getModelProvider({
         ? byokKey
         : appApiKeys.openrouter
           ? safeDecrypt(appApiKeys.openrouter)
-          : !plusTiers.includes(app?.tier || "")
+          : isFreeTier(app)
             ? process.env.OPENROUTER_API_KEY
-            : !plusTiers.includes(app?.tier || "")
+            : isFreeTier(app)
               ? process.env.OPENROUTER_API_KEY
               : ""
 
@@ -526,15 +564,15 @@ export async function getModelProvider({
 
     case "claude": {
       const byokKey = user?.apiKeys?.openrouter
-        ? safeDecrypt(user?.apiKeys?.openrouter)
+        ? byokDecrypt(user?.apiKeys?.openrouter)
         : guest?.apiKeys?.openrouter
-          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          ? byokDecrypt(guest?.apiKeys?.openrouter)
           : undefined
       const claudeKey = byokKey
         ? undefined
         : app?.apiKeys?.anthropic
           ? safeDecrypt(app?.apiKeys?.anthropic)
-          : !plusTiers.includes(app?.tier || "")
+          : isFreeTier(app)
             ? process.env.CLAUDE_API_KEY
             : ""
 
@@ -558,7 +596,7 @@ export async function getModelProvider({
         ? byokKey
         : appApiKeys.openrouter
           ? safeDecrypt(appApiKeys.openrouter)
-          : !plusTiers.includes(app?.tier || "")
+          : isFreeTier(app)
             ? process.env.OPENROUTER_API_KEY
             : ""
 
@@ -615,15 +653,15 @@ export async function getModelProvider({
 
     case "gemini": {
       const byokKey = user?.apiKeys?.openrouter
-        ? safeDecrypt(user?.apiKeys?.openrouter)
+        ? byokDecrypt(user?.apiKeys?.openrouter)
         : guest?.apiKeys?.openrouter
-          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          ? byokDecrypt(guest?.apiKeys?.openrouter)
           : undefined
       const geminiKey = byokKey
         ? undefined
         : appApiKeys.google
           ? safeDecrypt(appApiKeys.google)
-          : !plusTiers.includes(app?.tier || "")
+          : isFreeTier(app)
             ? process.env.GEMINI_API_KEY
             : ""
 
@@ -646,7 +684,7 @@ export async function getModelProvider({
         ? byokKey
         : app?.apiKeys?.openrouter
           ? safeDecrypt(app?.apiKeys?.openrouter)
-          : !plusTiers.includes(app?.tier || "")
+          : isFreeTier(app)
             ? process.env.OPENROUTER_API_KEY
             : ""
 
@@ -682,15 +720,15 @@ export async function getModelProvider({
 
     case "grok": {
       const byokKey = user?.apiKeys?.openrouter
-        ? safeDecrypt(user?.apiKeys?.openrouter)
+        ? byokDecrypt(user?.apiKeys?.openrouter)
         : guest?.apiKeys?.openrouter
-          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          ? byokDecrypt(guest?.apiKeys?.openrouter)
           : undefined
       const xaiKey = byokKey
         ? undefined
         : app?.apiKeys?.xai
           ? safeDecrypt(app?.apiKeys?.xai)
-          : !plusTiers.includes(app?.tier || "")
+          : isFreeTier(app)
             ? process.env.XAI_API_KEY
             : ""
 
@@ -725,7 +763,7 @@ export async function getModelProvider({
           ? byokKey
           : app?.apiKeys?.openrouter
             ? safeDecrypt(app?.apiKeys?.openrouter)
-            : !plusTiers.includes(app?.tier || "")
+            : isFreeTier(app)
               ? process.env.OPENROUTER_API_KEY
               : ""
 
@@ -758,9 +796,9 @@ export async function getModelProvider({
 
     case "perplexity": {
       const byokKey = user?.apiKeys?.openrouter
-        ? safeDecrypt(user?.apiKeys?.openrouter)
+        ? byokDecrypt(user?.apiKeys?.openrouter)
         : guest?.apiKeys?.openrouter
-          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          ? byokDecrypt(guest?.apiKeys?.openrouter)
           : undefined
       const modelId = job?.modelConfig?.model || "perplexity/sonar-pro"
 
@@ -768,7 +806,7 @@ export async function getModelProvider({
         ? undefined
         : app?.apiKeys?.perplexity
           ? safeDecrypt(app?.apiKeys?.perplexity)
-          : !plusTiers.includes(app?.tier || "")
+          : isFreeTier(app)
             ? process.env.PERPLEXITY_API_KEY
             : ""
       if (perplexityKey && !failedKeys?.includes(modelId)) {
@@ -788,7 +826,7 @@ export async function getModelProvider({
         ? byokKey
         : app?.apiKeys?.openrouter
           ? safeDecrypt(app?.apiKeys?.openrouter)
-          : !plusTiers.includes(app?.tier || "")
+          : isFreeTier(app)
             ? process.env.OPENROUTER_API_KEY
             : ""
 
@@ -821,16 +859,16 @@ export async function getModelProvider({
 
     default: {
       const byokKey = user?.apiKeys?.openrouter
-        ? safeDecrypt(user?.apiKeys?.openrouter)
+        ? byokDecrypt(user?.apiKeys?.openrouter)
         : guest?.apiKeys?.openrouter
-          ? safeDecrypt(guest?.apiKeys?.openrouter)
+          ? byokDecrypt(guest?.apiKeys?.openrouter)
           : undefined
       console.log("⚠️ Unknown agent, using DeepSeek fallback")
       const fallbackKey = byokKey
         ? byokKey
         : app?.apiKeys?.deepseek
           ? safeDecrypt(app?.apiKeys?.deepseek)
-          : !plusTiers.includes(app?.tier || "")
+          : isFreeTier(app)
             ? process.env.DEEPSEEK_API_KEY
             : ""
       const fallbackProvider = createDeepSeek({ apiKey: fallbackKey })
@@ -867,7 +905,7 @@ export async function getEmbeddingProvider({
     safeDecrypt(user?.apiKeys?.openai) ||
     safeDecrypt(guest?.apiKeys?.openai) ||
     safeDecrypt(app?.apiKeys?.openai) ||
-    (!plusTiers.includes(app?.tier || "")
+    (isFreeTier(app)
       ? process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY
       : "")
 
@@ -879,10 +917,10 @@ export async function getEmbeddingProvider({
   }
 
   const openrouterKey =
-    safeDecrypt(user?.apiKeys?.openrouter) ||
-    safeDecrypt(guest?.apiKeys?.openrouter) ||
+    byokDecrypt(user?.apiKeys?.openrouter) ||
+    byokDecrypt(guest?.apiKeys?.openrouter) ||
     safeDecrypt(app?.apiKeys?.openrouter) ||
-    (!plusTiers.includes(app?.tier || "") ? process.env.OPENROUTER_API_KEY : "")
+    (isFreeTier(app) ? process.env.OPENROUTER_API_KEY : "")
 
   if (openrouterKey) {
     return {

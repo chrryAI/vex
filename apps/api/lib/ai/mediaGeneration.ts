@@ -93,8 +93,8 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
     messageId = uuidv4(),
     apiKey = isBYOK
       ? byokReplicateKey || byokReplicateAppKey
-      : REPLICATE_API_KEY,
-    falKey = isBYOK ? byokFalKey || byokFalAppKey : FAL_KEY,
+      : byokReplicateAppKey,
+    falKey = isBYOK ? byokFalKey || byokFalAppKey : byokFalAppKey,
   } = options
 
   // Initial provider selection: try Fal if we have a key, otherwise Replicate
