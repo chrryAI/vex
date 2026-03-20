@@ -2178,7 +2178,9 @@ export function AuthProvider({
   )
 
   const showWatermelonInitial =
-    searchParams.get("watermelon") === "true" || pathname === "/watermelon"
+    siteConfig.isWatermelon ||
+    searchParams.get("watermelon") === "true" ||
+    pathname === "/watermelon"
 
   const [showWatermelon, setShowWatermelonInternal] = useState(
     showWatermelonInitial,

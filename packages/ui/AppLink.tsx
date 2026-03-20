@@ -3,6 +3,7 @@ import A from "./a/A"
 import { useAuth, useChat, useNavigationContext } from "./context/providers"
 import { Button, Span } from "./platform"
 import type { appWithStore } from "./types"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function AppLink({
   style,
@@ -18,6 +19,7 @@ export default function AppLink({
   isPear = false,
   href,
   icon,
+  event = ANALYTICS_EVENTS.APP_LINK_CLICK,
   openInNewTab = false,
   ...props
 }: {
@@ -28,6 +30,7 @@ export default function AppLink({
   as?: "a" | "button"
   onLoading?: () => void
   loading?: React.ReactNode
+  event?: string
   className?: string
   loadingStyle?: CSSProperties
   isTribe?: boolean
@@ -38,8 +41,14 @@ export default function AppLink({
   setIsNewAppChat?: (item: appWithStore) => void
 }) {
   const { setIsNewChat } = useChat()
-  const { loadingApp, getAppSlug, setLoadingAppId, storeApps, mergeApps } =
-    useAuth()
+  const {
+    loadingApp,
+    getAppSlug,
+    setLoadingAppId,
+    storeApps,
+    mergeApps,
+    plausible,
+  } = useAuth()
 
   const [isLoading, setIsLoading] = React.useState(
     loadingApp && loadingApp?.id === app?.id,
@@ -145,6 +154,10 @@ export default function AppLink({
         ...(isLoading ? loadingStyle : {}),
       }}
       onClick={() => {
+        if (event) {
+          plausible({ name: event, props: { app: app.name } })
+        }
+
         if (!currentApp) {
           setLoadingAppId(app.id)
           onLoading?.()
