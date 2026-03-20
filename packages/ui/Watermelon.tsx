@@ -20,7 +20,7 @@ import SignIn from "./SignIn"
 export default function Watermelon() {
   const {
     setSignInPart,
-    token,
+    app,
     siteConfig,
     downloadUrl,
     chrry,
@@ -32,8 +32,6 @@ export default function Watermelon() {
   } = useAuth()
 
   const { t } = useAppContext()
-
-  const [isBYOK, setIsBYOK] = useState(true)
 
   const openRouterApiKeyInitialValue =
     user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter || ""
@@ -79,7 +77,7 @@ export default function Watermelon() {
         <LanguageSwitcher />
       </Div>
 
-      {chrry && (
+      {app && (
         <P
           style={{
             display: "flex",
@@ -92,8 +90,8 @@ export default function Watermelon() {
           }}
         >
           <AppLink
-            app={chrry}
-            icon={chrry.icon}
+            app={app}
+            icon={<Img app={app} alt={app.name} width={16} height={16} />}
             loading={<Loading size={13} />}
             className="button inverted medium"
             style={{
@@ -101,7 +99,7 @@ export default function Watermelon() {
               fontFamily: "var(--font-sans)",
             }}
           >
-            {chrry.name}
+            {app.name}
           </AppLink>{" "}
         </P>
       )}
@@ -219,23 +217,24 @@ export default function Watermelon() {
             />
             Free (BYOK)
           </Button>
-          <Button
-            className="inverted"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-              padding: "0.25rem 0.5rem",
-            }}
-          >
-            <Img
-              alt="🍒 Chrry"
-              width={16}
-              height={16}
-              src="https://chrry.ai/images/apps/chrry.png"
-            />
-            Chrry
-          </Button>
+          {app && (
+            <AppLink
+              app={app}
+              className="button inverted"
+              icon={<Img app={app} alt={app.name} width={16} height={16} />}
+              loading={<Loading size={13} />}
+              style={{
+                ...utilities.button.style,
+                ...utilities.inverted.style,
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "0.25rem 0.5rem",
+              }}
+            >
+              {app.name}
+            </AppLink>
+          )}
           <A
             style={{
               display: "flex",

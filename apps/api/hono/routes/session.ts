@@ -153,9 +153,9 @@ session.get("/", async (c) => {
     macosVersion: "2.0.78", // Desktop app version (macOS, Windows, Linux)
   }
 
-  let member = await getMemberAction(c, { skipCache: true, skipMasking: true })
+  let member = await getMemberAction(c, { skipCache: true })
 
-  const guest = await getGuestAction(c, { skipCache: true, skipMasking: true })
+  const guest = await getGuestAction(c, { skipCache: true })
 
   const { success } = await checkRateLimit(c.req.raw, {
     member: member ?? undefined,
@@ -453,7 +453,6 @@ session.get("/", async (c) => {
 
         member = await getMemberAction(c, {
           skipCache: true,
-          skipMasking: true,
         })
       } else if (member.creditsLeft === 0) {
         await updateUser({
@@ -468,7 +467,6 @@ session.get("/", async (c) => {
 
         member = await getMemberAction(c, {
           skipCache: true,
-          skipMasking: true,
         })
       }
 
@@ -498,7 +496,6 @@ session.get("/", async (c) => {
           migratedFromGuest = true
           member = await getMemberAction(c, {
             skipCache: true,
-            skipMasking: true,
           })
         }
       }
@@ -526,7 +523,7 @@ session.get("/", async (c) => {
         }),
       ])
 
-      member = await getMemberAction(c, { skipCache: true, skipMasking: true })
+      member = await getMemberAction(c, { skipCache: true })
 
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401)
@@ -781,7 +778,7 @@ session.delete("/", async (c) => {
     return c.json({ error: "Unauthorized" }, 401)
   }
 
-  const member = await getMemberAction(c, { skipMasking: true })
+  const member = await getMemberAction(c)
   if (!member) {
     return c.json({ error: "Unauthorized" }, 401)
   }
