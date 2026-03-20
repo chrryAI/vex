@@ -98,7 +98,7 @@ import { useError } from "./ErrorProvider"
 
 export type { session }
 
-const VERSION = "1.1.63"
+const VERSION = "2.1.34"
 
 const AuthContext = createContext<
   | {
@@ -3302,14 +3302,6 @@ export function AuthProvider({
     }
   }, [session?.versions])
 
-  const pageSizes = {
-    threads: 20,
-    menuThreads: 10,
-    messages: 20,
-    users: 20,
-    apps: 50,
-  }
-
   const [PROMPT_LIMITS, setPromptLimits] = useState({
     INPUT: 7000, // Max for direct input
     INSTRUCTIONS: 2000, // Max for instructions
@@ -3548,6 +3540,12 @@ export function AuthProvider({
   const [needsUpdate, setNeedsUpdate] = useState(false)
 
   useEffect(() => {
+    console.log(
+      `🚀 ~ useEffect ~ toVersionNumber(versions?.macosVersion) :`,
+      toVersionNumber(versions?.macosVersion),
+      toVersionNumber(VERSION),
+    )
+
     const update = !versions
       ? false
       : isTauri
