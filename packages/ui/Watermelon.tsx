@@ -4,6 +4,7 @@ import { Trans } from "react-i18next"
 import { SiMacos } from "react-icons/si"
 import AppLink from "./AppLink"
 import A from "./a/A"
+import Checkbox from "./Checkbox"
 import { useAppContext } from "./context/AppContext"
 import { useNavigationContext } from "./context/providers"
 import { useAuth } from "./context/providers/AuthProvider"
@@ -15,7 +16,6 @@ import Loading from "./Loading"
 import { updateGuest, updateUser } from "./lib"
 import { Button, Div, Form, H1, Input, Label, P, Span, toast } from "./platform"
 import SignIn from "./SignIn"
-import Checkbox from "./Checkbox"
 
 export default function Watermelon() {
   const {
@@ -299,7 +299,10 @@ export default function Watermelon() {
                   openRouterApiKey,
                 })
 
-                setUser({ ...user, apiKeys: { openrouter: openRouterApiKey } })
+                setUser({
+                  ...user,
+                  apiKeys: { ...user.apiKeys, openrouter: openRouterApiKey },
+                })
 
                 toast.success("OpenRouter API key saved successfully")
               }
@@ -313,7 +316,7 @@ export default function Watermelon() {
 
                 setGuest({
                   ...guest,
-                  apiKeys: { openrouter: openRouterApiKey },
+                  apiKeys: { ...guest.apiKeys, openrouter: openRouterApiKey },
                 })
               }
             } catch (error) {

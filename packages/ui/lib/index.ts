@@ -602,6 +602,8 @@ export const updateUser = async ({
   country,
   API_URL = utils.API_URL,
   openRouterApiKey,
+  replicateApiKey,
+  falApiKey,
 }: {
   language?: string
   name?: string
@@ -613,8 +615,10 @@ export const updateUser = async ({
   token: string
   API_URL?: string
   city?: string
+  replicateApiKey?: string
   country?: string
   openRouterApiKey?: string
+  falApiKey?: string
 }) => {
   const response = await fetch(`${API_URL}/user`, {
     method: "PATCH",
@@ -629,6 +633,8 @@ export const updateUser = async ({
       city,
       country,
       openRouterApiKey,
+      replicateApiKey,
+      falApiKey,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -646,6 +652,8 @@ export const updateGuest = async ({
   city,
   country,
   token,
+  replicateApiKey,
+  falApiKey,
   API_URL = utils.API_URL,
   openRouterApiKey,
 }: {
@@ -655,6 +663,8 @@ export const updateGuest = async ({
   country?: string
   memoriesEnabled?: boolean
   API_URL?: string
+  replicateApiKey?: string
+  falApiKey?: string
   token: string
   openRouterApiKey?: string
 }) => {
@@ -667,6 +677,8 @@ export const updateGuest = async ({
       city,
       country,
       openRouterApiKey,
+      replicateApiKey,
+      falApiKey,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -1475,6 +1487,7 @@ export const getActions = ({
       characterProfilesEnabled?: boolean
       memoriesEnabled?: boolean
       openRouterApiKey?: string
+      replicateApiKey?: string
       city?: string
       country?: string
     }) => updateUser({ token, ...params, API_URL }),
@@ -1485,6 +1498,7 @@ export const getActions = ({
     // Guest operations
     getGuest: () => getGuest({ token, API_URL }),
     updateGuest: (params: {
+      replicateApiKey?: string
       favouriteAgent?: string
       characterProfilesEnabled?: boolean
       city?: string

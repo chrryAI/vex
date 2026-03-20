@@ -85,7 +85,10 @@ import MoodSelector from "./MoodSelector"
 import {
   Button,
   Div,
+  Form,
   H2,
+  Input,
+  Label,
   P,
   Span,
   Strong,
@@ -258,6 +261,7 @@ export default function Chat({
     MAX_FILE_SIZES,
     OWNER_CREDITS,
     PROMPT_LIMITS,
+
     ...auth
   } = useAuth()
 
@@ -341,7 +345,9 @@ export default function Chat({
     setIsNewChat,
     onlyAgent,
     scrollToBottom,
+    setNeedsReplicate,
     showTribe,
+    needsReplicate,
   } = useChat()
 
   const {
@@ -652,6 +658,7 @@ export default function Chat({
   }
 
   const [isSpeechActive, setIsSpeechActive] = useState(false)
+
   const [recognition, setRecognition] = useState<any>(null)
   const [quotaInfo, setQuotaInfo] = useState<{
     hourly: { used: number; limit: number; resetTime: string }
@@ -672,6 +679,14 @@ export default function Chat({
       })
   }
 
+  const replicateApiKeyInternal =
+    user?.apiKeys?.replicate || guest?.apiKeys?.replicate || ""
+
+  const [replicateApiKey, setReplicateApiKey] = useState(
+    replicateApiKeyInternal,
+  )
+
+  const [isSavingReplicateApiKey, setIsSavingReplicateApiKey] = useState(false)
   const setInput = (value: string) => {
     inputRef.current = value
 
@@ -3143,10 +3158,11 @@ export default function Chat({
                         data-testid={`agent-modal-button-${agent.name}`}
                         className={clsx(
                           `medium ${
-                            (agent.authorization === "user" &&
-                              !user &&
-                              !guest?.subscription) ||
-                            agent.id === sushiAgent?.id
+                            (
+                              agent.authorization === "user" &&
+                                !user &&
+                                !guest?.subscription
+                            ) || agent.id === sushiAgent?.id
                               ? "inverted"
                               : ""
                           }`,
@@ -3631,8 +3647,7 @@ export default function Chat({
                           )
                         }
                         return "5"
-                      })()}{" "}
-                      {t("requests")}
+                      })()} {t("requests")}
                     </Span>
                   </Div>
                   <Div style={styles.statItem.style}>
@@ -3751,6 +3766,132 @@ export default function Chat({
                       <Megaphone size={18} /> {t("Speak")}
                     </Button>
                   )}
+              </Div>
+            </Div>
+          </Modal>
+        )}
+        {needsReplicate && (
+          <Modal
+            isModalOpen={needsReplicate}
+            hideOnClickOutside={false}
+            onToggle={(open) => {
+              if (!open) {
+                setNeedsReplicate(false)
+              }
+
+              setNeedsReplicate(open)
+            }}
+            hasCloseButton
+            icon={<Flux />}
+            title={
+              <Div style={styles.speechModalTitle.style}>
+                <Label>Replicate (Flux)</Label>
+              </Div>
+            }
+          >
+            <Form
+              onSubmit={async (e) => {
+                e.preventDefault()
+                if (!replicateApiKey) {
+                  toast.error("Please enter your OpenRouter API key")
+                  return
+                }
+
+                // Client-side regex validation
+                const openRouterRegex = /^sk-or-v1-[a-zA-Z0-9]{64}$/
+                if (!openRouterRegex.test(replicateApiKey.trim())) {
+                  toast.error(
+                    "Invalid OpenRouter API key format (Expected sk-or-v1-...)",
+                  )
+                  return
+                }
+
+                try {
+                  setIsSavingReplicateApiKey(true)
+                  if (user) {
+                    await actions.updateUser({
+                      replicateApiKey,
+                    })
+
+                    setUser({
+                      ...user,
+                      apiKeys: { replicate: replicateApiKey },
+                    })
+
+                    toast.success("Replicate API key saved successfully")
+                  }
+
+                  if (guest) {
+                    await actions.updateGuest({
+                      replicateApiKey,
+                    })
+
+                    toast.success("Replicate API key saved successfully")
+
+                    setGuest({
+                      ...guest,
+                      apiKeys: { ...guest.apiKeys, replicate: replicateApiKey },
+                    })
+
+                    setNeedsReplicate(false)
+                    setIsImageGenerationEnabled(true)
+                  }
+                } catch (error) {
+                  console.error(error)
+                  toast.error("Something went wrong")
+                } finally {
+                  setIsSavingReplicateApiKey(false)
+                }
+              }}
+              style={{
+                ...utilities.row.style,
+                gap: 15,
+                marginTop: 15,
+                flexWrap: "wrap",
+              }}
+            >
+              <Input
+                dataTestId="replicate-api-key"
+                type="text"
+                placeholder="r8_..."
+                value={replicateApiKey}
+                onChange={(e) => setReplicateApiKey(e.target.value)}
+                style={{
+                  border: "1px solid var(--accent-6)",
+                }}
+              />
+              {replicateApiKey ? (
+                <Button
+                  className="inverted"
+                  type="submit"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "0.25rem 0.5rem",
+                  }}
+                >
+                  <Flux size={20} />
+                  {isSavingReplicateApiKey
+                    ? "Saving..."
+                    : user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter
+                      ? "Update"
+                      : "Save"}
+                </Button>
+              ) : null}
+            </Form>
+            <Div>
+              <Div style={{ ...utilities.column.style }}>
+                <Input
+                  dataTestId="replicate-api-key"
+                  type="password"
+                  data-required={true}
+                  placeholder={"r8_..."}
+                  value={""}
+                  style={{
+                    borderColor: "var(--accent-5)",
+                  }}
+                />
               </Div>
             </Div>
           </Modal>
