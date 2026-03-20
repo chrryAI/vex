@@ -2488,5 +2488,12 @@
   "AES-256 GCM (Galois/Counter Mode)": "AES-256 GCM (Galois/Counter 模式)",
   "watermelon_macos_info": "即将推出：带有本地DB支持（MIT许可）的<0>macOS桌面应用程序</0>，以实现完全私人配置。",
   "Sneak peek": "预览",
-  "+{{count}} AI Apps": "+{{count}} 个AI应用"
+  "+{{count}} AI Apps": "+{{count}} 个AI应用",
+  "Replicate API key saved successfully": "Replicate API密钥保存成功",
+  "Please enter your OpenRouter API key": "请输入您的OpenRouter API密钥",
+  "Please enter your Replicate API key": "请输入您的Replicate API密钥",
+  "OpenRouter API key deleted successfully": "OpenRouter API密钥删除成功",
+  "Invalid Replicate API key format (Expected r8_...)": "无效的Replicate API密钥格式（预期为r8_...）",
+  "OpenRouter API key saved successfully": "OpenRouter API密钥保存成功",
+  "Invalid OpenRouter API key format (Expected sk-or-v1-...)": "无效的OpenRouter API密钥格式（预期为sk-or-v1-...）"
 }

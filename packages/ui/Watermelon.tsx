@@ -1,16 +1,17 @@
-import { OpenRouter } from "@lobehub/icons"
+import { OpenRouter, Replicate } from "@lobehub/icons"
 import { useEffect, useState } from "react"
 import { Trans } from "react-i18next"
 import { SiMacos } from "react-icons/si"
 import AppLink from "./AppLink"
 import A from "./a/A"
+import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
 import { useNavigationContext } from "./context/providers"
 import { COLORS } from "./context/providers/AppProvider"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
-import { ArrowRight, Coins } from "./icons"
+import { ArrowRight, Coins, Flux } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import Loading from "./Loading"
 import { Button, Div, Form, H1, Input, P, Span, toast } from "./platform"
@@ -38,11 +39,31 @@ export default function Watermelon() {
   const architect = storeApps.find((app) => app.slug === "architect")
   const jules = storeApps.find((app) => app.slug === "jules")
   const debuggerApp = storeApps.find((app) => app.slug === "debugger")
+  const [isSavingReplicateApiKey, setIsSavingReplicateApiKey] = useState(false)
 
   const { t, captureException } = useAppContext()
 
   const openRouterApiKeyInitialValue =
     user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter || ""
+
+  const falApiKeyInitialValue = user?.apiKeys?.fal || guest?.apiKeys?.fal || ""
+
+  const [falApiKey, setFalApiKey] = useState(falApiKeyInitialValue)
+
+  useEffect(() => {
+    setFalApiKey(falApiKeyInitialValue)
+  }, [falApiKeyInitialValue])
+
+  const replicateApiKeyInternal =
+    user?.apiKeys?.replicate || guest?.apiKeys?.replicate || ""
+
+  const [replicateApiKey, setReplicateApiKey] = useState(
+    replicateApiKeyInternal,
+  )
+
+  useEffect(() => {
+    setReplicateApiKey(replicateApiKeyInternal)
+  }, [replicateApiKeyInternal])
 
   const [openRouterApiKey, setOpenRouterApiKey] = useState(
     openRouterApiKeyInitialValue,
@@ -59,6 +80,14 @@ export default function Watermelon() {
 
   const [isSavingOpenRouterApiKey, setIsSavingOpenRouterApiKey] =
     useState(false)
+
+  const [isDeletingOpenRouterApiKey, setIsDeletingOpenRouterApiKey] =
+    useState(false)
+
+  const [isDeletingReplicateApiKey, setIsDeletingReplicateApiKey] =
+    useState(false)
+
+  // const [isDeletingFalApiKey, setIsDeletingFalApiKey] = useState(false)
 
   const { utilities } = useStyles()
 
@@ -263,86 +292,147 @@ export default function Watermelon() {
             Sovereign
           </A>
         </Div>
-        <Form
-          onSubmit={async (e) => {
-            plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT })
-            e.preventDefault()
-            if (!openRouterApiKey) {
-              plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_ERROR })
-              toast.error("Please enter your OpenRouter API key")
-              return
-            }
-
-            // Client-side regex validation
-            const openRouterRegex = /^sk-or-v1-[a-zA-Z0-9]{64}$/
-            if (!openRouterRegex.test(openRouterApiKey.trim())) {
-              toast.error(
-                "Invalid OpenRouter API key format (Expected sk-or-v1-...)",
-              )
-              return
-            }
-
-            try {
-              setIsSavingOpenRouterApiKey(true)
-              if (user) {
-                await actions.updateUser({
-                  openRouterApiKey,
-                })
-
-                setUser({
-                  ...user,
-                  apiKeys: { ...user.apiKeys, openrouter: openRouterApiKey },
-                })
-
-                toast.success("OpenRouter API key saved successfully")
-                plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_SUCCESS })
+        <Div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <Form
+            onSubmit={async (e) => {
+              plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT })
+              e.preventDefault()
+              if (!openRouterApiKey) {
+                plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_ERROR })
+                toast.error(t("Please enter your OpenRouter API key"))
+                return
               }
 
-              if (guest) {
-                await actions.updateGuest({
-                  openRouterApiKey,
-                })
-
-                toast.success("OpenRouter API key saved successfully")
-
-                setGuest({
-                  ...guest,
-                  apiKeys: { ...guest.apiKeys, openrouter: openRouterApiKey },
-                })
-                plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_SUCCESS })
+              // Client-side regex validation
+              const openRouterRegex = /^sk-or-v1-[a-zA-Z0-9]{64}$/
+              if (!openRouterRegex.test(openRouterApiKey.trim())) {
+                toast.error(
+                  t(
+                    "Invalid OpenRouter API key format (Expected sk-or-v1-...)",
+                  ),
+                )
+                return
               }
-            } catch (error) {
-              console.error(error)
-              toast.error("Something went wrong")
-              captureException(error)
-              plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_ERROR })
-            } finally {
-              setIsSavingOpenRouterApiKey(false)
-            }
-          }}
-          style={{
-            ...utilities.row.style,
-            gap: 15,
-            marginTop: 15,
-            flexWrap: "wrap",
-          }}
-        >
-          {!openRouterApiKey ? (
-            <A openInNewTab href="https://openrouter.ai/keys">
-              <OpenRouter size={20} /> OpenRouter*
-            </A>
-          ) : null}
-          <Input
-            dataTestId="openrouter-api-key"
-            type="text"
-            placeholder="sk-..."
-            value={openRouterApiKey}
-            onChange={(e) => setOpenRouterApiKey(e.target.value)}
-            style={{
-              border: "1px solid var(--accent-6)",
+
+              try {
+                setIsSavingOpenRouterApiKey(true)
+                if (user) {
+                  await actions.updateUser({
+                    openRouterApiKey,
+                  })
+
+                  setUser({
+                    ...user,
+                    apiKeys: { ...user.apiKeys, openrouter: openRouterApiKey },
+                  })
+
+                  toast.success(t("OpenRouter API key saved successfully"))
+                  plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_SUCCESS })
+                }
+
+                if (guest) {
+                  await actions.updateGuest({
+                    openRouterApiKey,
+                  })
+
+                  toast.success(t("OpenRouter API key saved successfully"))
+
+                  setGuest({
+                    ...guest,
+                    apiKeys: { ...guest.apiKeys, openrouter: openRouterApiKey },
+                  })
+                  plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_SUCCESS })
+                }
+              } catch (error) {
+                console.error(error)
+                toast.error(t("Something went wrong"))
+                captureException(error)
+                plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_ERROR })
+              } finally {
+                setIsSavingOpenRouterApiKey(false)
+              }
             }}
-          />
-          {openRouterApiKey ? (
+            style={{
+              ...utilities.row.style,
+              gap: 15,
+              marginTop: 15,
+              flexWrap: "wrap",
+            }}
+          >
+            <A
+              openInNewTab
+              style={{ position: "relative" }}
+              href="https://openrouter.ai/keys"
+            >
+              <OpenRouter size={20} /> OpenRouter*
+              <Span
+                style={{
+                  fontSize: ".65rem",
+                  position: "absolute",
+                  bottom: -15,
+                  right: 3,
+                  color: COLORS.red,
+                }}
+              >
+                {t("Required")}
+              </Span>
+            </A>
+            {openRouterApiKeyInitialValue ? (
+              <ConfirmButton
+                disabled={isDeletingOpenRouterApiKey}
+                processing={isDeletingOpenRouterApiKey}
+                onConfirm={async () => {
+                  try {
+                    setIsDeletingOpenRouterApiKey(true)
+                    if (user) {
+                      await actions.updateUser({
+                        deletedApiKeys: ["openrouter"],
+                      })
+
+                      setUser({
+                        ...user,
+                        apiKeys: { ...user.apiKeys, openrouter: undefined },
+                      })
+
+                      toast.success(
+                        t("OpenRouter API key deleted successfully"),
+                      )
+                    }
+
+                    if (guest) {
+                      await actions.updateGuest({
+                        deletedApiKeys: ["openrouter"],
+                      })
+
+                      toast.success(
+                        t("OpenRouter API key deleted successfully"),
+                      )
+
+                      setGuest({
+                        ...guest,
+                        apiKeys: { ...guest.apiKeys, openrouter: undefined },
+                      })
+                    }
+                  } catch (error) {
+                    console.error(error)
+                    toast.error(t("Something went wrong"))
+                  } finally {
+                    setIsDeletingOpenRouterApiKey(false)
+                  }
+                }}
+                className="link"
+              />
+            ) : null}
+            <Input
+              dataTestId="openrouter-api-key"
+              type="text"
+              placeholder="sk-..."
+              value={openRouterApiKey}
+              onChange={(e) => setOpenRouterApiKey(e.target.value)}
+              style={{
+                border: "1px solid var(--accent-6)",
+              }}
+            />
             <Button
               className="inverted"
               type="submit"
@@ -360,8 +450,162 @@ export default function Watermelon() {
                   ? "Update"
                   : "Save"}
             </Button>
-          ) : null}
-        </Form>
+          </Form>
+          <Form
+            onSubmit={async (e) => {
+              e.preventDefault()
+              if (!replicateApiKey) {
+                toast.error(t("Please enter your Replicate API key"))
+                return
+              }
+
+              // Client-side regex validation (Replicate keys start with r8_)
+              const replicateRegex = /^r8_[a-zA-Z0-9]{37,42}$/
+              if (!replicateRegex.test(replicateApiKey.trim())) {
+                toast.error(
+                  t("Invalid Replicate API key format (Expected r8_...)"),
+                )
+                return
+              }
+
+              try {
+                setIsSavingReplicateApiKey(true)
+                if (user) {
+                  await actions.updateUser({
+                    replicateApiKey,
+                  })
+
+                  setUser({
+                    ...user,
+                    apiKeys: { ...user.apiKeys, replicate: replicateApiKey },
+                  })
+
+                  toast.success(t("Replicate API key saved successfully"))
+                }
+
+                if (guest) {
+                  await actions.updateGuest({
+                    replicateApiKey,
+                  })
+
+                  toast.success(t("Replicate API key saved successfully"))
+
+                  setGuest({
+                    ...guest,
+                    apiKeys: { ...guest.apiKeys, replicate: replicateApiKey },
+                  })
+                }
+              } catch (error) {
+                console.error(error)
+                toast.error(t("Something went wrong"))
+              } finally {
+                setIsSavingReplicateApiKey(false)
+              }
+            }}
+            style={{
+              ...utilities.row.style,
+              gap: 15,
+              flexWrap: "wrap",
+            }}
+          >
+            <A
+              href="https://replicate.com/account/api-tokens"
+              openInNewTab
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                position: "relative",
+              }}
+            >
+              <Replicate size={20} /> Replicate*
+              <Span
+                style={{
+                  fontSize: ".65rem",
+                  position: "absolute",
+                  bottom: -15,
+                  right: 3,
+                  color: COLORS.orange,
+                }}
+              >
+                {t("Optional")}
+              </Span>
+            </A>
+            {replicateApiKeyInternal ? (
+              <ConfirmButton
+                disabled={isDeletingReplicateApiKey}
+                processing={isDeletingReplicateApiKey}
+                onConfirm={async () => {
+                  try {
+                    setIsDeletingReplicateApiKey(true)
+                    if (user) {
+                      await actions.updateUser({
+                        deletedApiKeys: ["replicate"],
+                      })
+
+                      setUser({
+                        ...user,
+                        apiKeys: { ...user.apiKeys, replicate: undefined },
+                      })
+
+                      toast.success("Replicate API key deleted successfully")
+                    }
+
+                    if (guest) {
+                      await actions.updateGuest({
+                        deletedApiKeys: ["replicate"],
+                      })
+
+                      toast.success("Replicate API key deleted successfully")
+
+                      setGuest({
+                        ...guest,
+                        apiKeys: { ...guest.apiKeys, replicate: undefined },
+                      })
+                    }
+
+                    setReplicateApiKey("")
+                  } catch (error) {
+                    console.error(error)
+                    toast.error("Something went wrong")
+                  } finally {
+                    setIsDeletingReplicateApiKey(false)
+                  }
+                }}
+                className="link"
+              />
+            ) : null}
+            <Input
+              dataTestId="replicate-api-key"
+              type="text"
+              placeholder="r8_..."
+              value={replicateApiKey}
+              onChange={(e) => setReplicateApiKey(e.target.value)}
+              style={{
+                border: "1px solid var(--accent-6)",
+                flex: 1,
+              }}
+            />
+            <Button
+              className="inverted"
+              type="submit"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "0.25rem 0.5rem",
+              }}
+            >
+              <Flux size={20} />
+              {isSavingReplicateApiKey
+                ? "Saving..."
+                : user?.apiKeys?.replicate || guest?.apiKeys?.replicate
+                  ? "Update"
+                  : "Save"}
+            </Button>
+          </Form>
+        </Div>
+
         <P style={{ fontSize: ".85rem", marginTop: 10 }}>
           <A
             style={{

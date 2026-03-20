@@ -2487,5 +2487,12 @@
   "AES-256 GCM (Galois/Counter Mode)": "AES-256 GCM (Modo Galois/Contador)",
   "watermelon_macos_info": "Próximamente: Una <0>Aplicación de Escritorio macOS</0> con soporte de DB local (Licencia MIT) para una configuración completamente privada.",
   "Sneak peek": "Vista previa",
-  "+{{count}} AI Apps": "+{{count}} Apps de IA"
+  "+{{count}} AI Apps": "+{{count}} Apps de IA",
+  "Replicate API key saved successfully": "Clave API de Replicate guardada con éxito",
+  "Please enter your OpenRouter API key": "Por favor, introduzca su clave API de OpenRouter",
+  "Please enter your Replicate API key": "Por favor, introduzca su clave API de Replicate",
+  "OpenRouter API key deleted successfully": "Clave API de OpenRouter eliminada con éxito",
+  "Invalid Replicate API key format (Expected r8_...)": "Formato de clave API de Replicate inválido (Se esperaba r8_...)",
+  "OpenRouter API key saved successfully": "Clave API de OpenRouter guardada con éxito",
+  "Invalid OpenRouter API key format (Expected sk-or-v1-...)": "Formato de clave API de OpenRouter inválido (Se esperaba sk-or-v1-...)"
 }
