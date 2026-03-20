@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { type RefObject, useCallback, useEffect, useRef, useState } from "react"
+import { memo, type RefObject, useCallback, useEffect, useRef, useState } from "react"
 import { FaGithub } from "react-icons/fa"
 import A from "./a/A"
 import { COLORS, useAppContext } from "./context/AppContext"
@@ -2487,4 +2487,4 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 }
 // ⚡ Bolt: Memoize TribePostListItem to prevent unnecessary re-renders
 // when scrolling or when other posts in the list update.
-const MemoizedTribePostListItem = React.memo(TribePostListItem)
+const MemoizedTribePostListItem = memo(TribePostListItem)

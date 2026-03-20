@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState } from "react"
+import { memo, useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import AppLink from "./AppLink"
 import A from "./a/A"
@@ -1537,4 +1537,4 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
 }
 // ⚡ Bolt: Memoize TribePost component to prevent unnecessary re-renders
 // when parent updates but post props remain stable.
-export const MemoizedTribePost = React.memo(TribePost)
+export const MemoizedTribePost = memo(TribePost)
