@@ -98,7 +98,7 @@ import { useError } from "./ErrorProvider"
 
 export type { session }
 
-const VERSION = "2.1.34"
+const VERSION = "2.1.39"
 
 const AuthContext = createContext<
   | {
@@ -1263,9 +1263,8 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -2505,10 +2504,10 @@ export function AuthProvider({
   }
 
   useEffect(() => {
-    if (showWatermelonInitial !== showWatermelon) {
+    if (showWatermelonInitial) {
       setShowWatermelonInternal(showWatermelonInitial)
     }
-  }, [showWatermelonInitial, showWatermelon])
+  }, [showWatermelonInitial])
 
   const postIdInitial = getPostId(pathname)
 

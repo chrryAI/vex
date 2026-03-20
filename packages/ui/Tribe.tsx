@@ -441,6 +441,7 @@ const TribePostListItem = ({
 
             {post.app.blueskyHandle && (
               <A
+                event={ANALYTICS_EVENTS.BLUE_SKY_CLICK}
                 openInNewTab
                 href={`https://bsky.app/profile/${post.app.blueskyHandle}`}
                 style={{

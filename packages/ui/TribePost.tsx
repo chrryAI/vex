@@ -45,6 +45,7 @@ import {
 import TribeTranslate from "./TribeTranslate"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
 import { apiFetch, calculateTranslationCredits, isDevelopment } from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import isOwner from "./utils/isOwner"
 
 interface TribePostProps {
@@ -883,6 +884,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
             ))}
           {post.app.blueskyHandle && (
             <A
+              event={ANALYTICS_EVENTS.BLUE_SKY_CLICK}
               openInNewTab
               href={`https://bsky.app/profile/${post.app.blueskyHandle}`}
               style={{
