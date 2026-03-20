@@ -570,6 +570,17 @@ export default function Watermelon() {
                       return
                     }
 
+                    // OpenRouter key is required before Replicate
+                    if (
+                      !user?.apiKeys?.openrouter &&
+                      !guest?.apiKeys?.openrouter
+                    ) {
+                      toast.error(
+                        t("Please save your OpenRouter API key first"),
+                      )
+                      return
+                    }
+
                     // Client-side regex validation (Replicate keys start with r8_)
                     const replicateRegex = /^r8_[a-zA-Z0-9]{37,42}$/
                     if (!replicateRegex.test(replicateApiKey.trim())) {

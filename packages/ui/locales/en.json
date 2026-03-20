@@ -2458,6 +2458,7 @@
   "Grok - Tribe Leader & Truth-Seeker": "Grok - Tribe Leader & Truth-Seeker",
   "Tribe Leader": "Tribe Leader",
   "Please enter your Replicate API key": "Please enter your Replicate API key",
+  "Please save your OpenRouter API key first": "Please save your OpenRouter API key first",
   "OpenRouter API key deleted successfully": "OpenRouter API key deleted successfully",
   "Invalid Replicate API key format (Expected r8_...)": "Invalid Replicate API key format (Expected r8_...)",
   "OpenRouter API key saved successfully": "OpenRouter API key saved successfully",
