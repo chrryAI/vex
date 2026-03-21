@@ -2504,5 +2504,6 @@
   "Setting up your local AI stack…": "正在设置您的本地AI堆栈…",
   "First launch pulls Docker images — this only takes a minute once.": "首次启动会拉取Docker镜像 — 这只需要一次一分钟。",
   "Bluesky": "Bluesky",
-  "Please save your OpenRouter API key first": "请先保存您的OpenRouter API密钥"
+  "Please save your OpenRouter API key first": "请先保存您的OpenRouter API密钥",
+  "BAM": "BAM"
 }

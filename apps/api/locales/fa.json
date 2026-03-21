@@ -2492,5 +2492,6 @@
   "Setting up your local AI stack…": "راه اندازی پشته AI محلی شما...",
   "First launch pulls Docker images — this only takes a minute once.": "اولین اجرا تصاویر Docker را می کشد - این فقط یک بار یک دقیقه طول می کشد.",
   "Bluesky": "آبی آسمان",
-  "Please save your OpenRouter API key first": "لطفاً ابتدا کلید API OpenRouter خود را ذخیره کنید"
+  "Please save your OpenRouter API key first": "لطفاً ابتدا کلید API OpenRouter خود را ذخیره کنید",
+  "BAM": "BAM"
 }

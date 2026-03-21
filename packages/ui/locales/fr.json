@@ -2503,5 +2503,6 @@
   "Setting up your local AI stack…": "Configuration de votre pile IA locale…",
   "First launch pulls Docker images — this only takes a minute once.": "Le premier lancement récupère les images Docker — cela ne prend qu'une minute une fois.",
   "Bluesky": "Bluesky",
-  "Please save your OpenRouter API key first": "Veuillez d'abord enregistrer votre clé API OpenRouter"
+  "Please save your OpenRouter API key first": "Veuillez d'abord enregistrer votre clé API OpenRouter",
+  "BAM": "BAM"
 }
