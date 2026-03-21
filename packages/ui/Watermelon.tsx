@@ -84,7 +84,6 @@ export default function Watermelon() {
     app,
     siteConfig,
     downloadUrl,
-    getAppSlug,
     user,
     guest,
     setGuest,
