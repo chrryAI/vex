@@ -27,7 +27,7 @@ const plusTiers = ["plus", "pro"]
  */
 function isFreeTier(app?: { tier?: string | null } | null): boolean {
   if (isE2E) return true
-  return isFreeTier(app)
+  return !plusTiers.includes(app?.tier || "")
 }
 
 function safeDecrypt(encryptedKey: string | undefined): string | undefined {
