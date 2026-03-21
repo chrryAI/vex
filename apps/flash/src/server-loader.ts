@@ -119,7 +119,7 @@ export async function loadServerData(
   const BOT_UA_PATTERN =
     /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebot|twitterbot|linkedinbot|whatsapp|telegrambot|applebot|semrushbot|ahrefsbot|petalbot|mj12bot|dotbot|serpstatbot|rogerbot|exabot|sistrix|sogou|archive\.org_bot|ia_archiver|xbot|grok|gptbot|chatgpt-user|perplexitybot|claudebot/i
   const userAgent = headers["user-agent"] || ""
-  const isBot = false // BOT_UA_PATTERN.test(userAgent)
+  const isBot = BOT_UA_PATTERN.test(userAgent)
 
   const isBlogList = pathname === "/blog"
   const isBlogPost = pathname.startsWith("/blog/") && pathname !== "/blog"
