@@ -142,6 +142,7 @@ export const getImageSrc = ({
     "watermelon",
     "donut",
     "blossom",
+    "burn",
   ]
 
   const iconSrc = icon
