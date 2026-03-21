@@ -274,7 +274,7 @@ export default function Weather({
           size: 18,
         })
       })()}
-      <Span style={styles.info.style}>
+      <Span style={{ ...styles.info.style, color: "var(--shade-7)" }}>
         {weather && <Span>{weather.temperature}</Span>}
         {showLocation && (
           <Span
