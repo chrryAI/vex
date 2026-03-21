@@ -40,12 +40,14 @@ export const serverPlausibleEvent = ({
   domain,
   props = {},
   u,
+  maskedIP,
 }: {
   name: string
   url?: string
   domain?: string
   props?: Record<string, any>
   u?: string
+  maskedIP?: string
 }) => {
   //   if (process.env.NODE_ENV !== "production") return
 
@@ -63,7 +65,7 @@ export const serverPlausibleEvent = ({
   // Fallback to just the domain root.
   const pageUrl = url
     ? url
-    : `https://${targetDomain}${u?.startsWith("/") ? u : `/${u || ""}`}`
+    : `https://${maskedIP ? `maskedIP;${maskedIP};` : ""}${targetDomain}${u?.startsWith("/") ? u : `/${u || ""}`}`
 
   const payload = {
     name,

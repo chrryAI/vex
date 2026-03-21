@@ -2503,5 +2503,6 @@
   "Watermelon runs your AI stack locally. Install OrbStack to get started — it's lightweight and uses the macOS Virtualization framework.": "Watermelon在本地运行您的AI堆栈。安装OrbStack开始使用 — 它轻便且使用macOS虚拟化框架。",
   "Setting up your local AI stack…": "正在设置您的本地AI堆栈…",
   "First launch pulls Docker images — this only takes a minute once.": "首次启动会拉取Docker镜像 — 这只需要一次一分钟。",
-  "Bluesky": "Bluesky"
+  "Bluesky": "Bluesky",
+  "Please save your OpenRouter API key first": "请先保存您的OpenRouter API密钥"
 }
