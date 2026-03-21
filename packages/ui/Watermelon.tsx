@@ -98,7 +98,6 @@ export default function Watermelon() {
   const coder = storeApps.find((app) => app.slug === "coder")
   const architect = storeApps.find((app) => app.slug === "architect")
   const jules = storeApps.find((app) => app.slug === "jules")
-  const debuggerApp = storeApps.find((app) => app.slug === "debugger")
   const [isSavingReplicateApiKey, setIsSavingReplicateApiKey] = useState(false)
 
   const { t, captureException } = useAppContext()
