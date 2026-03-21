@@ -86,6 +86,7 @@ export default function Watermelon() {
     actions,
     storeApps,
     plausible,
+    setShowWatermelon,
   } = useAuth()
 
   const coder = storeApps.find((app) => app.slug === "coder")
@@ -763,24 +764,43 @@ export default function Watermelon() {
             <Div
               style={{
                 marginTop: "auto",
+                display: "flex",
+                gap: ".5rem",
+                flexWrap: "wrap",
+                flexDirection: "row",
+                position: "relative",
+                bottom: ".5rem",
               }}
             >
-              <A
-                event={ANALYTICS_EVENTS.BUY_ME_A_COFFEE_CLICK}
-                href="https://buymeacoffee.com/iliyan"
-                openInNewTab
-                title="Buy me a coffee"
+              <Div
                 style={{
                   display: "flex",
-                  alignItems: "center",
-                  gap: 5,
-                  fontSize: ".9rem",
-                  color: COLORS.orange,
+                  gap: ".7rem",
+                  flexWrap: "wrap",
+                  fontSize: ".85rem",
                 }}
               >
-                <SiBuymeacoffee color={COLORS.orange} size={20} />
-                {t("BAM")} 💥
-              </A>
+                <A href="/about">
+                  {app?.store?.app?.icon || "🍒"} /{t("about")}
+                </A>
+                <A href="/privacy">🤫 /{t("privacy")}</A>
+                <A
+                  event={ANALYTICS_EVENTS.BUY_ME_A_COFFEE_CLICK}
+                  href="https://buymeacoffee.com/iliyan"
+                  openInNewTab
+                  title="Buy me a coffee"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    fontSize: ".9rem",
+                    color: COLORS.orange,
+                  }}
+                >
+                  <SiBuymeacoffee color={COLORS.orange} size={16} />
+                  {t("BAM")} 💥
+                </A>
+              </Div>
             </Div>
             <Div
               style={{

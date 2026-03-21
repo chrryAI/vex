@@ -98,7 +98,7 @@ import { useError } from "./ErrorProvider"
 
 export type { session }
 
-const VERSION = "2.1.47"
+const VERSION = "2.1.48"
 
 const AuthContext = createContext<
   | {
@@ -2505,9 +2505,7 @@ export function AuthProvider({
   }
 
   useEffect(() => {
-    if (showWatermelonInitial) {
-      setShowWatermelonInternal(showWatermelonInitial)
-    }
+    setShowWatermelonInternal(showWatermelonInitial)
   }, [showWatermelonInitial])
 
   const postIdInitial = getPostId(pathname)
