@@ -311,15 +311,16 @@ export default function Watermelon() {
                 </Button>
                 {app && (
                   <AppLink
+                    isTribe={false}
                     app={app}
-                    className="button transparent"
+                    className="button inverted"
                     icon={
                       <Img app={app} alt={app.name} width={22} height={22} />
                     }
                     loading={<Loading size={13} />}
                     style={{
                       ...utilities.button.style,
-                      ...utilities.transparent.style,
+                      ...utilities.inverted.style,
                       display: "flex",
                       alignItems: "center",
                       gap: 5,
@@ -327,7 +328,6 @@ export default function Watermelon() {
                     }}
                   >
                     {t(app.name)}
-                    <Coins size={14} color={app?.themeColor || COLORS.blue} />
                   </AppLink>
                 )}
                 <A
