@@ -9,6 +9,7 @@ import {
   SiMacos,
   SiMinio,
   SiRedis,
+  SiTauri,
   SiVite,
 } from "react-icons/si"
 import AppLink from "./AppLink"
@@ -420,6 +421,9 @@ export default function Watermelon() {
                 </A>
                 <A openInNewTab href="https://vitejs.dev">
                   <SiVite color={COLORS.green} title="Vite" size={20} />
+                </A>
+                <A openInNewTab href="https://tauri.app">
+                  <SiTauri color={COLORS.orange} title="Tauri" size={20} />
                 </A>
                 <A openInNewTab href="https://hetzner.cloud/?ref=jBud3ivK4tnH">
                   <SiHetzner color={COLORS.red} title="Hetzner" size={20} />
