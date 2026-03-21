@@ -3338,7 +3338,10 @@ export const whiteLabels = [
   grape,
 ]
 
-export const analyticsDomains = whiteLabels.concat(e2eVex).concat(tribe)
+export const analyticsDomains = whiteLabels
+  .concat(e2eVex)
+  .concat(tribe)
+  .concat(watermelon)
 
 /**
  * Check if current site is Chrry
