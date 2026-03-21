@@ -117,6 +117,7 @@ const AuthContext = createContext<
       hourlyUsageLeft: number
       about: string | undefined
       canShowTribe: boolean
+      showWatermelonInitial: boolean
       actions: apiActions
       setAbout: (value: string | undefined) => void
       ask: string | undefined
@@ -3817,6 +3818,7 @@ export function AuthProvider({
         FRONTEND_URL,
         API_URL,
         MAX_FILE_SIZES,
+        showWatermelonInitial,
         isE2E,
         PRO_PRICE,
         PLUS_PRICE,
