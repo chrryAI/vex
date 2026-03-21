@@ -380,7 +380,7 @@ export default function ImageComponent(props: ImageProps) {
     if (result) return result
   }
 
-  const invader = `${BASE_URL}/images/pacman/space-invader.png`
+  const coder = `${BASE_URL}/images/apps/coder.png`
 
   return (
     <>
@@ -397,7 +397,7 @@ export default function ImageComponent(props: ImageProps) {
         title={title}
         priority={priority}
         src={resize({
-          url: slug && !src ? invader : src || invader,
+          url: slug && !src ? coder : src || coder,
           width,
           height,
         })}

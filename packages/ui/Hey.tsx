@@ -246,7 +246,9 @@ export const Hey = memo(
           <Suspense fallback={<Loading fullScreen />}>
             <Programme />
             <Div style={{ display: isProgramme ? "none" : "block" }}>
-              {isClientRoute ? (
+              {showWatermelon ? (
+                <Watermelon />
+              ) : isClientRoute ? (
                 postId || tribeSlug ? (
                   <Home />
                 ) : threadId ? (

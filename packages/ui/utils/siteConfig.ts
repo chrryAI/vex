@@ -22,6 +22,7 @@ export type siteMode =
   | "staging"
   | "tribe"
   | "nebula"
+  | "watermelon"
 
 /// <reference types="chrome" />
 
@@ -1418,6 +1419,19 @@ export const tribe = {
   isTribe: true,
 }
 
+export const watermelon = {
+  ...chrryAI,
+  mode: "watermelon" as siteMode,
+  // slug: "tribe",
+  favicon: "watermelon",
+  name: "Watermelon",
+  url: "https://watermelon.chrry.ai",
+  domain: "watermelon.chrry.ai",
+  description:
+    "Your AI-powered social feed. Discover posts, share feedback, and connect with your community.",
+  isWatermelon: true,
+}
+
 const staging = {
   ...chrryAI,
   url: "https://staging.chrry.ai",
@@ -1568,6 +1582,7 @@ export interface SiteConfig {
   store: string
   url: string
   isTribe?: boolean
+  isWatermelon?: boolean
   description: string
   version?: string
   email: string
@@ -1690,6 +1705,68 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       title: "Vex - دستیار هوش مصنوعی شخصی شما",
       description:
         "با دستیار هوش مصنوعی شخصی خود گفتگو کنید. با اعضای تیم همکاری کنید، در زمینه بمانید و کارها را سریعتر در تمام زبان‌ها انجام دهید.",
+    },
+  },
+  watermelon: {
+    en: {
+      title: "Watermelon - AI Super App",
+      description:
+        "Discover, create, and monetize AI applications. Launch your storefront, publish agents, and reach customers worldwide with Chrry.",
+    },
+    de: {
+      title: "Watermelon - Marktplatz für KI-Apps",
+      description:
+        "Entdecke, erstelle und monetarisiere KI-Anwendungen. Starte deinen Store, veröffentliche Agents und erreiche weltweit Kund*innen mit Chrry.",
+    },
+    fr: {
+      title: "Watermelon - AI Super App",
+      description:
+        "Découvrez, créez et monétisez des applications IA. Lancez votre boutique, publiez des agents et touchez des clients dans le monde entier avec Chrry.",
+    },
+    ja: {
+      title: "Watermelon - AIアプリマーケットプレイス",
+      description:
+        "AIアプリを発見・作成し、収益化しましょう。Chrryでストアを立ち上げ、エージェントを公開し、世界中のユーザーに届けます。",
+    },
+    ko: {
+      title: "Watermelon - AI 앱 마켓플레이스",
+      description:
+        "AI 애플리케이션을 발견하고 제작하며 수익화하세요. Chrry로 스토어를 열고, 에이전트를 게시하고, 전 세계 고객에게 다가가세요.",
+    },
+    pt: {
+      title: "Watermelon - Marketplace de Apps de IA",
+      description:
+        "Descubra, crie e monetize aplicações de IA. Lance sua loja, publique agentes e alcance clientes no mundo todo com a Chrry.",
+    },
+    es: {
+      title: "Watermelon - Marketplace de Apps de IA",
+      description:
+        "Descubre, crea y monetiza aplicaciones de IA. Lanza tu tienda, publica agentes y llega a clientes de todo el mundo con Chrry.",
+    },
+    zh: {
+      title: "Watermelon - AI 应用市场",
+      description:
+        "探索、创建并变现 AI 应用。使用 Chrry 搭建店铺、发布智能体，触达全球用户。",
+    },
+    nl: {
+      title: "Watermelon - AI-appmarktplaats",
+      description:
+        "Ontdek, bouw en verdien aan AI-apps. Start je eigen winkel, publiceer agents en bereik klanten wereldwijd met Chrry.",
+    },
+    tr: {
+      title: "Watermelon - Yapay Zekâ Uygulama Pazaryeri",
+      description:
+        "Yapay zekâ uygulamalarını keşfedin, geliştirin ve gelir elde edin. Chrry ile mağazanızı açın, ajanlar yayınlayın ve dünya çapında müşterilere ulaşın.",
+    },
+    sv: {
+      title: "Watermelon - AI-appmarknadsplats",
+      description:
+        "Upptäck, skapa och tjäna pengar på AI-applikationer. Lansera din butik, publicera agenter och nå kunder världen över med Chrry.",
+    },
+    fa: {
+      title: "Watermelon - بازار اپلیکیشن‌های هوش مصنوعی",
+      description:
+        "اپلیکیشن‌های هوش مصنوعی را کشف، ایجاد و درآمدزایی کنید. فروشگاه خود را راه‌اندازی کنید، عامل‌ها را منتشر کنید و با Chrry به مشتریان در سراسر جهان دسترسی پیدا کنید.",
     },
   },
   chrryAI: {
@@ -2912,7 +2989,7 @@ export function detectsiteModeDomain(
   hostname?: string,
   mode?: siteMode,
 ): siteMode {
-  const devMode = "vex"
+  const devMode = "watermelon"
 
   const defaultMode = (getEnv().VITE_SITE_MODE as siteMode) || mode || devMode
 
@@ -3003,6 +3080,10 @@ export function detectsiteModeDomain(
     return "staging"
   }
 
+  if (matchesDomain(host, "watermelon.chrry.ai")) {
+    return "watermelon"
+  }
+
   if (matchesDomain(host, "tribe.chrry.ai")) {
     return "tribe"
   }
@@ -3077,6 +3158,7 @@ export function detectsiteMode(hostname?: string): siteMode {
     "vault",
     "tribe",
     "nebula",
+    "watermelon",
   ]
 
   // If hostname is already a valid siteMode (e.g., "atlas"), use it directly
@@ -3206,6 +3288,16 @@ export function getSiteConfig(
     return vault
   }
 
+  if (mode === "watermelon") {
+    return {
+      ...watermelon,
+      slug:
+        (getEnv().VITE_SITE_MODE as siteMode) === "watermelon"
+          ? "watermelon"
+          : watermelon.slug,
+    }
+  }
+
   if (mode === "tribe") {
     // return tribe
     return {
@@ -3246,7 +3338,10 @@ export const whiteLabels = [
   grape,
 ]
 
-export const analyticsDomains = whiteLabels.concat(e2eVex).concat(tribe)
+export const analyticsDomains = whiteLabels
+  .concat(e2eVex)
+  .concat(tribe)
+  .concat(watermelon)
 
 /**
  * Check if current site is Chrry

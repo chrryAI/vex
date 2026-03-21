@@ -1319,7 +1319,6 @@ async function generateAIContent({
   // Get the appropriate model provider for this agent
   const { provider: model, agentName } = await getModelProvider({
     app,
-    name: "beles",
     user,
     guest,
   })

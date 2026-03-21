@@ -138,6 +138,22 @@ async function resolveAppBySlug(
   return { app, path: "appSlug" }
 }
 
+async function resolveAppByAppSlug(
+  appSlug: string,
+  auth: AuthContext,
+  skipCache: boolean,
+): Promise<{ app: any; path: string }> {
+  const app = await getAppDb({
+    slug: appSlug,
+    userId: auth.member?.id,
+    guestId: auth.guest?.id,
+    depth: 1,
+    skipCache,
+  })
+
+  return { app, path: "appSlug" }
+}
+
 /**
  * Resolve app from store slug
  */
@@ -531,6 +547,15 @@ export async function getApp({
     const result = await resolveAppBySlug(
       appSlug,
       storeSlug,
+      auth,
+      requestParams.skipCache,
+    )
+    if (!result.app) return null
+    appInternal = result.app
+    resolutionPath = result.path
+  } else if (appSlug) {
+    const result = await resolveAppByAppSlug(
+      appSlug,
       auth,
       requestParams.skipCache,
     )

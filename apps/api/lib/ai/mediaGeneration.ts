@@ -91,8 +91,10 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
     prompt,
     aspectRatio = "1:1",
     messageId = uuidv4(),
-    apiKey = isBYOK ? byokReplicateKey || byokReplicateAppKey : undefined,
-    falKey = isBYOK ? byokFalKey || byokFalAppKey : FAL_KEY,
+    apiKey = isBYOK
+      ? byokReplicateKey || byokReplicateAppKey
+      : byokReplicateAppKey,
+    falKey = isBYOK ? byokFalKey || byokFalAppKey : byokFalAppKey,
   } = options
 
   // Initial provider selection: try Fal if we have a key, otherwise Replicate
@@ -117,7 +119,13 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
             ? "square"
             : aspectRatio === "16:9"
               ? "landscape_16_9"
-              : "portrait_9_16",
+              : aspectRatio === "9:16"
+                ? "portrait_9_16"
+                : aspectRatio === "4:3"
+                  ? "landscape_4_3"
+                  : aspectRatio === "3:4"
+                    ? "portrait_3_4"
+                    : "square",
       },
       logs: true,
     })

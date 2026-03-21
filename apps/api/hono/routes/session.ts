@@ -32,6 +32,7 @@ import { getCookie, setCookie } from "hono/cookie"
 import { UAParser } from "ua-parser-js"
 import { v4 as uuidv4, validate as validateUuid } from "uuid"
 import * as lib from "../../lib"
+import { maskIP } from "../../lib/analytics"
 
 import { captureException } from "../../lib/captureException"
 import cleanupTest from "../../lib/cleanupTest"
@@ -708,7 +709,7 @@ session.get("/", async (c) => {
     }
 
     const newGuest = await createGuest({
-      ip: ip.toString(),
+      ip: maskIP(ip.toString()),
       createdOn: new Date(),
       updatedOn: new Date(),
       activeOn: new Date(),

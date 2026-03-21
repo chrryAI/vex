@@ -1,13 +1,13 @@
 "use client"
 
 import clsx from "clsx"
-import { lazy, Suspense, useEffect } from "react"
+import { lazy, Suspense } from "react"
 import { useAppContext } from "./context/AppContext"
-import Grapes from "./Grapes"
 import Img from "./Image"
-import { Circle, CircleCheck, CircleEllipsis } from "./icons"
+import { CircleCheck, CircleEllipsis } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import Menu from "./Menu"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 // Lazy load heavy components to reduce initial bundle
 const Subscribe = lazy(() => import("./Subscribe"))
@@ -15,7 +15,6 @@ const SignIn = lazy(() => import("./SignIn"))
 const CharacterProfiles = lazy(() => import("./CharacterProfiles"))
 
 import A from "./a/A"
-import AddToHomeScreen from "./addToHomeScreen"
 import {
   useApp,
   useAuth,
@@ -25,19 +24,10 @@ import {
 import { useStyles } from "./context/StylesContext"
 import { useTimerContext } from "./context/TimerContext"
 import { useHasHydrated } from "./hooks"
-import {
-  Button,
-  Div,
-  H1,
-  Main,
-  Span,
-  usePlatform,
-  useTheme,
-  VexToast,
-} from "./platform"
+import { Button, Div, H1, Main, Span, usePlatform, useTheme } from "./platform"
 import Version from "./Version"
 
-function Watermelon({
+export function WatermelonButton({
   isDrawerOpen,
 }: {
   time: number
@@ -46,7 +36,7 @@ function Watermelon({
 }) {
   const { viewPortWidth } = usePlatform()
   const { t } = useAppContext()
-  const { user, guest } = useAuth()
+  const { user, guest, siteConfig, setShowWatermelon, rtl } = useAuth()
 
   const hasHydrated = useHasHydrated()
   const { utilities } = useStyles()
@@ -57,16 +47,23 @@ function Watermelon({
 
   return (
     <A
-      href={"/watermelon"}
+      onClick={() => {
+        setShowWatermelon(true)
+      }}
+      openInNewTab
+      event={ANALYTICS_EVENTS.WM_BYOK_CLICK}
+      href={siteConfig.isWatermelon ? "/" : "/watermelon"}
       style={{
         ...utilities.xSmall.style,
-        marginTop: !isDrawerOpen ? 1 : -7.5,
-        marginLeft: isDrawerOpen ? 0 : -5,
+        marginTop: -7.5,
+        marginLeft: 0,
+        marginRight: rtl ? (isDrawerOpen ? 0 : -5) : 0,
         position: "relative",
         display: "flex",
         alignItems: "center",
         gap: 5,
-        left: 250,
+        left: rtl ? 0 : 250,
+        right: rtl ? 250 : 0,
       }}
     >
       <Img slug="watermelon" width={22} height={22} /> BYOK ({t("Free")})
@@ -318,7 +315,7 @@ export default function Skeleton({
                     ) : null}
 
                     {isMobileDevice ? null : (
-                      <Watermelon
+                      <WatermelonButton
                         isDrawerOpen={isDrawerOpen}
                         time={time}
                         isCountingDown={isCountingDown}

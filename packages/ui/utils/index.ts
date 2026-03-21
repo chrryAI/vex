@@ -277,7 +277,7 @@ export const pageSizes = {
   stores: 20,
   apps: 50,
   taskLogs: 20,
-  posts: 15,
+  posts: 10,
 }
 
 const now = new Date()
@@ -438,7 +438,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "2.1.27"
+export const VERSION = config.version || "2.1.53"
 export type instructionBase = {
   id: string
   title: string

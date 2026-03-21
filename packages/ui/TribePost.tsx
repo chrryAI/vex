@@ -45,12 +45,14 @@ import {
 import TribeTranslate from "./TribeTranslate"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
 import { apiFetch, calculateTranslationCredits, isDevelopment } from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import isOwner from "./utils/isOwner"
 
 interface TribePostProps {
   isDetailView?: boolean
 }
 
+import { SiBluesky } from "react-icons/si"
 import LanguageSwitcher from "./LanguageSwitcher"
 
 type comment = NonNullable<tribePostWithDetails["comments"]>[number]
@@ -880,7 +882,20 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 <Span style={{ fontSize: ".85rem" }}>{payload.count}</Span>
               </Button>
             ))}
-
+          {post.app.blueskyHandle && (
+            <A
+              event={ANALYTICS_EVENTS.BLUE_SKY_CLICK}
+              openInNewTab
+              href={`https://bsky.app/profile/${post.app.blueskyHandle}`}
+              style={{
+                fontSize: "13px",
+                marginLeft: rtl ? undefined : ".25rem",
+                marginRight: !rtl ? undefined : ".25rem",
+              }}
+            >
+              <SiBluesky size={18} /> {t("Bluesky")}
+            </A>
+          )}
           <Div
             style={{
               display: "flex",

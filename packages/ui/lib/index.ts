@@ -137,11 +137,15 @@ export const getImageSrc = ({
     "cosmos",
     "starmap",
     "quantumlab",
+    "hippo",
+    "whale",
     "avocado",
     "jules",
     "watermelon",
     "donut",
     "blossom",
+    "burn",
+    "hippo",
   ]
 
   const iconSrc = icon
@@ -183,10 +187,10 @@ export const getImageSrc = ({
   // images array: [512px, 192px, 180px, 128px, 32px]
   const getImageBySize = (size: number) => {
     if (!app?.images?.length) return null
-    if (size <= 32) return app.images[4]?.url // 32px
-    if (size <= 128) return app.images[3]?.url // 128px
-    if (size <= 180) return app.images[2]?.url // 180px
-    if (size <= 192) return app.images[1]?.url // 192px
+    // if (size <= 32) return app.images[4]?.url // 32px
+    // if (size <= 128) return app.images[3]?.url // 128px
+    // if (size <= 180) return app.images[2]?.url // 180px
+    // if (size <= 192) return app.images[1]?.url // 192px
     return app.images[0]?.url // 512px
   }
 
@@ -198,7 +202,7 @@ export const getImageSrc = ({
         : getImageBySize(size) ||
           app?.image ||
           (slug
-            ? `${BASE_URL}/images/pacman/space-invader.png`
+            ? `${BASE_URL}/images/apps/coder.png`
             : canEditApp
               ? image || iconSrc
               : undefined) // Remote web asset
@@ -604,6 +608,7 @@ export const updateUser = async ({
   openRouterApiKey,
   replicateApiKey,
   falApiKey,
+  deletedApiKeys,
 }: {
   language?: string
   name?: string
@@ -619,6 +624,7 @@ export const updateUser = async ({
   country?: string
   openRouterApiKey?: string
   falApiKey?: string
+  deletedApiKeys?: string[]
 }) => {
   const response = await fetch(`${API_URL}/user`, {
     method: "PATCH",
@@ -635,6 +641,7 @@ export const updateUser = async ({
       openRouterApiKey,
       replicateApiKey,
       falApiKey,
+      deletedApiKeys,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -656,6 +663,7 @@ export const updateGuest = async ({
   falApiKey,
   API_URL = utils.API_URL,
   openRouterApiKey,
+  deletedApiKeys,
 }: {
   favouriteAgent?: string
   characterProfilesEnabled?: boolean
@@ -667,6 +675,7 @@ export const updateGuest = async ({
   falApiKey?: string
   token: string
   openRouterApiKey?: string
+  deletedApiKeys?: string[]
 }) => {
   const response = await fetch(`${API_URL}/guest`, {
     method: "PATCH",
@@ -679,6 +688,7 @@ export const updateGuest = async ({
       openRouterApiKey,
       replicateApiKey,
       falApiKey,
+      deletedApiKeys,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -1179,6 +1189,7 @@ export const getApp = async ({
   skipCache,
   pathname,
   storeSlug,
+  appSlug,
   accountApp,
 }: {
   API_URL?: string
@@ -1189,6 +1200,7 @@ export const getApp = async ({
   skipCache?: boolean
   storeSlug?: string
   accountApp?: boolean
+  appSlug?: string
 }) => {
   // Build query params for intelligent resolution
   const params = new URLSearchParams()
@@ -1197,6 +1209,7 @@ export const getApp = async ({
   if (pathname) params.append("pathname", encodeURIComponent(pathname))
   if (skipCache) params.append("skipCache", "true")
   if (accountApp) params.append("accountApp", "true")
+  if (appSlug) params.append("appSlug", appSlug)
   // if (storeSlug) params.append("storeSlug", storeSlug)
 
   // Use /apps for intelligent resolution (no ID in path)
@@ -1488,8 +1501,10 @@ export const getActions = ({
       memoriesEnabled?: boolean
       openRouterApiKey?: string
       replicateApiKey?: string
+      falApiKey?: string
       city?: string
       country?: string
+      deletedApiKeys?: string[]
     }) => updateUser({ token, ...params, API_URL }),
     uploadUserImage: (file: File | null) =>
       uploadUserImage({ token, file, API_URL }),
@@ -1503,8 +1518,10 @@ export const getActions = ({
       characterProfilesEnabled?: boolean
       city?: string
       openRouterApiKey?: string
+      falApiKey?: string
       country?: string
       memoriesEnabled?: boolean
+      deletedApiKeys?: string[]
     }) => updateGuest({ token, ...params, API_URL }),
 
     // Message operations

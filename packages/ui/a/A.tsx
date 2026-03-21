@@ -1,6 +1,7 @@
 import React from "react"
 import { useAuth } from "../context/providers/AuthProvider"
 import { A, useNavigation, usePlatform, useTheme } from "../platform"
+import { ANALYTICS_EVENTS } from "../utils/analyticsEvents"
 
 const Anchor = React.forwardRef<
   HTMLAnchorElement,
@@ -9,14 +10,23 @@ const Anchor = React.forwardRef<
     href?: string
     preventDefault?: boolean
     clientOnly?: boolean
+    event?: string
     target?: "_blank" | "_self" | "_parent" | "_top"
   }
 >(
   (
-    { clientOnly, target, children, preventDefault, openInNewTab, ...props },
+    {
+      event = ANALYTICS_EVENTS.LINK_CLICK,
+      clientOnly,
+      target,
+      children,
+      preventDefault,
+      openInNewTab,
+      ...props
+    },
     ref,
   ) => {
-    const { FRONTEND_URL } = useAuth()
+    const { FRONTEND_URL, plausible } = useAuth()
 
     const { addHapticFeedback } = useTheme()
     const { isExtension, BrowserInstance, isTauri } = usePlatform()
@@ -26,9 +36,9 @@ const Anchor = React.forwardRef<
 
     const isExternalUrl = (url?: string) => {
       if (isTauri) return false
-      if (newTab) return true
       if (!url) return false
       return (
+        newTab &&
         (url.startsWith("http://") ||
           url.startsWith("https://") ||
           url.startsWith("mailto:") ||
@@ -49,6 +59,10 @@ const Anchor = React.forwardRef<
         ref={ref}
         target={newTab ? "_blank" : target}
         onClick={(e) => {
+          plausible({
+            name: event,
+            props: { href, id: props.id, title: props.title },
+          })
           props.onClick?.(e)
 
           if (e.defaultPrevented) {
@@ -65,7 +79,7 @@ const Anchor = React.forwardRef<
 
           // Don't prevent default for external URLs (let browser handle)
           if (isExternalUrl(href)) {
-            addHapticFeedback()
+            // addHapticFeedback()
             // For extensions, open external URLs in new tab via background script
             if (isExtension && BrowserInstance && href) {
               e.preventDefault()
@@ -78,7 +92,7 @@ const Anchor = React.forwardRef<
           }
 
           e.preventDefault()
-          addHapticFeedback()
+          // addHapticFeedback()
 
           // Handle internal routing
           if (href && !preventDefault) {

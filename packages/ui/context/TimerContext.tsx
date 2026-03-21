@@ -11,11 +11,10 @@ import {
   useRef,
   useState,
 } from "react"
-import useSWR from "swr"
 import { useWebSocket } from "../hooks/useWebSocket"
 import { Audio, useLocalStorage, usePlatform, useTheme } from "../platform"
 import type { device, timer } from "../types"
-import { API_URL, apiFetch, FRONTEND_URL, isSameDay } from "../utils"
+import { FRONTEND_URL, isSameDay } from "../utils"
 import console from "../utils/log"
 import { useAuth } from "./providers"
 

@@ -412,54 +412,38 @@ app.post("/", async (c) => {
           throw new Error(`Image host not allowed: ${parsedUrl.hostname}`)
         }
 
-        // Generate optimized versions for all use cases
-        const versions = [
-          { size: 512, name: "large" }, // PWA icon (required)
-          { size: 192, name: "medium" }, // PWA icon (required)
-          { size: 180, name: "apple" }, // Apple touch icon
-          { size: 128, name: "small" }, // UI thumbnails
-          { size: 32, name: "favicon" }, // Browser favicon
+        // Upload single 512px source — resize API handles all other sizes on-the-fly
+        const crypto = await import("node:crypto")
+        const contentHash = crypto
+          .createHash("sha256")
+          .update(`${imageUrl}-512x512`)
+          .digest("hex")
+          .substring(0, 16)
+
+        const result = await upload({
+          url: imageUrl,
+          messageId: `large-${contentHash}`,
+          options: {
+            width: 512,
+            height: 512,
+            fit: "contain",
+            position: "center",
+            title: "large-512x512",
+            type: "image",
+          },
+          context: "apps",
+        })
+
+        images = [
+          {
+            url: result.url,
+            width: 512,
+            height: 512,
+            id: uuid(),
+          },
         ]
 
-        const uploadPromises = versions.map(async ({ size, name }) => {
-          // Generate content-based hash for deduplication
-          // Same image + same size = same hash = no duplicates
-          // Using SHA256 for security compliance (MD5 flagged by security scanners)
-          const crypto = await import("node:crypto")
-          const contentHash = crypto
-            .createHash("sha256")
-            .update(`${imageUrl}-${size}x${size}`)
-            .digest("hex")
-            .substring(0, 16)
-
-          const result = await upload({
-            url: imageUrl,
-            messageId: `${slugify(name)}-${contentHash}`,
-            options: {
-              width: size,
-              height: size,
-              fit: "contain", // Center image, don't crop (adds padding if needed)
-              position: "center",
-              title: `${name}-${size}x${size}`,
-              type: "image",
-            },
-            context: "apps", // Use apps UploadThing account
-          })
-          return {
-            url: result.url,
-            width: size,
-            height: size,
-            id: uuid(),
-          }
-        })
-
-        images = await Promise.all(uploadPromises)
-
-        console.log("✅ Generated image versions:", {
-          large: images[0]?.url,
-          medium: images[1]?.url,
-          favicon: images[2]?.url,
-        })
+        console.log("✅ Uploaded app image (512px):", images[0]?.url)
 
         // Delete temporary image from /api/image
         try {
@@ -1266,53 +1250,37 @@ app.patch("/:id", async (c) => {
           }
         }
 
-        // Generate optimized versions for all use cases
-        const versions = [
-          { size: 512, name: "large" }, // PWA icon (required)
-          { size: 192, name: "medium" }, // PWA icon (required)
-          { size: 180, name: "apple" }, // Apple touch icon
-          { size: 128, name: "small" }, // UI thumbnails
-          { size: 32, name: "favicon" }, // Browser favicon
+        // Upload single 512px source — resize API handles all other sizes on-the-fly
+        const crypto = await import("node:crypto")
+        const contentHash = crypto
+          .createHash("sha256")
+          .update(`${imageUrl}-512x512`)
+          .digest("hex")
+          .substring(0, 16)
+
+        const result = await upload({
+          url: imageUrl,
+          messageId: `large-${contentHash}`,
+          options: {
+            width: 512,
+            height: 512,
+            fit: "contain",
+            position: "center",
+            title: "large-512x512",
+            type: "image",
+          },
+        })
+
+        images = [
+          {
+            url: result.url,
+            width: 512,
+            height: 512,
+            id: uuid(),
+          },
         ]
 
-        const uploadPromises = versions.map(async ({ size, name }) => {
-          // Generate content-based hash for deduplication
-          // Same image + same size = same hash = no duplicates
-          // Using SHA256 for security compliance (MD5 flagged by security scanners)
-          const crypto = await import("node:crypto")
-          const contentHash = crypto
-            .createHash("sha256")
-            .update(`${imageUrl}-${size}x${size}`)
-            .digest("hex")
-            .substring(0, 16)
-
-          const result = await upload({
-            url: imageUrl,
-            messageId: `${slugify(name)}-${contentHash}`,
-            options: {
-              width: size,
-              height: size,
-              fit: "contain", // Center image, don't crop (adds padding if needed)
-              position: "center",
-              title: `${name}-${size}x${size}`,
-              type: "image",
-            },
-          })
-          return {
-            url: result.url,
-            width: size,
-            height: size,
-            id: uuid(),
-          }
-        })
-
-        images = await Promise.all(uploadPromises)
-
-        console.log("✅ Generated image versions:", {
-          large: images[0]?.url,
-          medium: images[1]?.url,
-          favicon: images[2]?.url,
-        })
+        console.log("✅ Uploaded app image (512px):", images[0]?.url)
 
         // Delete temporary image
         try {

@@ -611,6 +611,7 @@ async function getAnalyticsContext({
       "sushi.chrry.ai",
       "focus.chrry.ai",
       "grape.chrry.ai",
+      "watermelon.chrry.ai",
       "vault.chrry.ai",
       "pear.chrry.ai",
       "popcorn.chrry.ai",

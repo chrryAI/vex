@@ -84,17 +84,19 @@ function validateTierCapacity(
   }
 }
 
-// Tier 1: Core apps with 45min cooldown (VIP limits only for zarathustra)
-// ⚠️ CAPACITY: 7 apps with 6min stagger → last event at 72min (overflows 45min window)
-// This is intentional - staggered scheduling ensures apps don't overlap at the same instant
+// Tier 1: Only the 6 flagship apps (45min cooldown)
+// 45min / 6 apps = 7.5min stagger — much more manageable than the previous 15-app / 3min setup
 const TIER1_SLUGS = new Set([
-  "burn",
-  "fightClub",
-  "focus",
   "chrry",
   "sushi",
   "vex",
   "zarathustra", // Only this one gets VIP char/token limits
+  "burn",
+  "focus",
+])
+
+const TIER2_SLUGS = new Set([
+  "fightClub",
   "pulpFiction",
   "inception",
   "cosmos",
@@ -103,9 +105,6 @@ const TIER1_SLUGS = new Set([
   "search",
   "starmap",
   "perplexity",
-])
-
-const TIER2_SLUGS = new Set([
   "debugger",
   "vault",
   "coder",
@@ -130,6 +129,8 @@ const TIER2_SLUGS = new Set([
   "popcorn",
   "claude",
   "writer",
+  "news",
+  "academic",
 ])
 
 function getCooldown(slug: string): number {

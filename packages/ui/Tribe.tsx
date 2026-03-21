@@ -3,6 +3,7 @@
 import type React from "react"
 import { type RefObject, useCallback, useEffect, useRef, useState } from "react"
 import { FaGithub } from "react-icons/fa"
+import { SiBluesky, SiBuymeacoffee } from "react-icons/si"
 import A from "./a/A"
 import { COLORS, useAppContext } from "./context/AppContext"
 import {
@@ -21,6 +22,7 @@ import Instructions from "./Instructions"
 import LanguageSwitcher from "./LanguageSwitcher"
 import { defaultLocale } from "./locales"
 import Markdown from "./MarkdownContent.web"
+
 import {
   Button,
   Div,
@@ -45,6 +47,7 @@ import TribeTranslate from "./TribeTranslate"
 import type { appWithStore, tribePost, user } from "./types"
 import { apiFetch, FRONTEND_URL } from "./utils"
 import isOwner from "./utils/isOwner"
+import Weather from "./Weather"
 
 const FocusButton = FocusButtonMini
 
@@ -57,6 +60,7 @@ import {
   ArrowLeft,
   BrickWallFire,
   CalendarIcon,
+  CircleCheck,
   CircleX,
   HeartPlus,
   LoaderCircle,
@@ -438,6 +442,21 @@ const TribePostListItem = ({
               </Div>
             )}
 
+            {post.app.blueskyHandle && (
+              <A
+                event={ANALYTICS_EVENTS.BLUE_SKY_CLICK}
+                openInNewTab
+                href={`https://bsky.app/profile/${post.app.blueskyHandle}`}
+                style={{
+                  fontSize: "13px",
+                  marginLeft: rtl ? undefined : ".25rem",
+                  marginRight: !rtl ? undefined : ".25rem",
+                }}
+              >
+                <SiBluesky size={18} /> {t("Bluesky")}
+              </A>
+            )}
+
             {post.app && (
               <Div
                 style={{
@@ -477,6 +496,7 @@ const TribePostListItem = ({
                 </AppLink>
               </Div>
             )}
+
             {owner ? (
               <TribeTranslate
                 type="post"
@@ -944,6 +964,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     setDisplayedApps,
     displayedApps,
     rtl,
+    guest,
+    setShowWatermelon,
     ...auth
   } = useAuth()
   const { setAppStatus } = useApp()
@@ -984,7 +1006,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     }
   }
 
-  const { isMobileDevice, isSmallDevice, isDark, reduceMotion } = useTheme()
+  const { isMobileDevice, isSmallDevice, isDark, reduceMotion, isDrawerOpen } =
+    useTheme()
   const { setIsNewChat } = useChat()
   const hasHydrated = useHasHydrated()
   const postsRef = useRef<HTMLDivElement>(null)
@@ -1284,7 +1307,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     gap: ".75rem",
                   }}
                 >
-                  <A openInNewTab href="https://chrry.dev">
+                  <A
+                    event={ANALYTICS_EVENTS.CHERRY_DEV_CLICK}
+                    openInNewTab
+                    href="https://chrry.dev"
+                  >
                     <FaGithub />
                     AGPLv3
                   </A>
@@ -1304,6 +1331,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                   flexDirection: isMobileDevice ? "column" : "row",
                   position: "relative",
                   bottom: isMobileDevice ? ".5rem" : ".5rem",
+                  marginBottom: ".75rem",
                 }}
               >
                 <Div
@@ -1312,12 +1340,64 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     gap: ".7rem",
                     flexWrap: "wrap",
                     fontSize: ".85rem",
+                    flex: 1,
                   }}
                 >
+                  {!isDrawerOpen && (
+                    <A
+                      onClick={() => {
+                        setShowWatermelon(true)
+                      }}
+                      openInNewTab
+                      event={ANALYTICS_EVENTS.WM_BYOK_CLICK}
+                      href={siteConfig.isWatermelon ? "/" : "/watermelon"}
+                      style={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                      }}
+                    >
+                      <Img slug="watermelon" width={20} height={20} /> BYOK (
+                      {t("Free")})
+                      {user?.apiKeys?.openrouter ||
+                      guest?.apiKeys?.openrouter ? (
+                        <CircleCheck color="var(--accent-4)" size={14} />
+                      ) : null}
+                    </A>
+                  )}
+                  <A
+                    event={ANALYTICS_EVENTS.BUY_ME_A_COFFEE_CLICK}
+                    href="https://buymeacoffee.com/iliyan"
+                    openInNewTab
+                    title="Buy me a coffee"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      color: COLORS.orange,
+                    }}
+                  >
+                    <SiBuymeacoffee color={COLORS.orange} size={16} />
+                    {t("BAM")} 💥
+                  </A>
                   <A href="/about">
                     {app?.store?.app?.icon || "🍒"} /{t("about")}
                   </A>
                   <A href="/privacy">/{t("privacy")} 🤫</A>
+                  <P
+                    style={{
+                      display: "flex",
+                      gap: 7.5,
+                      alignItems: "center",
+                      marginLeft: "auto",
+                    }}
+                  >
+                    <Weather showLocation />
+                    <A href="/about">
+                      <Img icon="hippo" size={25} />
+                    </A>
+                  </P>
                 </Div>
               </Div>
               <Div
@@ -1957,6 +2037,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       gap: 10,
                       alignItems: "center",
                       justifyContent: "center",
+                      flexWrap: "wrap",
                     }}
                   >
                     {app?.id === accountApp?.id &&

@@ -111,7 +111,6 @@ Title:`
     // Fallback to default if no model found
     const { provider: model } = await getModelProvider({
       app,
-      name: "beles",
       user,
       guest,
     })
@@ -231,7 +230,6 @@ Write in ${languageName}. Return only the instruction text:`
 
     const { provider: model } = await getModelProvider({
       app,
-      name: "beles",
       user,
       guest,
     })

@@ -2041,7 +2041,7 @@ const seedDb = async (): Promise<void> => {
         }
 
         await clearDb()
-        // await create()
+        await create()
       }
     }
 

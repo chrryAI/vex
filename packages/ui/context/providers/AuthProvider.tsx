@@ -98,7 +98,7 @@ import { useError } from "./ErrorProvider"
 
 export type { session }
 
-const VERSION = "1.1.63"
+const VERSION = "2.1.53"
 
 const AuthContext = createContext<
   | {
@@ -1655,6 +1655,11 @@ export function AuthProvider({
   }, [refetchTimer])
 
   const [selectedAgent, setSelectedAgent] = useState<aiAgent | undefined>()
+  const isBYOK = !!user?.apiKeys?.openrouter || !!guest?.apiKeys?.openrouter
+  const isReplicateBYOK =
+    !!user?.apiKeys?.replicate || !!guest?.apiKeys?.replicate
+  const isFalYOK = !!user?.apiKeys?.fal || !!guest?.apiKeys?.fal
+
   const plausible = ({
     name,
     url,
@@ -1729,6 +1734,9 @@ export function AuthProvider({
       creditsLeft,
       hourlyLimit,
       hourlyUsageLeft,
+      isBYOK,
+      isReplicateBYOK,
+      isFalYOK,
     }
 
     const finalProps = burn
@@ -1737,6 +1745,7 @@ export function AuthProvider({
           ...basic,
           ...enrichedProps,
           isMember: !!user,
+          isBYOK,
           isGuest: !!guest,
           isSubscriber: !!(user || guest)?.subscription,
           isOwner: isOwner(app, {
@@ -2177,23 +2186,6 @@ export function AuthProvider({
     showFocusInitial,
   )
 
-  const showWatermelonInitial =
-    searchParams.get("watermelon") === "true" || pathname === "/watermelon"
-
-  const [showWatermelon, setShowWatermelonInternal] = useState(
-    showWatermelonInitial,
-  )
-
-  const setShowWatermelon = (sw: boolean) => {
-    setShowWatermelonInternal(sw)
-
-    if (sw) {
-      addParams({ watermelon: "true" })
-    } else {
-      showWatermelon && removeParams("watermelon")
-    }
-  }
-
   useEffect(() => {
     if (showFocusInitial !== showFocus) {
       setShowFocusInternal(showFocusInitial)
@@ -2498,6 +2490,24 @@ export function AuthProvider({
     ? excludedSlugRoutes?.includes(_routeSlug)
     : false
 
+  const showWatermelonInitial = !!(
+    (siteConfig.isWatermelon && clearLocale(pathname) === "") ||
+    pathname === "/watermelon"
+  )
+
+  const [showWatermelon, setShowWatermelonInternal] = useLocalStorage<boolean>(
+    "showWatermelon",
+    showWatermelonInitial || !!siteConfig.isWatermelon,
+  )
+
+  const setShowWatermelon = (sw: boolean) => {
+    setShowWatermelonInternal(sw)
+  }
+
+  useEffect(() => {
+    setShowWatermelonInternal(showWatermelonInitial)
+  }, [showWatermelonInitial])
+
   const postIdInitial = getPostId(pathname)
 
   const [postId, setPostId] = useState(postIdInitial)
@@ -2606,6 +2616,9 @@ export function AuthProvider({
   }, [isPearInternal, app?.name, app?.slug, app?.id])
 
   const setShowTribe = (value: boolean) => {
+    if (value && showWatermelon) {
+      setShowWatermelon(false)
+    }
     if (!canShowTribe) return
     setShowTribeFinal(value)
 
@@ -3284,14 +3297,6 @@ export function AuthProvider({
     }
   }, [session?.versions])
 
-  const pageSizes = {
-    threads: 20,
-    menuThreads: 10,
-    messages: 20,
-    users: 20,
-    apps: 50,
-  }
-
   const [PROMPT_LIMITS, setPromptLimits] = useState({
     INPUT: 7000, // Max for direct input
     INSTRUCTIONS: 2000, // Max for instructions
@@ -3530,6 +3535,12 @@ export function AuthProvider({
   const [needsUpdate, setNeedsUpdate] = useState(false)
 
   useEffect(() => {
+    console.log(
+      `🚀 ~ useEffect ~ toVersionNumber(versions?.macosVersion) :`,
+      toVersionNumber(versions?.macosVersion),
+      toVersionNumber(VERSION),
+    )
+
     const update = !versions
       ? false
       : isTauri
