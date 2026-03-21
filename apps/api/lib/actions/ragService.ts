@@ -247,7 +247,15 @@ export async function processFileForRAG({
 
         // 3b. SYNC TO FALKORDB (Graph RAG)
         // We do this in parallel or background to not block legacy flow
-        storeDocumentChunk(filename, i, chunk, embedding, threadId, fileType)
+        storeDocumentChunk(
+          filename,
+          i,
+          chunk,
+          embedding,
+          threadId,
+          fileType,
+          app?.id || "global",
+        )
           .then(() => {
             // Level 4: Entity Linking (God Mode)
             // Extract topics from chunk and link to Graph entities
