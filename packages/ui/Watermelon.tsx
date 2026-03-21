@@ -279,7 +279,7 @@ export default function Watermelon() {
                   marginTop: 15,
                 }}
               >
-                🔪 {t("Choose your weapon")} 🏹
+                🔪<Span>{t("Choose your weapon")}</Span>🏹
               </P>
               <Div
                 style={{
