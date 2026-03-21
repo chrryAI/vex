@@ -108,12 +108,6 @@ export default function Watermelon() {
 
   const falApiKeyInitialValue = user?.apiKeys?.fal || guest?.apiKeys?.fal || ""
 
-  const [falApiKey, setFalApiKey] = useState(falApiKeyInitialValue)
-
-  useEffect(() => {
-    setFalApiKey(falApiKeyInitialValue)
-  }, [falApiKeyInitialValue])
-
   const replicateApiKeyInternal =
     user?.apiKeys?.replicate || guest?.apiKeys?.replicate || ""
 
