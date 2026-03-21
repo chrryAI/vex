@@ -6,6 +6,7 @@ import AppLink from "./AppLink"
 import A from "./a/A"
 import ColorScheme from "./ColorScheme"
 import ConfirmButton from "./ConfirmButton"
+import Weather from "./Weather"
 import { useAppContext } from "./context/AppContext"
 
 import { COLORS } from "./context/providers/AppProvider"
@@ -91,6 +92,7 @@ export default function Watermelon() {
     actions,
     storeApps,
     plausible,
+    city,
   } = useAuth()
 
   const coder = storeApps.find((app) => app.slug === "coder")
@@ -958,11 +960,24 @@ export default function Watermelon() {
                 color: "var(--shade-7)",
                 display: "flex",
                 gap: 5,
-                marginBottom: isMobileDevice ? 25 : 15,
+                marginBottom: isMobileDevice ? 25 : 25,
               }}
             >
               <Img icon={"hamster"} size={20} />{" "}
               <Span>v{app?.version || VERSION}</Span>
+            </P>
+            <P
+              style={{
+                marginBottom: isMobileDevice ? 25 : 15,
+                display: "flex",
+                gap: 7.5,
+                alignItems: "center",
+              }}
+            >
+              <Weather showLocation />
+              <A href="/about">
+                <Img icon="hippo" size={25} />
+              </A>
             </P>
           </>
         )}
