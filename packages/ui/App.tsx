@@ -937,6 +937,10 @@ export default function App({
                 style={{
                   marginTop: 70,
                   position: "relative",
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: "1rem",
+                  alignItems: "center",
                 }}
               >
                 {user && !user?.subscription ? (
@@ -1037,22 +1041,20 @@ export default function App({
                     <Img icon="spaceInvader" size={22} /> {t("Join")}
                   </Button>
                 )}
+                {app?.blueskyHandle && (
+                  <A
+                    event={ANALYTICS_EVENTS.BLUE_SKY_CLICK}
+                    openInNewTab
+                    href={`https://bsky.app/profile/${app.blueskyHandle}`}
+                    style={{
+                      fontSize: "13px",
+                      marginBottom: ".25rem",
+                    }}
+                  >
+                    <SiBluesky size={18} /> {t("Bluesky")}
+                  </A>
+                )}
               </Div>
-              {app?.blueskyHandle && (
-                <A
-                  event={ANALYTICS_EVENTS.BLUE_SKY_CLICK}
-                  openInNewTab
-                  href={`https://bsky.app/profile/${app.blueskyHandle}`}
-                  style={{
-                    fontSize: "13px",
-                    marginTop: "1rem",
-                    marginLeft: rtl ? undefined : ".25rem",
-                    marginRight: !rtl ? undefined : ".25rem",
-                  }}
-                >
-                  <SiBluesky size={18} /> {t("Bluesky")}
-                </A>
-              )}
             </>
           )}
 

@@ -479,9 +479,7 @@ const Thread = ({
               zIndex: 10,
               paddingBottom:
                 minimize && !showFocus && !showTribe
-                  ? app?.blueskyHandle
-                    ? 0
-                    : 30
+                  ? 30
                   : isStandalone
                     ? 200
                     : 195,
