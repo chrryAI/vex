@@ -25,7 +25,6 @@ import Img from "./Image"
 import {
   ArrowRight,
   Claude,
-  Coins,
   DeepSeek,
   Flux,
   Gemini,
@@ -228,12 +227,11 @@ export default function Watermelon() {
             >
               <P
                 style={{
-                  marginBottom: isMobileDevice ? 25 : 15,
                   display: "flex",
                   gap: 7.5,
                   alignItems: "center",
-                  marginTop: 20,
-                  marginBottom: isMobileDevice ? 25 : 50,
+                  marginTop: isMobileDevice ? 60 : 25,
+                  marginBottom: isMobileDevice ? 15 : 40,
                 }}
               >
                 <Weather showLocation />

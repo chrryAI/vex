@@ -37,6 +37,7 @@ import {
 } from "./hooks"
 import { useWebSocket } from "./hooks/useWebSocket"
 import Img from "./Image"
+import Instructions from "./Instructions"
 import {
   ArrowLeft,
   AudioLines,
@@ -67,7 +68,6 @@ import {
   Music,
   OpenAI,
   Palette,
-  Paperclip,
   Perplexity,
   Plus,
   Sparkles,
@@ -5053,7 +5053,11 @@ export default function Chat({
                         }}
                         type="submit"
                       >
-                        <Paperclip color={"var(--accent-6)"} size={22} />
+                        {isDevelopment ? (
+                          <Instructions size={24} icon key="attach-button" />
+                        ) : (
+                          <Img slug="hippo" size={24} key="attach-button" />
+                        )}
                       </Button>
                     )
                   )}
