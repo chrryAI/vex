@@ -224,9 +224,23 @@ export default function Watermelon() {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 9.5,
-                marginTop: isMobileDevice ? 75 : 100,
               }}
             >
+              <P
+                style={{
+                  marginBottom: isMobileDevice ? 25 : 15,
+                  display: "flex",
+                  gap: 7.5,
+                  alignItems: "center",
+                  marginTop: 20,
+                  marginBottom: isMobileDevice ? 25 : 50,
+                }}
+              >
+                <Weather showLocation />
+                <A href="/about">
+                  <Img icon="hippo" size={25} />
+                </A>
+              </P>
               <H1
                 style={{
                   display: "flex",
@@ -1026,19 +1040,6 @@ export default function Watermelon() {
             >
               <Img icon={"hamster"} size={20} />{" "}
               <Span>v{app?.version || VERSION}</Span>
-            </P>
-            <P
-              style={{
-                marginBottom: isMobileDevice ? 25 : 15,
-                display: "flex",
-                gap: 7.5,
-                alignItems: "center",
-              }}
-            >
-              <Weather showLocation />
-              <A href="/about">
-                <Img icon="hippo" size={25} />
-              </A>
             </P>
           </>
         )}
