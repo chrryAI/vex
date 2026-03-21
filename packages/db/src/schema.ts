@@ -39,6 +39,7 @@ export type apiKeys = {
   fal?: string // Encrypted Replicate API key (for Flux)
   openrouter?: string // Encrypted OpenRouter API key
   xai?: string // Encrypted XAI API key
+  s3?: string // Encrypted S3 API key
 }
 
 export const PROMPT_LIMITS = {
@@ -72,6 +73,7 @@ export const users = pgTable(
       fal?: string // Encrypted Replicate API key (for Flux)
       openrouter?: string // Encrypted OpenRouter API key
       xai?: string // Encrypted XAI API key
+      s3?: string // Encrypted S3 API key
     }>(),
     apiKey: text("apiKey"),
     image: text("image"),
@@ -240,6 +242,14 @@ export const feedbackTransactions = pgTable("feedbackTransactions", {
     enum: ["free", "plus", "pro"],
   }),
   creditsRemaining: integer("creditsRemaining").default(0),
+
+  hippoCredits: integer("hippoCredits").default(25).notNull(),
+  lastHippoCreditReset: timestamp("lastHippoCreditReset", {
+    mode: "date",
+    withTimezone: true,
+  })
+    .defaultNow()
+    .notNull(),
   metadata: jsonb("metadata").$type<{
     feedbackId?: string
     subscriptionId?: string
@@ -359,6 +369,7 @@ export const guests = pgTable("guest", {
     fal?: string // Encrypted Replicate API key (for Flux)
     openrouter?: string // Encrypted OpenRouter API key
     xai?: string // Encrypted XAI API key
+    s3?: string // Encrypted S3 API key
   }>(),
 
   weather: jsonb("weather").$type<{
@@ -391,6 +402,14 @@ export const guests = pgTable("guest", {
   favouriteAgent: text("favouriteAgent").notNull().default("sushi"),
 
   credits: integer("credits").default(GUEST_CREDITS_PER_MONTH).notNull(),
+
+  hippoCredits: integer("hippoCredits").default(5).notNull(),
+  lastHippoCreditReset: timestamp("lastHippoCreditReset", {
+    mode: "date",
+    withTimezone: true,
+  })
+    .defaultNow()
+    .notNull(),
   isBot: boolean("isBot").default(false).notNull(),
   isOnline: boolean("isOnline").default(false),
   imagesGeneratedToday: integer("imagesGeneratedToday").default(0).notNull(),
@@ -3239,6 +3258,7 @@ export const apps = pgTable(
       replicate?: string // Encrypted Replicate API key (for Flux)
       openrouter?: string // Encrypted OpenRouter API key
       xai?: string // Encrypted XAI API key
+      s3?: string // Encrypted S3 API key
     }>(), // If provided, app uses creator's keys instead of Vex's
 
     // Usage Limits (customizable per app)
@@ -5705,3 +5725,57 @@ export const slotAuctionsRelations = relations(slotAuctions, ({ one }) => ({
     references: [autonomousBids.id],
   }),
 }))
+
+export const hippos = pgTable(
+  "hippo",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
+    content: text("content").notNull(),
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    // files: jsonb("files").$type<
+    //   {
+    //     type: string
+    //     url?: string
+    //     name: string
+    //     size: number
+    //     data?: string
+    //     id: string
+    //   }[]
+    // >(),
+  },
+  (table) => ({
+    userIdIdx: index("hippo_user_idx").on(table.userId),
+    guestIdIdx: index("hippo_guest_idx").on(table.guestId),
+    createdOnIdx: index("hippo_created_on_idx").on(table.createdOn),
+  }),
+)
+
+export type hippo = typeof hippos.$inferSelect
+export type newHippo = typeof hippos.$inferInsert
+
+const hippoFiles = pgTable(
+  "hippoFiles",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    hippoId: uuid("hippoId").references(() => hippos.id, {
+      onDelete: "cascade",
+    }),
+    type: text("type").notNull(),
+    url: text("url"),
+    name: text("name").notNull(),
+    size: integer("size").notNull(),
+    data: text("data"),
+  },
+  (table) => ({
+    hippoIdIdx: index("hippo_files_hippo_idx").on(table.hippoId),
+  }),
+)
+
+export type hippoFile = typeof hippoFiles.$inferSelect
+export type newHippoFile = typeof hippoFiles.$inferInsert
