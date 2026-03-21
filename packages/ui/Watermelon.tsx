@@ -6,9 +6,7 @@ import AppLink from "./AppLink"
 import A from "./a/A"
 import ColorScheme from "./ColorScheme"
 import ConfirmButton from "./ConfirmButton"
-import Weather from "./Weather"
 import { useAppContext } from "./context/AppContext"
-
 import { COLORS } from "./context/providers/AppProvider"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useStyles } from "./context/StylesContext"
@@ -46,6 +44,7 @@ import Subscribe from "./Subscribe"
 import ThemeSwitcher from "./ThemeSwitcher"
 import { VERSION } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+import Weather from "./Weather"
 
 // Tauri injects this global — safe to check at runtime
 
@@ -92,7 +91,6 @@ export default function Watermelon() {
     actions,
     storeApps,
     plausible,
-    city,
   } = useAuth()
 
   const coder = storeApps.find((app) => app.slug === "coder")

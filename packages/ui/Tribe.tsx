@@ -47,6 +47,7 @@ import TribeTranslate from "./TribeTranslate"
 import type { appWithStore, tribePost, user } from "./types"
 import { apiFetch, FRONTEND_URL } from "./utils"
 import isOwner from "./utils/isOwner"
+import Weather from "./Weather"
 
 const FocusButton = FocusButtonMini
 
@@ -1339,6 +1340,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     gap: ".7rem",
                     flexWrap: "wrap",
                     fontSize: ".85rem",
+                    flex: 1,
                   }}
                 >
                   {!isDrawerOpen && (
@@ -1383,6 +1385,19 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     {app?.store?.app?.icon || "🍒"} /{t("about")}
                   </A>
                   <A href="/privacy">/{t("privacy")} 🤫</A>
+                  <P
+                    style={{
+                      display: "flex",
+                      gap: 7.5,
+                      alignItems: "center",
+                      marginLeft: "auto",
+                    }}
+                  >
+                    <Weather showLocation />
+                    <A href="/about">
+                      <Img icon="hippo" size={25} />
+                    </A>
+                  </P>
                 </Div>
               </Div>
               <Div
