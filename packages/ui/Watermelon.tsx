@@ -91,7 +91,6 @@ export default function Watermelon() {
     actions,
     storeApps,
     plausible,
-    setShowWatermelon,
   } = useAuth()
 
   const coder = storeApps.find((app) => app.slug === "coder")
@@ -142,7 +141,7 @@ export default function Watermelon() {
 
   const { utilities } = useStyles()
 
-  const { isTauri } = usePlatform()
+  const { isTauri, viewPortWidth } = usePlatform()
 
   const { isMobileDevice, colorScheme } = useTheme()
 
@@ -319,7 +318,7 @@ export default function Watermelon() {
                       padding: "0.25rem 0.5rem",
                     }}
                   >
-                    {app.name}
+                    {t(app.name)}
                     <Coins size={14} color={app?.themeColor || COLORS.blue} />
                   </AppLink>
                 )}
@@ -339,7 +338,7 @@ export default function Watermelon() {
                     height={22}
                     src="https://chrry.ai/images/apps/watermelon.png"
                   />
-                  Agency
+                  {t("Agency")}
                 </A>
                 <A
                   style={{
@@ -352,7 +351,7 @@ export default function Watermelon() {
                   href="?subscribe=true&plan=watermelon&watermelonTier=plus"
                 >
                   <Img alt="🦋 Sovereign" width={22} height={22} slug="tribe" />
-                  Sovereign
+                  {t("Sovereign")}
                 </A>
               </Div>
               <Div
@@ -480,18 +479,21 @@ export default function Watermelon() {
                     style={{ position: "relative" }}
                     href="https://openrouter.ai/keys"
                   >
-                    <OpenRouter size={20} /> OpenRouter*
-                    <Span
-                      style={{
-                        fontSize: ".65rem",
-                        position: "absolute",
-                        bottom: -15,
-                        right: 3,
-                        color: COLORS.red,
-                      }}
-                    >
-                      {t("Required")}
-                    </Span>
+                    <OpenRouter size={20} />{" "}
+                    {viewPortWidth >= 400 ? "OpenRouter*" : undefined}
+                    {viewPortWidth >= 400 ? (
+                      <Span
+                        style={{
+                          fontSize: ".65rem",
+                          position: "absolute",
+                          bottom: -15,
+                          right: 3,
+                          color: COLORS.red,
+                        }}
+                      >
+                        {t("Required")}
+                      </Span>
+                    ) : null}
                   </A>
                   {openRouterApiKeyInitialValue ? (
                     <ConfirmButton
@@ -554,6 +556,8 @@ export default function Watermelon() {
                     style={{
                       border: "1px solid var(--accent-6)",
                       borderColor: colorScheme,
+                      flex: 1,
+                      width: viewPortWidth < 400 ? "fit-content" : undefined,
                     }}
                   />
                   <Button
@@ -659,18 +663,21 @@ export default function Watermelon() {
                       position: "relative",
                     }}
                   >
-                    <Replicate size={20} /> Replicate*
-                    <Span
-                      style={{
-                        fontSize: ".65rem",
-                        position: "absolute",
-                        bottom: -15,
-                        right: 3,
-                        color: COLORS.orange,
-                      }}
-                    >
-                      {t("Optional")}
-                    </Span>
+                    <Replicate size={20} />{" "}
+                    {viewPortWidth >= 400 ? "Replicate*" : undefined}
+                    {viewPortWidth >= 400 ? (
+                      <Span
+                        style={{
+                          fontSize: ".65rem",
+                          position: "absolute",
+                          bottom: -15,
+                          right: 3,
+                          color: COLORS.orange,
+                        }}
+                      >
+                        {t("Optional")}
+                      </Span>
+                    ) : null}
                   </A>
                   {replicateApiKeyInternal ? (
                     <ConfirmButton
@@ -735,6 +742,7 @@ export default function Watermelon() {
                     style={{
                       borderColor: colorScheme,
                       flex: 1,
+                      width: viewPortWidth < 400 ? "fit-content" : undefined,
                     }}
                   />
                   <Button

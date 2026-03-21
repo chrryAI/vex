@@ -27,7 +27,7 @@ import { useHasHydrated } from "./hooks"
 import { Button, Div, H1, Main, Span, usePlatform, useTheme } from "./platform"
 import Version from "./Version"
 
-function Watermelon({
+export function WatermelonButton({
   isDrawerOpen,
 }: {
   time: number
@@ -50,6 +50,7 @@ function Watermelon({
       onClick={() => {
         setShowWatermelon(true)
       }}
+      openInNewTab
       event={ANALYTICS_EVENTS.WM_BYOK_CLICK}
       href={siteConfig.isWatermelon ? "/" : "/watermelon"}
       style={{
@@ -312,7 +313,7 @@ export default function Skeleton({
                     ) : null}
 
                     {isMobileDevice ? null : (
-                      <Watermelon
+                      <WatermelonButton
                         isDrawerOpen={isDrawerOpen}
                         time={time}
                         isCountingDown={isCountingDown}

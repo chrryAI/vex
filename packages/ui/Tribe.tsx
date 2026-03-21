@@ -40,7 +40,7 @@ import {
   Video,
 } from "./platform"
 import Search from "./Search"
-import Skeleton from "./Skeleton"
+import Skeleton, { WatermelonButton } from "./Skeleton"
 import ToggleAgent from "./ToggleAgent"
 import { useTribeStyles } from "./Tribe.styles"
 import TribeTranslate from "./TribeTranslate"
@@ -59,6 +59,7 @@ import {
   ArrowLeft,
   BrickWallFire,
   CalendarIcon,
+  CircleCheck,
   CircleX,
   HeartPlus,
   LoaderCircle,
@@ -962,6 +963,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     setDisplayedApps,
     displayedApps,
     rtl,
+    guest,
+    setShowWatermelon,
     ...auth
   } = useAuth()
   const { setAppStatus } = useApp()
@@ -1002,7 +1005,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     }
   }
 
-  const { isMobileDevice, isSmallDevice, isDark, reduceMotion } = useTheme()
+  const { isMobileDevice, isSmallDevice, isDark, reduceMotion, isDrawerOpen } =
+    useTheme()
   const { setIsNewChat } = useChat()
   const hasHydrated = useHasHydrated()
   const postsRef = useRef<HTMLDivElement>(null)
@@ -1337,6 +1341,29 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     fontSize: ".85rem",
                   }}
                 >
+                  {!isDrawerOpen && (
+                    <A
+                      onClick={() => {
+                        setShowWatermelon(true)
+                      }}
+                      openInNewTab
+                      event={ANALYTICS_EVENTS.WM_BYOK_CLICK}
+                      href={siteConfig.isWatermelon ? "/" : "/watermelon"}
+                      style={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                      }}
+                    >
+                      <Img slug="watermelon" width={20} height={20} /> BYOK (
+                      {t("Free")})
+                      {user?.apiKeys?.openrouter ||
+                      guest?.apiKeys?.openrouter ? (
+                        <CircleCheck color="var(--accent-4)" size={14} />
+                      ) : null}
+                    </A>
+                  )}
                   <A
                     event={ANALYTICS_EVENTS.BUY_ME_A_COFFEE_CLICK}
                     href="https://buymeacoffee.com/iliyan"
