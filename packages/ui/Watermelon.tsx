@@ -10,7 +10,7 @@ import {
 import { useEffect, useState } from "react"
 import { Trans } from "react-i18next"
 import { BiLogoPostgresql } from "react-icons/bi"
-import { SiMacos, SiMinio, SiRedis } from "react-icons/si"
+import { SiBuymeacoffee, SiMacos, SiMinio, SiRedis } from "react-icons/si"
 import AppLink from "./AppLink"
 import A from "./a/A"
 import ConfirmButton from "./ConfirmButton"
@@ -24,6 +24,7 @@ import { ArrowRight, Coins, Flux } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import Loading from "./Loading"
 import LocalSetupScreen from "./LocalSetupScreen"
+
 import {
   Button,
   Div,
@@ -759,6 +760,28 @@ export default function Watermelon() {
                   <ArrowRight size={14} color="var(--accent-5)" />
                 </A>
               </P>
+            </Div>
+            <Div
+              style={{
+                marginTop: "auto",
+              }}
+            >
+              <A
+                event={ANALYTICS_EVENTS.BUY_ME_A_COFFEE_CLICK}
+                href="https://buymeacoffee.com/iliyan"
+                openInNewTab
+                title="Buy me a coffee"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  fontSize: ".9rem",
+                  color: COLORS.orange,
+                }}
+              >
+                <SiBuymeacoffee color={COLORS.orange} size={20} />
+                {t("BAM")} 💥
+              </A>
             </Div>
             <Div
               style={{
