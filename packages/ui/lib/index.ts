@@ -137,6 +137,8 @@ export const getImageSrc = ({
     "cosmos",
     "starmap",
     "quantumlab",
+    "hippo",
+    "whale",
     "avocado",
     "jules",
     "watermelon",
