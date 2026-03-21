@@ -19,12 +19,12 @@ import { useNavigationContext } from "./context/providers"
 import { COLORS } from "./context/providers/AppProvider"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useStyles } from "./context/StylesContext"
+import { useTheme } from "./context/ThemeContext"
 import Img from "./Image"
 import { ArrowRight, Coins, Flux } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import Loading from "./Loading"
 import LocalSetupScreen from "./LocalSetupScreen"
-
 import {
   Button,
   Div,
@@ -147,13 +147,14 @@ export default function Watermelon() {
 
   const { isTauri } = usePlatform()
 
+  const { isMobileDevice } = useTheme()
+
   // const { push } = useNavigationContext()
   return (
     <>
       <Div
         style={{
           width: "100dvw",
-          height: "100dvh",
           display: "flex",
           color: "var(--shade-8)",
           alignItems: "center",
@@ -219,7 +220,7 @@ export default function Watermelon() {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 9.5,
-                marginTop: 100,
+                marginTop: isMobileDevice ? 75 : 100,
               }}
             >
               <H1
@@ -745,7 +746,9 @@ export default function Watermelon() {
                 </Form>
               </Div>
 
-              <P style={{ fontSize: ".85rem", marginTop: 25 }}>
+              <P
+                style={{ fontSize: ".85rem", marginTop: 25, marginBottom: 25 }}
+              >
                 <A
                   style={{
                     color: "var(--shade-6)",
@@ -770,6 +773,7 @@ export default function Watermelon() {
                 flexDirection: "row",
                 position: "relative",
                 bottom: ".5rem",
+                marginBottom: 20,
               }}
             >
               <Div

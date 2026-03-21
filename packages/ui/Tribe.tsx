@@ -3,7 +3,7 @@
 import type React from "react"
 import { type RefObject, useCallback, useEffect, useRef, useState } from "react"
 import { FaGithub } from "react-icons/fa"
-import { SiBluesky } from "react-icons/si"
+import { SiBluesky, SiBuymeacoffee } from "react-icons/si"
 import A from "./a/A"
 import { COLORS, useAppContext } from "./context/AppContext"
 import {
@@ -22,6 +22,7 @@ import Instructions from "./Instructions"
 import LanguageSwitcher from "./LanguageSwitcher"
 import { defaultLocale } from "./locales"
 import Markdown from "./MarkdownContent.web"
+
 import {
   Button,
   Div,
@@ -1325,6 +1326,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                   flexDirection: isMobileDevice ? "column" : "row",
                   position: "relative",
                   bottom: isMobileDevice ? ".5rem" : ".5rem",
+                  marginBottom: ".75rem",
                 }}
               >
                 <Div
@@ -1335,6 +1337,21 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     fontSize: ".85rem",
                   }}
                 >
+                  <A
+                    event={ANALYTICS_EVENTS.BUY_ME_A_COFFEE_CLICK}
+                    href="https://buymeacoffee.com/iliyan"
+                    openInNewTab
+                    title="Buy me a coffee"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      color: COLORS.orange,
+                    }}
+                  >
+                    <SiBuymeacoffee color={COLORS.orange} size={16} />
+                    {t("BAM")} 💥
+                  </A>
                   <A href="/about">
                     {app?.store?.app?.icon || "🍒"} /{t("about")}
                   </A>
