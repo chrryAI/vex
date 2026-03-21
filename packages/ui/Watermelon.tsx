@@ -96,7 +96,6 @@ export default function Watermelon() {
   } = useAuth()
 
   const coder = storeApps.find((app) => app.slug === "coder")
-  const architect = storeApps.find((app) => app.slug === "architect")
   const jules = storeApps.find((app) => app.slug === "jules")
   const [isSavingReplicateApiKey, setIsSavingReplicateApiKey] = useState(false)
 
