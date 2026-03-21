@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react"
 import { Trans } from "react-i18next"
 import { BiLogoPostgresql } from "react-icons/bi"
-import { SiBuymeacoffee, SiMacos, SiMinio, SiRedis } from "react-icons/si"
+import {
+  SiBun,
+  SiBuymeacoffee,
+  SiHetzner,
+  SiHono,
+  SiMacos,
+  SiMinio,
+  SiRedis,
+  SiVite,
+} from "react-icons/si"
 import AppLink from "./AppLink"
 import A from "./a/A"
 import ColorScheme from "./ColorScheme"
@@ -24,6 +33,7 @@ import {
   OpenRouter,
   Perplexity,
   Replicate,
+  WannathisIcon,
 } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import Loading from "./Loading"
@@ -355,8 +365,8 @@ export default function Watermelon() {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 10,
-                  marginTop: 15,
+                  gap: 12.5,
+                  marginTop: 17.5,
                   fontSize: "0.8rem",
                   color: COLORS.blue,
                   flexWrap: "wrap",
@@ -379,15 +389,67 @@ export default function Watermelon() {
                     <Img slug="whale" size={30} /> {t("Stack")}
                   </Span>
                 )}
-                <BiLogoPostgresql title="PostgreSQL" size={20} />
-                <SiRedis title="Redis" size={20} />
-                <SiMinio title="MinIO" size={20} />
-                <DeepSeek size={20} />
-                <Claude size={20} />
-                <Perplexity size={20} />
-                <OpenAI size={20} />
-                <Grok size={20} />
-                <Gemini size={20} />
+                {viewPortWidth >= 1400 && (
+                  <A
+                    onClick={() => {
+                      plausible({
+                        name: ANALYTICS_EVENTS.WANNATHIS,
+                        props: {
+                          app: app?.name,
+                        },
+                      })
+                    }}
+                    href="https://wannathis.one?via=iliyan"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <WannathisIcon />
+                  </A>
+                )}
+                <A openInNewTab href="https://postgresql.org">
+                  <BiLogoPostgresql title="PostgreSQL" size={20} />
+                </A>
+                <A openInNewTab href="https://www.falkordb.com">
+                  <SiRedis color={COLORS.red} title="FalkorDB" size={20} />
+                </A>
+                <A openInNewTab href="https://bun.sh">
+                  <SiBun color={COLORS.orange} title="Bun" size={20} />
+                </A>
+                <A openInNewTab href="https://hono.dev">
+                  <SiHono color={COLORS.red} title="Hono" size={20} />
+                </A>
+                <A openInNewTab href="https://vitejs.dev">
+                  <SiVite color={COLORS.green} title="Vite" size={20} />
+                </A>
+                <A openInNewTab href="https://hetzner.cloud/?ref=jBud3ivK4tnH">
+                  <SiHetzner color={COLORS.red} title="Hetzner" size={20} />
+                </A>
+                <A openInNewTab href="https://min.io">
+                  <SiMinio color={COLORS.red} title="MinIO" size={20} />
+                </A>
+                <A openInNewTab href="https://chatgpt.com">
+                  <OpenAI color={"var(--foreground)"} size={20} />
+                </A>
+                <A openInNewTab href="https://chat.deepseek.com">
+                  <DeepSeek color={COLORS.blue} size={20} />
+                </A>
+                <A openInNewTab href="https://claude.ai">
+                  <Claude color={COLORS.orange} size={20} />
+                </A>
+                <A
+                  openInNewTab
+                  color={COLORS.blue}
+                  href="https://perplexity.ai"
+                >
+                  <Perplexity size={20} />
+                </A>
+
+                <A openInNewTab href="https://grok.com">
+                  <Grok color={"var(--foreground)"} size={20} />
+                </A>
+                <A openInNewTab href="http://gemini.google.com">
+                  <Gemini size={20} />
+                </A>
               </Div>
               <Div
                 style={{ display: "flex", flexDirection: "column", gap: 20 }}
