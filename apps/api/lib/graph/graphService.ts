@@ -146,8 +146,8 @@ async function generateDynamicCypher({
   try {
     const prompt = `You are an expert FalkorDB Cypher architect. Generate a Cypher query to retrieve context for this user question: "${queryText}"
     
-    Current Graph Schema:
-    - Nodes: (Topic {name, createdAt}), (Document {name, threadId, createdAt}), (Chunk {content, chunkIndex}), (User {id})
+    Current Graph Schema (Multi-tenant! Every node MUST have an appId):
+    - Nodes: (Topic {name, appId, createdAt}), (Document {name, appId, threadId, createdAt}), (Chunk {content, appId, chunkIndex}), (User {id})
     - Relations: (Topic)-[REL]->(Topic), (Document)-[:HAS_CHUNK]->(Chunk), (Chunk)-[:MENTIONS]->(Topic)
     
     🚨 CRITICAL FalkorDB Limitations (WILL CAUSE ERRORS IF VIOLATED):
@@ -179,6 +179,7 @@ async function generateDynamicCypher({
     4. Keep it efficient (LIMIT 15).
     5. Use ONLY exact string matching with = operator.
     6. Return ONLY the raw Cypher query string.
+    7. CRITICAL SECURITY RULE: ALWAYS filter every MATCH statement by the current app context. You MUST add \`{appId: $appId}\` to all Node property maps in your queries. Only query nodes belonging to $appId.
     
     ✅ CORRECT Examples:
     - MATCH (n)-[r]->(m) RETURN n.name, type(r), m.name
@@ -307,6 +308,7 @@ export async function storeDocumentChunk(
   embedding: number[],
   threadId: string,
   fileType: string,
+  appId: string,
 ) {
   try {
     await ensureIndices()
@@ -317,11 +319,11 @@ export async function storeDocumentChunk(
     // SECURITY: Parameterized
     // Level 5: Added temporal tracking (createdAt)
     const query = `
-          MERGE (d:Document {name: $filename})
+          MERGE (d:Document {name: $filename, appId: $appId})
           ON CREATE SET d.threadId = $threadId, d.fileType = $fileType, d.createdAt = $now
           ON MATCH SET d.updatedAt = $now
           
-          CREATE (c:Chunk {content: $content, chunkIndex: $chunkIndex, createdAt: $now})
+          CREATE (c:Chunk {content: $content, chunkIndex: $chunkIndex, createdAt: $now, appId: $appId})
           SET c.embedding = $embedding
           
           MERGE (d)-[r:HAS_CHUNK]->(c)
@@ -336,6 +338,7 @@ export async function storeDocumentChunk(
         content,
         chunkIndex,
         embedding,
+        appId,
         now,
       },
     })
@@ -384,15 +387,21 @@ export async function linkChunkToEntities({
       // Note: Entity might already exist from chat extraction, if not we create as generic 'Topic'
       // Level 5: Temporal linking
       const query = `
-                MATCH (d:Document {name: $filename})
-                MATCH (d)-[:HAS_CHUNK]->(c:Chunk {chunkIndex: $chunkIndex})
-                MERGE (e:Topic {name: $entityName})
+                MATCH (d:Document {name: $filename, appId: $appId})
+                MATCH (d)-[:HAS_CHUNK]->(c:Chunk {chunkIndex: $chunkIndex, appId: $appId})
+                MERGE (e:Topic {name: $entityName, appId: $appId})
                 ON CREATE SET e.createdAt = $now
                 MERGE (c)-[r:MENTIONS]->(e)
                 ON CREATE SET r.createdAt = $now
             `
       await graph.query(query, {
-        params: { filename, chunkIndex, entityName, now },
+        params: {
+          filename,
+          chunkIndex,
+          entityName,
+          appId: app?.id || "global",
+          now,
+        },
       })
     }
     // console.log(`🔗 Entity Linking Done: ${filename} #${chunkIndex} -> [${entities.join(', ')}]`)
@@ -500,11 +509,11 @@ export async function extractAndStoreKnowledge(
       // FalkorDB client handles array -> vector conversion if supported, or we pass it as parameter
       // Level 5: Advanced versioned storage with temporal tracking
       const vectorQuery = `
-        MERGE (s:\`${sLabel}\` {name: $source})
+        MERGE (s:\`${sLabel}\` {name: $source, appId: $appId})
         ON CREATE SET s.createdAt = $now, s.embedding = $sourceEmbedding
         ON MATCH SET s.updatedAt = $now, s.embedding = $sourceEmbedding
         
-        MERGE (t:\`${tLabel}\` {name: $target})
+        MERGE (t:\`${tLabel}\` {name: $target, appId: $appId})
         ON CREATE SET t.createdAt = $now, t.embedding = $targetEmbedding
         ON MATCH SET t.updatedAt = $now, t.embedding = $targetEmbedding
         
@@ -521,6 +530,7 @@ export async function extractAndStoreKnowledge(
             target: sanitizedTarget,
             sourceEmbedding,
             targetEmbedding,
+            appId: app?.id || "global",
             now,
           },
         })
@@ -528,14 +538,21 @@ export async function extractAndStoreKnowledge(
         // Fallback without vector if embedding failed
         await graph.query(
           `
-            MERGE (s:${sLabel} {name: $source})
+            MERGE (s:${sLabel} {name: $source, appId: $appId})
             ON CREATE SET s.createdAt = $now
-            MERGE (t:${tLabel} {name: $target})
+            MERGE (t:${tLabel} {name: $target, appId: $appId})
             ON CREATE SET t.createdAt = $now
             MERGE (s)-[r:${rType}]->(t)
             ON CREATE SET r.createdAt = $now
          `,
-          { params: { source: sanitizedSource, target: sanitizedTarget, now } },
+          {
+            params: {
+              source: sanitizedSource,
+              target: sanitizedTarget,
+              appId: app?.id || "global",
+              now,
+            },
+          },
         )
       }
 
@@ -558,13 +575,14 @@ export async function extractAndStoreKnowledge(
         `
         MERGE (u:User {id: $userId})
         WITH u
-        MATCH (n {name: $nodeName}) 
+        MATCH (n {name: $nodeName, appId: $appId})
         MERGE (u)-[:MENTIONED]->(n)
     `,
         {
           params: {
             userId,
             nodeName: sourceNodeName,
+            appId: app?.id || "global",
           },
         },
       )
@@ -605,7 +623,7 @@ export async function getGraphContext({
       try {
         // Pass queryText as parameter for safe injection-free queries
         const dynamicResult = await graph.query(dynamicQuery, {
-          params: { queryText },
+          params: { queryText, appId: app?.id || "global" },
         })
         if ((dynamicResult as any)?.resultSet?.length > 0) {
           for (const row of (dynamicResult as any).resultSet) {
@@ -643,17 +661,17 @@ export async function getGraphContext({
           // CRITICAL: UNION requires exact column type match - cast both to string
           const expandQuery = `
                 MATCH (n)-[r]->(m)
-                WHERE n.name IN $names
+                WHERE n.name IN $names AND n.appId = $appId AND m.appId = $appId
                 RETURN n.name as source, type(r) as rel, toString(m.name) as target
                 LIMIT 10
                 UNION
                 MATCH (e:Topic)<-[rm:MENTIONS]-(c:Chunk)<-[:HAS_CHUNK]-(d:Document)
-                WHERE e.name IN $names
+                WHERE e.name IN $names AND e.appId = $appId AND c.appId = $appId AND d.appId = $appId
                 RETURN d.name as source, 'DISCUSSES' as rel, substring(c.content, 0, 500) as target
                 LIMIT 5
             `
           const expansion = await graph.query(expandQuery, {
-            params: { names: semanticNodes },
+            params: { names: semanticNodes, appId: app?.id || "global" },
           })
           if ((expansion as any)?.resultSet) {
             for (const row of (expansion as any).resultSet) {
@@ -706,17 +724,17 @@ export async function getGraphContext({
         // CRITICAL: UNION requires exact column type match - cast both to string
         const expandQuery = `
                 MATCH (n)-[r]->(m)
-                WHERE n.name IN $names
+                WHERE n.name IN $names AND n.appId = $appId AND m.appId = $appId
                 RETURN n.name as source, type(r) as rel, toString(m.name) as target
                 LIMIT 10
                 UNION
                 MATCH (e:Topic)<-[rm:MENTIONS]-(c:Chunk)<-[:HAS_CHUNK]-(d:Document)
-                WHERE e.name IN $names
+                WHERE e.name IN $names AND e.appId = $appId AND c.appId = $appId AND d.appId = $appId
                 RETURN d.name as source, 'DISCUSSES' as rel, substring(c.content, 0, 500) as target
                 LIMIT 3
             `
         const expansion = await graph.query(expandQuery, {
-          params: { names: textNodes },
+          params: { names: textNodes, appId: app?.id || "global" },
         })
         if ((expansion as any)?.resultSet) {
           for (const row of (expansion as any).resultSet) {
@@ -779,7 +797,7 @@ export async function storeNewsInGraph(article: {
     if (embedding) {
       await graph.query(
         `
-        MERGE (n:NewsArticle {name: $name})
+        MERGE (n:NewsArticle {name: $name, appId: 'news-global'})
         ON CREATE SET n.category = $category, n.source = $source, n.country = $country, n.createdAt = $now, n.embedding = $embedding
         ON MATCH SET n.updatedAt = $now, n.embedding = $embedding
         `,
@@ -797,7 +815,7 @@ export async function storeNewsInGraph(article: {
     } else {
       await graph.query(
         `
-        MERGE (n:NewsArticle {name: $name})
+        MERGE (n:NewsArticle {name: $name, appId: 'news-global'})
         ON CREATE SET n.category = $category, n.source = $source, n.country = $country, n.createdAt = $now
         ON MATCH SET n.updatedAt = $now
         `,
@@ -908,7 +926,8 @@ export async function clearGraphDataForUser({
         await graph.query(
           `
           UNWIND $threadIds AS threadId
-          MATCH (d:Document {threadId: threadId})
+          // SECURITY: Ensure we only delete documents belonging to this app
+          MATCH (d:Document {threadId: threadId, appId: $appId})
           OPTIONAL MATCH (d)-[:HAS_CHUNK]->(c:Chunk)
           DETACH DELETE d, c
           `,
