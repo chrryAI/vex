@@ -2507,5 +2507,6 @@
   "First launch pulls Docker images — this only takes a minute once.": "İlk başlatma Docker görüntülerini çeker — bu sadece bir kez bir dakika sürer.",
   "Bluesky": "Bluesky",
   "Please save your OpenRouter API key first": "Lütfen önce OpenRouter API anahtarınızı kaydedin",
-  "BAM": "BAM"
+  "BAM": "BAM",
+  "Give Hippo something to remember": "Hippo'ya hatırlayacağı bir şey verin"
 }

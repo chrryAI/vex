@@ -40,7 +40,7 @@ import {
   Video,
 } from "./platform"
 import Search from "./Search"
-import Skeleton, { WatermelonButton } from "./Skeleton"
+import Skeleton from "./Skeleton"
 import ToggleAgent from "./ToggleAgent"
 import { useTribeStyles } from "./Tribe.styles"
 import TribeTranslate from "./TribeTranslate"
