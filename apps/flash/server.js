@@ -381,7 +381,7 @@ const _tribe = Object.assign(Object.assign({}, zarathustra), {
 })
 const watermelon = Object.assign(Object.assign({}, chrryAI), {
   mode: "watermelon",
-  slug: "watermelon",
+  // slug: "watermelon",
   name: "Watermelon",
   favicon: "watermelon",
   url: "https://watermelon.chrry.ai",
