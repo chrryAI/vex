@@ -40,8 +40,7 @@ import {
   FileUp,
   MousePointerClick,
   Music,
-  Plus,
-  Sparkles,
+  Paperclip,
   Trash2,
   VideoIcon,
 } from "./icons"
@@ -78,8 +77,8 @@ export default function Instructions({
   className,
   thread,
   onSave,
-  icon,
-  showInstructions = true,
+  icon = true,
+  showInstructions = false,
   showDownloads = true,
   dataTestId = "instruction",
   showButton = true,
@@ -88,10 +87,13 @@ export default function Instructions({
   isAgentBuilder = false,
   onClose,
   style,
+  size,
+  key,
   ...rest
 }: {
   className?: string
   icon?: boolean
+  key?: string
   thread?: thread
   showInstructions?: boolean
   opacity?: number
@@ -103,6 +105,8 @@ export default function Instructions({
   showInstallers?: boolean
   onClose?: () => void
   isAgentBuilder?: boolean
+  size?: number
+
   onSave?: ({
     content,
     artifacts,
@@ -135,6 +139,7 @@ export default function Instructions({
     API_URL,
     weather,
     PROMPT_LIMITS,
+    isDevelopment,
     ...auth
   } = useAuth()
 
@@ -445,6 +450,7 @@ export default function Instructions({
 
   const [content, setContent] = useState(thread?.instructions || "")
 
+  const hippoSize = size || (icon ? 20 : 22)
   useEffect(() => {
     if (selectedInstruction && !thread) {
       if (selectedInstruction?.content) {
@@ -807,7 +813,7 @@ export default function Instructions({
   }
 
   return (
-    <Div data-testid={`${dataTestId}`}>
+    <Div key={key || dataTestId} data-testid={`${dataTestId}`}>
       {isAppDescriptionOpen && (
         <Modal
           style={{
@@ -1219,19 +1225,20 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
               </Button>
             )}
             <Div style={styles.actions.style}>
-              {user?.role === "admin" && (
-                <Button
-                  className="inverted"
-                  data-testid={`${dataTestId}-modal-chat-button`}
-                  onClick={() => {
-                    setIsChatOpen(true)
-                  }}
-                  style={{ ...utilities.inverted.style }}
-                >
-                  <Img app={app} size={14} />
-                  {isMobileDevice ? null : t("Chat")}
-                </Button>
-              )}
+              {user?.role === "admin" ||
+                (isDevelopment && (
+                  <Button
+                    className="inverted"
+                    data-testid={`${dataTestId}-modal-chat-button`}
+                    onClick={() => {
+                      setIsChatOpen(true)
+                    }}
+                    style={{ ...utilities.inverted.style }}
+                  >
+                    <Img app={app} size={14} />
+                    {isMobileDevice ? null : t("Chat")}
+                  </Button>
+                ))}
               <Button
                 className="inverted"
                 data-testid={`${dataTestId}-modal-artifacts-button`}
@@ -1318,11 +1325,11 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
           <Div
             style={{
               ...styles.instructionsButtonContainer.style,
-              marginBottom: !thread && !icon ? "0.8rem" : undefined,
+              // marginBottom: !thread && !icon ? "0.8rem" : undefined,
             }}
           >
             <Button
-              className={icon ? "link" : "inverted small"}
+              className={"link"}
               data-testid={`${dataTestId}-button`}
               onClick={() => {
                 // Clear content if it matches the currently selected instruction
@@ -1344,8 +1351,12 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   : utilities.inverted.style),
               }}
             >
-              <Img slug="hippo" size={16} />
-              {!icon ? <>{t("Instructions")}</> : <Plus size={12} />}
+              <Img slug="hippo" size={hippoSize} />
+              {!icon ? (
+                <>{t("Instructions")}</>
+              ) : (
+                <Paperclip size={hippoSize / 1.75} />
+              )}
             </Button>
           </Div>
         )}
@@ -1421,7 +1432,6 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
           </Div>
         )}
         {!thread &&
-          !icon &&
           ((showInstructions && showDownloads) || !showInstallers) && (
             <Div
               data-testid={`${dataTestId}-about`}

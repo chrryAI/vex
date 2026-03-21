@@ -1623,6 +1623,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           showDownloads={true}
                           showInstructions={false}
                           showInstallers={false}
+                          icon
                           style={{
                             marginTop: 0,
                           }}
@@ -1837,6 +1838,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       showButton={false}
                       showDownloads={true}
                       showInstructions={false}
+                      icon
                       style={{
                         marginTop: 0,
                       }}

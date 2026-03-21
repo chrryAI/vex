@@ -1747,7 +1747,7 @@ export default function App({
         >
           {isManagingApp && (
             <Instructions
-              showButton={true}
+              icon={false}
               dataTestId="instruction-builder"
               opacity={0}
               onSave={({ content, artifacts }) => {
@@ -1760,6 +1760,8 @@ export default function App({
             />
           )}
           <Instructions
+            icon
+            showInstructions
             showButton={false}
             dataTestId="instruction"
             isAgentBuilder={true}
