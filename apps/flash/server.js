@@ -710,7 +710,7 @@ export const whiteLabels = [
   _tribe,
 ]
 
-const VERSION = "2.1.40"
+const VERSION = "2.1.41"
 // Constants
 const port = process.env.PORT || 5173
 const base = process.env.BASE || "/"
