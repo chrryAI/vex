@@ -2504,5 +2504,6 @@
   "First launch pulls Docker images — this only takes a minute once.": "初回起動ではDockerイメージを取得します - これは一度だけ1分程度かかります。",
   "Bluesky": "ブルースカイ",
   "Please save your OpenRouter API key first": "まず、OpenRouter APIキーを保存してください",
-  "BAM": "BAM"
+  "BAM": "BAM",
+  "Give Hippo something to remember": "Hippoに覚えておくべき何かを与えてください"
 }

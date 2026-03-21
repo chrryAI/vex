@@ -2504,5 +2504,6 @@
   "First launch pulls Docker images — this only takes a minute once.": "첫 실행은 Docker 이미지를 가져오는데 — 이는 한 번에 단지 1분만 소요됩니다.",
   "Bluesky": "블루스카이",
   "Please save your OpenRouter API key first": "먼저 OpenRouter API 키를 저장해 주세요",
-  "BAM": "BAM"
+  "BAM": "BAM",
+  "Give Hippo something to remember": "Hippo에게 기억할 만한 것을 주세요"
 }
