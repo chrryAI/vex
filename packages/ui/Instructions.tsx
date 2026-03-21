@@ -31,8 +31,6 @@ import { useInstructionsStyles } from "./Instructions.styles"
 import {
   ArrowLeft,
   ArrowRight,
-  Brain,
-  BrainCircuit,
   Circle,
   CircleCheck,
   CircleX,
@@ -44,7 +42,6 @@ import {
   Music,
   Plus,
   Sparkles,
-  TestTubeDiagonal,
   Trash2,
   VideoIcon,
 } from "./icons"
@@ -206,6 +203,8 @@ export default function Instructions({
   const [placeHolder, setPlaceHolder] = useState<string | undefined>(
     rest.placeholder,
   )
+
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false)
 
   const [isAppDescriptionOpen, setIsAppDescriptionOpen] = useState(false)
 
@@ -1220,6 +1219,19 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
               </Button>
             )}
             <Div style={styles.actions.style}>
+              {user?.role === "admin" && (
+                <Button
+                  className="inverted"
+                  data-testid={`${dataTestId}-modal-chat-button`}
+                  onClick={() => {
+                    setIsChatOpen(true)
+                  }}
+                  style={{ ...utilities.inverted.style }}
+                >
+                  <Img app={app} size={14} />
+                  {isMobileDevice ? null : t("Chat")}
+                </Button>
+              )}
               <Button
                 className="inverted"
                 data-testid={`${dataTestId}-modal-artifacts-button`}
@@ -1228,7 +1240,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                 }}
                 style={{ ...utilities.inverted.style }}
               >
-                <Img slug="hippo" size={14} />
+                <Img slug="burn" size={14} />
                 {isMobileDevice ? null : t("Upload")}
               </Button>
 

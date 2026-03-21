@@ -111,6 +111,7 @@ const TIER2_SLUGS = new Set([
   "pear",
   "architect",
   "jules",
+  "hippo",
   "lucas",
   "grape",
   "meditations",
