@@ -98,7 +98,7 @@ import { useError } from "./ErrorProvider"
 
 export type { session }
 
-const VERSION = "2.1.45"
+const VERSION = "2.1.46"
 
 const AuthContext = createContext<
   | {
@@ -2618,6 +2618,9 @@ export function AuthProvider({
   }, [isPearInternal, app?.name, app?.slug, app?.id])
 
   const setShowTribe = (value: boolean) => {
+    if (value && showWatermelon) {
+      setShowWatermelon(false)
+    }
     if (!canShowTribe) return
     setShowTribeFinal(value)
 
