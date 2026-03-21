@@ -26,6 +26,7 @@ import {
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
 import { useResponsiveCount } from "./hooks/useResponsiveCount"
+import Img from "./Image"
 import { useInstructionsStyles } from "./Instructions.styles"
 import {
   ArrowLeft,
@@ -857,13 +858,13 @@ export default function Instructions({
           <>
             {isArtifactsOpen ? (
               <>
-                <TestTubeDiagonal color="var(--accent-4)" size={24} />
-                <Span>{t("Artifacts")}</Span>
+                <Img slug="hippo" size={24} />
+                <Span>{t("Upload")}</Span>
               </>
             ) : (
               <>
-                <Brain color="var(--accent-6)" size={24} />
-                <Span>{t("Instructions")}</Span>
+                <Img slug="hippo" size={24} />
+                <Span>{t("Hippo")}</Span>
               </>
             )}
 
@@ -1191,10 +1192,10 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
         )}
         {!isArtifactsOpen && (
           <Span style={styles.tip.style}>
-            <BrainCircuit size={16} color="var(--accent-6)" />
+            <Img slug="hippo" size={16} />
             <Span>
               {canUpdate
-                ? t(`Give Vex something to remember`)
+                ? t(`Give Hippo something to remember`)
                 : t(`Only owner can update instructions`)}
             </Span>
           </Span>
@@ -1212,7 +1213,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   <Loading width={14} height={14} />
                 ) : (
                   <>
-                    <Sparkles size={14} color="var(--accent-1)" />
+                    <Img app={app} size={14} />
                     {t("Generate")}
                   </>
                 )}
@@ -1227,8 +1228,8 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                 }}
                 style={{ ...utilities.inverted.style }}
               >
-                <TestTubeDiagonal size={14} color="var(--accent-4)" />
-                {isMobileDevice ? null : t("Artifacts")}
+                <Img slug="hippo" size={14} />
+                {isMobileDevice ? null : t("Upload")}
               </Button>
 
               {isManaging && (
@@ -1331,27 +1332,9 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   : utilities.inverted.style),
               }}
             >
-              <Brain color="var(--accent-6)" size={16} />
+              <Img slug="hippo" size={16} />
               {!icon ? <>{t("Instructions")}</> : <Plus size={12} />}
             </Button>
-            {!isMobileDevice && (
-              <Button
-                title={t("Artifacts")}
-                data-testid={`${dataTestId}-artifacts-button`}
-                onClick={() => {
-                  addHapticFeedback()
-                  setIsArtifactsOpen(true)
-                }}
-                className={icon ? "link" : "transparent"}
-                style={{
-                  ...(icon
-                    ? utilities.link.style
-                    : utilities.transparent.style),
-                }}
-              >
-                <TestTubeDiagonal size={15} color="var(--accent-4)" />
-              </Button>
-            )}
           </Div>
         )}
         {!thread && showInstructions && (

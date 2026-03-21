@@ -93,7 +93,6 @@ export default function Watermelon() {
     plausible,
   } = useAuth()
 
-  const coder = storeApps.find((app) => app.slug === "coder")
   const jules = storeApps.find((app) => app.slug === "jules")
   const [isSavingReplicateApiKey, setIsSavingReplicateApiKey] = useState(false)
 
@@ -101,8 +100,6 @@ export default function Watermelon() {
 
   const openRouterApiKeyInitialValue =
     user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter || ""
-
-  const falApiKeyInitialValue = user?.apiKeys?.fal || guest?.apiKeys?.fal || ""
 
   const replicateApiKeyInternal =
     user?.apiKeys?.replicate || guest?.apiKeys?.replicate || ""

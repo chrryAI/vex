@@ -55,8 +55,8 @@ export function WatermelonButton({
       href={siteConfig.isWatermelon ? "/" : "/watermelon"}
       style={{
         ...utilities.xSmall.style,
-        marginTop: !isDrawerOpen ? 1 : -7.5,
-        marginLeft: rtl ? 0 : isDrawerOpen ? 0 : -5,
+        marginTop: -7.5,
+        marginLeft: 0,
         marginRight: rtl ? (isDrawerOpen ? 0 : -5) : 0,
         position: "relative",
         display: "flex",

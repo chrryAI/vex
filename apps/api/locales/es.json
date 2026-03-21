@@ -2504,5 +2504,6 @@
   "First launch pulls Docker images — this only takes a minute once.": "El primer lanzamiento extrae imágenes de Docker, esto solo toma un minuto una vez.",
   "Bluesky": "Bluesky",
   "Please save your OpenRouter API key first": "Por favor, guarda primero tu clave API de OpenRouter",
-  "BAM": "BAM"
+  "BAM": "BAM",
+  "Give Hippo something to remember": "Dale a Hippo algo para recordar"
 }
