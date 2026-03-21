@@ -390,7 +390,6 @@ export default function Watermelon() {
                     plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT })
                     e.preventDefault()
                     if (!openRouterApiKey) {
-                      plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_ERROR })
                       toast.error(t("Please enter your OpenRouter API key"))
                       return
                     }
