@@ -1,27 +1,31 @@
-import {
-  Claude,
-  DeepSeek,
-  Gemini,
-  Grok,
-  OpenAI,
-  OpenRouter,
-  Replicate,
-} from "@lobehub/icons"
 import { useEffect, useState } from "react"
 import { Trans } from "react-i18next"
 import { BiLogoPostgresql } from "react-icons/bi"
 import { SiBuymeacoffee, SiMacos, SiMinio, SiRedis } from "react-icons/si"
 import AppLink from "./AppLink"
 import A from "./a/A"
+import ColorScheme from "./ColorScheme"
 import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
-import { useNavigationContext } from "./context/providers"
+
 import { COLORS } from "./context/providers/AppProvider"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useStyles } from "./context/StylesContext"
 import { useTheme } from "./context/ThemeContext"
 import Img from "./Image"
-import { ArrowRight, Coins, Flux } from "./icons"
+import {
+  ArrowRight,
+  Claude,
+  Coins,
+  DeepSeek,
+  Flux,
+  Gemini,
+  Grok,
+  OpenAI,
+  OpenRouter,
+  Perplexity,
+  Replicate,
+} from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import Loading from "./Loading"
 import LocalSetupScreen from "./LocalSetupScreen"
@@ -38,6 +42,8 @@ import {
 } from "./platform"
 import SignIn from "./SignIn"
 import Subscribe from "./Subscribe"
+import ThemeSwitcher from "./ThemeSwitcher"
+import { VERSION } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 // Tauri injects this global — safe to check at runtime
@@ -78,7 +84,6 @@ export default function Watermelon() {
     app,
     siteConfig,
     downloadUrl,
-    getAppSlug,
     user,
     guest,
     setGuest,
@@ -86,13 +91,10 @@ export default function Watermelon() {
     actions,
     storeApps,
     plausible,
-    setShowWatermelon,
   } = useAuth()
 
   const coder = storeApps.find((app) => app.slug === "coder")
-  const architect = storeApps.find((app) => app.slug === "architect")
   const jules = storeApps.find((app) => app.slug === "jules")
-  const debuggerApp = storeApps.find((app) => app.slug === "debugger")
   const [isSavingReplicateApiKey, setIsSavingReplicateApiKey] = useState(false)
 
   const { t, captureException } = useAppContext()
@@ -101,12 +103,6 @@ export default function Watermelon() {
     user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter || ""
 
   const falApiKeyInitialValue = user?.apiKeys?.fal || guest?.apiKeys?.fal || ""
-
-  const [falApiKey, setFalApiKey] = useState(falApiKeyInitialValue)
-
-  useEffect(() => {
-    setFalApiKey(falApiKeyInitialValue)
-  }, [falApiKeyInitialValue])
 
   const replicateApiKeyInternal =
     user?.apiKeys?.replicate || guest?.apiKeys?.replicate || ""
@@ -145,9 +141,9 @@ export default function Watermelon() {
 
   const { utilities } = useStyles()
 
-  const { isTauri } = usePlatform()
+  const { isTauri, viewPortWidth } = usePlatform()
 
-  const { isMobileDevice } = useTheme()
+  const { isMobileDevice, colorScheme } = useTheme()
 
   // const { push } = useNavigationContext()
   return (
@@ -322,7 +318,7 @@ export default function Watermelon() {
                       padding: "0.25rem 0.5rem",
                     }}
                   >
-                    {app.name}
+                    {t(app.name)}
                     <Coins size={14} color={app?.themeColor || COLORS.blue} />
                   </AppLink>
                 )}
@@ -342,7 +338,7 @@ export default function Watermelon() {
                     height={22}
                     src="https://chrry.ai/images/apps/watermelon.png"
                   />
-                  Agency
+                  {t("Agency")}
                 </A>
                 <A
                   style={{
@@ -355,35 +351,47 @@ export default function Watermelon() {
                   href="?subscribe=true&plan=watermelon&watermelonTier=plus"
                 >
                   <Img alt="🦋 Sovereign" width={22} height={22} slug="tribe" />
-                  Sovereign
+                  {t("Sovereign")}
                 </A>
               </Div>
-              {isTauri && (
-                <Div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    marginTop: 10,
-                  }}
-                >
+              <Div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  marginTop: 15,
+                  fontSize: "0.8rem",
+                  color: COLORS.blue,
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                }}
+              >
+                {isTauri ? (
                   <Button
                     type="button"
                     className="inverted"
                     onClick={() => setShowLocalSetup(true)}
                   >
-                    🐳 Local Stack
+                    <Img slug="whale" />
+                    {t("Local Stack")}
                   </Button>
-                  <BiLogoPostgresql title="PostgreSQL" size={20} />
-                  <SiRedis title="Redis" size={20} />
-                  <SiMinio title="MinIO" size={20} />
-                  <DeepSeek size={20} />
-                  <Claude size={20} />
-                  <OpenAI size={20} />
-                  <Grok size={20} />
-                  <Gemini size={20} />
-                </Div>
-              )}
+                ) : (
+                  <Span
+                    style={{ display: "flex", alignItems: "center", gap: 5 }}
+                  >
+                    <Img slug="whale" size={30} /> {t("Stack")}
+                  </Span>
+                )}
+                <BiLogoPostgresql title="PostgreSQL" size={20} />
+                <SiRedis title="Redis" size={20} />
+                <SiMinio title="MinIO" size={20} />
+                <DeepSeek size={20} />
+                <Claude size={20} />
+                <Perplexity size={20} />
+                <OpenAI size={20} />
+                <Grok size={20} />
+                <Gemini size={20} />
+              </Div>
               <Div
                 style={{ display: "flex", flexDirection: "column", gap: 20 }}
               >
@@ -471,18 +479,21 @@ export default function Watermelon() {
                     style={{ position: "relative" }}
                     href="https://openrouter.ai/keys"
                   >
-                    <OpenRouter size={20} /> OpenRouter*
-                    <Span
-                      style={{
-                        fontSize: ".65rem",
-                        position: "absolute",
-                        bottom: -15,
-                        right: 3,
-                        color: COLORS.red,
-                      }}
-                    >
-                      {t("Required")}
-                    </Span>
+                    <OpenRouter size={20} />{" "}
+                    {viewPortWidth >= 400 ? "OpenRouter*" : undefined}
+                    {viewPortWidth >= 400 ? (
+                      <Span
+                        style={{
+                          fontSize: ".65rem",
+                          position: "absolute",
+                          bottom: -15,
+                          right: 3,
+                          color: COLORS.red,
+                        }}
+                      >
+                        {t("Required")}
+                      </Span>
+                    ) : null}
                   </A>
                   {openRouterApiKeyInitialValue ? (
                     <ConfirmButton
@@ -544,6 +555,9 @@ export default function Watermelon() {
                     onChange={(e) => setOpenRouterApiKey(e.target.value)}
                     style={{
                       border: "1px solid var(--accent-6)",
+                      borderColor: colorScheme,
+                      flex: 1,
+                      width: viewPortWidth < 400 ? "fit-content" : undefined,
                     }}
                   />
                   <Button
@@ -554,6 +568,7 @@ export default function Watermelon() {
                       alignItems: "center",
                       gap: 5,
                       padding: "0.25rem 0.5rem",
+                      marginLeft: "auto",
                     }}
                   >
                     <OpenRouter size={20} />
@@ -648,18 +663,21 @@ export default function Watermelon() {
                       position: "relative",
                     }}
                   >
-                    <Replicate size={20} /> Replicate*
-                    <Span
-                      style={{
-                        fontSize: ".65rem",
-                        position: "absolute",
-                        bottom: -15,
-                        right: 3,
-                        color: COLORS.orange,
-                      }}
-                    >
-                      {t("Optional")}
-                    </Span>
+                    <Replicate size={20} />{" "}
+                    {viewPortWidth >= 400 ? "Replicate*" : undefined}
+                    {viewPortWidth >= 400 ? (
+                      <Span
+                        style={{
+                          fontSize: ".65rem",
+                          position: "absolute",
+                          bottom: -15,
+                          right: 3,
+                          color: COLORS.orange,
+                        }}
+                      >
+                        {t("Optional")}
+                      </Span>
+                    ) : null}
                   </A>
                   {replicateApiKeyInternal ? (
                     <ConfirmButton
@@ -722,8 +740,9 @@ export default function Watermelon() {
                     value={replicateApiKey}
                     onChange={(e) => setReplicateApiKey(e.target.value)}
                     style={{
-                      border: "1px solid var(--accent-6)",
+                      borderColor: colorScheme,
                       flex: 1,
+                      width: viewPortWidth < 400 ? "fit-content" : undefined,
                     }}
                   />
                   <Button
@@ -734,6 +753,7 @@ export default function Watermelon() {
                       alignItems: "center",
                       gap: 5,
                       padding: "0.25rem 0.5rem",
+                      marginLeft: "auto",
                     }}
                   >
                     <Flux size={20} />
@@ -919,6 +939,31 @@ export default function Watermelon() {
                 </Div>
               )}
             </Div>
+            <Div
+              style={{
+                marginTop: 35,
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                display: "flex",
+                marginBottom: 20,
+              }}
+            >
+              <ThemeSwitcher style={{ marginTop: 5 }} />
+              <ColorScheme />
+            </Div>
+            <P
+              style={{
+                fontSize: "0.8rem",
+                color: "var(--shade-7)",
+                display: "flex",
+                gap: 5,
+                marginBottom: isMobileDevice ? 25 : 15,
+              }}
+            >
+              <Img icon={"hamster"} size={20} />{" "}
+              <Span>v{app?.version || VERSION}</Span>
+            </P>
           </>
         )}
       </Div>

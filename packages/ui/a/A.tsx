@@ -36,9 +36,9 @@ const Anchor = React.forwardRef<
 
     const isExternalUrl = (url?: string) => {
       if (isTauri) return false
-      if (newTab) return true
       if (!url) return false
       return (
+        newTab &&
         (url.startsWith("http://") ||
           url.startsWith("https://") ||
           url.startsWith("mailto:") ||

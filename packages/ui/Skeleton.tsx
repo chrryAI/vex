@@ -27,7 +27,7 @@ import { useHasHydrated } from "./hooks"
 import { Button, Div, H1, Main, Span, usePlatform, useTheme } from "./platform"
 import Version from "./Version"
 
-function Watermelon({
+export function WatermelonButton({
   isDrawerOpen,
 }: {
   time: number
@@ -36,7 +36,7 @@ function Watermelon({
 }) {
   const { viewPortWidth } = usePlatform()
   const { t } = useAppContext()
-  const { user, guest, siteConfig, setShowWatermelon } = useAuth()
+  const { user, guest, siteConfig, setShowWatermelon, rtl } = useAuth()
 
   const hasHydrated = useHasHydrated()
   const { utilities } = useStyles()
@@ -50,17 +50,20 @@ function Watermelon({
       onClick={() => {
         setShowWatermelon(true)
       }}
+      openInNewTab
       event={ANALYTICS_EVENTS.WM_BYOK_CLICK}
       href={siteConfig.isWatermelon ? "/" : "/watermelon"}
       style={{
         ...utilities.xSmall.style,
         marginTop: !isDrawerOpen ? 1 : -7.5,
-        marginLeft: isDrawerOpen ? 0 : -5,
+        marginLeft: rtl ? 0 : isDrawerOpen ? 0 : -5,
+        marginRight: rtl ? (isDrawerOpen ? 0 : -5) : 0,
         position: "relative",
         display: "flex",
         alignItems: "center",
         gap: 5,
-        left: 250,
+        left: rtl ? 0 : 250,
+        right: rtl ? 250 : 0,
       }}
     >
       <Img slug="watermelon" width={22} height={22} /> BYOK ({t("Free")})
@@ -312,7 +315,7 @@ export default function Skeleton({
                     ) : null}
 
                     {isMobileDevice ? null : (
-                      <Watermelon
+                      <WatermelonButton
                         isDrawerOpen={isDrawerOpen}
                         time={time}
                         isCountingDown={isCountingDown}
