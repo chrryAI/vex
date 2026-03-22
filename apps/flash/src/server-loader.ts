@@ -58,6 +58,7 @@ export interface ServerData {
     threads: thread[]
     totalCount: number
   }
+  isBot?: boolean
   testConfig: { [key: string]: string[] }
   apiKey?: string
   canShowAllTribe?: boolean
@@ -515,6 +516,7 @@ export async function loadServerData(
     apiKey,
     canShowAllTribe,
     pathname,
+    isBot,
   }
   let metadata
   try {

@@ -47,6 +47,7 @@ export default function Chrry({
   tribePosts,
   testConfig,
   tribePost,
+  isBot,
   theme,
 }: {
   translations?: Record<string, any>
@@ -71,6 +72,7 @@ export default function Chrry({
     threads: thread[]
     totalCount: number
   }
+  isBot?: boolean
   theme?: "light" | "dark"
   testConfig?: { [key: string]: string[] }
   tribes?: paginatedTribes
@@ -100,6 +102,7 @@ export default function Chrry({
       tribePosts={tribePosts}
       tribePost={tribePost}
       theme={theme}
+      isBot={isBot}
     >
       {children}
     </AppProviders>

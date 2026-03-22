@@ -62,7 +62,7 @@ export const Hey = memo(
   }) {
     const { pathname } = useNavigationContext()
 
-    const { isExtension, isCapacitor, os } = usePlatform()
+    const { isExtension, isCapacitor, os, isBot } = usePlatform()
 
     const styles = useSidebarStyles()
 
@@ -94,6 +94,7 @@ export const Hey = memo(
       showWatermelon,
       FRONTEND_URL,
       showWatermelonInitial,
+      hasHydrated: isHydrated,
     } = useAuth()
 
     const { tribeSlug, isLoadingTribes } = useTribe()
@@ -140,8 +141,6 @@ export const Hey = memo(
           pathname === "/api" ||
           app ||
           currentStore))
-
-    const isHydrated = useHasHydrated()
 
     const showTribeLogo = showTribe
       ? canShowAllTribe || tribeSlug || postId
@@ -243,6 +242,10 @@ export const Hey = memo(
       app,
     ])
 
+    if (!isHydrated) {
+      return null
+    }
+
     return (
       <Div
         style={{
@@ -254,23 +257,25 @@ export const Hey = memo(
           {splash}
           <Suspense fallback={<Loading fullScreen />}>
             <Programme />
-            <Div style={{ display: isProgramme ? "none" : "block" }}>
-              {showWatermelon ? (
-                <Watermelon />
-              ) : isClientRoute ? (
-                postId || tribeSlug ? (
-                  <Home />
-                ) : threadId ? (
-                  <Thread key={threadId} />
-                ) : RouteComponent ? (
-                  <RouteComponent />
+            {isHydrated && (
+              <Div style={{ display: isProgramme ? "none" : "block" }}>
+                {showWatermelon ? (
+                  <Watermelon />
+                ) : isClientRoute ? (
+                  postId || tribeSlug ? (
+                    <Home />
+                  ) : threadId ? (
+                    <Thread key={threadId} />
+                  ) : RouteComponent ? (
+                    <RouteComponent />
+                  ) : (
+                    <Home />
+                  )
                 ) : (
-                  <Home />
-                )
-              ) : (
-                children
-              )}
-            </Div>
+                  children
+                )}
+              </Div>
+            )}
             {isHydrated && (
               <>
                 <VexToast />
