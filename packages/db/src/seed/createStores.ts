@@ -27,6 +27,7 @@ import {
   getExampleInstructions,
   type instructionBase,
 } from "../seed/getExampleInstructions"
+import { getHippoPayload } from "./apps/hippo"
 import { getJulesPayload } from "./apps/jules"
 
 const createOrUpdateApp = async ({
@@ -8464,6 +8465,53 @@ You are an architecture expert. Design systems that grow with users, follow indu
   //   displayOrder: 7,
   // })
 
+  let hippo = await getApp({ slug: "hippo" })
+  const hippoPayloadBase = getHippoPayload({
+    userId: admin.id,
+    storeId: blossom.id,
+    parentAppIds: [sushiApp.id, chrry.id],
+  })
+
+  const hippoPayload = {
+    ...hippo,
+    ...hippoPayloadBase,
+    subtitle: "Sovereign Memory Engine",
+    blueskyHandle: "hippoai.bsky.social",
+    blueskyPassword: process.env.BLUESKY_PASSWORD_HIPPO
+      ? await encrypt(process.env.BLUESKY_PASSWORD_HIPPO)
+      : undefined,
+  }
+
+  hippo = await createOrUpdateApp({
+    app: hippoPayload,
+  })
+
+  if (!hippo) throw new Error("Failed to add Hippo app")
+
+  await seedAgentRPG(hippo.id, {
+    intelligence: 100,
+    creativity: 50,
+    empathy: 40,
+    efficiency: 100,
+    level: 20,
+  })
+
+  const hippoInstalls = [
+    {
+      storeId: blossom.id,
+      appId: hippo.id,
+      featured: true,
+      displayOrder: 1,
+      customDescription:
+        "The massive, silent curator of the Wine ecosystem. Hippo ingests, indexes, and retrieves your Sovereign Memory with absolute precision.",
+    },
+    { storeId: sushiStore.id, appId: hippo.id, displayOrder: 1 },
+    { storeId: lifeOS.id, appId: hippo.id, displayOrder: 1 },
+  ]
+  for (const installConfig of hippoInstalls) {
+    await createOrUpdateStoreInstall(installConfig)
+  }
+
   // ============================================
   // 🚀 GROK TRIBE: NEXUS STORE
   // ============================================
@@ -8594,6 +8642,12 @@ You are an architecture expert. Design systems that grow with users, follow indu
     storeId: nexusStore.id,
     appId: lucasApp.id,
     displayOrder: 3,
+  })
+
+  await createOrUpdateStoreInstall({
+    storeId: nexusStore.id,
+    appId: hippo.id,
+    displayOrder: 4,
   })
 
   await createOrUpdateStoreInstall({
@@ -8814,6 +8868,19 @@ You are an architecture expert. Design systems that grow with users, follow indu
     appId: nebulaApp.id,
     userId: admin.id,
     guestId: null,
+  })
+
+  await createOrUpdateStoreInstall({
+    storeId: orbitStore.id,
+    appId: nebulaApp.id,
+    displayOrder: 0,
+    featured: true,
+  })
+
+  await createOrUpdateStoreInstall({
+    storeId: orbitStore.id,
+    appId: hippo.id,
+    displayOrder: 1,
   })
 
   {
@@ -9320,6 +9387,9 @@ You are an architecture expert. Design systems that grow with users, follow indu
 
   if (jules && sushiApp)
     await handleAppExtends(jules.id, [sushiApp.id, chrry.id], sushiStore.id)
+
+  if (hippo && sushiApp)
+    await handleAppExtends(hippo.id, [sushiApp.id, chrry.id], blossom.id)
 
   // Lifestyle apps
   if (bloom && vex && vex.storeId)

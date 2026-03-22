@@ -26,12 +26,11 @@ import {
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
 import { useResponsiveCount } from "./hooks/useResponsiveCount"
+import Img from "./Image"
 import { useInstructionsStyles } from "./Instructions.styles"
 import {
   ArrowLeft,
   ArrowRight,
-  Brain,
-  BrainCircuit,
   Circle,
   CircleCheck,
   CircleX,
@@ -41,9 +40,7 @@ import {
   FileUp,
   MousePointerClick,
   Music,
-  Plus,
-  Sparkles,
-  TestTubeDiagonal,
+  Paperclip,
   Trash2,
   VideoIcon,
 } from "./icons"
@@ -80,8 +77,8 @@ export default function Instructions({
   className,
   thread,
   onSave,
-  icon,
-  showInstructions = true,
+  icon = true,
+  showInstructions = false,
   showDownloads = true,
   dataTestId = "instruction",
   showButton = true,
@@ -90,10 +87,13 @@ export default function Instructions({
   isAgentBuilder = false,
   onClose,
   style,
+  size,
+  key,
   ...rest
 }: {
   className?: string
   icon?: boolean
+  key?: string
   thread?: thread
   showInstructions?: boolean
   opacity?: number
@@ -105,6 +105,8 @@ export default function Instructions({
   showInstallers?: boolean
   onClose?: () => void
   isAgentBuilder?: boolean
+  size?: number
+
   onSave?: ({
     content,
     artifacts,
@@ -137,6 +139,7 @@ export default function Instructions({
     API_URL,
     weather,
     PROMPT_LIMITS,
+    isDevelopment,
     ...auth
   } = useAuth()
 
@@ -205,6 +208,8 @@ export default function Instructions({
   const [placeHolder, setPlaceHolder] = useState<string | undefined>(
     rest.placeholder,
   )
+
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false)
 
   const [isAppDescriptionOpen, setIsAppDescriptionOpen] = useState(false)
 
@@ -445,6 +450,7 @@ export default function Instructions({
 
   const [content, setContent] = useState(thread?.instructions || "")
 
+  const hippoSize = size || (icon ? 20 : 22)
   useEffect(() => {
     if (selectedInstruction && !thread) {
       if (selectedInstruction?.content) {
@@ -807,7 +813,7 @@ export default function Instructions({
   }
 
   return (
-    <Div data-testid={`${dataTestId}`}>
+    <Div key={key || dataTestId} data-testid={`${dataTestId}`}>
       {isAppDescriptionOpen && (
         <Modal
           style={{
@@ -857,13 +863,13 @@ export default function Instructions({
           <>
             {isArtifactsOpen ? (
               <>
-                <TestTubeDiagonal color="var(--accent-4)" size={24} />
-                <Span>{t("Artifacts")}</Span>
+                <Img slug="hippo" size={24} />
+                <Span>{t("Upload")}</Span>
               </>
             ) : (
               <>
-                <Brain color="var(--accent-6)" size={24} />
-                <Span>{t("Instructions")}</Span>
+                <Img slug="hippo" size={24} />
+                <Span>{t("Hippo")}</Span>
               </>
             )}
 
@@ -1191,10 +1197,10 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
         )}
         {!isArtifactsOpen && (
           <Span style={styles.tip.style}>
-            <BrainCircuit size={16} color="var(--accent-6)" />
+            <Img slug="hippo" size={16} />
             <Span>
               {canUpdate
-                ? t(`Give Vex something to remember`)
+                ? t(`Give Hippo something to remember`)
                 : t(`Only owner can update instructions`)}
             </Span>
           </Span>
@@ -1212,13 +1218,27 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   <Loading width={14} height={14} />
                 ) : (
                   <>
-                    <Sparkles size={14} color="var(--accent-1)" />
+                    <Img app={app} size={14} />
                     {t("Generate")}
                   </>
                 )}
               </Button>
             )}
             <Div style={styles.actions.style}>
+              {user?.role === "admin" ||
+                (isDevelopment && (
+                  <Button
+                    className="inverted"
+                    data-testid={`${dataTestId}-modal-chat-button`}
+                    onClick={() => {
+                      setIsChatOpen(true)
+                    }}
+                    style={{ ...utilities.inverted.style }}
+                  >
+                    <Img app={app} size={14} />
+                    {isMobileDevice ? null : t("Chat")}
+                  </Button>
+                ))}
               <Button
                 className="inverted"
                 data-testid={`${dataTestId}-modal-artifacts-button`}
@@ -1227,8 +1247,8 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                 }}
                 style={{ ...utilities.inverted.style }}
               >
-                <TestTubeDiagonal size={14} color="var(--accent-4)" />
-                {isMobileDevice ? null : t("Artifacts")}
+                <Img slug="burn" size={14} />
+                {isMobileDevice ? null : t("Upload")}
               </Button>
 
               {isManaging && (
@@ -1305,11 +1325,11 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
           <Div
             style={{
               ...styles.instructionsButtonContainer.style,
-              marginBottom: !thread && !icon ? "0.8rem" : undefined,
+              // marginBottom: !thread && !icon ? "0.8rem" : undefined,
             }}
           >
             <Button
-              className={icon ? "link" : "inverted small"}
+              className={"link"}
               data-testid={`${dataTestId}-button`}
               onClick={() => {
                 // Clear content if it matches the currently selected instruction
@@ -1331,27 +1351,13 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   : utilities.inverted.style),
               }}
             >
-              <Brain color="var(--accent-6)" size={16} />
-              {!icon ? <>{t("Instructions")}</> : <Plus size={12} />}
+              <Img slug="hippo" size={hippoSize} />
+              {!icon ? (
+                <>{t("Instructions")}</>
+              ) : (
+                <Paperclip size={hippoSize / 1.75} />
+              )}
             </Button>
-            {!isMobileDevice && (
-              <Button
-                title={t("Artifacts")}
-                data-testid={`${dataTestId}-artifacts-button`}
-                onClick={() => {
-                  addHapticFeedback()
-                  setIsArtifactsOpen(true)
-                }}
-                className={icon ? "link" : "transparent"}
-                style={{
-                  ...(icon
-                    ? utilities.link.style
-                    : utilities.transparent.style),
-                }}
-              >
-                <TestTubeDiagonal size={15} color="var(--accent-4)" />
-              </Button>
-            )}
           </Div>
         )}
         {!thread && showInstructions && (
@@ -1426,7 +1432,6 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
           </Div>
         )}
         {!thread &&
-          !icon &&
           ((showInstructions && showDownloads) || !showInstallers) && (
             <Div
               data-testid={`${dataTestId}-about`}

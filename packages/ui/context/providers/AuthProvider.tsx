@@ -98,7 +98,7 @@ import { useError } from "./ErrorProvider"
 
 export type { session }
 
-const VERSION = "2.1.53"
+const VERSION = "2.1.61"
 
 const AuthContext = createContext<
   | {
@@ -117,6 +117,7 @@ const AuthContext = createContext<
       hourlyUsageLeft: number
       about: string | undefined
       canShowTribe: boolean
+      showWatermelonInitial: boolean
       actions: apiActions
       setAbout: (value: string | undefined) => void
       ask: string | undefined
@@ -2304,7 +2305,11 @@ export function AuthProvider({
   const getTribeUrl = (app?: appWithStore) => {
     return !(siteConfig.isTribe && showTribe) &&
       app &&
-      (getAppSlug(app) === pathname ? !showTribeProfile : true)
+      (getAppSlug(app) === pathname
+        ? showTribe
+          ? !showTribeProfile
+          : showTribeProfile
+        : showTribeProfile)
       ? getAppSlug(app)
       : siteConfig?.isTribe
         ? "/"
@@ -3817,6 +3822,7 @@ export function AuthProvider({
         FRONTEND_URL,
         API_URL,
         MAX_FILE_SIZES,
+        showWatermelonInitial,
         isE2E,
         PRO_PRICE,
         PLUS_PRICE,

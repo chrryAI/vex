@@ -35,7 +35,6 @@ import Modal from "./Modal"
 import { Button, Div, Input, P, Span, usePlatform, useTheme } from "./platform"
 import { MotiView } from "./platform/MotiView"
 import { useSubscribeStyles } from "./Subscribe.styles"
-import ToggleAgent from "./ToggleAgent"
 import type { subscription, user } from "./types"
 import { apiFetch, capitalizeFirstLetter } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
@@ -990,15 +989,23 @@ export default function Subscribe({
           </>
         ) : guest ? (
           <>
-            <ToggleAgent
-              small={false}
+            <Button
+              data-testid="register-button"
               className="inverted"
+              onClick={() => {
+                addHapticFeedback()
+                setSignInPart("register")
+              }}
               style={{
                 ...utilities.inverted.style,
-                ...styles.button.style,
+                alignItems: "center",
+                justifyContent: "center",
                 marginTop: ".3rem",
               }}
-            />
+            >
+              <Img slug="coder" width={18} height={18} />
+              {t("Register")}
+            </Button>
             <Button
               data-testid="login-button"
               className="link"
@@ -1155,6 +1162,8 @@ export default function Subscribe({
                       ? watermelonFeatures
                       : watermelonPlusFeatures
                     : []
+
+  const hippo = features.find((f) => f.emoji === "🦛")
   const shouldShowGift = () => {
     if (isTribe || isMolt) return false
     if (isGifting && !userToGift) return false
@@ -1591,21 +1600,32 @@ export default function Subscribe({
           className={"features"}
           style={{ ...styles.features.style }}
         >
-          {features.map((feature, i) => (
-            <MotiView
-              key={`${i + 1}-${animationKey}`}
-              from={{ opacity: 0, translateY: 0, translateX: -10 }}
-              animate={{ opacity: 1, translateY: 0, translateX: 0 }}
-              transition={{
-                duration: reduceMotion ? 0 : 100,
-                delay: reduceMotion ? 0 : (i + 1) * 25,
-              }}
-            >
-              <Div className={"feature"} style={{ ...styles.feature.style }}>
-                {feature.emoji} {feature.text}
-              </Div>
-            </MotiView>
-          ))}
+          {features
+            .filter((f) => f.emoji !== "🦛")
+            .map((feature, i) => (
+              <MotiView
+                key={`${i + 1}-${animationKey}`}
+                from={{ opacity: 0, translateY: 0, translateX: -10 }}
+                animate={{ opacity: 1, translateY: 0, translateX: 0 }}
+                transition={{
+                  duration: reduceMotion ? 0 : 100,
+                  delay: reduceMotion ? 0 : (i + 1) * 25,
+                }}
+              >
+                <Div
+                  className={"feature"}
+                  style={{
+                    ...styles.feature.style,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 3,
+                  }}
+                >
+                  <Span>{feature.emoji}</Span>
+                  <Span>{feature.text}</Span>
+                </Div>
+              </MotiView>
+            ))}
           {affiliateCode ? (
             (selectedPlan === "plus" ||
               selectedPlan === "pro" ||
@@ -1697,6 +1717,48 @@ export default function Subscribe({
                   </A>
                 </Div>
               </MotiView>
+              {hippo && (
+                <MotiView
+                  style={{
+                    marginTop: "0.25rem",
+                    marginBottom: "0.15rem",
+                  }}
+                  key={`1002-${animationKey}`}
+                  from={{ opacity: 0, translateY: 0, translateX: -10 }}
+                  animate={{ opacity: 1, translateY: 0, translateX: 0 }}
+                  transition={{
+                    duration: reduceMotion ? 0 : 100,
+                    delay: reduceMotion
+                      ? 0
+                      : ((selectedPlan === "plus"
+                          ? plusFeatures
+                          : selectedPlan === "member"
+                            ? memberFeatures
+                            : selectedPlan === "pro"
+                              ? proFeatures
+                              : selectedPlan === "credits"
+                                ? creditsFeatures
+                                : []
+                        ).length +
+                          2) *
+                        25,
+                  }}
+                >
+                  <Div
+                    className={"feature"}
+                    style={{
+                      ...styles.feature.style,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 3,
+                    }}
+                  >
+                    <Img slug="hippo" size={22} />
+
+                    {hippo.text}
+                  </Div>
+                </MotiView>
+              )}
             </>
           )}
           <Div

@@ -7,56 +7,103 @@ import {
 } from "@aws-sdk/client-s3"
 import { Upload } from "@aws-sdk/lib-storage"
 import { isDevelopment } from "@chrryai/chrry/utils"
+import { type guest, safeDecrypt, type user } from "@repo/db"
 import { FetchHttpHandler } from "@smithy/fetch-http-handler"
 import sharp from "sharp"
 import { parse as parseDomain } from "tldts"
 import { safeFetch } from "../utils/ssrf"
 import { captureException } from "./captureException"
 
-// Validate S3 configuration
-if (
-  !process.env.S3_ENDPOINT ||
-  !process.env.S3_ACCESS_KEY_ID ||
-  !process.env.S3_SECRET_ACCESS_KEY
-) {
-  console.warn("⚠️  S3 credentials not configured. Please add to .env:")
-  console.warn("   S3_ENDPOINT=${MINIO_SERVER_URL}")
-  console.warn("   S3_ACCESS_KEY_ID=${MINIO_ROOT_USER}")
-  console.warn("   S3_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}")
-  console.warn("   S3_BUCKET_NAME=chrry-chat-files")
-  console.warn("   S3_BUCKET_NAME_APPS=chrry-app-profiles")
-  console.warn("   S3_PUBLIC_URL=${MINIO_SERVER_URL}")
-}
-
-// S3 Client Configuration with FetchHttpHandler for Bun compatibility
-const s3Client = new S3Client({
-  endpoint: process.env.S3_ENDPOINT,
-  region: process.env.S3_REGION || "us-east-1",
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY_ID || "",
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
-  },
-  forcePathStyle: true, // Required for MinIO/Coolify
-  requestHandler: new FetchHttpHandler({
-    requestTimeout: 30000, // 30 second timeout
-  }),
-})
-
-// Bucket names for different contexts
-const BUCKET_CHAT = process.env.S3_BUCKET_NAME || "chrry-chat-files"
-const BUCKET_APPS = process.env.S3_BUCKET_NAME_APPS || "chrry-app-profiles"
-const PUBLIC_URL = process.env.S3_PUBLIC_URL || process.env.S3_ENDPOINT
-
-// Get bucket name based on context
-function getBucket(context: "chat" | "apps" = "chat"): string {
-  return context === "apps" ? BUCKET_APPS : BUCKET_CHAT
-}
-
 // Track which buckets we've already verified exist
 const verifiedBuckets = new Set<string>()
 
+export interface S3Config {
+  endpoint: string
+  accessKeyId: string
+  secretAccessKey: string
+  bucket: string
+  publicUrl: string
+}
+
+export async function getS3Config(
+  member?: user | null,
+  guest?: guest | null,
+  context: "chat" | "apps" = "chat",
+): Promise<S3Config | null> {
+  const encryptedS3Key = member?.apiKeys?.s3 || guest?.apiKeys?.s3
+  const s3ApiKey = encryptedS3Key ? safeDecrypt(encryptedS3Key) : null
+
+  if (s3ApiKey && s3ApiKey.startsWith("s3://")) {
+    try {
+      const withoutPrefix = s3ApiKey.slice(5)
+      const parts = withoutPrefix.split("@")
+      const credentials = parts[0] || ""
+      const rest = parts[1] || ""
+
+      const credParts = credentials.split(":")
+      const key = credParts[0] || ""
+      const secret = credParts[1] || ""
+
+      const firstSlash = rest.indexOf("/")
+      const endpointDomain =
+        firstSlash > -1 ? rest.substring(0, firstSlash) : rest
+      const bucket =
+        firstSlash > -1 ? rest.substring(firstSlash + 1) : "chrry-chat-files"
+
+      const endpoint = endpointDomain.startsWith("http")
+        ? endpointDomain
+        : `https://${endpointDomain}`
+
+      return {
+        endpoint,
+        accessKeyId: key,
+        secretAccessKey: secret,
+        bucket,
+        publicUrl: endpoint,
+      }
+    } catch (e) {
+      console.warn("Invalid S3 API Key format from user")
+    }
+  }
+
+  if (
+    !process.env.S3_ENDPOINT ||
+    !process.env.S3_ACCESS_KEY_ID ||
+    !process.env.S3_SECRET_ACCESS_KEY
+  ) {
+    return null
+  }
+
+  return {
+    endpoint: process.env.S3_ENDPOINT,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    bucket:
+      context === "apps"
+        ? process.env.S3_BUCKET_NAME_APPS || "chrry-app-profiles"
+        : process.env.S3_BUCKET_NAME || "chrry-chat-files",
+    publicUrl: process.env.S3_PUBLIC_URL || process.env.S3_ENDPOINT,
+  }
+}
+
+export function getS3Client(config: S3Config): S3Client {
+  return new S3Client({
+    endpoint: config.endpoint,
+    region: process.env.S3_REGION || "us-east-1",
+    credentials: {
+      accessKeyId: config.accessKeyId,
+      secretAccessKey: config.secretAccessKey,
+    },
+    forcePathStyle: true,
+    requestHandler: new FetchHttpHandler({ requestTimeout: 30000 }),
+  })
+}
+
 // Ensure bucket exists, create if not
-async function ensureBucketExists(bucket: string): Promise<void> {
+async function ensureBucketExists(
+  s3Client: S3Client,
+  bucket: string,
+): Promise<void> {
   if (verifiedBuckets.has(bucket)) return
 
   try {
@@ -64,6 +111,7 @@ async function ensureBucketExists(bucket: string): Promise<void> {
     verifiedBuckets.add(bucket)
     console.log(`✅ Bucket verified: ${bucket}`)
   } catch (err: any) {
+    // Basic automatic bucket creation logic
     if (
       err.name === "NotFound" ||
       err.Code === "NoSuchBucket" ||
@@ -72,7 +120,6 @@ async function ensureBucketExists(bucket: string): Promise<void> {
       console.log(`📦 Creating bucket: ${bucket}`)
       await s3Client.send(new CreateBucketCommand({ Bucket: bucket }))
 
-      // Set public read policy for the bucket
       const publicPolicy = {
         Version: "2012-10-17",
         Statement: [
@@ -91,7 +138,6 @@ async function ensureBucketExists(bucket: string): Promise<void> {
         }),
       )
       console.log(`🔓 Public read policy set for: ${bucket}`)
-
       verifiedBuckets.add(bucket)
       console.log(`✅ Bucket created: ${bucket}`)
     } else {
@@ -197,11 +243,15 @@ function validateFileType(
 export async function upload({
   url,
   messageId,
+  member,
+  guest,
   options = {},
   context = "chat",
 }: {
   url: string
   messageId: string
+  member?: user
+  guest?: guest
   options?: {
     maxWidth?: number
     maxHeight?: number
@@ -214,16 +264,13 @@ export async function upload({
   }
   context?: "chat" | "apps"
 }): Promise<{ url: string; width?: number; height?: number; title?: string }> {
-  // Validate S3 is configured
-  if (
-    !process.env.S3_ENDPOINT ||
-    !process.env.S3_ACCESS_KEY_ID ||
-    !process.env.S3_SECRET_ACCESS_KEY
-  ) {
+  const config = await getS3Config(member as any, guest as any, context)
+  if (!config) {
     throw new Error(
-      "S3 storage is not configured. Please add S3_ENDPOINT, S3_ACCESS_KEY_ID, and S3_SECRET_ACCESS_KEY to your .env file. See setup guide for details.",
+      "S3 storage is not configured. Please add S3_ENDPOINT, S3_ACCESS_KEY_ID, and S3_SECRET_ACCESS_KEY to your .env file or bypass using a custom S3 API connection string.",
     )
   }
+  const s3Client = getS3Client(config)
 
   // Only allow files from trusted hosts
   const ALLOWED_HOSTNAMES = [
@@ -397,12 +444,12 @@ export async function upload({
 
     // Generate S3 key with context prefix
     const s3Key = `${context}/${fileName}`
-    const bucket = getBucket(context)
+    const bucket = config.bucket
 
     console.log(`☁️ Uploading to S3: ${bucket}/${s3Key}`)
 
     // Ensure bucket exists before uploading
-    await ensureBucketExists(bucket)
+    await ensureBucketExists(s3Client, bucket)
 
     // Upload to S3
     const contentType = fileType === "image" ? "image/png" : blob.type
@@ -415,14 +462,13 @@ export async function upload({
         Body: Buffer.from(processedBuffer),
         ContentType: contentType,
         CacheControl: "public, max-age=31536000, immutable",
-        // ACL: "public-read", // Uncomment if your bucket doesn't have public read policy
       },
     })
 
     await upload.done()
 
     // Construct public URL
-    const publicUrl = `${PUBLIC_URL}/${bucket}/${s3Key}`
+    const publicUrl = `${config.publicUrl}/${bucket}/${s3Key}`
 
     console.log("✅ File uploaded successfully:", publicUrl)
 
@@ -447,10 +493,16 @@ export async function upload({
 export async function deleteFile(
   url: string,
   context: "chat" | "apps" = "chat",
+  member?: user,
+  guest?: guest,
 ): Promise<void> {
   try {
-    const bucket = getBucket(context)
-    const key = url.replace(`${PUBLIC_URL}/`, "")
+    const config = await getS3Config(member as any, guest as any, context)
+    if (!config) return
+
+    const s3Client = getS3Client(config)
+    const bucket = config.bucket
+    const key = url.replace(`${config.publicUrl}/`, "")
 
     await s3Client.send(
       new DeleteObjectCommand({

@@ -67,7 +67,6 @@ import {
   Music,
   OpenAI,
   Palette,
-  Paperclip,
   Perplexity,
   Plus,
   Sparkles,
@@ -5053,7 +5052,7 @@ export default function Chat({
                         }}
                         type="submit"
                       >
-                        <Paperclip color={"var(--accent-6)"} size={22} />
+                        <Img slug="hippo" size={24} key="attach-button" />
                       </Button>
                     )
                   )}

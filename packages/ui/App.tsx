@@ -211,6 +211,7 @@ export default function App({
   const sushi = apps.find((app) => app.slug === "sushi")
   const grok = apps.find((app) => app.slug === "grok")
   const pear = apps.find((app) => app.slug === "pear")
+  const hippo = apps.find((app) => app.slug === "hippo")
 
   const isBlossom = app?.store?.id === chrry?.store?.id
   const isLifeOS = app?.store?.id === vex?.store?.id
@@ -224,6 +225,7 @@ export default function App({
           item.id !== store?.appId &&
           item.id !== chrry?.id &&
           (item.id !== perplexity?.id || !isBlossom) &&
+          item.id !== hippo?.id &&
           (item.id !== vex?.id || !isSushi) &&
           (item.id !== claude?.id || !isBlossom) &&
           (item.id !== grok?.id || !isBlossom) &&
@@ -1745,7 +1747,7 @@ export default function App({
         >
           {isManagingApp && (
             <Instructions
-              showButton={true}
+              icon={false}
               dataTestId="instruction-builder"
               opacity={0}
               onSave={({ content, artifacts }) => {
@@ -1758,6 +1760,8 @@ export default function App({
             />
           )}
           <Instructions
+            icon
+            showInstructions
             showButton={false}
             dataTestId="instruction"
             isAgentBuilder={true}

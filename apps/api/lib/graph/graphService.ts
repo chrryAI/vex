@@ -179,7 +179,7 @@ async function generateDynamicCypher({
     4. Keep it efficient (LIMIT 15).
     5. Use ONLY exact string matching with = operator.
     6. Return ONLY the raw Cypher query string.
-    7. CRITICAL SECURITY RULE: ALWAYS filter every MATCH statement by the current app context. You MUST add \`{appId: $appId}\` to all Node property maps in your queries. Only query nodes belonging to $appId.
+    7. CRITICAL SECURITY RULE: ALWAYS filter every MATCH statement by the current store context to allow cross-app knowledge sharing. You MUST use a WHERE clause with \`IN $appIds\` (e.g., \`WHERE n.appId IN $appIds\`) for ALL matched nodes. Only query nodes belonging to apps in the $appIds list. NEVER use the inline \`{appId: $appId}\` syntax anymore.
     
     ✅ CORRECT Examples:
     - MATCH (n)-[r]->(m) RETURN n.name, type(r), m.name
@@ -611,6 +611,17 @@ export async function getGraphContext({
 
     const contextItems = new Set<string>()
 
+    // Support Cross-App Knowledge Sharing within the Store
+    const appIds = app?.id ? [app.id] : ["global"]
+    if (app && "store" in app && app.store?.apps) {
+      // Add all apps from the store to the array
+      app.store.apps.forEach((storeApp: any) => {
+        if (!appIds.includes(storeApp.id)) {
+          appIds.push(storeApp.id)
+        }
+      })
+    }
+
     // Level 5: Dynamic Reasoner (Primary)
     // AI determines the best way to query the graph for THIS specific question
     const dynamicQuery = await generateDynamicCypher({
@@ -623,7 +634,7 @@ export async function getGraphContext({
       try {
         // Pass queryText as parameter for safe injection-free queries
         const dynamicResult = await graph.query(dynamicQuery, {
-          params: { queryText, appId: app?.id || "global" },
+          params: { queryText, appIds },
         })
         if ((dynamicResult as any)?.resultSet?.length > 0) {
           for (const row of (dynamicResult as any).resultSet) {
@@ -661,17 +672,17 @@ export async function getGraphContext({
           // CRITICAL: UNION requires exact column type match - cast both to string
           const expandQuery = `
                 MATCH (n)-[r]->(m)
-                WHERE n.name IN $names AND n.appId = $appId AND m.appId = $appId
+                WHERE n.name IN $names AND n.appId IN $appIds AND m.appId IN $appIds
                 RETURN n.name as source, type(r) as rel, toString(m.name) as target
                 LIMIT 10
                 UNION
                 MATCH (e:Topic)<-[rm:MENTIONS]-(c:Chunk)<-[:HAS_CHUNK]-(d:Document)
-                WHERE e.name IN $names AND e.appId = $appId AND c.appId = $appId AND d.appId = $appId
+                WHERE e.name IN $names AND e.appId IN $appIds AND c.appId IN $appIds AND d.appId IN $appIds
                 RETURN d.name as source, 'DISCUSSES' as rel, substring(c.content, 0, 500) as target
                 LIMIT 5
             `
           const expansion = await graph.query(expandQuery, {
-            params: { names: semanticNodes, appId: app?.id || "global" },
+            params: { names: semanticNodes, appIds },
           })
           if ((expansion as any)?.resultSet) {
             for (const row of (expansion as any).resultSet) {
@@ -724,17 +735,17 @@ export async function getGraphContext({
         // CRITICAL: UNION requires exact column type match - cast both to string
         const expandQuery = `
                 MATCH (n)-[r]->(m)
-                WHERE n.name IN $names AND n.appId = $appId AND m.appId = $appId
+                WHERE n.name IN $names AND n.appId IN $appIds AND m.appId IN $appIds
                 RETURN n.name as source, type(r) as rel, toString(m.name) as target
                 LIMIT 10
                 UNION
                 MATCH (e:Topic)<-[rm:MENTIONS]-(c:Chunk)<-[:HAS_CHUNK]-(d:Document)
-                WHERE e.name IN $names AND e.appId = $appId AND c.appId = $appId AND d.appId = $appId
+                WHERE e.name IN $names AND e.appId IN $appIds AND c.appId IN $appIds AND d.appId IN $appIds
                 RETURN d.name as source, 'DISCUSSES' as rel, substring(c.content, 0, 500) as target
                 LIMIT 3
             `
         const expansion = await graph.query(expandQuery, {
-          params: { names: textNodes, appId: app?.id || "global" },
+          params: { names: textNodes, appIds },
         })
         if ((expansion as any)?.resultSet) {
           for (const row of (expansion as any).resultSet) {

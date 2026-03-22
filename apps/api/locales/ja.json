@@ -2504,5 +2504,11 @@
   "First launch pulls Docker images — this only takes a minute once.": "初回起動ではDockerイメージを取得します - これは一度だけ1分程度かかります。",
   "Bluesky": "ブルースカイ",
   "Please save your OpenRouter API key first": "まず、OpenRouter APIキーを保存してください",
-  "BAM": "BAM"
+  "BAM": "BAM",
+  "Give Hippo something to remember": "Hippoに覚えておくべき何かを与えてください",
+  "Format {{format}}": "フォーマット {{format}}",
+  "Sushi will auto-migrate you when you choose to login": "ログインを選択すると、Sushiが自動的にあなたを移行します",
+  "Or choose 10GB/month of free storage": "または、毎月10GBの無料ストレージを選択してください",
+  "Choose 10GB/month of free storage": "毎月10GBの無料ストレージを選択してください",
+  "Confirm switching Hippo": "Hippoへの切り替えを確認"
 }

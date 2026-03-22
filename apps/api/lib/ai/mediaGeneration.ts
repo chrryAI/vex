@@ -60,7 +60,8 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
   url: string
   prompt: string
   provider: string
-
+  member?: user | null
+  guest?: guest | null
   model: string
 }> {
   const isBYOK = !!options.user?.apiKeys?.openrouter

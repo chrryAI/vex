@@ -10,6 +10,7 @@ const Anchor = React.forwardRef<
     href?: string
     preventDefault?: boolean
     clientOnly?: boolean
+    rel?: string
     event?: string
     target?: "_blank" | "_self" | "_parent" | "_top"
   }
@@ -22,6 +23,7 @@ const Anchor = React.forwardRef<
       children,
       preventDefault,
       openInNewTab,
+      rel,
       ...props
     },
     ref,
@@ -38,7 +40,6 @@ const Anchor = React.forwardRef<
       if (isTauri) return false
       if (!url) return false
       return (
-        newTab &&
         (url.startsWith("http://") ||
           url.startsWith("https://") ||
           url.startsWith("mailto:") ||
@@ -57,6 +58,7 @@ const Anchor = React.forwardRef<
       <A
         {...props}
         ref={ref}
+        rel={rel || (newTab ? "noopener noreferrer" : undefined)}
         target={newTab ? "_blank" : target}
         onClick={(e) => {
           plausible({

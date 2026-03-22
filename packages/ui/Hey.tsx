@@ -93,6 +93,7 @@ export const Hey = memo(
       guest,
       showWatermelon,
       FRONTEND_URL,
+      showWatermelonInitial,
     } = useAuth()
 
     const { tribeSlug, isLoadingTribes } = useTribe()
@@ -176,7 +177,7 @@ export const Hey = memo(
                 setIsImageLoaded(true)
               }}
               slug={
-                showWatermelon
+                showWatermelon || showWatermelonInitial
                   ? "watermelon"
                   : showTribeLogo
                     ? "tribe"
@@ -184,9 +185,17 @@ export const Hey = memo(
                       ? undefined
                       : appSlug
               }
-              app={showTribeLogo || showWatermelon ? undefined : app}
+              app={
+                showTribeLogo || showWatermelon || showWatermelonInitial
+                  ? undefined
+                  : app
+              }
               showLoading={false}
-              size={showTribeLogo || showWatermelon ? 70 : 64}
+              size={
+                showTribeLogo || showWatermelon || showWatermelonInitial
+                  ? 70
+                  : 64
+              }
             />
           </Div>
         )
