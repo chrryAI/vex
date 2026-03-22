@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.1.67"
+const VERSION = "2.1.68"
 
 const AuthContext = createContext<
   | {
@@ -122,6 +122,7 @@ const AuthContext = createContext<
       about: string | undefined
       canShowTribe: boolean
       showWatermelonInitial: boolean
+      hasHydrated: boolean
       actions: apiActions
       setAbout: (value: string | undefined) => void
       ask: string | undefined
@@ -497,6 +498,7 @@ export function AuthProvider({
     // IDE state from platform
     isIDE,
     toggleIDE,
+    isBot,
   } = usePlatform()
 
   const [API_URL, setAPI_URL] = useState(utils.API_URL)
@@ -2423,7 +2425,9 @@ export function AuthProvider({
 
   // Handle pathname changes: extract slug and switch app
 
-  const hasHydrated = useHasHydrated()
+  const hasHydratedInternal = useHasHydrated()
+
+  const hasHydrated = hasHydratedInternal || !!isBot
 
   const [shouldFetchMoods, setShouldFetchMoods] = useState(false)
 
@@ -3548,12 +3552,6 @@ export function AuthProvider({
   const [needsUpdate, setNeedsUpdate] = useState(false)
 
   useEffect(() => {
-    console.log(
-      `🚀 ~ useEffect ~ toVersionNumber(versions?.macosVersion) :`,
-      toVersionNumber(versions?.macosVersion),
-      toVersionNumber(VERSION),
-    )
-
     const update = !versions
       ? false
       : isTauri
@@ -3798,6 +3796,7 @@ export function AuthProvider({
         setFrom,
         setAccountApp: setAccountApp,
         setDeviceId,
+        hasHydrated,
         setApp,
         aiAgents,
         rtl,
