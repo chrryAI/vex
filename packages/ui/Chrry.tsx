@@ -1,4 +1,5 @@
 "use client"
+import "./globals.scss"
 
 // Only import styles on web platforms (not React Native)
 // React Native will skip these imports during bundling
