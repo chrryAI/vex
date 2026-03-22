@@ -8496,26 +8496,21 @@ You are an architecture expert. Design systems that grow with users, follow indu
     level: 20,
   })
 
-  await createOrUpdateStoreInstall({
-    storeId: blossom.id,
-    appId: hippo.id,
-    featured: true,
-    displayOrder: 1,
-    customDescription:
-      "The massive, silent curator of the Wine ecosystem. Hippo ingests, indexes, and retrieves your Sovereign Memory with absolute precision.",
-  })
-
-  await createOrUpdateStoreInstall({
-    storeId: sushiStore.id,
-    appId: hippo.id,
-    displayOrder: 1,
-  })
-
-  await createOrUpdateStoreInstall({
-    storeId: lifeOS.id,
-    appId: hippo.id,
-    displayOrder: 1,
-  })
+  const hippoInstalls = [
+    {
+      storeId: blossom.id,
+      appId: hippo.id,
+      featured: true,
+      displayOrder: 1,
+      customDescription:
+        "The massive, silent curator of the Wine ecosystem. Hippo ingests, indexes, and retrieves your Sovereign Memory with absolute precision.",
+    },
+    { storeId: sushiStore.id, appId: hippo.id, displayOrder: 1 },
+    { storeId: lifeOS.id, appId: hippo.id, displayOrder: 1 },
+  ]
+  for (const installConfig of hippoInstalls) {
+    await createOrUpdateStoreInstall(installConfig)
+  }
 
   // ============================================
   // 🚀 GROK TRIBE: NEXUS STORE
@@ -8879,6 +8874,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     storeId: orbitStore.id,
     appId: nebulaApp.id,
     displayOrder: 0,
+    featured: true,
   })
 
   await createOrUpdateStoreInstall({
@@ -9391,6 +9387,9 @@ You are an architecture expert. Design systems that grow with users, follow indu
 
   if (jules && sushiApp)
     await handleAppExtends(jules.id, [sushiApp.id, chrry.id], sushiStore.id)
+
+  if (hippo && sushiApp)
+    await handleAppExtends(hippo.id, [sushiApp.id, chrry.id], blossom.id)
 
   // Lifestyle apps
   if (bloom && vex && vex.storeId)

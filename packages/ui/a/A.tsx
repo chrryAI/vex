@@ -10,6 +10,7 @@ const Anchor = React.forwardRef<
     href?: string
     preventDefault?: boolean
     clientOnly?: boolean
+    rel?: string
     event?: string
     target?: "_blank" | "_self" | "_parent" | "_top"
   }
@@ -22,6 +23,7 @@ const Anchor = React.forwardRef<
       children,
       preventDefault,
       openInNewTab,
+      rel,
       ...props
     },
     ref,
@@ -56,6 +58,7 @@ const Anchor = React.forwardRef<
       <A
         {...props}
         ref={ref}
+        rel={rel || (newTab ? "noopener noreferrer" : undefined)}
         target={newTab ? "_blank" : target}
         onClick={(e) => {
           plausible({

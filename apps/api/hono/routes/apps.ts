@@ -432,6 +432,8 @@ app.post("/", async (c) => {
             type: "image",
           },
           context: "apps",
+          member,
+          guest,
         })
 
         images = [
@@ -1269,6 +1271,8 @@ app.patch("/:id", async (c) => {
             title: "large-512x512",
             type: "image",
           },
+          member,
+          guest,
         })
 
         images = [

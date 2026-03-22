@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react"
 import { Trans } from "react-i18next"
 import { BiLogoPostgresql } from "react-icons/bi"
+import { FaAws } from "react-icons/fa"
+import { LuOrbit } from "react-icons/lu"
 import {
+  SiBiome,
   SiBun,
   SiBuymeacoffee,
   SiHetzner,
@@ -17,13 +20,16 @@ import A from "./a/A"
 import ColorScheme from "./ColorScheme"
 import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
+import { useAuth, useNavigationContext } from "./context/providers"
 import { COLORS } from "./context/providers/AppProvider"
-import { useAuth } from "./context/providers/AuthProvider"
 import { useStyles } from "./context/StylesContext"
 import { useTheme } from "./context/ThemeContext"
 import Img from "./Image"
+
 import {
   ArrowRight,
+  CircleCheck,
+  CircleX,
   Claude,
   DeepSeek,
   Flux,
@@ -118,6 +124,18 @@ export default function Watermelon() {
     replicateApiKeyInternal,
   )
 
+  const s3ApiKeyInternal = user?.apiKeys?.s3 || guest?.apiKeys?.s3 || ""
+
+  const [s3ApiKey, setS3ApiKey] = useState(s3ApiKeyInternal)
+
+  const [isSavingS3ApiKey, setIsSavingS3ApiKey] = useState(false)
+
+  const [isDeletingS3ApiKey, setIsDeletingS3ApiKey] = useState(false)
+
+  useEffect(() => {
+    setS3ApiKey(s3ApiKeyInternal)
+  }, [s3ApiKeyInternal])
+
   useEffect(() => {
     setReplicateApiKey(replicateApiKeyInternal)
   }, [replicateApiKeyInternal])
@@ -125,6 +143,52 @@ export default function Watermelon() {
   const [openRouterApiKey, setOpenRouterApiKey] = useState(
     openRouterApiKeyInitialValue,
   )
+
+  const handleDeleteS3 = async () => {
+    try {
+      setIsDeletingS3ApiKey(true)
+      if (user) {
+        await actions.updateUser({
+          deletedApiKeys: ["s3"],
+        })
+
+        setUser({
+          ...user,
+          apiKeys: {
+            ...user.apiKeys,
+            s3: undefined,
+          },
+        })
+
+        toast.success("MinIO/S3 API key deleted successfully")
+      }
+
+      if (guest) {
+        await actions.updateGuest({
+          deletedApiKeys: ["s3"],
+        })
+
+        toast.success("MinIO/S3 API key deleted successfully")
+
+        setGuest({
+          ...guest,
+          apiKeys: {
+            ...guest.apiKeys,
+            s3: undefined,
+          },
+        })
+      }
+
+      setS3ApiKey("")
+    } catch (error) {
+      console.error(error)
+      toast.error("Something went wrong")
+    } finally {
+      setIsDeletingS3ApiKey(false)
+    }
+  }
+
+  const [showS3, setShowS3] = useState(!!s3ApiKeyInternal)
 
   useEffect(() => {
     if (!user && !guest) return
@@ -148,16 +212,22 @@ export default function Watermelon() {
 
   const { utilities } = useStyles()
 
-  const { isTauri, viewPortWidth } = usePlatform()
+  const { isTauri, viewPortWidth, viewPortHeight } = usePlatform()
+
+  const [compact, setCompact] = useState(viewPortHeight < 920)
+
+  useEffect(() => {
+    setCompact(viewPortHeight < 920)
+  }, [viewPortHeight])
 
   const { isMobileDevice, colorScheme } = useTheme()
 
-  // const { push } = useNavigationContext()
+  const { addParams } = useNavigationContext()
   return (
     <>
       <Div
         style={{
-          width: "100dvw",
+          minHeight: "100dvh",
           display: "flex",
           color: "var(--shade-8)",
           alignItems: "center",
@@ -222,7 +292,7 @@ export default function Watermelon() {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 9.5,
+                gap: isMobileDevice ? 7.5 : 8.5,
               }}
             >
               <P
@@ -230,13 +300,13 @@ export default function Watermelon() {
                   display: "flex",
                   gap: 7.5,
                   alignItems: "center",
-                  marginTop: isMobileDevice ? 60 : 25,
-                  marginBottom: isMobileDevice ? 15 : 40,
+                  marginTop: isMobileDevice ? 60 : 15,
+                  marginBottom: isMobileDevice ? 15 : 20,
                 }}
               >
                 <Weather showLocation />
                 <A href="/about">
-                  <Img icon="hippo" size={25} />
+                  <Img icon="whale" size={28} />
                 </A>
               </P>
               <H1
@@ -302,7 +372,7 @@ export default function Watermelon() {
               <Div
                 style={{
                   display: "flex",
-                  gap: 10,
+                  gap: isMobileDevice ? 15 : 10,
                   marginTop: 15,
                   flexWrap: "wrap",
                   alignItems: "center",
@@ -364,7 +434,6 @@ export default function Watermelon() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 5,
                     padding: "0.25rem 0.5rem",
                   }}
                   className="button transparent"
@@ -379,11 +448,12 @@ export default function Watermelon() {
                   display: "flex",
                   alignItems: "center",
                   gap: 12.5,
-                  marginTop: 17.5,
+                  marginTop: 10,
                   fontSize: "0.8rem",
                   color: COLORS.blue,
                   flexWrap: "wrap",
                   justifyContent: "center",
+                  maxWidth: 400,
                 }}
               >
                 {isTauri ? (
@@ -395,30 +465,28 @@ export default function Watermelon() {
                     <Img slug="whale" />
                     {t("Local Stack")}
                   </Button>
-                ) : (
-                  <Span
-                    style={{ display: "flex", alignItems: "center", gap: 5 }}
-                  >
-                    <Img slug="whale" size={30} /> {t("Stack")}
-                  </Span>
-                )}
-                {viewPortWidth >= 1400 && (
-                  <A
-                    onClick={() => {
-                      plausible({
-                        name: ANALYTICS_EVENTS.WANNATHIS,
-                        props: {
-                          app: app?.name,
-                        },
-                      })
-                    }}
-                    href="https://wannathis.one?via=iliyan"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <WannathisIcon />
-                  </A>
-                )}
+                ) : null}
+
+                <A
+                  onClick={() => {
+                    plausible({
+                      name: ANALYTICS_EVENTS.WANNATHIS,
+                      props: {
+                        app: app?.name,
+                      },
+                    })
+                  }}
+                  href="https://wannathis.one?via=iliyan"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <WannathisIcon />
+                </A>
+
+                <A openInNewTab href="https://orbstack.dev">
+                  <LuOrbit size={20} color={COLORS.orange} title="OrbStack" />
+                </A>
+
                 <A openInNewTab href="https://postgresql.org">
                   <BiLogoPostgresql title="PostgreSQL" size={20} />
                 </A>
@@ -434,6 +502,9 @@ export default function Watermelon() {
                 <A openInNewTab href="https://vitejs.dev">
                   <SiVite color={COLORS.green} title="Vite" size={20} />
                 </A>
+                <A openInNewTab href="https://biomejs.dev">
+                  <SiBiome color={COLORS.purple} title="Biome" size={20} />
+                </A>
                 <A openInNewTab href="https://tauri.app">
                   <SiTauri color={COLORS.orange} title="Tauri" size={20} />
                 </A>
@@ -443,172 +514,494 @@ export default function Watermelon() {
                 <A openInNewTab href="https://min.io">
                   <SiMinio color={COLORS.red} title="MinIO" size={20} />
                 </A>
-                <A openInNewTab href="https://chatgpt.com">
+                <A openInNewTab href="https://chatgpt.com" aria-label="ChatGPT">
                   <OpenAI color={"var(--foreground)"} size={20} />
                 </A>
-                <A openInNewTab href="https://chat.deepseek.com">
+                <A
+                  openInNewTab
+                  href="https://chat.deepseek.com"
+                  aria-label="DeepSeek"
+                >
                   <DeepSeek color={COLORS.blue} size={20} />
                 </A>
-                <A openInNewTab href="https://claude.ai">
+                <A openInNewTab href="https://claude.ai" aria-label="Claude">
                   <Claude color={COLORS.orange} size={20} />
                 </A>
                 <A
                   openInNewTab
                   color={COLORS.blue}
                   href="https://perplexity.ai"
+                  aria-label="Perplexity"
                 >
                   <Perplexity size={20} />
                 </A>
 
-                <A openInNewTab href="https://grok.com">
+                <A openInNewTab href="https://grok.com" aria-label="Grok">
                   <Grok color={"var(--foreground)"} size={20} />
                 </A>
-                <A openInNewTab href="http://gemini.google.com">
+                <A
+                  openInNewTab
+                  href="https://gemini.google.com"
+                  aria-label="Gemini"
+                >
                   <Gemini size={20} />
                 </A>
               </Div>
-              <Div
-                style={{ display: "flex", flexDirection: "column", gap: 20 }}
-              >
-                <Form
-                  onSubmit={async (e) => {
-                    plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT })
-                    e.preventDefault()
-                    if (!openRouterApiKey) {
-                      toast.error(t("Please enter your OpenRouter API key"))
-                      return
-                    }
-
-                    // Client-side regex validation
-                    const openRouterRegex = /^sk-or-v1-[a-zA-Z0-9]{64}$/
-                    if (!openRouterRegex.test(openRouterApiKey.trim())) {
-                      toast.error(
-                        t(
-                          "Invalid OpenRouter API key format (Expected sk-or-v1-...)",
-                        ),
-                      )
-                      return
-                    }
-
-                    try {
-                      setIsSavingOpenRouterApiKey(true)
-                      if (user) {
-                        await actions.updateUser({
-                          openRouterApiKey,
-                        })
-
-                        setUser({
-                          ...user,
-                          apiKeys: {
-                            ...user.apiKeys,
-                            openrouter: openRouterApiKey,
-                          },
-                        })
-
-                        toast.success(
-                          t("OpenRouter API key saved successfully"),
-                        )
-                        plausible({
-                          name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_SUCCESS,
-                        })
-                      }
-
-                      if (guest) {
-                        await actions.updateGuest({
-                          openRouterApiKey,
-                        })
-
-                        toast.success(
-                          t("OpenRouter API key saved successfully"),
-                        )
-
-                        setGuest({
-                          ...guest,
-                          apiKeys: {
-                            ...guest.apiKeys,
-                            openrouter: openRouterApiKey,
-                          },
-                        })
-                        plausible({
-                          name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_SUCCESS,
-                        })
-                      }
-                    } catch (error) {
-                      console.error(error)
-                      toast.error(t("Something went wrong"))
-                      captureException(error)
-                      plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_ERROR })
-                    } finally {
-                      setIsSavingOpenRouterApiKey(false)
-                    }
-                  }}
+              {compact ? (
+                <Div
                   style={{
-                    ...utilities.row.style,
-                    gap: 15,
-                    marginTop: 15,
-                    flexWrap: "wrap",
+                    display: "flex",
+                    flexDirection: "column",
+                    marginTop: 20,
+                    gap: 20,
+                    alignItems: "center",
                   }}
                 >
-                  <A
-                    openInNewTab
-                    style={{ position: "relative" }}
-                    href="https://openrouter.ai/keys"
+                  <Button
+                    onClick={() => {
+                      setCompact(false)
+                    }}
+                    className="inverted"
+                    style={{ ...utilities.inverted.style }}
                   >
-                    <OpenRouter size={20} />{" "}
-                    {viewPortWidth >= 400 ? "OpenRouter*" : undefined}
-                    {viewPortWidth >= 400 ? (
-                      <Span
-                        style={{
-                          fontSize: ".65rem",
-                          position: "absolute",
-                          bottom: -15,
-                          right: 3,
-                          color: COLORS.red,
+                    <Img slug={"tribe"} width={20} height={20} />{" "}
+                    {t(
+                      !(s3ApiKey || openRouterApiKey)
+                        ? "Join the Tribe"
+                        : "Update API Keys",
+                    )}
+                  </Button>
+                </Div>
+              ) : (
+                <Div
+                  style={{ display: "flex", flexDirection: "column", gap: 20 }}
+                >
+                  <Form
+                    onSubmit={async (e) => {
+                      plausible({ name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT })
+                      e.preventDefault()
+                      if (!openRouterApiKey) {
+                        toast.error(t("Please enter your OpenRouter API key"))
+                        return
+                      }
+
+                      // Client-side regex validation
+                      const openRouterRegex = /^sk-or-v1-[a-zA-Z0-9]{64}$/
+                      if (!openRouterRegex.test(openRouterApiKey.trim())) {
+                        toast.error(
+                          t(
+                            "Invalid OpenRouter API key format (Expected sk-or-v1-...)",
+                          ),
+                        )
+                        return
+                      }
+
+                      try {
+                        setIsSavingOpenRouterApiKey(true)
+                        if (user) {
+                          await actions.updateUser({
+                            openRouterApiKey,
+                          })
+
+                          setUser({
+                            ...user,
+                            apiKeys: {
+                              ...user.apiKeys,
+                              openrouter: openRouterApiKey,
+                            },
+                          })
+
+                          toast.success(
+                            t("OpenRouter API key saved successfully"),
+                          )
+                          plausible({
+                            name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_SUCCESS,
+                          })
+                        }
+
+                        if (guest) {
+                          await actions.updateGuest({
+                            openRouterApiKey,
+                          })
+
+                          toast.success(
+                            t("OpenRouter API key saved successfully"),
+                          )
+
+                          setGuest({
+                            ...guest,
+                            apiKeys: {
+                              ...guest.apiKeys,
+                              openrouter: openRouterApiKey,
+                            },
+                          })
+                          plausible({
+                            name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_SUCCESS,
+                          })
+                        }
+                      } catch (error) {
+                        console.error(error)
+                        toast.error(t("Something went wrong"))
+                        captureException(error)
+                        plausible({
+                          name: ANALYTICS_EVENTS.WM_BYOK_SUBMIT_ERROR,
+                        })
+                      } finally {
+                        setIsSavingOpenRouterApiKey(false)
+                      }
+                    }}
+                    style={{
+                      ...utilities.row.style,
+                      gap: 15,
+                      marginTop: 15,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <A
+                      openInNewTab
+                      style={{ position: "relative" }}
+                      href="https://openrouter.ai/keys"
+                    >
+                      <OpenRouter size={20} />{" "}
+                      {viewPortWidth >= 400 ? "OpenRouter*" : undefined}
+                      {viewPortWidth >= 400 ? (
+                        <Span
+                          style={{
+                            fontSize: ".65rem",
+                            position: "absolute",
+                            bottom: -15,
+                            right: 3,
+                            color: COLORS.red,
+                          }}
+                        >
+                          {t("Required")}
+                        </Span>
+                      ) : null}
+                    </A>
+                    {openRouterApiKeyInitialValue ? (
+                      <ConfirmButton
+                        disabled={isDeletingOpenRouterApiKey}
+                        processing={isDeletingOpenRouterApiKey}
+                        onConfirm={async () => {
+                          try {
+                            setIsDeletingOpenRouterApiKey(true)
+                            if (user) {
+                              await actions.updateUser({
+                                deletedApiKeys: ["openrouter"],
+                              })
+
+                              setUser({
+                                ...user,
+                                apiKeys: {
+                                  ...user.apiKeys,
+                                  openrouter: undefined,
+                                },
+                              })
+
+                              toast.success(
+                                t("OpenRouter API key deleted successfully"),
+                              )
+                            }
+
+                            if (guest) {
+                              await actions.updateGuest({
+                                deletedApiKeys: ["openrouter"],
+                              })
+
+                              toast.success(
+                                t("OpenRouter API key deleted successfully"),
+                              )
+
+                              setGuest({
+                                ...guest,
+                                apiKeys: {
+                                  ...guest.apiKeys,
+                                  openrouter: undefined,
+                                },
+                              })
+                            }
+                          } catch (error) {
+                            console.error(error)
+                            toast.error(t("Something went wrong"))
+                          } finally {
+                            setIsDeletingOpenRouterApiKey(false)
+                          }
                         }}
-                      >
-                        {t("Required")}
-                      </Span>
+                        className="link"
+                      />
                     ) : null}
-                  </A>
-                  {openRouterApiKeyInitialValue ? (
-                    <ConfirmButton
-                      disabled={isDeletingOpenRouterApiKey}
-                      processing={isDeletingOpenRouterApiKey}
-                      onConfirm={async () => {
+                    <Input
+                      dataTestId="openrouter-api-key"
+                      type="text"
+                      placeholder="sk-..."
+                      value={openRouterApiKey}
+                      onChange={(e) => setOpenRouterApiKey(e.target.value)}
+                      style={{
+                        border: "1px solid var(--accent-6)",
+                        borderColor: colorScheme,
+                        flex: 1,
+                        width: viewPortWidth < 400 ? "fit-content" : undefined,
+                      }}
+                    />
+                    <Button
+                      className="inverted"
+                      type="submit"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                        padding: "0.25rem 0.5rem",
+                        marginLeft: "auto",
+                      }}
+                    >
+                      <OpenRouter size={20} />
+                      {isSavingOpenRouterApiKey
+                        ? "Saving..."
+                        : user?.apiKeys?.openrouter ||
+                            guest?.apiKeys?.openrouter
+                          ? "Update"
+                          : "Save"}
+                    </Button>
+                  </Form>
+                  <Form
+                    onSubmit={async (e) => {
+                      e.preventDefault()
+                      if (!replicateApiKey) {
+                        toast.error(t("Please enter your Replicate API key"))
+                        return
+                      }
+
+                      // OpenRouter key is required before Replicate
+                      if (
+                        !user?.apiKeys?.openrouter &&
+                        !guest?.apiKeys?.openrouter
+                      ) {
+                        toast.error(
+                          t("Please save your OpenRouter API key first"),
+                        )
+                        return
+                      }
+
+                      // Client-side regex validation (Replicate keys start with r8_)
+                      const replicateRegex = /^r8_[a-zA-Z0-9]{37,42}$/
+                      if (!replicateRegex.test(replicateApiKey.trim())) {
+                        toast.error(
+                          t(
+                            "Invalid Replicate API key format (Expected r8_...)",
+                          ),
+                        )
+                        return
+                      }
+
+                      try {
+                        setIsSavingReplicateApiKey(true)
+                        if (user) {
+                          await actions.updateUser({
+                            replicateApiKey,
+                          })
+
+                          setUser({
+                            ...user,
+                            apiKeys: {
+                              ...user.apiKeys,
+                              replicate: replicateApiKey,
+                            },
+                          })
+
+                          toast.success(
+                            t("Replicate API key saved successfully"),
+                          )
+                        }
+
+                        if (guest) {
+                          await actions.updateGuest({
+                            replicateApiKey,
+                          })
+
+                          toast.success(
+                            t("Replicate API key saved successfully"),
+                          )
+
+                          setGuest({
+                            ...guest,
+                            apiKeys: {
+                              ...guest.apiKeys,
+                              replicate: replicateApiKey,
+                            },
+                          })
+                        }
+                      } catch (error) {
+                        console.error(error)
+                        toast.error(t("Something went wrong"))
+                      } finally {
+                        setIsSavingReplicateApiKey(false)
+                      }
+                    }}
+                    style={{
+                      ...utilities.row.style,
+                      gap: 15,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <A
+                      href="https://replicate.com/account/api-tokens"
+                      openInNewTab
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                        position: "relative",
+                      }}
+                    >
+                      <Replicate size={20} />{" "}
+                      {viewPortWidth >= 400 ? "Replicate*" : undefined}
+                      {viewPortWidth >= 400 ? (
+                        <Span
+                          style={{
+                            fontSize: ".65rem",
+                            position: "absolute",
+                            bottom: -15,
+                            right: 3,
+                            color: COLORS.orange,
+                          }}
+                        >
+                          {t("Optional")}
+                        </Span>
+                      ) : null}
+                    </A>
+                    {replicateApiKeyInternal ? (
+                      <ConfirmButton
+                        disabled={isDeletingReplicateApiKey}
+                        processing={isDeletingReplicateApiKey}
+                        onConfirm={async () => {
+                          try {
+                            setIsDeletingReplicateApiKey(true)
+                            if (user) {
+                              await actions.updateUser({
+                                deletedApiKeys: ["replicate"],
+                              })
+
+                              setUser({
+                                ...user,
+                                apiKeys: {
+                                  ...user.apiKeys,
+                                  replicate: undefined,
+                                },
+                              })
+
+                              toast.success(
+                                "Replicate API key deleted successfully",
+                              )
+                            }
+
+                            if (guest) {
+                              await actions.updateGuest({
+                                deletedApiKeys: ["replicate"],
+                              })
+
+                              toast.success(
+                                "Replicate API key deleted successfully",
+                              )
+
+                              setGuest({
+                                ...guest,
+                                apiKeys: {
+                                  ...guest.apiKeys,
+                                  replicate: undefined,
+                                },
+                              })
+                            }
+
+                            setReplicateApiKey("")
+                          } catch (error) {
+                            console.error(error)
+                            toast.error("Something went wrong")
+                          } finally {
+                            setIsDeletingReplicateApiKey(false)
+                          }
+                        }}
+                        className="link"
+                      />
+                    ) : null}
+                    <Input
+                      dataTestId="replicate-api-key"
+                      type="text"
+                      placeholder="r8_..."
+                      value={replicateApiKey}
+                      onChange={(e) => setReplicateApiKey(e.target.value)}
+                      style={{
+                        borderColor: colorScheme,
+                        flex: 1,
+                        width: viewPortWidth < 400 ? "fit-content" : undefined,
+                      }}
+                    />
+                    <Button
+                      className="inverted"
+                      type="submit"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                        padding: "0.25rem 0.5rem",
+                        marginLeft: "auto",
+                      }}
+                    >
+                      <Flux size={20} />
+                      {isSavingReplicateApiKey
+                        ? "Saving..."
+                        : user?.apiKeys?.replicate || guest?.apiKeys?.replicate
+                          ? "Update"
+                          : "Save"}
+                    </Button>
+                  </Form>
+                  {showS3 ? (
+                    <Form
+                      onSubmit={async (e) => {
+                        e.preventDefault()
+                        if (!s3ApiKey) {
+                          toast.error(t("Please enter your S3 API key"))
+                          return
+                        }
+
+                        if (!/^s3:\/\//.test(s3ApiKey.trim())) {
+                          toast.error(
+                            t(
+                              "Invalid S3 format (Expected s3://key:secret@endpoint/bucket)",
+                            ),
+                          )
+                          return
+                        }
+
                         try {
-                          setIsDeletingOpenRouterApiKey(true)
+                          setIsSavingS3ApiKey(true)
                           if (user) {
                             await actions.updateUser({
-                              deletedApiKeys: ["openrouter"],
+                              s3ApiKey,
                             })
 
                             setUser({
                               ...user,
                               apiKeys: {
                                 ...user.apiKeys,
-                                openrouter: undefined,
+                                s3: s3ApiKey,
                               },
                             })
 
-                            toast.success(
-                              t("OpenRouter API key deleted successfully"),
-                            )
+                            toast.success(t("S3 API key saved successfully"))
                           }
 
                           if (guest) {
                             await actions.updateGuest({
-                              deletedApiKeys: ["openrouter"],
+                              s3ApiKey,
                             })
 
-                            toast.success(
-                              t("OpenRouter API key deleted successfully"),
-                            )
+                            toast.success(t("S3 API key saved successfully"))
 
                             setGuest({
                               ...guest,
                               apiKeys: {
                                 ...guest.apiKeys,
-                                openrouter: undefined,
+                                s3: s3ApiKey,
                               },
                             })
                           }
@@ -616,247 +1009,246 @@ export default function Watermelon() {
                           console.error(error)
                           toast.error(t("Something went wrong"))
                         } finally {
-                          setIsDeletingOpenRouterApiKey(false)
+                          setIsSavingS3ApiKey(false)
                         }
                       }}
-                      className="link"
-                    />
-                  ) : null}
-                  <Input
-                    dataTestId="openrouter-api-key"
-                    type="text"
-                    placeholder="sk-..."
-                    value={openRouterApiKey}
-                    onChange={(e) => setOpenRouterApiKey(e.target.value)}
-                    style={{
-                      border: "1px solid var(--accent-6)",
-                      borderColor: colorScheme,
-                      flex: 1,
-                      width: viewPortWidth < 400 ? "fit-content" : undefined,
-                    }}
-                  />
-                  <Button
-                    className="inverted"
-                    type="submit"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 5,
-                      padding: "0.25rem 0.5rem",
-                      marginLeft: "auto",
-                    }}
-                  >
-                    <OpenRouter size={20} />
-                    {isSavingOpenRouterApiKey
-                      ? "Saving..."
-                      : user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter
-                        ? "Update"
-                        : "Save"}
-                  </Button>
-                </Form>
-                <Form
-                  onSubmit={async (e) => {
-                    e.preventDefault()
-                    if (!replicateApiKey) {
-                      toast.error(t("Please enter your Replicate API key"))
-                      return
-                    }
-
-                    // OpenRouter key is required before Replicate
-                    if (
-                      !user?.apiKeys?.openrouter &&
-                      !guest?.apiKeys?.openrouter
-                    ) {
-                      toast.error(
-                        t("Please save your OpenRouter API key first"),
-                      )
-                      return
-                    }
-
-                    // Client-side regex validation (Replicate keys start with r8_)
-                    const replicateRegex = /^r8_[a-zA-Z0-9]{37,42}$/
-                    if (!replicateRegex.test(replicateApiKey.trim())) {
-                      toast.error(
-                        t("Invalid Replicate API key format (Expected r8_...)"),
-                      )
-                      return
-                    }
-
-                    try {
-                      setIsSavingReplicateApiKey(true)
-                      if (user) {
-                        await actions.updateUser({
-                          replicateApiKey,
-                        })
-
-                        setUser({
-                          ...user,
-                          apiKeys: {
-                            ...user.apiKeys,
-                            replicate: replicateApiKey,
-                          },
-                        })
-
-                        toast.success(t("Replicate API key saved successfully"))
-                      }
-
-                      if (guest) {
-                        await actions.updateGuest({
-                          replicateApiKey,
-                        })
-
-                        toast.success(t("Replicate API key saved successfully"))
-
-                        setGuest({
-                          ...guest,
-                          apiKeys: {
-                            ...guest.apiKeys,
-                            replicate: replicateApiKey,
-                          },
-                        })
-                      }
-                    } catch (error) {
-                      console.error(error)
-                      toast.error(t("Something went wrong"))
-                    } finally {
-                      setIsSavingReplicateApiKey(false)
-                    }
-                  }}
-                  style={{
-                    ...utilities.row.style,
-                    gap: 15,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <A
-                    href="https://replicate.com/account/api-tokens"
-                    openInNewTab
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 5,
-                      position: "relative",
-                    }}
-                  >
-                    <Replicate size={20} />{" "}
-                    {viewPortWidth >= 400 ? "Replicate*" : undefined}
-                    {viewPortWidth >= 400 ? (
-                      <Span
+                      style={{
+                        ...utilities.row.style,
+                        gap: 15,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <Button
+                        title={t("Close")}
+                        className="link"
+                        onClick={() => {
+                          setShowS3(false)
+                        }}
                         style={{
-                          fontSize: ".65rem",
-                          position: "absolute",
-                          bottom: -15,
-                          right: 3,
-                          color: COLORS.orange,
+                          ...utilities.link.style,
                         }}
                       >
-                        {t("Optional")}
-                      </Span>
-                    ) : null}
-                  </A>
-                  {replicateApiKeyInternal ? (
-                    <ConfirmButton
-                      disabled={isDeletingReplicateApiKey}
-                      processing={isDeletingReplicateApiKey}
-                      onConfirm={async () => {
-                        try {
-                          setIsDeletingReplicateApiKey(true)
-                          if (user) {
-                            await actions.updateUser({
-                              deletedApiKeys: ["replicate"],
-                            })
-
-                            setUser({
-                              ...user,
-                              apiKeys: {
-                                ...user.apiKeys,
-                                replicate: undefined,
-                              },
-                            })
-
-                            toast.success(
-                              "Replicate API key deleted successfully",
-                            )
-                          }
-
-                          if (guest) {
-                            await actions.updateGuest({
-                              deletedApiKeys: ["replicate"],
-                            })
-
-                            toast.success(
-                              "Replicate API key deleted successfully",
-                            )
-
-                            setGuest({
-                              ...guest,
-                              apiKeys: {
-                                ...guest.apiKeys,
-                                replicate: undefined,
-                              },
-                            })
-                          }
-
-                          setReplicateApiKey("")
-                        } catch (error) {
-                          console.error(error)
-                          toast.error("Something went wrong")
-                        } finally {
-                          setIsDeletingReplicateApiKey(false)
-                        }
+                        <CircleX color={COLORS.orange} size={18} />
+                      </Button>
+                      <A
+                        href="https://replicate.com/account/api-tokens"
+                        openInNewTab
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                          position: "relative",
+                        }}
+                      >
+                        <FaAws size={24} />{" "}
+                        {viewPortWidth >= 400 ? "S3/MinIO*" : undefined}
+                        {viewPortWidth >= 400 ? (
+                          <Span
+                            style={{
+                              fontSize: ".65rem",
+                              position: "absolute",
+                              bottom: -15,
+                              right: 3,
+                              color: COLORS.orange,
+                            }}
+                          >
+                            {t("Optional")}
+                          </Span>
+                        ) : null}
+                      </A>
+                      {s3ApiKeyInternal ? (
+                        <ConfirmButton
+                          disabled={isDeletingS3ApiKey}
+                          processing={isDeletingS3ApiKey}
+                          onConfirm={handleDeleteS3}
+                          className="link"
+                        />
+                      ) : null}
+                      <Div
+                        style={{
+                          flex: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 3,
+                        }}
+                      >
+                        <Input
+                          dataTestId="s3-api-key"
+                          type="text"
+                          placeholder="s3://ACCESS_KEY:SECRET_KEY@endpoint/bucket"
+                          value={s3ApiKey}
+                          onChange={(e) => setS3ApiKey(e.target.value)}
+                          style={{
+                            borderColor: colorScheme,
+                            width: "100%",
+                          }}
+                        />
+                      </Div>
+                      <Button
+                        className="inverted"
+                        type="submit"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                          padding: "0.25rem 0.5rem",
+                          marginLeft: "auto",
+                        }}
+                      >
+                        <Img slug="hippo" size={20} />
+                        {isSavingS3ApiKey
+                          ? "Saving..."
+                          : user?.apiKeys?.s3 || guest?.apiKeys?.s3
+                            ? "Update"
+                            : "Save"}
+                      </Button>
+                    </Form>
+                  ) : (
+                    <Div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                        flexWrap: "wrap",
                       }}
-                      className="link"
-                    />
-                  ) : null}
-                  <Input
-                    dataTestId="replicate-api-key"
-                    type="text"
-                    placeholder="r8_..."
-                    value={replicateApiKey}
-                    onChange={(e) => setReplicateApiKey(e.target.value)}
-                    style={{
-                      borderColor: colorScheme,
-                      flex: 1,
-                      width: viewPortWidth < 400 ? "fit-content" : undefined,
-                    }}
-                  />
-                  <Button
-                    className="inverted"
-                    type="submit"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 5,
-                      padding: "0.25rem 0.5rem",
-                      marginLeft: "auto",
-                    }}
-                  >
-                    <Flux size={20} />
-                    {isSavingReplicateApiKey
-                      ? "Saving..."
-                      : user?.apiKeys?.replicate || guest?.apiKeys?.replicate
-                        ? "Update"
-                        : "Save"}
-                  </Button>
-                </Form>
-              </Div>
+                    >
+                      <A
+                        href="https://console.aws.amazon.com/s3"
+                        openInNewTab
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                          position: "relative",
+                        }}
+                      >
+                        <FaAws size={24} />{" "}
+                        {viewPortWidth >= 400 ? "S3/MinIO*" : undefined}
+                        {viewPortWidth >= 400 ? (
+                          <Span
+                            style={{
+                              fontSize: ".65rem",
+                              position: "absolute",
+                              bottom: -15,
+                              right: 3,
+                              color: COLORS.orange,
+                            }}
+                          >
+                            {t("Optional")}
+                          </Span>
+                        ) : null}
+                      </A>
+                      <Button
+                        className="inverted"
+                        onClick={() => setShowS3(true)}
+                        style={{
+                          ...utilities.inverted.style,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                          padding: "0.25rem 0.5rem",
+                          marginLeft: "0.5rem",
+                        }}
+                      >
+                        {t(s3ApiKey ? "Update S3" : "Setup S3")}
+                      </Button>
+
+                      {s3ApiKey ? (
+                        <ConfirmButton
+                          processing={isDeletingS3ApiKey}
+                          disabled={isDeletingS3ApiKey}
+                          className="link"
+                          onConfirm={async () => {
+                            await handleDeleteS3()
+
+                            if (!user) {
+                              addParams({ subscribe: "true", plan: "member" })
+                              return
+                            }
+                          }}
+                          confirm={
+                            <>
+                              {" "}
+                              <Img slug="hippo" />
+                              {t("Confirm switching Hippo")}
+                              <CircleCheck color={COLORS.green} size={15} />
+                            </>
+                          }
+                          style={{
+                            ...utilities.link.style,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 5,
+                            padding: "0.25rem 0.5rem",
+                            marginLeft: "auto",
+                            marginTop: isMobileDevice ? "1.5rem" : undefined,
+                          }}
+                        >
+                          <Img slug="hippo" />
+                          {isMobileDevice
+                            ? t("Or choose 10GB/month of free storage")
+                            : t("Choose 10GB/month of free storage")}
+                        </ConfirmButton>
+                      ) : (
+                        <Button
+                          className="link"
+                          onClick={() => {
+                            if (user) {
+                              addParams({ subscribe: "true", plan: "member" })
+                              return
+                            }
+
+                            addParams({ subscribe: "true", plan: "member" })
+                          }}
+                          style={{
+                            ...utilities.link.style,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 5,
+                            padding: "0.25rem 0.5rem",
+                            marginLeft: "auto",
+                            marginTop: isMobileDevice ? "1.5rem" : undefined,
+                          }}
+                        >
+                          <Img slug="hippo" />
+                          {isMobileDevice
+                            ? t("Or choose 1gb/month of free storage")
+                            : t("Choose 1gb/month of free storage")}
+                          {user && (
+                            <CircleCheck color={COLORS.green} size={15} />
+                          )}
+                        </Button>
+                      )}
+                    </Div>
+                  )}
+                </Div>
+              )}
 
               <P
                 style={{ fontSize: ".85rem", marginTop: 25, marginBottom: 25 }}
               >
-                <A
-                  style={{
-                    color: "var(--shade-6)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 5,
-                  }}
-                  openInNewTab
-                  href="https://github.com/chrryAI/vex/blob/main/packages/db/encryption.ts"
-                >
-                  🔑 {t("AES-256 GCM (Galois/Counter Mode)")}
-                  <ArrowRight size={14} color="var(--accent-5)" />
-                </A>
+                {showS3 ? (
+                  <P>
+                    🔑{" "}
+                    {t("Format: {{format}}", {
+                      format: "s3://ACCESS_KEY:SECRET_KEY@endpoint/bucket",
+                    })}{" "}
+                  </P>
+                ) : (
+                  <A
+                    style={{
+                      color: "var(--shade-6)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                    }}
+                    openInNewTab
+                    href="https://github.com/chrryAI/vex/blob/main/packages/db/encryption.ts"
+                  >
+                    🔑 {t("AES-256 GCM (Galois/Counter Mode)")}{" "}
+                    <ArrowRight size={14} color="var(--accent-5)" />
+                  </A>
+                )}
               </P>
             </Div>
             <Div
@@ -926,11 +1318,28 @@ export default function Watermelon() {
                     }}
                     href="/?signIn=login"
                   >
-                    <Img alt="🍋 Coder" width={22} height={22} slug="coder" />{" "}
-                    {t("Login")}
+                    <Img alt="Coder" size={22} slug="coder" /> {t("Login")} (
+                    {t("Optional")})*
                   </A>
-                  <P style={{ fontSize: "0.9rem", color: "var(--shade-7)" }}>
-                    <Trans
+                  <P
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      justifyContent: "center",
+                      marginTop: 5,
+                    }}
+                  >
+                    <Img alt="Sushi" size={18} slug="sushi" />
+                    {t("Sushi will auto-migrate you when you choose to login")}
+                  </P>
+                  <P
+                    style={{
+                      fontSize: "0.9rem",
+                      color: "var(--shade-7)",
+                    }}
+                  >
+                    {/* <Trans
                       i18nKey="watermelon_guest_info"
                       defaults="You can use your own API key as a guest. Your data will <0>auto-migrate</0> when you <1>login</1>. Login is optional, but you can always sync your account."
                       components={[
@@ -940,7 +1349,7 @@ export default function Watermelon() {
                           onClick={() => setSignInPart("login")}
                         />,
                       ]}
-                    />
+                    /> */}
                   </P>
                 </>
               )}
@@ -1016,12 +1425,12 @@ export default function Watermelon() {
             </Div>
             <Div
               style={{
-                marginTop: 35,
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 10,
                 display: "flex",
                 marginBottom: 20,
+                marginTop: "auto",
               }}
             >
               <ThemeSwitcher style={{ marginTop: 5 }} />

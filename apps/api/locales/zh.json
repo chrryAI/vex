@@ -2506,5 +2506,10 @@
   "Bluesky": "Bluesky",
   "Please save your OpenRouter API key first": "请先保存您的OpenRouter API密钥",
   "BAM": "BAM",
-  "Give Hippo something to remember": "给Hippo留下一些记忆"
+  "Give Hippo something to remember": "给Hippo留下一些记忆",
+  "Format {{format}}": "格式 {{format}}",
+  "Sushi will auto-migrate you when you choose to login": "当您选择登录时，Sushi将自动为您迁移",
+  "Or choose 10GB/month of free storage": "或选择每月10GB的免费存储空间",
+  "Choose 10GB/month of free storage": "选择每月10GB的免费存储空间",
+  "Confirm switching Hippo": "确认切换到Hippo"
 }

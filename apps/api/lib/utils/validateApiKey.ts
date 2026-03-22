@@ -13,6 +13,7 @@ export type ProviderName =
   | "fal"
   | "openrouter"
   | "xai"
+  | "s3"
 
 const PROVIDER_REGEX: Record<string, RegExp> = {
   openai: /^sk-[a-zA-Z0-9]{32,}$/,
@@ -24,6 +25,7 @@ const PROVIDER_REGEX: Record<string, RegExp> = {
   replicate: /^r8_[a-zA-Z0-9]{34,}$/,
   fal: /^fal_[a-zA-Z0-9]{32,}$/,
   xai: /^xai-[a-zA-Z0-9]{32,}$/,
+  s3: /^s3:\/\//,
 }
 
 /**
@@ -53,5 +55,6 @@ export function normalizeProviderName(field: string): ProviderName | null {
   if (lower.includes("replicate")) return "replicate"
   if (lower.includes("fal")) return "fal"
   if (lower.includes("xai")) return "xai"
+  if (lower.includes("s3")) return "s3"
   return null
 }
