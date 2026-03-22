@@ -12,12 +12,12 @@ import {
 } from "./siteConfig"
 
 export {
-  isDevelopment,
-  isProduction,
-  getEnv,
-  isCI,
   checkIsExtension,
+  getEnv,
   getExtensionUrl,
+  isCI,
+  isDevelopment,
   isE2E,
+  isProduction,
   isTestingDevice,
 }

@@ -79,9 +79,10 @@ export const setCookieWeb = (
     ...(isLocalhost ? { domain: undefined, secure: undefined } : {}),
   }
 
-  const expires = new Date(
-    Date.now() + (optionsWithDefaults.days || 7) * 864e5,
-  ).toUTCString()
+  const expires = optionsWithDefaults.days
+    ? "; expires=" +
+      new Date(Date.now() + optionsWithDefaults.days * 864e5).toUTCString()
+    : ""
 
   const cookieString =
     name +

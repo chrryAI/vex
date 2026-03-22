@@ -635,13 +635,13 @@ button.link.bookmark:hover {
   color: var(--accent-1);
 }
 
+button.favorite:hover svg {
+  fill: var(--accent-1);
+}
+
 button.link.bookmark:hover svg {
   fill: var(--accent-1);
   color: var(--accent-1);
-}
-
-button.favorite:hover svg {
-  fill: var(--accent-1);
 }
 
 .chatTextArea,

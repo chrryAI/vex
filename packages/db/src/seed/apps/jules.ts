@@ -103,6 +103,7 @@ export const getJulesPayload = (params: {
     userId: params.userId,
     slug: "jules",
     name: "Jules",
+    domain: "https://sushi.chrry.ai/jules",
     storeId: params.storeId,
     extends: params.parentAppIds,
     version: "1.0.0",

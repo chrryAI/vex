@@ -106,6 +106,7 @@ export default function Watermelon() {
     setUser,
     actions,
     storeApps,
+    chrry,
     plausible,
   } = useAuth()
 
@@ -251,7 +252,7 @@ export default function Watermelon() {
           <LanguageSwitcher />
         </Div>
 
-        {app && (
+        {chrry && (
           <P
             style={{
               display: "flex",
@@ -265,9 +266,9 @@ export default function Watermelon() {
             }}
           >
             <AppLink
-              app={app}
+              app={chrry}
               event={ANALYTICS_EVENTS.WM_APP_LINK_CLICK}
-              icon={<Img app={app} alt={app.name} width={16} height={16} />}
+              icon={<Img app={chrry} alt={chrry.name} width={16} height={16} />}
               loading={<Loading size={13} />}
               className="button inverted medium"
               style={{
@@ -275,7 +276,7 @@ export default function Watermelon() {
                 fontFamily: "var(--font-sans)",
               }}
             >
-              {app.name}
+              {chrry.name}
             </AppLink>{" "}
           </P>
         )}
@@ -1437,7 +1438,7 @@ export default function Watermelon() {
               }}
             >
               <ThemeSwitcher style={{ marginTop: 5 }} />
-              <ColorScheme />
+              <ColorScheme size={22} />
             </Div>
             <P
               style={{

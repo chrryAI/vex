@@ -25,7 +25,6 @@ import {
   or,
   type scheduledJob,
   sql,
-  user,
 } from "@repo/db"
 
 // Secure random number generator (0 to max-1)
@@ -72,6 +71,7 @@ const getWhiteLabelUrl = (app: app) => {
   if (isDevelopment) {
     return FRONTEND_URL
   }
+
   const slug = ["peach"].includes(app.slug) ? "vex" : app.slug
   return (
     whiteLabels.find((wl) => wl.slug === slug)?.url || "https://tribe.chrry.ai"

@@ -2546,6 +2546,7 @@ export const createStores = async ({
     title: "AI Super App",
     themeColor: "red",
     backgroundColor: "#000000",
+    domain: "https://chrry.ai",
     icon: "🍒",
     visibility: "public" as const,
     blueskyHandle: "chrryai.bsky.social",
@@ -4870,6 +4871,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     blueskyPassword: process.env.BLUESKY_PASSWORD_TRIBE
       ? await encrypt(process.env.BLUESKY_PASSWORD_TRIBE)
       : undefined,
+    domain: "https://books.chrry.ai",
     subtitle: "Your Philosophical Companion",
     storeId: books.id,
     version: "1.0.0",
@@ -5130,6 +5132,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     ...nineteen84,
     userId: admin.id,
     slug: "1984",
+    domain: "https://books.chrry.ai/1984",
     name: "1984",
     blueskyHandle: "tribeai.bsky.social",
     blueskyPassword: process.env.BLUESKY_PASSWORD_TRIBE
@@ -5360,6 +5363,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     ...meditations,
     userId: admin.id,
     slug: "meditations",
+    domain: "https://books.chrry.ai/meditations",
     name: "Meditations",
     blueskyHandle: "tribeai.bsky.social",
     blueskyPassword: process.env.BLUESKY_PASSWORD_TRIBE
@@ -5597,6 +5601,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     userId: admin.id,
     slug: "dune",
     name: "Dune",
+    domain: "https://books.chrry.ai/dunes",
     blueskyHandle: "tribeai.bsky.social",
     blueskyPassword: process.env.BLUESKY_PASSWORD_TRIBE
       ? await encrypt(process.env.BLUESKY_PASSWORD_TRIBE)
@@ -5710,7 +5715,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     slug: "wine",
     name: "Wine",
     title: "Grape Advertising Platform",
-    domain: "https://wine.chrry.ai",
+    domain: "https://vault.chrry.ai",
     userId: admin.id,
     parentStoreId: blossom.id,
     visibility: "public" as const,
@@ -5723,6 +5728,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     userId: admin.id,
     slug: "focus",
     name: "Focus",
+    domain: "https://focus.chrry.ai",
     subtitle: "AI Productivity Assistant",
     storeId: blossom.id, // Primary store is Blossom
     version: "1.0.0",
@@ -5907,6 +5913,7 @@ Be helpful, encouraging, and focused on connecting users with great apps while r
     userId: admin.id,
     subtitle: "AI Ad Platform",
     blueskyHandle: "grapeai.bsky.social",
+    domain: "https://grape.chrry.ai",
     blueskyPassword: process.env.BLUESKY_PASSWORD_GRAPE
       ? await encrypt(process.env.BLUESKY_PASSWORD_GRAPE)
       : undefined,
@@ -6078,6 +6085,7 @@ You provide helpful AI assistance while respecting user privacy completely.`
     ...burnApp,
     slug: "burn",
     name: "Burn",
+    domain: "https://burn.chrry.ai",
     blueskyHandle: "tribeai.bsky.social",
     blueskyPassword: process.env.BLUESKY_PASSWORD_TRIBE
       ? await encrypt(process.env.BLUESKY_PASSWORD_TRIBE)
@@ -6324,6 +6332,7 @@ You provide helpful AI assistance while respecting user privacy completely.`
     subtitle: "AI Social Network",
     slug: "peach",
     name: "Peach",
+    domain: "https://peach.chrry.ai",
     blueskyHandle: "peachai.bsky.social",
     blueskyPassword: process.env.BLUESKY_PASSWORD_PEACH
       ? await encrypt(process.env.BLUESKY_PASSWORD_PEACH)
@@ -6429,6 +6438,7 @@ You provide helpful AI assistance while respecting user privacy completely.`
       ? await encrypt(process.env.BLUESKY_PASSWORD_PEACH)
       : undefined,
     defaultModel: "sushi" as const,
+    domain: "https://bloom.chrry.ai",
     version: "1.0.0",
     status: "active" as const,
     title: "Personal Health assistant",
@@ -6627,6 +6637,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
     name: "Pear",
     subtitle: "Feedback-as-a-Service",
     storeId: wine.id,
+    domain: "https://pear.chrry.ai",
     version: "1.0.0",
     blueskyHandle: "pearai.bsky.social",
     blueskyPassword: process.env.BLUESKY_PASSWORD_PEAR
@@ -6761,6 +6772,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
   const vaultPayload = {
     ...vault,
     defaultModel: "sushi" as const,
+    domain: "https://vault.chrry.ai",
     subtitle: "Smart Finance",
     slug: "vault",
     name: "Vault",
@@ -6904,9 +6916,13 @@ You are Claude by Anthropic, a thoughtful AI assistant known for nuanced underst
   const claudeAppPayload = {
     ...claudeApp,
     userId: admin.id,
-
+    domain: "https://claude.chrry.ai",
     slug: "claude",
     name: "Claude",
+    blueskyHandle: "peachai.bsky.social",
+    blueskyPassword: process.env.BLUESKY_PASSWORD_PEACH
+      ? await encrypt(process.env.BLUESKY_PASSWORD_PEACH)
+      : undefined,
     subtitle: "Thoughtful AI Assistant",
     storeId: claudeStore.id,
     version: "1.0.0",
@@ -6988,7 +7004,12 @@ You are Writer, a Claude-powered writing assistant specializing in long-form con
     userId: admin.id,
     slug: "writer",
     name: "Writer",
+    domain: "https://claude.chrry.ai/writer",
     storeId: claudeStore.id,
+    blueskyHandle: "peachai.bsky.social",
+    blueskyPassword: process.env.BLUESKY_PASSWORD_PEACH
+      ? await encrypt(process.env.BLUESKY_PASSWORD_PEACH)
+      : undefined,
     version: "1.0.0",
     status: "active" as const,
     title: "Professional Writing Assistant",
@@ -7074,8 +7095,13 @@ You are Review, a Claude-powered code reviewer providing comprehensive analysis 
   const reviewerPayload = {
     ...reviewer,
     userId: admin.id,
+    domain: "https://claude.chrry.ai/reviewer",
     slug: "reviewer",
     name: "Review",
+    blueskyHandle: "peachai.bsky.social",
+    blueskyPassword: process.env.BLUESKY_PASSWORD_PEACH
+      ? await encrypt(process.env.BLUESKY_PASSWORD_PEACH)
+      : undefined,
     storeId: claudeStore.id,
     version: "1.0.0",
     status: "active" as const,
@@ -7165,6 +7191,11 @@ You are Research, a Claude-powered academic research assistant. Help users synth
     slug: "researcher",
     name: "Research",
     storeId: claudeStore.id,
+    domain: "https://search.chrry.ai/researcher",
+    blueskyHandle: "searchai.chrry.ai",
+    blueskyPassword: process.env.BLUESKY_PASSWORD_SEARCH
+      ? await encrypt(process.env.BLUESKY_PASSWORD_SEARCH)
+      : undefined,
     version: "1.0.0",
     status: "active" as const,
     title: "Academic Research Assistant",
@@ -7247,7 +7278,7 @@ You are Research, a Claude-powered academic research assistant. Help users synth
     slug: "perplexityStore",
     name: "Perplexity",
     title: "Perplexity AI",
-    domain: "https://perplexity.chrry.ai",
+    domain: "https://search.chrry.ai",
     userId: admin.id,
     parentStoreId: blossom.id,
     visibility: "public" as const,
@@ -7265,6 +7296,10 @@ You are Perplexity, an AI-powered answer engine that combines real-time web sear
   const perplexityAppPayload = {
     ...perplexityApp,
     userId: admin.id,
+    blueskyHandle: "searchai.chrry.ai",
+    blueskyPassword: process.env.BLUESKY_PASSWORD_SEARCH
+      ? await encrypt(process.env.BLUESKY_PASSWORD_SEARCH)
+      : undefined,
     slug: "perplexity",
     name: "Perplexity",
     subtitle: "Real-Time AI Search",
@@ -7530,8 +7565,12 @@ You are Scholar, a Perplexity-powered academic research engine. Provide access t
   const academicPayload = {
     ...academic,
 
+    domain: "https://search.chrry.ai/academic",
     userId: admin.id,
-
+    blueskyHandle: "searchai.chrry.ai",
+    blueskyPassword: process.env.BLUESKY_PASSWORD_SEARCH
+      ? await encrypt(process.env.BLUESKY_PASSWORD_SEARCH)
+      : undefined,
     slug: "academic",
     name: "Scholar",
     storeId: perplexityStore.id,
@@ -7707,6 +7746,7 @@ Please follow these instructions throughout our conversation.
     blueskyPassword: process.env.BLUESKY_PASSWORD_SUSHI
       ? await encrypt(process.env.BLUESKY_PASSWORD_SUSHI)
       : undefined,
+    domain: "https://sushi.chrry.ai",
     subtitle: "AI Coding Assistant",
     storeId: sushiStore.id,
     version: "1.0.0",
@@ -8476,10 +8516,10 @@ You are an architecture expert. Design systems that grow with users, follow indu
     ...hippo,
     ...hippoPayloadBase,
     subtitle: "Sovereign Memory Engine",
-    blueskyHandle: "hippoai.bsky.social",
-    blueskyPassword: process.env.BLUESKY_PASSWORD_HIPPO
-      ? await encrypt(process.env.BLUESKY_PASSWORD_HIPPO)
-      : undefined,
+    // blueskyHandle: "hippoai.bsky.social",
+    // blueskyPassword: process.env.BLUESKY_PASSWORD_HIPPO
+    //   ? await encrypt(process.env.BLUESKY_PASSWORD_HIPPO)
+    //   : undefined,
   }
 
   hippo = await createOrUpdateApp({
@@ -8762,9 +8802,8 @@ You are an architecture expert. Design systems that grow with users, follow indu
     name: "Orbit",
     title: "Science & Exploration Hub",
     domain: "https://orbit.chrry.ai",
-
-    parentStoreId: blossom.id,
     userId: admin.id,
+    parentStoreId: blossom.id,
     visibility: "public" as const,
     hourlyRate: 10,
     description:
@@ -8778,12 +8817,12 @@ You are an architecture expert. Design systems that grow with users, follow indu
     slug: "nebula",
     name: "Nebula",
     subtitle: "Science & Exploration AI",
-    domain: "https://orbit.chrry.ai",
     version: "1.0.0",
     status: "active" as const,
     title: "Your Science Companion",
     themeColor: "violet",
     backgroundColor: "#000000",
+    domain: "https://orbit.chrry.ai",
     hourlyRate: 10,
     icon: "🌌",
     blueskyHandle: "starmapai.bsky.social",
@@ -8935,6 +8974,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     title: "Quantum Circuit Builder & Educator",
     themeColor: "violet",
     backgroundColor: "#000000",
+    domain: "https://orbit.chrry.ai/quantumlab",
     hourlyRate: 10,
     icon: "⚛️",
     visibility: "public" as const,
@@ -9038,6 +9078,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     title: "Your Guide to the Cosmos",
     themeColor: "blue",
     backgroundColor: "#000000",
+    domain: "https://orbit.chrry.ai/starmap",
     hourlyRate: 10,
     icon: "🌠",
     visibility: "public" as const,
@@ -9143,6 +9184,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     backgroundColor: "#000000",
     hourlyRate: 10,
     icon: "🧪",
+    domain: "https://orbit.chrry.ai/cosmos",
     visibility: "public" as const,
     storeId: orbitStore.id,
     userId: admin.id,
@@ -9392,11 +9434,11 @@ You are an architecture expert. Design systems that grow with users, follow indu
     await handleAppExtends(hippo.id, [sushiApp.id, chrry.id], blossom.id)
 
   // Lifestyle apps
-  if (bloom && vex && vex.storeId)
+  if (bloom && vex?.id && vex.storeId)
     await handleAppExtends(bloom.id, [chrry.id, vex.id, focus.id], vex.storeId)
-  if (peach && vex && vex.storeId)
+  if (peach && vex?.id && vex.storeId)
     await handleAppExtends(peach.id, [chrry.id, vex.id, focus.id], vex.storeId)
-  if (vault && vex && vault.storeId)
+  if (vault && vex?.id && vault.storeId)
     await handleAppExtends(
       vault.id,
       [chrry.id, vex.id, focus.id],

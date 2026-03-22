@@ -998,6 +998,7 @@ export type store = {
     height?: number
     id: string
   }> | null
+  excludeGridApps?: string[]
   teamId: string | null
   domain: string | null
   appId: string | null

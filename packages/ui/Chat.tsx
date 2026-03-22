@@ -274,7 +274,7 @@ export default function Chat({
   const cooldownMs = cooldownMinutes * 60 * 1000
 
   const setPostToTribe = (value: boolean) => {
-    if (value && lastTribe && lastTribe.createdOn) {
+    if (value && lastTribe?.createdOn) {
       const timeSinceLastPost =
         now.getTime() - new Date(lastTribe.createdOn).getTime()
       const remainingCooldown = cooldownMs - timeSinceLastPost
@@ -292,7 +292,7 @@ export default function Chat({
   }
 
   const setPostToMoltbook = (value: boolean) => {
-    if (value && lastMolt && lastMolt.createdOn) {
+    if (value && lastMolt?.createdOn) {
       const timeSinceLastPost =
         now.getTime() - new Date(lastMolt.createdOn).getTime()
       const remainingCooldown = cooldownMs - timeSinceLastPost

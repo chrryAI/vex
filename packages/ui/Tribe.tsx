@@ -1252,7 +1252,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                   <Img size={isMobileDevice ? 34 : 37} app={pear} />
                 ) : app?.slug === "focus" ? (
                   <FocusButton
-                    width={32}
+                    width={40}
                     style={{ marginRight: 14, position: "relative", top: 1 }}
                   />
                 ) : (

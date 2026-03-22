@@ -97,7 +97,7 @@ export const appSchema = z.object({
     .array(
       z.union([
         z.enum(["calendar", "location", "weather"]),
-        z.uuid("Invalid tool ID"),
+        z.string().uuid("Invalid tool ID"),
       ]),
     )
     .optional(),
@@ -178,7 +178,7 @@ export const appSchema = z.object({
 
   // Settings (Tab 7)
   visibility: z.enum(["private", "public", "unlisted"]).optional(),
-  extends: z.array(z.uuid("Invalid agent ID")).optional(),
+  extends: z.array(z.string().uuid("Invalid agent ID")).optional(),
 
   // Agent Exclusivity - boolean flag
   // If true, app only works with user's default agent (not other agents)

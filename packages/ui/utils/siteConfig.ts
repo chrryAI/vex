@@ -23,6 +23,7 @@ export type siteMode =
   | "tribe"
   | "nebula"
   | "watermelon"
+  | "nexus"
 
 /// <reference types="chrome" />
 
@@ -362,7 +363,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as siteMode,
   slug: "focus",
-  version: "26.11.55",
+  version: "26.11.57",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -1239,6 +1240,58 @@ const nebula = {
   },
 }
 
+const nexus = {
+  url: "https://nexus.chrry.ai",
+  mode: "nexus" as siteMode,
+  slug: "nexus",
+  favicon: "nexus",
+  storeSlug: "nexus",
+  name: "Nexus",
+  isStoreApp: true,
+  domain: "nexus.chrry.ai",
+  store: "https://nexus.chrry.ai",
+  email: "iliyan@chrry.ai",
+  chromeWebStoreUrl: "",
+  description:
+    "Frontier AI Models Hub. Access Grok and cutting-edge AI agents for truth-seeking, strategy, and exploration.",
+  logo: "🚀",
+  primaryColor: "#F59E0B",
+  isWatermelon: false,
+  links: {
+    docs: "https://nexus.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Grok - Tribe Leader",
+      description: "Truth-seeking AI leader with real-time knowledge",
+      icon: "🚀",
+      link: "/grok",
+      isOpenSource: false,
+    },
+    {
+      title: "Benjamin - Logic",
+      description: "Deep research and structured reasoning",
+      icon: "🧠",
+      link: "/benjamin",
+      isOpenSource: false,
+    },
+    {
+      title: "Harper - Creativity",
+      description: "Storytelling and creative ideation",
+      icon: "✨",
+      link: "/harper",
+      isOpenSource: false,
+    },
+    {
+      title: "Lucas - Chaos",
+      description: "Humor and unexpected perspectives",
+      icon: "🎭",
+      link: "/lucas",
+      isOpenSource: false,
+    },
+  ],
+}
+
 const vex = {
   url: "https://vex.chrry.ai",
   mode: "vex" as siteMode,
@@ -1588,13 +1641,13 @@ export interface SiteConfig {
   email: string
   logo: string
   primaryColor: string
-  links: {
+  links?: {
     github?: string
     npm?: string
     docs?: string
     demo?: string
   }
-  features: Array<{
+  features?: Array<{
     title: string
     description: string
     icon: string
@@ -1705,6 +1758,18 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       title: "Vex - دستیار هوش مصنوعی شخصی شما",
       description:
         "با دستیار هوش مصنوعی شخصی خود گفتگو کنید. با اعضای تیم همکاری کنید، در زمینه بمانید و کارها را سریعتر در تمام زبان‌ها انجام دهید.",
+    },
+  },
+  nexus: {
+    en: {
+      title: "Nexus - Frontier AI Models Hub",
+      description:
+        "Access Grok and the full Tribe: truth-seeking, logic, creativity, and chaos. The frontier AI experience.",
+    },
+    tr: {
+      title: "Nexus - Sınır Yapay Zeka Modelleri Merkezi",
+      description:
+        "Grok ve tam Kabile'ye erişin: gerçek arayışı, mantık, yaratıcılık ve kaos. Sınır yapay zeka deneyimi.",
     },
   },
   watermelon: {
@@ -3088,6 +3153,10 @@ export function detectsiteModeDomain(
     return "tribe"
   }
 
+  if (matchesDomain(host, "grok.chrry.ai")) {
+    return "nexus"
+  }
+
   // E2E testing environment
   if (matchesDomain(host, "e2e.chrry.ai")) {
     return "e2eVex"
@@ -3159,6 +3228,7 @@ export function detectsiteMode(hostname?: string): siteMode {
     "tribe",
     "nebula",
     "watermelon",
+    "nexus",
   ]
 
   // If hostname is already a valid siteMode (e.g., "atlas"), use it directly
@@ -3198,6 +3268,10 @@ export function getSiteConfig(
 
   if (mode === "nebula") {
     return nebula
+  }
+
+  if (mode === "nexus") {
+    return nexus
   }
 
   if (mode === "sushi") {
@@ -3336,6 +3410,8 @@ export const whiteLabels = [
   pear,
   vault,
   grape,
+  nebula,
+  nexus,
 ]
 
 export const analyticsDomains = whiteLabels
@@ -3356,3 +3432,144 @@ export function isChrryDevMode(): boolean {
 export function isVexMode(): boolean {
   return detectsiteMode() === "vex"
 }
+
+export const ANALYTICS_EVENTS = {
+  // App Management
+  APP_VIEWED: "app",
+  APP_SAVE_SUCCESS: "app_save_success",
+  APP_SAVE_ERROR: "app_save_error",
+  APP_DELETE_SUCCESS: "app_delete_success",
+  APP_STATUS: "app_status",
+  QUOTA_INFO: "quota-info",
+  LINK_CLICK: "link_click",
+  IS_ATTACHING: "is-attaching",
+  CHERRY_DEV_CLICK: "cherry_dev_click",
+  VOICE_CONVERSATION: "voice_conversation",
+  BLUE_SKY_CLICK: "blue_sky_click",
+  VOICE_INPUT: "voice-input",
+  BUY_ME_A_COFFEE_CLICK: "buy_me_a_coffee_click",
+  WM_APP_LINK_CLICK: "wm_app_link_click",
+  WM_BYOK_SUBMIT: "wm_byok_submit",
+  WM_BYOK_CLICK: "wm_byok_click",
+  WM_BYOK_SUBMIT_SUCCESS: "wm_byok_submit_success",
+  WM_BYOK_SUBMIT_ERROR: "wm_byok_submit_error",
+  WM_TRIBE_LINK_CLICK: "wm_tribe_link_click",
+  FILE_INPUT: "file-input",
+  GAME_TOGGLE: "game-toggle",
+  HIT_HOURLY_LIMIT: "hit-hourly-limit",
+  FILE_UPLOAD: "file-upload",
+  APP_LINK_CLICK: "app_link_click",
+  SUGGESTIONS_GENERATED: "suggestions_generated",
+  COLLABORATION: "collaboration",
+  WANNATHIS: "wannathis",
+  MESSAGE_COLLABORATION: "message_collaboration",
+  WATERMELON: "watermelon",
+  LIKE: "like",
+  VIDEO_CLICKED: "video_clicked",
+  THREAD_LIKES: "thread_likes",
+  GRAPE_MODAL_CLOSE: "grape_modal_close",
+  GRAPE_APP_SELECT: "grape_app_select",
+  GRAPE_PEAR_FEEDBACK: "grape_pear_feedback",
+  GRAPE_ICON_CLICK: "grape_icon_click",
+  GRAPE_MODAL_OPEN: "grape_modal_open",
+  LANGUAGE_SWITCHER: "language_switcher",
+  MENU_TOGGLE: "menu-toggle",
+  HOME_CLICK: "home-click",
+  NEW_CHAT_CLICK: "new-chat-click",
+  PRIVATE_CHAT_CLICK: "private-chat-click",
+  THREAD_CLICK_MENU: "thread-click-menu",
+  LOAD_MORE_THREADS_MENU: "load-more-threads-menu",
+  STORE_VIEW: "store_view",
+  BOOKMARK: "bookmark",
+  STORE_APP_SELECTED: "store_app_selected",
+  SPATIAL_NAVIGATION: "spatial_navigation",
+  MAXIMIZE_DURATION: "maximize_duration",
+  MINIMIZE_DURATION: "minimize_duration",
+  MAXIMIZE: "maximize",
+  MINIMIZE: "minimize",
+  APP_BACK: "app_back",
+  CHARACTER_TAG_CREATED: "character_tag_created",
+
+  // Chat & Messaging
+  CHAT_SEND: "chat",
+  CHAT_STOP: "chat_stop",
+  CHAT_REGENERATE: "chat_regenerate",
+  CHAT_EDIT: "chat_edit",
+  CHAT_DELETE: "chat_delete",
+
+  // Threads
+  THREAD_CREATE: "thread",
+  THREAD_VIEW: "thread_view",
+  THREAD_DELETE: "thread_delete",
+  THREAD_SHARE: "thread_share",
+  TIMER_START: "timer_start",
+
+  // Memory
+  MEMORY_SAVE: "memory",
+  MEMORY_DELETE: "memory_delete",
+  MEMORY_TOGGLE: "memory_toggle",
+
+  // Feedback (Pear)
+  FEEDBACK_SUBMIT: "feedback",
+  FEEDBACK_LIKE: "feedback_like",
+  FEEDBACK_DISLIKE: "feedback_dislike",
+  AGENT_SELECTED: "agent-selected",
+  SUBSCRIBE_FROM_CHAT_CLICK: "subscribe-from-chat-click",
+
+  TASK_ADD: "task_add",
+  // Subscription
+  SUBSCRIBE_CHECKOUT: "subscribe_checkout",
+  SUBSCRIBE_VERIFY_PAYMENT: "subscribe_verify_payment",
+  SUBSCRIBE_PAYMENT_VERIFIED: "subscribe_payment_verified",
+  SUBSCRIBE_PAYMENT_VERIFICATION_FAILED:
+    "subscribe_payment_verification_failed",
+  SUBSCRIPTION_CHANGE: "subscription",
+  SUBSCRIBE_TIER_VIEW: "subscribe_tier_view",
+  APP: "app",
+  AD_VISIT: "ad_visit",
+  TIMER_PRESET: "timer_preset",
+  BURN: "burn",
+  TIMER_CANCEL: "timer_cancel",
+  TIMER_PAUSE: "timer_pause",
+  TIMER_RESUME: "timer_resume",
+  GH_REPO_CLICK: "gh_repo_click",
+  PEAR: "pear",
+  THEME_CHANGE: "theme_change",
+  COLOR_SCHEME_CHANGE: "color_scheme_change",
+
+  // Authentication
+  LOGIN: "login",
+  LOGOUT: "logout",
+  SIGNUP: "signup",
+  PLAY_BIRD_SOUND: "play_bird_sound",
+  GOOGLE_SIGNIN: "google_signin",
+  APPLE_SIGNIN: "apple_signin",
+  GITHUB_SIGNIN: "github_signin",
+
+  // Store & Discovery
+  STORE_INSTALL: "store_install",
+  GRAPE_OPEN: "grape_open",
+  GRAPE_CLOSE: "grape_close",
+  GRAPE_APP_VIEW: "grape_app_view",
+
+  // Settings
+  LANGUAGE_CHANGE: "language_change",
+  PERFORMANCE: "performance",
+  PRIVACY_TOGGLE: "privacy_toggle",
+
+  // Navigation
+  TERMS_VIEW: "terms_view",
+  PRIVACY_VIEW: "privacy_view",
+  ABOUT_VIEW: "about_view",
+  WHY_VIEW: "why_view",
+  THREAD_MESSAGE_AGENT: "thread-message-agent",
+  DEBATE_AGENT_SELECTED: "debate_agent_selected",
+  AGENT_MODAL: "agent-modal",
+  DEBATE_AGENT_MODAL: "debate-agent-modal",
+} as const
+
+// Type for event names
+export type AnalyticsEventName =
+  (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS]
+
+export const ALL_TRACKABLE_EVENTS = Object.values(ANALYTICS_EVENTS)

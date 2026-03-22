@@ -14,8 +14,8 @@ import {
 import { useMarkdownContentStyles } from "./MarkdownContent.styles"
 import { Button, Div, ScrollView, Text, useTheme } from "./platform"
 
-export { processTextWithCitations }
 export type { MarkdownContentProps }
+export { processTextWithCitations }
 
 const _CodeBlock: React.FC<codeBlock> = ({ language, children, className }) => {
   const [copied, setCopied] = useState(false)

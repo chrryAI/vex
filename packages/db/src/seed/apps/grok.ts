@@ -94,6 +94,7 @@ export const getLucasPayload = (params: {
 }) => {
   return {
     userId: params.userId,
+    domain: "https://nexus.chrry.ai/lucas",
     slug: "lucas",
     name: "Lucas",
     storeId: params.storeId,
@@ -256,6 +257,7 @@ export const getBenjaminPayload = (params: {
     userId: params.userId,
     slug: "benjamin",
     name: "Benjamin",
+    domain: "https://nexus.chrry.ai/benjamin",
     storeId: params.storeId,
     extends: params.parentAppIds,
     version: "1.0.0",
@@ -417,6 +419,7 @@ export const getHarperPayload = (params: {
     userId: params.userId,
     slug: "harper",
     name: "Harper",
+    domain: "https://nexus.chrry.ai/harper",
     storeId: params.storeId,
     extends: params.parentAppIds,
     version: "1.0.0",
@@ -579,6 +582,7 @@ export const getGrokPayload = (params: {
   return {
     userId: params.userId,
     slug: "grok",
+    domain: "https://nexus.chrry.ai",
     name: "Grok",
     storeId: params.storeId,
     extends: params.parentAppIds,

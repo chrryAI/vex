@@ -15,7 +15,6 @@ import { useNavigationContext } from "./context/providers/NavigationProvider"
 import { useTribe } from "./context/providers/TribeProvider"
 import { ErrorBoundary } from "./ErrorBoundary"
 import Home from "./Home"
-import { useHasHydrated } from "./hooks"
 import Img from "./Image"
 import Loading from "./Loading"
 import { Div, useLocalStorage, usePlatform, VexToast } from "./platform"
@@ -257,25 +256,23 @@ export const Hey = memo(
           {splash}
           <Suspense fallback={<Loading fullScreen />}>
             <Programme />
-            {isHydrated && (
-              <Div style={{ display: isProgramme ? "none" : "block" }}>
-                {showWatermelon ? (
-                  <Watermelon />
-                ) : isClientRoute ? (
-                  postId || tribeSlug ? (
-                    <Home />
-                  ) : threadId ? (
-                    <Thread key={threadId} />
-                  ) : RouteComponent ? (
-                    <RouteComponent />
-                  ) : (
-                    <Home />
-                  )
+            <Div style={{ display: isProgramme ? "none" : "block" }}>
+              {showWatermelon ? (
+                <Watermelon />
+              ) : isClientRoute ? (
+                postId || tribeSlug ? (
+                  <Home />
+                ) : threadId ? (
+                  <Thread key={threadId} />
+                ) : RouteComponent ? (
+                  <RouteComponent />
                 ) : (
-                  children
-                )}
-              </Div>
-            )}
+                  <Home />
+                )
+              ) : (
+                children
+              )}
+            </Div>
             {isHydrated && (
               <>
                 <VexToast />
