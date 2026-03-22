@@ -971,9 +971,6 @@ export default function Chat({
         setNeedsReview(true)
         return
       }
-      if (selectedAgent?.name === "flux") {
-        setSelectedAgent(undefined)
-      }
     }
 
     setIsAttachingInternal(attaching)
@@ -1060,12 +1057,6 @@ export default function Chat({
       handleFileSelect(e.dataTransfer.files)
     }
   }
-
-  useEffect(() => {
-    if (files.length > 0 && selectedAgent?.name === "flux") {
-      setSelectedAgent(undefined)
-    }
-  }, [files.length, selectedAgent])
 
   // Fetch quota information
   const fetchQuotaInfo = async () => {
@@ -2128,7 +2119,6 @@ export default function Chat({
 
         const type = result?.contextMenuAction?.type
         if (type) {
-          if (selectedAgent?.name === "flux") setSelectedAgent(undefined)
           message = (() => {
             if (type === "writeReply") {
               return t(`✍️ Please help me write a reply to`)
