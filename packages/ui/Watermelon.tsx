@@ -1190,9 +1190,7 @@ export default function Watermelon() {
                           }}
                         >
                           <Img slug="hippo" />
-                          {isMobileDevice
-                            ? t("Or choose 10GB/month of free storage")
-                            : t("Choose 10GB/month of free storage")}
+                          {t("Or choose 10GB/month of free storage")}
                         </ConfirmButton>
                       ) : (
                         <Button
