@@ -54,12 +54,20 @@ vi.mock("../platform", async (importOriginal) => {
     ...actual,
     usePlatform: () => mockPlatform,
     useTheme: () => mockTheme,
-    Div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    Button: ({ children, ...props }: any) => (
-      <button {...props}>{children}</button>
+    Div: ({ children, handlers, state, ...props }: any) => (
+      <div {...props}>{children}</div>
     ),
-    Span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
-    Video: ({ ...props }: any) => <video {...props} />,
+    Button: ({
+      children,
+      onPointerDown,
+      onPointerUp,
+      onPointerLeave,
+      ...props
+    }: any) => <button {...props}>{children}</button>,
+    Span: ({ children, handlers, state, ...props }: any) => (
+      <span {...props}>{children}</span>
+    ),
+    Video: ({ handlers, state, ...props }: any) => <video {...props} />,
   }
 })
 
@@ -166,6 +174,8 @@ vi.mock("../utils", async (importOriginal) => {
     ),
     getInstructionConfig: vi.fn(() => ({ weather: "sunny" })),
     apiFetch: vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
       json: () => Promise.resolve({}),
       blob: () => Promise.resolve(new Blob()),
     }),
@@ -230,8 +240,10 @@ describe("Message", () => {
 
   it("handles text-to-speech playback", async () => {
     const onPlayAudio = vi.fn()
-    // Mock fetch for TTS using global.fetch mock properly
-    global.fetch = vi.fn().mockResolvedValue({
+    const { apiFetch } = await import("../utils")
+    vi.mocked(apiFetch).mockResolvedValue({
+      ok: true,
+      status: 200,
       json: () => Promise.resolve({ audio: "data:audio/mp3;base64,test" }),
     } as any)
 

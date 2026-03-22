@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.1.78"
+const VERSION = "2.1.80"
 
 const AuthContext = createContext<
   | {
@@ -124,7 +124,6 @@ const AuthContext = createContext<
       showWatermelonInitial: boolean
       hasHydrated: boolean
       actions: apiActions
-      spatialSessionId?: string
       setAbout: (value: string | undefined) => void
       ask: string | undefined
       setAsk: (value: string | undefined) => void
@@ -250,7 +249,7 @@ const AuthContext = createContext<
         apps: appWithStore[],
       ) => appWithStore | undefined
       setShowFocus: (showFocus: boolean) => void
-      showFocus: boolean | undefined
+      showFocus: boolean | undefined | null
       isLoadingTasks: boolean
       setIsLoadingPosts: (value: boolean) => void
       isLoadingPosts: boolean
@@ -956,29 +955,6 @@ export function AuthProvider({
   >("enableNotifications", true)
 
   const [minimize, setMinimize] = useLocalStorage<boolean>("minimize2", false)
-
-  const [spatialSessionId, setSpatialSessionId] = useCookie(
-    "spatialSessionId",
-    "",
-  )
-
-  // Initialize ephemeral spatialSessionId if not present
-  useEffect(() => {
-    if (typeof window !== "undefined" && !spatialSessionId) {
-      const newId = uuidv4()
-      const domain =
-        window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1"
-          ? undefined
-          : `.${window.location.hostname.split(".").slice(-2).join(".")}`
-
-      setSpatialSessionId(newId, {
-        domain,
-        path: "/",
-        sameSite: "lax",
-      })
-    }
-  }, [spatialSessionId, setSpatialSessionId])
 
   const [shouldFetchSession, setShouldFetchSession] = useState(!props.session)
 
@@ -1757,7 +1733,6 @@ export function AuthProvider({
       appName: app?.name,
       appSlug: app?.slug,
       baseAppName: baseApp?.name,
-      spatialSessionId,
       duration,
       minimize,
       isPear,
@@ -2217,11 +2192,15 @@ export function AuthProvider({
 
   const showFocusInitial = searchParams.get("focus") === "true"
 
-  const [showFocus, setShowFocusInternal] = useState<boolean | undefined>(
+  const [showFocus, setShowFocusInternal] = useLocalStorage<
+    boolean | undefined | null
+  >(
+    `showFocus:${app?.slug || "focus"}`,
     baseApp ? baseApp?.slug === "focus" || showFocusInitial : undefined,
   )
 
   useEffect(() => {
+    if (!isStorageReady) return
     if (!baseApp?.slug) return
     if (showFocus === undefined && baseApp?.slug === "focus") {
       setShowFocusInternal(true)
@@ -2229,7 +2208,7 @@ export function AuthProvider({
     if (showFocusInitial) {
       setShowFocusInternal(showFocusInitial)
     }
-  }, [showFocusInitial, showFocus, baseApp?.slug])
+  }, [showFocusInitial, showFocus, baseApp?.slug, isStorageReady])
 
   const setShowFocus = (sw: boolean) => {
     setShowFocusInternal(sw)
@@ -3781,7 +3760,6 @@ export function AuthProvider({
         setMinimize,
         setThread,
         isExtensionRedirect,
-        spatialSessionId,
         signInContext,
         signOutContext,
         characterProfilesEnabled,
