@@ -52,17 +52,15 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
       ...(!isSsrBuild
         ? [
             compression({
-              algorithm: "gzip",
+              algorithms: ["gzip"],
               exclude: [/\.(br)$/, /\.(gz)$/],
               threshold: 1024,
-              deleteOriginFile: false,
             }),
             // Generate brotli compressed files (better compression than gzip)
             compression({
-              algorithm: "brotliCompress",
+              algorithms: ["brotliCompress"],
               exclude: [/\.(br)$/, /\.(gz)$/],
               threshold: 1024,
-              deleteOriginFile: false,
             }),
           ]
         : []),
@@ -171,7 +169,7 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
           format: "es", // Force ES module format
           // Only add Node.js polyfills for SSR builds, not client builds
           banner: isSsrBuild
-            ? "import { createRequire } from 'module';import { fileURLToPath } from 'url';import { dirname } from 'path';const require = createRequire(import.meta.url);const __filename = fileURLToPath(import.meta.url);const __dirname = dirname(__filename);globalThis.require = require;globalThis.__dirname = __dirname;globalThis.__filename = __filename;"
+            ? "import { createRequire as __createRequire } from 'module';import { fileURLToPath as __fileURLToPath } from 'url';import { dirname as __dirnameFunc } from 'path';const require = __createRequire(import.meta.url);const __filename = __fileURLToPath(import.meta.url);const __dirname = __dirnameFunc(__filename);globalThis.require = require;globalThis.__dirname = __dirname;globalThis.__filename = __filename;"
             : undefined,
         },
       },

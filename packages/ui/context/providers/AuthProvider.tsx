@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.1.71"
+const VERSION = "2.1.72"
 
 const AuthContext = createContext<
   | {
@@ -124,6 +124,7 @@ const AuthContext = createContext<
       showWatermelonInitial: boolean
       hasHydrated: boolean
       actions: apiActions
+      spatialSessionId?: string
       setAbout: (value: string | undefined) => void
       ask: string | undefined
       setAsk: (value: string | undefined) => void
@@ -957,6 +958,29 @@ export function AuthProvider({
 
   const [minimize, setMinimize] = useLocalStorage<boolean>("minimize2", false)
 
+  const [spatialSessionId, setSpatialSessionId] = useCookie(
+    "spatialSessionId",
+    "",
+  )
+
+  // Initialize ephemeral spatialSessionId if not present
+  useEffect(() => {
+    if (typeof window !== "undefined" && !spatialSessionId) {
+      const newId = uuidv4()
+      const domain =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1"
+          ? undefined
+          : "." + window.location.hostname.split(".").slice(-2).join(".")
+
+      setSpatialSessionId(newId, {
+        domain,
+        path: "/",
+        sameSite: "lax",
+      })
+    }
+  }, [spatialSessionId, setSpatialSessionId])
+
   const [shouldFetchSession, setShouldFetchSession] = useState(!props.session)
 
   const [fingerprint, setFingerprint] = useCookieOrLocalStorage(
@@ -1734,6 +1758,7 @@ export function AuthProvider({
       appName: app?.name,
       appSlug: app?.slug,
       baseAppName: baseApp?.name,
+      spatialSessionId,
       duration,
       minimize,
       isPear,
@@ -3752,6 +3777,7 @@ export function AuthProvider({
         setMinimize,
         setThread,
         isExtensionRedirect,
+        spatialSessionId,
         signInContext,
         signOutContext,
         characterProfilesEnabled,
