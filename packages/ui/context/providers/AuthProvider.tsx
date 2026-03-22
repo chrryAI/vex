@@ -1,6 +1,7 @@
 "use client"
 
 import { t } from "i18next"
+import pLimit from "p-limit"
 import React, {
   createContext,
   type Dispatch,
@@ -97,6 +98,9 @@ import { useError } from "./ErrorProvider"
 // Constants (shared with DataProvider)
 
 export type { session }
+
+// Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
+const analyticsLimit = pLimit(1)
 
 const VERSION = "2.1.66"
 
@@ -1763,23 +1767,26 @@ export function AuthProvider({
         }
     // Only send meaningful events to API for AI context
     if (token && MEANINGFUL_EVENTS.includes(name as any)) {
-      fetch(`${API_URL}/analytics/grape`, {
-        method: "POST",
-        credentials: "include", // Send cookies for auth
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name,
-          url: normalizedUrl,
-          props: finalProps,
-          timestamp: Date.now(),
+      analyticsLimit(() =>
+        fetch(`${API_URL}/analytics/grape`, {
+          method: "POST",
+          credentials: "include", // Send cookies for auth
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name,
+            url: normalizedUrl,
+            props: finalProps,
+            timestamp: Date.now(),
+          }),
+        }).catch((error) => {
+          // Fire and forget error handling
+          captureException(error)
+          console.error("❌ Analytics plausible error:", error)
         }),
-      }).catch((error) => {
-        captureException(error)
-        console.error("❌ Analytics plausible error:", error)
-      }) // Fire and forget
+      )
     }
 
     if (user?.role === "admin") return
