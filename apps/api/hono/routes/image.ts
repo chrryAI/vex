@@ -85,6 +85,8 @@ image.post("/", async (c) => {
         type: "image",
       },
       context: "apps",
+      member,
+      guest,
     })
 
     console.log("✅ App image uploaded successfully:", uploadResult.url)

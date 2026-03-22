@@ -13,9 +13,24 @@ export { ErrorProvider, useError } from "./ErrorProvider"
 export { NavigationProvider, useNavigationContext } from "./NavigationProvider"
 export { TribeProvider, useTribe } from "./TribeProvider"
 
+import pLimit from "p-limit"
 // Composition root - combines all providers
 import { type ReactNode, useMemo, useState } from "react"
-import { SWRConfig } from "swr"
+import { type Middleware, SWRConfig, type SWRHook } from "swr"
+
+// Create a concurrency limit of 5 for all SWR network requests
+const limit = pLimit(5)
+
+const pLimitMiddleware: Middleware =
+  (useSWRNext: SWRHook) => (key, fetcher, config) => {
+    if (!fetcher) return useSWRNext(key, fetcher, config)
+
+    // Wrap the fetcher to limit concurrency
+    const wrappedFetcher = (...args: any[]) => limit(() => fetcher(...args))
+
+    return useSWRNext(key, wrappedFetcher, config)
+  }
+
 import { Hey } from "../../Hey"
 import getCacheProvider from "../../lib/swrCacheProvider"
 import type { locale } from "../../locales"
@@ -158,6 +173,7 @@ export default function AppProviders({
         if (retryCount >= 3) return
         setTimeout(() => revalidate({ retryCount }), 5000)
       },
+      use: [pLimitMiddleware],
     }),
     [],
   )

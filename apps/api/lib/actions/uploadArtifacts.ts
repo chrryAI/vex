@@ -116,6 +116,8 @@ export const uploadArtifacts = async ({
               title: file.filename,
               type: "text",
             },
+            member,
+            guest,
           })
           // Process for RAG in background (non-blocking)
           if (!isE2E && memoriesEnabled && !burn) {
@@ -154,6 +156,8 @@ export const uploadArtifacts = async ({
             title: file.filename,
             type: "pdf",
           },
+          member,
+          guest,
         })
 
         try {
@@ -199,6 +203,8 @@ export const uploadArtifacts = async ({
             title: file.filename,
             type: "image",
           },
+          member,
+          guest,
         })
 
         uploadedFiles.push({
@@ -235,6 +241,8 @@ export const uploadArtifacts = async ({
             title: file.filename,
             type: "video",
           },
+          member,
+          guest,
         })
 
         uploadedFiles.push({
@@ -253,6 +261,8 @@ export const uploadArtifacts = async ({
             title: file.filename,
             type: "audio",
           },
+          member,
+          guest,
         })
 
         uploadedFiles.push({
@@ -271,6 +281,8 @@ export const uploadArtifacts = async ({
             title: file.filename,
             type: "text",
           },
+          member,
+          guest,
         })
 
         uploadedFiles.push({

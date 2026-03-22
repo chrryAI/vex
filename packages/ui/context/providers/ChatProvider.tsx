@@ -230,6 +230,7 @@ export function ChatProvider({
     siteConfig,
     actions,
     setShowWatermelon,
+    appId,
     ...auth
   } = useAuth()
 
@@ -331,7 +332,7 @@ export function ChatProvider({
     error: threadsError,
   } = useSWR(
     token && shouldFetchThreads && session
-      ? ["contextThreads", toFetch, app?.id, collaborationStatus, isNewChat]
+      ? ["contextThreads", toFetch, appId, collaborationStatus, isNewChat]
       : null,
     async () => {
       try {
@@ -341,7 +342,7 @@ export function ChatProvider({
               setShouldFetchThreads(false)
             }
           },
-          appId: app?.id,
+          appId,
           userName: userNameByUrl,
           pageSize: pageSizes.menuThreads - (isMobile ? 2 : 0),
           sort: "bookmark",
@@ -401,7 +402,7 @@ export function ChatProvider({
     const threads = await actions.getThreads({
       pageSize: 1,
       collaborationStatus: "active",
-      appId: app?.id,
+      appId,
     })
     threads?.totalCount &&
       setActiveCollaborationThreadsCount(threads.totalCount)
@@ -420,7 +421,7 @@ export function ChatProvider({
     const threads = await actions.getThreads({
       pageSize: 1,
       myPendingCollaborations: true,
-      appId: app?.id,
+      appId,
     })
     threads?.totalCount &&
       setPendingCollaborationThreadsCount(threads.totalCount)
@@ -842,12 +843,6 @@ export function ChatProvider({
   // Track consecutive Pear messages that earned 0 credits → auto-disable after 3
   const pearNoGainStreakRef = React.useRef(0)
 
-  // AI Agents
-
-  useEffect(() => {
-    isPear && setSelectedAgent(sushiAgent)
-  }, [isPear])
-
   const onlyAgent = !!app?.onlyAgent
 
   const [debateAgent, setDebateAgentInternal] = useLocalStorage<
@@ -900,12 +895,6 @@ export function ChatProvider({
   const { appStatus, setAppStatus } = useApp()
 
   const { captureException } = useError()
-
-  useEffect(() => {
-    if (appStatus?.part) {
-      setSelectedAgent(sushiAgent)
-    }
-  }, [appStatus?.part])
 
   const [shouldFetchThread, setShouldFetchThread] = useState(!auth.threadData)
 
@@ -1013,7 +1002,7 @@ export function ChatProvider({
     if (selectedAgent?.name === agent?.name) return
     if (agent === null) {
       setAgentName("")
-      setSelectedAgentInternal(null)
+      setSelectedAgentInternal(undefined)
       setDebateAgent(null)
       return
     }
@@ -1028,37 +1017,22 @@ export function ChatProvider({
 
   const defaultAgentInternal =
     aiAgents.find((a) => app?.defaultModel && a.name === app?.defaultModel) ||
-    favouriteAgent
+    (aiAgents.length > 9 && app ? favouriteAgent : null)
 
   const [defaultAgent, setDefaultAgent] = useState<aiAgent | undefined | null>(
     defaultAgentInternal,
   )
 
-  const [selectedAgent, setSelectedAgentInternal] = useLocalStorage<
-    aiAgent | undefined | null
-  >("selectedAgent", defaultAgent)
+  const selectedAgent = auth.selectedAgent
+  const setSelectedAgentInternal = auth.setSelectedAgent
 
   useEffect(() => {
     setDefaultAgent(defaultAgentInternal)
   }, [defaultAgentInternal])
 
   useEffect(() => {
-    defaultAgent &&
-      (selectedAgent === undefined || !isUserSelectedAgent) &&
-      setSelectedAgent(defaultAgent)
-  }, [defaultAgent, isUserSelectedAgent, selectedAgent])
-
-  useEffect(() => {
-    auth.selectedAgent?.name !== selectedAgent?.name &&
-      selectedAgent &&
-      auth.setSelectedAgent(selectedAgent)
-  }, [selectedAgent])
-
-  useEffect(() => {
-    if (selectedAgent == null) return
-
-    !selectedAgent && setSelectedAgent(defaultAgent)
-  }, [defaultAgent, selectedAgent])
+    setSelectedAgent(defaultAgent)
+  }, [defaultAgent])
 
   const setIsWebSearchEnabled = (value: boolean) => {
     if (value) {

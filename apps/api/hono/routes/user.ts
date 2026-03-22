@@ -96,6 +96,7 @@ user.patch("/", async (c) => {
     apiKeys,
     openRouterApiKey,
     replicateApiKey,
+    s3ApiKey,
     falApiKey,
     deletedApiKeys,
   } = await c.req.json()
@@ -140,6 +141,7 @@ user.patch("/", async (c) => {
     if (replicateApiKey !== undefined)
       await updateKey("replicate", replicateApiKey)
     if (falApiKey !== undefined) await updateKey("fal", falApiKey)
+    if (s3ApiKey !== undefined) await updateKey("s3", s3ApiKey)
 
     // Handle explicit deletion of API keys
     if (Array.isArray(deletedApiKeys)) {

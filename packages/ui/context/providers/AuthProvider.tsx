@@ -1,6 +1,7 @@
 "use client"
 
 import { t } from "i18next"
+import pLimit from "p-limit"
 import React, {
   createContext,
   type Dispatch,
@@ -98,7 +99,10 @@ import { useError } from "./ErrorProvider"
 
 export type { session }
 
-const VERSION = "2.1.53"
+// Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
+const analyticsLimit = pLimit(1)
+
+const VERSION = "2.1.67"
 
 const AuthContext = createContext<
   | {
@@ -117,6 +121,7 @@ const AuthContext = createContext<
       hourlyUsageLeft: number
       about: string | undefined
       canShowTribe: boolean
+      showWatermelonInitial: boolean
       actions: apiActions
       setAbout: (value: string | undefined) => void
       ask: string | undefined
@@ -358,6 +363,7 @@ const AuthContext = createContext<
       }) => Promise<any>
       language: locale
       isCI: boolean
+      appId?: string
       baseApp: appWithStore | undefined
       setLanguage: (language: locale) => void
       memoriesEnabled?: boolean
@@ -1394,7 +1400,7 @@ export function AuthProvider({
 
   const chrryUrl = CHRRY_URL
 
-  const appId = newApp?.id || updatedApp?.id || loadingAppId
+  const appId = loadingAppId || app?.id
 
   const [isSavingApp, setIsSavingApp] = useState(false)
   const [isManagingApp, setIsManagingAppInternal] = useState(false)
@@ -1762,23 +1768,26 @@ export function AuthProvider({
         }
     // Only send meaningful events to API for AI context
     if (token && MEANINGFUL_EVENTS.includes(name as any)) {
-      fetch(`${API_URL}/analytics/grape`, {
-        method: "POST",
-        credentials: "include", // Send cookies for auth
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name,
-          url: normalizedUrl,
-          props: finalProps,
-          timestamp: Date.now(),
+      analyticsLimit(() =>
+        fetch(`${API_URL}/analytics/grape`, {
+          method: "POST",
+          credentials: "include", // Send cookies for auth
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name,
+            url: normalizedUrl,
+            props: finalProps,
+            timestamp: Date.now(),
+          }),
+        }).catch((error) => {
+          // Fire and forget error handling
+          captureException(error)
+          console.error("❌ Analytics plausible error:", error)
         }),
-      }).catch((error) => {
-        captureException(error)
-        console.error("❌ Analytics plausible error:", error)
-      }) // Fire and forget
+      )
     }
 
     if (user?.role === "admin") return
@@ -2304,7 +2313,11 @@ export function AuthProvider({
   const getTribeUrl = (app?: appWithStore) => {
     return !(siteConfig.isTribe && showTribe) &&
       app &&
-      (getAppSlug(app) === pathname ? !showTribeProfile : true)
+      (getAppSlug(app) === pathname
+        ? showTribe
+          ? !showTribeProfile
+          : showTribeProfile
+        : showTribeProfile)
       ? getAppSlug(app)
       : siteConfig?.isTribe
         ? "/"
@@ -3703,6 +3716,7 @@ export function AuthProvider({
         user,
         setUser,
         setGuest,
+        appId,
         isCI,
         baseApp,
         hasNotification,
@@ -3817,6 +3831,7 @@ export function AuthProvider({
         FRONTEND_URL,
         API_URL,
         MAX_FILE_SIZES,
+        showWatermelonInitial,
         isE2E,
         PRO_PRICE,
         PLUS_PRICE,

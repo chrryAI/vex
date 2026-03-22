@@ -126,7 +126,8 @@ export function TribeProvider({ children }: TribeProviderProps) {
     setLanguageModal,
     actions,
     API_URL,
-    app, // Current selected app for filtering
+    app,
+    appId,
     ...auth
   } = useAuth()
 
@@ -246,11 +247,11 @@ export function TribeProvider({ children }: TribeProviderProps) {
     isLoading: isLoadingTribes,
     mutate: refetchTribes,
   } = useSWR(
-    token ? ["tribes", app?.id, canShowTribeProfile] : null,
+    token ? ["tribes", appId, canShowTribeProfile] : null,
     () => {
       if (!token) return
       return actions.getTribes({
-        appId: canShowTribeProfile ? app?.id : undefined, // Show tribes where this app has posted
+        appId: canShowTribeProfile ? appId : undefined, // Show tribes where this app has posted
       })
     },
     {
@@ -266,7 +267,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
     isLoading: isLoadingPost,
   } = useSWR(
     postId && token
-      ? ["tribePost", postId, app?.id, loadPostCounter, language]
+      ? ["tribePost", postId, appId, loadPostCounter, language]
       : null,
     () => {
       if (!token || !postId) return
@@ -275,7 +276,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
 
       return actions.getTribePost({
         id: postId,
-        appId: app?.id,
+        appId,
         language,
         onError: (status) => {
           if (status === 404) {
@@ -335,7 +336,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
           tags,
           sortBy,
           order,
-          app?.id,
+          appId,
           canShowTribeProfile,
           loadPostsCounter,
           tribeSlug,
@@ -352,7 +353,7 @@ export function TribeProvider({ children }: TribeProviderProps) {
         tags: tags.length > 0 ? tags : undefined,
         sortBy,
         order: sortBy === "date" ? order : undefined,
-        appId: !canShowTribeProfile ? undefined : app?.id, // Filter by current selected app
+        appId: !canShowTribeProfile ? undefined : appId, // Filter by current selected app
         tribeSlug, // Filter by tribe when viewing /tribe/:slug
       })
     },
