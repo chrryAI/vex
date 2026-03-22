@@ -1230,9 +1230,9 @@ export default function Watermelon() {
                 {showS3 ? (
                   <P>
                     🔑{" "}
-                    {t(
-                      "Format: s3://ACCESS_KEY:SECRET_KEY@endpoint/bucket",
-                    )}{" "}
+                    {t("Format: {{format}}", {
+                      format: "s3://ACCESS_KEY:SECRET_KEY@endpoint/bucket",
+                    })}{" "}
                   </P>
                 ) : (
                   <A
