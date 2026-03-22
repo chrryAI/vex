@@ -15,8 +15,8 @@ import {
 } from "./context/providers"
 import { useTribe } from "./context/providers/TribeProvider"
 import { useStyles } from "./context/StylesContext"
+import Hippo from "./Hippo"
 import Img from "./Image"
-import Instructions from "./Instructions"
 import {
   Download,
   Heart,
@@ -429,8 +429,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           >
             <Img showLoading={false} icon="calendar" width={18} height={18} />
           </A>
-          <Instructions
-            showButton={false}
+          <Hippo
             showDownloads={true}
             showInstructions={false}
             style={{

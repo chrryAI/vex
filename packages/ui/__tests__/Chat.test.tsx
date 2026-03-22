@@ -54,21 +54,68 @@ vi.mock("../platform", async (importOriginal) => {
     ...actual,
     usePlatform: () => mockPlatform,
     useTheme: () => mockTheme,
-    // Mock primitive components to avoid context dependency
-    Div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    Button: ({ children, ...props }: any) => (
+    // Mock primitive components to avoid context dependency and filter non-DOM props
+    Div: ({ children, handlers, state, ...props }: any) => (
+      <div {...props}>{children}</div>
+    ),
+    Button: ({
+      children,
+      onPointerDown,
+      onPointerUp,
+      onPointerLeave,
+      ...props
+    }: any) => (
       <button type="button" {...props}>
         {children}
       </button>
     ),
-    Span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
-    TextArea: ({ ...props }: any) => <textarea {...props} />,
-    Input: ({ ...props }: any) => <input {...props} />,
-    H2: ({ children, ...props }: any) => <h2 {...props}>{children}</h2>,
-    Strong: ({ children, ...props }: any) => (
+    Span: ({ children, handlers, state, ...props }: any) => (
+      <span {...props}>{children}</span>
+    ),
+    TextArea: (props: any) => {
+      const {
+        onSubmitEditing,
+        onKeyPress,
+        onPaste,
+        blurOnSubmit,
+        multiline,
+        returnKeyType,
+        onChangeText,
+        ...cleanProps
+      } = props
+      return (
+        <textarea {...cleanProps} onKeyPress={onKeyPress} onPaste={onPaste} />
+      )
+    },
+    Input: (props: any) => {
+      const {
+        onSubmitEditing,
+        onKeyPress,
+        onPaste,
+        blurOnSubmit,
+        multiline,
+        returnKeyType,
+        onChangeText,
+        dataTestId,
+        error,
+        ...cleanProps
+      } = props
+      return (
+        <input
+          {...cleanProps}
+          onKeyPress={onKeyPress}
+          onPaste={onPaste}
+          data-testid={props["data-testid"] || dataTestId}
+        />
+      )
+    },
+    H2: ({ children, handlers, state, ...props }: any) => (
+      <h2 {...props}>{children}</h2>
+    ),
+    Strong: ({ children, handlers, state, ...props }: any) => (
       <strong {...props}>{children}</strong>
     ),
-    Video: ({ ...props }: any) => <video {...props} />,
+    Video: ({ handlers, state, ...props }: any) => <video {...props} />,
   }
 })
 

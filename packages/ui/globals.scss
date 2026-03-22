@@ -315,10 +315,10 @@ button {
 
 button.transparent,
 .button.transparent {
-  background-color: var(--background);
-  color: var(--foreground);
-  border: 0.0625rem solid var(--shade-2);
-  box-shadow: none;
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+  border: 0.0625rem solid var(--shade-2) !important;
+  box-shadow: none !important;
 }
 
 button.transparent:hover,
@@ -329,10 +329,10 @@ button.transparent:hover,
 
 button.inverted,
 .button.inverted {
-  background-color: var(--foreground);
-  color: var(--background);
-  border: 0.0625rem solid var(--shade-2);
-  box-shadow: none;
+  background-color: var(--foreground) !important;
+  color: var(--background) !important;
+  border: 0.0625rem solid var(--shade-2) !important;
+  box-shadow: none !important;
 }
 
 button.inverted:hover,
