@@ -230,6 +230,7 @@ export function ChatProvider({
     siteConfig,
     actions,
     setShowWatermelon,
+    appId,
     ...auth
   } = useAuth()
 
@@ -331,7 +332,7 @@ export function ChatProvider({
     error: threadsError,
   } = useSWR(
     token && shouldFetchThreads && session
-      ? ["contextThreads", toFetch, app?.id, collaborationStatus, isNewChat]
+      ? ["contextThreads", toFetch, appId, collaborationStatus, isNewChat]
       : null,
     async () => {
       try {
@@ -341,7 +342,7 @@ export function ChatProvider({
               setShouldFetchThreads(false)
             }
           },
-          appId: app?.id,
+          appId,
           userName: userNameByUrl,
           pageSize: pageSizes.menuThreads - (isMobile ? 2 : 0),
           sort: "bookmark",
@@ -401,7 +402,7 @@ export function ChatProvider({
     const threads = await actions.getThreads({
       pageSize: 1,
       collaborationStatus: "active",
-      appId: app?.id,
+      appId,
     })
     threads?.totalCount &&
       setActiveCollaborationThreadsCount(threads.totalCount)
@@ -420,7 +421,7 @@ export function ChatProvider({
     const threads = await actions.getThreads({
       pageSize: 1,
       myPendingCollaborations: true,
-      appId: app?.id,
+      appId,
     })
     threads?.totalCount &&
       setPendingCollaborationThreadsCount(threads.totalCount)
