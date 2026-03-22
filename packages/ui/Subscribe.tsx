@@ -998,6 +998,8 @@ export default function Subscribe({
               }}
               style={{
                 ...utilities.inverted.style,
+                alignItems: "center",
+                justifyContent: "center",
                 marginTop: ".3rem",
               }}
             >
