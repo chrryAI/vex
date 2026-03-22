@@ -9,7 +9,7 @@ import {
   FaWindows,
 } from "react-icons/fa"
 import { FiCheck } from "react-icons/fi"
-import { SiMacos } from "react-icons/si"
+import { SiApple } from "react-icons/si"
 import A from "./a/A"
 import { useAuth, useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
@@ -170,7 +170,7 @@ export default function Version() {
                   ) : (
                     <>
                       {os === "macos" ? (
-                        <SiMacos size={24} />
+                        <SiApple size={24} />
                       ) : os === "windows" ? (
                         <FaWindows size={18} />
                       ) : (

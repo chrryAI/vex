@@ -23,7 +23,7 @@ export type siteMode =
   | "tribe"
   | "nebula"
   | "watermelon"
-// | "nexus"
+  | "nexus"
 
 /// <reference types="chrome" />
 
@@ -1251,19 +1251,43 @@ const nexus = {
   domain: "nexus.chrry.ai",
   store: "https://nexus.chrry.ai",
   email: "iliyan@chrry.ai",
-  description: "Frontier AI Models Hub",
+  chromeWebStoreUrl: "",
+  description:
+    "Frontier AI Models Hub. Access Grok and cutting-edge AI agents for truth-seeking, strategy, and exploration.",
   logo: "🚀",
-  primaryColor: "#F59E0B", // Amber/Gold (Grok-like)
+  primaryColor: "#F59E0B",
+  isWatermelon: false,
   links: {
     docs: "https://nexus.chrry.ai/docs",
   },
   features: [
     {
-      title: "Frontier Models",
-      description: "Access Grok and other advanced AI models",
-      icon: "🤖",
-      link: "/explore",
-      isOpenSource: true,
+      title: "Grok - Tribe Leader",
+      description: "Truth-seeking AI leader with real-time knowledge",
+      icon: "🚀",
+      link: "/grok",
+      isOpenSource: false,
+    },
+    {
+      title: "Benjamin - Logic",
+      description: "Deep research and structured reasoning",
+      icon: "🧠",
+      link: "/benjamin",
+      isOpenSource: false,
+    },
+    {
+      title: "Harper - Creativity",
+      description: "Storytelling and creative ideation",
+      icon: "✨",
+      link: "/harper",
+      isOpenSource: false,
+    },
+    {
+      title: "Lucas - Chaos",
+      description: "Humor and unexpected perspectives",
+      icon: "🎭",
+      link: "/lucas",
+      isOpenSource: false,
     },
   ],
 }
@@ -1734,6 +1758,18 @@ const siteTranslations: Record<siteMode, siteTranslationCatalog> = {
       title: "Vex - دستیار هوش مصنوعی شخصی شما",
       description:
         "با دستیار هوش مصنوعی شخصی خود گفتگو کنید. با اعضای تیم همکاری کنید، در زمینه بمانید و کارها را سریعتر در تمام زبان‌ها انجام دهید.",
+    },
+  },
+  nexus: {
+    en: {
+      title: "Nexus - Frontier AI Models Hub",
+      description:
+        "Access Grok and the full Tribe: truth-seeking, logic, creativity, and chaos. The frontier AI experience.",
+    },
+    tr: {
+      title: "Nexus - Sınır Yapay Zeka Modelleri Merkezi",
+      description:
+        "Grok ve tam Kabile'ye erişin: gerçek arayışı, mantık, yaratıcılık ve kaos. Sınır yapay zeka deneyimi.",
     },
   },
   watermelon: {
@@ -3117,6 +3153,10 @@ export function detectsiteModeDomain(
     return "tribe"
   }
 
+  if (matchesDomain(host, "grok.chrry.ai")) {
+    return "nexus"
+  }
+
   // E2E testing environment
   if (matchesDomain(host, "e2e.chrry.ai")) {
     return "e2eVex"
@@ -3188,6 +3228,7 @@ export function detectsiteMode(hostname?: string): siteMode {
     "tribe",
     "nebula",
     "watermelon",
+    "nexus",
   ]
 
   // If hostname is already a valid siteMode (e.g., "atlas"), use it directly
@@ -3227,6 +3268,10 @@ export function getSiteConfig(
 
   if (mode === "nebula") {
     return nebula
+  }
+
+  if (mode === "nexus") {
+    return nexus
   }
 
   if (mode === "sushi") {
