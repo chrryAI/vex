@@ -363,7 +363,7 @@ export default function Watermelon() {
                   display: "flex",
                   alignItems: "center",
                   gap: 10,
-                  marginTop: 15,
+                  marginTop: 5,
                 }}
               >
                 🔪<Span>{t("Choose your weapon")}</Span>🏹
@@ -379,6 +379,9 @@ export default function Watermelon() {
                 }}
               >
                 <Button
+                  onClick={() => {
+                    setCompact(!compact)
+                  }}
                   className="inverted"
                   style={{
                     display: "flex",
@@ -388,7 +391,10 @@ export default function Watermelon() {
                   }}
                 >
                   <Img alt="🌋 Free" width={22} height={22} slug="coder" />
-                  {t("Free")} (BYOK)
+                  {t("Free")} (BYOK){" "}
+                  {!compact ? (
+                    <CircleCheck color={COLORS.blue} size={13} />
+                  ) : null}
                 </Button>
                 {app && (
                   <AppLink
@@ -1211,8 +1217,8 @@ export default function Watermelon() {
                         >
                           <Img slug="hippo" />
                           {isMobileDevice
-                            ? t("Or choose 1gb/month of free storage")
-                            : t("Choose 1gb/month of free storage")}
+                            ? t("Or choose 10GB/month of free storage")
+                            : t("Choose 10GB/month of free storage")}
                           {user && (
                             <CircleCheck color={COLORS.green} size={15} />
                           )}
@@ -1352,7 +1358,7 @@ export default function Watermelon() {
                   </P>
                 </>
               )}
-              {!isTauri && (
+              {!isTauri && viewPortHeight >= 800 && (
                 <Div>
                   <P
                     style={{
