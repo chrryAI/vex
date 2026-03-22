@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.1.66"
+const VERSION = "2.1.67"
 
 const AuthContext = createContext<
   | {
@@ -363,6 +363,7 @@ const AuthContext = createContext<
       }) => Promise<any>
       language: locale
       isCI: boolean
+      appId?: string
       baseApp: appWithStore | undefined
       setLanguage: (language: locale) => void
       memoriesEnabled?: boolean
@@ -1399,7 +1400,7 @@ export function AuthProvider({
 
   const chrryUrl = CHRRY_URL
 
-  const appId = newApp?.id || updatedApp?.id || loadingAppId
+  const appId = loadingAppId || app?.id
 
   const [isSavingApp, setIsSavingApp] = useState(false)
   const [isManagingApp, setIsManagingAppInternal] = useState(false)
@@ -3715,6 +3716,7 @@ export function AuthProvider({
         user,
         setUser,
         setGuest,
+        appId,
         isCI,
         baseApp,
         hasNotification,
