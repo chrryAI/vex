@@ -364,7 +364,7 @@ const vex = {
   },
 }
 
-const burn = {
+export const burn = {
   url: "https://burn.chrry.ai",
   mode: "burn" as siteMode,
   slug: "burn",
