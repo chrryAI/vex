@@ -4236,6 +4236,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                   title: file.filename,
                   type: "image",
                 },
+                member,
+                guest,
               }),
             )
           } catch (error: any) {
@@ -4274,6 +4276,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                   title: file.filename,
                   type: "audio",
                 },
+                member,
+                guest,
               })
             } catch (error: any) {
               captureException(error)
@@ -4299,6 +4303,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                   title: file.filename,
                   type: "video",
                 },
+                member,
+                guest,
               })
             } catch (error: any) {
               captureException(error)
@@ -4353,6 +4359,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                     title: file.filename,
                     type: "video",
                   },
+                  member,
+                  guest,
                 })
               } catch (uploadError: any) {
                 captureException(uploadError)
@@ -4453,6 +4461,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 title: file.filename,
                 type: "pdf",
               },
+              member,
+              guest,
             })
           } catch (error: any) {
             captureException(error)
@@ -5979,9 +5989,9 @@ Respond in JSON format:
             aspectRatio: "1:1",
             apiKey: replicateAuth,
             falKey: falAuth,
-            user: member,
-            guest: guest,
             app: requestApp,
+            user: member,
+            guest,
             messageId: slugify(currentMessageContent.trim().substring(0, 10)),
           })
           permanentUrl = result.url

@@ -2494,5 +2494,10 @@
   "Bluesky": "Bluesky",
   "Please save your OpenRouter API key first": "Vänligen spara din OpenRouter API-nyckel först",
   "BAM": "BAM",
-  "Give Hippo something to remember": "Ge Hippo något att minnas"
+  "Give Hippo something to remember": "Ge Hippo något att minnas",
+  "Format {{format}}": "Format {{format}}",
+  "Sushi will auto-migrate you when you choose to login": "Sushi kommer att automatiskt migrera dig när du väljer att logga in",
+  "Or choose 10GB/month of free storage": "Eller välj 10GB/månad av gratis lagring",
+  "Choose 10GB/month of free storage": "Välj 10GB/månad av gratis lagring",
+  "Confirm switching Hippo": "Bekräfta byte av Hippo"
 }

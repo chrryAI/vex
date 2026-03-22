@@ -3,12 +3,16 @@ import { Hono } from "hono"
 import sharp from "sharp"
 import { upload } from "../../lib/minio"
 import { getSafeUrl } from "../../utils/ssrf"
+import { getGuest, getMember } from "../lib/auth"
 
 export const resize = new Hono()
 
 // GET /resize?url=<image-url>&w=180&h=180&fit=cover&q=100
 // Downloads image, resizes it, uploads to MinIO, and returns permanent URL
 resize.get("/", async (c) => {
+  const member = await getMember(c)
+  const guest = await getGuest(c)
+
   try {
     const url = c.req.query("url")
     const width = Number.parseInt(
@@ -239,6 +243,8 @@ resize.get("/", async (c) => {
     const uploadResult = await upload({
       url: `data:image/${format};base64,${base64}`,
       messageId: `icon-${hash}.${format}`,
+      member,
+      guest,
       options: {
         width,
         height,

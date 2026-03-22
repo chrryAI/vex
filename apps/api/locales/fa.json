@@ -2494,5 +2494,10 @@
   "Bluesky": "آبی آسمان",
   "Please save your OpenRouter API key first": "لطفاً ابتدا کلید API OpenRouter خود را ذخیره کنید",
   "BAM": "BAM",
-  "Give Hippo something to remember": "به هیپو چیزی برای به یاد داشتن بده"
+  "Give Hippo something to remember": "به هیپو چیزی برای به یاد داشتن بده",
+  "Format {{format}}": "فرمت {{format}}",
+  "Sushi will auto-migrate you when you choose to login": "وقتی انتخاب کنید که وارد شوید، سوشی به طور خودکار شما را مهاجرت خواهد کرد",
+  "Or choose 10GB/month of free storage": "یا انتخاب کنید 10 گیگابایت / ماه حافظه رایگان",
+  "Choose 10GB/month of free storage": "10 گیگابایت / ماه حافظه رایگان را انتخاب کنید",
+  "Confirm switching Hippo": "تغییر به Hippo را تأیید کنید"
 }

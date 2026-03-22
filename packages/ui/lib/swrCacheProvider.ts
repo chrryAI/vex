@@ -142,7 +142,7 @@ function isQuotaExceeded(error: unknown): boolean {
 // Dexie Provider Factory
 // -----------------------------------------
 
-function _createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
+function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
   let db: SWRDexieDB | null = null
 
   // Try to initialize Dexie DB
@@ -476,13 +476,13 @@ export async function invalidatePattern(
  */
 export function getCacheProvider(_parentCache?: Readonly<Cache>): Cache {
   // ALWAYS use memory-only cache (IndexedDB disabled)
-  return createMemoryProvider()
+  // return createMemoryProvider()
 
   // Old code (disabled):
-  // if (typeof indexedDB !== "undefined") {
-  //   return createDexieProvider(DEFAULT_CONFIG)
-  // }
-  // return createMemoryProvider()
+  if (typeof indexedDB !== "undefined") {
+    return createDexieProvider(DEFAULT_CONFIG)
+  }
+  return createMemoryProvider()
 }
 
 /**
