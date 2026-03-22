@@ -16,11 +16,11 @@ import DeleteThread from "./DeleteThread"
 import EditThread from "./EditThread"
 import EnableSound from "./EnableSound"
 import Grapes from "./Grapes"
+import Hippo from "./Hippo"
 import { useHasHydrated, useThreadMetadata } from "./hooks"
 import { useThreadPresence } from "./hooks/useThreadPresence"
 import { useUserScroll } from "./hooks/useUserScroll"
 import Img from "./Image"
-import Instructions from "./Instructions"
 import {
   CircleX,
   Clock,
@@ -530,7 +530,7 @@ const Thread = ({
                   🧬
                 </Span>
               ) : null}
-              <Instructions
+              <Hippo
                 onSave={(data) => {
                   setThread({
                     ...thread,
@@ -824,7 +824,7 @@ const Thread = ({
                               />
                             </A>
                           )}
-                          <Instructions
+                          <Hippo
                             dataTestId="chat-instruction"
                             icon
                             thread={thread}
