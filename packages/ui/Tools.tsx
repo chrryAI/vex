@@ -242,13 +242,6 @@ export default function Tools({
           zIndex: 10,
         }}
       >
-        {!showGrape && showInstallers && (
-          <A style={{ lineHeight: 1.5 }} href={"/about"}>
-            <MousePointerClick color="var(--accent-1)" size={26} />
-
-            {t(appStatus?.part ? "Description" : "About")}
-          </A>
-        )}
         {appStatus?.part ? (
           <Suspense>
             <Agent />
