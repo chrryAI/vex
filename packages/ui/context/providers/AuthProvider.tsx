@@ -499,7 +499,6 @@ export function AuthProvider({
     // IDE state from platform
     isIDE,
     toggleIDE,
-    isBot,
   } = usePlatform()
 
   const [API_URL, setAPI_URL] = useState(utils.API_URL)
