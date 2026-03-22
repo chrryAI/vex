@@ -16,13 +16,11 @@ import {
 import { useStyles } from "./context/StylesContext"
 import FocusButtonMini from "./FocusButtonMini"
 import Grapes from "./Grapes"
-import Hippo from "./Hippo"
 import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
 import LanguageSwitcher from "./LanguageSwitcher"
 import { defaultLocale } from "./locales"
 import Markdown from "./MarkdownContent.web"
-
 import {
   Button,
   Div,
@@ -42,6 +40,7 @@ import {
 import Search from "./Search"
 import Skeleton from "./Skeleton"
 import ToggleAgent from "./ToggleAgent"
+import Tools from "./Tools"
 import { useTribeStyles } from "./Tribe.styles"
 import TribeTranslate from "./TribeTranslate"
 import type { appWithStore, tribePost, user } from "./types"
@@ -1395,7 +1394,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                   >
                     <Weather showLocation />
                     <A href="/about">
-                      <Img icon="hippo" size={25} />
+                      <Img icon="Tools" size={25} />
                     </A>
                   </Div>
                 </Div>
@@ -1618,7 +1617,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             height={18}
                           />
                         </A>
-                        <Hippo
+                        <Tools
                           showDownloads={true}
                           showInstructions={false}
                           showInstallers={false}
@@ -1833,7 +1832,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {t("🌀 Çapa")} IPA: /tʃɑ.ˈpɑ/
                       </A>
                     )}
-                    <Hippo
+                    <Tools
                       showDownloads={true}
                       showInstructions={false}
                       icon
@@ -1977,7 +1976,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           height={18}
                         />
                       </A>
-                      <Hippo
+                      <Tools
                         showDownloads={true}
                         showInstructions={false}
                         showInstallers={false}

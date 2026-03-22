@@ -1,4 +1,4 @@
-import "@chrryai/chrry/globals.scss"
+import "@chrryai/chrry/styles.scss"
 import Chrry from "@chrryai/chrry/Chrry"
 import { HistoryRouterProvider } from "@chrryai/pepper"
 import { Component, type ReactNode, useEffect } from "react"

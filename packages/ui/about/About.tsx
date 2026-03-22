@@ -18,7 +18,6 @@ import {
   useNavigationContext,
 } from "../context/providers"
 import { useStyles } from "../context/StylesContext"
-import Hippo from "../Hippo"
 import { useHasHydrated } from "../hooks"
 import Img from "../Image"
 import {
@@ -44,6 +43,7 @@ import {
 } from "../platform"
 import Skeleton from "../Skeleton"
 import ToggleAgent from "../ToggleAgent"
+import Tools from "../Tools"
 import {
   ADDITIONAL_CREDITS,
   AGENCY_PRICE,
@@ -321,7 +321,7 @@ export default function About() {
 
         <Section>
           <H2>{t(config.about?.platforms?.title || "Available Platforms")}</H2>
-          <Hippo
+          <Tools
             showDownloads={true}
             showInstructions={false}
             showInstallers={false}
