@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/waffles",
-  "version": "2.1.69",
+  "version": "2.1.70",
   "description": "Production-ready Playwright testing utilities and helpers for modern web apps",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -19,7 +19,8 @@
     "test:tauri": "TEST_URL=http://localhost:5173 playwright test --project tauri-macos",
     "build": "pnpm exec tsup",
     "dev": "pnpm exec tsup --watch",
-    "lint": "biome check ."
+    "lint": "biome check .",
+    "sync-goals": "tsx src/scripts/sync-plausible-goals.ts"
   },
   "keywords": [
     "playwright",
@@ -60,6 +61,7 @@
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",
     "tsup": "^8.0.0",
+    "tsx": "^4.19.3",
     "typescript": "^5.0.0"
   },
   "sideEffects": false

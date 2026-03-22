@@ -71,6 +71,10 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
     resolve: {
       alias: {
         chrry: path.resolve(__dirname, "../../packages/ui"),
+        "react-native": path.resolve(
+          __dirname,
+          "node_modules/react-native-web",
+        ),
       },
     },
     define: {},
