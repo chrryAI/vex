@@ -9388,7 +9388,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
   if (jules && sushiApp)
     await handleAppExtends(jules.id, [sushiApp.id, chrry.id], sushiStore.id)
 
-  if (hippo && sushiApp)
+  if (hippo)
     await handleAppExtends(hippo.id, [sushiApp.id, chrry.id], blossom.id)
 
   // Lifestyle apps
