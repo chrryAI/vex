@@ -325,7 +325,7 @@ const search = {
   },
 }
 
-const nebula = {
+export const nebula = {
   url: "https://orbit.chrry.ai",
   mode: "nebula" as siteMode,
   slug: "nebula",
