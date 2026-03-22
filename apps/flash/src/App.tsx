@@ -85,6 +85,7 @@ function App({ serverData }: AppProps) {
         accountApp={serverData?.accountApp}
         apiKey={serverData?.apiKey}
         testConfig={serverData?.testConfig}
+        isBot={serverData?.isBot}
       >
         {serverData?.isBlogRoute ? (
           <Skeleton>

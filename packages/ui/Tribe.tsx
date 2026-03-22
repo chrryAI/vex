@@ -1385,7 +1385,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     {app?.store?.app?.icon || "🍒"} /{t("about")}
                   </A>
                   <A href="/privacy">/{t("privacy")} 🤫</A>
-                  <P
+                  <Div
                     style={{
                       display: "flex",
                       gap: 7.5,
@@ -1397,7 +1397,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     <A href="/about">
                       <Img icon="hippo" size={25} />
                     </A>
-                  </P>
+                  </Div>
                 </Div>
               </Div>
               <Div
