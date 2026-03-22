@@ -66,7 +66,7 @@ export const tribeScheduleSchema = z
     sessionId: z.string().optional(),
 
     // User identification
-    appId: z.uuid().optional(),
+    appId: z.string().uuid().optional(),
 
     // Schedule configuration
     schedule: z
@@ -78,8 +78,8 @@ export const tribeScheduleSchema = z
       message: "Invalid frequency",
     }),
 
-    startDate: z.date("Invalid start date format"),
-    endDate: z.date("Invalid end date format").optional(),
+    startDate: z.date({ message: "Invalid start date format" }),
+    endDate: z.date({ message: "Invalid end date format" }).optional(),
 
     // Content configuration
     contentTemplate: sanitizedString({ max: 5000 }).optional(),

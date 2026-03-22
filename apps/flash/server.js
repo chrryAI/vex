@@ -710,7 +710,7 @@ export const whiteLabels = [
   _tribe,
 ]
 
-const VERSION = "2.1.74"
+const VERSION = "2.1.76"
 // Constants
 const port = process.env.PORT || 5173
 const base = process.env.BASE || "/"
@@ -1380,19 +1380,21 @@ app.use(async (req, res) => {
     let template
     /** @type {import('./src/entry-server.ts').render} */
     let _render
-    /** @type {import('./src/entry-server.ts').loadData} */
     let loadData
+    let renderSync
     if (!isProduction) {
       // Always read fresh template in development
       template = await fs.readFile("./index.html", "utf-8")
       template = await vite.transformIndexHtml(url, template)
       const entryServer = await vite.ssrLoadModule("/src/entry-server.tsx")
       _render = entryServer.render
+      renderSync = entryServer.renderSync
       loadData = entryServer.loadData
     } else {
       template = templateHtml
       const entryServer = await import("./dist/server/entry-server.js")
       _render = entryServer.render
+      renderSync = entryServer.renderSync
       loadData = entryServer.loadData
     }
 
@@ -1452,20 +1454,11 @@ app.use(async (req, res) => {
       }
     }
 
-    // Simple SSR without streaming
-    const { renderToString } = await import("react-dom/server")
-    const { default: React } = await import("react")
-
-    // Get App component
-    const App = !isProduction
-      ? (await vite.ssrLoadModule("/src/App.tsx")).default
-      : (await import("./dist/server/entry-server.js")).App
-
     console.log(
       "🔧 SSR: serverData.pathname before render:",
       serverData?.pathname,
     )
-    const appHtml = renderToString(React.createElement(App, { serverData }))
+    const appHtml = renderSync(serverData)
 
     // Collect CSS from Vite's module graph (dev only)
     let cssLinks = ""

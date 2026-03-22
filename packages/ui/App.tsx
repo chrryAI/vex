@@ -231,6 +231,7 @@ export default function App({
           (item.id !== grok?.id || !isBlossom) &&
           //Pear zaten chatte var :)
           (item.id !== pear?.id || !isBlossom) &&
+          !store?.excludeGridApps?.includes(item.slug) &&
           (item.id === grape?.id
             ? accountApp?.id === app?.id
               ? false

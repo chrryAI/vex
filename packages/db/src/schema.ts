@@ -3523,6 +3523,11 @@ export const stores = pgTable(
     teamId: uuid("teamId").references(() => teams.id, {
       onDelete: "cascade",
     }),
+    excludeGridApps: jsonb("excludeGridApps")
+      .$type<
+        Array<string> // UUID of custom agent
+      >()
+      .default([]),
     isSystem: boolean("isSystem").default(false).notNull(),
     hourlyRate: integer("hourlyRate"),
     credits: integer("credits"),

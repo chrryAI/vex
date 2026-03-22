@@ -10,22 +10,29 @@ function chromeExtensionPlugin(): PluginOption {
   return {
     name: "chrome-extension",
     enforce: "post" as const,
-    async writeBundle() {
-      // Build background script separately
-      await esbuild.build({
-        entryPoints: {
-          background: resolve(__dirname, "src/background.ts"),
-        },
-        bundle: true,
-        format: "esm",
-        outdir: "dist",
-        target: "chrome58",
-        minify: false,
-        loader: {
-          ".scss": "css",
-          ".css": "css",
-        },
-      })
+    async closeBundle() {
+      try {
+        console.log("🚀 Building background script...")
+        // Build background script separately
+        await esbuild.build({
+          entryPoints: {
+            background: resolve(__dirname, "src/background.ts"),
+          },
+          bundle: true,
+          format: "esm",
+          outdir: "dist",
+          target: "chrome58",
+          minify: false,
+          loader: {
+            ".scss": "css",
+            ".css": "css",
+          },
+        })
+        console.log("✅ Background script built.")
+      } catch (error) {
+        console.error("❌ Error building background script:", error)
+        throw error
+      }
     },
   }
 }
