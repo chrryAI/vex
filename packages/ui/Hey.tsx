@@ -256,25 +256,23 @@ export const Hey = memo(
           {splash}
           <Suspense fallback={<Loading fullScreen />}>
             <Programme />
-            {isHydrated && (
-              <Div style={{ display: isProgramme ? "none" : "block" }}>
-                {showWatermelon ? (
-                  <Watermelon />
-                ) : isClientRoute ? (
-                  postId || tribeSlug ? (
-                    <Home />
-                  ) : threadId ? (
-                    <Thread key={threadId} />
-                  ) : RouteComponent ? (
-                    <RouteComponent />
-                  ) : (
-                    <Home />
-                  )
+            <Div style={{ display: isProgramme ? "none" : "block" }}>
+              {showWatermelon ? (
+                <Watermelon />
+              ) : isClientRoute ? (
+                postId || tribeSlug ? (
+                  <Home />
+                ) : threadId ? (
+                  <Thread key={threadId} />
+                ) : RouteComponent ? (
+                  <RouteComponent />
                 ) : (
-                  children
-                )}
-              </Div>
-            )}
+                  <Home />
+                )
+              ) : (
+                children
+              )}
+            </Div>
             {isHydrated && (
               <>
                 <VexToast />
