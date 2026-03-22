@@ -1,12 +1,16 @@
 import { render, screen, waitFor } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import Img from "../Img"
 
 // Mock the platform imports
 vi.mock("../platform", () => ({
-  MotiView: ({ children }: any) => <div>{children}</div>,
-  Image: (props: any) => <img alt="mock" {...props} />,
+  MotiView: ({ children, onLoad }: any) => (
+    <div onLoad={onLoad}>{children}</div>
+  ),
+  Image: ({ onLoad, ...props }: any) => (
+    <img alt="mock-img" onLoad={onLoad} {...props} />
+  ),
   Span: ({ children, style, className }: any) => (
     <span style={style} className={className}>
       {children}
@@ -24,10 +28,19 @@ vi.mock("../platform/useInView", () => ({
 }))
 
 describe("Img component", () => {
+  let originalImage: any
+
+  beforeEach(() => {
+    originalImage = window.Image
+  })
+
+  afterEach(() => {
+    if (typeof window !== "undefined") {
+      window.Image = originalImage
+    }
+  })
+
   it("renders correctly and starts loading", async () => {
-    // We need to properly mock the Image constructor in the global window object
-    // since vitest uses happy-dom which has a real Image constructor
-    const originalImage = window.Image
     const decodeMock = vi.fn().mockResolvedValue(undefined)
     window.Image = class {
       src = ""
@@ -37,20 +50,132 @@ describe("Img component", () => {
     } as any
 
     render(
-      <Img src="https://example.com/test.jpg" alt="test image" width={100} />,
+      <Img src="https://example.com/test1.jpg" alt="test image" width={100} />,
     )
 
     await waitFor(() => {
       expect(decodeMock).toHaveBeenCalled()
-      // Because we mocked PlatformImage (Image from ../platform) as <img alt="mock" {...props} />
       expect(screen.getByAltText("test image")).toBeDefined()
     })
+  })
 
-    window.Image = originalImage
+  it("loads from cache on second render", async () => {
+    const decodeMock = vi.fn().mockResolvedValue(undefined)
+    window.Image = class {
+      src = ""
+      width = 100
+      height = 100
+      decode = decodeMock
+    } as any
+
+    const { rerender } = render(
+      <Img
+        src="https://example.com/cached.jpg"
+        alt="cached image"
+        width={100}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(decodeMock).toHaveBeenCalled()
+    })
+
+    decodeMock.mockClear()
+
+    rerender(
+      <Img
+        src="https://example.com/cached.jpg"
+        alt="cached image"
+        width={100}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByAltText("cached image")).toBeDefined()
+    })
+  })
+
+  it("loads from cache with dimensions handler", async () => {
+    const decodeMock = vi.fn().mockResolvedValue(undefined)
+    window.Image = class {
+      src = ""
+      width = 120
+      height = 120
+      decode = decodeMock
+    } as any
+
+    render(
+      <Img
+        src="https://example.com/cached-dim.jpg"
+        alt="cached dim"
+        width={120}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(decodeMock).toHaveBeenCalled()
+    })
+
+    decodeMock.mockClear()
+    const handleDimensionsChange = vi.fn()
+
+    render(
+      <Img
+        src="https://example.com/cached-dim.jpg"
+        alt="cached dim"
+        width={120}
+        handleDimensionsChange={handleDimensionsChange}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(handleDimensionsChange).toHaveBeenCalledWith({
+        width: 120,
+        height: 120,
+      })
+    })
+  })
+
+  it("handles decode error in cache gracefully", async () => {
+    const decodeMock = vi.fn().mockResolvedValue(undefined)
+    window.Image = class {
+      src = ""
+      width = 120
+      height = 120
+      decode = decodeMock
+    } as any
+
+    render(
+      <Img
+        src="https://example.com/cached-err.jpg"
+        alt="cached err"
+        width={120}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(decodeMock).toHaveBeenCalled()
+    })
+
+    decodeMock.mockRejectedValue(new Error("err"))
+    const handleDimensionsChange = vi.fn()
+
+    render(
+      <Img
+        src="https://example.com/cached-err.jpg"
+        alt="cached err"
+        width={120}
+        handleDimensionsChange={handleDimensionsChange}
+      />,
+    )
+
+    await waitFor(() => {
+      // By using findAllByAltText we ensure we just check if it exists at least once
+      expect(screen.queryAllByAltText("cached err").length).toBeGreaterThan(0)
+    })
   })
 
   it("prioritizes loading when priority prop is true", async () => {
-    const originalImage = window.Image
     const decodeMock = vi.fn().mockResolvedValue(undefined)
     window.Image = class {
       src = ""
@@ -72,12 +197,9 @@ describe("Img component", () => {
       expect(decodeMock).toHaveBeenCalled()
       expect(screen.getByAltText("priority image")).toBeDefined()
     })
-
-    window.Image = originalImage
   })
 
   it("handles dimensions change callback", async () => {
-    const originalImage = window.Image
     const decodeMock = vi.fn().mockResolvedValue(undefined)
     window.Image = class {
       src = ""
@@ -103,12 +225,9 @@ describe("Img component", () => {
         height: 150,
       })
     })
-
-    window.Image = originalImage
   })
 
   it("handles decode error gracefully", async () => {
-    const originalImage = window.Image
     const decodeMock = vi.fn().mockRejectedValue(new Error("Decode failed"))
     window.Image = class {
       src = ""
@@ -127,7 +246,5 @@ describe("Img component", () => {
       expect(decodeMock).toHaveBeenCalled()
       expect(screen.queryByAltText("error.jpg")).toBeNull()
     })
-
-    window.Image = originalImage
   })
 })
