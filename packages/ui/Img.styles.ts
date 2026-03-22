@@ -33,8 +33,8 @@ export const ImgStyleDefs = {
   },
 } as const
 
-import { createStyleHook } from "./styles/createStyleHook"
 import { createUnifiedStyles } from "./styles/createUnifiedStyles"
+import { createStyleHook } from "./styles/createStyleHook"
 
 export const ImgStyles = createUnifiedStyles(ImgStyleDefs)
 

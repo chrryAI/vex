@@ -111,8 +111,8 @@ export const AddToHomeScreenStyleDefs = {
   },
 } as const
 
-import { createStyleHook } from "../styles/createStyleHook"
 import { createUnifiedStyles } from "../styles/createUnifiedStyles"
+import { createStyleHook } from "../styles/createStyleHook"
 
 export const AddToHomeScreenStyles = createUnifiedStyles(
   AddToHomeScreenStyleDefs,
