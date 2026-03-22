@@ -17,3 +17,8 @@
 
 **Learning:** `markdown-to-jsx`'s `options` prop, if passed as an inline object, causes re-renders even if the parent component is memoized. Especially when `overrides` contains inline component definitions, it creates new function references on every render.
 **Action:** Always wrap `options` object for `<Markdown>` in `useMemo` when using `markdown-to-jsx` or similar libraries, and ensure component overrides are stable (either defined outside or memoized).
+
+## 2024-03-22 - Optimize App Wide Image Rendering
+
+**Learning:** `Img` component in `@chrryai/chrry` (specifically `packages/ui/Img.tsx`) is heavily utilized in grids, lists, and chat contexts. Since its props are mostly primitive types or stable references (src, alt, width, height), lacking `React.memo()` meant it was subjected to unnecessary re-renders whenever complex parent components updated their own internal states.
+**Action:** Wrapped `Img` in `React.memo()`. Always verify that low-level, frequently rendered UI primitives like Images, Buttons, and Icons are memoized to protect them from parent re-renders.
