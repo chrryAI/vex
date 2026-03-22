@@ -256,10 +256,10 @@ a,
   text-decoration: none;
   color: var(--accent-6);
   cursor: pointer;
-  background-color: transparent !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
+  background-color: transparent;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
   display: inline-flex;
   align-items: center;
   gap: 0.3125rem;
@@ -269,9 +269,9 @@ a:hover,
 .link:hover,
 a:disabled,
 .link:disabled {
-  text-decoration: none !important;
-  color: var(--accent-5) !important;
-  background-color: transparent !important;
+  text-decoration: none;
+  color: var(--accent-5);
+  background-color: transparent;
 }
 
 a:active,
@@ -315,10 +315,10 @@ button {
 
 button.transparent,
 .button.transparent {
-  background-color: var(--background) !important;
-  color: var(--foreground) !important;
-  border: 0.0625rem solid var(--shade-2) !important;
-  box-shadow: none !important;
+  background-color: var(--background);
+  color: var(--foreground);
+  border: 0.0625rem solid var(--shade-2);
+  box-shadow: none;
 }
 
 button.transparent:hover,
@@ -329,10 +329,10 @@ button.transparent:hover,
 
 button.inverted,
 .button.inverted {
-  background-color: var(--foreground) !important;
-  color: var(--background) !important;
-  border: 0.0625rem solid var(--shade-2) !important;
-  box-shadow: none !important;
+  background-color: var(--foreground);
+  color: var(--background);
+  border: 0.0625rem solid var(--shade-2);
+  box-shadow: none;
 }
 
 button.inverted:hover,
