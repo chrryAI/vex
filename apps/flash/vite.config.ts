@@ -67,7 +67,7 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
           ]
         : []),
     ],
-    publicDir: path.resolve(__dirname, "public"),
+    publicDir: isSsrBuild ? false : path.resolve(__dirname, "public"),
     resolve: {
       alias: {
         chrry: path.resolve(__dirname, "../../packages/ui"),
