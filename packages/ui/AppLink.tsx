@@ -112,8 +112,6 @@ export default function AppLink({
           if (e.metaKey || e.ctrlKey) {
             return
           }
-
-          setIsLoading(true)
           e.preventDefault()
 
           if (!currentApp) {
@@ -124,18 +122,15 @@ export default function AppLink({
           }
 
           if (props.setIsNewAppChat) {
-            setIsLoading(false)
             props.setIsNewAppChat(app)
             return
           }
 
           if (href) {
-            setIsLoading(false)
             push(href)
             return
           }
 
-          setIsLoading(false)
           setIsNewChat({
             value: true,
             to: getAppSlug(app),

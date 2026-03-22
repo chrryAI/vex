@@ -98,7 +98,7 @@ import { useError } from "./ErrorProvider"
 
 export type { session }
 
-const VERSION = "2.1.63"
+const VERSION = "2.1.64"
 
 const AuthContext = createContext<
   | {
