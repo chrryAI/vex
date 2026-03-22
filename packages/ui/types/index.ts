@@ -230,6 +230,7 @@ export type apiKeys = {
   fal?: string // Encrypted Replicate API key (for Flux)
   openrouter?: string // Encrypted OpenRouter API key
   xai?: string // Encrypted XAI API key
+  s3?: string // Encrypted S3 API key
 }
 
 // Subscription types

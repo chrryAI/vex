@@ -40,6 +40,10 @@ export const getFeatures = ({
       text: t("Unlimited voice conversations"),
     },
     {
+      emoji: "🦛",
+      text: t("50GB Hippo Storage"),
+    },
+    {
       emoji: "🌱",
       text: t("0.5% of subscription goes to CO₂ removal"),
     },
@@ -86,6 +90,10 @@ export const getFeatures = ({
       text: t("Custom themes & personalization"),
     },
     {
+      emoji: "🦛",
+      text: t("10GB Hippo Storage"),
+    },
+    {
       emoji: "🔄",
       text: t("Cross-device sync & history"),
     },
@@ -119,6 +127,10 @@ export const getFeatures = ({
     {
       emoji: "🔄",
       text: t("Higher generation limits (25 titles/instructions per hour)"),
+    },
+    {
+      emoji: "🦛",
+      text: t("250GB Hippo Storage"),
     },
     {
       emoji: "🌱",
@@ -159,6 +171,10 @@ export const getFeatures = ({
       emoji: "🆓",
       text: t("Free analytics tracking"),
     },
+    {
+      emoji: "🦛",
+      text: t("1GB Free Hippo Storage"),
+    },
   ]
 
   const grapePlusFeatures = [
@@ -197,6 +213,10 @@ export const getFeatures = ({
     {
       emoji: "📉",
       text: t("Real-time event tracking"),
+    },
+    {
+      emoji: "🦛",
+      text: t("10GB Hippo Storage"),
     },
   ]
 
@@ -241,6 +261,10 @@ export const getFeatures = ({
       emoji: "💾",
       text: t("Data export capabilities"),
     },
+    {
+      emoji: "🦛",
+      text: t("50GB Hippo Storage"),
+    },
   ]
 
   const pearFreeFeatures = [
@@ -272,6 +296,10 @@ export const getFeatures = ({
       emoji: "🎯",
       text: t("AI-validated feedback"),
     },
+    {
+      emoji: "🦛",
+      text: t("1GB Free Hippo Storage"),
+    },
   ]
 
   const pearPlusFeatures = [
@@ -302,6 +330,10 @@ export const getFeatures = ({
     {
       emoji: "📊",
       text: t("Feedback analytics"),
+    },
+    {
+      emoji: "🦛",
+      text: t("10GB Hippo Storage"),
     },
   ]
 
@@ -342,6 +374,10 @@ export const getFeatures = ({
       emoji: "⭐",
       text: t("Higher credit rewards"),
     },
+    {
+      emoji: "🦛",
+      text: t("50GB Hippo Storage"),
+    },
   ]
 
   const sushiFreeFeatures = [
@@ -380,6 +416,10 @@ export const getFeatures = ({
     {
       emoji: "🎯",
       text: t("Create, Grow, Sell, Earn 70%"),
+    },
+    {
+      emoji: "🦛",
+      text: t("1GB Free Hippo Storage"),
     },
   ]
 
@@ -421,6 +461,10 @@ export const getFeatures = ({
       emoji: "🎯",
       text: t("Create, Grow, Sell, Earn 70%"),
     },
+    {
+      emoji: "🦛",
+      text: t("10GB Hippo Storage"),
+    },
   ]
 
   const sushiArchitectFeatures = [
@@ -460,6 +504,10 @@ export const getFeatures = ({
       emoji: "🎯",
       text: t("Create, Grow, Sell, Earn 70%"),
     },
+    {
+      emoji: "🦛",
+      text: t("50GB Hippo Storage"),
+    },
   ]
 
   const watermelonFeatures = [
@@ -491,6 +539,10 @@ export const getFeatures = ({
     {
       emoji: "🏢",
       text: t("Agency-Level Deployment"),
+    },
+    {
+      emoji: "🦛",
+      text: t("1TB distributed Hippo Storage"),
     },
     {
       emoji: "✅",
@@ -528,6 +580,10 @@ export const getFeatures = ({
     {
       emoji: "🔐",
       text: t("RSA Key Signing & Encryption"),
+    },
+    {
+      emoji: "🦛",
+      text: t("Unlimited Sovereign Hippo Storage"),
     },
     {
       emoji: "⚔️",

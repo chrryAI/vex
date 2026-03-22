@@ -608,6 +608,7 @@ export const updateUser = async ({
   openRouterApiKey,
   replicateApiKey,
   falApiKey,
+  s3ApiKey,
   deletedApiKeys,
 }: {
   language?: string
@@ -625,6 +626,7 @@ export const updateUser = async ({
   openRouterApiKey?: string
   falApiKey?: string
   deletedApiKeys?: string[]
+  s3ApiKey?: string
 }) => {
   const response = await fetch(`${API_URL}/user`, {
     method: "PATCH",
@@ -642,6 +644,7 @@ export const updateUser = async ({
       replicateApiKey,
       falApiKey,
       deletedApiKeys,
+      s3ApiKey,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -664,6 +667,7 @@ export const updateGuest = async ({
   API_URL = utils.API_URL,
   openRouterApiKey,
   deletedApiKeys,
+  s3ApiKey,
 }: {
   favouriteAgent?: string
   characterProfilesEnabled?: boolean
@@ -676,6 +680,7 @@ export const updateGuest = async ({
   token: string
   openRouterApiKey?: string
   deletedApiKeys?: string[]
+  s3ApiKey?: string
 }) => {
   const response = await fetch(`${API_URL}/guest`, {
     method: "PATCH",
@@ -689,6 +694,7 @@ export const updateGuest = async ({
       replicateApiKey,
       falApiKey,
       deletedApiKeys,
+      s3ApiKey,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -1496,6 +1502,7 @@ export const getActions = ({
       name?: string
       image?: string
       userName?: string
+      s3ApiKey?: string
       favouriteAgent?: string
       characterProfilesEnabled?: boolean
       memoriesEnabled?: boolean
@@ -1522,6 +1529,7 @@ export const getActions = ({
       country?: string
       memoriesEnabled?: boolean
       deletedApiKeys?: string[]
+      s3ApiKey?: string
     }) => updateGuest({ token, ...params, API_URL }),
 
     // Message operations

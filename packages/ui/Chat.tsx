@@ -37,7 +37,6 @@ import {
 } from "./hooks"
 import { useWebSocket } from "./hooks/useWebSocket"
 import Img from "./Image"
-import Instructions from "./Instructions"
 import {
   ArrowLeft,
   AudioLines,
@@ -5053,11 +5052,7 @@ export default function Chat({
                         }}
                         type="submit"
                       >
-                        {isDevelopment ? (
-                          <Instructions size={24} icon key="attach-button" />
-                        ) : (
-                          <Img slug="hippo" size={24} key="attach-button" />
-                        )}
+                        <Img slug="hippo" size={24} key="attach-button" />
                       </Button>
                     )
                   )}

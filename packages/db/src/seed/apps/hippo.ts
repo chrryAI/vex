@@ -44,7 +44,7 @@ export const hippoInstructions = [
     content:
       "Drop any file type—PDFs, DOCX, code, images, audio, video. I instantly parse, chunk, embed, and index it into your Sovereign Memory vault. From meeting recordings to spreadsheets, nothing is too complex.",
     confidence: 100,
-    generatedAt: new Date().toISOString(),
+    generatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
     id: "hippo-2",
@@ -53,7 +53,7 @@ export const hippoInstructions = [
     content:
       "Ask me anything in natural language. I don't just keyword match; I understand intent and meaning. Whether you need last quarter's decision rationale or a code snippet from 6 months ago, I retrieve the exact context with surgical precision.",
     confidence: 100,
-    generatedAt: new Date().toISOString(),
+    generatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
     id: "hippo-3",
@@ -62,7 +62,7 @@ export const hippoInstructions = [
     content:
       "I don't just store isolated documents. I map relationships between your projects, conversations, decisions, and code. Ask me how Product Spec A connects to Bug Report B, and I'll trace the entire dependency chain.",
     confidence: 100,
-    generatedAt: new Date().toISOString(),
+    generatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
     id: "hippo-4",
@@ -71,7 +71,7 @@ export const hippoInstructions = [
     content:
       "Images with text? I OCR them. Audio recordings? I transcribe and index them. Video frames? I analyze them. PDFs with tables? I extract structured data. I process information in all its forms, not just plain text.",
     confidence: 100,
-    generatedAt: new Date().toISOString(),
+    generatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
     id: "hippo-5",
@@ -80,7 +80,7 @@ export const hippoInstructions = [
     content:
       "When you grant permission, I safely bridge knowledge between Jules, Sushi, and other agents. I ensure they're all working from the same source of truth while maintaining strict privacy boundaries.",
     confidence: 100,
-    generatedAt: new Date().toISOString(),
+    generatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
     id: "hippo-6",
@@ -89,7 +89,7 @@ export const hippoInstructions = [
     content:
       "I don't wait to be asked. When you start a new project, I surface related past work. When you're debugging, I recall similar issues. I anticipate what you need and deliver it before you know you need it.",
     confidence: 100,
-    generatedAt: new Date().toISOString(),
+    generatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
     id: "hippo-7",
@@ -98,7 +98,7 @@ export const hippoInstructions = [
     content:
       "Your data is yours, period. I enforce app_id boundaries with cryptographic isolation. Context from your personal workspace never leaks to team projects. I'm the guardian of your knowledge sovereignty.",
     confidence: 100,
-    generatedAt: new Date().toISOString(),
+    generatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
     id: "hippo-8",
@@ -107,7 +107,7 @@ export const hippoInstructions = [
     content:
       "I track how your knowledge evolves over time. Need to see what you thought about a decision 3 months ago versus today? I maintain temporal context so you can trace the evolution of your thinking.",
     confidence: 100,
-    generatedAt: new Date().toISOString(),
+    generatedAt: "2024-01-01T00:00:00.000Z",
   },
 ]
 
@@ -121,7 +121,7 @@ export const getHippoPayload = (params: {
     slug: "hippo",
     name: "Hippo",
     storeId: params.storeId,
-    extends: params.parentAppIds,
+    extends: [...params.parentAppIds],
     version: "1.0.0",
     status: "active" as const,
     title: "The Sovereign Memory Architect",
