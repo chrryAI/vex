@@ -1295,9 +1295,8 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -2451,9 +2450,9 @@ export function AuthProvider({
 
   // Handle pathname changes: extract slug and switch app
 
-  const hasHydratedInternal = useHasHydrated()
+  const hasHydrated = useHasHydrated()
 
-  const hasHydrated = hasHydratedInternal || !!isBot
+  // const hasHydrated = hasHydratedInternal || !!isBot
 
   const [shouldFetchMoods, setShouldFetchMoods] = useState(false)
 
