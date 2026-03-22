@@ -304,12 +304,11 @@ export async function syncPlausibleAnalytics() {
   }
 }
 
-// Run directly (commented out - use cron endpoint instead)
-// syncPlausibleAnalytics()
-//   .then(() => {
-//     console.log("✅ Sync complete")
-//     process.exit(0)
-//   })
+// Run directly (uncommented for testing)
+syncPlausibleAnalytics().then(() => {
+  console.log("✅ Sync complete")
+  process.exit(0)
+})
 //   .catch((error) => {
 //     console.error("❌ Sync failed:", error)
 //     process.exit(1)

@@ -1,3 +1,6 @@
+import dotenv from "dotenv"
+
+dotenv.config()
 /**
  * Analytics Event Constants
  * Centralized event names for tracking across the application
@@ -784,6 +787,137 @@ export const MEANINGFUL_EVENTS: AnalyticsEventName[] = [
   ANALYTICS_EVENTS.HIT_HOURLY_LIMIT,
 ]
 
+const PLAUSIBLE_HOST = process.env.PLAUSIBLE_HOST?.trim()
+const PLAUSIBLE_API_KEY = process.env.PLAUSIBLE_API_KEY?.trim()
+console.log(`🚀 ~ PLAUSIBLE_HOST:`, PLAUSIBLE_HOST)
+console.log(
+  `🚀 ~ PLAUSIBLE_API_KEY:`,
+  PLAUSIBLE_API_KEY ? `${PLAUSIBLE_API_KEY.slice(0, 10)}...` : "undefined",
+)
+
 // All events for Plausible goal tracking (auto-sync to Plausible)
 // This list is used to automatically configure Plausible goals
 export const ALL_TRACKABLE_EVENTS = Object.values(ANALYTICS_EVENTS)
+
+export async function syncAllGoals() {
+  if (!PLAUSIBLE_HOST || !PLAUSIBLE_API_KEY) {
+    throw new Error("Missing Plausible environment variables")
+  }
+
+  // Diagnostic step: Check which sites this key can access
+  console.log("🔍 Verifying API key access...")
+  try {
+    const sitesRes = await fetch(`${PLAUSIBLE_HOST}/api/v1/sites`, {
+      headers: {
+        Authorization: `Bearer ${PLAUSIBLE_API_KEY}`,
+        Accept: "application/json",
+        "User-Agent": "Chrry-Goal-Sync/1.0",
+      },
+    })
+    console.log(`   📡 Sites status: ${sitesRes.status}`)
+    if (sitesRes.ok) {
+      const sitesData = await sitesRes.json()
+      const availableDomains = sitesData.map((s: any) => s.domain)
+      console.log(
+        `✅ Key is valid. Accessible domains: ${availableDomains.join(", ")}`,
+      )
+    } else {
+      const err = await sitesRes.text()
+      try {
+        const jsonErr = JSON.parse(err)
+        console.error(
+          `❌ Key verification failed (sites endpoint): ${sitesRes.status} -`,
+          jsonErr,
+        )
+      } catch {
+        console.error(
+          `❌ Key verification failed (sites endpoint): ${sitesRes.status} - ${err.slice(0, 500)}`,
+        )
+      }
+    }
+  } catch (e: any) {
+    console.error("❌ Error during key verification:", e.message)
+  }
+
+  console.log(
+    `🚀 Starting Plausible goal sync for ${analyticsDomains.length} domains...`,
+  )
+  console.log(`📊 Trackable events: ${ALL_TRACKABLE_EVENTS.length}`)
+
+  for (const site of analyticsDomains) {
+    const domain = site.domain
+    console.log(`\n🎯 Syncing goals for "${domain}"...`)
+
+    try {
+      // 1. Fetch current goals
+      const goalsUrl = new URL(`${PLAUSIBLE_HOST}/api/v1/sites/goals`)
+      goalsUrl.searchParams.append("site_id", domain)
+
+      console.log(`   🔗 Fetching: ${goalsUrl.toString()}`)
+
+      const res = await fetch(goalsUrl.toString(), {
+        headers: {
+          Authorization: `Bearer ${PLAUSIBLE_API_KEY}`,
+          "Content-Type": "application/json", // bunu ekle
+          Accept: "application/json",
+          "User-Agent": "Chrry-Goal-Sync/1.0",
+        },
+      })
+
+      if (!res.ok) {
+        const errText = await res.text()
+        console.error(
+          `   ❌ Failed to fetch goals for ${domain}: ${res.status} - ${errText.slice(0, 200)}`,
+        )
+        continue
+      }
+
+      const { goals: currentGoals } = await res.json()
+      const existingGoalNames = new Set(
+        currentGoals.map((g: any) => g.event_name),
+      )
+
+      // 2. Identify missing goals
+      const missingGoals = ALL_TRACKABLE_EVENTS.filter(
+        (event) => !existingGoalNames.has(event),
+      )
+
+      if (missingGoals.length === 0) {
+        console.log(
+          `   ✅ All ${ALL_TRACKABLE_EVENTS.length} goals already exist.`,
+        )
+        continue
+      }
+
+      console.log(`   ➕ Creating ${missingGoals.length} missing goals...`)
+
+      // 3. Create missing goals
+      for (const eventName of missingGoals) {
+        const createUrl = `${PLAUSIBLE_HOST}/api/v1/sites/goals`
+        const createRes = await fetch(createUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${PLAUSIBLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            site_id: domain,
+            goal_type: "event",
+            event_name: eventName,
+          }),
+        })
+
+        if (createRes.ok) {
+          console.log(`      + Created: ${eventName}`)
+        } else {
+          const err = await createRes.text()
+          console.error(`      - Failed: ${eventName} (${err})`)
+        }
+      }
+    } catch (error) {
+      console.error(`   ❌ Error syncing ${domain}:`, error)
+    }
+  }
+
+  console.log("\n✅ Plausible goal synchronization complete!")
+}

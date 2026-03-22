@@ -88,7 +88,13 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
     },
     ssr: {
       external: ["i18n-iso-countries"], // Don't bundle - has dynamic requires
-      noExternal: [/@lobehub\//, "@chrryai/chrry", "chrry"], // Force bundle @lobehub packages and chrry to fix directory imports
+      noExternal: [
+        /@lobehub\//,
+        "@chrryai/chrry",
+        "chrry",
+        "react",
+        "react-dom",
+      ], // Force bundle libraries to fix ESM/CJS naming issues in React 19
       resolve: {
         externalConditions: ["node", "import"],
       },
