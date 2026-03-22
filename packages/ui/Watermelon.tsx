@@ -188,7 +188,7 @@ export default function Watermelon() {
     }
   }
 
-  const [showS3, setShowS3] = useState(!!s3ApiKeyInternal)
+  const [showS3, setShowS3] = useState(false)
 
   useEffect(() => {
     if (!user && !guest) return
@@ -300,13 +300,13 @@ export default function Watermelon() {
                   display: "flex",
                   gap: 7.5,
                   alignItems: "center",
-                  marginTop: isMobileDevice ? 60 : 15,
+                  marginTop: isMobileDevice ? 60 : 20,
                   marginBottom: isMobileDevice ? 15 : 20,
                 }}
               >
                 <Weather showLocation />
                 <A href="/about">
-                  <Img icon="whale" size={28} />
+                  <Img icon="heart" size={22} />
                 </A>
               </P>
               <H1
@@ -1108,7 +1108,7 @@ export default function Watermelon() {
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 5,
+                        gap: !isMobileDevice ? 10 : 17.5,
                         flexWrap: "wrap",
                       }}
                     >
@@ -1181,7 +1181,7 @@ export default function Watermelon() {
                             gap: 5,
                             padding: "0.25rem 0.5rem",
                             marginLeft: "auto",
-                            marginTop: isMobileDevice ? "1.5rem" : undefined,
+                            // marginTop: isMobileDevice ? "1.5rem" : undefined,
                           }}
                         >
                           <Img slug="hippo" />
@@ -1445,7 +1445,7 @@ export default function Watermelon() {
                 marginBottom: isMobileDevice ? 25 : 25,
               }}
             >
-              <Img icon={"hamster"} size={20} />{" "}
+              <Img icon={"whale"} size={24} />{" "}
               <Span>v{app?.version || VERSION}</Span>
             </P>
           </>
