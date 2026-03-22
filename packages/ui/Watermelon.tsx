@@ -1438,7 +1438,7 @@ export default function Watermelon() {
               }}
             >
               <ThemeSwitcher style={{ marginTop: 5 }} />
-              <ColorScheme />
+              <ColorScheme size={22} />
             </Div>
             <P
               style={{

@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.1.76"
+const VERSION = "2.1.77"
 
 const AuthContext = createContext<
   | {
@@ -2219,14 +2219,18 @@ export function AuthProvider({
   const showFocusInitial = searchParams.get("focus") === "true"
 
   const [showFocus, setShowFocusInternal] = useState<boolean | undefined>(
-    showFocusInitial,
+    baseApp ? baseApp?.slug === "focus" || showFocusInitial : undefined,
   )
 
   useEffect(() => {
-    if (showFocusInitial !== showFocus) {
+    if (!baseApp?.slug) return
+    if (showFocus === undefined && baseApp?.slug === "focus") {
+      setShowFocusInternal(true)
+    }
+    if (showFocusInitial) {
       setShowFocusInternal(showFocusInitial)
     }
-  }, [showFocusInitial, showFocus])
+  }, [showFocusInitial, showFocus, baseApp?.slug])
 
   const setShowFocus = (sw: boolean) => {
     setShowFocusInternal(sw)
