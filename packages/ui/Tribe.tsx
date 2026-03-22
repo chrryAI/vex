@@ -16,9 +16,9 @@ import {
 import { useStyles } from "./context/StylesContext"
 import FocusButtonMini from "./FocusButtonMini"
 import Grapes from "./Grapes"
+import Hippo from "./Hippo"
 import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
-import Instructions from "./Instructions"
 import LanguageSwitcher from "./LanguageSwitcher"
 import { defaultLocale } from "./locales"
 import Markdown from "./MarkdownContent.web"
@@ -1618,8 +1618,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             height={18}
                           />
                         </A>
-                        <Instructions
-                          showButton={false}
+                        <Hippo
                           showDownloads={true}
                           showInstructions={false}
                           showInstallers={false}
@@ -1834,8 +1833,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {t("🌀 Çapa")} IPA: /tʃɑ.ˈpɑ/
                       </A>
                     )}
-                    <Instructions
-                      showButton={false}
+                    <Hippo
                       showDownloads={true}
                       showInstructions={false}
                       icon
@@ -1979,8 +1977,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           height={18}
                         />
                       </A>
-                      <Instructions
-                        showButton={false}
+                      <Hippo
                         showDownloads={true}
                         showInstructions={false}
                         showInstallers={false}

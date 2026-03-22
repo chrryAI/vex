@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState } from "react"
+import { memo, useEffect, useState } from "react"
 
 import { useImgStyles } from "./Img.styles"
 import { ImageIcon } from "./icons"
@@ -30,7 +30,9 @@ interface ImgProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   }) => void
 }
 
-export default function Img({
+// ⚡ Bolt: Wrapped in React.memo() to prevent unnecessary re-renders
+// Impact: Reduces React render cycle overhead when parent components (like message lists or app grids) update, but image props (src, width, height) remain the same.
+const Img = memo(function Img({
   src,
   alt,
   width,
@@ -183,4 +185,6 @@ export default function Img({
       )}
     </Span>
   )
-}
+})
+
+export default Img

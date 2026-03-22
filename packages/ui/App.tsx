@@ -23,10 +23,10 @@ import { useTimerContext } from "./context/TimerContext"
 import EnableNotifications from "./EnableNotifications"
 import { useFocusButtonStyles } from "./FocusButton.styles"
 import Grapes from "./Grapes"
+import Hippo from "./Hippo"
 import { useHasHydrated } from "./hooks"
 import Logo from "./Image"
 import Img from "./Image"
-import Instructions from "./Instructions"
 import {
   ArrowRight,
   CircleCheck,
@@ -1746,7 +1746,7 @@ export default function App({
           }}
         >
           {isManagingApp && (
-            <Instructions
+            <Hippo
               icon={false}
               dataTestId="instruction-builder"
               opacity={0}
@@ -1759,10 +1759,9 @@ export default function App({
               showInstructions={false}
             />
           )}
-          <Instructions
+          <Hippo
             icon
             showInstructions
-            showButton={false}
             dataTestId="instruction"
             isAgentBuilder={true}
             opacity={0}

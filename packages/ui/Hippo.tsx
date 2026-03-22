@@ -73,15 +73,13 @@ import { formatFileSize } from "./utils/fileValidation"
 const Agent = lazy(() => import("./agent"))
 const EmojiPicker = lazy(() => import("./EmojiPicker"))
 
-export default function Instructions({
+export default function Hippo({
   className,
   thread,
   onSave,
-  icon = true,
   showInstructions = false,
   showDownloads = true,
   dataTestId = "instruction",
-  showButton = true,
   showInstallers = true,
   opacity = 1,
   isAgentBuilder = false,
@@ -89,6 +87,7 @@ export default function Instructions({
   style,
   size,
   key,
+  as = "icon",
   ...rest
 }: {
   className?: string
@@ -100,11 +99,11 @@ export default function Instructions({
   dataTestId?: string
   placeholder?: string
   isArtifactsOpen?: boolean
-  showButton?: boolean
   showDownloads?: boolean
   showInstallers?: boolean
   onClose?: () => void
   isAgentBuilder?: boolean
+  as?: "button" | "icon"
   size?: number
 
   onSave?: ({
@@ -117,6 +116,9 @@ export default function Instructions({
   style?: CSSProperties
 }) {
   const { t, console } = useAppContext()
+
+  const showButton = as === "button"
+  const icon = as === "icon"
 
   const styles = useInstructionsStyles()
 
@@ -1325,7 +1327,6 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
           <Div
             style={{
               ...styles.instructionsButtonContainer.style,
-              // marginBottom: !thread && !icon ? "0.8rem" : undefined,
             }}
           >
             <Button
