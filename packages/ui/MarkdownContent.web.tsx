@@ -18,8 +18,8 @@ import { createOverrides } from "./MarkdownOverrides"
 import { Button, Div, useTheme } from "./platform"
 import { usePlatformStyles } from "./platform/usePlatformStyles"
 
-export { processTextWithCitations, createOverrides }
 export type { MarkdownContentProps }
+export { createOverrides, processTextWithCitations }
 
 const CodeBlock: React.FC<codeBlock> = ({ language, children, className }) => {
   const [copied, setCopied] = useState(false)
