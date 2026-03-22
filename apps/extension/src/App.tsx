@@ -1,4 +1,4 @@
-import "chrry/globals.scss"
+import "chrry/styles.scss"
 // import "chrry/styles/view-transitions.css"
 import "./App.css"
 import Chrry from "chrry/Chrry"

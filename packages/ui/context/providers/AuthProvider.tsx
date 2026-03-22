@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.1.80"
+const VERSION = "2.1.82"
 
 const AuthContext = createContext<
   | {
@@ -2568,7 +2568,12 @@ export function AuthProvider({
       canBeTribeProfile
     ) && canShowTribe
 
-  const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
+  const [showTribeInternal, setShowTribeFinal] = useLocalStorage<
+    boolean | undefined | null
+  >("showTribe", showTribeInitial)
+
+  const showTribe =
+    showTribeInternal === null ? showTribeInitial : showTribeInternal
 
   const showTribeProfileInternal = canBeTribeProfile
 
