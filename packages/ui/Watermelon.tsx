@@ -109,7 +109,6 @@ export default function Watermelon() {
     plausible,
   } = useAuth()
 
-  const jules = storeApps.find((app) => app.slug === "jules")
   const [isSavingReplicateApiKey, setIsSavingReplicateApiKey] = useState(false)
 
   const { t, captureException } = useAppContext()
@@ -1374,7 +1373,7 @@ export default function Watermelon() {
                       }
                       openInNewTab={siteConfig.slug !== "chrry"}
                     >
-                      <Img alt="🐙 Jules" width={18} height={18} slug="jules" />
+                      <Img alt="🐙 Jules" size={22} slug="jules" />
                     </A>
                     {t("Sneak peek")}
                     <Button
