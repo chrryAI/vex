@@ -23,7 +23,6 @@ import {
   updateApp,
   type user,
 } from "./index"
-import { syncAllGoals } from "./src/plausible"
 import {
   aiAgents,
   apps,
@@ -1976,78 +1975,78 @@ const prod = async () => {
 // }
 
 const seedDb = async (): Promise<void> => {
-  await syncAllGoals()
-  process.exit(0)
+  // await syncAllGoals()
+  // process.exit(0)
 
-  // if (isProd) {
-  //   // eslint-disable-next-line no-console
-  //   console.warn(
-  //     "\n⚠️  WARNING: You are about to run the seed script on a NON-LOCAL database!\n" +
-  //       `DB_URL: ${DB_URL}\n` +
-  //       "Press Enter to continue, or Ctrl+C to abort.",
-  //   )
+  if (isProd) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "\n⚠️  WARNING: You are about to run the seed script on a NON-LOCAL database!\n" +
+        `DB_URL: ${DB_URL}\n` +
+        "Press Enter to continue, or Ctrl+C to abort.",
+    )
 
-  //   await new Promise<void>((resolve) => {
-  //     process.stdin.resume()
-  //     process.stdin.once("data", () => resolve())
-  //   })
-  // }
+    await new Promise<void>((resolve) => {
+      process.stdin.resume()
+      process.stdin.once("data", () => resolve())
+    })
+  }
 
-  // if (isProd) {
-  //   // eslint-disable-next-line no-console
-  //   console.warn(
-  //     "\n🚀  REALLY SURE WARNING: You are about to run the seed script on a NON-LOCAL database!\n" +
-  //       `DB_URL: ${DB_URL}\n` +
-  //       "Press Enter to continue, or Ctrl+C to abort.",
-  //   )
+  if (isProd) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "\n🚀  REALLY SURE WARNING: You are about to run the seed script on a NON-LOCAL database!\n" +
+        `DB_URL: ${DB_URL}\n` +
+        "Press Enter to continue, or Ctrl+C to abort.",
+    )
 
-  //   await new Promise<void>((resolve) => {
-  //     process.stdin.resume()
-  //     process.stdin.once("data", () => resolve())
-  //   })
+    await new Promise<void>((resolve) => {
+      process.stdin.resume()
+      process.stdin.once("data", () => resolve())
+    })
 
-  //   await prod()
-  //   process.exit(0)
-  // } else {
-  //   if (isSeedSafe) {
-  //     // eslint-disable-next-line no-console
-  //     console.warn(
-  //       "\n🏹  WARNING: You are about to run the seed script on a e2e database!\n" +
-  //         `DB_URL: ${process.env.DB_URL}\n` +
-  //         "Press Enter to continue, or Ctrl+C to abort.",
-  //     )
+    await prod()
+    process.exit(0)
+  } else {
+    if (isSeedSafe) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "\n🏹  WARNING: You are about to run the seed script on a e2e database!\n" +
+          `DB_URL: ${process.env.DB_URL}\n` +
+          "Press Enter to continue, or Ctrl+C to abort.",
+      )
 
-  //     await new Promise<void>((resolve) => {
-  //       process.stdin.resume()
-  //       process.stdin.once("data", () => resolve())
-  //     })
-  //   }
+      await new Promise<void>((resolve) => {
+        process.stdin.resume()
+        process.stdin.once("data", () => resolve())
+      })
+    }
 
-  //   if (MODE === "dev") {
-  //     if (isVex) {
-  //       await prod()
-  //     } else {
-  //       // Safety gate: only allow clearDb on local databases or with explicit opt-in
-  //       const databaseUrl = process.env.DATABASE_URL || ""
-  //       const isLocalDb =
-  //         databaseUrl.includes("localhost") ||
-  //         databaseUrl.includes("127.0.0.1") ||
-  //         databaseUrl.includes("0.0.0.0")
-  //       const allowClearDb = process.env.ALLOW_CLEAR_DB === "true"
+    if (MODE === "dev") {
+      if (isVex) {
+        await prod()
+      } else {
+        // Safety gate: only allow clearDb on local databases or with explicit opt-in
+        const databaseUrl = process.env.DATABASE_URL || ""
+        const isLocalDb =
+          databaseUrl.includes("localhost") ||
+          databaseUrl.includes("127.0.0.1") ||
+          databaseUrl.includes("0.0.0.0")
+        const allowClearDb = process.env.ALLOW_CLEAR_DB === "true"
 
-  //       if (!isLocalDb && !allowClearDb) {
-  //         throw new Error(
-  //           "❌ SAFETY: Cannot clear non-local database without ALLOW_CLEAR_DB=true",
-  //         )
-  //       }
+        if (!isLocalDb && !allowClearDb) {
+          throw new Error(
+            "❌ SAFETY: Cannot clear non-local database without ALLOW_CLEAR_DB=true",
+          )
+        }
 
-  //       await clearDb()
-  //       await create()
-  //     }
-  //   }
+        await clearDb()
+        await create()
+      }
+    }
 
-  //   process.exit(0)
-  // }
+    process.exit(0)
+  }
 }
 
 seedDb()

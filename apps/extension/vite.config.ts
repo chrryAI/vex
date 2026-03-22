@@ -39,7 +39,8 @@ function platformStubPlugin(): PluginOption {
       if (
         id.startsWith("@tauri-apps/api") ||
         id.startsWith("@capacitor") ||
-        id.startsWith("firebase/")
+        id.startsWith("firebase/") ||
+        id === "react-native"
       ) {
         return id
       }
@@ -49,7 +50,8 @@ function platformStubPlugin(): PluginOption {
       if (
         id.startsWith("@tauri-apps/api") ||
         id.startsWith("@capacitor") ||
-        id.startsWith("firebase/")
+        id.startsWith("firebase/") ||
+        id === "react-native"
       ) {
         if (id.startsWith("@tauri-apps/api")) {
           return `export * from "${path.resolve(__dirname, "src/stubs/tauri-api.ts")}"; export { default } from "${path.resolve(__dirname, "src/stubs/tauri-api.ts")}";`

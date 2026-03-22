@@ -109,6 +109,12 @@ export async function loadServerData(
 
   const API_URL = API_INTERNAL_URL
 
+  console.log("🔍 Host check:", {
+    host: hostname,
+    API_INTERNAL_URL: API_INTERNAL_URL,
+    isE2E,
+  })
+
   let TEST_FINGERPRINTS: string[] = []
 
   const pathname = (

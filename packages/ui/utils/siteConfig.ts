@@ -23,6 +23,7 @@ export type siteMode =
   | "tribe"
   | "nebula"
   | "watermelon"
+// | "nexus"
 
 /// <reference types="chrome" />
 
@@ -1239,6 +1240,34 @@ const nebula = {
   },
 }
 
+const nexus = {
+  url: "https://nexus.chrry.ai",
+  mode: "nexus" as siteMode,
+  slug: "nexus",
+  favicon: "nexus",
+  storeSlug: "nexus",
+  name: "Nexus",
+  isStoreApp: true,
+  domain: "nexus.chrry.ai",
+  store: "https://nexus.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description: "Frontier AI Models Hub",
+  logo: "🚀",
+  primaryColor: "#F59E0B", // Amber/Gold (Grok-like)
+  links: {
+    docs: "https://nexus.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Frontier Models",
+      description: "Access Grok and other advanced AI models",
+      icon: "🤖",
+      link: "/explore",
+      isOpenSource: true,
+    },
+  ],
+}
+
 const vex = {
   url: "https://vex.chrry.ai",
   mode: "vex" as siteMode,
@@ -1588,13 +1617,13 @@ export interface SiteConfig {
   email: string
   logo: string
   primaryColor: string
-  links: {
+  links?: {
     github?: string
     npm?: string
     docs?: string
     demo?: string
   }
-  features: Array<{
+  features?: Array<{
     title: string
     description: string
     icon: string
@@ -3336,6 +3365,8 @@ export const whiteLabels = [
   pear,
   vault,
   grape,
+  nebula,
+  nexus,
 ]
 
 export const analyticsDomains = whiteLabels

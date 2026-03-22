@@ -1475,7 +1475,6 @@ export default function App({
                           )}
                           {showZarathustraHere &&
                             zarathustra &&
-                            store &&
                             store?.apps?.some(
                               (app) => app.id === zarathustra.id,
                             ) && (

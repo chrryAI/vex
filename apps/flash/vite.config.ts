@@ -92,9 +92,8 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
         /@lobehub\//,
         "@chrryai/chrry",
         "chrry",
-        "react",
-        "react-dom",
-      ], // Force bundle libraries to fix ESM/CJS naming issues in React 19
+        ...(command === "build" ? ["react", "react-dom"] : []),
+      ], // Force bundle libraries to fix ESM/CJS naming issues in React 19 production build
       resolve: {
         externalConditions: ["node", "import"],
       },

@@ -971,7 +971,7 @@ export function AuthProvider({
         window.location.hostname === "localhost" ||
         window.location.hostname === "127.0.0.1"
           ? undefined
-          : "." + window.location.hostname.split(".").slice(-2).join(".")
+          : `.${window.location.hostname.split(".").slice(-2).join(".")}`
 
       setSpatialSessionId(newId, {
         domain,
@@ -2267,7 +2267,8 @@ export function AuthProvider({
 
   const canShowAllTribe = !!(
     clearLocale(pathname) === "/tribe" ||
-    (siteConfig.isTribe && !clearLocale(pathname))
+    (siteConfig.isTribe && !clearLocale(pathname)) ||
+    clearLocale(pathname) === "/"
   )
 
   const installs = [
