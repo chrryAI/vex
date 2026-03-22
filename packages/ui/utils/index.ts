@@ -51,12 +51,12 @@ import {
 } from "./env"
 
 export {
-  isCI,
-  isDevelopment,
-  isTestingDevice,
-  isProduction,
   checkIsExtension,
   getExtensionUrl,
+  isCI,
+  isDevelopment,
+  isProduction,
+  isTestingDevice,
 }
 
 export const VEX_LIVE_FINGERPRINTS =
@@ -438,7 +438,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "2.1.68"
+export const VERSION = config.version || "2.1.77"
 export type instructionBase = {
   id: string
   title: string

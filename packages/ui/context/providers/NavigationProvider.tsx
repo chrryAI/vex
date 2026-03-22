@@ -241,8 +241,7 @@ export function NavigationProvider({
     if (
       !isStandalone &&
       value &&
-      app &&
-      app.slug &&
+      app?.slug &&
       app.slug !== siteApp.slug &&
       ["ios", "android"].includes(os)
     ) {

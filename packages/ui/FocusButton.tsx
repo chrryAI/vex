@@ -927,9 +927,7 @@ export default function FocusButton({
                             }}
                             onClick={() => {
                               setShowFocus(false)
-                              app?.id === focus?.id
-                                ? setShowFocus(false)
-                                : setIsNewAppChat({ item: app })
+                              setIsNewAppChat({ item: app, tribe: true })
                             }}
                             // href={getAppSlug(refApp)}
                           >

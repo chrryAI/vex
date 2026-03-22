@@ -10,22 +10,29 @@ function chromeExtensionPlugin(): PluginOption {
   return {
     name: "chrome-extension",
     enforce: "post" as const,
-    async writeBundle() {
-      // Build background script separately
-      await esbuild.build({
-        entryPoints: {
-          background: resolve(__dirname, "src/background.ts"),
-        },
-        bundle: true,
-        format: "esm",
-        outdir: "dist",
-        target: "chrome58",
-        minify: false,
-        loader: {
-          ".scss": "css",
-          ".css": "css",
-        },
-      })
+    async closeBundle() {
+      try {
+        console.log("🚀 Building background script...")
+        // Build background script separately
+        await esbuild.build({
+          entryPoints: {
+            background: resolve(__dirname, "src/background.ts"),
+          },
+          bundle: true,
+          format: "esm",
+          outdir: "dist",
+          target: "chrome58",
+          minify: false,
+          loader: {
+            ".scss": "css",
+            ".css": "css",
+          },
+        })
+        console.log("✅ Background script built.")
+      } catch (error) {
+        console.error("❌ Error building background script:", error)
+        throw error
+      }
     },
   }
 }
@@ -39,7 +46,8 @@ function platformStubPlugin(): PluginOption {
       if (
         id.startsWith("@tauri-apps/api") ||
         id.startsWith("@capacitor") ||
-        id.startsWith("firebase/")
+        id.startsWith("firebase/") ||
+        id === "react-native"
       ) {
         return id
       }
@@ -49,7 +57,8 @@ function platformStubPlugin(): PluginOption {
       if (
         id.startsWith("@tauri-apps/api") ||
         id.startsWith("@capacitor") ||
-        id.startsWith("firebase/")
+        id.startsWith("firebase/") ||
+        id === "react-native"
       ) {
         if (id.startsWith("@tauri-apps/api")) {
           return `export * from "${path.resolve(__dirname, "src/stubs/tauri-api.ts")}"; export { default } from "${path.resolve(__dirname, "src/stubs/tauri-api.ts")}";`
@@ -110,7 +119,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "2.1.68",
+    version: siteConfig.version || "2.1.74",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission

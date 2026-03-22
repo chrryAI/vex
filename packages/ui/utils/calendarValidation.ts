@@ -2,7 +2,7 @@ import { z } from "zod"
 
 // Base attendee schema
 const attendeeSchema = z.object({
-  email: z.email("Invalid email address"),
+  email: z.string().email("Invalid email address"),
   name: z.string().optional(),
   status: z.enum(["pending", "accepted", "declined"]).default("pending"),
   isOrganizer: z.boolean().optional(),
@@ -72,8 +72,8 @@ const baseCalendarEventSchema = z.object({
   visibility: z.enum(["private", "public", "shared"]).default("private"),
 
   // AI integration
-  threadId: z.uuid().optional(),
-  agentId: z.uuid().optional(),
+  threadId: z.string().uuid().optional(),
+  agentId: z.string().uuid().optional(),
   aiContext: aiContextSchema.optional(),
 
   // External sync
@@ -127,7 +127,7 @@ export const createCalendarEventSchema = baseCalendarEventSchema.refine(
 export const updateCalendarEventSchema = baseCalendarEventSchema
   .partial() // Make all fields optional (Zod v4 requires no refinements before .partial())
   .extend({
-    id: z.uuid("Invalid event ID"), // Add required id field
+    id: z.string().uuid("Invalid event ID"), // Add required id field
     isAllDay: z.boolean().optional(),
     timezone: z.string().optional(),
     color: z

@@ -11,12 +11,11 @@ export default defineConfig({
     environment: "happy-dom",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
-    alias: {
-      // Resolve to absolute path of browser build to bypass exports check and force browser version
-      uuid: path.resolve(
-        path.dirname(require.resolve("uuid/package.json")),
-        "dist/esm-browser/index.js",
-      ),
+    alias: {},
+    server: {
+      deps: {
+        inline: [/@emoji-mart/, /@lobehub/],
+      },
     },
     deps: {
       interopDefault: true,
