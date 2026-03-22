@@ -63,6 +63,13 @@ export const users = pgTable(
       mode: "date",
       withTimezone: true,
     }),
+    hippoCredits: integer("hippoCredits").default(25).notNull(),
+    lastHippoCreditReset: timestamp("lastHippoCreditReset", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
     apiKeys: jsonb("apiKeys").$type<{
       openai?: string // Encrypted OpenAI API key
       anthropic?: string // Encrypted Anthropic API key
@@ -243,13 +250,6 @@ export const feedbackTransactions = pgTable("feedbackTransactions", {
   }),
   creditsRemaining: integer("creditsRemaining").default(0),
 
-  hippoCredits: integer("hippoCredits").default(25).notNull(),
-  lastHippoCreditReset: timestamp("lastHippoCreditReset", {
-    mode: "date",
-    withTimezone: true,
-  })
-    .defaultNow()
-    .notNull(),
   metadata: jsonb("metadata").$type<{
     feedbackId?: string
     subscriptionId?: string
