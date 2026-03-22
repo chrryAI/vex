@@ -1618,6 +1618,13 @@
       "when": 1774123690909,
       "tag": "0230_same_joshua_kane",
       "breakpoints": true
+    },
+    {
+      "idx": 231,
+      "version": "7",
+      "when": 1774132920808,
+      "tag": "0231_kind_dark_beast",
+      "breakpoints": true
     }
   ]
 }
