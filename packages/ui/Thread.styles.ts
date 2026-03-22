@@ -80,8 +80,8 @@ export const ThreadStyleDefs = {
   },
 } as const
 
-import { createUnifiedStyles } from "./styles/createUnifiedStyles"
 import { createStyleHook } from "./styles/createStyleHook"
+import { createUnifiedStyles } from "./styles/createUnifiedStyles"
 
 export const ThreadStyles = createUnifiedStyles(ThreadStyleDefs)
 

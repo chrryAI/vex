@@ -229,8 +229,8 @@ export const InstructionsStyleDefs = {
   },
 } as const
 
-import { createUnifiedStyles } from "./styles/createUnifiedStyles"
 import { createStyleHook } from "./styles/createStyleHook"
+import { createUnifiedStyles } from "./styles/createUnifiedStyles"
 
 export const InstructionsStyles = createUnifiedStyles(InstructionsStyleDefs)
 

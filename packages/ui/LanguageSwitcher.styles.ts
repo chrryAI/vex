@@ -24,8 +24,8 @@ export const LanguageSwitcherStyleDefs = {
   },
 } as const
 
-import { createUnifiedStyles } from "./styles/createUnifiedStyles"
 import { createStyleHook } from "./styles/createStyleHook"
+import { createUnifiedStyles } from "./styles/createUnifiedStyles"
 
 export const LanguageSwitcherStyles = createUnifiedStyles(
   LanguageSwitcherStyleDefs,

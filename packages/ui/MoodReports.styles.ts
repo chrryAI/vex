@@ -89,8 +89,8 @@ export const MoodReportsStyleDefs = {
   moodEmojiWindows: {},
 } as const
 
-import { createUnifiedStyles } from "./styles/createUnifiedStyles"
 import { createStyleHook } from "./styles/createStyleHook"
+import { createUnifiedStyles } from "./styles/createUnifiedStyles"
 
 export const MoodReportsStyles = createUnifiedStyles(MoodReportsStyleDefs)
 

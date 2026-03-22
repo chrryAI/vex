@@ -1781,7 +1781,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     alignItems: "center",
                     gap: 15,
                     justifyContent: "center",
-                    marginTop: 40,
+                    marginTop: 30,
                     marginBottom: 10,
                     flexDirection: "column",
                   }}
@@ -1832,15 +1832,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {t("🌀 Çapa")} IPA: /tʃɑ.ˈpɑ/
                       </A>
                     )}
-                    <Tools
-                      showDownloads={true}
-                      showInstructions={false}
-                      icon
-                      style={{
-                        marginTop: 0,
-                      }}
-                    />
                   </Div>
+                  <Tools
+                    showDownloads={true}
+                    showInstructions={false}
+                    icon
+                    style={{
+                      marginTop: 0,
+                    }}
+                  />
                   <FeedBack
                     style={{
                       position: "relative",
