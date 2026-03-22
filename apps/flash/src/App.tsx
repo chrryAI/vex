@@ -1,4 +1,4 @@
-import "@chrryai/chrry/globals.scss"
+import "@chrryai/chrry/styles.scss"
 import "@chrryai/chrry/styles/view-transitions.css"
 import Chrry from "chrry/Chrry"
 import Skeleton from "chrry/Skeleton"

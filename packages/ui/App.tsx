@@ -54,6 +54,7 @@ import {
   useTheme,
   Video,
 } from "./platform"
+import Tools from "./Tools"
 import type { appWithStore } from "./types"
 import { apiFetch, BrowserInstance } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
@@ -1747,7 +1748,7 @@ export default function App({
         >
           {isManagingApp && (
             <Hippo
-              icon={false}
+              as="button"
               dataTestId="instruction-builder"
               opacity={0}
               onSave={({ content, artifacts }) => {
@@ -1760,7 +1761,7 @@ export default function App({
             />
           )}
           <Hippo
-            icon
+            as="icon"
             showInstructions
             dataTestId="instruction"
             isAgentBuilder={true}
@@ -1775,6 +1776,7 @@ export default function App({
               })
             }}
           />
+          <Tools />
         </Div>
       </Div>
     </Div>

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react"
 import ReactDOM from "react-dom/client"
 // import { SetupWizard } from "./components/SetupWizard"
 import { TabBar } from "./components/TabBar"
-import "@chrryai/chrry/globals.scss"
+import "@chrryai/chrry/styles.scss"
 import "./styles/browser-chrome.css"
 
 interface Tab {

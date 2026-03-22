@@ -15,7 +15,6 @@ import {
 } from "./context/providers"
 import { useTribe } from "./context/providers/TribeProvider"
 import { useStyles } from "./context/StylesContext"
-import Hippo from "./Hippo"
 import Img from "./Image"
 import {
   Download,
@@ -42,6 +41,7 @@ import {
   useTheme,
   Video,
 } from "./platform"
+import Tools from "./Tools"
 import TribeTranslate from "./TribeTranslate"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
 import { apiFetch, calculateTranslationCredits, isDevelopment } from "./utils"
@@ -429,7 +429,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           >
             <Img showLoading={false} icon="calendar" width={18} height={18} />
           </A>
-          <Hippo
+          <Tools
             showDownloads={true}
             showInstructions={false}
             style={{
