@@ -240,7 +240,7 @@ export default function Watermelon() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 25,
+            gap: 10,
             position: "absolute",
             top: 15,
             right: 15,

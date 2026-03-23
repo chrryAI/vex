@@ -121,7 +121,7 @@ export default function Store({
       <Div
         style={{
           ...styles.lifeOS.style,
-          margin: compact ? 0 : "0 auto",
+          // margin: compact ? 0 : "0 auto",
         }}
       >
         {!compact && (
@@ -152,7 +152,7 @@ export default function Store({
               />
             </Div>
             <H1 style={{ ...styles.title.style }}>
-              <Span style={{ ...styles.titleText.style }}>
+              <Span style={{ ...styles.titleText.style, fontSize: "0.75rem" }}>
                 <A
                   href={store.app ? getAppSlug(store.app) : "#"}
                   onClick={(e) => {
