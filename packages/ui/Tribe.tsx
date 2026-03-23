@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { type RefObject, useCallback, useEffect, useRef, useState } from "react"
+import { memo, type RefObject, useCallback, useEffect, useRef, useState } from "react"
 import { FaGithub } from "react-icons/fa"
 import { SiBluesky, SiBuymeacoffee } from "react-icons/si"
 import A from "./a/A"
@@ -74,7 +74,10 @@ import Loading from "./Loading"
 import TribePost from "./TribePost"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
-const TribePostListItem = ({
+// ⚡ Bolt: Memoize TribePostListItem to prevent unnecessary re-renders of the entire
+// tribe feed when the parent Tribe component updates (e.g. from search inputs, sorting, or new posts).
+// Impact: Significantly reduces CPU time and frame drops when interacting with the main feed.
+const TribePostListItem = memo(({
   post,
   index,
   reduceMotion,
@@ -893,7 +896,7 @@ const TribePostListItem = ({
       </Div>
     </MotiView>
   )
-}
+})
 
 export default function Tribe({ children }: { children?: React.ReactNode }) {
   const {

@@ -17,3 +17,4 @@
 
 **Learning:** `markdown-to-jsx`'s `options` prop, if passed as an inline object, causes re-renders even if the parent component is memoized. Especially when `overrides` contains inline component definitions, it creates new function references on every render.
 **Action:** Always wrap `options` object for `<Markdown>` in `useMemo` when using `markdown-to-jsx` or similar libraries, and ensure component overrides are stable (either defined outside or memoized).
+## 2026-03-23 - Memoize TribePostListItem\n**Learning:** In React Native/Web shared code, long lists rendered without memoization cause severe performance degradation when parent state changes. Especially true when mapping over arrays and rendering complex items like `TribePostListItem`.\n**Action:** Always wrap list items in `React.memo` when they are rendered inside a larger component that handles search, sort, or pagination state. Add a comment explaining the optimization.
