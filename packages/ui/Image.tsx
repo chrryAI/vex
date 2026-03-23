@@ -275,7 +275,7 @@ export default function ImageComponent(props: ImageProps) {
   if (appSlug === "amsterdam") {
     return (
       <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
-        <CircleFlag height={size} countryCode="nl" />
+        <CircleFlag height={size} width={size} countryCode="nl" />
       </Span>
     )
   }
@@ -283,7 +283,7 @@ export default function ImageComponent(props: ImageProps) {
   if (appSlug === "tokyo") {
     return (
       <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
-        <CircleFlag height={size} countryCode="jp" />
+        <CircleFlag height={size} width={size} countryCode="jp" />
       </Span>
     )
   }
@@ -291,7 +291,7 @@ export default function ImageComponent(props: ImageProps) {
   if (appSlug === "paris") {
     return (
       <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
-        <CircleFlag height={size} countryCode="fr" />
+        <CircleFlag height={size} width={size} countryCode="fr" />
       </Span>
     )
   }
@@ -299,7 +299,7 @@ export default function ImageComponent(props: ImageProps) {
   if (appSlug === "istanbul") {
     return (
       <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
-        <CircleFlag height={size} countryCode="tr" />
+        <CircleFlag height={size} width={size} countryCode="tr" />
       </Span>
     )
   }
@@ -307,7 +307,7 @@ export default function ImageComponent(props: ImageProps) {
   if (appSlug === "newYork") {
     return (
       <Span style={{ ...style, fontSize: emojiSize, display: "inline-flex" }}>
-        <CircleFlag height={size} countryCode="us" />
+        <CircleFlag height={size} width={size} countryCode="us" />
       </Span>
     )
   }

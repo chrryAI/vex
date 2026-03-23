@@ -9,6 +9,7 @@ import {
   useEffect,
   useState,
 } from "react"
+import AddToHomeScreen from "./addToHomeScreen/AddToHomeScreen"
 import { useApp } from "./context/providers"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useNavigationContext } from "./context/providers/NavigationProvider"
@@ -241,10 +242,6 @@ export const Hey = memo(
       app,
     ])
 
-    if (!isHydrated) {
-      return null
-    }
-
     return (
       <Div
         style={{
@@ -254,31 +251,34 @@ export const Hey = memo(
       >
         <ErrorBoundary>
           {splash}
-          <Suspense fallback={<Loading fullScreen />}>
-            <Programme />
-            <Div style={{ display: isProgramme ? "none" : "block" }}>
-              {showWatermelon ? (
-                <Watermelon />
-              ) : isClientRoute ? (
-                postId || tribeSlug ? (
-                  <Home />
-                ) : threadId ? (
-                  <Thread key={threadId} />
-                ) : RouteComponent ? (
-                  <RouteComponent />
+          {isHydrated && (
+            <Suspense fallback={<Loading fullScreen />}>
+              <Programme />
+              <Div style={{ display: isProgramme ? "none" : "block" }}>
+                {showWatermelon ? (
+                  <Watermelon />
+                ) : isClientRoute ? (
+                  postId || tribeSlug ? (
+                    <Home />
+                  ) : threadId ? (
+                    <Thread key={threadId} />
+                  ) : RouteComponent ? (
+                    <RouteComponent />
+                  ) : (
+                    <Home />
+                  )
                 ) : (
-                  <Home />
-                )
-              ) : (
-                children
+                  children
+                )}
+              </Div>
+              {isHydrated && (
+                <>
+                  <VexToast />
+                  <AddToHomeScreen />
+                </>
               )}
-            </Div>
-            {isHydrated && (
-              <>
-                <VexToast />
-              </>
-            )}
-          </Suspense>
+            </Suspense>
+          )}
         </ErrorBoundary>
       </Div>
     )

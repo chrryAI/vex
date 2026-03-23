@@ -87,20 +87,21 @@ function validateTierCapacity(
 // Tier 1: Only the 6 flagship apps (45min cooldown)
 // 45min / 6 apps = 7.5min stagger — much more manageable than the previous 15-app / 3min setup
 const TIER1_SLUGS = new Set([
+  "hippo",
   "chrry",
   "sushi",
   "vex",
-  "zarathustra", // Only this one gets VIP char/token limits
+  "nebula",
   "burn",
   "focus",
 ])
 
 const TIER2_SLUGS = new Set([
   "fightClub",
+  "zarathustra",
   "pulpFiction",
   "inception",
   "cosmos",
-  "nebula",
   "quantumlab",
   "search",
   "starmap",
@@ -111,7 +112,6 @@ const TIER2_SLUGS = new Set([
   "pear",
   "architect",
   "jules",
-  "hippo",
   "lucas",
   "grape",
   "meditations",

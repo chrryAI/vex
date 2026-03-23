@@ -16,6 +16,7 @@ import {
 import { useStyles } from "./context/StylesContext"
 import FocusButtonMini from "./FocusButtonMini"
 import Grapes from "./Grapes"
+import Hippo from "./Hippo"
 import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
 import LanguageSwitcher from "./LanguageSwitcher"
@@ -1393,6 +1394,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     }}
                   >
                     <Weather showLocation />
+                    <Hippo />
                     <A href="/about">
                       <Img icon="Tools" size={25} />
                     </A>
@@ -1781,7 +1783,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     alignItems: "center",
                     gap: 15,
                     justifyContent: "center",
-                    marginTop: 40,
+                    marginTop: 30,
                     marginBottom: 10,
                     flexDirection: "column",
                   }}
@@ -1832,15 +1834,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {t("🌀 Çapa")} IPA: /tʃɑ.ˈpɑ/
                       </A>
                     )}
-                    <Tools
-                      showDownloads={true}
-                      showInstructions={false}
-                      icon
-                      style={{
-                        marginTop: 0,
-                      }}
-                    />
                   </Div>
+                  <Tools
+                    showDownloads={true}
+                    showInstructions={false}
+                    icon
+                    style={{
+                      marginTop: 0,
+                    }}
+                  />
                   <FeedBack
                     style={{
                       position: "relative",

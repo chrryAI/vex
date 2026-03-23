@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.1.82"
+const VERSION = "2.1.84"
 
 const AuthContext = createContext<
   | {
@@ -230,6 +230,8 @@ const AuthContext = createContext<
         threads?: thread[]
         totalCount: number
       }
+      isHippoOpen: boolean
+      setIsHippoOpen: (value: boolean) => void
       appStatus: AppStatus | undefined
       setAppStatus: (appStatus: AppStatus | undefined, path?: string) => void
       lastApp: appWithStore | undefined
@@ -444,6 +446,7 @@ export function AuthProvider({
   tribePosts: initialTribePosts,
   tribePost: initialTribePost,
   testConfig,
+  isBot,
   ...props
 }: {
   translations?: Record<string, any>
@@ -456,6 +459,7 @@ export function AuthProvider({
   gift?: string
   error?: string
   session?: session
+  isBot?: boolean
   app?: appWithStore
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
@@ -1276,6 +1280,8 @@ export function AuthProvider({
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
+
+  const [isHippoOpen, setIsHippoOpen] = useState(false)
 
   const baseAppInternal = storeApps.find((item) => {
     if (!item) return false
@@ -2433,9 +2439,9 @@ export function AuthProvider({
 
   // Handle pathname changes: extract slug and switch app
 
-  const hasHydrated = useHasHydrated()
+  const hasHydratedInternal = useHasHydrated()
 
-  // const hasHydrated = hasHydratedInternal || !!isBot
+  const hasHydrated = hasHydratedInternal || !!isBot
 
   const [shouldFetchMoods, setShouldFetchMoods] = useState(false)
 
@@ -3632,6 +3638,8 @@ export function AuthProvider({
         setMood,
         about,
         setAbout,
+        isHippoOpen,
+        setIsHippoOpen,
         ask,
         setAsk,
         isLoadingMoods,
