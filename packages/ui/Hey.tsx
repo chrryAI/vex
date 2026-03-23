@@ -20,6 +20,7 @@ import Loading from "./Loading"
 import { Div, useLocalStorage, usePlatform, VexToast } from "./platform"
 import { useSidebarStyles } from "./Sidebar.styles"
 import Thread from "./Thread"
+import AddToHomeScreen from "./addToHomeScreen/AddToHomeScreen"
 import { getAppAndStoreSlugs } from "./utils/url"
 import Programme from "./z/Programme"
 
@@ -241,10 +242,6 @@ export const Hey = memo(
       app,
     ])
 
-    if (!isHydrated) {
-      return null
-    }
-
     return (
       <Div
         style={{
@@ -276,6 +273,7 @@ export const Hey = memo(
             {isHydrated && (
               <>
                 <VexToast />
+                <AddToHomeScreen />
               </>
             )}
           </Suspense>
