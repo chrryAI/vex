@@ -232,7 +232,7 @@ export default function Tools({
   const hasHydrated = useHasHydrated()
 
   return (
-    <Div key={key || dataTestId} data-testid={`${dataTestId}`}>
+    <Div style={style} key={key || dataTestId} data-testid={`${dataTestId}`}>
       <Div
         data-testid={`${dataTestId}-about`}
         style={{
