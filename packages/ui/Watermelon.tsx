@@ -472,6 +472,34 @@ export default function Watermelon() {
                     {t("Local Stack")}
                   </Button>
                 ) : null}
+                <A
+                  openInNewTab
+                  aria-label="Vex"
+                  href="https://github.com/chrryAI/vex"
+                >
+                  <Img slug="vex" size={24} />
+                </A>
+                <A
+                  openInNewTab
+                  aria-label="Sushi"
+                  href="https://github.com/chrryAI/sushi"
+                >
+                  <Img slug="sushi" size={20} />
+                </A>
+                <A
+                  openInNewTab
+                  aria-label="Pepper"
+                  href="https://github.com/chrryAI/pepper"
+                >
+                  <Img slug="pepper" size={30} />
+                </A>
+                <A
+                  openInNewTab
+                  aria-label="Waffles"
+                  href="https://github.com/chrryAI/waffles"
+                >
+                  <Img slug="waffles" size={35} />
+                </A>
 
                 <A
                   onClick={() => {
@@ -530,6 +558,7 @@ export default function Watermelon() {
                 >
                   <DeepSeek color={COLORS.blue} size={20} />
                 </A>
+
                 <A openInNewTab href="https://claude.ai" aria-label="Claude">
                   <Claude color={COLORS.orange} size={20} />
                 </A>

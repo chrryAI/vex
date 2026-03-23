@@ -1,6 +1,6 @@
 "use client"
 
-import {
+import React, {
   type CSSProperties,
   type Dispatch,
   lazy,
@@ -85,6 +85,7 @@ export default function Hippo({
   size,
   key,
   as = "icon",
+  attachtTo,
   ...rest
 }: {
   className?: string
@@ -102,6 +103,7 @@ export default function Hippo({
   isAgentBuilder?: boolean
   as?: "button" | "icon"
   size?: number
+  attachtTo?: string
 
   onSave?: ({
     content,
@@ -139,6 +141,10 @@ export default function Hippo({
     weather,
     PROMPT_LIMITS,
     isDevelopment,
+    isHippoOpen,
+    setIsHippoOpen: setIsOpenInternal,
+    selectedInstruction,
+    setSelectedInstruction: setSelectedInstructionInternal,
     ...auth
   } = useAuth()
 
@@ -219,8 +225,6 @@ export default function Hippo({
 
   const productionExtensions = ["chrome"]
   const MAX_FILES = getMaxFiles({ user, guest })
-  const [selectedInstruction, setSelectedInstructionInternal] =
-    useState<instructionBase | null>(null)
 
   const setSelectedInstruction = (instruction: instructionBase | null) => {
     setSelectedInstructionInternal(instruction)
@@ -424,24 +428,23 @@ export default function Hippo({
 
   const instructionsListRef = useRef<HTMLDivElement>(null)
 
-  const { isHippoOpen: isOpen, setIsHippoOpen: setIsOpenInternal } = useAuth()
+  const isOpen = !!isHippoOpen
 
   const setIsOpen = (open: boolean) => {
-    setIsOpenInternal(open)
+    setIsOpenInternal(open ? `${dataTestId}-chat` : undefined)
     if (!open) {
       setCollaborationStep(0)
     }
   }
   useEffect(() => {
     if (collaborationStep === 1) {
-      setIsOpen(true)
       setContent("")
     }
   }, [collaborationStep, setIsOpen])
 
   useEffect(() => {
     if (!isOpen && collaborationStep === 1) {
-      // setCollaborationStep(0)
+      setCollaborationStep(0)
     }
   }, [isOpen, collaborationStep])
 
@@ -453,7 +456,7 @@ export default function Hippo({
       if (selectedInstruction?.content) {
         setContent(t(selectedInstruction?.content))
       }
-      // setIsOpen(true)
+      setIsOpen(true)
     }
   }, [selectedInstruction, t, setIsOpen, thread])
 
@@ -810,7 +813,7 @@ export default function Hippo({
   }
 
   return (
-    <Div key={key || dataTestId} data-testid={`${dataTestId}`}>
+    <Div>
       {isAppDescriptionOpen && (
         <Modal
           scrollable={!isChatOpen}
@@ -851,6 +854,7 @@ export default function Hippo({
         </Modal>
       )}
       <Modal
+        attachTo={attachtTo}
         scrollable={!isChatOpen}
         dataTestId={`${dataTestId}-modal`}
         borderHeader={true}
@@ -926,8 +930,19 @@ export default function Hippo({
         }}
       >
         {isChatOpen ? (
-          <Div style={{}}>
-            <HipChat compactMode={false} showSuggestions={false} />
+          <Div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <HipChat
+              hipchat
+              dataTestId={`${dataTestId}-chat`}
+              compactMode={false}
+              showSuggestions={false}
+              style={{ position: "relative", top: 15 }}
+            />
           </Div>
         ) : (
           <>
@@ -1234,20 +1249,19 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   </Button>
                 )}
                 <Div style={styles.actions.style}>
-                  {user?.role === "admin" ||
-                    (isDevelopment && (
-                      <Button
-                        className="inverted"
-                        data-testid={`${dataTestId}-modal-chat-button`}
-                        onClick={() => {
-                          setIsChatOpen(true)
-                        }}
-                        style={{ ...utilities.inverted.style }}
-                      >
-                        <Img app={app} size={14} />
-                        {isMobileDevice ? null : t("Chat")}
-                      </Button>
-                    ))}
+                  {isDevelopment && (
+                    <Button
+                      className="inverted"
+                      data-testid={`${dataTestId}-modal-chat-button`}
+                      onClick={() => {
+                        setIsChatOpen(true)
+                      }}
+                      style={{ ...utilities.inverted.style }}
+                    >
+                      <Img app={app} size={14} />
+                      {isMobileDevice ? null : t("Chat")}
+                    </Button>
+                  )}
                   <Button
                     className="inverted"
                     data-testid={`${dataTestId}-modal-artifacts-button`}
@@ -1339,7 +1353,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
             }}
           >
             <Button
-              className={"link"}
+              className={icon ? "link" : "inverted"}
               data-testid={`${dataTestId}-button`}
               onClick={() => {
                 // Clear content if it matches the currently selected instruction

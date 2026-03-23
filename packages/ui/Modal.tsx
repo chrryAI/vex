@@ -169,18 +169,11 @@ export default function Modal({
     }
   }, [isModalOpen])
 
-  const key = React.useId()
-
   return (
     hasHydrated &&
     isModalOpen &&
     createPortal(
-      <Div
-        key={key}
-        style={{ ...styles.modal.style }}
-        role="dialog"
-        aria-modal="true"
-      >
+      <Div style={{ ...styles.modal.style }} role="dialog" aria-modal="true">
         <Div
           style={{
             ...styles.main.style,

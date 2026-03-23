@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.1.84"
+const VERSION = "2.1.87"
 
 const AuthContext = createContext<
   | {
@@ -150,6 +150,8 @@ const AuthContext = createContext<
       timer?: timer | null
       tribeSlug?: string
       currentTribe?: tribe
+      selectedInstruction: instructionBase | null
+      setSelectedInstruction: (instruction: instructionBase | null) => void
       getTribeUrl: (app?: appWithStore) => string
       rtl: boolean
       mergeApps: (apps: appWithStore[]) => void
@@ -230,8 +232,8 @@ const AuthContext = createContext<
         threads?: thread[]
         totalCount: number
       }
-      isHippoOpen: boolean
-      setIsHippoOpen: (value: boolean) => void
+      isHippoOpen: string | undefined
+      setIsHippoOpen: (value: string | undefined) => void
       appStatus: AppStatus | undefined
       setAppStatus: (appStatus: AppStatus | undefined, path?: string) => void
       lastApp: appWithStore | undefined
@@ -1281,7 +1283,16 @@ export function AuthProvider({
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
 
-  const [isHippoOpen, setIsHippoOpen] = useState(false)
+  const [isHippoOpen, setIsHippoOpenInternal] = useState<string | undefined>(
+    undefined,
+  )
+
+  const setIsHippoOpen = (value: string | undefined) => {
+    if (!value) {
+      setSelectedInstruction(null)
+    }
+    setIsHippoOpenInternal(value)
+  }
 
   const baseAppInternal = storeApps.find((item) => {
     if (!item) return false
@@ -2197,12 +2208,22 @@ export function AuthProvider({
   }, [storeAppsSwr, newApp, updatedApp, loadingAppId])
 
   const showFocusInitial = searchParams.get("focus") === "true"
+  const postIdInitial = getPostId(pathname)
+  const [postId, setPostId] = useState(postIdInitial)
+
+  useEffect(() => {
+    setPostId(postIdInitial)
+  }, [postIdInitial])
 
   const [showFocus, setShowFocusInternal] = useLocalStorage<
     boolean | undefined | null
   >(
     `showFocus:${app?.slug || "focus"}`,
-    baseApp ? baseApp?.slug === "focus" || showFocusInitial : undefined,
+    !postId
+      ? baseApp
+        ? baseApp?.slug === "focus" || showFocusInitial
+        : undefined
+      : false,
   )
 
   useEffect(() => {
@@ -2437,6 +2458,9 @@ export function AuthProvider({
     session?.stores,
   )
 
+  const [selectedInstruction, setSelectedInstruction] =
+    useState<instructionBase | null>(null)
+
   // Handle pathname changes: extract slug and switch app
 
   const hasHydratedInternal = useHasHydrated()
@@ -2538,14 +2562,6 @@ export function AuthProvider({
   useEffect(() => {
     setShowWatermelonInternal(showWatermelonInitial)
   }, [showWatermelonInitial])
-
-  const postIdInitial = getPostId(pathname)
-
-  const [postId, setPostId] = useState(postIdInitial)
-
-  useEffect(() => {
-    setPostId(postIdInitial)
-  }, [postIdInitial])
 
   // Only show tribe profile when on app's own page (not /tribe route)
 
@@ -3855,6 +3871,8 @@ export function AuthProvider({
         isE2E,
         PRO_PRICE,
         PLUS_PRICE,
+        selectedInstruction,
+        setSelectedInstruction,
         FREE_DAYS,
         ADDITIONAL_CREDITS,
         PROMPT_LIMITS,

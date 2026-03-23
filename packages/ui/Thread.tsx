@@ -29,8 +29,6 @@ import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 // This component includes timer, tasks, moods, and analytics - heavy dependencies
 const Focus = lazy(() => import("./Focus"))
 
-type ThreadWithLikeCount = thread & { likeCount: number }
-
 const Thread = ({
   isHome,
 }: {
@@ -66,6 +64,7 @@ const Thread = ({
     postId,
     wasPear,
     isPear,
+    isHippoOpen,
     setPear,
     ...auth
   } = useAuth()
@@ -143,10 +142,6 @@ const Thread = ({
   useThreadMetadata(thread)
 
   // Derived from thread
-
-  const slugPath = slug ? `${slug}/` : "/"
-
-  const iWillRemember = memoriesEnabled ? `, ${t("I will remember")} 💭` : ""
 
   const id = threadId
 
@@ -490,6 +485,9 @@ const Thread = ({
         )}
 
         <HipChat
+          dataTestId={
+            threadId && !isEmpty ? "thread-instruction" : "chat-instruction"
+          }
           hipchat={false}
           compactMode={showFocus || showTribe}
           showSuggestions={!showFocus && !showTribe}
@@ -509,12 +507,12 @@ const Thread = ({
     <Suspense fallback={<Loading fullScreen />}>
       <Focus>{render()}</Focus>
     </Suspense>
-  ) : showTribe ? (
-    <Tribe>{render()}</Tribe>
   ) : (
     <Skeleton>
-      <MemoryConsent />
-      {render()}
+      <Tribe>
+        {!showTribe && <MemoryConsent />}
+        {render()}
+      </Tribe>
     </Skeleton>
   )
 }

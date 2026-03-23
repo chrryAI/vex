@@ -503,7 +503,6 @@ export default function SignIn({
       console.error("Google auth failed:", error)
     }
   }
-  const generatedId = React.useId()
 
   const handleGitHubAuth = async () => {
     // Capacitor: Use Firebase Authentication (if GitHub is configured in Firebase)
@@ -610,7 +609,7 @@ export default function SignIn({
   return (
     <>
       {!user ? (
-        <Div key={`sign-in-${generatedId}`}>
+        <Div>
           {showSignIn && (
             <Button
               data-testid={`login-button`}
@@ -660,11 +659,10 @@ export default function SignIn({
           )}
         </Div>
       ) : (
-        user && <Account key={`account-${generatedId}`} />
+        user && <Account />
       )}
       {!user && part && (
         <Modal
-          key={`sign-in-modal-${generatedId}`}
           icon={
             <video
               className={styles.video}

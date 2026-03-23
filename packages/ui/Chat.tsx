@@ -134,7 +134,7 @@ export default function Chat({
   onTyping,
   style,
   requiresSignin,
-  key,
+  chatKey,
   hipchat = true,
 }: {
   requiresSignin?: boolean
@@ -145,7 +145,7 @@ export default function Chat({
   showGreeting?: boolean
   className?: string
   hipchat?: boolean
-  key?: string
+  chatKey?: string
   onToggleGame?: (on: boolean) => void
   disabled?: boolean
   onMessage?: (message: {
@@ -159,6 +159,7 @@ export default function Chat({
       aiAgent?: aiAgent
       thread?: thread
     }
+    hipchat?: boolean
     webSearchResults?: any[]
     isImageGenerationEnabled?: boolean
     isWebSearchEnabled?: boolean
@@ -169,12 +170,14 @@ export default function Chat({
     aiAgent,
     isWebSearchEnabled,
     isImageGenerationEnabled,
+    hipchat,
   }: {
     content: string
     clientId?: string
     aiAgent?: aiAgent
     isWebSearchEnabled?: boolean
     isImageGenerationEnabled?: boolean
+    hipchat?: boolean
   }) => void
   style?: React.CSSProperties
   onStreamingStop?: (
@@ -198,6 +201,7 @@ export default function Chat({
         user: user
       }[]
     }
+    hipchat?: boolean
   }) => void
   text?: string
   thread?: thread
@@ -1767,7 +1771,7 @@ export default function Chat({
     setIsLoading(true)
 
     // Scroll to bottom after sending message
-    scrollToBottom(100)
+    scrollToBottom(100, undefined, chatContainerRef.current)
 
     playNotification()
 
@@ -1776,7 +1780,6 @@ export default function Chat({
         duration: 6000,
       })
     }
-
     onMessage?.({
       content: userMessageText,
       isUser: true,
@@ -1793,6 +1796,7 @@ export default function Chat({
         user: user as user,
         guest: guest as guest,
       },
+      hipchat,
     })
 
     setIsLoading(true)
@@ -1881,7 +1885,6 @@ export default function Chat({
         headers: postRequestHeaders,
         body: postRequestBody,
       })
-      console.log("userResponse", `${API_URL}/messages`, app?.name)
 
       if (debateAgent) {
         toast.success(t("Let's debate!"))
@@ -1937,6 +1940,7 @@ export default function Chat({
           content: userMessageText,
           isUser: true,
           message: userMessage,
+          hipchat,
         })
 
         // Auto-advance daily questions AFTER message is sent
@@ -2046,12 +2050,10 @@ export default function Chat({
         isStreaming: true,
         isImageGenerationEnabled,
         isWebSearchEnabled,
+        hipchat,
       })
 
       setIsStreaming(true)
-
-      // const foo = false
-      // if (!foo) return
 
       const agentResponse = await apiFetch(`${API_URL}/ai`, {
         method: "POST",
@@ -2431,6 +2433,7 @@ export default function Chat({
             aiAgent: data.message?.aiAgent,
             isWebSearchEnabled,
             isImageGenerationEnabled,
+            hipchat,
           })
         }
       } else if (type === "stream_complete") {
@@ -2519,6 +2522,7 @@ export default function Chat({
                 (agent) => agent.id === data.message?.message.debateAgentId,
               ),
             },
+            hipchat,
             isStreaming: true,
             isImageGenerationEnabled: data?.isImageGenerationEnabled,
             isWebSearchEnabled: data?.isWebSearchEnabled,
@@ -2579,6 +2583,7 @@ export default function Chat({
           message: data.message,
           isImageGenerationEnabled: data?.isImageGenerationEnabled,
           isWebSearchEnabled: data?.isWebSearchEnabled,
+          hipchat,
         })
 
         data.message.message.selectedAgentId &&
@@ -2595,6 +2600,7 @@ export default function Chat({
             isStreaming: true,
             isImageGenerationEnabled: data?.isImageGenerationEnabled,
             isWebSearchEnabled: data?.isWebSearchEnabled,
+            hipchat,
           })
       }
     },
@@ -2922,7 +2928,7 @@ export default function Chat({
   // Function to show chat input and scroll to bottom
   const showInputAndScrollToBottom = () => {
     addHapticFeedback()
-    scrollToBottom(500, true)
+    scrollToBottom(500, true, chatContainerRef.current)
   }
 
   const [shouldSubmit, setShouldSubmit] = useState(false)
@@ -2938,8 +2944,6 @@ export default function Chat({
       setAttempt(undefined)
     }
   }, [shouldSubmit, selectedAgent, attempt, debateAgent])
-
-  const generatedId = React.useId()
 
   const renderSubmit = () => {
     return (
@@ -3102,7 +3106,7 @@ export default function Chat({
   }
 
   return (
-    <Div key={`chat-${key || generatedId}`}>
+    <Div key={chatKey}>
       {isAgentModalOpen && (
         <Modal
           dataTestId="agent-modal"
@@ -5027,8 +5031,8 @@ export default function Chat({
                       <Link size={15} />
                       {t("Privacy")}
                     </A>
-                  ) : !isSelectingMood && isDevelopment && !hipchat ? (
-                    <Hippo size={24} />
+                  ) : !isSelectingMood && isDevelopment && user && !hipchat ? (
+                    <Hippo dataTestId="chat" size={24} />
                   ) : (
                     <Button
                       data-testid="attach-button"
