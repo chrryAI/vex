@@ -308,12 +308,10 @@ export default function Account({
   const [inputKey, setInputKey] = React.useState(0) // Force re-render
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
-  const generatedId = React.useId()
-
   return (
     <>
       <Button
-        key={`account-button-${key || generatedId}`}
+        key={`account-button-${key}`}
         data-testid={dataTestId || "account-button"}
         className="transparent"
         style={{
@@ -339,7 +337,6 @@ export default function Account({
         {t("Account")}
       </Button>
       <Modal
-        key={`account-modal-${key || generatedId}`}
         data-testid={`account-modal`}
         params={`?account=true&from=${from}`}
         hideOnClickOutside={false}

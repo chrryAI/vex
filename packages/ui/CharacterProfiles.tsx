@@ -1,5 +1,6 @@
 "use client"
-import React, { useEffect, useState } from "react"
+import type React from "react"
+import { useEffect, useState } from "react"
 import A from "./a/A"
 import CharacterProfile from "./CharacterProfile"
 import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
@@ -44,12 +45,11 @@ export default function CharacterProfiles({
   }, [showCharacterProfiles])
 
   const styles = useCharacterProfilesStyles()
-  const generatedId = React.useId()
 
   if (burn) return null
 
   return (
-    <Div key={`character-profiles-${key || generatedId}`} style={style}>
+    <Div key={`character-profiles-${key}`} style={style}>
       <Button
         title={t("Character Profile")}
         className={"link pulse"}

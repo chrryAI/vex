@@ -1,10 +1,11 @@
 "use client"
 
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import type React from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import Bookmark from "./Bookmark"
 import Chat from "./Chat"
 import CollaborationStatus from "./CollaborationStatus"
-import { useAppContext } from "./context/AppContext"
+import { COLORS, useAppContext } from "./context/AppContext"
 import {
   useApp,
   useAuth,
@@ -31,6 +32,7 @@ import {
   H2,
   Input,
   Span,
+  toast,
   usePlatform,
   useTheme,
 } from "./platform"
@@ -48,6 +50,7 @@ const HipChat = ({
   showSuggestions = false,
   messagesStyle,
   hipchat = true,
+  dataTestId,
   style,
 }: {
   showMessages?: boolean
@@ -56,6 +59,7 @@ const HipChat = ({
   messagesStyle?: React.CSSProperties
   hipchat?: boolean
   style?: React.CSSProperties
+  dataTestId?: string
 }) => {
   // Initialize unified styles hook
   const styles = useThreadStyles()
@@ -87,6 +91,8 @@ const HipChat = ({
     isHippoOpen,
     ...auth
   } = useAuth()
+
+  const defaultHip = isHippoOpen && !hipchat
 
   const threadId = auth.threadId || threadIdRef.current
 
@@ -148,7 +154,7 @@ const HipChat = ({
 
   const { appStatus, appFormWatcher, suggestSaveApp } = useApp()
 
-  const { addHapticFeedback } = useTheme()
+  const { addHapticFeedback, colorScheme } = useTheme()
 
   // Update thread metadata dynamically
   useThreadMetadata(thread)
@@ -556,7 +562,7 @@ const HipChat = ({
       isWebSearchEnabled?: boolean
       isImageGenerationEnabled?: boolean
     }) => {
-      if (isHippoOpen && !hipchat) {
+      if (defaultHip) {
         return
       }
       scrollToBottom()
@@ -665,14 +671,335 @@ const HipChat = ({
       resetScrollState,
       isUserScrolling,
       hasStoppedScrolling,
+      defaultHip,
     ],
   )
-  const generatedId = React.useId()
+
+  const renderChat = () => {
+    return (
+      <>
+        {(!isVisitor || collaborator) && (
+          <Div>
+            {/* Typing indicator for collaborative threads */}
+            {thread?.placeHolder && (
+              <Input data-testid="thread-placeholder" type="hidden" />
+            )}
+            <Div>
+              {hipchat && (
+                <Div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    padding: "10px 0 5px 0",
+                    borderTop: "1px dashed var(--accent-3)",
+                    borderColor:
+                      COLORS[colorScheme as keyof typeof COLORS] || COLORS.blue,
+                  }}
+                >
+                  {getTop()}
+                </Div>
+              )}
+            </Div>
+          </Div>
+        )}
+        <Chat
+          key={`${dataTestId}-chat`}
+          hipchat={hipchat}
+          requiresSignin={isVisitor && !activeCollaborator && !user}
+          compactMode={compactMode}
+          onTyping={notifyTyping}
+          disabled={isPendingCollaboration}
+          placeholder={
+            appFormPlaceholder
+              ? appFormPlaceholder
+              : appStatus?.part
+                ? `${t("Ask anything, I will explain")} 💭`
+                : debateAgent && selectedAgent
+                  ? t(
+                      "Start the {{selectedAgent}} vs {{debateAgent}} debate...",
+                      {
+                        selectedAgent: selectedAgent.displayName,
+                        debateAgent: debateAgent.displayName,
+                      },
+                    )
+                  : isPendingCollaboration
+                    ? t("Accept collaboration to continue")
+                    : selectedAgent === null
+                      ? thread?.collaborations &&
+                        thread?.collaborations?.length > 0
+                        ? t(
+                            "Chatting with your team. Invite AI to conversation...",
+                          )
+                        : t("Message yourself...")
+                      : collaborator
+                        ? t("Add AI to conversation...")
+                        : (t(placeHolderText || "") ??
+                          (selectedAgent?.capabilities.imageGeneration
+                            ? t("Describe anything...")
+                            : isWebSearchEnabled
+                              ? `${t("Search anything")}${iWillRemember}`
+                              : `${t("Ask anything")}${iWillRemember}`))
+          }
+          thread={thread}
+          showSuggestions={
+            !defaultHip &&
+            showSuggestions &&
+            !isLoading &&
+            messages.length === 0
+          }
+          onToggleGame={(on) => setIsGame(on)}
+          showGreeting={isEmpty}
+          onStreamingStop={async (message) => {
+            if (defaultHip) {
+              return
+            }
+            message?.message?.clientId &&
+              setMessages((prev) => {
+                return prev.map((m) =>
+                  m.message.id === message?.message?.clientId
+                    ? {
+                        ...m,
+                        message: {
+                          ...m.message,
+                          isStreamingStop: true,
+                          isStreaming: false,
+                        },
+                      }
+                    : m,
+                )
+              })
+          }}
+          onMessage={(msg) => {
+            if (defaultHip) {
+              return
+            }
+            if (msg.isUser && msg.message) {
+              console.log("✅ Adding user message to state")
+              scrollToBottom(500, true)
+              resetScrollState()
+              shouldStopAutoScrollRef.current = false // Reset auto-scroll for new response
+
+              if (
+                !msg.message.message.selectedAgentId &&
+                isOwner(msg.message.message, {
+                  userId: user?.id,
+                  guestId: guest?.id,
+                }) &&
+                msg.message.message.threadId &&
+                !defaultHip
+              ) {
+                if (!threadId) {
+                  if (typeof window !== "undefined") {
+                    window.history.pushState(
+                      {},
+                      "",
+                      `/threads/${msg.message.message.threadId}`,
+                    )
+                  }
+                  setIsNewChat({
+                    value: false,
+                  })
+                }
+              }
+              setMessages((prev) => {
+                const existingIndex = prev.findIndex(
+                  (m) => m.message.clientId === msg.message?.message?.clientId,
+                )
+
+                const newMessage = {
+                  message: msg.message?.message!,
+                  aiAgent: undefined,
+                  user: msg.message?.user ?? user ?? undefined,
+                  guest: msg.message?.guest ?? guest ?? undefined,
+                  thread: msg.message?.thread ?? thread ?? undefined,
+                }
+
+                if (existingIndex >= 0) {
+                  const updated = [...prev]
+                  updated[existingIndex] = newMessage
+                  return updated
+                }
+
+                const newMessages = [newMessage, ...prev]
+                console.log(
+                  "📝 Updated messages state:",
+                  newMessages.length,
+                  "messages",
+                  "Added:",
+                  newMessage.message.id,
+                )
+                return newMessages
+              })
+            } else if (msg.message) {
+              console.log("🤖 Adding AI message to state", {
+                messageId: msg.message?.message?.id,
+                content: msg.content,
+              })
+              setMessages((prev) => {
+                const messageId = msg.message?.message?.id
+                if (!messageId) return prev
+                const existingIndex = prev.findIndex(
+                  (m) => m.message.id === messageId,
+                )
+
+                const newMessage = {
+                  message: {
+                    id: msg.message?.message?.id!,
+                    type: "chat" as const, // Regular chat message
+                    content: msg.content,
+                    createdOn: msg?.message?.message?.createdOn!,
+                    updatedOn: msg?.message?.message?.updatedOn!,
+                    agentId:
+                      msg?.message?.message?.agentId ||
+                      msg?.message?.message?.selectedAgentId ||
+                      null,
+                    agentVersion: selectedAgent?.version || null,
+                    threadId: "",
+                    readOn: msg?.message?.message?.createdOn!,
+                    userId: user?.id || null,
+                    guestId: guest?.id || null,
+                    searchContext: msg?.message?.message?.searchContext!,
+                    webSearchResult: msg?.message?.message?.webSearchResult!,
+                    metadata: msg?.message?.message?.metadata!,
+                    originalContent: msg.content,
+                    images: msg?.message?.message?.images!,
+                    files: msg?.message?.message?.files!,
+                    isWebSearchEnabled: msg?.isWebSearchEnabled!,
+                    isImageGenerationEnabled: msg?.isImageGenerationEnabled!,
+                    isStreaming: true,
+                    reasoning: msg?.message?.message?.reasoning!,
+                    like: null,
+                    dislike: null,
+                    creditCost: selectedAgent?.creditCost || 1,
+                    task: msg?.message?.message?.task!,
+                    reactions: msg?.message?.message?.reactions!,
+                    clientId: msg.message?.message?.clientId!,
+                    audio: msg?.message?.message?.audio!,
+                    video: msg?.message?.message?.video!,
+                    selectedAgentId: msg.message?.message?.selectedAgentId!,
+                    debateAgentId: msg.message?.message?.debateAgentId!,
+                    pauseDebate: msg.message?.message?.pauseDebate!,
+                  },
+                  aiAgent: msg?.message?.aiAgent! || selectedAgent,
+                  thread: thread,
+                }
+
+                if (existingIndex >= 0) {
+                  const updated = [...prev]
+                  updated[existingIndex] = newMessage
+                  return updated
+                }
+
+                return [...prev, newMessage]
+              })
+            }
+          }}
+          onStreamingUpdate={(payload) => {
+            if (defaultHip) {
+              return
+            }
+            if (payload.hipchat && !hipchat) {
+              return
+            }
+            handleStreamingUpdate(payload)
+          }}
+          onStreamingComplete={(message?: {
+            message: message
+            user?: user
+            guest?: guest
+            aiAgent?: aiAgent
+            thread?: thread
+            hipchat?: boolean
+          }) => {
+            if (message?.hipchat && !hipchat) {
+              return
+            }
+            if (defaultHip) {
+              return
+            }
+            console.log("🤖 onStreamingComplete", {
+              messageId: message?.message?.id,
+              content: message?.message?.content,
+            })
+            if (!message?.aiAgent?.id && !message?.message.agentId) return
+
+            if (
+              isOwner(message.message, {
+                userId: user?.id,
+                guestId: guest?.id,
+              })
+            ) {
+              setShouldGetCredits(true)
+            }
+
+            plausible({
+              name: ANALYTICS_EVENTS.THREAD_MESSAGE_AGENT,
+              props: {
+                isStreaming: false,
+                agentId: selectedAgent?.id,
+                agentName: selectedAgent?.name,
+                agentVersion: selectedAgent?.version,
+              },
+            })
+
+            message?.thread &&
+              setThread({
+                ...message.thread,
+              })
+
+            // Mark last AI message as not streaming
+            message &&
+              setMessages((prev) =>
+                prev.map((m, i) => {
+                  if (m.message.id === message.message.id) {
+                    if (m.message.isStreamingStop) {
+                      return {
+                        ...m,
+                      }
+                    }
+
+                    return {
+                      ...m,
+                      message: {
+                        ...m.message,
+                        ...message.message,
+                        id: m.message.id,
+                        isStreaming: false,
+                      },
+                    }
+                  }
+                  return m
+                }),
+              )
+
+            if (!burn && !id && message?.message.threadId && !defaultHip) {
+              requestAnimationFrame(() => {
+                const navigationOptions = {
+                  state: { preservedThread: thread } as {
+                    preservedThread?: ThreadWithLikeCount
+                  },
+                }
+
+                // setIsNewChat(false)
+                // Update URL without triggering route change
+                if (typeof window !== "undefined") {
+                  window.history.pushState(
+                    navigationOptions.state,
+                    "",
+                    `/threads/${message.message.threadId}`,
+                  )
+                }
+              })
+            }
+          }}
+        />
+      </>
+    )
+  }
 
   const render = () => {
     return (
       <Div
-        key={generatedId}
         style={{
           display: hipchat ? "flex" : "block",
           flexDirection: "column",
@@ -831,314 +1158,9 @@ const HipChat = ({
                 nextPage={nextPage}
               />
             )}
-            {(!isVisitor || collaborator) && (
-              <Div>
-                {/* Typing indicator for collaborative threads */}
-                {thread?.placeHolder && (
-                  <Input data-testid="thread-placeholder" type="hidden" />
-                )}
-                <Div style={{}}>
-                  {hipchat && (
-                    <Div
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        margin: "10px 0",
-                      }}
-                    >
-                      {getTop()}
-                    </Div>
-                  )}
-                  <Chat
-                    hipchat={hipchat}
-                    requiresSignin={isVisitor && !activeCollaborator && !user}
-                    compactMode={compactMode}
-                    onTyping={notifyTyping}
-                    disabled={isPendingCollaboration}
-                    placeholder={
-                      appFormPlaceholder
-                        ? appFormPlaceholder
-                        : appStatus?.part
-                          ? `${t("Ask anything, I will explain")} 💭`
-                          : debateAgent && selectedAgent
-                            ? t(
-                                "Start the {{selectedAgent}} vs {{debateAgent}} debate...",
-                                {
-                                  selectedAgent: selectedAgent.displayName,
-                                  debateAgent: debateAgent.displayName,
-                                },
-                              )
-                            : isPendingCollaboration
-                              ? t("Accept collaboration to continue")
-                              : selectedAgent === null
-                                ? thread?.collaborations &&
-                                  thread?.collaborations?.length > 0
-                                  ? t(
-                                      "Chatting with your team. Invite AI to conversation...",
-                                    )
-                                  : t("Message yourself...")
-                                : collaborator
-                                  ? t("Add AI to conversation...")
-                                  : (t(placeHolderText || "") ??
-                                    (selectedAgent?.capabilities.imageGeneration
-                                      ? t("Describe anything...")
-                                      : isWebSearchEnabled
-                                        ? `${t("Search anything")}${iWillRemember}`
-                                        : `${t("Ask anything")}${iWillRemember}`))
-                    }
-                    thread={thread}
-                    showSuggestions={
-                      showSuggestions && !isLoading && messages.length === 0
-                    }
-                    onToggleGame={(on) => setIsGame(on)}
-                    showGreeting={isEmpty}
-                    onStreamingStop={async (message) => {
-                      message?.message?.clientId &&
-                        setMessages((prev) => {
-                          return prev.map((m) =>
-                            m.message.id === message?.message?.clientId
-                              ? {
-                                  ...m,
-                                  message: {
-                                    ...m.message,
-                                    isStreamingStop: true,
-                                    isStreaming: false,
-                                  },
-                                }
-                              : m,
-                          )
-                        })
-                    }}
-                    onMessage={(msg) => {
-                      if (isHippoOpen && !hipchat) {
-                        return
-                      }
-                      if (msg.isUser && msg.message) {
-                        console.log("✅ Adding user message to state")
-                        scrollToBottom(500, true)
-                        resetScrollState()
-                        shouldStopAutoScrollRef.current = false // Reset auto-scroll for new response
-
-                        if (
-                          !msg.message.message.selectedAgentId &&
-                          isOwner(msg.message.message, {
-                            userId: user?.id,
-                            guestId: guest?.id,
-                          }) &&
-                          msg.message.message.threadId &&
-                          !hipchat
-                        ) {
-                          if (!threadId) {
-                            if (typeof window !== "undefined") {
-                              window.history.pushState(
-                                {},
-                                "",
-                                `/threads/${msg.message.message.threadId}`,
-                              )
-                            }
-                            setIsNewChat({
-                              value: false,
-                            })
-                          }
-                        }
-                        setMessages((prev) => {
-                          const existingIndex = prev.findIndex(
-                            (m) =>
-                              m.message.clientId ===
-                              msg.message?.message?.clientId,
-                          )
-
-                          const newMessage = {
-                            message: msg.message?.message!,
-                            aiAgent: undefined,
-                            user: msg.message?.user ?? user ?? undefined,
-                            guest: msg.message?.guest ?? guest ?? undefined,
-                            thread: msg.message?.thread ?? thread ?? undefined,
-                          }
-
-                          if (existingIndex >= 0) {
-                            const updated = [...prev]
-                            updated[existingIndex] = newMessage
-                            return updated
-                          }
-
-                          const newMessages = [newMessage, ...prev]
-                          console.log(
-                            "📝 Updated messages state:",
-                            newMessages.length,
-                            "messages",
-                            "Added:",
-                            newMessage.message.id,
-                          )
-                          return newMessages
-                        })
-                      } else if (msg.message) {
-                        console.log("🤖 Adding AI message to state", {
-                          messageId: msg.message?.message?.id,
-                          content: msg.content,
-                        })
-                        setMessages((prev) => {
-                          const messageId = msg.message?.message?.id
-                          if (!messageId) return prev
-                          const existingIndex = prev.findIndex(
-                            (m) => m.message.id === messageId,
-                          )
-
-                          const newMessage = {
-                            message: {
-                              id: msg.message?.message?.id!,
-                              type: "chat" as const, // Regular chat message
-                              content: msg.content,
-                              createdOn: msg?.message?.message?.createdOn!,
-                              updatedOn: msg?.message?.message?.updatedOn!,
-                              agentId:
-                                msg?.message?.message?.agentId ||
-                                msg?.message?.message?.selectedAgentId ||
-                                null,
-                              agentVersion: selectedAgent?.version || null,
-                              threadId: "",
-                              readOn: msg?.message?.message?.createdOn!,
-                              userId: user?.id || null,
-                              guestId: guest?.id || null,
-                              searchContext:
-                                msg?.message?.message?.searchContext!,
-                              webSearchResult:
-                                msg?.message?.message?.webSearchResult!,
-                              metadata: msg?.message?.message?.metadata!,
-                              originalContent: msg.content,
-                              images: msg?.message?.message?.images!,
-                              files: msg?.message?.message?.files!,
-                              isWebSearchEnabled: msg?.isWebSearchEnabled!,
-                              isImageGenerationEnabled:
-                                msg?.isImageGenerationEnabled!,
-                              isStreaming: true,
-                              reasoning: msg?.message?.message?.reasoning!,
-                              like: null,
-                              dislike: null,
-                              creditCost: selectedAgent?.creditCost || 1,
-                              task: msg?.message?.message?.task!,
-                              reactions: msg?.message?.message?.reactions!,
-                              clientId: msg.message?.message?.clientId!,
-                              audio: msg?.message?.message?.audio!,
-                              video: msg?.message?.message?.video!,
-                              selectedAgentId:
-                                msg.message?.message?.selectedAgentId!,
-                              debateAgentId:
-                                msg.message?.message?.debateAgentId!,
-                              pauseDebate: msg.message?.message?.pauseDebate!,
-                            },
-                            aiAgent: msg?.message?.aiAgent! || selectedAgent,
-                            thread: thread,
-                          }
-
-                          if (existingIndex >= 0) {
-                            const updated = [...prev]
-                            updated[existingIndex] = newMessage
-                            return updated
-                          }
-
-                          return [...prev, newMessage]
-                        })
-                      }
-                    }}
-                    onStreamingUpdate={handleStreamingUpdate}
-                    onStreamingComplete={(message?: {
-                      message: message
-                      user?: user
-                      guest?: guest
-                      aiAgent?: aiAgent
-                      thread?: thread
-                    }) => {
-                      if (isHippoOpen && !hipchat) {
-                        return
-                      }
-                      console.log("🤖 onStreamingComplete", {
-                        messageId: message?.message?.id,
-                        content: message?.message?.content,
-                      })
-                      if (!message?.aiAgent?.id && !message?.message.agentId)
-                        return
-
-                      if (
-                        isOwner(message.message, {
-                          userId: user?.id,
-                          guestId: guest?.id,
-                        })
-                      ) {
-                        setShouldGetCredits(true)
-                      }
-
-                      plausible({
-                        name: ANALYTICS_EVENTS.THREAD_MESSAGE_AGENT,
-                        props: {
-                          isStreaming: false,
-                          agentId: selectedAgent?.id,
-                          agentName: selectedAgent?.name,
-                          agentVersion: selectedAgent?.version,
-                        },
-                      })
-
-                      message?.thread &&
-                        setThread({
-                          ...message.thread,
-                        })
-
-                      // Mark last AI message as not streaming
-                      message &&
-                        setMessages((prev) =>
-                          prev.map((m, i) => {
-                            if (m.message.id === message.message.id) {
-                              if (m.message.isStreamingStop) {
-                                return {
-                                  ...m,
-                                }
-                              }
-
-                              return {
-                                ...m,
-                                message: {
-                                  ...m.message,
-                                  ...message.message,
-                                  id: m.message.id,
-                                  isStreaming: false,
-                                },
-                              }
-                            }
-                            return m
-                          }),
-                        )
-
-                      if (
-                        !burn &&
-                        !id &&
-                        message?.message.threadId &&
-                        !hipchat
-                      ) {
-                        requestAnimationFrame(() => {
-                          const navigationOptions = {
-                            state: { preservedThread: thread } as {
-                              preservedThread?: ThreadWithLikeCount
-                            },
-                          }
-
-                          // setIsNewChat(false)
-                          // Update URL without triggering route change
-                          if (typeof window !== "undefined") {
-                            window.history.pushState(
-                              navigationOptions.state,
-                              "",
-                              `/threads/${message.message.threadId}`,
-                            )
-                          }
-                        })
-                      }
-                    }}
-                  />
-                </Div>
-              </Div>
-            )}
           </Div>
         )}
+        {renderChat()}
       </Div>
     )
   }

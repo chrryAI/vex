@@ -109,11 +109,7 @@ export default function Menu({
     pathname,
   } = useNavigationContext()
 
-  const showTribeLink =
-    (auth.showTribeProfile &&
-      !auth.postId &&
-      (pathname === "/" ? !siteConfig.isTribe : true)) ||
-    auth.threadIdRef.current
+  const showTribeLink = auth.showTribeProfile || auth.threadIdRef.current
 
   const { app } = useApp()
 
@@ -387,11 +383,6 @@ export default function Menu({
                         return
                       }
                       e.preventDefault()
-
-                      setShowFocus(false)
-
-                      toggleMenuIfSmallDevice()
-
                       if (showTribeLink) {
                         setIsNewChat({
                           value: true,
@@ -404,7 +395,8 @@ export default function Menu({
                           tribe: true,
                         })
                       }
-                      reload()
+                      // reload()
+                      toggleMenuIfSmallDevice()
                     }}
                   >
                     <Img
