@@ -5031,7 +5031,7 @@ export default function Chat({
                       <Link size={15} />
                       {t("Privacy")}
                     </A>
-                  ) : !isSelectingMood && isDevelopment && !hipchat ? (
+                  ) : !isSelectingMood && isDevelopment && user && !hipchat ? (
                     <Hippo dataTestId="chat" size={24} />
                   ) : (
                     <Button

@@ -2208,12 +2208,22 @@ export function AuthProvider({
   }, [storeAppsSwr, newApp, updatedApp, loadingAppId])
 
   const showFocusInitial = searchParams.get("focus") === "true"
+  const postIdInitial = getPostId(pathname)
+  const [postId, setPostId] = useState(postIdInitial)
+
+  useEffect(() => {
+    setPostId(postIdInitial)
+  }, [postIdInitial])
 
   const [showFocus, setShowFocusInternal] = useLocalStorage<
     boolean | undefined | null
   >(
     `showFocus:${app?.slug || "focus"}`,
-    baseApp ? baseApp?.slug === "focus" || showFocusInitial : undefined,
+    !postId
+      ? baseApp
+        ? baseApp?.slug === "focus" || showFocusInitial
+        : undefined
+      : false,
   )
 
   useEffect(() => {
@@ -2552,14 +2562,6 @@ export function AuthProvider({
   useEffect(() => {
     setShowWatermelonInternal(showWatermelonInitial)
   }, [showWatermelonInitial])
-
-  const postIdInitial = getPostId(pathname)
-
-  const [postId, setPostId] = useState(postIdInitial)
-
-  useEffect(() => {
-    setPostId(postIdInitial)
-  }, [postIdInitial])
 
   // Only show tribe profile when on app's own page (not /tribe route)
 
