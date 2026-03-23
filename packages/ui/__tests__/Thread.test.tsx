@@ -117,8 +117,10 @@ vi.mock("../Messages", () => ({
     onToggleLike,
     onPlayAudio,
     onCharacterProfileUpdate,
+    Top,
   }: any) => (
     <div data-testid="messages-list">
+      {Top}
       <button
         type="button"
         data-testid="trigger-delete"
@@ -220,7 +222,7 @@ describe("Thread", () => {
     })
 
     const instructions = container.querySelector(
-      "[data-testid='thread-instruction']",
+      "[data-testid='chat-instruction']",
     )
     expect(instructions).toBeTruthy()
 
