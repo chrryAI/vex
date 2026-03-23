@@ -1,9 +1,6 @@
 "use client"
 
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
-import Bookmark from "./Bookmark"
-import Chat from "./Chat"
-import CollaborationStatus from "./CollaborationStatus"
 import { useAppContext } from "./context/AppContext"
 import {
   useApp,
@@ -12,51 +9,20 @@ import {
   useNavigationContext,
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
-import DeleteThread from "./DeleteThread"
-import EditThread from "./EditThread"
-import EnableSound from "./EnableSound"
-import Grapes from "./Grapes"
 import HipChat from "./HipChat"
-import Hippo from "./Hippo"
 import { useHasHydrated, useThreadMetadata } from "./hooks"
 import { useThreadPresence } from "./hooks/useThreadPresence"
 import { useUserScroll } from "./hooks/useUserScroll"
-import Img from "./Image"
-import {
-  CircleX,
-  Clock,
-  ClockPlus,
-  InfoIcon,
-  ThumbsUp,
-  WannathisIcon,
-} from "./icons"
+import { WannathisIcon } from "./icons"
 import Loading from "./Loading"
 import MemoryConsent from "./MemoryConsent"
-import Messages from "./Messages"
-import {
-  A,
-  Button,
-  Div,
-  H2,
-  Input,
-  Span,
-  usePlatform,
-  useTheme,
-} from "./platform"
-import Share from "./Share"
+import { A, Div, Span, usePlatform, useTheme } from "./platform"
 import Skeleton from "./Skeleton"
 import { BREAKPOINTS } from "./styles/breakpoints"
 import { useThreadStyles } from "./Thread.styles"
 import Tribe from "./Tribe"
-import type {
-  aiAgent,
-  guest,
-  message,
-  paginatedMessages,
-  thread,
-  user,
-} from "./types"
-import { FRONTEND_URL, isCollaborator, isE2E, isOwner } from "./utils"
+import type { aiAgent, paginatedMessages, thread } from "./types"
+import { isCollaborator, isE2E, isOwner } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 // Lazy load Focus only on web (not extension) to reduce bundle size
@@ -473,18 +439,21 @@ const Thread = ({
           // paddingBottom: 195,
           // paddingLeft: isMobileDevice ? 0 : 10,
           ...styles.thread.style,
-          ...(isEmpty &&
-            !threadId &&
-            hasHydrated && {
-              ...styles.threadEmpty.style,
-              zIndex: 10,
-              paddingBottom:
-                minimize && !showFocus && !showTribe
-                  ? 30
-                  : isStandalone
-                    ? 200
-                    : 195,
-            }),
+          ...(isEmpty
+            ? !threadId &&
+              hasHydrated && {
+                ...styles.threadEmpty.style,
+                zIndex: 10,
+                paddingBottom:
+                  minimize && !showFocus && !showTribe
+                    ? 30
+                    : isStandalone
+                      ? 200
+                      : 195,
+              }
+            : {
+                paddingBottom: threadId ? 165 : undefined,
+              }),
           ...{
             position: "relative",
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
@@ -520,7 +489,15 @@ const Thread = ({
           </A>
         )}
 
-        <HipChat />
+        <HipChat
+          hipchat={false}
+          compactMode={showFocus || showTribe}
+          showSuggestions={!showFocus && !showTribe}
+          showMessages={!showFocus && !showTribe}
+          messagesStyle={{
+            margin: "0 -10px",
+          }}
+        />
       </Div>
     )
   }

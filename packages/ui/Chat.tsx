@@ -1,7 +1,8 @@
 "use client"
+
 import clsx from "clsx"
 import nProgress from "nprogress"
-import {
+import React, {
   type Dispatch,
   type SetStateAction,
   useCallback,
@@ -133,6 +134,8 @@ export default function Chat({
   onTyping,
   style,
   requiresSignin,
+  key,
+  hipchat = true,
 }: {
   requiresSignin?: boolean
   compactMode?: boolean
@@ -141,6 +144,8 @@ export default function Chat({
   showSuggestions?: boolean
   showGreeting?: boolean
   className?: string
+  hipchat?: boolean
+  key?: string
   onToggleGame?: (on: boolean) => void
   disabled?: boolean
   onMessage?: (message: {
@@ -406,10 +411,12 @@ export default function Chat({
   const {
     addHapticFeedback,
     playNotification,
-    isDrawerOpen,
     isSmallDevice,
     isMobileDevice,
+    ...theme
   } = useTheme()
+
+  const isDrawerOpen = theme.isDrawerOpen && !hipchat
 
   const canShowLinks =
     !showTribe && canShowTribe && empty && app && !appStatus?.part
@@ -2915,7 +2922,7 @@ export default function Chat({
   // Function to show chat input and scroll to bottom
   const showInputAndScrollToBottom = () => {
     addHapticFeedback()
-    scrollToBottom()
+    scrollToBottom(500, true)
   }
 
   const [shouldSubmit, setShouldSubmit] = useState(false)
@@ -2931,6 +2938,8 @@ export default function Chat({
       setAttempt(undefined)
     }
   }, [shouldSubmit, selectedAgent, attempt, debateAgent])
+
+  const generatedId = React.useId()
 
   const renderSubmit = () => {
     return (
@@ -3093,7 +3102,7 @@ export default function Chat({
   }
 
   return (
-    <>
+    <Div key={`chat-${key || generatedId}`}>
       {isAgentModalOpen && (
         <Modal
           dataTestId="agent-modal"
@@ -3495,8 +3504,10 @@ export default function Chat({
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         style={{
-          ...styles.chatContainerWrapper.style,
-          // ...(rtl ? { ...styles.right.style } : { ...styles.left.style }),
+          ...{
+            ...styles.chatContainerWrapper.style,
+            position: !hipchat ? "fixed" : "relative",
+          },
           ...style,
           ...(isDrawerOpen &&
             !isSmallDevice && {
@@ -3927,6 +3938,7 @@ export default function Chat({
                       style={{
                         ...styles.scrollDownButton.style,
                         ...utilities.link.style,
+                        marginBottom: "0.5rem",
                       }}
                       onClick={showInputAndScrollToBottom}
                       title={t("Scroll to bottom")}
@@ -5015,7 +5027,7 @@ export default function Chat({
                       <Link size={15} />
                       {t("Privacy")}
                     </A>
-                  ) : !isSelectingMood && isDevelopment ? (
+                  ) : !isSelectingMood && isDevelopment && !hipchat ? (
                     <Hippo size={24} />
                   ) : (
                     <Button
@@ -5260,6 +5272,6 @@ export default function Chat({
         }}
         apiUrl={API_URL}
       />
-    </>
+    </Div>
   )
 }

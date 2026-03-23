@@ -1,7 +1,5 @@
 "use client"
-
-import type React from "react"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import A from "./a/A"
 import CharacterProfile from "./CharacterProfile"
 import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
@@ -15,8 +13,10 @@ import Modal from "./Modal"
 import { Button, Div } from "./platform"
 
 export default function CharacterProfiles({
+  key,
   style,
 }: {
+  key?: string
   style?: React.CSSProperties
 }) {
   const { t } = useAppContext()
@@ -44,11 +44,12 @@ export default function CharacterProfiles({
   }, [showCharacterProfiles])
 
   const styles = useCharacterProfilesStyles()
+  const generatedId = React.useId()
 
   if (burn) return null
 
   return (
-    <Div style={style}>
+    <Div key={`character-profiles-${key || generatedId}`} style={style}>
       <Button
         title={t("Character Profile")}
         className={"link pulse"}

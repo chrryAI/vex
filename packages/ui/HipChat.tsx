@@ -1,6 +1,6 @@
 "use client"
 
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import Bookmark from "./Bookmark"
 import Chat from "./Chat"
 import CollaborationStatus from "./CollaborationStatus"
@@ -23,7 +23,6 @@ import { useUserScroll } from "./hooks/useUserScroll"
 import Img from "./Image"
 import { CircleX, Clock, ClockPlus, InfoIcon, ThumbsUp } from "./icons"
 import Loading from "./Loading"
-import MemoryConsent from "./MemoryConsent"
 import Messages from "./Messages"
 import {
   A,
@@ -36,28 +35,28 @@ import {
   useTheme,
 } from "./platform"
 import Share from "./Share"
-import Skeleton from "./Skeleton"
-import { BREAKPOINTS } from "./styles/breakpoints"
 import { useThreadStyles } from "./Thread.styles"
-import Tribe from "./Tribe"
-import type {
-  aiAgent,
-  guest,
-  message,
-  paginatedMessages,
-  thread,
-  user,
-} from "./types"
+import type { aiAgent, guest, message, thread, user } from "./types"
 import { FRONTEND_URL, isCollaborator, isE2E, isOwner } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
-// Lazy load Focus only on web (not extension) to reduce bundle size
-// This component includes timer, tasks, moods, and analytics - heavy dependencies
-const Focus = lazy(() => import("./Focus"))
-
 type ThreadWithLikeCount = thread & { likeCount: number }
 
-const HipChat = () => {
+const HipChat = ({
+  showMessages = true,
+  compactMode = true,
+  showSuggestions = false,
+  messagesStyle,
+  hipchat = true,
+  style,
+}: {
+  showMessages?: boolean
+  compactMode?: boolean
+  showSuggestions?: boolean
+  messagesStyle?: React.CSSProperties
+  hipchat?: boolean
+  style?: React.CSSProperties
+}) => {
   // Initialize unified styles hook
   const styles = useThreadStyles()
 
@@ -71,7 +70,6 @@ const HipChat = () => {
     plausible,
     threadIdRef,
     memoriesEnabled,
-    setShowFocus,
     grapes,
     app,
     baseApp,
@@ -86,6 +84,7 @@ const HipChat = () => {
     wasPear,
     isPear,
     setPear,
+    isHippoOpen,
     ...auth
   } = useAuth()
 
@@ -123,15 +122,7 @@ const HipChat = () => {
     ...chat
   } = useChat()
 
-  const showTribe = !!chat.showTribe
-
-  const hasHydrated = useHasHydrated()
-
-  const showFocus = auth.showFocus && isEmpty && hasHydrated
-
-  const { pathname } = useNavigationContext()
-
-  const { isIDE, isStandalone, viewPortWidth } = usePlatform()
+  const { isMobile: isMobileDevice } = usePlatform()
 
   // Navigation context
   const {
@@ -157,7 +148,7 @@ const HipChat = () => {
 
   const { appStatus, appFormWatcher, suggestSaveApp } = useApp()
 
-  const { addHapticFeedback, isMobileDevice, isSmallDevice } = useTheme()
+  const { addHapticFeedback } = useTheme()
 
   // Update thread metadata dynamically
   useThreadMetadata(thread)
@@ -270,6 +261,232 @@ const HipChat = () => {
     }
   }, [messages, autoSelectedAgent, debateAgent])
 
+  const getTop = () => {
+    return (
+      (thread || hipchat) && (
+        <Div style={styles.chatTop.style}>
+          {suggestSaveApp ? (
+            <A
+              href={`${FRONTEND_URL}/?step=add&part=title`}
+              title={t("Build your app")}
+              onClick={(e) => {
+                addHapticFeedback()
+
+                if (e.metaKey || e.ctrlKey) {
+                  return
+                }
+                e.preventDefault()
+
+                router.push(`${slugPath}?step=add&part=title`)
+              }}
+              className="button transparent"
+              style={{
+                ...utilities.button.style,
+                ...utilities.transparent.style,
+                ...utilities.xSmall.style,
+              }}
+            >
+              <Img
+                showLoading={false}
+                src={`${FRONTEND_URL}/icons/plus-128.png`}
+                alt="Calendar"
+                width={16}
+                height={16}
+              />
+            </A>
+          ) : (isRetro || user?.role === "admin") && isEmpty ? (
+            <>
+              <Button onClick={() => setIsRetro(false)} className="link">
+                <CircleX size={11} />
+              </Button>
+              <Button
+                data-testid="retro-button"
+                className="link"
+                style={{
+                  ...utilities.link.style,
+                }}
+                onClick={() => {
+                  if (isRetro) {
+                    // Advance to next question
+                    if (dailyQuestionData?.isLastQuestionOfSection) {
+                      advanceDailySection()
+                    } else {
+                      setDailyQuestionIndex(dailyQuestionIndex + 1)
+                    }
+                  } else {
+                    setIsRetro(true)
+                  }
+                }}
+              >
+                <Img size={16} app={app} />
+              </Button>
+            </>
+          ) : wasPear ? (
+            <Button
+              className="link"
+              style={{
+                ...utilities.link.style,
+                gap: 10,
+                fontSize: "0.85rem",
+                order: minimize ? -1 : 0,
+              }}
+              onClick={() => {
+                setPear(isPear ? undefined : app)
+              }}
+            >
+              {isPear && <CircleX size={14} />}
+              <Img slug={"pear"} size={18} />
+            </Button>
+          ) : grapes?.length ? (
+            <Grapes
+              style={{
+                ...utilities.button.style,
+                ...utilities.transparent.style,
+                ...utilities.xSmall.style,
+                padding: 0,
+                border: "none",
+                backgroundColor: "transparent",
+              }}
+            />
+          ) : (
+            <A
+              href={`${FRONTEND_URL}/calendar${threadId ? `?threadId=${threadId}` : ""}`}
+              title={t("Organize your life")}
+              onClick={(e) => {
+                addHapticFeedback()
+
+                if (e.metaKey || e.ctrlKey) {
+                  return
+                }
+                e.preventDefault()
+
+                goToCalendar()
+              }}
+              className="button transparent"
+              style={{
+                ...utilities.button.style,
+                ...utilities.transparent.style,
+                ...utilities.xSmall.style,
+              }}
+            >
+              <Img
+                showLoading={false}
+                src={`${FRONTEND_URL}/icons/calendar-128.png`}
+                alt="Calendar"
+                width={16}
+                height={16}
+              />
+            </A>
+          )}
+          {!hipchat && (
+            <Hippo dataTestId="chat-instruction" icon thread={thread} />
+          )}
+          <EnableSound />
+          {thread && (
+            <Bookmark
+              size={16}
+              dataTestId="thread"
+              onSave={async () => {
+                refetchThreads()
+              }}
+              thread={thread}
+            ></Bookmark>
+          )}
+          <Button
+            data-testid={`${liked ? "unfilter" : "filter"}-liked-button`}
+            className={"link"}
+            onClick={() => {
+              addHapticFeedback()
+              setLiked(!liked)
+            }}
+            style={{
+              ...utilities.xSmall.style,
+              padding: 0,
+            }}
+          >
+            {liked ? (
+              <ThumbsUp color="var(--accent-1)" size={16} />
+            ) : (
+              <ThumbsUp color="var(--shade-3)" size={16} />
+            )}
+          </Button>
+
+          {!isVisitor && thread && (
+            <Share
+              dataTestId="chat"
+              onCollaborationChange={() => {
+                setCollaborationVersion((v) => v + 1)
+                refetch()
+              }}
+              onChangeVisibility={(visibility) =>
+                setThread({ ...thread, visibility })
+              }
+              size={16}
+              thread={thread}
+            />
+          )}
+
+          <Span
+            data-testid="hourly-limit-info"
+            data-hourly-left={hourlyUsageLeft}
+            style={styles.hourlyLimit.style}
+          >
+            {!user?.subscription || !guest?.subscription ? (
+              <Button
+                className="link"
+                onClick={() => {
+                  addHapticFeedback()
+                  if (guest) {
+                    addParams({
+                      subscribe: "true",
+                      plan: "member",
+                    })
+                    return
+                  }
+                  addParams({
+                    subscribe: "true",
+                  })
+                }}
+                style={utilities.link.style}
+              >
+                <ClockPlus size={16} />
+              </Button>
+            ) : (
+              <Clock color="var(--accent-1)" size={16} />
+            )}
+            {hitHourlyLimit && <Span style={{ fontSize: "1rem" }}>😅</Span>}
+            {user?.messagesLastHour || guest?.messagesLastHour || 0}/
+            {hourlyLimit}"
+          </Span>
+          {thread && (
+            <CollaborationStatus
+              dataTestId="chat"
+              key={`${thread.id}-${collaborationVersion}`}
+              onSave={(status) => {
+                setCollaborationVersion((v) => v + 1)
+                collaborationStatus && setCollaborationStatus(undefined)
+                if (
+                  status === "revoked" ||
+                  (status === "rejected" &&
+                    (thread.userId !== user?.id || thread.guestId !== user?.id))
+                ) {
+                  setIsNewChat({
+                    value: true,
+                  })
+                  return
+                }
+
+                !collaborationStatus && refetchThreads()
+                refetch()
+              }}
+              thread={thread}
+            />
+          )}
+        </Div>
+      )
+    )
+  }
+
   useEffect(() => {
     if (thread?.collaborations?.length) {
       plausible({
@@ -339,6 +556,9 @@ const HipChat = () => {
       isWebSearchEnabled?: boolean
       isImageGenerationEnabled?: boolean
     }) => {
+      if (isHippoOpen && !hipchat) {
+        return
+      }
       scrollToBottom()
 
       if (isE2E && content.length > 500) {
@@ -447,10 +667,19 @@ const HipChat = () => {
       hasStoppedScrolling,
     ],
   )
+  const generatedId = React.useId()
 
   const render = () => {
     return (
-      <Div>
+      <Div
+        key={generatedId}
+        style={{
+          display: hipchat ? "flex" : "block",
+          flexDirection: "column",
+          height: hipchat ? (isMobileDevice ? "100%" : "80dvh") : "auto",
+          ...style,
+        }}
+      >
         {!isVisitor && thread && (
           <Div style={styles.headers.style}>
             <Div style={styles.header.style}>
@@ -462,17 +691,19 @@ const HipChat = () => {
                   🧬
                 </Span>
               ) : null}
-              <Hippo
-                onSave={(data) => {
-                  setThread({
-                    ...thread,
-                    instructions: data.content,
-                  })
-                }}
-                dataTestId="thread-instruction"
-                className="small"
-                thread={thread}
-              />
+              {!hipchat && (
+                <Hippo
+                  onSave={(data) => {
+                    setThread({
+                      ...thread,
+                      instructions: data.content,
+                    })
+                  }}
+                  dataTestId="thread-instruction"
+                  className="small"
+                  thread={thread}
+                />
+              )}
               <DeleteThread
                 id={thread.id}
                 onDelete={() => {
@@ -518,7 +749,6 @@ const HipChat = () => {
             </Div>
           </Div>
         )}
-
         {isLoading && !isLoadingMore && isEmpty ? (
           <Div style={styles.errorContainer.style}>
             <Loading />
@@ -564,9 +794,17 @@ const HipChat = () => {
             <InfoIcon color="var(--accent-1)" size={20} /> Unauthorized
           </Div>
         ) : (
-          <>
-            {showTribe ? null : (
+          <Div
+            style={{
+              flex: hipchat ? 1 : undefined,
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 0,
+            }}
+          >
+            {!showMessages ? null : (
               <Messages
+                Top={!hipchat && getTop()}
                 onCharacterProfileUpdate={handleCharacterProfileUpdate}
                 isHome={isHome}
                 thread={thread}
@@ -577,6 +815,11 @@ const HipChat = () => {
                     ? t("Nothing here yet")
                     : undefined
                 }
+                style={{
+                  ...messagesStyle,
+                  flex: hipchat ? 1 : undefined,
+                  overflowY: hipchat ? "auto" : undefined,
+                }}
                 showEmptyState={!!thread}
                 onDelete={handleDelete}
                 ref={messagesRef}
@@ -588,18 +831,28 @@ const HipChat = () => {
                 nextPage={nextPage}
               />
             )}
-            {(!isVisitor ||
-              collaborator ||
-              thread?.visibility === "public") && (
+            {(!isVisitor || collaborator) && (
               <Div>
                 {/* Typing indicator for collaborative threads */}
                 {thread?.placeHolder && (
                   <Input data-testid="thread-placeholder" type="hidden" />
                 )}
-                <Div>
+                <Div style={{}}>
+                  {hipchat && (
+                    <Div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        margin: "10px 0",
+                      }}
+                    >
+                      {getTop()}
+                    </Div>
+                  )}
                   <Chat
+                    hipchat={hipchat}
                     requiresSignin={isVisitor && !activeCollaborator && !user}
-                    compactMode={showFocus || showTribe}
+                    compactMode={compactMode}
                     onTyping={notifyTyping}
                     disabled={isPendingCollaboration}
                     placeholder={
@@ -633,246 +886,9 @@ const HipChat = () => {
                                         ? `${t("Search anything")}${iWillRemember}`
                                         : `${t("Ask anything")}${iWillRemember}`))
                     }
-                    Top={
-                      thread && (
-                        <Div style={styles.chatTop.style}>
-                          {suggestSaveApp ? (
-                            <A
-                              href={`${FRONTEND_URL}/?step=add&part=title`}
-                              title={t("Build your app")}
-                              onClick={(e) => {
-                                addHapticFeedback()
-
-                                if (e.metaKey || e.ctrlKey) {
-                                  return
-                                }
-                                e.preventDefault()
-
-                                router.push(`${slugPath}?step=add&part=title`)
-                              }}
-                              className="button transparent"
-                              style={{
-                                ...utilities.button.style,
-                                ...utilities.transparent.style,
-                                ...utilities.xSmall.style,
-                              }}
-                            >
-                              <Img
-                                showLoading={false}
-                                src={`${FRONTEND_URL}/icons/plus-128.png`}
-                                alt="Calendar"
-                                width={16}
-                                height={16}
-                              />
-                            </A>
-                          ) : (isRetro || user?.role === "admin") && isEmpty ? (
-                            <>
-                              <Button
-                                onClick={() => setIsRetro(false)}
-                                className="link"
-                              >
-                                <CircleX size={11} />
-                              </Button>
-                              <Button
-                                data-testid="retro-button"
-                                className="link"
-                                style={{
-                                  ...utilities.link.style,
-                                }}
-                                onClick={() => {
-                                  if (isRetro) {
-                                    // Advance to next question
-                                    if (
-                                      dailyQuestionData?.isLastQuestionOfSection
-                                    ) {
-                                      advanceDailySection()
-                                    } else {
-                                      setDailyQuestionIndex(
-                                        dailyQuestionIndex + 1,
-                                      )
-                                    }
-                                  } else {
-                                    setIsRetro(true)
-                                  }
-                                }}
-                              >
-                                <Img size={16} app={app} />
-                              </Button>
-                            </>
-                          ) : wasPear ? (
-                            <Button
-                              className="link"
-                              style={{
-                                ...utilities.link.style,
-                                gap: 10,
-                                fontSize: "0.85rem",
-                                order: minimize ? -1 : 0,
-                              }}
-                              onClick={() => {
-                                setPear(isPear ? undefined : app)
-                              }}
-                            >
-                              {isPear && <CircleX size={14} />}
-                              <Img slug={"pear"} size={18} />
-                            </Button>
-                          ) : grapes?.length ? (
-                            <Grapes
-                              style={{
-                                ...utilities.button.style,
-                                ...utilities.transparent.style,
-                                ...utilities.xSmall.style,
-                                padding: 0,
-                                border: "none",
-                                backgroundColor: "transparent",
-                              }}
-                            />
-                          ) : (
-                            <A
-                              href={`${FRONTEND_URL}/calendar${threadId ? `?threadId=${threadId}` : ""}`}
-                              title={t("Organize your life")}
-                              onClick={(e) => {
-                                addHapticFeedback()
-
-                                if (e.metaKey || e.ctrlKey) {
-                                  return
-                                }
-                                e.preventDefault()
-
-                                goToCalendar()
-                              }}
-                              className="button transparent"
-                              style={{
-                                ...utilities.button.style,
-                                ...utilities.transparent.style,
-                                ...utilities.xSmall.style,
-                              }}
-                            >
-                              <Img
-                                showLoading={false}
-                                src={`${FRONTEND_URL}/icons/calendar-128.png`}
-                                alt="Calendar"
-                                width={16}
-                                height={16}
-                              />
-                            </A>
-                          )}
-                          <Hippo
-                            dataTestId="chat-instruction"
-                            icon
-                            thread={thread}
-                          />
-                          <EnableSound />
-                          <Bookmark
-                            size={16}
-                            dataTestId="thread"
-                            onSave={async () => {
-                              refetchThreads()
-                            }}
-                            thread={thread}
-                          ></Bookmark>
-                          <Button
-                            data-testid={`${liked ? "unfilter" : "filter"}-liked-button`}
-                            className={"link"}
-                            onClick={() => {
-                              addHapticFeedback()
-                              setLiked(!liked)
-                            }}
-                            style={{
-                              ...utilities.xSmall.style,
-                              padding: 0,
-                            }}
-                          >
-                            {liked ? (
-                              <ThumbsUp color="var(--accent-1)" size={16} />
-                            ) : (
-                              <ThumbsUp color="var(--shade-3)" size={16} />
-                            )}
-                          </Button>
-
-                          {!isVisitor && (
-                            <Share
-                              dataTestId="chat"
-                              onCollaborationChange={() => {
-                                setCollaborationVersion((v) => v + 1)
-                                refetch()
-                              }}
-                              onChangeVisibility={(visibility) =>
-                                setThread({ ...thread, visibility })
-                              }
-                              size={16}
-                              thread={thread}
-                            />
-                          )}
-
-                          <Span
-                            data-testid="hourly-limit-info"
-                            data-hourly-left={hourlyUsageLeft}
-                            style={styles.hourlyLimit.style}
-                          >
-                            {!user?.subscription || !guest?.subscription ? (
-                              <Button
-                                className="link"
-                                onClick={() => {
-                                  addHapticFeedback()
-                                  if (guest) {
-                                    addParams({
-                                      subscribe: "true",
-                                      plan: "member",
-                                    })
-                                    return
-                                  }
-                                  addParams({
-                                    subscribe: "true",
-                                  })
-                                }}
-                                style={utilities.link.style}
-                              >
-                                <ClockPlus size={16} />
-                              </Button>
-                            ) : (
-                              <Clock color="var(--accent-1)" size={16} />
-                            )}
-                            {hitHourlyLimit && (
-                              <Span style={{ fontSize: "1rem" }}>😅</Span>
-                            )}
-                            {user?.messagesLastHour ||
-                              guest?.messagesLastHour ||
-                              0}
-                            /{hourlyLimit}"
-                          </Span>
-                          <CollaborationStatus
-                            dataTestId="chat"
-                            key={`${thread.id}-${collaborationVersion}`}
-                            onSave={(status) => {
-                              setCollaborationVersion((v) => v + 1)
-                              collaborationStatus &&
-                                setCollaborationStatus(undefined)
-                              if (
-                                status === "revoked" ||
-                                (status === "rejected" &&
-                                  (thread.userId !== user?.id ||
-                                    thread.guestId !== user?.id))
-                              ) {
-                                setIsNewChat({
-                                  value: true,
-                                })
-                                return
-                              }
-
-                              !collaborationStatus && refetchThreads()
-                              refetch()
-                            }}
-                            thread={thread}
-                          />
-                        </Div>
-                      )
-                    }
                     thread={thread}
                     showSuggestions={
-                      !showTribe &&
-                      !showFocus &&
-                      !isLoading &&
-                      messages.length === 0
+                      showSuggestions && !isLoading && messages.length === 0
                     }
                     onToggleGame={(on) => setIsGame(on)}
                     showGreeting={isEmpty}
@@ -894,6 +910,9 @@ const HipChat = () => {
                         })
                     }}
                     onMessage={(msg) => {
+                      if (isHippoOpen && !hipchat) {
+                        return
+                      }
                       if (msg.isUser && msg.message) {
                         console.log("✅ Adding user message to state")
                         scrollToBottom(500, true)
@@ -906,7 +925,8 @@ const HipChat = () => {
                             userId: user?.id,
                             guestId: guest?.id,
                           }) &&
-                          msg.message.message.threadId
+                          msg.message.message.threadId &&
+                          !hipchat
                         ) {
                           if (!threadId) {
                             if (typeof window !== "undefined") {
@@ -1029,6 +1049,9 @@ const HipChat = () => {
                       aiAgent?: aiAgent
                       thread?: thread
                     }) => {
+                      if (isHippoOpen && !hipchat) {
+                        return
+                      }
                       console.log("🤖 onStreamingComplete", {
                         messageId: message?.message?.id,
                         content: message?.message?.content,
@@ -1085,7 +1108,12 @@ const HipChat = () => {
                           }),
                         )
 
-                      if (!burn && !id && message?.message.threadId) {
+                      if (
+                        !burn &&
+                        !id &&
+                        message?.message.threadId &&
+                        !hipchat
+                      ) {
                         requestAnimationFrame(() => {
                           const navigationOptions = {
                             state: { preservedThread: thread } as {
@@ -1109,7 +1137,7 @@ const HipChat = () => {
                 </Div>
               </Div>
             )}
-          </>
+          </Div>
         )}
       </Div>
     )

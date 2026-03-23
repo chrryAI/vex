@@ -152,7 +152,7 @@ export default function Store({
               />
             </Div>
             <H1 style={{ ...styles.title.style }}>
-              <Span style={{ ...styles.titleText.style, fontSize: "0.75rem" }}>
+              <Span style={{ ...styles.titleText.style }}>
                 <A
                   href={store.app ? getAppSlug(store.app) : "#"}
                   onClick={(e) => {
@@ -239,6 +239,10 @@ export default function Store({
                     borderColor: COLORS[app.themeColor as keyof typeof COLORS],
                     ["--glow-color" as keyof React.CSSProperties]:
                       COLORS[app.themeColor as keyof typeof COLORS],
+                    ...{
+                      minWidth: isMobileDevice ? 60 : 110,
+                      maxWidth: 130,
+                    },
                   }}
                 >
                   <Div
@@ -250,13 +254,22 @@ export default function Store({
                       alignContent: "center",
                     }}
                   >
-                    <Span style={{ ...styles.appName.style }}>
+                    <Span
+                      style={{
+                        ...styles.appName.style,
+                        maxWidth: 80,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {app.icon} {app.name}
                     </Span>
                     <Span
                       style={{
                         ...styles.appSubtitle.style,
                         margin: ".25rem 0 0 0",
+                        maxWidth: 80,
                       }}
                     >
                       {t(app.subtitle || "")}

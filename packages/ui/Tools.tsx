@@ -2,19 +2,15 @@
 
 import {
   type CSSProperties,
-  type Dispatch,
   lazy,
-  type SetStateAction,
   Suspense,
   useEffect,
   useRef,
   useState,
 } from "react"
-import toast from "react-hot-toast"
 import { FaAndroid, FaApple, FaChrome } from "react-icons/fa"
 import { SiMacos } from "react-icons/si"
 import A from "./a/A"
-import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
 import {
   useApp,
@@ -26,49 +22,17 @@ import {
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
 import { useResponsiveCount } from "./hooks/useResponsiveCount"
-import Img from "./Image"
 import { useInstructionsStyles } from "./Instructions.styles"
-import {
-  ArrowLeft,
-  ArrowRight,
-  Circle,
-  CircleCheck,
-  CircleX,
-  Copy,
-  FileIcon,
-  FileText,
-  FileUp,
-  MousePointerClick,
-  Music,
-  Paperclip,
-  Trash2,
-  VideoIcon,
-} from "./icons"
-import Loading from "./Loading"
-import { updateThread } from "./lib"
-import Modal from "./Modal"
 import {
   Button,
   Div,
-  Input,
   Span,
-  TextArea,
   toRem,
   usePlatform,
   useTheme as usePlatformTheme,
 } from "./platform"
-import { MotiView } from "./platform/MotiView"
-import type { instruction, instructionBase, thread } from "./types"
-import {
-  apiFetch,
-  decodeHtmlEntities,
-  getInstructionConfig,
-  getMaxFiles,
-  isDeepEqual,
-  isOwner,
-  // PROMPT_LIMITS,
-} from "./utils"
-import { formatFileSize } from "./utils/fileValidation"
+import type { thread } from "./types"
+import { getMaxFiles } from "./utils"
 
 const Agent = lazy(() => import("./agent"))
 const EmojiPicker = lazy(() => import("./EmojiPicker"))

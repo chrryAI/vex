@@ -25,7 +25,7 @@ export default function Modal({
   event,
   params,
   icon,
-  scrollable,
+  scrollable = true,
   id,
   borderHeader = true,
   "data-testid": dti,
@@ -169,11 +169,18 @@ export default function Modal({
     }
   }, [isModalOpen])
 
+  const key = React.useId()
+
   return (
     hasHydrated &&
     isModalOpen &&
     createPortal(
-      <Div style={{ ...styles.modal.style }} role="dialog" aria-modal="true">
+      <Div
+        key={key}
+        style={{ ...styles.modal.style }}
+        role="dialog"
+        aria-modal="true"
+      >
         <Div
           style={{
             ...styles.main.style,
@@ -196,7 +203,10 @@ export default function Modal({
             ref={innerRef}
             id={id}
             tabIndex={-1}
-            style={{ ...styles.inner.style, outline: "none" }}
+            style={{
+              ...styles.inner.style,
+              outline: "none",
+            }}
           >
             <H4
               style={{
@@ -241,7 +251,7 @@ export default function Modal({
             <Div
               style={{
                 ...styles.content.style,
-                ...(scrollable ? styles.contentScrollable.style : {}),
+                ...(scrollable ? styles.scrollable.style : {}),
               }}
             >
               {children}

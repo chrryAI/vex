@@ -11,8 +11,6 @@ import {
   useState,
 } from "react"
 import toast from "react-hot-toast"
-import { FaAndroid, FaApple, FaChrome } from "react-icons/fa"
-import { SiMacos } from "react-icons/si"
 import A from "./a/A"
 import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
@@ -24,6 +22,7 @@ import {
   useNavigationContext,
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
+import HipChat from "./HipChat"
 import { useHasHydrated } from "./hooks"
 import { useResponsiveCount } from "./hooks/useResponsiveCount"
 import Img from "./Image"
@@ -38,7 +37,6 @@ import {
   FileIcon,
   FileText,
   FileUp,
-  MousePointerClick,
   Music,
   Paperclip,
   Trash2,
@@ -58,11 +56,6 @@ import {
   useTheme as usePlatformTheme,
 } from "./platform"
 import { MotiView } from "./platform/MotiView"
-import Share from "./Share"
-import Skeleton from "./Skeleton"
-import { BREAKPOINTS } from "./styles/breakpoints"
-import { useThreadStyles } from "./Thread.styles"
-import Tribe from "./Tribe"
 import type { instruction, instructionBase, thread } from "./types"
 import {
   apiFetch,
@@ -431,7 +424,7 @@ export default function Hippo({
 
   const instructionsListRef = useRef<HTMLDivElement>(null)
 
-  const [isOpen, setIsOpenInternal] = useState(false)
+  const { isHippoOpen: isOpen, setIsHippoOpen: setIsOpenInternal } = useAuth()
 
   const setIsOpen = (open: boolean) => {
     setIsOpenInternal(open)
@@ -820,6 +813,7 @@ export default function Hippo({
     <Div key={key || dataTestId} data-testid={`${dataTestId}`}>
       {isAppDescriptionOpen && (
         <Modal
+          scrollable={!isChatOpen}
           style={{
             ...styles.modal.style,
           }}
@@ -857,6 +851,7 @@ export default function Hippo({
         </Modal>
       )}
       <Modal
+        scrollable={!isChatOpen}
         dataTestId={`${dataTestId}-modal`}
         borderHeader={true}
         style={styles.modal.style}
@@ -930,253 +925,263 @@ export default function Hippo({
           setIsArtifactsOpen(false)
         }}
       >
-        {isArtifactsOpen ? (
-          <Div>
-            <Div>
-              {thread?.isMainThread && canUpdate ? (
-                <>
-                  <Div>
-                    {t(
-                      "⚠️ This is the DNA Thread. Files uploaded here become public RAG content accessible to all users of this app.",
-                    )}
-                  </Div>
-                  <Div style={{ marginTop: "0.5rem" }}>
-                    {t("For private data, use a regular thread instead.")}
-                  </Div>
-                </>
-              ) : (
-                <Div>
-                  {t(
-                    "Upload files here for the AI to remember and reference in future conversations. These artifacts remain private to this thread.",
-                  )}
-                </Div>
-              )}
-            </Div>
-            {(files.length || threadArtifacts.length) > 0 && (
-              <Div style={styles.filePreviewArea.style}>
-                {threadArtifacts.map((file, index) => {
-                  return (
-                    <Div key={index} style={styles.filePreview.style}>
-                      <Div style={styles.filePreviewIcon.style}>
-                        <FileIcon size={16} />
-                      </Div>
-
-                      <Div style={styles.filePreviewInfo.style}>
-                        <A
-                          className="link"
-                          href={file.url}
-                          style={{
-                            ...utilities.link.style,
-                            ...styles.filePreviewName.style,
-                          }}
-                          target="_blank"
-                        >
-                          {file.name}
-                        </A>
-                        <Div style={styles.filePreviewSize.style}>
-                          {(file.size / 1024).toFixed(1)}KB
-                        </Div>
-                      </Div>
-
-                      {deletingId === file.id ? (
-                        <Loading width={18} height={18} />
-                      ) : (
-                        <Button
-                          data-testid={`${dataTestId}-file-preview-clear`}
-                          type="button"
-                          className="link"
-                          onClick={() => handleDeleteFile(file.id)}
-                          style={{
-                            ...utilities.link.style,
-                            ...styles.filePreviewClear.style,
-                          }}
-                          title="Remove file"
-                        >
-                          <CircleX size={18} />
-                        </Button>
-                      )}
-                    </Div>
-                  )
-                })}
-                {files.map((file, index) => {
-                  const fileType = file.type.toLowerCase()
-                  const isImage = fileType.startsWith("image/")
-                  const isVideo = fileType.startsWith("video/")
-                  const isAudio = fileType.startsWith("audio/")
-                  const isPDF = fileType === "application/pdf"
-                  const isText =
-                    fileType.startsWith("text/") ||
-                    file.name.match(
-                      /\.(txt|md|json|csv|xml|html|css|js|ts|tsx|jsx|py|java|c|cpp|h|hpp|cs|php|rb|go|rs|swift|kt|scala|sh|yaml|yml|toml|ini|conf|log)$/i,
-                    )
-
-                  return (
-                    <Div key={index} style={styles.filePreview.style}>
-                      <Div style={styles.filePreviewIcon.style}>
-                        {isImage ? (
-                          <img
-                            src={URL.createObjectURL(file)}
-                            alt={file.name}
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              objectFit: "cover",
-                              borderRadius: "4px",
-                            }}
-                          />
-                        ) : isVideo ? (
-                          <VideoIcon size={16} />
-                        ) : isAudio ? (
-                          <Music size={16} />
-                        ) : isPDF || isText ? (
-                          <FileText size={16} />
-                        ) : (
-                          <FileIcon size={16} />
-                        )}
-                      </Div>
-
-                      <Div style={styles.filePreviewInfo.style}>
-                        <Div style={styles.filePreviewName.style}>
-                          {file.name}
-                        </Div>
-                        <Div style={styles.filePreviewSize.style}>
-                          {formatFileSize(file.size)}
-                        </Div>
-                      </Div>
-
-                      <Button
-                        data-testid={`${dataTestId}-file-preview-clear`}
-                        type="button"
-                        onClick={() => removeFile(index)}
-                        className="link"
-                        style={{
-                          ...utilities.link.style,
-                          ...styles.filePreviewClear.style,
-                        }}
-                        title="Remove file"
-                      >
-                        <CircleX size={18} />
-                      </Button>
-                    </Div>
-                  )
-                })}
-              </Div>
-            )}
-
-            <Div style={styles.actions.style}>
-              <Div style={styles.fileUploader.style}>
-                <>
-                  <Button
-                    className="transparent"
-                    data-testid={`${dataTestId}-artifacts-back-button`}
-                    onClick={() => {
-                      addHapticFeedback()
-                      setIsArtifactsOpen(false)
-                      setIsOpen(true)
-                    }}
-                    style={{ ...utilities.transparent.style }}
-                  >
-                    <ArrowLeft size={16} />
-                  </Button>
-                  <Button
-                    className="transparent"
-                    data-testid={`${dataTestId}-artifacts-paste-button`}
-                    onClick={async () => {
-                      addHapticFeedback()
-                      try {
-                        const text = await navigator.clipboard.readText()
-                        if (text.trim()) {
-                          const blob = new Blob([text], {
-                            type: "text/plain",
-                          })
-                          const file = new File([blob], "pasted-content.txt", {
-                            type: "text/plain",
-                            lastModified: Date.now(),
-                          })
-                          setFiles((prev) => [...prev, file])
-                          toast.success("Clipboard content added as file")
-                        } else {
-                          toast.error("Clipboard is empty")
-                        }
-                      } catch (error) {
-                        console.error("Failed to read clipboard:", error)
-                        captureException(error)
-                        toast.error(
-                          "Failed to access clipboard. Please check permissions.",
-                        )
-                      }
-                    }}
-                    style={{ ...utilities.transparent.style }}
-                  >
-                    <Copy size={16} />
-                    {t("Paste")}
-                  </Button>
-                  <Button
-                    className="transparent"
-                    data-testid={`${dataTestId}-artifacts-upload-button`}
-                    onClick={() =>
-                      triggerFileInput(
-                        "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
-                      )
-                    }
-                    style={{ ...utilities.transparent.style }}
-                  >
-                    <FileUp size={16} />
-                    {t("Upload")}
-                  </Button>
-                  {isAllowed && (
-                    <Button
-                      disabled={(!content && isManaging) || isSaving}
-                      style={{
-                        ...((!content && isManaging) || isSaving
-                          ? utilities.transparent.style
-                          : {}),
-                      }}
-                      data-testid={`${dataTestId}-modal-save-button`}
-                      onClick={() =>
-                        selectedInstruction
-                          ? handleSave({ instruction: selectedInstruction })
-                          : handleSave()
-                      }
-                    >
-                      {isSaving ? (
-                        <Loading width={14} height={14} color="white" />
-                      ) : (
-                        t("Save")
-                      )}
-                    </Button>
-                  )}
-                </>
-              </Div>
-            </Div>
+        {isChatOpen ? (
+          <Div style={{}}>
+            <HipChat compactMode={false} showSuggestions={false} />
           </Div>
         ) : (
           <>
-            {isManaging && selectedInstruction && (
-              <Div style={styles.titleField.style}>
-                <Span style={{ fontSize: "1.5rem" }}>{selectedEmoji}</Span>
-                <Input
-                  title={t("Feature title")}
-                  id="featureTitle"
-                  value={t(editedTitle)}
-                  onChange={(e) => setEditedTitle(e.target.value)}
-                  type="text"
-                  placeholder={t("Feature title")}
-                  style={{ flex: 1 }}
-                />
+            {isArtifactsOpen ? (
+              <Div>
+                <Div>
+                  {thread?.isMainThread && canUpdate ? (
+                    <>
+                      <Div>
+                        {t(
+                          "⚠️ This is the DNA Thread. Files uploaded here become public RAG content accessible to all users of this app.",
+                        )}
+                      </Div>
+                      <Div style={{ marginTop: "0.5rem" }}>
+                        {t("For private data, use a regular thread instead.")}
+                      </Div>
+                    </>
+                  ) : (
+                    <Div>
+                      {t(
+                        "Upload files here for the AI to remember and reference in future conversations. These artifacts remain private to this thread.",
+                      )}
+                    </Div>
+                  )}
+                </Div>
+                {(files.length || threadArtifacts.length) > 0 && (
+                  <Div style={styles.filePreviewArea.style}>
+                    {threadArtifacts.map((file, index) => {
+                      return (
+                        <Div key={index} style={styles.filePreview.style}>
+                          <Div style={styles.filePreviewIcon.style}>
+                            <FileIcon size={16} />
+                          </Div>
+
+                          <Div style={styles.filePreviewInfo.style}>
+                            <A
+                              className="link"
+                              href={file.url}
+                              style={{
+                                ...utilities.link.style,
+                                ...styles.filePreviewName.style,
+                              }}
+                              target="_blank"
+                            >
+                              {file.name}
+                            </A>
+                            <Div style={styles.filePreviewSize.style}>
+                              {(file.size / 1024).toFixed(1)}KB
+                            </Div>
+                          </Div>
+
+                          {deletingId === file.id ? (
+                            <Loading width={18} height={18} />
+                          ) : (
+                            <Button
+                              data-testid={`${dataTestId}-file-preview-clear`}
+                              type="button"
+                              className="link"
+                              onClick={() => handleDeleteFile(file.id)}
+                              style={{
+                                ...utilities.link.style,
+                                ...styles.filePreviewClear.style,
+                              }}
+                              title="Remove file"
+                            >
+                              <CircleX size={18} />
+                            </Button>
+                          )}
+                        </Div>
+                      )
+                    })}
+                    {files.map((file, index) => {
+                      const fileType = file.type.toLowerCase()
+                      const isImage = fileType.startsWith("image/")
+                      const isVideo = fileType.startsWith("video/")
+                      const isAudio = fileType.startsWith("audio/")
+                      const isPDF = fileType === "application/pdf"
+                      const isText =
+                        fileType.startsWith("text/") ||
+                        file.name.match(
+                          /\.(txt|md|json|csv|xml|html|css|js|ts|tsx|jsx|py|java|c|cpp|h|hpp|cs|php|rb|go|rs|swift|kt|scala|sh|yaml|yml|toml|ini|conf|log)$/i,
+                        )
+
+                      return (
+                        <Div key={index} style={styles.filePreview.style}>
+                          <Div style={styles.filePreviewIcon.style}>
+                            {isImage ? (
+                              <img
+                                src={URL.createObjectURL(file)}
+                                alt={file.name}
+                                style={{
+                                  width: "32px",
+                                  height: "32px",
+                                  objectFit: "cover",
+                                  borderRadius: "4px",
+                                }}
+                              />
+                            ) : isVideo ? (
+                              <VideoIcon size={16} />
+                            ) : isAudio ? (
+                              <Music size={16} />
+                            ) : isPDF || isText ? (
+                              <FileText size={16} />
+                            ) : (
+                              <FileIcon size={16} />
+                            )}
+                          </Div>
+
+                          <Div style={styles.filePreviewInfo.style}>
+                            <Div style={styles.filePreviewName.style}>
+                              {file.name}
+                            </Div>
+                            <Div style={styles.filePreviewSize.style}>
+                              {formatFileSize(file.size)}
+                            </Div>
+                          </Div>
+
+                          <Button
+                            data-testid={`${dataTestId}-file-preview-clear`}
+                            type="button"
+                            onClick={() => removeFile(index)}
+                            className="link"
+                            style={{
+                              ...utilities.link.style,
+                              ...styles.filePreviewClear.style,
+                            }}
+                            title="Remove file"
+                          >
+                            <CircleX size={18} />
+                          </Button>
+                        </Div>
+                      )
+                    })}
+                  </Div>
+                )}
+
+                <Div style={styles.actions.style}>
+                  <Div style={styles.fileUploader.style}>
+                    <>
+                      <Button
+                        className="transparent"
+                        data-testid={`${dataTestId}-artifacts-back-button`}
+                        onClick={() => {
+                          addHapticFeedback()
+                          setIsArtifactsOpen(false)
+                          setIsOpen(true)
+                        }}
+                        style={{ ...utilities.transparent.style }}
+                      >
+                        <ArrowLeft size={16} />
+                      </Button>
+                      <Button
+                        className="transparent"
+                        data-testid={`${dataTestId}-artifacts-paste-button`}
+                        onClick={async () => {
+                          addHapticFeedback()
+                          try {
+                            const text = await navigator.clipboard.readText()
+                            if (text.trim()) {
+                              const blob = new Blob([text], {
+                                type: "text/plain",
+                              })
+                              const file = new File(
+                                [blob],
+                                "pasted-content.txt",
+                                {
+                                  type: "text/plain",
+                                  lastModified: Date.now(),
+                                },
+                              )
+                              setFiles((prev) => [...prev, file])
+                              toast.success("Clipboard content added as file")
+                            } else {
+                              toast.error("Clipboard is empty")
+                            }
+                          } catch (error) {
+                            console.error("Failed to read clipboard:", error)
+                            captureException(error)
+                            toast.error(
+                              "Failed to access clipboard. Please check permissions.",
+                            )
+                          }
+                        }}
+                        style={{ ...utilities.transparent.style }}
+                      >
+                        <Copy size={16} />
+                        {t("Paste")}
+                      </Button>
+                      <Button
+                        className="transparent"
+                        data-testid={`${dataTestId}-artifacts-upload-button`}
+                        onClick={() =>
+                          triggerFileInput(
+                            "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
+                          )
+                        }
+                        style={{ ...utilities.transparent.style }}
+                      >
+                        <FileUp size={16} />
+                        {t("Upload")}
+                      </Button>
+                      {isAllowed && (
+                        <Button
+                          disabled={(!content && isManaging) || isSaving}
+                          style={{
+                            ...((!content && isManaging) || isSaving
+                              ? utilities.transparent.style
+                              : {}),
+                          }}
+                          data-testid={`${dataTestId}-modal-save-button`}
+                          onClick={() =>
+                            selectedInstruction
+                              ? handleSave({ instruction: selectedInstruction })
+                              : handleSave()
+                          }
+                        >
+                          {isSaving ? (
+                            <Loading width={14} height={14} color="white" />
+                          ) : (
+                            t("Save")
+                          )}
+                        </Button>
+                      )}
+                    </>
+                  </Div>
+                </Div>
               </Div>
-            )}
-            <TextArea
-              disabled={!canUpdate}
-              data-testid={`${dataTestId}-modal-textarea`}
-              id="instructions"
-              onChange={(e) => setContent(e.target.value)}
-              value={t(content, isManaging ? undefined : instructionConfig)}
-              style={styles.instructionsTextarea.style}
-              placeholder={
-                placeHolder ||
-                (collaborationStep === 1
-                  ? `✨ ${t(`Let's create something amazing together!`)}
+            ) : (
+              <>
+                {isManaging && selectedInstruction && (
+                  <Div style={styles.titleField.style}>
+                    <Span style={{ fontSize: "1.5rem" }}>{selectedEmoji}</Span>
+                    <Input
+                      title={t("Feature title")}
+                      id="featureTitle"
+                      value={t(editedTitle)}
+                      onChange={(e) => setEditedTitle(e.target.value)}
+                      type="text"
+                      placeholder={t("Feature title")}
+                      style={{ flex: 1 }}
+                    />
+                  </Div>
+                )}
+                <TextArea
+                  disabled={!canUpdate}
+                  data-testid={`${dataTestId}-modal-textarea`}
+                  id="instructions"
+                  onChange={(e) => setContent(e.target.value)}
+                  value={t(content, isManaging ? undefined : instructionConfig)}
+                  style={styles.instructionsTextarea.style}
+                  placeholder={
+                    placeHolder ||
+                    (collaborationStep === 1
+                      ? `✨ ${t(`Let's create something amazing together!`)}
 
 ${t(`Describe what you'd like to collaborate on:`)}
 
@@ -1187,7 +1192,7 @@ ${t(`Describe what you'd like to collaborate on:`)}
 🚀 ${t(`Plan and strategize together`)}
 
 ${t(`Share your vision and invite others to join the conversation!`)}`
-                  : `${t(`Tell AI how to behave in this chat. For example`)}
+                      : `${t(`Tell AI how to behave in this chat. For example`)}
 
 ${t(`Always ask for context before giving advice`)}
 ${t(`Focus on practical, actionable solutions`)}
@@ -1195,133 +1200,135 @@ ${t(`Explain complex topics in simple terms`)}
 ${t(`Remember my preferences and past conversations`)}
 
 ${t(`The more specific you are, the better AI can assist you!`)}`)
-              }
-            />
-          </>
-        )}
-        {!isArtifactsOpen && (
-          <Span style={styles.tip.style}>
-            <Img slug="hippo" size={16} />
-            <Span>
-              {canUpdate
-                ? t(`Give Hippo something to remember`)
-                : t(`Only owner can update instructions`)}
-            </Span>
-          </Span>
-        )}
-        {canUpdate && !isArtifactsOpen && (
-          <Div style={styles.footer.style}>
-            {thread && (
-              <Button
-                className="inverted"
-                data-testid={`${dataTestId}-modal-regenerate-button`}
-                onClick={() => handleSave({ regenerateInstructions: true })}
-                style={{ ...utilities.inverted.style }}
-              >
-                {isGeneratingInstructions ? (
-                  <Loading width={14} height={14} />
-                ) : (
-                  <>
-                    <Img app={app} size={14} />
-                    {t("Generate")}
-                  </>
-                )}
-              </Button>
+                  }
+                />
+              </>
             )}
-            <Div style={styles.actions.style}>
-              {user?.role === "admin" ||
-                (isDevelopment && (
+            {!isArtifactsOpen && (
+              <Span style={styles.tip.style}>
+                <Img slug="hippo" size={16} />
+                <Span>
+                  {canUpdate
+                    ? t(`Give Hippo something to remember`)
+                    : t(`Only owner can update instructions`)}
+                </Span>
+              </Span>
+            )}
+            {canUpdate && !isArtifactsOpen && (
+              <Div style={styles.footer.style}>
+                {thread && (
                   <Button
                     className="inverted"
-                    data-testid={`${dataTestId}-modal-chat-button`}
+                    data-testid={`${dataTestId}-modal-regenerate-button`}
+                    onClick={() => handleSave({ regenerateInstructions: true })}
+                    style={{ ...utilities.inverted.style }}
+                  >
+                    {isGeneratingInstructions ? (
+                      <Loading width={14} height={14} />
+                    ) : (
+                      <>
+                        <Img app={app} size={14} />
+                        {t("Generate")}
+                      </>
+                    )}
+                  </Button>
+                )}
+                <Div style={styles.actions.style}>
+                  {user?.role === "admin" ||
+                    (isDevelopment && (
+                      <Button
+                        className="inverted"
+                        data-testid={`${dataTestId}-modal-chat-button`}
+                        onClick={() => {
+                          setIsChatOpen(true)
+                        }}
+                        style={{ ...utilities.inverted.style }}
+                      >
+                        <Img app={app} size={14} />
+                        {isMobileDevice ? null : t("Chat")}
+                      </Button>
+                    ))}
+                  <Button
+                    className="inverted"
+                    data-testid={`${dataTestId}-modal-artifacts-button`}
                     onClick={() => {
-                      setIsChatOpen(true)
+                      setIsArtifactsOpen(true)
                     }}
                     style={{ ...utilities.inverted.style }}
                   >
-                    <Img app={app} size={14} />
-                    {isMobileDevice ? null : t("Chat")}
+                    <Img slug="burn" size={14} />
+                    {isMobileDevice ? null : t("Upload")}
                   </Button>
-                ))}
-              <Button
-                className="inverted"
-                data-testid={`${dataTestId}-modal-artifacts-button`}
-                onClick={() => {
-                  setIsArtifactsOpen(true)
-                }}
-                style={{ ...utilities.inverted.style }}
-              >
-                <Img slug="burn" size={14} />
-                {isMobileDevice ? null : t("Upload")}
-              </Button>
 
-              {isManaging && (
-                <Div
-                  style={{
-                    position: "relative",
-                  }}
-                >
-                  {showEmojiPicker && (
-                    <Suspense>
-                      <Div
-                        style={{
-                          position: "absolute",
-                          bottom: "100%",
-                          right: 0,
-                          marginBottom: "0.5rem",
-                          zIndex: 1000,
-                        }}
+                  {isManaging && (
+                    <Div
+                      style={{
+                        position: "relative",
+                      }}
+                    >
+                      {showEmojiPicker && (
+                        <Suspense>
+                          <Div
+                            style={{
+                              position: "absolute",
+                              bottom: "100%",
+                              right: 0,
+                              marginBottom: "0.5rem",
+                              zIndex: 1000,
+                            }}
+                          >
+                            <EmojiPicker
+                              open={showEmojiPicker}
+                              onClose={() => setShowEmojiPicker(false)}
+                              onEmojiClick={handleEmojiClick}
+                              width={300}
+                              height={400}
+                              previewConfig={{
+                                showPreview: false,
+                              }}
+                              skinTonesDisabled
+                              lazyLoadEmojis={true}
+                              isDark={isDark}
+                            />
+                          </Div>
+                        </Suspense>
+                      )}
+                      <Button
+                        className="inverted"
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        style={{ ...utilities.inverted.style }}
                       >
-                        <EmojiPicker
-                          open={showEmojiPicker}
-                          onClose={() => setShowEmojiPicker(false)}
-                          onEmojiClick={handleEmojiClick}
-                          width={300}
-                          height={400}
-                          previewConfig={{
-                            showPreview: false,
-                          }}
-                          skinTonesDisabled
-                          lazyLoadEmojis={true}
-                          isDark={isDark}
-                        />
-                      </Div>
-                    </Suspense>
+                        {selectedEmoji} {isMobileDevice ? null : t("Emoji")}
+                      </Button>
+                    </Div>
                   )}
-                  <Button
-                    className="inverted"
-                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    style={{ ...utilities.inverted.style }}
-                  >
-                    {selectedEmoji} {isMobileDevice ? null : t("Emoji")}
-                  </Button>
-                </Div>
-              )}
 
-              {isAllowed && (
-                <Button
-                  data-testid={`${dataTestId}-modal-save-button`}
-                  disabled={(!content && isManaging) || isSaving}
-                  style={{
-                    ...((!content && isManaging) || isSaving
-                      ? utilities.transparent.style
-                      : {}),
-                  }}
-                  onClick={() =>
-                    handleSave({
-                      instruction: selectedInstruction || undefined,
-                    })
-                  }
-                >
-                  {isSaving ? (
-                    <Loading width={14} height={14} color="white" />
-                  ) : (
-                    t("Save")
+                  {isAllowed && (
+                    <Button
+                      data-testid={`${dataTestId}-modal-save-button`}
+                      disabled={(!content && isManaging) || isSaving}
+                      style={{
+                        ...((!content && isManaging) || isSaving
+                          ? utilities.transparent.style
+                          : {}),
+                      }}
+                      onClick={() =>
+                        handleSave({
+                          instruction: selectedInstruction || undefined,
+                        })
+                      }
+                    >
+                      {isSaving ? (
+                        <Loading width={14} height={14} color="white" />
+                      ) : (
+                        t("Save")
+                      )}
+                    </Button>
                   )}
-                </Button>
-              )}
-            </Div>
-          </Div>
+                </Div>
+              </Div>
+            )}
+          </>
         )}
       </Modal>
       <Div style={styles.instructionsContainer.style}>

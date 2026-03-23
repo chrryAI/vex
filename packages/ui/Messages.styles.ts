@@ -11,7 +11,7 @@ export const MessagesStyleDefs = {
     flexDirection: "column",
     marginTop: 20,
     justifyContent: "flex-end",
-    overflowY: "auto",
+    // overflowY: "auto",
     maxHeight: "100%",
   },
   messages: {
