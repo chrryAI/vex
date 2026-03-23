@@ -146,6 +146,8 @@ export const getImageSrc = ({
     "blossom",
     "burn",
     "hippo",
+    "waffles",
+    "pepper",
   ]
 
   const iconSrc = icon

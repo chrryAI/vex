@@ -1234,20 +1234,19 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   </Button>
                 )}
                 <Div style={styles.actions.style}>
-                  {user?.role === "admin" ||
-                    (isDevelopment && (
-                      <Button
-                        className="inverted"
-                        data-testid={`${dataTestId}-modal-chat-button`}
-                        onClick={() => {
-                          setIsChatOpen(true)
-                        }}
-                        style={{ ...utilities.inverted.style }}
-                      >
-                        <Img app={app} size={14} />
-                        {isMobileDevice ? null : t("Chat")}
-                      </Button>
-                    ))}
+                  {isDevelopment && (
+                    <Button
+                      className="inverted"
+                      data-testid={`${dataTestId}-modal-chat-button`}
+                      onClick={() => {
+                        setIsChatOpen(true)
+                      }}
+                      style={{ ...utilities.inverted.style }}
+                    >
+                      <Img app={app} size={14} />
+                      {isMobileDevice ? null : t("Chat")}
+                    </Button>
+                  )}
                   <Button
                     className="inverted"
                     data-testid={`${dataTestId}-modal-artifacts-button`}

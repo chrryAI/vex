@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import type React from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import Bookmark from "./Bookmark"
 import Chat from "./Chat"
 import CollaborationStatus from "./CollaborationStatus"
@@ -87,6 +88,7 @@ const HipChat = ({
     isHippoOpen,
     ...auth
   } = useAuth()
+  console.log(`🚀 ~ isHippoOpen:`, isHippoOpen)
 
   const threadId = auth.threadId || threadIdRef.current
 
@@ -667,12 +669,10 @@ const HipChat = ({
       hasStoppedScrolling,
     ],
   )
-  const generatedId = React.useId()
 
   const render = () => {
     return (
       <Div
-        key={generatedId}
         style={{
           display: hipchat ? "flex" : "block",
           flexDirection: "column",
