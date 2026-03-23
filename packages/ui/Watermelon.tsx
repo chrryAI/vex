@@ -1146,7 +1146,13 @@ export default function Watermelon() {
                       </A>
                       <Button
                         className="inverted"
-                        onClick={() => setShowS3(true)}
+                        onClick={() => {
+                          if (!user && !s3ApiKey) {
+                            addParams({ subscribe: "true", plan: "member" })
+                            return
+                          }
+                          setShowS3(true)
+                        }}
                         style={{
                           ...utilities.inverted.style,
                           display: "flex",
