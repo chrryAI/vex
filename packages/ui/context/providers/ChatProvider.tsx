@@ -1175,8 +1175,8 @@ export function ChatProvider({
     const isTribeUrl =
       typeof window !== "undefined" &&
       window.location.search.includes("tribe=true")
-    if (showTribe || isTribeUrl) return
-    if (isEmpty || isUserScrolling || hasStoppedScrolling) return
+    if ((showTribe || isTribeUrl) && !force) return
+    if ((isEmpty || isUserScrolling || hasStoppedScrolling) && !force) return
     setTimeout(() => {
       // Use requestAnimationFrame for more stable scrolling in Tauri
       requestAnimationFrame(() => {

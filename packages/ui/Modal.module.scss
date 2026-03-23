@@ -108,11 +108,10 @@
   display: flex;
   flex-direction: column;
   max-height: 80dvh;
-  overflow-y: auto;
+}
 
-  &.scrollable {
-    overflow-y: auto;
-  }
+.scrollable {
+  overflow-y: auto;
 }
 
 @keyframes slideUp {

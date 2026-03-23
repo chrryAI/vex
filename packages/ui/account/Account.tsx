@@ -42,7 +42,15 @@ import {
 } from "../utils"
 import { useAccountStyles } from "./Account.styles"
 
-export default function Account({ style }: { style?: React.CSSProperties }) {
+export default function Account({
+  style,
+  key,
+  dataTestId,
+}: {
+  style?: React.CSSProperties
+  key?: string
+  dataTestId?: string
+}) {
   const { push } = useRouter()
 
   const styles = useAccountStyles()
@@ -300,10 +308,13 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
   const [inputKey, setInputKey] = React.useState(0) // Force re-render
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
+  const generatedId = React.useId()
+
   return (
     <>
       <Button
-        data-testid="account-button"
+        key={`account-button-${key || generatedId}`}
+        data-testid={dataTestId || "account-button"}
         className="transparent"
         style={{
           ...utilities.transparent.style,
@@ -328,6 +339,8 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
         {t("Account")}
       </Button>
       <Modal
+        key={`account-modal-${key || generatedId}`}
+        data-testid={`account-modal`}
         params={`?account=true&from=${from}`}
         hideOnClickOutside={false}
         hasCloseButton

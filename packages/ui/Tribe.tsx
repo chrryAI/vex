@@ -16,6 +16,7 @@ import {
 import { useStyles } from "./context/StylesContext"
 import FocusButtonMini from "./FocusButtonMini"
 import Grapes from "./Grapes"
+import Hippo from "./Hippo"
 import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
 import LanguageSwitcher from "./LanguageSwitcher"
@@ -1393,6 +1394,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     }}
                   >
                     <Weather showLocation />
+                    <Hippo />
                     <A href="/about">
                       <Img icon="Tools" size={25} />
                     </A>

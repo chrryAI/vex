@@ -194,6 +194,7 @@ export default function AppProviders({
               thread={thread}
               locale={locale}
               error={error}
+              isBot={isBot}
               apiKey={apiKey}
               app={app}
               pathname={pathname}
