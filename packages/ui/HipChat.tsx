@@ -49,9 +49,11 @@ const HipChat = ({
   compactMode = true,
   showSuggestions = false,
   messagesStyle,
-  hipchat = true,
+  // hipchat = true,
   dataTestId,
   style,
+  currentHippo,
+  ...rest
 }: {
   showMessages?: boolean
   compactMode?: boolean
@@ -60,10 +62,12 @@ const HipChat = ({
   hipchat?: boolean
   style?: React.CSSProperties
   dataTestId?: string
+  otherHip?: boolean
+  currentHippo?: string
 }) => {
   // Initialize unified styles hook
   const styles = useThreadStyles()
-
+  const hipchat = false
   // Split contexts for better organization
   const { t, console } = useAppContext()
 
@@ -91,10 +95,6 @@ const HipChat = ({
     isHippoOpen,
     ...auth
   } = useAuth()
-
-  const defaultHip = isHippoOpen && !hipchat
-
-  const threadId = auth.threadId || threadIdRef.current
 
   // Chat context
   const {
@@ -127,6 +127,11 @@ const HipChat = ({
     isEmpty,
     ...chat
   } = useChat()
+
+  const otherHip = false
+  console.log(`🚀 ~ isHippoOpen:`, { isHippoOpen, dataTestId, otherHip })
+
+  const threadId = auth.threadId || threadIdRef.current
 
   const { isMobile: isMobileDevice } = usePlatform()
 
@@ -195,7 +200,7 @@ const HipChat = ({
   }, [])
 
   const handleCharacterProfileUpdate = useCallback(() => {
-    !isChatFloating && scrollToBottom()
+    !isChatFloating && scrollToBottom(undefined, undefined, messagesRef.current)
   }, [isChatFloating, scrollToBottom])
 
   const handleToggleLike = useCallback((liked: boolean | undefined) => {
@@ -269,7 +274,7 @@ const HipChat = ({
 
   const getTop = () => {
     return (
-      (thread || hipchat) && (
+      thread && (
         <Div style={styles.chatTop.style}>
           {suggestSaveApp ? (
             <A
@@ -562,10 +567,10 @@ const HipChat = ({
       isWebSearchEnabled?: boolean
       isImageGenerationEnabled?: boolean
     }) => {
-      if (defaultHip) {
+      if (otherHip) {
         return
       }
-      scrollToBottom()
+      scrollToBottom(undefined, undefined, messagesRef.current)
 
       if (isE2E && content.length > 500) {
         const wordCount = content.split(/\s+/).length
@@ -671,7 +676,7 @@ const HipChat = ({
       resetScrollState,
       isUserScrolling,
       hasStoppedScrolling,
-      defaultHip,
+      otherHip,
     ],
   )
 
@@ -691,9 +696,7 @@ const HipChat = ({
                     display: "flex",
                     justifyContent: "center",
                     padding: "10px 0 5px 0",
-                    borderTop: "1px dashed var(--accent-3)",
-                    borderColor:
-                      COLORS[colorScheme as keyof typeof COLORS] || COLORS.blue,
+                    borderTop: "1px dashed var(--shade-2)",
                   }}
                 >
                   {getTop()}
@@ -703,7 +706,7 @@ const HipChat = ({
           </Div>
         )}
         <Chat
-          key={`${dataTestId}-chat`}
+          // key={`${dataTestId}-chat`}
           hipchat={hipchat}
           requiresSignin={isVisitor && !activeCollaborator && !user}
           compactMode={compactMode}
@@ -742,15 +745,12 @@ const HipChat = ({
           }
           thread={thread}
           showSuggestions={
-            !defaultHip &&
-            showSuggestions &&
-            !isLoading &&
-            messages.length === 0
+            showSuggestions && !isLoading && messages.length === 0
           }
           onToggleGame={(on) => setIsGame(on)}
           showGreeting={isEmpty}
           onStreamingStop={async (message) => {
-            if (defaultHip) {
+            if (otherHip) {
               return
             }
             message?.message?.clientId &&
@@ -770,12 +770,12 @@ const HipChat = ({
               })
           }}
           onMessage={(msg) => {
-            if (defaultHip) {
+            if (otherHip) {
               return
             }
             if (msg.isUser && msg.message) {
               console.log("✅ Adding user message to state")
-              scrollToBottom(500, true)
+              scrollToBottom(500, true, messagesRef.current)
               resetScrollState()
               shouldStopAutoScrollRef.current = false // Reset auto-scroll for new response
 
@@ -786,7 +786,7 @@ const HipChat = ({
                   guestId: guest?.id,
                 }) &&
                 msg.message.message.threadId &&
-                !defaultHip
+                !otherHip
               ) {
                 if (!threadId) {
                   if (typeof window !== "undefined") {
@@ -895,12 +895,10 @@ const HipChat = ({
             }
           }}
           onStreamingUpdate={(payload) => {
-            if (defaultHip) {
+            if (otherHip) {
               return
             }
-            if (payload.hipchat && !hipchat) {
-              return
-            }
+
             handleStreamingUpdate(payload)
           }}
           onStreamingComplete={(message?: {
@@ -911,10 +909,7 @@ const HipChat = ({
             thread?: thread
             hipchat?: boolean
           }) => {
-            if (message?.hipchat && !hipchat) {
-              return
-            }
-            if (defaultHip) {
+            if (otherHip) {
               return
             }
             console.log("🤖 onStreamingComplete", {
@@ -972,7 +967,7 @@ const HipChat = ({
                 }),
               )
 
-            if (!burn && !id && message?.message.threadId && !defaultHip) {
+            if (!burn && !id && message?.message.threadId && !otherHip) {
               requestAnimationFrame(() => {
                 const navigationOptions = {
                   state: { preservedThread: thread } as {
@@ -1018,19 +1013,7 @@ const HipChat = ({
                   🧬
                 </Span>
               ) : null}
-              {!hipchat && (
-                <Hippo
-                  onSave={(data) => {
-                    setThread({
-                      ...thread,
-                      instructions: data.content,
-                    })
-                  }}
-                  dataTestId="thread-instruction"
-                  className="small"
-                  thread={thread}
-                />
-              )}
+
               <DeleteThread
                 id={thread.id}
                 onDelete={() => {
@@ -1146,6 +1129,7 @@ const HipChat = ({
                   ...messagesStyle,
                   flex: hipchat ? 1 : undefined,
                   overflowY: hipchat ? "auto" : undefined,
+                  paddingRight: hipchat ? 12 : undefined,
                 }}
                 showEmptyState={!!thread}
                 onDelete={handleDelete}
@@ -1160,6 +1144,7 @@ const HipChat = ({
             )}
           </Div>
         )}
+
         {renderChat()}
       </Div>
     )

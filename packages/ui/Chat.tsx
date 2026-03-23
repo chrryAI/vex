@@ -1771,7 +1771,7 @@ export default function Chat({
     setIsLoading(true)
 
     // Scroll to bottom after sending message
-    scrollToBottom(100)
+    scrollToBottom(100, undefined, chatContainerRef.current)
 
     playNotification()
 
@@ -2928,7 +2928,7 @@ export default function Chat({
   // Function to show chat input and scroll to bottom
   const showInputAndScrollToBottom = () => {
     addHapticFeedback()
-    scrollToBottom(500, true)
+    scrollToBottom(500, true, chatContainerRef.current)
   }
 
   const [shouldSubmit, setShouldSubmit] = useState(false)

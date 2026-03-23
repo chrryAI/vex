@@ -431,7 +431,7 @@ export default function Hippo({
   const isOpen = !!isHippoOpen
 
   const setIsOpen = (open: boolean) => {
-    setIsOpenInternal(open ? dataTestId : undefined)
+    setIsOpenInternal(open ? `${dataTestId}-chat` : undefined)
     if (!open) {
       setCollaborationStep(0)
     }
