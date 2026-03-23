@@ -1776,7 +1776,7 @@ export default function App({
               })
             }}
           />
-          <Tools style={{ marginTop: "1rem" }} />
+          <Tools />
         </Div>
       </Div>
     </Div>

@@ -1214,11 +1214,11 @@ export function ChatProvider({
   }, [threadError])
 
   useEffect(() => {
-    // if (toFetch) {
-    //   setShowFocus(false)
-    //   return
-    // }
-    if (showFocus) {
+    if (toFetch) {
+      setShowFocus(false)
+      return
+    }
+    if (showFocus || !toFetch) {
       setThread(undefined)
       setMessages([])
     }

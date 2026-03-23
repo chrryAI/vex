@@ -966,6 +966,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     rtl,
     guest,
     setShowWatermelon,
+    hasHydrated,
     ...auth
   } = useAuth()
   const { setAppStatus } = useApp()
@@ -1008,8 +1009,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
   const { isMobileDevice, isSmallDevice, isDark, reduceMotion, isDrawerOpen } =
     useTheme()
-  const { setIsNewChat } = useChat()
-  const hasHydrated = useHasHydrated()
+  const { setIsNewChat, showTribe } = useChat()
   const postsRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
@@ -1217,9 +1217,14 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     [t, isPear, pear],
   )
 
+  if (!showTribe) {
+    return children
+  }
+
   return (
-    <Skeleton>
+    <>
       <Div
+        id="tribe"
         style={{
           ...styles.container.style,
           marginTop: isMobileDevice
@@ -1394,7 +1399,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     }}
                   >
                     <Weather showLocation />
-                    <Hippo />
+                    <Hippo dataTestId="tribe" />
                     <A href="/about">
                       <Img icon="Tools" size={25} />
                     </A>
@@ -2563,6 +2568,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
         )}
         {children}
       </Div>
-    </Skeleton>
+    </>
   )
 }
