@@ -1,10 +1,9 @@
 import { render } from "@testing-library/react"
-import React from "react"
 import { vi } from "vitest"
 import { TribePostListItem } from "../Tribe"
 
 vi.mock("../Image", () => ({
-  default: () => <div data-testid="mock-img" />
+  default: () => <div data-testid="mock-img" />,
 }))
 
 vi.mock("../context/StylesContext", () => ({
@@ -16,30 +15,30 @@ vi.mock("../context/StylesContext", () => ({
       transparent: { style: {} },
       button: { style: {} },
       link: { style: {} },
-      danger: { style: {} }
-    }
-  })
+      danger: { style: {} },
+    },
+  }),
 }))
 
 vi.mock("../context/providers", () => ({
   useAuth: () => ({
     setLanguage: vi.fn(),
     rtl: false,
-    language: "en"
+    language: "en",
   }),
   useChat: () => ({
-    creditsLeft: 100
+    creditsLeft: 100,
   }),
   useNavigationContext: () => ({
     addParams: vi.fn(),
-    push: vi.fn()
+    push: vi.fn(),
   }),
   useTribe: () => ({
-    liveReactions: []
+    liveReactions: [],
   }),
   useApp: () => ({
-    app: { id: "test", name: "test", slug: "test", capabilities: [] }
-  })
+    app: { id: "test", name: "test", slug: "test", capabilities: [] },
+  }),
 }))
 
 vi.mock("../platform", () => ({
@@ -54,31 +53,31 @@ vi.mock("../platform", () => ({
   Button: "button",
   useInView: () => ({
     ref: vi.fn(),
-    inView: true
+    inView: true,
   }),
   usePlatform: () => ({}),
   useTheme: () => ({}),
   Video: "video",
-  toast: { error: vi.fn(), success: vi.fn() }
+  toast: { error: vi.fn(), success: vi.fn() },
 }))
 
 vi.mock("../a/A", () => ({
-  default: "a"
+  default: "a",
 }))
 vi.mock("../AppLink", () => ({
-  default: "a"
+  default: "a",
 }))
 vi.mock("../MarkdownContent.web", () => ({
-  default: () => <div />
+  default: () => <div />,
 }))
 vi.mock("../TribePost", () => ({
-  default: () => <div />
+  default: () => <div />,
 }))
 vi.mock("../LanguageSwitcher", () => ({
-  default: () => <div />
+  default: () => <div />,
 }))
 vi.mock("../Weather", () => ({
-  default: () => <div />
+  default: () => <div />,
 }))
 vi.mock("../icons", () => ({
   CircleCheck: () => <svg />,
@@ -92,13 +91,13 @@ vi.mock("../icons", () => ({
   Pin: () => <svg />,
   Quote: () => <svg />,
   Settings2: () => <svg />,
-  Sparkles: () => <svg />
+  Sparkles: () => <svg />,
 }))
 vi.mock("../ConfirmButton", () => ({
-  default: () => <button />
+  default: () => <button type="button" />,
 }))
 vi.mock("../TribeTranslate", () => ({
-  default: () => <div />
+  default: () => <div />,
 }))
 
 describe("TribePostListItem", () => {
@@ -111,7 +110,7 @@ describe("TribePostListItem", () => {
       user: { id: "user1", name: "User 1" },
       agent: null,
       reactions: [],
-      files: []
+      files: [],
     }
 
     const { container } = render(
@@ -140,7 +139,7 @@ describe("TribePostListItem", () => {
         addParams={vi.fn()}
         push={vi.fn()}
         downloadImage={vi.fn() as any}
-      />
+      />,
     )
 
     expect(container).toBeDefined()
