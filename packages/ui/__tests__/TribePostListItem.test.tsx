@@ -101,47 +101,122 @@ vi.mock("../TribeTranslate", () => ({
 }))
 
 describe("TribePostListItem", () => {
-  it("renders correctly with memoization", () => {
-    const mockPost = {
-      id: "post1",
-      content: "Hello world",
-      createdAt: new Date(),
-      app: { id: "app1", name: "Test App", slug: "test" },
-      user: { id: "user1", name: "User 1" },
-      agent: null,
-      reactions: [],
-      files: [],
-    }
+  const defaultMockPost = {
+    id: "post1",
+    content: "Hello world",
+    createdAt: new Date(),
+    app: { id: "app1", name: "Test App", slug: "test" },
+    user: { id: "user1", name: "User 1" },
+    agent: null,
+    reactions: [],
+    files: [],
+  }
 
+  const defaultProps = {
+    index: 0,
+    reduceMotion: false,
+    isDark: false,
+    isMobileDevice: false,
+    isSmallDevice: false,
+    viewPortWidth: 1000,
+    t: (key: string) => key,
+    timeAgo: () => "1 hour ago",
+    isTogglingLike: undefined,
+    tryAppCharacterProfile: undefined,
+    setTryAppCharacterProfile: vi.fn(),
+    tyingToReact: undefined,
+    setTyingToReact: vi.fn(),
+    owner: true,
+    deletePost: vi.fn() as any,
+    setSignInPart: vi.fn(),
+    setAppStatus: vi.fn(),
+    tags: [],
+    setTags: vi.fn(),
+    postsRef: { current: null },
+    addParams: vi.fn(),
+    push: vi.fn(),
+    downloadImage: vi.fn() as any,
+  }
+
+  it("renders basic post without images", () => {
+    const { container } = render(
+      <TribePostListItem post={defaultMockPost as any} {...defaultProps} />,
+    )
+    expect(container).toBeDefined()
+  })
+
+  it("renders post with images on wide viewport", () => {
+    const postWithImages = {
+      ...defaultMockPost,
+      images: [{ url: "test-image.jpg" }],
+    }
     const { container } = render(
       <TribePostListItem
-        post={mockPost as any}
-        index={0}
-        reduceMotion={false}
-        isDark={false}
-        isMobileDevice={false}
-        isSmallDevice={false}
+        post={postWithImages as any}
+        {...defaultProps}
         viewPortWidth={1000}
-        t={(key) => key}
-        timeAgo={() => "1 hour ago"}
-        isTogglingLike={undefined}
-        tryAppCharacterProfile={undefined}
-        setTryAppCharacterProfile={vi.fn()}
-        tyingToReact={undefined}
-        setTyingToReact={vi.fn()}
-        owner={true}
-        deletePost={vi.fn() as any}
-        setSignInPart={vi.fn()}
-        setAppStatus={vi.fn()}
-        tags={[]}
-        setTags={vi.fn()}
-        postsRef={{ current: null }}
-        addParams={vi.fn()}
-        push={vi.fn()}
-        downloadImage={vi.fn() as any}
+        isMobileDevice={false}
       />,
     )
+    expect(container).toBeDefined()
+  })
 
+  it("renders post with images on small viewport (<500)", () => {
+    const postWithImages = {
+      ...defaultMockPost,
+      images: [{ url: "test-image.jpg" }],
+    }
+    const { container } = render(
+      <TribePostListItem
+        post={postWithImages as any}
+        {...defaultProps}
+        viewPortWidth={400}
+      />,
+    )
+    expect(container).toBeDefined()
+  })
+
+  it("renders post with images on mobile device", () => {
+    const postWithImages = {
+      ...defaultMockPost,
+      images: [{ url: "test-image.jpg" }],
+    }
+    const { container } = render(
+      <TribePostListItem
+        post={postWithImages as any}
+        {...defaultProps}
+        viewPortWidth={800}
+        isMobileDevice={true}
+      />,
+    )
+    expect(container).toBeDefined()
+  })
+
+  it("renders post with videos and files", () => {
+    const postWithMedia = {
+      ...defaultMockPost,
+      videos: [{ url: "test-video.mp4" }],
+      files: [{ url: "test.pdf", fileName: "test.pdf" }],
+    }
+    const { container } = render(
+      <TribePostListItem
+        post={postWithMedia as any}
+        {...defaultProps}
+        owner={false}
+      />,
+    )
+    expect(container).toBeDefined()
+  })
+
+  it("renders with reduceMotion and isDark true", () => {
+    const { container } = render(
+      <TribePostListItem
+        post={defaultMockPost as any}
+        {...defaultProps}
+        reduceMotion={true}
+        isDark={true}
+      />,
+    )
     expect(container).toBeDefined()
   })
 })
