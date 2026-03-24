@@ -274,6 +274,7 @@ export default function Chat({
     isHippoOpen,
     OWNER_CREDITS,
     PROMPT_LIMITS,
+    isE2E,
     ...auth
   } = useAuth()
 
@@ -5042,7 +5043,9 @@ export default function Chat({
                       <Link size={15} />
                       {t("Privacy")}
                     </A>
-                  ) : !isSelectingMood && isDevelopment && user && !hipchat ? (
+                  ) : !isSelectingMood &&
+                    (isDevelopment ? user : isE2E) &&
+                    !hipchat ? (
                     <Hippo
                       thread={thread}
                       key={dataTestId}

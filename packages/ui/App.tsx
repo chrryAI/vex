@@ -54,6 +54,7 @@ import {
   useTheme,
   Video,
 } from "./platform"
+import Ticker from "./Ticker"
 import Tools from "./Tools"
 import type { appWithStore } from "./types"
 import { apiFetch, BrowserInstance } from "./utils"
@@ -184,6 +185,8 @@ export default function App({
     FRONTEND_URL,
     API_URL,
     rtl,
+    tickerPaused: paused,
+    setTickerPaused: setPaused,
     ...auth
   } = useAuth()
 
@@ -594,6 +597,22 @@ export default function App({
             )}{" "}
             {minimize ? t("Superpowers") : t("Minimize")}
           </Button>
+          {minimize && (
+            <Button
+              className="link"
+              onClick={() => {
+                setPaused(!paused)
+              }}
+              title={paused ? t("Play") : t("Pause")}
+              style={{
+                ...utilities.link.style,
+                position: "relative",
+                right: 5,
+              }}
+            >
+              {paused ? <CirclePlay size={18} /> : <CirclePause size={18} />}
+            </Button>
+          )}
         </Div>
       )}
       <H1 style={styles.title.style}>
@@ -1058,6 +1077,13 @@ export default function App({
                     <SiBluesky size={18} /> {t("Bluesky")}
                   </A>
                 )}
+              </Div>
+              <Div
+                style={{
+                  marginTop: "1rem",
+                }}
+              >
+                <Ticker />
               </Div>
             </>
           )}

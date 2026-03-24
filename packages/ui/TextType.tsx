@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from "react"
+import { useAppContext } from "./context/AppContext"
 import { useStyles } from "./context/StylesContext"
 import { CirclePause, CirclePlay } from "./icons"
 import { Button, Div, Span } from "./platform"
@@ -74,6 +75,8 @@ const TextType = ({
   const [isVisible, setIsVisible] = useState(!startOnVisible)
   const cursorRef = useRef(null)
   const containerRef = useRef(null)
+
+  const { t } = useAppContext()
 
   const { utilities } = useStyles()
 
@@ -215,6 +218,7 @@ const TextType = ({
     <Div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
       {showControls && (
         <Button
+          title={paused ? t("Play") : t("Pause")}
           className="link"
           onClick={() => {
             setPaused(!paused)

@@ -441,7 +441,7 @@ const Thread = ({
                 zIndex: 10,
                 paddingBottom:
                   minimize && !showFocus && !showTribe
-                    ? 30
+                    ? 0
                     : isStandalone
                       ? 200
                       : 195,

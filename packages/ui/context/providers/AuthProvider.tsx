@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.1"
+const VERSION = "2.2.2"
 
 const AuthContext = createContext<
   | {
@@ -113,6 +113,8 @@ const AuthContext = createContext<
         chromeVersion: string
         macosVersion: string
       }
+      tickerPaused: boolean
+      setTickerPaused: (value: boolean) => void
       isE2E: boolean
       setTribes: (tribes?: paginatedTribes) => void
       setTribePosts: (tribePosts?: paginatedTribePosts) => void
@@ -1279,6 +1281,8 @@ export function AuthProvider({
   const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
     !initialTribePosts,
   )
+
+  const [tickerPaused, setTickerPaused] = useState(false)
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
@@ -2790,7 +2794,12 @@ export function AuthProvider({
     colorScheme,
     theme,
     themeMode,
+    reduceMotion,
   } = useTheme()
+
+  useEffect(() => {
+    reduceMotion && setTickerPaused(reduceMotion)
+  }, [reduceMotion])
 
   const [showCharacterProfiles, setShowCharacterProfiles] = useState(false)
   const [characterProfiles, setCharacterProfiles] = useState<
@@ -3672,6 +3681,8 @@ export function AuthProvider({
         isHippoOpen,
         setIsHippoOpen,
         ask,
+        tickerPaused,
+        setTickerPaused,
         setAsk,
         isLoadingMoods,
         mood,
