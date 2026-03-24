@@ -2,17 +2,19 @@ import React from "react"
 import { useApp, useAuth } from "./context/providers"
 import { COLORS, useTheme } from "./context/ThemeContext"
 import TextType from "./TextType"
+import { useAppContext } from "./context/AppContext"
 
 function Ticker({ style }: { style?: React.CSSProperties }) {
   const { instructions } = useApp()
   const { colorScheme } = useTheme()
   const { setSelectedInstruction } = useAuth()
   const [currentIndex, setCurrentIndex] = React.useState(0)
+  const { t } = useAppContext()
 
   // Map instructions to their titles for the typing effect
   const instructionTitles = React.useMemo(() => {
     return (instructions || []).map(
-      (ins) => `${ins.emoji ? ins.emoji + "  " : ""}${ins.title}`,
+      (ins) => `${ins.emoji ? ins.emoji + "  " : ""}${t(ins.title)}`,
     )
   }, [instructions])
 
