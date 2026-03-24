@@ -548,6 +548,7 @@ export default function Watermelon() {
                   }}
                   href="https://wannathis.one?via=iliyan"
                   target="_blank"
+                  title="WannaThis"
                   rel="noopener noreferrer"
                 >
                   <WannathisIcon />
