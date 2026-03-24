@@ -3,6 +3,7 @@
 import clsx from "clsx"
 import { lazy, Suspense } from "react"
 import { useAppContext } from "./context/AppContext"
+import Hippo from "./Hippo"
 import Img from "./Image"
 import { CircleCheck, CircleEllipsis } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
@@ -329,6 +330,7 @@ export default function Skeleton({
                     paddingTop: isTauri && rtl ? "1.3rem" : "0",
                   }}
                 >
+                  <Hippo dataTestId="skeleton-hip" />
                   <Suspense fallback={null}>
                     <CharacterProfiles />
                   </Suspense>
