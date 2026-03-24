@@ -951,7 +951,7 @@ export default function Hippo({
                     ? `hippo-${dataTestId}-chat`
                     : `${dataTestId}-chat`
                 }
-                compactMode={false}
+                compactMode
                 showSuggestions={false}
                 style={{ position: "relative", top: 15 }}
               />
