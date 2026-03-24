@@ -158,7 +158,7 @@ const HipChat = ({
 
   const { appStatus, appFormWatcher, suggestSaveApp } = useApp()
 
-  const { addHapticFeedback, colorScheme } = useTheme()
+  const { addHapticFeedback } = useTheme()
 
   // Update thread metadata dynamically
   useThreadMetadata(thread)
