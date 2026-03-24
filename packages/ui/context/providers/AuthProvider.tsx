@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.1.95"
+const VERSION = "2.1.96"
 
 const AuthContext = createContext<
   | {
@@ -1289,7 +1289,6 @@ export function AuthProvider({
   >(undefined)
 
   const isHippoOpen = isHippoOpenInternal
-  console.log(`🚀 ~ baseAppInternal ~ isHippoOpen:`, isHippoOpen)
 
   const setIsHippoOpen = (value: string | undefined) => {
     isHippoOpenRef.current = value

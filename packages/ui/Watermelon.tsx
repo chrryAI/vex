@@ -11,10 +11,10 @@ import {
   SiHono,
   SiMacos,
   SiMinio,
+  SiReact,
   SiRedis,
   SiTauri,
   SiVite,
-  SiReact,
 } from "react-icons/si"
 import AppLink from "./AppLink"
 import A from "./a/A"
@@ -428,6 +428,17 @@ export default function Watermelon() {
                   }}
                   className="button transparent"
                   href="?subscribe=true&plan=watermelon"
+                  onClick={(e) => {
+                    if (e.metaKey || e.ctrlKey) {
+                      return
+                    }
+                    e.preventDefault()
+
+                    addParams({
+                      subscribe: "true",
+                      plan: "watermelon",
+                    })
+                  }}
                 >
                   <Img
                     alt="🍉 Agency"
@@ -445,6 +456,18 @@ export default function Watermelon() {
                   }}
                   className="button transparent"
                   href="?subscribe=true&plan=watermelon&watermelonTier=plus"
+                  onClick={(e) => {
+                    if (e.metaKey || e.ctrlKey) {
+                      return
+                    }
+                    e.preventDefault()
+
+                    addParams({
+                      subscribe: "true",
+                      plan: "watermelon",
+                      watermelonTier: "plus",
+                    })
+                  }}
                 >
                   <Img alt="🦋 Sovereign" width={22} height={22} slug="tribe" />
                   {t("Sovereign")}
