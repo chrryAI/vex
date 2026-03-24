@@ -1755,6 +1755,8 @@ export default function App({
             hipchat={false}
             opacity={0}
             onSave={({ content, artifacts }) => {
+              console.log(`🚀 ~ isManagingApp:`, isManagingApp)
+
               if (isManagingApp) {
                 return
               }

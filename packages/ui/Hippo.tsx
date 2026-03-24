@@ -1,6 +1,6 @@
 "use client"
 
-import {
+import React, {
   type CSSProperties,
   type Dispatch,
   lazy,
@@ -146,7 +146,7 @@ export default function Hippo({
     PROMPT_LIMITS,
     isDevelopment,
     isHippoOpen,
-    setIsHippoOpen: setIsOpenAuth,
+    setIsHippoOpen: setIsOpenInternal,
     selectedInstruction,
     setSelectedInstruction: setSelectedInstructionInternal,
     ...auth
@@ -169,6 +169,8 @@ export default function Hippo({
     claudeAgent,
     favouriteAgent,
     refetchThread,
+    setArtifacts,
+    setInstruction,
   } = useChat()
 
   const {
@@ -432,12 +434,11 @@ export default function Hippo({
 
   const instructionsListRef = useRef<HTMLDivElement>(null)
 
-  const isOpen = isHippoOpen
+  const isOpen = !!isHippoOpen
 
   const setIsOpen = (open: boolean) => {
-    setIsOpenAuth(open ? `${dataTestId}-chat` : undefined)
+    setIsOpenInternal(open ? `${dataTestId}-chat` : undefined)
     if (!open) {
-      setIsOpenAuth(undefined)
       setCollaborationStep(0)
     }
   }
@@ -601,8 +602,6 @@ export default function Hippo({
         return
       }
 
-      console.log(`🚀 tep:`, step)
-
       if (step === "success") {
         // Update: Find and update existing completed highlight
         const updatedHighlights = currentHighlights.map((h) =>
@@ -692,11 +691,13 @@ export default function Hippo({
         setIsGeneratingInstructions(false)
       }
     } else {
-      onSave?.({ content: newInstruction, artifacts: files })
+      setInstruction(newInstruction)
+      setArtifacts(files)
       setIsSaving(false)
       setIsOpen(false)
       setIsArtifactsOpen(false)
       toast.success(t("Updated"))
+      onSave?.({ content: newInstruction, artifacts: files })
     }
 
     if (collaborationStep === 1) {
@@ -867,7 +868,7 @@ export default function Hippo({
           style={styles.modal.style}
           hasCloseButton
           hideOnClickOutside={false}
-          isModalOpen={!!isOpen || isArtifactsOpen}
+          isModalOpen={isOpen || isArtifactsOpen}
           title={
             <>
               {isArtifactsOpen ? (
@@ -949,7 +950,7 @@ export default function Hippo({
                     ? `hippo-${dataTestId}-chat`
                     : `${dataTestId}-chat`
                 }
-                compactMode
+                compactMode={false}
                 showSuggestions={false}
                 style={{ position: "relative", top: 15 }}
               />
