@@ -474,8 +474,6 @@ export default function Hippo({
   const [isGeneratingInstructions, setIsGeneratingInstructions] =
     useState(false)
 
-  const chatDataTestId = `${dataTestId}-chat`
-
   const [isArtifactsOpen, setIsArtifactsOpen] = useState(rest.isArtifactsOpen)
 
   const canUpdate = thread
