@@ -11,7 +11,7 @@ import {
   useRef,
   useState,
 } from "react"
-import { useAppContext } from "./context/AppContext"
+import { COLORS, useAppContext } from "./context/AppContext"
 import { useStyles } from "./context/StylesContext"
 import { CirclePause, CirclePlay } from "./icons"
 import { Button, Div, Span } from "./platform"
@@ -236,7 +236,11 @@ const TextType = ({
             top: "1px",
           }}
         >
-          {paused ? <CirclePlay size={20} /> : <CirclePause size={20} />}
+          {paused ? (
+            <CirclePlay color={COLORS.green} size={20} />
+          ) : (
+            <CirclePause color={COLORS.orange} size={20} />
+          )}
         </Button>
       )}
       {createElement(

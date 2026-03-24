@@ -347,9 +347,9 @@ export default function Watermelon() {
                   }}
                 >
                   {paused ? (
-                    <CirclePlay size={22} />
+                    <CirclePlay color={COLORS.green} size={22} />
                   ) : (
-                    <CirclePause size={22} />
+                    <CirclePause color={COLORS.orange} size={22} />
                   )}
                 </Button>
               </H1>

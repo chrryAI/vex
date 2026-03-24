@@ -970,7 +970,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     ...auth
   } = useAuth()
   const { setAppStatus } = useApp()
-  const { isExtension, isFirefox, viewPortWidth } = usePlatform()
+  const { isExtension, isFirefox, viewPortWidth, os } = usePlatform()
 
   const [tryAppCharacterProfile, setTryAppCharacterProfile] = useState<
     string | undefined
@@ -1873,7 +1873,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       <Div
                         style={{
                           display: "flex",
-                          gap: 7.5,
+                          gap: 15,
                           flex: 1,
                           flexWrap: "wrap",
                           alignItems: "center",
@@ -1886,20 +1886,16 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             icon={<Img size={32} app={app} />}
                           />
                         )}
-                        <Span
-                          style={{
-                            position: "relative",
-                            right: "0.2rem",
-                          }}
-                        >
-                          🌀
-                        </Span>
-                        <Ticker
-                          showControls
-                          style={{
-                            color: "var(--accent-5)",
-                          }}
-                        />{" "}
+                        {os !== "windows" && (
+                          <Span
+                            style={{
+                              position: "relative",
+                              right: "0.2rem",
+                            }}
+                          >
+                            {app?.icon}
+                          </Span>
+                        )}
                         {back ? (
                           <AppLink
                             isTribe
@@ -1921,16 +1917,30 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           </AppLink>
                         ) : null}
                       </Div>
-                      <P
+
+                      <Div
                         style={{
                           color: "var(--shade-7)",
+                          display: "flex",
+                          gap: 5,
+                          flexDirection: "column",
+                          alignSelf: "flex-start",
+                          alignItems: "flex-start",
                         }}
                       >
-                        <A href={`/${app?.store?.slug}`} target="_blank">
-                          {t(app?.store?.title ?? "")}
-                        </A>{" "}
-                        - {t(app?.store?.description ?? "")}
-                      </P>
+                        <Ticker
+                          showControls
+                          style={{
+                            color: "var(--accent-5)",
+                          }}
+                        />
+                        <P>
+                          <A href={`/${app?.store?.slug}`} target="_blank">
+                            {t(app?.store?.title ?? "")}
+                          </A>{" "}
+                          - {t(app?.store?.description ?? "")}
+                        </P>
+                      </Div>
                     </Div>
                   )}
 
