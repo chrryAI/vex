@@ -23,10 +23,10 @@ import { useTimerContext } from "./context/TimerContext"
 import EnableNotifications from "./EnableNotifications"
 import { useFocusButtonStyles } from "./FocusButton.styles"
 import Grapes from "./Grapes"
+import Hippo from "./Hippo"
 import { useHasHydrated } from "./hooks"
 import Logo from "./Image"
 import Img from "./Image"
-import Instructions from "./Instructions"
 import {
   ArrowRight,
   CircleCheck,
@@ -54,6 +54,7 @@ import {
   useTheme,
   Video,
 } from "./platform"
+import Tools from "./Tools"
 import type { appWithStore } from "./types"
 import { apiFetch, BrowserInstance } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
@@ -231,6 +232,7 @@ export default function App({
           (item.id !== grok?.id || !isBlossom) &&
           //Pear zaten chatte var :)
           (item.id !== pear?.id || !isBlossom) &&
+          !store?.excludeGridApps?.includes(item.slug) &&
           (item.id === grape?.id
             ? accountApp?.id === app?.id
               ? false
@@ -1475,7 +1477,6 @@ export default function App({
                           )}
                           {showZarathustraHere &&
                             zarathustra &&
-                            store &&
                             store?.apps?.some(
                               (app) => app.id === zarathustra.id,
                             ) && (
@@ -1745,26 +1746,13 @@ export default function App({
             pointerEvents: hasHydrated && minimize ? "none" : "auto",
           }}
         >
-          {isManagingApp && (
-            <Instructions
-              icon={false}
-              dataTestId="instruction-builder"
-              opacity={0}
-              onSave={({ content, artifacts }) => {
-                onSave?.({
-                  content,
-                  artifacts,
-                })
-              }}
-              showInstructions={false}
-            />
-          )}
-          <Instructions
-            icon
+          <Hippo
+            ghost
+            as="icon"
             showInstructions
-            showButton={false}
             dataTestId="instruction"
             isAgentBuilder={true}
+            hipchat={false}
             opacity={0}
             onSave={({ content, artifacts }) => {
               if (isManagingApp) {
@@ -1776,6 +1764,7 @@ export default function App({
               })
             }}
           />
+          <Tools />
         </Div>
       </Div>
     </Div>

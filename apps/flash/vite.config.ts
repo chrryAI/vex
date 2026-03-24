@@ -52,25 +52,27 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
       ...(!isSsrBuild
         ? [
             compression({
-              algorithm: "gzip",
+              algorithms: ["gzip"],
               exclude: [/\.(br)$/, /\.(gz)$/],
               threshold: 1024,
-              deleteOriginFile: false,
             }),
             // Generate brotli compressed files (better compression than gzip)
             compression({
-              algorithm: "brotliCompress",
+              algorithms: ["brotliCompress"],
               exclude: [/\.(br)$/, /\.(gz)$/],
               threshold: 1024,
-              deleteOriginFile: false,
             }),
           ]
         : []),
     ],
-    publicDir: path.resolve(__dirname, "public"),
+    publicDir: isSsrBuild ? false : path.resolve(__dirname, "public"),
     resolve: {
       alias: {
         chrry: path.resolve(__dirname, "../../packages/ui"),
+        "react-native": path.resolve(
+          __dirname,
+          "node_modules/react-native-web",
+        ),
       },
     },
     define: {},
@@ -86,7 +88,12 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
     },
     ssr: {
       external: ["i18n-iso-countries"], // Don't bundle - has dynamic requires
-      noExternal: [/@lobehub\//, "@chrryai/chrry", "chrry"], // Force bundle @lobehub packages and chrry to fix directory imports
+      noExternal: [
+        /@lobehub\//,
+        "@chrryai/chrry",
+        "chrry",
+        ...(command === "build" ? ["react", "react-dom"] : []),
+      ], // Force bundle libraries to fix ESM/CJS naming issues in React 19 production build
       resolve: {
         externalConditions: ["node", "import"],
       },
@@ -167,7 +174,7 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
           format: "es", // Force ES module format
           // Only add Node.js polyfills for SSR builds, not client builds
           banner: isSsrBuild
-            ? "import { createRequire } from 'module';import { fileURLToPath } from 'url';import { dirname } from 'path';const require = createRequire(import.meta.url);const __filename = fileURLToPath(import.meta.url);const __dirname = dirname(__filename);globalThis.require = require;globalThis.__dirname = __dirname;globalThis.__filename = __filename;"
+            ? "import { createRequire as __createRequire } from 'module';import { fileURLToPath as __fileURLToPath } from 'url';import { dirname as __dirnameFunc } from 'path';const require = __createRequire(import.meta.url);const __filename = __fileURLToPath(import.meta.url);const __dirname = __dirnameFunc(__filename);globalThis.require = require;globalThis.__dirname = __dirname;globalThis.__filename = __filename;"
             : undefined,
         },
       },

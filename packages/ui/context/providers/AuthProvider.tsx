@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.1.67"
+const VERSION = "2.1.92"
 
 const AuthContext = createContext<
   | {
@@ -122,6 +122,7 @@ const AuthContext = createContext<
       about: string | undefined
       canShowTribe: boolean
       showWatermelonInitial: boolean
+      hasHydrated: boolean
       actions: apiActions
       setAbout: (value: string | undefined) => void
       ask: string | undefined
@@ -149,6 +150,8 @@ const AuthContext = createContext<
       timer?: timer | null
       tribeSlug?: string
       currentTribe?: tribe
+      selectedInstruction: instructionBase | null
+      setSelectedInstruction: (instruction: instructionBase | null) => void
       getTribeUrl: (app?: appWithStore) => string
       rtl: boolean
       mergeApps: (apps: appWithStore[]) => void
@@ -229,6 +232,8 @@ const AuthContext = createContext<
         threads?: thread[]
         totalCount: number
       }
+      isHippoOpen: string | undefined
+      setIsHippoOpen: (value: string | undefined) => void
       appStatus: AppStatus | undefined
       setAppStatus: (appStatus: AppStatus | undefined, path?: string) => void
       lastApp: appWithStore | undefined
@@ -248,7 +253,7 @@ const AuthContext = createContext<
         apps: appWithStore[],
       ) => appWithStore | undefined
       setShowFocus: (showFocus: boolean) => void
-      showFocus: boolean | undefined
+      showFocus: boolean | undefined | null
       isLoadingTasks: boolean
       setIsLoadingPosts: (value: boolean) => void
       isLoadingPosts: boolean
@@ -443,6 +448,7 @@ export function AuthProvider({
   tribePosts: initialTribePosts,
   tribePost: initialTribePost,
   testConfig,
+  isBot,
   ...props
 }: {
   translations?: Record<string, any>
@@ -455,6 +461,7 @@ export function AuthProvider({
   gift?: string
   error?: string
   session?: session
+  isBot?: boolean
   app?: appWithStore
   tribes?: paginatedTribes
   tribePosts?: paginatedTribePosts
@@ -953,7 +960,7 @@ export function AuthProvider({
     boolean | undefined
   >("enableNotifications", true)
 
-  const [minimize, setMinimize] = useLocalStorage<boolean>("minimize", true)
+  const [minimize, setMinimize] = useLocalStorage<boolean>("minimize2", false)
 
   const [shouldFetchSession, setShouldFetchSession] = useState(!props.session)
 
@@ -1276,6 +1283,22 @@ export function AuthProvider({
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
 
+  const isHippoOpenRef = useRef<string | undefined>(undefined)
+  const [isHippoOpenInternal, setIsHippoOpenInternal] = useState<
+    string | undefined
+  >(undefined)
+
+  const isHippoOpen = isHippoOpenInternal
+  console.log(`🚀 ~ baseAppInternal ~ isHippoOpen:`, isHippoOpen)
+
+  const setIsHippoOpen = (value: string | undefined) => {
+    isHippoOpenRef.current = value
+    if (!value) {
+      setSelectedInstruction(null)
+    }
+    setIsHippoOpenInternal(value)
+  }
+
   const baseAppInternal = storeApps.find((item) => {
     if (!item) return false
 
@@ -1529,6 +1552,30 @@ export function AuthProvider({
   }
 
   const [agentName, _setAgentName] = useState(session?.aiAgent?.name)
+  const flattenObject = (obj: any, prefix = ""): Record<string, any> => {
+    const flattened: Record<string, any> = {}
+    if (!obj) return flattened
+
+    for (const key in obj) {
+      if (Object.hasOwn(obj, key)) {
+        const value = obj[key]
+        const newKey = prefix ? `${prefix}_${key}` : key
+
+        if (
+          value &&
+          typeof value === "object" &&
+          !Array.isArray(value) &&
+          !(value instanceof Date)
+        ) {
+          Object.assign(flattened, flattenObject(value, newKey))
+        } else {
+          flattened[newKey] = value
+        }
+      }
+    }
+    return flattened
+  }
+
   const plausibleEvent = ({
     name,
     url,
@@ -1565,6 +1612,9 @@ export function AuthProvider({
               : window?.location?.pathname || ""
             : "/"
 
+    // Flatten props for Plausible 2 compatibility
+    const flattenedProps = flattenObject(props)
+
     fetch("https://a.chrry.dev/api/data", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1572,7 +1622,7 @@ export function AuthProvider({
         name,
         url: `https://${domain}${u}`,
         domain,
-        props,
+        props: flattenedProps,
       }),
     }).catch(() => {})
   }
@@ -1790,7 +1840,7 @@ export function AuthProvider({
       )
     }
 
-    if (user?.role === "admin") return
+    // if (user?.role === "admin") return
 
     plausibleEvent({
       name,
@@ -2086,7 +2136,13 @@ export function AuthProvider({
     mutate: refetchAccountApps,
     isLoading: isLoadingAccountApps,
   } = useSWR(
-    token && ["accountApp", accountAppId, skipAppCacheTemp],
+    token && [
+      "accountApp",
+      accountAppId,
+      skipAppCacheTemp,
+      updatedApp?.id,
+      newApp?.id,
+    ],
     async () => {
       try {
         if (!token) return
@@ -2107,12 +2163,51 @@ export function AuthProvider({
   useEffect(() => {
     if (accountAppsSwr?.id) {
       setAccountApp(accountAppsSwr)
+      mergeApps([accountAppsSwr])
 
-      if (app?.id === accountAppsSwr.id) {
+      if (!accountApp && accountAppsSwr && newApp) {
+        toast.success(t("🥳 WOW!, you created something amazing"))
+        setNewApp(undefined)
+
+        setAccountApp(accountAppsSwr)
+
+        setIsSavingApp(false)
+        setIsManagingApp(false)
+
         setApp(accountAppsSwr)
+        setStore(accountAppsSwr.store)
+        router.push(getAppSlug(accountAppsSwr))
+        return
+      }
+
+      if (accountAppsSwr && updatedApp?.id) {
+        toast.success(`${t("Updated")} 🚀`)
+        // if (!isExtension && !isNative) {
+        //   // setSlug(getAppSlug(n) || "")
+        //   window.location.href = getAppSlug(u)
+        //   return
+        // }
+        setUpdatedApp(undefined)
+        setAccountApp(accountAppsSwr)
+
+        setIsManagingApp(false)
+        setIsSavingApp(false)
+
+        setApp(accountAppsSwr)
+        setStore(accountAppsSwr.store)
+
+        setSlug(getAppSlug(accountAppsSwr) || "")
+        // router.push(getAppSlug(accountAppsSwr))
+
+        return
+      }
+      if (appId === accountAppsSwr.id) {
+        mergeApps([accountAppsSwr])
+        setApp(accountAppsSwr)
+        setStore(accountAppsSwr.store)
       }
     }
-  }, [accountAppsSwr, app?.id])
+  }, [accountAppsSwr, accountApp, newApp?.id, updatedApp?.id, appId])
 
   useEffect(() => {
     if (storeAppsSwr) {
@@ -2125,81 +2220,39 @@ export function AuthProvider({
       if (storeAppsSwr.store?.apps?.length) {
         mergeApps(storeAppsSwr.store?.apps)
       }
-
-      // // Merge storeAppsSwr with current app state to preserve local changes
-      // if (app?.id && storeAppsSwr.store?.apps) {
-      //   const freshApp = storeAppsSwr.store.apps.find((a) => a.id === app.id)
-      //   if (freshApp) {
-      //     // Merge: keep local changes, update with fresh data
-      //     const mergedApp = {
-      //       ...freshApp,
-      //       ...app,
-      //       // Always take fresh data for these critical fields
-      //       store: freshApp.store,
-      //       updatedOn: freshApp.updatedOn,
-      //     }
-      //     setApp(mergedApp)
-      //   }
-      // }
-
-      const n = storeAppsSwr.store?.apps.find((app) => app.id === newApp?.id)
-      if (n) {
-        toast.success(t("🥳 WOW!, you created something amazing"))
-        // if (!isExtension && !isNative) {
-        //   // setSlug(getAppSlug(n) || "")
-        //   window.location.href = getAppSlug(n)
-        //   return
-        // }
-        setNewApp(undefined)
-
-        setAccountApp(n)
-
-        setIsSavingApp(false)
-        setIsManagingApp(false)
-
-        setApp(n)
-        setStore(n.store)
-        router.push(getAppSlug(n))
-      }
-
-      const u = storeAppsSwr?.store?.apps.find(
-        (app) => app.id === updatedApp?.id,
-      )
-      if (u) {
-        toast.success(`${t("Updated")} 🚀`)
-        // if (!isExtension && !isNative) {
-        //   // setSlug(getAppSlug(n) || "")
-        //   window.location.href = getAppSlug(u)
-        //   return
-        // }
-        setUpdatedApp(undefined)
-        setAccountApp(u)
-
-        setIsManagingApp(false)
-        setIsSavingApp(false)
-
-        setApp(u)
-        setStore(u.store)
-
-        setSlug(getAppSlug(u) || "")
-        router.push(getAppSlug(u))
-
-        return
-      }
     }
-  }, [storeAppsSwr, newApp, updatedApp, loadingAppId])
+  }, [storeAppsSwr, loadingAppId])
 
   const showFocusInitial = searchParams.get("focus") === "true"
+  const postIdInitial = getPostId(pathname)
+  const [postId, setPostId] = useState(postIdInitial)
 
-  const [showFocus, setShowFocusInternal] = useState<boolean | undefined>(
-    showFocusInitial,
+  useEffect(() => {
+    setPostId(postIdInitial)
+  }, [postIdInitial])
+
+  const [showFocus, setShowFocusInternal] = useLocalStorage<
+    boolean | undefined | null
+  >(
+    `showFocus:${app?.slug || "focus"}`,
+    !postId
+      ? baseApp
+        ? baseApp?.slug === "focus" || showFocusInitial
+        : undefined
+      : false,
   )
 
   useEffect(() => {
-    if (showFocusInitial !== showFocus) {
+    if (postId) return
+    if (!isStorageReady) return
+    if (!baseApp?.slug) return
+    if (showFocus === undefined && baseApp?.slug === "focus") {
+      setShowFocusInternal(true)
+    }
+    if (showFocusInitial) {
       setShowFocusInternal(showFocusInitial)
     }
-  }, [showFocusInitial, showFocus])
+  }, [showFocusInitial, showFocus, baseApp?.slug, isStorageReady, postId])
 
   const setShowFocus = (sw: boolean) => {
     setShowFocusInternal(sw)
@@ -2240,7 +2293,8 @@ export function AuthProvider({
 
   const canShowAllTribe = !!(
     clearLocale(pathname) === "/tribe" ||
-    (siteConfig.isTribe && !clearLocale(pathname))
+    (siteConfig.isTribe && !clearLocale(pathname)) ||
+    clearLocale(pathname) === "/"
   )
 
   const installs = [
@@ -2421,9 +2475,14 @@ export function AuthProvider({
     session?.stores,
   )
 
+  const [selectedInstruction, setSelectedInstruction] =
+    useState<instructionBase | null>(null)
+
   // Handle pathname changes: extract slug and switch app
 
-  const hasHydrated = useHasHydrated()
+  const hasHydratedInternal = useHasHydrated()
+
+  const hasHydrated = hasHydratedInternal || !!isBot
 
   const [shouldFetchMoods, setShouldFetchMoods] = useState(false)
 
@@ -2521,14 +2580,6 @@ export function AuthProvider({
     setShowWatermelonInternal(showWatermelonInitial)
   }, [showWatermelonInitial])
 
-  const postIdInitial = getPostId(pathname)
-
-  const [postId, setPostId] = useState(postIdInitial)
-
-  useEffect(() => {
-    setPostId(postIdInitial)
-  }, [postIdInitial])
-
   // Only show tribe profile when on app's own page (not /tribe route)
 
   const tribeSlug = pathname?.startsWith("/t/")
@@ -2556,7 +2607,12 @@ export function AuthProvider({
       canBeTribeProfile
     ) && canShowTribe
 
-  const [showTribe, setShowTribeFinal] = useState(showTribeInitial)
+  const [showTribeInternal, setShowTribeFinal] = useLocalStorage<
+    boolean | undefined | null
+  >("showTribe", showTribeInitial)
+
+  const showTribe =
+    showTribeInternal === null ? showTribeInitial : showTribeInternal
 
   const showTribeProfileInternal = canBeTribeProfile
 
@@ -2783,7 +2839,6 @@ export function AuthProvider({
   )
 
   const refetchInstructions = async ({ appId }: { appId?: string }) => {
-    if (showTribe || postId || _isExcluded) return
     if (user) {
       const item = await getUser({
         token,
@@ -3548,12 +3603,6 @@ export function AuthProvider({
   const [needsUpdate, setNeedsUpdate] = useState(false)
 
   useEffect(() => {
-    console.log(
-      `🚀 ~ useEffect ~ toVersionNumber(versions?.macosVersion) :`,
-      toVersionNumber(versions?.macosVersion),
-      toVersionNumber(VERSION),
-    )
-
     const update = !versions
       ? false
       : isTauri
@@ -3621,6 +3670,8 @@ export function AuthProvider({
         setMood,
         about,
         setAbout,
+        isHippoOpen,
+        setIsHippoOpen,
         ask,
         setAsk,
         isLoadingMoods,
@@ -3798,6 +3849,7 @@ export function AuthProvider({
         setFrom,
         setAccountApp: setAccountApp,
         setDeviceId,
+        hasHydrated,
         setApp,
         aiAgents,
         rtl,
@@ -3835,6 +3887,8 @@ export function AuthProvider({
         isE2E,
         PRO_PRICE,
         PLUS_PRICE,
+        selectedInstruction,
+        setSelectedInstruction,
         FREE_DAYS,
         ADDITIONAL_CREDITS,
         PROMPT_LIMITS,

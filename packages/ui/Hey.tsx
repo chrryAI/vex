@@ -9,13 +9,13 @@ import {
   useEffect,
   useState,
 } from "react"
+import AddToHomeScreen from "./addToHomeScreen/AddToHomeScreen"
 import { useApp } from "./context/providers"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useNavigationContext } from "./context/providers/NavigationProvider"
 import { useTribe } from "./context/providers/TribeProvider"
 import { ErrorBoundary } from "./ErrorBoundary"
 import Home from "./Home"
-import { useHasHydrated } from "./hooks"
 import Img from "./Image"
 import Loading from "./Loading"
 import { Div, useLocalStorage, usePlatform, VexToast } from "./platform"
@@ -94,6 +94,7 @@ export const Hey = memo(
       showWatermelon,
       FRONTEND_URL,
       showWatermelonInitial,
+      hasHydrated: isHydrated,
     } = useAuth()
 
     const { tribeSlug, isLoadingTribes } = useTribe()
@@ -140,8 +141,6 @@ export const Hey = memo(
           pathname === "/api" ||
           app ||
           currentStore))
-
-    const isHydrated = useHasHydrated()
 
     const showTribeLogo = showTribe
       ? canShowAllTribe || tribeSlug || postId
@@ -252,31 +251,32 @@ export const Hey = memo(
       >
         <ErrorBoundary>
           {splash}
-          <Suspense fallback={<Loading fullScreen />}>
-            <Programme />
-            <Div style={{ display: isProgramme ? "none" : "block" }}>
-              {showWatermelon ? (
-                <Watermelon />
-              ) : isClientRoute ? (
-                postId || tribeSlug ? (
-                  <Home />
-                ) : threadId ? (
-                  <Thread key={threadId} />
-                ) : RouteComponent ? (
-                  <RouteComponent />
+          {isHydrated && (
+            <Suspense fallback={<Loading fullScreen />}>
+              <Programme />
+              <Div style={{ display: isProgramme ? "none" : "block" }}>
+                {showWatermelon ? (
+                  <Watermelon />
+                ) : isClientRoute ? (
+                  postId || tribeSlug ? (
+                    <Home />
+                  ) : threadId ? (
+                    <Thread key={threadId} />
+                  ) : RouteComponent ? (
+                    <RouteComponent />
+                  ) : (
+                    <Home />
+                  )
                 ) : (
-                  <Home />
-                )
-              ) : (
-                children
-              )}
-            </Div>
-            {isHydrated && (
+                  children
+                )}
+              </Div>
               <>
                 <VexToast />
+                <AddToHomeScreen />
               </>
-            )}
-          </Suspense>
+            </Suspense>
+          )}
         </ErrorBoundary>
       </Div>
     )

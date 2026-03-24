@@ -39,8 +39,6 @@ import {
 
 // Dimensions will be imported dynamically when needed
 
-// Re-export for backwards compatibility
-export type { PlatformType, BrowserType }
 export {
   detectPlatform,
   getBrowser,
@@ -53,6 +51,8 @@ export {
   isTauri,
   isWeb,
 } from "./detection"
+// Re-export for backwards compatibility
+export type { BrowserType, PlatformType }
 
 // Get extension URL (works for Chrome, Firefox, etc.)
 export const getExtensionUrl = (path: string = "index.html"): string => {
@@ -123,7 +123,7 @@ export interface PlatformContextValue {
   viewPortWidth: number
   viewPortHeight: number
   isStorageReady: boolean
-
+  isBot?: boolean
   // IDE state
   isIDE: boolean
   toggleIDE: () => void
@@ -167,6 +167,7 @@ export function PlatformProvider({
   styleModules?: Record<string, Record<string, any>>
   viewPortWidth?: string
   viewPortHeight?: string
+  isBot?: boolean
   session?: {
     device?: { vendor?: string; model?: string; type?: string }
     os?: { name?: string; version?: string }
@@ -231,6 +232,8 @@ export function PlatformProvider({
   const isDesktop = _isWeb() && viewportWidth >= 960
 
   const isTauri = _isTauri()
+
+  const isBot = rest.isBot
 
   // Detect OS - Use server-side UAParser first, then client-side fallback
   const os: "ios" | "android" | "macos" | "windows" | "linux" | "unknown" =
@@ -534,6 +537,7 @@ export function PlatformProvider({
       serverDevice: session?.device,
       serverOS: session?.os,
       serverBrowser: session?.browser,
+      isBot,
     }),
     [
       platform,
@@ -546,6 +550,7 @@ export function PlatformProvider({
       isEdge,
       supportsHover,
       supportsTouch,
+      isBot,
       supportsKeyboard,
       supportsGestures,
       supportsCamera,

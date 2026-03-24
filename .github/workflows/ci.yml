@@ -137,7 +137,31 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
+      - name: Check Versions
+        id: check_versions
+        run: |
+          LOCAL_VERSION=$(jq -r '.version' package.json)
+          echo "LOCAL_VERSION=$LOCAL_VERSION" >> $GITHUB_ENV
+          echo "local_version=$LOCAL_VERSION" >> $GITHUB_OUTPUT
+          # Check API
+          LIVE_API_VERSION=$(curl -s -A "Chrry-Health-Check" -H "X-Internal-Request: flash-server" --compressed --connect-timeout 5 --max-time 10 "$STAGING_API_URL/api/health" | jq -r '.version' 2>/dev/null || echo "unknown")
+          echo "live_api_version=$LIVE_API_VERSION" >> $GITHUB_OUTPUT
+          if [ "$LOCAL_VERSION" != "$LIVE_API_VERSION" ]; then
+            echo "deploy_api=true" >> $GITHUB_OUTPUT
+          else
+            echo "deploy_api=false" >> $GITHUB_OUTPUT
+          fi
+          # Check Web
+          LIVE_WEB_VERSION=$(curl -s -A "Chrry-Health-Check" --compressed --connect-timeout 5 --max-time 10 "$STAGING_URL/api/health" | jq -r '.version' 2>/dev/null || echo "unknown")
+          echo "live_web_version=$LIVE_WEB_VERSION" >> $GITHUB_OUTPUT
+          if [ "$LOCAL_VERSION" != "$LIVE_WEB_VERSION" ]; then
+            echo "deploy_web=true" >> $GITHUB_OUTPUT
+          else
+            echo "deploy_web=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Deploy API to Coolify
+        if: steps.check_versions.outputs.deploy_api == 'true'
         env:
           COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
         run: |
@@ -146,6 +170,7 @@ jobs:
             -H "Authorization: Bearer $COOLIFY_TOKEN"
 
       - name: Wait for API deployment
+        if: steps.check_versions.outputs.deploy_api == 'true'
         run: |
           echo "⏳ Waiting for API to finish deploying..."
           MAX_ATTEMPTS=150
@@ -190,6 +215,7 @@ jobs:
           exit 1
 
       - name: Deploy Web to Coolify
+        if: steps.check_versions.outputs.deploy_web == 'true'
         env:
           COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
         run: |
@@ -198,6 +224,7 @@ jobs:
             -H "Authorization: Bearer $COOLIFY_TOKEN"
 
       - name: Wait for Web deployment
+        if: steps.check_versions.outputs.deploy_web == 'true'
         run: |
           echo "⏳ Waiting for Web to finish deploying..."
           MAX_ATTEMPTS=150

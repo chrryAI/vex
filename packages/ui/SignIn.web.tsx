@@ -609,11 +609,11 @@ export default function SignIn({
   return (
     <>
       {!user ? (
-        <>
+        <Div>
           {showSignIn && (
             <Button
-              data-testid="login-button"
-              id="login-button"
+              data-testid={`login-button`}
+              id={`login-button`}
               onClick={() => handleSignIn("login")}
               className={clsx("transparent small", styles.signInButton)}
             >
@@ -657,7 +657,7 @@ export default function SignIn({
               {registerButtonText || t("Register")}
             </Button>
           )}
-        </>
+        </Div>
       ) : (
         user && <Account />
       )}

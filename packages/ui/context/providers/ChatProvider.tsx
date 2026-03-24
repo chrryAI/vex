@@ -81,7 +81,11 @@ const ChatContext = createContext<
       hasNotification: boolean
       nextPage: number | undefined
       setNextPage: (nextPage: number | undefined) => void
-      scrollToBottom: (timeout?: number, force?: boolean) => void
+      scrollToBottom: (
+        timeout?: number,
+        force?: boolean,
+        element?: HTMLElement | null,
+      ) => void
       status: number | null
       error: any
       until: number
@@ -1166,7 +1170,11 @@ export function ChatProvider({
 
   const toFetchRef = useRef<boolean | null>(null)
 
-  const scrollToBottom = (timeout = isTauri ? 0 : 500, force = false) => {
+  const scrollToBottom = (
+    timeout = isTauri ? 0 : 500,
+    force = false,
+    element?: HTMLElement | null,
+  ) => {
     if (showFocus) setShowFocus(false)
 
     if (!threadId && !force) return
@@ -1175,15 +1183,18 @@ export function ChatProvider({
     const isTribeUrl =
       typeof window !== "undefined" &&
       window.location.search.includes("tribe=true")
-    if (showTribe || isTribeUrl) return
-    if (isEmpty || isUserScrolling || hasStoppedScrolling) return
+    if ((showTribe || isTribeUrl) && !force) return
+    if ((isEmpty || isUserScrolling || hasStoppedScrolling) && !force) return
     setTimeout(() => {
       // Use requestAnimationFrame for more stable scrolling in Tauri
       requestAnimationFrame(() => {
         // In Tauri, use instant scroll instead of smooth to prevent hopping
         const behavior = isTauri ? "instant" : "smooth"
-        window.scrollTo({
-          top: document.body.scrollHeight,
+        const target = element || window
+        const top = element ? element.scrollHeight : document.body.scrollHeight
+
+        target.scrollTo({
+          top,
           behavior: behavior as ScrollBehavior,
         })
         toFetchRef.current = null
@@ -1214,11 +1225,11 @@ export function ChatProvider({
   }, [threadError])
 
   useEffect(() => {
-    // if (toFetch) {
-    //   setShowFocus(false)
-    //   return
-    // }
-    if (showFocus) {
+    if (toFetch) {
+      setShowFocus(false)
+      return
+    }
+    if (showFocus || !toFetch) {
       setThread(undefined)
       setMessages([])
     }

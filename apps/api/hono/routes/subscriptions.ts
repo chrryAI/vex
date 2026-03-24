@@ -7,8 +7,10 @@ import {
   updateUser,
 } from "@repo/db"
 import {
+  AGENCY_CREDITS_PER_MONTH,
   PLUS_CREDITS_PER_MONTH,
   PRO_CREDITS_PER_MONTH,
+  SOVEREIGN_CREDITS_PER_MONTH,
 } from "@repo/db/src/schema"
 import { Hono } from "hono"
 import Stripe from "stripe"
@@ -70,13 +72,15 @@ subscriptions.delete("/", async (c) => {
 // POST /subscriptions/changePlan - Change subscription plan
 subscriptions.post("/changePlan", async (c) => {
   const { newPlan } = (await c.req.json()) as {
-    newPlan: "plus" | "pro"
+    newPlan: "plus" | "pro" | "agency" | "sovereign"
   }
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
-  const validTransitions = {
-    plus: ["pro"],
-    pro: ["plus"],
+  const validTransitions: Record<string, string[]> = {
+    plus: ["pro", "agency", "sovereign"],
+    pro: ["plus", "agency", "sovereign"],
+    agency: ["plus", "pro", "sovereign"],
+    sovereign: ["plus", "pro", "agency"],
   }
 
   try {
@@ -99,7 +103,11 @@ subscriptions.post("/changePlan", async (c) => {
     const newPriceId =
       newPlan === "plus"
         ? process.env.STRIPE_PRICE_PLUS_ID!
-        : process.env.STRIPE_PRICE_PRO_ID!
+        : newPlan === "pro"
+          ? process.env.STRIPE_PRICE_PRO_ID!
+          : newPlan === "agency"
+            ? process.env.STRIPE_PRICE_AGENCY_ID!
+            : process.env.STRIPE_PRICE_SOVEREIGN_ID!
 
     // Retrieve the Stripe subscription to get subscription items
     const stripeSubscription = await stripe.subscriptions.retrieve(
@@ -131,9 +139,14 @@ subscriptions.post("/changePlan", async (c) => {
       plan: newPlan,
     })
 
-    const PLAN_CREDITS = {
-      plus: PLUS_CREDITS_PER_MONTH, // 2000
-      pro: PRO_CREDITS_PER_MONTH, // 3000
+    const PLAN_CREDITS: Record<
+      "plus" | "pro" | "agency" | "sovereign",
+      number
+    > = {
+      plus: PLUS_CREDITS_PER_MONTH,
+      pro: PRO_CREDITS_PER_MONTH,
+      agency: AGENCY_CREDITS_PER_MONTH,
+      sovereign: SOVEREIGN_CREDITS_PER_MONTH,
     }
 
     const currentCredits = user?.credits ?? guest?.credits ?? 0

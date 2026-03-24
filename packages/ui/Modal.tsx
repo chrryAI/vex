@@ -25,19 +25,23 @@ export default function Modal({
   event,
   params,
   icon,
-  scrollable,
+  scrollable = true,
   id,
   borderHeader = true,
   "data-testid": dti,
   dataTestId,
   hideOnClickOutside = true,
   style,
+  innerStyle,
   attachTo,
+  headerStyle,
   ...props
 }: {
   hideOnClickOutside?: boolean
   params?: string
   id?: string
+  innerStyle?: React.CSSProperties
+  headerStyle?: React.CSSProperties
   attachTo?: string
   isModalOpen?: boolean
   hasCloseButton?: boolean
@@ -196,7 +200,11 @@ export default function Modal({
             ref={innerRef}
             id={id}
             tabIndex={-1}
-            style={{ ...styles.inner.style, outline: "none" }}
+            style={{
+              ...styles.inner.style,
+              outline: "none",
+              ...innerStyle,
+            }}
           >
             <H4
               style={{
@@ -204,6 +212,7 @@ export default function Modal({
                 ...(borderHeader
                   ? { borderBottom: "1px dashed var(--shade-2)" }
                   : {}),
+                ...headerStyle,
               }}
             >
               {icon === "blob" ? (
@@ -241,7 +250,7 @@ export default function Modal({
             <Div
               style={{
                 ...styles.content.style,
-                ...(scrollable ? styles.contentScrollable.style : {}),
+                ...(scrollable ? styles.scrollable.style : {}),
               }}
             >
               {children}

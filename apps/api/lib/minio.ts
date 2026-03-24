@@ -33,7 +33,7 @@ export async function getS3Config(
   const encryptedS3Key = member?.apiKeys?.s3 || guest?.apiKeys?.s3
   const s3ApiKey = encryptedS3Key ? safeDecrypt(encryptedS3Key) : null
 
-  if (s3ApiKey && s3ApiKey.startsWith("s3://")) {
+  if (s3ApiKey?.startsWith("s3://")) {
     try {
       const withoutPrefix = s3ApiKey.slice(5)
       const parts = withoutPrefix.split("@")

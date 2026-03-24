@@ -43,6 +43,8 @@ import { getFeatures } from "./utils/subscription"
 export type selectedPlanType =
   | "plus"
   | "pro"
+  | "agency"
+  | "sovereign"
   | "member"
   | "credits"
   | "coder"

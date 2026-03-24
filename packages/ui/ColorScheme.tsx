@@ -11,12 +11,14 @@ export default function ColorScheme({
   style,
   onChange,
   dataTestId,
+  size = 20,
   ...props
 }: {
   style?: React.CSSProperties
   onChange?: (color: keyof typeof COLORS) => void
   colorScheme?: string
   dataTestId?: string
+  size?: number
 }) {
   const styles = useColorSchemeStyles()
   const { plausible } = useAuth()
@@ -48,7 +50,7 @@ export default function ColorScheme({
   if (!hasHydrated) return null
 
   return (
-    <Div style={{ ...styles.colorScheme.style, ...style }}>
+    <Div style={{ ...styles.colorScheme.style, ...style, gap: ".35rem" }}>
       {Object.entries(COLORS).map(([key, value]) => (
         <Button
           data-testid={`${dataTestId}-${key}`}
@@ -61,11 +63,11 @@ export default function ColorScheme({
           style={{ ...styles.color.style }}
           className={"link"}
         >
-          <Circle size={20} fill={value} color={value} />
+          <Circle size={size} fill={value} color={value} />
           {colorScheme === key && (
             <CheckIcon
               style={{ ...styles.check.style }}
-              size={11}
+              size={size - 9}
               strokeWidth={3}
               color="white"
             />

@@ -41,16 +41,49 @@ vi.mock("../platform", async (importOriginal) => {
     ...actual,
     usePlatform: () => mockPlatform,
     useTheme: () => mockTheme,
-    // Mock primitive components to avoid context dependency
-    Div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    Button: ({ children, ...props }: any) => (
+    // Mock primitive components to avoid context dependency and filter non-DOM props
+    Div: ({ children, handlers, state, ...props }: any) => (
+      <div {...props}>{children}</div>
+    ),
+    Button: ({
+      children,
+      onPointerDown,
+      onPointerUp,
+      onPointerLeave,
+      ...props
+    }: any) => (
       <button type="button" {...props}>
         {children}
       </button>
     ),
-    Span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
-    A: ({ children, ...props }: any) => <a {...props}>{children}</a>,
-    Input: ({ ...props }: any) => <input {...props} />,
+    Span: ({ children, handlers, state, ...props }: any) => (
+      <span {...props}>{children}</span>
+    ),
+    A: ({ children, handlers, state, ...props }: any) => (
+      <a {...props}>{children}</a>
+    ),
+    Input: (props: any) => {
+      const {
+        onSubmitEditing,
+        onKeyPress,
+        onPaste,
+        blurOnSubmit,
+        multiline,
+        returnKeyType,
+        onChangeText,
+        dataTestId,
+        error,
+        ...cleanProps
+      } = props
+      return (
+        <input
+          {...cleanProps}
+          onKeyPress={onKeyPress}
+          onPaste={onPaste}
+          data-testid={props["data-testid"] || dataTestId}
+        />
+      )
+    },
   }
 })
 
@@ -84,8 +117,10 @@ vi.mock("../Messages", () => ({
     onToggleLike,
     onPlayAudio,
     onCharacterProfileUpdate,
+    Top,
   }: any) => (
     <div data-testid="messages-list">
+      {Top}
       <button
         type="button"
         data-testid="trigger-delete"
@@ -116,8 +151,10 @@ vi.mock("../EditThread", () => ({
 vi.mock("../Share", () => ({
   default: () => <div data-testid="share-thread" />,
 }))
-vi.mock("../Instructions", () => ({
-  default: () => <div data-testid="instructions" />,
+vi.mock("../Hippo", () => ({
+  default: ({ dataTestId }: any) => (
+    <div data-testid={dataTestId || "instruction"} />
+  ),
 }))
 vi.mock("../Bookmark", () => ({
   default: () => <div data-testid="bookmark" />,
@@ -184,7 +221,9 @@ describe("Thread", () => {
       root.render(<Thread />)
     })
 
-    const instructions = container.querySelector("[data-testid='instructions']")
+    const instructions = container.querySelector(
+      "[data-testid='chat-instruction']",
+    )
     expect(instructions).toBeTruthy()
 
     const deleteThread = container.querySelector(

@@ -20,6 +20,8 @@ import {
 
 export const PRO_CREDITS_PER_MONTH = 5000
 export const PLUS_CREDITS_PER_MONTH = 2000
+export const AGENCY_CREDITS_PER_MONTH = 50000
+export const SOVEREIGN_CREDITS_PER_MONTH = 250000
 export const ADDITIONAL_CREDITS = 500
 export const GUEST_CREDITS_PER_MONTH = 30
 export const MEMBER_CREDITS_PER_MONTH = 150
@@ -316,7 +318,7 @@ export const subscriptions = pgTable(
       .defaultNow()
       .notNull(),
     plan: text("plan", {
-      enum: ["plus", "pro"],
+      enum: ["plus", "pro", "agency", "sovereign"],
     }).notNull(),
     appId: uuid("appId").references(() => apps.id, { onDelete: "set null" }),
   },
@@ -3523,6 +3525,11 @@ export const stores = pgTable(
     teamId: uuid("teamId").references(() => teams.id, {
       onDelete: "cascade",
     }),
+    excludeGridApps: jsonb("excludeGridApps")
+      .$type<
+        Array<string> // UUID of custom agent
+      >()
+      .default([]),
     isSystem: boolean("isSystem").default(false).notNull(),
     hourlyRate: integer("hourlyRate"),
     credits: integer("credits"),

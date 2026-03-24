@@ -1,3 +1,5 @@
+import { vi } from "vitest"
+
 // Polyfill crypto if needed (happy-dom usually provides it, but just in case)
 if (!globalThis.crypto) {
   // Try to use node crypto webcrypto if available
@@ -39,3 +41,15 @@ console.error = (...args) => {
 
   originalConsoleError(...sanitizedArgs)
 }
+
+// Workaround for Node >=20.19 JSON ESM import assertions failing in @emoji-mart/data
+vi.mock("@emoji-mart/data", () => {
+  return {
+    default: {
+      categories: [],
+      emojis: {},
+      aliases: {},
+      sheet: { cols: 0, rows: 0 },
+    },
+  }
+})

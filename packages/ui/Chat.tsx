@@ -1,7 +1,8 @@
 "use client"
+
 import clsx from "clsx"
 import nProgress from "nprogress"
-import {
+import React, {
   type Dispatch,
   type SetStateAction,
   useCallback,
@@ -29,6 +30,7 @@ import {
 import { useStyles } from "./context/StylesContext"
 import DeleteThread from "./DeleteThread"
 import { FalkorDBSetupModal } from "./FalkorDBSetupModal"
+import Hippo from "./Hippo"
 import {
   useCountdown,
   useHasHydrated,
@@ -132,14 +134,22 @@ export default function Chat({
   onTyping,
   style,
   requiresSignin,
+  chatKey,
+  dataTestId,
+  hipchat = true,
+  hipChatId,
 }: {
   requiresSignin?: boolean
   compactMode?: boolean
   placeholder?: string
   Top?: React.ReactNode
+  dataTestId?: string
   showSuggestions?: boolean
   showGreeting?: boolean
   className?: string
+  hipchat?: boolean
+  chatKey?: string
+  hipChatId?: string
   onToggleGame?: (on: boolean) => void
   disabled?: boolean
   onMessage?: (message: {
@@ -153,6 +163,7 @@ export default function Chat({
       aiAgent?: aiAgent
       thread?: thread
     }
+    hipChatId?: string
     webSearchResults?: any[]
     isImageGenerationEnabled?: boolean
     isWebSearchEnabled?: boolean
@@ -163,12 +174,14 @@ export default function Chat({
     aiAgent,
     isWebSearchEnabled,
     isImageGenerationEnabled,
+    hipchat,
   }: {
     content: string
     clientId?: string
     aiAgent?: aiAgent
     isWebSearchEnabled?: boolean
     isImageGenerationEnabled?: boolean
+    hipchat?: boolean
   }) => void
   style?: React.CSSProperties
   onStreamingStop?: (
@@ -192,6 +205,7 @@ export default function Chat({
         user: user
       }[]
     }
+    hipchat?: boolean
   }) => void
   text?: string
   thread?: thread
@@ -258,9 +272,9 @@ export default function Chat({
     isDevelopment,
     MAX_FILE_LIMITS,
     MAX_FILE_SIZES,
+    isHippoOpen,
     OWNER_CREDITS,
     PROMPT_LIMITS,
-
     ...auth
   } = useAuth()
 
@@ -274,7 +288,7 @@ export default function Chat({
   const cooldownMs = cooldownMinutes * 60 * 1000
 
   const setPostToTribe = (value: boolean) => {
-    if (value && lastTribe && lastTribe.createdOn) {
+    if (value && lastTribe?.createdOn) {
       const timeSinceLastPost =
         now.getTime() - new Date(lastTribe.createdOn).getTime()
       const remainingCooldown = cooldownMs - timeSinceLastPost
@@ -292,7 +306,7 @@ export default function Chat({
   }
 
   const setPostToMoltbook = (value: boolean) => {
-    if (value && lastMolt && lastMolt.createdOn) {
+    if (value && lastMolt?.createdOn) {
       const timeSinceLastPost =
         now.getTime() - new Date(lastMolt.createdOn).getTime()
       const remainingCooldown = cooldownMs - timeSinceLastPost
@@ -405,10 +419,12 @@ export default function Chat({
   const {
     addHapticFeedback,
     playNotification,
-    isDrawerOpen,
     isSmallDevice,
     isMobileDevice,
+    ...theme
   } = useTheme()
+
+  const isDrawerOpen = theme.isDrawerOpen && !hipchat
 
   const canShowLinks =
     !showTribe && canShowTribe && empty && app && !appStatus?.part
@@ -1759,7 +1775,7 @@ export default function Chat({
     setIsLoading(true)
 
     // Scroll to bottom after sending message
-    scrollToBottom(100)
+    scrollToBottom(100, undefined, chatContainerRef.current)
 
     playNotification()
 
@@ -1768,7 +1784,6 @@ export default function Chat({
         duration: 6000,
       })
     }
-
     onMessage?.({
       content: userMessageText,
       isUser: true,
@@ -1785,6 +1800,7 @@ export default function Chat({
         user: user as user,
         guest: guest as guest,
       },
+      hipChatId,
     })
 
     setIsLoading(true)
@@ -1873,7 +1889,6 @@ export default function Chat({
         headers: postRequestHeaders,
         body: postRequestBody,
       })
-      console.log("userResponse", `${API_URL}/messages`, app?.name)
 
       if (debateAgent) {
         toast.success(t("Let's debate!"))
@@ -1929,6 +1944,7 @@ export default function Chat({
           content: userMessageText,
           isUser: true,
           message: userMessage,
+          hipChatId,
         })
 
         // Auto-advance daily questions AFTER message is sent
@@ -2038,12 +2054,10 @@ export default function Chat({
         isStreaming: true,
         isImageGenerationEnabled,
         isWebSearchEnabled,
+        hipChatId,
       })
 
       setIsStreaming(true)
-
-      // const foo = false
-      // if (!foo) return
 
       const agentResponse = await apiFetch(`${API_URL}/ai`, {
         method: "POST",
@@ -2423,6 +2437,7 @@ export default function Chat({
             aiAgent: data.message?.aiAgent,
             isWebSearchEnabled,
             isImageGenerationEnabled,
+            hipchat,
           })
         }
       } else if (type === "stream_complete") {
@@ -2511,6 +2526,7 @@ export default function Chat({
                 (agent) => agent.id === data.message?.message.debateAgentId,
               ),
             },
+            hipChatId,
             isStreaming: true,
             isImageGenerationEnabled: data?.isImageGenerationEnabled,
             isWebSearchEnabled: data?.isWebSearchEnabled,
@@ -2571,6 +2587,7 @@ export default function Chat({
           message: data.message,
           isImageGenerationEnabled: data?.isImageGenerationEnabled,
           isWebSearchEnabled: data?.isWebSearchEnabled,
+          hipChatId,
         })
 
         data.message.message.selectedAgentId &&
@@ -2587,6 +2604,7 @@ export default function Chat({
             isStreaming: true,
             isImageGenerationEnabled: data?.isImageGenerationEnabled,
             isWebSearchEnabled: data?.isWebSearchEnabled,
+            hipChatId,
           })
       }
     },
@@ -2914,7 +2932,7 @@ export default function Chat({
   // Function to show chat input and scroll to bottom
   const showInputAndScrollToBottom = () => {
     addHapticFeedback()
-    scrollToBottom()
+    scrollToBottom(500, true, chatContainerRef.current)
   }
 
   const [shouldSubmit, setShouldSubmit] = useState(false)
@@ -3092,7 +3110,7 @@ export default function Chat({
   }
 
   return (
-    <>
+    <Div key={chatKey}>
       {isAgentModalOpen && (
         <Modal
           dataTestId="agent-modal"
@@ -3494,8 +3512,10 @@ export default function Chat({
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         style={{
-          ...styles.chatContainerWrapper.style,
-          // ...(rtl ? { ...styles.right.style } : { ...styles.left.style }),
+          ...{
+            ...styles.chatContainerWrapper.style,
+            position: !hipchat ? "fixed" : "relative",
+          },
           ...style,
           ...(isDrawerOpen &&
             !isSmallDevice && {
@@ -3871,7 +3891,7 @@ export default function Chat({
             </Form>
           </Modal>
         )}
-        {isHydrated && (
+        {true && (
           <Div
             ref={chatContainerRef}
             style={{
@@ -3926,6 +3946,7 @@ export default function Chat({
                       style={{
                         ...styles.scrollDownButton.style,
                         ...utilities.link.style,
+                        marginBottom: "0.5rem",
                       }}
                       onClick={showInputAndScrollToBottom}
                       title={t("Scroll to bottom")}
@@ -3983,6 +4004,7 @@ export default function Chat({
                     </Div>
                   ) : null}
                   {empty &&
+                    !hipchat &&
                     !threadIdRef.current &&
                     !showQuotaInfo &&
                     canShowTribe &&
@@ -4031,23 +4053,25 @@ export default function Chat({
                             </Button>
                           </>
                         ) : (
-                          <>
-                            <Button
-                              className="link"
-                              style={{
-                                ...utilities.link.style,
-                                gap: 10,
-                                fontSize: "0.85rem",
-                                order: minimize ? -1 : 0,
-                              }}
-                              onClick={() => {
-                                setPear(isPear ? undefined : app)
-                              }}
-                            >
-                              <Img slug={"pear"} size={20} />
-                              {t(isPear ? "Pearing" : "Let's Pear")}
-                            </Button>
-                          </>
+                          !hipchat && (
+                            <>
+                              <Button
+                                className="link"
+                                style={{
+                                  ...utilities.link.style,
+                                  gap: 10,
+                                  fontSize: "0.85rem",
+                                  order: minimize ? -1 : 0,
+                                }}
+                                onClick={() => {
+                                  setPear(isPear ? undefined : app)
+                                }}
+                              >
+                                <Img slug={"pear"} size={20} />
+                                {t(isPear ? "Pearing" : "Let's Pear")}
+                              </Button>
+                            </>
+                          )
                         )}
                       </Div>
                     )}
@@ -4182,6 +4206,7 @@ export default function Chat({
                     </AppLink>
                   ) : (
                     canShowLinks &&
+                    !hipchat &&
                     (minimize || showFocus) && (
                       <>
                         <AppLink
@@ -4208,6 +4233,7 @@ export default function Chat({
                   )}
                   {isChatFloating ||
                   exceededInitial ||
+                  hipchat ||
                   threadId ? null : showGreeting && files.length === 0 ? (
                     <H2
                       style={{
@@ -4287,6 +4313,7 @@ export default function Chat({
                     empty &&
                     canShowTribe &&
                     app &&
+                    !hipchat &&
                     !appStatus?.part &&
                     !isChatFloating && (
                       <>
@@ -5014,37 +5041,41 @@ export default function Chat({
                       <Link size={15} />
                       {t("Privacy")}
                     </A>
+                  ) : !isSelectingMood && isDevelopment && user && !hipchat ? (
+                    <Hippo
+                      key={dataTestId}
+                      dataTestId={`${dataTestId}-hippo`}
+                      size={24}
+                    />
                   ) : (
-                    !isSelectingMood && (
-                      <Button
-                        data-testid="attach-button"
-                        title={t("Attach")}
-                        onClick={() => {
-                          addHapticFeedback()
+                    <Button
+                      data-testid="attach-button"
+                      title={t("Attach")}
+                      onClick={() => {
+                        addHapticFeedback()
 
-                          // Auto-switch to Sushi for file attachments
-                          const sushiAgent = aiAgents.find(
-                            (agent) => agent.name === "sushi",
-                          )
-                          if (sushiAgent && !selectedAgent?.capabilities?.pdf) {
-                            setSelectedAgent(sushiAgent)
-                          }
+                        // Auto-switch to Sushi for file attachments
+                        const sushiAgent = aiAgents.find(
+                          (agent) => agent.name === "sushi",
+                        )
+                        if (sushiAgent && !selectedAgent?.capabilities?.pdf) {
+                          setSelectedAgent(sushiAgent)
+                        }
 
-                          // Open system file picker directly with all supported types
-                          triggerFileInput(
-                            "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
-                          )
-                        }}
-                        className="link"
-                        style={{
-                          ...utilities.link.style,
-                          ...styles.attachButton.style,
-                        }}
-                        type="submit"
-                      >
-                        <Img slug="hippo" size={24} key="attach-button" />
-                      </Button>
-                    )
+                        // Open system file picker directly with all supported types
+                        triggerFileInput(
+                          "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
+                        )
+                      }}
+                      className="link"
+                      style={{
+                        ...utilities.link.style,
+                        ...styles.attachButton.style,
+                      }}
+                      type="submit"
+                    >
+                      <Img slug="hippo" size={24} key="attach-button" />
+                    </Button>
                   )}
                   {/* Quota info button */}
                   {!isSelectingMood && !needsReview && (
@@ -5259,6 +5290,6 @@ export default function Chat({
         }}
         apiUrl={API_URL}
       />
-    </>
+    </Div>
   )
 }

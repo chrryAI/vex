@@ -65,6 +65,8 @@ export default forwardRef<
     }
     onCharacterProfileUpdate?: () => void
     style?: React.CSSProperties
+    isMobileDevice?: boolean
+    Top?: React.ReactNode
   }
 >(function Messages(
   {
@@ -85,6 +87,8 @@ export default forwardRef<
     onCharacterProfileUpdate,
     style,
     isLoading,
+    isMobileDevice,
+    Top,
   },
   ref,
 ) {
@@ -240,7 +244,11 @@ export default forwardRef<
   if (!showEmptyState && messages?.length === 0) return null
   return (
     <Div
-      style={{ ...styles.messagesContainer, margin: "0 -10px", ...style }}
+      style={{
+        ...styles.messagesContainer,
+
+        ...style,
+      }}
       id={id}
       ref={ref}
     >
@@ -278,6 +286,7 @@ export default forwardRef<
 
           return (
             <Message
+              isMobileDevice={isMobileDevice}
               onToggleLike={onToggleLike}
               onDelete={onDelete}
               onPlayAudio={onPlayAudio}
@@ -319,71 +328,88 @@ export default forwardRef<
           </Button>
         </Div>
       ) : (
-        !burn && (
-          <>
-            <Div style={{ ...styles.enableCharacterProfilesContainer.style }}>
-              {!characterProfilesEnabled &&
-              !isStreaming &&
-              messages?.some((message) => !!message.message.agentId) ? (
-                <Button
-                  data-testid={"enable-character-profiles-from-messages"}
-                  disabled={isUpdating}
-                  onClick={async () => {
-                    setShowCharacterProfiles(true)
-                  }}
-                  className="inverted"
-                  style={{ ...utilities.inverted.style }}
-                >
-                  {isUpdating ? (
-                    <CircleX size={16} color="var(--accent-6)" />
-                  ) : (
-                    <Img app={app} size={18} />
-                  )}
-                  {t("Earn a Badge")}
-                </Button>
-              ) : null}
-            </Div>
-
-            {showLoadingCharacterProfile ? (
+        <Div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+            marginTop: "25px",
+            marginBottom: "10px",
+            gap: 20,
+          }}
+        >
+          {Top ? <Div>{Top}</Div> : null}
+          {!burn && (
+            <>
               <Div
-                data-testid={"generating-cp"}
                 style={{
-                  ...styles.characterProfileContainer.style,
-                  flexDirection: "row",
+                  display: "flex",
+                  justifyContent: "center",
                 }}
               >
-                <Video
-                  style={{ ...styles.video.style }}
-                  src={`${FRONTEND_URL}/video/blob.mp4`}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                />
-                {t("Generating character tags...")}
+                {!characterProfilesEnabled &&
+                !isStreaming &&
+                messages?.some((message) => !!message.message.agentId) ? (
+                  <Button
+                    data-testid={"enable-character-profiles-from-messages"}
+                    disabled={isUpdating}
+                    onClick={async () => {
+                      setShowCharacterProfiles(true)
+                    }}
+                    className="inverted"
+                    style={{ ...utilities.inverted.style }}
+                  >
+                    {isUpdating ? (
+                      <CircleX size={16} color="var(--accent-6)" />
+                    ) : (
+                      <Img app={app} size={18} />
+                    )}
+                    {t("Earn a Badge")}
+                  </Button>
+                ) : null}
               </Div>
-            ) : characterProfile &&
-              characterProfilesEnabled &&
-              (isOwner(characterProfile, {
-                userId: user?.id,
-                guestId: guest?.id,
-              }) ||
-                characterProfile.visibility === "public") ? (
-              <Div style={{ ...styles.characterProfileContainer.style }}>
-                <Div style={{ ...styles.tags.style }}>
-                  {characterProfile.tags?.join(", ")}
-                </Div>
-                <CharacterProfile
-                  onCharacterProfileUpdate={() => {
-                    onCharacterProfileUpdate?.()
+
+              {showLoadingCharacterProfile ? (
+                <Div
+                  data-testid={"generating-cp"}
+                  style={{
+                    ...styles.characterProfileContainer.style,
+                    flexDirection: "row",
                   }}
-                  characterProfile={characterProfile}
-                  showActions={true}
-                />
-              </Div>
-            ) : null}
-          </>
-        )
+                >
+                  <Video
+                    style={{ ...styles.video.style }}
+                    src={`${FRONTEND_URL}/video/blob.mp4`}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  />
+                  {t("Generating character tags...")}
+                </Div>
+              ) : characterProfile &&
+                characterProfilesEnabled &&
+                (isOwner(characterProfile, {
+                  userId: user?.id,
+                  guestId: guest?.id,
+                }) ||
+                  characterProfile.visibility === "public") ? (
+                <Div style={{ ...styles.characterProfileContainer.style }}>
+                  <Div style={{ ...styles.tags.style }}>
+                    {characterProfile.tags?.join(", ")}
+                  </Div>
+                  <CharacterProfile
+                    onCharacterProfileUpdate={() => {
+                      onCharacterProfileUpdate?.()
+                    }}
+                    characterProfile={characterProfile}
+                    showActions={true}
+                  />
+                </Div>
+              ) : null}
+            </>
+          )}
+        </Div>
       )}
     </Div>
   )

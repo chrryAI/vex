@@ -121,7 +121,7 @@ export default function Store({
       <Div
         style={{
           ...styles.lifeOS.style,
-          margin: compact ? 0 : "0 auto",
+          // margin: compact ? 0 : "0 auto",
         }}
       >
         {!compact && (
@@ -239,6 +239,10 @@ export default function Store({
                     borderColor: COLORS[app.themeColor as keyof typeof COLORS],
                     ["--glow-color" as keyof React.CSSProperties]:
                       COLORS[app.themeColor as keyof typeof COLORS],
+                    ...{
+                      minWidth: isMobileDevice ? 60 : 110,
+                      maxWidth: 130,
+                    },
                   }}
                 >
                   <Div
@@ -250,13 +254,22 @@ export default function Store({
                       alignContent: "center",
                     }}
                   >
-                    <Span style={{ ...styles.appName.style }}>
+                    <Span
+                      style={{
+                        ...styles.appName.style,
+                        maxWidth: 80,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {app.icon} {app.name}
                     </Span>
                     <Span
                       style={{
                         ...styles.appSubtitle.style,
                         margin: ".25rem 0 0 0",
+                        maxWidth: 80,
                       }}
                     >
                       {t(app.subtitle || "")}

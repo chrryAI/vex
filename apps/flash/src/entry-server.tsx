@@ -2,6 +2,7 @@ import { StrictMode } from "react"
 import {
   type RenderToPipeableStreamOptions,
   renderToPipeableStream,
+  renderToString,
 } from "react-dom/server"
 import App from "./App"
 import {
@@ -62,5 +63,16 @@ export function render(
       <vite-streaming-end></vite-streaming-end>
     </StrictMode>,
     options,
+  )
+}
+
+/**
+ * Synchronous render function for simple HTML replacement
+ */
+export function renderSync(serverData: ServerData | undefined) {
+  return renderToString(
+    <StrictMode>
+      <App serverData={serverData} />
+    </StrictMode>,
   )
 }

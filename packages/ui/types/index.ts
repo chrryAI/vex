@@ -244,7 +244,7 @@ export type subscription = {
   guestId: string | null
   createdOn: Date
   updatedOn: Date
-  plan: "plus" | "pro"
+  plan: "plus" | "pro" | "agency" | "sovereign"
 }
 
 export type newSubscription = Partial<subscription>
@@ -998,6 +998,7 @@ export type store = {
     height?: number
     id: string
   }> | null
+  excludeGridApps?: string[]
   teamId: string | null
   domain: string | null
   appId: string | null

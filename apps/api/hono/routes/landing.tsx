@@ -390,10 +390,10 @@ export function renderPage(
       
       button.transparent,
       .button.transparent {
-        background-color: var(--background);
-        color: var(--foreground);
-        border: 0.0625rem solid var(--shade-2);
-        box-shadow: none;
+        background-color: transparent !important;
+        color: var(--shade-6) !important;
+        border: 1px solid var(--shade-3) !important;
+        box-shadow: none !important;
       }
       
       button.transparent:hover,
@@ -404,10 +404,10 @@ export function renderPage(
       
       button.inverted,
       .button.inverted {
-        background-color: var(--foreground);
-        color: var(--background);
-        border: 0.0625rem solid var(--shade-2);
-        box-shadow: none;
+        background-color: var(--accent-0) !important;
+        color: var(--accent-7) !important;
+        border: 1px solid var(--accent-1) !important;
+        box-shadow: none !important;
       }
       
       button.inverted:hover,
@@ -938,10 +938,10 @@ export function renderPage(
       
       button.transparent,
       .button.transparent {
-        background-color: var(--background);
-        color: var(--foreground);
-        border: 0.0625rem solid var(--shade-2);
-        box-shadow: none;
+        background-color: transparent !important;
+        color: var(--shade-6) !important;
+        border: 1px solid var(--shade-3) !important;
+        box-shadow: none !important;
       }
       
       button.transparent:hover,
@@ -952,10 +952,10 @@ export function renderPage(
       
       button.inverted,
       .button.inverted {
-        background-color: var(--foreground);
-        color: var(--background);
-        border: 0.0625rem solid var(--shade-2);
-        box-shadow: none;
+        background-color: var(--accent-0) !important;
+        color: var(--accent-7) !important;
+        border: 1px solid var(--accent-1) !important;
+        box-shadow: none !important;
       }
       
       button.inverted:hover,

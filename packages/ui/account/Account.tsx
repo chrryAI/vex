@@ -42,7 +42,15 @@ import {
 } from "../utils"
 import { useAccountStyles } from "./Account.styles"
 
-export default function Account({ style }: { style?: React.CSSProperties }) {
+export default function Account({
+  style,
+  key,
+  dataTestId,
+}: {
+  style?: React.CSSProperties
+  key?: string
+  dataTestId?: string
+}) {
   const { push } = useRouter()
 
   const styles = useAccountStyles()
@@ -303,7 +311,8 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
   return (
     <>
       <Button
-        data-testid="account-button"
+        key={`account-button-${key}`}
+        data-testid={dataTestId || "account-button"}
         className="transparent"
         style={{
           ...utilities.transparent.style,
@@ -328,6 +337,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
         {t("Account")}
       </Button>
       <Modal
+        data-testid={`account-modal`}
         params={`?account=true&from=${from}`}
         hideOnClickOutside={false}
         hasCloseButton

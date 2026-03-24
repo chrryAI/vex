@@ -106,6 +106,7 @@ export default function Watermelon() {
     setUser,
     actions,
     storeApps,
+    chrry,
     plausible,
   } = useAuth()
 
@@ -239,7 +240,7 @@ export default function Watermelon() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 25,
+            gap: 10,
             position: "absolute",
             top: 15,
             right: 15,
@@ -251,7 +252,7 @@ export default function Watermelon() {
           <LanguageSwitcher />
         </Div>
 
-        {app && (
+        {chrry && (
           <P
             style={{
               display: "flex",
@@ -265,9 +266,9 @@ export default function Watermelon() {
             }}
           >
             <AppLink
-              app={app}
+              app={chrry}
               event={ANALYTICS_EVENTS.WM_APP_LINK_CLICK}
-              icon={<Img app={app} alt={app.name} width={16} height={16} />}
+              icon={<Img app={chrry} alt={chrry.name} width={16} height={16} />}
               loading={<Loading size={13} />}
               className="button inverted medium"
               style={{
@@ -275,7 +276,7 @@ export default function Watermelon() {
                 fontFamily: "var(--font-sans)",
               }}
             >
-              {app.name}
+              {chrry.name}
             </AppLink>{" "}
           </P>
         )}
@@ -471,6 +472,34 @@ export default function Watermelon() {
                     {t("Local Stack")}
                   </Button>
                 ) : null}
+                <A
+                  openInNewTab
+                  aria-label="Vex"
+                  href="https://github.com/chrryAI/vex"
+                >
+                  <Img slug="vex" size={24} />
+                </A>
+                <A
+                  openInNewTab
+                  aria-label="Sushi"
+                  href="https://github.com/chrryAI/sushi"
+                >
+                  <Img slug="sushi" size={20} />
+                </A>
+                <A
+                  openInNewTab
+                  aria-label="Pepper"
+                  href="https://github.com/chrryAI/pepper"
+                >
+                  <Img slug="pepper" size={30} />
+                </A>
+                <A
+                  openInNewTab
+                  aria-label="Waffles"
+                  href="https://github.com/chrryAI/waffles"
+                >
+                  <Img slug="waffles" size={35} />
+                </A>
 
                 <A
                   onClick={() => {
@@ -529,6 +558,7 @@ export default function Watermelon() {
                 >
                   <DeepSeek color={COLORS.blue} size={20} />
                 </A>
+
                 <A openInNewTab href="https://claude.ai" aria-label="Claude">
                   <Claude color={COLORS.orange} size={20} />
                 </A>
@@ -1145,7 +1175,13 @@ export default function Watermelon() {
                       </A>
                       <Button
                         className="inverted"
-                        onClick={() => setShowS3(true)}
+                        onClick={() => {
+                          if (!user && !s3ApiKey) {
+                            addParams({ subscribe: "true", plan: "member" })
+                            return
+                          }
+                          setShowS3(true)
+                        }}
                         style={{
                           ...utilities.inverted.style,
                           display: "flex",
@@ -1437,7 +1473,7 @@ export default function Watermelon() {
               }}
             >
               <ThemeSwitcher style={{ marginTop: 5 }} />
-              <ColorScheme />
+              <ColorScheme size={22} />
             </Div>
             <P
               style={{

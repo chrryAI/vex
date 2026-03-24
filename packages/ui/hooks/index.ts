@@ -26,7 +26,6 @@ function useCountdown(targetDate: Date | null) {
   return remaining
 }
 
-export { useLocalStorage, useHasHydrated, useCountdown }
 export { default as useCookieOrLocalStorage } from "./useCookieOrLocalStorage"
 export { useDeviceInfo } from "./useDeviceInfo"
 export {
@@ -38,3 +37,4 @@ export {
 } from "./useMetadata"
 export { usePWAInstall } from "./usePWAInstall"
 export { useComputedValue, useSyncedState } from "./useSyncedState"
+export { useCountdown, useHasHydrated, useLocalStorage }

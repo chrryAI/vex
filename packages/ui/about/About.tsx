@@ -20,7 +20,6 @@ import {
 import { useStyles } from "../context/StylesContext"
 import { useHasHydrated } from "../hooks"
 import Img from "../Image"
-import Instructions from "../Instructions"
 import {
   CircleArrowLeft,
   Claude,
@@ -44,6 +43,7 @@ import {
 } from "../platform"
 import Skeleton from "../Skeleton"
 import ToggleAgent from "../ToggleAgent"
+import Tools from "../Tools"
 import {
   ADDITIONAL_CREDITS,
   AGENCY_PRICE,
@@ -321,8 +321,7 @@ export default function About() {
 
         <Section>
           <H2>{t(config.about?.platforms?.title || "Available Platforms")}</H2>
-          <Instructions
-            showButton={false}
+          <Tools
             showDownloads={true}
             showInstructions={false}
             showInstallers={false}

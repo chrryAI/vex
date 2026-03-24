@@ -1,4 +1,7 @@
-import { analyticsDomains as whiteLabels } from "@chrryai/chrry/utils/siteConfig"
+import {
+  ALL_TRACKABLE_EVENTS,
+  analyticsDomains as whiteLabels,
+} from "@chrryai/chrry/utils/siteConfig"
 import { db } from "@repo/db"
 import * as schema from "@repo/db/src/schema"
 import * as dotenv from "dotenv"
@@ -23,6 +26,72 @@ interface _PlausibleResult {
   conversion_rate?: number
 }
 
+async function syncPlausibleGoals(
+  domain: string,
+  apiKey: string,
+  host: string,
+) {
+  console.log(`🎯 Syncing goals for ${domain}...`)
+
+  try {
+    // 1. Fetch current goals
+    const goalsUrl = new URL(`${host}/api/v1/sites/goals`)
+    goalsUrl.searchParams.append("site_id", domain)
+
+    const res = await fetch(goalsUrl.toString(), {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    })
+
+    if (!res.ok) {
+      console.error(`❌ Failed to fetch goals for ${domain}: ${res.status}`)
+      return
+    }
+
+    const { goals: currentGoals } = await res.json()
+    const existingGoalNames = new Set(
+      currentGoals.map((g: any) => g.event_name),
+    )
+
+    // 2. Identify missing goals
+    const missingGoals = ALL_TRACKABLE_EVENTS.filter(
+      (event) => !existingGoalNames.has(event),
+    )
+
+    if (missingGoals.length === 0) {
+      console.log(`✅ All ${ALL_TRACKABLE_EVENTS.length} goals already exist.`)
+      return
+    }
+
+    console.log(`🚀 Creating ${missingGoals.length} missing goals...`)
+
+    // 3. Create missing goals
+    for (const eventName of missingGoals) {
+      const createUrl = `${host}/api/v1/sites/goals`
+      const createRes = await fetch(createUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          site_id: domain,
+          goal_type: "event",
+          event_name: eventName,
+        }),
+      })
+
+      if (createRes.ok) {
+        console.log(`   + Created goal: ${eventName}`)
+      } else {
+        const err = await createRes.text()
+        console.error(`   - Failed to create goal ${eventName}: ${err}`)
+      }
+    }
+  } catch (error) {
+    console.error(`❌ Error syncing goals for ${domain}:`, error)
+  }
+}
+
 export async function syncPlausibleAnalytics() {
   console.log(
     `🍇 Starting sync for ${whiteLabels.length} white-label domains...`,
@@ -39,9 +108,14 @@ export async function syncPlausibleAnalytics() {
       continue // Skip to next domain
     }
 
-    console.log("📊 Fetching comprehensive Plausible analytics...")
-    console.log(`   Host: ${PLAUSIBLE_HOST}`)
     console.log(`   Site ID: ${PLAUSIBLE_SITE_ID}`)
+
+    // Sync goals first ensuring custom events are registered
+    await syncPlausibleGoals(
+      PLAUSIBLE_SITE_ID,
+      PLAUSIBLE_API_KEY,
+      PLAUSIBLE_HOST,
+    )
 
     try {
       // Helper function to fetch from Plausible API
@@ -229,14 +303,3 @@ export async function syncPlausibleAnalytics() {
     }
   }
 }
-
-// Run directly (commented out - use cron endpoint instead)
-// syncPlausibleAnalytics()
-//   .then(() => {
-//     console.log("✅ Sync complete")
-//     process.exit(0)
-//   })
-//   .catch((error) => {
-//     console.error("❌ Sync failed:", error)
-//     process.exit(1)
-//   })

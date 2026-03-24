@@ -25,7 +25,7 @@ class WebSocketManager {
   private maxReconnectAttempts = 10
   private reconnectInterval = 1000 // Start with 1 second
   private heartbeatInterval: NodeJS.Timeout | null = null
-  private reconnectTimeout: NodeJS.Timeout | null = null
+  private reconnectTimeout: ReturnType<typeof setTimeout> | null = null
   private connectionLostCallbacks: (() => void)[] = []
   private connectionRestoredCallbacks: (() => void)[] = []
 

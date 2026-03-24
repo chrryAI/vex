@@ -1,4 +1,4 @@
-import "@chrryai/chrry/globals.scss"
+import "@chrryai/chrry/styles.scss"
 import "@chrryai/chrry/styles/view-transitions.css"
 import Chrry from "chrry/Chrry"
 import Skeleton from "chrry/Skeleton"
@@ -85,6 +85,7 @@ function App({ serverData }: AppProps) {
         accountApp={serverData?.accountApp}
         apiKey={serverData?.apiKey}
         testConfig={serverData?.testConfig}
+        isBot={serverData?.isBot}
       >
         {serverData?.isBlogRoute ? (
           <Skeleton>

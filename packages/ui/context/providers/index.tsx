@@ -96,6 +96,7 @@ export interface AppProvidersProps {
     threads: thread[]
     totalCount: number
   }
+  isBot?: boolean
   tribes?: paginatedTribes
   accountApp?: appWithStore
   tribePosts?: paginatedTribePosts
@@ -130,6 +131,7 @@ export default function AppProviders({
   tribePost,
   accountApp,
   testConfig,
+  isBot,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
 
@@ -192,6 +194,7 @@ export default function AppProviders({
               thread={thread}
               locale={locale}
               error={error}
+              isBot={isBot}
               apiKey={apiKey}
               app={app}
               pathname={pathname}

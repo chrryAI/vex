@@ -136,7 +136,9 @@ export function TribeProvider({ children }: TribeProviderProps) {
   const { captureException, t } = useAppContext()
 
   // Debounce timer for cache invalidation
-  const invalidationTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const invalidationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
 
   const [sortBy, setSortByInternal] = useState<"date" | "hot" | "liked">(
     (searchParams.get("sort") as "date" | "hot" | "liked") || "hot",

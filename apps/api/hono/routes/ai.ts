@@ -3686,11 +3686,11 @@ When message language is unclear, default to this language.`
     fp && isE2EInternal ? fp : member?.fingerprint || guest?.fingerprint
 
   const isE2E =
-    !isDevelopment &&
-    !!fingerprint &&
-    !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
-    !!isE2EInternal &&
-    !job
+    (!!fingerprint &&
+      !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
+      !!isE2EInternal &&
+      !job) ||
+    isDevelopment
 
   // isE2E and fingerprint already declared earlier for performance optimization
 
@@ -3749,7 +3749,11 @@ When message language is unclear, default to this language.`
         }
 
         msg.message?.files?.forEach((file) => {
-          content += `\n\nSHARED FILES:\n\n${file.data}`
+          if (file.type === "text" || file.type === "pdf") {
+            content += `\n\n[FILE: ${file.name}]\n${file.data}`
+          } else {
+            content += `\n\n[ATTACHMENT: ${file.name}]`
+          }
         })
 
         // msg.message?.webSearchResult?.forEach((file) => {
@@ -3797,7 +3801,11 @@ When message language is unclear, default to this language.`
           let content = msg.message.content
 
           msg.message?.files?.forEach((file) => {
-            content += `\n\nSHARED FILES:\n\n${file.data}`
+            if (file.type === "text" || file.type === "pdf") {
+              content += `\n\n[FILE: ${file.name}]\n${file.data}`
+            } else {
+              content += `\n\n[ATTACHMENT: ${file.name}]`
+            }
           })
 
           // msg.message?.webSearchResult?.forEach((file) => {
@@ -4156,6 +4164,7 @@ When message language is unclear, default to this language.`
                       : "file",
             mimeType: mimeType || "text/plain", // Default to text/plain for code files
             data: base64,
+            buffer: buffer, // Keep raw buffer for multimodal parts
             filename: file.name,
             size: buffer.length,
           }
@@ -4259,7 +4268,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
 
           contentParts.push({
             type: "image",
-            image: `data:${file.mimeType};base64,${file.data}`,
+            image: new Uint8Array(file.buffer),
           })
         } else if (file.type === "audio" || file.type === "video") {
           contentParts.push({
@@ -4332,10 +4341,13 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               )
 
               for (let i = 0; i < videoFrames.length; i++) {
-                contentParts.push({
-                  type: "image",
-                  image: `data:image/png;base64,${videoFrames[i]}`,
-                })
+                videoFrames[i] &&
+                  contentParts.push({
+                    type: "image",
+                    image: new Uint8Array(
+                      Buffer.from(videoFrames[i] as string, "base64"),
+                    ),
+                  })
               }
 
               if (isDevelopment)
@@ -4801,11 +4813,16 @@ How I process and remember information:
           currentAssistantContent = []
         }
         // Accumulate user messages
-        currentUserContent.push(
-          typeof msg.content === "string"
-            ? msg.content
-            : JSON.stringify(msg.content),
-        )
+        if (typeof msg.content === "string") {
+          currentUserContent.push(msg.content)
+        } else if (Array.isArray(msg.content)) {
+          // Extract text parts from multimodal content
+          const textParts = msg.content
+            .filter((part: any) => part.type === "text")
+            .map((part: any) => part.text)
+            .join("\n")
+          if (textParts) currentUserContent.push(textParts)
+        }
       } else if (msg.role === "assistant") {
         // Flush any accumulated user content first
         if (currentUserContent.length > 0) {
@@ -4816,11 +4833,15 @@ How I process and remember information:
           currentUserContent = []
         }
         // Accumulate assistant messages
-        currentAssistantContent.push(
-          typeof msg.content === "string"
-            ? msg.content
-            : JSON.stringify(msg.content),
-        )
+        if (typeof msg.content === "string") {
+          currentAssistantContent.push(msg.content)
+        } else if (Array.isArray(msg.content)) {
+          const textParts = msg.content
+            .filter((part: any) => part.type === "text")
+            .map((part: any) => part.text)
+            .join("\n")
+          if (textParts) currentAssistantContent.push(textParts)
+        }
       } else {
         // System message or other - flush both accumulated contents
         if (currentUserContent.length > 0) {

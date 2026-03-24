@@ -16,13 +16,12 @@ import {
 import { useStyles } from "./context/StylesContext"
 import FocusButtonMini from "./FocusButtonMini"
 import Grapes from "./Grapes"
-import { useHasHydrated, useTribeMetadata, useTribePostMetadata } from "./hooks"
+import Hippo from "./Hippo"
+import { useTribeMetadata, useTribePostMetadata } from "./hooks"
 import Img from "./Image"
-import Instructions from "./Instructions"
 import LanguageSwitcher from "./LanguageSwitcher"
 import { defaultLocale } from "./locales"
 import Markdown from "./MarkdownContent.web"
-
 import {
   Button,
   Div,
@@ -40,8 +39,8 @@ import {
   Video,
 } from "./platform"
 import Search from "./Search"
-import Skeleton from "./Skeleton"
 import ToggleAgent from "./ToggleAgent"
+import Tools from "./Tools"
 import { useTribeStyles } from "./Tribe.styles"
 import TribeTranslate from "./TribeTranslate"
 import type { appWithStore, tribePost, user } from "./types"
@@ -966,6 +965,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     rtl,
     guest,
     setShowWatermelon,
+    hasHydrated,
     ...auth
   } = useAuth()
   const { setAppStatus } = useApp()
@@ -1008,8 +1008,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
 
   const { isMobileDevice, isSmallDevice, isDark, reduceMotion, isDrawerOpen } =
     useTheme()
-  const { setIsNewChat } = useChat()
-  const hasHydrated = useHasHydrated()
+  const { setIsNewChat, showTribe } = useChat()
   const postsRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
@@ -1217,9 +1216,14 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     [t, isPear, pear],
   )
 
+  if (!showTribe) {
+    return children
+  }
+
   return (
-    <Skeleton>
+    <>
       <Div
+        id="tribe"
         style={{
           ...styles.container.style,
           marginTop: isMobileDevice
@@ -1252,7 +1256,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                   <Img size={isMobileDevice ? 34 : 37} app={pear} />
                 ) : app?.slug === "focus" ? (
                   <FocusButton
-                    width={32}
+                    width={40}
                     style={{ marginRight: 14, position: "relative", top: 1 }}
                   />
                 ) : (
@@ -1385,7 +1389,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     {app?.store?.app?.icon || "🍒"} /{t("about")}
                   </A>
                   <A href="/privacy">/{t("privacy")} 🤫</A>
-                  <P
+                  <Div
                     style={{
                       display: "flex",
                       gap: 7.5,
@@ -1394,10 +1398,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     }}
                   >
                     <Weather showLocation />
+                    <Hippo ghost dataTestId="tribe" />
                     <A href="/about">
-                      <Img icon="hippo" size={25} />
+                      <Img icon="Tools" size={25} />
                     </A>
-                  </P>
+                  </Div>
                 </Div>
               </Div>
               <Div
@@ -1618,8 +1623,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             height={18}
                           />
                         </A>
-                        <Instructions
-                          showButton={false}
+                        <Tools
                           showDownloads={true}
                           showInstructions={false}
                           showInstallers={false}
@@ -1783,7 +1787,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     alignItems: "center",
                     gap: 15,
                     justifyContent: "center",
-                    marginTop: 40,
+                    marginTop: 30,
                     marginBottom: 10,
                     flexDirection: "column",
                   }}
@@ -1834,16 +1838,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {t("🌀 Çapa")} IPA: /tʃɑ.ˈpɑ/
                       </A>
                     )}
-                    <Instructions
-                      showButton={false}
-                      showDownloads={true}
-                      showInstructions={false}
-                      icon
-                      style={{
-                        marginTop: 0,
-                      }}
-                    />
                   </Div>
+                  {/* <Tools
+                    showDownloads={true}
+                    showInstructions={false}
+                    icon
+                    style={{
+                      marginTop: 0,
+                    }}
+                  /> */}
                   <FeedBack
                     style={{
                       position: "relative",
@@ -1979,8 +1982,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           height={18}
                         />
                       </A>
-                      <Instructions
-                        showButton={false}
+                      <Tools
                         showDownloads={true}
                         showInstructions={false}
                         showInstallers={false}
@@ -2565,6 +2567,6 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
         )}
         {children}
       </Div>
-    </Skeleton>
+    </>
   )
 }

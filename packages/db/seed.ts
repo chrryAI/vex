@@ -1975,7 +1975,7 @@ const prod = async () => {
 // }
 
 const seedDb = async (): Promise<void> => {
-  // await prod()
+  // await syncAllGoals()
   // process.exit(0)
 
   if (isProd) {

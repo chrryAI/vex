@@ -58,6 +58,7 @@ export interface ServerData {
     threads: thread[]
     totalCount: number
   }
+  isBot?: boolean
   testConfig: { [key: string]: string[] }
   apiKey?: string
   canShowAllTribe?: boolean
@@ -107,6 +108,12 @@ export async function loadServerData(
   const isDev = process.env.NODE_ENV !== "production"
 
   const API_URL = API_INTERNAL_URL
+
+  console.log("🔍 Host check:", {
+    host: hostname,
+    API_INTERNAL_URL: API_INTERNAL_URL,
+    isE2E,
+  })
 
   let TEST_FINGERPRINTS: string[] = []
 
@@ -515,6 +522,7 @@ export async function loadServerData(
     apiKey,
     canShowAllTribe,
     pathname,
+    isBot,
   }
   let metadata
   try {

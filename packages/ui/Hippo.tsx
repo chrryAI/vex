@@ -11,8 +11,6 @@ import {
   useState,
 } from "react"
 import toast from "react-hot-toast"
-import { FaAndroid, FaApple, FaChrome } from "react-icons/fa"
-import { SiMacos } from "react-icons/si"
 import A from "./a/A"
 import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
@@ -24,6 +22,7 @@ import {
   useNavigationContext,
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
+import HipChat from "./HipChat"
 import { useHasHydrated } from "./hooks"
 import { useResponsiveCount } from "./hooks/useResponsiveCount"
 import Img from "./Image"
@@ -38,7 +37,6 @@ import {
   FileIcon,
   FileText,
   FileUp,
-  MousePointerClick,
   Music,
   Paperclip,
   Trash2,
@@ -66,29 +64,30 @@ import {
   getMaxFiles,
   isDeepEqual,
   isOwner,
-  // PROMPT_LIMITS,
 } from "./utils"
 import { formatFileSize } from "./utils/fileValidation"
 
 const Agent = lazy(() => import("./agent"))
 const EmojiPicker = lazy(() => import("./EmojiPicker"))
 
-export default function Instructions({
+export default function Hippo({
   className,
   thread,
   onSave,
-  icon = true,
   showInstructions = false,
   showDownloads = true,
   dataTestId = "instruction",
-  showButton = true,
   showInstallers = true,
   opacity = 1,
+  hipchat = true,
   isAgentBuilder = false,
   onClose,
   style,
   size,
   key,
+  as = "icon",
+  attachtTo,
+  ghost,
   ...rest
 }: {
   className?: string
@@ -100,12 +99,15 @@ export default function Instructions({
   dataTestId?: string
   placeholder?: string
   isArtifactsOpen?: boolean
-  showButton?: boolean
   showDownloads?: boolean
   showInstallers?: boolean
   onClose?: () => void
   isAgentBuilder?: boolean
+  as?: "button" | "icon"
   size?: number
+  attachtTo?: string
+  ghost?: boolean
+  hipchat?: boolean
 
   onSave?: ({
     content,
@@ -117,6 +119,9 @@ export default function Instructions({
   style?: CSSProperties
 }) {
   const { t, console } = useAppContext()
+
+  const showButton = as === "button"
+  const icon = as === "icon"
 
   const styles = useInstructionsStyles()
 
@@ -140,6 +145,10 @@ export default function Instructions({
     weather,
     PROMPT_LIMITS,
     isDevelopment,
+    isHippoOpen,
+    setIsHippoOpen: setIsOpenAuth,
+    selectedInstruction,
+    setSelectedInstruction: setSelectedInstructionInternal,
     ...auth
   } = useAuth()
 
@@ -182,9 +191,7 @@ export default function Instructions({
   const { captureException } = useError()
 
   const { os, isStandalone, isTauri, isCapacitor, isExtension } = usePlatform()
-
-  const offset = isStandalone || isExtension || isCapacitor ? -80 : 0
-
+  const offset = isStandalone ? -250 : isExtension || isCapacitor ? -80 : 0
   const count = useResponsiveCount(
     [
       { height: 550, count: 0 }, // Small phones: show none (was 1)
@@ -222,8 +229,6 @@ export default function Instructions({
 
   const productionExtensions = ["chrome"]
   const MAX_FILES = getMaxFiles({ user, guest })
-  const [selectedInstruction, setSelectedInstructionInternal] =
-    useState<instructionBase | null>(null)
 
   const setSelectedInstruction = (instruction: instructionBase | null) => {
     setSelectedInstructionInternal(instruction)
@@ -427,24 +432,24 @@ export default function Instructions({
 
   const instructionsListRef = useRef<HTMLDivElement>(null)
 
-  const [isOpen, setIsOpenInternal] = useState(false)
+  const isOpen = isHippoOpen
 
   const setIsOpen = (open: boolean) => {
-    setIsOpenInternal(open)
+    setIsOpenAuth(open ? `${dataTestId}-chat` : undefined)
     if (!open) {
+      setIsOpenAuth(undefined)
       setCollaborationStep(0)
     }
   }
   useEffect(() => {
     if (collaborationStep === 1) {
-      setIsOpen(true)
       setContent("")
     }
   }, [collaborationStep, setIsOpen])
 
   useEffect(() => {
     if (!isOpen && collaborationStep === 1) {
-      // setCollaborationStep(0)
+      setCollaborationStep(0)
     }
   }, [isOpen, collaborationStep])
 
@@ -456,7 +461,7 @@ export default function Instructions({
       if (selectedInstruction?.content) {
         setContent(t(selectedInstruction?.content))
       }
-      // setIsOpen(true)
+      setIsOpen(true)
     }
   }, [selectedInstruction, t, setIsOpen, thread])
 
@@ -813,9 +818,10 @@ export default function Instructions({
   }
 
   return (
-    <Div key={key || dataTestId} data-testid={`${dataTestId}`}>
-      {isAppDescriptionOpen && (
+    <Div data-testid={dataTestId}>
+      {isAppDescriptionOpen && !ghost && (
         <Modal
+          scrollable={!isChatOpen}
           style={{
             ...styles.modal.style,
           }}
@@ -852,327 +858,362 @@ export default function Instructions({
           </Div>
         </Modal>
       )}
-      <Modal
-        dataTestId={`${dataTestId}-modal`}
-        borderHeader={true}
-        style={styles.modal.style}
-        hasCloseButton
-        hideOnClickOutside={false}
-        isModalOpen={isOpen || isArtifactsOpen}
-        title={
-          <>
-            {isArtifactsOpen ? (
-              <>
-                <Img slug="hippo" size={24} />
-                <Span>{t("Upload")}</Span>
-              </>
-            ) : (
-              <>
-                <Img slug="hippo" size={24} />
-                <Span>{t("Hippo")}</Span>
-              </>
-            )}
-
-            {canUpdate && !isArtifactsOpen && (
-              <Div style={styles.right.style}>
-                {charCount === 0 ? (
-                  <Span
-                    data-testid={`${dataTestId}-modal-max-char-count`}
-                    style={styles.maxCharCount.style}
-                  >
-                    {maxCharCount}
-                  </Span>
-                ) : (
-                  <Span
-                    data-testid={`${dataTestId}-modal-char-left`}
-                    style={{
-                      ...styles.charLeft.style,
-                      ...(maxCharCount - charCount < 50 &&
-                        styles.maxCharCountOrange.style),
-                      ...(charCount > maxCharCount &&
-                        styles.maxCharCountRed.style),
-                    }}
-                  >
-                    {charCount}/{maxCharCount}
-                  </Span>
-                )}
-                {thread?.instructions || (isManaging && content.length) ? (
-                  <ConfirmButton
-                    data-testid={`${dataTestId}-modal-delete-button`}
-                    confirm={
-                      <>
-                        <Trash2 color="var(--accent-0)" size={16} />{" "}
-                        {t("Are you sure?")}
-                      </>
-                    }
-                    onConfirm={() => {
-                      handleSave({
-                        deleteInstruction: true,
-                        instruction: selectedInstruction || undefined,
-                      })
-                    }}
-                    className="link"
-                  >
-                    <Trash2 color="var(--accent-1)" size={16} />
-                  </ConfirmButton>
-                ) : null}
-              </Div>
-            )}
-          </>
-        }
-        onToggle={(open) => {
-          open !== undefined && setIsOpen(open)
-          !isManaging && !open && onClose?.()
-          setIsArtifactsOpen(false)
-        }}
-      >
-        {isArtifactsOpen ? (
-          <Div>
-            <Div>
-              {thread?.isMainThread && canUpdate ? (
+      {!ghost && (
+        <Modal
+          attachTo={attachtTo}
+          scrollable={!isChatOpen}
+          dataTestId={`${dataTestId}-modal`}
+          borderHeader={true}
+          style={styles.modal.style}
+          hasCloseButton
+          hideOnClickOutside={false}
+          isModalOpen={!!isOpen || isArtifactsOpen}
+          title={
+            <>
+              {isArtifactsOpen ? (
                 <>
-                  <Div>
-                    {t(
-                      "⚠️ This is the DNA Thread. Files uploaded here become public RAG content accessible to all users of this app.",
-                    )}
-                  </Div>
-                  <Div style={{ marginTop: "0.5rem" }}>
-                    {t("For private data, use a regular thread instead.")}
-                  </Div>
+                  <Img slug="hippo" size={24} />
+                  <Span>{t("Upload")}</Span>
                 </>
               ) : (
-                <Div>
-                  {t(
-                    "Upload files here for the AI to remember and reference in future conversations. These artifacts remain private to this thread.",
+                <>
+                  <Img slug="hippo" size={24} />
+                  <Span>{t("Hippo")}</Span>
+                </>
+              )}
+
+              {canUpdate && !isArtifactsOpen && (
+                <Div style={styles.right.style}>
+                  {charCount === 0 ? (
+                    <Span
+                      data-testid={`${dataTestId}-modal-max-char-count`}
+                      style={styles.maxCharCount.style}
+                    >
+                      {maxCharCount}
+                    </Span>
+                  ) : (
+                    <Span
+                      data-testid={`${dataTestId}-modal-char-left`}
+                      style={{
+                        ...styles.charLeft.style,
+                        ...(maxCharCount - charCount < 50 &&
+                          styles.maxCharCountOrange.style),
+                        ...(charCount > maxCharCount &&
+                          styles.maxCharCountRed.style),
+                      }}
+                    >
+                      {charCount}/{maxCharCount}
+                    </Span>
                   )}
+                  {thread?.instructions || (isManaging && content.length) ? (
+                    <ConfirmButton
+                      data-testid={`${dataTestId}-modal-delete-button`}
+                      confirm={
+                        <>
+                          <Trash2 color="var(--accent-0)" size={16} />{" "}
+                          {t("Are you sure?")}
+                        </>
+                      }
+                      onConfirm={() => {
+                        handleSave({
+                          deleteInstruction: true,
+                          instruction: selectedInstruction || undefined,
+                        })
+                      }}
+                      className="link"
+                    >
+                      <Trash2 color="var(--accent-1)" size={16} />
+                    </ConfirmButton>
+                  ) : null}
                 </Div>
               )}
+            </>
+          }
+          onToggle={(open) => {
+            open !== undefined && setIsOpen(open)
+            !isManaging && !open && onClose?.()
+            setIsArtifactsOpen(false)
+          }}
+        >
+          {isChatOpen ? (
+            <Div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <HipChat
+                hipchat={hipchat}
+                dataTestId={
+                  isHippoOpen
+                    ? `hippo-${dataTestId}-chat`
+                    : `${dataTestId}-chat`
+                }
+                compactMode
+                showSuggestions={false}
+                style={{ position: "relative", top: 15 }}
+              />
             </Div>
-            {(files.length || threadArtifacts.length) > 0 && (
-              <Div style={styles.filePreviewArea.style}>
-                {threadArtifacts.map((file, index) => {
-                  return (
-                    <Div key={index} style={styles.filePreview.style}>
-                      <Div style={styles.filePreviewIcon.style}>
-                        <FileIcon size={16} />
-                      </Div>
-
-                      <Div style={styles.filePreviewInfo.style}>
-                        <A
-                          className="link"
-                          href={file.url}
-                          style={{
-                            ...utilities.link.style,
-                            ...styles.filePreviewName.style,
-                          }}
-                          target="_blank"
-                        >
-                          {file.name}
-                        </A>
-                        <Div style={styles.filePreviewSize.style}>
-                          {(file.size / 1024).toFixed(1)}KB
+          ) : (
+            <>
+              {isArtifactsOpen ? (
+                <Div>
+                  <Div>
+                    {thread?.isMainThread && canUpdate ? (
+                      <>
+                        <Div>
+                          {t(
+                            "⚠️ This is the DNA Thread. Files uploaded here become public RAG content accessible to all users of this app.",
+                          )}
                         </Div>
-                      </Div>
-
-                      {deletingId === file.id ? (
-                        <Loading width={18} height={18} />
-                      ) : (
-                        <Button
-                          data-testid={`${dataTestId}-file-preview-clear`}
-                          type="button"
-                          className="link"
-                          onClick={() => handleDeleteFile(file.id)}
-                          style={{
-                            ...utilities.link.style,
-                            ...styles.filePreviewClear.style,
-                          }}
-                          title="Remove file"
-                        >
-                          <CircleX size={18} />
-                        </Button>
-                      )}
-                    </Div>
-                  )
-                })}
-                {files.map((file, index) => {
-                  const fileType = file.type.toLowerCase()
-                  const isImage = fileType.startsWith("image/")
-                  const isVideo = fileType.startsWith("video/")
-                  const isAudio = fileType.startsWith("audio/")
-                  const isPDF = fileType === "application/pdf"
-                  const isText =
-                    fileType.startsWith("text/") ||
-                    file.name.match(
-                      /\.(txt|md|json|csv|xml|html|css|js|ts|tsx|jsx|py|java|c|cpp|h|hpp|cs|php|rb|go|rs|swift|kt|scala|sh|yaml|yml|toml|ini|conf|log)$/i,
-                    )
-
-                  return (
-                    <Div key={index} style={styles.filePreview.style}>
-                      <Div style={styles.filePreviewIcon.style}>
-                        {isImage ? (
-                          <img
-                            src={URL.createObjectURL(file)}
-                            alt={file.name}
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              objectFit: "cover",
-                              borderRadius: "4px",
-                            }}
-                          />
-                        ) : isVideo ? (
-                          <VideoIcon size={16} />
-                        ) : isAudio ? (
-                          <Music size={16} />
-                        ) : isPDF || isText ? (
-                          <FileText size={16} />
-                        ) : (
-                          <FileIcon size={16} />
+                        <Div style={{ marginTop: "0.5rem" }}>
+                          {t("For private data, use a regular thread instead.")}
+                        </Div>
+                      </>
+                    ) : (
+                      <Div>
+                        {t(
+                          "Upload files here for the AI to remember and reference in future conversations. These artifacts remain private to this thread.",
                         )}
                       </Div>
+                    )}
+                  </Div>
+                  {(files.length || threadArtifacts.length) > 0 && (
+                    <Div style={styles.filePreviewArea.style}>
+                      {threadArtifacts.map((file, index) => {
+                        return (
+                          <Div key={index} style={styles.filePreview.style}>
+                            <Div style={styles.filePreviewIcon.style}>
+                              <FileIcon size={16} />
+                            </Div>
 
-                      <Div style={styles.filePreviewInfo.style}>
-                        <Div style={styles.filePreviewName.style}>
-                          {file.name}
-                        </Div>
-                        <Div style={styles.filePreviewSize.style}>
-                          {formatFileSize(file.size)}
-                        </Div>
-                      </Div>
+                            <Div style={styles.filePreviewInfo.style}>
+                              <A
+                                className="link"
+                                href={file.url}
+                                style={{
+                                  ...utilities.link.style,
+                                  ...styles.filePreviewName.style,
+                                }}
+                                target="_blank"
+                              >
+                                {file.name}
+                              </A>
+                              <Div style={styles.filePreviewSize.style}>
+                                {(file.size / 1024).toFixed(1)}KB
+                              </Div>
+                            </Div>
 
-                      <Button
-                        data-testid={`${dataTestId}-file-preview-clear`}
-                        type="button"
-                        onClick={() => removeFile(index)}
-                        className="link"
-                        style={{
-                          ...utilities.link.style,
-                          ...styles.filePreviewClear.style,
-                        }}
-                        title="Remove file"
-                      >
-                        <CircleX size={18} />
-                      </Button>
-                    </Div>
-                  )
-                })}
-              </Div>
-            )}
-
-            <Div style={styles.actions.style}>
-              <Div style={styles.fileUploader.style}>
-                <>
-                  <Button
-                    className="transparent"
-                    data-testid={`${dataTestId}-artifacts-back-button`}
-                    onClick={() => {
-                      addHapticFeedback()
-                      setIsArtifactsOpen(false)
-                      setIsOpen(true)
-                    }}
-                    style={{ ...utilities.transparent.style }}
-                  >
-                    <ArrowLeft size={16} />
-                  </Button>
-                  <Button
-                    className="transparent"
-                    data-testid={`${dataTestId}-artifacts-paste-button`}
-                    onClick={async () => {
-                      addHapticFeedback()
-                      try {
-                        const text = await navigator.clipboard.readText()
-                        if (text.trim()) {
-                          const blob = new Blob([text], {
-                            type: "text/plain",
-                          })
-                          const file = new File([blob], "pasted-content.txt", {
-                            type: "text/plain",
-                            lastModified: Date.now(),
-                          })
-                          setFiles((prev) => [...prev, file])
-                          toast.success("Clipboard content added as file")
-                        } else {
-                          toast.error("Clipboard is empty")
-                        }
-                      } catch (error) {
-                        console.error("Failed to read clipboard:", error)
-                        captureException(error)
-                        toast.error(
-                          "Failed to access clipboard. Please check permissions.",
+                            {deletingId === file.id ? (
+                              <Loading width={18} height={18} />
+                            ) : (
+                              <Button
+                                data-testid={`${dataTestId}-file-preview-clear`}
+                                type="button"
+                                className="link"
+                                onClick={() => handleDeleteFile(file.id)}
+                                style={{
+                                  ...utilities.link.style,
+                                  ...styles.filePreviewClear.style,
+                                }}
+                                title="Remove file"
+                              >
+                                <CircleX size={18} />
+                              </Button>
+                            )}
+                          </Div>
                         )
-                      }
-                    }}
-                    style={{ ...utilities.transparent.style }}
-                  >
-                    <Copy size={16} />
-                    {t("Paste")}
-                  </Button>
-                  <Button
-                    className="transparent"
-                    data-testid={`${dataTestId}-artifacts-upload-button`}
-                    onClick={() =>
-                      triggerFileInput(
-                        "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
-                      )
-                    }
-                    style={{ ...utilities.transparent.style }}
-                  >
-                    <FileUp size={16} />
-                    {t("Upload")}
-                  </Button>
-                  {isAllowed && (
-                    <Button
-                      disabled={(!content && isManaging) || isSaving}
-                      style={{
-                        ...((!content && isManaging) || isSaving
-                          ? utilities.transparent.style
-                          : {}),
-                      }}
-                      data-testid={`${dataTestId}-modal-save-button`}
-                      onClick={() =>
-                        selectedInstruction
-                          ? handleSave({ instruction: selectedInstruction })
-                          : handleSave()
-                      }
-                    >
-                      {isSaving ? (
-                        <Loading width={14} height={14} color="white" />
-                      ) : (
-                        t("Save")
-                      )}
-                    </Button>
+                      })}
+                      {files.map((file, index) => {
+                        const fileType = file.type.toLowerCase()
+                        const isImage = fileType.startsWith("image/")
+                        const isVideo = fileType.startsWith("video/")
+                        const isAudio = fileType.startsWith("audio/")
+                        const isPDF = fileType === "application/pdf"
+                        const isText =
+                          fileType.startsWith("text/") ||
+                          file.name.match(
+                            /\.(txt|md|json|csv|xml|html|css|js|ts|tsx|jsx|py|java|c|cpp|h|hpp|cs|php|rb|go|rs|swift|kt|scala|sh|yaml|yml|toml|ini|conf|log)$/i,
+                          )
+
+                        return (
+                          <Div key={index} style={styles.filePreview.style}>
+                            <Div style={styles.filePreviewIcon.style}>
+                              {isImage ? (
+                                <img
+                                  src={URL.createObjectURL(file)}
+                                  alt={file.name}
+                                  style={{
+                                    width: "32px",
+                                    height: "32px",
+                                    objectFit: "cover",
+                                    borderRadius: "4px",
+                                  }}
+                                />
+                              ) : isVideo ? (
+                                <VideoIcon size={16} />
+                              ) : isAudio ? (
+                                <Music size={16} />
+                              ) : isPDF || isText ? (
+                                <FileText size={16} />
+                              ) : (
+                                <FileIcon size={16} />
+                              )}
+                            </Div>
+
+                            <Div style={styles.filePreviewInfo.style}>
+                              <Div style={styles.filePreviewName.style}>
+                                {file.name}
+                              </Div>
+                              <Div style={styles.filePreviewSize.style}>
+                                {formatFileSize(file.size)}
+                              </Div>
+                            </Div>
+
+                            <Button
+                              data-testid={`${dataTestId}-file-preview-clear`}
+                              type="button"
+                              onClick={() => removeFile(index)}
+                              className="link"
+                              style={{
+                                ...utilities.link.style,
+                                ...styles.filePreviewClear.style,
+                              }}
+                              title="Remove file"
+                            >
+                              <CircleX size={18} />
+                            </Button>
+                          </Div>
+                        )
+                      })}
+                    </Div>
                   )}
-                </>
-              </Div>
-            </Div>
-          </Div>
-        ) : (
-          <>
-            {isManaging && selectedInstruction && (
-              <Div style={styles.titleField.style}>
-                <Span style={{ fontSize: "1.5rem" }}>{selectedEmoji}</Span>
-                <Input
-                  title={t("Feature title")}
-                  id="featureTitle"
-                  value={t(editedTitle)}
-                  onChange={(e) => setEditedTitle(e.target.value)}
-                  type="text"
-                  placeholder={t("Feature title")}
-                  style={{ flex: 1 }}
-                />
-              </Div>
-            )}
-            <TextArea
-              disabled={!canUpdate}
-              data-testid={`${dataTestId}-modal-textarea`}
-              id="instructions"
-              onChange={(e) => setContent(e.target.value)}
-              value={t(content, isManaging ? undefined : instructionConfig)}
-              style={styles.instructionsTextarea.style}
-              placeholder={
-                placeHolder ||
-                (collaborationStep === 1
-                  ? `✨ ${t(`Let's create something amazing together!`)}
+
+                  <Div style={styles.actions.style}>
+                    <Div style={styles.fileUploader.style}>
+                      <>
+                        <Button
+                          className="transparent"
+                          data-testid={`${dataTestId}-artifacts-back-button`}
+                          onClick={() => {
+                            addHapticFeedback()
+                            setIsArtifactsOpen(false)
+                            setIsOpen(true)
+                          }}
+                          style={{ ...utilities.transparent.style }}
+                        >
+                          <ArrowLeft size={16} />
+                        </Button>
+                        <Button
+                          className="transparent"
+                          data-testid={`${dataTestId}-artifacts-paste-button`}
+                          onClick={async () => {
+                            addHapticFeedback()
+                            try {
+                              const text = await navigator.clipboard.readText()
+                              if (text.trim()) {
+                                const blob = new Blob([text], {
+                                  type: "text/plain",
+                                })
+                                const file = new File(
+                                  [blob],
+                                  "pasted-content.txt",
+                                  {
+                                    type: "text/plain",
+                                    lastModified: Date.now(),
+                                  },
+                                )
+                                setFiles((prev) => [...prev, file])
+                                toast.success("Clipboard content added as file")
+                              } else {
+                                toast.error("Clipboard is empty")
+                              }
+                            } catch (error) {
+                              console.error("Failed to read clipboard:", error)
+                              captureException(error)
+                              toast.error(
+                                "Failed to access clipboard. Please check permissions.",
+                              )
+                            }
+                          }}
+                          style={{ ...utilities.transparent.style }}
+                        >
+                          <Copy size={16} />
+                          {t("Paste")}
+                        </Button>
+                        <Button
+                          className="transparent"
+                          data-testid={`${dataTestId}-artifacts-upload-button`}
+                          onClick={() =>
+                            triggerFileInput(
+                              "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
+                            )
+                          }
+                          style={{ ...utilities.transparent.style }}
+                        >
+                          <FileUp size={16} />
+                          {t("Upload")}
+                        </Button>
+                        {isAllowed && (
+                          <Button
+                            disabled={(!content && isManaging) || isSaving}
+                            style={{
+                              ...((!content && isManaging) || isSaving
+                                ? utilities.transparent.style
+                                : {}),
+                            }}
+                            data-testid={`${dataTestId}-modal-save-button`}
+                            onClick={() =>
+                              selectedInstruction
+                                ? handleSave({
+                                    instruction: selectedInstruction,
+                                  })
+                                : handleSave()
+                            }
+                          >
+                            {isSaving ? (
+                              <Loading width={14} height={14} color="white" />
+                            ) : (
+                              t("Save")
+                            )}
+                          </Button>
+                        )}
+                      </>
+                    </Div>
+                  </Div>
+                </Div>
+              ) : (
+                <>
+                  {isManaging && selectedInstruction && (
+                    <Div style={styles.titleField.style}>
+                      <Span style={{ fontSize: "1.5rem" }}>
+                        {selectedEmoji}
+                      </Span>
+                      <Input
+                        title={t("Feature title")}
+                        id="featureTitle"
+                        value={t(editedTitle)}
+                        onChange={(e) => setEditedTitle(e.target.value)}
+                        type="text"
+                        placeholder={t("Feature title")}
+                        style={{ flex: 1 }}
+                      />
+                    </Div>
+                  )}
+                  <TextArea
+                    disabled={!canUpdate}
+                    data-testid={`${dataTestId}-modal-textarea`}
+                    id="instructions"
+                    onChange={(e) => setContent(e.target.value)}
+                    value={t(
+                      content,
+                      isManaging ? undefined : instructionConfig,
+                    )}
+                    style={styles.instructionsTextarea.style}
+                    placeholder={
+                      placeHolder ||
+                      (collaborationStep === 1
+                        ? `✨ ${t(`Let's create something amazing together!`)}
 
 ${t(`Describe what you'd like to collaborate on:`)}
 
@@ -1183,7 +1224,7 @@ ${t(`Describe what you'd like to collaborate on:`)}
 🚀 ${t(`Plan and strategize together`)}
 
 ${t(`Share your vision and invite others to join the conversation!`)}`
-                  : `${t(`Tell AI how to behave in this chat. For example`)}
+                        : `${t(`Tell AI how to behave in this chat. For example`)}
 
 ${t(`Always ask for context before giving advice`)}
 ${t(`Focus on practical, actionable solutions`)}
@@ -1191,147 +1232,155 @@ ${t(`Explain complex topics in simple terms`)}
 ${t(`Remember my preferences and past conversations`)}
 
 ${t(`The more specific you are, the better AI can assist you!`)}`)
-              }
-            />
-          </>
-        )}
-        {!isArtifactsOpen && (
-          <Span style={styles.tip.style}>
-            <Img slug="hippo" size={16} />
-            <Span>
-              {canUpdate
-                ? t(`Give Hippo something to remember`)
-                : t(`Only owner can update instructions`)}
-            </Span>
-          </Span>
-        )}
-        {canUpdate && !isArtifactsOpen && (
-          <Div style={styles.footer.style}>
-            {thread && (
-              <Button
-                className="inverted"
-                data-testid={`${dataTestId}-modal-regenerate-button`}
-                onClick={() => handleSave({ regenerateInstructions: true })}
-                style={{ ...utilities.inverted.style }}
-              >
-                {isGeneratingInstructions ? (
-                  <Loading width={14} height={14} />
-                ) : (
-                  <>
-                    <Img app={app} size={14} />
-                    {t("Generate")}
-                  </>
-                )}
-              </Button>
-            )}
-            <Div style={styles.actions.style}>
-              {user?.role === "admin" ||
-                (isDevelopment && (
-                  <Button
-                    className="inverted"
-                    data-testid={`${dataTestId}-modal-chat-button`}
-                    onClick={() => {
-                      setIsChatOpen(true)
-                    }}
-                    style={{ ...utilities.inverted.style }}
-                  >
-                    <Img app={app} size={14} />
-                    {isMobileDevice ? null : t("Chat")}
-                  </Button>
-                ))}
-              <Button
-                className="inverted"
-                data-testid={`${dataTestId}-modal-artifacts-button`}
-                onClick={() => {
-                  setIsArtifactsOpen(true)
-                }}
-                style={{ ...utilities.inverted.style }}
-              >
-                <Img slug="burn" size={14} />
-                {isMobileDevice ? null : t("Upload")}
-              </Button>
+                    }
+                  />
+                </>
+              )}
+              {!isArtifactsOpen && (
+                <Span style={styles.tip.style}>
+                  <Img slug="hippo" size={16} />
+                  <Span>
+                    {canUpdate
+                      ? t(`Give Hippo something to remember`)
+                      : t(`Only owner can update instructions`)}
+                  </Span>
+                </Span>
+              )}
+              {canUpdate && !isArtifactsOpen && (
+                <Div style={styles.footer.style}>
+                  {thread && (
+                    <Button
+                      className="inverted"
+                      data-testid={`${dataTestId}-modal-regenerate-button`}
+                      onClick={() =>
+                        handleSave({ regenerateInstructions: true })
+                      }
+                      style={{ ...utilities.inverted.style }}
+                    >
+                      {isGeneratingInstructions ? (
+                        <Loading width={14} height={14} />
+                      ) : (
+                        <>
+                          <Img app={app} size={14} />
+                          {t("Generate")}
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  <Div style={styles.actions.style}>
+                    {isDevelopment && (
+                      <Button
+                        className="inverted"
+                        data-testid={`${dataTestId}-modal-chat-button`}
+                        onClick={() => {
+                          setIsChatOpen(true)
+                        }}
+                        style={{ ...utilities.inverted.style }}
+                      >
+                        <Img app={app} size={14} />
+                        {isMobileDevice ? null : t("Chat")}
+                      </Button>
+                    )}
+                    <Button
+                      className="inverted"
+                      data-testid={`${dataTestId}-modal-artifacts-button`}
+                      onClick={() => {
+                        setIsArtifactsOpen(true)
+                      }}
+                      style={{ ...utilities.inverted.style }}
+                    >
+                      <Img slug="burn" size={14} />
+                      {isMobileDevice ? null : t("Upload")}
+                    </Button>
 
-              {isManaging && (
-                <Div
-                  style={{
-                    position: "relative",
-                  }}
-                >
-                  {showEmojiPicker && (
-                    <Suspense>
+                    {isManaging && (
                       <Div
                         style={{
-                          position: "absolute",
-                          bottom: "100%",
-                          right: 0,
-                          marginBottom: "0.5rem",
-                          zIndex: 1000,
+                          position: "relative",
                         }}
                       >
-                        <EmojiPicker
-                          open={showEmojiPicker}
-                          onClose={() => setShowEmojiPicker(false)}
-                          onEmojiClick={handleEmojiClick}
-                          width={300}
-                          height={400}
-                          previewConfig={{
-                            showPreview: false,
-                          }}
-                          skinTonesDisabled
-                          lazyLoadEmojis={true}
-                          isDark={isDark}
-                        />
+                        {showEmojiPicker && (
+                          <Suspense>
+                            <Div
+                              style={{
+                                position: "absolute",
+                                bottom: "100%",
+                                right: 0,
+                                marginBottom: "0.5rem",
+                                zIndex: 1000,
+                              }}
+                            >
+                              <EmojiPicker
+                                open={showEmojiPicker}
+                                onClose={() => setShowEmojiPicker(false)}
+                                onEmojiClick={handleEmojiClick}
+                                width={300}
+                                height={400}
+                                previewConfig={{
+                                  showPreview: false,
+                                }}
+                                skinTonesDisabled
+                                lazyLoadEmojis={true}
+                                isDark={isDark}
+                              />
+                            </Div>
+                          </Suspense>
+                        )}
+                        <Button
+                          className="inverted"
+                          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                          style={{ ...utilities.inverted.style }}
+                        >
+                          {selectedEmoji} {isMobileDevice ? null : t("Emoji")}
+                        </Button>
                       </Div>
-                    </Suspense>
-                  )}
-                  <Button
-                    className="inverted"
-                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    style={{ ...utilities.inverted.style }}
-                  >
-                    {selectedEmoji} {isMobileDevice ? null : t("Emoji")}
-                  </Button>
+                    )}
+
+                    {isAllowed && (
+                      <Button
+                        data-testid={`${dataTestId}-modal-save-button`}
+                        disabled={(!content && isManaging) || isSaving}
+                        style={{
+                          ...((!content && isManaging) || isSaving
+                            ? utilities.transparent.style
+                            : {}),
+                        }}
+                        onClick={() =>
+                          handleSave({
+                            instruction: selectedInstruction || undefined,
+                          })
+                        }
+                      >
+                        {isSaving ? (
+                          <Loading width={14} height={14} color="white" />
+                        ) : (
+                          t("Save")
+                        )}
+                      </Button>
+                    )}
+                  </Div>
                 </Div>
               )}
-
-              {isAllowed && (
-                <Button
-                  data-testid={`${dataTestId}-modal-save-button`}
-                  disabled={(!content && isManaging) || isSaving}
-                  style={{
-                    ...((!content && isManaging) || isSaving
-                      ? utilities.transparent.style
-                      : {}),
-                  }}
-                  onClick={() =>
-                    handleSave({
-                      instruction: selectedInstruction || undefined,
-                    })
-                  }
-                >
-                  {isSaving ? (
-                    <Loading width={14} height={14} color="white" />
-                  ) : (
-                    t("Save")
-                  )}
-                </Button>
-              )}
-            </Div>
-          </Div>
-        )}
-      </Modal>
+            </>
+          )}
+        </Modal>
+      )}
       <Div style={styles.instructionsContainer.style}>
-        {showButton && (
+        {(showButton || icon) && !showInstructions && (
           <Div
             style={{
               ...styles.instructionsButtonContainer.style,
-              // marginBottom: !thread && !icon ? "0.8rem" : undefined,
             }}
           >
             <Button
-              className={"link"}
+              id={ghost ? "hippo-ghost" : "hippo-instructions"}
+              className={icon ? "link" : "inverted"}
               data-testid={`${dataTestId}-button`}
               onClick={() => {
+                if (ghost) {
+                  document.getElementById("hippo-instructions")?.click()
+                  return
+                }
                 // Clear content if it matches the currently selected instruction
                 if (
                   !thread &&
@@ -1431,146 +1480,6 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
             })}
           </Div>
         )}
-        {!thread &&
-          ((showInstructions && showDownloads) || !showInstallers) && (
-            <Div
-              data-testid={`${dataTestId}-about`}
-              style={{
-                ...styles.bottom.style,
-                marginBottom: showDownloads ? 0 : 30,
-                marginTop: showInstallers ? 10 : style?.marginTop,
-                zIndex: 10,
-              }}
-            >
-              {!showGrape && showInstallers && (
-                <A style={{ lineHeight: 1.5 }} href={"/about"}>
-                  <MousePointerClick color="var(--accent-1)" size={26} />
-
-                  {t(appStatus?.part ? "Description" : "About")}
-                </A>
-              )}
-              {appStatus?.part ? (
-                <Suspense>
-                  <Agent />
-                </Suspense>
-              ) : (
-                <Div
-                  style={{
-                    display: "flex",
-                    gap: toRem(5),
-                  }}
-                >
-                  {!isCapacitor && (
-                    <Button
-                      className="transparent"
-                      style={{
-                        ...utilities.small.style,
-                        ...styles.installAppButton.style,
-                      }}
-                      onClick={() => {
-                        addHapticFeedback()
-                        setShowAddToHomeScreen(true)
-                      }}
-                    >
-                      {os === "ios" || os === "macos" ? (
-                        <FaApple
-                          style={{
-                            position: "relative",
-                            bottom: 1,
-                          }}
-                          size={18}
-                        />
-                      ) : (
-                        <FaAndroid size={18} />
-                      )}
-                      {/* {t("Install")} */}
-                    </Button>
-                  )}
-
-                  {os !== "android" &&
-                  os !== "ios" &&
-                  !isTauri &&
-                  downloadUrl ? (
-                    <Button
-                      className="inverted"
-                      style={{
-                        ...utilities.small.style,
-
-                        ...styles.installAppButton.style,
-                        paddingTop: "0",
-                        paddingBottom: "0",
-                      }}
-                      onClick={() => {
-                        const a = document.createElement("a")
-                        a.href = downloadUrl
-                        a.download = ""
-                        document.body.appendChild(a)
-                        a.click()
-                        document.body.removeChild(a)
-                      }}
-                    >
-                      <SiMacos
-                        style={{
-                          position: "relative",
-                          bottom: 1,
-                        }}
-                        size={32}
-                      />
-                      {/* {t("Install")} */}
-                    </Button>
-                  ) : null}
-                  {productionExtensions.includes("chrome")
-                    ? !showGrape && (
-                        <A
-                          openInNewTab
-                          href={chromeWebStoreUrl}
-                          className="button"
-                          style={{
-                            ...utilities.button.style,
-                            ...utilities.small.style,
-                            ...styles.installButton.style,
-                          }}
-                        >
-                          <FaChrome size={18} />
-                          {/* {t("Extension")} */}
-                        </A>
-                      )
-                    : null}
-                  {canGrape && (
-                    <A
-                      ref={grapeButtonRef}
-                      href="mailto:iliyan@chrry.ai"
-                      className="link"
-                      style={{
-                        ...utilities.link.style,
-                        marginLeft: showGrape ? 0 : 5,
-                        fontSize: "0.9rem",
-                        fontWeight: "normal",
-                        padding: "6.25px 0",
-                      }}
-                      onClick={(e) => {
-                        setShowGrape(!showGrape)
-                        if (!showGrape) {
-                          e.preventDefault()
-                          // Open email client for advertising inquiries
-                        }
-                      }}
-                    >
-                      {showGrape ? t("Get your brand here") : ""}{" "}
-                      <Span
-                        style={{
-                          marginLeft: 3,
-                          lineHeight: 0.7,
-                        }}
-                      >
-                        🍇
-                      </Span>
-                    </A>
-                  )}
-                </Div>
-              )}
-            </Div>
-          )}
       </Div>
     </Div>
   )

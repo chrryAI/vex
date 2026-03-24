@@ -69,6 +69,7 @@ function Message({
   onPlayAudio,
   isTyping,
   isOnline,
+  isMobileDevice = true,
 }: {
   message: {
     message: message & {
@@ -86,6 +87,7 @@ function Message({
   onPlayAudio?: () => void
   isTyping?: boolean
   isOnline?: boolean
+  isMobileDevice?: boolean
 }): React.ReactElement | null {
   const { t } = useAppContext()
   const { utilities } = useStyles()
@@ -152,7 +154,7 @@ function Message({
     }
   }, [weatherContext, user?.city, guest?.city, language])
 
-  const { addHapticFeedback, isMobileDevice } = useTheme()
+  const { addHapticFeedback } = useTheme()
 
   const ownerId = user?.id || guest?.id
 
