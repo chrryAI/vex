@@ -193,7 +193,7 @@ export default function Hippo({
   const { captureException } = useError()
 
   const { os, isStandalone, isTauri, isCapacitor, isExtension } = usePlatform()
-  const offset = isStandalone ? -250 : isExtension || isCapacitor ? -80 : 0
+  const offset = isStandalone ? -50 : isExtension || isCapacitor ? -80 : 0
   const count = useResponsiveCount(
     [
       { height: 550, count: 0 }, // Small phones: show none (was 1)
