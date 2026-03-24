@@ -121,14 +121,14 @@ export function useOnlineStatus() {
     // Recheck every 30s to detect server outages
     // const interval = setInterval(checkConnection, 30000)
 
-    return () => {
-      if (window.removeEventListener) {
-        window.removeEventListener("online", updateStatus)
-        window.removeEventListener("offline", updateStatus)
-        window.removeEventListener("focus", checkConnection)
-      }
-      clearInterval(interval)
-    }
+    // return () => {
+    //   if (window.removeEventListener) {
+    //     window.removeEventListener("online", updateStatus)
+    //     window.removeEventListener("offline", updateStatus)
+    //     window.removeEventListener("focus", checkConnection)
+    //   }
+    //   clearInterval(interval)
+    // }
   }, [user?.id, guest?.id])
 
   return isOnline
