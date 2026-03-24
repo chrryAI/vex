@@ -1405,7 +1405,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     }}
                   >
                     <Weather showLocation />
-                    <Hippo ghost dataTestId="tribe" />
+                    <Hippo dataTestId="tribe" />
                     <A href="/about">
                       <Img icon="Tools" size={25} />
                     </A>
