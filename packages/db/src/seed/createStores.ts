@@ -9434,7 +9434,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     await handleAppExtends(hippo.id, [sushiApp.id, chrry.id], blossom.id)
 
   // Lifestyle apps
-  if (bloom && vex?.id && vex.storeId)
+  if (vex?.id && vex.storeId)
     await handleAppExtends(bloom.id, [chrry.id, vex.id, focus.id], vex.storeId)
   if (peach && vex?.id && vex.storeId)
     await handleAppExtends(peach.id, [chrry.id, vex.id, focus.id], vex.storeId)
