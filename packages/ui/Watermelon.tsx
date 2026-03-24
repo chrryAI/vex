@@ -332,6 +332,14 @@ export default function Watermelon() {
                   className="link"
                   onClick={() => {
                     setPaused(!paused)
+                    plausible({
+                      name: ANALYTICS_EVENTS.TICKER_MOTTO_CLICK,
+                      props: {
+                        app: app?.name,
+                        store: app?.store?.name,
+                        paused: !paused,
+                      },
+                    })
                   }}
                   title={paused ? t("Play") : t("Pause")}
                   style={{

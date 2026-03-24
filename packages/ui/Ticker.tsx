@@ -4,6 +4,7 @@ import { useApp, useAuth } from "./context/providers"
 import { COLORS, useTheme } from "./context/ThemeContext"
 import TextType from "./TextType"
 import { decodeHtmlEntities, getInstructionConfig } from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 function Ticker({
   style,
@@ -23,6 +24,8 @@ function Ticker({
     weather,
     tickerPaused: paused,
     setTickerPaused,
+    plausible,
+    app,
   } = useAuth()
   const [currentIndex, setCurrentIndex] = React.useState(0)
   const { t } = useAppContext()
@@ -66,8 +69,17 @@ function Ticker({
         fontFamily: "var(--font-mono)",
         ...style,
       }}
-      onPause={() => {
-        setTickerPaused(true)
+      onToggle={(value) => {
+        plausible({
+          name: value
+            ? ANALYTICS_EVENTS.TICKER_PAUSE
+            : ANALYTICS_EVENTS.TICKER_RESUME,
+          props: {
+            app: app?.name,
+            store: app?.store?.name,
+          },
+        })
+        setTickerPaused(value)
       }}
       text={instructionTitles}
       typingSpeed={40}
@@ -80,6 +92,14 @@ function Ticker({
       onClick={() => {
         if (instructions?.[currentIndex]) {
           setSelectedInstruction(instructions[currentIndex])
+          plausible({
+            name: ANALYTICS_EVENTS.TICKER_CLICK,
+            props: {
+              app: app?.name,
+              store: app?.store?.name,
+              instruction: instructions?.[currentIndex]?.title,
+            },
+          })
         }
       }}
     />
