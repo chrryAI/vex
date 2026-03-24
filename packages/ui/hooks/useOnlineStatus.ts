@@ -114,11 +114,12 @@ export function useOnlineStatus() {
     window.addEventListener("offline", updateStatus)
     window.addEventListener("focus", checkConnection)
 
+    // Seems stable for now
     // Initial check in case navigator.onLine is wrong
-    checkConnection()
+    // checkConnection()
 
     // Recheck every 30s to detect server outages
-    const interval = setInterval(checkConnection, 30000)
+    // const interval = setInterval(checkConnection, 30000)
 
     return () => {
       if (window.removeEventListener) {
