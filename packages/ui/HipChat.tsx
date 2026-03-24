@@ -256,22 +256,6 @@ const HipChat = ({
   const collaborator = thread && isCollaborator(thread, user?.id)
   const activeCollaborator =
     thread && isCollaborator(thread, user?.id, "active")
-
-  const [autoSelectedAgent, setAutoSelectedAgent] = useState<boolean>(false)
-  useEffect(() => {
-    const lastMessage = messages[messages.length - 1]
-    // Only reset if not already in human mode
-    if (lastMessage?.message.agentId && !autoSelectedAgent && !debateAgent) {
-      const agent = aiAgents?.find(
-        (agent) => agent.id === lastMessage?.message.agentId,
-      )
-      if (agent) {
-        setSelectedAgent(agent)
-        setAutoSelectedAgent(true)
-      }
-    }
-  }, [messages, autoSelectedAgent, debateAgent])
-
   const getTop = () => {
     return (
       (thread || hipchat) && (
