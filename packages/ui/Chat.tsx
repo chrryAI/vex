@@ -4185,7 +4185,7 @@ export default function Chat({
                       loading={<Loading size={22} />}
                       icon={
                         <>
-                          <ArrowLeft size={16} />
+                          <Span>🌀</Span>
                           <Img app={back} size={22} />
                         </>
                       }
@@ -4290,7 +4290,7 @@ export default function Chat({
                       loading={<Loading size={22} />}
                       icon={
                         <>
-                          <ArrowLeft size={16} />
+                          <Span>🌀</Span>
                           <Img app={back} size={22} />
                         </>
                       }

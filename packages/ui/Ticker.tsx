@@ -1,8 +1,8 @@
 import React from "react"
+import { useAppContext } from "./context/AppContext"
 import { useApp, useAuth } from "./context/providers"
 import { COLORS, useTheme } from "./context/ThemeContext"
 import TextType from "./TextType"
-import { useAppContext } from "./context/AppContext"
 
 function Ticker({ style }: { style?: React.CSSProperties }) {
   const { instructions } = useApp()

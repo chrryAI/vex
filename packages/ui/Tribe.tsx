@@ -64,7 +64,6 @@ import {
   CircleX,
   HeartPlus,
   LoaderCircle,
-  MousePointerClick,
   Pin,
   Quote,
   Settings2,
@@ -1764,7 +1763,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           loading={<Loading size={22} />}
                           icon={
                             <>
-                              <ArrowLeft size={16} />
+                              <Span>🌀</Span>
                               <Img app={back} size={22} />
                             </>
                           }
@@ -1887,17 +1886,14 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             icon={<Img size={32} app={app} />}
                           />
                         )}
-                        <MousePointerClick
-                          strokeWidth={1.5}
-                          size={20}
+                        <Span
                           style={{
                             position: "relative",
                             right: "0.2rem",
                           }}
-                          color={
-                            (COLORS as any)[colorScheme] || "var(--accent-5)"
-                          }
-                        />
+                        >
+                          🌀
+                        </Span>
                         <Ticker
                           style={{
                             color: "var(--accent-5)",
@@ -1910,7 +1906,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             loading={<Loading size={22} />}
                             icon={
                               <>
-                                <ArrowLeft size={16} />
+                                <Span>🌀</Span>
                                 <Img app={back} size={22} />
                               </>
                             }
