@@ -135,17 +135,21 @@ export default function Chat({
   style,
   requiresSignin,
   chatKey,
+  dataTestId,
   hipchat = true,
+  hipChatId,
 }: {
   requiresSignin?: boolean
   compactMode?: boolean
   placeholder?: string
   Top?: React.ReactNode
+  dataTestId?: string
   showSuggestions?: boolean
   showGreeting?: boolean
   className?: string
   hipchat?: boolean
   chatKey?: string
+  hipChatId?: string
   onToggleGame?: (on: boolean) => void
   disabled?: boolean
   onMessage?: (message: {
@@ -159,7 +163,7 @@ export default function Chat({
       aiAgent?: aiAgent
       thread?: thread
     }
-    hipchat?: boolean
+    hipChatId?: string
     webSearchResults?: any[]
     isImageGenerationEnabled?: boolean
     isWebSearchEnabled?: boolean
@@ -1796,7 +1800,7 @@ export default function Chat({
         user: user as user,
         guest: guest as guest,
       },
-      hipchat,
+      hipChatId,
     })
 
     setIsLoading(true)
@@ -1940,7 +1944,7 @@ export default function Chat({
           content: userMessageText,
           isUser: true,
           message: userMessage,
-          hipchat,
+          hipChatId,
         })
 
         // Auto-advance daily questions AFTER message is sent
@@ -2050,7 +2054,7 @@ export default function Chat({
         isStreaming: true,
         isImageGenerationEnabled,
         isWebSearchEnabled,
-        hipchat,
+        hipChatId,
       })
 
       setIsStreaming(true)
@@ -2522,7 +2526,7 @@ export default function Chat({
                 (agent) => agent.id === data.message?.message.debateAgentId,
               ),
             },
-            hipchat,
+            hipChatId,
             isStreaming: true,
             isImageGenerationEnabled: data?.isImageGenerationEnabled,
             isWebSearchEnabled: data?.isWebSearchEnabled,
@@ -2583,7 +2587,7 @@ export default function Chat({
           message: data.message,
           isImageGenerationEnabled: data?.isImageGenerationEnabled,
           isWebSearchEnabled: data?.isWebSearchEnabled,
-          hipchat,
+          hipChatId,
         })
 
         data.message.message.selectedAgentId &&
@@ -2600,7 +2604,7 @@ export default function Chat({
             isStreaming: true,
             isImageGenerationEnabled: data?.isImageGenerationEnabled,
             isWebSearchEnabled: data?.isWebSearchEnabled,
-            hipchat,
+            hipChatId,
           })
       }
     },
@@ -5032,7 +5036,11 @@ export default function Chat({
                       {t("Privacy")}
                     </A>
                   ) : !isSelectingMood && isDevelopment && user && !hipchat ? (
-                    <Hippo dataTestId="chat" size={24} />
+                    <Hippo
+                      key={dataTestId}
+                      dataTestId={`${dataTestId}-hippo`}
+                      size={24}
+                    />
                   ) : (
                     <Button
                       data-testid="attach-button"

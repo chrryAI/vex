@@ -348,10 +348,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (result) {
         if (canEditApp && !canCreateNewApp) {
           setUpdatedApp(result)
-          await fetchApps()
+          // await refetchAccountApps()
         } else {
           setNewApp(result)
-          await fetchApps()
+          // await refetchAccountApps()
         }
         plausible({
           name: ANALYTICS_EVENTS.APP_SAVE_SUCCESS,

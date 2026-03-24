@@ -1746,25 +1746,13 @@ export default function App({
             pointerEvents: hasHydrated && minimize ? "none" : "auto",
           }}
         >
-          {isManagingApp && (
-            <Hippo
-              as="button"
-              dataTestId="instruction-builder"
-              opacity={0}
-              onSave={({ content, artifacts }) => {
-                onSave?.({
-                  content,
-                  artifacts,
-                })
-              }}
-              showInstructions={false}
-            />
-          )}
           <Hippo
+            ghost
             as="icon"
             showInstructions
             dataTestId="instruction"
             isAgentBuilder={true}
+            hipchat={false}
             opacity={0}
             onSave={({ content, artifacts }) => {
               if (isManagingApp) {
