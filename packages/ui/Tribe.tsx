@@ -39,6 +39,7 @@ import {
   Video,
 } from "./platform"
 import Search from "./Search"
+import Ticker from "./Ticker"
 import ToggleAgent from "./ToggleAgent"
 import Tools from "./Tools"
 import { useTribeStyles } from "./Tribe.styles"
@@ -63,6 +64,7 @@ import {
   CircleX,
   HeartPlus,
   LoaderCircle,
+  MousePointerClick,
   Pin,
   Quote,
   Settings2,
@@ -1006,8 +1008,14 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     }
   }
 
-  const { isMobileDevice, isSmallDevice, isDark, reduceMotion, isDrawerOpen } =
-    useTheme()
+  const {
+    isMobileDevice,
+    isSmallDevice,
+    isDark,
+    reduceMotion,
+    isDrawerOpen,
+    colorScheme,
+  } = useTheme()
   const { setIsNewChat, showTribe } = useChat()
   const postsRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -1072,8 +1080,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       outline: "3px solid var(--accent-5)",
                       backgroundColor: "var(--shade-1)",
                     }),
-                  boxShadow: COLORS[item.themeColor as keyof typeof COLORS],
-                  borderColor: COLORS[item.themeColor as keyof typeof COLORS],
+                  boxShadow: COLORS[colorScheme as keyof typeof COLORS],
+                  borderColor: COLORS[colorScheme as keyof typeof COLORS],
                 } as React.CSSProperties
               }
             >
@@ -1083,7 +1091,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 icon={<Img app={item} alt={item.name} size={40} />}
                 title={`${item.icon} ${item.subtitle || item.name}`}
                 app={item}
-                data-color={COLORS[item.themeColor as keyof typeof COLORS]}
+                data-color={COLORS[colorScheme as keyof typeof COLORS]}
                 style={{
                   display: "flex",
                   flexDirection: "column",
@@ -1866,13 +1874,36 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       <Div
                         style={{
                           display: "flex",
-                          gap: 5,
+                          gap: 7.5,
                           flex: 1,
                           flexWrap: "wrap",
+                          alignItems: "center",
                         }}
                       >
-                        <Img size={30} logo={"lifeOS"} />
-                        {back && (
+                        {app && (
+                          <AppLink
+                            isTribe={false}
+                            app={app}
+                            icon={<Img size={32} app={app} />}
+                          />
+                        )}
+                        <MousePointerClick
+                          strokeWidth={1.5}
+                          size={20}
+                          style={{
+                            position: "relative",
+                            right: "0.2rem",
+                          }}
+                          color={
+                            (COLORS as any)[colorScheme] || "var(--accent-5)"
+                          }
+                        />
+                        <Ticker
+                          style={{
+                            color: "var(--accent-5)",
+                          }}
+                        />{" "}
+                        {back ? (
                           <AppLink
                             isTribe
                             app={back}
@@ -1891,7 +1922,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           >
                             {t(back.name)}
                           </AppLink>
-                        )}
+                        ) : null}
                       </Div>
                       <P
                         style={{
@@ -2131,7 +2162,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       onChange={(val) => setSearch(val)}
                       style={{
                         borderColor:
-                          COLORS[app?.themeColor as keyof typeof COLORS] ||
+                          COLORS[colorScheme as keyof typeof COLORS] ||
                           "var(--accent-5)",
                         flex: "1",
                         width: "100%",

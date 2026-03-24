@@ -888,3 +888,19 @@ button.favorite {
 .typing {
   animation: typing 1.4s infinite ease-in-out;
 }
+
+.text-type {
+  display: inline-block;
+  white-space: pre-wrap;
+}
+
+.text-type__cursor {
+  margin-left: 0.25rem;
+  display: inline-block;
+  color: var(--shade-7);
+  opacity: 1;
+}
+
+.text-type__cursor--hidden {
+  display: none;
+}

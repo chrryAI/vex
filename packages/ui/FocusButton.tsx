@@ -1106,8 +1106,7 @@ export default function FocusButton({
                                         <Span style={styles.taskTime.style}>
                                           {Math.floor(totalTime / 3600) > 0 && (
                                             <>
-                                              {Math.floor(totalTime / 3600)}
-                                              h{" "}
+                                              {Math.floor(totalTime / 3600)}h{" "}
                                             </>
                                           )}
                                           {Math.floor((totalTime % 3600) / 60) >

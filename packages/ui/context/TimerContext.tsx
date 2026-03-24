@@ -488,7 +488,10 @@ export function TimerContextProvider({
   const hasAutoResumedRef = useRef<boolean>(false)
   const lastSyncedStateRef = useRef<string>("")
 
-  const [playBirds, setPlayBirds] = useState<boolean | undefined>(undefined)
+  const [playBirds, setPlayBirds] = useLocalStorage<boolean | undefined>(
+    "playBirds",
+    undefined,
+  )
 
   useEffect(() => {
     if (!timer?.id) return
@@ -972,11 +975,19 @@ export function TimerContextProvider({
     }
   }, [playBirds, isExtension])
 
+  const timerPlayingRef = useRef(false)
+
   const playTimerEnd = useCallback(async () => {
     // Only play sound in web mode (check for global Audio API)
     if (!enableSound || typeof window === "undefined" || !("Audio" in window)) {
       return
     }
+
+    if (timerPlayingRef.current) {
+      return
+    }
+
+    timerPlayingRef.current = true
 
     try {
       const audio = new (window as any).Audio()
@@ -988,6 +999,10 @@ export function TimerContextProvider({
       await audio.play().catch((error: Error) => {
         console.log("Audio playback failed:", error)
       })
+
+      setTimeout(() => {
+        timerPlayingRef.current = false
+      }, 500)
     } catch (error) {
       console.error("Error playing notification sound:", error)
     }
@@ -1186,7 +1201,7 @@ export function TimerContextProvider({
     }
   }, [isExtension])
 
-  const [playKitasaku, setPlayKitasaku] = useState(false)
+  const [playKitasaku, setPlayKitasaku] = useLocalStorage("playKitasaku", false)
 
   useEffect(() => {
     if (playKitasaku) {

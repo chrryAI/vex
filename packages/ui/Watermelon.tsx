@@ -253,7 +253,7 @@ export default function Watermelon() {
         </Div>
 
         {chrry && (
-          <P
+          <Div
             style={{
               display: "flex",
               alignItems: "center",
@@ -278,7 +278,7 @@ export default function Watermelon() {
             >
               {chrry.name}
             </AppLink>{" "}
-          </P>
+          </Div>
         )}
 
         {isTauri && showLocalSetup ? (
@@ -295,7 +295,7 @@ export default function Watermelon() {
                 gap: isMobileDevice ? 7.5 : 8.5,
               }}
             >
-              <P
+              <Div
                 style={{
                   display: "flex",
                   gap: 7.5,
@@ -308,7 +308,7 @@ export default function Watermelon() {
                 <A href="/about">
                   <Img icon="heart" size={22} />
                 </A>
-              </P>
+              </Div>
               <H1
                 style={{
                   display: "flex",
@@ -1263,7 +1263,7 @@ export default function Watermelon() {
                 </Div>
               )}
 
-              <P
+              <Div
                 style={{ fontSize: ".85rem", marginTop: 25, marginBottom: 25 }}
               >
                 {showS3 ? (
@@ -1288,7 +1288,7 @@ export default function Watermelon() {
                     <ArrowRight size={14} color="var(--accent-5)" />
                   </A>
                 )}
-              </P>
+              </Div>
             </Div>
             <Div
               style={{
@@ -1360,7 +1360,7 @@ export default function Watermelon() {
                     <Img alt="Coder" size={22} slug="coder" /> {t("Login")} (
                     {t("Optional")})*
                   </A>
-                  <P
+                  <Div
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -1371,30 +1371,12 @@ export default function Watermelon() {
                   >
                     <Img alt="Sushi" size={18} slug="sushi" />
                     {t("Sushi will auto-migrate you when you choose to login")}
-                  </P>
-                  <P
-                    style={{
-                      fontSize: "0.9rem",
-                      color: "var(--shade-7)",
-                    }}
-                  >
-                    {/* <Trans
-                      i18nKey="watermelon_guest_info"
-                      defaults="You can use your own API key as a guest. Your data will <0>auto-migrate</0> when you <1>login</1>. Login is optional, but you can always sync your account."
-                      components={[
-                        <Span key="migrate" />,
-                        <A
-                          key="login"
-                          onClick={() => setSignInPart("login")}
-                        />,
-                      ]}
-                    /> */}
-                  </P>
+                  </Div>
                 </>
               )}
               {!isTauri && viewPortHeight >= 800 && (
                 <Div>
-                  <P
+                  <Div
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -1442,9 +1424,9 @@ export default function Watermelon() {
                       />
                       {/* {t("Install")} */}
                     </Button>
-                  </P>
+                  </Div>
 
-                  <P style={{ fontSize: "0.85rem", color: "var(--shade-7)" }}>
+                  <Div style={{ fontSize: "0.85rem", color: "var(--shade-7)" }}>
                     💻{" "}
                     <Trans
                       i18nKey="watermelon_macos_info"
@@ -1458,7 +1440,7 @@ export default function Watermelon() {
                         />,
                       ]}
                     />
-                  </P>
+                  </Div>
                 </Div>
               )}
             </Div>
@@ -1475,7 +1457,7 @@ export default function Watermelon() {
               <ThemeSwitcher style={{ marginTop: 5 }} />
               <ColorScheme size={22} />
             </Div>
-            <P
+            <Div
               style={{
                 fontSize: "0.8rem",
                 color: "var(--shade-7)",
@@ -1486,7 +1468,7 @@ export default function Watermelon() {
             >
               <Img icon={"whale"} size={24} />{" "}
               <Span>v{app?.version || VERSION}</Span>
-            </P>
+            </Div>
           </>
         )}
       </Div>
