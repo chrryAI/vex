@@ -87,7 +87,7 @@ export default forwardRef<
     onCharacterProfileUpdate,
     style,
     isLoading,
-    isMobileDevice = true,
+    isMobileDevice,
     Top,
   },
   ref,

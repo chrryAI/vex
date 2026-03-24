@@ -11,14 +11,18 @@ export const getHourlyLimit = ({
   member?: user
   guest?: guest
 }) => {
-  if (app && isOwner(app, { userId: app?.userId, guestId: app?.guestId }))
-    return 5000
+  const subscription = member?.subscription || guest?.subscription
+
   if (member?.role === "admin" && !isE2E) return 500
 
-  if (member?.subscription || guest?.subscription) {
-    return member?.subscription?.plan === "pro" ? 200 : 100
+  const appOwnerMultiplier =
+    app && isOwner(app, { userId: app?.userId, guestId: app?.guestId }) ? 2 : 1
+  if (subscription) {
+    return subscription?.plan === "pro"
+      ? 200 * appOwnerMultiplier
+      : 100 * appOwnerMultiplier
   } else if (member) {
-    return 30
+    return 30 * appOwnerMultiplier
   } else {
     return 10
   }

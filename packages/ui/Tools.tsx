@@ -35,7 +35,6 @@ import type { thread } from "./types"
 import { getMaxFiles } from "./utils"
 
 const Agent = lazy(() => import("./agent"))
-const EmojiPicker = lazy(() => import("./EmojiPicker"))
 
 export default function Tools({
   className,

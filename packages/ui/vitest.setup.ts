@@ -39,7 +39,7 @@ console.error = (...args) => {
     return arg
   })
 
-  originalConsoleError(...sanitizedArgs)
+  // originalConsoleError(...sanitizedArgs)
 }
 
 // Workaround for Node >=20.19 JSON ESM import assertions failing in @emoji-mart/data

@@ -272,9 +272,9 @@ export default function Chat({
     isDevelopment,
     MAX_FILE_LIMITS,
     MAX_FILE_SIZES,
+    isHippoOpen,
     OWNER_CREDITS,
     PROMPT_LIMITS,
-
     ...auth
   } = useAuth()
 
@@ -3891,7 +3891,7 @@ export default function Chat({
             </Form>
           </Modal>
         )}
-        {isHydrated && (
+        {true && (
           <Div
             ref={chatContainerRef}
             style={{
@@ -4004,6 +4004,7 @@ export default function Chat({
                     </Div>
                   ) : null}
                   {empty &&
+                    !hipchat &&
                     !threadIdRef.current &&
                     !showQuotaInfo &&
                     canShowTribe &&
@@ -4052,23 +4053,25 @@ export default function Chat({
                             </Button>
                           </>
                         ) : (
-                          <>
-                            <Button
-                              className="link"
-                              style={{
-                                ...utilities.link.style,
-                                gap: 10,
-                                fontSize: "0.85rem",
-                                order: minimize ? -1 : 0,
-                              }}
-                              onClick={() => {
-                                setPear(isPear ? undefined : app)
-                              }}
-                            >
-                              <Img slug={"pear"} size={20} />
-                              {t(isPear ? "Pearing" : "Let's Pear")}
-                            </Button>
-                          </>
+                          !hipchat && (
+                            <>
+                              <Button
+                                className="link"
+                                style={{
+                                  ...utilities.link.style,
+                                  gap: 10,
+                                  fontSize: "0.85rem",
+                                  order: minimize ? -1 : 0,
+                                }}
+                                onClick={() => {
+                                  setPear(isPear ? undefined : app)
+                                }}
+                              >
+                                <Img slug={"pear"} size={20} />
+                                {t(isPear ? "Pearing" : "Let's Pear")}
+                              </Button>
+                            </>
+                          )
                         )}
                       </Div>
                     )}
@@ -4203,6 +4206,7 @@ export default function Chat({
                     </AppLink>
                   ) : (
                     canShowLinks &&
+                    !hipchat &&
                     (minimize || showFocus) && (
                       <>
                         <AppLink
@@ -4229,6 +4233,7 @@ export default function Chat({
                   )}
                   {isChatFloating ||
                   exceededInitial ||
+                  hipchat ||
                   threadId ? null : showGreeting && files.length === 0 ? (
                     <H2
                       style={{
@@ -4308,6 +4313,7 @@ export default function Chat({
                     empty &&
                     canShowTribe &&
                     app &&
+                    !hipchat &&
                     !appStatus?.part &&
                     !isChatFloating && (
                       <>

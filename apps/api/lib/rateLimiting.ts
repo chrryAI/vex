@@ -53,7 +53,7 @@ const LIMITS = {
   free: 300,
   plus: 600,
   pro: 1200,
-  appOwner: 5000,
+  agency: 5000,
   byok: 10000,
 } as const
 
@@ -64,7 +64,7 @@ const TITLE_LIMITS = {
   free: 20,
   plus: 50,
   pro: 150,
-  appOwner: 500,
+  agency: 500,
   byok: 1000,
 } as const
 
@@ -75,7 +75,7 @@ const THREAD_LIMITS = {
   free: 10,
   plus: 15,
   pro: 30,
-  appOwner: 100,
+  agency: 100,
   byok: 1000,
 } as const
 
@@ -89,11 +89,20 @@ function getTier(
   guest?: guestWithRelations,
   isAppOwner?: boolean,
 ): Tier {
-  if (member?.apiKeys?.openrouter) return "byok"
-  if (isAppOwner) return "appOwner"
   const plan = member?.subscription?.plan || guest?.subscription?.plan
+  const hasBYOK = guest?.apiKeys?.openrouter || member?.apiKeys?.openrouter
+
+  // 1. En üst öncelik: Kendi anahtarı olan veya en üst plan
+  if (hasBYOK || plan === "sovereign") return "byok"
+
+  // 2. App sahibi veya Agency planı (bunların limitleri aynı olabilir)
+  if (isAppOwner || plan === "agency") return "agency"
+
+  // 3. Mevcut planlar
   if (plan === "pro") return "pro"
   if (plan === "plus") return "plus"
+
+  // 4. Default haller
   if (member) return "free"
   if (guest) return "guest"
   return "anonymous"

@@ -16,7 +16,7 @@ import { useUserScroll } from "./hooks/useUserScroll"
 import { WannathisIcon } from "./icons"
 import Loading from "./Loading"
 import MemoryConsent from "./MemoryConsent"
-import { A, Div, Span, usePlatform, useTheme } from "./platform"
+import { A, Div, usePlatform, useTheme } from "./platform"
 import Skeleton from "./Skeleton"
 import { BREAKPOINTS } from "./styles/breakpoints"
 import { useThreadStyles } from "./Thread.styles"
@@ -488,6 +488,7 @@ const Thread = ({
           dataTestId={
             threadId && !isEmpty ? "thread-instruction" : "chat-instruction"
           }
+          isMobileDevice={isMobileDevice}
           hipchat={false}
           compactMode={showFocus || showTribe}
           showSuggestions={!showFocus && !showTribe}

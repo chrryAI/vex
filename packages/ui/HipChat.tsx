@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import Bookmark from "./Bookmark"
 import Chat from "./Chat"
 import CollaborationStatus from "./CollaborationStatus"
-import { COLORS, useAppContext } from "./context/AppContext"
+import { useAppContext } from "./context/AppContext"
 import {
   useApp,
   useAuth,
@@ -18,7 +18,7 @@ import EditThread from "./EditThread"
 import EnableSound from "./EnableSound"
 import Grapes from "./Grapes"
 import Hippo from "./Hippo"
-import { useHasHydrated, useThreadMetadata } from "./hooks"
+import { useThreadMetadata } from "./hooks"
 import { useThreadPresence } from "./hooks/useThreadPresence"
 import { useUserScroll } from "./hooks/useUserScroll"
 import Img from "./Image"
@@ -32,7 +32,6 @@ import {
   H2,
   Input,
   Span,
-  toast,
   usePlatform,
   useTheme,
 } from "./platform"
@@ -52,7 +51,7 @@ const HipChat = ({
   hipchat = true,
   dataTestId,
   style,
-  ...rest
+  ...props
 }: {
   showMessages?: boolean
   compactMode?: boolean
@@ -62,6 +61,7 @@ const HipChat = ({
   style?: React.CSSProperties
   dataTestId?: string
   otherHip?: boolean
+  isMobileDevice?: boolean
 }) => {
   // Initialize unified styles hook
   const styles = useThreadStyles()
@@ -133,7 +133,9 @@ const HipChat = ({
   const isEmpty = chat.isEmpty
   // && !hipchat
 
-  const { isMobile: isMobileDevice } = usePlatform()
+  const { isMobile: isMobileDevicePlatform } = usePlatform()
+
+  const isMobileDevice = props.isMobileDevice || isMobileDevicePlatform
 
   // Navigation context
   const {
@@ -159,7 +161,7 @@ const HipChat = ({
 
   const { appStatus, appFormWatcher, suggestSaveApp } = useApp()
 
-  const { addHapticFeedback, colorScheme } = useTheme()
+  const { addHapticFeedback } = useTheme()
 
   // Update thread metadata dynamically
   useThreadMetadata(thread)
@@ -256,22 +258,6 @@ const HipChat = ({
   const collaborator = thread && isCollaborator(thread, user?.id)
   const activeCollaborator =
     thread && isCollaborator(thread, user?.id, "active")
-
-  const [autoSelectedAgent, setAutoSelectedAgent] = useState<boolean>(false)
-  useEffect(() => {
-    const lastMessage = messages[messages.length - 1]
-    // Only reset if not already in human mode
-    if (lastMessage?.message.agentId && !autoSelectedAgent && !debateAgent) {
-      const agent = aiAgents?.find(
-        (agent) => agent.id === lastMessage?.message.agentId,
-      )
-      if (agent) {
-        setSelectedAgent(agent)
-        setAutoSelectedAgent(true)
-      }
-    }
-  }, [messages, autoSelectedAgent, debateAgent])
-
   const getTop = () => {
     return (
       (thread || hipchat) && (
@@ -544,7 +530,7 @@ const HipChat = ({
           : `${t("You can save it now!")} 🚀`
     : null
 
-  const [isGame, setIsGame] = useState(false)
+  const [_isGame, setIsGame] = useState(false)
 
   const [collaborationVersion, setCollaborationVersion] = useState(0)
   const { utilities } = useStyles()
@@ -1120,6 +1106,7 @@ const HipChat = ({
                   overflowY: hipchat ? "auto" : undefined,
                   paddingRight: hipchat ? 12 : undefined,
                 }}
+                isMobileDevice={isMobileDevice}
                 showEmptyState={!!thread}
                 onDelete={handleDelete}
                 ref={messagesRef}
