@@ -271,12 +271,10 @@ export const Hey = memo(
                   children
                 )}
               </Div>
-              {isHydrated && (
-                <>
-                  <VexToast />
-                  <AddToHomeScreen />
-                </>
-              )}
+              <>
+                <VexToast />
+                <AddToHomeScreen />
+              </>
             </Suspense>
           )}
         </ErrorBoundary>
