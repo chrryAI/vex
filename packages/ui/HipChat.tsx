@@ -527,7 +527,7 @@ const HipChat = ({
           : `${t("You can save it now!")} 🚀`
     : null
 
-  const [isGame, setIsGame] = useState(false)
+  const [_isGame, setIsGame] = useState(false)
 
   const [collaborationVersion, setCollaborationVersion] = useState(0)
   const { utilities } = useStyles()
