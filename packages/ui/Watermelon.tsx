@@ -27,10 +27,11 @@ import { COLORS } from "./context/providers/AppProvider"
 import { useStyles } from "./context/StylesContext"
 import { useTheme } from "./context/ThemeContext"
 import Img from "./Image"
-
 import {
   ArrowRight,
   CircleCheck,
+  CirclePause,
+  CirclePlay,
   CircleX,
   Claude,
   DeepSeek,
@@ -59,7 +60,9 @@ import {
 } from "./platform"
 import SignIn from "./SignIn"
 import Subscribe from "./Subscribe"
+import TextType from "./TextType"
 import ThemeSwitcher from "./ThemeSwitcher"
+import Ticker from "./Ticker"
 import { VERSION } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import Weather from "./Weather"
@@ -222,6 +225,8 @@ export default function Watermelon() {
     setCompact(viewPortHeight < 920)
   }, [viewPortHeight])
 
+  const [paused, setPaused] = useState(false)
+
   const { isMobileDevice, colorScheme } = useTheme()
 
   const { addParams } = useNavigationContext()
@@ -323,7 +328,23 @@ export default function Watermelon() {
               >
                 <Img width={50} height={50} slug="watermelon" />
                 {t("Watermelon")}&#169;
+                <Button
+                  className="link"
+                  onClick={() => {
+                    setPaused(!paused)
+                  }}
+                  style={{
+                    ...utilities.link.style,
+                  }}
+                >
+                  {paused ? (
+                    <CirclePlay size={22} />
+                  ) : (
+                    <CirclePause size={22} />
+                  )}
+                </Button>
               </H1>
+
               <Div
                 style={{
                   display: "flex",
@@ -369,7 +390,28 @@ export default function Watermelon() {
                   marginTop: 5,
                 }}
               >
-                🔪<Span>{t("Choose your weapon")}</Span>🏹
+                <TextType
+                  className="ticker-clickable"
+                  style={{
+                    fontSize: ".95rem",
+                    cursor: "pointer",
+                    color: "var(--shade-7)",
+                  }}
+                  text={[
+                    `🔪 ${t("Choose your weapon")} 🏹`,
+                    `🧠 ${t("Choose your wisdom")} 🍉`,
+                    `🦋 ${t("Choose sovereignty")} 🍩`,
+                    `🦄 ${t("Choose your vibe")} 🍣`,
+                    `🌀 ${t("Choose your totem")} `,
+                  ]}
+                  typingSpeed={60}
+                  pauseDuration={800}
+                  showCursor
+                  cursorCharacter="_"
+                  deletingSpeed={20}
+                  paused={paused}
+                />
+                {/* 🔪<Span>{t("Choose your weapon")}</Span>🏹 */}
               </P>
               <Div
                 style={{
@@ -1372,6 +1414,7 @@ export default function Watermelon() {
                 </A>
               </Div>
             </Div>
+
             <Div
               style={{
                 marginTop: "auto",
@@ -1384,6 +1427,39 @@ export default function Watermelon() {
                 fontSize: ".9rem",
               }}
             >
+              <Div
+                style={{
+                  alignSelf: "flex-start",
+                  display: "flex",
+                  gap: 5,
+                  alignItems: "center",
+                }}
+              >
+                {app && (
+                  <AppLink
+                    isTribe={false}
+                    app={app}
+                    icon={
+                      <Img app={app} alt={app.name} width={22} height={22} />
+                    }
+                    loading={<Loading size={13} />}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      padding: "0.25rem 0.5rem",
+                    }}
+                  >
+                    <Span>🌀</Span>
+                  </AppLink>
+                )}{" "}
+                <Ticker
+                  style={{
+                    color: "var(--shade-6)",
+                  }}
+                  paused={paused}
+                />
+              </Div>
               {!user && (
                 <>
                   <A

@@ -11,6 +11,10 @@ import {
   useRef,
   useState,
 } from "react"
+import { useStyles } from "./context/StylesContext"
+import { CirclePause, CirclePlay } from "./icons"
+import { Button, Div, Span } from "./platform"
+
 // import "./TextType.css"
 
 export interface TextTypeProps {
@@ -28,12 +32,14 @@ export interface TextTypeProps {
   cursorClassName?: string
   cursorBlinkDuration?: number
   textColors?: string[]
+  showControls?: boolean
   variableSpeed?: { min: number; max: number }
   onSentenceComplete?: (text: string, index: number) => void
   onIndexChange?: (index: number) => void
   startOnVisible?: boolean
   reverseMode?: boolean
   style?: CSSProperties
+  paused?: boolean
   [key: string]: any
 }
 
@@ -57,6 +63,7 @@ const TextType = ({
   onIndexChange,
   startOnVisible = false,
   reverseMode = false,
+  showControls = false,
   style,
   ...props
 }: TextTypeProps) => {
@@ -67,6 +74,14 @@ const TextType = ({
   const [isVisible, setIsVisible] = useState(!startOnVisible)
   const cursorRef = useRef(null)
   const containerRef = useRef(null)
+
+  const { utilities } = useStyles()
+
+  const [paused, setPaused] = useState(false)
+
+  useEffect(() => {
+    props.paused !== undefined && setPaused(props.paused)
+  }, [props.paused])
 
   const textArray = useMemo(() => (Array.isArray(text) ? text : [text]), [text])
 
@@ -113,7 +128,7 @@ const TextType = ({
   }, [showCursor, cursorBlinkDuration])
 
   useEffect(() => {
-    if (!isVisible) return
+    if (!isVisible || paused) return
 
     let timeout: any
     const currentText = textArray[currentTextIndex] || ""
@@ -148,7 +163,7 @@ const TextType = ({
               setDisplayedText((prev) => prev + processedText[currentCharIndex])
               setCurrentCharIndex((prev) => prev + 1)
             },
-            variableSpeed ? getRandomSpeed() : typingSpeed,
+            variableSpeed ? typingSpeed : getRandomSpeed(),
           )
         } else if (textArray.length >= 1) {
           if (!loop && currentTextIndex === textArray.length - 1) return
@@ -182,6 +197,7 @@ const TextType = ({
     reverseMode,
     variableSpeed,
     onSentenceComplete,
+    paused,
   ])
 
   useEffect(() => {
@@ -195,27 +211,48 @@ const TextType = ({
     (currentCharIndex < (textArray[currentTextIndex]?.length || 0) ||
       isDeleting)
 
-  return createElement(
-    Component,
-    {
-      ref: containerRef,
-      className: `text-type ${className}`,
-      ...props,
-    },
-    <span
-      className="text-type__content"
-      style={{ color: getCurrentTextColor() || "inherit", ...style }}
-    >
-      {displayedText}
-    </span>,
-    showCursor && (
-      <span
-        ref={cursorRef}
-        className={`text-type__cursor ${cursorClassName} ${shouldHideCursor ? "text-type__cursor--hidden" : ""}`}
-      >
-        {cursorCharacter}
-      </span>
-    ),
+  return (
+    <Div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
+      {showControls && (
+        <Button
+          className="link"
+          onClick={() => {
+            setPaused(!paused)
+          }}
+          style={{
+            ...utilities.link.style,
+            position: "relative",
+            top: "1px",
+          }}
+        >
+          {paused ? <CirclePlay size={20} /> : <CirclePause size={20} />}
+        </Button>
+      )}
+      {createElement(
+        Component,
+        {
+          ref: containerRef,
+          className: `text-type ${className}`,
+          ...props,
+        },
+        <>
+          <Span
+            className="text-type__content"
+            style={{ color: getCurrentTextColor() || "inherit", ...style }}
+          >
+            {displayedText}
+          </Span>
+        </>,
+        showCursor && (
+          <Span
+            ref={cursorRef}
+            className={`text-type__cursor ${cursorClassName} ${shouldHideCursor ? "text-type__cursor--hidden" : ""}`}
+          >
+            {cursorCharacter}
+          </Span>
+        ),
+      )}
+    </Div>
   )
 }
 
