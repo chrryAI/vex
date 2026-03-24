@@ -62,7 +62,7 @@ export const Hey = memo(
   }) {
     const { pathname } = useNavigationContext()
 
-    const { isExtension, isCapacitor, os, isBot } = usePlatform()
+    const { isExtension, isCapacitor, os } = usePlatform()
 
     const styles = useSidebarStyles()
 
@@ -271,12 +271,10 @@ export const Hey = memo(
                   children
                 )}
               </Div>
-              {isHydrated && (
-                <>
-                  <VexToast />
-                  <AddToHomeScreen />
-                </>
-              )}
+              <>
+                <VexToast />
+                <AddToHomeScreen />
+              </>
             </Suspense>
           )}
         </ErrorBoundary>

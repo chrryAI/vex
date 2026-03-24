@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.1.89"
+const VERSION = "2.1.92"
 
 const AuthContext = createContext<
   | {
@@ -1283,11 +1283,16 @@ export function AuthProvider({
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
 
-  const [isHippoOpen, setIsHippoOpenInternal] = useState<string | undefined>(
-    undefined,
-  )
+  const isHippoOpenRef = useRef<string | undefined>(undefined)
+  const [isHippoOpenInternal, setIsHippoOpenInternal] = useState<
+    string | undefined
+  >(undefined)
+
+  const isHippoOpen = isHippoOpenInternal
+  console.log(`🚀 ~ baseAppInternal ~ isHippoOpen:`, isHippoOpen)
 
   const setIsHippoOpen = (value: string | undefined) => {
+    isHippoOpenRef.current = value
     if (!value) {
       setSelectedInstruction(null)
     }
@@ -2238,6 +2243,7 @@ export function AuthProvider({
   )
 
   useEffect(() => {
+    if (postId) return
     if (!isStorageReady) return
     if (!baseApp?.slug) return
     if (showFocus === undefined && baseApp?.slug === "focus") {
@@ -2246,7 +2252,7 @@ export function AuthProvider({
     if (showFocusInitial) {
       setShowFocusInternal(showFocusInitial)
     }
-  }, [showFocusInitial, showFocus, baseApp?.slug, isStorageReady])
+  }, [showFocusInitial, showFocus, baseApp?.slug, isStorageReady, postId])
 
   const setShowFocus = (sw: boolean) => {
     setShowFocusInternal(sw)
@@ -2833,7 +2839,6 @@ export function AuthProvider({
   )
 
   const refetchInstructions = async ({ appId }: { appId?: string }) => {
-    if (showTribe || postId || _isExcluded) return
     if (user) {
       const item = await getUser({
         token,

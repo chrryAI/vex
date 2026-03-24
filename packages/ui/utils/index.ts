@@ -438,7 +438,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "2.1.89"
+export const VERSION = config.version || "2.1.92"
 export type instructionBase = {
   id: string
   title: string
@@ -662,14 +662,11 @@ export const getMaxFiles = ({
   guest?: { role?: string; subscription?: subscription }
 }) => {
   // Level 5 Balanced: High enough for RAG, low enough for UI
-  if (user?.role === "admin") return 50
-  if (user?.subscription?.plan === "pro" || guest?.subscription?.plan === "pro")
-    return 20
-  if (
-    user?.subscription?.plan === "plus" ||
-    guest?.subscription?.plan === "plus"
-  )
-    return 15
+  const plan = user?.subscription?.plan || guest?.subscription?.plan
+  if (user?.role === "admin" || plan === "sovereign") return 50
+  if (plan === "agency") return 30
+  if (plan === "pro") return 20
+  if (plan === "plus") return 15
   return MAX_FILE_LIMITS.artifacts // Guest/Default (5 or 10)
 }
 

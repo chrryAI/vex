@@ -411,11 +411,11 @@ export default function FocusButton({
           <Checkbox checked={enableSound} onChange={(e) => setEnableSound(e)}>
             {t("Sound")}
           </Checkbox>
-          <GitHubConnectButton
+          {/* <GitHubConnectButton
             variant="small"
             size={14}
             buttonText="Connect GitHub"
-          />
+          /> */}
         </Div>
         <Div style={styles.settingsFooter.style}>
           <A
@@ -1106,7 +1106,8 @@ export default function FocusButton({
                                         <Span style={styles.taskTime.style}>
                                           {Math.floor(totalTime / 3600) > 0 && (
                                             <>
-                                              {Math.floor(totalTime / 3600)}h{" "}
+                                              {Math.floor(totalTime / 3600)}
+                                              h{" "}
                                             </>
                                           )}
                                           {Math.floor((totalTime % 3600) / 60) >
