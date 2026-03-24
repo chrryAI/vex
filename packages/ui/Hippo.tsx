@@ -867,7 +867,7 @@ export default function Hippo({
         <Modal
           attachTo={attachtTo}
           scrollable={!isChatOpen}
-          dataTestId={`${dataTestId}-modal`}
+          dataTestId={`instruction-modal`}
           borderHeader={true}
           style={styles.modal.style}
           hasCloseButton
@@ -891,14 +891,14 @@ export default function Hippo({
                 <Div style={styles.right.style}>
                   {charCount === 0 ? (
                     <Span
-                      data-testid={`${dataTestId}-modal-max-char-count`}
+                      data-testid={`instruction-modal-max-char-count`}
                       style={styles.maxCharCount.style}
                     >
                       {maxCharCount}
                     </Span>
                   ) : (
                     <Span
-                      data-testid={`${dataTestId}-modal-char-left`}
+                      data-testid={`instruction-modal-char-left`}
                       style={{
                         ...styles.charLeft.style,
                         ...(maxCharCount - charCount < 50 &&
@@ -912,7 +912,7 @@ export default function Hippo({
                   )}
                   {thread?.instructions || (isManaging && content.length) ? (
                     <ConfirmButton
-                      data-testid={`${dataTestId}-modal-delete-button`}
+                      data-testid={`instruction-modal-delete-button`}
                       confirm={
                         <>
                           <Trash2 color="var(--accent-0)" size={16} />{" "}
@@ -1013,7 +1013,7 @@ export default function Hippo({
                               <Loading width={18} height={18} />
                             ) : (
                               <Button
-                                data-testid={`${dataTestId}-file-preview-clear`}
+                                data-testid={`instruction-file-preview-clear`}
                                 type="button"
                                 className="link"
                                 onClick={() => handleDeleteFile(file.id)}
@@ -1076,7 +1076,7 @@ export default function Hippo({
                             </Div>
 
                             <Button
-                              data-testid={`${dataTestId}-file-preview-clear`}
+                              data-testid={`instruction-file-preview-clear`}
                               type="button"
                               onClick={() => removeFile(index)}
                               className="link"
@@ -1099,7 +1099,7 @@ export default function Hippo({
                       <>
                         <Button
                           className="transparent"
-                          data-testid={`${dataTestId}-artifacts-back-button`}
+                          data-testid={`instruction-artifacts-back-button`}
                           onClick={() => {
                             addHapticFeedback()
                             setIsArtifactsOpen(false)
@@ -1111,7 +1111,7 @@ export default function Hippo({
                         </Button>
                         <Button
                           className="transparent"
-                          data-testid={`${dataTestId}-artifacts-paste-button`}
+                          data-testid={`instruction-artifacts-paste-button`}
                           onClick={async () => {
                             addHapticFeedback()
                             try {
@@ -1207,7 +1207,7 @@ export default function Hippo({
                   )}
                   <TextArea
                     disabled={!canUpdate}
-                    data-testid={`${dataTestId}-modal-textarea`}
+                    data-testid={`instruction-modal-textarea`}
                     id="instructions"
                     onChange={(e) => setContent(e.target.value)}
                     value={t(
@@ -1256,7 +1256,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   {thread && (
                     <Button
                       className="inverted"
-                      data-testid={`${dataTestId}-modal-regenerate-button`}
+                      data-testid={`instruction-modal-regenerate-button`}
                       onClick={() =>
                         handleSave({ regenerateInstructions: true })
                       }
@@ -1276,7 +1276,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                     {isDevelopment && (
                       <Button
                         className="inverted"
-                        data-testid={`${dataTestId}-modal-chat-button`}
+                        data-testid={`instruction-modal-chat-button`}
                         onClick={() => {
                           setIsChatOpen(true)
                         }}
@@ -1288,7 +1288,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                     )}
                     <Button
                       className="inverted"
-                      data-testid={`${dataTestId}-modal-artifacts-button`}
+                      data-testid={`instruction-modal-artifacts-button`}
                       onClick={() => {
                         setIsArtifactsOpen(true)
                       }}
@@ -1343,7 +1343,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
 
                     {isAllowed && (
                       <Button
-                        data-testid={`${dataTestId}-modal-save-button`}
+                        data-testid={`instruction-modal-save-button`}
                         disabled={(!content && isManaging) || isSaving}
                         style={{
                           ...((!content && isManaging) || isSaving

@@ -1931,7 +1931,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         <Ticker
                           showControls
                           style={{
-                            color: "var(--accent-5)",
+                            color:
+                              COLORS[app?.themeColor as keyof typeof COLORS],
                           }}
                         />
                         <P>

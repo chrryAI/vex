@@ -14,7 +14,7 @@ import {
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useStyles } from "./context/StylesContext"
 import { CirclePause, CirclePlay } from "./icons"
-import { Button, Div, Span } from "./platform"
+import { Button, Div, Span, usePlatform } from "./platform"
 
 // import "./TextType.css"
 
@@ -78,6 +78,8 @@ const TextType = ({
   const [isVisible, setIsVisible] = useState(!startOnVisible)
   const cursorRef = useRef(null)
   const containerRef = useRef(null)
+
+  const { viewPortWidth } = usePlatform()
 
   const { t } = useAppContext()
 
@@ -253,7 +255,16 @@ const TextType = ({
         <>
           <Span
             className="text-type__content"
-            style={{ color: getCurrentTextColor() || "inherit", ...style }}
+            style={{
+              color: getCurrentTextColor() || "inherit",
+              display: "inline-block",
+              maxWidth: viewPortWidth - 75,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              verticalAlign: "bottom",
+              ...style,
+            }}
           >
             {displayedText}
           </Span>
