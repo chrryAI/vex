@@ -366,7 +366,6 @@ export default function Chat({
     instruction,
     setInstruction,
   } = useChat()
-  console.log(`🚀 ~ instruction:`, instruction)
 
   const {
     router,
@@ -3494,19 +3493,7 @@ export default function Chat({
           </Div>
         </Modal>
       )}
-      {!thread && showSuggestions && !isGame && (
-        <App
-        // onSave={(instruction) => {
-        //   console.log(`🚀 ~ instruction:`, instruction)
-        //   setArtifacts(instruction.artifacts)
-        //   setInstruction(instruction.content)
-        //   // Start collaboration wizard after instructions are saved
-        //   if (isShowingCollaborate) {
-        //     setCollaborationStep(1)
-        //   }
-        // }}
-        />
-      )}
+      {!thread && showSuggestions && !isGame && <App />}
       <Div
         key={isChatFloating ? "floating" : "fixed"}
         onDragEnter={handleDragEnter}

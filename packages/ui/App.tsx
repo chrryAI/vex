@@ -1112,6 +1112,10 @@ export default function App({
                   }}
                   key={suggestSaveApp ? "highlights" : "settings"}
                   onClick={() => {
+                    if (isManagingApp) {
+                      setAppStatus(undefined)
+                      return
+                    }
                     if (accountApp?.id === app?.id) {
                       setAppStatus({
                         step: canEditApp ? "update" : "add",
@@ -1411,7 +1415,15 @@ export default function App({
                   <Settings2 size={24} color="var(--accent-1)" />
                 </Button>
               ) : (
-                <Hippo dataTestId="chat-instruction" />
+                <Div
+                  style={{
+                    position: "relative",
+                    left: 5,
+                    bottom: 5,
+                  }}
+                >
+                  <Hippo size={24} dataTestId="chat-instruction" />
+                </Div>
               )}
             </Div>
 
@@ -1772,8 +1784,6 @@ export default function App({
             hipchat={false}
             opacity={0}
             onSave={({ content, artifacts }) => {
-              console.log(`🚀 ~ isManagingApp:`, isManagingApp)
-
               if (isManagingApp) {
                 return
               }

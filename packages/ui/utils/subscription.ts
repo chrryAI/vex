@@ -599,6 +599,16 @@ export const getFeatures = ({
         price: `${CREDITS_PRICE}.00`,
       })}`,
     },
+    {
+      emoji: "🔥",
+      text: t(
+        "Credits only required for Anonymous Apps like Burn as spam filter",
+      ),
+    },
+    {
+      emoji: "♻️",
+      text: t("Credits are never wasted — they power your app"),
+    },
 
     {
       emoji: "✨",
@@ -617,16 +627,7 @@ export const getFeatures = ({
       emoji: "👩‍💻",
       text: t("Signed-in users create apps for free"),
     },
-    {
-      emoji: "🔥",
-      text: t(
-        "Credits only required for Anonymous Apps like Burn as spam filter",
-      ),
-    },
-    {
-      emoji: "♻️",
-      text: t("Credits are never wasted — they power your app"),
-    },
+
     {
       emoji: "🌱",
       text: t("0.5% of purchase goes to CO₂ removal"),

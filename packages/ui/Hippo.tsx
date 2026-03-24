@@ -1148,7 +1148,7 @@ export default function Hippo({
                         </Button>
                         <Button
                           className="transparent"
-                          data-testid={`${dataTestId}-artifacts-upload-button`}
+                          data-testid={`instruction-artifacts-upload-button`}
                           onClick={() =>
                             triggerFileInput(
                               "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
@@ -1167,7 +1167,7 @@ export default function Hippo({
                                 ? utilities.transparent.style
                                 : {}),
                             }}
-                            data-testid={`${dataTestId}-modal-save-button`}
+                            data-testid={`instruction-modal-save-button`}
                             onClick={() =>
                               selectedInstruction
                                 ? handleSave({
@@ -1371,7 +1371,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
         </Modal>
       )}
       <Div style={styles.instructionsContainer.style}>
-        {(showButton || icon) && !showInstructions && (
+        {(showButton || icon) && !showInstructions && !isManaging && (
           <Div
             style={{
               ...styles.instructionsButtonContainer.style,

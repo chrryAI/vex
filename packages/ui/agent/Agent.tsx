@@ -7,7 +7,8 @@ import { Controller, useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import Checkbox from "../Checkbox"
 import ColorScheme from "../ColorScheme"
-import { useAppContext } from "../context/AppContext"
+import ConfirmButton from "../ConfirmButton"
+import { COLORS, useAppContext } from "../context/AppContext"
 import {
   type TabType,
   useApp,
@@ -16,12 +17,14 @@ import {
   useNavigationContext,
 } from "../context/providers"
 import { useStyles } from "../context/StylesContext"
-import { useHasHydrated } from "../hooks"
+import { useHasHydrated, useLocalStorage } from "../hooks"
 import Img from "../Image"
 import {
   Blocks,
   Boxes,
   Brain,
+  ChevronRight,
+  CircleCheck,
   Claude,
   Coins,
   DeepSeek,
@@ -38,6 +41,7 @@ import {
   Settings2,
   Sparkles,
   ThermometerSun,
+  Trash2,
   VectorSquare,
   Webhook,
 } from "../icons"
@@ -68,6 +72,7 @@ import {
   FRONTEND_URL,
   isDevelopment,
   isE2E,
+  isOwner,
   PLUS_PRICE,
   PRO_PRICE,
 } from "../utils"
@@ -104,14 +109,24 @@ export default function Agent({
     appStatus,
     setAppStatus,
     defaultExtendedApps,
+    isManagingApp,
+    isRemovingApp,
+    removeApp,
     ...appContext
   } = useApp()
 
   const { aiAgents } = useChat()
 
+  const onwer = !!accountApp
+
   const { removeParams, searchParams, addParams } = useNavigationContext()
 
   const { isMobileDevice } = useTheme()
+
+  const [compact, setCompact] = useLocalStorage(
+    "vex_agent_compact",
+    isDevelopment || !isE2E,
+  )
 
   const {
     register,
@@ -337,7 +352,7 @@ export default function Agent({
   }, [isModalOpen])
 
   const setIsModalOpen = (open: boolean) => {
-    if (!open) removeParams("tab")
+    if (!open) removeParams(["tab", "settings"])
     if (open === isModalOpen) return
 
     let hasErrors = false
@@ -472,7 +487,7 @@ export default function Agent({
         data-testid="app-settings-button"
         style={{
           ...styles.settingsButton.style,
-          ...utilities.small.style,
+          ...utilities.xSmall.style,
         }}
         onClick={() => {
           setAppStatus({
@@ -721,259 +736,287 @@ export default function Agent({
                     />
                   </Div>
 
-                  <Div
-                    style={{ ...styles.field.style, ...styles.bordered.style }}
-                  >
-                    <Label
-                      style={{ ...styles.label.style, ...utilities.row.style }}
-                      htmlFor="placeholder"
-                    >
-                      <Sparkles
-                        size={20}
-                        color="var(--accent-1)"
-                        fill="var(--accent-1)"
-                      />
-                      {t("Default Input Placeholder")}
-                    </Label>
-                    <Input
-                      style={styles.placeholder.style}
-                      id="placeholder"
-                      data-testid="placeholder-input"
-                      placeholder={t(
-                        `${t("e.g., Plan your dream vacation with me")} ✈️`,
-                      )}
-                      type="text"
-                      {...register("placeholder")}
-                    />
-                  </Div>
-                  {/* Tab 3: Capabilities */}
-                  <Div
-                    style={{ ...styles.field.style, ...styles.lastChild.style }}
-                  >
-                    <Label
-                      style={{ ...styles.label.style, ...utilities.row.style }}
-                      htmlFor="capabilities"
-                    >
-                      <Boxes size={18} color="var(--accent-6)" />
-                      {t("Capabilities")}
-                    </Label>
-                    <Div style={{ ...utilities.row.style }}>
-                      <Controller
-                        name="capabilities.webSearch"
-                        control={control}
-                        render={({ field }) => (
-                          <Label>
-                            <Checkbox
-                              dataTestId="webSearch-checkbox"
-                              checked={field.value}
-                              onChange={(checked) => {
-                                if (aiAgent?.capabilities?.webSearch === true) {
-                                  toast.error(
-                                    t("Web Search required by {{model}}", {
-                                      model: aiAgent.name,
-                                    }),
-                                  )
-                                  return
-                                }
-                                field.onChange(checked)
-                              }}
-                            >
-                              <Span>{t("Web Search")}</Span>
-                            </Checkbox>
-                          </Label>
-                        )}
-                      />
-                      <Controller
-                        name="capabilities.image"
-                        control={control}
-                        render={({ field }) => (
-                          <Label>
-                            <Checkbox
-                              dataTestId="image-checkbox"
-                              checked={field.value}
-                              onChange={(checked) => {
-                                if (aiAgent?.capabilities?.image === true) {
-                                  toast.error(
-                                    t("Image Analysis required by {{model}}", {
-                                      model: aiAgent.name,
-                                    }),
-                                  )
-                                  return
-                                }
-                                field.onChange(checked)
-                              }}
-                            >
-                              <Span>{t("Image Analysis")}</Span>
-                            </Checkbox>
-                          </Label>
-                        )}
-                      />
-                      <Controller
-                        name="capabilities.videoGeneration"
-                        control={control}
-                        render={({ field }) => (
-                          <Label>
-                            <Checkbox
-                              dataTestId="videoGeneration-checkbox"
-                              checked={field.value}
-                              onChange={(checked) => {
-                                if (
-                                  aiAgent?.capabilities?.videoGeneration ===
-                                  true
-                                ) {
-                                  toast.error(
-                                    t(
-                                      "Video Generation required by {{model}}",
-                                      {
-                                        model: aiAgent.name,
-                                      },
-                                    ),
-                                  )
-                                  return
-                                }
-                                field.onChange(checked)
-                              }}
-                            >
-                              <Span>{t("Video Generation")}</Span>
-                            </Checkbox>
-                          </Label>
-                        )}
-                      />
-                      <Controller
-                        name="capabilities.imageGeneration"
-                        control={control}
-                        render={({ field }) => (
-                          <Label>
-                            <Checkbox
-                              dataTestId="imageGeneration-checkbox"
-                              checked={field.value}
-                              onChange={(checked) => {
-                                if (
-                                  aiAgent?.capabilities?.imageGeneration ===
-                                  true
-                                ) {
-                                  toast.error(
-                                    t(
-                                      "Image Generation required by {{model}}",
-                                      {
-                                        model: aiAgent.name,
-                                      },
-                                    ),
-                                  )
-                                  return
-                                }
-                                field.onChange(checked)
-                              }}
-                            >
-                              <Span>{t("ImageGeneration")}</Span>
-                            </Checkbox>
-                          </Label>
-                        )}
-                      />
-                      <Controller
-                        name="capabilities.pdf"
-                        control={control}
-                        render={({ field }) => (
-                          <Label>
-                            <Checkbox
-                              dataTestId="pdf-checkbox"
-                              checked={field.value}
-                              onChange={(checked) => {
-                                if (aiAgent?.capabilities?.pdf === true) {
-                                  toast.error(
-                                    t("File Analysis required by {{model}}", {
-                                      model: aiAgent.name,
-                                    }),
-                                  )
-                                  return
-                                }
-                                field.onChange(checked)
-                              }}
-                            >
-                              <Span>{t("File Analysis")}</Span>
-                            </Checkbox>
-                          </Label>
-                        )}
-                      />
-                      <Controller
-                        name="capabilities.audio"
-                        control={control}
-                        render={({ field }) => (
-                          <Label>
-                            <Checkbox
-                              checked={field.value}
-                              dataTestId="audio-checkbox"
-                              onChange={(checked) => {
-                                if (aiAgent?.capabilities?.audio === true) {
-                                  toast.error(
-                                    t("Voice required by {{model}}", {
-                                      model: aiAgent.name,
-                                    }),
-                                  )
-                                  return
-                                }
-                                field.onChange(checked)
-                              }}
-                            >
-                              <Span>{t("Voice")}</Span>
-                            </Checkbox>
-                          </Label>
-                        )}
-                      />
-                      <Controller
-                        name="capabilities.video"
-                        control={control}
-                        render={({ field }) => (
-                          <Label>
-                            <Checkbox
-                              dataTestId="video-checkbox"
-                              checked={field.value}
-                              onChange={(checked) => {
-                                if (aiAgent?.capabilities?.video === true) {
-                                  toast.error(
-                                    t("Video required by {{model}}", {
-                                      model: aiAgent.name,
-                                    }),
-                                  )
-                                  return
-                                }
-                                field.onChange(checked)
-                              }}
-                            >
-                              <Span>{t("Video")}</Span>
-                            </Checkbox>
-                          </Label>
-                        )}
-                      />
-                      <Controller
-                        name="capabilities.codeExecution"
-                        control={control}
-                        render={({ field }) => (
-                          <Label>
-                            <Checkbox
-                              dataTestId="codeExecution-checkbox"
-                              checked={field.value}
-                              onChange={(checked) => {
-                                if (
-                                  aiAgent?.capabilities?.codeExecution === true
-                                ) {
-                                  toast.error(
-                                    t("Code Execution required by {{model}}", {
-                                      model: aiAgent.name,
-                                    }),
-                                  )
-                                  return
-                                }
-                                field.onChange(checked)
-                              }}
-                            >
-                              <Span>{t("Code Execution")}</Span>
-                            </Checkbox>
-                          </Label>
-                        )}
-                      />
-                    </Div>
-                  </Div>
+                  {!compact && (
+                    <>
+                      <Div
+                        style={{
+                          ...styles.field.style,
+                          ...styles.bordered.style,
+                        }}
+                      >
+                        <Label
+                          style={{
+                            ...styles.label.style,
+                            ...utilities.row.style,
+                          }}
+                          htmlFor="placeholder"
+                        >
+                          <Sparkles
+                            size={20}
+                            color="var(--accent-1)"
+                            fill="var(--accent-1)"
+                          />
+                          {t("Default Input Placeholder")}
+                        </Label>
+                        <Input
+                          style={styles.placeholder.style}
+                          id="placeholder"
+                          data-testid="placeholder-input"
+                          placeholder={t(
+                            `${t("e.g., Plan your dream vacation with me")} ✈️`,
+                          )}
+                          type="text"
+                          {...register("placeholder")}
+                        />
+                      </Div>
+                      {/* Tab 3: Capabilities */}
+                      <Div
+                        style={{
+                          ...styles.field.style,
+                          ...styles.lastChild.style,
+                        }}
+                      >
+                        <Label
+                          style={{
+                            ...styles.label.style,
+                            ...utilities.row.style,
+                          }}
+                          htmlFor="capabilities"
+                        >
+                          <Boxes size={18} color="var(--accent-6)" />
+                          {t("Capabilities")}
+                        </Label>
+                        <Div style={{ ...utilities.row.style }}>
+                          <Controller
+                            name="capabilities.webSearch"
+                            control={control}
+                            render={({ field }) => (
+                              <Label>
+                                <Checkbox
+                                  dataTestId="webSearch-checkbox"
+                                  checked={field.value}
+                                  onChange={(checked) => {
+                                    if (
+                                      aiAgent?.capabilities?.webSearch === true
+                                    ) {
+                                      toast.error(
+                                        t("Web Search required by {{model}}", {
+                                          model: aiAgent.name,
+                                        }),
+                                      )
+                                      return
+                                    }
+                                    field.onChange(checked)
+                                  }}
+                                >
+                                  <Span>{t("Web Search")}</Span>
+                                </Checkbox>
+                              </Label>
+                            )}
+                          />
+                          <Controller
+                            name="capabilities.image"
+                            control={control}
+                            render={({ field }) => (
+                              <Label>
+                                <Checkbox
+                                  dataTestId="image-checkbox"
+                                  checked={field.value}
+                                  onChange={(checked) => {
+                                    if (aiAgent?.capabilities?.image === true) {
+                                      toast.error(
+                                        t(
+                                          "Image Analysis required by {{model}}",
+                                          {
+                                            model: aiAgent.name,
+                                          },
+                                        ),
+                                      )
+                                      return
+                                    }
+                                    field.onChange(checked)
+                                  }}
+                                >
+                                  <Span>{t("Image Analysis")}</Span>
+                                </Checkbox>
+                              </Label>
+                            )}
+                          />
+                          <Controller
+                            name="capabilities.videoGeneration"
+                            control={control}
+                            render={({ field }) => (
+                              <Label>
+                                <Checkbox
+                                  dataTestId="videoGeneration-checkbox"
+                                  checked={field.value}
+                                  onChange={(checked) => {
+                                    if (
+                                      aiAgent?.capabilities?.videoGeneration ===
+                                      true
+                                    ) {
+                                      toast.error(
+                                        t(
+                                          "Video Generation required by {{model}}",
+                                          {
+                                            model: aiAgent.name,
+                                          },
+                                        ),
+                                      )
+                                      return
+                                    }
+                                    field.onChange(checked)
+                                  }}
+                                >
+                                  <Span>{t("Video Generation")}</Span>
+                                </Checkbox>
+                              </Label>
+                            )}
+                          />
+                          <Controller
+                            name="capabilities.imageGeneration"
+                            control={control}
+                            render={({ field }) => (
+                              <Label>
+                                <Checkbox
+                                  dataTestId="imageGeneration-checkbox"
+                                  checked={field.value}
+                                  onChange={(checked) => {
+                                    if (
+                                      aiAgent?.capabilities?.imageGeneration ===
+                                      true
+                                    ) {
+                                      toast.error(
+                                        t(
+                                          "Image Generation required by {{model}}",
+                                          {
+                                            model: aiAgent.name,
+                                          },
+                                        ),
+                                      )
+                                      return
+                                    }
+                                    field.onChange(checked)
+                                  }}
+                                >
+                                  <Span>{t("ImageGeneration")}</Span>
+                                </Checkbox>
+                              </Label>
+                            )}
+                          />
+                          <Controller
+                            name="capabilities.pdf"
+                            control={control}
+                            render={({ field }) => (
+                              <Label>
+                                <Checkbox
+                                  dataTestId="pdf-checkbox"
+                                  checked={field.value}
+                                  onChange={(checked) => {
+                                    if (aiAgent?.capabilities?.pdf === true) {
+                                      toast.error(
+                                        t(
+                                          "File Analysis required by {{model}}",
+                                          {
+                                            model: aiAgent.name,
+                                          },
+                                        ),
+                                      )
+                                      return
+                                    }
+                                    field.onChange(checked)
+                                  }}
+                                >
+                                  <Span>{t("File Analysis")}</Span>
+                                </Checkbox>
+                              </Label>
+                            )}
+                          />
+                          <Controller
+                            name="capabilities.audio"
+                            control={control}
+                            render={({ field }) => (
+                              <Label>
+                                <Checkbox
+                                  checked={field.value}
+                                  dataTestId="audio-checkbox"
+                                  onChange={(checked) => {
+                                    if (aiAgent?.capabilities?.audio === true) {
+                                      toast.error(
+                                        t("Voice required by {{model}}", {
+                                          model: aiAgent.name,
+                                        }),
+                                      )
+                                      return
+                                    }
+                                    field.onChange(checked)
+                                  }}
+                                >
+                                  <Span>{t("Voice")}</Span>
+                                </Checkbox>
+                              </Label>
+                            )}
+                          />
+                          <Controller
+                            name="capabilities.video"
+                            control={control}
+                            render={({ field }) => (
+                              <Label>
+                                <Checkbox
+                                  dataTestId="video-checkbox"
+                                  checked={field.value}
+                                  onChange={(checked) => {
+                                    if (aiAgent?.capabilities?.video === true) {
+                                      toast.error(
+                                        t("Video required by {{model}}", {
+                                          model: aiAgent.name,
+                                        }),
+                                      )
+                                      return
+                                    }
+                                    field.onChange(checked)
+                                  }}
+                                >
+                                  <Span>{t("Video")}</Span>
+                                </Checkbox>
+                              </Label>
+                            )}
+                          />
+                          <Controller
+                            name="capabilities.codeExecution"
+                            control={control}
+                            render={({ field }) => (
+                              <Label>
+                                <Checkbox
+                                  dataTestId="codeExecution-checkbox"
+                                  checked={field.value}
+                                  onChange={(checked) => {
+                                    if (
+                                      aiAgent?.capabilities?.codeExecution ===
+                                      true
+                                    ) {
+                                      toast.error(
+                                        t(
+                                          "Code Execution required by {{model}}",
+                                          {
+                                            model: aiAgent.name,
+                                          },
+                                        ),
+                                      )
+                                      return
+                                    }
+                                    field.onChange(checked)
+                                  }}
+                                >
+                                  <Span>{t("Code Execution")}</Span>
+                                </Checkbox>
+                              </Label>
+                            )}
+                          />
+                        </Div>
+                      </Div>
+                    </>
+                  )}
                 </Div>
               </Div>
             )}
@@ -1499,7 +1542,7 @@ export default function Agent({
                         style={{
                           marginTop: ".3rem",
                           ...utilities.inverted.style,
-                          ...utilities.small.style,
+                          ...utilities.xSmall.style,
                         }}
                       >
                         <>
@@ -2005,37 +2048,71 @@ export default function Agent({
 
             <Div
               style={{
-                borderTop: tab === "systemPrompt" ? "none" : undefined,
                 ...styles.footer.style,
+
+                borderTop:
+                  compact || tab === "systemPrompt" ? "none" : undefined,
               }}
             >
               <>
+                {isManagingApp && onwer && (
+                  <ConfirmButton
+                    className="transparent"
+                    style={{
+                      ...utilities.transparent.style,
+                      ...utilities.xSmall.style,
+                    }}
+                    confirm={
+                      <>
+                        {isRemovingApp ? (
+                          <Loading size={18} />
+                        ) : (
+                          <Trash2 color="var(--accent-0)" size={18} />
+                        )}
+                        {t("Delete")}
+                      </>
+                    }
+                    disabled={isRemovingApp}
+                    onConfirm={async () => {
+                      await removeApp()
+                    }}
+                  >
+                    <Trash2 color="var(--accent-0)" size={18} />
+                  </ConfirmButton>
+                )}
                 <Button
                   data-testid="settings-tab"
+                  className="inverted"
                   style={{
-                    ...styles.tabButton.style,
-
                     ...utilities.inverted.style,
-                    ...utilities.small.style,
-                    ...(tab === "settings"
-                      ? styles.currentTab.style
-                      : undefined),
+                    ...utilities.xSmall.style,
                   }}
                   type="button"
                   onClick={() => {
+                    tab !== "systemPrompt" && setCompact(!compact)
                     setTab("settings")
                   }}
                 >
-                  <Settings2 size={16} /> {t("Settings")}
+                  <Img slug={!compact ? "sushi" : "coder"} size={24} />{" "}
+                  {t(
+                    tab === "systemPrompt"
+                      ? "Back"
+                      : tab === "settings"
+                        ? compact
+                          ? "More Options"
+                          : "Less Options"
+                        : compact
+                          ? "More Options"
+                          : "Less Options",
+                  )}
                 </Button>
               </>
-              {tab !== "systemPrompt" && (
+              {!compact && tab !== "systemPrompt" && (
                 <>
                   <Button
                     data-testid="extends-tab"
                     style={{
-                      ...styles.tabButton.style,
-                      ...utilities.small.style,
+                      ...utilities.xSmall.style,
                       ...(tab === "extends"
                         ? styles.currentTab.style
                         : undefined),
@@ -2058,7 +2135,7 @@ export default function Agent({
                     style={{
                       backgroundColor: "var(--accent-4)",
                       ...styles.tabButton.style,
-                      ...utilities.small.style,
+                      ...utilities.xSmall.style,
                       ...(tab === "monetization"
                         ? styles.currentTab.style
                         : undefined),
@@ -2074,7 +2151,7 @@ export default function Agent({
                     type="button"
                     style={{
                       ...styles.tabButton.style,
-                      ...utilities.small.style,
+                      ...utilities.xSmall.style,
                       ...(tab === "api" ? styles.currentTab.style : undefined),
                       backgroundColor: "var(--accent-1)",
                     }}
@@ -2105,6 +2182,8 @@ export default function Agent({
                         data-testid="moltbook-tab"
                         className="inverted"
                         style={{
+                          ...styles.tabButton.style,
+
                           ...utilities.inverted.style,
                           ...utilities.xSmall.style,
                           ...(tab === "moltBook"
@@ -2136,14 +2215,19 @@ export default function Agent({
                     setTab("systemPrompt")
                   }}
                   data-testid="system-prompt-button"
-                  className={clsx(styles.tabButton, "small")}
+                  className={clsx(styles.tabButton, "inverted")}
                   type="button"
                   style={{
+                    ...styles.tabButton.style,
                     backgroundColor:
                       !appFormWatcher.name || !!errors.name?.message
                         ? "var(--accent-0)"
                         : undefined,
-                    color: !appFormWatcher.name ? "#fff" : undefined,
+                    ...utilities.xSmall.style,
+                    ...utilities.inverted.style,
+                    color: COLORS.orange,
+                    borderColor: COLORS.orange,
+                    borderWidth: "2px",
                   }}
                   title={
                     errors.name?.message
@@ -2151,7 +2235,14 @@ export default function Agent({
                       : undefined
                   }
                 >
-                  <Brain size={16} /> {t("System Prompt")}
+                  <Img
+                    style={{ marginLeft: "auto" }}
+                    slug="architect"
+                    width={24}
+                    height={24}
+                  />
+                  {t("Next Step")}
+                  <ChevronRight size={16} />
                 </Button>
               )}
               {appFormWatcher.name && tab === "systemPrompt" && (
@@ -2159,6 +2250,15 @@ export default function Agent({
                   data-testid="continue-button"
                   className={clsx(styles.tabButton, "inverted")}
                   type="button"
+                  style={{
+                    ...styles.tabButton.style,
+
+                    ...utilities.xSmall.style,
+                    ...utilities.inverted.style,
+                    color: COLORS.red,
+                    borderColor: COLORS.red,
+                    borderWidth: "2px",
+                  }}
                   onClick={() => {
                     if (
                       appFormWatcher.tier !== "free" &&
@@ -2169,10 +2269,6 @@ export default function Agent({
                           "OpenRouter API key is required for paid tiers to enable revenue sharing.",
                         ),
                       )
-                      return
-                    }
-                    if (!appFormWatcher.systemPrompt) {
-                      toast.error(t("System prompt is required"))
                       return
                     }
 
@@ -2187,10 +2283,11 @@ export default function Agent({
                     showLoading={false}
                     src={`${FRONTEND_URL}/images/pacman/heart.png`}
                     alt="Heart"
-                    width={10}
-                    height={10}
+                    width={24}
+                    height={24}
                   />
                   {t("Continue")}
+                  <CircleCheck color={COLORS.red} size={16} />
                 </Button>
               )}
             </Div>

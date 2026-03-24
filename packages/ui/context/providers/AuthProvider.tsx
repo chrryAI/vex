@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.9"
+const VERSION = "2.2.10"
 
 const AuthContext = createContext<
   | {
@@ -113,6 +113,7 @@ const AuthContext = createContext<
         chromeVersion: string
         macosVersion: string
       }
+      push: (href: string) => void
       tickerPaused: boolean
       setTickerPaused: (value: boolean) => void
       isE2E: boolean
@@ -2138,14 +2139,17 @@ export function AuthProvider({
     data: accountAppsSwr,
     mutate: refetchAccountApps,
     isLoading: isLoadingAccountApps,
+    isValidating: isValidatingAccountApps,
   } = useSWR(
-    token && [
-      "accountApp",
-      accountAppId,
-      skipAppCacheTemp,
-      updatedApp?.id,
-      newApp?.id,
-    ],
+    !isRemovingApp &&
+      !isSavingApp &&
+      token && [
+        "accountApp",
+        accountAppId,
+        skipAppCacheTemp,
+        updatedApp?.id,
+        newApp?.id,
+      ],
     async () => {
       try {
         if (!token) return
@@ -2156,6 +2160,7 @@ export function AuthProvider({
           accountApp: true,
           skipCache: true,
         })
+
         return result
       } catch (error) {
         captureException(error)
@@ -2168,7 +2173,7 @@ export function AuthProvider({
       setAccountApp(accountAppsSwr)
       mergeApps([accountAppsSwr])
 
-      if (!accountApp && accountAppsSwr && newApp) {
+      if (accountAppsSwr && newApp) {
         toast.success(t("🥳 WOW!, you created something amazing"))
         setNewApp(undefined)
 
@@ -2210,7 +2215,14 @@ export function AuthProvider({
         setStore(accountAppsSwr.store)
       }
     }
-  }, [accountAppsSwr, accountApp, newApp?.id, updatedApp?.id, appId])
+  }, [accountAppsSwr, newApp?.id, updatedApp?.id, appId, app?.id])
+
+  useEffect(() => {
+    if (accountApp && pathname === getAppSlug(accountApp) && isRemovingApp) {
+      setAccountApp(undefined)
+      router.push("/")
+    }
+  }, [accountApp, pathname, isRemovingApp])
 
   useEffect(() => {
     if (storeAppsSwr) {
@@ -3902,6 +3914,7 @@ export function AuthProvider({
         FREE_DAYS,
         ADDITIONAL_CREDITS,
         PROMPT_LIMITS,
+        push: router.push,
         versions,
       }}
     >

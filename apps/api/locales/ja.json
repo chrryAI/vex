@@ -2514,5 +2514,16 @@
   "Choose your totem": "あなたのトーテムを選択してください",
   "Choose your vibe": "あなたの雰囲気を選択してください",
   "Choose your wisdom": "あなたの知恵を選択してください",
-  "Choose sovereignty": "主権を選択してください"
+  "Choose sovereignty": "主権を選択してください",
+  "Creating, give it a few seconds...": "作成中、少々お待ちください...",
+  "Updating, give it a few seconds...": "更新中、少々お待ちください...",
+  "Default Input Placeholder": "デフォルトの入力プレースホルダー",
+  "Image Analysis": "画像解析",
+  "Less Options": "オプションを減らす",
+  "Extend": "拡張",
+  "Monetization": "収益化",
+  "Next Step": "次のステップ",
+  "Edit your agent": "あなたのエージェントを編集",
+  "Go to agent": "エージェントへ移動",
+  "Deleting": "削除中"
 }
