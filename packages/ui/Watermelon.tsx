@@ -498,6 +498,22 @@ export default function Watermelon() {
                   </Button>
                 ) : null}
                 <A
+                  onClick={() => {
+                    plausible({
+                      name: ANALYTICS_EVENTS.WANNATHIS,
+                      props: {
+                        app: app?.name,
+                      },
+                    })
+                  }}
+                  href="https://wannathis.one?via=iliyan"
+                  target="_blank"
+                  title="WannaThis"
+                  rel="noopener noreferrer"
+                >
+                  <WannathisIcon />
+                </A>
+                <A
                   event={ANALYTICS_EVENTS.GH_REPO_CLICK}
                   openInNewTab
                   aria-label="GitHub"
@@ -535,23 +551,6 @@ export default function Watermelon() {
                   href="https://github.com/chrryAI/waffles"
                 >
                   <Img slug="waffles" size={35} />
-                </A>
-
-                <A
-                  onClick={() => {
-                    plausible({
-                      name: ANALYTICS_EVENTS.WANNATHIS,
-                      props: {
-                        app: app?.name,
-                      },
-                    })
-                  }}
-                  href="https://wannathis.one?via=iliyan"
-                  target="_blank"
-                  title="WannaThis"
-                  rel="noopener noreferrer"
-                >
-                  <WannathisIcon />
                 </A>
 
                 <A openInNewTab href="https://orbstack.dev">
