@@ -294,16 +294,18 @@ export const chat = async ({
   } else {
     await expect(instructionButton).not.toBeVisible()
 
-    instructionModal = page.getByTestId("chat-instruction-modal")
-    instructionButton = page.getByTestId("chat-instruction-button")
+    instructionModal = page.getByTestId("chat-instruction-hippo-modal")
+    instructionButton = page.getByTestId("chat-instruction-hippo-button")
     artifactsButton = page.getByTestId(
-      "chat-instruction-modal-artifacts-button",
+      "chat-instruction-hippo-modal-artifacts-button",
     )
-    modalTextarea = page.getByTestId("chat-instruction-modal-textarea")
-    modalCharLeft = page.getByTestId("chat-instruction-modal-char-left")
-    modalSaveButton = page.getByTestId("chat-instruction-modal-save-button")
+    modalTextarea = page.getByTestId("chat-instruction-hippo-modal-textarea")
+    modalCharLeft = page.getByTestId("chat-instruction-hippo-modal-char-left")
+    modalSaveButton = page.getByTestId(
+      "chat-instruction-hippo-modal-save-button",
+    )
     artifactsUploadButton = page.getByTestId(
-      "chat-instruction-artifacts-upload-button",
+      "chat-instruction-hippo-artifacts-upload-button",
     )
     await expect(thread).toBeVisible()
     await expect(about).not.toBeVisible()

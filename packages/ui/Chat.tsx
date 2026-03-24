@@ -5044,7 +5044,7 @@ export default function Chat({
                       {t("Privacy")}
                     </A>
                   ) : !isSelectingMood &&
-                    (isDevelopment ? user : isE2E) &&
+                    (isDevelopment ? user : user?.role === "admin") &&
                     !hipchat ? (
                     <Hippo
                       thread={thread}
