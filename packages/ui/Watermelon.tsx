@@ -26,6 +26,7 @@ import { useAuth, useNavigationContext } from "./context/providers"
 import { COLORS } from "./context/providers/AppProvider"
 import { useStyles } from "./context/StylesContext"
 import { useTheme } from "./context/ThemeContext"
+import Hippo from "./Hippo"
 import Img from "./Image"
 import {
   ArrowRight,
@@ -1310,34 +1311,43 @@ export default function Watermelon() {
                           {t("Or choose 10GB/month of free storage")}
                         </ConfirmButton>
                       ) : (
-                        <Button
-                          className="link"
-                          onClick={() => {
-                            if (user) {
-                              addParams({ subscribe: "true", plan: "member" })
-                              return
-                            }
-
-                            addParams({ subscribe: "true", plan: "member" })
-                          }}
+                        <Div
                           style={{
-                            ...utilities.link.style,
                             display: "flex",
                             alignItems: "center",
-                            gap: 5,
-                            padding: "0.25rem 0.5rem",
+
                             marginLeft: "auto",
                             marginTop: isMobileDevice ? "1.5rem" : undefined,
                           }}
                         >
-                          <Img slug="hippo" />
-                          {isMobileDevice
-                            ? t("Or choose 10GB/month of free storage")
-                            : t("Choose 10GB/month of free storage")}
-                          {user && (
-                            <CircleCheck color={COLORS.green} size={15} />
-                          )}
-                        </Button>
+                          <Img slug="hippo" size={20} />
+
+                          <Button
+                            className="link"
+                            onClick={() => {
+                              if (user) {
+                                addParams({ subscribe: "true", plan: "member" })
+                                return
+                              }
+
+                              addParams({ subscribe: "true", plan: "member" })
+                            }}
+                            style={{
+                              ...utilities.link.style,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 5,
+                              padding: "0.25rem 0.5rem",
+                            }}
+                          >
+                            {isMobileDevice
+                              ? t("Or choose 10GB/month of free storage")
+                              : t("Choose 10GB/month of free storage")}
+                            {user && (
+                              <CircleCheck color={COLORS.green} size={15} />
+                            )}
+                          </Button>
+                        </Div>
                       )}
                     </Div>
                   )}
@@ -1392,6 +1402,8 @@ export default function Watermelon() {
                   fontSize: ".85rem",
                 }}
               >
+                🍀
+                <Hippo />
                 <A href="/about">
                   {app?.store?.app?.icon || "🍒"} /{t("about")}
                 </A>
