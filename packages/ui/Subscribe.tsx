@@ -723,7 +723,7 @@ export default function Subscribe({
 
   const renderCheckout = () => {
     return (
-      <Div style={{ ...styles.checkoutButtonContainer.style, marginTop: -3 }}>
+      <Div style={{ ...styles.checkoutButtonContainer.style, marginTop: -1 }}>
         {selectedPlan !== "member" &&
         (selectedPlan === "watermelon" ||
           selectedPlan === "pro" ||
@@ -1485,7 +1485,7 @@ export default function Subscribe({
           ) : selectedPlan === "watermelon" ? (
             // Watermelon Tier Selection
             <>
-              {!showWatermelon && (
+              {!showWatermelon ? (
                 <A
                   event={ANALYTICS_EVENTS.WM_BYOK_CLICK}
                   className="transparent"
@@ -1499,6 +1499,55 @@ export default function Subscribe({
                   <Img slug="jules" size={21} />
                   {t("Free")} ({t("BYOK")})
                 </A>
+              ) : (
+                <>
+                  <Button
+                    className="transparent"
+                    data-gifted-fingerprint={giftedFingerPrint}
+                    onClick={() => {
+                      addHapticFeedback()
+                      if (isExtension) {
+                        BrowserInstance?.runtime?.sendMessage({
+                          action: "openInSameTab",
+                          url: `${FRONTEND_URL}?subscribe=true&extension=true`,
+                        })
+
+                        return
+                      }
+                      setIsModalOpen(true, "plus")
+                    }}
+                    disabled={loading}
+                    style={{
+                      ...utilities.transparent.style,
+                    }}
+                  >
+                    <Img icon="strawberry" showLoading={false} size={18} />
+                    {t("Plus")}
+                  </Button>
+                  <Button
+                    className="transparent"
+                    data-gifted-fingerprint={giftedFingerPrint}
+                    onClick={() => {
+                      addHapticFeedback()
+                      if (isExtension) {
+                        BrowserInstance?.runtime?.sendMessage({
+                          action: "openInSameTab",
+                          url: `${FRONTEND_URL}?subscribe=true&extension=true`,
+                        })
+
+                        return
+                      }
+                      setIsModalOpen(true, "pro")
+                    }}
+                    disabled={loading}
+                    style={{
+                      ...utilities.transparent.style,
+                    }}
+                  >
+                    <Img icon="raspberry" showLoading={false} size={18} />
+                    {t("Pro")}
+                  </Button>
+                </>
               )}
               <Button
                 className="transparent"
@@ -1595,6 +1644,24 @@ export default function Subscribe({
                 <SmilePlus size={14} /> {t("Pro")}
               </Button>
             </>
+          )}
+          {selectedPlan !== "watermelon" && (
+            <Button
+              className="link"
+              onClick={() => {
+                addHapticFeedback()
+                setSelectedPlan("watermelon")
+                setIsGifting(false)
+                setIsInviting(false)
+              }}
+              style={{
+                ...utilities.link.style,
+                ...utilities.small.style,
+              }}
+            >
+              <Img logo="watermelon" width={18} height={18} />
+              WM
+            </Button>
           )}
         </Div>
         <Div

@@ -274,7 +274,11 @@ export default function Weather({
           size: 18,
         })
       })()}
-      <Span style={{ ...styles.info.style, color: "var(--shade-7)" }}>
+      <Button
+        onClick={() => setIsCityModalOpen(true)}
+        className={"link"}
+        style={{ ...styles.info.style, color: "var(--shade-7)" }}
+      >
         {weather && <Span>{weather.temperature}</Span>}
         {showLocation && (
           <Span
@@ -287,7 +291,7 @@ export default function Weather({
             {city}, {country}
           </Span>
         )}
-      </Span>
+      </Button>
     </Div>
   )
 }
