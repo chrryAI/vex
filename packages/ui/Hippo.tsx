@@ -1,6 +1,6 @@
 "use client"
 
-import React, {
+import {
   type CSSProperties,
   type Dispatch,
   lazy,
@@ -146,7 +146,7 @@ export default function Hippo({
     PROMPT_LIMITS,
     isDevelopment,
     isHippoOpen,
-    setIsHippoOpen: setIsOpenInternal,
+    setIsHippoOpen: setIsOpenAuth,
     selectedInstruction,
     setSelectedInstruction: setSelectedInstructionInternal,
     ...auth
@@ -432,11 +432,12 @@ export default function Hippo({
 
   const instructionsListRef = useRef<HTMLDivElement>(null)
 
-  const isOpen = !!isHippoOpen
+  const isOpen = isHippoOpen
 
   const setIsOpen = (open: boolean) => {
     setIsOpenInternal(open ? `${dataTestId}-chat` : undefined)
     if (!open) {
+      setIsOpenAuth(undefined)
       setCollaborationStep(0)
     }
   }
@@ -472,6 +473,8 @@ export default function Hippo({
   const isAllowed = charCount < maxCharCount
   const [isGeneratingInstructions, setIsGeneratingInstructions] =
     useState(false)
+
+  const chatDataTestId = `${dataTestId}-chat`
 
   const [isArtifactsOpen, setIsArtifactsOpen] = useState(rest.isArtifactsOpen)
 

@@ -32,12 +32,16 @@ export default function Modal({
   dataTestId,
   hideOnClickOutside = true,
   style,
+  innerStyle,
   attachTo,
+  headerStyle,
   ...props
 }: {
   hideOnClickOutside?: boolean
   params?: string
   id?: string
+  innerStyle?: React.CSSProperties
+  headerStyle?: React.CSSProperties
   attachTo?: string
   isModalOpen?: boolean
   hasCloseButton?: boolean
@@ -199,6 +203,7 @@ export default function Modal({
             style={{
               ...styles.inner.style,
               outline: "none",
+              ...innerStyle,
             }}
           >
             <H4
@@ -207,6 +212,7 @@ export default function Modal({
                 ...(borderHeader
                   ? { borderBottom: "1px dashed var(--shade-2)" }
                   : {}),
+                ...headerStyle,
               }}
             >
               {icon === "blob" ? (

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import Bookmark from "./Bookmark"
 import Chat from "./Chat"
 import CollaborationStatus from "./CollaborationStatus"
-import { COLORS, useAppContext } from "./context/AppContext"
+import { useAppContext } from "./context/AppContext"
 import {
   useApp,
   useAuth,
@@ -18,7 +18,7 @@ import EditThread from "./EditThread"
 import EnableSound from "./EnableSound"
 import Grapes from "./Grapes"
 import Hippo from "./Hippo"
-import { useHasHydrated, useThreadMetadata } from "./hooks"
+import { useThreadMetadata } from "./hooks"
 import { useThreadPresence } from "./hooks/useThreadPresence"
 import { useUserScroll } from "./hooks/useUserScroll"
 import Img from "./Image"
@@ -32,7 +32,6 @@ import {
   H2,
   Input,
   Span,
-  toast,
   usePlatform,
   useTheme,
 } from "./platform"
