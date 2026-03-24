@@ -244,7 +244,7 @@ export type subscription = {
   guestId: string | null
   createdOn: Date
   updatedOn: Date
-  plan: "plus" | "pro"
+  plan: "plus" | "pro" | "agency" | "sovereign"
 }
 
 export type newSubscription = Partial<subscription>

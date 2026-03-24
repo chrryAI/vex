@@ -488,6 +488,7 @@ const Thread = ({
           dataTestId={
             threadId && !isEmpty ? "thread-instruction" : "chat-instruction"
           }
+          isMobileDevice={isMobileDevice}
           hipchat={false}
           compactMode={showFocus || showTribe}
           showSuggestions={!showFocus && !showTribe}

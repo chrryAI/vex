@@ -9438,7 +9438,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     await handleAppExtends(bloom.id, [chrry.id, vex.id, focus.id], vex.storeId)
   if (vex?.id && vex.storeId)
     await handleAppExtends(peach.id, [chrry.id, vex.id, focus.id], vex.storeId)
-  if (vault && vex?.id && vex.storeId)
+  if (vault && vex?.id && vex.storeId && focus.id && vault.storeId)
     await handleAppExtends(
       vault.id,
       [chrry.id, vex.id, focus.id],

@@ -51,7 +51,7 @@ const HipChat = ({
   hipchat = true,
   dataTestId,
   style,
-  ...rest
+  ...props
 }: {
   showMessages?: boolean
   compactMode?: boolean
@@ -61,6 +61,7 @@ const HipChat = ({
   style?: React.CSSProperties
   dataTestId?: string
   otherHip?: boolean
+  isMobileDevice?: boolean
 }) => {
   // Initialize unified styles hook
   const styles = useThreadStyles()
@@ -132,7 +133,9 @@ const HipChat = ({
   const isEmpty = chat.isEmpty
   // && !hipchat
 
-  const { isMobile: isMobileDevice } = usePlatform()
+  const { isMobile: isMobileDevicePlatform } = usePlatform()
+
+  const isMobileDevice = props.isMobileDevice || isMobileDevicePlatform
 
   // Navigation context
   const {
@@ -1103,6 +1106,7 @@ const HipChat = ({
                   overflowY: hipchat ? "auto" : undefined,
                   paddingRight: hipchat ? 12 : undefined,
                 }}
+                isMobileDevice={isMobileDevice}
                 showEmptyState={!!thread}
                 onDelete={handleDelete}
                 ref={messagesRef}
