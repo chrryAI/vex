@@ -7,6 +7,7 @@ import {
   SiBiome,
   SiBun,
   SiBuymeacoffee,
+  SiGithub,
   SiHetzner,
   SiHono,
   SiMacos,
@@ -483,7 +484,7 @@ export default function Watermelon() {
                   color: COLORS.blue,
                   flexWrap: "wrap",
                   justifyContent: "center",
-                  maxWidth: 400,
+                  maxWidth: 420,
                 }}
               >
                 {isTauri ? (
@@ -497,6 +498,15 @@ export default function Watermelon() {
                   </Button>
                 ) : null}
                 <A
+                  event={ANALYTICS_EVENTS.GH_REPO_CLICK}
+                  openInNewTab
+                  aria-label="GitHub"
+                  href="https://github.com/chrryAI"
+                >
+                  <SiGithub color={"var(--foreground)"} size={20} /> AGPLv3
+                </A>
+                <A
+                  event={ANALYTICS_EVENTS.GH_REPO_CLICK}
                   openInNewTab
                   aria-label="Vex"
                   href="https://github.com/chrryAI/vex"
@@ -511,6 +521,7 @@ export default function Watermelon() {
                   <Img slug="sushi" size={20} />
                 </A>
                 <A
+                  event={ANALYTICS_EVENTS.GH_REPO_CLICK}
                   openInNewTab
                   aria-label="Pepper"
                   href="https://github.com/chrryAI/pepper"
@@ -518,6 +529,7 @@ export default function Watermelon() {
                   <Img slug="pepper" size={30} />
                 </A>
                 <A
+                  event={ANALYTICS_EVENTS.GH_REPO_CLICK}
                   openInNewTab
                   aria-label="Waffles"
                   href="https://github.com/chrryAI/waffles"
@@ -1309,6 +1321,7 @@ export default function Watermelon() {
                       gap: 5,
                     }}
                     openInNewTab
+                    event={ANALYTICS_EVENTS.GH_REPO_CLICK}
                     href="https://github.com/chrryAI/vex/blob/main/packages/db/encryption.ts"
                   >
                     🔑 {t("AES-256 GCM (Galois/Counter Mode)")}{" "}
