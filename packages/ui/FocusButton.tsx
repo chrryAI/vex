@@ -16,7 +16,6 @@ import { useStyles } from "./context/StylesContext"
 import { COLORS, type themeType } from "./context/ThemeContext"
 import { useTimerContext } from "./context/TimerContext"
 import { useFocusButtonStyles } from "./FocusButton.styles"
-import GitHubConnectButton from "./GitHubConnectButton"
 import { useHasHydrated } from "./hooks"
 import Img from "./Image"
 import {

@@ -40,7 +40,6 @@ import {
 import { useWebSocket } from "./hooks/useWebSocket"
 import Img from "./Image"
 import {
-  ArrowLeft,
   AudioLines,
   ChevronDown,
   CircleArrowDown,
