@@ -966,6 +966,8 @@ export default function App({
                   alignItems: "center",
                 }}
               >
+                <Hippo dataTestId="minimize-hippo" />
+
                 {user && !user?.subscription ? (
                   <Button
                     data-testid="subscribe-from-minimize-button"

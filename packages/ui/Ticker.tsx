@@ -66,6 +66,9 @@ function Ticker({
         fontFamily: "var(--font-mono)",
         ...style,
       }}
+      onPause={() => {
+        setTickerPaused(true)
+      }}
       text={instructionTitles}
       typingSpeed={40}
       pauseDuration={800}

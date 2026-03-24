@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.2"
+const VERSION = "2.2.3"
 
 const AuthContext = createContext<
   | {
@@ -962,7 +962,7 @@ export function AuthProvider({
     boolean | undefined
   >("enableNotifications", true)
 
-  const [minimize, setMinimize] = useLocalStorage<boolean>("minimize2", false)
+  const [minimize, setMinimize] = useLocalStorage<boolean>("minimize", true)
 
   const [shouldFetchSession, setShouldFetchSession] = useState(!props.session)
 
