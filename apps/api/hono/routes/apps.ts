@@ -1428,12 +1428,12 @@ app.delete("/:id", async (c) => {
       }
     }
 
-    if (app?.id === app?.store?.appId && app.storeId) {
-      const deleted = await deleteStore({ id: app.storeId })
-      if (!deleted) {
-        return c.json({ error: "Failed to delete app" }, { status: 500 })
-      }
-    }
+    // if (app?.id === app?.store?.appId && app.storeId) {
+    //   const deleted = await deleteStore({ id: app.storeId })
+    //   if (!deleted) {
+    //     return c.json({ error: "Failed to delete app" }, { status: 500 })
+    //   }
+    // }
 
     // Delete the app
     const deleted = await deleteApp({ id: app.id })
@@ -1474,8 +1474,8 @@ app.patch("/:id/moltbook", async (c) => {
     // Get existing app
     const existingApp = await getAppDb({
       id: appId,
-      userId: member?.id,
-      guestId: guest?.id,
+      // userId: member?.id,
+      // guestId: guest?.id,
       skipCache: true,
     })
 

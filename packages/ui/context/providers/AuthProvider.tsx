@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.1.87"
+const VERSION = "2.1.88"
 
 const AuthContext = createContext<
   | {
@@ -1547,6 +1547,30 @@ export function AuthProvider({
   }
 
   const [agentName, _setAgentName] = useState(session?.aiAgent?.name)
+  const flattenObject = (obj: any, prefix = ""): Record<string, any> => {
+    const flattened: Record<string, any> = {}
+    if (!obj) return flattened
+
+    for (const key in obj) {
+      if (Object.hasOwn(obj, key)) {
+        const value = obj[key]
+        const newKey = prefix ? `${prefix}_${key}` : key
+
+        if (
+          value &&
+          typeof value === "object" &&
+          !Array.isArray(value) &&
+          !(value instanceof Date)
+        ) {
+          Object.assign(flattened, flattenObject(value, newKey))
+        } else {
+          flattened[newKey] = value
+        }
+      }
+    }
+    return flattened
+  }
+
   const plausibleEvent = ({
     name,
     url,
@@ -1583,6 +1607,9 @@ export function AuthProvider({
               : window?.location?.pathname || ""
             : "/"
 
+    // Flatten props for Plausible 2 compatibility
+    const flattenedProps = flattenObject(props)
+
     fetch("https://a.chrry.dev/api/data", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1590,7 +1617,7 @@ export function AuthProvider({
         name,
         url: `https://${domain}${u}`,
         domain,
-        props,
+        props: flattenedProps,
       }),
     }).catch(() => {})
   }
@@ -1808,7 +1835,7 @@ export function AuthProvider({
       )
     }
 
-    if (user?.role === "admin") return
+    // if (user?.role === "admin") return
 
     plausibleEvent({
       name,
@@ -2104,7 +2131,14 @@ export function AuthProvider({
     mutate: refetchAccountApps,
     isLoading: isLoadingAccountApps,
   } = useSWR(
-    token && ["accountApp", accountAppId, skipAppCacheTemp],
+    token && [
+      "accountApp",
+      accountAppId,
+      skipAppCacheTemp,
+      appId,
+      updatedApp?.id,
+      newApp?.id,
+    ],
     async () => {
       try {
         if (!token) return
@@ -2125,12 +2159,51 @@ export function AuthProvider({
   useEffect(() => {
     if (accountAppsSwr?.id) {
       setAccountApp(accountAppsSwr)
+      mergeApps([accountAppsSwr])
 
-      if (app?.id === accountAppsSwr.id) {
+      if (!accountApp && accountAppsSwr && newApp) {
+        toast.success(t("🥳 WOW!, you created something amazing"))
+        setNewApp(undefined)
+
+        setAccountApp(accountAppsSwr)
+
+        setIsSavingApp(false)
+        setIsManagingApp(false)
+
         setApp(accountAppsSwr)
+        setStore(accountAppsSwr.store)
+        router.push(getAppSlug(accountAppsSwr))
+        return
+      }
+
+      if (accountAppsSwr && updatedApp?.id) {
+        toast.success(`${t("Updated")} 🚀`)
+        // if (!isExtension && !isNative) {
+        //   // setSlug(getAppSlug(n) || "")
+        //   window.location.href = getAppSlug(u)
+        //   return
+        // }
+        setUpdatedApp(undefined)
+        setAccountApp(accountAppsSwr)
+
+        setIsManagingApp(false)
+        setIsSavingApp(false)
+
+        setApp(accountAppsSwr)
+        setStore(accountAppsSwr.store)
+
+        setSlug(getAppSlug(accountAppsSwr) || "")
+        // router.push(getAppSlug(accountAppsSwr))
+
+        return
+      }
+      if (appId === accountAppsSwr.id) {
+        mergeApps([accountAppsSwr])
+        setApp(accountAppsSwr)
+        setStore(accountAppsSwr.store)
       }
     }
-  }, [accountAppsSwr, app?.id])
+  }, [accountAppsSwr, accountApp, newApp?.id, updatedApp?.id, appId])
 
   useEffect(() => {
     if (storeAppsSwr) {
@@ -2143,69 +2216,8 @@ export function AuthProvider({
       if (storeAppsSwr.store?.apps?.length) {
         mergeApps(storeAppsSwr.store?.apps)
       }
-
-      // // Merge storeAppsSwr with current app state to preserve local changes
-      // if (app?.id && storeAppsSwr.store?.apps) {
-      //   const freshApp = storeAppsSwr.store.apps.find((a) => a.id === app.id)
-      //   if (freshApp) {
-      //     // Merge: keep local changes, update with fresh data
-      //     const mergedApp = {
-      //       ...freshApp,
-      //       ...app,
-      //       // Always take fresh data for these critical fields
-      //       store: freshApp.store,
-      //       updatedOn: freshApp.updatedOn,
-      //     }
-      //     setApp(mergedApp)
-      //   }
-      // }
-
-      const n = storeAppsSwr.store?.apps.find((app) => app.id === newApp?.id)
-      if (n) {
-        toast.success(t("🥳 WOW!, you created something amazing"))
-        // if (!isExtension && !isNative) {
-        //   // setSlug(getAppSlug(n) || "")
-        //   window.location.href = getAppSlug(n)
-        //   return
-        // }
-        setNewApp(undefined)
-
-        setAccountApp(n)
-
-        setIsSavingApp(false)
-        setIsManagingApp(false)
-
-        setApp(n)
-        setStore(n.store)
-        router.push(getAppSlug(n))
-      }
-
-      const u = storeAppsSwr?.store?.apps.find(
-        (app) => app.id === updatedApp?.id,
-      )
-      if (u) {
-        toast.success(`${t("Updated")} 🚀`)
-        // if (!isExtension && !isNative) {
-        //   // setSlug(getAppSlug(n) || "")
-        //   window.location.href = getAppSlug(u)
-        //   return
-        // }
-        setUpdatedApp(undefined)
-        setAccountApp(u)
-
-        setIsManagingApp(false)
-        setIsSavingApp(false)
-
-        setApp(u)
-        setStore(u.store)
-
-        setSlug(getAppSlug(u) || "")
-        router.push(getAppSlug(u))
-
-        return
-      }
     }
-  }, [storeAppsSwr, newApp, updatedApp, loadingAppId])
+  }, [storeAppsSwr, loadingAppId])
 
   const showFocusInitial = searchParams.get("focus") === "true"
   const postIdInitial = getPostId(pathname)

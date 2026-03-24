@@ -1399,7 +1399,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     }}
                   >
                     <Weather showLocation />
-                    <Hippo dataTestId="tribe" />
+                    <Hippo ghost dataTestId="tribe" />
                     <A href="/about">
                       <Img icon="Tools" size={25} />
                     </A>
@@ -1840,14 +1840,14 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       </A>
                     )}
                   </Div>
-                  <Tools
+                  {/* <Tools
                     showDownloads={true}
                     showInstructions={false}
                     icon
                     style={{
                       marginTop: 0,
                     }}
-                  />
+                  /> */}
                   <FeedBack
                     style={{
                       position: "relative",

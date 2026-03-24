@@ -49,10 +49,9 @@ const HipChat = ({
   compactMode = true,
   showSuggestions = false,
   messagesStyle,
-  // hipchat = true,
+  hipchat = true,
   dataTestId,
   style,
-  currentHippo,
   ...rest
 }: {
   showMessages?: boolean
@@ -63,11 +62,10 @@ const HipChat = ({
   style?: React.CSSProperties
   dataTestId?: string
   otherHip?: boolean
-  currentHippo?: string
 }) => {
   // Initialize unified styles hook
   const styles = useThreadStyles()
-  const hipchat = false
+
   // Split contexts for better organization
   const { t, console } = useAppContext()
 
@@ -124,14 +122,16 @@ const HipChat = ({
     liked,
     setLiked,
     placeHolderText,
-    isEmpty,
     ...chat
   } = useChat()
 
-  const otherHip = false
-  console.log(`🚀 ~ isHippoOpen:`, { isHippoOpen, dataTestId, otherHip })
+  const otherHipRef = useRef(isHippoOpen)
+  otherHipRef.current = ""
 
   const threadId = auth.threadId || threadIdRef.current
+
+  const isEmpty = chat.isEmpty
+  // && !hipchat
 
   const { isMobile: isMobileDevice } = usePlatform()
 
@@ -274,7 +274,7 @@ const HipChat = ({
 
   const getTop = () => {
     return (
-      thread && (
+      (thread || hipchat) && (
         <Div style={styles.chatTop.style}>
           {suggestSaveApp ? (
             <A
@@ -566,10 +566,8 @@ const HipChat = ({
       aiAgent?: aiAgent
       isWebSearchEnabled?: boolean
       isImageGenerationEnabled?: boolean
+      hipchat?: boolean
     }) => {
-      if (otherHip) {
-        return
-      }
       scrollToBottom(undefined, undefined, messagesRef.current)
 
       if (isE2E && content.length > 500) {
@@ -676,7 +674,7 @@ const HipChat = ({
       resetScrollState,
       isUserScrolling,
       hasStoppedScrolling,
-      otherHip,
+      dataTestId,
     ],
   )
 
@@ -706,7 +704,8 @@ const HipChat = ({
           </Div>
         )}
         <Chat
-          // key={`${dataTestId}-chat`}
+          dataTestId={dataTestId}
+          hipChatId={dataTestId}
           hipchat={hipchat}
           requiresSignin={isVisitor && !activeCollaborator && !user}
           compactMode={compactMode}
@@ -744,15 +743,10 @@ const HipChat = ({
                               : `${t("Ask anything")}${iWillRemember}`))
           }
           thread={thread}
-          showSuggestions={
-            showSuggestions && !isLoading && messages.length === 0
-          }
+          showSuggestions={showSuggestions && !isLoading && isEmpty}
           onToggleGame={(on) => setIsGame(on)}
           showGreeting={isEmpty}
           onStreamingStop={async (message) => {
-            if (otherHip) {
-              return
-            }
             message?.message?.clientId &&
               setMessages((prev) => {
                 return prev.map((m) =>
@@ -770,9 +764,10 @@ const HipChat = ({
               })
           }}
           onMessage={(msg) => {
-            if (otherHip) {
-              return
-            }
+            // if (isHippoOpen && dataTestId !== "hippo-chat-instruction") {
+            //   otherHipRef.current = msg.hipChatId
+            //   return
+            // }
             if (msg.isUser && msg.message) {
               console.log("✅ Adding user message to state")
               scrollToBottom(500, true, messagesRef.current)
@@ -785,10 +780,9 @@ const HipChat = ({
                   userId: user?.id,
                   guestId: guest?.id,
                 }) &&
-                msg.message.message.threadId &&
-                !otherHip
+                msg.message.message.threadId
               ) {
-                if (!threadId) {
+                if (!threadId && !hipchat) {
                   if (typeof window !== "undefined") {
                     window.history.pushState(
                       {},
@@ -895,10 +889,9 @@ const HipChat = ({
             }
           }}
           onStreamingUpdate={(payload) => {
-            if (otherHip) {
+            if (otherHipRef.current) {
               return
             }
-
             handleStreamingUpdate(payload)
           }}
           onStreamingComplete={(message?: {
@@ -909,13 +902,9 @@ const HipChat = ({
             thread?: thread
             hipchat?: boolean
           }) => {
-            if (otherHip) {
+            if (otherHipRef.current) {
               return
             }
-            console.log("🤖 onStreamingComplete", {
-              messageId: message?.message?.id,
-              content: message?.message?.content,
-            })
             if (!message?.aiAgent?.id && !message?.message.agentId) return
 
             if (
@@ -967,7 +956,7 @@ const HipChat = ({
                 }),
               )
 
-            if (!burn && !id && message?.message.threadId && !otherHip) {
+            if (!burn && !id && message?.message.threadId && !hipchat) {
               requestAnimationFrame(() => {
                 const navigationOptions = {
                   state: { preservedThread: thread } as {
@@ -1144,7 +1133,6 @@ const HipChat = ({
             )}
           </Div>
         )}
-
         {renderChat()}
       </Div>
     )
