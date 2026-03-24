@@ -114,6 +114,8 @@ export default function Watermelon() {
     storeApps,
     chrry,
     plausible,
+    tickerPaused: paused,
+    setTickerPaused: setPaused,
   } = useAuth()
 
   const [isSavingReplicateApiKey, setIsSavingReplicateApiKey] = useState(false)
@@ -226,8 +228,6 @@ export default function Watermelon() {
     setCompact(viewPortHeight < 920)
   }, [viewPortHeight])
 
-  const [paused, setPaused] = useState(false)
-
   const { isMobileDevice, colorScheme } = useTheme()
 
   const { addParams } = useNavigationContext()
@@ -322,9 +322,8 @@ export default function Watermelon() {
                   display: "flex",
                   alignItems: "center",
                   margin: 0,
-                  fontSize: "1.5rem",
+                  fontSize: "1.6rem",
                   gap: 15,
-                  fontFamily: "var(--font-mono)",
                 }}
               >
                 <Img width={50} height={50} slug="watermelon" />
@@ -334,6 +333,7 @@ export default function Watermelon() {
                   onClick={() => {
                     setPaused(!paused)
                   }}
+                  title={paused ? t("Play") : t("Pause")}
                   style={{
                     ...utilities.link.style,
                   }}
@@ -397,6 +397,7 @@ export default function Watermelon() {
                     fontSize: ".95rem",
                     cursor: "pointer",
                     color: "var(--shade-7)",
+                    fontFamily: "var(--font-mono)",
                   }}
                   text={[
                     `🔪 ${t("Choose your weapon")} 🏹`,

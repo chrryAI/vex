@@ -7,8 +7,8 @@ import { decodeHtmlEntities, getInstructionConfig } from "./utils"
 
 function Ticker({
   style,
-  paused = false,
   showControls = false,
+  ...props
 }: {
   style?: React.CSSProperties
   paused?: boolean
@@ -16,7 +16,14 @@ function Ticker({
 }) {
   const { instructions } = useApp()
   const { colorScheme } = useTheme()
-  const { setSelectedInstruction, user, guest, weather } = useAuth()
+  const {
+    setSelectedInstruction,
+    user,
+    guest,
+    weather,
+    tickerPaused: paused,
+    setTickerPaused,
+  } = useAuth()
   const [currentIndex, setCurrentIndex] = React.useState(0)
   const { t } = useAppContext()
   const city = user?.city || guest?.city
@@ -53,9 +60,10 @@ function Ticker({
       showControls={showControls}
       className="ticker-clickable"
       style={{
-        fontSize: ".95rem",
+        fontSize: ".85rem",
         cursor: "pointer",
-        color: (COLORS as any)[colorScheme] || COLORS.blue,
+        color: COLORS.blue,
+        fontFamily: "var(--font-mono)",
         ...style,
       }}
       text={instructionTitles}
