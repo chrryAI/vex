@@ -1895,6 +1895,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           🌀
                         </Span>
                         <Ticker
+                          showControls
                           style={{
                             color: "var(--accent-5)",
                           }}

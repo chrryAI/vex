@@ -5,7 +5,15 @@ import { COLORS, useTheme } from "./context/ThemeContext"
 import TextType from "./TextType"
 import { decodeHtmlEntities, getInstructionConfig } from "./utils"
 
-function Ticker({ style }: { style?: React.CSSProperties }) {
+function Ticker({
+  style,
+  paused = false,
+  showControls = false,
+}: {
+  style?: React.CSSProperties
+  paused?: boolean
+  showControls?: boolean
+}) {
   const { instructions } = useApp()
   const { colorScheme } = useTheme()
   const { setSelectedInstruction, user, guest, weather } = useAuth()
@@ -42,6 +50,7 @@ function Ticker({ style }: { style?: React.CSSProperties }) {
 
   return (
     <TextType
+      showControls={showControls}
       className="ticker-clickable"
       style={{
         fontSize: ".95rem",
@@ -56,6 +65,7 @@ function Ticker({ style }: { style?: React.CSSProperties }) {
       cursorCharacter="_"
       deletingSpeed={20}
       onIndexChange={setCurrentIndex}
+      paused={paused}
       onClick={() => {
         if (instructions?.[currentIndex]) {
           setSelectedInstruction(instructions[currentIndex])

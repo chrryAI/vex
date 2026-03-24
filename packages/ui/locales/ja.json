@@ -2510,5 +2510,9 @@
   "Sushi will auto-migrate you when you choose to login": "ログインを選択すると、Sushiが自動的にあなたを移行します",
   "Or choose 10GB/month of free storage": "または、毎月10GBの無料ストレージを選択してください",
   "Choose 10GB/month of free storage": "毎月10GBの無料ストレージを選択してください",
-  "Confirm switching Hippo": "Hippoへの切り替えを確認"
+  "Confirm switching Hippo": "Hippoへの切り替えを確認",
+  "Choose your totem": "あなたのトーテムを選択してください",
+  "Choose your vibe": "あなたの雰囲気を選択してください",
+  "Choose your wisdom": "あなたの知恵を選択してください",
+  "Choose sovereignty": "主権を選択してください"
 }
