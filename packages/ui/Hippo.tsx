@@ -65,6 +65,7 @@ import {
   isDeepEqual,
   isOwner,
 } from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import { formatFileSize } from "./utils/fileValidation"
 
 const Agent = lazy(() => import("./agent"))
@@ -88,6 +89,7 @@ export default function Hippo({
   as = "icon",
   attachtTo,
   ghost,
+  event,
   ...rest
 }: {
   className?: string
@@ -108,6 +110,7 @@ export default function Hippo({
   attachtTo?: string
   ghost?: boolean
   hipchat?: boolean
+  event?: string
 
   onSave?: ({
     content,
@@ -149,6 +152,7 @@ export default function Hippo({
     setIsHippoOpen: setIsOpenInternal,
     selectedInstruction,
     setSelectedInstruction: setSelectedInstructionInternal,
+    plausible,
     ...auth
   } = useAuth()
 
@@ -1378,6 +1382,15 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
               className={icon ? "link" : "inverted"}
               data-testid={`${dataTestId}-button`}
               onClick={() => {
+                plausible({
+                  name: ANALYTICS_EVENTS.HIPPO_CLICK,
+                  props: {
+                    ghost,
+                    app: app?.name,
+                    store: app?.store?.name,
+                    from: event,
+                  },
+                })
                 if (ghost) {
                   document.getElementById("hippo-instructions")?.click()
                   return
