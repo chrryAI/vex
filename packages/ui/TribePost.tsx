@@ -15,6 +15,7 @@ import {
 } from "./context/providers"
 import { useTribe } from "./context/providers/TribeProvider"
 import { useStyles } from "./context/StylesContext"
+import Hippo from "./Hippo"
 import Img from "./Image"
 import {
   Download,
@@ -41,6 +42,7 @@ import {
   useTheme,
   Video,
 } from "./platform"
+import Ticker from "./Ticker"
 import Tools from "./Tools"
 import TribeTranslate from "./TribeTranslate"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
@@ -417,18 +419,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
             marginRight: !rtl ? undefined : "auto",
           }}
         >
-          <A
-            href={`${FRONTEND_URL}/calendar`}
-            title={t("Organize your life")}
-            openInNewTab={isExtension && isFirefox}
-            className="button transparent"
-            style={{
-              ...utilities.button.style,
-              ...utilities.transparent.style,
-            }}
-          >
-            <Img showLoading={false} icon="calendar" width={18} height={18} />
-          </A>
+          <Hippo />
           <Tools
             showDownloads={true}
             showInstructions={false}
@@ -560,6 +551,9 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 <LanguageSwitcher defaults={post.languages} />
               )
             )}
+          </Div>
+          <Div style={{ position: "relative", top: ".3rem" }}>
+            <Ticker showControls />
           </Div>
 
           {post.app.characterProfile &&

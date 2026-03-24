@@ -42,6 +42,7 @@ export interface TextTypeProps {
   style?: CSSProperties
   paused?: boolean
   [key: string]: any
+  onToggle?: (value: boolean) => void
 }
 
 const TextType = ({
@@ -65,6 +66,8 @@ const TextType = ({
   startOnVisible = false,
   reverseMode = false,
   showControls = false,
+  onToggle,
+
   style,
   ...props
 }: TextTypeProps) => {
@@ -85,6 +88,10 @@ const TextType = ({
   useEffect(() => {
     props.paused !== undefined && setPaused(props.paused)
   }, [props.paused])
+
+  useEffect(() => {
+    onToggle?.(paused)
+  }, [paused])
 
   const textArray = useMemo(() => (Array.isArray(text) ? text : [text]), [text])
 

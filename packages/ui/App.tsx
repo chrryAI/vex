@@ -966,6 +966,8 @@ export default function App({
                   alignItems: "center",
                 }}
               >
+                <Hippo dataTestId="minimize-hippo" />
+
                 {user && !user?.subscription ? (
                   <Button
                     data-testid="subscribe-from-minimize-button"
@@ -1408,19 +1410,8 @@ export default function App({
                 >
                   <Settings2 size={24} color="var(--accent-1)" />
                 </Button>
-              ) : app?.id === chrry?.id && focus && !canBurn ? (
-                <FocusButton />
               ) : (
-                hasHydrated &&
-                !canEditApp &&
-                !isManagingApp &&
-                (canBurn ? (
-                  <BurnButton style={{ top: -5, right: -5 }} />
-                ) : (
-                  <Span style={{ ...styles.grip.style }}>
-                    <Grip size={24} color="var(--accent-1)" />
-                  </Span>
-                ))
+                <Hippo dataTestId="chat-instruction" />
               )}
             </Div>
 
