@@ -435,7 +435,7 @@ export default function Hippo({
   const isOpen = isHippoOpen
 
   const setIsOpen = (open: boolean) => {
-    setIsOpenInternal(open ? `${dataTestId}-chat` : undefined)
+    setIsOpenAuth(open ? `${dataTestId}-chat` : undefined)
     if (!open) {
       setIsOpenAuth(undefined)
       setCollaborationStep(0)
@@ -869,7 +869,7 @@ export default function Hippo({
           style={styles.modal.style}
           hasCloseButton
           hideOnClickOutside={false}
-          isModalOpen={isOpen || isArtifactsOpen}
+          isModalOpen={!!isOpen || isArtifactsOpen}
           title={
             <>
               {isArtifactsOpen ? (
