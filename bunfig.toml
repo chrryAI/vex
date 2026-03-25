@@ -1,5 +1,0 @@
-# Bun configuration for path mappings
-[module]
-# Configure path aliases for module resolution
-[module.paths]
-"chrry" = ["./packages/ui"]

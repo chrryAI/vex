@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it, vi } from "vitest"
+import { afterAll, describe, expect, it, vi } from "vite-plus/test"
 
 // Mock dependencies BEFORE importing the module under test
 vi.mock("sharp", () => {

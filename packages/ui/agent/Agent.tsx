@@ -72,7 +72,6 @@ import {
   FRONTEND_URL,
   isDevelopment,
   isE2E,
-  isOwner,
   PLUS_PRICE,
   PRO_PRICE,
 } from "../utils"

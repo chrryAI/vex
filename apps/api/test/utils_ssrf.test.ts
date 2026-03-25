@@ -1,5 +1,5 @@
 import dns from "node:dns/promises"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { getSafeUrl, safeFetch } from "../utils/ssrf"
 
 vi.mock("node:dns/promises", () => ({

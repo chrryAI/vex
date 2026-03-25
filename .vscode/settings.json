@@ -2,5 +2,12 @@
   "kiroAgent.configureMCP": "Enabled",
   "codium.codeCompletion.enable": false,
   "source.fixAll.eslint": "explicit",
-  "cSpell.words": ["Extension"]
+  "cSpell.words": ["Extension"],
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "oxc.fmt.configPath": "./vite.config.ts",
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "explicit"
+  }
 }

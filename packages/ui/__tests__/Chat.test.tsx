@@ -3,7 +3,7 @@
 import { act } from "@testing-library/react"
 import React from "react"
 import { createRoot } from "react-dom/client"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 // Make React globally available for the tested component which expects it
 global.React = React

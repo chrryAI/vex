@@ -3153,7 +3153,7 @@ export function detectsiteModeDomain(
     return "tribe"
   }
 
-  if (matchesDomain(host, "grok.chrry.ai")) {
+  if (matchesDomain(host, "nexus.chrry.ai")) {
     return "nexus"
   }
 

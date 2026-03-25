@@ -2,9 +2,9 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs"
 import path, { resolve } from "node:path"
 import react from "@vitejs/plugin-react"
 import * as esbuild from "esbuild"
-import type { PluginOption } from "vite"
-import { loadEnv } from "vite"
 import { viteStaticCopy } from "vite-plugin-static-copy"
+import type { PluginOption } from "vite-plus"
+import { loadEnv } from "vite-plus"
 
 function chromeExtensionPlugin(): PluginOption {
   return {
@@ -119,7 +119,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "2.2.17",
+    version: siteConfig.version || "2.2.19",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission

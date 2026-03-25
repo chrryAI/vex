@@ -1,4 +1,4 @@
-import { vi } from "vitest"
+import { vi } from "vite-plus/test"
 
 const defaultMockAuth = {
   user: { id: "user-1", name: "Test User", role: "user" },

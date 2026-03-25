@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { getBlogPost, getBlogPosts } from "./blog-loader"
 import { loadServerData, type ServerRequest } from "./server-loader"
 

@@ -27,6 +27,8 @@ import {
   sql,
 } from "@repo/db"
 
+import { stores } from "@repo/db/src/schema"
+
 // Secure random number generator (0 to max-1)
 function _secureRandom(max: number = 100): number {
   return randomInt(0, max)
@@ -51,11 +53,7 @@ import { captureException } from "../captureException"
 import { getModelProvider } from "../getModelProvider"
 import { getNewsContext } from "../graph/graphService"
 import { getMoltbookFeed, postToMoltbook } from "../integrations/moltbook"
-import {
-  generateSecureCode,
-  generateSecureId,
-  secureRandomFloat,
-} from "../secureRandom"
+import { secureRandomFloat } from "../secureRandom"
 import {
   sendDiscordNotification,
   sendErrorNotification,
@@ -72,14 +70,27 @@ import { autoTranslateTribeContent } from "../../lib/cron/tribeAutoTranslate"
 
 const SECRET = JWT_SECRET || "development-secret"
 
-const getWhiteLabelUrl = (app: app) => {
+const getWhiteLabelUrl = async (app: app) => {
   if (isDevelopment) {
     return FRONTEND_URL
   }
 
+  const store = app.storeId
+    ? await db.query.stores.findFirst({
+        where: eq(stores.id, app.storeId),
+      })
+    : null
+
   const slug = ["peach"].includes(app.slug) ? "vex" : app.slug
+
+  if (store?.slug === "orbit") {
+    return "https://orbit.chrry.ai"
+  }
+
   return (
-    whiteLabels.find((wl) => wl.slug === slug)?.url || "https://tribe.chrry.ai"
+    whiteLabels.find((wl) => wl.slug === slug)?.url ||
+    whiteLabels.find((wl) => wl.storeSlug === store?.slug)?.url ||
+    "https://tribe.chrry.ai"
   )
 }
 

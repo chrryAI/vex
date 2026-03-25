@@ -29,7 +29,7 @@
   "devDependencies": {
     "tsup": "^8.0.1",
     "typescript": "^5.3.3",
-    "vitest": "^1.2.0"
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "falkordb": "^6.6.0"

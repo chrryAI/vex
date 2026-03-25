@@ -33,7 +33,6 @@ import {
   CircleMinus,
   CirclePause,
   CirclePlay,
-  Grip,
   Info,
   Pencil,
   RefreshCw,
@@ -277,7 +276,7 @@ export default function App({
       })
   }
 
-  const appsInternal = React.useMemo(
+  const appsInternal = useMemo(
     () => getApps(),
     [
       getApps, // 🎯 Linter'ın istediği o kritik eksik!
@@ -319,9 +318,9 @@ export default function App({
   // No need for separate state + useEffect, useMemo already handles updates
   const appsState = appsInternal
 
-  const [, setFile] = React.useState<File | undefined>()
+  const [, setFile] = useState<File | undefined>()
 
-  const [image, setImageInternal] = React.useState<string | undefined>(
+  const [image, setImageInternal] = useState<string | undefined>(
     app?.image || undefined,
   )
   const setImage = (image?: string) => {
@@ -331,7 +330,7 @@ export default function App({
 
   const hasHydrated = useHasHydrated()
 
-  const [imageDimensionWarning, setImageDimensionWarning] = React.useState<
+  const [imageDimensionWarning, setImageDimensionWarning] = useState<
     string | null
   >(null)
 
@@ -461,7 +460,7 @@ export default function App({
 
   const hasErrors = Object.keys(appForm?.formState.errors || {}).length > 0
 
-  const [inputKey, setInputKey] = React.useState(0) // Force re-render
+  const [inputKey, setInputKey] = useState(0) // Force re-render
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const isSettingVisible = hasHydrated && isAppOwner && !isManagingApp

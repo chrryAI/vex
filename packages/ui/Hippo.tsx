@@ -1,6 +1,6 @@
 "use client"
 
-import React, {
+import {
   type CSSProperties,
   type Dispatch,
   lazy,
@@ -63,7 +63,6 @@ import {
   getInstructionConfig,
   getMaxFiles,
   isDeepEqual,
-  isE2E,
   isOwner,
 } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
