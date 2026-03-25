@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.1.92"
+const VERSION = "2.2.39"
 
 const AuthContext = createContext<
   | {
@@ -113,6 +113,9 @@ const AuthContext = createContext<
         chromeVersion: string
         macosVersion: string
       }
+      push: (href: string) => void
+      tickerPaused: boolean
+      setTickerPaused: (value: boolean) => void
       isE2E: boolean
       setTribes: (tribes?: paginatedTribes) => void
       setTribePosts: (tribePosts?: paginatedTribePosts) => void
@@ -548,7 +551,8 @@ export function AuthProvider({
   const isOwner = utils.isOwner
 
   const pathname = (typeof window === "undefined" ? props.pathname : pn) || "/"
-
+  const postIdInitial = getPostId(pathname)
+  const [postId, setPostId] = useState(postIdInitial)
   // Ensure searchParams always has .get() method for compatibility
   const searchParams = (typeof window === "undefined"
     ? props.searchParams
@@ -960,7 +964,7 @@ export function AuthProvider({
     boolean | undefined
   >("enableNotifications", true)
 
-  const [minimize, setMinimize] = useLocalStorage<boolean>("minimize2", false)
+  const [minimize, setMinimize] = useLocalStorage<boolean>("minimize", true)
 
   const [shouldFetchSession, setShouldFetchSession] = useState(!props.session)
 
@@ -1280,6 +1284,11 @@ export function AuthProvider({
     !initialTribePosts,
   )
 
+  const [tickerPaused, setTickerPaused] = useLocalStorage<boolean>(
+    "tickerPaused",
+    false,
+  )
+
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
 
@@ -1289,7 +1298,6 @@ export function AuthProvider({
   >(undefined)
 
   const isHippoOpen = isHippoOpenInternal
-  console.log(`🚀 ~ baseAppInternal ~ isHippoOpen:`, isHippoOpen)
 
   const setIsHippoOpen = (value: string | undefined) => {
     isHippoOpenRef.current = value
@@ -1443,7 +1451,6 @@ export function AuthProvider({
       fingerprint &&
       token &&
       deviceId &&
-      shouldFetchSession &&
       !isRemovingApp &&
       !isSavingApp
       ? ["session", token]
@@ -2108,7 +2115,7 @@ export function AuthProvider({
     mutate: refetchApps,
     isLoading: isLoadingApps,
   } = useSWR(
-    token && ["app", appId, skipAppCacheTemp, isManagingApp],
+    token && ["app", appId, skipAppCacheTemp, isManagingApp, postId],
     async () => {
       try {
         if (!token) return
@@ -2117,6 +2124,7 @@ export function AuthProvider({
           appId,
           chrryUrl,
           pathname,
+          postId,
           skipCache: isManagingApp
             ? isOwner(app, {
                 userId: user?.id,
@@ -2136,13 +2144,15 @@ export function AuthProvider({
     mutate: refetchAccountApps,
     isLoading: isLoadingAccountApps,
   } = useSWR(
-    token && [
-      "accountApp",
-      accountAppId,
-      skipAppCacheTemp,
-      updatedApp?.id,
-      newApp?.id,
-    ],
+    !isRemovingApp &&
+      !isSavingApp &&
+      token && [
+        "accountApp",
+        accountAppId,
+        skipAppCacheTemp,
+        updatedApp?.id,
+        newApp?.id,
+      ],
     async () => {
       try {
         if (!token) return
@@ -2153,6 +2163,7 @@ export function AuthProvider({
           accountApp: true,
           skipCache: true,
         })
+
         return result
       } catch (error) {
         captureException(error)
@@ -2165,7 +2176,7 @@ export function AuthProvider({
       setAccountApp(accountAppsSwr)
       mergeApps([accountAppsSwr])
 
-      if (!accountApp && accountAppsSwr && newApp) {
+      if (accountAppsSwr && newApp) {
         toast.success(t("🥳 WOW!, you created something amazing"))
         setNewApp(undefined)
 
@@ -2207,7 +2218,14 @@ export function AuthProvider({
         setStore(accountAppsSwr.store)
       }
     }
-  }, [accountAppsSwr, accountApp, newApp?.id, updatedApp?.id, appId])
+  }, [accountAppsSwr, newApp?.id, updatedApp?.id, appId, app?.id])
+
+  useEffect(() => {
+    if (accountApp && pathname === getAppSlug(accountApp) && isRemovingApp) {
+      setAccountApp(undefined)
+      router.push("/")
+    }
+  }, [accountApp, pathname, isRemovingApp])
 
   useEffect(() => {
     if (storeAppsSwr) {
@@ -2224,14 +2242,12 @@ export function AuthProvider({
   }, [storeAppsSwr, loadingAppId])
 
   const showFocusInitial = searchParams.get("focus") === "true"
-  const postIdInitial = getPostId(pathname)
-  const [postId, setPostId] = useState(postIdInitial)
 
   useEffect(() => {
     setPostId(postIdInitial)
   }, [postIdInitial])
 
-  const [showFocus, setShowFocusInternal] = useLocalStorage<
+  const [showFocusInternal, setShowFocusInternal] = useLocalStorage<
     boolean | undefined | null
   >(
     `showFocus:${app?.slug || "focus"}`,
@@ -2242,9 +2258,10 @@ export function AuthProvider({
       : false,
   )
 
+  const showFocus = showFocusInternal && !postId
+
   useEffect(() => {
-    if (postId) return
-    if (!isStorageReady) return
+    if (postId) return setShowFocusInternal(false)
     if (!baseApp?.slug) return
     if (showFocus === undefined && baseApp?.slug === "focus") {
       setShowFocusInternal(true)
@@ -2252,7 +2269,7 @@ export function AuthProvider({
     if (showFocusInitial) {
       setShowFocusInternal(showFocusInitial)
     }
-  }, [showFocusInitial, showFocus, baseApp?.slug, isStorageReady, postId])
+  }, [showFocusInitial, showFocus, baseApp?.slug, postId])
 
   const setShowFocus = (sw: boolean) => {
     setShowFocusInternal(sw)
@@ -2791,7 +2808,12 @@ export function AuthProvider({
     colorScheme,
     theme,
     themeMode,
+    reduceMotion,
   } = useTheme()
+
+  useEffect(() => {
+    reduceMotion && setTickerPaused(reduceMotion)
+  }, [reduceMotion])
 
   const [showCharacterProfiles, setShowCharacterProfiles] = useState(false)
   const [characterProfiles, setCharacterProfiles] = useState<
@@ -2910,9 +2932,9 @@ export function AuthProvider({
             if (newApp?.themeColor) {
               setColorScheme(newApp.themeColor)
             }
-            if (newApp?.backgroundColor) {
-              setAppTheme(newApp.backgroundColor)
-            }
+            // if (newApp?.backgroundColor) {
+            //   setAppTheme(newApp.backgroundColor)
+            // }
 
             // Only show toast once ever if dark/light mode changed between apps
             // Use both ref (for immediate duplicate prevention) and localStorage (for persistence)
@@ -3281,7 +3303,7 @@ export function AuthProvider({
 
   // back = the cross-store anchor app object (resolved from storeApps cache)
   const backInitial = lastAnchorApp
-    ? storeApps.find((a) => a.id === lastAnchorApp.appId)
+    ? storeApps.find((a) => a.id === lastAnchorApp.appId && a.id !== app?.id)
     : undefined
 
   const [back, setBack] = useState(backInitial)
@@ -3673,6 +3695,8 @@ export function AuthProvider({
         isHippoOpen,
         setIsHippoOpen,
         ask,
+        tickerPaused,
+        setTickerPaused,
         setAsk,
         isLoadingMoods,
         mood,
@@ -3892,6 +3916,7 @@ export function AuthProvider({
         FREE_DAYS,
         ADDITIONAL_CREDITS,
         PROMPT_LIMITS,
+        push: router.push,
         versions,
       }}
     >

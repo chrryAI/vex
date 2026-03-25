@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:ios": "CAPACITOR_SERVER_URL=http://192.168.2.3:5175 pnpm exec cap run ios && ./scripts/post-sync.sh",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "vp dev",
+    "dev:ios": "CAPACITOR_SERVER_URL=http://192.168.2.3:5175 vp exec cap run ios && ./scripts/post-sync.sh",
+    "build": "vp build",
+    "preview": "vp preview",
     "cap:sync": "cap sync && ./scripts/post-sync.sh",
     "cap:open:ios": "cap open ios",
     "cap:open:android": "cap open android",
@@ -25,7 +25,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-native-web": "^0.19.13",
-    "vite": "^8.0.1",
+    "vite": "catalog:",
     "vite-plugin-compression": "^0.5.1"
   },
   "devDependencies": {
@@ -33,6 +33,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "sass": "^1.98.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite-plus": "catalog:"
   }
 }

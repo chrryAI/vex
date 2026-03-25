@@ -1,6 +1,6 @@
 /**
  * API Key validation utility
- * Hocam API key'lerin formatlarını kontrol ediyoruz ki yanlış bir şey kaydedilmesin.
+ * Centralized for use in both Frontend (packages/ui) and API (apps/api).
  */
 
 export type ProviderName =
@@ -17,7 +17,7 @@ export type ProviderName =
 
 const PROVIDER_REGEX: Record<string, RegExp> = {
   openai: /^sk-[a-zA-Z0-9]{32,}$/,
-  openrouter: /^sk-or-v1-[a-zA-Z0-9]{64}$/,
+  openrouter: /^sk-or-v1-[a-f0-9]{64}$/,
   anthropic: /^sk-ant-api03-[a-zA-Z0-9-]{90,100}$/,
   google: /^AIza[a-zA-Z0-9_-]{35}$/,
   deepseek: /^sk-[a-z0-9]{32}$/,

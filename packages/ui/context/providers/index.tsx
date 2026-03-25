@@ -22,11 +22,14 @@ import { type Middleware, SWRConfig, type SWRHook } from "swr"
 const limit = pLimit(5)
 
 const pLimitMiddleware: Middleware =
-  (useSWRNext: SWRHook) => (key, fetcher, config) => {
+  (useSWRNext: SWRHook) => (key, fetcher, config: any) => {
     if (!fetcher) return useSWRNext(key, fetcher, config)
 
-    // Wrap the fetcher to limit concurrency
-    const wrappedFetcher = (...args: any[]) => limit(() => fetcher(...args))
+    // Wrap the fetcher to limit concurrency, but allow priority bypass
+    const wrappedFetcher = (...args: any[]) => {
+      if (config?.priority) return fetcher(...args)
+      return limit(() => fetcher(...args))
+    }
 
     return useSWRNext(key, wrappedFetcher, config)
   }

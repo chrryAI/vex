@@ -363,7 +363,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as siteMode,
   slug: "focus",
-  version: "26.11.58",
+  version: "26.11.61",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -3153,7 +3153,7 @@ export function detectsiteModeDomain(
     return "tribe"
   }
 
-  if (matchesDomain(host, "grok.chrry.ai")) {
+  if (matchesDomain(host, "nexus.chrry.ai")) {
     return "nexus"
   }
 

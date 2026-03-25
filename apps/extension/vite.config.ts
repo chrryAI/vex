@@ -2,9 +2,10 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs"
 import path, { resolve } from "node:path"
 import react from "@vitejs/plugin-react"
 import * as esbuild from "esbuild"
-import type { PluginOption } from "vite"
-import { loadEnv } from "vite"
 import { viteStaticCopy } from "vite-plugin-static-copy"
+import type { PluginOption } from "vite-plus"
+import { loadEnv } from "vite-plus"
+import { getSiteConfig } from "../../packages/ui/utils/siteConfig"
 
 function chromeExtensionPlugin(): PluginOption {
   return {
@@ -77,9 +78,6 @@ export default async ({ command, mode }) => {
     env.VITE_BROWSER === "firefox" || process.env.VITE_BROWSER === "firefox"
   const isProduction = command === "build"
 
-  // Dynamically import getSiteConfig after env is loaded
-  const { getSiteConfig } = await import("@chrryai/chrry/utils/siteConfig")
-
   // Use MODE env var if set, otherwise use vite mode, otherwise default to vex
   const siteMode = process.env.MODE || mode || "vex"
   const siteConfig = getSiteConfig(siteMode)
@@ -119,7 +117,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "2.1.74",
+    version: siteConfig.version || "2.2.39",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
@@ -161,6 +159,8 @@ export default async ({ command, mode }) => {
           },
         }),
     // Sushi specific override for New Tab
+    // (Disabled as per user request to keep only the extension functionality)
+    /*
     ...(siteConfig.slug === "sushi"
       ? {
           chrome_url_overrides: {
@@ -168,6 +168,7 @@ export default async ({ command, mode }) => {
           },
         }
       : {}),
+    */
   }
 
   // Add browser_specific_settings for Firefox

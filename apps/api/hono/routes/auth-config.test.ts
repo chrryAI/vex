@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 // Mock dependencies to prevent side effects and module loading errors
 vi.mock("@repo/db", () => ({

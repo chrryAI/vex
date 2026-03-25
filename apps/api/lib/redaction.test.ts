@@ -1,4 +1,4 @@
-import { expect, test } from "vitest"
+import { expect, test } from "vite-plus/test"
 import { redact } from "./redaction"
 
 test("server redact should redact emails", async () => {

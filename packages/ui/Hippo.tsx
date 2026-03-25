@@ -15,6 +15,7 @@ import A from "./a/A"
 import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
 import {
+  ChatProvider,
   useApp,
   useAuth,
   useChat,
@@ -65,6 +66,7 @@ import {
   isDeepEqual,
   isOwner,
 } from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import { formatFileSize } from "./utils/fileValidation"
 
 const Agent = lazy(() => import("./agent"))
@@ -76,10 +78,9 @@ export default function Hippo({
   onSave,
   showInstructions = false,
   showDownloads = true,
-  dataTestId = "instruction",
+  dataTestId = "chat-instruction",
   showInstallers = true,
   opacity = 1,
-  hipchat = true,
   isAgentBuilder = false,
   onClose,
   style,
@@ -88,6 +89,7 @@ export default function Hippo({
   as = "icon",
   attachtTo,
   ghost,
+  event,
   ...rest
 }: {
   className?: string
@@ -108,6 +110,7 @@ export default function Hippo({
   attachtTo?: string
   ghost?: boolean
   hipchat?: boolean
+  event?: string
 
   onSave?: ({
     content,
@@ -146,9 +149,10 @@ export default function Hippo({
     PROMPT_LIMITS,
     isDevelopment,
     isHippoOpen,
-    setIsHippoOpen: setIsOpenAuth,
+    setIsHippoOpen: setIsOpenInternal,
     selectedInstruction,
     setSelectedInstruction: setSelectedInstructionInternal,
+    plausible,
     ...auth
   } = useAuth()
 
@@ -169,6 +173,9 @@ export default function Hippo({
     claudeAgent,
     favouriteAgent,
     refetchThread,
+    setArtifacts,
+    setInstruction,
+    isEmpty,
   } = useChat()
 
   const {
@@ -191,7 +198,7 @@ export default function Hippo({
   const { captureException } = useError()
 
   const { os, isStandalone, isTauri, isCapacitor, isExtension } = usePlatform()
-  const offset = isStandalone ? -250 : isExtension || isCapacitor ? -80 : 0
+  const offset = isStandalone ? -50 : isExtension || isCapacitor ? -80 : 0
   const count = useResponsiveCount(
     [
       { height: 550, count: 0 }, // Small phones: show none (was 1)
@@ -216,7 +223,22 @@ export default function Hippo({
     rest.placeholder,
   )
 
-  const [isChatOpen, setIsChatOpen] = useState<boolean>(false)
+  const [isChatOpen, setIsChatOpenInternal] = useState<boolean>(false)
+  const hipchat =
+    dataTestId &&
+    isChatOpen &&
+    (rest.hipchat || isHippoOpen === `hippo-${dataTestId}`)
+
+  const setIsChatOpen = (value: boolean) => {
+    setIsChatOpenInternal(value)
+  }
+
+  // Close this modal if another Hippo modal opens
+  useEffect(() => {
+    if (isHippoOpen && isHippoOpen !== `hippo-${dataTestId}` && isChatOpen) {
+      setIsChatOpenInternal(false)
+    }
+  }, [isHippoOpen, dataTestId, isChatOpen])
 
   const [isAppDescriptionOpen, setIsAppDescriptionOpen] = useState(false)
 
@@ -254,13 +276,6 @@ export default function Hippo({
   }, [])
 
   const [files, setFilesInternal] = useState<File[]>([])
-  useEffect(() => {
-    if (files.length > 0 && !selectedAgent?.capabilities.pdf) {
-      favouriteAgent?.capabilities.pdf
-        ? setSelectedAgent(favouriteAgent)
-        : setSelectedAgent(user ? claudeAgent : deepSeekAgent)
-    }
-  }, [files, selectedAgent, user])
 
   const [threadArtifacts, setThreadArtifacts] = useState<
     {
@@ -432,12 +447,11 @@ export default function Hippo({
 
   const instructionsListRef = useRef<HTMLDivElement>(null)
 
-  const isOpen = isHippoOpen
+  const isOpen = dataTestId ? isHippoOpen === `hippo-${dataTestId}` : false
 
   const setIsOpen = (open: boolean) => {
-    setIsOpenAuth(open ? `${dataTestId}-chat` : undefined)
+    dataTestId && setIsOpenInternal(open ? `hippo-${dataTestId}` : undefined)
     if (!open) {
-      setIsOpenAuth(undefined)
       setCollaborationStep(0)
     }
   }
@@ -601,8 +615,6 @@ export default function Hippo({
         return
       }
 
-      console.log(`🚀 tep:`, step)
-
       if (step === "success") {
         // Update: Find and update existing completed highlight
         const updatedHighlights = currentHighlights.map((h) =>
@@ -692,11 +704,13 @@ export default function Hippo({
         setIsGeneratingInstructions(false)
       }
     } else {
-      onSave?.({ content: newInstruction, artifacts: files })
+      setInstruction(newInstruction)
+      setArtifacts(files)
       setIsSaving(false)
       setIsOpen(false)
       setIsArtifactsOpen(false)
       toast.success(t("Updated"))
+      onSave?.({ content: newInstruction, artifacts: files })
     }
 
     if (collaborationStep === 1) {
@@ -818,7 +832,7 @@ export default function Hippo({
   }
 
   return (
-    <Div data-testid={dataTestId}>
+    <Div key={`${dataTestId}-hippo`} data-testid={`${dataTestId}`}>
       {isAppDescriptionOpen && !ghost && (
         <Modal
           scrollable={!isChatOpen}
@@ -860,14 +874,14 @@ export default function Hippo({
       )}
       {!ghost && (
         <Modal
-          attachTo={attachtTo}
           scrollable={!isChatOpen}
           dataTestId={`${dataTestId}-modal`}
           borderHeader={true}
           style={styles.modal.style}
+          key={`${dataTestId}-modal`}
           hasCloseButton
           hideOnClickOutside={false}
-          isModalOpen={!!isOpen || isArtifactsOpen}
+          isModalOpen={isOpen || isArtifactsOpen}
           title={
             <>
               {isArtifactsOpen ? (
@@ -942,17 +956,16 @@ export default function Hippo({
                 flexDirection: "column",
               }}
             >
-              <HipChat
-                hipchat={hipchat}
-                dataTestId={
-                  isHippoOpen
-                    ? `hippo-${dataTestId}-chat`
-                    : `${dataTestId}-chat`
-                }
-                compactMode
-                showSuggestions={false}
-                style={{ position: "relative", top: 15 }}
-              />
+              <ChatProvider key={`chat-${dataTestId}`}>
+                <HipChat
+                  hipchat
+                  dataTestId={`hippo-${dataTestId}`}
+                  compactMode={false}
+                  isMobileDevice={true}
+                  showSuggestions={false}
+                  style={{ position: "relative", top: 15 }}
+                />
+              </ChatProvider>
             </Div>
           ) : (
             <>
@@ -1366,7 +1379,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
         </Modal>
       )}
       <Div style={styles.instructionsContainer.style}>
-        {(showButton || icon) && !showInstructions && (
+        {(showButton || icon) && !showInstructions && !isManaging && (
           <Div
             style={{
               ...styles.instructionsButtonContainer.style,
@@ -1377,6 +1390,15 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
               className={icon ? "link" : "inverted"}
               data-testid={`${dataTestId}-button`}
               onClick={() => {
+                plausible({
+                  name: ANALYTICS_EVENTS.HIPPO_CLICK,
+                  props: {
+                    ghost,
+                    app: app?.name,
+                    store: app?.store?.name,
+                    from: event,
+                  },
+                })
                 if (ghost) {
                   document.getElementById("hippo-instructions")?.click()
                   return
@@ -1422,7 +1444,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
             {instructions.slice(0, count).map((instruction, index) => {
               return (
                 <MotiView
-                  key={`instruction-${instruction.id}-isAppInstructions-${isAppInstructions ? "true" : "false"}`}
+                  key={`${dataTestId}-${instruction.id}-isAppInstructions-${isAppInstructions ? "true" : "false"}`}
                   from={{ opacity: 0, translateY: -10 }}
                   animate={{ opacity: 1, translateY: 0 }}
                   transition={{

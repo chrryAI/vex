@@ -441,7 +441,7 @@ const Thread = ({
                 zIndex: 10,
                 paddingBottom:
                   minimize && !showFocus && !showTribe
-                    ? 30
+                    ? 0
                     : isStandalone
                       ? 200
                       : 195,
@@ -485,9 +485,9 @@ const Thread = ({
         )}
 
         <HipChat
-          dataTestId={
-            threadId && !isEmpty ? "thread-instruction" : "chat-instruction"
-          }
+          // dataTestId={
+          //   threadId && !isEmpty ? "thread-instruction" : "home-instruction"
+          // }
           isMobileDevice={isMobileDevice}
           hipchat={false}
           compactMode={showFocus || showTribe}

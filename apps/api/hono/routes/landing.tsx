@@ -1181,8 +1181,17 @@ export function renderPage(
 }
 
 landing.get("/", (c) => {
-  const html = renderToString(React.createElement(ChrryDotDev))
-  return c.html(renderPage(html))
+  try {
+    const html = renderToString(React.createElement(ChrryDotDev))
+    return c.html(renderPage(html))
+  } catch (error) {
+    console.error("SSR Error:", error)
+    console.error(
+      "Error details:",
+      JSON.stringify(error, Object.getOwnPropertyNames(error), 2),
+    )
+    throw error
+  }
 })
 
 // Allowed hostnames for white-label apps (add new ones here)

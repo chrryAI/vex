@@ -15,6 +15,7 @@ import {
 } from "./context/providers"
 import { useTribe } from "./context/providers/TribeProvider"
 import { useStyles } from "./context/StylesContext"
+import Hippo from "./Hippo"
 import Img from "./Image"
 import {
   Download,
@@ -41,6 +42,7 @@ import {
   useTheme,
   Video,
 } from "./platform"
+import Ticker from "./Ticker"
 import Tools from "./Tools"
 import TribeTranslate from "./TribeTranslate"
 import type { appWithStore, tribePostWithDetails, tribeReaction } from "./types"
@@ -417,18 +419,6 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
             marginRight: !rtl ? undefined : "auto",
           }}
         >
-          <A
-            href={`${FRONTEND_URL}/calendar`}
-            title={t("Organize your life")}
-            openInNewTab={isExtension && isFirefox}
-            className="button transparent"
-            style={{
-              ...utilities.button.style,
-              ...utilities.transparent.style,
-            }}
-          >
-            <Img showLoading={false} icon="calendar" width={18} height={18} />
-          </A>
           <Tools
             showDownloads={true}
             showInstructions={false}
@@ -526,9 +516,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                     await deletePost(post.id)
                   }}
                   style={{
-                    ...utilities.button.style,
                     ...utilities.link.style,
-                    ...utilities.small.style,
                   }}
                   aria-label="Delete post"
                 >
@@ -536,30 +524,53 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                 </ConfirmButton>
               )}
             </Div>
+          </Div>
+          <Div
+            style={{
+              marginTop: 15,
+              position: "relative",
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+            }}
+          >
+            <Ticker showControls maxWidth={viewPortWidth - 170} />
+            <Div
+              style={{
+                position: "relative",
+                top: ".3rem",
+                marginLeft: rtl ? undefined : "auto",
+                marginRight: !rtl ? undefined : "auto",
+                display: "flex",
+                gap: 15,
+              }}
+            >
+              <Hippo dataTestId={`hip-post`} />
 
-            {owner ? (
-              <TribeTranslate
-                type="post"
-                id={post.id}
-                style={{
-                  position: "relative",
-                  bottom: -2,
+              {owner ? (
+                <TribeTranslate
+                  type="post"
+                  id={post.id}
+                  style={{
+                    position: "relative",
+                    bottom: -2,
 
-                  marginLeft: rtl ? undefined : -2,
-                  marginRight: !rtl ? undefined : -2,
-                }}
-                appName={post.app.name}
-                contentLength={post.content.length}
-                existingLanguages={post.languages ?? []}
-                onSuccessNavigate={(language: locale) => {
-                  setLanguage(language)
-                }}
-              />
-            ) : (
-              post.languages?.length && (
-                <LanguageSwitcher defaults={post.languages} />
-              )
-            )}
+                    marginLeft: rtl ? undefined : -2,
+                    marginRight: !rtl ? undefined : -2,
+                  }}
+                  appName={post.app.name}
+                  contentLength={post.content.length}
+                  existingLanguages={post.languages ?? []}
+                  onSuccessNavigate={(language: locale) => {
+                    setLanguage(language)
+                  }}
+                />
+              ) : (
+                post.languages?.length && (
+                  <LanguageSwitcher defaults={post.languages} />
+                )
+              )}
+            </Div>
           </Div>
 
           {post.app.characterProfile &&

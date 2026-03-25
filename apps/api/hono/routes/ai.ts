@@ -113,7 +113,11 @@ import { getModelProvider } from "../../lib/getModelProvider"
 import { getRetroAnalyticsContext } from "../../lib/getRetroAnalyticsContext"
 import { postToMoltbook } from "../../lib/integrations/moltbook"
 import { upload } from "../../lib/minio"
-import { getLatestNews, getNewsBySource } from "../../lib/newsFetcher"
+import {
+  getLatestNews,
+  getNewsBySource,
+  getSemanticNewsContext,
+} from "../../lib/newsFetcher"
 import {
   broadcast,
   notifyOwnerAndCollaborations as notifyOwnerAndCollaborationsInternal,
@@ -508,7 +512,10 @@ async function getRelevantMemoryContext({
  * - Bloomberg agent → Only Bloomberg news
  * - Generic agents → All news sources
  */
-async function getNewsContext(slug?: string | null): Promise<string> {
+async function getNewsContext(
+  slug?: string | null,
+  language?: string | null,
+): Promise<string> {
   try {
     let news: any[] = []
 
@@ -527,7 +534,16 @@ async function getNewsContext(slug?: string | null): Promise<string> {
       // Branded agent → Lots of their news (user wants this!)
       news = await getNewsBySource(source, 20)
     } else {
-      // Generic agent → Just top headlines (supplementary context)
+      // Generic agent → Use semantic search by app name/slug to find relevant news
+      const semanticContext = await getSemanticNewsContext(
+        slug || "tech",
+        10,
+        language ? [language] : undefined,
+      )
+      if (semanticContext)
+        return `\n\n## Relevant News Context:\n${semanticContext}`
+
+      // Fallback: Just top headlines
       news = await getLatestNews(5)
     }
 
@@ -1493,8 +1509,8 @@ ai.post("/", async (c) => {
     guest?: guest
 
     thread: thread & {
-      user: user | null
-      guest: guest | null
+      user: Pick<user, "id" | "name" | "userName" | "image"> | null
+      guest: Pick<guest, "id"> | null
       collaborations?: {
         collaboration: collaboration
         user: user
@@ -3239,17 +3255,23 @@ ${(() => {
 
   // Get news context based on app
   const newsContext = await tracker.track("news_context", () =>
-    getNewsContext(requestApp?.slug),
+    getNewsContext(requestApp?.slug, requestApp?.language),
   )
 
   // Get live analytics context for Grape
-  const analyticsContext = requestApp
-    ? await getAnalyticsContext({
-        app: requestApp,
-        member,
-        guest,
-      })
-    : ""
+  const isAnalyticsAgent =
+    requestApp?.slug === "grape" || requestApp?.slug === "pear"
+  const isTribePost = isTribe || thread?.isTribe
+  const shouldIncludeAnalytics = isAnalyticsAgent || !isTribePost
+
+  const analyticsContext =
+    requestApp && shouldIncludeAnalytics
+      ? await getAnalyticsContext({
+          app: requestApp,
+          member,
+          guest,
+        })
+      : ""
 
   // Get recent feedback context for Pear
   const pearContext =
@@ -3272,6 +3294,7 @@ ${(() => {
   const e2eContext =
     requestApp?.slug &&
     beasts.includes(requestApp?.slug) &&
+    shouldIncludeAnalytics &&
     isOwner(requestApp, {
       userId: member?.id,
     })

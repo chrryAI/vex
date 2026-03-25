@@ -39,6 +39,7 @@ import {
   Video,
 } from "./platform"
 import Search from "./Search"
+import Ticker from "./Ticker"
 import ToggleAgent from "./ToggleAgent"
 import Tools from "./Tools"
 import { useTribeStyles } from "./Tribe.styles"
@@ -969,7 +970,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     ...auth
   } = useAuth()
   const { setAppStatus } = useApp()
-  const { isExtension, isFirefox, viewPortWidth } = usePlatform()
+  const { isExtension, isFirefox, viewPortWidth, os } = usePlatform()
 
   const [tryAppCharacterProfile, setTryAppCharacterProfile] = useState<
     string | undefined
@@ -1006,8 +1007,14 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
     }
   }
 
-  const { isMobileDevice, isSmallDevice, isDark, reduceMotion, isDrawerOpen } =
-    useTheme()
+  const {
+    isMobileDevice,
+    isSmallDevice,
+    isDark,
+    reduceMotion,
+    isDrawerOpen,
+    colorScheme,
+  } = useTheme()
   const { setIsNewChat, showTribe } = useChat()
   const postsRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -1072,8 +1079,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       outline: "3px solid var(--accent-5)",
                       backgroundColor: "var(--shade-1)",
                     }),
-                  boxShadow: COLORS[item.themeColor as keyof typeof COLORS],
-                  borderColor: COLORS[item.themeColor as keyof typeof COLORS],
+                  boxShadow: COLORS[colorScheme as keyof typeof COLORS],
+                  borderColor: COLORS[colorScheme as keyof typeof COLORS],
                 } as React.CSSProperties
               }
             >
@@ -1083,7 +1090,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 icon={<Img app={item} alt={item.name} size={40} />}
                 title={`${item.icon} ${item.subtitle || item.name}`}
                 app={item}
-                data-color={COLORS[item.themeColor as keyof typeof COLORS]}
+                data-color={COLORS[colorScheme as keyof typeof COLORS]}
                 style={{
                   display: "flex",
                   flexDirection: "column",
@@ -1398,7 +1405,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     }}
                   >
                     <Weather showLocation />
-                    <Hippo ghost dataTestId="tribe" />
+                    <Hippo dataTestId="tribe" />
                     <A href="/about">
                       <Img icon="Tools" size={25} />
                     </A>
@@ -1756,7 +1763,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           loading={<Loading size={22} />}
                           icon={
                             <>
-                              <ArrowLeft size={16} />
+                              <Span>🌀</Span>
                               <Img app={back} size={22} />
                             </>
                           }
@@ -1773,6 +1780,32 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           {t(back.name)}
                         </AppLink>
                       )}
+                    </Div>
+                    <Div
+                      style={{
+                        marginTop: 12.5,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        position: "relative",
+                        bottom: -2.5,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      {app && (
+                        <AppLink
+                          isTribe={false}
+                          app={app}
+                          icon={<Img size={28} app={app} />}
+                        />
+                      )}
+                      <Ticker
+                        maxWidth={viewPortWidth - 70}
+                        showControls
+                        style={{
+                          color: COLORS[app?.themeColor as keyof typeof COLORS],
+                        }}
+                      />
                     </Div>
                   </Div>
                   {getStoreApps({
@@ -1866,20 +1899,37 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       <Div
                         style={{
                           display: "flex",
-                          gap: 5,
+                          gap: 15,
                           flex: 1,
                           flexWrap: "wrap",
+                          alignItems: "center",
                         }}
                       >
-                        <Img size={30} logo={"lifeOS"} />
-                        {back && (
+                        {app && (
+                          <AppLink
+                            isTribe={false}
+                            app={app}
+                            icon={<Img size={32} app={app} />}
+                          />
+                        )}
+                        {os !== "windows" && (
+                          <Span
+                            style={{
+                              position: "relative",
+                              right: "0.2rem",
+                            }}
+                          >
+                            {app?.icon}
+                          </Span>
+                        )}
+                        {back ? (
                           <AppLink
                             isTribe
                             app={back}
                             loading={<Loading size={22} />}
                             icon={
                               <>
-                                <ArrowLeft size={16} />
+                                <Span>🌀</Span>
                                 <Img app={back} size={22} />
                               </>
                             }
@@ -1891,18 +1941,83 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                           >
                             {t(back.name)}
                           </AppLink>
-                        )}
+                        ) : null}
                       </Div>
-                      <P
-                        style={{
-                          color: "var(--shade-7)",
-                        }}
-                      >
-                        <A href={`/${app?.store?.slug}`} target="_blank">
-                          {t(app?.store?.title ?? "")}
-                        </A>{" "}
-                        - {t(app?.store?.description ?? "")}
-                      </P>
+
+                      {app?.store?.appId === app?.id ? (
+                        <Div
+                          style={{
+                            color: "var(--shade-7)",
+                            display: "flex",
+                            gap: 5,
+                            flexDirection: "column",
+                            alignSelf: "flex-start",
+                            alignItems: "flex-start",
+                          }}
+                        >
+                          <Ticker
+                            maxWidth={viewPortWidth - 70}
+                            showControls
+                            style={{
+                              color:
+                                COLORS[app?.themeColor as keyof typeof COLORS],
+                            }}
+                          />
+                          <P>
+                            <A href={`/${app?.store?.slug}`} target="_blank">
+                              {t(app?.store?.name ?? "")}
+                            </A>{" "}
+                            {t(
+                              app?.store?.title
+                                ? ` - ${app?.store?.title}`
+                                : "",
+                            )}
+                            {t(
+                              app?.store?.description
+                                ? ` - ${app?.store?.description}`
+                                : "",
+                            )}
+                          </P>
+                        </Div>
+                      ) : (
+                        <Div
+                          style={{
+                            color: "var(--shade-7)",
+                            lineHeight: "1.6",
+                            fontSize: ".95rem",
+                            display: "flex",
+                            gap: 10,
+                            position: "relative",
+                            flexDirection: "column",
+                          }}
+                        >
+                          {app?.subtitle || app?.description ? (
+                            <Quote
+                              size={18}
+                              strokeWidth={1.25}
+                              style={{ position: "absolute", top: 5 }}
+                            />
+                          ) : (
+                            <Pin
+                              size={18}
+                              strokeWidth={1.25}
+                              style={{ position: "absolute", top: 5 }}
+                            />
+                          )}
+                          <P style={{ paddingLeft: 25 }}>
+                            {app?.subtitle || app?.description ? (
+                              <>
+                                {t(app?.subtitle ?? "")}{" "}
+                                {t(app?.description ?? "")} {app?.icon}
+                              </>
+                            ) : (
+                              t(
+                                "This part will be updated when  App Creator pin a character profile 🧬",
+                              )
+                            )}
+                          </P>
+                        </Div>
+                      )}
                     </Div>
                   )}
 
@@ -2010,31 +2125,65 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     flexDirection: "column",
                   }}
                 >
-                  {app?.subtitle || app?.description ? (
-                    <Quote
-                      size={18}
-                      strokeWidth={1.25}
-                      style={{ position: "absolute", top: 5 }}
-                    />
+                  {app?.store?.appId === app?.id ? (
+                    <>
+                      {app?.subtitle || app?.description ? (
+                        <Quote
+                          size={18}
+                          strokeWidth={1.25}
+                          style={{ position: "absolute", top: 5 }}
+                        />
+                      ) : (
+                        <Pin
+                          size={18}
+                          strokeWidth={1.25}
+                          style={{ position: "absolute", top: 5 }}
+                        />
+                      )}
+                      <P style={{ paddingLeft: 25 }}>
+                        {app?.subtitle || app?.description ? (
+                          <>
+                            {t(app?.subtitle ?? "")} {t(app?.description ?? "")}{" "}
+                            {app?.icon}
+                          </>
+                        ) : (
+                          t(
+                            "This part will be updated when  App Creator pin a character profile 🧬",
+                          )
+                        )}
+                      </P>
+                    </>
                   ) : (
-                    <Pin
-                      size={18}
-                      strokeWidth={1.25}
-                      style={{ position: "absolute", top: 5 }}
-                    />
+                    <Div
+                      style={{
+                        color: "var(--shade-7)",
+                        display: "flex",
+                        gap: 5,
+                        flexDirection: "column",
+                        alignSelf: "flex-start",
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      <Ticker
+                        maxWidth={viewPortWidth - 70}
+                        showControls
+                        style={{
+                          color: COLORS[app?.themeColor as keyof typeof COLORS],
+                        }}
+                      />
+                      <P>
+                        <A href={`/${app?.store?.slug}`} target="_blank">
+                          {t(app?.store?.name ?? "")}
+                        </A>{" "}
+                        {t(app?.store?.title ? ` - ${app?.store?.title}` : "")}
+                        {t(
+                          app?.store?.description
+                            ? ` - ${app?.store?.description}`
+                            : "",
+                        )}
+                      </P>
+                    </Div>
                   )}
-                  <P style={{ paddingLeft: 25 }}>
-                    {app?.subtitle || app?.description ? (
-                      <>
-                        {t(app?.subtitle ?? "")} {t(app?.description ?? "")}{" "}
-                        {app?.icon}
-                      </>
-                    ) : (
-                      t(
-                        "This part will be updated when  App Creator pin a character profile 🧬",
-                      )
-                    )}
-                  </P>
                   <Div
                     style={{
                       display: "flex",
@@ -2131,7 +2280,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       onChange={(val) => setSearch(val)}
                       style={{
                         borderColor:
-                          COLORS[app?.themeColor as keyof typeof COLORS] ||
+                          COLORS[colorScheme as keyof typeof COLORS] ||
                           "var(--accent-5)",
                         flex: "1",
                         width: "100%",

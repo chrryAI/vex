@@ -1,4 +1,4 @@
-import { vi } from "vitest"
+import { vi } from "vite-plus/test"
 
 // Polyfill crypto if needed (happy-dom usually provides it, but just in case)
 if (!globalThis.crypto) {

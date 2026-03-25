@@ -45,7 +45,7 @@ type ThreadWithLikeCount = thread & { likeCount: number }
 
 const HipChat = ({
   showMessages = true,
-  compactMode = true,
+  compactMode = false,
   showSuggestions = false,
   messagesStyle,
   hipchat = true,
@@ -91,6 +91,7 @@ const HipChat = ({
     isPear,
     setPear,
     isHippoOpen,
+    isDevelopment,
     ...auth
   } = useAuth()
 
@@ -116,7 +117,6 @@ const HipChat = ({
     until,
     setUntil,
     error,
-    scrollToBottom,
     nextPage,
     status,
     liked,
@@ -124,6 +124,35 @@ const HipChat = ({
     placeHolderText,
     ...chat
   } = useChat()
+
+  const refetch = () => {
+    return refetchThread()
+  }
+
+  const refetchRef = useRef<typeof refetch | null>(refetch)
+  refetchRef.current = refetch
+
+  const scrollToBottom = hipchat
+    ? (timeout = 500, force = false, element?: HTMLElement | null) => {
+        setTimeout(() => {
+          // Use requestAnimationFrame for more stable scrolling in Tauri
+          requestAnimationFrame(() => {
+            // In Tauri, use instant scroll instead of smooth to prevent hopping
+            const behavior = "smooth"
+            const target = element || window
+            const top = element
+              ? element.scrollHeight
+              : document.body.scrollHeight
+
+            target.scrollTo({
+              top,
+              behavior: behavior as ScrollBehavior,
+            })
+            refetchRef.current = null
+          })
+        }, timeout)
+      }
+    : chat.scrollToBottom
 
   const otherHipRef = useRef(isHippoOpen)
   otherHipRef.current = ""
@@ -177,9 +206,7 @@ const HipChat = ({
   // plausible if we've already auto-selected an agent for this thread
   const shouldStopAutoScrollRef = useRef(false)
 
-  const refetch = () => {
-    return refetchThread()
-  }
+  const [compact, setCompact] = useState(hipchat ? false : compactMode)
 
   // ⚡ Bolt: Stable callbacks for Messages component to prevent re-renders
   const isChatFloatingRef = useRef(isChatFloating)
@@ -187,9 +214,6 @@ const HipChat = ({
 
   const scrollToBottomRef = useRef(scrollToBottom)
   scrollToBottomRef.current = scrollToBottom
-
-  const refetchRef = useRef(refetch)
-  refetchRef.current = refetch
 
   const setMessagesRef = useRef(setMessages)
   setMessagesRef.current = setMessages
@@ -201,20 +225,30 @@ const HipChat = ({
     shouldStopAutoScrollRef.current = true
   }, [])
 
+  useEffect(() => {
+    if (hipchat) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        scrollToBottom(100, true, messagesRef.current)
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [hipchat, scrollToBottom])
+
   const handleCharacterProfileUpdate = useCallback(() => {
     !isChatFloating && scrollToBottom(undefined, undefined, messagesRef.current)
   }, [isChatFloating, scrollToBottom])
 
   const handleToggleLike = useCallback((liked: boolean | undefined) => {
-    refetchRef.current()
+    refetchRef.current?.()
   }, [])
 
   const handleDelete = useCallback(async ({ id }: { id: string }) => {
     if (currentMessagesRef.current.length === 1) {
-      await refetchRef.current().then(() => setMessagesRef.current([]))
+      await refetchRef.current?.().then(() => setMessagesRef.current([]))
     } else {
       await refetchRef
-        .current()
+        .current?.()
         .then(() =>
           setMessagesRef.current(
             currentMessagesRef.current.filter((m) => m.message.id !== id),
@@ -262,36 +296,7 @@ const HipChat = ({
     return (
       (thread || hipchat) && (
         <Div style={styles.chatTop.style}>
-          {suggestSaveApp ? (
-            <A
-              href={`${FRONTEND_URL}/?step=add&part=title`}
-              title={t("Build your app")}
-              onClick={(e) => {
-                addHapticFeedback()
-
-                if (e.metaKey || e.ctrlKey) {
-                  return
-                }
-                e.preventDefault()
-
-                router.push(`${slugPath}?step=add&part=title`)
-              }}
-              className="button transparent"
-              style={{
-                ...utilities.button.style,
-                ...utilities.transparent.style,
-                ...utilities.xSmall.style,
-              }}
-            >
-              <Img
-                showLoading={false}
-                src={`${FRONTEND_URL}/icons/plus-128.png`}
-                alt="Calendar"
-                width={16}
-                height={16}
-              />
-            </A>
-          ) : (isRetro || user?.role === "admin") && isEmpty ? (
+          {(isRetro || user?.role === "admin") && !isDevelopment && isEmpty ? (
             <>
               <Button onClick={() => setIsRetro(false)} className="link">
                 <CircleX size={11} />
@@ -538,6 +543,8 @@ const HipChat = ({
   const { isUserScrolling, hasStoppedScrolling, resetScrollState } =
     useUserScroll()
 
+  const canStream = !isEmpty
+
   // Memoize the streaming update handler to prevent infinite loops
   const handleStreamingUpdate = useCallback(
     ({
@@ -554,6 +561,7 @@ const HipChat = ({
       isImageGenerationEnabled?: boolean
       hipchat?: boolean
     }) => {
+      if (!canStream) return
       scrollToBottom(undefined, undefined, messagesRef.current)
 
       if (isE2E && content.length > 500) {
@@ -656,6 +664,7 @@ const HipChat = ({
       isLoadingMore,
       scrollToBottom,
       setMessages,
+      canStream,
       shouldAutoScroll,
       resetScrollState,
       isUserScrolling,
@@ -679,7 +688,7 @@ const HipChat = ({
                   style={{
                     display: "flex",
                     justifyContent: "center",
-                    padding: "10px 0 5px 0",
+                    padding: "10px 0 10px 0",
                     borderTop: "1px dashed var(--shade-2)",
                   }}
                 >
@@ -694,7 +703,7 @@ const HipChat = ({
           hipChatId={dataTestId}
           hipchat={hipchat}
           requiresSignin={isVisitor && !activeCollaborator && !user}
-          compactMode={compactMode}
+          compactMode={compact}
           onTyping={notifyTyping}
           disabled={isPendingCollaboration}
           placeholder={
@@ -888,9 +897,7 @@ const HipChat = ({
             thread?: thread
             hipchat?: boolean
           }) => {
-            if (otherHipRef.current) {
-              return
-            }
+            if (!canStream) return
             if (!message?.aiAgent?.id && !message?.message.agentId) return
 
             if (
@@ -970,15 +977,23 @@ const HipChat = ({
   const render = () => {
     return (
       <Div
+        key={`${dataTestId}-hipchat`}
         style={{
-          display: hipchat ? "flex" : "block",
+          display: "flex",
           flexDirection: "column",
-          height: hipchat ? (isMobileDevice ? "100%" : "80dvh") : "auto",
+          height: hipchat ? "80dvh" : "auto",
           ...style,
         }}
       >
         {!isVisitor && thread && (
-          <Div style={styles.headers.style}>
+          <Div
+            className={hipchat ? "blur" : undefined}
+            style={{
+              ...styles.headers.style,
+              position: "relative",
+              bottom: hipchat ? "0.6rem" : undefined,
+            }}
+          >
             <Div style={styles.header.style}>
               {thread.isMainThread ? (
                 <Span
@@ -1105,6 +1120,7 @@ const HipChat = ({
                   flex: hipchat ? 1 : undefined,
                   overflowY: hipchat ? "auto" : undefined,
                   paddingRight: hipchat ? 12 : undefined,
+                  paddingBottom: hipchat ? 10 : undefined,
                 }}
                 isMobileDevice={isMobileDevice}
                 showEmptyState={!!thread}

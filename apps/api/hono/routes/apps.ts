@@ -14,7 +14,6 @@ import {
   db,
   deleteApp,
   deleteInstall,
-  deleteStore,
   encrypt,
   eq,
   getApp as getAppDb,

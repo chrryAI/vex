@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 // Set env vars before importing minio
 process.env.S3_ENDPOINT = "https://minio.chrry.dev"

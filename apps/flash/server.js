@@ -710,7 +710,7 @@ export const whiteLabels = [
   _tribe,
 ]
 
-const VERSION = "2.1.92"
+const VERSION = "2.2.39"
 // Constants
 const port = process.env.PORT || 5173
 const base = process.env.BASE || "/"
@@ -729,6 +729,11 @@ const app = express()
 // Trust proxy - needed for X-Forwarded-For header from reverse proxy
 // Set to 1 for single proxy (Nginx) - more secure than 'true'
 app.set("trust proxy", 1)
+
+// Lightweight health check endpoint to avoid SSR overhead
+app.get("/health", (req, res) => {
+  res.status(200).send("OK")
+})
 
 app.use(cookieParser())
 

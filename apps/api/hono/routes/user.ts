@@ -1,5 +1,9 @@
 import { resolve4, resolve6 } from "node:dns/promises"
-import { isValidUsername } from "@chrryai/chrry/utils"
+import {
+  isValidUsername,
+  type ProviderName,
+  validateApiKey,
+} from "@chrryai/chrry/utils"
 import { protectedRoutes } from "@chrryai/chrry/utils/url"
 import {
   deleteUser,
@@ -16,10 +20,6 @@ import { captureException } from "../../lib/captureException"
 import { clearGraphDataForUser } from "../../lib/graph/graphService"
 import { deleteFile, upload } from "../../lib/minio"
 import { scanFileForMalware } from "../../lib/security"
-import {
-  type ProviderName,
-  validateApiKey,
-} from "../../lib/utils/validateApiKey"
 import { isPrivateIP } from "../../utils/ssrf"
 import { getMember } from "../lib/auth"
 
@@ -131,7 +131,7 @@ user.patch("/", async (c) => {
 
   try {
     if (apiKeys && typeof apiKeys === "object") {
-      for (const [provider, value] of Object.entries(apiKeys || {})) {
+      for (const [provider, value] of Object.entries(apiKeys)) {
         await updateKey(provider as ProviderName, value as string)
       }
     }

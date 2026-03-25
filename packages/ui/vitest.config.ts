@@ -1,7 +1,7 @@
 import { createRequire } from "node:module"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { defineConfig } from "vitest/config"
+import { defineConfig } from "vite-plus"
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

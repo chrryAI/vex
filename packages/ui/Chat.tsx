@@ -40,7 +40,6 @@ import {
 import { useWebSocket } from "./hooks/useWebSocket"
 import Img from "./Image"
 import {
-  ArrowLeft,
   AudioLines,
   ChevronDown,
   CircleArrowDown,
@@ -275,6 +274,7 @@ export default function Chat({
     isHippoOpen,
     OWNER_CREDITS,
     PROMPT_LIMITS,
+    isE2E,
     ...auth
   } = useAuth()
 
@@ -361,6 +361,10 @@ export default function Chat({
     setNeedsReplicate,
     showTribe,
     needsReplicate,
+    artifacts,
+    setArtifacts,
+    instruction,
+    setInstruction,
   } = useChat()
 
   const {
@@ -1100,7 +1104,6 @@ export default function Chat({
     },
   )
 
-  const [artifacts, setArtifacts] = useState<File[]>([])
   const [instructionsIndex, setInstructionsIndex] = useState(0)
 
   useEffect(() => {
@@ -1571,8 +1574,6 @@ export default function Chat({
 
   const { push } = router
 
-  const [instruction, setInstruction] = useState("")
-
   // Collaboration wizard steps
   const collaborationSteps = [
     {
@@ -1839,7 +1840,7 @@ export default function Chat({
         taskId && formData.append("taskId", taskId)
         mood && formData.append("moodId", mood.id)
         formData.append("actionEnabled", JSON.stringify(isExtension))
-        formData.append("instructions", instruction)
+        instruction && formData.append("instructions", instruction)
         formData.append("language", language)
         clientId && formData.append("clientId", clientId)
         isPear && formData.append("pear", JSON.stringify(isPear))
@@ -3492,19 +3493,7 @@ export default function Chat({
           </Div>
         </Modal>
       )}
-      {!thread && showSuggestions && !isGame && (
-        <App
-          onSave={(instruction) => {
-            setInstructionsIndex(instructionsIndex + 1)
-            setArtifacts(instruction.artifacts)
-            setInstruction(instruction.content)
-            // Start collaboration wizard after instructions are saved
-            if (isShowingCollaborate) {
-              setCollaborationStep(1)
-            }
-          }}
-        />
-      )}
+      {!thread && showSuggestions && !isGame && <App />}
       <Div
         key={isChatFloating ? "floating" : "fixed"}
         onDragEnter={handleDragEnter}
@@ -4185,7 +4174,7 @@ export default function Chat({
                       loading={<Loading size={22} />}
                       icon={
                         <>
-                          <ArrowLeft size={16} />
+                          <Span>🌀</Span>
                           <Img app={back} size={22} />
                         </>
                       }
@@ -4290,7 +4279,7 @@ export default function Chat({
                       loading={<Loading size={22} />}
                       icon={
                         <>
-                          <ArrowLeft size={16} />
+                          <Span>🌀</Span>
                           <Img app={back} size={22} />
                         </>
                       }
@@ -5041,8 +5030,11 @@ export default function Chat({
                       <Link size={15} />
                       {t("Privacy")}
                     </A>
-                  ) : !isSelectingMood && isDevelopment && user && !hipchat ? (
+                  ) : !isSelectingMood &&
+                    (isDevelopment ? user : user?.role === "admin") &&
+                    !hipchat ? (
                     <Hippo
+                      thread={thread}
                       key={dataTestId}
                       dataTestId={`${dataTestId}-hippo`}
                       size={24}

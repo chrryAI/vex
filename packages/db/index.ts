@@ -222,6 +222,7 @@ export { redis, upstashRedis } from "./src/redis"
 // Export Better Auth tables
 export {
   and,
+  asc,
   baAccounts,
   baSessions,
   baVerifications,
@@ -2672,17 +2673,19 @@ export const getThread = async ({
   return result
     ? {
         ...result.threads,
-        user: {
-          id: result.user?.id,
-          name: result.user?.name,
-          userName: result.user?.userName,
-          createdOn: result.user?.createdOn,
-          updatedOn: result.user?.updatedOn,
-          image: result.user?.image,
-          // activeOn: result.user?.activeOn,
-          // isOnline: result.user?.isOnline,
-        } as user | null,
-        guest: result.guest,
+        user: result.user
+          ? {
+              id: result.user?.id,
+              name: result.user?.name,
+              userName: result.user?.userName,
+              image: result.user?.image,
+            }
+          : (null as user | null),
+        guest: result.guest
+          ? {
+              id: result.guest?.id,
+            }
+          : result.guest,
         collaborations: await getCollaborations({
           threadId: result.threads.id,
         }),
@@ -8625,16 +8628,33 @@ export async function getAgentApiUsage({
 
 // NewsAPI country codes mapped from locales (top-headlines supports country param)
 const NEWS_COUNTRIES: { country: string; lang: string }[] = [
-  { country: "us", lang: "en" },
-  { country: "de", lang: "de" },
-  { country: "es", lang: "es" },
-  { country: "fr", lang: "fr" },
-  { country: "jp", lang: "ja" },
-  { country: "kr", lang: "ko" },
-  { country: "br", lang: "pt" },
-  { country: "cn", lang: "zh" },
-  { country: "nl", lang: "nl" },
-  { country: "tr", lang: "tr" },
+  { country: "us", lang: "en" }, // United States (English)
+  { country: "gb", lang: "en" }, // United Kingdom (English)
+  { country: "ca", lang: "en" }, // Canada (English)
+  { country: "au", lang: "en" }, // Australia (English)
+  { country: "in", lang: "en" }, // India (English)
+  { country: "de", lang: "de" }, // Germany (German)
+  { country: "fr", lang: "fr" }, // France (French)
+  { country: "es", lang: "es" }, // Spain (Spanish)
+  { country: "it", lang: "it" }, // Italy (Italian)
+  { country: "nl", lang: "nl" }, // Netherlands (Dutch)
+  { country: "br", lang: "pt" }, // Brazil (Portuguese)
+  { country: "pt", lang: "pt" }, // Portugal (Portuguese)
+  { country: "jp", lang: "ja" }, // Japan (Japanese)
+  { country: "kr", lang: "ko" }, // Korea (Korean)
+  { country: "cn", lang: "zh" }, // China (Chinese)
+  { country: "tw", lang: "zh" }, // Taiwan (Chinese)
+  { country: "tr", lang: "tr" }, // Turkey (Turkish)
+  { country: "ru", lang: "ru" }, // Russia (Russian)
+  { country: "ua", lang: "uk" }, // Ukraine (Ukrainian)
+  { country: "gr", lang: "el" }, // Greece (Greek)
+  { country: "il", lang: "he" }, // Israel (Hebrew)
+  { country: "sa", lang: "ar" }, // Saudi Arabia (Arabic)
+  { country: "eg", lang: "ar" }, // Egypt (Arabic)
+  { country: "vn", lang: "vi" }, // Vietnam (Vietnamese)
+  { country: "pl", lang: "pl" }, // Poland (Polish)
+  { country: "se", lang: "sv" }, // Sweden (Swedish)
+  { country: "no", lang: "no" }, // Norway (Norwegian)
 ]
 
 // Scrape og:description / meta description from a URL (best-effort, no throw)
@@ -8665,7 +8685,7 @@ async function scrapeMetaDescription(url: string): Promise<string | null> {
   }
 }
 
-export async function fetchAndStoreNews(): Promise<{
+export async function fetchAndStoreOldNews(): Promise<{
   inserted: number
   skipped: number
   error?: string
@@ -8825,6 +8845,130 @@ export async function fetchAndStoreNews(): Promise<{
   return { inserted, skipped, newlyInserted, countryStats }
 }
 
+export async function fetchAndStoreNews(): Promise<{
+  inserted: number
+  skipped: number
+  error?: string
+  countryStats?: { country: string; fetched: number; error?: string }[]
+  newlyInserted?: any[]
+}> {
+  // Değişken adını GNEWS_API_KEY olarak güncelledik
+  const apiKey = process.env.GNEWS_API_KEY
+  if (!apiKey) {
+    return { inserted: 0, skipped: 0, error: "GNEWS_API_KEY not set" }
+  }
+
+  const allArticles: any[] = []
+  const countryStats: { country: string; fetched: number; error?: string }[] =
+    []
+
+  for (const { country, lang } of NEWS_COUNTRIES) {
+    try {
+      // GNews API v4 URL yapısı
+      // GNews 'pageSize' yerine 'max' kullanır (Free tier max 10'dur genelde)
+      const url = `https://gnews.io/api/v4/top-headlines?category=general&lang=${lang}&country=${country}&max=10&apikey=${apiKey}`
+
+      const res = await fetch(url)
+
+      if (!res.ok) {
+        countryStats.push({ country, fetched: 0, error: `HTTP ${res.status}` })
+        continue
+      }
+
+      const data = await res.json()
+
+      // GNews hata durumunda 'errors' dizisi dönebilir
+      if (data.errors) {
+        countryStats.push({
+          country,
+          fetched: 0,
+          error: data.errors[0] || "GNews API error",
+        })
+        continue
+      }
+
+      let fetched = 0
+      for (const article of data.articles || []) {
+        if (!article.title || !article.url) continue
+
+        // GNews içeriği NewsAPI'dan biraz daha uzundur ama yine de tam metin değildir
+        // Senin enrichment (zenginleştirme) mantığını burada koruyoruz
+        const apiContent = article.content || article.description || ""
+
+        allArticles.push({
+          title: article.title.substring(0, 500),
+          description: article.description
+            ? article.description.substring(0, 1000)
+            : null,
+          content: apiContent,
+          url: article.url,
+          source: article.source?.name || null,
+          country,
+          category: lang,
+          publishedAt: article.publishedAt
+            ? new Date(article.publishedAt)
+            : null,
+        })
+        fetched++
+      }
+      countryStats.push({ country, fetched })
+    } catch (err) {
+      countryStats.push({
+        country,
+        fetched: 0,
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
+  }
+
+  // --- İçerik Zenginleştirme (Aynı Mantık) ---
+  const toEnrich = allArticles.filter(
+    (a) => !a.content || a.content.length < 200,
+  )
+  const batchSize = 5 // GNews'da hız sınırına takılmamak için batch'i küçülttük
+  for (let i = 0; i < toEnrich.length; i += batchSize) {
+    const batch = toEnrich.slice(i, i + batchSize)
+    await Promise.allSettled(
+      batch.map(async (article) => {
+        const scraped = await scrapeMetaDescription(article.url)
+        if (scraped && scraped.length > (article.content?.length ?? 0)) {
+          article.content = scraped
+        }
+      }),
+    )
+  }
+
+  // --- DB İşlemleri (Aynı Mantık) ---
+  if (allArticles.length === 0) return { inserted: 0, skipped: 0, countryStats }
+
+  await db
+    .delete(tribeNews)
+    .where(lt(tribeNews.fetchedAt, new Date(Date.now() - 48 * 60 * 60 * 1000)))
+
+  let inserted = 0
+  let skipped = 0
+  const newlyInserted: any[] = []
+
+  for (const article of allArticles) {
+    try {
+      const result = await db
+        .insert(tribeNews)
+        .values(article)
+        .onConflictDoNothing()
+        .returning({ id: tribeNews.id })
+      if (result.length > 0) {
+        inserted++
+        newlyInserted.push(article)
+      } else {
+        skipped++
+      }
+    } catch {
+      skipped++
+    }
+  }
+
+  return { inserted, skipped, newlyInserted, countryStats }
+}
 export async function getRecentNews(limit = 20): Promise<
   {
     title: string

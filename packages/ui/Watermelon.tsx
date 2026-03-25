@@ -7,10 +7,12 @@ import {
   SiBiome,
   SiBun,
   SiBuymeacoffee,
+  SiGithub,
   SiHetzner,
   SiHono,
   SiMacos,
   SiMinio,
+  SiReact,
   SiRedis,
   SiTauri,
   SiVite,
@@ -24,11 +26,13 @@ import { useAuth, useNavigationContext } from "./context/providers"
 import { COLORS } from "./context/providers/AppProvider"
 import { useStyles } from "./context/StylesContext"
 import { useTheme } from "./context/ThemeContext"
+import Hippo from "./Hippo"
 import Img from "./Image"
-
 import {
   ArrowRight,
   CircleCheck,
+  CirclePause,
+  CirclePlay,
   CircleX,
   Claude,
   DeepSeek,
@@ -57,8 +61,10 @@ import {
 } from "./platform"
 import SignIn from "./SignIn"
 import Subscribe from "./Subscribe"
+import TextType from "./TextType"
 import ThemeSwitcher from "./ThemeSwitcher"
-import { VERSION } from "./utils"
+import Ticker from "./Ticker"
+import { VERSION, validateApiKey } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import Weather from "./Weather"
 
@@ -108,6 +114,8 @@ export default function Watermelon() {
     storeApps,
     chrry,
     plausible,
+    tickerPaused: paused,
+    setTickerPaused: setPaused,
   } = useAuth()
 
   const [isSavingReplicateApiKey, setIsSavingReplicateApiKey] = useState(false)
@@ -253,7 +261,7 @@ export default function Watermelon() {
         </Div>
 
         {chrry && (
-          <P
+          <Div
             style={{
               display: "flex",
               alignItems: "center",
@@ -278,7 +286,7 @@ export default function Watermelon() {
             >
               {chrry.name}
             </AppLink>{" "}
-          </P>
+          </Div>
         )}
 
         {isTauri && showLocalSetup ? (
@@ -295,7 +303,7 @@ export default function Watermelon() {
                 gap: isMobileDevice ? 7.5 : 8.5,
               }}
             >
-              <P
+              <Div
                 style={{
                   display: "flex",
                   gap: 7.5,
@@ -308,20 +316,44 @@ export default function Watermelon() {
                 <A href="/about">
                   <Img icon="heart" size={22} />
                 </A>
-              </P>
+              </Div>
               <H1
                 style={{
                   display: "flex",
                   alignItems: "center",
                   margin: 0,
-                  fontSize: "1.5rem",
+                  fontSize: "1.6rem",
                   gap: 15,
-                  fontFamily: "var(--font-mono)",
                 }}
               >
                 <Img width={50} height={50} slug="watermelon" />
                 {t("Watermelon")}&#169;
+                <Button
+                  className="link"
+                  onClick={() => {
+                    setPaused(!paused)
+                    plausible({
+                      name: ANALYTICS_EVENTS.TICKER_MOTTO_CLICK,
+                      props: {
+                        app: app?.name,
+                        store: app?.store?.name,
+                        paused: !paused,
+                      },
+                    })
+                  }}
+                  title={paused ? t("Play") : t("Pause")}
+                  style={{
+                    ...utilities.link.style,
+                  }}
+                >
+                  {paused ? (
+                    <CirclePlay color={COLORS.green} size={22} />
+                  ) : (
+                    <CirclePause color={COLORS.orange} size={22} />
+                  )}
+                </Button>
               </H1>
+
               <Div
                 style={{
                   display: "flex",
@@ -357,7 +389,7 @@ export default function Watermelon() {
                   {t("+{{count}} AI Apps", { count: storeApps.length })}
                 </A>
               </Div>
-              <P
+              <Div
                 style={{
                   fontSize: "1rem",
                   color: "var(--shade-7)",
@@ -367,8 +399,30 @@ export default function Watermelon() {
                   marginTop: 5,
                 }}
               >
-                🔪<Span>{t("Choose your weapon")}</Span>🏹
-              </P>
+                <TextType
+                  className="ticker-clickable"
+                  style={{
+                    fontSize: ".95rem",
+                    cursor: "pointer",
+                    color: "var(--shade-7)",
+                    fontFamily: "var(--font-mono)",
+                  }}
+                  text={[
+                    `🔪 ${t("Choose your weapon")} 🏹`,
+                    `🧠 ${t("Choose your wisdom")} 🍉`,
+                    `🦋 ${t("Choose sovereignty")} 🍩`,
+                    `🦄 ${t("Choose your vibe")} 🍣`,
+                    `🌀 ${t("Choose your totem")} `,
+                  ]}
+                  typingSpeed={60}
+                  pauseDuration={800}
+                  showCursor
+                  cursorCharacter="_"
+                  deletingSpeed={20}
+                  paused={paused}
+                  maxWidth={viewPortWidth - 70}
+                />
+              </Div>
               <Div
                 style={{
                   display: "flex",
@@ -427,6 +481,17 @@ export default function Watermelon() {
                   }}
                   className="button transparent"
                   href="?subscribe=true&plan=watermelon"
+                  onClick={(e) => {
+                    if (e.metaKey || e.ctrlKey) {
+                      return
+                    }
+                    e.preventDefault()
+
+                    addParams({
+                      subscribe: "true",
+                      plan: "watermelon",
+                    })
+                  }}
                 >
                   <Img
                     alt="🍉 Agency"
@@ -444,6 +509,18 @@ export default function Watermelon() {
                   }}
                   className="button transparent"
                   href="?subscribe=true&plan=watermelon&watermelonTier=plus"
+                  onClick={(e) => {
+                    if (e.metaKey || e.ctrlKey) {
+                      return
+                    }
+                    e.preventDefault()
+
+                    addParams({
+                      subscribe: "true",
+                      plan: "watermelon",
+                      watermelonTier: "plus",
+                    })
+                  }}
                 >
                   <Img alt="🦋 Sovereign" width={22} height={22} slug="tribe" />
                   {t("Sovereign")}
@@ -459,7 +536,7 @@ export default function Watermelon() {
                   color: COLORS.blue,
                   flexWrap: "wrap",
                   justifyContent: "center",
-                  maxWidth: 400,
+                  maxWidth: 420,
                 }}
               >
                 {isTauri ? (
@@ -473,6 +550,31 @@ export default function Watermelon() {
                   </Button>
                 ) : null}
                 <A
+                  onClick={() => {
+                    plausible({
+                      name: ANALYTICS_EVENTS.WANNATHIS,
+                      props: {
+                        app: app?.name,
+                      },
+                    })
+                  }}
+                  href="https://wannathis.one?via=iliyan"
+                  target="_blank"
+                  title="👀 Wannathis"
+                  rel="noopener noreferrer"
+                >
+                  <WannathisIcon />
+                </A>
+                <A
+                  event={ANALYTICS_EVENTS.GH_REPO_CLICK}
+                  openInNewTab
+                  aria-label="GitHub"
+                  href="https://github.com/chrryAI"
+                >
+                  <SiGithub color={"var(--foreground)"} size={20} /> AGPLv3
+                </A>
+                <A
+                  event={ANALYTICS_EVENTS.GH_REPO_CLICK}
                   openInNewTab
                   aria-label="Vex"
                   href="https://github.com/chrryAI/vex"
@@ -487,6 +589,7 @@ export default function Watermelon() {
                   <Img slug="sushi" size={20} />
                 </A>
                 <A
+                  event={ANALYTICS_EVENTS.GH_REPO_CLICK}
                   openInNewTab
                   aria-label="Pepper"
                   href="https://github.com/chrryAI/pepper"
@@ -494,27 +597,12 @@ export default function Watermelon() {
                   <Img slug="pepper" size={30} />
                 </A>
                 <A
+                  event={ANALYTICS_EVENTS.GH_REPO_CLICK}
                   openInNewTab
                   aria-label="Waffles"
                   href="https://github.com/chrryAI/waffles"
                 >
                   <Img slug="waffles" size={35} />
-                </A>
-
-                <A
-                  onClick={() => {
-                    plausible({
-                      name: ANALYTICS_EVENTS.WANNATHIS,
-                      props: {
-                        app: app?.name,
-                      },
-                    })
-                  }}
-                  href="https://wannathis.one?via=iliyan"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <WannathisIcon />
                 </A>
 
                 <A openInNewTab href="https://orbstack.dev">
@@ -532,6 +620,9 @@ export default function Watermelon() {
                 </A>
                 <A openInNewTab href="https://hono.dev">
                   <SiHono color={COLORS.red} title="Hono" size={20} />
+                </A>
+                <A openInNewTab href="https://react.dev">
+                  <SiReact color={COLORS.blue} title="React" size={20} />
                 </A>
                 <A openInNewTab href="https://vitejs.dev">
                   <SiVite color={COLORS.green} title="Vite" size={20} />
@@ -620,9 +711,10 @@ export default function Watermelon() {
                         return
                       }
 
-                      // Client-side regex validation
-                      const openRouterRegex = /^sk-or-v1-[a-zA-Z0-9]{64}$/
-                      if (!openRouterRegex.test(openRouterApiKey.trim())) {
+                      // Client-side regex validation using centralized utility
+                      if (
+                        !validateApiKey("openrouter", openRouterApiKey.trim())
+                      ) {
                         toast.error(
                           t(
                             "Invalid OpenRouter API key format (Expected sk-or-v1-...)",
@@ -1229,41 +1321,50 @@ export default function Watermelon() {
                           {t("Or choose 10GB/month of free storage")}
                         </ConfirmButton>
                       ) : (
-                        <Button
-                          className="link"
-                          onClick={() => {
-                            if (user) {
-                              addParams({ subscribe: "true", plan: "member" })
-                              return
-                            }
-
-                            addParams({ subscribe: "true", plan: "member" })
-                          }}
+                        <Div
                           style={{
-                            ...utilities.link.style,
                             display: "flex",
                             alignItems: "center",
-                            gap: 5,
-                            padding: "0.25rem 0.5rem",
+
                             marginLeft: "auto",
                             marginTop: isMobileDevice ? "1.5rem" : undefined,
                           }}
                         >
-                          <Img slug="hippo" />
-                          {isMobileDevice
-                            ? t("Or choose 10GB/month of free storage")
-                            : t("Choose 10GB/month of free storage")}
-                          {user && (
-                            <CircleCheck color={COLORS.green} size={15} />
-                          )}
-                        </Button>
+                          <Img slug="hippo" size={20} />
+
+                          <Button
+                            className="link"
+                            onClick={() => {
+                              if (user) {
+                                addParams({ subscribe: "true", plan: "member" })
+                                return
+                              }
+
+                              addParams({ subscribe: "true", plan: "member" })
+                            }}
+                            style={{
+                              ...utilities.link.style,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 5,
+                              padding: "0.25rem 0.5rem",
+                            }}
+                          >
+                            {isMobileDevice
+                              ? t("Or choose 10GB/month of free storage")
+                              : t("Choose 10GB/month of free storage")}
+                            {user && (
+                              <CircleCheck color={COLORS.green} size={15} />
+                            )}
+                          </Button>
+                        </Div>
                       )}
                     </Div>
                   )}
                 </Div>
               )}
 
-              <P
+              <Div
                 style={{ fontSize: ".85rem", marginTop: 25, marginBottom: 25 }}
               >
                 {showS3 ? (
@@ -1282,13 +1383,14 @@ export default function Watermelon() {
                       gap: 5,
                     }}
                     openInNewTab
+                    event={ANALYTICS_EVENTS.GH_REPO_CLICK}
                     href="https://github.com/chrryAI/vex/blob/main/packages/db/encryption.ts"
                   >
                     🔑 {t("AES-256 GCM (Galois/Counter Mode)")}{" "}
                     <ArrowRight size={14} color="var(--accent-5)" />
                   </A>
                 )}
-              </P>
+              </Div>
             </Div>
             <Div
               style={{
@@ -1310,6 +1412,8 @@ export default function Watermelon() {
                   fontSize: ".85rem",
                 }}
               >
+                🍀
+                <Hippo dataTestId="hippo-wm" />
                 <A href="/about">
                   {app?.store?.app?.icon || "🍒"} /{t("about")}
                 </A>
@@ -1332,6 +1436,7 @@ export default function Watermelon() {
                 </A>
               </Div>
             </Div>
+
             <Div
               style={{
                 marginTop: "auto",
@@ -1344,6 +1449,40 @@ export default function Watermelon() {
                 fontSize: ".9rem",
               }}
             >
+              <Div
+                style={{
+                  alignSelf: "flex-start",
+                  display: "flex",
+                  gap: 5,
+                  alignItems: "center",
+                }}
+              >
+                {app && (
+                  <AppLink
+                    isTribe={false}
+                    app={app}
+                    icon={
+                      <Img app={app} alt={app.name} width={22} height={22} />
+                    }
+                    loading={<Loading size={13} />}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      padding: "0.25rem 0.5rem",
+                    }}
+                  >
+                    <Span>🌀</Span>
+                  </AppLink>
+                )}{" "}
+                <Ticker
+                  style={{
+                    color: "var(--shade-6)",
+                  }}
+                  maxWidth={viewPortWidth - 150}
+                  paused={paused}
+                />
+              </Div>
               {!user && (
                 <>
                   <A
@@ -1360,7 +1499,7 @@ export default function Watermelon() {
                     <Img alt="Coder" size={22} slug="coder" /> {t("Login")} (
                     {t("Optional")})*
                   </A>
-                  <P
+                  <Div
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -1371,30 +1510,12 @@ export default function Watermelon() {
                   >
                     <Img alt="Sushi" size={18} slug="sushi" />
                     {t("Sushi will auto-migrate you when you choose to login")}
-                  </P>
-                  <P
-                    style={{
-                      fontSize: "0.9rem",
-                      color: "var(--shade-7)",
-                    }}
-                  >
-                    {/* <Trans
-                      i18nKey="watermelon_guest_info"
-                      defaults="You can use your own API key as a guest. Your data will <0>auto-migrate</0> when you <1>login</1>. Login is optional, but you can always sync your account."
-                      components={[
-                        <Span key="migrate" />,
-                        <A
-                          key="login"
-                          onClick={() => setSignInPart("login")}
-                        />,
-                      ]}
-                    /> */}
-                  </P>
+                  </Div>
                 </>
               )}
               {!isTauri && viewPortHeight >= 800 && (
                 <Div>
-                  <P
+                  <Div
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -1442,9 +1563,9 @@ export default function Watermelon() {
                       />
                       {/* {t("Install")} */}
                     </Button>
-                  </P>
+                  </Div>
 
-                  <P style={{ fontSize: "0.85rem", color: "var(--shade-7)" }}>
+                  <Div style={{ fontSize: "0.85rem", color: "var(--shade-7)" }}>
                     💻{" "}
                     <Trans
                       i18nKey="watermelon_macos_info"
@@ -1458,7 +1579,7 @@ export default function Watermelon() {
                         />,
                       ]}
                     />
-                  </P>
+                  </Div>
                 </Div>
               )}
             </Div>
@@ -1475,7 +1596,7 @@ export default function Watermelon() {
               <ThemeSwitcher style={{ marginTop: 5 }} />
               <ColorScheme size={22} />
             </Div>
-            <P
+            <Div
               style={{
                 fontSize: "0.8rem",
                 color: "var(--shade-7)",
@@ -1486,7 +1607,7 @@ export default function Watermelon() {
             >
               <Img icon={"whale"} size={24} />{" "}
               <Span>v{app?.version || VERSION}</Span>
-            </P>
+            </Div>
           </>
         )}
       </Div>

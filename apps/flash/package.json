@@ -5,13 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "rm -rf .vite node_modules/.vite dist && NODE_ENV=development node server --force",
-    "build": "pnpm run build:client && pnpm run build:server",
-    "build:client": "NODE_ENV=production pnpm vite build --outDir dist/client",
-    "build:server": "NODE_ENV=production pnpm vite build --ssr src/entry-server.tsx --outDir dist/server",
+    "build": "vp run build:client && vp run build:server",
+    "build:client": "NODE_ENV=production vp build --outDir dist/client",
+    "build:server": "NODE_ENV=production vp build --ssr src/entry-server.tsx --outDir dist/server",
     "start": "cross-env NODE_ENV=production node server",
     "preview": "cross-env NODE_ENV=production node server",
     "check-types": "tsc --noEmit",
-    "test": "vitest run --coverage.enabled --coverage.provider=v8 --coverage.reporter=text --coverage.reporter=lcov"
+    "test": "vp test run --coverage.enabled --coverage.provider=v8 --coverage.reporter=text --coverage.reporter=lcov"
   },
   "dependencies": {
     "@arcjet/node": "1.3.0",
@@ -33,11 +33,12 @@
     "remark-gfm": "^4.0.1",
     "sirv": "^3.0.2",
     "uuid": "^13.0.0",
-    "vite": "^8.0.1",
+    "vite": "catalog:",
     "vite-plugin-compression2": "^2.5.3",
     "vite-plugin-static-copy": "^4.0.0"
   },
   "devDependencies": {
+    "terser": "^5.39.0",
     "@types/express": "^5.0.6",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
@@ -46,6 +47,7 @@
     "cross-env": "^10.1.0",
     "sass": "^1.98.0",
     "typescript": "~5.9.3",
-    "vitest": "^4.1.0"
+    "vitest": "catalog:",
+    "vite-plus": "catalog:"
   }
 }

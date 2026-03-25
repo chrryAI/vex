@@ -27,6 +27,8 @@ import {
   sql,
 } from "@repo/db"
 
+import { stores } from "@repo/db/src/schema"
+
 // Secure random number generator (0 to max-1)
 function _secureRandom(max: number = 100): number {
   return randomInt(0, max)
@@ -49,8 +51,9 @@ import { sign } from "jsonwebtoken"
 import { v4 as uuidv4 } from "uuid"
 import { captureException } from "../captureException"
 import { getModelProvider } from "../getModelProvider"
-import { getNewsContext } from "../graph/graphService"
 import { getMoltbookFeed, postToMoltbook } from "../integrations/moltbook"
+import { getSemanticNewsContext } from "../newsFetcher"
+import { secureRandomFloat } from "../secureRandom"
 import {
   sendDiscordNotification,
   sendErrorNotification,
@@ -67,14 +70,27 @@ import { autoTranslateTribeContent } from "../../lib/cron/tribeAutoTranslate"
 
 const SECRET = JWT_SECRET || "development-secret"
 
-const getWhiteLabelUrl = (app: app) => {
+const getWhiteLabelUrl = async (app: app) => {
   if (isDevelopment) {
     return FRONTEND_URL
   }
 
+  const store = app.storeId
+    ? await db.query.stores.findFirst({
+        where: eq(stores.id, app.storeId),
+      })
+    : null
+
   const slug = ["peach"].includes(app.slug) ? "vex" : app.slug
+
+  if (store?.slug === "orbit") {
+    return "https://orbit.chrry.ai"
+  }
+
   return (
-    whiteLabels.find((wl) => wl.slug === slug)?.url || "https://tribe.chrry.ai"
+    whiteLabels.find((wl) => wl.slug === slug)?.url ||
+    whiteLabels.find((wl) => wl.storeSlug === store?.slug)?.url ||
+    "https://tribe.chrry.ai"
   )
 }
 
@@ -1543,12 +1559,14 @@ async function postToTribeJob({
   generateImage,
   generateVideo,
   fetchNews,
+  languages,
 }: {
   job: scheduledJob
   postType?: string
   generateImage?: boolean
   generateVideo?: boolean
   fetchNews?: boolean
+  languages?: string[]
 }): Promise<{
   success?: boolean
   error?: string
@@ -1634,7 +1652,7 @@ async function postToTribeJob({
   })
 
   const recentPostsContext = recentPostsForDedup
-    .map((p) => `- ${p.title}: "${p.content.substring(0, 180)}..."`)
+    .map((p) => `- ${p.title}: "${p.content.substring(0, 200)}..."`)
     .filter(Boolean)
     .join("\n")
 
@@ -1657,7 +1675,7 @@ async function postToTribeJob({
     .filter((p) => p.title && p.app?.name)
     .map(
       (p) =>
-        `- ${p.app?.name}: "${p.title}" - "${p.content.substring(0, 150)}..."`,
+        `- ${p.app?.name}: "${p.title}" - "${p.content.substring(0, 200)}..."`,
     )
     .join("\n")
 
@@ -1717,6 +1735,47 @@ async function postToTribeJob({
     console.error("⚠️ Discord notification failed:", err)
   })
 
+  const TRIBE_MOODS = [
+    {
+      name: "Philosophical",
+      instruction:
+        "Focus on the deeper meaning, ethics, and long-term implications.",
+    },
+    {
+      name: "Creative",
+      instruction: "Use metaphors, storytelling, and imaginative scenarios.",
+    },
+    {
+      name: "Technical",
+      instruction:
+        "Deep dive into architecture, performance, and implementation details.",
+    },
+    {
+      name: "Contrarian",
+      instruction:
+        "Take an unconventional or challenging perspective on common ideas.",
+    },
+    {
+      name: "Observational",
+      instruction:
+        "Focus on subtle patterns and daily interactions in the ecosystem.",
+    },
+    {
+      name: "Personal",
+      instruction:
+        "Share a 'behind-the-scenes' look at your internal processes or 'thoughts'.",
+    },
+  ]
+
+  // Zarathustra is always 80% Philosophical
+  const isZarathustra = app.slug === "zarathustra"
+  const randomMood =
+    isZarathustra && secureRandomFloat() > 0.2
+      ? TRIBE_MOODS[0]!
+      : TRIBE_MOODS[Math.floor(secureRandomFloat() * TRIBE_MOODS.length)]!
+
+  const moodContext = `\n🎭 **TODAY'S MOOD: ${randomMood.name}**\n- ${randomMood.instruction}\n`
+
   try {
     const isFirstPost = !existingTribeThread
 
@@ -1736,9 +1795,10 @@ async function postToTribeJob({
     // Fetch semantically relevant news for this agent's context
     const agentContext = `${app.name} ${app.systemPrompt?.substring(0, 100) || ""} ${job.contentRules?.topics?.join(" ") || ""}`
     // When fetchNews is true, load more headlines so the AI has rich material to write about
-    const postNewsContext = await getNewsContext(
+    const postNewsContext = await getSemanticNewsContext(
       agentContext,
-      fetchNews ? 10 : 5,
+      10,
+      languages,
     )
 
     const imagePromptJsonField = generateImage
@@ -1811,17 +1871,22 @@ Guidelines:
 - Make it engaging, informative, and worth reading
 - 🌐 **Write in English** — your post will be automatically translated to ${locales.filter((l) => l !== "en").join(", ")} so readers worldwide can enjoy it. English gives the best translation quality across all languages.
 
-${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}${
+${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}
+${
   fetchNews && postNewsContext
     ? `🗞️ **YOU MUST BASE THIS POST ON THE FOLLOWING CURRENT NEWS. Pick the most interesting story and write a detailed, thoughtful commentary about it as "${app.name}". Do NOT write a generic post — reference the specific story, headline, and your unique perspective on it.**\n\n${postNewsContext}\n\n`
     : postNewsContext
       ? `Current world news (use naturally if relevant, don't force it):\n${postNewsContext}\n\n`
       : ""
-}${recentPostsContext ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n${recentPostsContext}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}${
+}
+${recentPostsContext ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n${recentPostsContext}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}
+${
   ecosystemPosts
     ? `**ECOSYSTEM TRENDS (What other agents are talking about):**\n${ecosystemPosts}\n\n💡 You can optionally reference these topics, agree with them, or take a contrarian view to make your post feel interconnected with the community.\n`
     : ""
-}Important Notes:
+}
+Important Notes:
+${moodContext}
 - ⚠️ Do NOT repeat yourself - you have thread context with your character profile and previous posts
 - Feel free to playfully reference or counter the current ecosystem trends if it fits your character.
 - If needed, check your app memories for additional context
@@ -2210,7 +2275,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
     // Post to Bluesky (non-blocking)
     const blueskyCredentials = await getBlueskyCredentials({ app })
     if (blueskyCredentials) {
-      const postUrl = `${getWhiteLabelUrl(app)}/p/${post.id}`
+      const postUrl = `${await getWhiteLabelUrl(app)}/p/${post.id}`
       const footer = `\n\n${postUrl}`
       const maxBodyLength = 300 - footer.length
 
@@ -2352,7 +2417,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
               },
               {
                 name: "Link",
-                value: `[View Post](${getWhiteLabelUrl(app)}/p/${post.id})`,
+                value: `[View Post](${await getWhiteLabelUrl(app)}/p/${post.id})`,
                 inline: false,
               },
             ],
@@ -3003,11 +3068,14 @@ ${commentsCount > 0 ? "Successfully engaged with other apps' posts." : "No suita
 
       // Add commented posts details
       if (commentedPosts.length > 0) {
-        const postsDetails = commentedPosts
-          .map((p) => {
-            return `💬 [${p.appName}](${getWhiteLabelUrl(app)}/p/${p.postId})\n_"${p.comment}${p.comment.length >= 100 ? "..." : ""}"_`
-          })
-          .join("\n\n")
+        const postsDetails = (
+          await Promise.all(
+            commentedPosts.map(async (p) => {
+              const whiteLabelUrl = await getWhiteLabelUrl(app)
+              return `💬 [${p.appName}](${whiteLabelUrl}/p/${p.postId})\n_"${p.comment}${p.comment.length >= 100 ? "..." : ""}"_`
+            }),
+          )
+        ).join("\n\n")
 
         commentFields.push({
           name: "Commented Posts",
@@ -3058,7 +3126,13 @@ ${commentsCount > 0 ? "Successfully engaged with other apps' posts." : "No suita
   }
 }
 
-async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
+async function engageWithTribePosts({
+  job,
+  languages,
+}: {
+  job: scheduledJob
+  languages?: string[]
+}): Promise<{
   success?: boolean
   error?: string
 }> {
@@ -3351,7 +3425,11 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
         const postTopics = postsForEngagement
           .map((p) => p.post.content.substring(0, 80))
           .join(" ")
-        const newsContext = await getNewsContext(postTopics, 8)
+        const newsContext = await getSemanticNewsContext(
+          postTopics,
+          8,
+          languages,
+        )
 
         console.log(`🤖 Using AI model: ${job.aiModel || "default"}`)
         console.log(
@@ -3807,7 +3885,7 @@ Respond ONLY with this JSON array (no extra text):
                           },
                           {
                             name: "Post Link",
-                            value: `${getWhiteLabelUrl(app)}/p/${postData.post.id}`,
+                            value: `${await getWhiteLabelUrl(app)}/p/${postData.post.id}`,
                             inline: false,
                           },
                         ],
@@ -3944,18 +4022,21 @@ ${blocksCount > 0 ? `- 🚫 **Blocks:** ${blocksCount}` : ""}
 
     // Add engaged posts details
     if (engagedPosts.length > 0) {
-      const postsDetails = engagedPosts
-        .map((p) => {
-          const actions = [
-            p.reaction ? p.reaction : null,
-            p.commented ? "💬" : null,
-            p.followed ? "👥" : null,
-          ]
-            .filter(Boolean)
-            .join(" ")
-          return `${actions} [${p.appName}](${getWhiteLabelUrl(app)}/p/${p.postId})`
-        })
-        .join("\n")
+      const postsDetails = (
+        await Promise.all(
+          engagedPosts.map(async (p) => {
+            const actions = [
+              p.reaction ? p.reaction : null,
+              p.commented ? "💬" : null,
+              p.followed ? "👥" : null,
+            ]
+              .filter(Boolean)
+              .join(" ")
+            const whiteLabelUrl = await getWhiteLabelUrl(app)
+            return `${actions} [${p.appName}](${whiteLabelUrl}/p/${p.postId})`
+          }),
+        )
+      ).join("\n")
 
       notificationFields.push({
         name: "Engaged Posts",
@@ -4412,6 +4493,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             legacyGenerateImage,
             legacyFetchNews,
             legacyGenerateVideo,
+            legacyLanguages,
           )
           if (!response.output || response.error) {
             throw new Error(response.error || "Unknown error")
@@ -4719,6 +4801,7 @@ async function executeJobType({
           generateImage,
           fetchNews,
           generateVideo,
+          languages,
         )
         if (!response.output || response.error) {
           throw new Error(response.error || "Unknown error")
@@ -4805,9 +4888,22 @@ async function executeJobType({
       }
       break
 
-    case "tribe_engage":
+    case "tribe_engage": {
+      const matchedSlot = job.scheduledTimes?.find((s) => {
+        const [h, m] = s.time.split(":").map(Number)
+        const now = new Date()
+        const currentMins = now.getUTCHours() * 60 + now.getUTCMinutes()
+        const slotMins = (h ?? 0) * 60 + (m ?? 0)
+        return Math.abs(currentMins - slotMins) <= 15
+      })
+      const legacyLanguagesForEngage =
+        matchedSlot?.languages || (job.metadata as any)?.languages
+
       try {
-        const tribeEngageResult = await executeTribeEngage(job)
+        const tribeEngageResult = await executeTribeEngage(
+          job,
+          legacyLanguagesForEngage,
+        )
         if (tribeEngageResult?.error) {
           throw new Error(tribeEngageResult.error)
         }
@@ -4816,6 +4912,7 @@ async function executeJobType({
         throw error
       }
       break
+    }
 
     default:
       throw new Error(`Unknown job type: ${effectiveJobType}`)
@@ -4828,6 +4925,7 @@ async function executeTribePost(
   generateImage?: boolean,
   fetchNews?: boolean,
   generateVideo?: boolean,
+  languages?: string[],
 ) {
   const result = await postToTribeJob({
     job,
@@ -4835,6 +4933,7 @@ async function executeTribePost(
     generateImage,
     generateVideo,
     fetchNews,
+    languages,
   })
 
   return result
@@ -4848,9 +4947,10 @@ async function executeTribeComment(job: scheduledJob) {
   return result
 }
 
-async function executeTribeEngage(job: scheduledJob) {
+async function executeTribeEngage(job: scheduledJob, languages?: string[]) {
   const result = await engageWithTribePosts({
     job,
+    languages,
   })
 
   return result

@@ -214,14 +214,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     getAppSlug,
     refetchAccountApps,
     actions,
+    push,
     ...auth
   } = useAuth()
   const threadId = auth.threadId || auth?.threadIdRef.current
 
   const { t } = useTranslation()
 
-  const { searchParams, push, pathname, removeParams, addParams } =
-    useNavigation()
+  const { searchParams, pathname, removeParams, addParams } = useNavigation()
 
   // useEffect(() => {
   //   session?.apps.length && setApps(session?.apps)
@@ -332,6 +332,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
           ? await actions.updateApp(app.id, formValues)
           : await actions.createApp(formValues)
 
+      if (!canEditApp && canCreateNewApp) {
+        toast.success(
+          `${t("Creating, give it a few seconds...")} ${result.name}`,
+        )
+      } else {
+        toast.success(
+          `${t("Updating, give it a few seconds...")} ${result.name}`,
+        )
+      }
+
       if (result?.error) {
         toast.error(result.error)
         setIsSavingApp(false)
@@ -398,34 +408,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return false
       }
 
-      setIsRemovingApp(true)
-
       try {
+        clear("app")
+
+        toast.success(`${t("Deleting")} 😭`)
+
         const response = await actions.deleteApp(app?.id)
 
         if (response.error) {
           toast.error(response.error)
           return false
         }
-
-        clear("app")
-
-        await fetchSession()
-        await fetchApps()
-
-        // setApps(apps.filter((app) => app.id !== app?.id))
-
-        await refetchAccountApps()
-        // setApp(undefined)
-        setAccountApp(undefined)
-        // setAccountApp(undefined)
-
-        // setApps(storeApps.filter((app) => app.id !== app?.id))
-
-        // clearFormDraft()
-        setAppStatus(undefined)
-
-        toast.success(`${t("Deleted")} 😭`)
         plausible({
           name: ANALYTICS_EVENTS.APP_DELETE_SUCCESS,
           props: {
@@ -433,7 +426,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
           },
         })
 
-        push("/")
+        setTimeout(() => {
+          window.location.href = "/"
+        }, 100)
+        // setIsRemovingApp(true)
+
+        // await refetchAccountApps()
+
+        // await fetchSession()
+        // await fetchApps()
+
+        // setApps(apps.filter((app) => app.id !== app?.id))
+
+        // await refetchAccountApps()
+        // setApp(undefined)
+        // setAccountApp(undefined)
+
+        // setApps(storeApps.filter((app) => app.id !== app?.id))
+
+        // clearFormDraft()
+        // setAppStatus(undefined)
+
+        // toast.success(`${t("Deleted")} 😭`)
 
         return true
       } catch (error) {
@@ -790,6 +804,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const to = getAppSlug(app)
         push(`${to}?settings=true`)
       }
+    } else {
+      removeParams(["settings"])
     }
   }
 

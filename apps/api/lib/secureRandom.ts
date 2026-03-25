@@ -51,3 +51,15 @@ export function generateSecureCode(length: number = 8): string {
 
   return result
 }
+
+/**
+ * Generate a cryptographically secure random float between 0 and 1
+ * Uses node:crypto randomBytes()
+ *
+ * @returns Secure random float in range [0, 1)
+ */
+export function secureRandomFloat(): number {
+  const buf = randomBytes(4)
+  // Divide by 2^32 to get a float in [0, 1)
+  return buf.readUInt32BE(0) / (0xffffffff + 1)
+}

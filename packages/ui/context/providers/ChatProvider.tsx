@@ -54,6 +54,8 @@ const ChatContext = createContext<
       setShouldGetCredits: (shouldGetCredits: boolean) => void
       fetchActiveCollaborationThreadsCount: () => Promise<void>
       fetchPendingCollaborationThreadsCount: () => Promise<void>
+      artifacts: File[]
+      setArtifacts: (artifacts: File[]) => void
       setIsNewAppChat: ({
         item,
         tribe,
@@ -61,6 +63,8 @@ const ChatContext = createContext<
         item: appWithStore | undefined
         tribe?: boolean
       }) => void
+      setInstruction: (instruction: string | undefined) => void
+      instruction: string | undefined
       shouldFocus: boolean
       needsReplicate: boolean
       setNeedsReplicate: (value: boolean) => void
@@ -611,6 +615,10 @@ export function ChatProvider({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldGetCredits])
+
+  const [instruction, setInstruction] = useState<string | undefined>(undefined)
+
+  const [artifacts, setArtifacts] = useState<File[]>([])
 
   const [shouldMutate, setShouldMutate] = useState(false)
 
@@ -1429,6 +1437,8 @@ export function ChatProvider({
         wasIncognito,
         setWasIncognito,
         burn,
+        instruction,
+        setInstruction,
         pendingCollaborationThreadsCount,
         activeCollaborationThreadsCount,
         setCollaborationStatus,
@@ -1443,6 +1453,8 @@ export function ChatProvider({
         setShouldGetCredits,
         showTribe,
         setShowTribe,
+        artifacts,
+        setArtifacts,
         setAsk,
         setAbout,
       }}

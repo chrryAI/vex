@@ -3,7 +3,7 @@ import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
 import { db, eq, getApp as getAppDb, getStore } from "@repo/db"
-import { stores } from "@repo/db/src/schema"
+import { stores, tribePosts } from "@repo/db/src/schema"
 import type { Context } from "hono"
 import { getActiveRentalsForStore } from "../../lib/adExchange/getActiveRentals"
 import { getGuest, getMember } from "./auth"
@@ -508,10 +508,18 @@ export async function getApp({
     }
   }
 
+  const postId = c.req.query("postId")
+
+  const post = postId
+    ? await db.query.tribePosts.findFirst({
+        where: eq(tribePosts.id, postId),
+      })
+    : null
+
   // 2. Extract request data
   const request = c.req.raw
   const requestParams = extractRequestParams(c, params)
-  const appId = extractAppId(c, params)
+  const appId = post?.appId || extractAppId(c, params)
 
   // 3. Get auth context
   const member = await getMember(c, { skipCache: true })
@@ -520,6 +528,7 @@ export async function getApp({
 
   // 4. Get site config
   const chrryUrlParam = c.req.query("chrryUrl")
+
   const chrryUrl = params.chrryUrl || chrryUrlParam || getChrryUrl(request)
   const siteConfig = getSiteConfig(chrryUrl)
 

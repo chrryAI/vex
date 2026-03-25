@@ -16,7 +16,6 @@ import { useStyles } from "./context/StylesContext"
 import { COLORS, type themeType } from "./context/ThemeContext"
 import { useTimerContext } from "./context/TimerContext"
 import { useFocusButtonStyles } from "./FocusButton.styles"
-import GitHubConnectButton from "./GitHubConnectButton"
 import { useHasHydrated } from "./hooks"
 import Img from "./Image"
 import {
@@ -411,11 +410,11 @@ export default function FocusButton({
           <Checkbox checked={enableSound} onChange={(e) => setEnableSound(e)}>
             {t("Sound")}
           </Checkbox>
-          <GitHubConnectButton
+          {/* <GitHubConnectButton
             variant="small"
             size={14}
             buttonText="Connect GitHub"
-          />
+          /> */}
         </Div>
         <Div style={styles.settingsFooter.style}>
           <A
@@ -927,7 +926,6 @@ export default function FocusButton({
                             }}
                             onClick={() => {
                               setShowFocus(false)
-                              setIsNewAppChat({ item: app, tribe: true })
                             }}
                             // href={getAppSlug(refApp)}
                           >

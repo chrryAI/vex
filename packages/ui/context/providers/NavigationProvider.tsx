@@ -19,7 +19,6 @@ import {
 import type { thread } from "../../types"
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
 import { whiteLabels } from "../../utils/siteConfig"
-import { useApp } from "./AppProvider"
 import { useAuth } from "./AuthProvider"
 import { useChat } from "./ChatProvider"
 
@@ -128,7 +127,7 @@ export function NavigationProvider({
     toString: () => "",
   }
 
-  const { app } = useApp()
+  const { app } = useAuth()
 
   const {
     threadId,

@@ -1,5 +1,5 @@
 import { graph } from "@repo/db"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import {
   findFunctionCallers,
   findImportUsage,

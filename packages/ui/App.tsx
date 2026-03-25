@@ -33,7 +33,6 @@ import {
   CircleMinus,
   CirclePause,
   CirclePlay,
-  Grip,
   Info,
   Pencil,
   RefreshCw,
@@ -54,6 +53,7 @@ import {
   useTheme,
   Video,
 } from "./platform"
+import Ticker from "./Ticker"
 import Tools from "./Tools"
 import type { appWithStore } from "./types"
 import { apiFetch, BrowserInstance } from "./utils"
@@ -184,6 +184,8 @@ export default function App({
     FRONTEND_URL,
     API_URL,
     rtl,
+    tickerPaused: paused,
+    setTickerPaused: setPaused,
     ...auth
   } = useAuth()
 
@@ -274,7 +276,7 @@ export default function App({
       })
   }
 
-  const appsInternal = React.useMemo(
+  const appsInternal = useMemo(
     () => getApps(),
     [
       getApps, // 🎯 Linter'ın istediği o kritik eksik!
@@ -316,9 +318,9 @@ export default function App({
   // No need for separate state + useEffect, useMemo already handles updates
   const appsState = appsInternal
 
-  const [, setFile] = React.useState<File | undefined>()
+  const [, setFile] = useState<File | undefined>()
 
-  const [image, setImageInternal] = React.useState<string | undefined>(
+  const [image, setImageInternal] = useState<string | undefined>(
     app?.image || undefined,
   )
   const setImage = (image?: string) => {
@@ -328,7 +330,7 @@ export default function App({
 
   const hasHydrated = useHasHydrated()
 
-  const [imageDimensionWarning, setImageDimensionWarning] = React.useState<
+  const [imageDimensionWarning, setImageDimensionWarning] = useState<
     string | null
   >(null)
 
@@ -458,7 +460,7 @@ export default function App({
 
   const hasErrors = Object.keys(appForm?.formState.errors || {}).length > 0
 
-  const [inputKey, setInputKey] = React.useState(0) // Force re-render
+  const [inputKey, setInputKey] = useState(0) // Force re-render
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const isSettingVisible = hasHydrated && isAppOwner && !isManagingApp
@@ -594,6 +596,22 @@ export default function App({
             )}{" "}
             {minimize ? t("Superpowers") : t("Minimize")}
           </Button>
+          {minimize && (
+            <Button
+              className="link"
+              onClick={() => {
+                setPaused(!paused)
+              }}
+              title={paused ? t("Play") : t("Pause")}
+              style={{
+                ...utilities.link.style,
+                position: "relative",
+                right: 5,
+              }}
+            >
+              {paused ? <CirclePlay size={18} /> : <CirclePause size={18} />}
+            </Button>
+          )}
         </Div>
       )}
       <H1 style={styles.title.style}>
@@ -947,6 +965,8 @@ export default function App({
                   alignItems: "center",
                 }}
               >
+                <Hippo dataTestId="minimize-hippo" />
+
                 {user && !user?.subscription ? (
                   <Button
                     data-testid="subscribe-from-minimize-button"
@@ -1059,6 +1079,13 @@ export default function App({
                   </A>
                 )}
               </Div>
+              <Div
+                style={{
+                  marginTop: "1rem",
+                }}
+              >
+                <Ticker />
+              </Div>
             </>
           )}
 
@@ -1084,6 +1111,10 @@ export default function App({
                   }}
                   key={suggestSaveApp ? "highlights" : "settings"}
                   onClick={() => {
+                    if (isManagingApp) {
+                      setAppStatus(undefined)
+                      return
+                    }
                     if (accountApp?.id === app?.id) {
                       setAppStatus({
                         step: canEditApp ? "update" : "add",
@@ -1382,19 +1413,16 @@ export default function App({
                 >
                   <Settings2 size={24} color="var(--accent-1)" />
                 </Button>
-              ) : app?.id === chrry?.id && focus && !canBurn ? (
-                <FocusButton />
               ) : (
-                hasHydrated &&
-                !canEditApp &&
-                !isManagingApp &&
-                (canBurn ? (
-                  <BurnButton style={{ top: -5, right: -5 }} />
-                ) : (
-                  <Span style={{ ...styles.grip.style }}>
-                    <Grip size={24} color="var(--accent-1)" />
-                  </Span>
-                ))
+                <Div
+                  style={{
+                    position: "relative",
+                    left: 5,
+                    bottom: 5,
+                  }}
+                >
+                  <Hippo size={24} dataTestId="highlights" />
+                </Div>
               )}
             </Div>
 
@@ -1747,7 +1775,6 @@ export default function App({
           }}
         >
           <Hippo
-            ghost
             as="icon"
             showInstructions
             dataTestId="instruction"

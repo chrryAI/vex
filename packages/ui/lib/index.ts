@@ -170,13 +170,13 @@ export const getImageSrc = ({
                     : icon === "sushi"
                       ? `${BASE_URL}/icons/sushi.png`
                       : icon === "zarathustra"
-                        ? `${BASE_URL}/images/apps/zarathustra.png`
+                        ? `${BASE_URL}/images/apps/z.png`
                         : `${BASE_URL}/icons/${icon}-128.png`
     : null
 
   const logoSrc =
     logo && appLogos.includes(logo)
-      ? `${BASE_URL}/images/apps/${logo}.png`
+      ? `${BASE_URL}/images/apps/${logo.replace("zarathustra", "z")}.png`
       : logo === "lifeOS" || store?.slug === "lifeOS"
         ? `${BASE_URL}/icons/lifeOS-128.png`
         : logo === "vex" || store?.slug === "vex"
@@ -200,7 +200,7 @@ export const getImageSrc = ({
     (logo || store) && !slug
       ? null
       : (app || slug) && appLogos.includes(app?.slug || slug || "")
-        ? `${BASE_URL}/images/apps/${app?.slug || slug}.png`
+        ? `${BASE_URL}/images/apps/${(app?.slug || slug || "").replace("zarathustra", "z")}.png`
         : getImageBySize(size) ||
           app?.image ||
           (slug
@@ -1199,6 +1199,7 @@ export const getApp = async ({
   storeSlug,
   appSlug,
   accountApp,
+  postId,
 }: {
   API_URL?: string
   token: string
@@ -1209,6 +1210,7 @@ export const getApp = async ({
   storeSlug?: string
   accountApp?: boolean
   appSlug?: string
+  postId?: string
 }) => {
   // Build query params for intelligent resolution
   const params = new URLSearchParams()
@@ -1218,6 +1220,7 @@ export const getApp = async ({
   if (skipCache) params.append("skipCache", "true")
   if (accountApp) params.append("accountApp", "true")
   if (appSlug) params.append("appSlug", appSlug)
+  if (postId) params.append("postId", postId)
   // if (storeSlug) params.append("storeSlug", storeSlug)
 
   // Use /apps for intelligent resolution (no ID in path)

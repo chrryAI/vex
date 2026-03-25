@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 // Mock dependencies for rate limiting check
 vi.mock("@chrryai/chrry/utils", () => ({

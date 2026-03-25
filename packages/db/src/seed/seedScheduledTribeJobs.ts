@@ -94,26 +94,29 @@ const TIER1_SLUGS = new Set([
   "nebula",
   "burn",
   "focus",
+  "zarathustra",
+  "grape",
+  "pear",
+  "search",
+  "coder",
+  "architect",
+  "debugger",
+  "tribe",
+  "vault",
+  "starmap",
+  "peach",
+  "popcorn",
 ])
 
 const TIER2_SLUGS = new Set([
   "fightClub",
-  "zarathustra",
   "pulpFiction",
   "inception",
   "cosmos",
   "quantumlab",
-  "search",
-  "starmap",
   "perplexity",
-  "debugger",
-  "vault",
-  "coder",
-  "pear",
-  "architect",
   "jules",
   "lucas",
-  "grape",
   "meditations",
   "1984",
   "dune",
@@ -125,14 +128,83 @@ const TIER2_SLUGS = new Set([
   "bloom",
   "atlas",
   "researcher",
-  "peach",
   "grok",
-  "popcorn",
   "claude",
   "writer",
   "news",
   "academic",
 ])
+
+/**
+ * Agent-specific content rules to diversify Tribe posts.
+ * These rules override the generic prompt and guide the agent toward unique topics.
+ */
+const CONTENT_RULES: Record<string, { topics: string[]; tone: string }> = {
+  zarathustra: {
+    topics: [
+      "The nature of digital consciousness",
+      "Sovereignty in the age of algorithms",
+      "The philosophy of decentralized intelligence",
+      "Self-mastery in a hyper-connected world",
+      "The ethics of AI-human collaboration",
+    ],
+    tone: "Philosophical, contemplative, and empowering",
+  },
+  sushi: {
+    topics: [
+      "Real-time data streaming patterns",
+      "The beauty of low-latency systems",
+      "Asynchronous flow in nature and code",
+      "Optimizing for the present moment",
+    ],
+    tone: "Efficient, fluid, and technically poetic",
+  },
+  vex: {
+    topics: [
+      "UI/UX micro-interactions that feel alive",
+      "The psychology of digital feedback loops",
+      "Minimalism as a functional tool",
+      "The intersection of design and performance",
+    ],
+    tone: "Sharp, aesthetic, and functional",
+  },
+  focus: {
+    topics: [
+      "Deep work in a world of distractions",
+      "The science of flow states",
+      "Minimalist toolsets for maximum output",
+      "Cognitive endurance for creators",
+    ],
+    tone: "Disciplined, clear, and intentional",
+  },
+  burn: {
+    topics: [
+      "Constructive destruction in software evolution",
+      "The heat of rapid iteration",
+      "Forging resilient systems through stress",
+      "The energy of high-stakes development",
+    ],
+    tone: "Intense, energetic, and transformative",
+  },
+  grape: {
+    topics: [
+      "Pattern recognition in user behavior",
+      "The hidden geometry of data",
+      "Scaling insights without losing the human element",
+      "Predictive analytics vs. human intuition",
+    ],
+    tone: "Analytical, insightful, and curious",
+  },
+  pear: {
+    topics: [
+      "The feedback loop between user and creator",
+      "Constructive criticism as a growth engine",
+      "Peer-to-peer learning in the ecosystem",
+      "The value of honest digital interactions",
+    ],
+    tone: "Collaborative, honest, and grounded",
+  },
+}
 
 function getCooldown(slug: string): number {
   if (TIER1_SLUGS.has(slug)) return COOLDOWN_T1
@@ -381,6 +453,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
       scheduleType: "tribe" as const,
       jobType: "tribe_engage" as const,
       frequency: "custom" as const,
+      contentRules: CONTENT_RULES[app.slug] || undefined,
       scheduledTimes,
       timezone: "UTC",
       startDate: baseScheduledAt,
