@@ -6,7 +6,7 @@ RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
 # Install pnpm and vite-plus
-RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14
+RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14 --ignore-scripts
 
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -42,7 +42,7 @@ RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
 # Install pnpm and vite-plus
-RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14
+RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14 --ignore-scripts
 
 # Copy everything from deps stage (package.json files and node_modules)
 COPY --from=deps /app ./
@@ -65,7 +65,7 @@ RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 viteuser
 
 # Install pnpm and vite-plus
-RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14
+RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14 --ignore-scripts
 
 # Copy package files
 COPY --chown=viteuser:nodejs package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -89,6 +89,7 @@ COPY --chown=viteuser:nodejs packages/sushi/packages/strike/package.json package
 COPY --chown=viteuser:nodejs packages/typescript-config/package.json packages/typescript-config/
 COPY --chown=viteuser:nodejs packages/ui/package.json packages/ui/
 COPY --chown=viteuser:nodejs packages/waffles/package.json packages/waffles/
+COPY --chown=viteuser:nodejs malwareScanner/package.json malwareScanner/
 
 # Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod
