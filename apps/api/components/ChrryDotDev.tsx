@@ -131,99 +131,14 @@ const css = `
 `
 
 export default function ChrryDotDev() {
-  const config = chrryDev
-
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <div className="container">
-        <div className="header">
-          <div className="header-inner">
-            <div className="vex">
-              <span>Built by </span>
-              <a href={"https://vex.chrry.ai"}>
-                <img
-                  alt="Vex"
-                  src="/icons/vex-icon.png"
-                  width={24}
-                  height={24}
-                />
-                Vex
-              </a>
-              <code className="install-cmd">npm install @chrryai/chrry</code>
-            </div>
-          </div>
-
-          <div className="logo">
-            <img
-              alt="Chrry"
-              src="/logo/cherry-500.png"
-              width={250}
-              height={250}
-            />
-            <h1>
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href={"https://chrry.ai"}
-              >
-                Chrry
-              </a>
-            </h1>
-          </div>
-
-          <p className="description">{config.description}</p>
-
-          <div className="links">
-            <a
-              href={"https://chrry.ai"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="link"
-            >
-              🍒 Chrry.ai
-            </a>
-            <a href="https://chrry.ai/about">🧐 /about</a>
-            <a href="/privacy">🤫 /privacy</a>
-            {config.links.github && (
-              <a
-                href={config.links.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link"
-              >
-                GitHub
-              </a>
-            )}
-            {config.links.npm && (
-              <a
-                href={config.links.npm}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link"
-              >
-                npm
-              </a>
-            )}
-          </div>
-        </div>
-
-        <div className="features">
-          {config.features.map((feature) => (
-            <a
-              key={feature.icon}
-              href={feature.link}
-              target={feature.isOpenSource ? "_blank" : undefined}
-              rel={feature.isOpenSource ? "noopener noreferrer" : undefined}
-              className="feature"
-            >
-              <div className="featureTitle">
-                <span>{feature.icon}</span> <span>{feature.title}</span>
-              </div>
-              <p className="featureDescription">{feature.description}</p>
-            </a>
-          ))}
-        </div>
+        <h1>Chrry</h1>
+        <p>AI-Powered Development Platform</p>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
       </div>
     </>
   )
