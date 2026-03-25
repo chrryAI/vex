@@ -17,3 +17,8 @@
 
 **Learning:** `markdown-to-jsx`'s `options` prop, if passed as an inline object, causes re-renders even if the parent component is memoized. Especially when `overrides` contains inline component definitions, it creates new function references on every render.
 **Action:** Always wrap `options` object for `<Markdown>` in `useMemo` when using `markdown-to-jsx` or similar libraries, and ensure component overrides are stable (either defined outside or memoized).
+
+## 2026-03-25 - React Native StyleSheet.create & Re-renders
+
+**Learning:** `StyleSheet.create` in React Native creates a new style object reference on every render when placed inside a component's render function. When passed to components like `<Markdown>` as a `style` prop, this new reference breaks memoization and triggers unnecessary re-renders of the entire child tree.
+**Action:** Always wrap `StyleSheet.create` calls inside `useMemo` (e.g., `useMemo(() => StyleSheet.create({...}), [deps])`) if they must be defined inside the component due to relying on dynamic props like `colors`. This prevents excessive re-renders by preserving style references.
