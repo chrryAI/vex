@@ -486,7 +486,7 @@ const Thread = ({
 
         <HipChat
           dataTestId={
-            threadId && !isEmpty ? "thread-instruction" : "chat-instruction"
+            threadId && !isEmpty ? "thread-instruction" : "home-instruction"
           }
           isMobileDevice={isMobileDevice}
           hipchat={false}

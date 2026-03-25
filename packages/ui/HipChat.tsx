@@ -91,6 +91,7 @@ const HipChat = ({
     isPear,
     setPear,
     isHippoOpen,
+
     ...auth
   } = useAuth()
 
@@ -538,6 +539,8 @@ const HipChat = ({
   const { isUserScrolling, hasStoppedScrolling, resetScrollState } =
     useUserScroll()
 
+  const canStream = !isEmpty
+
   // Memoize the streaming update handler to prevent infinite loops
   const handleStreamingUpdate = useCallback(
     ({
@@ -554,6 +557,7 @@ const HipChat = ({
       isImageGenerationEnabled?: boolean
       hipchat?: boolean
     }) => {
+      if (!canStream) return
       scrollToBottom(undefined, undefined, messagesRef.current)
 
       if (isE2E && content.length > 500) {
@@ -656,6 +660,7 @@ const HipChat = ({
       isLoadingMore,
       scrollToBottom,
       setMessages,
+      canStream,
       shouldAutoScroll,
       resetScrollState,
       isUserScrolling,
@@ -888,9 +893,7 @@ const HipChat = ({
             thread?: thread
             hipchat?: boolean
           }) => {
-            if (otherHipRef.current) {
-              return
-            }
+            if (!canStream) return
             if (!message?.aiAgent?.id && !message?.message.agentId) return
 
             if (
