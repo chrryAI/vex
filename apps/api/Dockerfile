@@ -6,7 +6,7 @@ RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9.15.0
 
 # Copy only package files for better caching
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -51,7 +51,7 @@ COPY --chown=hono:nodejs packages/ui ./chrry
 COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
 
 # Install Bun for runtime (much faster than Node)
-RUN npm install -g bun
+RUN npm install -g bun@1.0.29
 
 # Switch to non-root user
 USER hono

@@ -5,8 +5,8 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm@9.15.0
+# Install pnpm and vite-plus
+RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14
 
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -23,8 +23,8 @@ FROM base AS builder
 RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm@9.15.0
+# Install pnpm and vite-plus
+RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14
 
 # Copy node_modules from deps stage (REUSE, don't reinstall!)
 # Copy root node_modules
@@ -41,7 +41,7 @@ COPY . .
 
 # Build the Vite application
 ENV NODE_OPTIONS='--max-old-space-size=8192'
-RUN pnpm --filter flash run build
+RUN vp run build --filter flash
 
 # Production image
 FROM base AS runner
@@ -53,8 +53,8 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 viteuser
 
-# Install pnpm
-RUN npm install -g pnpm@9.15.0
+# Install pnpm and vite-plus
+RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14
 
 # Copy package files
 COPY --chown=viteuser:nodejs package.json pnpm-lock.yaml pnpm-workspace.yaml ./
