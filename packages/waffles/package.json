@@ -2,26 +2,6 @@
   "name": "@chrryai/waffles",
   "version": "2.2.39",
   "description": "Production-ready Playwright testing utilities and helpers for modern web apps",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
-  },
-  "files": ["dist", "README.md", "LICENSE"],
-  "scripts": {
-    "e2e": "TEST_URL=http://e2e.chrry.ai playwright test --project chromium",
-    "e": "pnpm exec playwright install chromium && TEST_URL=http://localhost:5173 playwright test --project chromium",
-    "test:tauri": "TEST_URL=http://localhost:5173 playwright test --project tauri-macos",
-    "build": "pnpm exec tsup",
-    "dev": "pnpm exec tsup --watch",
-    "lint": "biome check .",
-    "sync-goals": "tsx src/scripts/sync-plausible-goals.ts"
-  },
   "keywords": [
     "playwright",
     "testing",
@@ -31,23 +11,40 @@
     "automation",
     "typescript"
   ],
-  "author": "Ibrahim Velinov",
-  "license": "AGPL-3.0",
+  "homepage": "https://github.com/chrryai/waffles",
+  "bugs": {
+    "url": "https://github.com/chrryai/waffles/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/chrryai/waffles.git"
   },
-  "bugs": {
-    "url": "https://github.com/chrryai/waffles/issues"
+  "license": "AGPL-3.0",
+  "author": "Ibrahim Velinov",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
   },
-  "homepage": "https://github.com/chrryai/waffles",
-  "publishConfig": {
-    "access": "public"
-  },
-  "peerDependencies": {
-    "@chrryai/chrry": "workspace:*",
-    "@playwright/test": "^1.40.0",
-    "react": "^18.0.0 || ^19.0.0"
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "pnpm exec tsup",
+    "dev": "pnpm exec tsup --watch",
+    "e": "pnpm exec playwright install chromium && TEST_URL=http://localhost:5173 playwright test --project chromium",
+    "e2e": "TEST_URL=http://e2e.chrry.ai playwright test --project chromium",
+    "lint": "biome check .",
+    "sync-goals": "tsx src/scripts/sync-plausible-goals.ts",
+    "test:tauri": "TEST_URL=http://localhost:5173 playwright test --project tauri-macos"
   },
   "dependencies": {
     "@faker-js/faker": "^9.3.0",
@@ -64,5 +61,12 @@
     "tsx": "^4.19.3",
     "typescript": "^5.0.0"
   },
-  "sideEffects": false
+  "peerDependencies": {
+    "@chrryai/chrry": "workspace:*",
+    "@playwright/test": "^1.40.0",
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

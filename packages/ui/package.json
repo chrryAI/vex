@@ -1,10 +1,27 @@
 {
   "name": "@chrryai/chrry",
   "version": "2.2.39",
+  "private": false,
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "keywords": [
+    "react",
+    "react-native",
+    "nextjs",
+    "ui",
+    "components",
+    "cross-platform",
+    "typescript"
+  ],
+  "homepage": "https://chrry.dev",
+  "bugs": {
+    "url": "https://github.com/chrryai/chrry/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chrryai/chrry.git"
+  },
+  "license": "AGPL-3.0",
+  "author": "Iliyan Velinov",
   "type": "module",
   "exports": {
     ".": {
@@ -32,36 +49,22 @@
     "./package.json": "./package.json",
     "./*": "./*"
   },
-  "files": ["dist", "locales", "**/*.css", "**/*.scss", "README.md"],
-  "private": false,
-  "publishConfig": {
-    "access": "public"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/chrryai/chrry.git"
-  },
-  "keywords": [
-    "react",
-    "react-native",
-    "nextjs",
-    "ui",
-    "components",
-    "cross-platform",
-    "typescript"
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "locales",
+    "**/*.css",
+    "**/*.scss",
+    "README.md"
   ],
-  "author": "Iliyan Velinov",
-  "license": "AGPL-3.0",
-  "bugs": {
-    "url": "https://github.com/chrryai/chrry/issues"
-  },
-  "homepage": "https://chrry.dev",
   "scripts": {
     "build": "pnpm exec tsup",
-    "dev": "pnpm exec tsup --watch",
-    "lint": "biome check .",
-    "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit",
+    "dev": "pnpm exec tsup --watch",
+    "generate:component": "turbo gen react-component",
+    "lint": "biome check .",
     "prepublishOnly": "npm run build",
     "test": "vp test run",
     "test:coverage": "vp test run --coverage && node -e \"const fs=require('fs');const p='coverage/lcov.info';if(fs.existsSync(p)){const c=fs.readFileSync(p,'utf8');const lines=c.split('\\n');const newLines=lines.map(l=>{if(l.startsWith('SF:')){let f=l.substring(3);if(f.includes('packages/ui/')){return 'SF:'+f.substring(f.indexOf('packages/ui/'));}return 'SF:packages/ui/'+f;}return l;});fs.writeFileSync(p,newLines.join('\\n'));}\""
@@ -166,8 +169,8 @@
     "react-native-svg": "^15.15.4",
     "tsup": "^8.5.1",
     "typescript": "5.9.3",
-    "vitest": "catalog:",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "@react-navigation/native": "^7.0.0",
@@ -186,5 +189,8 @@
     "date-fns": "^4.1.0",
     "react-big-calendar": "^1.19.4",
     "recharts": "^3.8.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

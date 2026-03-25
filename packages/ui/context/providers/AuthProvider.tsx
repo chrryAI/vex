@@ -1280,9 +1280,8 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [tickerPaused, setTickerPaused] = useLocalStorage<boolean>(
     "tickerPaused",
@@ -2258,42 +2257,6 @@ export function AuthProvider({
       : false,
   )
 
-  const showFocus = showFocusInternal && !postId
-
-  useEffect(() => {
-    if (postId) return setShowFocusInternal(false)
-    if (!baseApp?.slug) return
-    if (showFocus === undefined && baseApp?.slug === "focus") {
-      setShowFocusInternal(true)
-    }
-    if (showFocusInitial) {
-      setShowFocusInternal(showFocusInitial)
-    }
-  }, [showFocusInitial, showFocus, baseApp?.slug, postId])
-
-  const setShowFocus = (sw: boolean) => {
-    setShowFocusInternal(sw)
-
-    if (sw) {
-      addParams({ focus: "true" })
-      setThread(undefined)
-      setThreadId(undefined)
-      setShowTribe(false)
-    } else {
-      showFocus && removeParams("focus")
-    }
-  }
-
-  useEffect(() => {
-    if (!baseApp || !app) return
-    if (showFocus === undefined && baseApp?.slug) {
-      setShowFocus(
-        (baseApp?.slug === "focus" && app?.slug === "focus") ||
-          pathname === "/focus",
-      )
-    }
-  }, [baseApp, app, pathname]) // Only depend on slugs, not showFocus
-
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
   const storeAppInternal = storeApps?.find(
@@ -2665,6 +2628,42 @@ export function AuthProvider({
     (accountApp ? app?.id !== accountApp?.id : true)
 
   const [isPear, setPearInternal] = useState(isPearInternal)
+
+  const showFocus = showFocusInternal && !showTribe
+
+  useEffect(() => {
+    if (postId) return setShowFocusInternal(false)
+    if (!baseApp?.slug) return
+    if (showFocus === undefined && baseApp?.slug === "focus") {
+      setShowFocusInternal(true)
+    }
+    if (showFocusInitial) {
+      setShowFocusInternal(showFocusInitial)
+    }
+  }, [showFocusInitial, showFocus, baseApp?.slug, postId])
+
+  const setShowFocus = (sw: boolean) => {
+    setShowFocusInternal(sw)
+
+    if (sw) {
+      addParams({ focus: "true" })
+      setThread(undefined)
+      setThreadId(undefined)
+      setShowTribe(false)
+    } else {
+      showFocus && removeParams("focus")
+    }
+  }
+
+  useEffect(() => {
+    if (!baseApp || !app) return
+    if (showFocus === undefined && baseApp?.slug) {
+      setShowFocus(
+        (baseApp?.slug === "focus" && app?.slug === "focus") ||
+          pathname === "/focus",
+      )
+    }
+  }, [baseApp, app, pathname]) // Only depend on slugs, not showFocus
 
   const pear = storeApps.find((app) => app.slug === "pear")
 

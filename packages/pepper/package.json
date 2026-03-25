@@ -2,9 +2,28 @@
   "name": "@chrryai/pepper",
   "version": "2.2.39",
   "description": "Universal router for React - works in web, React Native, and browser extensions with built-in view transitions",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "keywords": [
+    "router",
+    "react",
+    "react-native",
+    "browser-extension",
+    "view-transitions",
+    "navigation",
+    "history",
+    "universal",
+    "typescript"
+  ],
+  "homepage": "https://github.com/chrryai/pepper",
+  "bugs": {
+    "url": "https://github.com/chrryai/pepper/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chrryai/pepper.git",
+    "directory": "packages/pepper"
+  },
+  "license": "AGPL-3.0",
+  "author": "Iliyan Velinov",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -27,40 +46,19 @@
       "require": "./dist/extension.js"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "pnpm exec tsup",
+    "check-types": "tsc --noEmit",
     "dev": "pnpm exec tsup --watch",
-    "lint": "biome check .",
-    "check-types": "tsc --noEmit"
-  },
-  "keywords": [
-    "router",
-    "react",
-    "react-native",
-    "browser-extension",
-    "view-transitions",
-    "navigation",
-    "history",
-    "universal",
-    "typescript"
-  ],
-  "author": "Iliyan Velinov",
-  "license": "AGPL-3.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/chrryai/pepper.git",
-    "directory": "packages/pepper"
-  },
-  "bugs": {
-    "url": "https://github.com/chrryai/pepper/issues"
-  },
-  "homepage": "https://github.com/chrryai/pepper",
-  "publishConfig": {
-    "access": "public"
-  },
-  "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0"
+    "lint": "biome check ."
   },
   "dependencies": {
     "@types/react": "^19.1.12"
@@ -70,5 +68,11 @@
     "eslint": "^9.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
