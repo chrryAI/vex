@@ -1280,9 +1280,8 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [tickerPaused, setTickerPaused] = useLocalStorage<boolean>(
     "tickerPaused",
@@ -2247,7 +2246,7 @@ export function AuthProvider({
     setPostId(postIdInitial)
   }, [postIdInitial])
 
-  const [showFocus, setShowFocusInternal] = useLocalStorage<
+  const [showFocusInternal, setShowFocusInternal] = useLocalStorage<
     boolean | undefined | null
   >(
     `showFocus:${app?.slug || "focus"}`,
@@ -2258,9 +2257,10 @@ export function AuthProvider({
       : false,
   )
 
+  const showFocus = showFocusInternal && !postId
+
   useEffect(() => {
-    if (postId) return
-    if (!isStorageReady) return
+    if (postId) return setShowFocusInternal(false)
     if (!baseApp?.slug) return
     if (showFocus === undefined && baseApp?.slug === "focus") {
       setShowFocusInternal(true)
@@ -2268,7 +2268,7 @@ export function AuthProvider({
     if (showFocusInitial) {
       setShowFocusInternal(showFocusInitial)
     }
-  }, [showFocusInitial, showFocus, baseApp?.slug, isStorageReady, postId])
+  }, [showFocusInitial, showFocus, baseApp?.slug, postId])
 
   const setShowFocus = (sw: boolean) => {
     setShowFocusInternal(sw)

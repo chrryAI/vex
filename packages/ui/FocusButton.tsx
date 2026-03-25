@@ -926,7 +926,6 @@ export default function FocusButton({
                             }}
                             onClick={() => {
                               setShowFocus(false)
-                              setIsNewAppChat({ item: app, tribe: true })
                             }}
                             // href={getAppSlug(refApp)}
                           >
@@ -1105,7 +1104,8 @@ export default function FocusButton({
                                         <Span style={styles.taskTime.style}>
                                           {Math.floor(totalTime / 3600) > 0 && (
                                             <>
-                                              {Math.floor(totalTime / 3600)}h{" "}
+                                              {Math.floor(totalTime / 3600)}
+                                              h{" "}
                                             </>
                                           )}
                                           {Math.floor((totalTime % 3600) / 60) >
