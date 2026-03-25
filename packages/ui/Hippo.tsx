@@ -841,7 +841,7 @@ export default function Hippo({
   }
 
   return (
-    <Div data-testid={`${dataTestId}`}>
+    <Div key={dataTestId} data-testid={`${dataTestId}`}>
       {isAppDescriptionOpen && !ghost && (
         <Modal
           scrollable={!isChatOpen}
@@ -883,11 +883,11 @@ export default function Hippo({
       )}
       {!ghost && (
         <Modal
-          attachTo={attachtTo}
           scrollable={!isChatOpen}
           dataTestId={`instruction-modal`}
           borderHeader={true}
           style={styles.modal.style}
+          key={`${dataTestId}-instruction-modal`}
           hasCloseButton
           hideOnClickOutside={false}
           isModalOpen={isOpen || isArtifactsOpen}
