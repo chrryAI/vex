@@ -111,4 +111,7 @@ ENV HOST="0.0.0.0"
 
 WORKDIR /app/apps/flash
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:5173/health || exit 1
+
 CMD ["node", "server.js"]
