@@ -1,0 +1,11 @@
+[install]
+optional = true
+dev = true
+peer = true
+
+[run]
+bun = "bun"
+
+# Path mappings for Bun runtime
+[module]
+"@chrryai/chrry/*" = "./packages/ui/*"

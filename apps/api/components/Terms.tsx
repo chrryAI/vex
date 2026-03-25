@@ -1,4 +1,4 @@
-import { chrryDev } from "./dotDev"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 const css = `
 .container {
@@ -38,7 +38,7 @@ section { border-bottom: 1px dashed var(--shade-2); padding-bottom: 1rem; }
 `
 
 export default function Terms({ hostname }: { hostname?: string }) {
-  const config = chrryDev
+  const config = getSiteConfig(hostname || "chrry.ai")
   const name = config.name || "Chrry"
   const url = config.url || "https://chrry.ai"
   const email = "legal@chrry.ai"

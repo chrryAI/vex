@@ -62,8 +62,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN groupadd --system --gid 1001 nodejs && \
     useradd --system --uid 1001 --gid nodejs hono
 
-# Copy tsconfig.json FIRST for Bun path mappings
+# Copy tsconfig.json and bunfig.toml FIRST for Bun path mappings
 COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
+COPY --chown=hono:nodejs bunfig.toml ./bunfig.toml
 
 # Copy the ENTIRE node_modules including workspace structure
 COPY --from=deps --chown=hono:nodejs /app ./
