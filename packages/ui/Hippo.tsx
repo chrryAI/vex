@@ -80,7 +80,6 @@ export default function Hippo({
   dataTestId = "instruction",
   showInstallers = true,
   opacity = 1,
-  hipchat = true,
   isAgentBuilder = false,
   onClose,
   style,
@@ -122,6 +121,12 @@ export default function Hippo({
   style?: CSSProperties
 }) {
   const { t, console } = useAppContext()
+
+  const [hipchat, setHipchat] = useState(rest.hipchat)
+
+  useEffect(() => {
+    setHipchat(rest.hipchat)
+  }, [rest.hipchat])
 
   const showButton = as === "button"
   const icon = as === "icon"
@@ -222,7 +227,12 @@ export default function Hippo({
     rest.placeholder,
   )
 
-  const [isChatOpen, setIsChatOpen] = useState<boolean>(false)
+  const [isChatOpen, setIsChatOpenInternal] = useState<boolean>(false)
+
+  const setIsChatOpen = (value: boolean) => {
+    setHipchat(value)
+    setIsChatOpenInternal(value)
+  }
 
   const [isAppDescriptionOpen, setIsAppDescriptionOpen] = useState(false)
 
@@ -940,7 +950,7 @@ export default function Hippo({
             setIsArtifactsOpen(false)
           }}
         >
-          {isChatOpen && isDevelopment ? (
+          {hipchat && isDevelopment ? (
             <Div
               style={{
                 display: "flex",

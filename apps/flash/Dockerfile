@@ -1,8 +1,17 @@
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat python3 make g++
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libc6-dev \
+    python3 \
+    make \
+    g++ \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Install pnpm and vite-plus
@@ -38,7 +47,12 @@ RUN pnpm install --frozen-lockfile
 
 # Build the source code
 FROM base AS builder
-RUN apk add --no-cache libc6-compat python3 make g++
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libc6-dev \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Install pnpm and vite-plus
@@ -61,8 +75,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 viteuser
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs viteuser
 
 # Install pnpm and vite-plus
 RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14 --ignore-scripts
@@ -115,6 +129,6 @@ ENV HOST="0.0.0.0"
 WORKDIR /app/apps/flash
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:5173/health || exit 1
+    CMD apt-get update && apt-get install -y wget && wget --no-verbose --tries=1 --spider http://localhost:5173/health || exit 1
 
 CMD ["node", "server.js"]

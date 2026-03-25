@@ -1,8 +1,17 @@
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat python3 make g++
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libc6-dev \
+    python3 \
+    make \
+    g++ \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Install pnpm and vite-plus
@@ -43,11 +52,15 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Install FFmpeg for video processing
-RUN apk add --no-cache ffmpeg
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    wget \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 hono
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs hono
 
 # Copy tsconfig.json FIRST for Bun path mappings
 COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
@@ -66,8 +79,7 @@ COPY --chown=hono:nodejs packages/ui ./chrry
 COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
 
 # Install Bun for runtime (much faster than Node)
-RUN apk add --no-cache libstdc++ libgcc gcompat
-COPY --from=oven/bun:1.1.27-alpine /usr/local/bin/bun /usr/local/bin/bun
+COPY --from=oven/bun:1.1.27 /usr/local/bin/bun /usr/local/bin/bun
 
 # Switch to non-root user
 USER hono
