@@ -77,116 +77,114 @@ const MarkdownContent = memo(
     })
 
     // Native markdown styles
-    const markdownStyles = useMemo(
-      () =>
-        StyleSheet.create({
-          body: {
-            color: colors.foreground,
-            fontSize: 16,
-            lineHeight: 24,
-          },
-          heading1: {
-            fontSize: 28,
-            fontWeight: "bold",
-            marginVertical: 16,
-            color: colors.foreground,
-          },
-          heading2: {
-            fontSize: 24,
-            fontWeight: "bold",
-            marginVertical: 14,
-            color: colors.foreground,
-          },
-          heading3: {
-            fontSize: 20,
-            fontWeight: "bold",
-            marginVertical: 12,
-            color: colors.foreground,
-          },
-          heading4: {
-            fontSize: 18,
-            fontWeight: "bold",
-            marginVertical: 10,
-            color: colors.foreground,
-          },
-          paragraph: {
-            marginVertical: 8,
-            color: colors.foreground,
-          },
-          link: {
-            color: colors.accent6,
-            textDecorationLine: "underline",
-          },
-          code_inline: {
-            backgroundColor: colors.shade2,
-            color: colors.accent6,
-            paddingHorizontal: 6,
-            paddingVertical: 2,
-            borderRadius: 4,
-            fontFamily: "monospace",
-          },
-          code_block: {
-            backgroundColor: colors.shade1,
-            padding: 12,
-            borderRadius: 8,
-            marginVertical: 8,
-            fontFamily: "monospace",
-          },
-          fence: {
-            backgroundColor: colors.shade1,
-            padding: 12,
-            borderRadius: 8,
-            marginVertical: 8,
-            fontFamily: "monospace",
-          },
-          blockquote: {
-            backgroundColor: colors.shade1,
-            borderLeftWidth: 4,
-            borderLeftColor: colors.accent6,
-            paddingLeft: 12,
-            paddingVertical: 8,
-            marginVertical: 8,
-          },
-          list_item: {
-            marginVertical: 4,
-            color: colors.foreground,
-          },
-          bullet_list: {
-            marginVertical: 8,
-          },
-          ordered_list: {
-            marginVertical: 8,
-          },
-          table: {
-            borderWidth: 1,
-            borderColor: colors.shade3,
-            marginVertical: 8,
-          },
-          thead: {
-            backgroundColor: colors.shade2,
-          },
-          tbody: {},
-          th: {
-            padding: 8,
-            fontWeight: "bold",
-            borderWidth: 1,
-            borderColor: colors.shade3,
-          },
-          td: {
-            padding: 8,
-            borderWidth: 1,
-            borderColor: colors.shade3,
-          },
-          tr: {},
-          image: {
-            maxWidth: "100%",
-            height: "auto",
-            marginVertical: 8,
-            borderRadius: 8,
-          },
-        }),
-      [colors],
-    )
+    const markdownStyles = useMemo(() => {
+      return StyleSheet.create({
+        body: {
+          color: colors.foreground,
+          fontSize: 16,
+          lineHeight: 24,
+        },
+        heading1: {
+          fontSize: 28,
+          fontWeight: "bold",
+          marginVertical: 16,
+          color: colors.foreground,
+        },
+        heading2: {
+          fontSize: 24,
+          fontWeight: "bold",
+          marginVertical: 14,
+          color: colors.foreground,
+        },
+        heading3: {
+          fontSize: 20,
+          fontWeight: "bold",
+          marginVertical: 12,
+          color: colors.foreground,
+        },
+        heading4: {
+          fontSize: 18,
+          fontWeight: "bold",
+          marginVertical: 10,
+          color: colors.foreground,
+        },
+        paragraph: {
+          marginVertical: 8,
+          color: colors.foreground,
+        },
+        link: {
+          color: colors.accent6,
+          textDecorationLine: "underline",
+        },
+        code_inline: {
+          backgroundColor: colors.shade2,
+          color: colors.accent6,
+          paddingHorizontal: 6,
+          paddingVertical: 2,
+          borderRadius: 4,
+          fontFamily: "monospace",
+        },
+        code_block: {
+          backgroundColor: colors.shade1,
+          padding: 12,
+          borderRadius: 8,
+          marginVertical: 8,
+          fontFamily: "monospace",
+        },
+        fence: {
+          backgroundColor: colors.shade1,
+          padding: 12,
+          borderRadius: 8,
+          marginVertical: 8,
+          fontFamily: "monospace",
+        },
+        blockquote: {
+          backgroundColor: colors.shade1,
+          borderLeftWidth: 4,
+          borderLeftColor: colors.accent6,
+          paddingLeft: 12,
+          paddingVertical: 8,
+          marginVertical: 8,
+        },
+        list_item: {
+          marginVertical: 4,
+          color: colors.foreground,
+        },
+        bullet_list: {
+          marginVertical: 8,
+        },
+        ordered_list: {
+          marginVertical: 8,
+        },
+        table: {
+          borderWidth: 1,
+          borderColor: colors.shade3,
+          marginVertical: 8,
+        },
+        thead: {
+          backgroundColor: colors.shade2,
+        },
+        tbody: {},
+        th: {
+          padding: 8,
+          fontWeight: "bold",
+          borderWidth: 1,
+          borderColor: colors.shade3,
+        },
+        td: {
+          padding: 8,
+          borderWidth: 1,
+          borderColor: colors.shade3,
+        },
+        tr: {},
+        image: {
+          maxWidth: "100%",
+          height: "auto",
+          marginVertical: 8,
+          borderRadius: 8,
+        },
+      })
+    }, [colors])
 
     return (
       <Div style={style} data-testid={dataTestId}>
