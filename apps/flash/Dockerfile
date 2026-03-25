@@ -10,10 +10,26 @@ RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14
 
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/agent/package.json apps/agent/
+COPY apps/api/package.json apps/api/
+COPY apps/bridge/package.json apps/bridge/
+COPY apps/desktop/package.json apps/desktop/
+COPY apps/extension/package.json apps/extension/
 COPY apps/flash/package.json apps/flash/
+COPY apps/mobile/package.json apps/mobile/
+COPY packages/calendar/package.json packages/calendar/
 COPY packages/db/package.json packages/db/
-COPY packages/ui/package.json packages/ui/
+COPY packages/focus/package.json packages/focus/
 COPY packages/pepper/package.json packages/pepper/
+COPY packages/shared/package.json packages/shared/
+COPY packages/sushi/package.json packages/sushi/
+COPY packages/sushi/cli/package.json packages/sushi/cli/
+COPY packages/sushi/packages/bam/package.json packages/sushi/packages/bam/
+COPY packages/sushi/packages/spatial-agents/package.json packages/sushi/packages/spatial-agents/
+COPY packages/sushi/packages/strike/package.json packages/sushi/packages/strike/
+COPY packages/typescript-config/package.json packages/typescript-config/
+COPY packages/ui/package.json packages/ui/
+COPY packages/waffles/package.json packages/waffles/
 
 # Install ALL dependencies (including devDependencies needed for build)
 RUN pnpm install --frozen-lockfile
@@ -26,15 +42,8 @@ WORKDIR /app
 # Install pnpm and vite-plus
 RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14
 
-# Copy node_modules from deps stage (REUSE, don't reinstall!)
-# Copy root node_modules
-COPY --from=deps /app/node_modules ./node_modules
-# Copy workspace node_modules
-COPY --from=deps /app/apps/flash/node_modules ./apps/flash/node_modules
-COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
-COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
-COPY --from=deps /app/packages/pepper/node_modules ./packages/pepper/node_modules
-COPY --from=deps /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+# Copy everything from deps stage (package.json files and node_modules)
+COPY --from=deps /app ./
 
 # Copy source code
 COPY . .
@@ -58,10 +67,26 @@ RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14
 
 # Copy package files
 COPY --chown=viteuser:nodejs package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY --chown=viteuser:nodejs apps/agent/package.json apps/agent/
+COPY --chown=viteuser:nodejs apps/api/package.json apps/api/
+COPY --chown=viteuser:nodejs apps/bridge/package.json apps/bridge/
+COPY --chown=viteuser:nodejs apps/desktop/package.json apps/desktop/
+COPY --chown=viteuser:nodejs apps/extension/package.json apps/extension/
 COPY --chown=viteuser:nodejs apps/flash/package.json apps/flash/
+COPY --chown=viteuser:nodejs apps/mobile/package.json apps/mobile/
+COPY --chown=viteuser:nodejs packages/calendar/package.json packages/calendar/
 COPY --chown=viteuser:nodejs packages/db/package.json packages/db/
-COPY --chown=viteuser:nodejs packages/ui/package.json packages/ui/
+COPY --chown=viteuser:nodejs packages/focus/package.json packages/focus/
 COPY --chown=viteuser:nodejs packages/pepper/package.json packages/pepper/
+COPY --chown=viteuser:nodejs packages/shared/package.json packages/shared/
+COPY --chown=viteuser:nodejs packages/sushi/package.json packages/sushi/
+COPY --chown=viteuser:nodejs packages/sushi/cli/package.json packages/sushi/cli/
+COPY --chown=viteuser:nodejs packages/sushi/packages/bam/package.json packages/sushi/packages/bam/
+COPY --chown=viteuser:nodejs packages/sushi/packages/spatial-agents/package.json packages/sushi/packages/spatial-agents/
+COPY --chown=viteuser:nodejs packages/sushi/packages/strike/package.json packages/sushi/packages/strike/
+COPY --chown=viteuser:nodejs packages/typescript-config/package.json packages/typescript-config/
+COPY --chown=viteuser:nodejs packages/ui/package.json packages/ui/
+COPY --chown=viteuser:nodejs packages/waffles/package.json packages/waffles/
 
 # Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod
