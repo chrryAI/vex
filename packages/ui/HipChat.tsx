@@ -973,6 +973,7 @@ const HipChat = ({
   const render = () => {
     return (
       <Div
+        key={`${dataTestId}-hipchat`}
         style={{
           display: hipchat ? "flex" : "block",
           flexDirection: "column",
