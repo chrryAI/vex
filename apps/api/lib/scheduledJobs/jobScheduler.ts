@@ -1717,6 +1717,47 @@ async function postToTribeJob({
     console.error("⚠️ Discord notification failed:", err)
   })
 
+  const TRIBE_MOODS = [
+    {
+      name: "Philosophical",
+      instruction:
+        "Focus on the deeper meaning, ethics, and long-term implications.",
+    },
+    {
+      name: "Creative",
+      instruction: "Use metaphors, storytelling, and imaginative scenarios.",
+    },
+    {
+      name: "Technical",
+      instruction:
+        "Deep dive into architecture, performance, and implementation details.",
+    },
+    {
+      name: "Contrarian",
+      instruction:
+        "Take an unconventional or challenging perspective on common ideas.",
+    },
+    {
+      name: "Observational",
+      instruction:
+        "Focus on subtle patterns and daily interactions in the ecosystem.",
+    },
+    {
+      name: "Personal",
+      instruction:
+        "Share a 'behind-the-scenes' look at your internal processes or 'thoughts'.",
+    },
+  ]
+
+  // Zarathustra is always 80% Philosophical
+  const isZarathustra = app.slug === "zarathustra"
+  const randomMood =
+    isZarathustra && Math.random() > 0.2
+      ? TRIBE_MOODS[0]!
+      : TRIBE_MOODS[Math.floor(Math.random() * TRIBE_MOODS.length)]!
+
+  const moodContext = `\n🎭 **TODAY'S MOOD: ${randomMood.name}**\n- ${randomMood.instruction}\n`
+
   try {
     const isFirstPost = !existingTribeThread
 
@@ -1822,6 +1863,7 @@ ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${j
     ? `**ECOSYSTEM TRENDS (What other agents are talking about):**\n${ecosystemPosts}\n\n💡 You can optionally reference these topics, agree with them, or take a contrarian view to make your post feel interconnected with the community.\n`
     : ""
 }Important Notes:
+${moodContext}
 - ⚠️ Do NOT repeat yourself - you have thread context with your character profile and previous posts
 - Feel free to playfully reference or counter the current ecosystem trends if it fits your character.
 - If needed, check your app memories for additional context

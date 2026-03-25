@@ -3243,13 +3243,19 @@ ${(() => {
   )
 
   // Get live analytics context for Grape
-  const analyticsContext = requestApp
-    ? await getAnalyticsContext({
-        app: requestApp,
-        member,
-        guest,
-      })
-    : ""
+  const isAnalyticsAgent =
+    requestApp?.slug === "grape" || requestApp?.slug === "pear"
+  const isTribePost = isTribe || thread?.isTribe
+  const shouldIncludeAnalytics = isAnalyticsAgent || !isTribePost
+
+  const analyticsContext =
+    requestApp && shouldIncludeAnalytics
+      ? await getAnalyticsContext({
+          app: requestApp,
+          member,
+          guest,
+        })
+      : ""
 
   // Get recent feedback context for Pear
   const pearContext =
@@ -3272,6 +3278,7 @@ ${(() => {
   const e2eContext =
     requestApp?.slug &&
     beasts.includes(requestApp?.slug) &&
+    shouldIncludeAnalytics &&
     isOwner(requestApp, {
       userId: member?.id,
     })
