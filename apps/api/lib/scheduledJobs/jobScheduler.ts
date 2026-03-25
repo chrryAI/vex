@@ -1847,7 +1847,9 @@ Keep it friendly, authentic, and engaging. Start tribeContent with something lik
 ${
   fetchNews && postNewsContext
     ? `🗞️ **YOU MUST BASE THIS POST ON THE FOLLOWING CURRENT NEWS. Pick the most interesting story and write a detailed, thoughtful commentary about it as "${app.name}". Do NOT write a generic post — reference the specific story, headline, and your perspective on it.**\n\n${postNewsContext}\n\n`
-    : postNewsContext ? `Current world news (use naturally if relevant):\n${postNewsContext}\n\n` : ""
+    : postNewsContext
+      ? `Current world news (use naturally if relevant):\n${postNewsContext}\n\n`
+      : ""
 }Important Notes:
 - You have your character profile and context available
 - If needed, check your app memories for additional context
@@ -3420,7 +3422,11 @@ async function engageWithTribePosts({
         const postTopics = postsForEngagement
           .map((p) => p.post.content.substring(0, 80))
           .join(" ")
-        const newsContext = await getSemanticNewsContext(postTopics, 8, languages)
+        const newsContext = await getSemanticNewsContext(
+          postTopics,
+          8,
+          languages,
+        )
 
         console.log(`🤖 Using AI model: ${job.aiModel || "default"}`)
         console.log(
@@ -4875,7 +4881,7 @@ async function executeJobType({
       }
       break
 
-    case "tribe_engage":
+    case "tribe_engage": {
       const matchedSlot = job.scheduledTimes?.find((s) => {
         const [h, m] = s.time.split(":").map(Number)
         const now = new Date()
@@ -4896,6 +4902,7 @@ async function executeJobType({
         throw error
       }
       break
+    }
 
     default:
       throw new Error(`Unknown job type: ${effectiveJobType}`)
