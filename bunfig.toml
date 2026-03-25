@@ -1,11 +1,5 @@
-[install]
-optional = true
-dev = true
-peer = true
-
-[run]
-bun = "bun"
-
-# Path mappings for Bun runtime
+# Bun configuration for path mappings
 [module]
-"@chrryai/chrry/*" = "./packages/ui/*"
+# Configure path aliases for module resolution
+[module.paths]
+"chrry" = ["./packages/ui"]
