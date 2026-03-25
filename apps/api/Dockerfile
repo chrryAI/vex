@@ -67,7 +67,7 @@ COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
 
 # Install Bun for runtime (much faster than Node)
 RUN apk add --no-cache libstdc++ libgcc gcompat
-COPY --from=oven/bun:1.1.27 /usr/local/bin/bun /usr/local/bin/bun
+COPY --from=oven/bun:1.1.27-alpine /usr/local/bin/bun /usr/local/bin/bun
 
 # Switch to non-root user
 USER hono
