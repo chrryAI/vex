@@ -1783,11 +1783,12 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     </Div>
                     <Div
                       style={{
+                        marginTop: 12.5,
                         display: "flex",
                         alignItems: "center",
                         gap: 10,
                         position: "relative",
-                        bottom: -7.5,
+                        bottom: -2.5,
                         flexWrap: "wrap",
                       }}
                     >
