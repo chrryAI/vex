@@ -25,11 +25,13 @@ COPY packages/shared/package.json packages/shared/
 COPY packages/sushi/package.json packages/sushi/
 COPY packages/sushi/cli/package.json packages/sushi/cli/
 COPY packages/sushi/packages/bam/package.json packages/sushi/packages/bam/
+COPY packages/sushi/packages/memory/package.json packages/sushi/packages/memory/
 COPY packages/sushi/packages/spatial-agents/package.json packages/sushi/packages/spatial-agents/
 COPY packages/sushi/packages/strike/package.json packages/sushi/packages/strike/
 COPY packages/typescript-config/package.json packages/typescript-config/
 COPY packages/ui/package.json packages/ui/
 COPY packages/waffles/package.json packages/waffles/
+COPY malwareScanner/package.json malwareScanner/
 
 # Install ALL dependencies (including devDependencies needed for build)
 RUN pnpm install --frozen-lockfile

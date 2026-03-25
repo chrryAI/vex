@@ -855,6 +855,8 @@ export async function storeNewsInGraph(article: {
 
 /**
  * Query recent news from graph by semantic similarity
+ * @deprecated Use getSemanticNewsContext from lib/newsFetcher.ts for primary RAG tasks.
+ * The graph version should only be used when graph-specific relationships are required.
  */
 export async function getNewsContext(
   queryText: string,

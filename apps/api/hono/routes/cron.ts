@@ -10,7 +10,13 @@ import {
   lt,
   sql,
 } from "@repo/db"
-import { apps, guests, messages, subscriptions } from "@repo/db/src/schema"
+import {
+  apps,
+  guests,
+  messages,
+  subscriptions,
+  tribeNews,
+} from "@repo/db/src/schema"
 import { Hono } from "hono"
 import { syncPlausibleAnalytics } from "../../cron/sync-plausible"
 import { isDevelopment } from "../../lib"
@@ -25,10 +31,8 @@ import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
 import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
 import { syncSonarCloud } from "../../lib/cron/sonarSync"
 import { autoTranslateMissingContent } from "../../lib/cron/tribeAutoTranslateMissing"
-import {
-  clearGraphDataForUser,
-  storeNewsInGraph,
-} from "../../lib/graph/graphService"
+import { clearGraphDataForUser } from "../../lib/graph/graphService"
+import { getEmbedding } from "../../lib/newsFetcher"
 import {
   executeScheduledJob,
   findJobsToRun,
@@ -257,18 +261,39 @@ async function handleFetchNews(c: any) {
   try {
     const result = await fetchAndStoreNews()
 
-    // Sync newly inserted articles to graph (fire-and-forget)
-    let graphSynced = 0
+    // Generate embeddings for newly inserted articles (important for semantic search!)
     if (result.newlyInserted && result.newlyInserted.length > 0) {
+      console.log(
+        `🧠 Generating embeddings for ${result.newlyInserted.length} new articles...`,
+      )
+      // Run in background but track progress
       Promise.allSettled(
-        result.newlyInserted.map((article) => storeNewsInGraph(article)),
-      ).then((results) => {
-        graphSynced = results.filter((r) => r.status === "fulfilled").length
-        console.log(
-          `📰 Graph news sync: ${graphSynced}/${result.newlyInserted!.length} articles`,
-        )
+        result.newlyInserted.map(async (article) => {
+          try {
+            const contentText =
+              `${article.title || ""} ${article.content || article.description || ""}`.trim()
+            if (!contentText) return
+
+            const embedding = await getEmbedding({ text: contentText })
+            if (embedding) {
+              await db
+                .update(tribeNews)
+                .set({ embedding })
+                .where(eq(tribeNews.url, article.url))
+            }
+          } catch (err) {
+            console.error(
+              `❌ Failed to generate embedding for ${article.url}:`,
+              err,
+            )
+          }
+        }),
+      ).then(() => {
+        console.log("✅ News embedding generation complete")
       })
     }
+
+    // Sync newly inserted articles to graph (fire-and-forget)
 
     // Discord summary notification
     const stats = result.countryStats || []

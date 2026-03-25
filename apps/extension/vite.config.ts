@@ -5,6 +5,7 @@ import * as esbuild from "esbuild"
 import { viteStaticCopy } from "vite-plugin-static-copy"
 import type { PluginOption } from "vite-plus"
 import { loadEnv } from "vite-plus"
+import { getSiteConfig } from "../../packages/ui/utils/siteConfig"
 
 function chromeExtensionPlugin(): PluginOption {
   return {
@@ -77,9 +78,6 @@ export default async ({ command, mode }) => {
     env.VITE_BROWSER === "firefox" || process.env.VITE_BROWSER === "firefox"
   const isProduction = command === "build"
 
-  // Dynamically import getSiteConfig after env is loaded
-  const { getSiteConfig } = await import("@chrryai/chrry/utils/siteConfig")
-
   // Use MODE env var if set, otherwise use vite mode, otherwise default to vex
   const siteMode = process.env.MODE || mode || "vex"
   const siteConfig = getSiteConfig(siteMode)
@@ -119,7 +117,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "2.2.23",
+    version: siteConfig.version || "2.2.25",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission

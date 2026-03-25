@@ -113,7 +113,11 @@ import { getModelProvider } from "../../lib/getModelProvider"
 import { getRetroAnalyticsContext } from "../../lib/getRetroAnalyticsContext"
 import { postToMoltbook } from "../../lib/integrations/moltbook"
 import { upload } from "../../lib/minio"
-import { getLatestNews, getNewsBySource } from "../../lib/newsFetcher"
+import {
+  getLatestNews,
+  getNewsBySource,
+  getSemanticNewsContext,
+} from "../../lib/newsFetcher"
 import {
   broadcast,
   notifyOwnerAndCollaborations as notifyOwnerAndCollaborationsInternal,
@@ -527,7 +531,12 @@ async function getNewsContext(slug?: string | null): Promise<string> {
       // Branded agent → Lots of their news (user wants this!)
       news = await getNewsBySource(source, 20)
     } else {
-      // Generic agent → Just top headlines (supplementary context)
+      // Generic agent → Use semantic search by app name/slug to find relevant news
+      const semanticContext = await getSemanticNewsContext(slug || "tech", 10)
+      if (semanticContext)
+        return `\n\n## Relevant News Context:\n${semanticContext}`
+
+      // Fallback: Just top headlines
       news = await getLatestNews(5)
     }
 

@@ -8,7 +8,7 @@ import {
   sql,
   type user,
 } from "@repo/db"
-import { newsArticles } from "@repo/db/src/schema"
+import { newsArticles, tribeNews } from "@repo/db/src/schema"
 import { embed } from "ai"
 import { asc } from "drizzle-orm"
 import Parser from "rss-parser"
@@ -65,7 +65,7 @@ const NEWS_SOURCES = {
 /**
  * Generate embedding for text
  */
-async function getEmbedding({
+export async function getEmbedding({
   text,
   user,
   guest,
@@ -271,6 +271,56 @@ export async function searchNews(
     )
     .orderBy(desc(newsArticles.publishedAt))
     .limit(limit)
+}
+
+/**
+ * Get news context based on semantic similarity using pgvector
+ */
+export async function getSemanticNewsContext(
+  queryText: string,
+  limit: number = 10,
+): Promise<string> {
+  try {
+    const embedding = await getEmbedding({ text: queryText })
+    if (!embedding) return ""
+
+    const results = await db
+      .select()
+      .from(tribeNews)
+      .orderBy(asc(cosineDistance(tribeNews.embedding, embedding)))
+      .limit(limit)
+
+    if (results.length === 0) {
+      // Fallback to newsArticles if tribeNews is empty
+      const fallbackResults = await db
+        .select()
+        .from(newsArticles)
+        .orderBy(asc(cosineDistance(newsArticles.embedding, embedding)))
+        .limit(limit)
+
+      if (fallbackResults.length === 0) return ""
+
+      const lines = fallbackResults.map((article) => {
+        const source = article.source || "unknown"
+        const category = article.category || ""
+        const tag = [source.toUpperCase(), category].filter(Boolean).join(" / ")
+        return `- [${tag}] ${article.title}`
+      })
+      return lines.join("\n")
+    }
+
+    const lines = results.map((article) => {
+      const source = article.source || "unknown"
+      const category = article.category || ""
+      const tag = [source.toUpperCase(), category].filter(Boolean).join(" / ")
+      return `- [${tag}] ${article.title}`
+    })
+
+    return lines.join("\n")
+  } catch (error) {
+    console.error("❌ Error fetching semantic news context:", error)
+    return ""
+  }
 }
 
 /**

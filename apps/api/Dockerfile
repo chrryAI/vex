@@ -25,17 +25,16 @@ COPY packages/shared/package.json ./packages/shared/package.json
 COPY packages/sushi/package.json ./packages/sushi/package.json
 COPY packages/sushi/cli/package.json ./packages/sushi/cli/package.json
 COPY packages/sushi/packages/bam/package.json ./packages/sushi/packages/bam/package.json
+COPY packages/sushi/packages/memory/package.json ./packages/sushi/packages/memory/package.json
 COPY packages/sushi/packages/spatial-agents/package.json ./packages/sushi/packages/spatial-agents/package.json
 COPY packages/sushi/packages/strike/package.json ./packages/sushi/packages/strike/package.json
 COPY packages/typescript-config/package.json ./packages/typescript-config/package.json
 COPY packages/ui/package.json ./packages/ui/package.json
 COPY packages/waffles/package.json ./packages/waffles/package.json
+COPY malwareScanner/package.json ./malwareScanner/package.json
 
 # Install all dependencies (hono is needed at runtime)
 RUN pnpm install --frozen-lockfile
-
-# Build only the DB package (UI package doesn't need building for API)
-RUN cd packages/db && pnpm run build || true
 
 # Production image
 FROM base AS runner
@@ -67,7 +66,8 @@ COPY --chown=hono:nodejs packages/ui ./chrry
 COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
 
 # Install Bun for runtime (much faster than Node)
-RUN npm install -g bun@1.0.29
+RUN apk add --no-cache libstdc++ libgcc
+COPY --from=oven/bun:1.0.29 /usr/local/bin/bun /usr/local/bin/bun
 
 # Switch to non-root user
 USER hono
@@ -78,7 +78,7 @@ ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/api/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3001/api/health || exit 1
 
 # Run with Bun for better performance
 CMD ["bun", "run", "apps/api/server.ts"]

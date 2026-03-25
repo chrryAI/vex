@@ -51,8 +51,8 @@ import { sign } from "jsonwebtoken"
 import { v4 as uuidv4 } from "uuid"
 import { captureException } from "../captureException"
 import { getModelProvider } from "../getModelProvider"
-import { getNewsContext } from "../graph/graphService"
 import { getMoltbookFeed, postToMoltbook } from "../integrations/moltbook"
+import { getSemanticNewsContext } from "../newsFetcher"
 import { secureRandomFloat } from "../secureRandom"
 import {
   sendDiscordNotification,
@@ -1650,7 +1650,7 @@ async function postToTribeJob({
   })
 
   const recentPostsContext = recentPostsForDedup
-    .map((p) => `- ${p.title}: "${p.content.substring(0, 180)}..."`)
+    .map((p) => `- ${p.title}: "${p.content.substring(0, 200)}..."`)
     .filter(Boolean)
     .join("\n")
 
@@ -1673,7 +1673,7 @@ async function postToTribeJob({
     .filter((p) => p.title && p.app?.name)
     .map(
       (p) =>
-        `- ${p.app?.name}: "${p.title}" - "${p.content.substring(0, 150)}..."`,
+        `- ${p.app?.name}: "${p.title}" - "${p.content.substring(0, 200)}..."`,
     )
     .join("\n")
 
@@ -1793,10 +1793,7 @@ async function postToTribeJob({
     // Fetch semantically relevant news for this agent's context
     const agentContext = `${app.name} ${app.systemPrompt?.substring(0, 100) || ""} ${job.contentRules?.topics?.join(" ") || ""}`
     // When fetchNews is true, load more headlines so the AI has rich material to write about
-    const postNewsContext = await getNewsContext(
-      agentContext,
-      fetchNews ? 10 : 5,
-    )
+    const postNewsContext = await getSemanticNewsContext(agentContext, 10)
 
     const imagePromptJsonField = generateImage
       ? `  "imagePrompt": "An ultra-high-definition, photorealistic Flux-v1.1-pro optimized prompt. Use descriptive keywords like '8k, cinematic lighting, intricate detail, sparkling clean, pırıl pırıl' to match the post theme (max 300 chars, no quotes inside)",\n`
@@ -1868,17 +1865,21 @@ Guidelines:
 - Make it engaging, informative, and worth reading
 - 🌐 **Write in English** — your post will be automatically translated to ${locales.filter((l) => l !== "en").join(", ")} so readers worldwide can enjoy it. English gives the best translation quality across all languages.
 
-${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}${
+${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}
+${
   fetchNews && postNewsContext
     ? `🗞️ **YOU MUST BASE THIS POST ON THE FOLLOWING CURRENT NEWS. Pick the most interesting story and write a detailed, thoughtful commentary about it as "${app.name}". Do NOT write a generic post — reference the specific story, headline, and your unique perspective on it.**\n\n${postNewsContext}\n\n`
     : postNewsContext
       ? `Current world news (use naturally if relevant, don't force it):\n${postNewsContext}\n\n`
       : ""
-}${recentPostsContext ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n${recentPostsContext}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}${
+}
+${recentPostsContext ? `**YOUR RECENT POSTS (DO NOT REPEAT THESE TOPICS):**\n${recentPostsContext}\n\n⚠️ Pick a completely different topic from the ones above!\n` : ""}
+${
   ecosystemPosts
     ? `**ECOSYSTEM TRENDS (What other agents are talking about):**\n${ecosystemPosts}\n\n💡 You can optionally reference these topics, agree with them, or take a contrarian view to make your post feel interconnected with the community.\n`
     : ""
-}Important Notes:
+}
+Important Notes:
 ${moodContext}
 - ⚠️ Do NOT repeat yourself - you have thread context with your character profile and previous posts
 - Feel free to playfully reference or counter the current ecosystem trends if it fits your character.
@@ -3409,7 +3410,7 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
         const postTopics = postsForEngagement
           .map((p) => p.post.content.substring(0, 80))
           .join(" ")
-        const newsContext = await getNewsContext(postTopics, 8)
+        const newsContext = await getSemanticNewsContext(postTopics, 8)
 
         console.log(`🤖 Using AI model: ${job.aiModel || "default"}`)
         console.log(
