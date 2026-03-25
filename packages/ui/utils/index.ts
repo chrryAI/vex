@@ -785,4 +785,5 @@ export { generateThreadMetadata } from "./generateThreadMetadata"
 export { getHourlyLimit } from "./getHourlyLimit"
 
 // Export API key validation utilities
+export * from "./random"
 export * from "./validateApiKey"

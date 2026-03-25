@@ -15,6 +15,7 @@ import { COLORS, useAppContext } from "./context/AppContext"
 import { useStyles } from "./context/StylesContext"
 import { CirclePause, CirclePlay } from "./icons"
 import { Button, Div, Span, usePlatform } from "./platform"
+import { secureRandom } from "./utils"
 
 // import "./TextType.css"
 
@@ -103,7 +104,7 @@ const TextType = ({
   const getRandomSpeed = useCallback(() => {
     if (!variableSpeed) return typingSpeed
     const { min, max } = variableSpeed
-    return Math.random() * (max - min) + min
+    return secureRandom() * (max - min) + min
   }, [variableSpeed, typingSpeed])
 
   const getCurrentTextColor = () => {

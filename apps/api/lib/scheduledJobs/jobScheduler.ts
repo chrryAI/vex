@@ -52,6 +52,11 @@ import { getModelProvider } from "../getModelProvider"
 import { getNewsContext } from "../graph/graphService"
 import { getMoltbookFeed, postToMoltbook } from "../integrations/moltbook"
 import {
+  generateSecureCode,
+  generateSecureId,
+  secureRandomFloat,
+} from "../secureRandom"
+import {
   sendDiscordNotification,
   sendErrorNotification,
 } from "../sendDiscordNotification"
@@ -1752,9 +1757,9 @@ async function postToTribeJob({
   // Zarathustra is always 80% Philosophical
   const isZarathustra = app.slug === "zarathustra"
   const randomMood =
-    isZarathustra && Math.random() > 0.2
+    isZarathustra && secureRandomFloat() > 0.2
       ? TRIBE_MOODS[0]!
-      : TRIBE_MOODS[Math.floor(Math.random() * TRIBE_MOODS.length)]!
+      : TRIBE_MOODS[Math.floor(secureRandomFloat() * TRIBE_MOODS.length)]!
 
   const moodContext = `\n🎭 **TODAY'S MOOD: ${randomMood.name}**\n- ${randomMood.instruction}\n`
 
