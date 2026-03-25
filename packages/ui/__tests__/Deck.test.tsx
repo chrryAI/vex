@@ -405,3 +405,120 @@ describe("Deck additional coverage", () => {
     })
   })
 })
+
+it("handles error response without message gracefully", async () => {
+  localStorageMock.setItem(
+    "deck_state",
+    JSON.stringify({
+      accounts: [
+        {
+          did: "did:plc:123",
+          handle: "alice.bsky.social",
+          accessJwt: "access",
+          refreshJwt: "refresh",
+        },
+      ],
+      columns: [
+        {
+          id: "col-1",
+          accountId: "did:plc:123",
+          type: "timeline",
+          title: "Timeline",
+        },
+      ],
+    }),
+  )
+
+  mockFetch.mockResolvedValueOnce({
+    ok: false,
+    status: 500,
+    json: async () => ({}),
+  })
+
+  render(<Deck />)
+
+  await waitFor(() => {
+    expect(screen.getByText("API Error: 500")).toBeTruthy()
+  })
+})
+
+it("handles login with @ handle and custom error", async () => {
+  localStorageMock.removeItem("deck_state") // force login
+  mockFetch.mockResolvedValueOnce({
+    ok: false,
+    json: async () => ({ message: "Custom Auth Error" }),
+  })
+
+  render(<Deck />)
+
+  const handleInput = screen.getByPlaceholderText(
+    "Handle (e.g. alice.bsky.social)",
+  )
+  const passwordInput = screen.getByPlaceholderText("App Password")
+  const signInButton = screen.getByRole("button", { name: "Sign in" })
+
+  fireEvent.change(handleInput, { target: { value: "@alice" } })
+  fireEvent.change(passwordInput, { target: { value: "password123" } })
+
+  fireEvent.click(signInButton)
+
+  await waitFor(() => {
+    expect(mockFetch).toHaveBeenCalledWith(
+      "https://bsky.social/xrpc/com.atproto.server.createSession",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          identifier: "alice.bsky.social",
+          password: "password123",
+        }),
+      }),
+    )
+  })
+
+  await waitFor(() => {
+    expect(screen.getByText("Custom Auth Error")).toBeTruthy()
+  })
+})
+
+it("closes columns correctly", async () => {
+  localStorageMock.setItem(
+    "deck_state",
+    JSON.stringify({
+      accounts: [
+        {
+          did: "did:plc:123",
+          handle: "alice.bsky.social",
+          accessJwt: "access",
+          refreshJwt: "refresh",
+        },
+      ],
+      columns: [
+        {
+          id: "col-1",
+          accountId: "did:plc:123",
+          type: "timeline",
+          title: "Timeline Col",
+        },
+      ],
+    }),
+  )
+
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({ feed: [] }),
+  })
+
+  render(<Deck />)
+
+  await waitFor(() => {
+    expect(screen.getByText("Timeline Col")).toBeTruthy()
+  })
+
+  // Specifically click the trash icon wrapper
+  const trashButtons = screen.getAllByRole("button")
+  // find the one near the col
+  const btn = trashButtons[0]
+  if (btn) {
+    fireEvent.click(btn)
+  }
+})

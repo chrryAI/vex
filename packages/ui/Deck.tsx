@@ -550,9 +550,8 @@ const PostItem = ({
               marginTop: "12px",
             }}
           >
-            {p.embed.images.map((img: any) => {
-              const imgKey =
-                img.thumb || img.fullsize || Math.random().toString()
+            {p.embed.images.map((img: any, i: number) => {
+              const imgKey = img.thumb || img.fullsize || `fallback-img-${i}`
               return (
                 <img
                   key={imgKey}
@@ -782,9 +781,8 @@ const ColumnView = ({
         ) : items.length === 0 ? (
           <div style={styles.center}>No items to show.</div>
         ) : (
-          items.map((item) => {
-            const itemKey =
-              item.post?.uri || item.uri || Math.random().toString()
+          items.map((item, idx) => {
+            const itemKey = item.post?.uri || item.uri || `fallback-item-${idx}`
             return (
               <PostItem
                 key={itemKey}
