@@ -130,7 +130,7 @@ const css = `
 
 `
 
-export default function Chrry() {
+export default function ChrryDotDev() {
   const config = chrryDev
 
   return (

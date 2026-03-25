@@ -376,9 +376,9 @@ const HipChat = ({
               />
             </A>
           )}
-          {!hipchat && (
+          {/* {!hipchat && (
             <Hippo dataTestId="chat-instruction" icon thread={thread} />
-          )}
+          )} */}
           <EnableSound />
           {thread && (
             <Bookmark
