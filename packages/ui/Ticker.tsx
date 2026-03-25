@@ -55,7 +55,7 @@ function Ticker({
       (instruction) =>
         `${instruction.emoji} ${decodeHtmlEntities(t(instruction.title, instructionConfig))}`,
     )
-  }, [instructions, instructionConfig])
+  }, [instructions, instructionConfig, t])
 
   if (!instructionTitles.length) return null
 

@@ -179,7 +179,7 @@ const TextType = ({
               setDisplayedText((prev) => prev + processedText[currentCharIndex])
               setCurrentCharIndex((prev) => prev + 1)
             },
-            variableSpeed ? typingSpeed : getRandomSpeed(),
+            variableSpeed ? getRandomSpeed() : typingSpeed,
           )
         } else if (textArray.length >= 1) {
           if (!loop && currentTextIndex === textArray.length - 1) return

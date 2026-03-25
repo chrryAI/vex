@@ -428,7 +428,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         setTimeout(() => {
           window.location.href = "/"
-        }, 30)
+        }, 100)
         // setIsRemovingApp(true)
 
         // await refetchAccountApps()

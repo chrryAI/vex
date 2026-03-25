@@ -184,8 +184,6 @@ export default function Hippo({
     setShowAddToHomeScreen,
   } = useNavigationContext()
 
-  const hipchat = rest.hipchat || isHippoOpen === `hippo-${dataTestId}`
-  console.log(`🚀 ~ dataTestId:`, dataTestId)
   console.log(`🚀 ~ isHippoOpen:`, isHippoOpen)
   const {
     isManagingApp,
@@ -225,6 +223,8 @@ export default function Hippo({
   )
 
   const [isChatOpen, setIsChatOpenInternal] = useState<boolean>(false)
+  const hipchat =
+    isChatOpen && (rest.hipchat || isHippoOpen === `hippo-${dataTestId}`)
 
   const setIsChatOpen = (value: boolean) => {
     setIsChatOpenInternal(value)
