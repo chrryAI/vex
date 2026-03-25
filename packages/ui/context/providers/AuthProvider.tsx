@@ -2113,7 +2113,7 @@ export function AuthProvider({
     mutate: refetchApps,
     isLoading: isLoadingApps,
   } = useSWR(
-    token && ["app", appId, skipAppCacheTemp, isManagingApp],
+    token && ["app", appId, skipAppCacheTemp, isManagingApp, postId],
     async () => {
       try {
         if (!token) return
@@ -2122,6 +2122,7 @@ export function AuthProvider({
           appId,
           chrryUrl,
           pathname,
+          postId,
           skipCache: isManagingApp
             ? isOwner(app, {
                 userId: user?.id,

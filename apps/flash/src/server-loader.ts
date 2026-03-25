@@ -426,6 +426,7 @@ export async function loadServerData(
           token: apiKey,
           pathname,
           API_URL,
+          postId,
         })
       : ({ id: appId } as appWithStore)
 
