@@ -1796,7 +1796,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         <AppLink
                           isTribe={false}
                           app={app}
-                          icon={<Img size={32} app={app} />}
+                          icon={<Img size={28} app={app} />}
                         />
                       )}
                       <Ticker
