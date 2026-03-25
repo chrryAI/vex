@@ -420,6 +420,7 @@ export default function Watermelon() {
                   cursorCharacter="_"
                   deletingSpeed={20}
                   paused={paused}
+                  maxWidth={viewPortWidth - 70}
                 />
               </Div>
               <Div
@@ -1478,6 +1479,7 @@ export default function Watermelon() {
                   style={{
                     color: "var(--shade-6)",
                   }}
+                  maxWidth={viewPortWidth - 150}
                   paused={paused}
                 />
               </Div>
