@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Install pnpm and vite-plus
-RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14 --ignore-scripts
+RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14 --ignore-scripts --force
 
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./

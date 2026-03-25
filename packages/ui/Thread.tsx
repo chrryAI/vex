@@ -485,9 +485,9 @@ const Thread = ({
         )}
 
         <HipChat
-          dataTestId={
-            threadId && !isEmpty ? "thread-instruction" : "home-instruction"
-          }
+          // dataTestId={
+          //   threadId && !isEmpty ? "thread-instruction" : "home-instruction"
+          // }
           isMobileDevice={isMobileDevice}
           hipchat={false}
           compactMode={showFocus || showTribe}

@@ -1413,7 +1413,7 @@ export default function Watermelon() {
                 }}
               >
                 🍀
-                <Hippo />
+                <Hippo dataTestId="hippo-wm" />
                 <A href="/about">
                   {app?.store?.app?.icon || "🍒"} /{t("about")}
                 </A>

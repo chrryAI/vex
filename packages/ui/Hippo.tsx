@@ -122,12 +122,6 @@ export default function Hippo({
 }) {
   const { t, console } = useAppContext()
 
-  const [hipchat, setHipchat] = useState(rest.hipchat)
-
-  useEffect(() => {
-    setHipchat(rest.hipchat)
-  }, [rest.hipchat])
-
   const showButton = as === "button"
   const icon = as === "icon"
 
@@ -190,6 +184,9 @@ export default function Hippo({
     setShowAddToHomeScreen,
   } = useNavigationContext()
 
+  const hipchat = rest.hipchat || isHippoOpen === `hippo-${dataTestId}`
+  console.log(`🚀 ~ dataTestId:`, dataTestId)
+  console.log(`🚀 ~ isHippoOpen:`, isHippoOpen)
   const {
     isManagingApp,
     appFormWatcher,
@@ -230,7 +227,6 @@ export default function Hippo({
   const [isChatOpen, setIsChatOpenInternal] = useState<boolean>(false)
 
   const setIsChatOpen = (value: boolean) => {
-    setHipchat(value)
     setIsChatOpenInternal(value)
   }
 
@@ -451,7 +447,7 @@ export default function Hippo({
   const isOpen = !!isHippoOpen
 
   const setIsOpen = (open: boolean) => {
-    setIsOpenInternal(open ? `${dataTestId}-chat` : undefined)
+    setIsOpenInternal(open ? `hippo-${dataTestId}` : undefined)
     if (!open) {
       setCollaborationStep(0)
     }
@@ -950,7 +946,7 @@ export default function Hippo({
             setIsArtifactsOpen(false)
           }}
         >
-          {hipchat && isDevelopment ? (
+          {hipchat && isDevelopment && dataTestId ? (
             <Div
               style={{
                 display: "flex",
@@ -959,12 +955,9 @@ export default function Hippo({
             >
               <HipChat
                 hipchat={hipchat}
-                dataTestId={
-                  isHippoOpen
-                    ? `hippo-${dataTestId}-chat`
-                    : `${dataTestId}-chat`
-                }
-                compactMode={false}
+                dataTestId={`hippo-${dataTestId}`}
+                compactMode={true}
+                isMobileDevice={true}
                 showSuggestions={false}
                 style={{ position: "relative", top: 15 }}
               />
