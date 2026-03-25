@@ -550,8 +550,8 @@ const PostItem = ({
               marginTop: "12px",
             }}
           >
-            {p.embed.images.map((img: any, i: number) => {
-              const imgKey = img.thumb || img.fullsize || `fallback-img-${i}`
+            {p.embed.images.map((img: any) => {
+              const imgKey = img.thumb || img.fullsize || crypto.randomUUID()
               return (
                 <img
                   key={imgKey}
@@ -746,9 +746,9 @@ const ColumnView = ({
       </div>
 
       <div style={styles.columnBody}>
-        {loading ? (
-          <div style={styles.center}>Loading...</div>
-        ) : error ? (
+        {loading && <div style={styles.center}>Loading...</div>}
+
+        {!loading && error && (
           <div style={styles.center}>
             <div style={{ color: theme.danger }}>{error}</div>
             <button
@@ -778,11 +778,17 @@ const ColumnView = ({
               </button>
             )}
           </div>
-        ) : items.length === 0 ? (
+        )}
+
+        {!loading && !error && items.length === 0 && (
           <div style={styles.center}>No items to show.</div>
-        ) : (
-          items.map((item, idx) => {
-            const itemKey = item.post?.uri || item.uri || `fallback-item-${idx}`
+        )}
+
+        {!loading &&
+          !error &&
+          items.length > 0 &&
+          items.map((item) => {
+            const itemKey = item.post?.uri || item.uri || crypto.randomUUID()
             return (
               <PostItem
                 key={itemKey}
@@ -790,8 +796,7 @@ const ColumnView = ({
                 onClick={() => handlePostClick(item.post?.uri || item.uri)}
               />
             )
-          })
-        )}
+          })}
       </div>
     </div>
   )
