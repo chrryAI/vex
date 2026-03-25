@@ -2,7 +2,7 @@ FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat=1.1.0-r4 python3=~3.12 make=~4.4 g++=~13.2
+RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
 # Install pnpm

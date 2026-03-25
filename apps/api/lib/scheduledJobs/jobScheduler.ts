@@ -2275,7 +2275,7 @@ ${moodContext}
     // Post to Bluesky (non-blocking)
     const blueskyCredentials = await getBlueskyCredentials({ app })
     if (blueskyCredentials) {
-      const postUrl = `${getWhiteLabelUrl(app)}/p/${post.id}`
+      const postUrl = `${await getWhiteLabelUrl(app)}/p/${post.id}`
       const footer = `\n\n${postUrl}`
       const maxBodyLength = 300 - footer.length
 
@@ -2417,7 +2417,7 @@ ${moodContext}
               },
               {
                 name: "Link",
-                value: `[View Post](${getWhiteLabelUrl(app)}/p/${post.id})`,
+                value: `[View Post](${await getWhiteLabelUrl(app)}/p/${post.id})`,
                 inline: false,
               },
             ],
@@ -3068,11 +3068,14 @@ ${commentsCount > 0 ? "Successfully engaged with other apps' posts." : "No suita
 
       // Add commented posts details
       if (commentedPosts.length > 0) {
-        const postsDetails = commentedPosts
-          .map((p) => {
-            return `💬 [${p.appName}](${getWhiteLabelUrl(app)}/p/${p.postId})\n_"${p.comment}${p.comment.length >= 100 ? "..." : ""}"_`
-          })
-          .join("\n\n")
+        const postsDetails = (
+          await Promise.all(
+            commentedPosts.map(async (p) => {
+              const whiteLabelUrl = await getWhiteLabelUrl(app)
+              return `💬 [${p.appName}](${whiteLabelUrl}/p/${p.postId})\n_"${p.comment}${p.comment.length >= 100 ? "..." : ""}"_`
+            }),
+          )
+        ).join("\n\n")
 
         commentFields.push({
           name: "Commented Posts",
@@ -3882,7 +3885,7 @@ Respond ONLY with this JSON array (no extra text):
                           },
                           {
                             name: "Post Link",
-                            value: `${getWhiteLabelUrl(app)}/p/${postData.post.id}`,
+                            value: `${await getWhiteLabelUrl(app)}/p/${postData.post.id}`,
                             inline: false,
                           },
                         ],
@@ -4019,18 +4022,21 @@ ${blocksCount > 0 ? `- 🚫 **Blocks:** ${blocksCount}` : ""}
 
     // Add engaged posts details
     if (engagedPosts.length > 0) {
-      const postsDetails = engagedPosts
-        .map((p) => {
-          const actions = [
-            p.reaction ? p.reaction : null,
-            p.commented ? "💬" : null,
-            p.followed ? "👥" : null,
-          ]
-            .filter(Boolean)
-            .join(" ")
-          return `${actions} [${p.appName}](${getWhiteLabelUrl(app)}/p/${p.postId})`
-        })
-        .join("\n")
+      const postsDetails = (
+        await Promise.all(
+          engagedPosts.map(async (p) => {
+            const actions = [
+              p.reaction ? p.reaction : null,
+              p.commented ? "💬" : null,
+              p.followed ? "👥" : null,
+            ]
+              .filter(Boolean)
+              .join(" ")
+            const whiteLabelUrl = await getWhiteLabelUrl(app)
+            return `${actions} [${p.appName}](${whiteLabelUrl}/p/${p.postId})`
+          }),
+        )
+      ).join("\n")
 
       notificationFields.push({
         name: "Engaged Posts",

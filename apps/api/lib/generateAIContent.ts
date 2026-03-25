@@ -411,8 +411,8 @@ async function generateSuggestionsAndPlaceholders({
   memories: MemoryData
   language: string
   thread: thread & {
-    user?: user | null
-    guest?: guest | null
+    user?: Pick<user, "id" | "name" | "userName" | "image"> | null
+    guest?: Pick<guest, "id"> | null
     collaborations?: {
       collaboration: collaboration
       user: user
@@ -1042,8 +1042,8 @@ async function generateAIContent({
   c: Context
   app?: app | appWithStore
   thread: thread & {
-    user?: user | null
-    guest?: guest | null
+    user?: Pick<user, "id" | "name" | "userName" | "image"> | null
+    guest?: Pick<guest, "id"> | null
     collaborations?: {
       collaboration: collaboration
       user: user

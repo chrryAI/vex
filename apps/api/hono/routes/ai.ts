@@ -1509,8 +1509,8 @@ ai.post("/", async (c) => {
     guest?: guest
 
     thread: thread & {
-      user: user | null
-      guest: guest | null
+      user: Pick<user, "id" | "name" | "userName" | "image"> | null
+      guest: Pick<guest, "id"> | null
       collaborations?: {
         collaboration: collaboration
         user: user

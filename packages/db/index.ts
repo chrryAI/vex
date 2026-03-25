@@ -2673,17 +2673,19 @@ export const getThread = async ({
   return result
     ? {
         ...result.threads,
-        user: {
-          id: result.user?.id,
-          name: result.user?.name,
-          userName: result.user?.userName,
-          createdOn: result.user?.createdOn,
-          updatedOn: result.user?.updatedOn,
-          image: result.user?.image,
-          // activeOn: result.user?.activeOn,
-          // isOnline: result.user?.isOnline,
-        } as user | null,
-        guest: result.guest,
+        user: result.user
+          ? {
+              id: result.user?.id,
+              name: result.user?.name,
+              userName: result.user?.userName,
+              image: result.user?.image,
+            }
+          : (null as user | null),
+        guest: result.guest
+          ? {
+              id: result.guest?.id,
+            }
+          : result.guest,
         collaborations: await getCollaborations({
           threadId: result.threads.id,
         }),
