@@ -88,7 +88,7 @@ export default function AppLink({
       tribe: isTribe,
       pear: isPear,
     })
-  }, [currentApp, loadingApp, isTribe, isPear])
+  }, [currentApp, loadingApp, isTribe, isPear, href])
 
   useEffect(() => {
     const sa = storeApps.find((a) => a.id === app.id)
