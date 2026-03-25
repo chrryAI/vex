@@ -1559,12 +1559,14 @@ async function postToTribeJob({
   generateImage,
   generateVideo,
   fetchNews,
+  languages,
 }: {
   job: scheduledJob
   postType?: string
   generateImage?: boolean
   generateVideo?: boolean
   fetchNews?: boolean
+  languages?: string[]
 }): Promise<{
   success?: boolean
   error?: string
@@ -1793,7 +1795,11 @@ async function postToTribeJob({
     // Fetch semantically relevant news for this agent's context
     const agentContext = `${app.name} ${app.systemPrompt?.substring(0, 100) || ""} ${job.contentRules?.topics?.join(" ") || ""}`
     // When fetchNews is true, load more headlines so the AI has rich material to write about
-    const postNewsContext = await getSemanticNewsContext(agentContext, 10)
+    const postNewsContext = await getSemanticNewsContext(
+      agentContext,
+      10,
+      languages,
+    )
 
     const imagePromptJsonField = generateImage
       ? `  "imagePrompt": "An ultra-high-definition, photorealistic Flux-v1.1-pro optimized prompt. Use descriptive keywords like '8k, cinematic lighting, intricate detail, sparkling clean, pırıl pırıl' to match the post theme (max 300 chars, no quotes inside)",\n`
@@ -3117,7 +3123,13 @@ ${commentsCount > 0 ? "Successfully engaged with other apps' posts." : "No suita
   }
 }
 
-async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
+async function engageWithTribePosts({
+  job,
+  languages,
+}: {
+  job: scheduledJob
+  languages?: string[]
+}): Promise<{
   success?: boolean
   error?: string
 }> {
@@ -3410,7 +3422,7 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
         const postTopics = postsForEngagement
           .map((p) => p.post.content.substring(0, 80))
           .join(" ")
-        const newsContext = await getSemanticNewsContext(postTopics, 8)
+        const newsContext = await getSemanticNewsContext(postTopics, 8, languages)
 
         console.log(`🤖 Using AI model: ${job.aiModel || "default"}`)
         console.log(
@@ -4471,6 +4483,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             legacyGenerateImage,
             legacyFetchNews,
             legacyGenerateVideo,
+            legacyLanguages,
           )
           if (!response.output || response.error) {
             throw new Error(response.error || "Unknown error")
@@ -4864,9 +4877,19 @@ async function executeJobType({
       }
       break
 
-    case "tribe_engage":
+    case "tribe_engage": {
+      const matchedSlot = job.scheduledTimes?.find((s) => {
+        const [h, m] = s.time.split(":").map(Number)
+        const now = new Date()
+        const currentMins = now.getUTCHours() * 60 + now.getUTCMinutes()
+        const slotMins = (h ?? 0) * 60 + (m ?? 0)
+        return Math.abs(currentMins - slotMins) <= 15
+      })
+      const legacyLanguages =
+        matchedSlot?.languages || (job.metadata as any)?.languages
+
       try {
-        const tribeEngageResult = await executeTribeEngage(job)
+        const tribeEngageResult = await executeTribeEngage(job, legacyLanguages)
         if (tribeEngageResult?.error) {
           throw new Error(tribeEngageResult.error)
         }
@@ -4887,6 +4910,7 @@ async function executeTribePost(
   generateImage?: boolean,
   fetchNews?: boolean,
   generateVideo?: boolean,
+  languages?: string[],
 ) {
   const result = await postToTribeJob({
     job,
@@ -4894,6 +4918,7 @@ async function executeTribePost(
     generateImage,
     generateVideo,
     fetchNews,
+    languages,
   })
 
   return result
@@ -4907,9 +4932,10 @@ async function executeTribeComment(job: scheduledJob) {
   return result
 }
 
-async function executeTribeEngage(job: scheduledJob) {
+async function executeTribeEngage(job: scheduledJob, languages?: string[]) {
   const result = await engageWithTribePosts({
     job,
+    languages,
   })
 
   return result

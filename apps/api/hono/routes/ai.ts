@@ -512,7 +512,10 @@ async function getRelevantMemoryContext({
  * - Bloomberg agent → Only Bloomberg news
  * - Generic agents → All news sources
  */
-async function getNewsContext(slug?: string | null): Promise<string> {
+async function getNewsContext(
+  slug?: string | null,
+  language?: string | null,
+): Promise<string> {
   try {
     let news: any[] = []
 
@@ -532,7 +535,11 @@ async function getNewsContext(slug?: string | null): Promise<string> {
       news = await getNewsBySource(source, 20)
     } else {
       // Generic agent → Use semantic search by app name/slug to find relevant news
-      const semanticContext = await getSemanticNewsContext(slug || "tech", 10)
+      const semanticContext = await getSemanticNewsContext(
+        slug || "tech",
+        10,
+        language ? [language] : undefined,
+      )
       if (semanticContext)
         return `\n\n## Relevant News Context:\n${semanticContext}`
 
@@ -3248,7 +3255,7 @@ ${(() => {
 
   // Get news context based on app
   const newsContext = await tracker.track("news_context", () =>
-    getNewsContext(requestApp?.slug),
+    getNewsContext(requestApp?.slug, requestApp?.language),
   )
 
   // Get live analytics context for Grape

@@ -1,16 +1,17 @@
 import {
   and,
+  asc,
   cosineDistance,
   db,
   desc,
   eq,
   type guest,
+  inArray,
   sql,
   type user,
 } from "@repo/db"
 import { newsArticles, tribeNews } from "@repo/db/src/schema"
 import { embed } from "ai"
-import { asc } from "drizzle-orm"
 import Parser from "rss-parser"
 import { getEmbeddingProvider } from "./getModelProvider"
 
@@ -279,26 +280,60 @@ export async function searchNews(
 export async function getSemanticNewsContext(
   queryText: string,
   limit: number = 10,
+  languages?: string[],
 ): Promise<string> {
   try {
     const embedding = await getEmbedding({ text: queryText })
     if (!embedding) return ""
 
+    // Build the filters
+    const filters = []
+    if (languages && languages.length > 0) {
+      filters.push(inArray(tribeNews.category, languages))
+    }
+
     const results = await db
       .select()
       .from(tribeNews)
+      .where(filters.length > 0 ? and(...filters) : undefined)
       .orderBy(asc(cosineDistance(tribeNews.embedding, embedding)))
       .limit(limit)
 
     if (results.length === 0) {
-      // Fallback to newsArticles if tribeNews is empty
+      // Fallback to newsArticles (or any language) if no matching results in tribeNews
+      const fallbackFilters = []
+      if (languages && languages.length > 0) {
+        fallbackFilters.push(inArray(newsArticles.category, languages))
+      }
+
       const fallbackResults = await db
         .select()
         .from(newsArticles)
+        .where(fallbackFilters.length > 0 ? and(...fallbackFilters) : undefined)
         .orderBy(asc(cosineDistance(newsArticles.embedding, embedding)))
         .limit(limit)
 
-      if (fallbackResults.length === 0) return ""
+      if (fallbackResults.length === 0) {
+        // Absolute fallback: Just get anything if language filter is too restrictive
+        const absoluteFallback = await db
+          .select()
+          .from(tribeNews)
+          .orderBy(asc(cosineDistance(tribeNews.embedding, embedding)))
+          .limit(limit)
+
+        if (absoluteFallback.length === 0) return ""
+
+        return absoluteFallback
+          .map((article) => {
+            const source = article.source || "unknown"
+            const category = article.category || ""
+            const tag = [source.toUpperCase(), category]
+              .filter(Boolean)
+              .join(" / ")
+            return `- [${tag}] ${article.title}`
+          })
+          .join("\n")
+      }
 
       const lines = fallbackResults.map((article) => {
         const source = article.source || "unknown"

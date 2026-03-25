@@ -222,6 +222,7 @@ export { redis, upstashRedis } from "./src/redis"
 // Export Better Auth tables
 export {
   and,
+  asc,
   baAccounts,
   baSessions,
   baVerifications,
