@@ -13,6 +13,7 @@
 // Make Chrry the default export
 export { default as Chrry, default } from "./Chrry"
 export { HistoryRouterProvider } from "./context/providers/HistoryRouterProvider"
+export { default as Deck } from "./Deck"
 // Re-export commonly used utilities and hooks
 export * from "./hooks"
 export * from "./lib"
