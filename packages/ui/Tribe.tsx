@@ -1964,9 +1964,16 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         />
                         <P>
                           <A href={`/${app?.store?.slug}`} target="_blank">
-                            {t(app?.store?.title ?? "")}
+                            {t(app?.store?.name ?? "")}
                           </A>{" "}
-                          - {t(app?.store?.description ?? "")}
+                          {t(
+                            app?.store?.title ? ` - ${app?.store?.title}` : "",
+                          )}
+                          {t(
+                            app?.store?.description
+                              ? ` - ${app?.store?.description}`
+                              : "",
+                          )}
                         </P>
                       </Div>
                     </Div>
