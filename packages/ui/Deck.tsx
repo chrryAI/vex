@@ -950,13 +950,26 @@ export default function Deck() {
         </div>
 
         {state.accounts.map((acc, i) => (
-          <div key={i} style={styles.sidebarIcon} title={`@${acc.handle}`}>
+          <button
+            type="button"
+            key={i}
+            style={{
+              ...styles.sidebarIcon,
+              border: "none",
+              padding: 0,
+              background: "none",
+            }}
+            onClick={() => {
+              addColumn(acc.did, "timeline", "Timeline")
+            }}
+            title={`Add Timeline for @${acc.handle}`}
+          >
             <img
               src={`https://ui-avatars.com/api/?name=${acc.handle}&background=random`}
               style={{ width: "100%", height: "100%", borderRadius: "50%" }}
               alt={acc.handle}
             />
-          </div>
+          </button>
         ))}
 
         <div
