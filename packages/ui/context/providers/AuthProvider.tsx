@@ -1279,11 +1279,13 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
-  const [tickerPaused, setTickerPaused] = useState(false)
+  const [tickerPaused, setTickerPaused] = useLocalStorage<boolean>(
+    "tickerPaused",
+    false,
+  )
 
   const [postToTribe, setPostToTribe] = useState(false)
   const [postToMoltbook, setPostToMoltbook] = useState(false)
