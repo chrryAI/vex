@@ -449,7 +449,7 @@ export default function Hippo({
 
   const instructionsListRef = useRef<HTMLDivElement>(null)
 
-  const isOpen = !!isHippoOpen
+  const isOpen = dataTestId ? isHippoOpen === `hippo-${dataTestId}` : false
 
   const setIsOpen = (open: boolean) => {
     dataTestId && setIsOpenInternal(open ? `hippo-${dataTestId}` : undefined)
