@@ -69,6 +69,7 @@ const TextType = ({
   onToggle,
 
   style,
+  paused: pausedProp,
   ...props
 }: TextTypeProps) => {
   const [displayedText, setDisplayedText] = useState("")
@@ -85,11 +86,11 @@ const TextType = ({
 
   const { utilities } = useStyles()
 
-  const [paused, setPaused] = useState(false)
+  const [paused, setPaused] = useState(pausedProp || false)
 
   useEffect(() => {
-    props.paused !== undefined && setPaused(props.paused)
-  }, [props.paused])
+    pausedProp !== undefined && setPaused(pausedProp)
+  }, [pausedProp])
 
   useEffect(() => {
     onToggle?.(paused)

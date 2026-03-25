@@ -64,7 +64,7 @@ import Subscribe from "./Subscribe"
 import TextType from "./TextType"
 import ThemeSwitcher from "./ThemeSwitcher"
 import Ticker from "./Ticker"
-import { VERSION } from "./utils"
+import { VERSION, validateApiKey } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import Weather from "./Weather"
 
@@ -389,7 +389,7 @@ export default function Watermelon() {
                   {t("+{{count}} AI Apps", { count: storeApps.length })}
                 </A>
               </Div>
-              <P
+              <Div
                 style={{
                   fontSize: "1rem",
                   color: "var(--shade-7)",
@@ -421,8 +421,7 @@ export default function Watermelon() {
                   deletingSpeed={20}
                   paused={paused}
                 />
-                {/* 🔪<Span>{t("Choose your weapon")}</Span>🏹 */}
-              </P>
+              </Div>
               <Div
                 style={{
                   display: "flex",
@@ -711,9 +710,10 @@ export default function Watermelon() {
                         return
                       }
 
-                      // Client-side regex validation
-                      const openRouterRegex = /^sk-or-v1-[a-zA-Z0-9]{64}$/
-                      if (!openRouterRegex.test(openRouterApiKey.trim())) {
+                      // Client-side regex validation using centralized utility
+                      if (
+                        !validateApiKey("openrouter", openRouterApiKey.trim())
+                      ) {
                         toast.error(
                           t(
                             "Invalid OpenRouter API key format (Expected sk-or-v1-...)",

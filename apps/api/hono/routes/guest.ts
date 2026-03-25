@@ -1,10 +1,7 @@
+import { type ProviderName, validateApiKey } from "@chrryai/chrry/utils"
 import { encrypt, getGuest, updateGuest } from "@repo/db"
 import { Hono } from "hono"
 import { captureException } from "../../lib/captureException"
-import {
-  type ProviderName,
-  validateApiKey,
-} from "../../lib/utils/validateApiKey"
 import { getGuest as getGuestAction } from "../lib/auth"
 
 export const guest = new Hono()
@@ -60,7 +57,7 @@ guest.patch("/", async (c) => {
 
   try {
     if (apiKeys && typeof apiKeys === "object") {
-      for (const [provider, value] of Object.entries(apiKeys || {})) {
+      for (const [provider, value] of Object.entries(apiKeys)) {
         await updateKey(provider as ProviderName, value as string)
       }
     }
