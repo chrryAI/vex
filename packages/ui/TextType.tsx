@@ -28,6 +28,7 @@ export interface TextTypeProps {
   loop?: boolean
   className?: string
   showCursor?: boolean
+  maxWidth?: number
   hideCursorWhileTyping?: boolean
   cursorCharacter?: string
   cursorClassName?: string
@@ -66,6 +67,7 @@ const TextType = ({
   startOnVisible = false,
   reverseMode = false,
   showControls = false,
+  maxWidth,
   onToggle,
 
   style,
@@ -225,7 +227,14 @@ const TextType = ({
       isDeleting)
 
   return (
-    <Div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
+    <Div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: ".35rem",
+        ...style,
+      }}
+    >
       {showControls && (
         <Button
           title={paused ? t("Play") : t("Pause")}
@@ -235,8 +244,6 @@ const TextType = ({
           }}
           style={{
             ...utilities.link.style,
-            position: "relative",
-            top: "1px",
           }}
         >
           {paused ? (
@@ -259,12 +266,11 @@ const TextType = ({
             style={{
               color: getCurrentTextColor() || "inherit",
               display: "inline-block",
-              maxWidth: viewPortWidth - 75,
+              maxWidth,
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
               verticalAlign: "bottom",
-              ...style,
             }}
           >
             {displayedText}

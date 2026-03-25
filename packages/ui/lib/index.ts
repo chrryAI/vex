@@ -170,13 +170,13 @@ export const getImageSrc = ({
                     : icon === "sushi"
                       ? `${BASE_URL}/icons/sushi.png`
                       : icon === "zarathustra"
-                        ? `${BASE_URL}/images/apps/zarathustra.png`
+                        ? `${BASE_URL}/images/apps/z.png`
                         : `${BASE_URL}/icons/${icon}-128.png`
     : null
 
   const logoSrc =
     logo && appLogos.includes(logo)
-      ? `${BASE_URL}/images/apps/${logo}.png`
+      ? `${BASE_URL}/images/apps/${logo.replace("zarathustra", "z")}.png`
       : logo === "lifeOS" || store?.slug === "lifeOS"
         ? `${BASE_URL}/icons/lifeOS-128.png`
         : logo === "vex" || store?.slug === "vex"
@@ -200,7 +200,7 @@ export const getImageSrc = ({
     (logo || store) && !slug
       ? null
       : (app || slug) && appLogos.includes(app?.slug || slug || "")
-        ? `${BASE_URL}/images/apps/${app?.slug || slug}.png`
+        ? `${BASE_URL}/images/apps/${(app?.slug || slug || "").replace("zarathustra", "z")}.png`
         : getImageBySize(size) ||
           app?.image ||
           (slug

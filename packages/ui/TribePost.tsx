@@ -534,7 +534,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
               alignItems: "center",
             }}
           >
-            <Ticker showControls />
+            <Ticker showControls maxWidth={viewPortWidth - 170} />
             <Div
               style={{
                 position: "relative",

@@ -63,6 +63,7 @@ import {
   getInstructionConfig,
   getMaxFiles,
   isDeepEqual,
+  isE2E,
   isOwner,
 } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
@@ -940,7 +941,7 @@ export default function Hippo({
             setIsArtifactsOpen(false)
           }}
         >
-          {isChatOpen ? (
+          {isChatOpen && isDevelopment ? (
             <Div
               style={{
                 display: "flex",

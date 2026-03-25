@@ -1781,6 +1781,31 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         </AppLink>
                       )}
                     </Div>
+                    <Div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        position: "relative",
+                        bottom: -7.5,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      {app && (
+                        <AppLink
+                          isTribe={false}
+                          app={app}
+                          icon={<Img size={32} app={app} />}
+                        />
+                      )}
+                      <Ticker
+                        maxWidth={viewPortWidth - 70}
+                        showControls
+                        style={{
+                          color: COLORS[app?.themeColor as keyof typeof COLORS],
+                        }}
+                      />
+                    </Div>
                   </Div>
                   {getStoreApps({
                     style: { marginBottom: 25, marginTop: 5 },
@@ -1929,6 +1954,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         }}
                       >
                         <Ticker
+                          maxWidth={viewPortWidth - 70}
                           showControls
                           style={{
                             color:

@@ -3686,11 +3686,11 @@ When message language is unclear, default to this language.`
     fp && isE2EInternal ? fp : member?.fingerprint || guest?.fingerprint
 
   const isE2E =
-    !!fingerprint &&
-    !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
-    !!isE2EInternal &&
-    !job &&
-    !isDevelopment
+    (!!fingerprint &&
+      !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
+      !!isE2EInternal &&
+      !job) ||
+    isDevelopment
 
   // isE2E and fingerprint already declared earlier for performance optimization
 

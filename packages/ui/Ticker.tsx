@@ -9,11 +9,12 @@ import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 function Ticker({
   style,
   showControls = false,
-  ...props
+  maxWidth,
 }: {
   style?: React.CSSProperties
   paused?: boolean
   showControls?: boolean
+  maxWidth?: number
 }) {
   const { instructions } = useApp()
   const { colorScheme } = useTheme()
@@ -81,6 +82,7 @@ function Ticker({
         })
         setTickerPaused(value)
       }}
+      maxWidth={maxWidth}
       text={instructionTitles}
       typingSpeed={40}
       pauseDuration={800}
