@@ -271,17 +271,18 @@ export const chat = async ({
   let willFail = false
 
   const getNthInstruction = async (nth: number) => {
-    const items = page.getByTestId("instruction-item")
+    const items = page.getByTestId("chat-instruction-item")
     return items.nth(nth)
   }
 
-  const about = page.getByTestId("instruction-about")
   let instructionButton = await getNthInstruction(0)
-  let artifactsButton = page.getByTestId("instruction-modal-artifacts-button")
-  let instructionModal = page.getByTestId("instruction-modal")
-  let modalTextarea = page.getByTestId("instruction-modal-textarea")
-  let modalCharLeft = page.getByTestId("instruction-modal-char-left")
-  let modalSaveButton = page.getByTestId("instruction-modal-save-button")
+  let artifactsButton = page.getByTestId(
+    "chat-instruction-modal-artifacts-button",
+  )
+  let instructionModal = page.getByTestId("chat-instruction-modal")
+  let modalTextarea = page.getByTestId("chat-instruction-modal-textarea")
+  let modalCharLeft = page.getByTestId("chat-instruction-modal-char-left")
+  let modalSaveButton = page.getByTestId("chat-instruction-modal-save-button")
 
   let artifactsUploadButton = page.getByTestId(
     "instruction-artifacts-upload-button",
@@ -290,7 +291,6 @@ export const chat = async ({
   if (!threadId) {
     await expect(thread).not.toBeVisible()
     await expect(instructionButton).toBeVisible()
-    await expect(about).toBeVisible()
   } else {
     await expect(instructionButton).not.toBeVisible()
 
