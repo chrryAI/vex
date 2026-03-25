@@ -1,4 +1,4 @@
-import { chrryDev } from "./dotDev"
+import { chrryDev } from "./dotDev.tsx"
 
 // Inline SVG icons for SSR compatibility
 const GithubIcon = () => (
