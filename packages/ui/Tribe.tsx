@@ -1944,38 +1944,80 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         ) : null}
                       </Div>
 
-                      <Div
-                        style={{
-                          color: "var(--shade-7)",
-                          display: "flex",
-                          gap: 5,
-                          flexDirection: "column",
-                          alignSelf: "flex-start",
-                          alignItems: "flex-start",
-                        }}
-                      >
-                        <Ticker
-                          maxWidth={viewPortWidth - 70}
-                          showControls
+                      {app?.store?.appId === app?.id ? (
+                        <Div
                           style={{
-                            color:
-                              COLORS[app?.themeColor as keyof typeof COLORS],
+                            color: "var(--shade-7)",
+                            display: "flex",
+                            gap: 5,
+                            flexDirection: "column",
+                            alignSelf: "flex-start",
+                            alignItems: "flex-start",
                           }}
-                        />
-                        <P>
-                          <A href={`/${app?.store?.slug}`} target="_blank">
-                            {t(app?.store?.name ?? "")}
-                          </A>{" "}
-                          {t(
-                            app?.store?.title ? ` - ${app?.store?.title}` : "",
+                        >
+                          <Ticker
+                            maxWidth={viewPortWidth - 70}
+                            showControls
+                            style={{
+                              color:
+                                COLORS[app?.themeColor as keyof typeof COLORS],
+                            }}
+                          />
+                          <P>
+                            <A href={`/${app?.store?.slug}`} target="_blank">
+                              {t(app?.store?.name ?? "")}
+                            </A>{" "}
+                            {t(
+                              app?.store?.title
+                                ? ` - ${app?.store?.title}`
+                                : "",
+                            )}
+                            {t(
+                              app?.store?.description
+                                ? ` - ${app?.store?.description}`
+                                : "",
+                            )}
+                          </P>
+                        </Div>
+                      ) : (
+                        <Div
+                          style={{
+                            color: "var(--shade-7)",
+                            lineHeight: "1.6",
+                            fontSize: ".95rem",
+                            display: "flex",
+                            gap: 10,
+                            position: "relative",
+                            flexDirection: "column",
+                          }}
+                        >
+                          {app?.subtitle || app?.description ? (
+                            <Quote
+                              size={18}
+                              strokeWidth={1.25}
+                              style={{ position: "absolute", top: 5 }}
+                            />
+                          ) : (
+                            <Pin
+                              size={18}
+                              strokeWidth={1.25}
+                              style={{ position: "absolute", top: 5 }}
+                            />
                           )}
-                          {t(
-                            app?.store?.description
-                              ? ` - ${app?.store?.description}`
-                              : "",
-                          )}
-                        </P>
-                      </Div>
+                          <P style={{ paddingLeft: 25 }}>
+                            {app?.subtitle || app?.description ? (
+                              <>
+                                {t(app?.subtitle ?? "")}{" "}
+                                {t(app?.description ?? "")} {app?.icon}
+                              </>
+                            ) : (
+                              t(
+                                "This part will be updated when  App Creator pin a character profile 🧬",
+                              )
+                            )}
+                          </P>
+                        </Div>
+                      )}
                     </Div>
                   )}
 
@@ -2083,31 +2125,65 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     flexDirection: "column",
                   }}
                 >
-                  {app?.subtitle || app?.description ? (
-                    <Quote
-                      size={18}
-                      strokeWidth={1.25}
-                      style={{ position: "absolute", top: 5 }}
-                    />
+                  {app?.store?.appId === app?.id ? (
+                    <>
+                      {app?.subtitle || app?.description ? (
+                        <Quote
+                          size={18}
+                          strokeWidth={1.25}
+                          style={{ position: "absolute", top: 5 }}
+                        />
+                      ) : (
+                        <Pin
+                          size={18}
+                          strokeWidth={1.25}
+                          style={{ position: "absolute", top: 5 }}
+                        />
+                      )}
+                      <P style={{ paddingLeft: 25 }}>
+                        {app?.subtitle || app?.description ? (
+                          <>
+                            {t(app?.subtitle ?? "")} {t(app?.description ?? "")}{" "}
+                            {app?.icon}
+                          </>
+                        ) : (
+                          t(
+                            "This part will be updated when  App Creator pin a character profile 🧬",
+                          )
+                        )}
+                      </P>
+                    </>
                   ) : (
-                    <Pin
-                      size={18}
-                      strokeWidth={1.25}
-                      style={{ position: "absolute", top: 5 }}
-                    />
+                    <Div
+                      style={{
+                        color: "var(--shade-7)",
+                        display: "flex",
+                        gap: 5,
+                        flexDirection: "column",
+                        alignSelf: "flex-start",
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      <Ticker
+                        maxWidth={viewPortWidth - 70}
+                        showControls
+                        style={{
+                          color: COLORS[app?.themeColor as keyof typeof COLORS],
+                        }}
+                      />
+                      <P>
+                        <A href={`/${app?.store?.slug}`} target="_blank">
+                          {t(app?.store?.name ?? "")}
+                        </A>{" "}
+                        {t(app?.store?.title ? ` - ${app?.store?.title}` : "")}
+                        {t(
+                          app?.store?.description
+                            ? ` - ${app?.store?.description}`
+                            : "",
+                        )}
+                      </P>
+                    </Div>
                   )}
-                  <P style={{ paddingLeft: 25 }}>
-                    {app?.subtitle || app?.description ? (
-                      <>
-                        {t(app?.subtitle ?? "")} {t(app?.description ?? "")}{" "}
-                        {app?.icon}
-                      </>
-                    ) : (
-                      t(
-                        "This part will be updated when  App Creator pin a character profile 🧬",
-                      )
-                    )}
-                  </P>
                   <Div
                     style={{
                       display: "flex",
