@@ -192,9 +192,7 @@ export default function ChrryDotDev() {
                 rel="noopener noreferrer"
                 className="link"
               >
-                <GithubIcon />
-                <span>GitHub</span>
-                <ExternalLinkIcon />
+                GitHub
               </a>
             )}
             {config.links.npm && (
@@ -204,9 +202,7 @@ export default function ChrryDotDev() {
                 rel="noopener noreferrer"
                 className="link"
               >
-                <PackageIcon />
-                <span>npm</span>
-                <ExternalLinkIcon />
+                npm
               </a>
             )}
           </div>
