@@ -551,7 +551,8 @@ export function AuthProvider({
   const isOwner = utils.isOwner
 
   const pathname = (typeof window === "undefined" ? props.pathname : pn) || "/"
-
+  const postIdInitial = getPostId(pathname)
+  const [postId, setPostId] = useState(postIdInitial)
   // Ensure searchParams always has .get() method for compatibility
   const searchParams = (typeof window === "undefined"
     ? props.searchParams
@@ -2241,8 +2242,6 @@ export function AuthProvider({
   }, [storeAppsSwr, loadingAppId])
 
   const showFocusInitial = searchParams.get("focus") === "true"
-  const postIdInitial = getPostId(pathname)
-  const [postId, setPostId] = useState(postIdInitial)
 
   useEffect(() => {
     setPostId(postIdInitial)
