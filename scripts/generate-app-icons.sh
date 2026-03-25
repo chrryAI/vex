@@ -7,8 +7,8 @@ apps=("atlas" "bloom" "blossom" "chrry" "focus" "peach" "popcorn" "sushi" "vault
 sizes=(16 32 48 128)
 
 # Base directories
-input_dir="../apps/flash/public/images/apps"
-output_dir="../apps/extension/public/icons"
+input_dir="./apps/flash/public/images/apps"
+output_dir="./apps/extension/public/icons"
 
 # Create output directory if it doesn't exist
 mkdir -p "$output_dir"

@@ -119,7 +119,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "2.2.13",
+    version: siteConfig.version || "2.2.14",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
@@ -161,6 +161,8 @@ export default async ({ command, mode }) => {
           },
         }),
     // Sushi specific override for New Tab
+    // (Disabled as per user request to keep only the extension functionality)
+    /*
     ...(siteConfig.slug === "sushi"
       ? {
           chrome_url_overrides: {
@@ -168,6 +170,7 @@ export default async ({ command, mode }) => {
           },
         }
       : {}),
+    */
   }
 
   // Add browser_specific_settings for Firefox
