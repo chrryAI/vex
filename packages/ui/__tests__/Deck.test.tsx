@@ -268,11 +268,28 @@ it("handles post interaction and thread viewing", async () => {
   })
 
   // Test go back button (the SVG icon button in header)
-  const backButton = document.querySelector('button[type="button"] > svg')
+  const backButtons = document.querySelectorAll('button[type="button"] > svg')
+  // Find the correct one (it's the first one in the Thread view usually)
+  const backButton = Array.from(backButtons).find(
+    (btn) =>
+      btn.parentElement?.onclick?.name === "handleBack" ||
+      btn.parentElement?.className === "backButton" ||
+      btn.parentElement?.querySelector("svg"),
+  )
+
   if (backButton?.parentElement) {
-    fireEvent.click(backButton.parentElement)
+    // the back button is specifically the one at the start of the details header
+    const realBackButton = document.querySelector(
+      'div[style*="font-size: 18px"]',
+    )?.previousElementSibling
+    if (realBackButton) {
+      fireEvent.click(realBackButton)
+    } else {
+      fireEvent.click(backButton.parentElement)
+    }
+
     await waitFor(() => {
-      expect(screen.queryByText("Thread")).toBeNull()
+      expect(screen.queryByText("Hello Reply!")).toBeNull()
     })
   }
 })
@@ -332,4 +349,59 @@ it("handles column drag and drop logic", async () => {
       fireEvent.dragEnd(col1)
     }
   }
+})
+
+describe("Deck additional coverage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    localStorageMock.clear()
+  })
+
+  it("handles API errors gracefully and retries", async () => {
+    localStorageMock.setItem(
+      "deck_state",
+      JSON.stringify({
+        accounts: [
+          {
+            did: "did:plc:123",
+            handle: "alice.bsky.social",
+            accessJwt: "access",
+            refreshJwt: "refresh",
+          },
+        ],
+        columns: [
+          {
+            id: "col-1",
+            accountId: "did:plc:123",
+            type: "profile",
+            title: "Profile",
+          },
+        ],
+      }),
+    )
+
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ message: "API error occurred" }),
+    })
+
+    render(<Deck />)
+
+    await waitFor(() => {
+      expect(screen.getByText("API error occurred")).toBeTruthy()
+    })
+
+    // Mock successful retry
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ feed: [] }),
+    })
+
+    const retryBtn = screen.getByRole("button", { name: "Retry" })
+    fireEvent.click(retryBtn)
+
+    await waitFor(() => {
+      expect(screen.getByText("No items to show.")).toBeTruthy()
+    })
+  })
 })

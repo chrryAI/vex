@@ -490,6 +490,8 @@ const PostItem = ({
 
   return (
     <div
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       style={{
         ...styles.post,
         ...(isHovered && !isMain ? styles.postHover : {}),
@@ -500,6 +502,12 @@ const PostItem = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (onClick && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault()
+          onClick()
+        }
+      }}
     >
       <div
         style={{
@@ -542,19 +550,23 @@ const PostItem = ({
               marginTop: "12px",
             }}
           >
-            {p.embed.images.map((img: any, i: number) => (
-              <img
-                key={i}
-                src={img.thumb || img.fullsize}
-                style={{
-                  borderRadius: "12px",
-                  maxWidth: "100%",
-                  maxHeight: "300px",
-                  objectFit: "cover",
-                }}
-                alt="attachment"
-              />
-            ))}
+            {p.embed.images.map((img: any) => {
+              const imgKey =
+                img.thumb || img.fullsize || Math.random().toString()
+              return (
+                <img
+                  key={imgKey}
+                  src={img.thumb || img.fullsize}
+                  style={{
+                    borderRadius: "12px",
+                    maxWidth: "100%",
+                    maxHeight: "300px",
+                    objectFit: "cover",
+                  }}
+                  alt="attachment"
+                />
+              )
+            })}
           </div>
         )}
 
@@ -601,7 +613,7 @@ const ColumnView = ({
   // Drill-down path management
   const [path, setPath] = useState<string[]>([])
 
-  const currentViewUri = path.length > 0 ? path[path.length - 1] : null
+  const currentViewUri = path.length > 0 ? path.at(-1) : null
 
   const fetchData = useCallback(async () => {
     if (!account) return
@@ -719,12 +731,19 @@ const ColumnView = ({
             <span style={styles.columnHeaderAccount}>@{account.handle}</span>
           )}
         </div>
-        <div
-          style={{ cursor: "pointer", padding: "4px" }}
+        <button
+          type="button"
+          style={{
+            cursor: "pointer",
+            padding: "4px",
+            background: "none",
+            border: "none",
+            color: "inherit",
+          }}
           onClick={() => onClose(col.id)}
         >
           <TrashIcon />
-        </div>
+        </button>
       </div>
 
       <div style={styles.columnBody}>
@@ -763,13 +782,17 @@ const ColumnView = ({
         ) : items.length === 0 ? (
           <div style={styles.center}>No items to show.</div>
         ) : (
-          items.map((item, idx) => (
-            <PostItem
-              key={item.post?.uri || item.uri || idx}
-              post={item}
-              onClick={() => handlePostClick(item.post?.uri || item.uri)}
-            />
-          ))
+          items.map((item) => {
+            const itemKey =
+              item.post?.uri || item.uri || Math.random().toString()
+            return (
+              <PostItem
+                key={itemKey}
+                post={item}
+                onClick={() => handlePostClick(item.post?.uri || item.uri)}
+              />
+            )
+          })
         )}
       </div>
     </div>
@@ -806,7 +829,7 @@ export default function Deck() {
     }
   }, [state])
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.SyntheticEvent) => {
     e.preventDefault()
     setLoginLoading(true)
     setLoginError("")
@@ -925,8 +948,14 @@ export default function Deck() {
           </svg>
         </div>
 
-        <div
-          style={styles.sidebarIcon}
+        <button
+          type="button"
+          style={{
+            ...styles.sidebarIcon,
+            border: "none",
+            background: "none",
+            padding: 0,
+          }}
           onClick={() => {
             if (state.accounts.length > 0 && state.accounts[0]) {
               addColumn(state.accounts[0].did, "timeline", "Timeline")
@@ -935,19 +964,25 @@ export default function Deck() {
           title="Add Timeline"
         >
           <HomeIcon />
-        </div>
+        </button>
 
         {/* We can add buttons to add other column types here */}
 
         <div style={{ flex: 1 }} />
 
-        <div
-          style={styles.sidebarIcon}
+        <button
+          type="button"
+          style={{
+            ...styles.sidebarIcon,
+            border: "none",
+            background: "none",
+            padding: 0,
+          }}
           onClick={() => setShowLogin(true)}
           title="Add Account"
         >
           <UserIcon />
-        </div>
+        </button>
 
         {state.accounts.map((acc, i) => (
           <button
@@ -972,8 +1007,14 @@ export default function Deck() {
           </button>
         ))}
 
-        <div
-          style={styles.sidebarIcon}
+        <button
+          type="button"
+          style={{
+            ...styles.sidebarIcon,
+            border: "none",
+            background: "none",
+            padding: 0,
+          }}
           onClick={() => {
             if (confirm("Clear all data and logout?")) {
               localStorage.removeItem("deck_state")
@@ -984,7 +1025,7 @@ export default function Deck() {
           title="Settings/Logout"
         >
           <SettingsIcon />
-        </div>
+        </button>
       </div>
 
       {/* Main Deck Area */}
