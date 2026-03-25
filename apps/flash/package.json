@@ -38,6 +38,7 @@
     "vite-plugin-static-copy": "^4.0.0"
   },
   "devDependencies": {
+    "terser": "^5.39.0",
     "@types/express": "^5.0.6",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
