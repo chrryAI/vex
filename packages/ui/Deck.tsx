@@ -550,8 +550,9 @@ const PostItem = ({
               marginTop: "12px",
             }}
           >
-            {p.embed.images.map((img: any) => {
-              const imgKey = img.thumb || img.fullsize || crypto.randomUUID()
+            {p.embed.images.map((img: any, idx: number) => {
+              const imgKey =
+                img.thumb || img.fullsize || `img-${idx}-${Date.now()}`
               return (
                 <img
                   key={imgKey}
@@ -787,8 +788,9 @@ const ColumnView = ({
         {!loading &&
           !error &&
           items.length > 0 &&
-          items.map((item) => {
-            const itemKey = item.post?.uri || item.uri || crypto.randomUUID()
+          items.map((item, idx) => {
+            const itemKey =
+              item.post?.uri || item.uri || `item-${idx}-${Date.now()}`
             return (
               <PostItem
                 key={itemKey}
