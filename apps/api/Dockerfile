@@ -25,7 +25,6 @@ COPY packages/shared/package.json ./packages/shared/package.json
 COPY packages/sushi/package.json ./packages/sushi/package.json
 COPY packages/sushi/cli/package.json ./packages/sushi/cli/package.json
 COPY packages/sushi/packages/bam/package.json ./packages/sushi/packages/bam/package.json
-COPY packages/sushi/packages/memory/package.json ./packages/sushi/packages/memory/package.json
 COPY packages/sushi/packages/spatial-agents/package.json ./packages/sushi/packages/spatial-agents/package.json
 COPY packages/sushi/packages/strike/package.json ./packages/sushi/packages/strike/package.json
 COPY packages/typescript-config/package.json ./packages/typescript-config/package.json

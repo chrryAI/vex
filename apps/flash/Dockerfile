@@ -25,7 +25,6 @@ COPY packages/shared/package.json packages/shared/
 COPY packages/sushi/package.json packages/sushi/
 COPY packages/sushi/cli/package.json packages/sushi/cli/
 COPY packages/sushi/packages/bam/package.json packages/sushi/packages/bam/
-COPY packages/sushi/packages/memory/package.json packages/sushi/packages/memory/
 COPY packages/sushi/packages/spatial-agents/package.json packages/sushi/packages/spatial-agents/
 COPY packages/sushi/packages/strike/package.json packages/sushi/packages/strike/
 COPY packages/typescript-config/package.json packages/typescript-config/
@@ -114,6 +113,6 @@ ENV HOST="0.0.0.0"
 WORKDIR /app/apps/flash
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:5173/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:5173/health || exit 1
 
 CMD ["node", "server.js"]
