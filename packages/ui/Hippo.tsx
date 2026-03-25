@@ -278,13 +278,6 @@ export default function Hippo({
   }, [])
 
   const [files, setFilesInternal] = useState<File[]>([])
-  useEffect(() => {
-    if (files.length > 0 && !selectedAgent?.capabilities.pdf) {
-      favouriteAgent?.capabilities.pdf
-        ? setSelectedAgent(favouriteAgent)
-        : setSelectedAgent(user ? claudeAgent : deepSeekAgent)
-    }
-  }, [files, selectedAgent, user])
 
   const [threadArtifacts, setThreadArtifacts] = useState<
     {
