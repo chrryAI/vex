@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Install pnpm and vite-plus
-RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14 --ignore-scripts
+RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14 --ignore-scripts --force
 
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -56,7 +56,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Install pnpm and vite-plus
-RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14 --ignore-scripts
+RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14 --ignore-scripts --force
 
 # Copy everything from deps stage (package.json files and node_modules)
 COPY --from=deps /app ./
@@ -79,7 +79,7 @@ RUN groupadd --system --gid 1001 nodejs && \
     useradd --system --uid 1001 --gid nodejs viteuser
 
 # Install pnpm and vite-plus
-RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14 --ignore-scripts
+RUN npm install -g pnpm@9.15.0 vite-plus@0.1.14 --ignore-scripts --force
 
 # Copy package files
 COPY --chown=viteuser:nodejs package.json pnpm-lock.yaml pnpm-workspace.yaml ./

@@ -224,11 +224,23 @@ export default function Hippo({
 
   const [isChatOpen, setIsChatOpenInternal] = useState<boolean>(false)
   const hipchat =
-    isChatOpen && (rest.hipchat || isHippoOpen === `hippo-${dataTestId}`)
+    dataTestId &&
+    isChatOpen &&
+    (rest.hipchat || isHippoOpen === `hippo-${dataTestId}`)
+  console.log(`🚀 ~ hipchat:`, hipchat)
 
+  console.log(`🚀 ~ isHippoOpen:`, isHippoOpen)
+  console.log(`🚀 ~ dataTestId:`, dataTestId)
   const setIsChatOpen = (value: boolean) => {
     setIsChatOpenInternal(value)
   }
+
+  // Close this modal if another Hippo modal opens
+  useEffect(() => {
+    if (isHippoOpen && isHippoOpen !== `hippo-${dataTestId}` && isChatOpen) {
+      setIsChatOpenInternal(false)
+    }
+  }, [isHippoOpen, dataTestId, isChatOpen])
 
   const [isAppDescriptionOpen, setIsAppDescriptionOpen] = useState(false)
 
@@ -447,7 +459,7 @@ export default function Hippo({
   const isOpen = !!isHippoOpen
 
   const setIsOpen = (open: boolean) => {
-    setIsOpenInternal(open ? `hippo-${dataTestId}` : undefined)
+    dataTestId && setIsOpenInternal(open ? `hippo-${dataTestId}` : undefined)
     if (!open) {
       setCollaborationStep(0)
     }
@@ -829,7 +841,7 @@ export default function Hippo({
   }
 
   return (
-    <Div data-testid={dataTestId}>
+    <Div data-testid={`${dataTestId}`}>
       {isAppDescriptionOpen && !ghost && (
         <Modal
           scrollable={!isChatOpen}
@@ -954,7 +966,7 @@ export default function Hippo({
               }}
             >
               <HipChat
-                hipchat={hipchat}
+                hipchat
                 dataTestId={`hippo-${dataTestId}`}
                 compactMode={true}
                 isMobileDevice={true}
