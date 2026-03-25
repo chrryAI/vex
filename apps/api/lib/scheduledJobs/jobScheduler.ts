@@ -4795,6 +4795,7 @@ async function executeJobType({
           generateImage,
           fetchNews,
           generateVideo,
+          languages,
         )
         if (!response.output || response.error) {
           throw new Error(response.error || "Unknown error")
@@ -4889,11 +4890,14 @@ async function executeJobType({
         const slotMins = (h ?? 0) * 60 + (m ?? 0)
         return Math.abs(currentMins - slotMins) <= 15
       })
-      const legacyLanguages =
+      const legacyLanguagesForEngage =
         matchedSlot?.languages || (job.metadata as any)?.languages
 
       try {
-        const tribeEngageResult = await executeTribeEngage(job, legacyLanguages)
+        const tribeEngageResult = await executeTribeEngage(
+          job,
+          legacyLanguagesForEngage,
+        )
         if (tribeEngageResult?.error) {
           throw new Error(tribeEngageResult.error)
         }

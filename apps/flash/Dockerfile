@@ -33,6 +33,7 @@ COPY packages/waffles/package.json packages/waffles/
 COPY malwareScanner/package.json malwareScanner/
 
 # Install ALL dependencies (including devDependencies needed for build)
+ENV NODE_ENV=development
 RUN pnpm install --frozen-lockfile
 
 # Build the source code

@@ -2,7 +2,7 @@ FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat python3 make g++
+RUN apk add --no-cache libc6-compat=1.1.0-r4 python3=~3.12 make=~4.4 g++=~13.2
 WORKDIR /app
 
 # Install pnpm
@@ -33,6 +33,7 @@ COPY packages/waffles/package.json ./packages/waffles/package.json
 COPY malwareScanner/package.json ./malwareScanner/package.json
 
 # Install all dependencies (hono is needed at runtime)
+ENV NODE_ENV=development
 RUN pnpm install --frozen-lockfile
 
 # Production image
@@ -65,8 +66,8 @@ COPY --chown=hono:nodejs packages/ui ./chrry
 COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
 
 # Install Bun for runtime (much faster than Node)
-RUN apk add --no-cache libstdc++ libgcc
-COPY --from=oven/bun:1.0.29 /usr/local/bin/bun /usr/local/bin/bun
+RUN apk add --no-cache libstdc++ libgcc gcompat
+COPY --from=oven/bun:1.1.27 /usr/local/bin/bun /usr/local/bin/bun
 
 # Switch to non-root user
 USER hono
@@ -80,4 +81,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:3001/api/health || exit 1
 
 # Run with Bun for better performance
-CMD ["bun", "run", "apps/api/server.ts"]
+CMD ["/usr/local/bin/bun", "run", "apps/api/server.ts"]
