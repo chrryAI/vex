@@ -1,4 +1,4 @@
-import { chrryDev } from "./dotDev.tsx"
+import { chrryDev } from "./dotDev"
 
 const css = `
 .container {
