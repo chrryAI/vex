@@ -1279,9 +1279,8 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [tickerPaused, setTickerPaused] = useLocalStorage<boolean>(
     "tickerPaused",
@@ -1450,7 +1449,6 @@ export function AuthProvider({
       fingerprint &&
       token &&
       deviceId &&
-      shouldFetchSession &&
       !isRemovingApp &&
       !isSavingApp
       ? ["session", token]
