@@ -76,6 +76,10 @@ COPY --chown=hono:nodejs packages ./packages
 # Copy packages/ui as chrry for direct imports (Docker doesn't follow symlinks)
 COPY --chown=hono:nodejs packages/ui ./chrry
 
+# Create symlink for @chrryai/chrry imports
+RUN mkdir -p node_modules/@chrryai && \
+    ln -sf /app/packages/ui /app/node_modules/@chrryai/chrry
+
 # Ensure tsconfig.json is in the root (copy again to be safe)
 COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
 
