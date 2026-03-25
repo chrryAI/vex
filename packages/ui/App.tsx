@@ -1421,7 +1421,7 @@ export default function App({
                     bottom: 5,
                   }}
                 >
-                  <Hippo size={24} dataTestId="chat-instruction" />
+                  <Hippo size={24} dataTestId="highlights" />
                 </Div>
               )}
             </Div>

@@ -289,6 +289,7 @@ function Message({
   const [speech, setSpeech] = useState<HTMLAudioElement | null>(null)
 
   const handleUpdateAgent = async (app?: app) => {
+    if (user?.role !== "admin") return
     if (!token || !threadId) return
     addHapticFeedback()
     setIsAppSelectOpen(false)

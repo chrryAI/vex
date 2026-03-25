@@ -78,7 +78,7 @@ export default function Hippo({
   onSave,
   showInstructions = false,
   showDownloads = true,
-  dataTestId = "instruction",
+  dataTestId = "chat-instruction",
   showInstallers = true,
   opacity = 1,
   isAgentBuilder = false,
