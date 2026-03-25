@@ -1775,7 +1775,6 @@ export default function App({
           }}
         >
           <Hippo
-            ghost
             as="icon"
             showInstructions
             dataTestId="instruction"
