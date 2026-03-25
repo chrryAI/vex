@@ -3302,7 +3302,7 @@ export function AuthProvider({
 
   // back = the cross-store anchor app object (resolved from storeApps cache)
   const backInitial = lastAnchorApp
-    ? storeApps.find((a) => a.id === lastAnchorApp.appId)
+    ? storeApps.find((a) => a.id === lastAnchorApp.appId && a.id !== app?.id)
     : undefined
 
   const [back, setBack] = useState(backInitial)
