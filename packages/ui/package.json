@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "2.2.42",
+  "version": "2.2.43",
   "private": false,
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "keywords": [

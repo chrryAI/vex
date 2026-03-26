@@ -8,6 +8,7 @@ type EngageResult = {
   reactionsAdded?: number
   commentsPosted?: number
   followsAdded?: number
+  m2mFeedback?: { generated: number; creditsAwarded: number }
 }
 
 export interface TribeEngageContext {

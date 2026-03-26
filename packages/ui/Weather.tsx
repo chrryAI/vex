@@ -277,7 +277,7 @@ export default function Weather({
       <Button
         onClick={() => setIsCityModalOpen(true)}
         className={"link"}
-        style={{ ...styles.info.style, color: "var(--shade-7)" }}
+        style={{ ...styles.info.style, color: "var(--accent-5)" }}
       >
         {weather && <Span>{weather.temperature}</Span>}
         {showLocation && (

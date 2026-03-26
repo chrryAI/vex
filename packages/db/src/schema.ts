@@ -252,6 +252,12 @@ export const feedbackTransactions = pgTable("feedbackTransactions", {
   }),
   creditsRemaining: integer("creditsRemaining").default(0),
 
+  // M2M tracking
+  source: text("source", { enum: ["human", "m2m"] }).default("human"),
+  sourceAppId: uuid("sourceAppId").references(() => apps.id, {
+    onDelete: "cascade",
+  }),
+
   metadata: jsonb("metadata").$type<{
     feedbackId?: string
     subscriptionId?: string
@@ -4614,6 +4620,14 @@ export const pearFeedback = pgTable(
       .notNull()
       .default("pending"),
 
+    // M2M (Machine-to-Machine) feedback tracking
+    source: text("source", { enum: ["human", "m2m"] })
+      .notNull()
+      .default("human"),
+    sourceAppId: uuid("sourceAppId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
+
     // Timestamps
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
       .defaultNow()
@@ -4634,6 +4648,12 @@ export const pearFeedback = pgTable(
       table.sentimentScore,
     ),
     createdOnIdx: index("pearFeedback_createdOn_idx").on(table.createdOn),
+    sourceIdx: index("pearFeedback_source_idx").on(table.source),
+    m2mDedupIdx: index("pearFeedback_m2m_dedup_idx").on(
+      table.sourceAppId,
+      table.appId,
+      table.source,
+    ),
   }),
 )
 

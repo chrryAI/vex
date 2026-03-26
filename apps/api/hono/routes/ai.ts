@@ -1231,7 +1231,7 @@ ai.post("/", async (c) => {
   // const startTime = Date.now()
   // console.log("🚀 POST /api/ai - Request received")
   // console.time("messageProcessing")
-
+  const shushiFileModel = "claude"
   const member = await tracker.track("auth_member", () =>
     getMember(c, { skipCache: true, skipMasking: true }),
   )
@@ -5227,8 +5227,8 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
 
   const computedAgentName =
     agent.name === "sushi"
-      ? imageGenerationEnabled
-        ? "claude"
+      ? files.length
+        ? shushiFileModel
         : "deepseek"
       : agent.name
 
@@ -5377,18 +5377,18 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   let model: Awaited<ReturnType<typeof getModelProvider>>
 
   if (files.length > 0 && agent.name === "sushi") {
-    const claude = await getAiAgent({
-      name: "claude",
+    const sushiFileAgent = await getAiAgent({
+      name: shushiFileModel,
     })
 
-    if (!claude) {
+    if (!sushiFileAgent) {
       console.log("❌ Claude not found")
       return c.json({ error: "Claude not found" }, { status: 404 })
     }
     console.log("🤖 Using Claude for multimodal (images/videos/PDFs)")
     model = await getModelProvider({
       app: requestApp,
-      name: claude.name,
+      name: sushiFileAgent.name,
       job,
       activeSchedule,
       user: member,
@@ -6177,7 +6177,10 @@ Respond in JSON format:
         typeof model === "string"
           ? model
           : (model as any).modelId || "deepseek-reasoner"
-      const tokenCheck = checkTokenLimit(messages, modelId)
+      const tokenCheck = checkTokenLimit(
+        messages,
+        files.length ? shushiFileModel : modelId,
+      )
 
       console.log(`📊 Token check for ${tokenCheck.modelName}:`, {
         estimated: tokenCheck.estimatedTokens,

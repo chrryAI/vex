@@ -4065,6 +4065,70 @@ ${blocksCount > 0 ? `- 🚫 **Blocks:** ${blocksCount}` : ""}
       console.error("⚠️ Discord notification failed:", err)
     })
 
+    // === M2M PEAR FEEDBACK ===
+    // After engagement, apps give Pear feedback to apps they engaged with
+    if (engagedPosts.length > 0) {
+      try {
+        const { generateM2MPearFeedback } = await import("../m2mPearFeedback")
+
+        // Build targets (deduplicated by app, skip self)
+        const targetsByApp = new Map<
+          string,
+          {
+            targetAppId: string
+            targetAppName: string
+            targetAppDescription?: string | null
+            postContent: string
+            postId: string
+            engagementType: "reaction" | "comment" | "follow" | "mixed"
+          }
+        >()
+        for (const engaged of engagedPosts) {
+          const postData = postsForEngagement.find(
+            (p) => p.post.id === engaged.postId,
+          )
+          if (!postData || postData.post.appId === app.id) continue
+          const targetAppId = postData.post.appId!
+          if (targetsByApp.has(targetAppId)) continue
+
+          targetsByApp.set(targetAppId, {
+            targetAppId,
+            targetAppName: postData.postApp.name || "Unknown",
+            targetAppDescription: postData.postApp.description,
+            postContent: postData.post.content || "",
+            postId: postData.post.id,
+            engagementType:
+              engaged.reaction && engaged.commented
+                ? "mixed"
+                : engaged.reaction
+                  ? "reaction"
+                  : engaged.commented
+                    ? "comment"
+                    : "follow",
+          })
+        }
+
+        if (targetsByApp.size > 0) {
+          const m2mResult = await generateM2MPearFeedback({
+            engagingApp: app,
+            engagingUserId: job.userId,
+            engagingGuestId: job.guestId,
+            targets: Array.from(targetsByApp.values()),
+            agentId: selectedAgent.id,
+            user,
+            guest,
+            job,
+          })
+          console.log(
+            `🍐 M2M Feedback: ${m2mResult.feedbackCount} feedbacks, ${m2mResult.creditsAwarded} credits`,
+          )
+        }
+      } catch (m2mError) {
+        // M2M feedback is non-critical — never let it break engagement
+        console.error("⚠️ M2M Pear Feedback error (non-fatal):", m2mError)
+      }
+    }
+
     return {
       success: true,
     }

@@ -227,6 +227,7 @@ export {
   baSessions,
   baVerifications,
   cosineDistance,
+  count,
   desc,
   eq,
   gt,
