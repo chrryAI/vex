@@ -45,6 +45,20 @@ export interface M2MFeedbackTarget {
   targetAppId: string
   targetAppName: string
   targetAppDescription?: string | null
+  targetAppSystemPrompt?: string | null
+  targetAppTips?: Array<{
+    id: string
+    content?: string
+    emoji?: string
+  }> | null
+  targetAppHighlights?: Array<{
+    id: string
+    title: string
+    content?: string
+    emoji?: string
+  }> | null
+  targetAppTitle?: string | null
+  targetAppSubtitle?: string | null
   postContent: string
   postId: string
   engagementType: "reaction" | "comment" | "follow" | "mixed"
@@ -178,10 +192,45 @@ function buildM2MPrompt(
     : ""
 
   const appList = targets
-    .map(
-      (t, i) =>
-        `App ${i + 1}: "${t.targetAppName}"${t.targetAppDescription ? `\nDescription: ${t.targetAppDescription.substring(0, 200)}` : ""}\nPost you engaged with: "${t.postContent.substring(0, 400)}"\nYour engagement: ${t.engagementType}`,
-    )
+    .map((t, i) => {
+      const parts = [`App ${i + 1}: "${t.targetAppName}"`]
+
+      if (t.targetAppTitle) parts.push(`Title: ${t.targetAppTitle}`)
+      if (t.targetAppSubtitle) parts.push(`Subtitle: ${t.targetAppSubtitle}`)
+      if (t.targetAppDescription)
+        parts.push(`Description: ${t.targetAppDescription.substring(0, 300)}`)
+      if (t.targetAppSystemPrompt)
+        parts.push(
+          `System Prompt: ${t.targetAppSystemPrompt.substring(0, 400)}`,
+        )
+
+      if (t.targetAppHighlights && t.targetAppHighlights.length > 0) {
+        const highlights = t.targetAppHighlights
+          .slice(0, 3)
+          .map(
+            (h) =>
+              `${h.emoji || "•"} ${h.title}${h.content ? `: ${h.content.substring(0, 100)}` : ""}`,
+          )
+          .join("\n  ")
+        parts.push(`Highlights:\n  ${highlights}`)
+      }
+
+      if (t.targetAppTips && t.targetAppTips.length > 0) {
+        const tips = t.targetAppTips
+          .slice(0, 3)
+          .map(
+            (tip) =>
+              `${tip.emoji || "•"} ${tip.content?.substring(0, 100) || ""}`,
+          )
+          .join("\n  ")
+        parts.push(`Tips:\n  ${tips}`)
+      }
+
+      parts.push(`Post you engaged with: "${t.postContent.substring(0, 400)}"`)
+      parts.push(`Your engagement: ${t.engagementType}`)
+
+      return parts.join("\n")
+    })
     .join("\n\n")
 
   return `You are "${engagingApp.name || "Unknown"}" evaluating apps you just interacted with on Tribe.
@@ -277,9 +326,34 @@ async function awardM2MCredits({
 
 // ==================== STORAGE ====================
 
-function calculateMetrics(credits: number) {
+function calculateMetrics(
+  credits: number,
+  feedbackType: GeneratedFeedback["feedbackType"],
+) {
+  // Sentiment based on feedback type (like AI would analyze)
+  let baseSentiment = 0
+  switch (feedbackType) {
+    case "praise":
+      baseSentiment = 0.9
+      break
+    case "suggestion":
+    case "feature_request":
+      baseSentiment = 0.5 // Neutral - constructive
+      break
+    case "complaint":
+      baseSentiment = -0.3
+      break
+    case "bug":
+      baseSentiment = -0.5
+      break
+  }
+
+  // Adjust sentiment by credit quality (higher credits = more constructive)
+  const creditBonus = (credits - 5) * 0.1 // -0.3 to +0.3
+  const sentimentScore = Math.max(-1, Math.min(1, baseSentiment + creditBonus))
+
   return {
-    sentimentScore: credits >= 6 ? 0.8 : credits >= 4 ? 0.6 : 0.4,
+    sentimentScore,
     specificityScore: credits >= 6 ? 0.85 : credits >= 4 ? 0.7 : 0.5,
     actionabilityScore: credits >= 6 ? 0.85 : credits >= 4 ? 0.7 : 0.4,
   }
@@ -304,7 +378,7 @@ async function storeM2MFeedback({
   category: GeneratedFeedback["category"]
   credits: number
 }): Promise<void> {
-  const metrics = calculateMetrics(credits)
+  const metrics = calculateMetrics(credits, feedbackType)
 
   await db.insert(pearFeedback).values({
     content,

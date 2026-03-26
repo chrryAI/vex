@@ -2689,15 +2689,15 @@ This is the conversation starter that prompted their message. Keep this context 
 `
     : ""
 }${
-  appPlaceholder || threadPlaceholder
-    ? `
+          appPlaceholder || threadPlaceholder
+            ? `
 You recently generated these personalized suggestions for the user:
 ${appPlaceholder ? `- App placeholder: "${appPlaceholder.text}"` : ""}
 ${threadPlaceholder ? `- Thread placeholder: "${threadPlaceholder.text}"` : ""}
 
 These reflect the user's interests and recent conversations. If the user seems uncertain about what to discuss or asks for suggestions, you can naturally reference these topics. Be conversational about it - don't just list them, weave them into your response naturally.`
-    : ""
-}
+            : ""
+        }
 `
       : ""
 
@@ -5444,11 +5444,11 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
 
   searchContext
     ? console.log("🌐 Web search enabled")
-    : console.log("❌ Web search disabled")
+    : console.log("😁 Web search disabled")
 
   agent.capabilities.webSearch
     ? console.log("🤖 Agent supports web search")
-    : console.log("❌ Agent does not support web search")
+    : console.log("😁 Agent does not support web search")
 
   // Function to extract web search results from web search response and process citations
   // Supports any agent with webSearch capability (Perplexity, Sushi, etc.)

@@ -1639,6 +1639,13 @@
       "when": 1774447022394,
       "tag": "0233_nostalgic_sumo",
       "breakpoints": true
+    },
+    {
+      "idx": 234,
+      "version": "7",
+      "when": 1774528585101,
+      "tag": "0234_brown_the_hunter",
+      "breakpoints": true
     }
   ]
 }
