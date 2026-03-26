@@ -15,14 +15,15 @@ import React, {
   useState,
 } from "react"
 import toast from "react-hot-toast"
+
 import useSWR from "swr"
-import { v4 as uuidv4 } from "uuid"
+import { v4 as uuidv4, validate } from "uuid"
 import {
   initializeGoogleAuth,
   appleSignIn as nativeAppleSignIn,
   googleSignIn as nativeGoogleSignIn,
 } from "../../auth/capacitorAuth"
-import { useHasHydrated } from "../../hooks"
+import { useHasHydrated, useLocalStorage } from "../../hooks"
 import useCache from "../../hooks/useCache"
 import i18n from "../../i18n"
 import {
@@ -39,10 +40,11 @@ import {
   storage,
   useCookie,
   useCookieOrLocalStorage,
-  useLocalStorage,
+  useLocalStorage as useLocal,
   useNavigation,
   usePlatform,
 } from "../../platform"
+
 import type {
   affiliateStats,
   aiAgent,
@@ -102,7 +104,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.44"
+const VERSION = "2.2.45"
 
 const AuthContext = createContext<
   | {
@@ -475,6 +477,7 @@ export function AuthProvider({
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
   showTribe?: boolean
+  deviceId?: string
   accountApp?: appWithStore
   testConfig?: { [key: string]: string[] }
   searchParams?: Record<string, string> & {
@@ -951,19 +954,27 @@ export function AuthProvider({
 
   const [deviceIdExtension, setDeviceIdExtension] = useCookieOrLocalStorage(
     "deviceId",
-    props.session?.deviceId,
+    props?.deviceId || props.session?.deviceId,
   )
 
-  const [deviceIdWeb, setDeviceIdWeb] = useCookie(
+  const [deviceIdDonut, setDeviceIdDonut] = useLocal(
+    "deviceId",
+    props?.deviceId || props.session?.deviceId,
+  )
+  const [deviceIdWeb, setDeviceIdWeb] = useLocal(
     "deviceId",
     props.session?.deviceId,
   )
 
-  const deviceId =
-    isExtension || isTauri || isCapacitor ? deviceIdExtension : deviceIdWeb
+  const deviceId = donut
+    ? deviceIdDonut
+    : isExtension || isTauri || isCapacitor
+      ? deviceIdExtension
+      : deviceIdWeb
 
-  const setDeviceId =
-    isExtension || isTauri || isCapacitor
+  const setDeviceId = donut
+    ? setDeviceIdDonut
+    : isExtension || isTauri || isCapacitor
       ? setDeviceIdExtension
       : setDeviceIdWeb
 
@@ -985,7 +996,11 @@ export function AuthProvider({
   )
 
   const ssrToken =
-    props?.session?.user?.token || props?.session?.guest?.fingerprint || apiKey
+    props?.session?.user?.token ||
+    props?.session?.guest?.fingerprint ||
+    (donut && validate(apiKey))
+      ? undefined
+      : apiKey
   const [tokenExtension, setTokenExtension] = useCookieOrLocalStorage(
     "token",
     ssrToken,
@@ -2638,7 +2653,7 @@ export function AuthProvider({
   const showFocus = showFocusInternal && isFocus
 
   useEffect(() => {
-    if (postId) return setShowFocusInternal(false)
+    if (postId) setShowFocusInternal(false)
     if (!baseApp?.slug) return
     if (showFocus === undefined && baseApp?.slug === "focus") {
       setShowFocusInternal(true)

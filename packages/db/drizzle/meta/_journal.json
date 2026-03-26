@@ -1653,6 +1653,13 @@
       "when": 1774531562631,
       "tag": "0235_free_lizard",
       "breakpoints": true
+    },
+    {
+      "idx": 236,
+      "version": "7",
+      "when": 1774546210760,
+      "tag": "0236_light_killer_shrike",
+      "breakpoints": true
     }
   ]
 }

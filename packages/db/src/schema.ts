@@ -718,6 +718,10 @@ export const threads = pgTable("threads", {
   createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
+  pearAppId: uuid("pearAppId").references(() => apps.id, {
+    onDelete: "cascade",
+  }),
+
   updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -2152,6 +2156,9 @@ export const creditUsages = pgTable(
       .references(() => aiAgents.id, { onDelete: "cascade" })
       .notNull(),
     creditCost: integer("creditCost").notNull(),
+    pearAppId: uuid("pearAppId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
     messageType: text("messageType", {
       enum: [
         "user",

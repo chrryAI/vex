@@ -66,6 +66,7 @@ export interface AppProvidersProps {
     toString: () => string
   } // URL search params with URLSearchParams-compatible API
   locale?: locale
+  deviceId?: string
   apiKey?: string
   children: ReactNode
   session?: session
@@ -137,6 +138,7 @@ export default function AppProviders({
   accountApp,
   testConfig,
   isBot,
+  deviceId,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
 
@@ -195,6 +197,7 @@ export default function AppProviders({
         <ErrorProvider>
           <ThemeProvider theme={theme} session={session}>
             <AuthProvider
+              deviceId={deviceId}
               translations={translations}
               thread={thread}
               locale={locale}

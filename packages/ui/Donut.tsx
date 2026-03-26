@@ -1,6 +1,7 @@
 // "use client"
 // // import "./styles.scss"
 
+import { v4 as uuidv4 } from "uuid"
 import Chrry from "./Chrry"
 
 // // // Only import styles on web platforms (not React Native)
@@ -24,9 +25,5 @@ export default function Donut({
   children?: React.ReactNode
   apiKey?: string
 }) {
-  return (
-    <Chrry donut apiKey={apiKey}>
-      {children}
-    </Chrry>
-  )
+  return <Chrry key={apiKey} donut deviceId={uuidv4()} apiKey={apiKey}></Chrry>
 }

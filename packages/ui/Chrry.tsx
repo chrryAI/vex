@@ -47,6 +47,7 @@ export default function Chrry({
   tribes,
   tribePosts,
   testConfig,
+  deviceId,
   tribePost,
   isBot,
   theme,
@@ -74,6 +75,7 @@ export default function Chrry({
     threads: thread[]
     totalCount: number
   }
+  deviceId?: string
   donut?: boolean
   isBot?: boolean
   theme?: "light" | "dark"
@@ -97,6 +99,7 @@ export default function Chrry({
       pathname={pathname}
       onSetLanguage={onSetLanguage}
       apiKey={apiKey}
+      deviceId={deviceId}
       thread={thread}
       testConfig={testConfig}
       translations={translations}

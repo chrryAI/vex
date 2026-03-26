@@ -488,8 +488,6 @@ const Thread = ({
           </A>
         )}
 
-        {/* {!donut && auth.isDevelopment && <Donut apiKey={auth.token} />} */}
-
         <HipChat
           // dataTestId={
           //   threadId && !isEmpty ? "thread-instruction" : "home-instruction"

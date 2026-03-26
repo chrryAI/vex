@@ -1,6 +1,18 @@
 import type { app, guest, scheduledJob, user } from "@repo/db"
-import { and, db, eq, getApp, getGuest, getUser, gte, sql } from "@repo/db"
+import {
+  and,
+  db,
+  eq,
+  getAiAgent,
+  getApp,
+  getGuest,
+  getMessages,
+  getUser,
+  gte,
+  sql,
+} from "@repo/db"
 import { pearFeedback } from "@repo/db/src/schema"
+import { sign } from "jsonwebtoken"
 import { sendDiscordNotification } from "../sendDiscordNotification"
 
 // ==================== CONSTANTS ====================
@@ -8,6 +20,13 @@ import { sendDiscordNotification } from "../sendDiscordNotification"
 const FEEDBACK_DAILY_QUOTA = 10 // Max feedbacks per app per day
 const MIN_FEEDBACK_LENGTH = 30
 const FEEDBACK_COMMISSION_RATE = 0.1 // 10% platform commission
+
+const JWT_SECRET = process.env.AUTH_SECRET
+const JWT_EXPIRY = "1h"
+if (!JWT_SECRET && process.env.NODE_ENV !== "development") {
+  throw new Error("AUTH_SECRET is not defined")
+}
+const SECRET = JWT_SECRET || "development-secret"
 
 // ==================== TYPES ====================
 
@@ -30,6 +49,11 @@ interface GeneratedAppFeedback {
     | "other"
   credits: number
 }
+
+function generateToken(userId: string, email: string): string {
+  return sign({ userId, email }, SECRET, { expiresIn: JWT_EXPIRY })
+}
+
 // ==================== RATE LIMITING ====================
 
 async function checkAppFeedbackQuota(
@@ -190,6 +214,14 @@ export async function generateAppFeedback({
 
   const user = reviewingUserId ? await getUser({ id: reviewingUserId }) : null
 
+  const selectedAgent = await getAiAgent({
+    name: "sushi",
+  })
+
+  if (!selectedAgent) {
+    throw new Error("Sushi agent not found")
+  }
+
   const guest = reviewingGuestId
     ? await getGuest({ id: reviewingGuestId })
     : null
@@ -238,8 +270,14 @@ export async function generateAppFeedback({
       return { success: true, feedbackCount: 0, errors: [] }
     }
 
-    // 3. Call AI route for each target app individually
-    const baseUrl = process.env.API_URL || "http://localhost:3000"
+    // 3. Generate JWT token for API calls
+    if (!user?.email) {
+      throw new Error("User email is required for JWT token generation")
+    }
+    const token = generateToken(reviewingUserId!, user.email)
+
+    // 4. Call /messages route for each target app (like scheduled jobs)
+    const baseUrl = process.env.API_INTERNAL_URL || "http://localhost:3001/api"
 
     for (const targetAppId of validTargetIds) {
       try {
@@ -257,32 +295,63 @@ Provide specific, actionable feedback (30-250 chars) as a JSON object with:
 
 Respond with a single JSON object (not an array).`
 
-        const response = await fetch(`${baseUrl}/ai`, {
+        // Step 1: Create user message via /messages route
+        const userMessageResponse = await fetch(`${baseUrl}/messages`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            prompt,
+            content: prompt,
             appId: reviewingApp.id,
-            userId: reviewingUserId,
-            guestId: reviewingGuestId,
-            feedbackAppIds: [targetAppId],
-            model: "deepSeek",
-            maxTokens: 500,
-            temperature: 0.7,
+            agentId: selectedAgent.id,
+            pearAppId: targetAppId,
           }),
         })
 
-        if (!response.ok) {
+        if (!userMessageResponse.ok) {
+          const errorText = await userMessageResponse.text()
           console.error(
-            `🍐 AI route failed for ${targetAppId}: ${response.status}`,
+            `🍐 User message failed for ${targetAppId}: ${userMessageResponse.status} - ${errorText}`,
+          )
+          errors.push(`${targetAppId}: user_message_error`)
+          continue
+        }
+
+        const userMessageData = await userMessageResponse.json()
+        const messageId = userMessageData.id
+
+        if (!messageId) {
+          console.error(`🍐 No messageId returned for ${targetAppId}`)
+          errors.push(`${targetAppId}: no_message_id`)
+          continue
+        }
+
+        // Step 2: Call AI route with messageId
+        const aiResponse = await fetch(`${baseUrl}/ai`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            messageId,
+            agentId: selectedAgent.id,
+            pearAppId: targetAppId,
+          }),
+        })
+
+        if (!aiResponse.ok) {
+          const errorText = await aiResponse.text()
+          console.error(
+            `🍐 AI route failed for ${targetAppId}: ${aiResponse.status} - ${errorText}`,
           )
           errors.push(`${targetAppId}: ai_route_error`)
           continue
         }
 
-        const aiResult = await response.json()
+        const aiResult = await aiResponse.json()
 
         // Parse AI response
         let feedback: GeneratedAppFeedback
@@ -332,6 +401,16 @@ Respond with a single JSON object (not an array).`
         console.log(
           `🍐 App feedback: ${reviewingApp.name} → ${targetAppId}: ${credits} credits (${feedback.feedbackType})`,
         )
+
+        if (!userMessageData?.message?.threadId) {
+          throw new Error("ThreadId is not found")
+        }
+
+        const lastMessageInfo = await getMessages({
+          userId: user.id,
+          threadId: userMessageData?.message?.threadId,
+          pageSize: 1,
+        })
       } catch (feedbackError) {
         console.error(
           `🍐 Error processing feedback for ${targetAppId}:`,

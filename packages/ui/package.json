@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "2.2.44",
+  "version": "2.2.45",
   "private": false,
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "keywords": [
@@ -89,7 +89,6 @@
     "@types/sanitize-html": "^2.16.1",
     "@types/three": "^0.183.1",
     "@types/uuid": "^11.0.0",
-    "@uidotdev/usehooks": "^2.4.1",
     "ai": "^6.0.134",
     "antd": "^6.3.3",
     "clsx": "^2.1.1",

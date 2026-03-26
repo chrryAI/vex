@@ -14,12 +14,7 @@ import useSWR from "swr"
 import { useUserScroll } from "../../hooks/useUserScroll"
 import { useWebSocket } from "../../hooks/useWebSocket"
 
-import {
-  useLocalStorage,
-  useNavigation,
-  usePlatform,
-  useTheme,
-} from "../../platform"
+import { useNavigation, usePlatform, useTheme } from "../../platform"
 import type {
   aiAgent,
   app,
@@ -857,9 +852,9 @@ export function ChatProvider({
 
   const onlyAgent = !!app?.onlyAgent
 
-  const [debateAgent, setDebateAgentInternal] = useLocalStorage<
+  const [debateAgent, setDebateAgentInternal] = useState<
     aiAgent | undefined | null
-  >("debateAgent", undefined)
+  >(undefined)
 
   useEffect(() => {
     if (debateAgent) {
