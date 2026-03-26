@@ -5037,12 +5037,7 @@ async function executeJobType({
       )
       const { generateAppFeedback } = await import("./generateAppFeedback")
       const feedbackResult = await generateAppFeedback({
-        reviewingApp: app,
-        reviewingUserId: job.userId,
-        reviewingGuestId: job.guestId,
         targetAppIds: feedbackApps,
-        user,
-        guest,
         job,
       })
       console.log(`🍐 App feedback: ${feedbackResult.feedbackCount} generated`)
