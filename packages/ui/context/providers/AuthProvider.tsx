@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.39"
+const VERSION = "2.2.40"
 
 const AuthContext = createContext<
   | {
@@ -452,6 +452,7 @@ export function AuthProvider({
   tribePost: initialTribePost,
   testConfig,
   isBot,
+  donut,
   ...props
 }: {
   translations?: Record<string, any>
@@ -462,6 +463,7 @@ export function AuthProvider({
   children: ReactNode
   fingerprint?: string
   gift?: string
+  donut?: boolean
   error?: string
   session?: session
   isBot?: boolean
@@ -1280,8 +1282,9 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] =
-    useState<boolean>(!initialTribePosts)
+  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
+    !initialTribePosts,
+  )
 
   const [tickerPaused, setTickerPaused] = useLocalStorage<boolean>(
     "tickerPaused",

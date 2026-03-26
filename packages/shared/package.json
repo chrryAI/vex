@@ -2,9 +2,7 @@
   "name": "@repo/shared",
   "version": "0.0.0",
   "private": true,
-  "sideEffects": [
-    "*.css"
-  ],
+  "sideEffects": ["*.css"],
   "type": "module",
   "exports": {
     "./contexts/*": "./src/contexts/*.tsx",

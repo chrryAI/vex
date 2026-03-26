@@ -96,7 +96,6 @@ const TIER1_SLUGS = new Set([
   "focus",
   "zarathustra",
   "grape",
-  "pear",
   "search",
   "coder",
   "architect",
@@ -133,6 +132,7 @@ const TIER2_SLUGS = new Set([
   "writer",
   "news",
   "academic",
+  "pear",
 ])
 
 /**

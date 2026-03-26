@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "2.2.39",
+  "version": "2.2.40",
   "private": false,
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "keywords": [
@@ -52,13 +52,7 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist",
-    "locales",
-    "**/*.css",
-    "**/*.scss",
-    "README.md"
-  ],
+  "files": ["dist", "locales", "**/*.css", "**/*.scss", "README.md"],
   "scripts": {
     "build": "pnpm exec tsup",
     "check-types": "tsc --noEmit",

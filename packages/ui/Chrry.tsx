@@ -50,6 +50,7 @@ export default function Chrry({
   tribePost,
   isBot,
   theme,
+  donut,
 }: {
   translations?: Record<string, any>
   useExtensionIcon?: (slug?: string) => void
@@ -73,6 +74,7 @@ export default function Chrry({
     threads: thread[]
     totalCount: number
   }
+  donut?: boolean
   isBot?: boolean
   theme?: "light" | "dark"
   testConfig?: { [key: string]: string[] }
@@ -85,6 +87,7 @@ export default function Chrry({
     <AppProviders
       useExtensionIcon={useExtensionIcon}
       locale={locale}
+      donut={donut}
       accountApp={accountApp}
       siteConfig={siteConfig}
       session={session}
