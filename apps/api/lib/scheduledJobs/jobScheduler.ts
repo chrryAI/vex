@@ -4446,6 +4446,8 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         } else if (activeSchedule.postType === "engagement") {
           effectiveJobType =
             job.scheduleType === "tribe" ? "tribe_engage" : "moltbook_engage"
+        } else if (activeSchedule.postType === "autonomous") {
+          effectiveJobType = "autonomous"
         }
         console.log(
           `🎯 Active postType: ${activeSchedule.postType} → ${effectiveJobType}`,
