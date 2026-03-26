@@ -991,7 +991,7 @@ const HipChat = ({
             style={{
               ...styles.headers.style,
               position: "relative",
-              bottom: hipchat ? "0.6rem" : undefined,
+              marginBottom: "1rem",
             }}
           >
             <Div style={styles.header.style}>

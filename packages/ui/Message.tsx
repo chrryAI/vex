@@ -924,6 +924,7 @@ function Message({
                     data-testid="user-message-images"
                     style={{
                       ...styles.userMessageImages.style,
+                      position: "relative",
                     }}
                   >
                     {images.map((image) => (
@@ -1325,7 +1326,10 @@ function Message({
                   style={{ ...styles.agentMessageImages.style, marginTop: 5 }}
                 >
                   {message.message.images.map((image) => (
-                    <Div key={image.url} style={agentImageStyle}>
+                    <Div
+                      key={image.url}
+                      style={{ ...agentImageStyle, position: "relative" }}
+                    >
                       <Img
                         style={agentImageStyle}
                         src={image.url}
