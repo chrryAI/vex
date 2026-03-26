@@ -1272,6 +1272,7 @@ ai.post("/", async (c) => {
     const formData = (await request.formData()) as unknown as FormData
     requestData = {
       wasPear: formData.get("wasPear") === "true",
+      feedbackApp: formData.get("feedbackApp") as string,
       stream: formData.get("stream"),
       postId: formData.get("postId") as string,
       placeholder: formData.get("placeholder") as string,
@@ -1340,6 +1341,7 @@ ai.post("/", async (c) => {
     deviceId,
     fingerprint: fp,
     postType,
+    feedbackApp,
     ...rest
   } = requestData
 
@@ -1428,7 +1430,6 @@ ai.post("/", async (c) => {
     job?.jobType.startsWith("molt") || thread?.isMolt || message?.thread?.isMolt
 
   const isPear = requestData.pear === true || requestData.pear === "true"
-  const feedbackAppIds = requestData.feedbackAppIds || []
   const wasPear = requestData.wasPear === true || requestData.wasPear === "true"
   const isTribe = job?.jobType.startsWith("tribe") || !!message.message?.isTribe
 
@@ -3382,6 +3383,16 @@ This data helps maintain system integrity and ensure comprehensive test coverage
     if (!requestApp) {
       return c.json({ error: "App not found" }, { status: 404 })
     }
+
+    const toFeedBack = feedbackApp
+      ? await getApp({
+          id: requestApp!.id,
+          userId: member?.id,
+          guestId: guest?.id,
+          skipCache: true,
+          dept: 1,
+        })
+      : undefined
 
     // Only show this message if we're actually in the main thread
     const isActuallyMainThread = thread?.id === requestApp.mainThreadId

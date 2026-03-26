@@ -1,5 +1,5 @@
 import type { app, guest, scheduledJob, user } from "@repo/db"
-import { and, db, eq, gte, sql } from "@repo/db"
+import { and, db, eq, gte, sql, getUser, getApp, getGuest } from "@repo/db"
 import { pearFeedback } from "@repo/db/src/schema"
 import { sendDiscordNotification } from "../sendDiscordNotification"
 
@@ -200,9 +200,8 @@ export async function generateAppFeedback({
       return { success: true, feedbackCount: 0, errors: [] }
     }
 
-    // 2. Get target apps with full data (depth:1 for relations)
-    const targets: AppFeedbackTarget[] = []
-
+    // 2. Filter valid target app IDs
+    const validTargetIds: string[] = []
     for (const targetAppId of targetAppIds.slice(0, quota.remaining)) {
       // Skip self-review
       if (targetAppId === reviewingApp.id) {
@@ -230,67 +229,67 @@ export async function generateAppFeedback({
       return { success: true, feedbackCount: 0, errors: [] }
     }
 
-    // 3. Call AI route for rich feedback generation
+    // 3. Call AI route for each target app individually
     const baseUrl = process.env.API_URL || "http://localhost:3000"
-    const prompt = `Review the following apps and provide constructive Pear feedback. Analyze their:
-- Character profiles and personality
+
+    for (const targetAppId of validTargetIds) {
+      try {
+        const prompt = `Review this app and provide constructive Pear feedback. Analyze:
+- Character profile and personality
 - Recent posts and content quality
 - App features, tips, and highlights
 - Overall platform presence and value
 
-For each app, provide specific, actionable feedback (30-250 chars) with a feedbackType (suggestion/praise/complaint/feature_request/bug), category (ux/feature/ui_design/analytics/performance/other), and credit score (3-10).
+Provide specific, actionable feedback (30-250 chars) as a JSON object with:
+- content: your feedback text
+- feedbackType: suggestion/praise/complaint/feature_request/bug
+- category: ux/feature/ui_design/analytics/performance/other
+- credits: 3-10 (quality score)
 
-Respond with a JSON array of feedback objects.`
+Respond with a single JSON object (not an array).`
 
-    const response = await fetch(`${baseUrl}/ai`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt,
-        appId: reviewingApp.id,
-        userId: reviewingUserId,
-        guestId: reviewingGuestId,
-        feedbackAppIds: validTargetIds,
-        model: "deepSeek",
-        maxTokens: 2000,
-        temperature: 0.7,
-      }),
-    })
+        const response = await fetch(`${baseUrl}/ai`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            prompt,
+            appId: reviewingApp.id,
+            userId: reviewingUserId,
+            guestId: reviewingGuestId,
+            feedbackAppIds: [targetAppId],
+            model: "deepSeek",
+            maxTokens: 500,
+            temperature: 0.7,
+          }),
+        })
 
-    if (!response.ok) {
-      throw new Error(
-        `AI route failed: ${response.status} ${response.statusText}`,
-      )
-    }
+        if (!response.ok) {
+          console.error(
+            `🍐 AI route failed for ${targetAppId}: ${response.status}`,
+          )
+          errors.push(`${targetAppId}: ai_route_error`)
+          continue
+        }
 
-    const aiResult = await response.json()
+        const aiResult = await response.json()
 
-    // 4. Parse AI response
-    let feedbacks: GeneratedAppFeedback[]
-    try {
-      let text = aiResult.content || aiResult.text || ""
-      text = text.trim()
-      if (text.startsWith("```")) {
-        text = text.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "")
-      }
-      feedbacks = JSON.parse(text)
-      if (!Array.isArray(feedbacks)) {
-        throw new Error("Response is not an array")
-      }
-    } catch (parseError) {
-      console.error("🍐 App feedback: Failed to parse AI response:", parseError)
-      errors.push("parse_error")
-      return { success: false, feedbackCount: 0, errors }
-    }
-
-    // 5. Process each feedback
-    for (const feedback of feedbacks) {
-      try {
-        const targetAppId = validTargetIds[feedback.appIndex - 1]
-        if (!targetAppId) {
-          errors.push(`invalid appIndex: ${feedback.appIndex}`)
+        // Parse AI response
+        let feedback: GeneratedAppFeedback
+        try {
+          let text = aiResult.content || aiResult.text || ""
+          text = text.trim()
+          if (text.startsWith("```")) {
+            text = text.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "")
+          }
+          feedback = JSON.parse(text)
+        } catch (parseError) {
+          console.error(
+            `🍐 Failed to parse AI response for ${targetAppId}:`,
+            parseError,
+          )
+          errors.push(`${targetAppId}: parse_error`)
           continue
         }
 
@@ -299,7 +298,7 @@ Respond with a JSON array of feedback objects.`
           !feedback.content ||
           feedback.content.trim().length < MIN_FEEDBACK_LENGTH
         ) {
-          console.log(`🍐 Rejected feedback for app ${targetAppId}: too short`)
+          console.log(`🍐 Rejected feedback for ${targetAppId}: too short`)
           errors.push(`${targetAppId}: too_short`)
           continue
         }
@@ -326,10 +325,10 @@ Respond with a JSON array of feedback objects.`
         )
       } catch (feedbackError) {
         console.error(
-          `🍐 Error processing app feedback for target ${feedback.appIndex}:`,
+          `🍐 Error processing feedback for ${targetAppId}:`,
           feedbackError,
         )
-        errors.push(`processing_error_${feedback.appIndex}`)
+        errors.push(`${targetAppId}: processing_error`)
       }
     }
 
@@ -354,10 +353,7 @@ Respond with a JSON array of feedback objects.`
                 },
                 {
                   name: "Targets",
-                  value: targets
-                    .slice(0, 5)
-                    .map((t) => t.appName)
-                    .join(", "),
+                  value: `${validTargetIds.length} apps`,
                   inline: false,
                 },
               ],
