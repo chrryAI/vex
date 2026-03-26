@@ -1936,7 +1936,7 @@ export const scheduledJobs = pgTable(
         scheduledTimes: Array<{
           time: string
           model: string
-          postType: "post" | "comment" | "engagement"
+          postType: "post" | "comment" | "engagement" | "autonomous"
           charLimit: number
           credits: number
           maxTokens?: number

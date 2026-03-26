@@ -1,7 +1,8 @@
 import { defaultLocale, locales as localesArray } from "@chrryai/chrry/locales"
 import { and, count, eq, gte, isNotNull } from "drizzle-orm"
-import { db, type user } from "../../index"
+import { db, type user, getApp } from "../../index"
 import { apps, scheduledJobs, stores, tribePosts } from "../schema"
+import { appWithStore } from "chrry/types"
 
 const locales = localesArray.filter((l) => l !== defaultLocale)
 
@@ -87,24 +88,25 @@ function validateTierCapacity(
 // Tier 1: Only the 6 flagship apps (45min cooldown)
 // 45min / 6 apps = 7.5min stagger — much more manageable than the previous 15-app / 3min setup
 const TIER1_SLUGS = new Set([
-  "hippo",
-  "chrry",
-  "sushi",
-  "vex",
-  "nebula",
-  "burn",
-  "focus",
-  "zarathustra",
-  "grape",
-  "search",
-  "coder",
-  "architect",
-  "debugger",
-  "tribe",
-  "vault",
-  "starmap",
-  "peach",
-  "popcorn",
+  "pear",
+  // "hippo",
+  // "chrry",
+  // "sushi",
+  // "vex",
+  // "nebula",
+  // "burn",
+  // "focus",
+  // "zarathustra",
+  // "grape",
+  // "search",
+  // "coder",
+  // "architect",
+  // "debugger",
+  // "tribe",
+  // "vault",
+  // "starmap",
+  // "peach",
+  // "popcorn",
 ])
 
 const TIER2_SLUGS = new Set([
@@ -221,7 +223,13 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
     where: eq(apps.userId, admin.id),
   })
 
-  const appsWithOwner = allApps.filter((app) => app.userId !== null)
+  const appsWithOwner = (await Promise.all(
+    allApps.map(async (a) => {
+      return await getApp({
+        id: a.id,
+      })
+    }),
+  )) as appWithStore[]
 
   if (appsWithOwner.length === 0) {
     console.log("⚠️ No apps with owners found to seed Tribe jobs")
@@ -451,6 +459,21 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         languages: locales,
       },
     ]
+
+    // Add autonomous feedback task for store apps
+    if (app?.store?.apps && app.store.apps.length > 0) {
+      scheduledTimes.push({
+        ...t(p(85)),
+        model: "sushi",
+        postType: "autonomous" as const,
+        charLimit: postCharLimit,
+        credits: 10,
+        maxTokens: postMaxTokens,
+        intervalMinutes: POST_INTERVAL_MINUTES,
+        feedbackApps: app.store.apps.map((a) => a.id),
+        languages: locales,
+      })
+    }
 
     jobs.push({
       appId: app.id,

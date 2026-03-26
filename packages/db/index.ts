@@ -5167,6 +5167,7 @@ export const getApp = async ({
   skipCache = false,
   ownerId,
   threadId,
+  isSystem,
   role,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom"
@@ -5182,6 +5183,7 @@ export const getApp = async ({
   skipCache?: boolean
   ownerId?: string
   threadId?: string
+  isSystem?: boolean
   role?: "admin" | "user"
 }): Promise<appWithStore | undefined> => {
   // Build app identification conditions
@@ -5219,6 +5221,13 @@ export const getApp = async ({
 
   if (storeDomain) {
     appConditions.push(eq(stores.domain, storeDomain))
+  }
+  if (isSystem) {
+    appConditions.push(eq(stores.isSystem, isSystem))
+  }
+
+  if (isSystem === false) {
+    appConditions.push(not(stores.isSystem))
   }
 
   // Build access conditions (can user/guest access this app?)

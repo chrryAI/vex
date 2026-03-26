@@ -172,6 +172,15 @@ export async function generateAppFeedback({
       })
     : null
 
+  const pear = await getApp({
+    slug: "pear",
+    isSystem: true,
+  })
+
+  if (!pear) {
+    throw new Error("Pear is not found")
+  }
+
   if (!reviewingApp) {
     throw new Error("ReviewingApp is not found")
   }

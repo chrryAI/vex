@@ -271,7 +271,12 @@ export const Hey = memo(
       )
 
     return (
-      <Wrapper>
+      <Div
+        style={{
+          width: donut ? undefined : "100dvw",
+          height: donut ? undefined : "100dvh",
+        }}
+      >
         <ErrorBoundary>
           {splash}
           {isHydrated && (
@@ -301,7 +306,7 @@ export const Hey = memo(
             </Suspense>
           )}
         </ErrorBoundary>
-      </Wrapper>
+      </Div>
     )
   },
   (prevProps, nextProps) => {

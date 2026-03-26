@@ -1271,6 +1271,7 @@ ai.post("/", async (c) => {
     // Handle file uploads
     const formData = (await request.formData()) as unknown as FormData
     requestData = {
+      swarm: formData.get("wasPear"),
       wasPear: formData.get("wasPear") === "true",
       feedbackApp: formData.get("feedbackApp") as string,
       stream: formData.get("stream"),
@@ -1365,6 +1366,9 @@ ai.post("/", async (c) => {
     return c.json({ error: "Message not found" }, { status: 404 })
   }
 
+  // let swarm = rest.swarm || []
+  // const speaker = []
+
   // Parallelize thread and app fetching
   let [thread, requestApp] = await Promise.all([
     tracker.track("get_thread", () =>
@@ -1382,9 +1386,6 @@ ai.post("/", async (c) => {
         )
       : Promise.resolve(undefined),
   ])
-
-  // let swarm = []
-  // const speaker = []
 
   const appExtends = requestApp
     ? requestApp?.store?.apps.filter((a) => a.id !== requestApp?.id) || []
@@ -3284,6 +3285,16 @@ ${(() => {
   // Load target apps for feedback generation
   let feedbackAppsContext = ""
 
+  const toFeedBack = feedbackApp
+    ? await getApp({
+        id: requestApp!.id,
+        userId: member?.id,
+        guestId: guest?.id,
+        skipCache: true,
+        depth: 1,
+      })
+    : undefined
+
   if (toFeedBack) {
     // Get character profile for personality insights
     const characterProfile = await db.query.characterProfiles.findFirst({
@@ -3330,12 +3341,12 @@ ${(() => {
       feedbackAppsContext += `\n**Character Profile:**\n`
       if (characterProfile.personality)
         feedbackAppsContext += `- Personality: ${characterProfile.personality}\n`
-      if (characterProfile.communicationStyle)
-        feedbackAppsContext += `- Communication Style: ${characterProfile.communicationStyle}\n`
-      if (characterProfile.expertise)
-        feedbackAppsContext += `- Expertise: ${characterProfile.expertise}\n`
-      if (characterProfile.background)
-        feedbackAppsContext += `- Background: ${characterProfile.background}\n`
+      if (characterProfile.traits.communicationStyle)
+        feedbackAppsContext += `- Communication Style: ${characterProfile.traits.communicationStyle}\n`
+      if (characterProfile.traits.expertise)
+        feedbackAppsContext += `- Expertise: ${characterProfile.traits.expertise}\n`
+      if (characterProfile.traits.background)
+        feedbackAppsContext += `- Background: ${characterProfile.traits.background}\n`
     }
 
     if (recentPosts.length > 0) {
@@ -3452,16 +3463,6 @@ This data helps maintain system integrity and ensure comprehensive test coverage
     if (!requestApp) {
       return c.json({ error: "App not found" }, { status: 404 })
     }
-
-    const toFeedBack = feedbackApp
-      ? await getApp({
-          id: requestApp!.id,
-          userId: member?.id,
-          guestId: guest?.id,
-          skipCache: true,
-          depth: 1,
-        })
-      : undefined
 
     // Only show this message if we're actually in the main thread
     const isActuallyMainThread = thread?.id === requestApp.mainThreadId

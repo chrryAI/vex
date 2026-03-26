@@ -553,7 +553,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
 
     let newHour = 12
     let newMinute = 0
-    let newPostType: "post" | "comment" | "engagement" = "post"
+    let newPostType: "post" | "comment" | "engagement" | "autonomous" = "post"
 
     if (lastSlot) {
       // Use the same postType as last slot

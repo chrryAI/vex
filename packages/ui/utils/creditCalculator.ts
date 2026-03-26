@@ -5,7 +5,7 @@
 export interface scheduleSlot {
   hour: number
   minute: number
-  postType: "post" | "comment" | "engagement"
+  postType: "post" | "comment" | "engagement" | "autonomous"
   model:
     | "sushi"
     | "deepSeek"

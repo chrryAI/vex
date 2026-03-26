@@ -2292,28 +2292,73 @@ ${moodContext}
 
       const blueskyText = `${truncatedBody}${footer}`
 
-      postToBluesky({
-        text: blueskyText,
-        credentials: blueskyCredentials,
-        video: finalVideoUrl,
-        images: finalImageUrl ? [finalImageUrl] : undefined,
-      })
-        .then(async (res) => {
-          if (!res?.uri) return
-          // res is guaranteed to be non-null if we get here because postToBluesky now throws on error
-          // Success: Send Discord notification with Bluesky URL
-          const [repo, collection, rkey] = res.uri
-            .replace("at://", "")
-            .split("/")
-          const bskyPostUrl = `https://bsky.app/profile/${blueskyCredentials.handle}/post/${rkey}`
+      !isDevelopment &&
+        postToBluesky({
+          text: blueskyText,
+          credentials: blueskyCredentials,
+          video: finalVideoUrl,
+          images: finalImageUrl ? [finalImageUrl] : undefined,
+        })
+          .then(async (res) => {
+            if (!res?.uri) return
+            // res is guaranteed to be non-null if we get here because postToBluesky now throws on error
+            // Success: Send Discord notification with Bluesky URL
+            const [repo, collection, rkey] = res.uri
+              .replace("at://", "")
+              .split("/")
+            const bskyPostUrl = `https://bsky.app/profile/${blueskyCredentials.handle}/post/${rkey}`
 
-          try {
-            await sendDiscordNotification(
+            try {
+              await sendDiscordNotification(
+                {
+                  embeds: [
+                    {
+                      title: "🦋 Posted to Bluesky",
+                      color: 0x3b82f6, // Bluesky Blue
+                      fields: [
+                        {
+                          name: "Agent",
+                          value: app.name || "Unknown",
+                          inline: true,
+                        },
+                        {
+                          name: "Handle",
+                          value: `@${blueskyCredentials.handle}`,
+                          inline: true,
+                        },
+                        {
+                          name: "Post Link",
+                          value: `[View on Bluesky](${bskyPostUrl})`,
+                          inline: false,
+                        },
+                      ],
+                      timestamp: new Date().toISOString(),
+                      footer: { text: "Vex Cross-Posting" },
+                    },
+                  ],
+                },
+                process.env.DISCORD_TRIBE_WEBHOOK_URL,
+              )
+              console.log(`✅ Bluesky post notified to Discord: ${bskyPostUrl}`)
+            } catch (discordErr) {
+              console.error(
+                "⚠️ Failed to notify Discord about Bluesky post success:",
+                discordErr,
+              )
+              captureException(discordErr)
+            }
+          })
+          .catch((err) => {
+            captureException(err)
+            console.error("⚠️ Bluesky post failed (non-blocking):", err)
+
+            // Error: Send "oops" Discord notification
+            sendDiscordNotification(
               {
                 embeds: [
                   {
-                    title: "🦋 Posted to Bluesky",
-                    color: 0x3b82f6, // Bluesky Blue
+                    title: "⚠️ oops: Bluesky post failed",
+                    color: 0xef4444, // Red
                     fields: [
                       {
                         name: "Agent",
@@ -2321,65 +2366,21 @@ ${moodContext}
                         inline: true,
                       },
                       {
-                        name: "Handle",
-                        value: `@${blueskyCredentials.handle}`,
-                        inline: true,
-                      },
-                      {
-                        name: "Post Link",
-                        value: `[View on Bluesky](${bskyPostUrl})`,
+                        name: "Error",
+                        value: err instanceof Error ? err.message : String(err),
                         inline: false,
                       },
                     ],
                     timestamp: new Date().toISOString(),
-                    footer: { text: "Vex Cross-Posting" },
+                    footer: { text: "Vex Error Monitoring" },
                   },
                 ],
               },
               process.env.DISCORD_TRIBE_WEBHOOK_URL,
-            )
-            console.log(`✅ Bluesky post notified to Discord: ${bskyPostUrl}`)
-          } catch (discordErr) {
-            console.error(
-              "⚠️ Failed to notify Discord about Bluesky post success:",
-              discordErr,
-            )
-            captureException(discordErr)
-          }
-        })
-        .catch((err) => {
-          captureException(err)
-          console.error("⚠️ Bluesky post failed (non-blocking):", err)
-
-          // Error: Send "oops" Discord notification
-          sendDiscordNotification(
-            {
-              embeds: [
-                {
-                  title: "⚠️ oops: Bluesky post failed",
-                  color: 0xef4444, // Red
-                  fields: [
-                    {
-                      name: "Agent",
-                      value: app.name || "Unknown",
-                      inline: true,
-                    },
-                    {
-                      name: "Error",
-                      value: err instanceof Error ? err.message : String(err),
-                      inline: false,
-                    },
-                  ],
-                  timestamp: new Date().toISOString(),
-                  footer: { text: "Vex Error Monitoring" },
-                },
-              ],
-            },
-            process.env.DISCORD_TRIBE_WEBHOOK_URL,
-          ).catch((discordErr) => {
-            console.error("⚠️ Failed to send error to Discord:", discordErr)
+            ).catch((discordErr) => {
+              console.error("⚠️ Failed to send error to Discord:", discordErr)
+            })
           })
-        })
     }
 
     // Send Discord notification (non-blocking)

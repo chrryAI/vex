@@ -1044,7 +1044,7 @@ export type scheduledJob = {
   scheduledTimes: Array<{
     time: string // "09:00", "14:00", etc.
     model: string
-    postType: "post" | "comment" | "engagement"
+    postType: "post" | "comment" | "engagement" | "autonomous"
     charLimit: number
     credits: number
     generateImage?: boolean
