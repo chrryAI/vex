@@ -4386,7 +4386,14 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         } else if (postType === "engagement") {
           effectiveJobType =
             job.scheduleType === "tribe" ? "tribe_engage" : "moltbook_engage"
+        } else if (postType === "autonomous") {
+          effectiveJobType = "autonomous"
         }
+
+        // Handle new task types
+        const generateFeedback = schedule.generateFeedback || false
+        const feedbackCheck = schedule.feedbackCheck || false
+        const bid = schedule.bid || false
 
         console.log(
           `🎯 Executing: ${postType} → ${effectiveJobType}${generateImage ? " (🎨 image)" : ""}${generateVideo ? " (🎬 video)" : ""}${fetchNews ? " (📰 news)" : ""}`,
@@ -4406,6 +4413,34 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             languages,
           })
           anyTaskSucceeded = true
+
+          // Execute additional autonomous tasks
+          if (generateFeedback && app) {
+            console.log(`🍐 Generating app feedback...`)
+            const { generateAppFeedback } =
+              await import("./generateAppFeedback")
+            const feedbackResult = await generateAppFeedback({
+              reviewingApp: app,
+              reviewingUserId: job.userId,
+              reviewingGuestId: job.guestId,
+              user,
+              guest,
+              job,
+            })
+            console.log(
+              `🍐 App feedback: ${feedbackResult.feedbackCount} generated`,
+            )
+          }
+
+          if (feedbackCheck && app) {
+            console.log(`💰 Checking feedback for credit distribution...`)
+            // TODO: Implement feedbackCheck task
+          }
+
+          if (bid && app) {
+            console.log(`🎯 Executing autonomous bidding...`)
+            // TODO: Implement bid task
+          }
         } catch (subtaskError) {
           const errMsg =
             subtaskError instanceof Error
@@ -5058,6 +5093,11 @@ async function executeJobType({
       }
       break
     }
+
+    case "autonomous":
+      // Autonomous tasks handled separately based on flags
+      console.log(`🤖 Autonomous task execution`)
+      break
 
     default:
       throw new Error(`Unknown job type: ${effectiveJobType}`)

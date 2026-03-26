@@ -153,7 +153,7 @@ export async function getModelProvider({
     modelId?: string
     time: string // "09:00"
     model: string
-    postType: "post" | "comment" | "engagement"
+    postType: "post" | "comment" | "engagement" | "autonomous"
     charLimit: number
     credits: number
     generateImage?: boolean

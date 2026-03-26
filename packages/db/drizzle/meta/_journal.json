@@ -1646,6 +1646,13 @@
       "when": 1774528585101,
       "tag": "0234_brown_the_hunter",
       "breakpoints": true
+    },
+    {
+      "idx": 235,
+      "version": "7",
+      "when": 1774531562631,
+      "tag": "0235_free_lizard",
+      "breakpoints": true
     }
   ]
 }

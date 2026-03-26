@@ -1459,7 +1459,6 @@ export default function Watermelon() {
               >
                 {app && (
                   <AppLink
-                    isTribe={false}
                     app={app}
                     icon={
                       <Img app={app} alt={app.name} width={22} height={22} />

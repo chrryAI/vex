@@ -1071,8 +1071,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     borderRadius: 20,
                     flex: 1,
                     ...{
-                      minWidth: isMobileDevice ? 60 : 80,
-                      maxWidth: 90,
+                      minWidth: isMobileDevice ? 40 : 80,
+                      maxWidth: isMobileDevice ? 50 : 90,
                     },
                   },
 
@@ -1093,7 +1093,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                   <Img
                     app={item}
                     alt={item.name}
-                    size={isMobileDevice ? 35 : 40}
+                    size={isMobileDevice ? 30 : 40}
                   />
                 }
                 title={`${item.icon} ${item.subtitle || item.name}`}
