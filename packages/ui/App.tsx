@@ -1777,7 +1777,7 @@ export default function App({
           <Hippo
             as="icon"
             showInstructions
-            dataTestId="instruction"
+            dataTestId="chat-instruction"
             isAgentBuilder={true}
             hipchat={false}
             opacity={0}

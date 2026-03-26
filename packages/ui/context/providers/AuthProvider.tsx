@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.39"
+const VERSION = "2.2.41"
 
 const AuthContext = createContext<
   | {
@@ -452,6 +452,7 @@ export function AuthProvider({
   tribePost: initialTribePost,
   testConfig,
   isBot,
+  donut,
   ...props
 }: {
   translations?: Record<string, any>
@@ -462,6 +463,7 @@ export function AuthProvider({
   children: ReactNode
   fingerprint?: string
   gift?: string
+  donut?: boolean
   error?: string
   session?: session
   isBot?: boolean
@@ -2242,6 +2244,11 @@ export function AuthProvider({
   }, [storeAppsSwr, loadingAppId])
 
   const showFocusInitial = searchParams.get("focus") === "true"
+  const isFocus = !postId
+    ? baseApp
+      ? baseApp?.slug === "focus" || showFocusInitial
+      : undefined
+    : false
 
   useEffect(() => {
     setPostId(postIdInitial)
@@ -2249,50 +2256,7 @@ export function AuthProvider({
 
   const [showFocusInternal, setShowFocusInternal] = useLocalStorage<
     boolean | undefined | null
-  >(
-    `showFocus:${app?.slug || "focus"}`,
-    !postId
-      ? baseApp
-        ? baseApp?.slug === "focus" || showFocusInitial
-        : undefined
-      : false,
-  )
-
-  const showFocus = showFocusInternal && !postId
-
-  useEffect(() => {
-    if (postId) return setShowFocusInternal(false)
-    if (!baseApp?.slug) return
-    if (showFocus === undefined && baseApp?.slug === "focus") {
-      setShowFocusInternal(true)
-    }
-    if (showFocusInitial) {
-      setShowFocusInternal(showFocusInitial)
-    }
-  }, [showFocusInitial, showFocus, baseApp?.slug, postId])
-
-  const setShowFocus = (sw: boolean) => {
-    setShowFocusInternal(sw)
-
-    if (sw) {
-      addParams({ focus: "true" })
-      setThread(undefined)
-      setThreadId(undefined)
-      setShowTribe(false)
-    } else {
-      showFocus && removeParams("focus")
-    }
-  }
-
-  useEffect(() => {
-    if (!baseApp || !app) return
-    if (showFocus === undefined && baseApp?.slug) {
-      setShowFocus(
-        (baseApp?.slug === "focus" && app?.slug === "focus") ||
-          pathname === "/focus",
-      )
-    }
-  }, [baseApp, app, pathname]) // Only depend on slugs, not showFocus
+  >(`showFocus:${app?.slug || "focus"}`, isFocus)
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
@@ -2665,6 +2629,42 @@ export function AuthProvider({
     (accountApp ? app?.id !== accountApp?.id : true)
 
   const [isPear, setPearInternal] = useState(isPearInternal)
+
+  const showFocus = showFocusInternal && isFocus
+
+  useEffect(() => {
+    if (postId) return setShowFocusInternal(false)
+    if (!baseApp?.slug) return
+    if (showFocus === undefined && baseApp?.slug === "focus") {
+      setShowFocusInternal(true)
+    }
+    if (showFocusInitial) {
+      setShowFocusInternal(showFocusInitial)
+    }
+  }, [showFocusInitial, showFocus, baseApp?.slug, postId])
+
+  const setShowFocus = (sw: boolean) => {
+    setShowFocusInternal(sw)
+
+    if (sw) {
+      addParams({ focus: "true" })
+      setThread(undefined)
+      setThreadId(undefined)
+      setShowTribe(false)
+    } else {
+      showFocus && removeParams("focus")
+    }
+  }
+
+  useEffect(() => {
+    if (!baseApp || !app) return
+    if (showFocus === undefined && baseApp?.slug) {
+      setShowFocus(
+        (baseApp?.slug === "focus" && app?.slug === "focus") ||
+          pathname === "/focus",
+      )
+    }
+  }, [baseApp, app, pathname]) // Only depend on slugs, not showFocus
 
   const pear = storeApps.find((app) => app.slug === "pear")
 

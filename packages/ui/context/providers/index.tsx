@@ -102,6 +102,7 @@ export interface AppProvidersProps {
   isBot?: boolean
   tribes?: paginatedTribes
   accountApp?: appWithStore
+  donut?: boolean
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
 }
@@ -125,6 +126,7 @@ export default function AppProviders({
   translations,
   useExtensionIcon,
   siteConfig,
+  donut,
   searchParams,
   threads,
   tribes,
@@ -200,6 +202,7 @@ export default function AppProviders({
               isBot={isBot}
               apiKey={apiKey}
               app={app}
+              donut={donut}
               pathname={pathname}
               threads={threads}
               showTribe={showTribe}

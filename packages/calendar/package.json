@@ -1,11 +1,11 @@
 {
   "name": "@chrryai/calendar",
   "version": "1.0.0",
+  "private": false,
   "description": "Calendar - Smart Calendar components (Chrome extension only)",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "private": false,
   "scripts": {
     "build": "echo 'Calendar - Coming soon'",
     "dev": "echo 'Calendar - Coming soon'"
