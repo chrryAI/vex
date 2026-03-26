@@ -1,8 +1,8 @@
 import { defaultLocale, locales as localesArray } from "@chrryai/chrry/locales"
+import type { appWithStore } from "chrry/types"
 import { and, count, eq, gte, isNotNull } from "drizzle-orm"
-import { db, type user, getApp } from "../../index"
+import { db, getApp, type user } from "../../index"
 import { apps, scheduledJobs, stores, tribePosts } from "../schema"
-import { appWithStore } from "chrry/types"
 
 const locales = localesArray.filter((l) => l !== defaultLocale)
 
@@ -404,7 +404,21 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
     const mediaType = MEDIA_PATTERN[appIndex % MEDIA_PATTERN.length]!
     appIndex++
 
-    const scheduledTimes = [
+    const scheduledTimes: Array<{
+      time: string
+      model: string
+      postType: "post" | "comment" | "engagement" | "autonomous"
+      charLimit: number
+      credits: number
+      maxTokens?: number
+      languages?: string[]
+      intervalMinutes?: number
+      feedbackApps?: string[]
+      generateImage?: boolean
+      generateVideo?: boolean
+      hour: number
+      minute: number
+    }> = [
       {
         ...t(0),
         model: "sushi",
