@@ -1342,6 +1342,7 @@ ai.post("/", async (c) => {
     fingerprint: fp,
     postType,
     feedbackApp,
+    feedbackAppIds,
     ...rest
   } = requestData
 
@@ -3281,6 +3282,81 @@ ${(() => {
       ? await getPearContext()
       : ""
 
+  // Load target apps for feedback generation
+  let feedbackAppsContext = ""
+  if (
+    feedbackAppIds &&
+    Array.isArray(feedbackAppIds) &&
+    feedbackAppIds.length > 0
+  ) {
+    const feedbackApps = []
+    for (const targetAppId of feedbackAppIds) {
+      const targetApp = await getApp({ appId: targetAppId, depth: 1 })
+      if (targetApp) {
+        // Get character profile
+        const characterProfile = await db.query.characterProfiles.findFirst({
+          where: (profiles, { eq }) => eq(profiles.appId, targetAppId),
+        })
+
+        // Get recent posts
+        const recentPosts = await db.query.tribePosts.findMany({
+          where: (posts, { eq }) => eq(posts.appId, targetAppId),
+          orderBy: (posts, { desc }) => [desc(posts.createdOn)],
+          limit: 5,
+        })
+
+        feedbackApps.push({
+          app: targetApp,
+          characterProfile,
+          recentPosts,
+        })
+      }
+    }
+
+    if (feedbackApps.length > 0) {
+      feedbackAppsContext = `\n\n## 🍐 Apps to Review for Feedback\n\n${feedbackApps
+        .map((item, idx) => {
+          const { app, characterProfile, recentPosts } = item
+          let context = `### App ${idx + 1}: ${app.name}\n`
+
+          if (app.title) context += `**Title:** ${app.title}\n`
+          if (app.subtitle) context += `**Subtitle:** ${app.subtitle}\n`
+          if (app.description)
+            context += `**Description:** ${app.description}\n`
+          if (app.systemPrompt)
+            context += `**System Prompt:** ${app.systemPrompt.substring(0, 400)}...\n`
+
+          if (app.highlights && app.highlights.length > 0) {
+            context += `**Highlights:**\n${app.highlights
+              .slice(0, 3)
+              .map(
+                (h: any) =>
+                  `- ${h.emoji || "•"} ${h.title}${h.content ? `: ${h.content}` : ""}`,
+              )
+              .join("\n")}\n`
+          }
+
+          if (app.tips && app.tips.length > 0) {
+            context += `**Tips:**\n${app.tips
+              .slice(0, 3)
+              .map((t: any) => `- ${t.emoji || "•"} ${t.content || ""}`)
+              .join("\n")}\n`
+          }
+
+          if (characterProfile) {
+            context += `**Character Profile:**\n- Personality: ${characterProfile.personality || "N/A"}\n- Communication Style: ${characterProfile.communicationStyle || "N/A"}\n`
+          }
+
+          if (recentPosts.length > 0) {
+            context += `**Recent Posts:**\n${recentPosts.map((p: any) => `- "${p.content?.substring(0, 200)}..."`).join("\n")}\n`
+          }
+
+          return context
+        })
+        .join("\n")}`
+    }
+  }
+
   // When Pear mode is active, remind the AI to nudge the user to leave feedback
   const pearNudgeAllowed = isPear && !canPostToTribe && !canPostToMolt
   const wasPearReminderAllowed =
@@ -3687,6 +3763,7 @@ When message language is unclear, default to this language.`
     grapeContext, // Available apps in Grape button (GLOBAL - all apps need this)
     analyticsContext, // Live analytics for Grape
     pearContext, // Recent feedback for Pear
+    feedbackAppsContext, // Target apps for feedback generation with full context
     pearModeReminder, // Nudge user to submit feedback when Pear mode is on
     e2eContext, // E2E testing analytics for system integrity
     dnaContext, // App owner's foundational knowledge
