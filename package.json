@@ -1,6 +1,6 @@
 {
   "name": "vex",
-  "version": "2.2.41",
+  "version": "2.2.42",
   "private": true,
   "type": "module",
   "workspaces": ["apps/*", "packages/*"],

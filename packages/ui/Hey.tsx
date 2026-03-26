@@ -15,6 +15,8 @@ import { useAuth } from "./context/providers/AuthProvider"
 import { useNavigationContext } from "./context/providers/NavigationProvider"
 import { useTribe } from "./context/providers/TribeProvider"
 import { ErrorBoundary } from "./ErrorBoundary"
+import HipChat from "./HipChat"
+import Hippo from "./Hippo"
 import Home from "./Home"
 import Img from "./Image"
 import Loading from "./Loading"
@@ -95,6 +97,7 @@ export const Hey = memo(
       FRONTEND_URL,
       showWatermelonInitial,
       hasHydrated: isHydrated,
+      donut,
     } = useAuth()
 
     const { tribeSlug, isLoadingTribes } = useTribe()
@@ -245,8 +248,8 @@ export const Hey = memo(
     return (
       <Div
         style={{
-          width: "100dvw",
-          height: "100dvh",
+          width: donut ? undefined : "100dvw",
+          height: donut ? undefined : "100dvh",
         }}
       >
         <ErrorBoundary>

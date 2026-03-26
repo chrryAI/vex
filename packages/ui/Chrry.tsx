@@ -92,8 +92,8 @@ export default function Chrry({
       siteConfig={siteConfig}
       session={session}
       app={app}
-      viewPortWidth={viewPortWidth}
-      viewPortHeight={viewPortHeight}
+      viewPortWidth={donut ? "500px" : viewPortWidth}
+      viewPortHeight={donut ? "700px" : viewPortHeight}
       pathname={pathname}
       onSetLanguage={onSetLanguage}
       apiKey={apiKey}

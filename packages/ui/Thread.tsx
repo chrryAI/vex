@@ -9,6 +9,7 @@ import {
   useNavigationContext,
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
+import Donut from "./Donut"
 import HipChat from "./HipChat"
 import { useHasHydrated, useThreadMetadata } from "./hooks"
 import { useThreadPresence } from "./hooks/useThreadPresence"
@@ -24,6 +25,8 @@ import Tribe from "./Tribe"
 import type { aiAgent, paginatedMessages, thread } from "./types"
 import { isCollaborator, isE2E, isOwner } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+
+// import Donut from "./Donut"
 
 // Lazy load Focus only on web (not extension) to reduce bundle size
 // This component includes timer, tasks, moods, and analytics - heavy dependencies
@@ -66,6 +69,7 @@ const Thread = ({
     isPear,
     isHippoOpen,
     setPear,
+    donut,
     ...auth
   } = useAuth()
 
@@ -483,6 +487,8 @@ const Thread = ({
             <WannathisIcon /> Wannathis
           </A>
         )}
+
+        {/* {!donut && <Donut apiKey={auth.token} />} */}
 
         <HipChat
           // dataTestId={

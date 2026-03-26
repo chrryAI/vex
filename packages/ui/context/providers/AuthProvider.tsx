@@ -102,7 +102,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.41"
+const VERSION = "2.2.42"
 
 const AuthContext = createContext<
   | {
@@ -113,6 +113,8 @@ const AuthContext = createContext<
         chromeVersion: string
         macosVersion: string
       }
+      isDonatOpen: boolean
+      setIsDonatOpen: (value: boolean) => void
       push: (href: string) => void
       tickerPaused: boolean
       setTickerPaused: (value: boolean) => void
@@ -127,6 +129,7 @@ const AuthContext = createContext<
       showWatermelonInitial: boolean
       hasHydrated: boolean
       actions: apiActions
+      donut?: boolean
       setAbout: (value: string | undefined) => void
       ask: string | undefined
       setAsk: (value: string | undefined) => void
@@ -941,6 +944,8 @@ export function AuthProvider({
   const hourlyUsageLeft = user
     ? hourlyLimit - (user?.messagesLastHour || 0)
     : hourlyLimit - (guest?.messagesLastHour || 0)
+
+  const [isDonatOpen, setIsDonatOpen] = useState(false)
 
   const [showGrapes, setShowGrapes] = useState(false)
 
@@ -3739,6 +3744,8 @@ export function AuthProvider({
         tribeStripeSession,
         setTribeStripeSession,
         store,
+        isDonatOpen,
+        setIsDonatOpen,
         stores,
         migratedFromGuestRef,
         isDevelopment,
@@ -3771,6 +3778,7 @@ export function AuthProvider({
         lasProcessedSession,
         setWasGifted,
         isPear,
+        donut,
         setSkipAppCacheTemp,
         skipAppCacheTemp,
         setPear,

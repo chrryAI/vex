@@ -4795,14 +4795,37 @@ async function executeJobType({
   switch (effectiveJobType) {
     case "tribe_post":
       try {
-        const response = await executeTribePost(
-          job,
-          postType,
-          generateImage,
-          fetchNews,
-          generateVideo,
-          languages,
-        )
+        // Try XState first, fall back to direct async
+        let response: Awaited<ReturnType<typeof executeTribePost>>
+        try {
+          const { executeJobViaXState, isSupportedJobType } = await import(
+            "../xstate"
+          )
+          if (isSupportedJobType(effectiveJobType)) {
+            console.log(`🎭 [XState] Routing tribe_post through state machine`)
+            const xstateResult = await executeJobViaXState(job, {
+              effectiveJobType,
+            })
+            response = xstateResult.success
+              ? (xstateResult.output as typeof response)
+              : { success: false, error: xstateResult.error }
+          } else {
+            throw new Error("Fallback: unsupported job type")
+          }
+        } catch (xstateError) {
+          console.warn(
+            `⚠️ [XState] tribe_post failed, falling back to direct:`,
+            xstateError instanceof Error ? xstateError.message : xstateError,
+          )
+          response = await executeTribePost(
+            job,
+            postType,
+            generateImage,
+            fetchNews,
+            generateVideo,
+            languages,
+          )
+        }
         if (!response.output || response.error) {
           throw new Error(response.error || "Unknown error")
         }
@@ -4859,9 +4882,34 @@ async function executeJobType({
 
     case "tribe_comment":
       try {
-        const response = await executeTribeComment(job)
-        if (!response?.content || response.error) {
-          throw new Error(response?.error || "Unknown error")
+        // Try XState first, fall back to direct async
+        let commentResponse: Awaited<ReturnType<typeof executeTribeComment>>
+        try {
+          const { executeJobViaXState, isSupportedJobType } = await import(
+            "../xstate"
+          )
+          if (isSupportedJobType(effectiveJobType)) {
+            console.log(
+              `🎭 [XState] Routing tribe_comment through state machine`,
+            )
+            const xstateResult = await executeJobViaXState(job, {
+              effectiveJobType,
+            })
+            commentResponse = xstateResult.success
+              ? (xstateResult.output as typeof commentResponse)
+              : { error: xstateResult.error }
+          } else {
+            throw new Error("Fallback: unsupported job type")
+          }
+        } catch (xstateError) {
+          console.warn(
+            `⚠️ [XState] tribe_comment failed, falling back to direct:`,
+            xstateError instanceof Error ? xstateError.message : xstateError,
+          )
+          commentResponse = await executeTribeComment(job)
+        }
+        if (!commentResponse?.content || commentResponse.error) {
+          throw new Error(commentResponse?.error || "Unknown error")
         }
         // 🌍 Fire-and-forget: auto-translate the most recent comments for this app (bulk batch)
         if (job.appId) {
@@ -4900,12 +4948,35 @@ async function executeJobType({
         matchedSlot?.languages || (job.metadata as any)?.languages
 
       try {
-        const tribeEngageResult = await executeTribeEngage(
-          job,
-          legacyLanguagesForEngage,
-        )
-        if (tribeEngageResult?.error) {
-          throw new Error(tribeEngageResult.error)
+        // Try XState first, fall back to direct async
+        let engageResult: Awaited<ReturnType<typeof executeTribeEngage>>
+        try {
+          const { executeJobViaXState, isSupportedJobType } = await import(
+            "../xstate"
+          )
+          if (isSupportedJobType(effectiveJobType)) {
+            console.log(
+              `🎭 [XState] Routing tribe_engage through state machine`,
+            )
+            const xstateResult = await executeJobViaXState(job, {
+              languages: legacyLanguagesForEngage,
+              effectiveJobType,
+            })
+            engageResult = xstateResult.success
+              ? (xstateResult.output as typeof engageResult)
+              : { error: xstateResult.error }
+          } else {
+            throw new Error("Fallback: unsupported job type")
+          }
+        } catch (xstateError) {
+          console.warn(
+            `⚠️ [XState] tribe_engage failed, falling back to direct:`,
+            xstateError instanceof Error ? xstateError.message : xstateError,
+          )
+          engageResult = await executeTribeEngage(job, legacyLanguagesForEngage)
+        }
+        if (engageResult?.error) {
+          throw new Error(engageResult.error)
         }
       } catch (error) {
         console.error(`❌ tribe_engage failed:`, error)
@@ -4954,6 +5025,29 @@ async function executeTribeEngage(job: scheduledJob, languages?: string[]) {
   })
 
   return result
+}
+
+// Direct exports for XState machines to call back into existing logic
+export async function executeTribePostDirect(params: {
+  job: scheduledJob
+  postType?: string
+  generateImage?: boolean
+  generateVideo?: boolean
+  fetchNews?: boolean
+  languages?: string[]
+}) {
+  return postToTribeJob(params)
+}
+
+export async function executeTribeCommentDirect(job: scheduledJob) {
+  return checkTribeComments({ job })
+}
+
+export async function executeTribeEngageDirect(
+  job: scheduledJob,
+  languages?: string[],
+) {
+  return engageWithTribePosts({ job, languages })
 }
 
 async function executeMoltbookPost(job: scheduledJob) {

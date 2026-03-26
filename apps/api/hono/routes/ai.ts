@@ -3713,7 +3713,7 @@ When message language is unclear, default to this language.`
       !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
       !!isE2EInternal &&
       !job) ||
-    isDevelopment
+    (isDevelopment && !job)
 
   // isE2E and fingerprint already declared earlier for performance optimization
 
@@ -5810,7 +5810,13 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       )
     }
 
-    return response || c.json({ success: true })
+    // Return message data so callers can extract AI content from the response
+    return c.json({
+      success: true,
+      message: latestAiMessage || { message: aiMessage },
+      text: testResponse,
+      content: testResponse,
+    })
   }
 
   checkThreadSummaryLimit({ user: member, guest, thread }) &&

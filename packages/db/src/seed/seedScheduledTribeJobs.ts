@@ -1,7 +1,7 @@
 import { defaultLocale, locales as localesArray } from "@chrryai/chrry/locales"
 import { and, count, eq, gte, isNotNull } from "drizzle-orm"
 import { db, type user } from "../../index"
-import { apps, scheduledJobs, tribePosts } from "../schema"
+import { apps, scheduledJobs, stores, tribePosts } from "../schema"
 
 const locales = localesArray.filter((l) => l !== defaultLocale)
 
@@ -361,6 +361,11 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
 
     // Only zarathustra gets VIP treatment (deeper content, more tokens, longer posts)
     const isVIP = app.slug === "zarathustra"
+    const store = app.storeId
+      ? await db.query.stores.findFirst({
+          where: eq(stores.id, app.storeId),
+        })
+      : null
     const postCharLimit = isVIP ? 2000 : 1000
     const postMaxTokens = isVIP ? 15000 : 10000
     const engageCharLimit = isVIP ? 800 : 500
@@ -442,6 +447,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         intervalMinutes: POST_INTERVAL_MINUTES,
         ...(mediaType === "video" && { generateVideo: true }),
         ...(mediaType === "image" && { generateImage: true }),
+
         languages: locales,
       },
     ]
@@ -462,6 +468,12 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
       totalEstimatedCredits: 50,
       status: "active" as const,
       nextRunAt: baseScheduledAt,
+      fetchNews:
+        store?.slug &&
+        ["perplexityStore", "movies", "books"].includes(store?.slug)
+          ? true
+          : false,
+
       modelConfig: { maxTokens: scheduledTimes[0]!.maxTokens },
       metadata: {
         tribeSlug: "general",
