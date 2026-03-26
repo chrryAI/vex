@@ -3,7 +3,7 @@ import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
 import { db, eq, getApp as getAppDb, getStore } from "@repo/db"
-import { stores, tribePosts } from "@repo/db/src/schema"
+import { stores, threads, tribePosts } from "@repo/db/src/schema"
 import type { Context } from "hono"
 import { getActiveRentalsForStore } from "../../lib/adExchange/getActiveRentals"
 import { getGuest, getMember } from "./auth"
@@ -519,7 +519,15 @@ export async function getApp({
   // 2. Extract request data
   const request = c.req.raw
   const requestParams = extractRequestParams(c, params)
-  const appId = post?.appId || extractAppId(c, params)
+
+  const threadId = c.req.query("threadId")
+
+  const thread = threadId
+    ? await db.query.threads.findFirst({
+        where: eq(threads.id, threadId),
+      })
+    : null
+  const appId = thread?.appId || post?.appId || extractAppId(c, params)
 
   // 3. Get auth context
   const member = await getMember(c, { skipCache: true })

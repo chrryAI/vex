@@ -1197,6 +1197,7 @@ export const getApp = async ({
   skipCache,
   pathname,
   storeSlug,
+  threadId,
   appSlug,
   accountApp,
   postId,
@@ -1211,6 +1212,7 @@ export const getApp = async ({
   accountApp?: boolean
   appSlug?: string
   postId?: string
+  threadId?: string
 }) => {
   // Build query params for intelligent resolution
   const params = new URLSearchParams()
@@ -1221,6 +1223,7 @@ export const getApp = async ({
   if (accountApp) params.append("accountApp", "true")
   if (appSlug) params.append("appSlug", appSlug)
   if (postId) params.append("postId", postId)
+  if (threadId) params.append("threadId", threadId)
   // if (storeSlug) params.append("storeSlug", storeSlug)
 
   // Use /apps for intelligent resolution (no ID in path)

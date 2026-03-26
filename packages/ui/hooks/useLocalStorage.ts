@@ -11,7 +11,6 @@ export default function useLocalStorage<T>(
 
   const key = deviceId ? `${deviceId}-${keyAs}` : undefined
 
-  console.log(`🚀 ~ key:`, key)
   const [storedValue, setStoredValue] = useState<T>(
     initialValue instanceof Function ? initialValue() : initialValue,
   )
