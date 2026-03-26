@@ -488,7 +488,7 @@ const Thread = ({
           </A>
         )}
 
-        {/* {!donut && <Donut apiKey={auth.token} />} */}
+        {!donut && auth.isDevelopment && <Donut apiKey={auth.token} />}
 
         <HipChat
           // dataTestId={

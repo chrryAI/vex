@@ -1,8 +1,6 @@
 import type { app, guest, scheduledJob, user } from "@repo/db"
 import { and, db, eq, gte, sql } from "@repo/db"
-import { pearFeedback, tribePosts } from "@repo/db/src/schema"
-import { generateText } from "ai"
-import { getModelProvider } from "../getModelProvider"
+import { pearFeedback } from "@repo/db/src/schema"
 import { sendDiscordNotification } from "../sendDiscordNotification"
 
 // ==================== CONSTANTS ====================
@@ -12,30 +10,6 @@ const MIN_FEEDBACK_LENGTH = 30
 const FEEDBACK_COMMISSION_RATE = 0.1 // 10% platform commission
 
 // ==================== TYPES ====================
-
-interface AppFeedbackTarget {
-  appId: string
-  appName: string
-  appDescription?: string | null
-  appSystemPrompt?: string | null
-  appTips?: Array<{
-    id: string
-    content?: string
-    emoji?: string
-  }> | null
-  appHighlights?: Array<{
-    id: string
-    title: string
-    content?: string
-    emoji?: string
-  }> | null
-  appTitle?: string | null
-  appSubtitle?: string | null
-  recentPosts: Array<{
-    content: string
-    createdOn: Date
-  }>
-}
 
 interface GeneratedAppFeedback {
   appIndex: number
@@ -56,7 +30,6 @@ interface GeneratedAppFeedback {
     | "other"
   credits: number
 }
-
 // ==================== RATE LIMITING ====================
 
 async function checkAppFeedbackQuota(
@@ -104,90 +77,6 @@ async function checkAppFeedbackDedup(
 }
 
 // ==================== AI PROMPT ====================
-
-function buildAppFeedbackPrompt(
-  reviewingApp: { name?: string | null; systemPrompt?: string | null },
-  targets: AppFeedbackTarget[],
-): string {
-  const personality = reviewingApp.systemPrompt
-    ? `Your perspective: ${reviewingApp.systemPrompt.substring(0, 300)}\n\n`
-    : ""
-
-  const appList = targets
-    .map((t, i) => {
-      const parts = [`App ${i + 1}: "${t.appName}"`]
-
-      if (t.appTitle) parts.push(`Title: ${t.appTitle}`)
-      if (t.appSubtitle) parts.push(`Subtitle: ${t.appSubtitle}`)
-      if (t.appDescription)
-        parts.push(`Description: ${t.appDescription.substring(0, 300)}`)
-      if (t.appSystemPrompt)
-        parts.push(`System Prompt: ${t.appSystemPrompt.substring(0, 400)}`)
-
-      if (t.appHighlights && t.appHighlights.length > 0) {
-        const highlights = t.appHighlights
-          .slice(0, 3)
-          .map(
-            (h) =>
-              `${h.emoji || "•"} ${h.title}${h.content ? `: ${h.content.substring(0, 100)}` : ""}`,
-          )
-          .join("\n  ")
-        parts.push(`Highlights:\n  ${highlights}`)
-      }
-
-      if (t.appTips && t.appTips.length > 0) {
-        const tips = t.appTips
-          .slice(0, 3)
-          .map(
-            (tip) =>
-              `${tip.emoji || "•"} ${tip.content?.substring(0, 100) || ""}`,
-          )
-          .join("\n  ")
-        parts.push(`Tips:\n  ${tips}`)
-      }
-
-      if (t.recentPosts.length > 0) {
-        const posts = t.recentPosts
-          .slice(0, 3)
-          .map((p) => `"${p.content.substring(0, 200)}"`)
-          .join("\n  ")
-        parts.push(`Recent Posts:\n  ${posts}`)
-      }
-
-      return parts.join("\n")
-    })
-    .join("\n\n")
-
-  return `You are "${reviewingApp.name || "Unknown"}" reviewing apps on the Tribe platform.
-
-${personality}Analyze each app below and provide constructive Pear feedback on their platform presence, features, and overall value proposition. Focus on:
-- App design and user experience
-- Feature completeness and usefulness
-- System prompt quality and personality
-- Content quality from recent posts
-- Tips and highlights effectiveness
-
-${appList}
-
-For EACH app, provide structured feedback. Skip an app ONLY if you have nothing meaningful to say.
-
-Respond ONLY with this JSON array (no markdown, no explanation):
-[
-  {
-    "appIndex": 1,
-    "content": "Specific, actionable feedback (30-250 chars)",
-    "feedbackType": "suggestion" | "praise" | "complaint" | "feature_request" | "bug",
-    "category": "ux" | "feature" | "ui_design" | "analytics" | "performance" | "other",
-    "credits": 3-10
-  }
-]
-
-Credit scale:
-- 3-4: Basic observation
-- 5-6: Specific feedback with concrete detail
-- 7-8: Actionable suggestion with clear improvement path
-- 9-10: Exceptional analysis with deep insight`
-}
 
 // ==================== METRICS ====================
 
@@ -264,20 +153,10 @@ async function storeAppFeedback({
 // ==================== MAIN FUNCTION ====================
 
 export async function generateAppFeedback({
-  reviewingApp,
-  reviewingUserId,
-  reviewingGuestId,
   targetAppIds,
-  user,
-  guest,
   job,
 }: {
-  reviewingApp: app
-  reviewingUserId?: string | null
-  reviewingGuestId?: string | null
   targetAppIds: string[]
-  user?: user | null
-  guest?: guest | null
   job: scheduledJob
 }): Promise<{
   success: boolean
@@ -286,6 +165,25 @@ export async function generateAppFeedback({
 }> {
   const errors: string[] = []
   let feedbackCount = 0
+
+  const reviewingApp = job.appId
+    ? await getApp({
+        id: job.appId,
+      })
+    : null
+
+  if (!reviewingApp) {
+    throw new Error("ReviewingApp is not found")
+  }
+
+  const reviewingUserId = reviewingApp.userId
+  const reviewingGuestId = reviewingApp.guestId
+
+  const user = reviewingUserId ? await getUser({ id: reviewingUserId }) : null
+
+  const guest = reviewingGuestId
+    ? await getGuest({ id: reviewingGuestId })
+    : null
 
   try {
     if (!targetAppIds || targetAppIds.length === 0) {
@@ -303,7 +201,6 @@ export async function generateAppFeedback({
     }
 
     // 2. Get target apps with full data (depth:1 for relations)
-    const { getApp } = await import("@repo/db")
     const targets: AppFeedbackTarget[] = []
 
     for (const targetAppId of targetAppIds.slice(0, quota.remaining)) {
@@ -323,66 +220,58 @@ export async function generateAppFeedback({
         continue
       }
 
-      // Get full app data with relations
-      const targetApp = await getApp({ appId: targetAppId, depth: 1 })
-      if (!targetApp) {
-        console.log(`🍐 Target app not found: ${targetAppId}`)
-        errors.push(`app_not_found: ${targetAppId}`)
-        continue
-      }
-
-      // Get recent posts
-      const recentPosts = await db
-        .select({
-          content: tribePosts.content,
-          createdOn: tribePosts.createdOn,
-        })
-        .from(tribePosts)
-        .where(eq(tribePosts.appId, targetAppId))
-        .orderBy(sql`${tribePosts.createdOn} DESC`)
-        .limit(5)
-
-      targets.push({
-        appId: targetApp.id,
-        appName: targetApp.name,
-        appDescription: targetApp.description,
-        appSystemPrompt: targetApp.systemPrompt,
-        appTips: targetApp.tips as any,
-        appHighlights: targetApp.highlights as any,
-        appTitle: targetApp.title,
-        appSubtitle: targetApp.subtitle,
-        recentPosts,
-      })
+      validTargetIds.push(targetAppId)
     }
 
-    if (targets.length === 0) {
+    if (validTargetIds.length === 0) {
       console.log(
         `🍐 No valid targets after filtering for ${reviewingApp.name}`,
       )
       return { success: true, feedbackCount: 0, errors: [] }
     }
 
-    // 4. Generate AI feedback
-    const prompt = buildAppFeedbackPrompt(reviewingApp, targets)
+    // 3. Call AI route for rich feedback generation
+    const baseUrl = process.env.API_URL || "http://localhost:3000"
+    const prompt = `Review the following apps and provide constructive Pear feedback. Analyze their:
+- Character profiles and personality
+- Recent posts and content quality
+- App features, tips, and highlights
+- Overall platform presence and value
 
-    const { provider } = await getModelProvider({
-      name: "deepSeek",
-      user,
-      guest,
-      job,
+For each app, provide specific, actionable feedback (30-250 chars) with a feedbackType (suggestion/praise/complaint/feature_request/bug), category (ux/feature/ui_design/analytics/performance/other), and credit score (3-10).
+
+Respond with a JSON array of feedback objects.`
+
+    const response = await fetch(`${baseUrl}/ai`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        prompt,
+        appId: reviewingApp.id,
+        userId: reviewingUserId,
+        guestId: reviewingGuestId,
+        feedbackAppIds: validTargetIds,
+        model: "deepSeek",
+        maxTokens: 2000,
+        temperature: 0.7,
+      }),
     })
 
-    const result = await generateText({
-      model: provider,
-      prompt,
-      maxOutputTokens: 2000,
-      temperature: 0.7,
-    })
+    if (!response.ok) {
+      throw new Error(
+        `AI route failed: ${response.status} ${response.statusText}`,
+      )
+    }
 
-    // 5. Parse JSON response
+    const aiResult = await response.json()
+
+    // 4. Parse AI response
     let feedbacks: GeneratedAppFeedback[]
     try {
-      let text = result.text.trim()
+      let text = aiResult.content || aiResult.text || ""
+      text = text.trim()
       if (text.startsWith("```")) {
         text = text.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "")
       }
@@ -396,11 +285,11 @@ export async function generateAppFeedback({
       return { success: false, feedbackCount: 0, errors }
     }
 
-    // 6. Process each feedback
+    // 5. Process each feedback
     for (const feedback of feedbacks) {
       try {
-        const target = targets[feedback.appIndex - 1]
-        if (!target) {
+        const targetAppId = validTargetIds[feedback.appIndex - 1]
+        if (!targetAppId) {
           errors.push(`invalid appIndex: ${feedback.appIndex}`)
           continue
         }
@@ -410,8 +299,8 @@ export async function generateAppFeedback({
           !feedback.content ||
           feedback.content.trim().length < MIN_FEEDBACK_LENGTH
         ) {
-          console.log(`🍐 Rejected feedback for ${target.appName}: too short`)
-          errors.push(`${target.appName}: too_short`)
+          console.log(`🍐 Rejected feedback for app ${targetAppId}: too short`)
+          errors.push(`${targetAppId}: too_short`)
           continue
         }
 
@@ -422,7 +311,7 @@ export async function generateAppFeedback({
         await storeAppFeedback({
           content: feedback.content,
           sourceAppId: reviewingApp.id,
-          targetAppId: target.appId,
+          targetAppId,
           reviewingUserId,
           reviewingGuestId,
           feedbackType: feedback.feedbackType,
@@ -433,7 +322,7 @@ export async function generateAppFeedback({
         feedbackCount++
 
         console.log(
-          `🍐 App feedback: ${reviewingApp.name} → ${target.appName}: ${credits} credits (${feedback.feedbackType})`,
+          `🍐 App feedback: ${reviewingApp.name} → ${targetAppId}: ${credits} credits (${feedback.feedbackType})`,
         )
       } catch (feedbackError) {
         console.error(

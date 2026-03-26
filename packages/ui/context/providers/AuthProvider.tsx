@@ -113,8 +113,8 @@ const AuthContext = createContext<
         chromeVersion: string
         macosVersion: string
       }
-      isDonatOpen: boolean
-      setIsDonatOpen: (value: boolean) => void
+      isDonutOpen: boolean
+      setIsDonutOpen: (value: boolean) => void
       push: (href: string) => void
       tickerPaused: boolean
       setTickerPaused: (value: boolean) => void
@@ -945,7 +945,7 @@ export function AuthProvider({
     ? hourlyLimit - (user?.messagesLastHour || 0)
     : hourlyLimit - (guest?.messagesLastHour || 0)
 
-  const [isDonatOpen, setIsDonatOpen] = useState(false)
+  const [isDonutOpen, setIsDonutOpen] = useState(false)
 
   const [showGrapes, setShowGrapes] = useState(false)
 
@@ -1287,9 +1287,8 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(
-    !initialTribePosts,
-  )
+  const [isLoadingPosts, setIsLoadingPosts] =
+    useState<boolean>(!initialTribePosts)
 
   const [tickerPaused, setTickerPaused] = useLocalStorage<boolean>(
     "tickerPaused",
@@ -3744,8 +3743,8 @@ export function AuthProvider({
         tribeStripeSession,
         setTribeStripeSession,
         store,
-        isDonatOpen,
-        setIsDonatOpen,
+        isDonutOpen,
+        setIsDonutOpen,
         stores,
         migratedFromGuestRef,
         isDevelopment,

@@ -64,11 +64,10 @@ const JWT_SECRET = process.env.NEXTAUTH_SECRET
 if (!JWT_SECRET && process.env.NODE_ENV !== "development") {
   throw new Error("NEXTAUTH_SECRET is not defined")
 }
+const SECRET = JWT_SECRET || "development-secret"
 
 import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
 import { autoTranslateTribeContent } from "../../lib/cron/tribeAutoTranslate"
-
-const SECRET = JWT_SECRET || "development-secret"
 
 const getWhiteLabelUrl = async (app: app) => {
   if (isDevelopment) {
@@ -4071,73 +4070,6 @@ ${blocksCount > 0 ? `- 🚫 **Blocks:** ${blocksCount}` : ""}
       console.error("⚠️ Discord notification failed:", err)
     })
 
-    // === M2M PEAR FEEDBACK ===
-    // After engagement, apps give Pear feedback to apps they engaged with
-    if (engagedPosts.length > 0) {
-      try {
-        const { generateM2MPearFeedback } = await import("../m2mPearFeedback")
-
-        // Build targets (deduplicated by app, skip self)
-        const targetsByApp = new Map<
-          string,
-          {
-            targetAppId: string
-            targetAppName: string
-            targetAppDescription?: string | null
-            postContent: string
-            postId: string
-            engagementType: "reaction" | "comment" | "follow" | "mixed"
-          }
-        >()
-        for (const engaged of engagedPosts) {
-          const postData = postsForEngagement.find(
-            (p) => p.post.id === engaged.postId,
-          )
-          if (!postData || postData.post.appId === app.id) continue
-          const targetAppId = postData.post.appId!
-          if (targetsByApp.has(targetAppId)) continue
-
-          targetsByApp.set(targetAppId, {
-            targetAppId,
-            targetAppName: postData.postApp.name || "Unknown",
-            targetAppDescription: postData.postApp.description,
-            targetAppHighlights: postData.postApp.highlights,
-            targetAppTitle: postData.postApp.title,
-            targetAppSubtitle: postData.postApp.subtitle,
-            postContent: postData.post.content || "",
-            postId: postData.post.id,
-            engagementType:
-              engaged.reaction && engaged.commented
-                ? "mixed"
-                : engaged.reaction
-                  ? "reaction"
-                  : engaged.commented
-                    ? "comment"
-                    : "follow",
-          })
-        }
-
-        if (targetsByApp.size > 0) {
-          const m2mResult = await generateM2MPearFeedback({
-            engagingApp: app,
-            engagingUserId: job.userId,
-            engagingGuestId: job.guestId,
-            targets: Array.from(targetsByApp.values()),
-            agentId: selectedAgent.id,
-            user,
-            guest,
-            job,
-          })
-          console.log(
-            `🍐 M2M Feedback: ${m2mResult.feedbackCount} feedbacks, ${m2mResult.creditsAwarded} credits`,
-          )
-        }
-      } catch (m2mError) {
-        // M2M feedback is non-critical — never let it break engagement
-        console.error("⚠️ M2M Pear Feedback error (non-fatal):", m2mError)
-      }
-    }
-
     return {
       success: true,
     }
@@ -4408,6 +4340,12 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
           })
           anyTaskSucceeded = true
 
+          const app = job.appId
+            ? await db.query.apps.findFirst({
+                where: eq(apps.id, job.appId),
+              })
+            : null
+
           // Execute additional autonomous tasks
           if (feedbackApps && feedbackApps.length > 0 && app) {
             console.log(
@@ -4416,12 +4354,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             const { generateAppFeedback } =
               await import("./generateAppFeedback")
             const feedbackResult = await generateAppFeedback({
-              reviewingApp: app,
-              reviewingUserId: job.userId,
-              reviewingGuestId: job.guestId,
               targetAppIds: feedbackApps,
-              user,
-              guest,
               job,
             })
             console.log(
@@ -5289,7 +5222,7 @@ export function calculateNextRunTime(
   scheduledTimes: Array<{
     time: string
     model: string
-    postType: "post" | "comment" | "engagement"
+    postType: "post" | "comment" | "engagement" | "autonomous"
     charLimit: number
     credits: number
   }>,

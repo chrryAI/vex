@@ -1428,6 +1428,7 @@ ai.post("/", async (c) => {
     job?.jobType.startsWith("molt") || thread?.isMolt || message?.thread?.isMolt
 
   const isPear = requestData.pear === true || requestData.pear === "true"
+  const feedbackAppIds = requestData.feedbackAppIds || []
   const wasPear = requestData.wasPear === true || requestData.wasPear === "true"
   const isTribe = job?.jobType.startsWith("tribe") || !!message.message?.isTribe
 
@@ -2689,15 +2690,15 @@ This is the conversation starter that prompted their message. Keep this context 
 `
     : ""
 }${
-  appPlaceholder || threadPlaceholder
-    ? `
+          appPlaceholder || threadPlaceholder
+            ? `
 You recently generated these personalized suggestions for the user:
 ${appPlaceholder ? `- App placeholder: "${appPlaceholder.text}"` : ""}
 ${threadPlaceholder ? `- Thread placeholder: "${threadPlaceholder.text}"` : ""}
 
 These reflect the user's interests and recent conversations. If the user seems uncertain about what to discuss or asks for suggestions, you can naturally reference these topics. Be conversational about it - don't just list them, weave them into your response naturally.`
-    : ""
-}
+            : ""
+        }
 `
       : ""
 

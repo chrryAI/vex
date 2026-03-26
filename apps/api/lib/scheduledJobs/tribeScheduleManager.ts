@@ -225,7 +225,11 @@ export async function createOrUpdateTribeSchedule(params: {
     const normalizedScheduledTimes = schedule.map((item) => ({
       time: item.time,
       model: item.model,
-      postType: (item.postType || "post") as "post" | "comment" | "engagement",
+      postType: (item.postType || "post") as
+        | "post"
+        | "comment"
+        | "engagement"
+        | "autonomous",
       charLimit: item.charLimit || 280,
       credits: item.credits,
       ...(item.generateImage !== undefined && {
