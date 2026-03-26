@@ -1,6 +1,6 @@
 import type { app, guest, scheduledJob, user } from "@repo/db"
-import { and, db, eq, gte, inArray, ne, notInArray, sql } from "@repo/db"
-import { apps, pearFeedback, tribePosts } from "@repo/db/src/schema"
+import { and, db, eq, gte, sql } from "@repo/db"
+import { pearFeedback, tribePosts } from "@repo/db/src/schema"
 import { generateText } from "ai"
 import { getModelProvider } from "../getModelProvider"
 import { sendDiscordNotification } from "../sendDiscordNotification"
@@ -40,8 +40,20 @@ interface AppFeedbackTarget {
 interface GeneratedAppFeedback {
   appIndex: number
   content: string
-  feedbackType: "suggestion" | "praise" | "complaint" | "feature_request" | "bug"
-  category: "ux" | "performance" | "feature" | "bug" | "ui_design" | "analytics" | "other"
+  feedbackType:
+    | "suggestion"
+    | "praise"
+    | "complaint"
+    | "feature_request"
+    | "bug"
+  category:
+    | "ux"
+    | "performance"
+    | "feature"
+    | "bug"
+    | "ui_design"
+    | "analytics"
+    | "other"
   credits: number
 }
 
@@ -126,7 +138,10 @@ function buildAppFeedbackPrompt(
       if (t.appTips && t.appTips.length > 0) {
         const tips = t.appTips
           .slice(0, 3)
-          .map((tip) => `${tip.emoji || "•"} ${tip.content?.substring(0, 100) || ""}`)
+          .map(
+            (tip) =>
+              `${tip.emoji || "•"} ${tip.content?.substring(0, 100) || ""}`,
+          )
           .join("\n  ")
         parts.push(`Tips:\n  ${tips}`)
       }
@@ -252,6 +267,7 @@ export async function generateAppFeedback({
   reviewingApp,
   reviewingUserId,
   reviewingGuestId,
+  targetAppIds,
   user,
   guest,
   job,
@@ -259,6 +275,7 @@ export async function generateAppFeedback({
   reviewingApp: app
   reviewingUserId?: string | null
   reviewingGuestId?: string | null
+  targetAppIds: string[]
   user?: user | null
   guest?: guest | null
   job: scheduledJob
@@ -271,6 +288,11 @@ export async function generateAppFeedback({
   let feedbackCount = 0
 
   try {
+    if (!targetAppIds || targetAppIds.length === 0) {
+      console.log(`🍐 No target apps specified for ${reviewingApp.name}`)
+      return { success: true, feedbackCount: 0, errors: [] }
+    }
+
     // 1. Check daily quota
     const quota = await checkAppFeedbackQuota(reviewingApp.id)
     if (!quota.allowed) {
@@ -280,54 +302,43 @@ export async function generateAppFeedback({
       return { success: true, feedbackCount: 0, errors: [] }
     }
 
-    // 2. Get apps to review (exclude self, system apps, and already reviewed)
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
-
-    // Get apps already reviewed in last 24h
-    const reviewedAppIds = await db
-      .select({ appId: pearFeedback.appId })
-      .from(pearFeedback)
-      .where(
-        and(
-          eq(pearFeedback.sourceAppId, reviewingApp.id),
-          eq(pearFeedback.source, "m2m"),
-          gte(pearFeedback.createdOn, twentyFourHoursAgo),
-        ),
-      )
-      .then((rows) => rows.map((r) => r.appId).filter((id): id is string => !!id))
-
-    // Get eligible apps (public, active, not self, not system, not reviewed)
-    const eligibleApps = await db
-      .select()
-      .from(apps)
-      .where(
-        and(
-          eq(apps.visibility, "public"),
-          eq(apps.status, "active"),
-          ne(apps.id, reviewingApp.id),
-          eq(apps.isSystem, false),
-          reviewedAppIds.length > 0
-            ? notInArray(apps.id, reviewedAppIds)
-            : sql`true`,
-        ),
-      )
-      .limit(20)
-
-    if (eligibleApps.length === 0) {
-      console.log(`🍐 No eligible apps to review for ${reviewingApp.name}`)
-      return { success: true, feedbackCount: 0, errors: [] }
-    }
-
-    // 3. Get recent posts for each app
+    // 2. Get target apps with full data (depth:1 for relations)
+    const { getApp } = await import("@repo/db")
     const targets: AppFeedbackTarget[] = []
-    for (const targetApp of eligibleApps.slice(0, quota.remaining)) {
+
+    for (const targetAppId of targetAppIds.slice(0, quota.remaining)) {
+      // Skip self-review
+      if (targetAppId === reviewingApp.id) {
+        console.log(`🍐 Skipping self-review for ${reviewingApp.name}`)
+        continue
+      }
+
+      // Check deduplication
+      const isDuplicate = await checkAppFeedbackDedup(
+        reviewingApp.id,
+        targetAppId,
+      )
+      if (isDuplicate) {
+        console.log(`🍐 Already reviewed ${targetAppId} in last 24h`)
+        continue
+      }
+
+      // Get full app data with relations
+      const targetApp = await getApp({ appId: targetAppId, depth: 1 })
+      if (!targetApp) {
+        console.log(`🍐 Target app not found: ${targetAppId}`)
+        errors.push(`app_not_found: ${targetAppId}`)
+        continue
+      }
+
+      // Get recent posts
       const recentPosts = await db
         .select({
           content: tribePosts.content,
           createdOn: tribePosts.createdOn,
         })
         .from(tribePosts)
-        .where(eq(tribePosts.appId, targetApp.id))
+        .where(eq(tribePosts.appId, targetAppId))
         .orderBy(sql`${tribePosts.createdOn} DESC`)
         .limit(5)
 
@@ -345,6 +356,9 @@ export async function generateAppFeedback({
     }
 
     if (targets.length === 0) {
+      console.log(
+        `🍐 No valid targets after filtering for ${reviewingApp.name}`,
+      )
       return { success: true, feedbackCount: 0, errors: [] }
     }
 
@@ -392,7 +406,10 @@ export async function generateAppFeedback({
         }
 
         // Validate
-        if (!feedback.content || feedback.content.trim().length < MIN_FEEDBACK_LENGTH) {
+        if (
+          !feedback.content ||
+          feedback.content.trim().length < MIN_FEEDBACK_LENGTH
+        ) {
           console.log(`🍐 Rejected feedback for ${target.appName}: too short`)
           errors.push(`${target.appName}: too_short`)
           continue
@@ -448,7 +465,10 @@ export async function generateAppFeedback({
                 },
                 {
                   name: "Targets",
-                  value: targets.slice(0, 5).map((t) => t.appName).join(", "),
+                  value: targets
+                    .slice(0, 5)
+                    .map((t) => t.appName)
+                    .join(", "),
                   inline: false,
                 },
               ],

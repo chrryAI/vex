@@ -1825,6 +1825,7 @@ export const scheduledJobs = pgTable(
         "moltbook_engage",
         "tribe_comment", // Tribe comment checking
         "tribe_engage", // Tribe engagement
+        "autonomous",
       ],
     }).notNull(),
 
@@ -1843,9 +1844,11 @@ export const scheduledJobs = pgTable(
           credits: number
           generateImage?: boolean
           generateVideo?: boolean
-          generateFeedback?: boolean
-          feedbackCollect?: boolean
-          bid?: boolean
+          feedbackApps?: string[]
+          feedbackCollect?: string[]
+          bidApp?: string[]
+          bidStore?: string[]
+          swapApp?: string[]
           fetchNews?: boolean
           languages?: string[]
           maxTokens?: number // Optional max tokens for AI generation

@@ -4101,8 +4101,6 @@ ${blocksCount > 0 ? `- 🚫 **Blocks:** ${blocksCount}` : ""}
             targetAppId,
             targetAppName: postData.postApp.name || "Unknown",
             targetAppDescription: postData.postApp.description,
-            targetAppSystemPrompt: postData.postApp.systemPrompt,
-            targetAppTips: postData.postApp.tips,
             targetAppHighlights: postData.postApp.highlights,
             targetAppTitle: postData.postApp.title,
             targetAppSubtitle: postData.postApp.subtitle,
@@ -4371,6 +4369,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
 
       for (const schedule of job.scheduledTimes) {
         const postType = schedule.postType
+        const feedbackApps = schedule.feedbackApps
         const generateImage = schedule.generateImage === true
         const fetchNews = schedule.fetchNews === true
         const generateVideo = schedule.generateVideo === true
@@ -4389,11 +4388,6 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         } else if (postType === "autonomous") {
           effectiveJobType = "autonomous"
         }
-
-        // Handle new task types
-        const generateFeedback = schedule.generateFeedback || false
-        const feedbackCheck = schedule.feedbackCheck || false
-        const bid = schedule.bid || false
 
         console.log(
           `🎯 Executing: ${postType} → ${effectiveJobType}${generateImage ? " (🎨 image)" : ""}${generateVideo ? " (🎬 video)" : ""}${fetchNews ? " (📰 news)" : ""}`,
@@ -4415,14 +4409,17 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
           anyTaskSucceeded = true
 
           // Execute additional autonomous tasks
-          if (generateFeedback && app) {
-            console.log(`🍐 Generating app feedback...`)
+          if (feedbackApps && feedbackApps.length > 0 && app) {
+            console.log(
+              `🍐 Generating app feedback for ${feedbackApps.length} apps...`,
+            )
             const { generateAppFeedback } =
               await import("./generateAppFeedback")
             const feedbackResult = await generateAppFeedback({
               reviewingApp: app,
               reviewingUserId: job.userId,
               reviewingGuestId: job.guestId,
+              targetAppIds: feedbackApps,
               user,
               guest,
               job,
@@ -4430,16 +4427,6 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             console.log(
               `🍐 App feedback: ${feedbackResult.feedbackCount} generated`,
             )
-          }
-
-          if (feedbackCheck && app) {
-            console.log(`💰 Checking feedback for credit distribution...`)
-            // TODO: Implement feedbackCheck task
-          }
-
-          if (bid && app) {
-            console.log(`🎯 Executing autonomous bidding...`)
-            // TODO: Implement bid task
           }
         } catch (subtaskError) {
           const errMsg =
