@@ -256,17 +256,9 @@ const TribePostListItem = React.memo(
                     style={{
                       borderRadius: "15px",
                       width:
-                        viewPortWidth < 500
-                          ? "100%"
-                          : isMobileDevice
-                            ? 300
-                            : 200,
+                        viewPortWidth < 500 ? "100%" : isMobileDevice ? 300 : 200,
                       height:
-                        viewPortWidth < 500
-                          ? "auto"
-                          : isMobileDevice
-                            ? 300
-                            : 200,
+                        viewPortWidth < 500 ? "auto" : isMobileDevice ? 300 : 200,
                     }}
                     src={post.images[0].url}
                   />{" "}
