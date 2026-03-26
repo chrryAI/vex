@@ -29,11 +29,11 @@ const GOOGLE_WEB_CLIENT_SECRET = process.env.GOOGLE_WEB_CLIENT_SECRET
 const _GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
 const _GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET
 
-if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_SECRET) {
-  throw new Error("❌ NEXTAUTH_SECRET is not set in production environment")
+if (process.env.NODE_ENV === "production" && !process.env.AUTH_SECRET) {
+  throw new Error("❌ AUTH_SECRET is not set in production environment")
 }
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || "development-secret"
+const JWT_SECRET = process.env.AUTH_SECRET || "development-secret"
 const JWT_EXPIRY = "30d"
 const ALLOWED_DOMAINS = [".chrry.ai", ".chrry.dev", ".chrry.store", "localhost"]
 const COOKIE_MAX_AGE = 30 * 24 * 60 * 60 // 30 days

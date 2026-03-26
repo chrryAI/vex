@@ -44,7 +44,7 @@ export async function getMember(
     })
 
     if (user) {
-      const token = jwt.sign({ email: byEmail }, process.env.NEXTAUTH_SECRET!)
+      const token = jwt.sign({ email: byEmail }, process.env.AUTH_SECRET!)
 
       return {
         ...user,
@@ -85,7 +85,7 @@ export async function getMember(
       }
 
       // Verify and decode the token
-      const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!)
+      const decoded: any = jwt.verify(token, process.env.AUTH_SECRET!)
       if (decoded.email) {
         const user = await getUser({
           email: decoded.email,

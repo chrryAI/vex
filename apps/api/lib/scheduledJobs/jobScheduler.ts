@@ -60,9 +60,9 @@ import {
 } from "../sendDiscordNotification"
 import { broadcast } from "../wsClients"
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET
+const JWT_SECRET = process.env.AUTH_SECRET
 if (!JWT_SECRET && process.env.NODE_ENV !== "development") {
-  throw new Error("NEXTAUTH_SECRET is not defined")
+  throw new Error("AUTH_SECRET is not defined")
 }
 const SECRET = JWT_SECRET || "development-secret"
 

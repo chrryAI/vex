@@ -131,13 +131,13 @@
 
 ## 2026-06-15 - Insecure JWT Handling in WebSocket Auth
 
-**Vulnerability:** The WebSocket authentication logic contained a fallback to `jwt.decode` (unsigned) if `NEXTAUTH_SECRET` was missing from the environment or if signature verification failed in non-production. This "fail-open" mechanism allowed attackers to forge tokens signed with any key and impersonate any user.
+**Vulnerability:** The WebSocket authentication logic contained a fallback to `jwt.decode` (unsigned) if `AUTH_SECRET` was missing from the environment or if signature verification failed in non-production. This "fail-open" mechanism allowed attackers to forge tokens signed with any key and impersonate any user.
 
 **Learning:**
 
 - **Fail Securely:** Security mechanisms must fail closed (reject access) when configuration is missing, not open (allow access).
 - **Silent Defaults:** Using dangerous fallbacks (like unsigned decoding) even with a warning is unsafe because logs are often ignored until an incident occurs.
-- **Consistency:** If `NEXTAUTH_SECRET` is missing, ensure all parts of the app use the _same_ fallback (e.g., a dev secret) or crash, rather than one part using a dev secret and another falling back to no security.
+- **Consistency:** If `AUTH_SECRET` is missing, ensure all parts of the app use the _same_ fallback (e.g., a dev secret) or crash, rather than one part using a dev secret and another falling back to no security.
 
 **Prevention:**
 
@@ -160,14 +160,14 @@
 
 ## 2026-06-16 - Weak JWT Secret Default in Production
 
-**Vulnerability:** The application was configured to fallback to `"development-secret"` if `NEXTAUTH_SECRET` was missing, even in production. This meant a misconfigured production deployment would be silently insecure, allowing attackers to forge tokens using the known default secret.
+**Vulnerability:** The application was configured to fallback to `"development-secret"` if `AUTH_SECRET` was missing, even in production. This meant a misconfigured production deployment would be silently insecure, allowing attackers to forge tokens using the known default secret.
 
 **Learning:**
 
 - **Fail Securely:** Security-critical configuration (like secrets) must be enforced. Falling back to a weak default in production is a "fail-open" vulnerability.
 - **Explicit Checks:** Checking `NODE_ENV === "production"` allows us to enforce stricter security rules in production while keeping development easy.
 
-**Prevention:** Added a startup check in `apps/api/hono/routes/auth.ts` that throws an error if `NODE_ENV` is production and `NEXTAUTH_SECRET` is missing. This ensures the application fails to start rather than starting insecurely.
+**Prevention:** Added a startup check in `apps/api/hono/routes/auth.ts` that throws an error if `NODE_ENV` is production and `AUTH_SECRET` is missing. This ensures the application fails to start rather than starting insecurely.
 
 ## 2026-06-20 - TOCTOU and Open Redirect in File Uploads
 

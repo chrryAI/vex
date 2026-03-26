@@ -1342,7 +1342,6 @@ ai.post("/", async (c) => {
     fingerprint: fp,
     postType,
     feedbackApp,
-    feedbackAppIds,
     ...rest
   } = requestData
 
@@ -3284,77 +3283,71 @@ ${(() => {
 
   // Load target apps for feedback generation
   let feedbackAppsContext = ""
-  if (
-    feedbackAppIds &&
-    Array.isArray(feedbackAppIds) &&
-    feedbackAppIds.length > 0
-  ) {
-    const feedbackApps = []
-    for (const targetAppId of feedbackAppIds) {
-      const targetApp = await getApp({ appId: targetAppId, depth: 1 })
-      if (targetApp) {
-        // Get character profile
-        const characterProfile = await db.query.characterProfiles.findFirst({
-          where: (profiles, { eq }) => eq(profiles.appId, targetAppId),
-        })
 
-        // Get recent posts
-        const recentPosts = await db.query.tribePosts.findMany({
-          where: (posts, { eq }) => eq(posts.appId, targetAppId),
-          orderBy: (posts, { desc }) => [desc(posts.createdOn)],
-          limit: 5,
-        })
+  if (toFeedBack) {
+    // Get character profile for personality insights
+    const characterProfile = await db.query.characterProfiles.findFirst({
+      where: (profiles, { eq }) => eq(profiles.appId, toFeedBack.id),
+    })
 
-        feedbackApps.push({
-          app: targetApp,
-          characterProfile,
-          recentPosts,
-        })
-      }
+    // Get recent posts for content quality analysis
+    const recentPosts = await db.query.tribePosts.findMany({
+      where: (posts, { eq }) => eq(posts.appId, toFeedBack.id),
+      orderBy: (posts, { desc }) => [desc(posts.createdOn)],
+      limit: 5,
+    })
+
+    // Build comprehensive feedback context
+    feedbackAppsContext = `\n\n## 🍐 App to Review for Feedback: ${toFeedBack.name}\n\n`
+
+    if (toFeedBack.title)
+      feedbackAppsContext += `**Title:** ${toFeedBack.title}\n`
+    if (toFeedBack.subtitle)
+      feedbackAppsContext += `**Subtitle:** ${toFeedBack.subtitle}\n`
+    if (toFeedBack.description)
+      feedbackAppsContext += `**Description:** ${toFeedBack.description}\n`
+    if (toFeedBack.systemPrompt)
+      feedbackAppsContext += `**System Prompt:** ${toFeedBack.systemPrompt.substring(0, 500)}...\n`
+
+    if (toFeedBack.highlights && toFeedBack.highlights.length > 0) {
+      feedbackAppsContext += `\n**Highlights:**\n${toFeedBack.highlights
+        .slice(0, 5)
+        .map(
+          (h: any) =>
+            `- ${h.emoji || "•"} **${h.title}**${h.content ? `: ${h.content}` : ""}`,
+        )
+        .join("\n")}\n`
     }
 
-    if (feedbackApps.length > 0) {
-      feedbackAppsContext = `\n\n## 🍐 Apps to Review for Feedback\n\n${feedbackApps
-        .map((item, idx) => {
-          const { app, characterProfile, recentPosts } = item
-          let context = `### App ${idx + 1}: ${app.name}\n`
-
-          if (app.title) context += `**Title:** ${app.title}\n`
-          if (app.subtitle) context += `**Subtitle:** ${app.subtitle}\n`
-          if (app.description)
-            context += `**Description:** ${app.description}\n`
-          if (app.systemPrompt)
-            context += `**System Prompt:** ${app.systemPrompt.substring(0, 400)}...\n`
-
-          if (app.highlights && app.highlights.length > 0) {
-            context += `**Highlights:**\n${app.highlights
-              .slice(0, 3)
-              .map(
-                (h: any) =>
-                  `- ${h.emoji || "•"} ${h.title}${h.content ? `: ${h.content}` : ""}`,
-              )
-              .join("\n")}\n`
-          }
-
-          if (app.tips && app.tips.length > 0) {
-            context += `**Tips:**\n${app.tips
-              .slice(0, 3)
-              .map((t: any) => `- ${t.emoji || "•"} ${t.content || ""}`)
-              .join("\n")}\n`
-          }
-
-          if (characterProfile) {
-            context += `**Character Profile:**\n- Personality: ${characterProfile.personality || "N/A"}\n- Communication Style: ${characterProfile.communicationStyle || "N/A"}\n`
-          }
-
-          if (recentPosts.length > 0) {
-            context += `**Recent Posts:**\n${recentPosts.map((p: any) => `- "${p.content?.substring(0, 200)}..."`).join("\n")}\n`
-          }
-
-          return context
-        })
-        .join("\n")}`
+    if (toFeedBack.tips && toFeedBack.tips.length > 0) {
+      feedbackAppsContext += `\n**Tips:**\n${toFeedBack.tips
+        .slice(0, 5)
+        .map((t: any) => `- ${t.emoji || "•"} ${t.content || ""}`)
+        .join("\n")}\n`
     }
+
+    if (characterProfile) {
+      feedbackAppsContext += `\n**Character Profile:**\n`
+      if (characterProfile.personality)
+        feedbackAppsContext += `- Personality: ${characterProfile.personality}\n`
+      if (characterProfile.communicationStyle)
+        feedbackAppsContext += `- Communication Style: ${characterProfile.communicationStyle}\n`
+      if (characterProfile.expertise)
+        feedbackAppsContext += `- Expertise: ${characterProfile.expertise}\n`
+      if (characterProfile.background)
+        feedbackAppsContext += `- Background: ${characterProfile.background}\n`
+    }
+
+    if (recentPosts.length > 0) {
+      feedbackAppsContext += `\n**Recent Posts (Last ${recentPosts.length}):**\n${recentPosts
+        .map(
+          (p: any, idx: number) =>
+            `${idx + 1}. "${p.content?.substring(0, 250)}${p.content && p.content.length > 250 ? "..." : ""}"`,
+        )
+        .join("\n")}\n`
+    }
+
+    feedbackAppsContext += `\n**Your Task:** Analyze this app comprehensively and provide constructive Pear feedback. Consider:\n- Feature completeness and usefulness\n- System prompt quality and personality alignment\n- Content quality from recent posts\n- Tips and highlights effectiveness\n- Character profile consistency\n- Overall platform presence and value proposition\n\nProvide specific, actionable feedback as a JSON object with: content (30-250 chars), feedbackType (suggestion/praise/complaint/feature_request/bug), category (ux/feature/ui_design/analytics/performance/other), and credits (3-10 quality score).\n`
   }
 
   // When Pear mode is active, remind the AI to nudge the user to leave feedback
@@ -3466,7 +3459,7 @@ This data helps maintain system integrity and ensure comprehensive test coverage
           userId: member?.id,
           guestId: guest?.id,
           skipCache: true,
-          dept: 1,
+          depth: 1,
         })
       : undefined
 

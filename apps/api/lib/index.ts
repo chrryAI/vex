@@ -368,7 +368,7 @@ export async function getBrowser() {
 */
 
 export const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY
-export const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET
+export const AUTH_SECRET = process.env.AUTH_SECRET
 export const CHATGPT_API_KEY = process.env.CHATGPT_API_KEY
 export const CHATGPT_API_KEY_2 = process.env.CHATGPT_API_KEY_2
 export const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY
