@@ -1069,9 +1069,11 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     gap: 10,
                     outline: "1px dashed var(--shade-2)",
                     borderRadius: 20,
-                    minWidth: "initial",
                     flex: 1,
-                    maxWidth: 100,
+                    ...{
+                      minWidth: isMobileDevice ? 60 : 80,
+                      maxWidth: 90,
+                    },
                   },
 
                   ...(subjectApp?.id === item.id &&
@@ -1087,7 +1089,13 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
               <AppLink
                 isTribe
                 loading={<Loading size={30} />}
-                icon={<Img app={item} alt={item.name} size={40} />}
+                icon={
+                  <Img
+                    app={item}
+                    alt={item.name}
+                    size={isMobileDevice ? 35 : 40}
+                  />
+                }
                 title={`${item.icon} ${item.subtitle || item.name}`}
                 app={item}
                 data-color={COLORS[colorScheme as keyof typeof COLORS]}
@@ -1105,15 +1113,17 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                 }}
                 className={`pointer ${loadingApp?.id === item.id ? "glow" : ""}`}
               >
-                <Span
-                  style={{
-                    fontSize: isMobileDevice ? ".65rem" : ".7rem",
-                    color: "var(--shade-7)",
-                    marginTop: ".25rem",
-                  }}
-                >
-                  {item.name}
-                </Span>
+                {!isMobileDevice && (
+                  <Span
+                    style={{
+                      fontSize: isMobileDevice ? ".65rem" : ".7rem",
+                      color: "var(--shade-7)",
+                      marginTop: ".25rem",
+                    }}
+                  >
+                    {item.name}
+                  </Span>
+                )}
               </AppLink>
               {item.storeId !== subjectApp?.storeId && (
                 <Span
