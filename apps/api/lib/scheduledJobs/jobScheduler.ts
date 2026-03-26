@@ -4338,6 +4338,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             fetchNews,
             generateVideo,
             languages,
+            feedbackApps,
           })
           anyTaskSucceeded = true
 
@@ -4816,6 +4817,7 @@ async function executeJobType({
   fetchNews,
   generateVideo,
   languages,
+  feedbackApps,
 }: {
   effectiveJobType: string
   job: scheduledJob
@@ -4824,6 +4826,7 @@ async function executeJobType({
   fetchNews?: boolean
   generateVideo?: boolean
   languages?: string[]
+  feedbackApps?: string[]
 }): Promise<void> {
   switch (effectiveJobType) {
     case "tribe_post":
@@ -5021,7 +5024,6 @@ async function executeJobType({
       // Autonomous feedback generation for M2M Pear system
       console.log(`🤖 Autonomous feedback generation`)
 
-      const feedbackApps = scheduledTime?.feedbackApps
       if (!feedbackApps || feedbackApps.length === 0) {
         console.log(`⏭️ No feedbackApps configured for autonomous task`)
         break
