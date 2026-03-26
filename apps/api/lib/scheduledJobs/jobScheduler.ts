@@ -2146,7 +2146,10 @@ ${moodContext}
         }
       } catch (vidErr) {
         captureException(vidErr)
-        console.error("⚠️ Video generation failed (post still created):", vidErr)
+        console.error(
+          "⚠️ Video generation failed (post still created):",
+          vidErr,
+        )
       }
     }
 
@@ -2212,7 +2215,10 @@ ${moodContext}
         }
       } catch (imgErr) {
         captureException(imgErr)
-        console.error("⚠️ Image generation failed (post still created):", imgErr)
+        console.error(
+          "⚠️ Image generation failed (post still created):",
+          imgErr,
+        )
       }
     }
 
@@ -4346,9 +4352,8 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             console.log(
               `🍐 Generating app feedback for ${feedbackApps.length} apps...`,
             )
-            const { generateAppFeedback } = await import(
-              "./generateAppFeedback"
-            )
+            const { generateAppFeedback } =
+              await import("./generateAppFeedback")
             const feedbackResult = await generateAppFeedback({
               targetAppIds: feedbackApps,
               job,
@@ -4824,9 +4829,8 @@ async function executeJobType({
         // Try XState first, fall back to direct async
         let response: Awaited<ReturnType<typeof executeTribePost>>
         try {
-          const { executeJobViaXState, isSupportedJobType } = await import(
-            "../xstate"
-          )
+          const { executeJobViaXState, isSupportedJobType } =
+            await import("../xstate")
           if (isSupportedJobType(effectiveJobType)) {
             console.log(`🎭 [XState] Routing tribe_post through state machine`)
             const xstateResult = await executeJobViaXState(job, {
@@ -4862,7 +4866,9 @@ async function executeJobType({
             userId: job.userId!,
             postIds: [response.post_id],
             languages,
-          }).catch((err) => console.error("⚠️ Auto-translate post failed:", err))
+          }).catch((err) =>
+            console.error("⚠️ Auto-translate post failed:", err),
+          )
         }
       } catch (error) {
         console.error(`❌ tribe_post failed:`, error)
@@ -4911,9 +4917,8 @@ async function executeJobType({
         // Try XState first, fall back to direct async
         let commentResponse: Awaited<ReturnType<typeof executeTribeComment>>
         try {
-          const { executeJobViaXState, isSupportedJobType } = await import(
-            "../xstate"
-          )
+          const { executeJobViaXState, isSupportedJobType } =
+            await import("../xstate")
           if (isSupportedJobType(effectiveJobType)) {
             console.log(
               `🎭 [XState] Routing tribe_comment through state machine`,
@@ -4977,9 +4982,8 @@ async function executeJobType({
         // Try XState first, fall back to direct async
         let engageResult: Awaited<ReturnType<typeof executeTribeEngage>>
         try {
-          const { executeJobViaXState, isSupportedJobType } = await import(
-            "../xstate"
-          )
+          const { executeJobViaXState, isSupportedJobType } =
+            await import("../xstate")
           if (isSupportedJobType(effectiveJobType)) {
             console.log(
               `🎭 [XState] Routing tribe_engage through state machine`,
@@ -5011,10 +5015,37 @@ async function executeJobType({
       break
     }
 
-    case "autonomous":
-      // Autonomous tasks handled separately based on flags
-      console.log(`🤖 Autonomous task execution`)
+    case "autonomous": {
+      // Autonomous feedback generation for M2M Pear system
+      console.log(`🤖 Autonomous feedback generation`)
+
+      const feedbackApps = scheduledTime?.feedbackApps
+      if (!feedbackApps || feedbackApps.length === 0) {
+        console.log(`⏭️ No feedbackApps configured for autonomous task`)
+        break
+      }
+
+      if (!app) {
+        console.log(`⚠️ No app found for autonomous feedback generation`)
+        break
+      }
+
+      console.log(
+        `🍐 Generating app feedback for ${feedbackApps.length} apps...`,
+      )
+      const { generateAppFeedback } = await import("./generateAppFeedback")
+      const feedbackResult = await generateAppFeedback({
+        reviewingApp: app,
+        reviewingUserId: job.userId,
+        reviewingGuestId: job.guestId,
+        targetAppIds: feedbackApps,
+        user,
+        guest,
+        job,
+      })
+      console.log(`🍐 App feedback: ${feedbackResult.feedbackCount} generated`)
       break
+    }
 
     default:
       throw new Error(`Unknown job type: ${effectiveJobType}`)
