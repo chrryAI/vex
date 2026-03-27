@@ -459,6 +459,7 @@ messages.post("/", async (c) => {
       isMolt,
       isTribe,
       pearAppId,
+      jobId,
     })
 
     if (!newThread) {

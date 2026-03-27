@@ -295,7 +295,7 @@ const HipChat = ({
   const getTop = () => {
     return (
       (thread || hipchat) && (
-        <Div style={styles.chatTop.style}>
+        <Div style={{ ...styles.chatTop.style }}>
           {(isRetro || user?.role === "admin") && !isDevelopment && isEmpty ? (
             <>
               <Button onClick={() => setIsRetro(false)} className="link">
@@ -423,9 +423,11 @@ const HipChat = ({
               onChangeVisibility={(visibility) =>
                 setThread({ ...thread, visibility })
               }
-              size={16}
+              size={20}
               thread={thread}
-            />
+            >
+              {t("Share")}
+            </Share>
           )}
 
           <Span
@@ -653,6 +655,7 @@ const HipChat = ({
               selectedAgentId: aiAgent?.id || null,
               debateAgentId: null,
               pauseDebate: false,
+              jobId: null,
             },
             aiAgent: aiAgent,
             thread: thread,
@@ -682,7 +685,7 @@ const HipChat = ({
             {thread?.placeHolder && (
               <Input data-testid="thread-placeholder" type="hidden" />
             )}
-            <Div>
+            <Div style={{ marginTop: "auto" }}>
               {hipchat && (
                 <Div
                   style={{
@@ -869,6 +872,7 @@ const HipChat = ({
                     selectedAgentId: msg.message?.message?.selectedAgentId!,
                     debateAgentId: msg.message?.message?.debateAgentId!,
                     pauseDebate: msg.message?.message?.pauseDebate!,
+                    jobId: msg?.message?.message?.jobId ?? null,
                   },
                   aiAgent: msg?.message?.aiAgent! || selectedAgent,
                   thread: thread,
@@ -982,7 +986,7 @@ const HipChat = ({
         style={{
           display: "flex",
           flexDirection: "column",
-          height: hipchat ? "80dvh" : "auto",
+          flex: 1,
           ...style,
         }}
       >
@@ -995,7 +999,7 @@ const HipChat = ({
               marginBottom: "1.5rem",
             }}
           >
-            <Div style={{ ...styles.header.style, gap: ".9rem" }}>
+            <Div style={{ ...styles.header.style, gap: ".75rem" }}>
               {thread.isMainThread ? (
                 <Span
                   title={t("DNA thread")}
@@ -1099,10 +1103,11 @@ const HipChat = ({
         ) : (
           <Div
             style={{
-              flex: hipchat ? 1 : undefined,
+              flex: 1,
               display: "flex",
               flexDirection: "column",
               minHeight: 0,
+              height: "100%",
             }}
           >
             {!showMessages ? null : (
@@ -1120,7 +1125,7 @@ const HipChat = ({
                 }
                 style={{
                   ...messagesStyle,
-                  flex: hipchat ? 1 : undefined,
+                  flex: 1,
                   overflowY: hipchat ? "auto" : undefined,
                   paddingRight: hipchat ? 12 : undefined,
                   paddingBottom: hipchat ? 10 : undefined,

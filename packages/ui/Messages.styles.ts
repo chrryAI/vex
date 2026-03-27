@@ -12,7 +12,7 @@ export const MessagesStyleDefs = {
     marginTop: 20,
     justifyContent: "flex-end",
     // overflowY: "auto",
-    maxHeight: "100%",
+    // maxHeight: "100%",
   },
   messages: {
     display: "flex",

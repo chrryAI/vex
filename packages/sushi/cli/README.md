@@ -10,6 +10,7 @@ Lightweight, ahead-of-time AI built-in compiler that works directly from your te
 - 🐛 **Debugger** - Find and fix bugs instantly
 - 🏗️ **Architect** - Design scalable systems
 - 🍜 **PM** - Coordinate multi-agent workflows
+- ⚡ **STRIKE** - Mutation testing for code quality
 - 💳 **Guest Mode** - 100 free credits to start
 - 🔑 **Unlimited Mode** - Add API key for unlimited usage
 - 📁 **File System Access** - Read/write code directly
@@ -159,6 +160,56 @@ sushi pm "Add real-time notifications feature"
 sushi pm "Optimize database queries and add caching"
 ```
 
+### ⚡ STRIKE - Mutation Testing
+
+```bash
+# Run mutation testing on a file
+sushi strike src/utils.js
+
+# Test multiple files
+sushi strike src/utils.js src/api.js
+
+# Specify test command
+sushi strike src/math.js --test "npm test"
+
+# Show weak spots (survived mutations)
+sushi strike src/*.js --weak-spots
+
+# Dry run - generate mutations without running tests
+sushi strike src/utils.js --dry-run
+
+# Filter mutation categories
+sushi strike src/utils.js --category "arithmetic,comparison"
+```
+
+**What is Mutation Testing?**
+
+STRIKE creates small changes (mutations) to your code and checks if your tests catch them. If a mutation survives (tests pass), your tests need improvement.
+
+**Examples:**
+
+```bash
+# Basic mutation testing
+sushi strike src/calculator.js
+
+# Test with custom test command
+sushi strike src/auth.js --test "jest auth.test.js"
+
+# Find weak spots in your test coverage
+sushi strike src/**/*.js --weak-spots
+
+# Generate report
+sushi strike src/math.js --output json > mutation-report.json
+```
+
+**Understanding Results:**
+
+- **Killed** ✅ - Mutation was caught by tests (good!)
+- **Survived** 💀 - Mutation passed tests (needs more tests)
+- **Score** 📊 - Percentage of mutations killed (target: 80%+)
+
+**Credit Cost:** 20 credits per use (Guest mode)
+
 ## Credit Management
 
 ### View Credits
@@ -179,6 +230,7 @@ sushi credits --history
 - Debugger: 8 credits (12 uses)
 - Architect: 12 credits (8 uses)
 - PM: 15 credits (6 uses)
+- STRIKE: 20 credits (5 uses)
 
 **Unlimited Mode:**
 
@@ -231,7 +283,8 @@ Your API keys are safe! 🔒
     "coder": { "enabled": true },
     "debugger": { "enabled": true },
     "architect": { "enabled": true },
-    "pm": { "enabled": true }
+    "pm": { "enabled": true },
+    "strike": { "enabled": true }
   },
   "fileAccess": {
     "read": ["**/*.{js,ts,jsx,tsx,py,go,rs}"],

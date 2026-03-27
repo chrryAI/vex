@@ -70,6 +70,24 @@ threads.get("/", async (c) => {
   }
 
   const threadId = c.req.query("threadId")
+  const hasPearApp =
+    c.req.query("hasPearApp") === "true"
+      ? true
+      : c.req.query("hasPearApp") !== "false"
+        ? false
+        : undefined
+  const isTribe =
+    c.req.query("isTribe") === "true"
+      ? true
+      : c.req.query("isTribe") !== "false"
+        ? false
+        : undefined
+  const isDNA =
+    c.req.query("isDNA") === "true"
+      ? true
+      : c.req.query("isDNA") !== "false"
+        ? false
+        : undefined
   const appId = c.req.query("appId")
   const starred = request.url.includes("starred")
   const sort = c.req.query("sort") as "bookmark" | "date" | undefined
@@ -210,8 +228,8 @@ threads.get("/", async (c) => {
   // Fetch threads based on context
   const threadsResult = await getThreads({
     ...payload,
-    // appId: collaborationStatusFinal ? undefined : app?.id,
-    // collaborationStatus: collaborationStatusFinal,
+    appId: collaborationStatusFinal ? undefined : app?.id,
+    collaborationStatus: collaborationStatusFinal,
     ...(!sanitizedUserName
       ? {
           guestId,
@@ -223,7 +241,10 @@ threads.get("/", async (c) => {
         }),
     visibility: getVisibilityFilter(),
     userName: sanitizedUserName,
-    // myPendingCollaborations: myPendingCollaborations ? true : undefined,
+    hasPearApp,
+    isDNA,
+    isTribe,
+    myPendingCollaborations: myPendingCollaborations ? true : undefined,
   })
 
   return c.json({

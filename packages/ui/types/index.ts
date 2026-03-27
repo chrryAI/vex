@@ -411,6 +411,7 @@ export type thread = {
   isMolt?: boolean
   pearAppId?: string
   isTribe?: boolean
+  jobId?: string
   characterProfile?: characterProfile
   placeHolder?: placeHolder
   collaborations?:
@@ -552,6 +553,7 @@ export type modelName =
 // Message types
 export type message = {
   id: string
+  jobId: string | null
   agentId: string | null
   debateAgentId: string | null
   pauseDebate: boolean

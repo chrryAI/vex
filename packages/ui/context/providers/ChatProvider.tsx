@@ -733,11 +733,13 @@ export function ChatProvider({
   }, [toFetch])
 
   useEffect(() => {
-    if (profile) {
-      setIsVisitor(user?.id === profile.id)
+    if (!profile) return
+    if (!user && !guest) return
+    if (profile && user) {
+      setIsVisitor(user?.id !== profile.id)
       return
-    } else if (userNameByUrl) {
-      setIsVisitor(user?.userName === userNameByUrl)
+    } else if (userNameByUrl && user) {
+      setIsVisitor(user?.userName !== userNameByUrl)
       return
     }
 

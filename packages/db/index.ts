@@ -298,7 +298,7 @@ export const canCollaborate = ({
   return isOwner(thread, { userId, guestId })
     ? true
     : thread?.collaborations?.some(
-        (collaboration) =>
+        (collaboration: { collaboration: collaboration; user: user }) =>
           collaboration.user.id === userId &&
           collaboration.collaboration.status &&
           ["active", "pending"].includes(collaboration.collaboration.status),
@@ -1598,7 +1598,12 @@ export const getMessages = async ({
   const conditionsArray = [
     isPear ? eq(messages.isPear, true) : undefined,
     userId ? eq(messages.userId, userId) : undefined,
-    isTribe !== undefined ? eq(messages.isTribe, isTribe) : undefined,
+    isTribe !== undefined
+      ? and(
+          eq(messages.isTribe, isTribe),
+          isTribe ? isNotNull(messages.jobId) : isNull(messages.jobId),
+        )
+      : undefined,
     isMolt !== undefined ? eq(messages.isMolt, isMolt) : undefined,
     appId ? eq(messages.appId, appId) : undefined,
     guestId ? eq(messages.guestId, guestId) : undefined,
@@ -2795,6 +2800,9 @@ export const getThreads = async ({
   appId,
   appIds,
   ownerId,
+  hasPearApp,
+  isDNA,
+  isTribe,
 }: {
   page?: number
   pageSize?: number
@@ -2811,6 +2819,9 @@ export const getThreads = async ({
   appId?: string
   appIds?: string[]
   ownerId?: string
+  hasPearApp?: boolean
+  isTribe?: boolean
+  isDNA?: boolean
 }) => {
   // const user = userId ? await getUser({ id: userId }) : undefined
   // const guest = guestId ? await getGuest({ id: guestId }) : undefined
@@ -2875,6 +2886,24 @@ export const getThreads = async ({
     ownerId
       ? or(eq(apps.userId, ownerId), eq(apps.guestId, ownerId))
       : undefined,
+    isDNA === true
+      ? eq(threads.isMainThread, true)
+      : isDNA === false
+        ? eq(threads.isMainThread, false)
+        : undefined,
+    isTribe === true
+      ? or(
+          eq(threads.isTribe, false),
+          isNotNull(threads.tribeId),
+          isNotNull(threads.jobId),
+        )
+      : isTribe === false
+        ? or(
+            eq(threads.isTribe, false),
+            isNull(threads.tribeId),
+            isNull(threads.jobId),
+          )
+        : undefined,
 
     appIds && appIds.length > 0
       ? or(
@@ -2944,6 +2973,9 @@ export const getThreads = async ({
   const orderParams = [
     ...(appId
       ? [sql`CASE WHEN ${threads.appId} = ${appId} THEN 0 ELSE 1 END`]
+      : []),
+    ...(hasPearApp
+      ? [sql`CASE WHEN ${threads.pearAppId} IS NOT NULL THEN 0 ELSE 1 END`]
       : []),
     ...(sort === "bookmark"
       ? [

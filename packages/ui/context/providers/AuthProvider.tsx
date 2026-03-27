@@ -104,7 +104,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.54"
+const VERSION = "2.2.56"
 
 const AuthContext = createContext<
   | {
@@ -847,8 +847,14 @@ export function AuthProvider({
     [],
   )
 
-  const [user, setUser] = React.useState<sessionUser | undefined>(session?.user)
+  const [user, setUserInternal] = React.useState<sessionUser | undefined>(
+    session?.user,
+  )
 
+  const setUser = (user: sessionUser | undefined) => {
+    setUserInternal(user)
+    setProfile(user)
+  }
   const [_state, setState] = useState<AuthState>({
     user,
     loading: true,

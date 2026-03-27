@@ -1,8 +1,8 @@
-# 🍣 SUSHI
+# 🍣 SUSHI + Porffor
 
 **Simple Universal System for Hybrid Intelligence**
 
-> Enterprise-grade compiler infrastructure with multi-agent coordination
+> Enterprise-grade compiler infrastructure with multi-agent coordination and AOT compilation
 
 ---
 
@@ -10,20 +10,19 @@
 
 SUSHI is a comprehensive development platform combining:
 
-- 🍕 **Porffor Compiler** - AOT JS/TS → WASM/C compilation
+- 🍕 **Porffor Compiler** - AOT JS/TS → WASM/C compilation (v0.61.12)
 - 🌮 **BAM** - Bug detection system
 - 🍔 **STRIKE** - Mutation testing framework
 - 🥑 **Memory** - Learning system
 - 🍣 **Spatial Agents** - Multi-agent coordination
 - 🍜 **PM Agent** - Project manager AI
-
-**See [SUSHI_README.md](./SUSHI_README.md) for the complete platform overview.**
+- ⚡ **SUSHI CLI** - Terminal AI assistant with `sushi strike` mutation testing
 
 ---
 
 # Porffor &nbsp;<sup><sub>/ˈpɔrfɔr/ &nbsp;_(poor-for)_</sup></sub>
 
-A from-scratch experimental **AOT** optimizing JS/TS -> Wasm/C engine/compiler/runtime in JS. Research project, not yet intended for serious use.<br>
+A from-scratch experimental **AOT** optimizing JS/TS -> Wasm/C engine/compiler/runtime in JS. Research project, not yet intended for serious use.
 
 <img src="https://github.com/CanadaHonk/porffor/assets/19228318/de8ad753-8ce3-4dcd-838e-f4d49452f8f8" alt="Screenshot of terminal showing Porffor running and compiling a hello world" width="60%">
 
@@ -85,12 +84,6 @@ Expect nothing to work! Only very limited JS is currently supported. See files i
 
 **`porf debug path/to/script.js`**
 
-<!-- ### Debugging the compiled Wasm of a JS file
-> [!WARNING]
-> Very experimental WIP feature!
-
-**`porf dissect path/to/script.js`** -->
-
 ### Options
 
 - `--parser=acorn|@babel/parser|meriyah|hermes-parser` (default: `acorn`) to set which parser to use
@@ -109,20 +102,17 @@ Expect nothing to work! Only very limited JS is currently supported. See files i
 
 ## Sub-engines
 
-<!-- ### Asur
-Asur is Porffor's own Wasm engine; it is an intentionally simple interpreter written in JS. It is very WIP. See [its readme](asur/README.md) for more details. -->
-
 ### 2c
 
 2c is Porffor's own Wasm -> C compiler, using generated Wasm bytecode and internal info to generate specific and efficient C code. Little boilerplate/preluded code or required external files, just for CLI binaries (not like wasm2c very much).
 
 ## Versioning
 
-Porffor uses a unique versioning system, here's an example: `0.48.7`. Let's break it down:
+Porffor uses a unique versioning system, here's an example: `0.61.12`. Let's break it down:
 
 1. `0` - major, always `0` as Porffor is not ready yet
-2. `48` - minor, total Test262 pass percentage (rounded half down, eg `49.4%` -> `48`, `49.5%` -> `49`)
-3. `7` - micro, build number for that minor (incremented each git push)
+2. `61` - minor, total Test262 pass percentage (rounded half down, eg `49.4%` -> `48`, `49.5%` -> `49`)
+3. `12` - micro, build number for that minor (incremented each git push)
 
 ## Performance
 
@@ -186,3 +176,64 @@ Porffor intentionally does not use Wasm proposals which are not commonly impleme
 - No other JS engine is purple colored
 - Purple is pretty cool
 - Purple apparently represents "ambition", which is one word to describe this project
+
+---
+
+# 🍣 SUSHI CLI
+
+**Terminal AI Development Assistant with Mutation Testing**
+
+## Quick Start
+
+```bash
+# Install globally
+npm install -g porffor
+
+# Initialize SUSHI in your project
+sushi init
+
+# Run mutation testing
+sushi strike src/utils.js --test "npm test"
+
+# Show weak spots
+sushi strike src/**/*.js --weak-spots
+```
+
+## Commands
+
+| Command | Description | Credits |
+|---------|-------------|---------|
+| `sushi init` | Initialize SUSHI in project | Free |
+| `sushi status` | Show agent status | Free |
+| `sushi config` | Configure API keys | Free |
+| `sushi coder <task>` | Generate code | 10 |
+| `sushi debugger <error>` | Fix bugs | 8 |
+| `sushi architect <design>` | Design systems | 12 |
+| `sushi pm <goal>` | Coordinate tasks | 15 |
+| `sushi strike <files>` | **Mutation testing** | **20** |
+
+## Mutation Testing with STRIKE
+
+```bash
+# Test a single file
+sushi strike src/math.js
+
+# Test multiple files with custom test command
+sushi strike src/*.js --test "jest"
+
+# Find weak spots in test coverage
+sushi strike src/utils.js --weak-spots
+
+# Dry run - see mutations without running tests
+sushi strike src/api.js --dry-run
+```
+
+### Understanding Results
+
+- **Killed** ✅ - Mutation was caught by tests (good!)
+- **Survived** 💀 - Mutation passed tests (needs more tests!)
+- **Score** 📊 - Target: 80%+
+
+---
+
+**Synced with upstream:** [CanadaHonk/porffor](https://github.com/CanadaHonk/porffor) v0.61.12

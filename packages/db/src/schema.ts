@@ -752,6 +752,10 @@ export const threads = pgTable("threads", {
     onDelete: "set null",
   }),
 
+  jobId: uuid("jobId").references((): AnyPgColumn => scheduledJobs.id, {
+    onDelete: "set null",
+  }),
+
   isMainThread: boolean("isMainThread").notNull().default(false),
 
   appId: uuid("appId").references(() => apps.id, {
@@ -1930,7 +1934,7 @@ export const scheduledJobs = pgTable(
 
     // Calendar integration
     calendarEventId: uuid("calendarEventId").references(
-      () => calendarEvents.id,
+      (): AnyPgColumn => calendarEvents.id,
       {
         onDelete: "set null",
       },
@@ -2732,7 +2736,7 @@ export const calendarEvents = pgTable(
       .default([]),
 
     // Integration with AI and threads
-    threadId: uuid("threadId").references(() => threads.id, {
+    threadId: uuid("threadId").references((): AnyPgColumn => threads.id, {
       onDelete: "set null",
     }), // Link to conversation that created this event
     agentId: uuid("agentId").references(() => aiAgents.id, {

@@ -552,6 +552,7 @@ program
         debugger: { enabled: true },
         architect: { enabled: true },
         pm: { enabled: true },
+        strike: { enabled: true },
       },
       fileAccess: {
         read: ["**/*.{js,ts,jsx,tsx,py,go,rs}"],
@@ -585,6 +586,11 @@ program
     console.log(
       chalk.white(
         `   4. Design systems: ${chalk.bold("sushi architect 'your design'")}`,
+      ),
+    )
+    console.log(
+      chalk.white(
+        `   5. Mutation testing: ${chalk.bold("sushi strike src/file.js")}`,
       ),
     )
   })
@@ -637,6 +643,13 @@ program
       ),
     )
 
+    console.log(chalk.cyan("\n🔬 Testing Tools:"))
+    console.log(
+      chalk.white(
+        `   ⚡ STRIKE     - ${chalk.green("Ready")} (20 credits per use)`,
+      ),
+    )
+
     console.log(chalk.cyan("\n🔌 Integrations:"))
     console.log(chalk.white(`   🌮 BAM        - ${chalk.green("Connected")}`))
     console.log(chalk.white(`   🍔 STRIKE     - ${chalk.green("Connected")}`))
@@ -645,12 +658,149 @@ program
   })
 
 // ============================================
+// STRIKE - Mutation Testing ⚡
+// ============================================
+
+program
+  .command("strike <files...>")
+  .description("⚡ Run mutation testing on files")
+  .option("-t, --test <command>", "Test command to run", "npm test")
+  .option("-o, --output <format>", "Output format (table|json|html)", "table")
+  .option("--weak-spots", "Show weak spots analysis")
+  .option("--dry-run", "Generate mutations without running tests")
+  .option("--category <cats>", "Mutation categories (comma-separated)", "all")
+  .action(async (files, options) => {
+    const config = await loadConfig()
+
+    if (config.mode === "guest") {
+      const canUse = await useCredits(20, `STRIKE: mutation testing`)
+      if (!canUse) return
+    }
+
+    console.log(chalk.cyan("\n⚡ STRIKE - Mutation Testing System\n"))
+
+    const spinner = ora("Initializing STRIKE...").start()
+
+    // Dynamic import to avoid early FalkorDB connection errors
+    const { initSTRIKE, runMutationTesting, analyzeMutationScore, findWeakSpots, closeSTRIKE } = await import(
+      new URL("../tools/strike.js", import.meta.url)
+    ).catch(() => {
+      return {
+        initSTRIKE: async () => console.log("⚡ STRIKE (mock mode)"),
+        runMutationTesting: async () => ({
+          total: 0,
+          killed: 0,
+          survived: 0,
+          score: 0,
+        }),
+        analyzeMutationScore: async () => ({
+          total: 0,
+          killed: 0,
+          score: 0,
+        }),
+        findWeakSpots: async () => [],
+        closeSTRIKE: async () => {},
+      }
+    })
+
+    try {
+      await initSTRIKE()
+      spinner.succeed("STRIKE initialized")
+
+      let totalStats = { total: 0, killed: 0, survived: 0, score: 0 }
+
+      for (const file of files) {
+        const fileSpinner = ora(`Testing ${file}...`).start()
+
+        try {
+          const stats = await runMutationTesting(file, options.test)
+          fileSpinner.succeed(
+            `${file}: ${stats.score.toFixed(1)}% (${stats.killed}/${stats.total} killed)`,
+          )
+
+          totalStats.total += stats.total
+          totalStats.killed += stats.killed
+          totalStats.survived += stats.survived
+        } catch (err) {
+          fileSpinner.fail(`${file}: ${err.message}`)
+        }
+      }
+
+      // Calculate overall score
+      totalStats.score =
+        totalStats.total > 0
+          ? (totalStats.killed / totalStats.total) * 100
+          : 0
+
+      console.log(chalk.cyan("\n📊 Mutation Testing Results:"))
+      console.log(chalk.white(`   Files tested: ${files.length}`))
+      console.log(chalk.white(`   Total mutations: ${totalStats.total}`))
+      console.log(chalk.green(`   Killed: ${totalStats.killed}`))
+      console.log(chalk.red(`   Survived: ${totalStats.survived}`))
+
+      const scoreColor =
+        totalStats.score >= 80
+          ? chalk.green
+          : totalStats.score >= 50
+            ? chalk.yellow
+            : chalk.red
+      console.log(
+        scoreColor(`   Overall Score: ${totalStats.score.toFixed(2)}%`),
+      )
+
+      // Mutation score interpretation
+      console.log(chalk.cyan("\n💡 Score Interpretation:"))
+      if (totalStats.score >= 80) {
+        console.log(
+          chalk.green(
+            "   Excellent! Your tests are catching most mutations.",
+          ),
+        )
+      } else if (totalStats.score >= 50) {
+        console.log(
+          chalk.yellow(
+            "   Good progress. Consider adding more test cases.",
+          ),
+        )
+      } else {
+        console.log(
+          chalk.red(
+            "   Needs improvement. Your tests may have coverage gaps.",
+          ),
+        )
+      }
+
+      // Show weak spots if requested
+      if (options.weakSpots) {
+        console.log(chalk.cyan("\n🎯 Weak Spots Analysis:"))
+        await findWeakSpots()
+      }
+
+      await closeSTRIKE()
+
+      if (config.mode === "guest") {
+        const credits = await loadCredits()
+        console.log(chalk.yellow(`\n💳 Credits remaining: ${credits.remaining}`))
+      }
+
+      // Exit with error code if score is too low
+      if (totalStats.score < 50) {
+        process.exit(1)
+      }
+    } catch (err) {
+      spinner.fail(`STRIKE failed: ${err.message}`)
+      console.error(err)
+      process.exit(1)
+    }
+  })
+
+// ============================================
 // MAIN
 // ============================================
 
 program
   .name("sushi")
-  .description("🍣 SUSHI - Terminal AI Development Assistant")
-  .version("1.0.0")
+  .description("🍣 SUSHI - Terminal AI Development Assistant (Porffor v0.61.12)")
+  .version("0.61.12")
 
 program.parse()

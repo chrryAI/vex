@@ -358,7 +358,7 @@ export default function Share({
             ...style,
           }}
         >
-          <Img slug="jules" size={size} />
+          <Img slug="peach" size={size} />
           {children}
         </Button>
       </Div>
@@ -374,7 +374,7 @@ export default function Share({
           loading ? (
             <Loading width={22} height={22} />
           ) : (
-            <Img slug="jules" size={20} />
+            <Img slug="peach" size={30} />
           )
         }
       >

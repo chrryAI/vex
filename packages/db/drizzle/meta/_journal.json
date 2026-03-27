@@ -1667,6 +1667,13 @@
       "when": 1774559686213,
       "tag": "0237_acoustic_the_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 238,
+      "version": "7",
+      "when": 1774622538114,
+      "tag": "0238_yielding_speedball",
+      "breakpoints": true
     }
   ]
 }

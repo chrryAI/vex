@@ -308,10 +308,6 @@ const Thread = ({
         data-thread-title={thread?.title}
         data-testid={id ? "thread" : isHome ? "home" : undefined}
         style={{
-          // paddingTop: 0,
-          // paddingRight: isMobileDevice ? 0 : 10,
-          // paddingBottom: 195,
-          // paddingLeft: isMobileDevice ? 0 : 10,
           ...styles.thread.style,
           ...(isEmpty
             ? !threadId &&
@@ -319,20 +315,17 @@ const Thread = ({
                 ...styles.threadEmpty.style,
                 zIndex: 10,
                 paddingBottom:
-                  minimize && !showFocus && !showTribe
+                  minimize || (!showFocus && !showTribe)
                     ? 0
                     : isStandalone
                       ? 200
                       : 195,
               }
-            : {
-                paddingBottom: threadId ? 165 : undefined,
-              }),
-          ...{
-            position: "relative",
-            maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
-            marginBottom: isIDE ? 50 : undefined,
-          },
+            : { paddingBottom: threadId ? 115 : undefined }),
+          position: "relative",
+          maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
+          marginBottom: isIDE ? 50 : undefined,
+          flex: 1,
         }}
       >
         {viewPortWidth >= 1400 && (
