@@ -131,11 +131,13 @@ threads.get("/", async (c) => {
     }
   }
 
-  const app = await getApp({
-    id: appId,
-    userId: member?.id,
-    guestId: guest?.id,
-  })
+  const app = appId
+    ? await getApp({
+        id: appId,
+        userId: member?.id,
+        guestId: guest?.id,
+      })
+    : undefined
 
   const pageSize = Number(c.req.query("pageSize") || "100")
   const search = c.req.query("search")

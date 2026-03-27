@@ -161,16 +161,16 @@ export default function Menu({
 
   const count = useResponsiveCount([
     { height: 500, count: 0 },
-    { height: 550, count: 1 },
-    { height: 600, count: 2 },
-    { height: 650, count: 3 },
-    { height: 700, count: 4 },
-    { height: 750, count: 5 },
-    { height: 800, count: 6 },
-    { height: 850, count: 7 },
-    { height: 900, count: 8 },
-    { height: 950, count: 9 },
-    { height: 1000, count: 10 },
+    { height: 550, count: 0 },
+    { height: 600, count: 1 },
+    { height: 650, count: 2 },
+    { height: 700, count: 3 },
+    { height: 750, count: 4 },
+    { height: 800, count: 5 },
+    { height: 850, count: 6 },
+    { height: 900, count: 7 },
+    { height: 950, count: 8 },
+    { height: 1000, count: 9 },
   ])
 
   const [loadingThreadId, setLoadingThreadId] = useState<string | null>(null)
@@ -711,6 +711,7 @@ export default function Menu({
                         className="menuThreadList"
                         style={{
                           ...styles.threadsList.style,
+                          marginTop: 15,
                         }}
                       >
                         {threads?.threads
@@ -742,8 +743,7 @@ export default function Menu({
                               data-testid="menu-thread-item"
                               style={{
                                 ...styles.threadItem.style,
-                                paddingRight:
-                                  collaborationStatus === "pending" ? 0 : 17,
+                                paddingRight: 0,
                                 alignItems: "flex-start",
                                 flexDirection: "column",
                                 gap: "0.35rem",
@@ -754,20 +754,20 @@ export default function Menu({
                               className="menuThreadItem"
                             >
                               {thread.pearAppId ? (
-                                <Span
-                                  style={{ display: "flex", gap: 5 }}
-                                  title={t("DNA thread")}
-                                >
+                                <Span style={{ display: "flex", gap: 5 }}>
                                   <Img slug="pear" size={14} />{" "}
                                   <Img app={thread.app} size={14} />
                                 </Span>
                               ) : thread.isMainThread ? (
-                                <Span title={t("DNA thread")}>
-                                  <Img src="/images/dna.png" size={14} />
+                                <Span
+                                  style={{ display: "flex", gap: 10 }}
+                                  title={t("DNA thread")}
+                                >
+                                  🧬 <Img slug={thread?.app?.slug} size={14} />
                                 </Span>
                               ) : thread.app ? (
-                                <Span title={t("DNA thread")}>
-                                  <Img app={thread.app} size={14} />
+                                <Span>
+                                  <Img slug={thread?.app?.slug} size={14} />
                                 </Span>
                               ) : thread.visibility !== "private" ||
                                 thread.collaborations?.length ? (
