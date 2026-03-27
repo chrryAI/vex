@@ -517,7 +517,6 @@ export function ChatProvider({
 
       setCollaborationStep(0)
       setThread(undefined)
-      setProfile(undefined)
       setStatus(null)
       burn && setWasIncognito(true)
       setShowTribe(tribe === true)
@@ -551,14 +550,6 @@ export function ChatProvider({
       fetchThreads()
     }
   }, [app])
-
-  useEffect(() => {
-    setWasIncognito(burn)
-    if (burn) {
-      // setThread(undefined)
-      setProfile(undefined)
-    }
-  }, [burn])
 
   const userOrGuest = user || guest
 

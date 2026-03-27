@@ -3,7 +3,10 @@
   "version": "2.2.58",
   "private": true,
   "type": "module",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "browser": "bash scripts/run-browser.sh",
     "build": "turbo build",
@@ -47,6 +50,10 @@
     "test:coverage": "turbo run test:coverage",
     "test:scss": "node scripts/test-scss-converter.js",
     "test-ai": "bash scripts/test-commit-message.sh",
+    "docs:build": "NODE_OPTIONS='--max-old-space-size=8192' typedoc",
+    "docs:build:markdown": "NODE_OPTIONS='--max-old-space-size=8192' typedoc --options typedoc.markdown.json",
+    "docs:serve": "npx serve docs/api",
+    "docs:watch": "NODE_OPTIONS='--max-old-space-size=8192' typedoc --watch",
     "translate": "node scripts/translate.js",
     "update-version": "node scripts/update-version.js",
     "validate:chrry": "node scripts/validate-chrry-config.js"
@@ -98,6 +105,8 @@
     "is-reference": "^3.0.3",
     "openai": "^6.32.0",
     "tsx": "^4.21.0",
+    "typedoc": "^0.28.18",
+    "typedoc-plugin-markdown": "^4.11.0",
     "vite-plus": "catalog:",
     "vitest": "catalog:"
   },

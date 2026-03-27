@@ -101,9 +101,12 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
       ? byokReplicateKey || byokReplicateAppKey
       : byokReplicateAppKey,
     falKey = isBYOK ? byokFalKey || byokFalAppKey : byokFalAppKey,
-    openRouterKey = isBYOK
-      ? byokOpenRouterKey || process.env.OPENROUTER_API_KEY
-      : process.env.OPENROUTER_API_KEY,
+    //Problematic techno 📀
+    openRouterKey = "",
+
+    // isBYOK
+    //   ? byokOpenRouterKey || process.env.OPENROUTER_API_KEY
+    //   : process.env.OPENROUTER_API_KEY,
   } = options
 
   // Initial provider selection: try OpenRouter for flux models if requested or byok
@@ -441,7 +444,10 @@ export async function generateVideo(options: VideoGenerationOptions): Promise<{
     }
   } catch (error: any) {
     if (providerToTry === "fal" && apiKey) {
-      console.warn("⚠️ Fal.ai video failed, falling back to Replicate...", error)
+      console.warn(
+        "⚠️ Fal.ai video failed, falling back to Replicate...",
+        error,
+      )
       try {
         return await tryReplicate()
       } catch (replicateError) {

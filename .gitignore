@@ -48,6 +48,10 @@ dist/
 playwright-report/
 reports
 .stryker
+
+# typedoc generated docs (auto-deployed to GitHub Pages)
+docs/api/
+docs/api-markdown/
 .stryker-tmp
 stryker.log
 

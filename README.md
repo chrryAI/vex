@@ -1,6 +1,7 @@
 [![Hetzner](https://img.shields.io/badge/Hetzner-D30428?logo=Hetzner&logoColor=white)](https://hetzner.cloud/?ref=jBud3ivK4tnH)
 [![Patent Pending](https://img.shields.io/badge/Patent-Pending-gold?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik02IDlIMnY5YTIgMiAwIDAgMCAyIDJoOGEyIDIgMCAwIDAgMi0yVjlIOHoiLz48cGF0aCBkPSJNNiAzaDh2NmgtOHoiLz48L3N2Zz4=)](https://patents.google.com/)
 [![Powered by Arcjet](https://img.shields.io/badge/Powered%20by-Arcjet-0A2540?style=flat&logo=shield&logoColor=white)](https://arcjet.com)
+[![API Docs](https://img.shields.io/badge/API-Documentation-3178C6?logo=typescript&logoColor=white)](https://chrryai.github.io/vex/)
 
 # Vex
 
@@ -98,6 +99,35 @@ pnpm dev:all
 ```
 
 **That's it!** Everything runs locally. See [SELF_HOSTING.md](SELF_HOSTING.md) for full guide.
+
+## 📚 API Documentation
+
+Auto-generated TypeScript API documentation available at: **https://chrryai.github.io/vex/**
+
+### Generate Locally
+
+```bash
+# Generate HTML docs (serves at http://localhost:3000)
+pnpm docs:build
+pnpm docs:serve
+
+# Generate Markdown docs (for embedding in README)
+pnpm docs:build:markdown
+
+# Watch mode for development
+pnpm docs:watch
+```
+
+### Documentation Coverage
+
+| Package | Description |
+|---------|-------------|
+| `@repo/shared` | Shared utilities, contexts, hooks, stores |
+| `@repo/ui` | UI components and design system |
+| `@repo/calendar` | Calendar components |
+| `@repo/waffles` | Grid system |
+| `@repo/pepper` | State management |
+| `@repo/focus` | Focus utilities |
 
 ### ☁️ Cloud Setup (Alternative)
 
