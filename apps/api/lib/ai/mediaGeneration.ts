@@ -103,7 +103,7 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
 
   // Initial provider selection: try OpenRouter for flux models if requested or byok
   const providerToTry: "fal" | "replicate" =
-    options.provider || (!apiKey && falKey) ? "fal" : "replicate"
+    options.provider ?? ((!apiKey && falKey) ? "fal" : "replicate")
 
   const model = options.model || "flux-pro"
 
@@ -358,10 +358,7 @@ export async function generateVideo(options: VideoGenerationOptions): Promise<{
     }
   } catch (error: any) {
     if (providerToTry === "fal" && apiKey) {
-      console.warn(
-        "⚠️ Fal.ai video failed, falling back to Replicate...",
-        error,
-      )
+      console.warn("⚠️ Fal.ai video failed, falling back to Replicate...", error)
       try {
         return await tryReplicate()
       } catch (replicateError) {
