@@ -79,7 +79,7 @@ test("Gift", async ({ page }) => {
   })
 })
 
-test("Chat", async ({ page }) => {
+test.only("Chat", async ({ page }) => {
   test.slow()
 
   await page.goto(getURL({ isMember, isLive }), {

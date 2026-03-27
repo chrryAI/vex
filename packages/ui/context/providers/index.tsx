@@ -195,30 +195,30 @@ export default function AppProviders({
         session={session}
       >
         <ErrorProvider>
-          <ThemeProvider theme={theme} session={session}>
-            <AuthProvider
-              deviceId={deviceId}
-              translations={translations}
-              thread={thread}
-              locale={locale}
-              error={error}
-              isBot={isBot}
-              apiKey={apiKey}
-              app={app}
-              donut={donut}
-              pathname={pathname}
-              threads={threads}
-              showTribe={showTribe}
-              onSetLanguage={onSetLanguage}
-              session={session}
-              siteConfig={siteConfig}
-              searchParams={searchParams}
-              tribes={tribes}
-              tribePosts={tribePosts}
-              tribePost={tribePost}
-              accountApp={accountApp}
-              testConfig={testConfig}
-            >
+          <AuthProvider
+            deviceId={deviceId}
+            translations={translations}
+            thread={thread}
+            locale={locale}
+            error={error}
+            isBot={isBot}
+            apiKey={apiKey}
+            app={app}
+            donut={donut}
+            pathname={pathname}
+            threads={threads}
+            showTribe={showTribe}
+            onSetLanguage={onSetLanguage}
+            session={session}
+            siteConfig={siteConfig}
+            searchParams={searchParams}
+            tribes={tribes}
+            tribePosts={tribePosts}
+            tribePost={tribePost}
+            accountApp={accountApp}
+            testConfig={testConfig}
+          >
+            <ThemeProvider theme={theme} session={session}>
               <AppProvider>
                 <ChatProvider>
                   <TimerContextProvider>
@@ -239,8 +239,8 @@ export default function AppProviders({
                   </TimerContextProvider>
                 </ChatProvider>
               </AppProvider>
-            </AuthProvider>
-          </ThemeProvider>
+            </ThemeProvider>
+          </AuthProvider>
         </ErrorProvider>
       </PlatformProvider>
     </SWRConfig>

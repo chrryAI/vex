@@ -7,10 +7,12 @@ export default function useLocalStorage<T>(
   keyAs: string,
   initialValue: T | (() => T),
 ) {
-  const [deviceId] = useLocal("deviceId", "")
-
-  const prefix = deviceId
-  const key = prefix ? `🍒-${prefix}-${keyAs}` : keyAs
+  // const [deviceId] = useLocal("deviceId", "")
+  // const prefix = deviceId
+  const key = keyAs
+  //  const key = prefix
+  //   ? `🍒-${prefix}-${keyAs}`
+  //   : keyAs
 
   const [storedValue, setStoredValue] = useState<T>(
     initialValue instanceof Function ? initialValue() : initialValue,
@@ -39,6 +41,10 @@ export default function useLocalStorage<T>(
           console.error("Error reading initial localStorage:", error)
         }
       }
+      // Reset to initial value if no stored value found
+      const defaultValue =
+        initialValue instanceof Function ? initialValue() : initialValue
+      setStoredValue(defaultValue)
     }
     loadInitial()
   }, [key])

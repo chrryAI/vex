@@ -104,7 +104,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.50"
+const VERSION = "2.2.51"
 
 const AuthContext = createContext<
   | {
@@ -2330,9 +2330,7 @@ export function AuthProvider({
   const zarathustra = storeApps.find((app) => app.slug === "zarathustra")
 
   const hasInformedRef = useRef(false)
-  const hasShownThemeLockToastRef = useRef(false)
-  const [hasSeenThemeLockNotification, setHasSeenThemeLockNotification] =
-    useLocalStorage<boolean>("hasSeenThemeLockNotification", false)
+  useLocalStorage<boolean>("burnNotification", false)
   const setBurn = (value: boolean) => {
     setBurnInternal(value)
 
@@ -2821,20 +2819,6 @@ export function AuthProvider({
     }
   }, [user, guest, isSessionLoading])
 
-  const {
-    setColorScheme,
-    setTheme,
-    isThemeLocked,
-    colorScheme,
-    theme,
-    themeMode,
-    reduceMotion,
-  } = useTheme()
-
-  useEffect(() => {
-    reduceMotion && setTickerPaused(reduceMotion)
-  }, [reduceMotion])
-
   const [showCharacterProfiles, setShowCharacterProfiles] = useState(false)
   const [characterProfiles, setCharacterProfiles] = useState<
     characterProfile[]
@@ -2867,13 +2851,6 @@ export function AuthProvider({
 
   const favouriteAgent = aiAgents?.find(
     (agent) => agent.name === (user || guest)?.favouriteAgent,
-  )
-
-  const setAppTheme = useCallback(
-    (themeColor?: string) => {
-      setTheme(themeColor === "#ffffff" ? "light" : "dark")
-    },
-    [setTheme],
   )
 
   const [instructions, setInstructions] = useState<instruction[] | undefined>(
@@ -2923,69 +2900,12 @@ export function AuthProvider({
           refetchInstructions({ appId: newApp?.id })
         }
 
-        // Only update theme if app actually changed
-        // Defer theme updates to avoid "setState during render" error
-        setTimeout(() => {
-          if (!isThemeLocked) {
-            // Detect if dark/light mode will change
-            const isDarkColor = (color: string) => {
-              // Simple heuristic: if hex color is dark (low luminance)
-              const hex = color.replace("#", "")
-              const r = Number.parseInt(hex.substr(0, 2), 16)
-              const g = Number.parseInt(hex.substr(2, 2), 16)
-              const b = Number.parseInt(hex.substr(4, 2), 16)
-              const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-              return luminance < 0.5
-            }
-
-            // Compare previous and new app's background colors to detect actual mode change
-            const prevMode =
-              prevApp?.backgroundColor && isDarkColor(prevApp.backgroundColor)
-                ? "dark"
-                : "light"
-            const newMode =
-              newApp?.backgroundColor && isDarkColor(newApp.backgroundColor)
-                ? "dark"
-                : "light"
-            const modeChanged = prevApp && newMode !== prevMode
-
-            if (newApp?.themeColor) {
-              setColorScheme(newApp.themeColor)
-            }
-            // if (newApp?.backgroundColor) {
-            //   setAppTheme(newApp.backgroundColor)
-            // }
-
-            // Only show toast once ever if dark/light mode changed between apps
-            // Use both ref (for immediate duplicate prevention) and localStorage (for persistence)
-            if (
-              modeChanged &&
-              !hasSeenThemeLockNotification &&
-              !hasShownThemeLockToastRef.current
-            ) {
-              hasShownThemeLockToastRef.current = true
-              setHasSeenThemeLockNotification(true)
-            }
-          }
-        }, 0)
-
         // Merge apps from the new app's store
         newApp?.store?.apps && mergeApps(newApp?.store?.apps)
         return newApp
       })
     },
-    [
-      setColorScheme,
-      setAppTheme,
-      baseApp,
-      mergeApps,
-      user,
-      guest,
-      isThemeLocked,
-      colorScheme,
-      theme,
-      themeMode,
-    ],
+    [baseApp, mergeApps, user, guest],
   )
 
   const [thread, setThreadInternal] = useState<thread | undefined>(

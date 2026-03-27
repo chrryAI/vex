@@ -13,12 +13,8 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  toast,
-  useCookieOrLocalStorage,
-  useLocalStorage,
-  usePlatform,
-} from "../platform"
+import { useLocalStorage } from "../hooks"
+import { toast, useCookieOrLocalStorage, usePlatform } from "../platform"
 import {
   darkTheme,
   lightTheme,
@@ -28,7 +24,7 @@ import {
 } from "../styles/theme"
 import { FRONTEND_URL } from "../utils"
 import console from "../utils/log"
-import type { session } from "./providers/AuthProvider"
+import { type session, useAuth } from "./providers/AuthProvider"
 
 export const COLORS = {
   red: "#ef4444", // red-500
@@ -82,6 +78,7 @@ export function ThemeProvider({
   session?: session
   theme?: themeType
 }) {
+  const { app } = useAuth()
   const { isWeb, isExtension, isAndroid, viewPortWidth, device, os } =
     usePlatform()
   const { t } = useTranslation()
@@ -89,7 +86,7 @@ export function ThemeProvider({
   // Cross-platform color scheme storage
   const [colorScheme, setColorSchemeInternal] = useLocalStorage<string>(
     "colorScheme",
-    session?.app?.themeColor || "orange",
+    app?.themeColor || "orange",
   )
 
   const setColorScheme = (scheme?: string) => {

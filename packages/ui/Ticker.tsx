@@ -17,7 +17,9 @@ function Ticker({
   maxWidth?: number
 }) {
   const { instructions } = useApp()
-  const { colorScheme } = useTheme()
+
+  const { colorScheme, theme, reduceMotion } = useTheme()
+
   const {
     setSelectedInstruction,
     user,
@@ -49,6 +51,10 @@ function Ticker({
       }),
     )
   }, [city, country, weather])
+
+  useEffect(() => {
+    reduceMotion && setTickerPaused(reduceMotion)
+  }, [reduceMotion])
   // Map instructions to their titles for the typing effect
   const instructionTitles = React.useMemo(() => {
     return (instructions || []).map(

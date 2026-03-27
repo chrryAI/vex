@@ -2,41 +2,20 @@ import { useEffect, useState } from "react"
 import { useAuth } from "../context/providers"
 import { isTauri } from "../platform/detection"
 import { API_URL, apiFetch, FRONTEND_URL } from "../utils"
+import useLocalStorage from "./useLocalStorage"
 
 const THROTTLE_MS = 5000 // 5 seconds
-const THROTTLE_KEY = "vex_health_check_throttle"
-const CHECKING_KEY = "vex_health_check_in_progress"
-
-// Helper to safely access localStorage
-function getStorageItem(key: string): string | null {
-  if (typeof window === "undefined" || !window.localStorage) return null
-  try {
-    return localStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
-
-function setStorageItem(key: string, value: string): void {
-  if (typeof window === "undefined" || !window.localStorage) return
-  try {
-    localStorage.setItem(key, value)
-  } catch {
-    // Ignore storage errors
-  }
-}
-
-function removeStorageItem(key: string): void {
-  if (typeof window === "undefined" || !window.localStorage) return
-  try {
-    localStorage.removeItem(key)
-  } catch {
-    // Ignore storage errors
-  }
-}
 
 export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(true)
+  const [lastCheck, setLastCheck] = useLocalStorage(
+    "vex_health_check_throttle",
+    0,
+  )
+  const [isChecking, setIsChecking] = useLocalStorage(
+    "vex_health_check_in_progress",
+    false,
+  )
 
   const { user, guest } = useAuth()
 
@@ -61,16 +40,14 @@ export function useOnlineStatus() {
       }
 
       const now = Date.now()
-      const lastCheck = Number.parseInt(getStorageItem(THROTTLE_KEY) || "0", 10)
-      const isChecking = getStorageItem(CHECKING_KEY) === "true"
 
       // Throttle: skip if called too soon OR if already checking
       if (now - lastCheck < THROTTLE_MS || isChecking) {
         return
       }
 
-      setStorageItem(THROTTLE_KEY, now.toString())
-      setStorageItem(CHECKING_KEY, "true")
+      setLastCheck(now)
+      setIsChecking(true)
 
       try {
         // In Tauri, only check API health (no frontend server)
@@ -106,7 +83,7 @@ export function useOnlineStatus() {
         // Don't send to Sentry as this is normal behavior
         setIsOnline(false)
       } finally {
-        removeStorageItem(CHECKING_KEY)
+        setIsChecking(false)
       }
     }
 

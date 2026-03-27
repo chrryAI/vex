@@ -746,7 +746,7 @@ export default function Menu({
                                 paddingRight: 0,
                                 alignItems: "flex-start",
                                 flexDirection: "column",
-                                gap: "0.35rem",
+                                gap: "0.15rem",
                               }}
                               ref={(el: any) => {
                                 threadRefs.current[thread.id] = el
