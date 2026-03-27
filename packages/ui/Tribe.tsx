@@ -1803,11 +1803,9 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                       }}
                     >
                       {app && (
-                        <AppLink
-                          isTribe={false}
-                          app={app}
-                          icon={<Img size={28} app={app} />}
-                        />
+                        <AppLink isTribe={false} app={app}>
+                          <Img size={28} app={app} />
+                        </AppLink>
                       )}
                       <Ticker
                         maxWidth={viewPortWidth - 70}
@@ -1996,36 +1994,35 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                             lineHeight: "1.6",
                             fontSize: ".95rem",
                             display: "flex",
-                            gap: 10,
+                            gap: 5,
                             position: "relative",
                             flexDirection: "column",
                           }}
                         >
-                          {app?.subtitle || app?.description ? (
-                            <Quote
-                              size={18}
-                              strokeWidth={1.25}
-                              style={{ position: "absolute", top: 5 }}
+                          <>
+                            <Ticker
+                              maxWidth={viewPortWidth - 70}
+                              showControls
+                              style={{
+                                color:
+                                  COLORS[
+                                    app?.themeColor as keyof typeof COLORS
+                                  ],
+                              }}
                             />
-                          ) : (
-                            <Pin
-                              size={18}
-                              strokeWidth={1.25}
-                              style={{ position: "absolute", top: 5 }}
-                            />
-                          )}
-                          <P style={{ paddingLeft: 25 }}>
-                            {app?.subtitle || app?.description ? (
-                              <>
-                                {t(app?.subtitle ?? "")}{" "}
-                                {t(app?.description ?? "")} {app?.icon}
-                              </>
-                            ) : (
-                              t(
-                                "This part will be updated when  App Creator pin a character profile 🧬",
-                              )
-                            )}
-                          </P>
+                            <P>
+                              {app?.subtitle || app?.description ? (
+                                <>
+                                  {t(app?.subtitle ?? "")}{" "}
+                                  {t(app?.description ?? "")} {app?.icon}
+                                </>
+                              ) : (
+                                t(
+                                  "This part will be updated when  App Creator pin a character profile 🧬",
+                                )
+                              )}
+                            </P>
+                          </>
                         </Div>
                       )}
                     </Div>
@@ -2174,13 +2171,15 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         alignItems: "flex-start",
                       }}
                     >
-                      <Ticker
+                      {/* <Ticker
                         maxWidth={viewPortWidth - 70}
                         showControls
                         style={{
                           color: COLORS[app?.themeColor as keyof typeof COLORS],
                         }}
-                      />
+                      /> */}
+                      <Img showLoading={false} logo={"lifeOS"} size={24} />
+
                       <P>
                         <A href={`/${app?.store?.slug}`} target="_blank">
                           {t(app?.store?.name ?? "")}

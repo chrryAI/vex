@@ -1,12 +1,9 @@
 {
   "name": "vex",
-  "version": "2.2.51",
+  "version": "2.2.52",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "browser": "bash scripts/run-browser.sh",
     "build": "turbo build",
