@@ -132,27 +132,7 @@ const HipChat = ({
   const refetchRef = useRef<typeof refetch | null>(refetch)
   refetchRef.current = refetch
 
-  const scrollToBottom = hipchat
-    ? (timeout = 500, force = false, element?: HTMLElement | null) => {
-        setTimeout(() => {
-          // Use requestAnimationFrame for more stable scrolling in Tauri
-          requestAnimationFrame(() => {
-            // In Tauri, use instant scroll instead of smooth to prevent hopping
-            const behavior = "smooth"
-            const target = element || window
-            const top = element
-              ? element.scrollHeight
-              : document.body.scrollHeight
-
-            target.scrollTo({
-              top,
-              behavior: behavior as ScrollBehavior,
-            })
-            refetchRef.current = null
-          })
-        }, timeout)
-      }
-    : chat.scrollToBottom
+  const scrollToBottom = chat.scrollToBottom
 
   const otherHipRef = useRef(isHippoOpen)
   otherHipRef.current = ""
@@ -211,9 +191,6 @@ const HipChat = ({
   // ⚡ Bolt: Stable callbacks for Messages component to prevent re-renders
   const isChatFloatingRef = useRef(isChatFloating)
   isChatFloatingRef.current = isChatFloating
-
-  const scrollToBottomRef = useRef(scrollToBottom)
-  scrollToBottomRef.current = scrollToBottom
 
   const setMessagesRef = useRef(setMessages)
   setMessagesRef.current = setMessages
@@ -564,7 +541,7 @@ const HipChat = ({
       hipchat?: boolean
     }) => {
       if (!canStream) return
-      scrollToBottom(undefined, undefined, messagesRef.current)
+      scrollToBottom(undefined, undefined)
 
       if (isE2E && content.length > 500) {
         const wordCount = content.split(/\s+/).length
@@ -768,7 +745,7 @@ const HipChat = ({
             // }
             if (msg.isUser && msg.message) {
               console.log("✅ Adding user message to state")
-              scrollToBottom(500, true, messagesRef.current)
+              scrollToBottom(500, true)
               resetScrollState()
               shouldStopAutoScrollRef.current = false // Reset auto-scroll for new response
 
