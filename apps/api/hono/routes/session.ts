@@ -785,10 +785,6 @@ session.delete("/", async (c) => {
     return c.json({ error: "isVex" }, 401)
   }
 
-  if (!isSeedSafe && !isDevelopment) {
-    return c.json({ error: "Not isSeedSafe" }, 401)
-  }
-
   const member = await getMemberAction(c)
   if (!member) {
     return c.json({ error: "Unauthorized" }, 401)

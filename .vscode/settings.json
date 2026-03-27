@@ -14,5 +14,8 @@
     "tab.activeBorder": "#7CC243",
     "statusBar.background": "#7CC243",
     "statusBar.foreground": "#ffffff"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
   }
 }
