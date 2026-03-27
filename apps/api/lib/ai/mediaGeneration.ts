@@ -102,8 +102,8 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
   } = options
 
   // Initial provider selection: try OpenRouter for flux models if requested or byok
-  const providerToTry: "fal" | "replicate" =
-    options.provider ?? ((!apiKey && falKey) ? "fal" : "replicate")
+  const providerToTry: "fal" | "replicate" | "openrouter" =
+    options.provider ?? (!apiKey && falKey ? "fal" : "replicate")
 
   const model = options.model || "flux-pro"
 
