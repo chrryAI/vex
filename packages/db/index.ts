@@ -22,7 +22,7 @@ import {
   not,
   notInArray,
   or,
-  SQL,
+  type SQL,
   sql,
   sum,
 } from "drizzle-orm"
