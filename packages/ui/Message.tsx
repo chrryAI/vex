@@ -1226,8 +1226,16 @@ function Message({
               </>
             ) : (
               <Span style={styles.appIcon.style}>
-                <Img app={message?.app} size={35} />
-                <Span>{message?.app?.name || "Vex"}</Span>
+                <Img
+                  app={message?.app || message.thread?.app || app}
+                  size={35}
+                />
+                <Span>
+                  {message?.app?.name ||
+                    message.thread?.app?.name ||
+                    app?.name ||
+                    "Vex"}
+                </Span>
               </Span>
             )}
           </Button>
