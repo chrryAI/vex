@@ -1181,7 +1181,8 @@ export function renderPage(
 }
 
 landing.get("/", (c) => {
-  return c.json({ status: "ok", service: "chrry-api", version: "1.0.0" })
+  const html = renderToString(<ChrryDotDev />)
+  return c.html(renderPage(html, "Chrry - AI-Powered Development Platform"))
 })
 
 // Allowed hostnames for white-label apps (add new ones here)
@@ -1202,9 +1203,11 @@ function trustedHostname(c: any): string {
 }
 
 landing.get("/privacy", (c) => {
-  return c.json({ status: "ok", page: "privacy" })
+  const html = renderToString(<Privacy />)
+  return c.html(renderPage(html, "Privacy Policy - Chrry"))
 })
 
 landing.get("/terms", (c) => {
-  return c.json({ status: "ok", page: "terms" })
+  const html = renderToString(<Terms />)
+  return c.html(renderPage(html, "Terms of Service - Chrry"))
 })
