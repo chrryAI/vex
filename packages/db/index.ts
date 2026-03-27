@@ -22,6 +22,7 @@ import {
   not,
   notInArray,
   or,
+  SQL,
   sql,
   sum,
 } from "drizzle-orm"
@@ -2940,6 +2941,30 @@ export const getThreads = async ({
       : undefined,
   ].filter(Boolean)
 
+  const orderParams = [
+    ...(appId
+      ? [sql`CASE WHEN ${threads.appId} = ${appId} THEN 0 ELSE 1 END`]
+      : []),
+    ...(sort === "bookmark"
+      ? [
+          bookmarkedThreadIds && bookmarkedThreadIds.length > 0
+            ? sql`CASE WHEN ${threads.id} = ANY(ARRAY[${sql.join(
+                bookmarkedThreadIds.map((id) => sql`${id}`),
+                sql`, `,
+              )}]::uuid[]) THEN 0 ELSE 1 END`
+            : undefined,
+          appId || (appIds && appIds.length > 0)
+            ? sql`CASE WHEN ${threads.isMainThread} = true THEN 0 ELSE 1 END`
+            : undefined,
+          sql`CASE WHEN ${threads.bookmarks} IS NULL THEN 1 ELSE 0 END`,
+          desc(
+            sql`jsonb_array_length(COALESCE(${threads.bookmarks}, '[]'::jsonb))`,
+          ),
+          desc(threads.updatedOn),
+        ]
+      : [desc(threads.updatedOn)]),
+  ].filter(Boolean) as SQL[]
+
   if (search && search.length >= 3) {
     // Subquery for thread IDs with FTS on messages.content
     const subquery = db
@@ -2954,29 +2979,7 @@ export const getThreads = async ({
       .where(inArray(threads.id, subquery))
       .leftJoin(users, eq(threads.userId, users.id))
       .leftJoin(apps, eq(threads.appId, apps.id))
-      .orderBy(
-        // appId
-        //   ? sql`CASE WHEN ${threads.appId} = ${appId} THEN 0 ELSE 1 END`
-        //   : sql`1`,
-        ...(sort === "bookmark"
-          ? [
-              bookmarkedThreadIds && bookmarkedThreadIds.length > 0
-                ? sql`CASE WHEN ${threads.id} = ANY(ARRAY[${sql.join(
-                    bookmarkedThreadIds.map((id) => sql`${id}`),
-                    sql`, `,
-                  )}]::uuid[]) THEN 0 ELSE 1 END`
-                : sql`1`,
-
-              // Prioritize threads bookmarked by current user
-              // Then by total bookmark count (popular threads)
-              sql`CASE WHEN ${threads.bookmarks} IS NULL THEN 1 ELSE 0 END`,
-              desc(
-                sql`jsonb_array_length(COALESCE(${threads.bookmarks}, '[]'::jsonb))`,
-              ),
-              desc(threads.createdOn),
-            ]
-          : [desc(threads.createdOn)]),
-      )
+      .orderBy(...orderParams)
       .limit(pageSize)
       .offset((page - 1) * pageSize)
 
@@ -3058,30 +3061,7 @@ export const getThreads = async ({
       .where(and(...conditionsArray))
       .leftJoin(users, eq(threads.userId, users.id))
       .leftJoin(apps, eq(threads.appId, apps.id))
-      .orderBy(
-        // appId
-        //   ? sql`CASE WHEN ${threads.appId} = ${appId} THEN 0 ELSE 1 END`
-        //   : sql`1`,
-        ...(sort === "bookmark"
-          ? [
-              bookmarkedThreadIds && bookmarkedThreadIds.length > 0
-                ? sql`CASE WHEN ${threads.id} = ANY(ARRAY[${sql.join(
-                    bookmarkedThreadIds.map((id) => sql`${id}`),
-                    sql`, `,
-                  )}]::uuid[]) THEN 0 ELSE 1 END`
-                : sql`1`,
-
-              // Prioritize threads bookmarked by current user
-
-              // Then by total bookmark count (popular threads)
-              sql`CASE WHEN ${threads.bookmarks} IS NULL THEN 1 ELSE 0 END`,
-              desc(
-                sql`jsonb_array_length(COALESCE(${threads.bookmarks}, '[]'::jsonb))`,
-              ),
-              desc(threads.updatedOn),
-            ]
-          : [desc(threads.updatedOn)]),
-      )
+      .orderBy(...orderParams)
       .limit(pageSize)
       .offset((page - 1) * pageSize)
 

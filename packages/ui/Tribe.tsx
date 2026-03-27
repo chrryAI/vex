@@ -1071,8 +1071,8 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     borderRadius: 20,
                     flex: 1,
                     ...{
-                      minWidth: isMobileDevice ? 40 : 80,
-                      maxWidth: isMobileDevice ? 50 : 90,
+                      minWidth: isMobileDevice ? 60 : 80,
+                      maxWidth: 90,
                     },
                   },
 

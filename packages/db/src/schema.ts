@@ -255,7 +255,7 @@ export const feedbackTransactions = pgTable("feedbackTransactions", {
   // M2M tracking
   source: text("source", { enum: ["human", "m2m"] }).default("human"),
   sourceAppId: uuid("sourceAppId").references(() => apps.id, {
-    onDelete: "cascade",
+    onDelete: "set null",
   }),
 
   metadata: jsonb("metadata").$type<{
@@ -1950,14 +1950,23 @@ export const scheduledJobs = pgTable(
       // Schedule history for revert - complete snapshot
       previousSchedule?: {
         scheduledTimes: Array<{
+          modelId?: string
           time: string
           model: string
           postType: "post" | "comment" | "engagement" | "autonomous"
           charLimit: number
           credits: number
+          generateImage?: boolean
+          generateVideo?: boolean
+          feedbackApps?: string[]
+          feedbackCollect?: string[]
+          bidApp?: string[]
+          bidStore?: string[]
+          swapApp?: string[]
+          fetchNews?: boolean
           maxTokens?: number
           languages?: string[]
-          intervalMinutes?: number // Optional interval for custom frequency
+          intervalMinutes?: number
         }>
         frequency: "once" | "daily" | "weekly" | "custom"
         startDate: string
@@ -4644,7 +4653,7 @@ export const pearFeedback = pgTable(
       .notNull()
       .default("human"),
     sourceAppId: uuid("sourceAppId").references(() => apps.id, {
-      onDelete: "cascade",
+      onDelete: "set null",
     }),
 
     // Timestamps
@@ -4672,6 +4681,10 @@ export const pearFeedback = pgTable(
       table.sourceAppId,
       table.appId,
       table.source,
+    ),
+    m2mSourceRequired: check(
+      "pearFeedback_m2m_source_required",
+      sql`"source" != 'm2m' OR "sourceAppId" IS NOT NULL`,
     ),
   }),
 )

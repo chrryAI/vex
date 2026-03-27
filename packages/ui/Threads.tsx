@@ -75,7 +75,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
 
   const styles = useThreadsStyles()
 
-  const [sortByDate, setSortByDate] = useLocalStorage("sortByDate", true)
+  const [sortByDate, setSortByDate] = useState(true)
 
   const [threads, setThreads] = useState<{
     threads: (thread & {

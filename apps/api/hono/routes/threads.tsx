@@ -149,26 +149,27 @@ threads.get("/", async (c) => {
     return c.json({ error: "Authentication required", status: 401 }, 401)
   }
 
-  const getVisibilityFilter: () => ("public" | "private")[] | undefined =
-    () => {
-      // Viewing own profile - show all
-      if (isSameUser) return undefined
+  const getVisibilityFilter: () =>
+    | ("public" | "private")[]
+    | undefined = () => {
+    // Viewing own profile - show all
+    if (isSameUser) return undefined
 
-      // Thread context - check collaboration access
-      if (thread) {
-        const hasAccess = isOwner(thread, {
-          userId: member?.id,
-          guestId: guest?.id,
-        })
-        return hasAccess ? undefined : ["public"]
-      }
-
-      // Viewing pending collaborations - show all
-      if (myPendingCollaborations) return undefined
-
-      // Viewing another user's profile - public only
-      return userFromUserName ? ["public"] : undefined
+    // Thread context - check collaboration access
+    if (thread) {
+      const hasAccess = isOwner(thread, {
+        userId: member?.id,
+        guestId: guest?.id,
+      })
+      return hasAccess ? undefined : ["public"]
     }
+
+    // Viewing pending collaborations - show all
+    if (myPendingCollaborations) return undefined
+
+    // Viewing another user's profile - public only
+    return userFromUserName ? ["public"] : undefined
+  }
 
   const isSameUser = sanitizedUserName && sanitizedUserName === member?.userName
 
@@ -210,8 +211,8 @@ threads.get("/", async (c) => {
   // Fetch threads based on context
   const threadsResult = await getThreads({
     ...payload,
-    appId: collaborationStatusFinal ? undefined : app?.id,
-    collaborationStatus: collaborationStatusFinal,
+    // appId: collaborationStatusFinal ? undefined : app?.id,
+    // collaborationStatus: collaborationStatusFinal,
     ...(!sanitizedUserName
       ? {
           guestId,
@@ -223,7 +224,7 @@ threads.get("/", async (c) => {
         }),
     visibility: getVisibilityFilter(),
     userName: sanitizedUserName,
-    myPendingCollaborations: myPendingCollaborations ? true : undefined,
+    // myPendingCollaborations: myPendingCollaborations ? true : undefined,
   })
 
   return c.json({

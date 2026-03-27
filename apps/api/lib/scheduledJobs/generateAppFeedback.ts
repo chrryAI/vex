@@ -242,16 +242,25 @@ export async function generateAppFeedback({
       return { success: true, feedbackCount: 0, errors: [] }
     }
 
-    // 2. Filter valid target app IDs
+    // 2. Filter valid target app IDs (deduplicate first, then filter until quota filled)
+    const seenTargetAppIds = new Set<string>()
     const validTargetIds: string[] = []
-    for (const targetAppId of targetAppIds.slice(0, quota.remaining)) {
+    const uniqueTargetIds = [...new Set(targetAppIds)]
+
+    for (const targetAppId of uniqueTargetIds) {
+      if (validTargetIds.length >= quota.remaining) break
+
       // Skip self-review
       if (targetAppId === reviewingApp.id) {
         console.log(`🍐 Skipping self-review for ${reviewingApp.name}`)
         continue
       }
 
-      // Check deduplication
+      // Skip in-run duplicates
+      if (seenTargetAppIds.has(targetAppId)) continue
+      seenTargetAppIds.add(targetAppId)
+
+      // Check 24h deduplication
       const isDuplicate = await checkAppFeedbackDedup(
         reviewingApp.id,
         targetAppId,
@@ -385,6 +394,18 @@ Respond with a single JSON object (not an array).`
         // Clamp credits
         const credits = Math.min(10, Math.max(3, feedback.credits))
 
+        // Final dedup guard (race condition protection)
+        const alreadyStored = await checkAppFeedbackDedup(
+          reviewingApp.id,
+          targetAppId,
+        )
+        if (alreadyStored) {
+          console.log(
+            `🍐 Skipping ${targetAppId}: already stored by another worker`,
+          )
+          continue
+        }
+
         // Store feedback
         await storeAppFeedback({
           content: feedback.content,
@@ -424,7 +445,7 @@ Respond with a single JSON object (not an array).`
           throw new Error("Last message not found")
         }
 
-        const pearFeedback = await fetch(`${baseUrl}/ai`, {
+        await fetch(`${baseUrl}/ai`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
