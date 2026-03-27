@@ -19,12 +19,14 @@ export default function EditThread({
   refetch,
   onDelete,
   thread,
+  size,
   style,
   ...rest
 }: {
   style?: React.CSSProperties
   thread: thread
   isIcon?: boolean
+  size?: number
   onDelete?: () => void
   onSave?: ({ title }: { title: string }) => void
   refetch?: () => Promise<void>
@@ -192,10 +194,10 @@ export default function EditThread({
         }}
       >
         {isIcon ? (
-          <Pencil size={12} color="var(--accent-1)" />
+          <Pencil size={size || 12} color="var(--accent-1)" />
         ) : (
           <>
-            <Pencil size={14} color="var(--accent-1)" />
+            <Pencil size={size || 14} color="var(--accent-1)" />
           </>
         )}
       </Button>

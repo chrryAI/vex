@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, type ReactNode, useContext } from "react"
+import { createContext, type ReactNode, useContext } from "react"
 
 const ScopeContext = createContext<string | undefined>(undefined)
 

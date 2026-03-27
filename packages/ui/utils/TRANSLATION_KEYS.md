@@ -6,15 +6,15 @@ This document lists all translation keys needed for the dynamic instruction syst
 
 ```typescript
 // Time of day
-time.morning = "morning"
-time.afternoon = "afternoon"
-time.evening = "evening"
-time.night = "night"
+time.morning = "morning";
+time.afternoon = "afternoon";
+time.evening = "evening";
+time.night = "night";
 
 // Common terms
-common.home = "home"
-common.current_weather = "Current weather"
-common.consider_weather = "Consider current weather ({temp} {weatherEmoji})"
+common.home = "home";
+common.current_weather = "Current weather";
+common.consider_weather = "Consider current weather ({temp} {weatherEmoji})";
 ```
 
 ## Atlas App Instructions
@@ -153,12 +153,12 @@ The translation function should support ICU MessageFormat for conditional text:
 
 ```typescript
 // Conditional location
-"{location, select, other { in {location}}}"
+"{location, select, other { in {location}}}";
 // If location exists: " in Amsterdam, Netherlands"
 // If location is empty: ""
 
 // Conditional country
-"{country, select, other { for {country} passport holders}}"
+"{country, select, other { for {country} passport holders}}";
 // If country exists: " for Netherlands passport holders"
 // If country is empty: ""
 ```

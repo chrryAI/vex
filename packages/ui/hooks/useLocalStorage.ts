@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react"
-import { useScope } from "../context/ScopeContext"
 import { useLocalStorage as useLocal } from "../platform/useStorage"
 import { BrowserInstance, checkIsExtension } from "../utils"
 import console from "../utils/log"
@@ -8,12 +7,10 @@ export default function useLocalStorage<T>(
   keyAs: string,
   initialValue: T | (() => T),
 ) {
-  const scopeId = useScope()
   const [deviceId] = useLocal("deviceId", "")
 
-  const prefix = scopeId || deviceId
-  const key = keyAs
-  prefix ? `${prefix}-${keyAs}` : undefined
+  const prefix = deviceId
+  const key = prefix ? `🍒-${prefix}-${keyAs}` : undefined
 
   const [storedValue, setStoredValue] = useState<T>(
     initialValue instanceof Function ? initialValue() : initialValue,

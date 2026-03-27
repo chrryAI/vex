@@ -398,6 +398,7 @@ export type messages = {
   guest?: guest
   aiAgent?: aiAgent
   thread?: thread
+  app?: appWithStore
 }[]
 
 export type paginatedMessages = {
@@ -408,6 +409,7 @@ export type paginatedMessages = {
 // Thread types
 export type thread = {
   isMolt?: boolean
+  pearAppId?: string
   isTribe?: boolean
   characterProfile?: characterProfile
   placeHolder?: placeHolder
@@ -559,11 +561,13 @@ export type message = {
   isImageGenerationEnabled: boolean
   agentVersion: string | null
   userId: string | null
+  app?: appWithStore
   isMolt?: boolean
   isTribe?: boolean
   tribePostId?: string
   guestId: string | null
   content: string
+  pearAppId?: string
   reasoning: string | null
   originalContent: string | null
   createdOn: Date

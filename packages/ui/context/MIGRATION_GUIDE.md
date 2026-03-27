@@ -18,12 +18,9 @@ This guide helps you migrate logic from the monolithic `AppContext` to the new m
 **Find in AppContext:**
 
 ```tsx
-const captureException = (
-  error: Error | unknown,
-  context?: Record<string, any>,
-) => {
+const captureException = (error: Error | unknown, context?: Record<string, any>) => {
   // Move this logic to ErrorProvider
-}
+};
 ```
 
 ---
@@ -176,21 +173,21 @@ const [apps, setApps] = useState(...)
 ### Before (AppContext):
 
 ```tsx
-import { useAppContext } from "./context/AppContext"
+import { useAppContext } from "./context/AppContext";
 
 function MyComponent() {
-  const { input, setInput, captureException } = useAppContext()
+  const { input, setInput, captureException } = useAppContext();
 }
 ```
 
 ### After (Modular):
 
 ```tsx
-import { useInput, useError } from "./context/providers"
+import { useInput, useError } from "./context/providers";
 
 function MyComponent() {
-  const { input, setInput } = useInput()
-  const { captureException } = useError()
+  const { input, setInput } = useInput();
+  const { captureException } = useError();
 }
 ```
 

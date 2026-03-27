@@ -27,6 +27,7 @@ import {
   linkChunkToEntities,
   storeDocumentChunk,
 } from "../../lib/graph/graphService"
+import { cleanAiResponse } from "../ai/cleanAiResponse"
 import { getEmbeddingProvider, getModelProvider } from "../getModelProvider"
 
 const API_KEY = process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY
@@ -124,13 +125,7 @@ Required JSON format:
     })
 
     try {
-      let cleanText = result.text.trim()
-      if (cleanText.startsWith("```json")) {
-        cleanText = cleanText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
-      } else if (cleanText.startsWith("```")) {
-        cleanText = cleanText.replace(/^```\s*/, "").replace(/\s*```$/, "")
-      }
-
+      const cleanText = cleanAiResponse(result.text)
       const parsed = JSON.parse(cleanText)
       return {
         summary: parsed.summary || `Document: ${filename}`,

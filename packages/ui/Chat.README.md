@@ -13,10 +13,10 @@ The `Chat` component is the heart of the Vex AI chat experience. It provides a f
 ## 🚀 Usage
 
 ```tsx
-import { Chat } from "@chrryai/chrry"
+import { Chat } from "@chrryai/chrry";
 
 function App() {
-  return <Chat />
+  return <Chat />;
 }
 ```
 

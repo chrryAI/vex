@@ -9,7 +9,6 @@ import {
   useNavigationContext,
 } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
-import Donut from "./Donut"
 import HipChat from "./HipChat"
 import { useHasHydrated, useThreadMetadata } from "./hooks"
 import { useThreadPresence } from "./hooks/useThreadPresence"
@@ -22,8 +21,8 @@ import Skeleton from "./Skeleton"
 import { BREAKPOINTS } from "./styles/breakpoints"
 import { useThreadStyles } from "./Thread.styles"
 import Tribe from "./Tribe"
-import type { aiAgent, paginatedMessages, thread } from "./types"
-import { isCollaborator, isE2E, isOwner } from "./utils"
+import type { paginatedMessages, thread } from "./types"
+import { isCollaborator, isOwner } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 // import Donut from "./Donut"
@@ -303,130 +302,6 @@ const Thread = ({
   const { isUserScrolling, hasStoppedScrolling, resetScrollState } =
     useUserScroll()
 
-  // Memoize the streaming update handler to prevent infinite loops
-  const handleStreamingUpdate = useCallback(
-    ({
-      content,
-      clientId,
-      aiAgent,
-      isWebSearchEnabled,
-      isImageGenerationEnabled,
-    }: {
-      content: string
-      clientId?: string
-      aiAgent?: aiAgent
-      isWebSearchEnabled?: boolean
-      isImageGenerationEnabled?: boolean
-    }) => {
-      scrollToBottom()
-
-      if (isE2E && content.length > 500) {
-        const wordCount = content.split(/\s+/).length
-        const hasReasoning = content.includes("__REASONING__")
-        const preview = content.slice(0, 200).replace(/\n/g, " ")
-
-        console.log("🤖 Streaming Update", {
-          preview: `${preview}...`,
-          stats: {
-            chars: content.length,
-            words: wordCount,
-            hasReasoning,
-          },
-          agent: aiAgent?.displayName || aiAgent?.name || "unknown",
-          features: {
-            webSearch: !!isWebSearchEnabled,
-            imageGen: !!isImageGenerationEnabled,
-          },
-          clientId: clientId?.slice(0, 8),
-        })
-      }
-
-      // Only update if content actually changed and clientId exists
-      if (!clientId) return
-
-      setMessages((prev) => {
-        const existingIndex = prev.findIndex(
-          (m) => m.message.id === clientId && !m.message.isStreamingStop,
-        )
-
-        // If message exists, update it
-        if (existingIndex >= 0) {
-          return prev.map((m) =>
-            m.message.id === clientId && !m.message.isStreamingStop
-              ? {
-                  ...m,
-                  message: {
-                    ...m.message,
-                    content,
-                    isStreaming: true,
-                    isWebSearchEnabled: !!isWebSearchEnabled,
-                    isImageGenerationEnabled: !!isImageGenerationEnabled,
-                  },
-                  aiAgent: aiAgent ?? m.aiAgent,
-                }
-              : m,
-          )
-        }
-
-        if (threadId !== prev?.[0]?.message?.threadId) {
-          return prev
-        }
-
-        // If message doesn't exist, add it (from other device/collaboration)
-        return [
-          ...prev,
-          {
-            message: {
-              id: clientId,
-              type: "chat" as const,
-              content,
-              createdOn: new Date(),
-              updatedOn: new Date(),
-              agentId: aiAgent?.id || null,
-              agentVersion: aiAgent?.version || null,
-              threadId: threadId || "",
-              readOn: new Date(),
-              userId: user?.id || null,
-              guestId: guest?.id || null,
-              searchContext: null,
-              webSearchResult: null,
-              metadata: null,
-              originalContent: content,
-              images: null,
-              files: null,
-              isWebSearchEnabled: !!isWebSearchEnabled,
-              isImageGenerationEnabled: !!isImageGenerationEnabled,
-              isStreaming: true,
-              reasoning: null,
-              like: null,
-              dislike: null,
-              creditCost: aiAgent?.creditCost || 1,
-              task: "chat",
-              reactions: null,
-              clientId,
-              audio: null,
-              video: null,
-              selectedAgentId: aiAgent?.id || null,
-              debateAgentId: null,
-              pauseDebate: false,
-            },
-            aiAgent: aiAgent,
-            thread: thread,
-          },
-        ]
-      })
-    },
-    [
-      isLoadingMore,
-      scrollToBottom,
-      setMessages,
-      shouldAutoScroll,
-      resetScrollState,
-      isUserScrolling,
-      hasStoppedScrolling,
-    ],
-  )
-
   const render = () => {
     return (
       <Div
@@ -495,8 +370,8 @@ const Thread = ({
           isMobileDevice={isMobileDevice}
           hipchat={false}
           compactMode={showFocus || showTribe}
-          showSuggestions={!showFocus && !showTribe}
-          showMessages={!showFocus && !showTribe}
+          showSuggestions={!showFocus && !showTribe && isEmpty}
+          showMessages={!showFocus && !showTribe && !isEmpty}
           messagesStyle={{
             margin: "0 -10px",
           }}

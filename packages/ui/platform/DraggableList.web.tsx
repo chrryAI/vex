@@ -65,7 +65,9 @@ function SortableItem<T>({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id })
+  } = useSortable({
+    id,
+  })
 
   const style = {
     transform: CSS.Transform.toString(transform),

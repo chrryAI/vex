@@ -70,7 +70,6 @@ threads.get("/", async (c) => {
   }
 
   const threadId = c.req.query("threadId")
-  const _slug = c.req.query("slug")
   const appId = c.req.query("appId")
   const starred = request.url.includes("starred")
   const sort = c.req.query("sort") as "bookmark" | "date" | undefined
@@ -132,7 +131,7 @@ threads.get("/", async (c) => {
     }
   }
 
-  const _app = await getApp({
+  const app = await getApp({
     id: appId,
     userId: member?.id,
     guestId: guest?.id,
@@ -209,7 +208,7 @@ threads.get("/", async (c) => {
   // Fetch threads based on context
   const threadsResult = await getThreads({
     ...payload,
-    appId: collaborationStatusFinal ? undefined : _app?.id,
+    appId: collaborationStatusFinal ? undefined : app?.id,
     collaborationStatus: collaborationStatusFinal,
     ...(!sanitizedUserName
       ? {

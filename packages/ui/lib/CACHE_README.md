@@ -13,13 +13,13 @@ npm install idb
 ## Quick Start
 
 ```typescript
-import { cacheData, getCachedData } from "./lib/db"
+import { cacheData, getCachedData } from "./lib/db";
 
 // Cache data
-await cacheData("myKey", { foo: "bar" }, 1000 * 60 * 30) // 30 min TTL
+await cacheData("myKey", { foo: "bar" }, 1000 * 60 * 30); // 30 min TTL
 
 // Retrieve data
-const data = await getCachedData("myKey")
+const data = await getCachedData("myKey");
 ```
 
 ## API Reference
@@ -37,7 +37,7 @@ Cache any JSON-serializable data.
 **Example:**
 
 ```typescript
-await cacheData("apps", appsArray, 1000 * 60 * 60) // 1 hour
+await cacheData("apps", appsArray, 1000 * 60 * 60); // 1 hour
 ```
 
 ### `getCachedData<T>(key)`
@@ -53,7 +53,7 @@ Retrieve cached data. Returns `null` if not found or expired.
 **Example:**
 
 ```typescript
-const apps = await getCachedData<appWithStore[]>("apps")
+const apps = await getCachedData<appWithStore[]>("apps");
 ```
 
 ### `deleteCachedData(key)`
@@ -75,16 +75,16 @@ Get estimated cache size in bytes.
 ```typescript
 const { data } = useSWR(["key", token], async () => {
   try {
-    const data = await fetchData()
-    await cacheData("key", data)
-    return data
+    const data = await fetchData();
+    await cacheData("key", data);
+    return data;
   } catch (error) {
     // Fallback to cache on error
-    const cached = await getCachedData("key")
-    if (cached) return cached
-    throw error
+    const cached = await getCachedData("key");
+    if (cached) return cached;
+    throw error;
   }
-})
+});
 ```
 
 ### Pattern 2: With TTL
@@ -92,14 +92,14 @@ const { data } = useSWR(["key", token], async () => {
 ```typescript
 const { data } = useSWR(["threads", appId], async () => {
   try {
-    const threads = await getThreads({ appId })
+    const threads = await getThreads({ appId });
     // Cache for 30 minutes
-    await cacheData(`threads-${appId}`, threads, 1000 * 60 * 30)
-    return threads
+    await cacheData(`threads-${appId}`, threads, 1000 * 60 * 30);
+    return threads;
   } catch (error) {
-    return await getCachedData(`threads-${appId}`)
+    return await getCachedData(`threads-${appId}`);
   }
-})
+});
 ```
 
 ## What to Cache
@@ -131,34 +131,34 @@ Use descriptive, scoped keys:
 
 ```typescript
 // Good
-"storeApps"
-"session"
-"threads-app123"
-"profile-user456"
+"storeApps";
+"session";
+"threads-app123";
+"profile-user456";
 
 // Bad
-"data"
-"cache1"
-"temp"
+"data";
+"cache1";
+"temp";
 ```
 
 ## TTL Guidelines
 
 ```typescript
 // No TTL - Cache forever (static data)
-await cacheData("config", config)
+await cacheData("config", config);
 
 // 5 minutes - Frequently changing
-await cacheData("notifications", data, 1000 * 60 * 5)
+await cacheData("notifications", data, 1000 * 60 * 5);
 
 // 30 minutes - Moderate freshness
-await cacheData("threads", data, 1000 * 60 * 30)
+await cacheData("threads", data, 1000 * 60 * 30);
 
 // 1 hour - Stable data
-await cacheData("apps", data, 1000 * 60 * 60)
+await cacheData("apps", data, 1000 * 60 * 60);
 
 // 24 hours - Rarely changes
-await cacheData("profile", data, 1000 * 60 * 60 * 24)
+await cacheData("profile", data, 1000 * 60 * 60 * 24);
 ```
 
 ## Storage Limits
@@ -192,38 +192,38 @@ await cacheData("profile", data, 1000 * 60 * 60 * 24)
 
 ```typescript
 // Check if data loads from cache
-const cached = await getCachedData("apps")
-console.log("Cached apps:", cached)
+const cached = await getCachedData("apps");
+console.log("Cached apps:", cached);
 ```
 
 ## Debugging
 
 ```typescript
 // View all cache keys
-import { getAllCacheKeys } from "./lib/db"
-const keys = await getAllCacheKeys()
-console.log("Cached keys:", keys)
+import { getAllCacheKeys } from "./lib/db";
+const keys = await getAllCacheKeys();
+console.log("Cached keys:", keys);
 
 // Check cache size
-import { getCacheSize } from "./lib/db"
-const size = await getCacheSize()
-console.log("Cache size:", (size / 1024 / 1024).toFixed(2), "MB")
+import { getCacheSize } from "./lib/db";
+const size = await getCacheSize();
+console.log("Cache size:", (size / 1024 / 1024).toFixed(2), "MB");
 
 // Clear everything
-import { clearCache } from "./lib/db"
-await clearCache()
+import { clearCache } from "./lib/db";
+await clearCache();
 ```
 
 ## Migration from localStorage
 
 ```typescript
 // Before (localStorage)
-localStorage.setItem("apps", JSON.stringify(apps))
-const apps = JSON.parse(localStorage.getItem("apps"))
+localStorage.setItem("apps", JSON.stringify(apps));
+const apps = JSON.parse(localStorage.getItem("apps"));
 
 // After (IndexedDB)
-await cacheData("apps", apps)
-const apps = await getCachedData("apps")
+await cacheData("apps", apps);
+const apps = await getCachedData("apps");
 ```
 
 ## Performance

@@ -2130,7 +2130,9 @@ export default function Chat({
       try {
         const result = (await BrowserInstance?.storage?.local?.get?.([
           "contextMenuAction",
-        ])) as { contextMenuAction: { type: string; text: string } }
+        ])) as {
+          contextMenuAction: { type: string; text: string }
+        }
 
         const type = result?.contextMenuAction?.type
         if (type) {

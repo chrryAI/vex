@@ -131,7 +131,8 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
   }, [sortedThreads, storeApps])
 
   const threadRefs = useRef<{ [id: string]: HTMLDivElement | null }>({})
-  const isSwarm = appsWithThreads.length > 1 || selectedApp
+  const isSwarm = !!appsWithThreads.length
+
   useEffect(() => {
     if (lastStarredId && threadRefs.current[lastStarredId]) {
       threadRefs.current[lastStarredId]?.scrollIntoView({
@@ -425,7 +426,8 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                     }}
                     className={"threadsItem"}
                   >
-                    <Div style={{ ...styles.threadItemTitle.style }}>
+                    <Div style={{ ...styles.threadItemTitle.style, gap: 12 }}>
+                      <Img size={20} app={thread.app} />
                       {loadingThreadId === thread.id ? (
                         <Loading
                           style={{
@@ -436,6 +438,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                       ) : (
                         !isVisitor && (
                           <EditThread
+                            size={16}
                             refetch={async () => {
                               await refetch()
                             }}
@@ -444,40 +447,6 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                           />
                         )
                       )}
-                      {(() => {
-                        const url = `/threads/${thread.id}`
-                        return (
-                          <A
-                            data-testid="threads-item-title"
-                            onClick={(e) => {
-                              if (e.metaKey || e.ctrlKey) {
-                                return
-                              }
-
-                              e.preventDefault()
-
-                              const threadApp = storeApps.find(
-                                (app) => app.id === thread.appId,
-                              )
-
-                              if (
-                                thread.appId &&
-                                (!threadApp || !hasStoreApps(threadApp))
-                              ) {
-                                setLoadingThreadId(thread.id)
-                                setLoadingAppId(thread.appId)
-                                return
-                              }
-
-                              router.push(url)
-                            }}
-                            href={url}
-                            key={thread.id}
-                          >
-                            {thread.title}
-                          </A>
-                        )
-                      })()}
 
                       {!isVisitor && (
                         <>
@@ -487,13 +456,14 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                               style={{
                                 marginRight: 3,
                                 marginLeft: 3,
-                                fontSize: 12,
+                                fontSize: 16,
                               }}
                             >
                               🧬
                             </Span>
                           ) : null}
                           <Bookmark
+                            size={16}
                             dataTestId="threads"
                             onSave={() => {
                               refetch()
@@ -503,17 +473,55 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                           />
                         </>
                       )}
+
                       <Div style={{ ...styles.right.style }}>
                         <Span style={{ ...styles.threadItemDate.style }}>
                           {timeAgo(thread.createdOn, language)}
                         </Span>
-                        {!isVisitor && <Share thread={thread} size={13} />}
+                        {!isVisitor && <Share thread={thread} size={18} />}
                       </Div>
                     </Div>
+                    {(() => {
+                      const url = `/threads/${thread.id}`
+                      return (
+                        <A
+                          data-testid="threads-item-title"
+                          onClick={(e) => {
+                            if (e.metaKey || e.ctrlKey) {
+                              return
+                            }
 
-                    <Span style={{ ...styles.threadAiResponse.style }}>
+                            e.preventDefault()
+
+                            const threadApp = storeApps.find(
+                              (app) => app.id === thread.appId,
+                            )
+
+                            if (
+                              thread.appId &&
+                              (!threadApp || !hasStoreApps(threadApp))
+                            ) {
+                              setLoadingThreadId(thread.id)
+                              setLoadingAppId(thread.appId)
+                              return
+                            }
+
+                            router.push(url)
+                          }}
+                          href={url}
+                          key={thread.id}
+                          style={{ marginTop: 5 }}
+                        >
+                          {thread.title}
+                        </A>
+                      )
+                    })()}
+
+                    <Div
+                      style={{ ...styles.threadAiResponse.style, marginTop: 5 }}
+                    >
                       {thread.aiResponse}
-                    </Span>
+                    </Div>
                   </Div>
                 </MotiView>
               ))}

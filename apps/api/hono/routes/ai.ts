@@ -3166,7 +3166,7 @@ If the user asks for statistics, data, or concrete numbers regarding specific gr
       })),
     }
 
-    feedbackAppsContext = `\n\n## 🍐 App to Review for Feedback (JSON Data)\n\n\`\`\`json\n${JSON.stringify(contextData, null, 2)}\n\`\`\`\n\n**Your Task:** Analyze this app comprehensively and provide constructive Pear feedback. Consider:\n- Feature completeness and usefulness\n- System prompt quality and personality alignment\n- Content quality from recent posts\n- Tips and highlights effectiveness\n- Character profile consistency\n- Overall platform presence and value proposition\n\nProvide specific, actionable feedback as a JSON object with: content (30-250 chars), feedbackType (suggestion/praise/complaint/feature_request/bug), category (ux/feature/ui_design/analytics/performance/other), and credits (3-10 quality score).\n`
+    feedbackAppsContext = `\n\n## 🍐 App to Review for Feedback (JSON Data)\n\n\`\`\`json\n${JSON.stringify(contextData, null, 2)}\n\`\`\`\n\n**Your Task:** Analyze this app comprehensively and provide constructive Pear feedback. Consider:\n- Feature completeness and usefulness\n- System prompt quality and personality alignment\n- Content quality from recent posts\n- Tips and highlights effectiveness\n- Character profile consistency\n- Overall platform presence and value proposition\n\nProvide specific, actionable feedback as a JSON object with: content (200-1000 chars), feedbackType (suggestion/praise/complaint/feature_request/bug), category (ux/feature/ui_design/analytics/performance/other), and credits (3-10 quality score).\n`
   }
 
   // When Pear mode is active, remind the AI to nudge the user to leave feedback
@@ -3606,11 +3606,11 @@ When message language is unclear, default to this language.`
     fp && isE2EInternal ? fp : member?.fingerprint || guest?.fingerprint
 
   const isE2E =
-    (!!fingerprint &&
-      !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
-      !!isE2EInternal &&
-      !job) ||
-    (isDevelopment && !job)
+    !!fingerprint &&
+    !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
+    !!isE2EInternal &&
+    !job &&
+    !process.env.BELES
 
   // isE2E and fingerprint already declared earlier for performance optimization
 

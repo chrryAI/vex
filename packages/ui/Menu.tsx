@@ -16,6 +16,7 @@ import {
 import { useStyles } from "./context/StylesContext"
 import EmptyStateTips from "./EmptyStateTips"
 import { useHasHydrated } from "./hooks"
+import { useResponsiveCount } from "./hooks/useResponsiveCount"
 import Img from "./Image"
 import {
   ArrowLeft,
@@ -25,7 +26,6 @@ import {
   LoaderCircle,
   Lock,
   LockOpen,
-  MessageCirclePlus,
   PanelRight,
   Search,
   Tornado,
@@ -158,6 +158,20 @@ export default function Menu({
       return () => clearInterval(interval)
     }
   }, [tauri])
+
+  const count = useResponsiveCount([
+    { height: 500, count: 0 },
+    { height: 550, count: 1 },
+    { height: 600, count: 2 },
+    { height: 650, count: 3 },
+    { height: 700, count: 4 },
+    { height: 750, count: 5 },
+    { height: 800, count: 6 },
+    { height: 850, count: 7 },
+    { height: 900, count: 8 },
+    { height: 950, count: 9 },
+    { height: 1000, count: 10 },
+  ])
 
   const [loadingThreadId, setLoadingThreadId] = useState<string | null>(null)
 
@@ -706,12 +720,7 @@ export default function Menu({
                               (a.isMainThread ? 1 : 0)
                             )
                           })
-                          .slice(
-                            0,
-                            canShowAllTribe || isPear
-                              ? 1
-                              : threads?.threads?.length,
-                          )
+                          .slice(0, canShowAllTribe || isPear ? 1 : count)
                           .map((thread, index) => (
                             <MotiView
                               key={`${thread.id}-${thread.bookmarks?.length}-${animationKey}`}
@@ -735,18 +744,30 @@ export default function Menu({
                                 ...styles.threadItem.style,
                                 paddingRight:
                                   collaborationStatus === "pending" ? 0 : 17,
+                                alignItems: "flex-start",
+                                flexDirection: "column",
+                                gap: "0.35rem",
                               }}
                               ref={(el: any) => {
                                 threadRefs.current[thread.id] = el
                               }}
                               className="menuThreadItem"
                             >
-                              {thread.isMainThread ? (
+                              {thread.pearAppId ? (
                                 <Span
+                                  style={{ display: "flex", gap: 5 }}
                                   title={t("DNA thread")}
-                                  style={{ marginRight: 3, fontSize: 11 }}
                                 >
-                                  🧬
+                                  <Img slug="pear" size={14} />{" "}
+                                  <Img app={thread.app} size={14} />
+                                </Span>
+                              ) : thread.isMainThread ? (
+                                <Span title={t("DNA thread")}>
+                                  <Img src="/images/dna.png" size={14} />
+                                </Span>
+                              ) : thread.app ? (
+                                <Span title={t("DNA thread")}>
+                                  <Img app={thread.app} size={14} />
                                 </Span>
                               ) : thread.visibility !== "private" ||
                                 thread.collaborations?.length ? (

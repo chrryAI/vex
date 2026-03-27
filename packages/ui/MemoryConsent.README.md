@@ -11,10 +11,10 @@ The `MemoryConsent` component is used to obtain user consent for the AI's memory
 ## 🚀 Usage
 
 ```tsx
-import { MemoryConsent } from "@chrryai/chrry"
+import { MemoryConsent } from "@chrryai/chrry";
 
 function App() {
-  return <MemoryConsent />
+  return <MemoryConsent />;
 }
 ```
 

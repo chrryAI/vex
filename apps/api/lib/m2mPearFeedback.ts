@@ -14,6 +14,7 @@ import {
 } from "@repo/db"
 import { apps, feedbackTransactions } from "@repo/db/src/schema"
 import { generateText } from "ai"
+import { cleanAiResponse } from "./ai/cleanAiResponse"
 import { getModelProvider } from "./getModelProvider"
 import { sendDiscordNotification } from "./sendDiscordNotification"
 
@@ -477,12 +478,8 @@ export async function generateM2MPearFeedback({
     // 4. Parse JSON response
     let feedbacks: GeneratedFeedback[]
     try {
-      let text = result.text.trim()
-      // Strip markdown code fences if present
-      if (text.startsWith("```")) {
-        text = text.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "")
-      }
-      feedbacks = JSON.parse(text)
+      const text = result.text.trim()
+      feedbacks = JSON.parse(cleanAiResponse(text))
       if (!Array.isArray(feedbacks)) {
         throw new Error("Response is not an array")
       }

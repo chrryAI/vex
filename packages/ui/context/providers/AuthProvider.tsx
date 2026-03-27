@@ -104,7 +104,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.47"
+const VERSION = "2.2.49"
 
 const AuthContext = createContext<
   | {
@@ -2722,7 +2722,6 @@ export function AuthProvider({
   }, [isPearInternal, app?.name, app?.slug, app?.id])
 
   const setShowTribe = (value: boolean) => {
-    console.log(`🚀 ~ setShowTribe ~ value:`, value)
     if (value && showWatermelon) {
       setShowWatermelon(false)
     }

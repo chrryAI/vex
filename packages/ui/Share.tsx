@@ -7,7 +7,7 @@ import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
-import Img from "./Img"
+import Img from "./Image"
 import {
   Circle,
   CircleCheck,
@@ -17,7 +17,6 @@ import {
   Link2,
   LockIcon,
   Rss,
-  ShareIcon,
   Trash2,
   UsersRound,
 } from "./icons"
@@ -35,11 +34,13 @@ export default function Share({
   thread,
   onCollaborationChange,
   style,
+  children,
   ...rest
 }: {
   dataTestId?: string
   thread: thread
   style?: React.CSSProperties
+  children?: React.ReactNode
   size?: number
   onCollaborationChange?: (
     collaborations?: { collaboration: collaboration; user: user }[],
@@ -357,7 +358,8 @@ export default function Share({
             ...style,
           }}
         >
-          <ShareIcon size={size} />
+          <Img slug="jules" size={size} />
+          {children}
         </Button>
       </Div>
       <Modal
@@ -369,7 +371,11 @@ export default function Share({
         title={t("Share Thread")}
         hasCloseButton
         icon={
-          loading ? <Loading width={22} height={22} /> : <ShareIcon size={20} />
+          loading ? (
+            <Loading width={22} height={22} />
+          ) : (
+            <Img slug="jules" size={20} />
+          )
         }
       >
         <Div style={styles.shareModalContent.style}>

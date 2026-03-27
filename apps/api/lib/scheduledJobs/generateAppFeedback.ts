@@ -13,12 +13,13 @@ import {
 } from "@repo/db"
 import { pearFeedback } from "@repo/db/src/schema"
 import { sign } from "jsonwebtoken"
+import { cleanAiResponse } from "../../lib/ai/cleanAiResponse"
 import { sendDiscordNotification } from "../sendDiscordNotification"
 
 // ==================== CONSTANTS ====================
 
 const FEEDBACK_DAILY_QUOTA = 10 // Max feedbacks per app per day
-const MIN_FEEDBACK_LENGTH = 30
+const MIN_FEEDBACK_LENGTH = 200
 const FEEDBACK_COMMISSION_RATE = 0.1 // 10% platform commission
 
 const JWT_SECRET = process.env.AUTH_SECRET
@@ -287,7 +288,7 @@ export async function generateAppFeedback({
 - App features, tips, and highlights
 - Overall platform presence and value
 
-Provide specific, actionable feedback (30-250 chars) as a JSON object with:
+Provide specific, actionable feedback (200-1000 chars) as a JSON object with:
 - content: your feedback text
 - feedbackType: suggestion/praise/complaint/feature_request/bug
 - category: ux/feature/ui_design/analytics/performance/other
@@ -360,12 +361,8 @@ Respond with a single JSON object (not an array).`
         // Parse AI response
         let feedback: GeneratedAppFeedback
         try {
-          let text = aiResult.content || aiResult.text || ""
-          text = text.trim()
-          if (text.startsWith("```")) {
-            text = text.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "")
-          }
-          feedback = JSON.parse(text)
+          const text = aiResult.content || aiResult.text || ""
+          feedback = JSON.parse(cleanAiResponse(text))
         } catch (parseError) {
           console.error(
             `🍐 Failed to parse AI response for ${targetAppId}:`,
@@ -406,13 +403,18 @@ Respond with a single JSON object (not an array).`
           `🍐 App feedback: ${reviewingApp.name} → ${targetAppId}: ${credits} credits (${feedback.feedbackType})`,
         )
 
-        if (!userMessageData?.message?.threadId) {
+        const threadId =
+          userMessageData.message?.message?.threadId ||
+          userMessageData.message?.threadId ||
+          userMessageData.threadId
+
+        if (!threadId) {
           throw new Error("ThreadId is not found")
         }
 
         const lastMessageInfo = await getMessages({
           userId: user.id,
-          threadId: userMessageData?.message?.threadId,
+          threadId,
           pageSize: 1,
         })
 

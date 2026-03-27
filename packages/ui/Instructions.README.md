@@ -11,10 +11,10 @@ The `Instructions` component allows users to provide custom instructions for a c
 ## 🚀 Usage
 
 ```tsx
-import { Instructions } from "@chrryai/chrry"
+import { Instructions } from "@chrryai/chrry";
 
 function App() {
-  return <Instructions />
+  return <Instructions />;
 }
 ```
 

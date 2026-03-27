@@ -14,7 +14,7 @@ const Anchor = React.forwardRef<
     event?: string
     target?: "_blank" | "_self" | "_parent" | "_top"
     dataTestId?: string
-    ["data-testid"]?: string
+    "data-testid"?: string
   }
 >(
   (

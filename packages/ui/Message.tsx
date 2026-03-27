@@ -49,6 +49,7 @@ import { Button, Div, P, Span, Strong, useTheme, Video } from "./platform"
 import type {
   aiAgent,
   app,
+  appWithStore,
   guest,
   message,
   thread,
@@ -81,6 +82,7 @@ function Message({
     aiAgent?: aiAgent
     thread?: thread
     parentMessage?: message
+    app?: appWithStore
   }
   onDelete?: ({ id }: { id: string }) => Promise<void>
   onToggleLike?: (liked: boolean | undefined) => void
@@ -114,7 +116,7 @@ function Message({
   const isStreaming = message.message.isStreaming
 
   const { setIsAccountVisible, push } = useNavigationContext()
-  const { refetchThread, scrollToBottom } = useChat()
+  const { refetchThread, scrollToBottom, setIsNewChat } = useChat()
   const { addParams } = useNavigationContext()
 
   const { slug, apps, app } = useApp()
@@ -1224,8 +1226,8 @@ function Message({
               </>
             ) : (
               <Span style={styles.appIcon.style}>
-                <Img app={app} size={35} />
-                <Span>{app?.name || "Vex"}</Span>
+                <Img app={message?.app} size={35} />
+                <Span>{message?.app?.name || "Vex"}</Span>
               </Span>
             )}
           </Button>
@@ -1423,8 +1425,10 @@ function Message({
                     href={`/p/${message.message.tribePostId}`}
                     onClick={(e) => {
                       e.preventDefault()
-                      setShowTribe(true)
-                      push(`/p/${message.message.tribePostId}`)
+                      setIsNewChat({
+                        value: true,
+                        postId: message.message.tribePostId,
+                      })
                     }}
                   >
                     <Img slug="zarathustra" />

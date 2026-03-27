@@ -847,6 +847,7 @@ const HipChat = ({
                     readOn: msg?.message?.message?.createdOn!,
                     userId: user?.id || null,
                     guestId: guest?.id || null,
+                    app: msg?.message?.message?.app,
                     searchContext: msg?.message?.message?.searchContext!,
                     webSearchResult: msg?.message?.message?.webSearchResult!,
                     metadata: msg?.message?.message?.metadata!,
@@ -991,10 +992,10 @@ const HipChat = ({
             style={{
               ...styles.headers.style,
               position: "relative",
-              marginBottom: "1rem",
+              marginBottom: "1.5rem",
             }}
           >
-            <Div style={styles.header.style}>
+            <Div style={{ ...styles.header.style, gap: ".9rem" }}>
               {thread.isMainThread ? (
                 <Span
                   title={t("DNA thread")}
@@ -1043,9 +1044,11 @@ const HipChat = ({
                 onChangeVisibility={(visibility) =>
                   setThread({ ...thread, visibility })
                 }
-                size={15}
+                size={22}
                 thread={thread}
-              />
+              >
+                {t("Share")}
+              </Share>
             </Div>
           </Div>
         )}

@@ -50,29 +50,29 @@ export const updateInstallOrder = async ({
   guestId,
   order,
 }: {
-  appId: string
-  userId?: string
-  guestId?: string
-  order: number
+  appId: string;
+  userId?: string;
+  guestId?: string;
+  order: number;
 }) => {
-  const conditions = [eq(installs.appId, appId)]
+  const conditions = [eq(installs.appId, appId)];
 
   if (userId) {
-    conditions.push(eq(installs.userId, userId))
+    conditions.push(eq(installs.userId, userId));
   }
 
   if (guestId) {
-    conditions.push(eq(installs.guestId, guestId))
+    conditions.push(eq(installs.guestId, guestId));
   }
 
   const [updated] = await db
     .update(installs)
     .set({ order })
     .where(and(...conditions))
-    .returning()
+    .returning();
 
-  return updated
-}
+  return updated;
+};
 ```
 
 ### 2. API Endpoint
@@ -81,14 +81,14 @@ Created at `/apps/web/app/api/apps/reorder/route.ts`:
 
 ```typescript
 export async function POST(request: NextRequest) {
-  const member = await getMember()
-  const guest = await getGuest()
+  const member = await getMember();
+  const guest = await getGuest();
 
   if (!member && !guest) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json()
+  const body = await request.json();
 
   // Update all app orders in parallel
   const updatePromises = body.apps.map((item) =>
@@ -98,11 +98,11 @@ export async function POST(request: NextRequest) {
       guestId: guest?.id,
       order: item.order,
     }),
-  )
+  );
 
-  await Promise.all(updatePromises)
+  await Promise.all(updatePromises);
 
-  return NextResponse.json({ success: true }, { status: 200 })
+  return NextResponse.json({ success: true }, { status: 200 });
 }
 ```
 
@@ -125,27 +125,25 @@ export async function POST(request: NextRequest) {
 ### 1. Import Components
 
 ```tsx
-import { DraggableAppList } from "./DraggableAppList"
-import { DraggableAppItem } from "./DraggableAppItem"
-import { useAppReorder } from "./hooks/useAppReorder"
+import { DraggableAppList } from "./DraggableAppList";
+import { DraggableAppItem } from "./DraggableAppItem";
+import { useAppReorder } from "./hooks/useAppReorder";
 ```
 
 ### 2. Use the Hook
 
 ```tsx
 function MyApps() {
-  const [apps, setApps] = useState(session?.apps || [])
+  const [apps, setApps] = useState(session?.apps || []);
 
-  const { moveApp, handleDrop, handleDragStart, handleDragEnd } = useAppReorder(
-    {
-      apps,
-      setApps,
-      // Optional: custom save function
-      onSave: async (apps) => {
-        await customSaveFunction(apps)
-      },
+  const { moveApp, handleDrop, handleDragStart, handleDragEnd } = useAppReorder({
+    apps,
+    setApps,
+    // Optional: custom save function
+    onSave: async (apps) => {
+      await customSaveFunction(apps);
     },
-  )
+  });
 
   return (
     <DraggableAppList className={styles.apps}>
@@ -166,7 +164,7 @@ function MyApps() {
         </DraggableAppItem>
       ))}
     </DraggableAppList>
-  )
+  );
 }
 ```
 
@@ -175,22 +173,20 @@ function MyApps() {
 ## 🔄 Complete Integration Example
 
 ```tsx
-import { useState, useCallback } from "react"
-import { DraggableAppList } from "./DraggableAppList"
-import { DraggableAppItem } from "./DraggableAppItem"
-import { useAppReorder } from "./hooks/useAppReorder"
-import { useAppContext } from "./context/AppContext"
+import { useState, useCallback } from "react";
+import { DraggableAppList } from "./DraggableAppList";
+import { DraggableAppItem } from "./DraggableAppItem";
+import { useAppReorder } from "./hooks/useAppReorder";
+import { useAppContext } from "./context/AppContext";
 
 export default function App() {
-  const { apps: initialApps } = useAppContext()
-  const [apps, setApps] = useState(initialApps)
+  const { apps: initialApps } = useAppContext();
+  const [apps, setApps] = useState(initialApps);
 
-  const { moveApp, handleDrop, handleDragStart, handleDragEnd } = useAppReorder(
-    {
-      apps,
-      setApps,
-    },
-  )
+  const { moveApp, handleDrop, handleDragStart, handleDragEnd } = useAppReorder({
+    apps,
+    setApps,
+  });
 
   return (
     <div className={styles.appsGrid}>
@@ -210,7 +206,7 @@ export default function App() {
               href={`/${app.slug}`}
               className="button small inverted"
               onClick={(e) => {
-                e.preventDefault()
+                e.preventDefault();
                 // Your navigation logic
               }}
             >
@@ -221,7 +217,7 @@ export default function App() {
         ))}
       </DraggableAppList>
     </div>
-  )
+  );
 }
 ```
 
@@ -320,11 +316,11 @@ Console: "✅ App order saved successfully"
 
 ```typescript
 // API checks for authenticated user
-const member = await getMember()
-const guest = await getGuest()
+const member = await getMember();
+const guest = await getGuest();
 
 if (!member && !guest) {
-  return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }
 ```
 
@@ -335,7 +331,7 @@ if (!member && !guest) {
 const conditions = [
   eq(installs.appId, appId),
   eq(installs.userId, userId), // Only user's installs
-]
+];
 ```
 
 ---
@@ -391,16 +387,16 @@ curl -X POST http://localhost:3000/api/apps/reorder \
 
 ```typescript
 // Check if apps state is updating
-console.log("Apps after move:", apps)
+console.log("Apps after move:", apps);
 
 // Check if setApps is being called
 const moveApp = useCallback(
   (dragIndex, hoverIndex) => {
-    console.log("moveApp called:", { dragIndex, hoverIndex })
-    setApps(/* ... */)
+    console.log("moveApp called:", { dragIndex, hoverIndex });
+    setApps(/* ... */);
   },
   [setApps],
-)
+);
 ```
 
 ### Order Not Persisting
@@ -411,9 +407,9 @@ const handleDrop = async () => {
   const response = await apiFetch("/api/apps/reorder", {
     method: "POST",
     body: JSON.stringify({ apps }),
-  })
-  console.log("API response:", await response.json())
-}
+  });
+  console.log("API response:", await response.json());
+};
 ```
 
 ### Drag Not Working
@@ -449,13 +445,13 @@ const handleDrop = async () => {
 1. **Add Loading State**
 
 ```typescript
-const [isSaving, setIsSaving] = useState(false)
+const [isSaving, setIsSaving] = useState(false);
 
 const handleDrop = async () => {
-  setIsSaving(true)
-  await saveOrder()
-  setIsSaving(false)
-}
+  setIsSaving(true);
+  await saveOrder();
+  setIsSaving(false);
+};
 ```
 
 2. **Add Error Handling**
@@ -463,14 +459,14 @@ const handleDrop = async () => {
 ```typescript
 const handleDrop = async () => {
   try {
-    await saveOrder()
-    showToast("Order saved!")
+    await saveOrder();
+    showToast("Order saved!");
   } catch (error) {
-    showToast("Failed to save order")
+    showToast("Failed to save order");
     // Revert to previous order
-    setApps(previousApps)
+    setApps(previousApps);
   }
-}
+};
 ```
 
 3. **Add Animations**
@@ -486,9 +482,9 @@ const handleDrop = async () => {
 ```typescript
 const handleDragStart = () => {
   if (navigator.vibrate) {
-    navigator.vibrate(10)
+    navigator.vibrate(10);
   }
-}
+};
 ```
 
 ---

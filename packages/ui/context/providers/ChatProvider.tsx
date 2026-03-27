@@ -159,11 +159,13 @@ const ChatContext = createContext<
         to,
         tribe,
         pear,
+        postId,
       }: {
         value: boolean
         to?: string
         tribe?: boolean
         pear?: boolean
+        postId?: string
       }) => void
     }
   | undefined
@@ -255,6 +257,7 @@ export function ChatProvider({
       guest?: guest
       aiAgent?: aiAgent
       thread?: thread
+      app?: appWithStore
     }[]
   >(auth.threadData?.messages.messages || [])
 
@@ -497,11 +500,13 @@ export function ChatProvider({
     to = app?.slug ? getAppSlug(app) : "/",
     tribe,
     pear,
+    postId,
   }: {
     value: boolean
     to?: string
     tribe?: boolean
     pear?: boolean
+    postId?: string
   }) => {
     if (value) {
       shouldStopAutoScrollRef.current = true
@@ -522,7 +527,11 @@ export function ChatProvider({
       setThreadId(undefined)
       setMessages([])
       threadIdRef.current = undefined
-      router.push(to)
+      if (postId) {
+        router.push(`/p/${postId}`)
+      } else {
+        router.push(to)
+      }
     } else {
       shouldStopAutoScrollRef.current = false
       // Ensure tribe view resets when closing a new chat

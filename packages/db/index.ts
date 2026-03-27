@@ -1646,6 +1646,7 @@ export const getMessages = async ({
       guest: guests,
       aiAgent: aiAgents,
       thread: threads,
+      app: apps,
     })
     .from(messages)
     .where(conditions)
@@ -1653,6 +1654,7 @@ export const getMessages = async ({
     .leftJoin(guests, eq(messages.guestId, guests.id))
     .leftJoin(aiAgents, eq(messages.agentId, aiAgents.id))
     .innerJoin(threads, eq(messages.threadId, threads.id))
+    .leftJoin(apps, eq(messages.appId, apps.id))
     .orderBy(isAsc ? asc(messages.createdOn) : desc(messages.createdOn))
     .limit(pageSize)
     .offset((page - 1) * pageSize)
@@ -1670,25 +1672,32 @@ export const getMessages = async ({
 
   return {
     messages: await Promise.all(
-      result.map(async (message) => ({
-        ...message,
-        parentMessage: message.message.clientId
-          ? await getMessage({
-              clientId: message.message.id,
-            }).then((res) => res?.message)
-          : undefined,
-        user: {
-          id: message.user?.id,
-          createdOn: message.user?.createdOn,
-          updatedOn: message.user?.updatedOn,
-          userName: message.user?.userName,
-          name: message.user?.name,
-          image: message.user?.image,
-        },
-        mood: await getMood({
-          id: message.message.id,
-        }),
-      })),
+      result.map(async (message) => {
+        const app = message.message?.appId
+          ? await getApp({ id: message.message.appId })
+          : undefined
+
+        return {
+          ...message,
+          parentMessage: message.message.clientId
+            ? await getMessage({
+                clientId: message.message.id,
+              }).then((res) => res?.message)
+            : undefined,
+          app,
+          user: {
+            id: message.user?.id,
+            createdOn: message.user?.createdOn,
+            updatedOn: message.user?.updatedOn,
+            userName: message.user?.userName,
+            name: message.user?.name,
+            image: message.user?.image,
+          },
+          mood: await getMood({
+            id: message.message.id,
+          }),
+        }
+      }),
     ),
     totalCount,
     hasNextPage,
@@ -2671,6 +2680,13 @@ export const getThread = async ({
     .leftJoin(characterProfiles, eq(threads.id, characterProfiles.threadId))
     .limit(1)
 
+  const app = result?.threads?.appId
+    ? await getApp({
+        id: result.threads.appId,
+        userId,
+        guestId,
+      })
+    : undefined
   return result
     ? {
         ...result.threads,
@@ -2704,14 +2720,7 @@ export const getThread = async ({
           userId: result.threads.userId || undefined,
           guestId: result.threads.guestId || undefined,
         }),
-        app: result.threads.appId
-          ? await getPureApp({
-              id: result.threads.appId,
-              userId,
-              guestId,
-              isSafe: true,
-            })
-          : undefined,
+        app: app ? toSafeApp({ app, userId, guestId }) : undefined,
       }
     : undefined
 }
@@ -2998,33 +3007,48 @@ export const getThreads = async ({
 
     return {
       threads: await Promise.all(
-        result.map(async (thread) => ({
-          ...thread.threads,
-          user: thread.user
-            ? {
-                id: thread.user?.id,
-                name: thread.user?.name,
-                userName: thread.user?.userName,
-                createdOn: thread.user?.createdOn,
-                updatedOn: thread.user?.updatedOn,
-                characterProfiles: await getCharacterProfiles({
-                  userId: thread.user?.id,
-                  visibility: "public",
-                }),
-                // activeOn: thread.user?.activeOn,
-                // isOnline: thread.user?.isOnline,
-              }
-            : null,
-          collaborations: await getCollaborations({
-            threadId: thread.threads.id,
-          }),
-          lastMessage: (
-            await getMessages({
-              pageSize: 1,
+        result.map(async (thread) => {
+          const app = thread.threads.appId
+            ? await db.query.apps.findFirst({
+                where: eq(apps.id, thread.threads.appId),
+                columns: {
+                  id: true,
+                  name: true,
+                  icon: true,
+                  slug: true,
+                },
+              })
+            : undefined
+
+          return {
+            ...thread.threads,
+            user: thread.user
+              ? {
+                  id: thread.user?.id,
+                  name: thread.user?.name,
+                  userName: thread.user?.userName,
+                  createdOn: thread.user?.createdOn,
+                  updatedOn: thread.user?.updatedOn,
+                  characterProfiles: await getCharacterProfiles({
+                    userId: thread.user?.id,
+                    visibility: "public",
+                  }),
+                  // activeOn: thread.user?.activeOn,
+                  // isOnline: thread.user?.isOnline,
+                }
+              : null,
+            collaborations: await getCollaborations({
               threadId: thread.threads.id,
-            })
-          ).messages.at(0)?.message,
-        })),
+            }),
+            app: app ?? undefined,
+            lastMessage: (
+              await getMessages({
+                pageSize: 1,
+                threadId: thread.threads.id,
+              })
+            ).messages.at(0)?.message,
+          }
+        }),
       ),
       totalCount,
       hasNextPage,
@@ -3082,32 +3106,47 @@ export const getThreads = async ({
 
     return {
       threads: await Promise.all(
-        result.map(async (thread) => ({
-          ...thread.threads,
-          user: thread.user
-            ? {
-                id: thread.user?.id,
-                createdOn: thread.user?.createdOn,
-                updatedOn: thread.user?.updatedOn,
-                userName: thread.user?.userName,
-                name: thread.user?.name,
-                characterProfiles: await getCharacterProfiles({
-                  userId: thread.user?.id,
-                  visibility: "public",
-                }),
-              }
-            : null,
+        result.map(async (thread) => {
+          const app = thread.threads.appId
+            ? await db.query.apps.findFirst({
+                where: eq(apps.id, thread.threads.appId),
+                columns: {
+                  id: true,
+                  name: true,
+                  icon: true,
+                  slug: true,
+                },
+              })
+            : undefined
 
-          collaborations: await getCollaborations({
-            threadId: thread.threads.id,
-          }),
-          lastMessage: (
-            await getMessages({
-              pageSize: 1,
+          return {
+            ...thread.threads,
+            app,
+            user: thread.user
+              ? {
+                  id: thread.user?.id,
+                  createdOn: thread.user?.createdOn,
+                  updatedOn: thread.user?.updatedOn,
+                  userName: thread.user?.userName,
+                  name: thread.user?.name,
+                  characterProfiles: await getCharacterProfiles({
+                    userId: thread.user?.id,
+                    visibility: "public",
+                  }),
+                }
+              : null,
+
+            collaborations: await getCollaborations({
               threadId: thread.threads.id,
-            })
-          ).messages.at(0)?.message,
-        })),
+            }),
+            lastMessage: (
+              await getMessages({
+                pageSize: 1,
+                threadId: thread.threads.id,
+              })
+            ).messages.at(0)?.message,
+          }
+        }),
       ),
       totalCount,
       hasNextPage,

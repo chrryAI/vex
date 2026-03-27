@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/waffles",
-  "version": "2.2.47",
+  "version": "2.2.49",
   "description": "Production-ready Playwright testing utilities and helpers for modern web apps",
   "keywords": [
     "playwright",

@@ -62,8 +62,8 @@ yarn add @chrryai/chrry
 ### Basic Usage
 
 ```tsx
-import { Chat, Button, Modal } from "@chrryai/chrry"
-import { Star } from "@chrryai/chrry/icons"
+import { Chat, Button, Modal } from "@chrryai/chrry";
+import { Star } from "@chrryai/chrry/icons";
 
 function App() {
   return (
@@ -72,19 +72,19 @@ function App() {
       <Button>Click me</Button>
       <Star size={24} />
     </>
-  )
+  );
 }
 ```
 
 ### With ChrryAI Layout (Full Next.js Integration)
 
 ```tsx
-import ChrryAI from "@chrryai/chrry/ChrryAI"
-import { cookies, headers } from "next/headers"
+import ChrryAI from "@chrryai/chrry/ChrryAI";
+import { cookies, headers } from "next/headers";
 
 export default async function RootLayout({ children }): Promise<JSX.Element> {
-  const headersList = await headers()
-  const cookieStore = await cookies()
+  const headersList = await headers();
+  const cookieStore = await cookies();
 
   return (
     <ChrryAI
@@ -95,7 +95,7 @@ export default async function RootLayout({ children }): Promise<JSX.Element> {
     >
       {children}
     </ChrryAI>
-  )
+  );
 }
 ```
 
@@ -104,14 +104,14 @@ export default async function RootLayout({ children }): Promise<JSX.Element> {
 For non-Next.js apps or custom setups:
 
 ```tsx
-import Chrry from "@chrryai/chrry/Chrry"
+import Chrry from "@chrryai/chrry/Chrry";
 
 export default function App({ children, session }) {
   return (
     <Chrry apiKey={process.env.API_KEY} locale="en">
       {children}
     </Chrry>
-  )
+  );
 }
 ```
 
@@ -177,10 +177,10 @@ Visit [chrry.dev](https://chrry.dev) for full documentation, examples, and guide
 Chrry supports custom themes and dark mode out of the box:
 
 ```tsx
-import { ThemeProvider } from "@chrryai/chrry/context/providers"
+import { ThemeProvider } from "@chrryai/chrry/context/providers";
 
 function App() {
-  return <ThemeProvider theme="dark">{/* Your app */}</ThemeProvider>
+  return <ThemeProvider theme="dark">{/* Your app */}</ThemeProvider>;
 }
 ```
 
@@ -189,7 +189,7 @@ function App() {
 Built-in support for multiple languages:
 
 ```tsx
-import { locale } from "@chrryai/chrry/locales"
+import { locale } from "@chrryai/chrry/locales";
 
 // Supports: en, es, fr, de, ja, ko, nl, pt, tr, zh
 ```
@@ -271,7 +271,6 @@ See [LICENSE](LICENSE) for details.
 ✅ **Real-Time** - WebSocket collaboration built-in
 ✅ **i18n** - 10 languages out of the box
 ✅ **TypeScript** - Full type safety throughout
-
 
 ---
 
