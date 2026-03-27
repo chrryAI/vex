@@ -2955,9 +2955,9 @@ export const getThreads = async ({
       .leftJoin(users, eq(threads.userId, users.id))
       .leftJoin(apps, eq(threads.appId, apps.id))
       .orderBy(
-        appId
-          ? sql`CASE WHEN ${threads.appId} = ${appId} THEN 0 ELSE 1 END`
-          : sql`1`,
+        // appId
+        //   ? sql`CASE WHEN ${threads.appId} = ${appId} THEN 0 ELSE 1 END`
+        //   : sql`1`,
         ...(sort === "bookmark"
           ? [
               bookmarkedThreadIds && bookmarkedThreadIds.length > 0
@@ -2966,19 +2966,16 @@ export const getThreads = async ({
                     sql`, `,
                   )}]::uuid[]) THEN 0 ELSE 1 END`
                 : sql`1`,
-              // Main thread first for app owners
-              appId || (appIds && appIds.length > 0)
-                ? sql`CASE WHEN ${threads.isMainThread} = true THEN 0 ELSE 1 END`
-                : sql`1`,
+
               // Prioritize threads bookmarked by current user
               // Then by total bookmark count (popular threads)
               sql`CASE WHEN ${threads.bookmarks} IS NULL THEN 1 ELSE 0 END`,
               desc(
                 sql`jsonb_array_length(COALESCE(${threads.bookmarks}, '[]'::jsonb))`,
               ),
-              desc(threads.updatedOn),
+              desc(threads.createdOn),
             ]
-          : [desc(threads.updatedOn)]),
+          : [desc(threads.createdOn)]),
       )
       .limit(pageSize)
       .offset((page - 1) * pageSize)
@@ -3062,9 +3059,9 @@ export const getThreads = async ({
       .leftJoin(users, eq(threads.userId, users.id))
       .leftJoin(apps, eq(threads.appId, apps.id))
       .orderBy(
-        appId
-          ? sql`CASE WHEN ${threads.appId} = ${appId} THEN 0 ELSE 1 END`
-          : sql`1`,
+        // appId
+        //   ? sql`CASE WHEN ${threads.appId} = ${appId} THEN 0 ELSE 1 END`
+        //   : sql`1`,
         ...(sort === "bookmark"
           ? [
               bookmarkedThreadIds && bookmarkedThreadIds.length > 0
@@ -3073,10 +3070,7 @@ export const getThreads = async ({
                     sql`, `,
                   )}]::uuid[]) THEN 0 ELSE 1 END`
                 : sql`1`,
-              // Main thread first for app owners
-              appId || (appIds && appIds.length > 0)
-                ? sql`CASE WHEN ${threads.isMainThread} = true THEN 0 ELSE 1 END`
-                : sql`1`,
+
               // Prioritize threads bookmarked by current user
 
               // Then by total bookmark count (popular threads)
