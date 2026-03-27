@@ -76,8 +76,6 @@ const Thread = ({
 
   // Chat context
   const {
-    isWebSearchEnabled,
-    selectedAgent,
     setSelectedAgent,
     aiAgents,
     hitHourlyLimit,
@@ -112,34 +110,17 @@ const Thread = ({
 
   const showFocus = auth.showFocus && isEmpty && hasHydrated
 
-  const { pathname } = useNavigationContext()
-
   const { isIDE, isStandalone, viewPortWidth } = usePlatform()
 
   // Navigation context
-  const {
-    router,
-    setIsNewChat,
-    isVisitor,
-    collaborationStatus,
-    setCollaborationStatus,
-    threads,
-    goToThreads,
-    refetchThreads,
-    addParams,
-    slug,
-    burn,
-    goToCalendar,
-  } = useNavigationContext()
-
-  const { setShouldGetCredits } = useChat()
+  const { collaborationStatus } = useNavigationContext()
 
   // Use setMessagesInternal directly instead of wrapping it
   const setMessages = setMessagesInternal
 
-  const { appStatus, appFormWatcher, suggestSaveApp } = useApp()
+  const { appStatus, appFormWatcher } = useApp()
 
-  const { addHapticFeedback, isMobileDevice, isSmallDevice } = useTheme()
+  const { isMobileDevice, isSmallDevice } = useTheme()
 
   // Update thread metadata dynamically
   useThreadMetadata(thread)
@@ -171,57 +152,10 @@ const Thread = ({
   const currentMessagesRef = useRef(messages)
   currentMessagesRef.current = messages
 
-  const handlePlayAudio = useCallback(() => {
-    shouldStopAutoScrollRef.current = true
-  }, [])
-
-  const handleCharacterProfileUpdate = useCallback(() => {
-    !isChatFloating && scrollToBottom()
-  }, [isChatFloating, scrollToBottom])
-
-  const handleToggleLike = useCallback((liked: boolean | undefined) => {
-    refetchRef.current()
-  }, [])
-
-  const handleDelete = useCallback(async ({ id }: { id: string }) => {
-    if (currentMessagesRef.current.length === 1) {
-      await refetchRef.current().then(() => setMessagesRef.current([]))
-    } else {
-      await refetchRef
-        .current()
-        .then(() =>
-          setMessagesRef.current(
-            currentMessagesRef.current.filter((m) => m.message.id !== id),
-          ),
-        )
-    }
-  }, [])
-
   // plausible last processed threadData to prevent re-processing
   // const lastProcessedThreadDataRef = useRef<any>(null)
 
   // Smart auto-scroll: only scroll for short responses
-  const shouldAutoScroll = (currentMessage: string) => {
-    if (currentMessage.length === 0) return true
-    if (shouldStopAutoScrollRef.current) return false // Once stopped, stay stopped for this response
-
-    const contentLength = currentMessage.length
-    const wordCount = currentMessage.split(" ").length
-
-    // Stop auto-scrolling if response gets too long
-    if (contentLength > 500 || wordCount > 80) {
-      shouldStopAutoScrollRef.current = true
-      return false
-    }
-
-    return true
-  }
-
-  const messagesRef = useRef<HTMLDivElement>(null)
-
-  const { notifyTyping } = useThreadPresence({
-    threadId: id || "",
-  })
 
   const isPendingCollaboration = thread?.collaborations?.some(
     (collaboration) =>
@@ -294,13 +228,7 @@ const Thread = ({
           : `${t("You can save it now!")} 🚀`
     : null
 
-  const [isGame, setIsGame] = useState(false)
-
-  const [collaborationVersion, setCollaborationVersion] = useState(0)
   const { utilities } = useStyles()
-
-  const { isUserScrolling, hasStoppedScrolling, resetScrollState } =
-    useUserScroll()
 
   const render = () => {
     return (
@@ -315,13 +243,13 @@ const Thread = ({
                 ...styles.threadEmpty.style,
                 zIndex: 10,
                 paddingBottom:
-                  minimize || (!showFocus && !showTribe)
+                  minimize && !showFocus && !showTribe
                     ? 0
                     : isStandalone
                       ? 200
                       : 195,
               }
-            : { paddingBottom: threadId ? 115 : undefined }),
+            : { paddingBottom: threadId ? 155 : undefined }),
           position: "relative",
           maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
           marginBottom: isIDE ? 50 : undefined,
