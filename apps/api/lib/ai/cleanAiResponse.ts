@@ -1,4 +1,16 @@
 /**
+ * Sanitizes content for safe JSON transmission to AI APIs.
+ * Escapes backslashes to prevent malformed Unicode escape sequences.
+ */
+export function sanitizeForAI(content: string): string {
+  if (!content) return content
+  
+  // Escape backslashes to prevent \\u from being interpreted as Unicode escape
+  // This fixes "unexpected end of hex escape" errors
+  return content.replace(/\\/g, "\\\\")
+}
+
+/**
  * Robustly cleans AI response text for JSON parsing.
  * Handles markdown code blocks, reasoning tags (<think>), and leading/trailing noise.
  */

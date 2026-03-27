@@ -101,7 +101,7 @@ import {
   processMessageForRAG,
 } from "../../lib/actions/ragService"
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
-import { cleanAiResponse } from "../../lib/ai/cleanAiResponse"
+import { cleanAiResponse, sanitizeForAI } from "../../lib/ai/cleanAiResponse"
 import { generateImage } from "../../lib/ai/mediaGeneration"
 import { PerformanceTracker } from "../../lib/analytics"
 import { getDNAThreadArtifacts } from "../../lib/appRAG"
@@ -1779,7 +1779,15 @@ ${
       ? await getMessages({ threadId: thread.id, pageSize: dynamicPageSize })
       : { messages: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
-    const messages = messagesData.messages || []
+    let messages = messagesData.messages || []
+
+    // Sanitize message content to prevent JSON escape errors in AI API calls
+    messages = messages.map((msg) => ({
+      ...msg,
+      content: typeof msg.content === "string" 
+        ? sanitizeForAI(msg.content) 
+        : msg.content,
+    }))
 
     // Only main app (depth 0) provides instructions and artifacts
     const instructions = depth === 0 ? thread?.instructions || "" : ""
@@ -6082,7 +6090,12 @@ Respond in JSON format:
         }
         newMessages.push(...split.recentMessages)
 
-        messages = newMessages as ModelMessage[]
+        messages = (newMessages as ModelMessage[]).map((msg) => ({
+          ...msg,
+          content: typeof msg.content === "string" 
+            ? sanitizeForAI(msg.content) 
+            : msg.content,
+        }))
         tokenLimitWarning = createTokenLimitError(
           tokenCheck.estimatedTokens,
           tokenCheck.maxTokens,
@@ -6101,6 +6114,7 @@ Respond in JSON format:
 
       try {
         console.log("🍣 Step 1: Creating streamText result...")
+        
         const result = streamText({
           model: model.provider,
           messages,
@@ -7357,7 +7371,12 @@ Respond in JSON format:
           })
         }
         newMessages.push(...split.recentMessages)
-        messages = newMessages as ModelMessage[]
+        messages = (newMessages as ModelMessage[]).map((msg) => ({
+          ...msg,
+          content: typeof msg.content === "string" 
+            ? sanitizeForAI(msg.content) 
+            : msg.content,
+        }))
 
         tokenLimitWarning = createTokenLimitError(
           tokenCheck.estimatedTokens,
