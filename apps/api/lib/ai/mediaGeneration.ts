@@ -254,7 +254,7 @@ export async function generateVideo(options: VideoGenerationOptions): Promise<{
 
   // Initial provider selection: try Fal if we have a key, otherwise Replicate
   const providerToTry: "fal" | "replicate" =
-    options.provider || (falKey ? "fal" : "replicate")
+    options.provider ?? (falKey ? "fal" : "replicate")
   const model = options.model || "kling-v1.5"
 
   console.log(
