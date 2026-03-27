@@ -89,9 +89,6 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
       : !plusTiers.includes(options.app?.tier || "")
         ? process.env.FAL_KEY
         : ""
-  const byokOpenRouterKey = options.user?.apiKeys?.openrouter
-    ? await decrypt(options.user?.apiKeys?.openrouter)
-    : undefined
 
   const {
     prompt,
@@ -102,84 +99,17 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
       : byokReplicateAppKey,
     falKey = isBYOK ? byokFalKey || byokFalAppKey : byokFalAppKey,
     //Problematic techno 📀
-    openRouterKey = "",
-
-    // isBYOK
-    //   ? byokOpenRouterKey || process.env.OPENROUTER_API_KEY
-    //   : process.env.OPENROUTER_API_KEY,
   } = options
 
   // Initial provider selection: try OpenRouter for flux models if requested or byok
-  const providerToTry: "fal" | "replicate" | "openrouter" =
-    options.provider ||
-    (options.model?.startsWith("flux") && (openRouterKey || isBYOK)
-      ? "openrouter"
-      : !apiKey && falKey
-        ? "fal"
-        : "replicate")
+  const providerToTry: "fal" | "replicate" =
+    options.provider || (!apiKey && falKey) ? "fal" : "replicate"
 
   const model = options.model || "flux-pro"
 
   console.log(
     `🎨 Generating image via ${providerToTry} (${model}): "${prompt.substring(0, 50)}..."`,
   )
-
-  const tryOpenRouter = async (): Promise<any> => {
-    if (!openRouterKey) throw new Error("OpenRouter API key is missing")
-
-    const orModel = model.startsWith("flux")
-      ? model === "flux-2-klein"
-        ? "black-forest-labs/flux.2-klein-4b"
-        : model === "flux-2-max"
-          ? "black-forest-labs/flux.2-max"
-          : model === "flux-2-flex"
-            ? "black-forest-labs/flux.2-flex"
-            : model === "flux-2-pro"
-              ? "black-forest-labs/flux.2-pro"
-              : "black-forest-labs/flux-1.1-pro"
-      : "black-forest-labs/flux-1.1-pro"
-
-    const response = await fetch(
-      "https://openrouter.ai/api/v1/images/generations",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${openRouterKey}`,
-          "HTTP-Referer": "https://chrry.ai",
-          "X-Title": "Chrry AI",
-        },
-        body: JSON.stringify({
-          prompt,
-          model: orModel,
-          response_format: "url",
-        }),
-      },
-    )
-
-    if (!response.ok) {
-      const error = await response.text()
-      throw new Error(`OpenRouter image generation failed: ${error}`)
-    }
-
-    const result = await response.json()
-    const imageUrl = result.data?.[0]?.url
-
-    if (!imageUrl) throw new Error("OpenRouter generated no image URL")
-
-    const uploaded = await upload({
-      url: imageUrl,
-      messageId,
-      options: { type: "image", title: prompt.substring(0, 50) },
-    })
-
-    return {
-      url: uploaded.url,
-      prompt,
-      provider: "openrouter",
-      model: orModel,
-    }
-  }
 
   const tryFal = async (): Promise<any> => {
     if (!falKey) throw new Error("Fal.ai API key is missing")
@@ -259,24 +189,12 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
   }
 
   try {
-    if (providerToTry === "openrouter") {
-      return await tryOpenRouter()
-    } else if (providerToTry === "fal") {
+    if (providerToTry === "fal") {
       return await tryFal()
     } else {
       return await tryReplicate()
     }
   } catch (error: any) {
-    if (providerToTry === "openrouter" && (falKey || apiKey)) {
-      console.warn("⚠️ OpenRouter failed, falling back...", error)
-      try {
-        if (falKey) return await tryFal()
-        return await tryReplicate()
-      } catch (fallbackError) {
-        console.error("❌ Multiple providers failed:", fallbackError)
-        throw fallbackError
-      }
-    }
     if (providerToTry === "fal" && apiKey) {
       console.warn("⚠️ Fal.ai failed, falling back to Replicate...", error)
       try {
@@ -335,7 +253,7 @@ export async function generateVideo(options: VideoGenerationOptions): Promise<{
   } = options
 
   // Initial provider selection: try Fal if we have a key, otherwise Replicate
-  const providerToTry: "fal" | "replicate" | "openrouter" =
+  const providerToTry: "fal" | "replicate" =
     options.provider || (falKey ? "fal" : "replicate")
   const model = options.model || "kling-v1.5"
 
@@ -433,11 +351,7 @@ export async function generateVideo(options: VideoGenerationOptions): Promise<{
   }
 
   try {
-    if (providerToTry === "openrouter") {
-      // Fallback to Fal/Replicate for video as we don't have OR video models mapped yet
-      if (falKey) return await tryFal()
-      return await tryReplicate()
-    } else if (providerToTry === "fal") {
+    if (providerToTry === "fal") {
       return await tryFal()
     } else {
       return await tryReplicate()
