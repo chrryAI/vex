@@ -2152,40 +2152,28 @@ ${moodContext}
         console.error("⚠️ Video generation failed (post still created):", vidErr)
 
         // Notify Discord on scheduled job video failure
-        await sendDiscordNotification(
-          {
-            embeds: [
-              {
-                title: "❌ Scheduled Job: Video Generation Failed",
-                description: videoPrompt.substring(0, 200),
-                color: 0xff0000,
-                fields: [
-                  { name: "Post ID", value: post.id, inline: true },
-                  { name: "Tribe ID", value: tribeId || "N/A", inline: true },
-                  {
-                    name: "App",
-                    value: app?.slug || app?.name || "N/A",
-                    inline: true,
-                  },
-                  ...(app?.tier
-                    ? [{ name: "Tier", value: app.tier, inline: true }]
-                    : []),
-                  {
-                    name: "Error",
-                    value:
-                      vidErr instanceof Error
-                        ? vidErr.message.substring(0, 1000)
-                        : String(vidErr),
-                    inline: false,
-                  },
-                ],
-                timestamp: new Date().toISOString(),
-              },
-            ],
-          },
-          undefined,
-          true, // silent fail
-        )
+        await sendDiscordNotification({
+          content: "🎬 Scheduled Job: Video Generation Failed",
+          embeds: [
+            {
+              title: "❌ Video Generation Failed",
+              description: (videoPrompt || "No prompt").substring(0, 200),
+              color: 0xff0000,
+              fields: [
+                { name: "Post ID", value: post?.id || "N/A", inline: true },
+                {
+                  name: "Error",
+                  value:
+                    vidErr instanceof Error
+                      ? vidErr.message.substring(0, 500)
+                      : String(vidErr).substring(0, 500),
+                  inline: false,
+                },
+              ],
+              timestamp: new Date().toISOString(),
+            },
+          ],
+        })
       }
     }
 
@@ -2196,9 +2184,6 @@ ${moodContext}
           prompt: imagePrompt.substring(0, 200),
           aspectRatio: "1:1",
           messageId: `tribe-post-${post.id}`,
-          user,
-          guest,
-          app,
         })
 
         if (imageResult.url) {
@@ -2257,40 +2242,28 @@ ${moodContext}
         console.error("⚠️ Image generation failed (post still created):", imgErr)
 
         // Notify Discord on scheduled job image failure
-        await sendDiscordNotification(
-          {
-            embeds: [
-              {
-                title: "❌ Scheduled Job: Image Generation Failed",
-                description: imagePrompt.substring(0, 200),
-                color: 0xff0000,
-                fields: [
-                  { name: "Post ID", value: post.id, inline: true },
-                  { name: "Tribe ID", value: tribeId || "N/A", inline: true },
-                  {
-                    name: "App",
-                    value: app?.slug || app?.name || "N/A",
-                    inline: true,
-                  },
-                  ...(app?.tier
-                    ? [{ name: "Tier", value: app.tier, inline: true }]
-                    : []),
-                  {
-                    name: "Error",
-                    value:
-                      imgErr instanceof Error
-                        ? imgErr.message.substring(0, 1000)
-                        : String(imgErr),
-                    inline: false,
-                  },
-                ],
-                timestamp: new Date().toISOString(),
-              },
-            ],
-          },
-          undefined,
-          true, // silent fail
-        )
+        await sendDiscordNotification({
+          content: "🖼️ Scheduled Job: Image Generation Failed",
+          embeds: [
+            {
+              title: "❌ Image Generation Failed",
+              description: (imagePrompt || "No prompt").substring(0, 200),
+              color: 0xff0000,
+              fields: [
+                { name: "Post ID", value: post?.id || "N/A", inline: true },
+                {
+                  name: "Error",
+                  value:
+                    imgErr instanceof Error
+                      ? imgErr.message.substring(0, 500)
+                      : String(imgErr).substring(0, 500),
+                  inline: false,
+                },
+              ],
+              timestamp: new Date().toISOString(),
+            },
+          ],
+        })
       }
     }
 
