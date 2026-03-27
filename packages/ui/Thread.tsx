@@ -1,18 +1,11 @@
 "use client"
 
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
+import { lazy, Suspense, useEffect, useRef, useState } from "react"
 import { useAppContext } from "./context/AppContext"
-import {
-  useApp,
-  useAuth,
-  useChat,
-  useNavigationContext,
-} from "./context/providers"
+import { useAuth, useChat, useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import HipChat from "./HipChat"
 import { useHasHydrated, useThreadMetadata } from "./hooks"
-import { useThreadPresence } from "./hooks/useThreadPresence"
-import { useUserScroll } from "./hooks/useUserScroll"
 import { WannathisIcon } from "./icons"
 import Loading from "./Loading"
 import MemoryConsent from "./MemoryConsent"
@@ -25,10 +18,6 @@ import type { paginatedMessages, thread } from "./types"
 import { isCollaborator, isOwner } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
-// import Donut from "./Donut"
-
-// Lazy load Focus only on web (not extension) to reduce bundle size
-// This component includes timer, tasks, moods, and analytics - heavy dependencies
 const Focus = lazy(() => import("./Focus"))
 
 const Thread = ({
@@ -43,34 +32,11 @@ const Thread = ({
   const styles = useThreadStyles()
 
   // Split contexts for better organization
-  const { t, console } = useAppContext()
+  const { t } = useAppContext()
 
   // Auth context
-  const {
-    user,
-    guest,
-    plausible,
-    threadIdRef,
-    memoriesEnabled,
-    setShowFocus,
-    grapes,
-    app,
-    baseApp,
-    setIsRetro,
-    isRetro,
-    advanceDailySection,
-    dailyQuestionData,
-    dailyQuestionIndex,
-    setDailyQuestionIndex,
-    minimize,
-    postId,
-    wasPear,
-    isPear,
-    isHippoOpen,
-    setPear,
-    donut,
-    ...auth
-  } = useAuth()
+  const { user, guest, plausible, threadIdRef, app, minimize, ...auth } =
+    useAuth()
 
   const threadId = auth.threadId || threadIdRef.current
 
@@ -78,28 +44,13 @@ const Thread = ({
   const {
     setSelectedAgent,
     aiAgents,
-    hitHourlyLimit,
     debateAgent,
-    hourlyLimit,
-    hourlyUsageLeft,
     thread,
-    setThread,
     messages,
     setMessages: setMessagesInternal,
     isChatFloating,
     refetchThread,
-    isLoading,
-    isLoadingMore,
-    setIsLoadingMore,
-    until,
-    setUntil,
-    error,
     scrollToBottom,
-    nextPage,
-    status,
-    liked,
-    setLiked,
-    placeHolderText,
     isEmpty,
     ...chat
   } = useChat()
@@ -118,8 +69,6 @@ const Thread = ({
   // Use setMessagesInternal directly instead of wrapping it
   const setMessages = setMessagesInternal
 
-  const { appStatus, appFormWatcher } = useApp()
-
   const { isMobileDevice, isSmallDevice } = useTheme()
 
   // Update thread metadata dynamically
@@ -130,7 +79,6 @@ const Thread = ({
   const id = threadId
 
   // plausible if we've already auto-selected an agent for this thread
-  const shouldStopAutoScrollRef = useRef(false)
 
   const refetch = () => {
     return refetchThread()
@@ -209,24 +157,6 @@ const Thread = ({
     guest?.id,
   ])
   // aiAgents excluded to prevent loop, setSelectedAgent is stable
-
-  const nameIsRequired = `👋 ${t("Name your app...")}`
-  const titleIsRequired = `✍️ ${t("Give it a title...")}`
-
-  // Only show app creation warnings when actually in app creation mode
-  const appFormPlaceholder = appStatus?.part
-    ? !appFormWatcher.canSubmit || appFormWatcher.id
-      ? !appFormWatcher.name
-        ? nameIsRequired
-        : appFormWatcher.title
-          ? null
-          : titleIsRequired
-      : !appFormWatcher?.highlights?.length
-        ? `${t("You can go next, updating suggestions recommended.")} 🎯`
-        : !appFormWatcher?.systemPrompt
-          ? `${t("Updating Description and Settings recommended.")} 🧠`
-          : `${t("You can save it now!")} 🚀`
-    : null
 
   const { utilities } = useStyles()
 
