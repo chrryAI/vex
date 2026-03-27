@@ -9,10 +9,5 @@
   "editor.formatOnSaveMode": "file",
   "editor.codeActionsOnSave": {
     "source.fixAll.oxc": "explicit"
-  },
-  "workbench.colorCustomizations": {
-    "tab.activeBorder": "#7CC243",
-    "statusBar.background": "#7CC243",
-    "statusBar.foreground": "#ffffff"
   }
 }

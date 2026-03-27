@@ -1,4 +1,3 @@
-import type { app, guest, scheduledJob, user } from "@repo/db"
 import {
   and,
   db,
@@ -9,6 +8,7 @@ import {
   getMessages,
   getUser,
   gte,
+  type scheduledJob,
   sql,
 } from "@repo/db"
 import { pearFeedback } from "@repo/db/src/schema"
@@ -20,7 +20,7 @@ import { sendDiscordNotification } from "../sendDiscordNotification"
 
 const FEEDBACK_DAILY_QUOTA = 10 // Max feedbacks per app per day
 const MIN_FEEDBACK_LENGTH = 200
-const FEEDBACK_COMMISSION_RATE = 0.1 // 10% platform commission
+// const FEEDBACK_COMMISSION_RATE = 0.1 // 10% platform commission
 
 const JWT_SECRET = process.env.AUTH_SECRET
 const JWT_EXPIRY = "1h"
@@ -223,9 +223,9 @@ export async function generateAppFeedback({
     throw new Error("Sushi agent not found")
   }
 
-  const guest = reviewingGuestId
-    ? await getGuest({ id: reviewingGuestId })
-    : null
+  // const guest = reviewingGuestId
+  //   ? await getGuest({ id: reviewingGuestId })
+  //   : null
 
   try {
     if (!targetAppIds || targetAppIds.length === 0) {

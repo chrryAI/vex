@@ -9,7 +9,6 @@ import {
   logCreditUsage,
   pearFeedback,
   type scheduledJob,
-  sql,
   type user,
 } from "@repo/db"
 import { apps, feedbackTransactions } from "@repo/db/src/schema"

@@ -94,10 +94,8 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
     prompt,
     aspectRatio = "1:1",
     messageId = uuidv4(),
-    apiKey = isBYOK
-      ? byokReplicateKey || byokReplicateAppKey
-      : byokReplicateAppKey,
-    falKey = isBYOK ? byokFalKey || byokFalAppKey : byokFalAppKey,
+    apiKey = isBYOK ? byokReplicateKey : byokReplicateAppKey,
+    falKey = isBYOK ? byokFalKey : byokFalAppKey,
     //Problematic techno 📀
   } = options
 
@@ -358,10 +356,7 @@ export async function generateVideo(options: VideoGenerationOptions): Promise<{
     }
   } catch (error: any) {
     if (providerToTry === "fal" && apiKey) {
-      console.warn(
-        "⚠️ Fal.ai video failed, falling back to Replicate...",
-        error,
-      )
+      console.warn("⚠️ Fal.ai video failed, falling back to Replicate...", error)
       try {
         return await tryReplicate()
       } catch (replicateError) {
