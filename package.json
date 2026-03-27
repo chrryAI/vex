@@ -3,7 +3,10 @@
   "version": "2.2.51",
   "private": true,
   "type": "module",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "browser": "bash scripts/run-browser.sh",
     "build": "turbo build",
@@ -100,7 +103,7 @@
     "vite-plus": "catalog:",
     "vitest": "catalog:"
   },
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=20.19"
   },
