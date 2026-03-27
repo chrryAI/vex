@@ -1,0 +1,60 @@
+name: Publish Packages to NPM
+
+on:
+  push:
+    branches: [web]
+    paths:
+      - 'packages/**'
+      - 'package.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - pepper
+          - waffles
+          # İsterseniz diğer paketleri de ekleyin:
+          # - calendar
+          # - focus
+          # - shared
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: 20
+          cache: pnpm
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package
+        run: pnpm --filter @chrryai/${{ matrix.package }} build
+
+      - name: Publish to NPM
+        run: pnpm --filter @chrryai/${{ matrix.package }} publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Notify Success
+        if: success()
+        run: echo "✅ @chrryai/${{ matrix.package }} published successfully!"
+
+      - name: Notify Failure
+        if: failure()
+        run: echo "❌ Failed to publish @chrryai/${{ matrix.package }}"
