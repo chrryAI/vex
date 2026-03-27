@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test"
 import { getURL, TEST_MEMBER_FINGERPRINTS, wait } from "."
-import { subscribe } from "./shared/subscribe"
 import { signIn } from "./shared/signIn"
+import { subscribe } from "./shared/subscribe"
 
 const isLive = false
 
@@ -18,7 +18,7 @@ test("WM_001: Launch Watermelon as Guest", async ({ page }) => {
       isLive,
       isMember: false,
       fingerprint: TEST_MEMBER_FINGERPRINTS[0],
-      app: "watermelon",
+      // app: "watermelon",
     }),
     {
       waitUntil: "domcontentloaded",
@@ -40,7 +40,7 @@ test("WM_002: Launch Watermelon as Member", async ({ page }) => {
     getURL({
       isLive,
       isMember: true,
-      app: "watermelon",
+      // app: "watermelon",
     }),
     {
       waitUntil: "domcontentloaded",

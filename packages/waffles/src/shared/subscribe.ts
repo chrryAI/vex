@@ -28,47 +28,43 @@ export const subscribe = async ({
 
   const newChat = createChat && !inviteOrGift && !isMember
 
-  const prompts = isMember
-    ? [
-        {
-          text: "List shortly the top 3 must-see attractions in Tokyo",
-          model: "sushi" as modelName,
-        },
-        {
-          mix: {
-            paste: 1,
-            pdf: 1,
-            image: 1,
-          },
-          text: "Suggest briefly a simple itinerary for day 1",
-          model: "claude" as modelName,
-        },
-        {
-          text: "Shortly explain the best way to get around",
-          model: "chatGPT" as modelName,
-          mix: {
-            paste: 1,
-            pdf: 1,
-            video: 1,
-          },
-        },
-        {
-          text: "How can I enable character profile? Answer shortly",
-          model: "perplexity" as modelName,
-        },
-      ]
-    : [
-        {
-          text: "What are the main benefits of TypeScript over JavaScript shortly?",
-          model: "sushi" as modelName,
-        },
-        {
-          text: "How do you implement proper error boundaries in React briefly?",
-          model: "sushi" as modelName,
-        },
-      ]
+  const prompts = [
+    {
+      text: "List shortly the top 3 must-see attractions in Tokyo",
+      model: "sushi" as modelName,
+    },
+    {
+      mix: {
+        paste: 1,
+        pdf: 1,
+        image: 1,
+      },
+      text: "Suggest briefly a simple itinerary for day 1",
+      model: "claude" as modelName,
+    },
+    {
+      text: "Shortly explain the best way to get around",
+      model: "chatGPT" as modelName,
+      mix: {
+        paste: 1,
+        pdf: 1,
+        video: 1,
+      },
+    },
+    {
+      text: "How can I enable character profile? Answer shortly",
+      model: "perplexity" as modelName,
+    },
+  ]
+
   if (newChat || (!inviteOrGift && isMember)) {
     await chat({
+      artifacts: {
+        paste: 1,
+        pdf: 1,
+      },
+      hasCP: true,
+      hasPH: true,
       page,
       isMember,
       isNewChat: false,

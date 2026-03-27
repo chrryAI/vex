@@ -20,36 +20,6 @@ import { thread } from "./shared/thread"
 const isMember = true
 const isLive = false
 
-// test("Sync Plausible", async ({ page }) => {
-//   await page.goto("https://a.chrry.dev", {
-//     waitUntil: "domcontentloaded",
-//     timeout: 100000,
-//   })
-
-//   const items = document.querySelectorAll(".relative")
-
-//   items.forEach((item) => {
-//     item.click()
-
-//     const input = document.querySelector("focus:border-blue-300")
-//     input?.click()
-
-//   const button = document.querySelector("button")
-//   button?.click()
-//   })
-// })
-
-test("Subscribe", async ({ page }) => {
-  await clean({ page })
-  await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "domcontentloaded",
-    timeout: 100000,
-  })
-
-  await signIn({ page })
-  await subscribe({ page, isMember })
-})
-
 test("Invite", async ({ page }) => {
   await clean({ page })
   await page.goto(getURL({ isLive: false, isMember }), {

@@ -253,7 +253,7 @@ export async function generateVideo(options: VideoGenerationOptions): Promise<{
   } = options
 
   // Initial provider selection: try Fal if we have a key, otherwise Replicate
-  const providerToTry: "fal" | "replicate" =
+  const providerToTry: "fal" | "replicate" | "openrouter" =
     options.provider ?? (falKey ? "fal" : "replicate")
   const model = options.model || "kling-v1.5"
 
@@ -358,7 +358,10 @@ export async function generateVideo(options: VideoGenerationOptions): Promise<{
     }
   } catch (error: any) {
     if (providerToTry === "fal" && apiKey) {
-      console.warn("⚠️ Fal.ai video failed, falling back to Replicate...", error)
+      console.warn(
+        "⚠️ Fal.ai video failed, falling back to Replicate...",
+        error,
+      )
       try {
         return await tryReplicate()
       } catch (replicateError) {

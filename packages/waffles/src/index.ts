@@ -42,7 +42,8 @@ export const VEX_LIVE_FINGERPRINT_3 = VEX_LIVE_FINGERPRINTS[2] || ""
 export const TEST_URL =
   process.env.TEST_URL! || process.env.PLAYWRIGHT_BASE_URL!
 
-export const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+export const wait = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms))
 export const isCI = process.env.VITE_CI || process.env.CI
 
 const getURL = (
@@ -68,9 +69,13 @@ const getURL = (
 ) => {
   const base = TEST_URL
   const fp = isMember
-    ? (isLive ? VEX_LIVE_FINGERPRINT_2 : fingerprint || TEST_MEMBER_FINGERPRINTS[0] || "")
-    : (isLive ? VEX_LIVE_FINGERPRINT : fingerprint || TEST_GUEST_FINGERPRINTS[0] || "")
-  
+    ? isLive
+      ? VEX_LIVE_FINGERPRINT_2
+      : fingerprint || TEST_MEMBER_FINGERPRINTS[0] || ""
+    : isLive
+      ? VEX_LIVE_FINGERPRINT
+      : fingerprint || TEST_GUEST_FINGERPRINTS[0] || ""
+
   const appParam = app ? `&app=${app}` : ""
   const url = `${base}${path}?fp=${fp}${appParam}`
 
@@ -176,10 +181,4 @@ export const log = ({ page }: { page: Page }) => {
   })
 }
 
-export {
-  capitalizeFirstLetter,
-  getURL,
-  simulateInputPaste,
-  simulatePaste,
-  wait,
-}
+export { capitalizeFirstLetter, getURL, simulateInputPaste, simulatePaste }

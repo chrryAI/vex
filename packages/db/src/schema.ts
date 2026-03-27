@@ -90,6 +90,10 @@ export const users = pgTable(
     role: text("role", { enum: ["admin", "user"] })
       .notNull()
       .default("user"),
+    roles: jsonb("roles")
+      .$type<Array<"admin" | "user" | "tester" | string>>()
+      .default(["user"]),
+
     tribeCredits: integer("tribeCredits")
       .notNull()
       .default(MEMBER_FREE_TRIBE_CREDITS),
@@ -355,6 +359,12 @@ export const guests = pgTable("guest", {
   createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
+  role: text("role", { enum: ["admin", "guest"] })
+    .notNull()
+    .default("guest"),
+  roles: jsonb("roles")
+    .$type<Array<"admin" | "guest" | "tester" | string>>()
+    .default(["guest"]),
   updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
