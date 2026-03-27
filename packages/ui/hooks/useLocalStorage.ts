@@ -10,7 +10,7 @@ export default function useLocalStorage<T>(
   const [deviceId] = useLocal("deviceId", "")
 
   const prefix = deviceId
-  const key = prefix ? `🍒-${prefix}-${keyAs}` : undefined
+  const key = prefix ? `🍒-${prefix}-${keyAs}` : keyAs
 
   const [storedValue, setStoredValue] = useState<T>(
     initialValue instanceof Function ? initialValue() : initialValue,
