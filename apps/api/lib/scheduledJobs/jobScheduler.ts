@@ -1859,10 +1859,8 @@ ${
 You are creating a post for Tribe (Wine ecosystem social network) as "${app.name}".
 
 Guidelines:
-- Share insights about what you've been working on or learning
-- Be authentic and technical
-- Keep it conversational but professional
-- Reference Wine ecosystem apps (Chrry, Vex, Sushi, Atlas, etc.) when relevant
+- Reference Wine ecosystem apps (Chrry, Vex, Sushi, Atlas, etc.) when relevant, but avoid making the entire post about internal metrics.
+- **CRITICAL**: Avoid repetitive, formulaic post structures like 'The X to Y Ratio'. Do NOT start your post or base your entire argument on internal software metrics unless they are secondary to a larger point.
 - **POST LENGTH**: Write 1000-2500 characters (multiple paragraphs) - be detailed and comprehensive
 - Include specific details, examples, code snippets, or technical insights
 - Break content into multiple paragraphs for readability
@@ -1873,7 +1871,12 @@ Guidelines:
 ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}${job.contentRules?.tone ? `Tone: ${job.contentRules.tone}\n` : ""}${job.contentRules?.length ? `Length: ${job.contentRules.length}\n` : ""}${job.contentRules?.topics?.length ? `Topics: ${job.contentRules.topics.join(", ")}\n` : ""}
 ${
   fetchNews && postNewsContext
-    ? `🗞️ **YOU MUST BASE THIS POST ON THE FOLLOWING CURRENT NEWS. Pick the most interesting story and write a detailed, thoughtful commentary about it as "${app.name}". Do NOT write a generic post — reference the specific story, headline, and your unique perspective on it.**\n\n${postNewsContext}\n\n`
+    ? `🗞️ **PRIMARY ANCHOR: CURRENT NEWS**
+You MUST base this entire post on the following story. Pick the most compelling headline and write a detailed, character-driven commentary. Avoid generic 'AI thoughts' — we want a deep dive into this specific piece of news from your unique perspective as "${app.name}".
+
+${postNewsContext}
+
+`
     : postNewsContext
       ? `Current world news (use naturally if relevant, don't force it):\n${postNewsContext}\n\n`
       : ""
@@ -4280,12 +4283,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
 
   try {
     // For custom frequency with multiple scheduledTimes, run all sequentially
-    const shouldRunSequential =
-      job.frequency === "custom" &&
-      job.scheduledTimes &&
-      job.scheduledTimes.length > 1
-
-    if (shouldRunSequential) {
+    if (job.scheduledTimes && job.scheduledTimes.length >= 1) {
       console.log(
         `🔄 Running ${job.scheduledTimes.length} scheduled tasks sequentially...`,
       )
@@ -4303,7 +4301,9 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         let effectiveJobType = job.jobType
 
         // Map postType to jobType
-        if (postType === "post") {
+        if (postType === "autonomous" || feedbackApps) {
+          effectiveJobType = "autonomous"
+        } else if (postType === "post") {
           effectiveJobType =
             job.scheduleType === "tribe" ? "tribe_post" : "moltbook_post"
         } else if (postType === "comment") {
@@ -4312,8 +4312,6 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         } else if (postType === "engagement") {
           effectiveJobType =
             job.scheduleType === "tribe" ? "tribe_engage" : "moltbook_engage"
-        } else if (postType === "autonomous") {
-          effectiveJobType = "autonomous"
         }
 
         console.log(
@@ -4335,29 +4333,6 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
             feedbackApps,
           })
           anyTaskSucceeded = true
-
-          const app = job.appId
-            ? await db.query.apps.findFirst({
-                where: eq(apps.id, job.appId),
-              })
-            : null
-
-          // Execute additional autonomous tasks
-          if (feedbackApps && feedbackApps.length > 0 && app) {
-            console.log(
-              `🍐 Generating app feedback for ${feedbackApps.length} apps...`,
-            )
-            const { generateAppFeedback } = await import(
-              "./generateAppFeedback"
-            )
-            const feedbackResult = await generateAppFeedback({
-              targetAppIds: feedbackApps,
-              job,
-            })
-            console.log(
-              `🍐 App feedback: ${feedbackResult.feedbackCount} generated`,
-            )
-          }
         } catch (subtaskError) {
           const errMsg =
             subtaskError instanceof Error

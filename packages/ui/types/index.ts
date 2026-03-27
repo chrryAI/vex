@@ -844,7 +844,7 @@ export const emojiMap: Record<moodType, string> = {
   angry: "😠",
   astonished: "😲",
   inlove: "😍",
-  thinking: "🤔",
+  thinking: "🧐",
 }
 
 // App types

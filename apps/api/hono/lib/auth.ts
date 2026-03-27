@@ -77,7 +77,7 @@ export async function getMember(
           return {
             ...result,
             token,
-            password: full ? result.password : null,
+            password: null,
           } as userWithRelations
         }
 
@@ -98,7 +98,7 @@ export async function getMember(
           return {
             ...user,
             token,
-            password: full ? user.password : null,
+            password: null,
           } as userWithRelations
         }
         return

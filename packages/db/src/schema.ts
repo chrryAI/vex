@@ -957,6 +957,10 @@ export const messages = pgTable(
       onDelete: "set null",
     }),
 
+    pearAppId: uuid("pearAppId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
+
     moltReplyId: uuid("moltReplyId").references(() => moltComments.id, {
       onDelete: "set null",
     }),
@@ -2156,9 +2160,7 @@ export const creditUsages = pgTable(
       .references(() => aiAgents.id, { onDelete: "cascade" })
       .notNull(),
     creditCost: integer("creditCost").notNull(),
-    pearAppId: uuid("pearAppId").references(() => apps.id, {
-      onDelete: "cascade",
-    }),
+
     messageType: text("messageType", {
       enum: [
         "user",

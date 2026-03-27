@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
-
+import AppLink from "./AppLink"
 import A from "./a/A"
 import Bookmark from "./Bookmark"
 import CollaborationStatus from "./CollaborationStatus"
@@ -187,7 +187,7 @@ export default function Menu({
     setIsThemeLocked,
   } = useTheme()
 
-  const toggleMenu = ({ timeout = 200 }: { timeout?: number } = {}) => {
+  const toggleMenu = ({ timeout = 100 }: { timeout?: number } = {}) => {
     addHapticFeedback()
     plausible({
       name: ANALYTICS_EVENTS.MENU_TOGGLE,
@@ -505,38 +505,21 @@ export default function Menu({
                   )}
                 </Button>
               </Div>
-              <A
-                data-testid="new-chat-button"
-                href={FRONTEND_URL}
-                onClick={(e) => {
-                  plausible({
-                    name: ANALYTICS_EVENTS.NEW_CHAT_CLICK,
-                  })
-                  if (e.metaKey || e.ctrlKey) {
-                    return
-                  }
-                  e.preventDefault()
-
-                  setBurn(false)
-                  setShowFocus(false)
-                  setShowTribe(false)
-
-                  isSmallDevice ? toggleMenu() : addHapticFeedback()
-                  setIsNewChat({
-                    value: true,
-                  })
-                  reload()
-                }}
-                style={styles.menuItemButton.style}
-                className="button transparent"
-              >
-                {showTribeLink ? (
+              {app && (
+                <AppLink
+                  onClick={() => {
+                    isSmallDevice ? toggleMenu() : addHapticFeedback()
+                  }}
+                  isTribe={false}
+                  app={app}
+                  dataTestId="new-chat-button"
+                  style={styles.menuItemButton.style}
+                  className="button transparent"
+                >
                   <Img app={app} size={18} />
-                ) : (
-                  <MessageCirclePlus size={18} />
-                )}{" "}
-                {t("New chat")}
-              </A>
+                  {t("New chat")}
+                </AppLink>
+              )}
               <Button
                 onClick={() => {
                   isSmallDevice ? toggleMenu() : addHapticFeedback()

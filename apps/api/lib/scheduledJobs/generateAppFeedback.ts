@@ -320,7 +320,8 @@ Respond with a single JSON object (not an array).`
         }
 
         const userMessageData = await userMessageResponse.json()
-        const messageId = userMessageData.id
+        const messageId =
+          userMessageData.message?.message?.id || userMessageData.id
 
         if (!messageId) {
           console.error(`🍐 No messageId returned for ${targetAppId}`)
@@ -339,6 +340,9 @@ Respond with a single JSON object (not an array).`
             messageId,
             agentId: selectedAgent.id,
             pearAppId: targetAppId,
+            stream: false,
+            jobId: job?.id,
+            appId: reviewingApp.id,
           }),
         })
 
@@ -410,6 +414,28 @@ Respond with a single JSON object (not an array).`
           userId: user.id,
           threadId: userMessageData?.message?.threadId,
           pageSize: 1,
+        })
+
+        const lastMessage = lastMessageInfo?.messages?.[0]
+
+        if (!lastMessage?.message?.id) {
+          throw new Error("Last message not found")
+        }
+
+        const pearFeedback = await fetch(`${baseUrl}/ai`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            messageId: lastMessage.message.id,
+            agentId: selectedAgent.id,
+            stream: false,
+            pear: "true",
+            jobId: job?.id,
+            appId: pear.id,
+          }),
         })
       } catch (feedbackError) {
         console.error(

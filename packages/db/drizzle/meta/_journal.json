@@ -1660,6 +1660,13 @@
       "when": 1774546210760,
       "tag": "0236_light_killer_shrike",
       "breakpoints": true
+    },
+    {
+      "idx": 237,
+      "version": "7",
+      "when": 1774559686213,
+      "tag": "0237_acoustic_the_stranger",
+      "breakpoints": true
     }
   ]
 }

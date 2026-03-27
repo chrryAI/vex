@@ -508,7 +508,6 @@ export function ChatProvider({
 
       setLikedInternal(undefined)
       setShowFocus(false)
-      setShowTribe(tribe === true)
       setShowWatermelon(false)
 
       setCollaborationStep(0)
@@ -516,6 +515,8 @@ export function ChatProvider({
       setProfile(undefined)
       setStatus(null)
       burn && setWasIncognito(true)
+      setShowTribe(tribe === true)
+
       setCollaborationStatus(null)
       setIsChatFloating(false)
       setThreadId(undefined)

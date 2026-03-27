@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/waffles",
-  "version": "2.2.46",
+  "version": "2.2.47",
   "description": "Production-ready Playwright testing utilities and helpers for modern web apps",
   "keywords": [
     "playwright",
@@ -37,7 +37,7 @@
     "build": "pnpm exec tsup",
     "dev": "pnpm exec tsup --watch",
     "e": "pnpm exec playwright install chromium && TEST_URL=http://localhost:5173 playwright test --project chromium",
-    "e2e": "TEST_URL=http://e2e.chrry.ai playwright test --project chromium",
+    "e2e": "playwright test --project chromium",
     "lint": "biome check .",
     "sync-goals": "tsx src/scripts/sync-plausible-goals.ts",
     "test:tauri": "TEST_URL=http://localhost:5173 playwright test --project tauri-macos"

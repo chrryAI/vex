@@ -21,6 +21,7 @@ export default function AppLink({
   icon,
   event = ANALYTICS_EVENTS.APP_LINK_CLICK,
   openInNewTab = false,
+  dataTestId,
   ...props
 }: {
   title?: string
@@ -37,8 +38,10 @@ export default function AppLink({
   isPear?: boolean
   icon?: React.ReactNode
   openInNewTab?: boolean
+  dataTestId?: string
   href?: string
   setIsNewAppChat?: (item: appWithStore) => void
+  onClick?: (e: React.MouseEvent) => void
 }) {
   const { setIsNewChat } = useChat()
   const {
@@ -100,6 +103,7 @@ export default function AppLink({
   if (as === "a") {
     return (
       <A
+        dataTestId={dataTestId}
         openInNewTab={openInNewTab}
         title={title}
         aria-label={title}
@@ -112,6 +116,8 @@ export default function AppLink({
           if (e.metaKey || e.ctrlKey) {
             return
           }
+
+          props.onClick?.(e)
 
           setIsLoading(true)
           e.preventDefault()
@@ -153,6 +159,7 @@ export default function AppLink({
 
   return (
     <Button
+      data-testid={dataTestId}
       aria-label={title}
       style={{
         ...style,

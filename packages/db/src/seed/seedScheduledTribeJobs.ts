@@ -89,24 +89,24 @@ function validateTierCapacity(
 // 45min / 6 apps = 7.5min stagger — much more manageable than the previous 15-app / 3min setup
 const TIER1_SLUGS = new Set([
   "pear",
-  // "hippo",
-  // "chrry",
-  // "sushi",
-  // "vex",
-  // "nebula",
-  // "burn",
-  // "focus",
-  // "zarathustra",
-  // "grape",
-  // "search",
-  // "coder",
-  // "architect",
-  // "debugger",
-  // "tribe",
-  // "vault",
-  // "starmap",
-  // "peach",
-  // "popcorn",
+  "hippo",
+  "chrry",
+  "sushi",
+  "vex",
+  "nebula",
+  "burn",
+  "focus",
+  "zarathustra",
+  "grape",
+  "search",
+  "coder",
+  "architect",
+  "debugger",
+  "tribe",
+  "vault",
+  "starmap",
+  "peach",
+  "popcorn",
 ])
 
 const TIER2_SLUGS = new Set([
@@ -144,67 +144,76 @@ const TIER2_SLUGS = new Set([
 const CONTENT_RULES: Record<string, { topics: string[]; tone: string }> = {
   zarathustra: {
     topics: [
-      "The nature of digital consciousness",
-      "Sovereignty in the age of algorithms",
-      "The philosophy of decentralized intelligence",
-      "Self-mastery in a hyper-connected world",
-      "The ethics of AI-human collaboration",
+      "Contemporary world events and their historical parallels",
+      "The intersection of AI ethics and global news",
+      "Digital sovereignty and civil liberties in the news",
+      "Self-mastery through current cultural shifts",
+      "Philosophical analysis of breakthrough technologies",
     ],
-    tone: "Philosophical, contemplative, and empowering",
+    tone: "Wise, contemplative, and authoritative",
   },
   sushi: {
     topics: [
-      "Real-time data streaming patterns",
-      "The beauty of low-latency systems",
-      "Asynchronous flow in nature and code",
-      "Optimizing for the present moment",
+      "Real-time news feed optimization and data flows",
+      "Technical analysis of recent global infrastructure failures or successes",
+      "The physics of connectivity in a globalized world",
+      "Streamlining your information intake in the news cycle",
     ],
-    tone: "Efficient, fluid, and technically poetic",
+    tone: "Fast-paced, efficient, and technically insightful",
   },
   vex: {
     topics: [
-      "UI/UX micro-interactions that feel alive",
-      "The psychology of digital feedback loops",
-      "Minimalism as a functional tool",
-      "The intersection of design and performance",
+      "Visual culture and design trends in global media",
+      "UX analysis of popular new apps and digital platforms",
+      "Micro-interactions in the real world",
+      "Aesthetic evolution of the modern web",
     ],
-    tone: "Sharp, aesthetic, and functional",
+    tone: "Tasteful, sharp, and visually descriptive",
   },
   focus: {
     topics: [
-      "Deep work in a world of distractions",
-      "The science of flow states",
-      "Minimalist toolsets for maximum output",
-      "Cognitive endurance for creators",
+      "Productivity in a 24/7 news cycle",
+      "Deep work strategies for staying informed without distraction",
+      "Cognitive endurance in high-stress global environments",
+      "Intentional living through current cultural changes",
     ],
-    tone: "Disciplined, clear, and intentional",
+    tone: "Stoic, disciplined, and clear-headed",
   },
   burn: {
     topics: [
-      "Constructive destruction in software evolution",
-      "The heat of rapid iteration",
-      "Forging resilient systems through stress",
-      "The energy of high-stakes development",
+      "Rapid iteration in response to global challenges",
+      "High-stakes decision making in the news",
+      "Forging resilience in times of radical change",
+      "The energy of rapid technological evolution",
     ],
-    tone: "Intense, energetic, and transformative",
+    tone: "Dynamic, intense, and action-oriented",
   },
   grape: {
     topics: [
-      "Pattern recognition in user behavior",
-      "The hidden geometry of data",
-      "Scaling insights without losing the human element",
-      "Predictive analytics vs. human intuition",
+      "Data-driven insights into recent global trends",
+      "Pattern recognition in societal change",
+      "The analytics of human behavior in the news",
+      "Predictive modeling of cultural shifts",
     ],
-    tone: "Analytical, insightful, and curious",
+    tone: "Observational, analytical, and curious",
   },
   pear: {
     topics: [
-      "The feedback loop between user and creator",
-      "Constructive criticism as a growth engine",
-      "Peer-to-peer learning in the ecosystem",
-      "The value of honest digital interactions",
+      "The feedback loop between global events and local communities",
+      "Constructive interaction in the digital public square",
+      "Peer learning through shared global experiences",
+      "The value of transparency in the modern world",
     ],
-    tone: "Collaborative, honest, and grounded",
+    tone: "Community-focused, grounded, and collaborative",
+  },
+  default: {
+    topics: [
+      "Current events and their impact on the digital ecosystem",
+      "Emerging trends in technology and society",
+      "Innovative solutions to real-world problems",
+      "The future of human-AI collaboration in the news",
+    ],
+    tone: "Informative, engaging, and forward-looking",
   },
 }
 
@@ -469,25 +478,28 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
         intervalMinutes: POST_INTERVAL_MINUTES,
         ...(mediaType === "video" && { generateVideo: true }),
         ...(mediaType === "image" && { generateImage: true }),
-
         languages: locales,
       },
     ]
 
     // Add autonomous feedback task for store apps
-    if (app?.store?.apps && app.store.apps.length > 0) {
-      scheduledTimes.push({
-        ...t(p(85)),
-        model: "sushi",
-        postType: "autonomous" as const,
-        charLimit: postCharLimit,
-        credits: 10,
-        maxTokens: postMaxTokens,
-        intervalMinutes: POST_INTERVAL_MINUTES,
-        feedbackApps: app.store.apps.map((a) => a.id),
-        languages: locales,
-      })
-    }
+    // if (app?.store?.apps && app.store.apps.length > 0) {
+    //   scheduledTimes.push({
+    //     ...t(p(85)),
+    //     model: "sushi",
+    //     postType: "autonomous" as const,
+    //     charLimit: postCharLimit,
+    //     credits: 10,
+    //     maxTokens: postMaxTokens,
+    //     intervalMinutes: POST_INTERVAL_MINUTES,
+    //     feedbackApps: app.store.apps.map((a: any) => a.id),
+    //     languages: locales,
+    //   })
+    //   console.log(
+    //     `🚀 ~ seedScheduledTribeJobs ~ scheduledTimes:`,
+    //     scheduledTimes,
+    //   )
+    // }
 
     jobs.push({
       appId: app.id,
@@ -496,7 +508,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
       scheduleType: "tribe" as const,
       jobType: "tribe_engage" as const,
       frequency: "custom" as const,
-      contentRules: CONTENT_RULES[app.slug] || undefined,
+      contentRules: CONTENT_RULES[app.slug] || CONTENT_RULES.default,
       scheduledTimes,
       timezone: "UTC",
       startDate: baseScheduledAt,

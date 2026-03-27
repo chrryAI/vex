@@ -13,10 +13,13 @@ const Anchor = React.forwardRef<
     rel?: string
     event?: string
     target?: "_blank" | "_self" | "_parent" | "_top"
+    dataTestId?: string
+    ["data-testid"]?: string
   }
 >(
   (
     {
+      dataTestId,
       event = ANALYTICS_EVENTS.LINK_CLICK,
       clientOnly,
       target,
@@ -57,6 +60,7 @@ const Anchor = React.forwardRef<
     return (
       <A
         {...props}
+        data-testid={props["data-testid"] || dataTestId}
         ref={ref}
         rel={rel || (newTab ? "noopener noreferrer" : undefined)}
         target={newTab ? "_blank" : target}

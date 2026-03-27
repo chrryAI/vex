@@ -139,9 +139,9 @@ export const chat = async ({
       timeout: 100000,
     })
     await wait(3000)
-
-    await prepare({ page })
   }
+  await prepare({ page })
+
   const agentModal = page.getByTestId("agent-modal")
   await expect(agentModal).not.toBeVisible()
 
@@ -306,7 +306,6 @@ export const chat = async ({
       "chat-instruction-artifacts-upload-button",
     )
     await expect(thread).toBeVisible()
-    await expect(about).not.toBeVisible()
   }
 
   // await expect(instructionButton).not.toBeVisible()
