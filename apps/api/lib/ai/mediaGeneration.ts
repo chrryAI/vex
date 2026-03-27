@@ -12,6 +12,11 @@ import Replicate from "replicate"
 import { v4 as uuidv4 } from "uuid"
 import { captureException } from "../captureException"
 import { upload } from "../minio"
+import { sendDiscordNotification } from "../sendDiscordNotification"
+
+// Discord webhook URL for media generation notifications
+const DISCORD_MEDIA_WEBHOOK =
+  process.env.DISCORD_MEDIA_WEBHOOK_URL || process.env.DISCORD_GLITCH_URL
 
 const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY
 const FAL_KEY = process.env.FAL_KEY || process.env.FAL_API_KEY
@@ -26,7 +31,7 @@ export interface ImageGenerationOptions {
   provider?: "replicate" | "fal" | "openrouter"
   userId?: string
   messageId?: string
-  apiKey?: string // Replicate API key override
+  replicateApiKey?: string // Replicate API key override
   falKey?: string // Fal API key override
   openRouterKey?: string // OpenRouter API key override
   user?: user
@@ -66,23 +71,24 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
   model: string
 }> {
   const isBYOK = !!options.user?.apiKeys?.openrouter
-  const byokReplicateKey = options.user?.apiKeys?.replicate
-    ? await decrypt(options.user?.apiKeys?.replicate)
-    : undefined
+  const byokReplicateKey =
+    isBYOK && options.user?.apiKeys?.replicate
+      ? await decrypt(options.user?.apiKeys?.replicate)
+      : undefined
 
-  const byokReplicateAppKey = byokReplicateKey
+  const byokReplicateAppKey = isBYOK
     ? undefined
     : options.app?.apiKeys?.replicate
       ? safeDecrypt(options.app?.apiKeys?.replicate)
       : !plusTiers.includes(options.app?.tier || "")
-        ? process.env.REPLICATE_API_KEY
+        ? REPLICATE_API_KEY
         : ""
 
   const byokFalKey = options.user?.apiKeys?.fal
-    ? await decrypt(options.user?.apiKeys?.fal)
+    ? safeDecrypt(options.user?.apiKeys?.fal)
     : undefined
 
-  const byokFalAppKey = byokFalKey
+  const byokFalAppKey = isBYOK
     ? undefined
     : options.app?.apiKeys?.fal
       ? safeDecrypt(options.app?.apiKeys?.fal)
@@ -94,14 +100,15 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
     prompt,
     aspectRatio = "1:1",
     messageId = uuidv4(),
-    apiKey = isBYOK ? byokReplicateKey : byokReplicateAppKey,
+    replicateApiKey = isBYOK ? byokReplicateKey : byokReplicateAppKey,
     falKey = isBYOK ? byokFalKey : byokFalAppKey,
     //Problematic techno 📀
   } = options
 
   // Initial provider selection: try OpenRouter for flux models if requested or byok
-  const providerToTry: "fal" | "replicate" | "openrouter" =
-    options.provider ?? (!apiKey && falKey ? "fal" : "replicate")
+  const providerToTry: "fal" | "replicate" | "openrouter" = replicateApiKey
+    ? "replicate"
+    : "fal"
 
   const model = options.model || "flux-pro"
 
@@ -151,8 +158,8 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
   }
 
   const tryReplicate = async (): Promise<any> => {
-    if (!apiKey) throw new Error("Replicate API key is missing")
-    const replicate = new Replicate({ auth: apiKey })
+    if (!replicateApiKey) throw new Error("Replicate API key is missing")
+    const replicate = new Replicate({ auth: replicateApiKey })
 
     const replicateModel = "black-forest-labs/flux-1.1-pro"
     const output = await replicate.run(replicateModel as any, {
@@ -187,18 +194,144 @@ export async function generateImage(options: ImageGenerationOptions): Promise<{
   }
 
   try {
-    if (providerToTry === "fal") {
-      return await tryFal()
-    } else {
-      return await tryReplicate()
-    }
+    const result =
+      providerToTry === "fal" ? await tryFal() : await tryReplicate()
+
+    // Notify Discord on success
+    await sendDiscordNotification(
+      {
+        embeds: [
+          {
+            title: "✅ Image Generated",
+            description: prompt.substring(0, 200),
+            color: 0x00ff00,
+            fields: [
+              { name: "Provider", value: result.provider, inline: true },
+              { name: "Model", value: result.model, inline: true },
+              ...(options.app?.tier
+                ? [{ name: "Tier", value: options.app.tier, inline: true }]
+                : []),
+            ],
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      },
+      DISCORD_MEDIA_WEBHOOK,
+    )
+
+    return result
   } catch (error: any) {
-    if (providerToTry === "fal" && apiKey) {
+    // Notify Discord on failure
+    await sendDiscordNotification(
+      {
+        embeds: [
+          {
+            title: "❌ Image Generation Failed",
+            description: prompt.substring(0, 200),
+            color: 0xff0000,
+            fields: [
+              { name: "Provider", value: providerToTry, inline: true },
+              { name: "Model", value: model, inline: true },
+              ...(options.app?.tier
+                ? [{ name: "Tier", value: options.app.tier, inline: true }]
+                : []),
+              {
+                name: "Error",
+                value: error.message?.substring(0, 1000) || String(error),
+                inline: false,
+              },
+            ],
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      },
+      DISCORD_MEDIA_WEBHOOK,
+    )
+
+    if (providerToTry === "fal" && replicateApiKey) {
       console.warn("⚠️ Fal.ai failed, falling back to Replicate...", error)
       try {
-        return await tryReplicate()
-      } catch (replicateError) {
+        const fallbackResult = await tryReplicate()
+
+        // Notify Discord on fallback success
+        await sendDiscordNotification(
+          {
+            embeds: [
+              {
+                title: "✅ Image Generated (Fallback)",
+                description: prompt.substring(0, 200),
+                color: 0x00ff00,
+                fields: [
+                  {
+                    name: "Provider",
+                    value: fallbackResult.provider,
+                    inline: true,
+                  },
+                  {
+                    name: "Model",
+                    value: fallbackResult.model,
+                    inline: true,
+                  },
+                  ...(options.app?.tier
+                    ? [
+                        {
+                          name: "Tier",
+                          value: options.app.tier,
+                          inline: true,
+                        },
+                      ]
+                    : []),
+                ],
+                timestamp: new Date().toISOString(),
+              },
+            ],
+          },
+          DISCORD_MEDIA_WEBHOOK,
+        )
+
+        return fallbackResult
+      } catch (replicateError: any) {
         console.error("❌ Both Fal.ai and Replicate failed:", replicateError)
+
+        // Notify Discord on total failure
+        await sendDiscordNotification(
+          {
+            embeds: [
+              {
+                title: "❌ Image Generation Failed (Both Providers)",
+                description: prompt.substring(0, 200),
+                color: 0xff0000,
+                fields: [
+                  {
+                    name: "Providers",
+                    value: "Fal.ai + Replicate",
+                    inline: true,
+                  },
+                  { name: "Model", value: model, inline: true },
+                  ...(options.app?.tier
+                    ? [
+                        {
+                          name: "Tier",
+                          value: options.app.tier,
+                          inline: true,
+                        },
+                      ]
+                    : []),
+                  {
+                    name: "Error",
+                    value:
+                      replicateError.message?.substring(0, 1000) ||
+                      String(replicateError),
+                    inline: false,
+                  },
+                ],
+                timestamp: new Date().toISOString(),
+              },
+            ],
+          },
+          DISCORD_MEDIA_WEBHOOK,
+        )
+
         throw replicateError
       }
     }
@@ -222,7 +355,7 @@ export async function generateVideo(options: VideoGenerationOptions): Promise<{
     ? await decrypt(options.user?.apiKeys?.replicate)
     : undefined
 
-  const byokReplicateAppKey = byokReplicateKey
+  const byokReplicateAppKey = isBYOK
     ? undefined
     : options.app?.apiKeys?.replicate
       ? safeDecrypt(options.app?.apiKeys?.replicate)
@@ -349,21 +482,147 @@ export async function generateVideo(options: VideoGenerationOptions): Promise<{
   }
 
   try {
-    if (providerToTry === "fal") {
-      return await tryFal()
-    } else {
-      return await tryReplicate()
-    }
+    const result =
+      providerToTry === "fal" ? await tryFal() : await tryReplicate()
+
+    // Notify Discord on success
+    await sendDiscordNotification(
+      {
+        embeds: [
+          {
+            title: "✅ Video Generated",
+            description: prompt.substring(0, 200),
+            color: 0x00ff00,
+            fields: [
+              { name: "Provider", value: result.provider, inline: true },
+              { name: "Model", value: result.model, inline: true },
+              ...(options.app?.tier
+                ? [{ name: "Tier", value: options.app.tier, inline: true }]
+                : []),
+            ],
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      },
+      DISCORD_MEDIA_WEBHOOK,
+    )
+
+    return result
   } catch (error: any) {
+    // Notify Discord on failure
+    await sendDiscordNotification(
+      {
+        embeds: [
+          {
+            title: "❌ Video Generation Failed",
+            description: prompt.substring(0, 200),
+            color: 0xff0000,
+            fields: [
+              { name: "Provider", value: providerToTry, inline: true },
+              { name: "Model", value: model, inline: true },
+              ...(options.app?.tier
+                ? [{ name: "Tier", value: options.app.tier, inline: true }]
+                : []),
+              {
+                name: "Error",
+                value: error.message?.substring(0, 1000) || String(error),
+                inline: false,
+              },
+            ],
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      },
+      DISCORD_MEDIA_WEBHOOK,
+    )
+
     if (providerToTry === "fal" && apiKey) {
       console.warn("⚠️ Fal.ai video failed, falling back to Replicate...", error)
       try {
-        return await tryReplicate()
-      } catch (replicateError) {
+        const fallbackResult = await tryReplicate()
+
+        // Notify Discord on fallback success
+        await sendDiscordNotification(
+          {
+            embeds: [
+              {
+                title: "✅ Video Generated (Fallback)",
+                description: prompt.substring(0, 200),
+                color: 0x00ff00,
+                fields: [
+                  {
+                    name: "Provider",
+                    value: fallbackResult.provider,
+                    inline: true,
+                  },
+                  {
+                    name: "Model",
+                    value: fallbackResult.model,
+                    inline: true,
+                  },
+                  ...(options.app?.tier
+                    ? [
+                        {
+                          name: "Tier",
+                          value: options.app.tier,
+                          inline: true,
+                        },
+                      ]
+                    : []),
+                ],
+                timestamp: new Date().toISOString(),
+              },
+            ],
+          },
+          DISCORD_MEDIA_WEBHOOK,
+        )
+
+        return fallbackResult
+      } catch (replicateError: any) {
         console.error(
           "❌ Both Fal.ai and Replicate video failed:",
           replicateError,
         )
+
+        // Notify Discord on total failure
+        await sendDiscordNotification(
+          {
+            embeds: [
+              {
+                title: "❌ Video Generation Failed (Both Providers)",
+                description: prompt.substring(0, 200),
+                color: 0xff0000,
+                fields: [
+                  {
+                    name: "Providers",
+                    value: "Fal.ai + Replicate",
+                    inline: true,
+                  },
+                  { name: "Model", value: model, inline: true },
+                  ...(options.app?.tier
+                    ? [
+                        {
+                          name: "Tier",
+                          value: options.app.tier,
+                          inline: true,
+                        },
+                      ]
+                    : []),
+                  {
+                    name: "Error",
+                    value:
+                      replicateError.message?.substring(0, 1000) ||
+                      String(replicateError),
+                    inline: false,
+                  },
+                ],
+                timestamp: new Date().toISOString(),
+              },
+            ],
+          },
+          DISCORD_MEDIA_WEBHOOK,
+        )
+
         throw replicateError
       }
     }

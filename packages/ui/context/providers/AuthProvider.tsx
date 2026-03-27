@@ -104,7 +104,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.65"
+const VERSION = "2.2.66"
 
 const AuthContext = createContext<
   | {

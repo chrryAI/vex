@@ -5899,42 +5899,6 @@ Respond in JSON format:
         if (isDevelopment)
           console.debug("Generating image with enhanced Flux prompt...")
 
-        // Prioritize app-specific Replicate/OpenRouter key if provided (Image Gen usually via Replicate directly)
-        // If the app has a specific key for 'replicate', use it.
-        // Note: Currently Agent.tsx might not have a dedicated 'replicate' field, but if it exists in DB, we use it.
-        // Logic: Plus/Pro apps use platform's REPLICATE_API_KEY, free apps need BYOK
-        let replicateAuth = plusTiers.includes(requestApp?.tier || "")
-          ? REPLICATE_API_KEY
-          : (requestApp?.apiKeys?.replicate ? "" : REPLICATE_API_KEY)
-        const appReplicateKey = requestApp?.apiKeys?.replicate
-        if (appReplicateKey) {
-          try {
-            replicateAuth = decrypt(appReplicateKey)
-            console.log("✅ Using app-specific Replicate API key")
-          } catch (e) {
-            captureException(e)
-            console.warn("⚠️ Failed to decrypt Replicate key, using as-is")
-            replicateAuth = appReplicateKey
-          }
-        }
-
-        let falAuth = ""
-        const appFalKey = requestApp?.apiKeys?.fal
-        if (appFalKey) {
-          try {
-            falAuth = decrypt(appFalKey)
-            console.log("✅ Using app-specific Fal.ai API key")
-          } catch (e) {
-            captureException(e)
-            falAuth = appFalKey
-          }
-        }
-        
-        // Fallback to platform FAL_KEY for paid tiers
-        if (!falAuth && plusTiers.includes(requestApp?.tier || "")) {
-          falAuth = FAL_KEY || ""
-        }
-
         // Generate image using unified utility (handles both Replicate and Fal.ai)
         let permanentUrl: string
         let title: string
@@ -5942,8 +5906,6 @@ Respond in JSON format:
           const result = await generateImage({
             prompt: enhancedPrompt,
             aspectRatio: "1:1",
-            apiKey: replicateAuth,
-            falKey: falAuth,
             app: requestApp,
             user: member,
             guest,
