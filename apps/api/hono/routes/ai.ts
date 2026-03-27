@@ -5902,7 +5902,10 @@ Respond in JSON format:
         // Prioritize app-specific Replicate/OpenRouter key if provided (Image Gen usually via Replicate directly)
         // If the app has a specific key for 'replicate', use it.
         // Note: Currently Agent.tsx might not have a dedicated 'replicate' field, but if it exists in DB, we use it.
-        let replicateAuth = requestApp?.tier === "free" ? REPLICATE_API_KEY : ""
+        // Logic: Plus/Pro apps use platform's REPLICATE_API_KEY, free apps need BYOK
+        let replicateAuth = plusTiers.includes(requestApp?.tier || "")
+          ? REPLICATE_API_KEY
+          : (requestApp?.apiKeys?.replicate ? "" : REPLICATE_API_KEY)
         const appReplicateKey = requestApp?.apiKeys?.replicate
         if (appReplicateKey) {
           try {
@@ -5925,6 +5928,11 @@ Respond in JSON format:
             captureException(e)
             falAuth = appFalKey
           }
+        }
+        
+        // Fallback to platform FAL_KEY for paid tiers
+        if (!falAuth && plusTiers.includes(requestApp?.tier || "")) {
+          falAuth = FAL_KEY || ""
         }
 
         // Generate image using unified utility (handles both Replicate and Fal.ai)
