@@ -2525,5 +2525,13 @@
   "Next Step": "Próximo Passo",
   "Edit your agent": "Edite seu agente",
   "Go to agent": "Ir para o agente",
-  "Deleting": "Excluindo"
+  "Deleting": "Excluindo",
+  "privacy.google.accessed.content": "Acessamos os seguintes dados do usuário do Google via OAuth com escopos: openid, email e perfil: Endereço de email - Seu email principal da conta do Google; Nome - Seu nome de exibição do seu perfil do Google; Foto do perfil - URL da imagem do avatar da sua conta do Google.",
+  "privacy.google.accessed.title": "Dados Acessados",
+  "privacy.google.content": "Quando você faz login com o Google, acessamos informações específicas da sua conta do Google para criar e autenticar sua conta. Esta seção descreve quais dados acessamos e como os usamos em conformidade com a Política de Dados do Usuário dos Serviços API do Google.",
+  "privacy.google.handling.content": "Não vendemos, alugamos ou compartilhamos seus dados de usuário do Google com terceiros. Seus dados são armazenados de forma segura e usados apenas para fornecer nossos serviços a você. Você pode excluir sua conta e os dados associados a qualquer momento entrando em contato conosco em iliyan@chrry.ai.",
+  "privacy.google.handling.title": "Manuseio de Dados",
+  "privacy.google.title": "Dados do Usuário do Google",
+  "privacy.google.usage.content": "Os dados do usuário do Google que acessamos são usados exclusivamente para os seguintes propósitos: Criação de conta - Para criar sua conta de usuário em nosso sistema; Autenticação - Para verificar sua identidade e fazer seu login de forma segura; Exibição de perfil - Para exibir seu nome e avatar dentro do aplicativo; Comunicação - Para enviar notificações importantes relacionadas à conta para o seu email.",
+  "privacy.google.usage.title": "Uso de Dados"
 }

@@ -5,7 +5,7 @@ import { useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"
 import Img from "./Img"
 import { CircleArrowLeft } from "./icons"
-import { Button, Div, H1, H2, P, Section, useTheme } from "./platform"
+import { Button, Div, H1, H2, H3, P, Section, useTheme } from "./platform"
 import Skeleton from "./Skeleton"
 import { FRONTEND_URL } from "./utils"
 
@@ -27,7 +27,14 @@ export default function Privacy() {
           padding: "0 0px 20px 0px",
         }}
       >
-        <H1 style={{ marginTop: 0 }}>
+        <H1
+          style={{
+            marginTop: 0,
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+          }}
+        >
           <Button className="link" onClick={() => router.push("/about")}>
             <CircleArrowLeft color="var(--accent-1)" size={24} />
           </Button>{" "}
@@ -97,6 +104,23 @@ export default function Privacy() {
         </Section>
 
         <Section>
+          <H2>{t("privacy.google.title")}</H2>
+          <P>{t("privacy.google.content")}</P>
+          <H3 style={{ marginTop: 16, marginBottom: 8, fontSize: "1rem" }}>
+            {t("privacy.google.accessed.title")}
+          </H3>
+          <P>{t("privacy.google.accessed.content")}</P>
+          <H3 style={{ marginTop: 16, marginBottom: 8, fontSize: "1rem" }}>
+            {t("privacy.google.usage.title")}
+          </H3>
+          <P>{t("privacy.google.usage.content")}</P>
+          <H3 style={{ marginTop: 16, marginBottom: 8, fontSize: "1rem" }}>
+            {t("privacy.google.handling.title")}
+          </H3>
+          <P>{t("privacy.google.handling.content")}</P>
+        </Section>
+
+        <Section>
           <H2>{t("privacy.security.title")}</H2>
           <P>{t("privacy.security.content")}</P>
         </Section>
@@ -108,7 +132,7 @@ export default function Privacy() {
 
         <Div style={styles.lastUpdated.style}>
           <Img src={`${FRONTEND_URL}/frog.png`} width={24} height={24} />
-          {t("privacy.last_updated", { date: "August 4, 2025" })}
+          {t("privacy.last_updated", { date: "March 27, 2026" })}
         </Div>
       </Div>
     </Skeleton>

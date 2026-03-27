@@ -1,7 +1,7 @@
 import { test } from "@playwright/test"
 import { getURL, TEST_MEMBER_FINGERPRINTS } from "."
-import { subscribe } from "./shared/subscribe"
 import { signIn } from "./shared/signIn"
+import { subscribe } from "./shared/subscribe"
 
 const isLive = false
 

@@ -2525,5 +2525,13 @@
   "Next Step": "次のステップ",
   "Edit your agent": "あなたのエージェントを編集",
   "Go to agent": "エージェントへ移動",
-  "Deleting": "削除中"
+  "Deleting": "削除中",
+  "privacy.google.accessed.content": "OAuthのスコープ：openid、email、profileを通じて、以下のGoogleユーザーデータにアクセスします：メールアドレス - あなたの主要なGoogleアカウントのメール；名前 - Googleプロフィールからの表示名；プロフィール画像 - Googleアカウントのアバター画像URL。",
+  "privacy.google.accessed.title": "アクセスしたデータ",
+  "privacy.google.content": "Googleでサインインすると、アカウントを作成し認証するために、特定の情報をGoogleアカウントから取得します。このセクションでは、Google APIサービスユーザーデータポリシーに準拠して、どのデータにアクセスし、それをどのように使用するかを説明します。",
+  "privacy.google.handling.content": "Googleユーザーデータを第三者に販売、貸出、共有することはありません。あなたのデータは安全に保管され、私たちのサービスを提供するためだけに使用されます。いつでもiliyan@chrry.aiに連絡してアカウントと関連データを削除することができます。",
+  "privacy.google.handling.title": "データの取り扱い",
+  "privacy.google.title": "Googleユーザーデータ",
+  "privacy.google.usage.content": "アクセスしたGoogleユーザーデータは、以下の目的のためだけに使用されます：アカウント作成 - システム内でユーザーアカウントを作成するため；認証 - あなたの身元を確認し、安全にログインさせるため；プロフィール表示 - アプリ内であなたの名前とアバターを表示するため；通信 - あなたのメールに重要なアカウント関連の通知を送るため。",
+  "privacy.google.usage.title": "データの使用"
 }

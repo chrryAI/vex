@@ -2514,5 +2514,13 @@
   "Next Step": "Nästa steg",
   "Edit your agent": "Redigera din agent",
   "Go to agent": "Gå till agenten",
-  "Deleting": "Raderar"
+  "Deleting": "Raderar",
+  "privacy.google.accessed.content": "Vi får tillgång till följande Google-användardata via OAuth med omfattningar: openid, e-post och profil: E-postadress - Din primära Google-kontoe-post; Namn - Ditt visningsnamn från din Google-profil; Profilbild - Din Google-kontos avatarbilds-URL.",
+  "privacy.google.accessed.title": "Åtkomst till data",
+  "privacy.google.content": "När du loggar in med Google får vi tillgång till specifik information från ditt Google-konto för att skapa och autentisera ditt konto. Detta avsnitt beskriver vilka data vi får tillgång till och hur vi använder det i enlighet med Googles API-tjänster Användardatapolicy.",
+  "privacy.google.handling.content": "Vi säljer inte, hyr inte ut eller delar din Google-användardata med tredje part. Dina data lagras säkert och används endast för att tillhandahålla våra tjänster till dig. Du kan radera ditt konto och tillhörande data när som helst genom att kontakta oss på iliyan@chrry.ai.",
+  "privacy.google.handling.title": "Datahantering",
+  "privacy.google.title": "Google-användardata",
+  "privacy.google.usage.content": "Google-användardata som vi får tillgång till används endast för följande ändamål: Kontoskapande - För att skapa ditt användarkonto i vårt system; Autentisering - För att verifiera din identitet och logga in dig säkert; Profilvisning - För att visa ditt namn och avatar inom appen; Kommunikation - För att skicka viktiga kontorelaterade meddelanden till din e-post.",
+  "privacy.google.usage.title": "Dataanvändning"
 }
