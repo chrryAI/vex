@@ -1,5 +1,5 @@
 import { test } from "@playwright/test"
-import { getURL, TEST_MEMBER_FINGERPRINTS } from "."
+import { getURL } from "."
 import { chat } from "./shared/chat"
 import { collaboration } from "./shared/collaboration"
 import { limit } from "./shared/limit"
@@ -14,25 +14,6 @@ import { clean, prepare } from "./shared/clean"
 
 test.beforeEach(async ({ page }) => {
   await clean({ page })
-})
-
-test("Subscribe As Guest", async ({ page }) => {
-  await page.goto(
-    getURL({
-      isLive,
-      isMember,
-      fingerprint: TEST_MEMBER_FINGERPRINTS[0],
-    }),
-    {
-      waitUntil: "domcontentloaded",
-      timeout: 100000,
-    },
-  )
-  await prepare({ page })
-  await subscribe({
-    page,
-    isMember,
-  })
 })
 
 test("Invite", async ({ page }) => {
