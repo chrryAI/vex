@@ -817,6 +817,7 @@ export default function Menu({
                                     data-testid="menu-thread-link"
                                     style={{
                                       ...styles.threadItem.style,
+                                      color: "var(--accent-5)",
                                     }}
                                     onClick={(e) => {
                                       const threadApp = storeApps.find(
