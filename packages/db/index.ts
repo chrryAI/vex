@@ -1505,6 +1505,12 @@ export const getMessage = async ({
       }
     : undefined
 
+  const pearApp = result?.message?.pearAppId
+    ? await getSimpleApp({
+        id: result?.message?.pearAppId,
+      })
+    : undefined
+
   const guest = result?.guest
     ? {
         id: result.guest?.id,
@@ -1515,6 +1521,7 @@ export const getMessage = async ({
     ? {
         ...result,
         user,
+        pearApp,
         guest,
       }
     : undefined
@@ -1682,7 +1689,11 @@ export const getMessages = async ({
         // const app = message.message?.appId
         //   ? await getApp({ id: message.message.appId })
         //   : undefined
-
+        const pearApp = message.message?.pearAppId
+          ? await getSimpleApp({
+              id: message.message?.pearAppId,
+            })
+          : undefined
         const app = message.message?.appId
           ? await getPureApp({ id: message.message.appId })
           : undefined
@@ -1695,6 +1706,7 @@ export const getMessages = async ({
               }).then((res) => res?.message)
             : undefined,
           app,
+          pearApp,
           user: {
             id: message.user?.id,
             createdOn: message.user?.createdOn,
@@ -2727,6 +2739,7 @@ export const getThread = async ({
         collaborations: await getCollaborations({
           threadId: result.threads.id,
         }),
+        pearApp,
         characterProfile: await getCharacterProfile({
           threadId: result.threads.id,
           userId: result.threads.userId || undefined,
@@ -3061,6 +3074,12 @@ export const getThreads = async ({
               })
             : undefined
 
+          const pearApp = thread?.threads?.pearAppId
+            ? await getSimpleApp({
+                id: thread?.threads?.pearAppId,
+              })
+            : undefined
+
           return {
             ...thread.threads,
             user: thread.user
@@ -3082,6 +3101,7 @@ export const getThreads = async ({
               threadId: thread.threads.id,
             }),
             app: app ?? undefined,
+            pearApp: pearApp ?? undefined,
             lastMessage: (
               await getMessages({
                 pageSize: 1,
@@ -3122,6 +3142,11 @@ export const getThreads = async ({
     return {
       threads: await Promise.all(
         result.map(async (thread) => {
+          const pearApp = thread?.threads?.pearAppId
+            ? await getSimpleApp({
+                id: thread?.threads?.pearAppId,
+              })
+            : undefined
           const app = thread.threads.appId
             ? await db.query.apps.findFirst({
                 where: eq(apps.id, thread.threads.appId),
@@ -3137,6 +3162,7 @@ export const getThreads = async ({
           return {
             ...thread.threads,
             app,
+            pearApp,
             user: thread.user
               ? {
                   id: thread.user?.id,

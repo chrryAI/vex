@@ -73,6 +73,14 @@ const ChatContext = createContext<
       showTribe: boolean | undefined
       setAbout: (value: string | undefined) => void
       setAsk: (value: string | undefined) => void
+      threadsAppId: string | undefined
+      setThreadsAppId: (threadsAppId: string | undefined) => void
+      hasPearApp?: boolean
+      setHasPearApp: (hasPearApp?: boolean) => void
+      isDNA?: boolean
+      setIsDNA: (isDNA?: boolean) => void
+      isTribe?: boolean
+      setIsTribe: (isTribe?: boolean) => void
       setIsImageGenerationEnabled: (
         value: boolean,
         forAgent?: aiAgent | null,
@@ -332,6 +340,11 @@ export function ChatProvider({
     }
   }, [user])
 
+  const [threadsAppId, setThreadsAppId] = useState<string | undefined>()
+  const [hasPearApp, setHasPearApp] = useState<boolean | undefined>(undefined)
+  const [isDNA, setIsDNA] = useState<boolean | undefined>(undefined)
+  const [isTribe, setIsTribe] = useState<boolean | undefined>(undefined)
+
   const {
     data: threadsSwr,
     mutate: refetchThreads,
@@ -339,7 +352,17 @@ export function ChatProvider({
     error: threadsError,
   } = useSWR(
     token && shouldFetchThreads && session
-      ? ["contextThreads", toFetch, appId, collaborationStatus, isNewChat]
+      ? [
+          "contextThreads",
+          toFetch,
+          appId,
+          collaborationStatus,
+          isNewChat,
+          threadsAppId,
+          hasPearApp,
+          isDNA,
+          isTribe,
+        ]
       : null,
     async () => {
       try {
@@ -349,8 +372,11 @@ export function ChatProvider({
               setShouldFetchThreads(false)
             }
           },
-          appId,
+          hasPearApp: pathname.includes("/threads") ? hasPearApp : undefined,
+          appId: pathname.includes("/threads") ? threadsAppId : appId,
+          isDNA: pathname.includes("/threads") ? isDNA : undefined,
           userName: userNameByUrl,
+          isTribe: pathname.includes("/threads") ? isTribe : undefined,
           pageSize: pageSizes.menuThreads - (isMobile ? 2 : 0),
           sort: "bookmark",
           collaborationStatus:
@@ -1456,7 +1482,15 @@ export function ChatProvider({
         artifacts,
         setArtifacts,
         setAsk,
+        threadsAppId,
+        setThreadsAppId,
+        hasPearApp,
+        setHasPearApp,
         setAbout,
+        isDNA,
+        setIsDNA,
+        isTribe,
+        setIsTribe,
       }}
     >
       {children}

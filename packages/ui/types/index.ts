@@ -399,6 +399,7 @@ export type messages = {
   aiAgent?: aiAgent
   thread?: thread
   app?: appWithStore
+  pearApp?: appWithStore
 }[]
 
 export type paginatedMessages = {
@@ -424,6 +425,7 @@ export type thread = {
   moltUrl?: string
   moltId?: string
   submolt?: string
+  pearApp?: appWithStore
   tribeId?: string
   isMainThread: boolean
   lastMessage?: message

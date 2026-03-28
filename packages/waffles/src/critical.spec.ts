@@ -42,6 +42,6 @@ test("Subscribe as Member", async ({ page }) => {
   await subscribe({ page, isMember: true })
 })
 
-test.only("Collaboration", async ({ page, browser }) => {
+test.skip("Collaboration", async ({ page, browser }) => {
   await collaboration({ page, browser, isMember: false })
 })

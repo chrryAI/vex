@@ -755,19 +755,20 @@ export default function Menu({
                             >
                               {thread.pearAppId ? (
                                 <Span style={{ display: "flex", gap: 5 }}>
-                                  <Img slug="pear" size={14} />{" "}
-                                  <Img app={thread.app} size={14} />
+                                  <Img app={thread.app} size={15} />
+                                  <Img slug="pear" size={15} />
+                                  <Img app={thread.pearApp} size={15} />
                                 </Span>
                               ) : thread.isMainThread ? (
                                 <Span
                                   style={{ display: "flex", gap: 10 }}
                                   title={t("DNA thread")}
                                 >
-                                  🧬 <Img slug={thread?.app?.slug} size={14} />
+                                  🧬 <Img slug={thread?.app?.slug} size={15} />
                                 </Span>
                               ) : thread.app ? (
                                 <Span>
-                                  <Img slug={thread?.app?.slug} size={14} />
+                                  <Img slug={thread?.app?.slug} size={15} />
                                 </Span>
                               ) : thread.visibility !== "private" ||
                                 thread.collaborations?.length ? (
@@ -817,7 +818,9 @@ export default function Menu({
                                     data-testid="menu-thread-link"
                                     style={{
                                       ...styles.threadItem.style,
-                                      color: "var(--accent-5)",
+                                      color: isDark
+                                        ? "var(--blue-600)"
+                                        : "var(--blue-600)",
                                     }}
                                     onClick={(e) => {
                                       const threadApp = storeApps.find(

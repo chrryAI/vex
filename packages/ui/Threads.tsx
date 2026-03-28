@@ -5,7 +5,7 @@ import useSWR from "swr"
 import type { collaboration, thread, user } from "../ui/types"
 import Bookmark from "./Bookmark"
 import { useAppContext } from "./context/AppContext"
-import { useAuth, useNavigationContext } from "./context/providers"
+import { useAuth, useChat, useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import EditThread from "./EditThread"
 
@@ -50,7 +50,11 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
 
   const [animationKey, setAnimationKey] = useState(0)
 
-  const [selectedApp, setSelectedApp] = useState<string | undefined>(undefined)
+  const [selectedApp, setSelectedAppInternal] = useState<string | undefined>(
+    undefined,
+  )
+
+  const selectedAppRef = useRef(selectedApp)
 
   useEffect(() => {
     if (!reduceMotion) {
@@ -76,6 +80,14 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     setShowCharacterProfiles,
   } = useAuth()
 
+  const { setThreadsAppId, ...chat } = useChat()
+
+  const setSelectedApp = (value: string | undefined) => {
+    selectedAppRef.current = value
+    setThreadsAppId(value)
+    setSelectedAppInternal(value)
+  }
+
   const styles = useThreadsStyles()
 
   const [sortByDate, setSortByDate] = useState(true)
@@ -97,6 +109,12 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     pn: string = pathname,
   ) => {
     setCollaborationStatusInternal(status)
+
+    if (status) {
+      setIsDNA(false)
+      setIsTribe(false)
+      setHasPearApp(false)
+    }
 
     const currentSearchStatus = searchParams.get("collaborationStatus")
 
@@ -165,27 +183,47 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
   const [search, setSearch] = useState("")
 
   const [isLoading, setIsLoading] = useState(true)
-  const [hasPearApp, setHasPearAppInternal] = useState<boolean | undefined>(
+  const [hasPearApp, setHasPearAppFinal] = useState<boolean | undefined>(
     undefined,
   )
 
-  const [isDNA, setIsDNAInternal] = useState<boolean | undefined>(undefined)
+  const setHasPearAppInternal = (v: boolean | undefined) => {
+    setHasPearAppFinal(v)
+    chat.setHasPearApp(v)
+  }
+  const [isDNA, setIsDNAFinal] = useState<boolean | undefined>(undefined)
+
+  const setIsDNAInternal = (v: boolean | undefined) => {
+    setIsDNAFinal(v)
+    chat.setIsDNA(v)
+  }
+
   const [showAllProfiles, setShowAllProfiles] = useState<boolean>(false)
-  const [isTribe, setIsTribeInternal] = useState<boolean | undefined>(true)
+  const [isTribe, setIsTribeFinal] = useState<boolean | undefined>(false)
+
+  const setIsTribeInternal = (v: boolean | undefined) => {
+    setIsTribeFinal(v)
+    chat.setIsTribe(v)
+  }
 
   const setHasPearApp = (v: boolean) => {
     setHasPearAppInternal(v)
+    chat.setHasPearApp(v)
+    v && setCollaborationStatusInternal(null)
     isDNA && v && setIsDNAInternal(undefined)
     isTribe && v && setIsTribeInternal(undefined)
   }
   const setIsDNA = (v: boolean) => {
     setIsDNAInternal(v)
+    v && setCollaborationStatusInternal(null)
     hasPearApp && v && setHasPearAppInternal(undefined)
     isTribe && v && setIsTribeInternal(undefined)
   }
 
   const setIsTribe = (v: boolean) => {
     setIsTribeInternal(v)
+
+    v && setCollaborationStatusInternal(null)
     hasPearApp && v && setHasPearAppInternal(undefined)
     isDNA && v && setIsDNAInternal(undefined)
   }
@@ -550,6 +588,9 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                     <Div style={{ ...styles.threadItemTitle.style, gap: 12 }}>
                       <Img size={20} slug={thread.app?.slug} />
                       {thread.pearAppId && <Img size={20} slug={"pear"} />}
+                      {thread.pearApp && (
+                        <Img size={20} slug={thread.pearApp.slug} />
+                      )}
                       {loadingThreadId === thread.id ? (
                         <Loading
                           style={{

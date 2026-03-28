@@ -1480,6 +1480,7 @@ export const getActions = ({
       threadId?: string
       userName?: string
       hasPearApp?: boolean
+      isTribe?: boolean
       collaborationStatus?: "pending" | "active" | null
       myPendingCollaborations?: boolean
       onError?: (status: number) => void
