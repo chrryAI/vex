@@ -5642,7 +5642,7 @@ export const getSimpleApp = async ({
 
   // Cross-seed public cache if owner-specific request
   if (isOwner) {
-    const publicCacheKey = `simple:app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
+    const publicCacheKey = `simple:app:${id}:slug:${slug}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
     // Sanitize user-specific data (placeholders)
     const publicResult = { ...result, placeHolder: undefined }
     setCache(publicCacheKey, publicResult, 60 * 60)

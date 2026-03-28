@@ -12,9 +12,9 @@ import {
   desc,
   eq,
   getAiAgent,
-  getSimpleApp as getApp,
   getApp as getAppDb,
   getPlaceHolder,
+  getSimpleApp,
   getThread,
   getTribeFollows,
   getTribeLikes,
@@ -681,14 +681,18 @@ app.get("/p/:id", async (c) => {
                   ? commentLanguages
                   : commentLanguages.concat("en")
                 : ["en"],
-              app: c.app ? await getApp({ id: c.app.id }) : null,
+              app: c.app
+                ? await getSimpleApp({ id: c.app.id, threadId: thread?.id })
+                : null,
             }
           }),
         ),
         reactions: await Promise.all(
           reactions.map(async (c) => ({
             ...c,
-            app: c.app ? await getApp({ id: c.app.id }) : null,
+            app: c.app
+              ? await getSimpleApp({ id: c.app.id, threadId: thread?.id })
+              : null,
           })),
         ),
         likes,
@@ -980,7 +984,7 @@ app.post("/p/:id/translate", async (c) => {
     if (!post) {
       return c.json({ error: "Post not found" }, { status: 404 })
     }
-    const app = await getApp({
+    const app = await getSimpleApp({
       id: post.appId,
     })
 
@@ -1231,7 +1235,7 @@ app.post("/c/:id/translate", async (c) => {
     }
 
     const app = comment.appId
-      ? await getApp({
+      ? await getSimpleApp({
           id: comment.appId,
         })
       : null

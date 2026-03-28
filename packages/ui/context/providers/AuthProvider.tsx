@@ -103,7 +103,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.74"
+const VERSION = "2.2.78"
 
 const AuthContext = createContext<
   | {
@@ -2285,12 +2285,25 @@ export function AuthProvider({
     }
   }, [storeAppsSwr, loadingAppId, commentAppId])
 
-  const showFocusInitial = searchParams.get("focus") === "true"
-  const isFocus = !postId
-    ? baseApp
-      ? baseApp?.slug === "focus" || showFocusInitial
-      : undefined
+  const _routeSegments = (pathname.split("?")?.[0] || "")
+    .replace(/^\//, "")
+    .split("/")
+  const _routeSlug =
+    _routeSegments.length > 1 && locales.includes(_routeSegments[0] as any)
+      ? _routeSegments[1]
+      : _routeSegments[0]
+  const _isExcluded = _routeSlug
+    ? excludedSlugRoutes?.includes(_routeSlug)
     : false
+
+  const showFocusInitial = searchParams.get("focus") === "true"
+  const isFocus =
+    !_isExcluded &&
+    (!postId
+      ? baseApp
+        ? baseApp?.slug === "focus" || showFocusInitial
+        : showFocusInitial
+      : false)
 
   useEffect(() => {
     setPostId(postIdInitial)
@@ -2571,18 +2584,6 @@ export function AuthProvider({
 
   const showTribeFromPath = pathname === "/tribe"
 
-  // Normalize to first path segment (strip locale prefix if present) for excludedSlugRoutes
-  const _routeSegments = (pathname.split("?")?.[0] || "")
-    .replace(/^\//, "")
-    .split("/")
-  const _routeSlug =
-    _routeSegments.length > 1 && locales.includes(_routeSegments[0] as any)
-      ? _routeSegments[1]
-      : _routeSegments[0]
-  const _isExcluded = _routeSlug
-    ? excludedSlugRoutes?.includes(_routeSlug)
-    : false
-
   const showWatermelonInitial = !!(
     (siteConfig.isWatermelon && clearLocale(pathname) === "") ||
     pathname === "/watermelon"
@@ -2612,6 +2613,8 @@ export function AuthProvider({
     : undefined
 
   const tribeQuery = searchParams.get("tribe") === "true"
+
+  // Normalize to first path segment (strip locale prefix if present) for excludedSlugRoutes
 
   const canBeTribeProfile =
     !canShowAllTribe &&
@@ -2671,16 +2674,16 @@ export function AuthProvider({
 
   const showFocus = showFocusInternal && isFocus
 
-  useEffect(() => {
-    if (postId) setShowFocusInternal(false)
-    if (!baseApp?.slug) return
-    if (showFocus === undefined && baseApp?.slug === "focus") {
-      setShowFocusInternal(true)
-    }
-    if (showFocusInitial) {
-      setShowFocusInternal(showFocusInitial)
-    }
-  }, [showFocusInitial, showFocus, baseApp?.slug, postId])
+  // useEffect(() => {
+  //   if (postId) setShowFocusInternal(false)
+  //   if (!baseApp?.slug) return
+  //   if (showFocus === undefined && baseApp?.slug === "focus") {
+  //     setShowFocusInternal(true)
+  //   }
+  //   if (showFocusInitial) {
+  //     setShowFocusInternal(showFocusInitial)
+  //   }
+  // }, [showFocusInitial, showFocus, baseApp?.slug, postId])
 
   const setShowFocus = (sw: boolean) => {
     setShowFocusInternal(sw)
