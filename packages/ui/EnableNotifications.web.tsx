@@ -294,7 +294,7 @@ export default function EnableNotifications({
   if (!isMounted || isManagingApp) return null
 
   // Show notification button for extensions if permission not granted, for web if service worker ready
-  const shouldShow = !isExtension && isSubscribed === false && !!swRegistration
+  const shouldShow = !isExtension && !isSubscribed && !!swRegistration
 
   return (
     <Div style={styles.enableNotificationsContainer.style}>

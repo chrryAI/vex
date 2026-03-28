@@ -225,13 +225,15 @@ export async function getModelProvider({
   }
 
   const toSwitch =
-    !(isBYOK || user?.role === "admin") && !byokModelId
-      ? agent.name
-      : byokModelId
-        ? "beles"
-        : !byokModelId && (isDevelopment ? !job : !!job)
+    process.env.BELES === "true"
+      ? "beles"
+      : !(isBYOK || user?.role === "admin") && !byokModelId
+        ? agent.name
+        : byokModelId
           ? "beles"
-          : agent.name
+          : !byokModelId && (isDevelopment ? !job : !!job)
+            ? "beles"
+            : agent.name
 
   switch (toSwitch) {
     case "beles": {

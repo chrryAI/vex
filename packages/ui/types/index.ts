@@ -412,6 +412,7 @@ export type paginatedMessages = {
 export type thread = {
   isMolt?: boolean
   pearAppId?: string
+  apps?: appWithStore[]
   isTribe?: boolean
   jobId?: string
   characterProfile?: characterProfile

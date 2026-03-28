@@ -103,7 +103,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.92"
+const VERSION = "2.2.94"
 
 const AuthContext = createContext<
   | {
@@ -2989,12 +2989,12 @@ export function AuthProvider({
     // Priority 1: If there's a thread, use the thread's app
     let matchedApp: appWithStore | undefined
 
-    if (!matchedApp && thread?.appId) {
+    if (!matchedApp && thread?.appId && !loadingAppId) {
       const threadApp = storeApps.find((app) => app.id === thread.appId)
       matchedApp = threadApp
     }
 
-    if (!matchedApp && postId && tribePost) {
+    if (!matchedApp && postId && tribePost && !loadingAppId) {
       const postApp = storeApps.find((app) => app.id === tribePost.appId)
       matchedApp = postApp
     }

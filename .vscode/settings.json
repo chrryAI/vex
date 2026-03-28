@@ -15,10 +15,5 @@
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "workbench.colorCustomizations": {
-    "tab.activeBorder": "#7CC243",
-    "statusBar.background": "#7CC243",
-    "statusBar.foreground": "#ffffff"
   }
 }

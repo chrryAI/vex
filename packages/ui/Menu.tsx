@@ -162,15 +162,15 @@ export default function Menu({
   const count = useResponsiveCount([
     { height: 500, count: 0 },
     { height: 550, count: 0 },
-    { height: 600, count: 1 },
-    { height: 650, count: 2 },
-    { height: 700, count: 3 },
-    { height: 750, count: 4 },
-    { height: 800, count: 5 },
-    { height: 850, count: 6 },
-    { height: 900, count: 7 },
-    { height: 950, count: 8 },
-    { height: 1000, count: 9 },
+    { height: 600, count: 0 },
+    { height: 650, count: 1 },
+    { height: 700, count: 2 },
+    { height: 750, count: 3 },
+    { height: 800, count: 4 },
+    { height: 850, count: 5 },
+    { height: 900, count: 6 },
+    { height: 950, count: 7 },
+    { height: 1000, count: 8 },
   ])
 
   const [loadingThreadId, setLoadingThreadId] = useState<string | null>(null)
@@ -753,22 +753,42 @@ export default function Menu({
                               }}
                               className="menuThreadItem"
                             >
-                              {thread.pearAppId ? (
-                                <Span style={{ display: "flex", gap: 5 }}>
-                                  <Img app={thread.app} size={15} />
-                                  <Img slug="pear" size={15} />
-                                  <Img app={thread.pearApp} size={15} />
-                                </Span>
-                              ) : thread.isMainThread ? (
+                              <Div
+                                style={{
+                                  display: "flex",
+                                  gap: 10,
+                                  marginTop: 3,
+                                  marginBottom: 4,
+                                }}
+                              >
+                                {thread.app && (
+                                  <AppLink
+                                    icon={
+                                      <Img size={18} slug={thread.app?.slug} />
+                                    }
+                                    loading={<Loading size={18} />}
+                                    app={thread.app}
+                                  ></AppLink>
+                                )}
+                                {thread?.apps
+                                  ?.slice(0, 4)
+                                  ?.filter((a) => a.id !== thread.appId)
+                                  .map((app) => (
+                                    <AppLink
+                                      key={app.id}
+                                      icon={<Img size={18} slug={app.slug} />}
+                                      loading={<Loading size={18} />}
+                                      app={app}
+                                    ></AppLink>
+                                  ))}
+                              </Div>
+
+                              {thread.isMainThread ? (
                                 <Span
                                   style={{ display: "flex", gap: 10 }}
                                   title={t("DNA thread")}
                                 >
                                   🧬 <Img slug={thread?.app?.slug} size={15} />
-                                </Span>
-                              ) : thread.app ? (
-                                <Span>
-                                  <Img slug={thread?.app?.slug} size={15} />
                                 </Span>
                               ) : thread.visibility !== "private" ||
                                 thread.collaborations?.length ? (
@@ -808,7 +828,6 @@ export default function Menu({
                                   ) : null}
                                 </Span>
                               ) : null}
-
                               {(() => {
                                 const url = `/threads/${thread.id}`
 
@@ -818,9 +837,7 @@ export default function Menu({
                                     data-testid="menu-thread-link"
                                     style={{
                                       ...styles.threadItem.style,
-                                      color: isDark
-                                        ? "var(--blue-600)"
-                                        : "var(--blue-600)",
+                                      color: "var(--shade-6)",
                                     }}
                                     onClick={(e) => {
                                       const threadApp = storeApps.find(
@@ -862,7 +879,6 @@ export default function Menu({
                                   </A>
                                 )
                               })()}
-
                               {loadingThreadId === thread.id ? (
                                 <Loading
                                   style={{

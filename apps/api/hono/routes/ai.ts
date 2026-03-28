@@ -3616,12 +3616,15 @@ When message language is unclear, default to this language.`
   const fingerprint =
     fp && isE2EInternal ? fp : member?.fingerprint || guest?.fingerprint
 
+  const isBeles = process.env.BELES === "true"
   const isE2E =
     !!fingerprint &&
     !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
     !!isE2EInternal &&
     !job &&
-    !process.env.BELES
+    !isBeles
+
+  const canAnalyze = isBeles ? false : true
 
   // isE2E and fingerprint already declared earlier for performance optimization
 
@@ -4163,8 +4166,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
     }
 
     // Add file parts
-    if (userContent.files && userContent.files.length > 0) {
-      for (const file of userContent.files) {
+    if (userMessage.files?.length) {
+      for (const file of userMessage.files) {
         if (file.type === "image") {
           let uploadResult: uploadResultType
           try {
@@ -4197,15 +4200,17 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             size: file.size,
           })
 
-          contentParts.push({
-            type: "image",
-            image: new Uint8Array(file.buffer),
-          })
+          canAnalyze &&
+            contentParts.push({
+              type: "image",
+              image: new Uint8Array(file.buffer),
+            })
         } else if (file.type === "audio" || file.type === "video") {
-          contentParts.push({
-            type: "text",
-            text: `[${file.type.toUpperCase()} FILE: ${file.filename} (${(file.size / 1024).toFixed(1)}KB)]`,
-          })
+          canAnalyze &&
+            contentParts.push({
+              type: "text",
+              text: `[${file.type.toUpperCase()} FILE: ${file.filename} (${(file.size / 1024).toFixed(1)}KB)]`,
+            })
           if (file.type === "audio") {
             let uploadResult: uploadResultType
             try {
@@ -4273,6 +4278,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
 
               for (let i = 0; i < videoFrames.length; i++) {
                 videoFrames[i] &&
+                  canAnalyze &&
                   contentParts.push({
                     type: "image",
                     image: new Uint8Array(
@@ -5515,7 +5521,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
     messages[0].content = `${messages[0].content}${searchContext}\n\nPlease use the above web search results to provide accurate, up-to-date information in your response. Cite sources when relevant using numbered citations like [1], [2], [3], etc.`
   }
 
-  if (isE2E) {
+  if (isE2E || (imageGenerationEnabled && isE2EInternal)) {
     if (isDevelopment) console.debug("Starting E2E testing", { threadId })
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
@@ -7351,7 +7357,7 @@ Respond in JSON format:
       let tokenLimitWarning: string | null = null
 
       const toolsForModel =
-        process.env.BELES === "true" || agent.name === "perplexity"
+        isBeles || agent.name === "perplexity"
           ? undefined
           : job
             ? allTools
