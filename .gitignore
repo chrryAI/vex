@@ -1,5 +1,10 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Random/temp files that might be accidentally created (e.g., apps/zibISwDk - 111MB binary)
+apps/zib*
+# Ignore extensionless files in apps root (potential temp/bin files)
+apps/*[^.][^.][^.][^.][^.]$
+
 # dependencies
 node_modules
 .pnp
