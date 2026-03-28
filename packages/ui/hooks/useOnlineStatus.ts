@@ -89,7 +89,7 @@ export function useOnlineStatus() {
 
     window.addEventListener("online", updateStatus)
     window.addEventListener("offline", updateStatus)
-    window.addEventListener("focus", checkConnection)
+    // window.addEventListener("focus", checkConnection)
 
     // Seems stable for now
     // Initial check in case navigator.onLine is wrong
