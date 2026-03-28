@@ -2293,7 +2293,7 @@ You can enable these in your settings anytime!"
 
   // 🍇 Grape Context (Global - all apps should know about available apps)
   const grapeContext =
-    requestApp?.store?.apps && requestApp.store.apps.length > 0
+    requestApp?.store?.apps && requestApp.store?.apps?.length > 0
       ? `
 
 ## 🍇 Grape (Discover Apps, Earn Credits)

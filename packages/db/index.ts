@@ -5572,8 +5572,8 @@ export const getSimpleApp = async ({
   // Otherwise use public cache key
   const cacheKey =
     userId || guestId
-      ? `simpleapp:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}:includeCharacterProfiles:${includeCharacterProfiles}`
-      : `simpleapp:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}:includeCharacterProfiles:${includeCharacterProfiles}`
+      ? `simple-app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}:includeCharacterProfiles:${includeCharacterProfiles}`
+      : `simple-app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}:includeCharacterProfiles:${includeCharacterProfiles}`
 
   // Try cache first
 
@@ -5655,7 +5655,7 @@ export const getSimpleApp = async ({
 
   // Cross-seed public cache if owner-specific request
   if (isOwner) {
-    const publicCacheKey = `simpleapp:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}:includeCharacterProfiles:${includeCharacterProfiles}`
+    const publicCacheKey = `simple-app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}:includeCharacterProfiles:${includeCharacterProfiles}`
     // Sanitize user-specific data (placeholders)
     const publicResult = { ...r, placeHolder: undefined }
     setCache(publicCacheKey, publicResult, 60 * 60)

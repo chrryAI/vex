@@ -1291,12 +1291,12 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                           {comment.app && (
                             <Img
                               app={
-                                comment.app.store?.apps.length
+                                comment.app.store?.apps?.length
                                   ? comment.app
                                   : undefined
                               }
                               slug={
-                                comment.app.store?.apps.length
+                                comment.app.store?.apps?.length
                                   ? undefined
                                   : comment.app.slug
                               }

@@ -483,7 +483,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
     ]
 
     // Add autonomous feedback task for store apps
-    if (app?.store?.apps && app.store.apps.length > 0) {
+    if (app?.store?.apps && app.store?.apps?.length > 0) {
       scheduledTimes.push({
         ...t(p(85)),
         model: "sushi",

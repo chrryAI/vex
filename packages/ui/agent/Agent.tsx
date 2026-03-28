@@ -1030,14 +1030,14 @@ export default function Agent({
                       ...styles.bordered.style,
                     }}
                   >
-                    {!chrry?.store?.apps.length ? (
+                    {!chrry?.store?.apps?.length ? (
                       <Loading size={22} />
                     ) : (
                       <Blocks size={18} color="var(--accent-6)" />
                     )}
                     {t("Extend")}
                   </Span>
-                  {chrry?.store?.apps.length ? (
+                  {chrry?.store?.apps?.length ? (
                     <Div
                       style={{ ...styles.field.style, ...utilities.row.style }}
                     >

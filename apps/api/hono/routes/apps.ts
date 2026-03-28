@@ -716,7 +716,7 @@ app.post("/reorder", async (c) => {
       userId: member?.id,
       guestId: guest?.id,
       storeId,
-      appsCount: body.apps.length,
+      appsCount: body.apps?.length,
     })
 
     // Process each app
