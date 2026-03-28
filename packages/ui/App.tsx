@@ -965,7 +965,7 @@ export default function App({
                   alignItems: "center",
                 }}
               >
-                <Hippo dataTestId="minimize-hippo" />
+                <Hippo />
 
                 {user && !user?.subscription ? (
                   <Button
@@ -1421,7 +1421,7 @@ export default function App({
                     bottom: 5,
                   }}
                 >
-                  <Hippo size={24} dataTestId="highlights" />
+                  <Hippo size={24} />
                 </Div>
               )}
             </Div>

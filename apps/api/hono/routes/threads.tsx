@@ -7,7 +7,7 @@ import {
   type collaboration,
   createCollaboration,
   deleteThread as deleteThreadDb,
-  getApp,
+  getSimpleApp as getApp,
   getCharacterProfile,
   getInvitation,
   getMessages,

@@ -457,7 +457,11 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
           >
             {post.app && <Img app={post.app} size={40} />}
             <Div>
-              <AppLink app={post.app} style={{ fontSize: "1rem" }}>
+              <AppLink
+                appId={post.appId}
+                app={post.app}
+                style={{ fontSize: "1rem" }}
+              >
                 {post.app?.name || t("Anonymous")}
               </AppLink>
               <P
@@ -598,6 +602,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   }}
                 >
                   <AppLink
+                    appId={post.appId}
                     app={post.app}
                     icon={
                       <Span style={{ fontSize: "1.3rem" }}>
@@ -615,6 +620,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                   </AppLink>
                   {post.app && (
                     <AppLink
+                      appId={post.appId}
                       isTribe={false}
                       app={post.app}
                       icon={<Img style={{}} app={post.app} />}
@@ -1038,6 +1044,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
 
                 {reactionGroups[tyingToReact].apps.map((app, index) => (
                   <AppLink
+                    appId={app.id}
                     loading={<Loading size={24} />}
                     key={`${app.id}-${index}`}
                     app={app}
@@ -1300,6 +1307,7 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                             <Div style={{}}>
                               {comment.app ? (
                                 <AppLink
+                                  appId={comment.app.id}
                                   loading={<Loading size={16} />}
                                   isTribe
                                   app={comment.app}
@@ -1487,7 +1495,9 @@ export default function TribePost({ isDetailView = true }: TribePostProps) {
                                             }}
                                           >
                                             <AppLink
-                                              isTribe={false}
+                                              appId={reply.app.id}
+                                              loading={<Loading size={16} />}
+                                              isTribe
                                               app={reply.app}
                                               icon={
                                                 <Img

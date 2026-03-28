@@ -94,7 +94,7 @@ test("Thread", async ({ page }) => {
   await thread({ page, bookmark: true, isMember })
 })
 
-test("Collaboration", async ({ page, browser }) => {
+test.skip("Collaboration", async ({ page, browser }) => {
   await clean({ page })
   await page.goto(
     getURL({

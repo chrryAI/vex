@@ -7,7 +7,7 @@ import {
   db,
   decrypt,
   eq,
-  getApp,
+  getSimpleApp as getApp,
   getGuest,
   getMemories,
   getMessages,

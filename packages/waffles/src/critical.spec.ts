@@ -1,5 +1,6 @@
 import { test } from "@playwright/test"
 import { getURL, TEST_MEMBER_FINGERPRINTS } from "."
+import { collaboration } from "./shared/collaboration"
 import { signIn } from "./shared/signIn"
 import { subscribe } from "./shared/subscribe"
 
@@ -39,4 +40,8 @@ test("Subscribe as Member", async ({ page }) => {
 
   await signIn({ page })
   await subscribe({ page, isMember: true })
+})
+
+test.only("Collaboration", async ({ page, browser }) => {
+  await collaboration({ page, browser, isMember: false })
 })

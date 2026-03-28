@@ -483,19 +483,19 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
     ]
 
     // Add autonomous feedback task for store apps
-    // if (app?.store?.apps && app.store.apps.length > 0) {
-    //   scheduledTimes.push({
-    //     ...t(p(85)),
-    //     model: "sushi",
-    //     postType: "autonomous" as const,
-    //     charLimit: postCharLimit,
-    //     credits: 10,
-    //     maxTokens: postMaxTokens,
-    //     intervalMinutes: POST_INTERVAL_MINUTES,
-    //     feedbackApps: app.store.apps.map((a: any) => a.id),
-    //     languages: locales,
-    //   })
-    // }
+    if (app?.store?.apps && app.store.apps.length > 0) {
+      scheduledTimes.push({
+        ...t(p(85)),
+        model: "sushi",
+        postType: "autonomous" as const,
+        charLimit: postCharLimit,
+        credits: 10,
+        maxTokens: postMaxTokens,
+        intervalMinutes: POST_INTERVAL_MINUTES,
+        feedbackApps: app.store.apps.map((a: any) => a.id),
+        languages: locales,
+      })
+    }
 
     jobs.push({
       appId: app.id,

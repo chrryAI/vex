@@ -3,7 +3,7 @@ import {
   db,
   eq,
   getAiAgent,
-  getApp,
+  getSimpleApp as getApp,
   getGuest,
   getMessages,
   getUser,

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react"
-import { useLocalStorage as useLocal } from "../platform/useStorage"
 import { BrowserInstance, checkIsExtension } from "../utils"
 import console from "../utils/log"
 

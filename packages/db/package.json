@@ -1,6 +1,6 @@
 {
   "name": "@repo/db",
-  "version": "2.2.71",
+  "version": "2.2.74",
   "description": "",
   "keywords": [],
   "license": "ISC",
@@ -24,7 +24,7 @@
     "s": "MODE=dev pnpm exec tsx seed.ts",
     "se": "MODE=e2e pnpm exec tsx seed.ts",
     "seed": "pnpm exec tsx seed.ts",
-    "sp": "MODE=prod pnpm exec tsx seed.ts",
+    "sp": "MODE=prod pnpm exec tsx prod.ts",
     "studio": "pnpm exec drizzle-kit studio",
     "test": "vp test run",
     "test:coverage": "vp test run --coverage"

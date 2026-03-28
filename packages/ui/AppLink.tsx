@@ -22,9 +22,11 @@ export default function AppLink({
   event = ANALYTICS_EVENTS.APP_LINK_CLICK,
   openInNewTab = false,
   dataTestId,
+  appId,
   ...props
 }: {
   title?: string
+  appId?: string
   style?: CSSProperties
   app: appWithStore
   children?: React.ReactNode
@@ -51,11 +53,17 @@ export default function AppLink({
     storeApps,
     mergeApps,
     plausible,
+    setCommentAppId,
   } = useAuth()
 
-  const [isLoading, setIsLoading] = React.useState(
+  const [isLoading, setIsLoadingInternal] = React.useState(
     loadingApp && loadingApp?.id === app?.id,
   )
+
+  const setIsLoading = (value: boolean) => {
+    setIsLoadingInternal(value)
+    appId && setCommentAppId(value ? app.id : undefined)
+  }
 
   const { push } = useNavigationContext()
 
@@ -66,7 +74,7 @@ export default function AppLink({
   }, [loadingApp])
 
   const currentApp = storeApps.find(
-    (a) => a.id === app?.id && a.store?.apps?.length,
+    (a) => app.id && a.id === app?.id && a.store?.apps?.length,
   )
 
   React.useEffect(() => {
@@ -125,6 +133,7 @@ export default function AppLink({
           if (!currentApp) {
             setLoadingAppId(app.id)
             onLoading?.()
+
             setIsLoading(true)
             return
           }

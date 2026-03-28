@@ -1381,7 +1381,7 @@ ai.post("/", async (c) => {
             depth: 1,
             userId: member?.id,
             guestId: guest?.id,
-            skipCache: true,
+            // skipCache: true,
           }),
         )
       : Promise.resolve(undefined),
@@ -3126,7 +3126,7 @@ If the user asks for statistics, data, or concrete numbers regarding specific gr
         id: pearAppId,
         userId: member?.id,
         guestId: guest?.id,
-        skipCache: true,
+        // skipCache: true,
         depth: 1,
       })
     : undefined
@@ -3258,16 +3258,14 @@ This data helps maintain system integrity and ensure comprehensive test coverage
       }
 
       await updateApp({
-        ...requestApp!,
+        id: requestApp.id,
         mainThreadId: thread.id,
       })
 
-      requestApp = await getApp({
-        id: requestApp!.id,
-        userId: member?.id,
-        guestId: guest?.id,
-        skipCache: true,
-      })
+      requestApp = {
+        ...requestApp,
+        mainThreadId: thread.id,
+      }
     } catch (error) {
       captureException(error)
     }

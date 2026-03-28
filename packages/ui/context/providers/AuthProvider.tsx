@@ -92,7 +92,6 @@ import {
 } from "../../utils/siteConfig"
 import ago from "../../utils/timeAgo"
 import { excludedSlugRoutes } from "../../utils/url"
-import { useTheme } from "../ThemeContext"
 import type { Task } from "../TimerContext"
 import type { AppStatus } from "./AppProvider"
 import { useError } from "./ErrorProvider"
@@ -104,7 +103,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.71"
+const VERSION = "2.2.74"
 
 const AuthContext = createContext<
   | {
@@ -143,6 +142,8 @@ const AuthContext = createContext<
         timestamp: number
         duration?: number
       } | null
+      commentAppId?: string
+      setCommentAppId: (value: string | undefined) => void
       showWatermelon: boolean
       setShowWatermelon: (value: boolean) => void
       refetchAffiliateData: () => Promise<void>
@@ -2138,12 +2139,23 @@ export function AuthProvider({
 
     setSkipAppCacheTempInternal(val)
   }
+
+  const [commentAppId, setCommentAppId] = useState<string | undefined>(
+    undefined,
+  )
   const {
     data: storeAppsSwr,
     mutate: refetchApps,
     isLoading: isLoadingApps,
   } = useSWR(
-    token && ["app", appId, skipAppCacheTemp, isManagingApp, postId],
+    token && [
+      "app",
+      appId,
+      skipAppCacheTemp,
+      isManagingApp,
+      postId,
+      commentAppId,
+    ],
     async () => {
       try {
         if (!token) return
@@ -2153,7 +2165,7 @@ export function AuthProvider({
           chrryUrl,
           threadId,
           pathname,
-          postId,
+          postId: commentAppId ? undefined : postId,
           skipCache: isManagingApp
             ? isOwner(app, {
                 userId: user?.id,
@@ -2258,6 +2270,9 @@ export function AuthProvider({
 
   useEffect(() => {
     if (storeAppsSwr) {
+      if (storeAppsSwr.id === commentAppId) {
+        setCommentAppId(undefined)
+      }
       skipAppCacheTemp && setSkipAppCacheTemp(false)
       const a = storeAppsSwr.store?.apps?.find((app) => app.id === loadingAppId)
       if (hasStoreApps(a)) {
@@ -2268,7 +2283,7 @@ export function AuthProvider({
         mergeApps(storeAppsSwr.store?.apps)
       }
     }
-  }, [storeAppsSwr, loadingAppId])
+  }, [storeAppsSwr, loadingAppId, commentAppId])
 
   const showFocusInitial = searchParams.get("focus") === "true"
   const isFocus = !postId
@@ -3856,6 +3871,8 @@ export function AuthProvider({
         FRONTEND_URL,
         API_URL,
         MAX_FILE_SIZES,
+        commentAppId,
+        setCommentAppId,
         showWatermelonInitial,
         isE2E,
         PRO_PRICE,
