@@ -460,13 +460,19 @@ export function ChatProvider({
       setPendingCollaborationThreadsCount(threads.totalCount)
   }
 
+  const currentSearchStatus = searchParams.get("collaborationStatus")
+
   const setCollaborationStatus = (
     newStatus: "pending" | "active" | undefined | null,
   ) => {
+    if (!newStatus && currentSearchStatus) {
+      removeParams("collaborationStatus")
+    }
     if (newStatus === collaborationStatus) {
       return
     }
     setCollaborationStatusInternal(newStatus)
+
     fetchActiveCollaborationThreadsCount()
     fetchPendingCollaborationThreadsCount()
   }

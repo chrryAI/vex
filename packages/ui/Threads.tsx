@@ -104,11 +104,28 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     nextPage: null,
   })
 
+  const currentSearchStatus = searchParams.get("collaborationStatus") as
+    | "pending"
+    | "active"
+    | null
+
+  const [localCollaborationStatus, setCollaborationStatusInitial] = useState<
+    "pending" | "active" | string | undefined | null
+  >(currentSearchStatus || currentSearchStatus)
+
+  useEffect(() => {
+    if (currentSearchStatus) {
+      setCollaborationStatusInternal(currentSearchStatus)
+      setCollaborationStatusInitial(currentSearchStatus)
+    }
+  }, [currentSearchStatus])
+
   const setCollaborationStatus = (
     status: "pending" | "active" | undefined | null,
     pn: string = pathname,
   ) => {
     setCollaborationStatusInternal(status)
+    setCollaborationStatusInitial(status)
 
     if (status) {
       setIsDNA(false)
@@ -116,17 +133,21 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
       setHasPearApp(false)
     }
 
-    const currentSearchStatus = searchParams.get("collaborationStatus")
-
-    if (currentSearchStatus === status) {
-      return
-    }
-    if (status) {
-      router.push(`${pn}?collaborationStatus=${status}`)
-    } else {
-      router.push(pn)
-    }
+    // if (currentSearchStatus === status) {
+    //   return
+    // }
+    // if (status) {
+    //   router.push(`${pn}?collaborationStatus=${status}`)
+    // } else {
+    //   router.push(pn)
+    // }
   }
+
+  useEffect(() => {
+    setCollaborationStatus(
+      currentSearchStatus as "active" | "pending" | undefined | null,
+    )
+  }, [currentSearchStatus])
 
   const [loadingThreadId, setLoadingThreadId] = useState<string | null>(null)
 

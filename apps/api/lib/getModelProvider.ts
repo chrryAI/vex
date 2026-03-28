@@ -133,10 +133,12 @@ export async function getModelProvider({
   user,
   guest,
   job,
+  byokModelId,
   ...rest
 }: {
   app?: app | appWithStore
   modelId?: string
+  byokModelId?: string
   name?:
     | "deepSeek"
     | "chatGPT"
@@ -153,7 +155,6 @@ export async function getModelProvider({
   user?: user | userWithRelations | null
   guest?: guest | null
   activeSchedule?: {
-    modelId?: string
     time: string // "09:00"
     model: string
     postType: "post" | "comment" | "engagement" | "autonomous"
@@ -224,11 +225,13 @@ export async function getModelProvider({
   }
 
   const toSwitch =
-    user?.role === "admin" && rest.modelId
-      ? "beles"
-      : process.env.BELES === "yes" && (isDevelopment ? !job : !!job)
+    !(isBYOK || user?.role === "admin") && !byokModelId
+      ? agent.name
+      : byokModelId
         ? "beles"
-        : agent.name
+        : !byokModelId && (isDevelopment ? !job : !!job)
+          ? "beles"
+          : agent.name
 
   switch (toSwitch) {
     case "beles": {
@@ -249,7 +252,8 @@ export async function getModelProvider({
         const failed = agent.metadata?.failed || []
         const active = freeModels.filter((m) => !failed.includes(m))
         const modelId =
-          rest.modelId ||
+          byokModelId ||
+          // rest.modelId ||
           active.sort((a, b) => {
             const metadata = agent.metadata as Record<string, any> | undefined
             const dateA = metadata?.[a] ? new Date(metadata[a]).getTime() : 0
@@ -478,7 +482,7 @@ export async function getModelProvider({
       })
 
       const modelId =
-        activeSchedule?.modelId ||
+        activeSchedule?.model ||
         job?.metadata?.modelId ||
         sortedPool[0] ||
         (activePool?.length > 0 ? activePool[0] : pool[0]) ||
@@ -631,7 +635,7 @@ export async function getModelProvider({
       {
         // For scheduled jobs, use DeepSeek instead of expensive Claude
         const scheduledModelId =
-          activeSchedule?.modelId ||
+          activeSchedule?.model ||
           job?.metadata?.modelId ||
           job?.modelConfig?.model ||
           "anthropic/claude-sonnet-4-6"

@@ -1296,6 +1296,7 @@ ai.post("/", async (c) => {
       about: formData.get("about") === "true",
       isSpeechActive: formData.get("isSpeechActive") === "true",
       pear: formData.get("pear") === "true",
+      byokModelId: formData.get("modelId") === "true",
       weather: formData.get("weather")
         ? JSON.parse(formData.get("weather") as string)
         : null,
@@ -1345,6 +1346,7 @@ ai.post("/", async (c) => {
     postType,
     pearAppId,
     modelId,
+    byokModelId,
     ...rest
   } = requestData
 
@@ -5299,7 +5301,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       activeSchedule,
       user: member,
       guest,
-      modelId,
+      byokModelId,
     })
   } else if (rest.webSearchEnabled && agent.name === "sushi") {
     const perplexityAgent = await getAiAgent({
@@ -5317,7 +5319,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       activeSchedule,
       user: member,
       guest,
-      modelId,
+      byokModelId,
     })
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
@@ -5332,8 +5334,8 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       job,
       activeSchedule,
       user: member,
+      byokModelId,
       guest,
-      modelId,
     })
     console.log(
       `✅ Provider created using: ${model.agentName || agent.name}${jobId ? " (reasoning disabled for scheduled job)" : ""}`,
@@ -5758,7 +5760,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
           activeSchedule,
           user: member,
           guest,
-          modelId,
+          byokModelId,
         })
         const enhanceModelId =
           typeof deepseekEnhanceProvider.provider === "string"
