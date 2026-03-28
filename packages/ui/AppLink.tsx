@@ -53,7 +53,6 @@ export default function AppLink({
     storeApps,
     mergeApps,
     plausible,
-    setCommentAppId,
   } = useAuth()
 
   const [isLoading, setIsLoadingInternal] = React.useState(
@@ -62,7 +61,6 @@ export default function AppLink({
 
   const setIsLoading = (value: boolean) => {
     setIsLoadingInternal(value)
-    appId && setCommentAppId(value ? app.id : undefined)
   }
 
   const { push } = useNavigationContext()

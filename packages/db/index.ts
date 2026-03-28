@@ -5442,11 +5442,14 @@ export const getApp = async ({
   const result = {
     ...(isSafe
       ? (toSafeApp({
-          app: { ...app.app, characterProfiles: appCharacterProfiles },
+          app: {
+            ...app.app,
+            characterProfiles: appCharacterProfiles ?? undefined,
+          },
           userId,
           guestId,
         }) as unknown as app)
-      : { ...app.app, characterProfiles: appCharacterProfiles }),
+      : { ...app.app, characterProfiles: appCharacterProfiles ?? undefined }),
     extends: await getAppExtends({
       appId: app.app.id,
     }),
@@ -5486,14 +5489,16 @@ export const getSimpleApp = async ({
   guestId,
   storeId,
   isSafe = true,
-  depth = 0,
   storeSlug,
   storeDomain,
-  skipCache = false,
   ownerId,
   threadId,
   isSystem,
   role,
+  name,
+  depth = 0,
+  skipCache = false,
+  includeCharacterProfiles = false,
 }: {
   id?: string
   slug?: string
@@ -5502,13 +5507,15 @@ export const getSimpleApp = async ({
   storeId?: string
   isSafe?: boolean
   depth?: number
-  storeSlug?: string
   storeDomain?: string
-  skipCache?: boolean
+  storeSlug?: string
   ownerId?: string
   threadId?: string
   isSystem?: boolean
+  name?: string
   role?: "admin" | "user"
+  skipCache?: boolean
+  includeCharacterProfiles?: boolean
 }): Promise<appWithStore | undefined> => {
   // Build app identification conditions
   const appConditions = []
@@ -5565,8 +5572,8 @@ export const getSimpleApp = async ({
   // Otherwise use public cache key
   const cacheKey =
     userId || guestId
-      ? `simple:app:${id}:slug:${slug}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
-      : `simple:app:${id}:slug:${slug}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
+      ? `simpleapp:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}:includeCharacterProfiles:${includeCharacterProfiles}`
+      : `simpleapp:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}:includeCharacterProfiles:${includeCharacterProfiles}`
 
   // Try cache first
 
@@ -5583,7 +5590,7 @@ export const getSimpleApp = async ({
       app: apps,
       user: users,
       guest: guests,
-      store: storeDomain ? stores : sql`NULL`.as("store"),
+      store: stores,
     })
     .from(apps)
     .leftJoin(users, eq(apps.userId, users.id))
@@ -5601,36 +5608,42 @@ export const getSimpleApp = async ({
 
   if (!app) return undefined
 
-  const appCharacterProfiles =
-    (await getCharacterProfiles({
-      appId: app.app.id,
-      threadId,
-    })) ??
-    (await getCharacterProfiles({
-      appId: app.app.id,
-      isAppOwner: true,
-    }))
+  const appCharacterProfiles = !includeCharacterProfiles
+    ? null
+    : ((await getCharacterProfiles({
+        appId: app.app.id,
+        threadId,
+      })) ??
+      (await getCharacterProfiles({
+        appId: app.app.id,
+        isAppOwner: true,
+      })))
 
   const result = {
     ...(isSafe
       ? (toSafeApp({
-          app: { ...app.app, characterProfiles: appCharacterProfiles },
+          app: {
+            ...app.app,
+            characterProfiles: appCharacterProfiles ?? undefined,
+          },
           userId,
           guestId,
         }) as unknown as app)
-      : { ...app.app, characterProfiles: appCharacterProfiles }),
-    extends: await getAppExtends({
-      appId: app.app.id,
-    }),
+      : { ...app.app, characterProfiles: appCharacterProfiles ?? undefined }),
     user: toSafeUser({ user: app.user }),
     guest: toSafeGuest({ guest: app.guest }),
     store: app.store,
-    placeHolder: await getPlaceHolder({
-      appId: app.app.id,
-      userId,
-      guestId,
-    }),
   } as unknown as appWithStore
+
+  const r = {
+    ...result,
+    store: result.store
+      ? {
+          ...result.store,
+          apps: [],
+        }
+      : undefined,
+  }
 
   // Determine if user is owner from query result (no extra DB queries needed)
   const isOwner =
@@ -5642,13 +5655,13 @@ export const getSimpleApp = async ({
 
   // Cross-seed public cache if owner-specific request
   if (isOwner) {
-    const publicCacheKey = `simple:app:${id}:slug:${slug}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}`
+    const publicCacheKey = `simpleapp:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}:includeCharacterProfiles:${includeCharacterProfiles}`
     // Sanitize user-specific data (placeholders)
-    const publicResult = { ...result, placeHolder: undefined }
+    const publicResult = { ...r, placeHolder: undefined }
     setCache(publicCacheKey, publicResult, 60 * 60)
   }
 
-  return result
+  return r
 }
 export const getPureApp = async ({
   name,
@@ -5656,9 +5669,7 @@ export const getPureApp = async ({
   slug,
   userId,
   guestId,
-  storeId,
   isSafe = true,
-  depth = 0,
   includeScheduledJobs = false,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom" | "Vex"

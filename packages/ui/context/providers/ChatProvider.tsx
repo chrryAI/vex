@@ -236,6 +236,7 @@ export function ChatProvider({
     actions,
     setShowWatermelon,
     appId,
+    setPostId,
     ...auth
   } = useAuth()
 
@@ -510,6 +511,7 @@ export function ChatProvider({
   }) => {
     if (value) {
       shouldStopAutoScrollRef.current = true
+      setPostId(undefined)
 
       setLikedInternal(undefined)
       setShowFocus(false)

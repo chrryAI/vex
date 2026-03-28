@@ -103,7 +103,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.79"
+const VERSION = "2.2.85"
 
 const AuthContext = createContext<
   | {
@@ -338,6 +338,7 @@ const AuthContext = createContext<
       popcorn: appWithStore | undefined
       TEST_MEMBER_EMAILS?: string[]
       TEST_MEMBER_FINGERPRINTS: string[]
+      setPostId: (postId: string | undefined) => void
       TEST_GUEST_FINGERPRINTS: string[]
       storeApp: appWithStore | undefined
       chrry: appWithStore | undefined
@@ -2154,7 +2155,7 @@ export function AuthProvider({
       skipAppCacheTemp,
       isManagingApp,
       postId,
-      commentAppId,
+      loadingAppId,
     ],
     async () => {
       try {
@@ -2165,7 +2166,7 @@ export function AuthProvider({
           chrryUrl,
           threadId,
           pathname,
-          postId: commentAppId ? undefined : postId,
+          postId: loadingAppId ? undefined : postId,
           skipCache: isManagingApp
             ? isOwner(app, {
                 userId: user?.id,
@@ -2296,12 +2297,16 @@ export function AuthProvider({
     ? excludedSlugRoutes?.includes(_routeSlug)
     : false
 
-  const showFocusInitial = searchParams.get("focus") === "true"
+  const showFocusQuery = searchParams.get("focus") === "true"
+  const showFocusPathname = pathname === "/focus"
+
+  const showFocusInitial = showFocusQuery || showFocusPathname
+
   const isFocus =
     !_isExcluded &&
     (!postId
-      ? baseApp
-        ? baseApp?.slug === "focus" || showFocusInitial
+      ? siteConfig
+        ? siteConfig?.slug === "focus" || showFocusInitial
         : showFocusInitial
       : false)
 
@@ -2311,7 +2316,7 @@ export function AuthProvider({
 
   const [showFocusInternal, setShowFocusInternal] = useLocalStorage<
     boolean | undefined | null
-  >(`showFocus:${app?.slug || "focus"}`, isFocus)
+  >(`focus`, undefined)
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
@@ -2672,18 +2677,18 @@ export function AuthProvider({
 
   const [isPear, setPearInternal] = useState(isPearInternal)
 
-  const showFocus = showFocusInternal && isFocus
+  const showFocus = showFocusInternal ?? isFocus
 
-  // useEffect(() => {
-  //   if (postId) setShowFocusInternal(false)
-  //   if (!baseApp?.slug) return
-  //   if (showFocus === undefined && baseApp?.slug === "focus") {
-  //     setShowFocusInternal(true)
-  //   }
-  //   if (showFocusInitial) {
-  //     setShowFocusInternal(showFocusInitial)
-  //   }
-  // }, [showFocusInitial, showFocus, baseApp?.slug, postId])
+  useEffect(() => {
+    if (postId) setShowFocusInternal(false)
+    console.log(`🚀 ~ AuthProvider ~ baseApp:`, baseApp)
+    if (showFocusInternal === undefined && siteConfig?.slug === "focus") {
+      setShowFocusInternal(true)
+    }
+    // if (showFocusInitial) {
+    //   setShowFocusInternal(showFocusInitial)
+    // }
+  }, [showFocusInternal, siteConfig, postId])
 
   const setShowFocus = (sw: boolean) => {
     setShowFocusInternal(sw)
@@ -2697,16 +2702,6 @@ export function AuthProvider({
       showFocus && removeParams("focus")
     }
   }
-
-  useEffect(() => {
-    if (!baseApp || !app) return
-    if (showFocus === undefined && baseApp?.slug) {
-      setShowFocus(
-        (baseApp?.slug === "focus" && app?.slug === "focus") ||
-          pathname === "/focus",
-      )
-    }
-  }, [baseApp, app, pathname]) // Only depend on slugs, not showFocus
 
   const pear = storeApps.find((app) => app.slug === "pear")
 
@@ -3879,6 +3874,7 @@ export function AuthProvider({
         showWatermelonInitial,
         isE2E,
         PRO_PRICE,
+        setPostId,
         PLUS_PRICE,
         selectedInstruction,
         setSelectedInstruction,

@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process"
 import fs from "node:fs"
 import path, { dirname } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -98,5 +99,17 @@ files.slice(1).forEach((file) => {
     updatePackageJson(file, newVersion)
   } else {
     replaceVersionInFile(file, oldVersion, newVersion)
+  }
+})
+
+// 8. Format package.json files with Biome to match project style
+const packageJsonFiles = files.filter((f) => f.endsWith("package.json"))
+console.log("Formatting package.json files with Biome...")
+packageJsonFiles.forEach((file) => {
+  try {
+    execSync(`npx biome format --write "${file}"`, { stdio: "pipe" })
+    console.log(`Formatted ${file}`)
+  } catch {
+    // biome might not be available, ignore
   }
 })
