@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "rm -rf .vite node_modules/.vite dist && NODE_ENV=development node server --force",
+    "dev:https": "portless flash pnpm run dev",
     "build": "vp run build:client && vp run build:server",
     "build:client": "NODE_ENV=production vp build --outDir dist/client",
     "build:server": "NODE_ENV=production vp build --ssr src/entry-server.tsx --outDir dist/server",

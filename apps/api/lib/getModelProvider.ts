@@ -133,8 +133,10 @@ export async function getModelProvider({
   user,
   guest,
   job,
+  ...rest
 }: {
   app?: app | appWithStore
+  modelId?: string
   name?:
     | "deepSeek"
     | "chatGPT"
@@ -222,9 +224,11 @@ export async function getModelProvider({
   }
 
   const toSwitch =
-    process.env.BELES === "true" && (isDevelopment ? !job : !!job)
+    user?.role === "admin" && rest.modelId
       ? "beles"
-      : agent.name
+      : process.env.BELES === "yes" && (isDevelopment ? !job : !!job)
+        ? "beles"
+        : agent.name
 
   switch (toSwitch) {
     case "beles": {
@@ -236,24 +240,23 @@ export async function getModelProvider({
 
       if (openrouterKey) {
         const freeModels = [
-          // "openrouter/free", // En kolay, auto-rotasyon
-          // "arcee-ai/trinity-large-preview:free",
-          // "nvidia/nemotron-3-nano-30b-a3b:free",
-          // "meta-llama/llama-3.3-70b-instruct:free",
-          // "qwen/qwen3-vl-235b-a22b-thinking",
-          "openrouter/free",
+          "qwen/qwen3-coder-next",
+          // "mistralai/devstral-2-2512",
+          // "openrouter/auto",
         ]
 
         // LRU rotasyon (mevcut sortedPool logicini kullan)
         const failed = agent.metadata?.failed || []
         const active = freeModels.filter((m) => !failed.includes(m))
         const modelId =
+          rest.modelId ||
           active.sort((a, b) => {
             const metadata = agent.metadata as Record<string, any> | undefined
             const dateA = metadata?.[a] ? new Date(metadata[a]).getTime() : 0
             const dateB = metadata?.[b] ? new Date(metadata[b]).getTime() : 0
             return dateA - dateB
-          })[0] || "openrouter/free"
+          })[0] ||
+          "openrouter/free"
 
         const provider = createOpenRouter({ apiKey: openrouterKey })
 

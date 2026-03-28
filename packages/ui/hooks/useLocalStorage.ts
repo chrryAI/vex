@@ -114,7 +114,7 @@ export default function useLocalStorage<T>(
 
   const setValue = useCallback(
     async (value: T | ((t: T) => T)) => {
-      if (!key) return value
+      // if (!key) return value
       try {
         const valueToStore =
           value instanceof Function ? value(storedValue) : value

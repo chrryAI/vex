@@ -1280,6 +1280,7 @@ ai.post("/", async (c) => {
       appId: formData.get("appId") as string,
       fp: formData.get("fingerprint") as string,
       slug: formData.get("slug") as string,
+      modelId: formData.get("slug") as string,
       selectedAgentId: (formData.get("selectedAgentId") as string) || "",
       pauseDebate: formData.get("pauseDebate") === "true",
       debateAgentId: (formData.get("debateAgentId") as string) || "",
@@ -1343,6 +1344,7 @@ ai.post("/", async (c) => {
     fingerprint: fp,
     postType,
     pearAppId,
+    modelId,
     ...rest
   } = requestData
 
@@ -1486,9 +1488,14 @@ ai.post("/", async (c) => {
       },
       c,
     }
-    shouldStream
-      ? notifyOwnerAndCollaborationsInternal(payload)
-      : (canPostToMolt || canPostToTribe) && broadcast(payload)
+
+    notifyOwnerAndCollaborationsInternal({
+      ...payload,
+      types: ["stream", "email", "ws"].filter((type) =>
+        shouldStream ? type : type !== "ws",
+      ) as notifyOwnerAndCollaborationsPayload["types"],
+    })
+    !shouldStream && (canPostToMolt || canPostToTribe) && broadcast(payload)
   }
 
   async function enhancedStreamChunk({
@@ -5292,6 +5299,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       activeSchedule,
       user: member,
       guest,
+      modelId,
     })
   } else if (rest.webSearchEnabled && agent.name === "sushi") {
     const perplexityAgent = await getAiAgent({
@@ -5309,6 +5317,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       activeSchedule,
       user: member,
       guest,
+      modelId,
     })
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
@@ -5324,6 +5333,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       activeSchedule,
       user: member,
       guest,
+      modelId,
     })
     console.log(
       `✅ Provider created using: ${model.agentName || agent.name}${jobId ? " (reasoning disabled for scheduled job)" : ""}`,
@@ -5748,6 +5758,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
           activeSchedule,
           user: member,
           guest,
+          modelId,
         })
         const enhanceModelId =
           typeof deepseekEnhanceProvider.provider === "string"

@@ -103,7 +103,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.87"
+const VERSION = "2.2.90"
 
 const AuthContext = createContext<
   | {
@@ -114,6 +114,7 @@ const AuthContext = createContext<
         chromeVersion: string
         macosVersion: string
       }
+      isAdmin: boolean
       isDonutOpen: boolean
       setIsDonutOpen: (value: boolean) => void
       push: (href: string) => void
@@ -129,6 +130,8 @@ const AuthContext = createContext<
       canShowTribe: boolean
       showWatermelonInitial: boolean
       hasHydrated: boolean
+      modelId: string | undefined
+      setModelId: (value: string | undefined) => void
       actions: apiActions
       donut?: boolean
       setAbout: (value: string | undefined) => void
@@ -917,6 +920,8 @@ export function AuthProvider({
     [],
   )
 
+  const [isAdmin, setIsAdmin] = useState(!!user?.roles?.includes("admin"))
+
   useEffect(() => {
     if (error) {
       console.error("🔥 Global Auth Error Triggered:", error)
@@ -1117,6 +1122,10 @@ export function AuthProvider({
       // Update user/guest state
       if (sessionData.user) {
         setUser(sessionData.user)
+        setIsAdmin(
+          sessionData.user.roles.includes("admin") ||
+            session?.user?.role === "admin",
+        )
         setToken(sessionData.user.token)
         setFingerprint(sessionData.user.fingerprint || undefined)
         setGuest(undefined)
@@ -2681,7 +2690,6 @@ export function AuthProvider({
 
   useEffect(() => {
     if (postId) setShowFocusInternal(false)
-    console.log(`🚀 ~ AuthProvider ~ baseApp:`, baseApp)
     if (showFocusInternal === undefined && siteConfig?.slug === "focus") {
       setShowFocusInternal(true)
     }
@@ -2829,6 +2837,15 @@ export function AuthProvider({
       i18n.changeLanguage(locale)
     }
   }
+
+  const [modelIdInternal, setModelIdInternal] = useLocalStorage<
+    string | undefined
+  >("modelId", undefined)
+
+  const setModelId = (value: string | undefined) => {
+    setModelIdInternal(value || "")
+  }
+  const modelId = isAdmin ? modelIdInternal : undefined
 
   const [isLoading, setIsLoading] = useState(true)
 
@@ -3638,6 +3655,8 @@ export function AuthProvider({
         loadingApp,
         selectedAgent,
         setSelectedAgent,
+        modelId,
+        setModelId,
         setLoadingApp,
         taskId,
         focus,
@@ -3883,6 +3902,7 @@ export function AuthProvider({
         PROMPT_LIMITS,
         push: router.push,
         versions,
+        isAdmin,
       }}
     >
       {children}

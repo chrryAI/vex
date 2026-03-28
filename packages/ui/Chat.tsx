@@ -275,6 +275,7 @@ export default function Chat({
     OWNER_CREDITS,
     PROMPT_LIMITS,
     isE2E,
+    modelId,
     ...auth
   } = useAuth()
 
@@ -1977,6 +1978,8 @@ export default function Chat({
         Authorization: `Bearer ${token}`,
       }
 
+      const isAdmin = user?.roles?.includes("admin")
+
       if (files && files.length > 0) {
         // Use FormData for file uploads
         const formData = new FormData()
@@ -1995,6 +1998,7 @@ export default function Chat({
           "imageGenerationEnabled",
           isImageGenerationEnabled.toString(),
         )
+        isAdmin && modelId && formData.append("modelId", modelId)
 
         isRetro && formData.append("retro", "true")
 
@@ -2039,6 +2043,7 @@ export default function Chat({
           retro: isRetro,
           appId: app?.id,
           fingerprint,
+          modelId: isAdmin ? modelId : undefined,
         })
       }
 

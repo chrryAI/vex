@@ -4,9 +4,6 @@ import * as utils from ".."
 const registerServiceWorker = async (
   FRONTEND_URL = utils.FRONTEND_URL,
 ): Promise<ServiceWorkerRegistration | null> => {
-  // Temporarily disable service worker to prevent reload loop
-  return null
-
   if ("serviceWorker" in navigator) {
     try {
       const registration = await navigator.serviceWorker.register(
@@ -18,10 +15,7 @@ const registerServiceWorker = async (
         },
       )
 
-      // Check for updates immediately
-      registration.update()
-
-      // Listen for new service worker installation
+      // Listen for new service worker installation FIRST (before calling update)
       registration.addEventListener("updatefound", () => {
         const newWorker = registration.installing
         if (!newWorker) return
@@ -45,14 +39,22 @@ const registerServiceWorker = async (
         console.log("Service worker controller changed")
       })
 
-      console.log("Service Worker registered successfully")
+      // Check for updates AFTER setting up listeners
+      try {
+        await registration.update()
+      } catch (updateError) {
+        console.log(
+          "Service worker update check failed (will retry on next load):",
+          updateError,
+        )
+      }
+
       return registration
     } catch (error) {
       console.error("Service Worker registration failed:", error)
       return null
     }
   } else {
-    console.log("Service workers are not supported in this browser")
     return null
   }
 }
@@ -81,22 +83,45 @@ export const subscribeToPushNotifications = async (
 
   try {
     const permissionResult = await Notification.requestPermission()
+
     if (permissionResult === "granted") {
-      const subscription =
-        (await registration.pushManager.getSubscription()) ||
-        (await registration.pushManager.subscribe({
+      const existingSubscription =
+        await registration.pushManager.getSubscription()
+
+      if (existingSubscription) {
+        return existingSubscription
+      }
+
+      try {
+        const applicationServerKey = urlBase64ToUint8Array(publicVapidKey)
+
+        // Add timeout to detect hanging subscribe (some browsers/networks may hang)
+        const subscribePromise = registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicVapidKey) as any,
-        }))
-      console.log("User is subscribed:", subscription)
-      return subscription
+          applicationServerKey: applicationServerKey.buffer as ArrayBuffer,
+        })
+
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(
+            () =>
+              reject(new Error("Push subscription timeout after 10 seconds")),
+            10000,
+          )
+        })
+
+        const subscription = await Promise.race([
+          subscribePromise,
+          timeoutPromise,
+        ])
+        return subscription
+      } catch (subscribeError) {
+        throw subscribeError
+      }
     } else {
-      console.log("Notification permission denied")
       return null
     }
   } catch (error) {
-    console.error("Error subscribing to push notifications:", error)
-    return null
+    throw error
   }
 }
 
@@ -105,6 +130,7 @@ const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
   if (!base64String) {
     throw new Error("base64String is undefined or empty")
   }
+
   // Ensure the base64 string is properly padded
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4)
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/")

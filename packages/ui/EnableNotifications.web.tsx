@@ -158,9 +158,6 @@ export default function EnableNotifications({
         typeof window !== "undefined" &&
         (isTauri || window.location.protocol === "file:")
       ) {
-        console.log(
-          "Skipping Service Worker registration in desktop environment",
-        )
         return
       }
 
@@ -175,7 +172,6 @@ export default function EnableNotifications({
             setSwRegistration(registration)
             const subscription =
               await registration.pushManager.getSubscription()
-
             if (subscription) {
               const result = await apiFetch(`${API_URL}/pushSubscription`, {
                 method: "POST",
@@ -213,12 +209,34 @@ export default function EnableNotifications({
 
                 return
               }
+            } else {
+              // Permission granted but no subscription - auto subscribe!
+              const publicVapidKey = getEnv().VITE_VAPID_PUBLIC_KEY
+              if (publicVapidKey) {
+                try {
+                  const newSubscription = await subscribeToPushNotifications(
+                    registration,
+                    publicVapidKey,
+                  )
+                  if (newSubscription) {
+                    setIsSubscribed(true)
+                    const p256dh = newSubscription.getKey("p256dh")
+                    const auth = newSubscription.getKey("auth")
+                    if (user && p256dh && auth) {
+                      await addPushSubscription(newSubscription, p256dh, auth)
+                    }
+                    return
+                  }
+                } catch {
+                  // Auto-subscribe failed, will show button for manual retry
+                }
+              }
             }
           }
         }
       }
 
-      // If we get here, either permission isn't granted or no subscription exists
+      // If we get here, either permission isn't granted or no subscription exists (and auto-subscribe failed)
       const registration = await registerServiceWorker()
       if (registration) {
         setSwRegistration(registration)
@@ -231,43 +249,43 @@ export default function EnableNotifications({
 
   const handleSubscribe = async () => {
     // Handle extension notifications - just request permission, no database storage
-    if (isExtension) {
-      if (typeof chrome !== "undefined" && chrome.notifications) {
-        chrome.notifications.getPermissionLevel((level) => {
-          if (level === "granted") {
-            setIsSubscribed(true)
-          } else {
-            chrome.permissions.request(
-              { permissions: ["notifications"] },
-              (granted) => {
-                setIsSubscribed(granted)
-              },
-            )
-          }
-        })
-      }
-      return
-    }
-
     if (!isStandalone && (os === "ios" || os === "android")) {
       setShowAddToHomeScreen(true)
       return
     }
     if (swRegistration && !pushSubscription) {
-      const publicVapidKey = getEnv().VITE_VAPID_PUBLIC_KEY!
+      const publicVapidKey = getEnv().VITE_VAPID_PUBLIC_KEY
 
-      const subscription = await subscribeToPushNotifications(
-        swRegistration,
-        publicVapidKey,
-      )
-      if (subscription) {
-        setIsSubscribed(true)
+      if (!publicVapidKey) {
+        toast.error("VAPID key missing - notifications cannot be enabled")
+        return
+      }
 
-        const p256dh = subscription.getKey("p256dh")
-        const auth = subscription.getKey("auth")
+      try {
+        const subscription = await subscribeToPushNotifications(
+          swRegistration,
+          publicVapidKey,
+        )
+        if (subscription) {
+          setIsSubscribed(true)
 
-        if (user && p256dh && auth) {
-          addPushSubscription(subscription, p256dh, auth)
+          const p256dh = subscription.getKey("p256dh")
+          const auth = subscription.getKey("auth")
+
+          if (user && p256dh && auth) {
+            addPushSubscription(subscription, p256dh, auth)
+          }
+          toast.success("Notifications enabled!")
+        }
+      } catch (subscribeError) {
+        const errorMsg =
+          subscribeError instanceof Error
+            ? subscribeError.message
+            : "Unknown error"
+        if (errorMsg.includes("timeout")) {
+          toast.error("Push service timeout - try again later")
+        } else {
+          toast.error("Failed to enable notifications")
         }
       }
     }
@@ -276,33 +294,23 @@ export default function EnableNotifications({
   if (!isMounted || isManagingApp) return null
 
   // Show notification button for extensions if permission not granted, for web if service worker ready
-  const shouldShow =
-    (storeApp && storeApp?.id !== app?.id) ||
-    (!isExtension &&
-      (isDevelopment || (user || guest)?.lastMessage) &&
-      isSubscribed === false &&
-      swRegistration)
+  const shouldShow = !isExtension && isSubscribed === false && !!swRegistration
 
   return (
     <Div style={styles.enableNotificationsContainer.style}>
       <Weather onLocationClick={onLocationClick} showLocation={!shouldShow} />
-      {storeApp && getAppSlug(storeApp) !== pathname ? (
-        <StoreApp />
-      ) : (
-        isMounted &&
-        shouldShow && (
-          <Div style={styles.enableNotifications.style}>
-            <Button
-              data-testid="enableNotificationsButton"
-              onClick={handleSubscribe}
-              className={"small"}
-              style={styles.enableNotificationsButton.style}
-              disabled={!swRegistration}
-            >
-              <BellRing size={16} /> {t(text)}
-            </Button>
-          </Div>
-        )
+      {isMounted && shouldShow && (
+        <Div style={styles.enableNotifications.style}>
+          <Button
+            data-testid="enableNotificationsButton"
+            onClick={handleSubscribe}
+            className={"small"}
+            style={styles.enableNotificationsButton.style}
+            disabled={!swRegistration}
+          >
+            <BellRing size={16} /> {t(text)}
+          </Button>
+        </Div>
       )}
     </Div>
   )

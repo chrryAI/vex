@@ -23,6 +23,7 @@ export type user = {
   emailVerified: Date | null
   image: string | null
   role: "admin" | "user"
+  roles: string[]
   theme: "light" | "dark" | "system"
   createdOn: Date
   updatedOn: Date

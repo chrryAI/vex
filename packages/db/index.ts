@@ -1162,6 +1162,10 @@ export const getUser = async ({
           collaborationStatus: ["active"],
         }).then((res) => res.totalCount),
 
+        roles: result?.user?.roles?.includes(result.user.role)
+          ? result.user.roles
+          : (result.user.roles || []).concat(result.user.role),
+
         subscription,
       }
     : undefined
@@ -5982,6 +5986,12 @@ export function toSafeUser({ user }: { user?: Partial<user> | null }) {
     image: user?.image,
     // email: user?.email,
     role: user.role,
+    roles:
+      user.role && user.roles?.includes(user.role)
+        ? user.roles
+        : user?.role
+          ? (user.roles || []).concat(user?.role)
+          : user.roles,
     // createdOn: user.createdOn,
     // updatedOn: user.updatedOn,
   }
