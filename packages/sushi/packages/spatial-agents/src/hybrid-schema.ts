@@ -8,17 +8,17 @@
  * - Sync layer: Keep FalkorDB in sync with PostgreSQL changes
  */
 
-import { FalkorDB } from "falkordb"
+import { FalkorDB } from "falkordb";
 
 export interface HybridConfig {
   postgres: {
-    connectionString: string
-  }
+    connectionString: string;
+  };
   falkordb: {
-    host: string
-    port: number
-    graphName: string
-  }
+    host: string;
+    port: number;
+    graphName: string;
+  };
 }
 
 /**
@@ -36,7 +36,7 @@ export type GraphNodeType =
   | "KanbanBoard"
   | "Agent"
   | "PMAgent"
-  | "ApiKey"
+  | "ApiKey";
 
 /**
  * Graph Relationship Types
@@ -52,15 +52,15 @@ export type GraphRelationType =
   | "COMMUNICATES_WITH" // Agent communicates with Agent
   | "HAS_ACCESS_TO" // Agent has access to ApiKey
   | "CREATED_BY" // Entity created by User
-  | "RELATED_TO" // Generic relationship
+  | "RELATED_TO"; // Generic relationship
 
 /**
  * Sync Strategy
  */
 export interface SyncStrategy {
-  mode: "realtime" | "batch" | "manual"
-  batchInterval?: number // milliseconds
-  tables: string[] // Which PostgreSQL tables to sync
+  mode: "realtime" | "batch" | "manual";
+  batchInterval?: number; // milliseconds
+  tables: string[]; // Which PostgreSQL tables to sync
 }
 
 /**
@@ -68,12 +68,12 @@ export interface SyncStrategy {
  * Manages both PostgreSQL and FalkorDB
  */
 export class HybridDB {
-  private falkorDB: any = null
-  private graph: any = null
-  private config: HybridConfig
+  private falkorDB: any = null;
+  private graph: any = null;
+  private config: HybridConfig;
 
   constructor(config: HybridConfig) {
-    this.config = config
+    this.config = config;
   }
 
   async connect(): Promise<void> {
@@ -83,17 +83,17 @@ export class HybridDB {
         host: this.config.falkordb.host,
         port: this.config.falkordb.port,
       },
-    })
-    this.graph = this.falkorDB.selectGraph(this.config.falkordb.graphName)
+    });
+    this.graph = this.falkorDB.selectGraph(this.config.falkordb.graphName);
 
-    console.log("✅ Connected to FalkorDB")
+    console.log("✅ Connected to FalkorDB");
   }
 
   async disconnect(): Promise<void> {
     if (this.falkorDB) {
-      await this.falkorDB.close()
-      this.falkorDB = null
-      this.graph = null
+      await this.falkorDB.close();
+      this.falkorDB = null;
+      this.graph = null;
     }
   }
 
@@ -105,16 +105,16 @@ export class HybridDB {
    * Sync PostgreSQL data to FalkorDB graph
    */
   async syncFromPostgres(data: {
-    type: GraphNodeType
-    id: string
-    properties: Record<string, any>
+    type: GraphNodeType;
+    id: string;
+    properties: Record<string, any>;
     relationships?: Array<{
-      type: GraphRelationType
-      targetType: GraphNodeType
-      targetId: string
-    }>
+      type: GraphRelationType;
+      targetType: GraphNodeType;
+      targetId: string;
+    }>;
   }): Promise<void> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     // Create or update node
     await this.graph.query(
@@ -128,7 +128,7 @@ export class HybridDB {
           properties: data.properties,
         },
       },
-    )
+    );
 
     // Create relationships
     if (data.relationships) {
@@ -145,7 +145,7 @@ export class HybridDB {
               targetId: rel.targetId,
             },
           },
-        )
+        );
       }
     }
   }
@@ -155,15 +155,15 @@ export class HybridDB {
    */
   async batchSync(
     entities: Array<{
-      type: GraphNodeType
-      id: string
-      properties: Record<string, any>
+      type: GraphNodeType;
+      id: string;
+      properties: Record<string, any>;
     }>,
   ): Promise<void> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     for (const entity of entities) {
-      await this.syncFromPostgres(entity)
+      await this.syncFromPostgres(entity);
     }
   }
 
@@ -175,11 +175,11 @@ export class HybridDB {
    * Find optimal agent for task based on graph relationships
    */
   async findOptimalAgentForTask(taskId: string): Promise<{
-    agentId: string
-    score: number
-    reason: string
+    agentId: string;
+    score: number;
+    reason: string;
   } | null> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     // Find agents with:
     // 1. Low current workload
@@ -216,31 +216,31 @@ export class HybridDB {
       {
         params: { taskId },
       },
-    )
+    );
 
     if (!result || !result.data || result.data.length === 0) {
-      return null
+      return null;
     }
 
-    const row = result.data[0]
+    const row = result.data[0];
     return {
       agentId: row.agentId,
       score: row.score,
       reason: `Workload-optimized assignment (score: ${row.score})`,
-    }
+    };
   }
 
   /**
    * Get PM Agent's team overview
    */
   async getPMTeamOverview(pmAgentId: string): Promise<{
-    totalAgents: number
-    activeAgents: number
-    totalTasks: number
-    tasksByStatus: Record<string, number>
-    agentWorkloads: Array<{ agentId: string; taskCount: number }>
+    totalAgents: number;
+    activeAgents: number;
+    totalTasks: number;
+    tasksByStatus: Record<string, number>;
+    agentWorkloads: Array<{ agentId: string; taskCount: number }>;
   }> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     // Get all agents managed by PM
     const agentsResult = await this.graph.query(
@@ -250,7 +250,7 @@ export class HybridDB {
              SUM(CASE WHEN agent.status = 'working' THEN 1 ELSE 0 END) as active
     `,
       { params: { pmAgentId } },
-    )
+    );
 
     // Get task distribution
     const tasksResult = await this.graph.query(
@@ -259,7 +259,7 @@ export class HybridDB {
       RETURN COUNT(task) as total, task.status as status
     `,
       { params: { pmAgentId } },
-    )
+    );
 
     // Get agent workloads
     const workloadResult = await this.graph.query(
@@ -271,22 +271,22 @@ export class HybridDB {
       ORDER BY taskCount DESC
     `,
       { params: { pmAgentId } },
-    )
+    );
 
-    const tasksByStatus: Record<string, number> = {}
+    const tasksByStatus: Record<string, number> = {};
     if (tasksResult?.data) {
       for (const row of tasksResult.data) {
-        tasksByStatus[row.status] = row.total
+        tasksByStatus[row.status] = row.total;
       }
     }
 
-    const agentWorkloads: Array<{ agentId: string; taskCount: number }> = []
+    const agentWorkloads: Array<{ agentId: string; taskCount: number }> = [];
     if (workloadResult?.data) {
       for (const row of workloadResult.data) {
         agentWorkloads.push({
           agentId: row.agentId,
           taskCount: row.taskCount,
-        })
+        });
       }
     }
 
@@ -296,18 +296,18 @@ export class HybridDB {
       totalTasks: Object.values(tasksByStatus).reduce((a, b) => a + b, 0),
       tasksByStatus,
       agentWorkloads,
-    }
+    };
   }
 
   /**
    * Find task dependencies and blockers
    */
   async getTaskDependencies(taskId: string): Promise<{
-    blockedBy: string[]
-    blocking: string[]
-    canStart: boolean
+    blockedBy: string[];
+    blocking: string[];
+    canStart: boolean;
   }> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     const result = await this.graph.query(
       `
@@ -325,21 +325,21 @@ export class HybridDB {
         COLLECT(DISTINCT blocked.id) as blocking
     `,
       { params: { taskId } },
-    )
+    );
 
     if (!result || !result.data || result.data.length === 0) {
-      return { blockedBy: [], blocking: [], canStart: true }
+      return { blockedBy: [], blocking: [], canStart: true };
     }
 
-    const row = result.data[0]
-    const blockedBy = row.blockedBy.filter((id: string) => id !== null)
-    const blocking = row.blocking.filter((id: string) => id !== null)
+    const row = result.data[0];
+    const blockedBy = row.blockedBy.filter((id: string) => id !== null);
+    const blocking = row.blocking.filter((id: string) => id !== null);
 
     return {
       blockedBy,
       blocking,
       canStart: blockedBy.length === 0,
-    }
+    };
   }
 
   /**
@@ -349,10 +349,10 @@ export class HybridDB {
     agentId: string,
     depth: number = 2,
   ): Promise<{
-    agents: Array<{ id: string; name: string; distance: number }>
-    connections: Array<{ from: string; to: string; type: string }>
+    agents: Array<{ id: string; name: string; distance: number }>;
+    connections: Array<{ from: string; to: string; type: string }>;
   }> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     const result = await this.graph.query(
       `
@@ -369,16 +369,16 @@ export class HybridDB {
           depth,
         },
       },
-    )
+    );
 
-    const agents: Array<{ id: string; name: string; distance: number }> = []
+    const agents: Array<{ id: string; name: string; distance: number }> = [];
     if (result?.data) {
       for (const row of result.data) {
         agents.push({
           id: row.id,
           name: row.name,
           distance: row.distance,
-        })
+        });
       }
     }
 
@@ -394,21 +394,21 @@ export class HybridDB {
           agentIds: [agentId, ...agents.map((a) => a.id)],
         },
       },
-    )
+    );
 
-    const connections: Array<{ from: string; to: string; type: string }> = []
+    const connections: Array<{ from: string; to: string; type: string }> = [];
     if (connectionsResult?.data) {
       for (const row of connectionsResult.data) {
         connections.push({
           from: row.from,
           to: row.to,
           type: row.type,
-        })
+        });
       }
     }
 
-    return { agents, connections }
+    return { agents, connections };
   }
 }
 
-export default HybridDB
+export default HybridDB;

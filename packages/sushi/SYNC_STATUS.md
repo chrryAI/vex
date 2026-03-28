@@ -7,6 +7,7 @@
 ## Synced Components
 
 ### ✅ Package.json
+
 - Updated version: `0.61.5` → `0.61.12`
 - Synced with upstream dependencies
 - Added `sushi` bin entry alongside `porf`
@@ -15,10 +16,12 @@
   - Test scripts (`test:bam`, `test:strike`, etc.)
 
 ### ✅ CLI Version
+
 - Updated CLI version to match Porffor: `0.61.12`
 - Updated description to include Porffor version
 
 ### ✅ README.md
+
 - Synced Porffor documentation with upstream
 - Kept SUSHI-specific sections:
   - SUSHI platform overview
@@ -26,6 +29,7 @@
   - STRIKE mutation testing documentation
 
 ### ✅ CLI Package.json
+
 - Updated version to `0.61.12`
 - Updated repository links to upstream
 - Added keywords: `porffor`, `mutation-testing`, `strike`

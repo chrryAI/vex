@@ -21,7 +21,7 @@ export interface SpatialContext {
 export interface SpatialNavigationEvent {
   from: SpatialCoordinate;
   to: SpatialCoordinate;
-  reason: 'user' | 'agent' | 'auto';
+  reason: "user" | "agent" | "auto";
   timestamp: number;
 }
 
@@ -31,26 +31,26 @@ export function parseSpatialCommand(input: string): {
   coordinate: Partial<SpatialCoordinate>;
 } {
   const coordinate: Partial<SpatialCoordinate> = {};
-  
+
   // Extract @x:value
   const xMatch = input.match(/@x:(\w+)/);
   if (xMatch) coordinate.x = xMatch[1];
-  
+
   // Extract y:value
   const yMatch = input.match(/\by:(\w+)/);
   if (yMatch) coordinate.y = yMatch[1];
-  
+
   // Extract z:value (can be negative for history)
   const zMatch = input.match(/\bz:(-?\d+)/);
   if (zMatch) coordinate.z = parseInt(zMatch[1], 10);
-  
+
   // Remove spatial commands from text
   const text = input
-    .replace(/@x:\w+/g, '')
-    .replace(/\by:\w+/g, '')
-    .replace(/\bz:-?\d+/g, '')
+    .replace(/@x:\w+/g, "")
+    .replace(/\by:\w+/g, "")
+    .replace(/\bz:-?\d+/g, "")
     .trim();
-  
+
   return { text, coordinate };
 }
 
@@ -61,7 +61,7 @@ export function formatCoordinate(coord: SpatialCoordinate): string {
 
 // Default coordinates
 export const DEFAULT_COORDINATE: SpatialCoordinate = {
-  x: 'sensei',
-  y: 'general',
+  x: "sensei",
+  y: "general",
   z: Date.now(),
 };

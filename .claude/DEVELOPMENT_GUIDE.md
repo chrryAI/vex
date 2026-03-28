@@ -259,7 +259,7 @@ DEBUG=* pnpm dev
 **Client (Browser Console):**
 
 ```javascript
-localStorage.setItem("debug", "vex:*")
+localStorage.setItem("debug", "vex:*");
 ```
 
 ### Inspect Database

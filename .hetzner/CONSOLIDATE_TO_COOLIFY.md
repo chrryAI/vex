@@ -148,7 +148,7 @@ curl -I https://chrry.ai
 
 ```typescript
 // App automatically detects domain
-const siteConfig = getSiteConfig(hostname)
+const siteConfig = getSiteConfig(hostname);
 
 // Returns correct config for:
 // - chrry.ai

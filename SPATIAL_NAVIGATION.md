@@ -16,17 +16,17 @@ The Wine ecosystem introduces a revolutionary **N-dimensional spatial navigation
 
 ```typescript
 interface App {
-  id: string
-  name: string
-  slug: string
-  store: Store
+  id: string;
+  name: string;
+  slug: string;
+  store: Store;
 }
 
 interface Store {
-  id: string
-  name: string
-  slug: string
-  domain: string // e.g., "vex.chrry.ai"
+  id: string;
+  name: string;
+  slug: string;
+  domain: string; // e.g., "vex.chrry.ai"
 }
 ```
 
@@ -88,10 +88,10 @@ When clicking an app **within the same store domain**:
 // Example: chrry.ai/ → chrry.ai/sushi
 if (clickedApp.store === currentStore) {
   // View switches, URL changes, but store context preserved
-  navigateTo(`${currentStore.domain}/${clickedApp.slug}`)
-  showStoreHomeButton() // Chrry button appears
-  hideClickedAppButton() // Sushi becomes active
-  maintainStoreContext()
+  navigateTo(`${currentStore.domain}/${clickedApp.slug}`);
+  showStoreHomeButton(); // Chrry button appears
+  hideClickedAppButton(); // Sushi becomes active
+  maintainStoreContext();
 }
 ```
 
@@ -113,10 +113,10 @@ When clicking an app from a **different store**:
 // Example: chrry.ai/ → vex.chrry.ai/
 if (clickedApp.store !== currentStore) {
   // Full dimensional jump - domain changes
-  navigateTo(`${clickedApp.store.domain}/`)
-  showPreviousStoreButton() // Chrry button appears as back path
-  hideCurrentStoreButton() // Vex disappears (you're there)
-  switchContext(clickedApp.store)
+  navigateTo(`${clickedApp.store.domain}/`);
+  showPreviousStoreButton(); // Chrry button appears as back path
+  hideCurrentStoreButton(); // Vex disappears (you're there)
+  switchContext(clickedApp.store);
 }
 ```
 
@@ -136,9 +136,9 @@ Result: Navigate to vex.chrry.ai/
 ```typescript
 // Chrry always resets to home base
 if (clickedStore === "chrry") {
-  navigateTo("chrry.ai/")
-  resetToOriginalContext()
-  clearNavigationStack()
+  navigateTo("chrry.ai/");
+  resetToOriginalContext();
+  clearNavigationStack();
 }
 ```
 
@@ -150,11 +150,11 @@ if (clickedStore === "chrry") {
 function getVisibleButtons(currentStore: Store, allStores: Store[]): Store[] {
   return allStores.filter((store) => {
     // Hide current store (you're already there)
-    if (store.id === currentStore.id) return false
+    if (store.id === currentStore.id) return false;
 
     // Show all other stores
-    return true
-  })
+    return true;
+  });
 }
 ```
 
@@ -227,24 +227,24 @@ Back: Chrry button appears (return to store home)
 
 ```typescript
 interface NavigationState {
-  currentStore: Store
-  currentPath: string // e.g., "/sushi" or "/"
-  navigationStack: Store[] // For back navigation
-  visibleStores: Store[] // Dynamic button list
+  currentStore: Store;
+  currentPath: string; // e.g., "/sushi" or "/"
+  navigationStack: Store[]; // For back navigation
+  visibleStores: Store[]; // Dynamic button list
 }
 
 function handleNavigation(targetStore: Store, targetPath?: string) {
-  const isSameStore = targetStore.id === currentStore.id
+  const isSameStore = targetStore.id === currentStore.id;
 
   if (isSameStore) {
     // Same store - just switch path
-    router.push(`${currentStore.domain}${targetPath || "/"}`)
-    updateVisibleButtons() // Show store home button
+    router.push(`${currentStore.domain}${targetPath || "/"}`);
+    updateVisibleButtons(); // Show store home button
   } else {
     // Different store - full navigation
-    router.push(`${targetStore.domain}${targetPath || "/"}`)
-    navigationStack.push(currentStore) // Remember where we came from
-    updateVisibleButtons() // Hide target, show origin
+    router.push(`${targetStore.domain}${targetPath || "/"}`);
+    navigationStack.push(currentStore); // Remember where we came from
+    updateVisibleButtons(); // Hide target, show origin
   }
 
   trackSpatialNavigation({
@@ -252,7 +252,7 @@ function handleNavigation(targetStore: Store, targetPath?: string) {
     to_store: targetStore.slug,
     navigation_type: isSameStore ? "in_store" : "cross_store",
     depth_level: navigationStack.length,
-  })
+  });
 }
 ```
 
@@ -404,14 +404,14 @@ const myStore = {
   name: "MyApp",
   slug: "myapp",
   domain: "myapp.chrry.ai", // Your universe
-}
+};
 ```
 
 **2. Support Cross-Store Apps**
 
 ```typescript
 // Allow apps from other stores
-const availableApps = [...myStoreApps, ...installedFromOtherStores]
+const availableApps = [...myStoreApps, ...installedFromOtherStores];
 ```
 
 **3. Track Navigation**
@@ -422,7 +422,7 @@ trackEvent("spatial_navigation", {
   from_store: previousStore,
   to_store: currentStore,
   navigation_type: "cross_store",
-})
+});
 ```
 
 ### For App Developers
@@ -431,7 +431,7 @@ trackEvent("spatial_navigation", {
 
 ```typescript
 // Check which universe you're in
-const currentStore = getStoreFromDomain(window.location.hostname)
+const currentStore = getStoreFromDomain(window.location.hostname);
 ```
 
 **2. Handle Navigation**
@@ -440,9 +440,9 @@ const currentStore = getStoreFromDomain(window.location.hostname)
 // Same store = path change
 // Different store = domain change
 if (targetStore === currentStore) {
-  router.push(`/${targetApp.slug}`)
+  router.push(`/${targetApp.slug}`);
 } else {
-  window.location.href = `${targetStore.domain}/`
+  window.location.href = `${targetStore.domain}/`;
 }
 ```
 
@@ -452,10 +452,10 @@ if (targetStore === currentStore) {
 // Always clean up before navigation
 useEffect(() => {
   return () => {
-    clearLocalState()
-    saveNavigationContext()
-  }
-}, [currentStore])
+    clearLocalState();
+    saveNavigationContext();
+  };
+}, [currentStore]);
 ```
 
 ## Conclusion

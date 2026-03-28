@@ -2,6 +2,15 @@
   "name": "@chrryai/bam",
   "version": "0.1.0",
   "description": "Bug Analysis & Memory - Detect bugs, logic errors, and missing implementations",
+  "keywords": [
+    "bug-detection",
+    "code-quality",
+    "falkordb",
+    "graph-database",
+    "static-analysis"
+  ],
+  "license": "MIT",
+  "author": "Chrry AI",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -17,15 +26,6 @@
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "test": "vitest"
   },
-  "keywords": [
-    "bug-detection",
-    "static-analysis",
-    "code-quality",
-    "falkordb",
-    "graph-database"
-  ],
-  "author": "Chrry AI",
-  "license": "MIT",
   "devDependencies": {
     "tsup": "^8.0.1",
     "typescript": "^5.3.3",

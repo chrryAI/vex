@@ -3,7 +3,7 @@
  * Standard tool system for AI agents
  */
 
-import { JSONSchema7 } from 'json-schema';
+import { JSONSchema7 } from "json-schema";
 
 export interface MCPTool {
   name: string;
@@ -25,7 +25,7 @@ export interface MCPToolResult {
 
 export interface MCPServer {
   name: string;
-  transport: 'stdio' | 'http' | 'sse';
+  transport: "stdio" | "http" | "sse";
   command?: string;
   args?: string[];
   url?: string;
@@ -35,130 +35,130 @@ export interface MCPServer {
 // Built-in SUSHI tools
 export const SUSHI_TOOLS: MCPTool[] = [
   {
-    name: 'read_file',
-    description: 'Read the contents of a file',
+    name: "read_file",
+    description: "Read the contents of a file",
     parameters: {
-      type: 'object',
+      type: "object",
       properties: {
-        path: { type: 'string', description: 'Path to the file' },
-        offset: { type: 'number', description: 'Line offset (optional)' },
-        limit: { type: 'number', description: 'Max lines to read (optional)' },
+        path: { type: "string", description: "Path to the file" },
+        offset: { type: "number", description: "Line offset (optional)" },
+        limit: { type: "number", description: "Max lines to read (optional)" },
       },
-      required: ['path'],
+      required: ["path"],
     },
   },
   {
-    name: 'write_file',
-    description: 'Write content to a file',
+    name: "write_file",
+    description: "Write content to a file",
     parameters: {
-      type: 'object',
+      type: "object",
       properties: {
-        path: { type: 'string', description: 'Path to the file' },
-        content: { type: 'string', description: 'Content to write' },
+        path: { type: "string", description: "Path to the file" },
+        content: { type: "string", description: "Content to write" },
       },
-      required: ['path', 'content'],
+      required: ["path", "content"],
     },
   },
   {
-    name: 'run_command',
-    description: 'Run a shell command',
+    name: "run_command",
+    description: "Run a shell command",
     parameters: {
-      type: 'object',
+      type: "object",
       properties: {
-        command: { type: 'string', description: 'Command to run' },
-        cwd: { type: 'string', description: 'Working directory (optional)' },
+        command: { type: "string", description: "Command to run" },
+        cwd: { type: "string", description: "Working directory (optional)" },
       },
-      required: ['command'],
+      required: ["command"],
     },
   },
   {
-    name: 'search_code',
-    description: 'Search for code patterns in the codebase',
+    name: "search_code",
+    description: "Search for code patterns in the codebase",
     parameters: {
-      type: 'object',
+      type: "object",
       properties: {
-        query: { type: 'string', description: 'Search query' },
-        path: { type: 'string', description: 'Path to search in (optional)' },
+        query: { type: "string", description: "Search query" },
+        path: { type: "string", description: "Path to search in (optional)" },
       },
-      required: ['query'],
+      required: ["query"],
     },
   },
   {
-    name: 'git_diff',
-    description: 'Show git diff',
+    name: "git_diff",
+    description: "Show git diff",
     parameters: {
-      type: 'object',
+      type: "object",
       properties: {
-        staged: { type: 'boolean', description: 'Show staged changes' },
-        file: { type: 'string', description: 'Specific file (optional)' },
+        staged: { type: "boolean", description: "Show staged changes" },
+        file: { type: "string", description: "Specific file (optional)" },
       },
     },
   },
   {
-    name: 'strike_test',
-    description: 'Run mutation testing with STRIKE',
+    name: "strike_test",
+    description: "Run mutation testing with STRIKE",
     parameters: {
-      type: 'object',
+      type: "object",
       properties: {
-        files: { 
-          type: 'array', 
-          items: { type: 'string' },
-          description: 'Files to test' 
+        files: {
+          type: "array",
+          items: { type: "string" },
+          description: "Files to test",
         },
-        testCommand: { type: 'string', description: 'Test command to run' },
+        testCommand: { type: "string", description: "Test command to run" },
       },
-      required: ['files'],
+      required: ["files"],
     },
   },
   {
-    name: 'navigate_spatial',
-    description: 'Navigate to a spatial coordinate',
+    name: "navigate_spatial",
+    description: "Navigate to a spatial coordinate",
     parameters: {
-      type: 'object',
+      type: "object",
       properties: {
-        x: { type: 'string', description: 'X coordinate (app/agent)' },
-        y: { type: 'string', description: 'Y coordinate (context)' },
-        z: { type: 'number', description: 'Z coordinate (time)' },
+        x: { type: "string", description: "X coordinate (app/agent)" },
+        y: { type: "string", description: "Y coordinate (context)" },
+        z: { type: "number", description: "Z coordinate (time)" },
       },
     },
   },
   {
-    name: 'recall_memory',
-    description: 'Recall relevant memories from the past',
+    name: "recall_memory",
+    description: "Recall relevant memories from the past",
     parameters: {
-      type: 'object',
+      type: "object",
       properties: {
-        query: { type: 'string', description: 'What to recall' },
-        limit: { type: 'number', description: 'Max results' },
+        query: { type: "string", description: "What to recall" },
+        limit: { type: "number", description: "Max results" },
       },
-      required: ['query'],
+      required: ["query"],
     },
   },
   {
-    name: 'view_image',
-    description: 'Analyze an image',
+    name: "view_image",
+    description: "Analyze an image",
     parameters: {
-      type: 'object',
+      type: "object",
       properties: {
-        path: { type: 'string', description: 'Path to image' },
+        path: { type: "string", description: "Path to image" },
       },
-      required: ['path'],
+      required: ["path"],
     },
   },
   {
-    name: 'plan',
-    description: 'Create a plan before executing (architect mode)',
+    name: "plan",
+    description: "Create a plan before executing (architect mode)",
     parameters: {
-      type: 'object',
+      type: "object",
       properties: {
-        task: { type: 'string', description: 'Task to plan' },
-        steps: { 
-          type: 'array', 
-          items: { type: 'string' },
-          description: 'Planned steps' 
+        task: { type: "string", description: "Task to plan" },
+        steps: {
+          type: "array",
+          items: { type: "string" },
+          description: "Planned steps",
         },
       },
-      required: ['task', 'steps'],
+      required: ["task", "steps"],
     },
   },
 ];

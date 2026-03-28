@@ -142,10 +142,10 @@ I recommend addressing these immediately.
 
 ```typescript
 // Sync issues to graph
-await syncIssuesToGraph(issues)
+await syncIssuesToGraph(issues);
 
 // Sync metrics to graph
-await syncMetricsToGraph(projectKey, metrics, measuredAt)
+await syncMetricsToGraph(projectKey, metrics, measuredAt);
 ```
 
 ### Query Functions
@@ -155,10 +155,10 @@ await syncMetricsToGraph(projectKey, metrics, measuredAt)
 const insights = await getCodeQualityInsights({
   severity: "CRITICAL",
   type: "VULNERABILITY",
-})
+});
 
 // Get code hotspots
-const hotspots = await getCodeHotspots()
+const hotspots = await getCodeHotspots();
 ```
 
 ## 📈 Benefits

@@ -3,7 +3,11 @@ nixPkgs = ["nodejs_22", "ffmpeg"]
 nixLibs = []
 
 [phases.install]
-cmds = ["corepack enable", "corepack prepare pnpm@9.1.2 --activate", "pnpm install --frozen-lockfile"]
+cmds = [
+  "corepack enable",
+  "corepack prepare pnpm@9.1.2 --activate",
+  "pnpm install --frozen-lockfile",
+]
 
 [phases.build]
 cmds = ["pnpm build --filter web..."]

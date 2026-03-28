@@ -31,7 +31,7 @@ Grape is Chrry's **privacy-first, context-aware advertising system** that integr
 ```typescript
 // Schema: users & guests tables
 {
-  adConsent: boolean("adConsent").default(false).notNull()
+  adConsent: boolean("adConsent").default(false).notNull();
 }
 
 // Users explicitly opt-in
@@ -39,8 +39,8 @@ const enableAds = async () => {
   await updateUser({
     ...user,
     adConsent: true,
-  })
-}
+  });
+};
 ```
 
 #### 2. Context-Aware Matching
@@ -52,14 +52,14 @@ const adContext = {
   intent: "learning",
   sentiment: "curious",
   expertise: "intermediate",
-}
+};
 
 // Match ads based on context (no user tracking)
 const relevantAds = await matchAds({
   context: adContext,
   appId: app.id,
   language: user.language,
-})
+});
 ```
 
 #### 3. Native Ad Integration
@@ -115,7 +115,7 @@ const contextualAds = {
 
   // AI/ML
   "machine learning": ["Coursera", "Hugging Face", "Replicate"],
-}
+};
 ```
 
 #### B. App-Specific Ads
@@ -123,20 +123,12 @@ const contextualAds = {
 ```typescript
 // Bloom (Productivity) - Show productivity tools
 if (app.slug === "bloom") {
-  ads = [
-    "Notion - All-in-one workspace",
-    "Todoist - Task management",
-    "Forest - Focus timer app",
-  ]
+  ads = ["Notion - All-in-one workspace", "Todoist - Task management", "Forest - Focus timer app"];
 }
 
 // Atlas (Travel) - Show travel services
 if (app.slug === "atlas") {
-  ads = [
-    "Airbnb - Unique stays",
-    "Skyscanner - Cheap flights",
-    "Rome2rio - Travel planning",
-  ]
+  ads = ["Airbnb - Unique stays", "Skyscanner - Cheap flights", "Rome2rio - Travel planning"];
 }
 ```
 
@@ -145,12 +137,12 @@ if (app.slug === "atlas") {
 ```typescript
 // Morning: Productivity tools
 if (timeOfDay === "morning") {
-  ads = ["Coffee delivery", "Morning routine apps", "Breakfast recipes"]
+  ads = ["Coffee delivery", "Morning routine apps", "Breakfast recipes"];
 }
 
 // Evening: Entertainment
 if (timeOfDay === "evening") {
-  ads = ["Streaming services", "Restaurant delivery", "Event tickets"]
+  ads = ["Streaming services", "Restaurant delivery", "Event tickets"];
 }
 ```
 
@@ -163,7 +155,7 @@ if (user.adConsent && weather?.city) {
     `Restaurants in ${weather.city}`,
     `Events near ${weather.city}`,
     `Services in ${weather.city}`,
-  ]
+  ];
 }
 ```
 
@@ -185,7 +177,7 @@ const pricing = {
   cpc: 0.5, // Cost per click
   cpa: 25.0, // Cost per acquisition
   minBudget: 500, // Minimum monthly budget
-}
+};
 ```
 
 ## Pear 🍐: Feedback Marketplace
@@ -224,7 +216,7 @@ const feedbackOpportunities = {
       ],
     },
   ],
-}
+};
 ```
 
 #### 2. AI-Powered Feedback Collection
@@ -258,15 +250,15 @@ const feedbackQuality = {
   sentiment: "balanced", // Not just praise/criticism
   expertise: "demonstrated", // Shows knowledge
   score: 9.2 / 10,
-}
+};
 
 // High-quality feedback earns full payout
 if (feedbackQuality.score >= 8.0) {
-  payout = fullAmount
+  payout = fullAmount;
 } else if (feedbackQuality.score >= 6.0) {
-  payout = fullAmount * 0.7 // 70% for decent feedback
+  payout = fullAmount * 0.7; // 70% for decent feedback
 } else {
-  payout = 0 // Low quality rejected
+  payout = 0; // Low quality rejected
 }
 ```
 
@@ -342,7 +334,7 @@ const feedbackTypes = {
     time: "30 min",
     questions: ["Bugs", "UX", "Performance"],
   },
-}
+};
 ```
 
 #### B. Expertise Matching
@@ -354,14 +346,12 @@ const userExpertise = {
   interests: ["Productivity", "AI", "Travel"],
   experience: "intermediate",
   languages: ["English", "Spanish"],
-}
+};
 
 // Only show relevant feedback opportunities
 const matchedOpportunities = feedbackRequests.filter((request) => {
-  return request.requiredSkills.some((skill) =>
-    userExpertise.skills.includes(skill),
-  )
-})
+  return request.requiredSkills.some((skill) => userExpertise.skills.includes(skill));
+});
 ```
 
 #### C. Earnings Dashboard
@@ -383,7 +373,7 @@ const earnings = {
     contentReview: 45.0,
     betaTesting: 50.0,
   },
-}
+};
 ```
 
 #### D. Reputation System
@@ -428,7 +418,7 @@ const requestorPricing = {
   betaTesting: 50.0, // $50 per tester (user gets $25)
   minResponses: 10, // Minimum 10 responses
   platformFee: 0.5, // 50% platform fee
-}
+};
 ```
 
 ## Integration: Grape + Pear
@@ -479,7 +469,7 @@ const revenueModel = {
 
   // Total
   totalMonthly: 75000, // $75k/month potential
-}
+};
 ```
 
 ## Technical Implementation
@@ -494,10 +484,10 @@ const grapeAds = pgTable("grape_ads", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   targetContext: jsonb("targetContext").$type<{
-    topics: string[]
-    apps: string[]
-    timeOfDay: string[]
-    locations: string[]
+    topics: string[];
+    apps: string[];
+    timeOfDay: string[];
+    locations: string[];
   }>(),
   budget: integer("budget").notNull(), // cents
   spent: integer("spent").default(0),
@@ -506,7 +496,7 @@ const grapeAds = pgTable("grape_ads", {
   conversions: integer("conversions").default(0),
   status: text("status", { enum: ["active", "paused", "ended"] }),
   createdOn: timestamp("createdOn").defaultNow(),
-})
+});
 
 // Pear Feedback
 const pearFeedback = pgTable("pear_feedback", {
@@ -519,7 +509,7 @@ const pearFeedback = pgTable("pear_feedback", {
   payout: integer("payout"), // cents
   status: text("status", { enum: ["pending", "approved", "rejected", "paid"] }),
   createdOn: timestamp("createdOn").defaultNow(),
-})
+});
 
 // Pear Payouts
 const pearPayouts = pgTable("pear_payouts", {
@@ -532,7 +522,7 @@ const pearPayouts = pgTable("pear_payouts", {
   }),
   requestedOn: timestamp("requestedOn").defaultNow(),
   completedOn: timestamp("completedOn"),
-})
+});
 ```
 
 ### API Routes

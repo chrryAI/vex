@@ -16,12 +16,14 @@ This document outlines the pricing tiers for the Watermelon onboarding flow.
 - ✅ Unlimited usage
 
 **Perfect for:**
+
 - Privacy-conscious users
 - Developers
 - Self-hosters
 - Offline work
 
 **Setup:**
+
 ```bash
 pnpm local:setup
 ```
@@ -40,11 +42,13 @@ pnpm local:setup
 - ✅ Web + Desktop + Mobile
 
 **Perfect for:**
+
 - Multi-device users
 - Teams (coming soon)
 - Users who want cloud backup
 
 **Signup:**
+
 - Email/password authentication
 - No credit card required
 
@@ -64,12 +68,14 @@ pnpm local:setup
 - ✅ Dedicated account manager
 
 **Perfect for:**
+
 - Marketing agencies
 - Development teams
 - Consulting firms
 - Enterprise teams
 
 **Contact:**
+
 - Redirect to: https://chrry.ai/agency
 - Email: agency@chrry.ai
 
@@ -90,12 +96,14 @@ pnpm local:setup
 - ✅ Dedicated support team
 
 **Perfect for:**
+
 - Large enterprises
 - Government agencies
 - Regulated industries
 - Custom deployments
 
 **Contact:**
+
 - Redirect to: https://chrry.ai/sovereign
 - Email: sovereign@chrry.ai
 
@@ -103,19 +111,19 @@ pnpm local:setup
 
 ## Comparison Table
 
-| Feature | Watermelon | Chrry | Agency | Sovereign |
-|---------|-----------|-------|--------|-----------|
-| **Price** | FREE | FREE | $1000/mo | Custom |
-| **Local Mode** | ✅ | ✅ | ✅ | ✅ |
-| **Cloud Sync** | ❌ | ✅ | ✅ | ✅ |
-| **Login Required** | ❌ | ✅ | ✅ | ✅ |
-| **Multi-Device** | ❌ | ✅ | ✅ | ✅ |
-| **Team Features** | ❌ | ❌ | ✅ | ✅ |
-| **Priority Support** | ❌ | ❌ | ✅ | ✅ |
-| **White-Label** | ❌ | ❌ | ❌ | ✅ |
-| **On-Premise** | ✅ | ❌ | ❌ | ✅ |
-| **SLA** | ❌ | ❌ | ✅ | ✅ |
-| **Custom Integration** | ❌ | ❌ | ❌ | ✅ |
+| Feature                | Watermelon | Chrry | Agency   | Sovereign |
+| ---------------------- | ---------- | ----- | -------- | --------- |
+| **Price**              | FREE       | FREE  | $1000/mo | Custom    |
+| **Local Mode**         | ✅         | ✅    | ✅       | ✅        |
+| **Cloud Sync**         | ❌         | ✅    | ✅       | ✅        |
+| **Login Required**     | ❌         | ✅    | ✅       | ✅        |
+| **Multi-Device**       | ❌         | ✅    | ✅       | ✅        |
+| **Team Features**      | ❌         | ❌    | ✅       | ✅        |
+| **Priority Support**   | ❌         | ❌    | ✅       | ✅        |
+| **White-Label**        | ❌         | ❌    | ❌       | ✅        |
+| **On-Premise**         | ✅         | ❌    | ❌       | ✅        |
+| **SLA**                | ❌         | ❌    | ✅       | ✅        |
+| **Custom Integration** | ❌         | ❌    | ❌       | ✅        |
 
 ---
 
@@ -124,6 +132,7 @@ pnpm local:setup
 ### UI Flow
 
 1. **Welcome Screen**
+
    ```
    "Choose Your Weapon 🍉"
    ```
@@ -146,12 +155,12 @@ pnpm local:setup
 ### State Management
 
 ```typescript
-type PricingTier = 'watermelon' | 'chrry' | 'agency' | 'sovereign'
+type PricingTier = "watermelon" | "chrry" | "agency" | "sovereign";
 
 interface OnboardingState {
-  selectedTier: PricingTier | null
-  isLocalMode: boolean
-  cloudSyncEnabled: boolean
+  selectedTier: PricingTier | null;
+  isLocalMode: boolean;
+  cloudSyncEnabled: boolean;
 }
 ```
 
@@ -166,6 +175,7 @@ CLOUD_SYNC_ENABLED=true   # Chrry/Agency/Sovereign
 ### No Provider Dependencies
 
 The Watermelon.tsx component should:
+
 - ❌ NOT use AuthProvider
 - ❌ NOT use TribeProvider
 - ❌ NOT require token
@@ -178,21 +188,25 @@ The Watermelon.tsx component should:
 ## Revenue Model
 
 ### Free Tiers (Watermelon + Chrry)
+
 - **Revenue**: $0
 - **Cost**: Minimal (user provides API keys)
 - **Goal**: User acquisition, community growth
 
 ### Agency Tier
+
 - **Revenue**: $1000/month per team
 - **Target**: 100 teams = $100k MRR
 - **Features**: Team collaboration, priority support
 
 ### Sovereign Tier
+
 - **Revenue**: Custom (starting $10k/month)
 - **Target**: 10 enterprises = $100k+ MRR
 - **Features**: Full white-label, on-premise
 
 ### Total Addressable Market
+
 - **Watermelon**: Unlimited (free tier)
 - **Chrry**: Unlimited (free tier)
 - **Agency**: 10,000+ agencies worldwide

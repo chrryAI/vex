@@ -2,6 +2,14 @@
   "name": "@chrryai/strike",
   "version": "0.1.0",
   "description": "Mutation Testing System - Generate mutants, run tests, identify weak spots",
+  "keywords": [
+    "code-coverage",
+    "falkordb",
+    "mutation-testing",
+    "test-quality"
+  ],
+  "license": "MIT",
+  "author": "Chrry AI",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -17,14 +25,6 @@
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "test": "vitest"
   },
-  "keywords": [
-    "mutation-testing",
-    "test-quality",
-    "code-coverage",
-    "falkordb"
-  ],
-  "author": "Chrry AI",
-  "license": "MIT",
   "dependencies": {
     "falkordb": "^1.0.5"
   },

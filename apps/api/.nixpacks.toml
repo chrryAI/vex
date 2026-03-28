@@ -3,7 +3,11 @@ nixPkgs = ["nodejs_22"]
 nixLibs = []
 
 [phases.install]
-cmds = ["corepack enable", "corepack prepare pnpm@9.1.2 --activate", "pnpm install --frozen-lockfile"]
+cmds = [
+  "corepack enable",
+  "corepack prepare pnpm@9.1.2 --activate",
+  "pnpm install --frozen-lockfile",
+]
 
 [phases.build]
 cmds = ["pnpm build --filter api..."]
@@ -14,6 +18,6 @@ cmd = "pnpm --filter api start"
 
 [variables]
 TURBO_API = "$TURBO_API"
-TURBO_TOKEN = "$TURBO_TOKEN"  
+TURBO_TOKEN = "$TURBO_TOKEN"
 TURBO_REMOTE_CACHE_SIGNATURE_KEY = "$TURBO_REMOTE_CACHE_SIGNATURE_KEY"
 TURBO_TEAM = "vex"

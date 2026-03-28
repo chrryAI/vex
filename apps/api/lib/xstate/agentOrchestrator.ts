@@ -1,4 +1,6 @@
 import type { scheduledJob } from "@repo/db"
+import type { scheduleTimeType } from "@repo/db/src/schema"
+
 import { type AnyActorRef, createActor } from "xstate"
 import { tribeCommentMachine } from "./machines/tribeCommentMachine"
 import { tribeEngageMachine } from "./machines/tribeEngageMachine"
@@ -32,17 +34,31 @@ export function isSupportedJobType(
  * Execute a scheduled job via XState state machine
  * Returns a promise that resolves when the machine reaches a final state
  */
-export async function executeJobViaXState(
-  job: scheduledJob,
-  options?: { languages?: string[]; effectiveJobType?: string },
-): Promise<{
+export async function executeJobViaXState({
+  job,
+  slot,
+}: {
+  job: scheduledJob
+  slot?: scheduleTimeType
+}): Promise<{
   success: boolean
   error?: string
   output?: any
 }> {
-  // Use effectiveJobType override (for custom frequency jobs where a single job
-  // runs different slot types like post/comment/engage sequentially)
-  const jobType = (options?.effectiveJobType || job.jobType) as string
+  // Use slot's postType to determine the actual job type
+  // For custom frequency jobs, a single job can run different slot types (post/comment/engage)
+  let jobType: string
+  // Debug: console.log(`🎭 [XState] Slot:`, slot ? { postType: slot.postType, time: slot.time } : "undefined")
+  if (slot?.postType === "post") {
+    jobType = "tribe_post"
+  } else if (slot?.postType === "comment") {
+    jobType = "tribe_comment"
+  } else if (slot?.postType === "engagement") {
+    jobType = "tribe_engage"
+  } else {
+    // Fallback to job.jobType for backward compatibility
+    jobType = job.jobType as string
+  }
 
   if (!isSupportedJobType(jobType)) {
     throw new Error(`Unsupported XState job type: ${jobType}`)
@@ -65,10 +81,21 @@ export async function executeJobViaXState(
     const machine = MACHINE_MAP[jobType]
 
     // Prepare input based on job type
-    const input =
-      jobType === "tribe_engage"
-        ? { job, languages: options?.languages }
-        : { job }
+    let input: any
+    if (jobType === "tribe_engage") {
+      input = { job, languages: slot?.languages }
+    } else if (jobType === "tribe_post") {
+      input = {
+        job,
+        postType: slot?.postType,
+        generateImage: slot?.generateImage,
+        generateVideo: slot?.generateVideo,
+        fetchNews: slot?.fetchNews,
+        languages: slot?.languages,
+      }
+    } else {
+      input = { job }
+    }
 
     const actor = createActor(machine, { input: input as any })
 

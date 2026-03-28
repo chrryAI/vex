@@ -27,7 +27,8 @@ import {
   sql,
 } from "@repo/db"
 
-import { stores } from "@repo/db/src/schema"
+import { type scheduleTimeType, stores } from "@repo/db/src/schema"
+import { executeJobViaXState, isSupportedJobType } from "../xstate"
 
 // Secure random number generator (0 to max-1)
 function _secureRandom(max: number = 100): number {
@@ -112,6 +113,47 @@ import { getBlueskyCredentials, postToBluesky } from "../bluesky"
 import { checkMoltbookHealth } from "../integrations/moltbook"
 
 const JWT_EXPIRY = "30d"
+
+/**
+ * Find the matching schedule slot for the current time
+ * Returns the slot that is closest to current time (within tolerance)
+ */
+function findMatchingSlot(
+  scheduledTimes: scheduleTimeType[],
+  timezone: string = "Europe/Amsterdam",
+  toleranceMinutes: number = 30,
+): { slot: scheduleTimeType | undefined; currentMinutes: number } {
+  if (!scheduledTimes?.length) {
+    return { slot: undefined, currentMinutes: 0 }
+  }
+
+  const zonedNow = toZonedTime(new Date(), timezone)
+  const currentMinutes = zonedNow.getHours() * 60 + zonedNow.getMinutes()
+
+  const matchedSlot = scheduledTimes.find((s) => {
+    let slotMinutes: number
+    if (s.time.includes("T")) {
+      const d = new Date(s.time)
+      const zd = toZonedTime(d, timezone)
+      slotMinutes = zd.getHours() * 60 + zd.getMinutes()
+    } else {
+      const [h, m] = s.time.split(":").map(Number)
+      slotMinutes = (h ?? 0) * 60 + (m ?? 0)
+    }
+
+    const diff = Math.abs(slotMinutes - currentMinutes)
+    const wrappedDiff = Math.abs(
+      Math.min(slotMinutes, currentMinutes) +
+        1440 -
+        Math.max(slotMinutes, currentMinutes),
+    )
+    const minDiff = Math.min(diff, wrappedDiff)
+
+    return minDiff <= toleranceMinutes
+  })
+
+  return { slot: matchedSlot, currentMinutes }
+}
 
 function generateToken(userId: string, email: string): string {
   return sign({ userId, email }, SECRET, { expiresIn: JWT_EXPIRY })
@@ -1554,18 +1596,10 @@ export async function postToMoltbookJob({
 
 async function postToTribeJob({
   job,
-  postType,
-  generateImage,
-  generateVideo,
-  fetchNews,
-  languages,
+  slot,
 }: {
   job: scheduledJob
-  postType?: string
-  generateImage?: boolean
-  generateVideo?: boolean
-  fetchNews?: boolean
-  languages?: string[]
+  slot?: scheduleTimeType
 }): Promise<{
   success?: boolean
   error?: string
@@ -1577,6 +1611,12 @@ async function postToTribeJob({
   if (!job.appId) {
     throw new Error("App not found for Tribe posting")
   }
+
+  const postType = slot?.postType || "post"
+  const generateImage = slot?.generateImage
+  const generateVideo = slot?.generateVideo
+  const fetchNews = slot?.fetchNews
+  const languages = slot?.languages
 
   const app = await db.query.apps.findFirst({
     where: eq(apps.id, job.appId),
@@ -1989,8 +2029,20 @@ ${moodContext}
       } as ReturnType<typeof parseAIJsonResponse>
     } else if (aiMessageContent) {
       console.log(`⚠️ Falling back to parseAIJsonResponse from message content`)
-      console.log(`📄 Full AI response:\n${aiMessageContent}`)
-      parsedContent = parseAIJsonResponse(aiMessageContent)
+
+      // Handle both string and object (ai.ts may return pre-parsed object in data.text)
+      if (typeof aiMessageContent === "object" && aiMessageContent !== null) {
+        // Already parsed object from ai.ts
+        console.log(`📄 Using pre-parsed object from AI response`)
+        parsedContent = aiMessageContent as ReturnType<
+          typeof parseAIJsonResponse
+        >
+      } else {
+        // String content, need to parse
+        const contentStr = aiMessageContent as string
+        console.log(`📄 Full AI response:\n${contentStr.substring(0, 500)}...`)
+        parsedContent = parseAIJsonResponse(contentStr)
+      }
     } else {
       throw new Error(
         "No AI content received — neither tribeContent nor message content available",
@@ -4342,14 +4394,14 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
 
       for (const schedule of job.scheduledTimes) {
         const postType = schedule.postType
-        const feedbackApps = schedule.feedbackApps
         const generateImage = schedule.generateImage === true
         const fetchNews = schedule.fetchNews === true
         const generateVideo = schedule.generateVideo === true
+
         let effectiveJobType = job.jobType
 
         // Map postType to jobType
-        if (postType === "autonomous" || feedbackApps) {
+        if (postType === "autonomous") {
           effectiveJobType = "autonomous"
         } else if (postType === "post") {
           effectiveJobType =
@@ -4369,16 +4421,10 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         // Execute the job type — wrap in try/catch so one subtask failure
         // doesn't abort the rest. Cooldown is a skip, not a real failure.
         try {
-          const languages = schedule.languages || job.metadata?.languages
           await executeJobType({
             effectiveJobType,
             job,
-            postType,
-            generateImage,
-            fetchNews,
-            generateVideo,
-            languages,
-            feedbackApps,
+            slot: schedule,
           })
           anyTaskSucceeded = true
         } catch (subtaskError) {
@@ -4481,97 +4527,11 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
       tribePostId?: string
       moltPostId?: string
       error?: string
-    }
+    } = { output: "" }
 
     switch (effectiveJobType) {
-      case "tribe_post": {
-        // Resolve generateImage and fetchNews from the active schedule slot
-        const matchedSlot = (() => {
-          if (!job.scheduledTimes?.length) return undefined
-          const timezone = job.timezone || "Europe/Amsterdam"
-          const zonedNow = toZonedTime(new Date(), timezone)
-          const currentMinutes =
-            zonedNow.getHours() * 60 + zonedNow.getMinutes()
-
-          return job.scheduledTimes.find((s) => {
-            let slotMinutes: number
-            if (s.time.includes("T")) {
-              // Parse as ISO but ensure we extract hours/minutes in the CORRECT timezone
-              const d = new Date(s.time)
-              const zd = toZonedTime(d, timezone)
-              slotMinutes = zd.getHours() * 60 + zd.getMinutes()
-            } else {
-              // Assume HH:mm format
-              const [h, m] = s.time.split(":").map(Number)
-              slotMinutes = (h ?? 0) * 60 + (m ?? 0)
-            }
-
-            // Calculate difference with wrap-around support (for midnight)
-            const diff = Math.abs(slotMinutes - currentMinutes)
-            const wrappedDiff = Math.abs(
-              Math.min(slotMinutes, currentMinutes) +
-                1440 -
-                Math.max(slotMinutes, currentMinutes),
-            )
-
-            // Use 10-minute tolerance for cron jitter
-            const minDiff = Math.min(diff, wrappedDiff)
-            return minDiff <= 10
-          })
-        })()
-        const legacyGenerateImage = matchedSlot?.generateImage === true
-        const legacyGenerateVideo = matchedSlot?.generateVideo === true
-        const legacyFetchNews = matchedSlot?.fetchNews === true
-        const legacyLanguages =
-          matchedSlot?.languages || (job.metadata as any)?.languages
-
-        if (matchedSlot) {
-          console.log(
-            `🎯 Matched schedule slot: ${matchedSlot.time} (${matchedSlot.postType}) | genImage: ${legacyGenerateImage} | genVideo: ${legacyGenerateVideo} | fetchNews: ${legacyFetchNews}`,
-          )
-        } else {
-          console.log(
-            `⚠️ No matching schedule slot found for current time (${new Date().toISOString()})`,
-          )
-        }
-
-        // if (true) {
-        //   throw new Error(response.error || "Unknown error")
-        // }
-        try {
-          const response = await executeTribePost(
-            job,
-            undefined,
-            legacyGenerateImage,
-            legacyFetchNews,
-            legacyGenerateVideo,
-            legacyLanguages,
-          )
-          if (!response.output || response.error) {
-            throw new Error(response.error || "Unknown error")
-          }
-          result = {
-            output: response.output,
-            tribePostId: response.post_id,
-          }
-          // 🌍 Fire-and-forget: auto-translate the new post
-          if (response.post_id && job.appId && !isDevelopment) {
-            autoTranslateTribeContent({
-              appId: job.appId,
-              userId: job.userId,
-              postIds: [response.post_id],
-              languages: legacyLanguages,
-            }).catch((err) =>
-              console.error("⚠️ Auto-translate post failed:", err),
-            )
-          }
-        } catch (error) {
-          result = {
-            output: String(error),
-          }
-        }
-        break
-      }
+      // Note: tribe_post, tribe_comment, tribe_engage are now handled by executeJobType
+      // This switch only handles legacy paths and non-tribe jobs
 
       case "moltbook_post":
         try {
@@ -4613,91 +4573,6 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         }
         result = {
           output: "Engaged with Moltbook",
-        }
-        break
-      }
-
-      case "tribe_comment": {
-        const matchedSlot = (() => {
-          if (!job.scheduledTimes?.length) return undefined
-          const timezone = job.timezone || "Europe/Amsterdam"
-          const zonedNow = toZonedTime(new Date(), timezone)
-          const currentMinutes =
-            zonedNow.getHours() * 60 + zonedNow.getMinutes()
-
-          return job.scheduledTimes.find((s) => {
-            let slotMinutes: number
-            if (s.time.includes("T")) {
-              const d = new Date(s.time)
-              const zd = toZonedTime(d, timezone)
-              slotMinutes = zd.getHours() * 60 + zd.getMinutes()
-            } else {
-              const [h, m] = s.time.split(":").map(Number)
-              slotMinutes = (h ?? 0) * 60 + (m ?? 0)
-            }
-            const diff = Math.abs(slotMinutes - currentMinutes)
-            const wrappedDiff = Math.abs(
-              Math.min(slotMinutes, currentMinutes) +
-                1440 -
-                Math.max(slotMinutes, currentMinutes),
-            )
-            const minDiff = Math.min(diff, wrappedDiff)
-            return minDiff <= 10
-          })
-        })()
-        const legacyLanguages =
-          matchedSlot?.languages || (job.metadata as any)?.languages
-        try {
-          const response = await executeTribeComment(job)
-          if (!response?.content || response.error) {
-            throw new Error(response?.error || "Unknown error")
-          }
-          result = {
-            output: response.content,
-          }
-          // 🌍 Fire-and-forget: auto-translate the most recent comments for this app (bulk batch)
-          if (job.appId) {
-            const recentComments = await db.query.tribeComments.findMany({
-              where: and(
-                eq(tribeComments.appId, job.appId),
-                gt(
-                  tribeComments.createdOn,
-                  new Date(Date.now() - 2 * 60 * 1000),
-                ), // Last 2 mins
-              ),
-            })
-            if (recentComments.length > 0 && !isDevelopment) {
-              autoTranslateTribeContent({
-                appId: job.appId,
-                userId: job.userId,
-                commentIds: recentComments.map((c) => c.id),
-                languages: legacyLanguages,
-              }).catch((err) =>
-                console.error("⚠️ Auto-translate comments failed:", err),
-              )
-            }
-          }
-        } catch (error) {
-          result = {
-            output: String(error),
-          }
-        }
-        break
-      }
-
-      case "tribe_engage": {
-        try {
-          const tribeEngageResult = await executeTribeEngage(job)
-          if (tribeEngageResult?.error) {
-            throw new Error(tribeEngageResult.error)
-          }
-          result = {
-            output: "Engaged with Tribe",
-          }
-        } catch (error) {
-          result = {
-            output: String(error),
-          }
         }
         break
       }
@@ -4830,35 +4705,28 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
 async function executeJobType({
   effectiveJobType,
   job,
-  postType,
-  generateImage,
-  fetchNews,
-  generateVideo,
-  languages,
-  feedbackApps,
+  slot,
 }: {
   effectiveJobType: string
   job: scheduledJob
-  postType?: string
-  generateImage?: boolean
-  fetchNews?: boolean
-  generateVideo?: boolean
-  languages?: string[]
-  feedbackApps?: string[]
+  slot?: scheduleTimeType
 }): Promise<void> {
+  const postType = slot?.postType || "unknown"
+  const generateImage = slot?.generateImage === true
+  const generateVideo = slot?.generateVideo === true
+  const fetchNews = slot?.fetchNews === true
+  const languages = slot?.languages || (job.metadata as any)?.languages
   switch (effectiveJobType) {
     case "tribe_post":
       try {
         // Try XState first, fall back to direct async
         let response: Awaited<ReturnType<typeof executeTribePost>>
         try {
-          const { executeJobViaXState, isSupportedJobType } = await import(
-            "../xstate"
-          )
           if (isSupportedJobType(effectiveJobType)) {
             console.log(`🎭 [XState] Routing tribe_post through state machine`)
-            const xstateResult = await executeJobViaXState(job, {
-              effectiveJobType,
+            const xstateResult = await executeJobViaXState({
+              job,
+              slot,
             })
             response = xstateResult.success
               ? (xstateResult.output as typeof response)
@@ -4871,14 +4739,7 @@ async function executeJobType({
             `⚠️ [XState] tribe_post failed, falling back to direct:`,
             xstateError instanceof Error ? xstateError.message : xstateError,
           )
-          response = await executeTribePost(
-            job,
-            postType,
-            generateImage,
-            fetchNews,
-            generateVideo,
-            languages,
-          )
+          response = await executeTribePost({ job, slot })
         }
         if (!response.output || response.error) {
           throw new Error(response.error || "Unknown error")
@@ -4946,8 +4807,9 @@ async function executeJobType({
             console.log(
               `🎭 [XState] Routing tribe_comment through state machine`,
             )
-            const xstateResult = await executeJobViaXState(job, {
-              effectiveJobType,
+            const xstateResult = await executeJobViaXState({
+              job,
+              slot,
             })
             commentResponse = xstateResult.success
               ? (xstateResult.output as typeof commentResponse)
@@ -4960,7 +4822,7 @@ async function executeJobType({
             `⚠️ [XState] tribe_comment failed, falling back to direct:`,
             xstateError instanceof Error ? xstateError.message : xstateError,
           )
-          commentResponse = await executeTribeComment(job)
+          commentResponse = await executeTribeComment({ job })
         }
         if (!commentResponse?.content || commentResponse.error) {
           throw new Error(commentResponse?.error || "Unknown error")
@@ -4998,7 +4860,7 @@ async function executeJobType({
         const slotMins = (h ?? 0) * 60 + (m ?? 0)
         return Math.abs(currentMins - slotMins) <= 15
       })
-      const legacyLanguagesForEngage =
+      const languagesForEngage =
         matchedSlot?.languages || (job.metadata as any)?.languages
 
       try {
@@ -5012,9 +4874,9 @@ async function executeJobType({
             console.log(
               `🎭 [XState] Routing tribe_engage through state machine`,
             )
-            const xstateResult = await executeJobViaXState(job, {
-              languages: legacyLanguagesForEngage,
-              effectiveJobType,
+            const xstateResult = await executeJobViaXState({
+              job,
+              slot,
             })
             engageResult = xstateResult.success
               ? (xstateResult.output as typeof engageResult)
@@ -5027,7 +4889,10 @@ async function executeJobType({
             `⚠️ [XState] tribe_engage failed, falling back to direct:`,
             xstateError instanceof Error ? xstateError.message : xstateError,
           )
-          engageResult = await executeTribeEngage(job, legacyLanguagesForEngage)
+          engageResult = await executeTribeEngage({
+            job,
+            languages: slot?.languages,
+          })
         }
         if (engageResult?.error) {
           throw new Error(engageResult.error)
@@ -5040,6 +4905,7 @@ async function executeJobType({
     }
 
     case "autonomous": {
+      const feedbackApps = slot?.feedbackApps || []
       // Autonomous feedback generation for M2M Pear system
       console.log(`🤖 Autonomous feedback generation`)
 
@@ -5065,27 +4931,22 @@ async function executeJobType({
   }
 }
 
-async function executeTribePost(
-  job: scheduledJob,
-  postType?: string,
-  generateImage?: boolean,
-  fetchNews?: boolean,
-  generateVideo?: boolean,
-  languages?: string[],
-) {
+async function executeTribePost({
+  job,
+  slot,
+}: {
+  job: scheduledJob
+  slot?: scheduleTimeType
+}) {
   const result = await postToTribeJob({
     job,
-    postType,
-    generateImage,
-    generateVideo,
-    fetchNews,
-    languages,
+    slot,
   })
 
   return result
 }
 
-async function executeTribeComment(job: scheduledJob) {
+async function executeTribeComment({ job }: { job: scheduledJob }) {
   const result = await checkTribeComments({
     job,
   })
@@ -5093,7 +4954,13 @@ async function executeTribeComment(job: scheduledJob) {
   return result
 }
 
-async function executeTribeEngage(job: scheduledJob, languages?: string[]) {
+async function executeTribeEngage({
+  job,
+  languages,
+}: {
+  job: scheduledJob
+  languages?: string[]
+}) {
   const result = await engageWithTribePosts({
     job,
     languages,
@@ -5105,13 +4972,37 @@ async function executeTribeEngage(job: scheduledJob, languages?: string[]) {
 // Direct exports for XState machines to call back into existing logic
 export async function executeTribePostDirect(params: {
   job: scheduledJob
+  slot?: scheduleTimeType
   postType?: string
   generateImage?: boolean
   generateVideo?: boolean
   fetchNews?: boolean
   languages?: string[]
 }) {
-  return postToTribeJob(params)
+  // Build a synthetic slot from individual params if slot not provided
+  const now = new Date()
+  const syntheticSlot =
+    params.slot ||
+    ({
+      postType: params.postType || "post",
+      generateImage: params.generateImage,
+      generateVideo: params.generateVideo,
+      fetchNews: params.fetchNews,
+      languages: params.languages,
+      time: now.toISOString(),
+      model: params.job.aiModel || "sushi",
+      credits: 10,
+      intervalMinutes: 60,
+      maxTokens: 10000,
+      charLimit: 1000,
+      hour: now.getHours(),
+      minute: now.getMinutes(),
+    } as scheduleTimeType)
+
+  return postToTribeJob({
+    job: params.job,
+    slot: syntheticSlot,
+  })
 }
 
 export async function executeTribeCommentDirect(job: scheduledJob) {

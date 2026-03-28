@@ -96,7 +96,7 @@ Conversation → AI Analysis → Memory Extraction → Categorization → Storag
 
 ```typescript
 // Automatically extract memories from conversation
-const memories = await extractMemories(conversationText, model)
+const memories = await extractMemories(conversationText, model);
 
 // AI categorizes each memory
 for (const memory of memories) {
@@ -104,7 +104,7 @@ for (const memory of memories) {
     appId &&
     (memory.category === "fact" ||
       memory.category === "instruction" ||
-      memory.category === "context")
+      memory.category === "context");
 
   // Save to appropriate scope
   await createMemory({
@@ -113,7 +113,7 @@ for (const memory of memories) {
     content: memory.content,
     category: memory.category,
     importance: memory.importance,
-  })
+  });
 }
 ```
 
@@ -126,7 +126,7 @@ Generates personalized action suggestions based on conversation context, user me
 
 ```javascript
 // Hardcoded suggestions (same for everyone)
-const suggestions = ["Create a new task", "Start a timer", "View your calendar"]
+const suggestions = ["Create a new task", "Start a timer", "View your calendar"];
 ```
 
 **Chrry's AI Automation:**
@@ -156,7 +156,7 @@ const suggestions = await generateSuggestions({
     confidence: 0.85,
     requiresWebSearch: true,
   })
-]
+];
 ```
 
 **Key Features:**
@@ -194,7 +194,7 @@ if (currentApp.slug === "bloom") {
     "Start a 25min focus session",
     "Review your weekly progress",
     "Analyze your productivity patterns",
-  ]
+  ];
 }
 
 if (currentApp.slug === "atlas") {
@@ -203,7 +203,7 @@ if (currentApp.slug === "atlas") {
     "Find hidden gems in {{city}}",
     "Plan your {{timeOfDay}} itinerary",
     "Discover local food spots {{weatherEmoji}}",
-  ]
+  ];
 }
 ```
 
@@ -272,7 +272,7 @@ const placeholderHistory = {
       topicKeywords: ["typescript", "types", "interfaces"],
     },
   ],
-}
+};
 ```
 
 ### 4. Character Profile Generation
@@ -379,10 +379,10 @@ const bloomContext = {
   activeTasks: 12, // Current active tasks
   focusTime: 450, // Minutes focused (7 days)
   timerStatus: "running", // Current timer state
-}
+};
 
 // AI uses this context for suggestions
-;("You've focused for 450min this week! 🎯 Ready for another session?")
+("You've focused for 450min this week! 🎯 Ready for another session?");
 ```
 
 ## Automation Architecture
@@ -446,8 +446,8 @@ const bloomContext = {
 
 ```typescript
 // User gets instant response
-const userResponse = await generateResponse(userMessage)
-sendToUser(userResponse) // ✅ Instant
+const userResponse = await generateResponse(userMessage);
+sendToUser(userResponse); // ✅ Instant
 
 // Background processing happens AFTER user gets response
 generateAIContent({
@@ -457,8 +457,8 @@ generateAIContent({
   latestMessage,
 }).catch((error) => {
   // Silent failure - user already got their response
-  console.error("Background processing failed:", error)
-})
+  console.error("Background processing failed:", error);
+});
 ```
 
 **Benefits:**
@@ -476,7 +476,7 @@ generateAIContent({
 
 ```typescript
 // Use cost-efficient DeepSeek for automation
-const model = getModelProvider("deepseek-chat")
+const model = getModelProvider("deepseek-chat");
 
 // ~90% cheaper than GPT-4
 // Perfect for background tasks
@@ -487,7 +487,7 @@ const model = getModelProvider("deepseek-chat")
 
 ```typescript
 // Use app's selected agent for user-facing responses
-const model = getModelProvider(app.selectedAgent)
+const model = getModelProvider(app.selectedAgent);
 
 // GPT-4, Claude, or custom models
 // High quality for user experience
@@ -521,13 +521,13 @@ const userSettings = {
   memoriesEnabled: true, // Save personal memories
   characterProfilesEnabled: true, // Build personality profile
   moodTrackingEnabled: true, // Track emotional state
-}
+};
 
 // Privacy-first approach
 if (!user.memoriesEnabled) {
   // Skip user memories, but ALWAYS save app memories
   // App memories = institutional knowledge (no personal data)
-  await saveAppMemories(memories)
+  await saveAppMemories(memories);
 }
 ```
 
@@ -568,7 +568,7 @@ User: "How do I pass params between screens?"
 **Memories Created:**
 
 ```typescript
-;[
+[
   {
     category: "expertise",
     content: "Working with React Native and TypeScript",
@@ -581,13 +581,13 @@ User: "How do I pass params between screens?"
     importance: 7,
     scope: "app", // Helps ALL users of Vex
   },
-]
+];
 ```
 
 **Suggestions Generated:**
 
 ```typescript
-;[
+[
   {
     title: "Debug React Navigation params",
     emoji: "🧭",
@@ -607,7 +607,7 @@ User: "How do I pass params between screens?"
     confidence: 0.7,
     requiresWebSearch: true,
   },
-]
+];
 ```
 
 **Placeholders Created:**
@@ -637,7 +637,7 @@ User: "Definitely food! I love ramen and sushi."
 **Memories Created:**
 
 ```typescript
-;[
+[
   {
     category: "preference",
     content: "Loves ramen and sushi",
@@ -656,18 +656,17 @@ User: "Definitely food! I love ramen and sushi."
     importance: 7,
     scope: "app", // Helps ALL Atlas users
   },
-]
+];
 ```
 
 **Suggestions Generated:**
 
 ```typescript
-;[
+[
   {
     title: "Find best ramen in {{city}} {{flag}}",
     emoji: "🍜",
-    content:
-      "Discover top-rated ramen shops in Tokyo based on your preferences",
+    content: "Discover top-rated ramen shops in Tokyo based on your preferences",
     confidence: 0.95,
     requiresWebSearch: true,
   },
@@ -685,7 +684,7 @@ User: "Definitely food! I love ramen and sushi."
     confidence: 0.85,
     requiresWebSearch: false,
   },
-]
+];
 ```
 
 **Placeholders Created:**
@@ -737,7 +736,7 @@ User: "I need to finish this report by 5pm."
 **Suggestions Generated:**
 
 ```typescript
-;[
+[
   {
     title: "Start 25min focus session",
     emoji: "⏱️",
@@ -757,7 +756,7 @@ User: "I need to finish this report by 5pm."
     confidence: 0.75,
     requiresWebSearch: true,
   },
-]
+];
 ```
 
 **Placeholders Created:**
@@ -783,21 +782,21 @@ async function generateAIContent({
   language,
   app,
 }: {
-  thread: Thread
-  user?: User
-  guest?: Guest
-  conversationHistory: Message[]
-  latestMessage: Message
-  language: string
-  app?: App
+  thread: Thread;
+  user?: User;
+  guest?: Guest;
+  conversationHistory: Message[];
+  latestMessage: Message;
+  language: string;
+  app?: App;
 }) {
   // 1. Get cost-efficient model for background processing
-  const { provider: model, agentName } = await getModelProvider(app)
+  const { provider: model, agentName } = await getModelProvider(app);
 
   // 2. Extract conversation text
   const conversationText = conversationHistory
     .map((msg) => `${msg.role}: ${msg.content}`)
-    .join("\n")
+    .join("\n");
 
   // 3. Parallel AI processing
   const [memories, characterProfile, mood, suggestions] = await Promise.all([
@@ -805,7 +804,7 @@ async function generateAIContent({
     generateCharacterProfile(conversationText, model),
     detectMood(conversationText, model),
     generateSuggestions(conversationText, memories, app, model),
-  ])
+  ]);
 
   // 4. Save to database
   await Promise.all([
@@ -813,7 +812,7 @@ async function generateAIContent({
     saveCharacterProfile(characterProfile, user, guest),
     saveMood(mood, user, guest, latestMessage),
     saveSuggestions(suggestions, user, guest, app),
-  ])
+  ]);
 
   // 5. Generate placeholders
   const placeholders = await generatePlaceholders({
@@ -821,13 +820,13 @@ async function generateAIContent({
     conversationText,
     language,
     model,
-  })
+  });
 
   // 6. Notify user (real-time update)
   notifyUser({
     type: "content_updated",
     data: { suggestions, placeholders, characterProfile },
-  })
+  });
 }
 ```
 
@@ -862,7 +861,7 @@ Generate ONLY valid JSON array (max 5 memories):
     "importance": 1-10,
     "tags": ["tag1", "tag2"]
   }
-]`
+]`;
 ```
 
 **Suggestion Generation Prompt:**
@@ -894,7 +893,7 @@ Generate 7 unique suggestions in JSON format:
     "confidence": 0.0-1.0,
     "requiresWebSearch": true/false
   }
-]`
+]`;
 ```
 
 ## Performance Metrics
@@ -933,7 +932,7 @@ const visualContent = await generateVisuals({
   conversationContext,
   userPreferences,
   appTheme,
-})
+});
 ```
 
 ### 2. Predictive Suggestions
@@ -945,7 +944,7 @@ const predictedNeeds = await predictUserNeeds({
   currentContext,
   timeOfDay,
   location,
-})
+});
 ```
 
 ### 3. Cross-App Memory Sharing
@@ -956,7 +955,7 @@ const crossAppMemories = await getRelevantMemories({
   currentApp: "atlas",
   relatedApps: ["bloom", "vex"],
   context: "travel planning",
-})
+});
 ```
 
 ### 4. Collaborative Content Generation
@@ -967,7 +966,7 @@ const teamSuggestions = await generateTeamContent({
   teamMembers,
   sharedGoals,
   projectContext,
-})
+});
 ```
 
 ## Conclusion

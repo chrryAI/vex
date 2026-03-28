@@ -201,16 +201,16 @@ sushi strike src/**/*.js --weak-spots
 
 ## Commands
 
-| Command | Description | Credits |
-|---------|-------------|---------|
-| `sushi init` | Initialize SUSHI in project | Free |
-| `sushi status` | Show agent status | Free |
-| `sushi config` | Configure API keys | Free |
-| `sushi coder <task>` | Generate code | 10 |
-| `sushi debugger <error>` | Fix bugs | 8 |
-| `sushi architect <design>` | Design systems | 12 |
-| `sushi pm <goal>` | Coordinate tasks | 15 |
-| `sushi strike <files>` | **Mutation testing** | **20** |
+| Command                    | Description                 | Credits |
+| -------------------------- | --------------------------- | ------- |
+| `sushi init`               | Initialize SUSHI in project | Free    |
+| `sushi status`             | Show agent status           | Free    |
+| `sushi config`             | Configure API keys          | Free    |
+| `sushi coder <task>`       | Generate code               | 10      |
+| `sushi debugger <error>`   | Fix bugs                    | 8       |
+| `sushi architect <design>` | Design systems              | 12      |
+| `sushi pm <goal>`          | Coordinate tasks            | 15      |
+| `sushi strike <files>`     | **Mutation testing**        | **20**  |
 
 ## Mutation Testing with STRIKE
 

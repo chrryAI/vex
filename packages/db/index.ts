@@ -4407,11 +4407,7 @@ export const getCities = async ({
                 ? sql`LOWER(${cities.name}) = LOWER(${name})`
                 : sql`LOWER(${cities.country}) = LOWER(${country})`
           } THEN 0
-          WHEN ${
-            name && country
-              ? sql`LOWER(${cities.name}) = LOWER(${name})`
-              : sql`FALSE`
-          } THEN 1
+          WHEN ${name && country ? sql`LOWER(${cities.name}) = LOWER(${name})` : sql`FALSE`} THEN 1
           ELSE 2
         END
       `,

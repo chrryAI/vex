@@ -24,7 +24,7 @@ export default function Layout({
 
   return (
     <>
-      {/* 
+      {/*
         Metadata is already server-rendered in index.html by server.js
         No need for client-side Helmet or API calls
       */}

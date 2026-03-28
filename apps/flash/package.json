@@ -1,7 +1,7 @@
 {
   "name": "flash",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "rm -rf .vite node_modules/.vite dist && NODE_ENV=development node server --force",

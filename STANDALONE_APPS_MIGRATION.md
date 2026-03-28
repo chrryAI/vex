@@ -7,13 +7,15 @@ Her app'i ayrı standalone Tauri desktop app olarak paketlemek için migration y
 ## ✅ Completed Apps
 
 ### 1. **Atlas** 🌍 - AI Travel Companion
+
 - **Location**: `/apps/atlas/`
 - **Port**: 5173
 - **Identifier**: `ai.chrry.atlas`
 - **Features**: Travel planning, itineraries, local insights, weather integration
 - **Status**: ✅ Package structure created
 
-### 2. **Vault** 💰 - AI Finance Assistant  
+### 2. **Vault** 💰 - AI Finance Assistant
+
 - **Location**: `/apps/vault/`
 - **Port**: 5174
 - **Identifier**: `ai.chrry.vault`
@@ -76,24 +78,29 @@ pnpm tauri build
 ## 📱 Pending Apps
 
 ### 3. **Bloom** 🌸 - Wellness & Sustainability Coach
+
 - Port: 5175
 - Features: Fitness, nutrition, mood tracking, focus sessions
 
 ### 4. **Peach** 🍑 - Social Connection Assistant
-- Port: 5176  
+
+- Port: 5176
 - Features: Friend finder, activity planning, social insights
 
 ### 5. **Focus** ⏱️ - Productivity Assistant
+
 - Port: 5177
 - Features: Pomodoro timer, task management, time tracking
 
 ### 6. **Nebula** 🌌 - Science & Exploration Hub
+
 - Port: 5178
 - Features: Quantum computing, astrophysics, advanced math
 
 ## 🎨 Shared Dependencies
 
 All apps share:
+
 - **@repo/ui**: Shared UI component library
 - **@repo/db**: Shared database layer & seed data
 - **React 18**: UI framework
@@ -130,33 +137,37 @@ vault-1.0.0-amd64.AppImage
 ✅ **Independent updates** - Each app updates separately  
 ✅ **Smaller downloads** - ~50MB per app vs 200MB+ for monolith  
 ✅ **Better branding** - Each app has its own icon, name, window title  
-✅ **App Store ready** - Can submit each app to Mac App Store, Windows Store separately  
+✅ **App Store ready** - Can submit each app to Mac App Store, Windows Store separately
 
 ## 🔄 Migration from createStores.ts
 
 ### Before (Monolithic)
+
 ```typescript
 // All apps in one giant createStores.ts file (9356 lines!)
-const atlas = await createOrUpdateApp({ app: atlasPayload })
-const vault = await createOrUpdateApp({ app: vaultPayload })
-const bloom = await createOrUpdateApp({ app: bloomPayload })
+const atlas = await createOrUpdateApp({ app: atlasPayload });
+const vault = await createOrUpdateApp({ app: vaultPayload });
+const bloom = await createOrUpdateApp({ app: bloomPayload });
 // ... 20+ more apps
 ```
 
 ### After (Modular)
+
 ```typescript
 // Each app is a standalone package
 apps/atlas/    → Atlas desktop app
-apps/vault/    → Vault desktop app  
+apps/vault/    → Vault desktop app
 apps/bloom/    → Bloom desktop app
 ```
 
 ## 📊 Database Seeding - Decentralized Approach
 
 ### Old Way (Monolithic)
+
 All apps seeded from one giant `createStores.ts` file (9356 lines!)
 
 ### New Way (Modular)
+
 Each app has its own `seed.ts` file:
 
 ```
@@ -190,11 +201,12 @@ export async function seedAtlas(params: {
 ✅ **Independent seeding** - Each app can seed itself  
 ✅ **No monolith** - No more 9356-line createStores.ts  
 ✅ **Reusable** - Seed functions can be called from anywhere  
-✅ **Testable** - Each app's seed can be tested independently  
+✅ **Testable** - Each app's seed can be tested independently
 
 ### Shared Helpers
 
 Common seed logic extracted to `/packages/db/src/seed/helpers.ts`:
+
 - `handleAppExtends()` - Setup app inheritance
 - `getOrCreateStore()` - Create/update stores
 - etc.
@@ -234,6 +246,7 @@ Common seed logic extracted to `/packages/db/src/seed/helpers.ts`:
 ## 🎉 Result
 
 Users can now download:
+
 - **Atlas.dmg** - Just the travel app
 - **Vault.dmg** - Just the finance app
 - **Bloom.dmg** - Just the wellness app

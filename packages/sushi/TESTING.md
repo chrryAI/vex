@@ -112,22 +112,22 @@ BAM automatically scans your codebase for common bug patterns and logs them to F
 ### Usage
 
 ```typescript
-import { BAM } from "./packages/bam/src/index"
+import { BAM } from "./packages/bam/src/index";
 
 const bam = new BAM({
   host: "localhost",
   port: 6380,
   graphName: "porffor_bugs",
-})
+});
 
-await bam.connect()
+await bam.connect();
 
 // Scan entire compiler directory
-const bugs = await bam.scanDirectory("./compiler")
-console.log(`Found ${bugs.length} potential issues`)
+const bugs = await bam.scanDirectory("./compiler");
+console.log(`Found ${bugs.length} potential issues`);
 
 // Analyze patterns
-const patterns = await bam.analyzeBugPatterns()
+const patterns = await bam.analyzeBugPatterns();
 // [
 //   { type: 'MISSING_ERROR_HANDLING', count: 15, avgLine: 127 },
 //   { type: 'UNUSED_IMPORT', count: 3, avgLine: 8 }
@@ -160,23 +160,23 @@ STRIKE generates code mutations to test your test suite quality. If a mutation "
 ### Usage
 
 ```typescript
-import { STRIKE } from "./packages/strike/src/index"
+import { STRIKE } from "./packages/strike/src/index";
 
 const strike = new STRIKE({
   host: "localhost",
   port: 6380,
   graphName: "porffor_mutations",
-})
+});
 
-await strike.connect()
+await strike.connect();
 
 // Test semantic.js
 const results = await strike.testFile("./compiler/semantic.js", {
   testCommand: "node test_suite.js",
   maxMutations: 50,
-})
+});
 
-console.log(`Mutation Score: ${results.killRate}%`)
+console.log(`Mutation Score: ${results.killRate}%`);
 // Kill Rate: 35.56% (20 killed, 36 survived)
 ```
 
@@ -260,13 +260,13 @@ A multi-agent system where AI agents coordinate on testing tasks using 3D spatia
 ### Usage
 
 ```typescript
-import { SpatialAgentSystem } from "./packages/spatial-agents/src/index"
+import { SpatialAgentSystem } from "./packages/spatial-agents/src/index";
 
 const system = new SpatialAgentSystem({
   graphName: "porffor_agents",
-})
+});
 
-await system.connect()
+await system.connect();
 
 // Register debugger agent
 await system.registerAgent({
@@ -276,7 +276,7 @@ await system.registerAgent({
   position: { x: 0, y: 0, z: 0 },
   capabilities: ["static-analysis", "profiling"],
   status: "idle",
-})
+});
 
 // Create task from BAM bug
 await system.createTask({
@@ -286,11 +286,11 @@ await system.createTask({
   priority: 10,
   status: "pending",
   position: { x: 0, y: 0, z: 0 },
-})
+});
 
 // Auto-assign to optimal agent
-const agent = await system.findOptimalAgent(task)
-await system.assignTask("fix-semantic-227", agent.id)
+const agent = await system.findOptimalAgent(task);
+await system.assignTask("fix-semantic-227", agent.id);
 ```
 
 ### Example Workflow
@@ -311,17 +311,17 @@ await system.assignTask("fix-semantic-227", agent.id)
 ### Full Pipeline
 
 ```typescript
-import { BAM } from "./packages/bam/src/index"
-import { SpatialAgentSystem } from "./packages/spatial-agents/src/index"
+import { BAM } from "./packages/bam/src/index";
+import { SpatialAgentSystem } from "./packages/spatial-agents/src/index";
 
 // 1. Scan for bugs
-const bam = new BAM()
-await bam.connect()
-const bugs = await bam.scanDirectory("./compiler")
+const bam = new BAM();
+await bam.connect();
+const bugs = await bam.scanDirectory("./compiler");
 
 // 2. Create spatial agent system
-const agents = new SpatialAgentSystem()
-await agents.connect()
+const agents = new SpatialAgentSystem();
+await agents.connect();
 
 // 3. Register agents
 await agents.registerAgent({
@@ -330,7 +330,7 @@ await agents.registerAgent({
   position: { x: 0, y: 0, z: 0 },
   capabilities: ["bug-fixing"],
   status: "idle",
-})
+});
 
 // 4. Create tasks from bugs
 for (const bug of bugs) {
@@ -341,12 +341,12 @@ for (const bug of bugs) {
     type: "bugfix",
     priority: bug.severity === "HIGH" ? 10 : 5,
     status: "pending",
-  })
+  });
 }
 
 // 5. Auto-assign tasks
-const stats = await agents.getSystemStats()
-console.log(`Created ${stats.totalTasks} tasks`)
+const stats = await agents.getSystemStats();
+console.log(`Created ${stats.totalTasks} tasks`);
 ```
 
 ## Dashboard

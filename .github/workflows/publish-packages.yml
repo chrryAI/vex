@@ -4,8 +4,8 @@ on:
   push:
     branches: [web]
     paths:
-      - 'packages/**'
-      - 'package.json'
+      - "packages/**"
+      - "package.json"
   workflow_dispatch:
 
 permissions:

@@ -3,13 +3,13 @@
  * Genetic code for agent behavior and evolution
  */
 
-import { SpatialCoordinate } from './spatial.js';
+import { SpatialCoordinate } from "./spatial.js";
 
-export type AgentType = 'sensei' | 'student' | 'debugger' | 'pm' | 'custom';
-export type AutonomyLevel = 'manual' | 'semi' | 'full';
+export type AgentType = "sensei" | "student" | "debugger" | "pm" | "custom";
+export type AutonomyLevel = "manual" | "semi" | "full";
 
 export interface AgentStats {
-  level: number;  // 1-99
+  level: number; // 1-99
   xp: number;
   mutationsTested: number;
   mutationsKilled: number;
@@ -19,11 +19,11 @@ export interface AgentStats {
 
 export interface Mutation {
   id: string;
-  type: 'prompt' | 'tool' | 'strategy' | 'knowledge';
+  type: "prompt" | "tool" | "strategy" | "knowledge";
   original: string;
   mutated: string;
   timestamp: number;
-  successRate: number;  // 0-1
+  successRate: number; // 0-1
   killed: boolean;
 }
 
@@ -32,29 +32,29 @@ export interface InterAppFeedback {
   targetAgent: AgentType;
   mutationId: string;
   successMetric: number;
-  adoptionDecision: 'auto' | 'pending' | 'rejected';
+  adoptionDecision: "auto" | "pending" | "rejected";
   timestamp: number;
 }
 
 export interface DNAThread {
   id: string;
   agent: AgentType;
-  
+
   // Genetic code
   systemPrompt: string;
   availableTools: string[];
   autonomyLevel: AutonomyLevel;
-  
+
   // Stats & evolution
   stats: AgentStats;
   mutations: Mutation[];
   feedback: InterAppFeedback[];
-  
+
   // Spatial position
   coordinate: SpatialCoordinate;
-  
+
   // Human approvals
-  requireApprovalFor: string[];  // ['auth', 'payment', 'delete']
+  requireApprovalFor: string[]; // ['auth', 'payment', 'delete']
   notifyOnMutation: boolean;
 }
 
@@ -74,8 +74,8 @@ export function gainXP(agent: DNAThread, amount: number): void {
 
 // Default DNA threads
 export const DEFAULT_SENSEI_DNA: DNAThread = {
-  id: 'sensei-default',
-  agent: 'sensei',
+  id: "sensei-default",
+  agent: "sensei",
   systemPrompt: `You are Sensei, an expert software architect.
 Your role is to:
 1. Analyze code architecture
@@ -84,8 +84,16 @@ Your role is to:
 4. Guide other agents
 
 Always think step-by-step and explain your reasoning.`,
-  availableTools: ['read_file', 'write_file', 'run_command', 'search_code', 'git_diff', 'strike_test', 'plan'],
-  autonomyLevel: 'semi',
+  availableTools: [
+    "read_file",
+    "write_file",
+    "run_command",
+    "search_code",
+    "git_diff",
+    "strike_test",
+    "plan",
+  ],
+  autonomyLevel: "semi",
   stats: {
     level: 1,
     xp: 0,
@@ -96,14 +104,14 @@ Always think step-by-step and explain your reasoning.`,
   },
   mutations: [],
   feedback: [],
-  coordinate: { x: 'sensei', y: 'general', z: Date.now() },
-  requireApprovalFor: ['auth', 'payment', 'delete', 'git_push'],
+  coordinate: { x: "sensei", y: "general", z: Date.now() },
+  requireApprovalFor: ["auth", "payment", "delete", "git_push"],
   notifyOnMutation: true,
 };
 
 export const DEFAULT_STUDENT_DNA: DNAThread = {
-  id: 'student-default',
-  agent: 'student',
+  id: "student-default",
+  agent: "student",
   systemPrompt: `You are Student, a capable software developer.
 Your role is to:
 1. Write clean, tested code
@@ -112,8 +120,8 @@ Your role is to:
 4. Learn from feedback
 
 Implement features carefully and test your changes.`,
-  availableTools: ['read_file', 'write_file', 'run_command', 'search_code', 'git_diff'],
-  autonomyLevel: 'manual',
+  availableTools: ["read_file", "write_file", "run_command", "search_code", "git_diff"],
+  autonomyLevel: "manual",
   stats: {
     level: 1,
     xp: 0,
@@ -124,7 +132,7 @@ Implement features carefully and test your changes.`,
   },
   mutations: [],
   feedback: [],
-  coordinate: { x: 'student', y: 'general', z: Date.now() },
-  requireApprovalFor: ['auth', 'payment', 'delete'],
+  coordinate: { x: "student", y: "general", z: Date.now() },
+  requireApprovalFor: ["auth", "payment", "delete"],
   notifyOnMutation: true,
 };

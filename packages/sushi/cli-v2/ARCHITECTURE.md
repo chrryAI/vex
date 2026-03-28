@@ -15,15 +15,15 @@
 
 ## 🏗️ Tech Stack
 
-| Layer | Technology | Reason |
-|-------|------------|--------|
-| **TUI Framework** | Ink (React for Terminal) | Modern, React-based, type-safe |
-| **State Management** | Zustand | Simple, fast, no boilerplate |
-| **Database** | FalkorDB (existing) | Graph + Vector, already have it |
-| **AI Streaming** | Vercel AI SDK | Standard streaming, multi-provider |
-| **MCP** | Official TypeScript SDK | Standard tool protocol |
-| **Multi-modal** | clipboardy + mic | Image paste, voice input |
-| **Build** | tsx + pkg | Fast dev, binary distribution |
+| Layer                | Technology               | Reason                             |
+| -------------------- | ------------------------ | ---------------------------------- |
+| **TUI Framework**    | Ink (React for Terminal) | Modern, React-based, type-safe     |
+| **State Management** | Zustand                  | Simple, fast, no boilerplate       |
+| **Database**         | FalkorDB (existing)      | Graph + Vector, already have it    |
+| **AI Streaming**     | Vercel AI SDK            | Standard streaming, multi-provider |
+| **MCP**              | Official TypeScript SDK  | Standard tool protocol             |
+| **Multi-modal**      | clipboardy + mic         | Image paste, voice input           |
+| **Build**            | tsx + pkg                | Fast dev, binary distribution      |
 
 ---
 
@@ -132,19 +132,19 @@ CREATE (m)-[:SIMILAR {score: 0.95}]->(other:Memory)
 ```typescript
 interface DNAThread {
   id: string;
-  agent: 'sensei' | 'student' | 'debugger';
-  level: number;  // 1-99 (XP-based)
+  agent: "sensei" | "student" | "debugger";
+  level: number; // 1-99 (XP-based)
   xp: number;
-  
+
   // Genetic code
   systemPrompt: string;
   tools: string[];
-  autonomyLevel: 'manual' | 'semi' | 'full';
-  
+  autonomyLevel: "manual" | "semi" | "full";
+
   // Evolution
   mutations: Mutation[];
   feedback: InterAppFeedback[];
-  
+
   // Spatial position
   coordinate: SpatialCoordinate;
 }
@@ -163,21 +163,21 @@ function gainXP(agent: Agent, killedMutations: number) {
 ```typescript
 // Built-in tools
 const tools: MCPTool[] = [
-  { name: 'read_file', description: 'Read file contents' },
-  { name: 'write_file', description: 'Write file with changes' },
-  { name: 'run_command', description: 'Execute shell command' },
-  { name: 'search_code', description: 'Search codebase' },
-  { name: 'git_diff', description: 'Show git diff' },
-  { name: 'strike_test', description: 'Run mutation testing' },
-  { name: 'view_image', description: 'Analyze image' },
-  { name: 'voice_input', description: 'Transcribe voice' },
+  { name: "read_file", description: "Read file contents" },
+  { name: "write_file", description: "Write file with changes" },
+  { name: "run_command", description: "Execute shell command" },
+  { name: "search_code", description: "Search codebase" },
+  { name: "git_diff", description: "Show git diff" },
+  { name: "strike_test", description: "Run mutation testing" },
+  { name: "view_image", description: "Analyze image" },
+  { name: "voice_input", description: "Transcribe voice" },
 ];
 
 // External MCP servers
 const servers = [
-  { name: 'filesystem', transport: 'stdio' },
-  { name: 'github', transport: 'http' },
-  { name: 'stripe', transport: 'sse' },
+  { name: "filesystem", transport: "stdio" },
+  { name: "github", transport: "http" },
+  { name: "stripe", transport: "sse" },
 ];
 ```
 
@@ -236,6 +236,7 @@ UI Update (Ink re-render)
 ## 🚀 Key Features
 
 ### 1. Natural Commands
+
 ```bash
 # Spatial navigation
 sushi> @x:vault fix the login bug
@@ -252,18 +253,21 @@ sushi> /voice add user profile feature
 ```
 
 ### 2. Persistent Context
+
 - Every conversation stored in FalkorDB
 - Vector embeddings for semantic search
 - Spatial coordinates for navigation
 - Git integration for code context
 
 ### 3. Agent Evolution
+
 - Agents level up by killing mutations
 - DNA threads track evolution
 - Inter-agent feedback loop
 - Automatic skill improvement
 
 ### 4. Real-time Streaming
+
 - Token-by-token display
 - Tool execution progress
 - File operation status
@@ -292,20 +296,20 @@ sushi> /voice add user profile feature
 
 ## 🎓 Claude Code Parity Checklist
 
-| Feature | Claude Code | SUSHI v2 |
-|---------|-------------|----------|
-| Terminal UI | ✅ | ✅ (Ink) |
-| Multi-file edits | ✅ | ✅ (MCP) |
-| Git integration | ✅ | ✅ |
-| Streaming | ✅ | ✅ |
-| Plan/Act mode | ✅ | ✅ (Sensei mode) |
-| Multi-model | ❌ | ✅ |
-| Spatial nav | ❌ | ✅ |
-| DNA threading | ❌ | ✅ |
-| Mutation testing | ❌ | ✅ |
-| Image input | ✅ | ✅ |
-| Voice input | ❌ | ✅ |
-| OSS | ❌ | ✅ |
+| Feature          | Claude Code | SUSHI v2         |
+| ---------------- | ----------- | ---------------- |
+| Terminal UI      | ✅          | ✅ (Ink)         |
+| Multi-file edits | ✅          | ✅ (MCP)         |
+| Git integration  | ✅          | ✅               |
+| Streaming        | ✅          | ✅               |
+| Plan/Act mode    | ✅          | ✅ (Sensei mode) |
+| Multi-model      | ❌          | ✅               |
+| Spatial nav      | ❌          | ✅               |
+| DNA threading    | ❌          | ✅               |
+| Mutation testing | ❌          | ✅               |
+| Image input      | ✅          | ✅               |
+| Voice input      | ❌          | ✅               |
+| OSS              | ❌          | ✅               |
 
 ---
 

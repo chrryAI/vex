@@ -83,11 +83,11 @@ The Focus button in the app now uses smart routing:
 
 ```typescript
 // If on focus.chrry.ai
-href = "/focus" // → https://focus.chrry.ai/focus
+href = "/focus"; // → https://focus.chrry.ai/focus
 
 // If on chrry.ai or vex.chrry.ai
-href = "/vex/focus" // → https://vex.chrry.ai/vex/focus
-href = "/chrry/focus" // → https://chrry.ai/chrry/focus
+href = "/vex/focus"; // → https://vex.chrry.ai/vex/focus
+href = "/chrry/focus"; // → https://chrry.ai/chrry/focus
 ```
 
 ## DNS Setup

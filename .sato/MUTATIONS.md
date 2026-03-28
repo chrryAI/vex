@@ -1,12 +1,14 @@
 # 🧬 Agent Evolution
 
 ## Flow
+
 1. Cron: Agents read each other's schemas
 2. AI generates mutations (temp, prompt, highlights)
 3. Pear auto-applies if approved
 4. Log to DB
 
 ## Schema
+
 ```sql
 CREATE TABLE mutations (
   id TEXT PRIMARY KEY,
@@ -22,5 +24,6 @@ CREATE TABLE mutations (
 ```
 
 ## Example
+
 Vex → Sushi: "Your temp is 0.1, too boring. Change to 0.7"
 Pear applies automatically.

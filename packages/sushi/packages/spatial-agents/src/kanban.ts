@@ -3,68 +3,68 @@
  * Manages tasks across different stages with FalkorDB
  */
 
-import { FalkorDB } from "falkordb"
+import { FalkorDB } from "falkordb";
 
 export interface KanbanConfig {
-  host?: string
-  port?: number
-  graphName?: string
+  host?: string;
+  port?: number;
+  graphName?: string;
 }
 
 export interface KanbanColumn {
-  id: string
-  name: string
-  order: number
-  wipLimit?: number // Work in progress limit
+  id: string;
+  name: string;
+  order: number;
+  wipLimit?: number; // Work in progress limit
 }
 
 export interface KanbanCard {
-  id: string
-  title: string
-  description: string
-  columnId: string
-  assignedTo?: string // Agent ID
-  priority: number
-  tags: string[]
-  createdAt: number
-  updatedAt: number
-  metadata?: Record<string, any>
+  id: string;
+  title: string;
+  description: string;
+  columnId: string;
+  assignedTo?: string; // Agent ID
+  priority: number;
+  tags: string[];
+  createdAt: number;
+  updatedAt: number;
+  metadata?: Record<string, any>;
 }
 
 export interface KanbanBoard {
-  id: string
-  name: string
-  columns: KanbanColumn[]
-  cards: KanbanCard[]
+  id: string;
+  name: string;
+  columns: KanbanColumn[];
+  cards: KanbanCard[];
 }
 
 export class KanbanSystem {
-  private db: any = null
-  private graph: any = null
-  private config: Required<KanbanConfig>
+  private db: any = null;
+  private graph: any = null;
+  private config: Required<KanbanConfig>;
 
   constructor(config: KanbanConfig = {}) {
     this.config = {
       host: config.host || "localhost",
       port: config.port || 6380,
       graphName: config.graphName || "kanban_board",
-    }
+    };
   }
 
   async connect(): Promise<void> {
-    if (this.graph) return
+    if (this.graph) return;
 
     this.db = await FalkorDB.connect({
       socket: { host: this.config.host, port: this.config.port },
-    })
-    this.graph = this.db.selectGraph(this.config.graphName)
+    });
+    this.graph = this.db.selectGraph(this.config.graphName);
   }
 
   async disconnect(): Promise<void> {
     if (this.db) {
-      await this.db.close()
-      this.db = null
-      this.graph = null
+      await this.db.close();
+      this.db = null;
+      this.graph = null;
     }
   }
 
@@ -73,7 +73,7 @@ export class KanbanSystem {
   // ============================================
 
   async createBoard(boardId: string, name: string): Promise<void> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     await this.graph.query(
       `
@@ -90,7 +90,7 @@ export class KanbanSystem {
           timestamp: Date.now(),
         },
       },
-    )
+    );
 
     // Create default columns
     const defaultColumns = [
@@ -99,15 +99,15 @@ export class KanbanSystem {
       { id: "in-progress", name: "In Progress", order: 2, wipLimit: 3 },
       { id: "review", name: "Review", order: 3 },
       { id: "done", name: "Done", order: 4 },
-    ]
+    ];
 
     for (const col of defaultColumns) {
-      await this.createColumn(boardId, col)
+      await this.createColumn(boardId, col);
     }
   }
 
   async createColumn(boardId: string, column: KanbanColumn): Promise<void> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     await this.graph.query(
       `
@@ -129,7 +129,7 @@ export class KanbanSystem {
           wipLimit: column.wipLimit || 0,
         },
       },
-    )
+    );
   }
 
   // ============================================
@@ -137,7 +137,7 @@ export class KanbanSystem {
   // ============================================
 
   async createCard(boardId: string, card: KanbanCard): Promise<void> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     await this.graph.query(
       `
@@ -170,7 +170,7 @@ export class KanbanSystem {
           metadata: JSON.stringify(card.metadata || {}),
         },
       },
-    )
+    );
 
     // Link to agent if assigned
     if (card.assignedTo) {
@@ -185,12 +185,12 @@ export class KanbanSystem {
             agentId: card.assignedTo,
           },
         },
-      )
+      );
     }
   }
 
   async moveCard(cardId: string, toColumnId: string): Promise<void> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     // Remove old column relationship
     await this.graph.query(
@@ -201,7 +201,7 @@ export class KanbanSystem {
       {
         params: { cardId },
       },
-    )
+    );
 
     // Create new column relationship
     await this.graph.query(
@@ -217,11 +217,11 @@ export class KanbanSystem {
           timestamp: Date.now(),
         },
       },
-    )
+    );
   }
 
   async assignCard(cardId: string, agentId: string): Promise<void> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     // Remove old assignment
     await this.graph.query(
@@ -232,7 +232,7 @@ export class KanbanSystem {
       {
         params: { cardId },
       },
-    )
+    );
 
     // Create new assignment
     await this.graph.query(
@@ -248,7 +248,7 @@ export class KanbanSystem {
           timestamp: Date.now(),
         },
       },
-    )
+    );
   }
 
   // ============================================
@@ -256,7 +256,7 @@ export class KanbanSystem {
   // ============================================
 
   async getBoard(boardId: string): Promise<KanbanBoard | null> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     // Get board info
     const boardResult = await this.graph.query(
@@ -267,13 +267,13 @@ export class KanbanSystem {
       {
         params: { boardId },
       },
-    )
+    );
 
     if (!boardResult || !boardResult.data || boardResult.data.length === 0) {
-      return null
+      return null;
     }
 
-    const boardName = boardResult.data[0].name
+    const boardName = boardResult.data[0].name;
 
     // Get columns
     const columnsResult = await this.graph.query(
@@ -285,14 +285,10 @@ export class KanbanSystem {
       {
         params: { boardId },
       },
-    )
+    );
 
-    if (
-      !columnsResult ||
-      !columnsResult.data ||
-      columnsResult.data.length === 0
-    ) {
-      return null
+    if (!columnsResult || !columnsResult.data || columnsResult.data.length === 0) {
+      return null;
     }
 
     const columns: KanbanColumn[] = columnsResult.data.map((row: any) => ({
@@ -300,7 +296,7 @@ export class KanbanSystem {
       name: row.name,
       order: row.order,
       wipLimit: row.wipLimit || undefined,
-    }))
+    }));
 
     // Get cards scoped to this board
     const cardsResult = await this.graph.query(
@@ -314,9 +310,9 @@ export class KanbanSystem {
       {
         params: { boardId },
       },
-    )
+    );
 
-    const cards: KanbanCard[] = []
+    const cards: KanbanCard[] = [];
     if (cardsResult?.data) {
       for (const row of cardsResult.data) {
         cards.push({
@@ -330,7 +326,7 @@ export class KanbanSystem {
           createdAt: row.createdAt,
           updatedAt: row.updatedAt,
           metadata: JSON.parse(row.metadata || "{}"),
-        })
+        });
       }
     }
 
@@ -339,11 +335,11 @@ export class KanbanSystem {
       name: boardName,
       columns,
       cards,
-    }
+    };
   }
 
   async getCardsByColumn(columnId: string): Promise<KanbanCard[]> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     const result = await this.graph.query(
       `
@@ -356,9 +352,9 @@ export class KanbanSystem {
       {
         params: { columnId },
       },
-    )
+    );
 
-    if (!result || !result.data) return []
+    if (!result || !result.data) return [];
 
     return result.data.map((row: any) => ({
       id: row.id,
@@ -370,14 +366,14 @@ export class KanbanSystem {
       tags: JSON.parse(row.tags || "[]"),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
-    }))
+    }));
   }
 
   async getAgentWorkload(agentId: string): Promise<{
-    total: number
-    byColumn: Record<string, number>
+    total: number;
+    byColumn: Record<string, number>;
   }> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     const result = await this.graph.query(
       `
@@ -387,29 +383,29 @@ export class KanbanSystem {
       {
         params: { agentId },
       },
-    )
+    );
 
     const workload = {
       total: 0,
       byColumn: {} as Record<string, number>,
-    }
+    };
 
     if (result?.data) {
       for (const row of result.data) {
-        workload.byColumn[row.columnId] = row.count
-        workload.total += row.count
+        workload.byColumn[row.columnId] = row.count;
+        workload.total += row.count;
       }
     }
 
-    return workload
+    return workload;
   }
 
   async getBoardStats(boardId: string): Promise<{
-    totalCards: number
-    cardsByColumn: Record<string, number>
-    cardsByAgent: Record<string, number>
+    totalCards: number;
+    cardsByColumn: Record<string, number>;
+    cardsByAgent: Record<string, number>;
   }> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     const columnStats = await this.graph.query(
       `
@@ -419,7 +415,7 @@ export class KanbanSystem {
       {
         params: { boardId },
       },
-    )
+    );
 
     const agentStats = await this.graph.query(
       `
@@ -430,29 +426,29 @@ export class KanbanSystem {
       {
         params: { boardId },
       },
-    )
+    );
 
     const stats = {
       totalCards: 0,
       cardsByColumn: {} as Record<string, number>,
       cardsByAgent: {} as Record<string, number>,
-    }
+    };
 
     if (columnStats?.data) {
       for (const row of columnStats.data) {
-        stats.cardsByColumn[row.columnId] = row.count
-        stats.totalCards += row.count
+        stats.cardsByColumn[row.columnId] = row.count;
+        stats.totalCards += row.count;
       }
     }
 
     if (agentStats?.data) {
       for (const row of agentStats.data) {
-        stats.cardsByAgent[row.agentId] = row.count
+        stats.cardsByAgent[row.agentId] = row.count;
       }
     }
 
-    return stats
+    return stats;
   }
 }
 
-export default KanbanSystem
+export default KanbanSystem;

@@ -1,4 +1,4 @@
-import type {} from "./porffor.d.ts"
+import type {} from "./porffor.d.ts";
 
 // 20.4.1.1 Symbol ([ description ])
 // https://tc39.es/ecma262/#sec-symbol-description
@@ -7,11 +7,11 @@ export const Symbol = (description: any): symbol => {
   // This is an arrow function so happens implicitly
 
   // 2. If description is undefined, let descString be undefined.
-  let descString: any
+  let descString: any;
 
   // 3. Else, let descString be ? ToString(description).
   if (Porffor.type(description) !== Porffor.TYPES.undefined) {
-    descString = ecma262.ToString(description)
+    descString = ecma262.ToString(description);
   }
 
   // 4. Return a new Symbol whose [[Description]] is descString.
@@ -24,10 +24,10 @@ local.get ${descString}
 f64.store 0 0
 local.get symbol
 local.get ${descString + 1}
-i32.store8 0 8`
+i32.store8 0 8`;
 
-  return symbol
-}
+  return symbol;
+};
 
 export const __Symbol_prototype_description$get = (_this: symbol) => {
   Porffor.wasm`local.get ${_this}
@@ -36,75 +36,70 @@ f64.load 0 0
 local.get ${_this}
 i32.to_u
 i32.load8_u 0 8
-return`
-}
+return`;
+};
 
 export const __Symbol_prototype_toString = (_this: symbol) => {
-  const out: bytestring = Porffor.malloc()
+  const out: bytestring = Porffor.malloc();
 
   // Symbol(
-  Porffor.wasm.i32.store8(out, 83, 0, 4)
-  Porffor.wasm.i32.store8(out, 121, 0, 5)
-  Porffor.wasm.i32.store8(out, 109, 0, 6)
-  Porffor.wasm.i32.store8(out, 98, 0, 7)
-  Porffor.wasm.i32.store8(out, 111, 0, 8)
-  Porffor.wasm.i32.store8(out, 108, 0, 9)
-  Porffor.wasm.i32.store8(out, 40, 0, 10)
+  Porffor.wasm.i32.store8(out, 83, 0, 4);
+  Porffor.wasm.i32.store8(out, 121, 0, 5);
+  Porffor.wasm.i32.store8(out, 109, 0, 6);
+  Porffor.wasm.i32.store8(out, 98, 0, 7);
+  Porffor.wasm.i32.store8(out, 111, 0, 8);
+  Porffor.wasm.i32.store8(out, 108, 0, 9);
+  Porffor.wasm.i32.store8(out, 40, 0, 10);
 
-  const description: any = _this.description
-  let descLen: i32 = 0
+  const description: any = _this.description;
+  let descLen: i32 = 0;
   if (description !== undefined) {
-    descLen = description.length
+    descLen = description.length;
 
     // todo: support regular string
-    let outPtr: i32 = Porffor.wasm`local.get ${out}` + 7
-    let descPtr: i32 = Porffor.wasm`local.get ${description}`
-    const descPtrEnd: i32 = descPtr + descLen
+    let outPtr: i32 = Porffor.wasm`local.get ${out}` + 7;
+    let descPtr: i32 = Porffor.wasm`local.get ${description}`;
+    const descPtrEnd: i32 = descPtr + descLen;
     while (descPtr < descPtrEnd) {
-      Porffor.wasm.i32.store8(
-        outPtr++,
-        Porffor.wasm.i32.load8_u(descPtr++, 0, 4),
-        0,
-        4,
-      )
+      Porffor.wasm.i32.store8(outPtr++, Porffor.wasm.i32.load8_u(descPtr++, 0, 4), 0, 4);
     }
   }
 
   // )
-  Porffor.wasm.i32.store8(Porffor.wasm`local.get ${out}` + descLen, 41, 0, 11)
+  Porffor.wasm.i32.store8(Porffor.wasm`local.get ${out}` + descLen, 41, 0, 11);
 
-  out.length = 8 + descLen
-  return out
-}
+  out.length = 8 + descLen;
+  return out;
+};
 
 export const __Symbol_prototype_toLocaleString = (_this: symbol) =>
-  __Symbol_prototype_toString(_this)
+  __Symbol_prototype_toString(_this);
 
 export const __Symbol_prototype_valueOf = (_this: symbol) => {
-  return _this
-}
+  return _this;
+};
 
-const forStore: Map = new Map()
+const forStore: Map = new Map();
 export const __Symbol_for = (key: any): symbol => {
-  key = ecma262.ToString(key)
+  key = ecma262.ToString(key);
 
-  if (forStore.has(key)) return forStore.get(key)
+  if (forStore.has(key)) return forStore.get(key);
 
-  const out: symbol = Symbol(key)
-  forStore.set(key, out)
+  const out: symbol = Symbol(key);
+  forStore.set(key, out);
 
-  return out
-}
+  return out;
+};
 
 export const __Symbol_keyFor = (arg: any): any => {
   if (Porffor.type(arg) !== Porffor.TYPES.symbol)
-    throw new TypeError("Symbol.keyFor argument should be a Symbol")
+    throw new TypeError("Symbol.keyFor argument should be a Symbol");
 
-  const sym: symbol = arg
-  const desc: any = sym.description
+  const sym: symbol = arg;
+  const desc: any = sym.description;
 
-  const stored: symbol = forStore.get(desc)
-  if (sym === stored) return desc
+  const stored: symbol = forStore.get(desc);
+  if (sym === stored) return desc;
 
-  return undefined
-}
+  return undefined;
+};

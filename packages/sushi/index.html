@@ -1,23 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <head>
   <title>Porffor</title>
 
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-  <meta itemprop="name" content="Porffor">
-  <meta property="og:title" content="Porffor">
-  <meta itemprop="description" content="Porffor compiles JavaScript ahead-of-time to WebAssembly and native binaries.">
-  <meta property="og:description" content="Porffor compiles JavaScript ahead-of-time to WebAssembly and native binaries.">
-  <meta property="og:type" content="website">
+  <meta itemprop="name" content="Porffor" />
+  <meta property="og:title" content="Porffor" />
+  <meta
+    itemprop="description"
+    content="Porffor compiles JavaScript ahead-of-time to WebAssembly and native binaries."
+  />
+  <meta
+    property="og:description"
+    content="Porffor compiles JavaScript ahead-of-time to WebAssembly and native binaries."
+  />
+  <meta property="og:type" content="website" />
 
-  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="icon" type="image/png" href="logo.png" />
 
   <style>
     @import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,600,800);
 
     :root {
-      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+      font-family:
+        "JetBrains Mono",
+        ui-monospace,
+        SFMono-Regular,
+        SF Mono,
+        Menlo,
+        Consolas,
+        Liberation Mono,
+        monospace;
 
       --header-primary: #ffffff;
       --header-secondary: #b9bbbe;
@@ -34,7 +48,8 @@
       --background-secondary: #200840;
     }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
     }
@@ -56,7 +71,8 @@
       margin: 0;
     }
 
-    h2, details > summary {
+    h2,
+    details > summary {
       font-weight: 600;
       font-size: 20px;
 
@@ -486,7 +502,8 @@
     .ansi-33 {
       color: rgb(193, 156, 0);
     }
-    .ansi-2, .ansi-90 {
+    .ansi-2,
+    .ansi-90 {
       color: rgb(118, 118, 118);
     }
 
@@ -708,7 +725,9 @@
         margin-bottom: 40px;
       }
 
-      pre, #graph, .bars {
+      pre,
+      #graph,
+      .bars {
         display: none;
       }
 
@@ -784,10 +803,16 @@
       <h1>Porffor</h1>
 
       <div>
-        <a href="https://github.com/CanadaHonk/porffor">Code</a><span class="hidden-600">&nbsp;|&nbsp;</span>
-        <a href="https://discord.gg/wPV3WgDGwg">Chat</a><div style="flex-grow: 1"></div>
-        <a href="https://x.com/CanadaHonk"><span class="hidden-600">Twitter</span><span class="shown-600">🐦</span></a><span class="hidden-600">&nbsp;|&nbsp;</span>
-        <a href="https://bsky.app/profile/goose.icu"><span class="hidden-600">Bluesky</span><span class="shown-600">🦋</span></a>
+        <a href="https://github.com/CanadaHonk/porffor">Code</a
+        ><span class="hidden-600">&nbsp;|&nbsp;</span>
+        <a href="https://discord.gg/wPV3WgDGwg">Chat</a>
+        <div style="flex-grow: 1"></div>
+        <a href="https://x.com/CanadaHonk"
+          ><span class="hidden-600">Twitter</span><span class="shown-600">🐦</span></a
+        ><span class="hidden-600">&nbsp;|&nbsp;</span>
+        <a href="https://bsky.app/profile/goose.icu"
+          ><span class="hidden-600">Bluesky</span><span class="shown-600">🦋</span></a
+        >
       </div>
     </div>
   </header>
@@ -795,10 +820,9 @@
   <article>
     <h1 class="tagline">An ahead-of-time JavaScript compiler</h1>
     <p>
-      Porffor compiles JavaScript ahead-of-time to WebAssembly and native binaries.<br>
+      Porffor compiles JavaScript ahead-of-time to WebAssembly and native binaries.<br />
       It is currently in <b>pre-alpha</b> with usability beginning in 2025.
     </p>
-
 
     <section class="bars">
       <div>
@@ -840,7 +864,10 @@
       </div>
 
       <p>
-        <span class="new">new!</span> Cold start times for an AWS Lambda hello world function (<a href="https://goose.icu/lambda/">source and methodology</a>)
+        <span class="new">new!</span> Cold start times for an AWS Lambda hello world function (<a
+          href="https://goose.icu/lambda/"
+          >source and methodology</a
+        >)
       </p>
     </section>
 
@@ -849,29 +876,28 @@
         <h1>JS -> Wasm</h1>
         <p>
           Porffor's WebAssembly output is
-          <b>10-30x smaller and faster</b> compared to existing JS -> Wasm
-          projects as Porffor compiles JS instead of bundling an interpreter.
+          <b>10-30x smaller and faster</b> compared to existing JS -> Wasm projects as Porffor
+          compiles JS instead of bundling an interpreter.
         </p>
         <p>
-          JS as Wasm allows for sandboxed execution but suffers drastic
-          performance losses: <b>Porffor solves this</b>, allowing for:
+          JS as Wasm allows for sandboxed execution but suffers drastic performance losses:
+          <b>Porffor solves this</b>, allowing for:
         </p>
 
         <details>
           <summary>Secure, efficient server-side JS hosting</summary>
           <p>
-            For edge runtimes, Wasm sandboxing allows secure execution without
-            needing excessive isolation; combined with AOTs low overhead
-            compared to JITs, Porffor could allow for running many more
-            customers on the same hardware with minimal performance loss.
+            For edge runtimes, Wasm sandboxing allows secure execution without needing excessive
+            isolation; combined with AOTs low overhead compared to JITs, Porffor could allow for
+            running many more customers on the same hardware with minimal performance loss.
           </p>
         </details>
 
         <details>
           <summary>Reverse-engineering resistance</summary>
           <p>
-            If you have especially sensitive JS, compilation can be much harder
-            to reverse than code obfuscation.
+            If you have especially sensitive JS, compilation can be much harder to reverse than code
+            obfuscation.
           </p>
         </details>
       </div>
@@ -879,27 +905,26 @@
       <div>
         <h1>JS -> Native</h1>
         <p>
-          As Porffor truly compiles JS without packaging a runtime,
-          binary sizes are up to <b>1000x smaller</b> (~90MB -> &lt;100KB).
+          As Porffor truly compiles JS without packaging a runtime, binary sizes are up to
+          <b>1000x smaller</b> (~90MB -> &lt;100KB).
         </p>
         <p>
-          JS as native allows for simple one-click execution but has substandard
-          sizes: <b>Porffor solves this</b>, allowing for:
+          JS as native allows for simple one-click execution but has substandard sizes:
+          <b>Porffor solves this</b>, allowing for:
         </p>
 
         <details>
           <summary>Fast JS for embedded, game consoles, and more</summary>
           <p>
-            Under the hood, Porffor compiles JS -> C -> native; anywhere you can
-            use C, you can now use JS!
+            Under the hood, Porffor compiles JS -> C -> native; anywhere you can use C, you can now
+            use JS!
           </p>
         </details>
 
         <details>
           <summary>Tiny CLI apps written in JS</summary>
           <p>
-            Imagine writing a CLI app in JS and compiling it to a one-click
-            executable under 1MB!
+            Imagine writing a CLI app in JS and compiling it to a one-click executable under 1MB!
           </p>
         </details>
       </div>
@@ -908,18 +933,18 @@
     <section class="cards three">
       <div>
         <p>
-          <b>Porffor has safe compilation</b> as it is written in JS (preventing memory safety vulnerabilities) with 0 eval.
+          <b>Porffor has safe compilation</b> as it is written in JS (preventing memory safety
+          vulnerabilities) with 0 eval.
         </p>
       </div>
       <div>
         <p>
-          <b>Porffor is written from scratch</b> with ahead-of-time in mind allowing for previously impossible optimizations.
+          <b>Porffor is written from scratch</b> with ahead-of-time in mind allowing for previously
+          impossible optimizations.
         </p>
       </div>
       <div>
-        <p>
-          <b>Porffor natively supports TypeScript</b>, no build step: just give it a TS file.
-        </p>
+        <p><b>Porffor natively supports TypeScript</b>, no build step: just give it a TS file.</p>
       </div>
     </section>
 
@@ -962,7 +987,8 @@
 │  JavaScript  ├─────►│ Binary (Wasm/native) ├<span class="hidden-1000">─────────────────────</span>──►
 │              │      │                      │
 └──────────────┘      └──────────────────────┘
-</pre><pre>
+</pre>
+      <pre>
 <h2>Runtime (user's machine)</h2>
 
 <b>Interpreter</b>
@@ -1018,14 +1044,27 @@
 </pre>
     </section>
 
-    <p>Instead of a slow interpreter or multiple JIT tiers carefully balancing compile speed (startup/loading time) and JS performance, compiling AOT allows you to compile first and run later. While compile speed for AOT remains important for DX, it no longer effects UX; allowing Porffor to perform static analysis for optimizations like C++ and Rust do today.</p>
+    <p>
+      Instead of a slow interpreter or multiple JIT tiers carefully balancing compile speed
+      (startup/loading time) and JS performance, compiling AOT allows you to compile first and run
+      later. While compile speed for AOT remains important for DX, it no longer effects UX; allowing
+      Porffor to perform static analysis for optimizations like C++ and Rust do today.
+    </p>
 
-    <p id="test262">The main drawbacks of AOT is lack of dynamic JS evaluation (like <code>eval</code>) and needing to reinvent the JS engine, so as Porffor is early a lot of JS doesn't work yet, but it is improving by the day:</p>
+    <p id="test262">
+      The main drawbacks of AOT is lack of dynamic JS evaluation (like <code>eval</code>) and
+      needing to reinvent the JS engine, so as Porffor is early a lot of JS doesn't work yet, but it
+      is improving by the day:
+    </p>
 
     <!-- <hr> -->
-    <h2 class="gui-header">Test262 <pre id="test262_percent"></pre></h2>
+    <h2 class="gui-header">
+      Test262
+      <pre id="test262_percent"></pre>
+    </h2>
     <p>
-      Porffor is run against <a class="simple" href="https://github.com/tc39/test262">Test262</a>, the official ECMAScript conformance test suite, every commit to track conformance progress.
+      Porffor is run against <a class="simple" href="https://github.com/tc39/test262">Test262</a>,
+      the official ECMAScript conformance test suite, every commit to track conformance progress.
     </p>
     <div id="graph">
       <div id="graph_legend"></div>
@@ -1051,7 +1090,7 @@
   <script>
     (async () => {
       const loadScript = async (x) => {
-        const el = document.createElement('script');
+        const el = document.createElement("script");
         el.src = x;
         document.head.append(el);
 
@@ -1059,25 +1098,25 @@
       };
 
       if (!window.monaco) {
-        await loadScript('https://cdn.openasar.dev/monaco-editor/min/vs/loader.js');
+        await loadScript("https://cdn.openasar.dev/monaco-editor/min/vs/loader.js");
 
         require.config({
-          paths: { vs: 'https://cdn.openasar.dev/monaco-editor/min/vs' }
+          paths: { vs: "https://cdn.openasar.dev/monaco-editor/min/vs" },
         });
-        await new Promise((res) => require(['vs/editor/editor.main'], res));
+        await new Promise((res) => require(["vs/editor/editor.main"], res));
       }
 
-      const monacoContainer = document.createElement('div');
+      const monacoContainer = document.createElement("div");
       split.appendChild(monacoContainer);
 
-      const jsSize = document.createElement('div');
-      jsSize.id = 'js-size';
+      const jsSize = document.createElement("div");
+      jsSize.id = "js-size";
       monacoContainer.append(jsSize);
 
-      const wasmView = document.createElement('div');
+      const wasmView = document.createElement("div");
       split.appendChild(wasmView);
 
-      const status = document.getElementById('status');
+      const status = document.getElementById("status");
       let code = `
 console.log(\`Hello from \${navigator.userAgent}! Did you know:\\n\`);
 
@@ -1109,7 +1148,7 @@ console.log(border);
 
       const _addOptions = (container, options, def) => {
         for (const x of options) {
-          const el = document.createElement('option');
+          const el = document.createElement("option");
           el.textContent = x;
           el.selected = x === def;
 
@@ -1142,8 +1181,8 @@ console.log(border);
       window.editor = monaco.editor.create(monacoContainer, {
         value: code,
         codeLens: false,
-        language: 'typescript',
-        theme: 'vs-dark',
+        language: "typescript",
+        theme: "vs-dark",
         minimap: {
           enabled: false,
         },
@@ -1161,20 +1200,20 @@ console.log(border);
         globalThis.process = {
           // argv: ['', '', ...args.value.split(' '), `-O${opt_dropdown.value}`, `--parser=${parser_dropdown.value}`, `--target=${target_dropdown.value}`]
           argv: [
-            '',
-            '',
+            "",
+            "",
             // ...args.value.split(' '),
             // `--parser=${parser_dropdown.value}`,
             // `--target=${target_dropdown.value}`,
-            '--disassemble',
+            "--disassemble",
           ],
         };
       };
 
       setProcess();
       // load version
-      globalThis.version = (await (await fetch('../runtime/index.js')).text()).split('\'')[3];
-      const compile = (await import('../compiler/wrap.js')).default;
+      globalThis.version = (await (await fetch("../runtime/index.js")).text()).split("'")[3];
+      const compile = (await import("../compiler/wrap.js")).default;
 
       const comp = async () => {
         setProcess();
@@ -1184,16 +1223,19 @@ console.log(border);
 
         jsSize.textContent = `${new Blob([code]).size} bytes`;
 
-        const ansi = x => x.replaceAll('\x1B[0m', '</span>').replace(/\x1B\[([0-9]{1,2})m/g, (_, esc) => `<span class='ansi-${esc}'>`);
+        const ansi = (x) =>
+          x
+            .replaceAll("\x1B[0m", "</span>")
+            .replace(/\x1B\[([0-9]{1,2})m/g, (_, esc) => `<span class='ansi-${esc}'>`);
 
-        let cache = '';
+        let cache = "";
         const print = (str) => {
           cache += str;
         };
 
-        output.textContent = '';
-        wasmView.innerHTML = '';
-        status.textContent = 'Compiling...';
+        output.textContent = "";
+        wasmView.innerHTML = "";
+        status.textContent = "Compiling...";
 
         let wasm, exports, times, disasms, _c;
         try {
@@ -1207,9 +1249,8 @@ console.log(border);
         // if (target_dropdown.value === 'c') {
         //   wasmView.textContent = c.trim();
         // } else {
-          wasmView.innerHTML =
-            `<div id='wasm-size'>${wasm.byteLength} bytes</div>` +
-            ansi(disasms.join('\n'));
+        wasmView.innerHTML =
+          `<div id='wasm-size'>${wasm.byteLength} bytes</div>` + ansi(disasms.join("\n"));
         // }
 
         status.textContent = `Compiled in ${times[0].toFixed(0)}ms`;
@@ -1225,7 +1266,7 @@ console.log(border);
           return;
         }
 
-        print('\n');
+        print("\n");
 
         const execTime = performance.now() - t2;
         status.textContent += `. Executed in ${execTime.toFixed(0)}ms`;
@@ -1245,29 +1286,26 @@ console.log(border);
       comp();
 
       const _niceDate = (x) => {
-        return x.toLocaleString('default', {
-          month: 'long',
-          day: 'numeric'
+        return x.toLocaleString("default", {
+          month: "long",
+          day: "numeric",
         });
       };
 
-      const history = await (await fetch('/test262/history.json')).json();
+      const history = await (await fetch("/test262/history.json")).json();
       const percent = history[0].results[0];
-      test262_percent.innerHTML = `${percent.toFixed(2)}% <span style="color: var(--text-muted); font-size: 80%">${'█'.repeat(Math.floor(percent / 4))}${'░'.repeat(Math.ceil((100 - percent) / 4))}</span>`;
+      test262_percent.innerHTML = `${percent.toFixed(2)}% <span style="color: var(--text-muted); font-size: 80%">${"█".repeat(Math.floor(percent / 4))}${"░".repeat(Math.ceil((100 - percent) / 4))}</span>`;
 
       const colors = {
-        pass: '#57f287',
-        fail: '#fee75c',
-        runtimeError: '#ed4245',
-        compileError: '#6f0b0c',
+        pass: "#57f287",
+        fail: "#fee75c",
+        runtimeError: "#ed4245",
+        compileError: "#6f0b0c",
       };
 
       for (const x in colors) {
-        const name = x.replace(
-          /[a-z][A-Z]/,
-          (_) => `${_[0]} ${_[1].toLowerCase()}`,
-        );
-        const el = document.createElement('div');
+        const name = x.replace(/[a-z][A-Z]/, (_) => `${_[0]} ${_[1].toLowerCase()}`);
+        const el = document.createElement("div");
         el.textContent = name[0].toUpperCase() + name.slice(1);
         el.style = `--color: ${colors[x]}`;
 
@@ -1298,10 +1336,10 @@ console.log(border);
         const paddingY = 10;
 
         svg.setAttribute(
-          'viewBox',
+          "viewBox",
           `0 0 ${width + leftAxisWidth + paddingX * 2} ${height + paddingY * 2}`,
         );
-        svg.innerHTML = '';
+        svg.innerHTML = "";
 
         // left axis line
         // const leftAxisLine = document.createElementNS(
@@ -1318,28 +1356,22 @@ console.log(border);
         const gridlinesEvery = 10;
         // for (let i = lowerBound; i <= upperBound; i += gridlinesEvery) {
         for (let i = 0; i <= 100; i += gridlinesEvery) {
-          const line = document.createElementNS(
-            'http://www.w3.org/2000/svg',
-            'line',
-          );
-          line.setAttribute('x1', (leftAxisWidth + paddingX).toFixed());
-          line.setAttribute('x2', (width + leftAxisWidth + paddingX).toFixed());
+          const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("x1", (leftAxisWidth + paddingX).toFixed());
+          line.setAttribute("x2", (width + leftAxisWidth + paddingX).toFixed());
 
           // const y = (padding + (1 - ((i - lowerBound) / (upperBound - lowerBound))) * height).toFixed();
           const y = (paddingY + (1 - i / 100) * height).toFixed();
-          line.setAttribute('y1', y);
-          line.setAttribute('y2', y);
-          line.setAttribute('stroke', '#505458');
+          line.setAttribute("y1", y);
+          line.setAttribute("y2", y);
+          line.setAttribute("stroke", "#505458");
           svg.appendChild(line);
 
-          const text = document.createElementNS(
-            'http://www.w3.org/2000/svg',
-            'text',
-          );
-          text.setAttribute('x', paddingX + leftAxisWidth - 12);
+          const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", paddingX + leftAxisWidth - 12);
           // text.setAttribute('y', +y + ((i - lowerBound) / (upperBound - lowerBound)) * 10);
-          text.setAttribute('y', +y + 7);
-          text.setAttribute('text-anchor', 'end');
+          text.setAttribute("y", +y + 7);
+          text.setAttribute("text-anchor", "end");
 
           text.textContent = `${i}%`;
           svg.appendChild(text);
@@ -1353,16 +1385,8 @@ console.log(border);
         };
 
         for (let i = 0; i < history.length; i++) {
-          const [
-            percent,
-            total,
-            pass,
-            fail,
-            runtimeError,
-            wasmError,
-            compileError,
-            timeout
-          ] = history[i].results;
+          const [percent, total, pass, fail, runtimeError, wasmError, compileError, timeout] =
+            history[i].results;
 
           const when = (history[i].time - oldest) / dateRange;
           const x = (paddingX + leftAxisWidth + when * width).toFixed();
@@ -1372,21 +1396,18 @@ console.log(border);
             points[type].push(`${x},${y}`);
           };
 
-          run(pass, 'pass');
-          run(fail, 'fail');
-          run(runtimeError + timeout, 'runtimeError');
-          run(compileError + wasmError, 'compileError');
+          run(pass, "pass");
+          run(fail, "fail");
+          run(runtimeError + timeout, "runtimeError");
+          run(compileError + wasmError, "compileError");
         }
 
         const addLine = (points, color) => {
-          const polyline = document.createElementNS(
-            'http://www.w3.org/2000/svg',
-            'polyline',
-          );
-          polyline.setAttribute('fill', 'none');
-          polyline.setAttribute('stroke', color);
-          polyline.setAttribute('stroke-width', 3);
-          polyline.setAttribute('points', points.join(' '));
+          const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+          polyline.setAttribute("fill", "none");
+          polyline.setAttribute("stroke", color);
+          polyline.setAttribute("stroke-width", 3);
+          polyline.setAttribute("points", points.join(" "));
           svg.appendChild(polyline);
         };
 
@@ -1395,7 +1416,7 @@ console.log(border);
         }
       };
       makeGraph();
-      window.addEventListener('resize', makeGraph);
+      window.addEventListener("resize", makeGraph);
     })();
   </script>
 </body>

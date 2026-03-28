@@ -161,7 +161,6 @@ export function sanitizeForAI(text: string): string {
 
       // Limit length to prevent token overflow
       .slice(0, 50000) // Max 50k chars
-
       // Normalize whitespace
       .replaceAll(/\s+/g, " ")
       .trim()

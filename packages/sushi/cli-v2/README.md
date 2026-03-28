@@ -33,6 +33,7 @@ npm start
 ## Commands
 
 ### Spatial Navigation
+
 ```
 @x:sensei      # Switch to Sensei agent
 @y:auth        # Switch to auth context
@@ -41,11 +42,13 @@ npm start
 ```
 
 ### Agent Selection
+
 - `F1` - Sensei (Architect)
 - `F2` - Student (Coder)
 - `F3` - Debugger
 
 ### Keyboard Shortcuts
+
 - `Tab` - Switch panels
 - `↑/↓` - Navigate history
 - `Esc` - Exit

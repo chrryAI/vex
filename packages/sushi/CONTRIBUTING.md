@@ -55,7 +55,7 @@ We'll explain things per common usage you will likely need to know:
 ### Get a pointer
 
 ```js
-Porffor.wasm`local.get ${foobar}`
+Porffor.wasm`local.get ${foobar}`;
 ```
 
 Gets the pointer to the variable `foobar`. You don't really need to worry about how it works in detail, but essentially it gets the pointer as a number (type) instead of as the object it is.
@@ -63,7 +63,7 @@ Gets the pointer to the variable `foobar`. You don't really need to worry about 
 ### Store a character in a ByteString
 
 ```js
-Porffor.wasm.i32.store8(pointer, characterCode, 0, 4)
+Porffor.wasm.i32.store8(pointer, characterCode, 0, 4);
 ```
 
 Stores the character code `characterCode` at the pointer `pointer` **for a ByteString**.[^1]
@@ -71,7 +71,7 @@ Stores the character code `characterCode` at the pointer `pointer` **for a ByteS
 ### Store a character in a String
 
 ```js
-Porffor.wasm.i32.store16(pointer, characterCode, 0, 4)
+Porffor.wasm.i32.store16(pointer, characterCode, 0, 4);
 ```
 
 Stores the character code `characterCode` at the pointer `pointer` **for a String**.[^1]
@@ -79,7 +79,7 @@ Stores the character code `characterCode` at the pointer `pointer` **for a Strin
 ### Load a character from a ByteString
 
 ```js
-Porffor.wasm.i32.load8_u(pointer, 0, 4)
+Porffor.wasm.i32.load8_u(pointer, 0, 4);
 ```
 
 Loads the character code at the pointer `pointer` **for a ByteString**.[^1]
@@ -87,7 +87,7 @@ Loads the character code at the pointer `pointer` **for a ByteString**.[^1]
 ### Load a character from a String
 
 ```js
-Porffor.wasm.i32.load16_u(pointer, 0, 4)
+Porffor.wasm.i32.load16_u(pointer, 0, 4);
 ```
 
 Loads the character code at the pointer `pointer` **for a String**.[^1]
@@ -95,7 +95,7 @@ Loads the character code at the pointer `pointer` **for a String**.[^1]
 ### Manually store the length of an object
 
 ```js
-Porffor.wasm.i32.store(pointer, length, 0, 0)
+Porffor.wasm.i32.store(pointer, length, 0, 0);
 ```
 
 Stores the length `length` at pointer `pointer`, setting the length of an object. This is mostly unneeded today as you can just do `obj.length = length`. [^1]
@@ -108,25 +108,25 @@ Here is the code for `ByteString.prototype.toUpperCase()`:
 
 ```ts
 export const __ByteString_prototype_toUpperCase = (_this: bytestring) => {
-  const len: i32 = _this.length
+  const len: i32 = _this.length;
 
-  let out: bytestring = ""
-  Porffor.wasm.i32.store(out, len, 0, 0)
+  let out: bytestring = "";
+  Porffor.wasm.i32.store(out, len, 0, 0);
 
   let i: i32 = Porffor.wasm`local.get ${_this}`,
-    j: i32 = Porffor.wasm`local.get ${out}`
+    j: i32 = Porffor.wasm`local.get ${out}`;
 
-  const endPtr: i32 = i + len
+  const endPtr: i32 = i + len;
   while (i < endPtr) {
-    let chr: i32 = Porffor.wasm.i32.load8_u(i++, 0, 4)
+    let chr: i32 = Porffor.wasm.i32.load8_u(i++, 0, 4);
 
-    if (chr >= 97) if (chr <= 122) chr -= 32
+    if (chr >= 97) if (chr <= 122) chr -= 32;
 
-    Porffor.wasm.i32.store8(j++, chr, 0, 4)
+    Porffor.wasm.i32.store8(j++, chr, 0, 4);
   }
 
-  return out
-}
+  return out;
+};
 ```
 
 Now let's go through it section by section:
@@ -145,10 +145,10 @@ Here we define a built-in for Porffor. Notably:
 ---
 
 ```ts
-const len: i32 = _this.length
+const len: i32 = _this.length;
 
-let out: bytestring = ""
-Porffor.wasm.i32.store(out, len, 0, 0)
+let out: bytestring = "";
+Porffor.wasm.i32.store(out, len, 0, 0);
 ```
 
 This sets up the `out` variable we are going to write to for the output of this function. We set the length in advance to be the same as `_this`, as `foo.length == foo.toLowerCase().length`, because we will later be manually writing to it using Wasm intrinsics, which will not update the length themselves.
@@ -157,7 +157,7 @@ This sets up the `out` variable we are going to write to for the output of this 
 
 ```ts
 let i: i32 = Porffor.wasm`local.get ${_this}`,
-  j: i32 = Porffor.wasm`local.get ${out}`
+  j: i32 = Porffor.wasm`local.get ${out}`;
 ```
 
 Get the pointers for `_this` and `out` as `i32`s (~`number`s).
@@ -174,7 +174,7 @@ Set up an end target pointer as the pointer variable for `_this` plus the length
 ---
 
 ```ts
-let chr: i32 = Porffor.wasm.i32.load8_u(i++, 0, 4)
+let chr: i32 = Porffor.wasm.i32.load8_u(i++, 0, 4);
 ```
 
 Read the character (code) from the current `_this` pointer variable, and increment it so next iteration it reads the next character, etc.
@@ -182,7 +182,7 @@ Read the character (code) from the current `_this` pointer variable, and increme
 ---
 
 ```ts
-if (chr >= 97) if (chr <= 122) chr -= 32
+if (chr >= 97) if (chr <= 122) chr -= 32;
 ```
 
 If the character code is >= 97 (`a`) and <= 122 (`z`), decrease it by 32, making it an upper case character. eg: 97 (`a`) - 32 = 65 (`A`).
@@ -190,7 +190,7 @@ If the character code is >= 97 (`a`) and <= 122 (`z`), decrease it by 32, making
 ---
 
 ```ts
-Porffor.wasm.i32.store8(j++, chr, 0, 4)
+Porffor.wasm.i32.store8(j++, chr, 0, 4);
 ```
 
 Store the character code into the `out` pointer variable, and increment it.
@@ -250,8 +250,8 @@ export const add_i32 = (a: any, b: any) => {
   ;; return (0, 0) otherwise
   i32.const 0
   i32.const 0
-  return`
-}
+  return`;
+};
 ```
 
 ---

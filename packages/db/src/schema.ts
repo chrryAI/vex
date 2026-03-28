@@ -52,6 +52,26 @@ export const PROMPT_LIMITS = {
   THREAD_TITLE: 100,
 }
 
+export type scheduleTimeType = {
+  modelId?: string
+  time: string // "09:00"
+  model: string
+  postType: "post" | "comment" | "engagement" | "autonomous"
+  charLimit: number
+  credits: number
+  generateImage?: boolean
+  generateVideo?: boolean
+  feedbackApps?: string[]
+  feedbackCollect?: string[]
+  bidApp?: string[]
+  bidStore?: string[]
+  swapApp?: string[]
+  fetchNews?: boolean
+  languages?: string[]
+  maxTokens?: number // Optional max tokens for AI generation
+  intervalMinutes?: number // Optional interval for custom frequency (e.g., 60 = every hour)
+}
+
 export const users = pgTable(
   "user",
   {
@@ -1864,27 +1884,7 @@ export const scheduledJobs = pgTable(
       enum: ["once", "daily", "weekly", "custom"],
     }).notNull(),
     scheduledTimes: jsonb("scheduledTimes")
-      .$type<
-        Array<{
-          modelId?: string
-          time: string // "09:00"
-          model: string
-          postType: "post" | "comment" | "engagement" | "autonomous"
-          charLimit: number
-          credits: number
-          generateImage?: boolean
-          generateVideo?: boolean
-          feedbackApps?: string[]
-          feedbackCollect?: string[]
-          bidApp?: string[]
-          bidStore?: string[]
-          swapApp?: string[]
-          fetchNews?: boolean
-          languages?: string[]
-          maxTokens?: number // Optional max tokens for AI generation
-          intervalMinutes?: number // Optional interval for custom frequency (e.g., 60 = every hour)
-        }>
-      >()
+      .$type<Array<scheduleTimeType>>()
       .notNull(), // Full schedule slot objects
     timezone: text("timezone").notNull().default("UTC"),
     startDate: timestamp("startDate", {
@@ -1963,25 +1963,7 @@ export const scheduledJobs = pgTable(
       languages?: string[]
       // Schedule history for revert - complete snapshot
       previousSchedule?: {
-        scheduledTimes: Array<{
-          modelId?: string
-          time: string
-          model: string
-          postType: "post" | "comment" | "engagement" | "autonomous"
-          charLimit: number
-          credits: number
-          generateImage?: boolean
-          generateVideo?: boolean
-          feedbackApps?: string[]
-          feedbackCollect?: string[]
-          bidApp?: string[]
-          bidStore?: string[]
-          swapApp?: string[]
-          fetchNews?: boolean
-          maxTokens?: number
-          languages?: string[]
-          intervalMinutes?: number
-        }>
+        scheduledTimes: Array<scheduleTimeType>
         frequency: "once" | "daily" | "weekly" | "custom"
         startDate: string
         endDate?: string
@@ -5049,7 +5031,9 @@ export const talentEarnings = pgTable(
       .notNull(),
     recruitmentFlowId: uuid("recruitmentFlowId").references(
       () => recruitmentFlows.id,
-      { onDelete: "cascade" },
+      {
+        onDelete: "cascade",
+      },
     ),
 
     // Transaction

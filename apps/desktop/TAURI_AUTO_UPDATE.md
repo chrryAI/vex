@@ -53,9 +53,7 @@ Add the updater config to `tauri.conf.template.json`:
   "plugins": {
     "updater": {
       "active": true,
-      "endpoints": [
-        "https://vex.chrry.ai/api/updates/{{target}}/{{current_version}}"
-      ],
+      "endpoints": ["https://vex.chrry.ai/api/updates/{{target}}/{{current_version}}"],
       "dialog": true,
       "pubkey": "YOUR_PUBLIC_KEY_HERE"
     },
@@ -185,31 +183,31 @@ pub fn run() {
 Listen for update events in your React app:
 
 ```typescript
-import { listen } from "@tauri-apps/api/event"
-import { check } from "@tauri-apps/plugin-updater"
-import { relaunch } from "@tauri-apps/plugin-process"
+import { listen } from "@tauri-apps/api/event";
+import { check } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
 
 // Check for updates manually
 async function checkForUpdates() {
-  const update = await check()
+  const update = await check();
 
   if (update?.available) {
-    console.log(`Update to ${update.version} available!`)
-    console.log(`Release notes: ${update.body}`)
+    console.log(`Update to ${update.version} available!`);
+    console.log(`Release notes: ${update.body}`);
 
     // Download and install
-    await update.downloadAndInstall()
+    await update.downloadAndInstall();
 
     // Restart app
-    await relaunch()
+    await relaunch();
   }
 }
 
 // Listen for update events
 listen("update-available", (event) => {
-  console.log("Update available:", event.payload)
+  console.log("Update available:", event.payload);
   // Show notification to user
-})
+});
 ```
 
 ---
@@ -237,19 +235,19 @@ Create an API endpoint in your backend:
 
 ```typescript
 // apps/api/hono/routes/updates.ts
-import { Hono } from "hono"
+import { Hono } from "hono";
 
-const updates = new Hono()
+const updates = new Hono();
 
 updates.get("/:platform/:version", async (c) => {
-  const { platform, version } = c.req.param()
+  const { platform, version } = c.req.param();
 
   // Get latest version from database or config
-  const latestVersion = "0.2.0"
+  const latestVersion = "0.2.0";
 
   // Compare versions
   if (version >= latestVersion) {
-    return c.body(null, 204) // No update
+    return c.body(null, 204); // No update
   }
 
   // Return update info
@@ -263,10 +261,10 @@ updates.get("/:platform/:version", async (c) => {
         url: `https://vex.chrry.ai/installs/Vex_${latestVersion}_${platform}.dmg`,
       },
     },
-  })
-})
+  });
+});
 
-export default updates
+export default updates;
 ```
 
 ---

@@ -283,7 +283,7 @@ const pipeline = {
     input: "All previous outputs",
     output: "deployment-checklist.md",
   },
-}
+};
 ```
 
 ## Security Best Practices

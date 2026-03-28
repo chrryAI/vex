@@ -1,24 +1,24 @@
-import { createImport, importedFuncs } from "./builtins.js"
-import { log } from "./log.js"
-import { TYPE_NAMES, TYPES } from "./types.js"
-import { Opcodes, Valtype } from "./wasmSpec.js"
+import { createImport, importedFuncs } from "./builtins.js";
+import { log } from "./log.js";
+import { TYPE_NAMES, TYPES } from "./types.js";
+import { Opcodes, Valtype } from "./wasmSpec.js";
 
-createImport("print", 1, 0)
-createImport("printChar", 1, 0)
-createImport("time", 0, 1)
-createImport("timeOrigin", 0, 1)
+createImport("print", 1, 0);
+createImport("printChar", 1, 0);
+createImport("time", 0, 1);
+createImport("timeOrigin", 0, 1);
 
-import process from "node:process"
+import process from "node:process";
 
-globalThis.process = process
+globalThis.process = process;
 
-import fs from "node:fs"
-import { join } from "node:path"
-import { fileURLToPath } from "node:url"
+import fs from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const __dirname = fileURLToPath(new URL(".", import.meta.url))
-globalThis.precompileCompilerPath = __dirname
-globalThis.precompile = true
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
+globalThis.precompileCompilerPath = __dirname;
+globalThis.precompile = true;
 
 globalThis.valtypeOverrides = {
   returns: {
@@ -114,22 +114,24 @@ globalThis.valtypeOverrides = {
     ],
     __Porffor_object_underlying: [Valtype.f64, Valtype.i32],
   },
-}
+};
 
-const argv = process.argv.slice()
+const argv = process.argv.slice();
 
-const timing = {}
-let defaultPrefs = null
+const timing = {};
+let defaultPrefs = null;
 const compile = async (file, _funcs) => {
-  let source = fs.readFileSync(file, "utf8")
-  let first = source.slice(0, source.indexOf("\n"))
+  let source = fs.readFileSync(file, "utf8");
+  let first = source.slice(0, source.indexOf("\n"));
 
   if (first.startsWith("export default")) {
-    source = await (await import(`file://${file}`)).default({
+    source = await (
+      await import(`file://${file}`)
+    ).default({
       TYPES,
       TYPE_NAMES,
-    })
-    first = source.slice(0, source.indexOf("\n"))
+    });
+    first = source.slice(0, source.indexOf("\n"));
   }
 
   let args = [
@@ -146,73 +148,71 @@ const compile = async (file, _funcs) => {
     "--no-closures",
     "--never-fallback-builtin-proto",
     "--unroll-threshold=0",
-  ]
+  ];
   if (!defaultPrefs) {
-    process.argv = argv.concat(args)
-    globalThis.argvChanged?.()
-    defaultPrefs = globalThis.Prefs
+    process.argv = argv.concat(args);
+    globalThis.argvChanged?.();
+    defaultPrefs = globalThis.Prefs;
   }
 
   if (first.startsWith("// @porf")) {
-    args = first.slice("// @porf ".length).split(" ").concat(args)
+    args = first.slice("// @porf ".length).split(" ").concat(args);
   }
-  process.argv = argv.concat(args)
-  globalThis.argvChanged?.()
+  process.argv = argv.concat(args);
+  globalThis.argvChanged?.();
 
-  const porfCompile = (await import(`./index.js?_=${Date.now()}`)).default
+  const porfCompile = (await import(`./index.js?_=${Date.now()}`)).default;
 
-  const { funcs, globals, data, exceptions, times } = porfCompile(source)
+  const { funcs, globals, data, exceptions, times } = porfCompile(source);
 
-  timing.parse ??= 0
-  timing.parse += times[1] - times[0]
-  timing.codegen ??= 0
-  timing.codegen += times[2] - times[1]
-  timing.opt ??= 0
-  timing.opt += times[3] - times[2]
+  timing.parse ??= 0;
+  timing.parse += times[1] - times[0];
+  timing.codegen ??= 0;
+  timing.codegen += times[2] - times[1];
+  timing.opt ??= 0;
+  timing.opt += times[3] - times[2];
 
-  const allocated = new Set()
+  const allocated = new Set();
 
   const invGlobals = Object.keys(globals).reduce((acc, y) => {
-    acc[globals[y].idx] = { ...globals[y], name: y }
-    return acc
-  }, {})
+    acc[globals[y].idx] = { ...globals[y], name: y };
+    return acc;
+  }, {});
 
-  const main = funcs.find((x) => x.name === "#main")
-  const exports = funcs.filter((x) => x.export && x.name !== "#main")
+  const main = funcs.find((x) => x.name === "#main");
+  const exports = funcs.filter((x) => x.export && x.name !== "#main");
   for (const x of exports) {
-    const body = globalThis.funcBodies[x.name]
-    const bodyHasTopLevelThrow = body?.body?.some(
-      (x) => x.type === "ThrowStatement",
-    )
+    const body = globalThis.funcBodies[x.name];
+    const bodyHasTopLevelThrow = body?.body?.some((x) => x.type === "ThrowStatement");
 
-    if (x.name === "_eval") x.name = "eval"
+    if (x.name === "_eval") x.name = "eval";
     if (x.data) {
       x.data = x.data.reduce((acc, x) => {
-        acc[data[x].page] = data[x].bytes
-        return acc
-      }, {})
+        acc[data[x].page] = data[x].bytes;
+        return acc;
+      }, {});
     }
 
     if (x.exceptions) {
       x.exceptions = x.exceptions
         .map((x) => {
-          const obj = exceptions[x]
-          if (obj) obj.exceptId = x
-          return obj
+          const obj = exceptions[x];
+          if (obj) obj.exceptId = x;
+          return obj;
         })
-        .filter((x) => x)
+        .filter((x) => x);
     }
 
     const rewriteWasm = (x, wasm, rewriteLocals = false) => {
       const locals = Object.keys(x.locals).reduce((acc, y) => {
-        acc[x.locals[y].idx] = { ...x.locals[y], name: y }
-        return acc
-      }, {})
+        acc[x.locals[y].idx] = { ...x.locals[y], name: y };
+        return acc;
+      }, {});
 
-      let depth = 0
+      let depth = 0;
       for (let i = 0; i < wasm.length; i++) {
-        const y = wasm[i]
-        const n = wasm[i + 1]
+        const y = wasm[i];
+        const n = wasm[i + 1];
 
         if (
           y[0] === Opcodes.block ||
@@ -220,150 +220,140 @@ const compile = async (file, _funcs) => {
           y[0] === Opcodes.if ||
           y[0] === Opcodes.try
         )
-          depth++
-        if (y[0] === Opcodes.end) depth--
+          depth++;
+        if (y[0] === Opcodes.end) depth--;
 
         if (y[0] === Opcodes.call) {
-          const idx = y[1]
-          const f = funcs.find((x) => x.index === idx)
+          const idx = y[1];
+          const f = funcs.find((x) => x.index === idx);
           if (!f) {
             if (idx < importedFuncs.length) {
-              wasm[i] = [Opcodes.call, importedFuncs[idx].name]
+              wasm[i] = [Opcodes.call, importedFuncs[idx].name];
             }
 
-            continue
+            continue;
           }
 
-          wasm[i] = [Opcodes.call, f.name]
+          wasm[i] = [Opcodes.call, f.name];
         }
 
         if (y[0] === Opcodes.global_get || y[0] === Opcodes.global_set) {
-          const global = invGlobals[y[1]]
-          wasm[i] = ["global", y[0], global.name, global.type]
+          const global = invGlobals[y[1]];
+          wasm[i] = ["global", y[0], global.name, global.type];
 
           if (!x.globalInits) {
             if (!main.rewrittenGlobalInits) {
               for (const z in main.globalInits) {
-                rewriteWasm(main, main.globalInits[z], true)
+                rewriteWasm(main, main.globalInits[z], true);
               }
 
-              main.rewrittenGlobalInits = true
+              main.rewrittenGlobalInits = true;
             }
 
-            x.globalInits = main.globalInits
+            x.globalInits = main.globalInits;
           }
         }
 
         if (
           rewriteLocals &&
           typeof y[1] === "number" &&
-          (y[0] === Opcodes.local_get ||
-            y[0] === Opcodes.local_set ||
-            y[0] === Opcodes.local_tee)
+          (y[0] === Opcodes.local_get || y[0] === Opcodes.local_set || y[0] === Opcodes.local_tee)
         ) {
-          const local = locals[y[1]]
-          wasm[i] = [y[0], "local", local.name, local.type]
+          const local = locals[y[1]];
+          wasm[i] = [y[0], "local", local.name, local.type];
         }
 
-        if (!n) continue
+        if (!n) continue;
 
         const alloc = (l) => {
-          if (!l) return
-          if (![TYPES.array].includes(l.metadata?.type)) return
-          if (!x.pages) return
+          if (!l) return;
+          if (![TYPES.array].includes(l.metadata?.type)) return;
+          if (!x.pages) return;
 
-          const pageName = [...x.pages.keys()].find((z) => z.endsWith(l.name))
-          if (!pageName || allocated.has(pageName)) return
-          allocated.add(pageName)
+          const pageName = [...x.pages.keys()].find((z) => z.endsWith(l.name));
+          if (!pageName || allocated.has(pageName)) return;
+          allocated.add(pageName);
 
-          wasm[i] = ["alloc", pageName, valtypeBinary]
-        }
+          wasm[i] = ["alloc", pageName, valtypeBinary];
+        };
 
-        if (
-          y[0] === Opcodes.const &&
-          (n[0] === Opcodes.local_set || n[0] === Opcodes.local_tee)
-        ) {
-          alloc(locals[n[1]])
+        if (y[0] === Opcodes.const && (n[0] === Opcodes.local_set || n[0] === Opcodes.local_tee)) {
+          alloc(locals[n[1]]);
         }
 
         if (y[0] === Opcodes.const && n[0] === Opcodes.global_set) {
-          alloc(invGlobals[n[1]])
+          alloc(invGlobals[n[1]]);
         }
 
         if (n[0] === Opcodes.throw) {
-          x.usesTag = true
-          let id
+          x.usesTag = true;
+          let id;
           if (y[0] === Opcodes.i32_const && n[1] === 0) {
-            id = y[1]
-            wasm[i] = [
-              "throw",
-              exceptions[id].constructor,
-              exceptions[id].message,
-            ]
+            id = y[1];
+            wasm[i] = ["throw", exceptions[id].constructor, exceptions[id].message];
 
             // remove throw inst
-            wasm.splice(i + 1, 1)
+            wasm.splice(i + 1, 1);
           } else {
-            n[1]--
+            n[1]--;
           }
 
           if (!bodyHasTopLevelThrow && depth === 0)
             log.warning(
               "codegen",
               `top-level throw in ${x.name} (${exceptions[id].constructor}: ${exceptions[id].message})`,
-            )
+            );
         }
 
         if (n[0] === Opcodes.catch) {
-          x.usesTag = true
+          x.usesTag = true;
         }
       }
-    }
+    };
 
-    rewriteWasm(x, x.wasm)
+    rewriteWasm(x, x.wasm);
   }
 
-  _funcs.push(...exports)
-}
+  _funcs.push(...exports);
+};
 
 const precompile = async () => {
-  if (globalThis._porf_loadParser)
-    await globalThis._porf_loadParser("@babel/parser")
+  if (globalThis._porf_loadParser) await globalThis._porf_loadParser("@babel/parser");
 
-  const dir = join(__dirname, "builtins")
+  const dir = join(__dirname, "builtins");
 
-  const t = performance.now()
+  const t = performance.now();
 
-  const funcs = []
-  let fileCount = 0
+  const funcs = [];
+  let fileCount = 0;
   for (const file of fs.readdirSync(dir).toSorted()) {
-    if (file.endsWith(".d.ts")) continue
-    fileCount++
+    if (file.endsWith(".d.ts")) continue;
+    fileCount++;
 
-    globalThis.precompile = file
-    const t = performance.now()
+    globalThis.precompile = file;
+    const t = performance.now();
 
     try {
-      await compile(join(dir, file), funcs)
+      await compile(join(dir, file), funcs);
     } catch (e) {
-      console.log(`\r${" ".repeat(80)}\r${" ".repeat(12)}${file}\r`)
-      throw e
+      console.log(`\r${" ".repeat(80)}\r${" ".repeat(12)}${file}\r`);
+      throw e;
     }
 
     process.stdout.write(
       `\r${" ".repeat(80)}\r\u001b[2m${`[${(performance.now() - t).toFixed(2)}ms]`.padEnd(12, " ")}\u001b[0m\u001b[92m${file}\u001b[0m\r`,
-    )
+    );
   }
 
-  const total = performance.now() - t
+  const total = performance.now() - t;
   console.log(
     `\r${" ".repeat(80)}\r\u001b[2m${`[${total.toFixed(2)}ms]`.padEnd(12, " ")}\u001b[0m\u001b[92mcompiled ${funcs.length} funcs from ${fileCount} files\u001b[0m \u001b[90m(${["parse", "codegen", "opt"].map((x) => `${x}: ${((timing[x] / total) * 100).toFixed(0)}%`).join(", ")})\u001b[0m`,
-  )
+  );
 
   const comptimeFlagChecks = {
     hasFunc: (x) => `hasFunc('${x}')`,
     hasType: (x) => `usedTypes.has(${TYPES[x]})`,
-  }
+  };
 
   return `// autogenerated by compiler/precompile.js
 import { number } from './encoding.js';
@@ -376,14 +366,11 @@ ${funcs
   .map((x) => {
     const rewriteWasm = (wasm) => {
       const str = JSON.stringify(
-        wasm.filter(
-          (x) => x.length && (x[0] != null || typeof x[1] === "string"),
-        ),
+        wasm.filter((x) => x.length && (x[0] != null || typeof x[1] === "string")),
         (k, v) => {
-          if (Number.isNaN(v) || v === Infinity || v === -Infinity)
-            return v.toString()
-          if (Object.is(v, -0)) return "-0"
-          return v
+          if (Number.isNaN(v) || v === Infinity || v === -Infinity) return v.toString();
+          if (Object.is(v, -0)) return "-0";
+          return v;
         },
       )
         .replace(
@@ -393,18 +380,12 @@ ${funcs
         )
         .replace(
           /\["global",(.*?),"(.*?)",(.*?)\]/g,
-          (_, opcode, name, valtype) =>
-            `...glbl(${opcode},'${name}',${valtype})`,
+          (_, opcode, name, valtype) => `...glbl(${opcode},'${name}',${valtype})`,
         )
-        .replace(
-          /"local","(.*?)",(.*?)\]/g,
-          (_, name, valtype) => `loc('${name}',${valtype})]`,
-        )
+        .replace(/"local","(.*?)",(.*?)\]/g, (_, name, valtype) => `loc('${name}',${valtype})]`)
         .replace(/\[16,"(.*?)"]/g, (_, name) => `[16,builtin('${name}')]`)
         .replace(/\["funcref",(.*?),"(.*?)"]/g, (_1, op, name) =>
-          op === "65"
-            ? `...i32ify(funcRef('${name}'))`
-            : `...funcRef('${name}')`,
+          op === "65" ? `...i32ify(funcRef('${name}'))` : `...funcRef('${name}')`,
         )
         .replace(/\["str",(.*?),"(.*?)",(.*?)]/g, (_1, op, str, bytestring) =>
           op === "65"
@@ -413,8 +394,7 @@ ${funcs
         )
         .replace(
           /\["throw","(.*?)","(.*?)"\]/g,
-          (_, constructor, message) =>
-            `...internalThrow(_,'${constructor}',\`${message}\`)`,
+          (_, constructor, message) => `...internalThrow(_,'${constructor}',\`${message}\`)`,
         )
         .replace(
           /\["get object","(.*?)"\]/g,
@@ -429,66 +409,54 @@ ${funcs
           /\[null,"comptime_flag","(.*?)",(\{.*?\}),"#",(\{.*?\}),"#",(\{.*?\})\]/g,
           (_, flag, passAst, failAst, prefs) => {
             const processAst = (ast) =>
-              JSON.stringify(
-                JSON.parse(ast.replaceAll("\n", "\\n")),
-                (k, v) => {
-                  if (k === "loc" || k === "start" || k === "end")
-                    return undefined
-                  return v
-                },
-              )
-            passAst = processAst(passAst)
-            failAst = processAst(failAst)
+              JSON.stringify(JSON.parse(ast.replaceAll("\n", "\\n")), (k, v) => {
+                if (k === "loc" || k === "start" || k === "end") return undefined;
+                return v;
+              });
+            passAst = processAst(passAst);
+            failAst = processAst(failAst);
 
             // ignore default prefs in prefs for better diff and size
-            prefs = JSON.parse(prefs)
+            prefs = JSON.parse(prefs);
             const diffPrefs = Object.keys(prefs).reduce((acc, x) => {
-              if (prefs[x] !== defaultPrefs[x]) acc[x] = prefs[x]
-              return acc
-            }, {})
+              if (prefs[x] !== defaultPrefs[x]) acc[x] = prefs[x];
+              return acc;
+            }, {});
 
-            const [id, extra] = flag.split(".")
+            const [id, extra] = flag.split(".");
 
             // Sanitize 'extra' to prevent code injection - only allow alphanumeric, underscore, and dash
-            const sanitizedExtra = extra
-              ? extra.replace(/[^a-zA-Z0-9_-]/g, "")
-              : ""
+            const sanitizedExtra = extra ? extra.replace(/[^a-zA-Z0-9_-]/g, "") : "";
 
             // Validate that comptimeFlagChecks[id] exists before calling
             if (!comptimeFlagChecks[id]) {
-              throw new Error(`Invalid comptime flag id: ${id}`)
+              throw new Error(`Invalid comptime flag id: ${id}`);
             }
 
             // Get the check result and sanitize it before injecting into code
-            const checkResult = comptimeFlagChecks[id](sanitizedExtra)
+            const checkResult = comptimeFlagChecks[id](sanitizedExtra);
             // Ensure checkResult is safe - must be valid JS expression (typically boolean or simple value)
-            const sanitizedCheckResult = JSON.stringify(checkResult)
+            const sanitizedCheckResult = JSON.stringify(checkResult);
 
-            return `[null,()=>{const a=Prefs;Prefs={...defaultPrefs,${JSON.stringify(diffPrefs).slice(1, -1)}};resetGlobals(Valtype,Opcodes);const b=generate(_,${sanitizedCheckResult}?${passAst}:${failAst});if(b.at(-1)[0]>=0x41&&b.at(-1)[0]<=0x44)b.pop();Prefs=a;resetGlobals(Valtype,Opcodes);return b;}]`
+            return `[null,()=>{const a=Prefs;Prefs={...defaultPrefs,${JSON.stringify(diffPrefs).slice(1, -1)}};resetGlobals(Valtype,Opcodes);const b=generate(_,${sanitizedCheckResult}?${passAst}:${failAst});if(b.at(-1)[0]>=0x41&&b.at(-1)[0]<=0x44)b.pop();Prefs=a;resetGlobals(Valtype,Opcodes);return b;}]`;
           },
         )
-        .replaceAll('"-0"', "-0")
+        .replaceAll('"-0"', "-0");
 
       return `${`(_,{${str.includes("usedTypes.") ? "usedTypes," : ""}${str.includes("hasFunc(") ? "hasFunc," : ""}${str.includes("Valtype") ? "Valtype," : ""}${str.includes("i32ify") ? "i32ify," : ""}${str.includes("Opcodes") ? "Opcodes," : ""}${str.includes("...t(") ? "t," : ""}${`${str.includes("allocPage(") ? "allocPage," : ""}${str.includes("makeString(") ? "makeString," : ""}${str.includes("glbl(") ? "glbl," : ""}${str.includes("loc(") ? "loc," : ""}${str.includes("builtin(") ? "builtin," : ""}${str.includes("funcRef(") ? "funcRef," : ""}${str.includes("internalThrow(") ? "internalThrow," : ""}${str.includes("generateIdent(") ? "generateIdent," : ""}${str.includes("generate(") ? "generate," : ""}`.slice(0, -1)}})=>`.replace(
         "_,{}",
         "",
-      )}eval(${JSON.stringify(str)})`
-    }
+      )}eval(${JSON.stringify(str)})`;
+    };
 
-    const locals = Object.entries(x.locals).sort((a, b) => a[1].idx - b[1].idx)
+    const locals = Object.entries(x.locals).sort((a, b) => a[1].idx - b[1].idx);
 
     // todo: check for other identifier unsafe characters
-    const name = x.name.includes("#") ? `['${x.name}']` : `.${x.name}`
+    const name = x.name.includes("#") ? `['${x.name}']` : `.${x.name}`;
 
     const returnTypes = [...(x.returnTypes ?? [])].filter(
-      (x) =>
-        ![
-          TYPES.undefined,
-          TYPES.number,
-          TYPES.boolean,
-          TYPES.function,
-        ].includes(x),
-    )
+      (x) => ![TYPES.undefined, TYPES.number, TYPES.boolean, TYPES.function].includes(x),
+    );
     return `x${name}={
 wasm:${rewriteWasm(x.wasm)},
 params:${JSON.stringify(x.params)},typedParams:1,returns:${JSON.stringify(x.returns)},${x.returnType != null ? `returnType:${JSON.stringify(x.returnType)},` : ""}${returnTypes.length > 0 ? `returnTypes:${JSON.stringify(returnTypes)},` : ""}jsLength:${x.jsLength},
@@ -505,10 +473,10 @@ ${x.table ? `table:1,` : ""}${x.constr ? `constr:1,` : ""}${x.hasRestArgument ? 
       .replaceAll("\n\n", "\n")
       .replaceAll("\n\n", "\n")
       .replaceAll("\n\n", "\n")
-      .replaceAll(",\n}", "\n}")
+      .replaceAll(",\n}", "\n}");
   })
   .join("\n")}
-}`
-}
+}`;
+};
 
-fs.writeFileSync(join(__dirname, "builtins_precompiled.js"), await precompile())
+fs.writeFileSync(join(__dirname, "builtins_precompiled.js"), await precompile());

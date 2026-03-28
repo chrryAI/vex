@@ -1585,9 +1585,7 @@ ${
   parentApp.highlights && parentApp.highlights?.length > 0
     ? `
 **Inherited Capabilities:**
-${parentApp.highlights
-  .map((h: any) => `${h.emoji || "•"} **${h.title}**: ${h.content}`)
-  .join("\n")}
+${parentApp.highlights.map((h: any) => `${h.emoji || "•"} **${h.title}**: ${h.content}`).join("\n")}
 `
     : ""
 }
@@ -1779,15 +1777,13 @@ ${
       ? await getMessages({ threadId: thread.id, pageSize: dynamicPageSize })
       : { messages: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
-    let messages = messagesData.messages || []
-
-    // Sanitize message content to prevent JSON escape errors in AI API calls
-    messages = messages.map((msg) => ({
+    const messages = (messagesData.messages || []).map((msg: any) => ({
       ...msg,
-      content: typeof msg.content === "string" 
-        ? sanitizeForAI(msg.content) 
-        : msg.content,
-    }))
+      content:
+        typeof msg.content === "string"
+          ? sanitizeForAI(msg.content)
+          : msg.content,
+    })) as ModelMessage[]
 
     // Only main app (depth 0) provides instructions and artifacts
     const instructions = depth === 0 ? thread?.instructions || "" : ""
@@ -1959,7 +1955,7 @@ ${
       // Only log credits when BOTH channels are disabled (not when one is active)
       !canPostToTribe &&
         !canPostToMolt &&
-        shouldStream &&
+        !job &&
         (await logCreditUsage({
           userId: member?.id,
           guestId: guest?.id,
@@ -6090,12 +6086,16 @@ Respond in JSON format:
         }
         newMessages.push(...split.recentMessages)
 
-        messages = (newMessages as ModelMessage[]).map((msg) => ({
-          ...msg,
-          content: typeof msg.content === "string" 
-            ? sanitizeForAI(msg.content) 
-            : msg.content,
-        }))
+        const sanitizedMessages = (newMessages as ModelMessage[]).map(
+          (msg: any) => ({
+            ...msg,
+            content:
+              typeof msg.content === "string"
+                ? sanitizeForAI(msg.content)
+                : msg.content,
+          }),
+        ) as ModelMessage[]
+        messages = sanitizedMessages
         tokenLimitWarning = createTokenLimitError(
           tokenCheck.estimatedTokens,
           tokenCheck.maxTokens,
@@ -6114,7 +6114,7 @@ Respond in JSON format:
 
       try {
         console.log("🍣 Step 1: Creating streamText result...")
-        
+
         const result = streamText({
           model: model.provider,
           messages,
@@ -7340,7 +7340,11 @@ Respond in JSON format:
       let tokenLimitWarning: string | null = null
 
       const toolsForModel =
-        job || agent.name === "perplexity" ? undefined : allTools
+        process.env.BELES === "true" || agent.name === "perplexity"
+          ? undefined
+          : job
+            ? allTools
+            : undefined
 
       // Sato optimization #12: Global context protection for all providers (especially Claude 200k limit)
       const modelId =
@@ -7371,12 +7375,16 @@ Respond in JSON format:
           })
         }
         newMessages.push(...split.recentMessages)
-        messages = (newMessages as ModelMessage[]).map((msg) => ({
-          ...msg,
-          content: typeof msg.content === "string" 
-            ? sanitizeForAI(msg.content) 
-            : msg.content,
-        }))
+        const sanitizedMessages2 = (newMessages as ModelMessage[]).map(
+          (msg: any) => ({
+            ...msg,
+            content:
+              typeof msg.content === "string"
+                ? sanitizeForAI(msg.content)
+                : msg.content,
+          }),
+        ) as ModelMessage[]
+        messages = sanitizedMessages2
 
         tokenLimitWarning = createTokenLimitError(
           tokenCheck.estimatedTokens,

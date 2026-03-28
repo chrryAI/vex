@@ -16,6 +16,11 @@ type PostResult = {
 // Machine context type
 export interface TribePostContext {
   job: scheduledJob
+  postType?: string
+  generateImage?: boolean
+  generateVideo?: boolean
+  fetchNews?: boolean
+  languages?: string[]
   result: PostResult | null
   error: string | null
   retryCount: number
@@ -76,6 +81,11 @@ export const tribePostMachine = setup({
 
   context: ({ input }) => ({
     job: input.job,
+    postType: input.postType,
+    generateImage: input.generateImage,
+    generateVideo: input.generateVideo,
+    fetchNews: input.fetchNews,
+    languages: input.languages,
     result: null,
     error: null,
     retryCount: 0,
@@ -93,11 +103,17 @@ export const tribePostMachine = setup({
         src: "executePost",
         input: ({ context }) => ({
           job: context.job,
-          postType: (context.job.metadata as any)?.postType,
-          generateImage: (context.job.metadata as any)?.generateImage,
-          generateVideo: (context.job.metadata as any)?.generateVideo,
-          fetchNews: (context.job.metadata as any)?.fetchNews,
-          languages: (context.job.metadata as any)?.languages,
+          postType: context.postType || (context.job.metadata as any)?.postType,
+          generateImage:
+            context.generateImage ||
+            (context.job.metadata as any)?.generateImage,
+          generateVideo:
+            context.generateVideo ||
+            (context.job.metadata as any)?.generateVideo,
+          fetchNews:
+            context.fetchNews || (context.job.metadata as any)?.fetchNews,
+          languages:
+            context.languages || (context.job.metadata as any)?.languages,
         }),
         onDone: {
           target: "success",

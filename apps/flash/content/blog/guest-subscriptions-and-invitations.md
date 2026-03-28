@@ -74,10 +74,10 @@ const createGuest = async (fingerprint: string, ip: string) => {
     ip,
     credits: FREE_CREDITS,
     createdOn: new Date(),
-  })
+  });
 
-  return guest
-}
+  return guest;
+};
 ```
 
 #### 2. Subscription Processing
@@ -85,23 +85,23 @@ const createGuest = async (fingerprint: string, ip: string) => {
 ```typescript
 // Process guest subscription without registration
 export async function POST(request: Request) {
-  const { session_id, userId, guestId, email } = await request.json()
+  const { session_id, userId, guestId, email } = await request.json();
 
   // Find or create user/guest
   const user = email
     ? await getUser({ email })
     : userId
       ? await getUser({ id: userId })
-      : undefined
+      : undefined;
 
   const guest = !user
     ? email
       ? await createGuest({ fingerprint: uuidv4(), ip: getIP() })
       : await getGuest({ id: guestId })
-    : undefined
+    : undefined;
 
   // Process Stripe payment
-  const session = await stripe.checkout.sessions.retrieve(session_id)
+  const session = await stripe.checkout.sessions.retrieve(session_id);
 
   if (session.payment_status === "paid") {
     // Update credits and subscription status
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
         ...user,
         credits: Math.max(user.credits, PLUS_CREDITS_PER_MONTH),
         subscribedOn: new Date(),
-      })
+      });
     }
 
     if (guest) {
@@ -118,7 +118,7 @@ export async function POST(request: Request) {
         id: guest.id,
         credits: Math.max(guest.credits, PLUS_CREDITS_PER_MONTH),
         subscribedOn: new Date(),
-      })
+      });
     }
 
     // Create subscription record
@@ -130,7 +130,7 @@ export async function POST(request: Request) {
       guestId: guest?.id,
       plan: "plus",
       sessionId: session.id,
-    })
+    });
 
     // Send gift email if applicable
     if (email && guest) {
@@ -138,7 +138,7 @@ export async function POST(request: Request) {
         email,
         giftFingerprint: guest.fingerprint,
         isExistingUser: !!user,
-      })
+      });
     }
   }
 }
@@ -189,23 +189,23 @@ export default function GiftEmail({
 // Handle gift link redemption
 const handleGiftRedemption = async (giftFingerprint: string) => {
   // Find guest with gift fingerprint
-  const giftGuest = await getGuest({ fingerprint: giftFingerprint })
+  const giftGuest = await getGuest({ fingerprint: giftFingerprint });
 
   if (!giftGuest?.subscription) {
-    throw new Error("Invalid or expired gift")
+    throw new Error("Invalid or expired gift");
   }
 
   // Set user's fingerprint to gift fingerprint for session
-  setFingerprint(giftFingerprint)
+  setFingerprint(giftFingerprint);
 
   // Clean up URL parameter
-  const url = new URL(window.location.href)
-  url.searchParams.delete("gift")
-  window.history.replaceState({}, "", url.toString())
+  const url = new URL(window.location.href);
+  url.searchParams.delete("gift");
+  window.history.replaceState({}, "", url.toString());
 
   // User now has access to premium features
-  return giftGuest
-}
+  return giftGuest;
+};
 ```
 
 ## User Experience Flow
@@ -306,29 +306,23 @@ const Subscribe = ({ user, guest }: SubscribeProps) => {
 ```typescript
 // Handle gift parameter in session
 const AppContext = () => {
-  const gift = searchParams.get("gift") || ""
+  const gift = searchParams.get("gift") || "";
 
-  const { data: sessionData } = useSWR(
-    ["session", token, fingerprint],
-    async () => {
-      const response = await fetch(
-        `${API_URL}/session?fp=${fingerprint}&gift=${gift}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      )
+  const { data: sessionData } = useSWR(["session", token, fingerprint], async () => {
+    const response = await fetch(`${API_URL}/session?fp=${fingerprint}&gift=${gift}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      // Clean up gift parameter after processing
-      if (gift) {
-        const url = new URL(window.location.href)
-        url.searchParams.delete("gift")
-        window.history.replaceState({}, "", url.toString())
-      }
+    // Clean up gift parameter after processing
+    if (gift) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("gift");
+      window.history.replaceState({}, "", url.toString());
+    }
 
-      return response.json()
-    },
-  )
-}
+    return response.json();
+  });
+};
 ```
 
 ## Migration System
@@ -339,25 +333,25 @@ const AppContext = () => {
 // Seamless migration from guest to full user account
 const migrateGuestToUser = async (guest: Guest, user: User) => {
   // Transfer all guest data to user account
-  await transferThreads(guest.id, user.id)
-  await transferSubscriptions(guest.id, user.id)
-  await transferCredits(guest, user)
+  await transferThreads(guest.id, user.id);
+  await transferSubscriptions(guest.id, user.id);
+  await transferCredits(guest, user);
 
   // Mark guest as migrated
   await updateGuest({
     id: guest.id,
     migratedToUser: true,
     fingerprint: uuidv4(), // New fingerprint to prevent reuse
-  })
+  });
 
   // Update user with migration flag
   await updateUser({
     id: user.id,
     migratedFromGuest: true,
-  })
+  });
 
-  return { user: updatedUser, guest: updatedGuest }
-}
+  return { user: updatedUser, guest: updatedGuest };
+};
 ```
 
 ### Data Transfer Functions
@@ -371,8 +365,8 @@ const transferThreads = async (guestId: string, userId: string) => {
       guestId: null,
       userId: userId,
     },
-  })
-}
+  });
+};
 
 // Transfer subscription ownership
 const transferSubscriptions = async (guestId: string, userId: string) => {
@@ -382,8 +376,8 @@ const transferSubscriptions = async (guestId: string, userId: string) => {
       guestId: null,
       userId: userId,
     },
-  })
-}
+  });
+};
 ```
 
 ## Security Considerations
@@ -422,7 +416,7 @@ const trackSubscriptionFunnel = {
   paymentCompleted: () => plausible("payment_completed"),
   giftSent: () => plausible("gift_sent"),
   giftRedeemed: () => plausible("gift_redeemed"),
-}
+};
 ```
 
 ### Key Metrics

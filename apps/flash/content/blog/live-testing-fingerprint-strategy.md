@@ -22,7 +22,7 @@ const STAGING_CONFIG = {
   apiUrl: "https://staging-api.example.com",
   userBase: "synthetic_test_users",
   dataVolume: "limited_subset",
-}
+};
 
 // Problems:
 // - Different infrastructure
@@ -47,27 +47,20 @@ Vex uses browser fingerprints to create isolated testing environments within pro
 
 ```typescript
 // Secure fingerprint-based test isolation using environment variables
-const TEST_MEMBER_FINGERPRINTS =
-  process.env.TEST_MEMBER_FINGERPRINTS?.split(",") || []
-const TEST_GUEST_FINGERPRINTS =
-  process.env.TEST_GUEST_FINGERPRINTS?.split(",") || []
+const TEST_MEMBER_FINGERPRINTS = process.env.TEST_MEMBER_FINGERPRINTS?.split(",") || [];
+const TEST_GUEST_FINGERPRINTS = process.env.TEST_GUEST_FINGERPRINTS?.split(",") || [];
 
 // Test environment detection with whitelist validation
 export const isTestEnvironment = (fingerprint: string): boolean => {
-  return TEST_MEMBER_FINGERPRINTS.concat(TEST_GUEST_FINGERPRINTS).includes(
-    fingerprint,
-  )
-}
+  return TEST_MEMBER_FINGERPRINTS.concat(TEST_GUEST_FINGERPRINTS).includes(fingerprint);
+};
 ```
 
 ### Test User Management
 
 ```typescript
 // Automated test user creation
-export const createTestUser = async (
-  type: "guest" | "member" | "admin",
-  fingerprint: string,
-) => {
+export const createTestUser = async (type: "guest" | "member" | "admin", fingerprint: string) => {
   const testUser = {
     fingerprint,
     email: `test-${type}-${Date.now()}@vex-testing.internal`,
@@ -83,10 +76,10 @@ export const createTestUser = async (
     permissions: type === "admin" ? ["admin"] : [],
     createdOn: new Date(),
     isTestUser: true,
-  }
+  };
 
-  return await createUser(testUser)
-}
+  return await createUser(testUser);
+};
 ```
 
 ## Live Testing Architecture
@@ -108,19 +101,19 @@ export const getLiveTestConfig = () => ({
     userIsolation: true,
     cleanupAfterTests: true,
   },
-})
+});
 
 // Test execution with fingerprint via URL parameter
 test("Live guest subscription flow", async ({ page }) => {
   // Use test fingerprint from environment variable
-  const testFingerprint = TEST_GUEST_FINGERPRINTS[0]
+  const testFingerprint = TEST_GUEST_FINGERPRINTS[0];
 
   // Pass fingerprint via URL (validated against whitelist on server)
-  await page.goto(`https://vex.chrry.ai?fp=${testFingerprint}`)
+  await page.goto(`https://vex.chrry.ai?fp=${testFingerprint}`);
 
   // Execute real user journey on production
-  await testGuestSubscriptionFlow({ page })
-})
+  await testGuestSubscriptionFlow({ page });
+});
 ```
 
 ### Data Isolation Strategy
@@ -135,24 +128,24 @@ export const testDataManager = {
       title: `Test Thread ${Date.now()}`,
       visibility: "private",
       isTestData: true,
-    })
+    });
 
-    return testThread
+    return testThread;
   },
 
   // Cleanup test data after tests
   cleanupTestData: async () => {
     await deleteThreads({
       where: { isTestData: true },
-    })
+    });
 
     await deleteMessages({
       where: { isTestData: true },
-    })
+    });
 
     await deleteTestUsers({
       where: { isTestUser: true },
-    })
+    });
   },
 
   // Isolate test transactions
@@ -162,15 +155,15 @@ export const testDataManager = {
       return {
         stripeKey: process.env.STRIPE_TEST_KEY,
         webhookSecret: process.env.STRIPE_TEST_WEBHOOK_SECRET,
-      }
+      };
     }
 
     return {
       stripeKey: process.env.STRIPE_LIVE_KEY,
       webhookSecret: process.env.STRIPE_LIVE_WEBHOOK_SECRET,
-    }
+    };
   },
-}
+};
 ```
 
 ## Security and Safety Measures
@@ -181,23 +174,20 @@ export const testDataManager = {
 // Simple and secure fingerprint validation with environment variables
 export const validateTestFingerprint = (fpFromQuery: string | null): string => {
   // Check if fingerprint is in whitelist from environment variables
-  const isWhitelisted = TEST_MEMBER_FINGERPRINTS.concat(
-    TEST_GUEST_FINGERPRINTS,
-  ).includes(fpFromQuery)
+  const isWhitelisted =
+    TEST_MEMBER_FINGERPRINTS.concat(TEST_GUEST_FINGERPRINTS).includes(fpFromQuery);
 
   // Only accept query fingerprint if it's whitelisted
-  return isWhitelisted
-    ? fpFromQuery
-    : headers["x-fp"] || cookies.fingerprint || uuidv4()
-}
+  return isWhitelisted ? fpFromQuery : headers["x-fp"] || cookies.fingerprint || uuidv4();
+};
 
 // Prevent test fingerprint leakage in logs
 export const sanitizeFingerprint = (fingerprint: string): string => {
   if (isTestEnvironment(fingerprint)) {
-    return "[TEST_USER]"
+    return "[TEST_USER]";
   }
-  return fingerprint
-}
+  return fingerprint;
+};
 ```
 
 ### Why Environment Variables?
@@ -208,11 +198,10 @@ The environment variable approach provides significant security advantages over 
 // ❌ INSECURE: Hardcoded in source code
 export const TEST_FINGERPRINTS = {
   GUEST_USERS: ["abc-123", "def-456"], // Exposed in git!
-}
+};
 
 // ✅ SECURE: Environment variables
-const TEST_GUEST_FINGERPRINTS =
-  process.env.TEST_GUEST_FINGERPRINTS?.split(",") || []
+const TEST_GUEST_FINGERPRINTS = process.env.TEST_GUEST_FINGERPRINTS?.split(",") || [];
 
 // Benefits:
 // - Not in source code or git history
@@ -235,10 +224,10 @@ export const productionSafetyGuards = {
         requests: 100,
         window: "1h",
         burst: 10,
-      }
+      };
     }
 
-    return standardRateLimit
+    return standardRateLimit;
   },
 
   // Prevent test data pollution
@@ -249,21 +238,21 @@ export const productionSafetyGuards = {
         ...data,
         isTestData: true,
         testEnvironment: true,
-      }
+      };
     }
 
-    return data
+    return data;
   },
 
   // Emergency test shutdown
   emergencyShutdown: async () => {
     // Disable all test fingerprints
-    await redis.set("test:emergency_shutdown", "true", "EX", 3600)
+    await redis.set("test:emergency_shutdown", "true", "EX", 3600);
 
     // Cleanup active test sessions
-    await cleanupActiveTestSessions()
+    await cleanupActiveTestSessions();
   },
-}
+};
 ```
 
 ## Test Scenarios and Coverage
@@ -274,43 +263,43 @@ export const productionSafetyGuards = {
 // Guest user complete journey
 test.describe("Live Guest Journey", () => {
   test("Complete guest subscription flow", async ({ page }) => {
-    const fingerprint = TEST_FINGERPRINTS.GUEST_USERS[0]
+    const fingerprint = TEST_FINGERPRINTS.GUEST_USERS[0];
 
     // 1. Initial visit
-    await page.goto(`https://vex.chrry.ai?fp=${fingerprint}`)
+    await page.goto(`https://vex.chrry.ai?fp=${fingerprint}`);
 
     // 2. Use free credits
-    await chat({ page, isMember: false, credits: 150 })
+    await chat({ page, isMember: false, credits: 150 });
 
     // 3. Hit credit limit
-    await exhaustCredits({ page })
+    await exhaustCredits({ page });
 
     // 4. Subscribe without registration
-    await subscribe({ page, isMember: false })
+    await subscribe({ page, isMember: false });
 
     // 5. Verify premium access
-    await verifyPremiumFeatures({ page })
+    await verifyPremiumFeatures({ page });
 
     // 6. Test gift functionality
-    await giftSubscription({ page, recipientEmail: "test@example.com" })
-  })
-})
+    await giftSubscription({ page, recipientEmail: "test@example.com" });
+  });
+});
 
 // Member user advanced features
 test.describe("Live Member Features", () => {
   test("Advanced member capabilities", async ({ page }) => {
-    const fingerprint = TEST_FINGERPRINTS.MEMBER_USERS[0]
+    const fingerprint = TEST_FINGERPRINTS.MEMBER_USERS[0];
 
-    await page.goto(`https://vex.chrry.ai?fp=${fingerprint}`)
+    await page.goto(`https://vex.chrry.ai?fp=${fingerprint}`);
 
     // Test all premium features
-    await testFileUpload({ page })
-    await testRAGFunctionality({ page })
-    await testCollaboration({ page })
-    await testThreadManagement({ page })
-    await testCrossDeviceSync({ page })
-  })
-})
+    await testFileUpload({ page });
+    await testRAGFunctionality({ page });
+    await testCollaboration({ page });
+    await testThreadManagement({ page });
+    await testCrossDeviceSync({ page });
+  });
+});
 ```
 
 ### Cross-Platform Testing
@@ -319,20 +308,20 @@ test.describe("Live Member Features", () => {
 // Extension + Web platform testing
 test.describe("Cross-Platform Live Testing", () => {
   test("Extension to web sync", async ({ page, context }) => {
-    const fingerprint = TEST_FINGERPRINTS.MEMBER_USERS[1]
+    const fingerprint = TEST_FINGERPRINTS.MEMBER_USERS[1];
 
     // Simulate extension usage
-    await page.goto(`https://vex.chrry.ai?fp=${fingerprint}&extension=true`)
-    await createThreadInExtension({ page })
+    await page.goto(`https://vex.chrry.ai?fp=${fingerprint}&extension=true`);
+    await createThreadInExtension({ page });
 
     // Switch to web platform
-    const webPage = await context.newPage()
-    await webPage.goto(`https://vex.chrry.ai?fp=${fingerprint}`)
+    const webPage = await context.newPage();
+    await webPage.goto(`https://vex.chrry.ai?fp=${fingerprint}`);
 
     // Verify thread sync
-    await verifyThreadSync({ extensionPage: page, webPage })
-  })
-})
+    await verifyThreadSync({ extensionPage: page, webPage });
+  });
+});
 ```
 
 ## Monitoring and Observability
@@ -342,22 +331,18 @@ test.describe("Cross-Platform Live Testing", () => {
 ```typescript
 // Test execution monitoring
 export const liveTestMetrics = {
-  trackTestExecution: (
-    testName: string,
-    fingerprint: string,
-    result: "pass" | "fail",
-  ) => {
+  trackTestExecution: (testName: string, fingerprint: string, result: "pass" | "fail") => {
     metrics.counter("live_test.execution", 1, {
       test_name: testName,
       fingerprint_type: getFingerprint(fingerprint),
       result,
-    })
+    });
   },
 
   trackTestDuration: (testName: string, duration: number) => {
     metrics.histogram("live_test.duration", duration, {
       test_name: testName,
-    })
+    });
   },
 
   trackProductionImpact: (fingerprint: string, operation: string) => {
@@ -365,10 +350,10 @@ export const liveTestMetrics = {
       metrics.counter("live_test.production_operations", 1, {
         operation,
         test_user: true,
-      })
+      });
     }
   },
-}
+};
 ```
 
 ### Real-Time Test Dashboard
@@ -377,7 +362,7 @@ export const liveTestMetrics = {
 // Live test monitoring dashboard
 export const testDashboard = {
   activeTests: async () => {
-    const activeFingerprints = await redis.smembers("active_test_fingerprints")
+    const activeFingerprints = await redis.smembers("active_test_fingerprints");
 
     return Promise.all(
       activeFingerprints.map(async (fp) => ({
@@ -386,7 +371,7 @@ export const testDashboard = {
         currentTest: await redis.get(`test:${fp}:current_test`),
         status: await redis.get(`test:${fp}:status`),
       })),
-    )
+    );
   },
 
   testResults: async (timeRange: string) => {
@@ -399,9 +384,9 @@ export const testDashboard = {
       FROM live_test_results 
       WHERE created_at > NOW() - INTERVAL '${timeRange}'
       GROUP BY test_name
-    `)
+    `);
   },
-}
+};
 ```
 
 ## Benefits and Advantages
@@ -426,7 +411,7 @@ const testingComparison = {
     integrations: "live_services",
     accuracy: "99%",
   },
-}
+};
 ```
 
 ### Continuous Validation
@@ -452,21 +437,21 @@ const testingComparison = {
 export const fingerprintRotation = {
   rotateTestFingerprints: async () => {
     // Generate new test fingerprints
-    const newFingerprints = generateTestFingerprints()
+    const newFingerprints = generateTestFingerprints();
 
     // Gradually migrate tests to new fingerprints
-    await migrateTestSessions(newFingerprints)
+    await migrateTestSessions(newFingerprints);
 
     // Cleanup old fingerprint data
-    await cleanupOldTestData()
+    await cleanupOldTestData();
   },
 
   validateFingerprintSecurity: async (fingerprint: string) => {
     // Ensure test fingerprints can't be guessed
-    const entropy = calculateEntropy(fingerprint)
-    return entropy > MINIMUM_ENTROPY_THRESHOLD
+    const entropy = calculateEntropy(fingerprint);
+    return entropy > MINIMUM_ENTROPY_THRESHOLD;
   },
-}
+};
 ```
 
 ### 2. Data Lifecycle Management
@@ -491,7 +476,7 @@ export const testDataLifecycle = {
     verifyDeletion: true,
     auditTrail: true,
   },
-}
+};
 ```
 
 ### 3. Safety Protocols
@@ -500,22 +485,22 @@ export const testDataLifecycle = {
 // Emergency procedures
 export const emergencyProtocols = {
   detectAnomalies: async () => {
-    const testTraffic = await getTestTrafficVolume()
-    const productionTraffic = await getProductionTrafficVolume()
+    const testTraffic = await getTestTrafficVolume();
+    const productionTraffic = await getProductionTrafficVolume();
 
     // Alert if test traffic exceeds threshold
     if (testTraffic / productionTraffic > 0.1) {
-      await triggerEmergencyShutdown()
+      await triggerEmergencyShutdown();
     }
   },
 
   isolationBreach: async (fingerprint: string) => {
     // Immediate containment
-    await disableFingerprint(fingerprint)
-    await quarantineTestData(fingerprint)
-    await notifySecurityTeam(fingerprint)
+    await disableFingerprint(fingerprint);
+    await quarantineTestData(fingerprint);
+    await notifySecurityTeam(fingerprint);
   },
-}
+};
 ```
 
 ## Security Considerations
@@ -555,7 +540,7 @@ export const futureCapabilities = {
     description: "Load testing with synthetic traffic using test fingerprints",
     implementation: "Controlled load generation in production",
   },
-}
+};
 ```
 
 ## Conclusion

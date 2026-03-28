@@ -90,8 +90,8 @@ docker run -p 6380:6379 falkordb/falkordb:latest
 ### 3. Initialize Hybrid DB
 
 ```typescript
-import { HybridDB } from "@chrryai/spatial-agents/hybrid-schema"
-import { PostgresSync } from "@chrryai/spatial-agents/postgres-sync"
+import { HybridDB } from "@chrryai/spatial-agents/hybrid-schema";
+import { PostgresSync } from "@chrryai/spatial-agents/postgres-sync";
 
 const hybridDB = new HybridDB({
   postgres: {
@@ -102,9 +102,9 @@ const hybridDB = new HybridDB({
     port: 6380,
     graphName: "your_workspace",
   },
-})
+});
 
-await hybridDB.connect()
+await hybridDB.connect();
 ```
 
 ## Usage Patterns
@@ -112,7 +112,7 @@ await hybridDB.connect()
 ### Pattern 1: Sync Existing Data
 
 ```typescript
-const sync = new PostgresSync(hybridDB)
+const sync = new PostgresSync(hybridDB);
 
 // Sync a user
 await sync.syncUser({
@@ -123,7 +123,7 @@ await sync.syncUser({
   isAvailableForHire: user.isAvailableForHire,
   hourlyRate: user.hourlyRate,
   expertise: user.expertise,
-})
+});
 
 // Sync a task
 await sync.syncTask({
@@ -133,7 +133,7 @@ await sync.syncTask({
   userId: task.userId,
   taskStateId: task.taskStateId,
   appId: task.appId,
-})
+});
 ```
 
 ### Pattern 2: Batch Sync Workspace
@@ -146,7 +146,7 @@ await sync.syncWorkspace({
   boards: await db.select().from(kanbanBoards),
   states: await db.select().from(taskStates),
   tasks: await db.select().from(tasks),
-})
+});
 ```
 
 ### Pattern 3: Create Spatial Agents
@@ -163,7 +163,7 @@ await hybridDB.syncFromPostgres({
     capabilities: JSON.stringify(["task-assignment", "coordination"]),
     position: JSON.stringify({ x: 0, y: 0, z: 10 }),
   },
-})
+});
 
 // Create developer agent
 await hybridDB.syncFromPostgres({
@@ -183,26 +183,26 @@ await hybridDB.syncFromPostgres({
       targetId: "pm-1",
     },
   ],
-})
+});
 ```
 
 ### Pattern 4: Graph Queries
 
 ```typescript
 // Find optimal agent for task
-const assignment = await hybridDB.findOptimalAgentForTask("task-123")
+const assignment = await hybridDB.findOptimalAgentForTask("task-123");
 // { agentId: 'agent-1', score: 85, reason: 'Workload-optimized' }
 
 // Get PM team overview
-const overview = await hybridDB.getPMTeamOverview("pm-1")
+const overview = await hybridDB.getPMTeamOverview("pm-1");
 // { totalAgents: 5, activeAgents: 3, totalTasks: 12, ... }
 
 // Check task dependencies
-const deps = await hybridDB.getTaskDependencies("task-123")
+const deps = await hybridDB.getTaskDependencies("task-123");
 // { blockedBy: ['task-100'], blocking: ['task-124'], canStart: false }
 
 // Get agent network
-const network = await hybridDB.getAgentNetwork("agent-1", 2)
+const network = await hybridDB.getAgentNetwork("agent-1", 2);
 // { agents: [...], connections: [...] }
 ```
 
@@ -239,20 +239,20 @@ FOR EACH ROW EXECUTE FUNCTION notify_task_change();
 
 ```typescript
 // Listen for changes
-import { RealtimeSync } from "@chrryai/spatial-agents/postgres-sync"
+import { RealtimeSync } from "@chrryai/spatial-agents/postgres-sync";
 
-const realtimeSync = new RealtimeSync(hybridDB)
+const realtimeSync = new RealtimeSync(hybridDB);
 
 pgClient.on("notification", async (msg) => {
-  const event = JSON.parse(msg.payload)
+  const event = JSON.parse(msg.payload);
   await realtimeSync.handleChange({
     table: "task",
     operation: event.operation,
     data: event.data,
-  })
-})
+  });
+});
 
-await pgClient.query("LISTEN task_change")
+await pgClient.query("LISTEN task_change");
 ```
 
 ## API Key Management (PM Agent)
@@ -275,7 +275,7 @@ await hybridDB.syncFromPostgres({
       targetId: "pm-1",
     },
   ],
-})
+});
 
 // Query API keys for PM Agent
 const result = await graph.query(
@@ -284,7 +284,7 @@ const result = await graph.query(
   RETURN key.service as service, key.key as key
 `,
   { params: { pmId: "pm-1" } },
-)
+);
 ```
 
 ## Best Practices
@@ -326,19 +326,16 @@ const task = await db
     taskStateId: "todo-column",
     appId: currentApp.id,
   })
-  .returning()
+  .returning();
 
 // 2. Sync to FalkorDB
-await sync.syncTask(task[0])
+await sync.syncTask(task[0]);
 
 // 3. PM Agent finds optimal agent
-const assignment = await hybridDB.findOptimalAgentForTask(task[0].id)
+const assignment = await hybridDB.findOptimalAgentForTask(task[0].id);
 
 // 4. Assign in both databases
-await db
-  .update(tasks)
-  .set({ assignedTo: assignment.agentId })
-  .where(eq(tasks.id, task[0].id))
+await db.update(tasks).set({ assignedTo: assignment.agentId }).where(eq(tasks.id, task[0].id));
 
 await graph.query(
   `
@@ -351,7 +348,7 @@ await graph.query(
       taskId: task[0].id,
     },
   },
-)
+);
 
 // 5. Agent executes task (your business logic)
 // 6. Update status in both databases
@@ -417,11 +414,11 @@ const result = await graph.query(
   RETURN n
 `,
   { params: { id: taskId } },
-)
+);
 
 if (!result.data || result.data.length === 0) {
-  console.log("Node not found, resyncing...")
-  await sync.syncTask(task)
+  console.log("Node not found, resyncing...");
+  await sync.syncTask(task);
 }
 ```
 
@@ -429,9 +426,9 @@ if (!result.data || result.data.length === 0) {
 
 ```typescript
 try {
-  await hybridDB.connect()
+  await hybridDB.connect();
 } catch (error) {
-  console.error("FalkorDB connection failed:", error)
+  console.error("FalkorDB connection failed:", error);
   // Fallback to PostgreSQL-only mode
 }
 ```

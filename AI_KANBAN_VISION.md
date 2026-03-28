@@ -147,50 +147,44 @@ Want me to move this to 'Blocked' and notify the team?"
 
 ```typescript
 interface TaskEvent {
-  taskId: string
+  taskId: string;
   events: Array<{
-    type:
-      | "created"
-      | "assigned"
-      | "started"
-      | "blocked"
-      | "ai_helped"
-      | "completed"
-    timestamp: Date
-    actor: "user" | "ai" | "team_member"
+    type: "created" | "assigned" | "started" | "blocked" | "ai_helped" | "completed";
+    timestamp: Date;
+    actor: "user" | "ai" | "team_member";
     metadata: {
       // For 'created'
-      source?: "user_request" | "ai_suggestion" | "template"
-      originalPrompt?: string
+      source?: "user_request" | "ai_suggestion" | "template";
+      originalPrompt?: string;
 
       // For 'assigned'
-      assignedTo?: string
-      assignmentReason?: string
-      aiConfidence?: number
+      assignedTo?: string;
+      assignmentReason?: string;
+      aiConfidence?: number;
 
       // For 'blocked'
-      blockerType?: "technical" | "dependency" | "clarification" | "external"
-      blockerDescription?: string
+      blockerType?: "technical" | "dependency" | "clarification" | "external";
+      blockerDescription?: string;
 
       // For 'ai_helped'
-      suggestionType?: "code" | "guidance" | "resource" | "connection"
-      suggestionAccepted?: boolean
-      helpfulness?: number // 1-5 rating
+      suggestionType?: "code" | "guidance" | "resource" | "connection";
+      suggestionAccepted?: boolean;
+      helpfulness?: number; // 1-5 rating
 
       // For 'completed'
-      actualTime?: number
-      qualityScore?: number
-      userSatisfaction?: number
-    }
-  }>
+      actualTime?: number;
+      qualityScore?: number;
+      userSatisfaction?: number;
+    };
+  }>;
 
   aiLearnings: {
-    estimateAccuracy: number // 0-1
-    blockerPredictionAccuracy: number
-    helpfulnessScore: number
-    teamVelocityImpact: number
-    patterns: string[]
-  }
+    estimateAccuracy: number; // 0-1
+    blockerPredictionAccuracy: number;
+    helpfulnessScore: number;
+    teamVelocityImpact: number;
+    patterns: string[];
+  };
 }
 ```
 
@@ -377,41 +371,41 @@ function assignTask(task: Task, team: TeamMember[]): Assignment {
     member,
     score: calculateScore(task, member),
     reasoning: generateReasoning(task, member),
-  }))
+  }));
 
   // Sort by score
-  scores.sort((a, b) => b.score - a.score)
+  scores.sort((a, b) => b.score - a.score);
 
   return {
     assignedTo: scores[0].member,
     confidence: scores[0].score,
     reasoning: scores[0].reasoning,
     alternatives: scores.slice(1, 3), // Show top 3
-  }
+  };
 }
 
 function calculateScore(task: Task, member: TeamMember): number {
-  let score = 0
+  let score = 0;
 
   // Skill match (40%)
   const skillMatch =
     task.requiredSkills.filter((s) => member.skills.includes(s)).length /
-    task.requiredSkills.length
-  score += skillMatch * 0.4
+    task.requiredSkills.length;
+  score += skillMatch * 0.4;
 
   // Availability (30%)
-  const availability = member.availability.hoursPerDay / 8
-  score += availability * 0.3
+  const availability = member.availability.hoursPerDay / 8;
+  score += availability * 0.3;
 
   // Historical performance (20%)
-  const performance = member.metrics.completionRate
-  score += performance * 0.2
+  const performance = member.metrics.completionRate;
+  score += performance * 0.2;
 
   // Current workload (10% - inverse)
-  const workload = getCurrentWorkload(member)
-  score += (1 - workload) * 0.1
+  const workload = getCurrentWorkload(member);
+  score += (1 - workload) * 0.1;
 
-  return score
+  return score;
 }
 ```
 
@@ -503,10 +497,10 @@ interface BlockerDetection {
 // 1. Detect potential blocker
 if (isTaskPotentiallyBlocked(task)) {
   // 2. Analyze context
-  const context = await analyzeTaskContext(task)
+  const context = await analyzeTaskContext(task);
 
   // 3. Generate suggestions
-  const suggestions = await generateSuggestions(task, context)
+  const suggestions = await generateSuggestions(task, context);
 
   // 4. Notify user (non-intrusive)
   await notifyUser({
@@ -514,10 +508,10 @@ if (isTaskPotentiallyBlocked(task)) {
     message: `I noticed you might be stuck on "${task.title}". Need help?`,
     suggestions,
     actions: ["get_help", "mark_blocked", "dismiss"],
-  })
+  });
 
   // 5. Learn from response
-  await trackUserResponse(task, suggestions)
+  await trackUserResponse(task, suggestions);
 }
 ```
 

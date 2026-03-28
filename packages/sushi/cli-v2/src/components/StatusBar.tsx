@@ -3,9 +3,9 @@
  * Bottom status information
  */
 
-import React, { FC } from 'react';
-import { Box, Text } from 'ink';
-import { useStore } from '../store.js';
+import React, { FC } from "react";
+import { Box, Text } from "ink";
+import { useStore } from "../store.js";
 
 export const StatusBar: FC = () => {
   const { ui, activeAgent, agents, spatial } = useStore();
@@ -39,7 +39,7 @@ export const StatusBar: FC = () => {
         <Text color={getStrikeColor(agent.stats.mutationsKilled, agent.stats.mutationsTested)}>
           {agent.stats.mutationsTested > 0
             ? `${Math.round((agent.stats.mutationsKilled / agent.stats.mutationsTested) * 100)}%`
-            : 'N/A'}
+            : "N/A"}
         </Text>
       </Box>
 
@@ -55,18 +55,23 @@ export const StatusBar: FC = () => {
 
 function getAgentColor(agent: string): string {
   switch (agent) {
-    case 'sensei': return 'magenta';
-    case 'student': return 'blue';
-    case 'debugger': return 'red';
-    case 'pm': return 'yellow';
-    default: return 'white';
+    case "sensei":
+      return "magenta";
+    case "student":
+      return "blue";
+    case "debugger":
+      return "red";
+    case "pm":
+      return "yellow";
+    default:
+      return "white";
   }
 }
 
 function getStrikeColor(killed: number, total: number): string {
-  if (total === 0) return 'gray';
+  if (total === 0) return "gray";
   const score = (killed / total) * 100;
-  if (score >= 80) return 'green';
-  if (score >= 50) return 'yellow';
-  return 'red';
+  if (score >= 80) return "green";
+  if (score >= 50) return "yellow";
+  return "red";
 }

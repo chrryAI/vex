@@ -1,11 +1,11 @@
-version: '3.8'
+version: "3.8"
 
 services:
   redis-waffles:
     image: redis:7.2
     container_name: vex-redis-waffles
     ports:
-      - "127.0.0.1:6381:6379"  # Bind to localhost only for security
+      - "127.0.0.1:6381:6379" # Bind to localhost only for security
     volumes:
       - ./redis_waffles_data:/data
     restart: unless-stopped

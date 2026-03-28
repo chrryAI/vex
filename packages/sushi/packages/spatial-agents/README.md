@@ -24,16 +24,16 @@ pnpm add @chrryai/spatial-agents
 ## Quick Start
 
 ```typescript
-import { SpatialAgentSystem } from "@chrryai/spatial-agents"
+import { SpatialAgentSystem } from "@chrryai/spatial-agents";
 
 // Initialize system
 const system = new SpatialAgentSystem({
   host: "localhost",
   port: 6380,
   graphName: "my_agents",
-})
+});
 
-await system.connect()
+await system.connect();
 
 // Register agents
 await system.registerAgent({
@@ -43,7 +43,7 @@ await system.registerAgent({
   position: { x: 0, y: 0, z: 0 },
   capabilities: ["typescript", "react", "testing"],
   status: "idle",
-})
+});
 
 await system.registerAgent({
   id: "tester-1",
@@ -52,7 +52,7 @@ await system.registerAgent({
   position: { x: 10, y: 5, z: 0 },
   capabilities: ["unit-testing", "e2e-testing"],
   status: "idle",
-})
+});
 
 // Create task
 await system.createTask({
@@ -63,7 +63,7 @@ await system.createTask({
   priority: 10,
   status: "pending",
   position: { x: 2, y: 1, z: 0 },
-})
+});
 
 // Find optimal agent for task
 const task = await system.findOptimalAgent({
@@ -73,11 +73,11 @@ const task = await system.findOptimalAgent({
   priority: 10,
   status: "pending",
   position: { x: 2, y: 1, z: 0 },
-})
+});
 
 // Assign task
 if (task) {
-  await system.assignTask("task-1", task.id)
+  await system.assignTask("task-1", task.id);
 }
 
 // Send message
@@ -87,11 +87,11 @@ await system.sendMessage({
   content: "Bug fixed, ready for testing",
   type: "notification",
   timestamp: Date.now(),
-})
+});
 
 // Get system stats
-const stats = await system.getSystemStats()
-console.log(stats)
+const stats = await system.getSystemStats();
+console.log(stats);
 // {
 //   totalAgents: 2,
 //   activeAgents: 1,
@@ -114,7 +114,7 @@ await system.registerAgent({
   position: { x: 0, y: 0, z: 10 }, // Higher Z = more experience
   capabilities: ["architecture", "security", "performance"],
   status: "idle",
-})
+});
 
 await system.registerAgent({
   id: "reviewer-junior",
@@ -123,7 +123,7 @@ await system.registerAgent({
   position: { x: 0, y: 0, z: 2 },
   capabilities: ["code-style", "testing"],
   status: "idle",
-})
+});
 
 // Create review task
 await system.createTask({
@@ -133,7 +133,7 @@ await system.createTask({
   priority: 8,
   status: "pending",
   position: { x: 0, y: 0, z: 9 }, // High complexity = higher Z
-})
+});
 
 // System will assign to senior reviewer (closer in Z-axis)
 ```
@@ -148,7 +148,7 @@ await system.registerAgent({
   position: { x: -75, y: 40, z: 0 }, // NYC coordinates
   capabilities: ["e2e", "performance"],
   status: "idle",
-})
+});
 
 await system.registerAgent({
   id: "test-eu-west",
@@ -156,7 +156,7 @@ await system.registerAgent({
   position: { x: 0, y: 51, z: 0 }, // London coordinates
   capabilities: ["e2e", "performance"],
   status: "idle",
-})
+});
 
 // Create test task
 await system.createTask({
@@ -166,7 +166,7 @@ await system.createTask({
   priority: 10,
   status: "pending",
   position: { x: -74, y: 41, z: 0 }, // Near NYC
-})
+});
 
 // System assigns to closest agent (test-us-east)
 ```
@@ -178,9 +178,9 @@ await system.createTask({
 const nearby = await system.findNearbyAgents(
   { x: 0, y: 0, z: 0 },
   50, // radius
-)
+);
 
-console.log(`Found ${nearby.length} nearby agents`)
+console.log(`Found ${nearby.length} nearby agents`);
 
 // Broadcast message to all agents
 await system.sendMessage({
@@ -189,11 +189,11 @@ await system.sendMessage({
   content: "System maintenance in 10 minutes",
   type: "notification",
   timestamp: Date.now(),
-})
+});
 
 // Get agent's communication network
-const network = await system.getAgentNetwork("coder-1", 2)
-console.log("Connected agents:", network.agents)
+const network = await system.getAgentNetwork("coder-1", 2);
+console.log("Connected agents:", network.agents);
 ```
 
 ## API Reference
@@ -225,14 +225,14 @@ new SpatialAgentSystem(config?: SpatialConfig)
 ## Integration with BAM + STRIKE
 
 ```typescript
-import { BAM } from "@chrryai/bam"
-import { SpatialAgentSystem } from "@chrryai/spatial-agents"
+import { BAM } from "@chrryai/bam";
+import { SpatialAgentSystem } from "@chrryai/spatial-agents";
 
-const bam = new BAM()
-const agents = new SpatialAgentSystem()
+const bam = new BAM();
+const agents = new SpatialAgentSystem();
 
-await bam.connect()
-await agents.connect()
+await bam.connect();
+await agents.connect();
 
 // Register debugger agent
 await agents.registerAgent({
@@ -242,10 +242,10 @@ await agents.registerAgent({
   position: { x: 0, y: 0, z: 0 },
   capabilities: ["bug-detection", "static-analysis"],
   status: "idle",
-})
+});
 
 // Scan for bugs
-const bugs = await bam.scanDirectory("./src")
+const bugs = await bam.scanDirectory("./src");
 
 // Create task for each bug
 for (const bug of bugs) {
@@ -257,12 +257,12 @@ for (const bug of bugs) {
     priority: bug.severity === "HIGH" ? 10 : 5,
     status: "pending",
     position: { x: 0, y: 0, z: 0 },
-  })
+  });
 }
 
 // Auto-assign to debugger agent
-const stats = await agents.getSystemStats()
-console.log(`Created ${stats.totalTasks} bug fix tasks`)
+const stats = await agents.getSystemStats();
+console.log(`Created ${stats.totalTasks} bug fix tasks`);
 ```
 
 ## License

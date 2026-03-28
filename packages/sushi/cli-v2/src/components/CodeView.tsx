@@ -3,9 +3,9 @@
  * File display and diff view
  */
 
-import React, { FC } from 'react';
-import { Box, Text } from 'ink';
-import { useStore } from '../store.js';
+import React, { FC } from "react";
+import { Box, Text } from "ink";
+import { useStore } from "../store.js";
 
 export const CodeView: FC = () => {
   const { ui } = useStore();
@@ -13,21 +13,16 @@ export const CodeView: FC = () => {
   return (
     <Box flexDirection="column" padding={1} height="100%">
       <Text bold underline color="cyan">
-        {ui.showDiff ? 'Diff View' : 'Code View'}
+        {ui.showDiff ? "Diff View" : "Code View"}
       </Text>
 
       <Box flexGrow={1} marginTop={1} overflow="hidden">
         {ui.showDiff && ui.diffContent ? (
-          <DiffViewer
-            original={ui.diffContent.original}
-            modified={ui.diffContent.modified}
-          />
+          <DiffViewer original={ui.diffContent.original} modified={ui.diffContent.modified} />
         ) : (
           <Box flexDirection="column">
             <Text dimColor>No file selected</Text>
-            <Text dimColor>
-              Files will appear here when referenced in chat
-            </Text>
+            <Text dimColor>Files will appear here when referenced in chat</Text>
           </Box>
         )}
       </Box>
@@ -40,8 +35,8 @@ const DiffViewer: FC<{
   modified: string;
 }> = ({ original, modified }) => {
   // Simple line-by-line diff
-  const originalLines = original.split('\n');
-  const modifiedLines = modified.split('\n');
+  const originalLines = original.split("\n");
+  const modifiedLines = modified.split("\n");
 
   return (
     <Box flexDirection="column">
@@ -67,7 +62,8 @@ const DiffViewer: FC<{
 
         return (
           <Text key={i} dimColor>
-            {'  '}{line}
+            {"  "}
+            {line}
           </Text>
         );
       })}

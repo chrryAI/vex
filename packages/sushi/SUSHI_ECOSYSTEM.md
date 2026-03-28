@@ -173,16 +173,16 @@ Together, they create a **self-improving, AI-powered development ecosystem**.
 class SushiOrchestrator {
   async route(request: Request) {
     if (request.type === "reasoning") {
-      return await deepSeekR1.process(request)
+      return await deepSeekR1.process(request);
     }
     if (request.type === "vision") {
-      return await claude.process(request)
+      return await claude.process(request);
     }
     if (request.type === "search") {
-      return await perplexity.process(request)
+      return await perplexity.process(request);
     }
     // Default: DeepSeek Chat
-    return await deepSeekChat.process(request)
+    return await deepSeekChat.process(request);
   }
 }
 
@@ -191,7 +191,7 @@ const sushiStore = {
   debugger: new DebuggerApp(), // Uses BAM
   coder: new CoderApp(), // Uses Porffor
   architect: new ArchitectApp(), // Uses Spatial Agents
-}
+};
 ```
 
 ### SUSHI Platform Layer (Infrastructure)
@@ -201,25 +201,25 @@ const sushiStore = {
 await porffor.compile("sushi-app.ts", {
   target: "wasm",
   optimize: true,
-})
+});
 
 // Test SUSHI App with BAM+STRIKE
-const bugs = await bam.scan("sushi-app.ts")
-const mutations = await strike.test("sushi-app.ts")
+const bugs = await bam.scan("sushi-app.ts");
+const mutations = await strike.test("sushi-app.ts");
 
 // Learn from SUSHI App usage
 await memory.learn({
   bugs,
   mutations,
   userFeedback: sushiApp.getFeedback(),
-})
+});
 
 // Coordinate SUSHI App agents
 await spatialAgents.coordinate({
   debugger: sushiStore.debugger,
   coder: sushiStore.coder,
   architect: sushiStore.architect,
-})
+});
 ```
 
 ---

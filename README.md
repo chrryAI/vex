@@ -120,18 +120,19 @@ pnpm docs:watch
 
 ### Documentation Coverage
 
-| Package | Description |
-|---------|-------------|
-| `@repo/shared` | Shared utilities, contexts, hooks, stores |
-| `@repo/ui` | UI components and design system |
-| `@repo/calendar` | Calendar components |
-| `@repo/waffles` | Grid system |
-| `@repo/pepper` | State management |
-| `@repo/focus` | Focus utilities |
+| Package          | Description                               |
+| ---------------- | ----------------------------------------- |
+| `@repo/shared`   | Shared utilities, contexts, hooks, stores |
+| `@repo/ui`       | UI components and design system           |
+| `@repo/calendar` | Calendar components                       |
+| `@repo/waffles`  | Grid system                               |
+| `@repo/pepper`   | State management                          |
+| `@repo/focus`    | Focus utilities                           |
 
 ### ☁️ Cloud Setup (Alternative)
 
 Prerequisites:
+
 - Node.js 18+
 - pnpm 9+
 - PostgreSQL 14+ (with `pgvector` extension)
@@ -277,3 +278,4 @@ Apps exist in a 3D coordinate system:
 🧬 **App Inheritance**: Apps extend parent apps (FightClub extends Popcorn extends Chrry), inheriting features and tools.
 
 📲 **Native-Grade Experience**: Each app installs separately with its own name, icon, theme, and memory, despite running on shared infrastructure.
+```

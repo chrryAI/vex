@@ -1,13 +1,13 @@
 export default async () => {
-  let out = ""
+  let out = "";
 
   const arrayCode = (await import("node:fs")).readFileSync(
     `${globalThis.precompileCompilerPath}/builtins/array.ts`,
     "utf8",
-  )
-  const typedArrayFuncs = [
-    ...arrayCode.matchAll(/\/\/ @porf-typed-array[\s\S]+?^};$/gm),
-  ].map((x) => x[0])
+  );
+  const typedArrayFuncs = [...arrayCode.matchAll(/\/\/ @porf-typed-array[\s\S]+?^};$/gm)].map(
+    (x) => x[0],
+  );
 
   // TypedArrays are stored like this in memory:
   // length (i32)
@@ -27,7 +27,7 @@ export default async () => {
     "BigInt64",
     "BigUint64",
   ]) {
-    const name = `${x}Array`
+    const name = `${x}Array`;
     out += `export const ${name} = function (arg: any, byteOffset: any, length: any): ${name} {
   if (!new.target) throw new TypeError("Constructor ${name} requires 'new'");
 
@@ -220,8 +220,8 @@ export const __${name}_prototype_subarray = (_this: ${name}, start: any, end: an
   return out;
 };
 
-${typedArrayFuncs.reduce((acc, x) => `${acc + x.replace("// @porf-typed-array\n", "").replaceAll("Array", name).replaceAll("any[]", name)}\n\n`, "")}`
+${typedArrayFuncs.reduce((acc, x) => `${acc + x.replace("// @porf-typed-array\n", "").replaceAll("Array", name).replaceAll("any[]", name)}\n\n`, "")}`;
   }
 
-  return out
-}
+  return out;
+};

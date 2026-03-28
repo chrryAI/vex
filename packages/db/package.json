@@ -1,17 +1,17 @@
 {
   "name": "@repo/db",
-  "version": "2.2.70",
+  "version": "2.2.71",
   "description": "",
   "keywords": [],
   "license": "ISC",
   "author": "",
   "type": "module",
+  "main": "./index.ts",
   "exports": {
     ".": "./index.ts",
     "./src/schema": "./src/schema.ts",
     "./src/better-auth-schema": "./src/better-auth-schema.ts"
   },
-  "main": "./index.ts",
   "scripts": {
     "check-types": "tsc --noEmit",
     "clear": "CLEAR=true pnpm exec tsx seed.ts",

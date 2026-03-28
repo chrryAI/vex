@@ -38,26 +38,25 @@ One Server: Detects domain automatically
 // packages/ui/utils/siteConfig.ts
 
 export function detectsiteModeDomain(hostname?: string): siteMode {
-  const host =
-    hostname || (typeof window !== "undefined" ? window.location.hostname : "")
+  const host = hostname || (typeof window !== "undefined" ? window.location.hostname : "");
 
   // Domain-based detection
   if (host.includes("chrry.dev")) {
-    return "chrryDev"
+    return "chrryDev";
   }
 
   // chrry.ai and all subdomains (focus.chrry.ai, bloom.chrry.ai, etc.)
   if (host.includes("chrry.ai") && !host.includes("vex.chrry.ai")) {
-    return "chrryAI"
+    return "chrryAI";
   }
 
   // Store domains
   if (host.includes("chrry.store")) {
-    return "chrryStore"
+    return "chrryStore";
   }
 
   // Default to vex (vex.chrry.ai or localhost)
-  return "vex"
+  return "vex";
 }
 ```
 
@@ -66,25 +65,25 @@ export function detectsiteModeDomain(hostname?: string): siteMode {
 ```typescript
 export function detectsiteMode(hostname?: string): siteMode {
   // Try domain detection first
-  const mode = detectsiteModeDomain(hostname)
+  const mode = detectsiteModeDomain(hostname);
   if (mode) {
-    return mode
+    return mode;
   }
 
   // Fallback to environment variables (for special cases)
   if (process.env.VITE_SITE_MODE === "chrryDev") {
-    return "chrryDev"
+    return "chrryDev";
   }
 
   if (process.env.VITE_SITE_MODE === "chrryAI") {
-    return "chrryAI"
+    return "chrryAI";
   }
 
   if (process.env.VITE_SITE_MODE === "chrryStore") {
-    return "chrryStore"
+    return "chrryStore";
   }
 
-  return "vex"
+  return "vex";
 }
 ```
 
@@ -93,10 +92,10 @@ export function detectsiteMode(hostname?: string): siteMode {
 ```typescript
 export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // If it's a valid siteMode, use it directly
-  const validModes: siteMode[] = ["chrryDev", "chrryAI", "chrryStore", "vex"]
+  const validModes: siteMode[] = ["chrryDev", "chrryAI", "chrryStore", "vex"];
   const mode = validModes.includes(hostnameOrMode as siteMode)
     ? (hostnameOrMode as siteMode)
-    : detectsiteMode(hostnameOrMode)
+    : detectsiteMode(hostnameOrMode);
 
   // Return config based on mode
   if (mode === "chrryDev") {
@@ -117,24 +116,24 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
 
 ```typescript
 // No hostname needed - uses window.location.hostname
-const siteConfig = getSiteConfig()
+const siteConfig = getSiteConfig();
 ```
 
 ### **Server-Side** (Pass hostname)
 
 ```typescript
-import { headers } from "next/headers"
+import { headers } from "next/headers";
 
 export default async function Page() {
   // Get hostname from request headers
-  const headersList = await headers()
-  const hostname = headersList.get("host") || ""
+  const headersList = await headers();
+  const hostname = headersList.get("host") || "";
 
   // Pass to getSiteConfig for proper detection
-  const siteConfig = getSiteConfig(hostname)
+  const siteConfig = getSiteConfig(hostname);
 
   if (siteConfig.mode !== "vex") {
-    return notFound()
+    return notFound();
   }
 
   // ... rest of component
@@ -240,35 +239,35 @@ localhost:3000          → vex        → Default (development)
 
 ```typescript
 // Test chrry.ai
-detectsiteModeDomain("chrry.ai") // → "chrryAI"
+detectsiteModeDomain("chrry.ai"); // → "chrryAI"
 
 // Test focus subdomain
-detectsiteModeDomain("focus.chrry.ai") // → "chrryAI"
+detectsiteModeDomain("focus.chrry.ai"); // → "chrryAI"
 
 // Test vex
-detectsiteModeDomain("vex.chrry.ai") // → "vex"
+detectsiteModeDomain("vex.chrry.ai"); // → "vex"
 
 // Test chrry.dev
-detectsiteModeDomain("chrry.dev") // → "chrryDev"
+detectsiteModeDomain("chrry.dev"); // → "chrryDev"
 
 // Test localhost
-detectsiteModeDomain("localhost") // → "vex"
+detectsiteModeDomain("localhost"); // → "vex"
 ```
 
 ### **Test getSiteConfig**
 
 ```typescript
 // Pass hostname
-const config1 = getSiteConfig("focus.chrry.ai")
-console.log(config1.mode) // "chrryAI"
+const config1 = getSiteConfig("focus.chrry.ai");
+console.log(config1.mode); // "chrryAI"
 
 // Pass mode directly
-const config2 = getSiteConfig("chrryAI")
-console.log(config2.mode) // "chrryAI"
+const config2 = getSiteConfig("chrryAI");
+console.log(config2.mode); // "chrryAI"
 
 // No parameter (uses window.location)
-const config3 = getSiteConfig()
-console.log(config3.mode) // Depends on current domain
+const config3 = getSiteConfig();
+console.log(config3.mode); // Depends on current domain
 ```
 
 ---
@@ -305,10 +304,10 @@ vault.chrry.ai
 
 ```typescript
 // Always validate hostname from headers
-const hostname = headersList.get("host") || ""
+const hostname = headersList.get("host") || "";
 
 // Sanitize if needed
-const sanitized = hostname.replace(/[^a-z0-9.-]/gi, "")
+const sanitized = hostname.replace(/[^a-z0-9.-]/gi, "");
 ```
 
 ### **2. CORS Configuration**
@@ -320,7 +319,7 @@ const allowedOrigins = [
   /^https:\/\/[\w-]+\.chrry\.ai$/,
   "https://vex.chrry.ai",
   "https://chrry.dev",
-]
+];
 ```
 
 ### **3. SSL/TLS**

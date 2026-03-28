@@ -4,7 +4,6 @@
  */
 export function sanitizeForAI(content: string): string {
   if (!content) return content
-  
   // Escape backslashes to prevent \\u from being interpreted as Unicode escape
   // This fixes "unexpected end of hex escape" errors
   return content.replace(/\\/g, "\\\\")

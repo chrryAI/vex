@@ -31,7 +31,7 @@ app.use(
     threshold: 1024, // Only compress > 1KB
     filter: compression.filter,
   }),
-)
+);
 ```
 
 **Impact:**
@@ -49,8 +49,8 @@ app.use(
 ```javascript
 // Cache static assets for 1 year
 if (req.path.match(/\.(js|css|png|jpg|...)$/)) {
-  res.setHeader("Cache-Control", "public, max-age=31536000, immutable")
-  res.setHeader("Expires", new Date(Date.now() + 31536000000).toUTCString())
+  res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  res.setHeader("Expires", new Date(Date.now() + 31536000000).toUTCString());
 }
 ```
 
@@ -68,8 +68,8 @@ if (req.path.match(/\.(js|css|png|jpg|...)$/)) {
 
 ```typescript
 // Generate .gz and .br files at build time
-viteCompression({ algorithm: "gzip", ext: ".gz" })
-viteCompression({ algorithm: "brotliCompress", ext: ".br" })
+viteCompression({ algorithm: "gzip", ext: ".gz" });
+viteCompression({ algorithm: "brotliCompress", ext: ".br" });
 ```
 
 **Impact:**
@@ -86,11 +86,11 @@ viteCompression({ algorithm: "brotliCompress", ext: ".br" })
 
 ```typescript
 manualChunks: (id) => {
-  if (id.includes("react")) return "react-vendor"
-  if (id.includes("framer-motion")) return "animation-vendor"
-  if (id.includes("@lobehub")) return "ui-vendor"
-  return "vendor"
-}
+  if (id.includes("react")) return "react-vendor";
+  if (id.includes("framer-motion")) return "animation-vendor";
+  if (id.includes("@lobehub")) return "ui-vendor";
+  return "vendor";
+};
 ```
 
 **Impact:**

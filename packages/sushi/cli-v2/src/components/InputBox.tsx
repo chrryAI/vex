@@ -3,10 +3,10 @@
  * User input with autocomplete
  */
 
-import React, { useState, FC } from 'react';
-import { Box, Text } from 'ink';
-import TextInput from 'ink-text-input';
-import Spinner from 'ink-spinner';
+import React, { useState, FC } from "react";
+import { Box, Text } from "ink";
+import TextInput from "ink-text-input";
+import Spinner from "ink-spinner";
 
 interface Props {
   onSubmit: (value: string) => void;
@@ -14,12 +14,12 @@ interface Props {
 }
 
 export const InputBox: FC<Props> = ({ onSubmit, isLoading }) => {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState("");
 
   const handleSubmit = (v: string) => {
     if (v.trim()) {
       onSubmit(v);
-      setValue('');
+      setValue("");
     }
   };
 

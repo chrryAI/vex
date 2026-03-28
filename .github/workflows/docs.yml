@@ -4,9 +4,9 @@ on:
   push:
     branches: [main, master]
     paths:
-      - 'packages/**'
-      - 'typedoc.json'
-      - '.github/workflows/docs.yml'
+      - "packages/**"
+      - "typedoc.json"
+      - ".github/workflows/docs.yml"
   workflow_dispatch:
 
 permissions:
@@ -33,8 +33,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

@@ -256,9 +256,7 @@ export const notifyOwnerAndCollaborations = async ({
         JSON.stringify({
           icon: `${FRONTEND_URL}/icon-128.png`,
           badge: `${FRONTEND_URL}/icon-128.png`,
-          title: `${
-            payload.data.message?.message.content.slice(0, 100) || "New message"
-          } - Vex`,
+          title: `${payload.data.message?.message.content.slice(0, 100) || "New message"} - Vex`,
           body: "You have a new message",
           tag: `thread-${payload.data.message?.message.threadId}-message-${payload.data.message?.message.id}`,
           data: {
@@ -301,9 +299,7 @@ export const notifyOwnerAndCollaborations = async ({
         JSON.stringify({
           icon: `${FRONTEND_URL}/icon-128.png`,
           badge: `${FRONTEND_URL}/icon-128.png`,
-          title: `${
-            payload.data.message?.message.content.slice(0, 100) || "New message"
-          } - Vex`,
+          title: `${payload.data.message?.message.content.slice(0, 100) || "New message"} - Vex`,
           body: "You have a new message",
           tag: `thread-${payload.data.message?.message.threadId}-message-${payload.data.message?.message.id}`,
           data: {

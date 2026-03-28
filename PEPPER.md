@@ -48,10 +48,10 @@ function App() {
 
 ```typescript
 // Next.js App Router
-router.push("/calendar") // 100-300ms wait ❌
+router.push("/calendar"); // 100-300ms wait ❌
 
 // Pepper Router
-navigate("/calendar") // 0ms instant ✅
+navigate("/calendar"); // 0ms instant ✅
 ```
 
 ### 🎨 Native View Transitions (Web)
@@ -188,7 +188,7 @@ const {
   pathname, // Current pathname
   searchParams, // URLSearchParams
   hash, // URL hash
-} = useNavigation()
+} = useNavigation();
 ```
 
 #### Navigation Options
@@ -206,57 +206,57 @@ navigate(path: string, options?: {
 
 ```typescript
 // Basic navigation
-navigate("/about")
+navigate("/about");
 
 // Replace current entry
-navigate("/login", { replace: true })
+navigate("/login", { replace: true });
 
 // Pass state
-navigate("/profile", { state: { userId: 123 } })
+navigate("/profile", { state: { userId: 123 } });
 
 // Disable scroll to top
-navigate("/feed", { scroll: false })
+navigate("/feed", { scroll: false });
 
 // Force server navigation (Next.js)
-navigate("/blog", { clientOnly: false })
+navigate("/blog", { clientOnly: false });
 ```
 
 ### URL Manipulation
 
 ```typescript
-const { addParams, removeParams, setParams } = useNavigation()
+const { addParams, removeParams, setParams } = useNavigation();
 
 // Add query params
-addParams({ tab: "settings", view: "profile" })
+addParams({ tab: "settings", view: "profile" });
 // /current-path?tab=settings&view=profile
 
 // Remove params
-removeParams(["tab", "view"])
+removeParams(["tab", "view"]);
 // /current-path
 
 // Replace all params
-setParams({ page: "1", sort: "date" })
+setParams({ page: "1", sort: "date" });
 // /current-path?page=1&sort=date
 ```
 
 ### History Navigation
 
 ```typescript
-const { goBack, goForward, refresh, prefetch } = useNavigation()
+const { goBack, goForward, refresh, prefetch } = useNavigation();
 
-goBack() // Navigate back
-goForward() // Navigate forward
-refresh() // Refresh current route (Next.js)
-prefetch("/about") // Prefetch route (Next.js)
+goBack(); // Navigate back
+goForward(); // Navigate forward
+refresh(); // Refresh current route (Next.js)
+prefetch("/about"); // Prefetch route (Next.js)
 ```
 
 ### Route Helpers
 
 ```typescript
-import { useCurrentPathname, useCurrentSearchParams } from "@chrryai/pepper"
+import { useCurrentPathname, useCurrentSearchParams } from "@chrryai/pepper";
 
-const pathname = useCurrentPathname() // "/about"
-const searchParams = useCurrentSearchParams() // URLSearchParams
+const pathname = useCurrentPathname(); // "/about"
+const searchParams = useCurrentSearchParams(); // URLSearchParams
 ```
 
 ---
@@ -304,10 +304,10 @@ Pepper automatically uses the View Transitions API when available.
 
 ```typescript
 // Default transitions work automatically
-navigate("/about") // ✨ Smooth transition
+navigate("/about"); // ✨ Smooth transition
 
 // Disable for specific navigation
-navigate("/settings", { transition: false })
+navigate("/settings", { transition: false });
 ```
 
 ---
@@ -318,26 +318,26 @@ navigate("/settings", { transition: false })
 
 ```typescript
 class PepperRouter {
-  private listeners: Set<() => void>
-  private state: RouterState
+  private listeners: Set<() => void>;
+  private state: RouterState;
 
   navigate(path: string, options?: NavigationOptions) {
     // Use View Transitions API if available (web)
     if (document.startViewTransition) {
       document.startViewTransition(() => {
-        window.history.pushState({}, "", path)
-        this.notifyListeners()
-      })
+        window.history.pushState({}, "", path);
+        this.notifyListeners();
+      });
     } else {
       // Fallback for older browsers / React Native
-      window.history.pushState({}, "", path)
-      this.notifyListeners()
+      window.history.pushState({}, "", path);
+      this.notifyListeners();
     }
   }
 
   subscribe(listener: () => void) {
-    this.listeners.add(listener)
-    return () => this.listeners.delete(listener)
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
   }
 }
 ```
@@ -456,30 +456,30 @@ function ExtensionPopup() {
 
 ```typescript
 // ✅ Good - instant navigation (default)
-navigate("/about")
+navigate("/about");
 
 // ⚠️ Only use when you need server data
-navigate("/blog", { clientOnly: false })
+navigate("/blog", { clientOnly: false });
 ```
 
 ### 2. Preserve Scroll Position
 
 ```typescript
 // ✅ Good - scroll to top for new pages
-navigate("/about")
+navigate("/about");
 
 // ✅ Good - preserve scroll for tabs
-navigate("/feed?tab=following", { scroll: false })
+navigate("/feed?tab=following", { scroll: false });
 ```
 
 ### 3. Use Replace for Redirects
 
 ```typescript
 // ✅ Good - don't pollute history
-navigate("/login", { replace: true })
+navigate("/login", { replace: true });
 
 // ❌ Bad - user can go back to protected route
-navigate("/login")
+navigate("/login");
 ```
 
 ### 4. Prefetch Important Routes

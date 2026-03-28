@@ -32,7 +32,7 @@ type Mood =
   | "angry" // 😡
   | "astonished" // 😰
   | "inlove" // 😍
-  | "thinking" // 🤔 (default)
+  | "thinking"; // 🤔 (default)
 ```
 
 ### **3. Smart Update Logic**
@@ -56,14 +56,14 @@ type Mood =
 
 ```typescript
 // Chat.tsx
-const [moodType, setMoodType] = useState(mood?.type || "thinking")
-const [isSelectingMood, setIsSelectingMood] = useState(!mood)
+const [moodType, setMoodType] = useState(mood?.type || "thinking");
+const [isSelectingMood, setIsSelectingMood] = useState(!mood);
 
 // When user selects mood
-await updateMood({ type: newMood })
+await updateMood({ type: newMood });
 
 // Mood is attached to messages
-formData.append("moodId", mood.id)
+formData.append("moodId", mood.id);
 ```
 
 ### **Server Side**
@@ -87,14 +87,14 @@ POST /api/mood
 
 ```typescript
 // /api/messages/route.ts
-const mood = moodId ? await getMood({ id: moodId }) : undefined
+const mood = moodId ? await getMood({ id: moodId }) : undefined;
 
 // Mood is saved with message
 await createMessage({
   moodId: mood?.id,
   content: messageContent,
   // ...
-})
+});
 ```
 
 ---
@@ -155,12 +155,12 @@ await createMessage({
 
 ```typescript
 {
-  id: string
-  content: string
-  moodId: string | null // ← Links to mood
-  threadId: string
-  userId: string | null
-  guestId: string | null
+  id: string;
+  content: string;
+  moodId: string | null; // ← Links to mood
+  threadId: string;
+  userId: string | null;
+  guestId: string | null;
   // ...
 }
 ```
@@ -283,10 +283,10 @@ Result: One mood entry, last state = "happy"
 
 ```typescript
 // AI-powered insights
-;-"You're happiest on Fridays" -
+-"You're happiest on Fridays" -
   "Mood improves after exercise" -
   "Stress peaks on Mondays" -
-  "Suggest activities to improve mood"
+  "Suggest activities to improve mood";
 ```
 
 ---
@@ -316,12 +316,12 @@ Result: One mood entry, last state = "happy"
 useEffect(() => {
   function handleClickOutside(event) {
     if (!ref.current.contains(event.target)) {
-      setMood(originalMood) // Revert
-      onMoodChange(originalMood)
+      setMood(originalMood); // Revert
+      onMoodChange(originalMood);
     }
   }
-  document.addEventListener("mousedown", handleClickOutside)
-}, [])
+  document.addEventListener("mousedown", handleClickOutside);
+}, []);
 ```
 
 ---
@@ -382,9 +382,7 @@ features: {
 
 ```typescript
 // AI receives mood in system prompt
-const moodContext = mood
-  ? `User's current mood: ${emojiMap[mood.type]} (${mood.type})`
-  : ""
+const moodContext = mood ? `User's current mood: ${emojiMap[mood.type]} (${mood.type})` : "";
 
 // AI adjusts responses based on mood
 if (mood.type === "sad") {
@@ -400,7 +398,7 @@ if (mood.type === "sad") {
 
 ```typescript
 // User's mood over a week
-;[
+[
   { date: "2025-11-01", mood: "happy", updatedAt: "10:30" },
   { date: "2025-11-02", mood: "thinking", updatedAt: "09:15" },
   { date: "2025-11-03", mood: "sad", updatedAt: "14:20" },
@@ -408,7 +406,7 @@ if (mood.type === "sad") {
   { date: "2025-11-05", mood: "angry", updatedAt: "16:45" },
   { date: "2025-11-06", mood: "happy", updatedAt: "08:30" },
   { date: "2025-11-07", mood: "inlove", updatedAt: "19:00" },
-]
+];
 
 // Clean, one entry per day!
 ```
