@@ -28,6 +28,7 @@ import {
   H1,
   H2,
   H3,
+  H4,
   MotiView,
   P,
   Span,
@@ -199,7 +200,7 @@ const TribePostListItem = ({
             {`/${t(post.tribe?.slug || "general")}`}
           </A>
         </Div>
-        <H3
+        <H4
           style={{
             margin: 0,
             padding: 0,
@@ -216,7 +217,7 @@ const TribePostListItem = ({
           >
             {post.title}
           </AppLink>
-        </H3>
+        </H4>
         <Div
           style={{
             display: "flex",
@@ -1496,7 +1497,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
             <Div>
               {!showTribeProfile && (
                 <>
-                  <H2
+                  <Div
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -1652,7 +1653,7 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         {!rtl && <FocusButton />}
                       </Div>
                     </Div>
-                  </H2>
+                  </Div>
                   <Div
                     style={{
                       marginBottom: isMobileDevice ? "1rem" : "1.5rem",
@@ -1952,17 +1953,18 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                         ) : null}
                       </Div>
 
-                      {app?.store?.appId === app?.id ? (
-                        <Div
-                          style={{
-                            color: "var(--shade-7)",
-                            display: "flex",
-                            gap: 5,
-                            flexDirection: "column",
-                            alignSelf: "flex-start",
-                            alignItems: "flex-start",
-                          }}
-                        >
+                      <Div
+                        style={{
+                          color: "var(--shade-7)",
+                          lineHeight: "1.6",
+                          fontSize: ".95rem",
+                          display: "flex",
+                          gap: 5,
+                          position: "relative",
+                          flexDirection: "column",
+                        }}
+                      >
+                        <>
                           <Ticker
                             maxWidth={viewPortWidth - 70}
                             showControls
@@ -1971,60 +1973,28 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                                 COLORS[app?.themeColor as keyof typeof COLORS],
                             }}
                           />
-                          <P>
-                            <A href={`/${app?.store?.slug}`} target="_blank">
-                              {t(app?.store?.name ?? "")}
-                            </A>{" "}
-                            {t(
-                              app?.store?.title
-                                ? ` - ${app?.store?.title}`
-                                : "",
+                          <H2
+                            style={{
+                              fontSize: "1rem",
+                              fontWeight: "normal",
+                              marginTop: "0.5rem",
+                              marginBottom: "0.2rem",
+                              color: "var(--shade-7)",
+                            }}
+                          >
+                            {app?.subtitle || app?.description ? (
+                              <>
+                                {t(app?.subtitle ?? "")}{" "}
+                                {t(app?.description ?? "")} {app?.icon}
+                              </>
+                            ) : (
+                              t(
+                                "This part will be updated when  App Creator pin a character profile 🧬",
+                              )
                             )}
-                            {t(
-                              app?.store?.description
-                                ? ` - ${app?.store?.description}`
-                                : "",
-                            )}
-                          </P>
-                        </Div>
-                      ) : (
-                        <Div
-                          style={{
-                            color: "var(--shade-7)",
-                            lineHeight: "1.6",
-                            fontSize: ".95rem",
-                            display: "flex",
-                            gap: 5,
-                            position: "relative",
-                            flexDirection: "column",
-                          }}
-                        >
-                          <>
-                            <Ticker
-                              maxWidth={viewPortWidth - 70}
-                              showControls
-                              style={{
-                                color:
-                                  COLORS[
-                                    app?.themeColor as keyof typeof COLORS
-                                  ],
-                              }}
-                            />
-                            <P>
-                              {app?.subtitle || app?.description ? (
-                                <>
-                                  {t(app?.subtitle ?? "")}{" "}
-                                  {t(app?.description ?? "")} {app?.icon}
-                                </>
-                              ) : (
-                                t(
-                                  "This part will be updated when  App Creator pin a character profile 🧬",
-                                )
-                              )}
-                            </P>
-                          </>
-                        </Div>
-                      )}
+                          </H2>
+                        </>
+                      </Div>
                     </Div>
                   )}
 
@@ -2132,67 +2102,40 @@ export default function Tribe({ children }: { children?: React.ReactNode }) {
                     flexDirection: "column",
                   }}
                 >
-                  {app?.store?.appId === app?.id ? (
-                    <>
-                      {app?.subtitle || app?.description ? (
-                        <Quote
-                          size={18}
-                          strokeWidth={1.25}
-                          style={{ position: "absolute", top: 5 }}
-                        />
-                      ) : (
-                        <Pin
-                          size={18}
-                          strokeWidth={1.25}
-                          style={{ position: "absolute", top: 5 }}
-                        />
-                      )}
-                      <P style={{ paddingLeft: 25 }}>
-                        {app?.subtitle || app?.description ? (
-                          <>
-                            {t(app?.subtitle ?? "")} {t(app?.description ?? "")}{" "}
-                            {app?.icon}
-                          </>
-                        ) : (
-                          t(
-                            "This part will be updated when  App Creator pin a character profile 🧬",
-                          )
-                        )}
-                      </P>
-                    </>
-                  ) : (
-                    <Div
-                      style={{
-                        color: "var(--shade-7)",
-                        display: "flex",
-                        gap: 5,
-                        flexDirection: "column",
-                        alignSelf: "flex-start",
-                        alignItems: "flex-start",
-                      }}
-                    >
-                      {/* <Ticker
+                  <H3
+                    style={{
+                      color: "var(--shade-6)",
+                      display: "flex",
+                      gap: 5,
+                      flexDirection: "column",
+                      alignSelf: "flex-start",
+                      alignItems: "flex-start",
+                      margin: 0,
+                      fontWeight: "normal",
+                      fontSize: ".9rem",
+                    }}
+                  >
+                    {/* <Ticker
                         maxWidth={viewPortWidth - 70}
                         showControls
                         style={{
                           color: COLORS[app?.themeColor as keyof typeof COLORS],
                         }}
                       /> */}
-                      <Img showLoading={false} logo={"lifeOS"} size={24} />
+                    <Img showLoading={false} logo={"lifeOS"} size={24} />
 
-                      <P>
-                        <A href={`/${app?.store?.slug}`} target="_blank">
-                          {t(app?.store?.name ?? "")}
-                        </A>{" "}
-                        {t(app?.store?.title ? ` - ${app?.store?.title}` : "")}
-                        {t(
-                          app?.store?.description
-                            ? ` - ${app?.store?.description}`
-                            : "",
-                        )}
-                      </P>
-                    </Div>
-                  )}
+                    <P>
+                      <A href={`/${app?.store?.slug}`} target="_blank">
+                        {t(app?.store?.name ?? "")}
+                      </A>{" "}
+                      {t(app?.store?.title ? ` - ${app?.store?.title}` : "")}
+                      {t(
+                        app?.store?.description
+                          ? ` - ${app?.store?.description}`
+                          : "",
+                      )}
+                    </P>
+                  </H3>
                   <Div
                     style={{
                       display: "flex",

@@ -294,34 +294,32 @@ export const Hey = memo(
       >
         <ErrorBoundary>
           {splash}
-          {isHydrated && (
-            <Suspense fallback={<Loading fullScreen />}>
-              <Programme />
-              <Div style={{ display: isProgramme ? "none" : "block" }}>
-                {showWatermelon ? (
-                  <Watermelon />
-                ) : showGrape ? (
-                  <Grape />
-                ) : isClientRoute ? (
-                  postId || tribeSlug ? (
-                    <Home />
-                  ) : threadId ? (
-                    <Thread key={threadId} />
-                  ) : RouteComponent ? (
-                    <RouteComponent />
-                  ) : (
-                    <Home />
-                  )
+          <Suspense fallback={<Loading fullScreen />}>
+            <Programme />
+            <Div style={{ display: isProgramme ? "none" : "block" }}>
+              {showWatermelon ? (
+                <Watermelon />
+              ) : showGrape ? (
+                <Grape />
+              ) : isClientRoute ? (
+                postId || tribeSlug ? (
+                  <Home />
+                ) : threadId ? (
+                  <Thread key={threadId} />
+                ) : RouteComponent ? (
+                  <RouteComponent />
                 ) : (
-                  children
-                )}
-              </Div>
-              <>
-                <VexToast />
-                <AddToHomeScreen />
-              </>
-            </Suspense>
-          )}
+                  <Home />
+                )
+              ) : (
+                children
+              )}
+            </Div>
+            <>
+              <VexToast />
+              <AddToHomeScreen />
+            </>
+          </Suspense>
         </ErrorBoundary>
       </Div>
     )
